@@ -284,7 +284,7 @@ export class KeyboardInteraction {
         let cells: HTMLTableCellElement[] = [].slice.call(tableEle.querySelectorAll('td'));
         let maxRow: number = tableEle.rows.length;
         let maxColumn: number = tableEle.rows[0].cells.length;
-        if (start.classList.contains(cls.ALLDAY_CELLS_CLASS)) {
+        if (start && start.classList.contains(cls.ALLDAY_CELLS_CLASS)) {
             const allDayRow: HTMLTableRowElement = this.parent.getAllDayRow() as HTMLTableRowElement;
             cells = [].slice.call(allDayRow.cells);
             maxRow = 1;

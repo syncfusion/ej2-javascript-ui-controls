@@ -486,6 +486,26 @@ export function getClientY(e: MouseEvent & TouchEvent): number {
     return e.changedTouches ? e.changedTouches[0].clientY : e.clientY;
 }
 
+/**
+ * Get even number based on device pixel ratio
+ * @hidden
+ */
+export function getDPRValue(value: number) {
+    return window.devicePixelRatio % 1 > 0 ? value % 2 === 0 ? value : value + 1 : value;
+}
+
+/**
+ * @hidden
+ */
+function getDPRWidth(value: number) {
+    if (window.devicePixelRatio % 1 > 0) {
+        const pointValue = (value * window.devicePixelRatio) % 1;
+        return value + (pointValue ? (1 - parseFloat(pointValue.toFixed(2))) / window.devicePixelRatio : 0);
+    } else {
+        return value;
+    }
+}
+
 const config: IAriaOptions<string> = {
     role: 'role',
     selected: 'aria-selected',
@@ -549,9 +569,9 @@ export function setResize(idx: number, index: number, value: string, isCol: bool
     } else {
         curEle = curEleH = frozenRow || frozenCol ? parent.getRow(idx, null, frozenCol - 1) :
             parent.getRow(idx, parent.getRowHeaderTable());
-        curEleH.style.height = parseInt(value, 10) > 0 ? value : '2px';
+        curEleH.style.height = parseInt(value, 10) > 0 ? getDPRValue(parseInt(value, 10)) + 'px' : '2px';
         curEleC = parent.getRow(idx, null, frozenCol);
-        curEleC.style.height = parseInt(value, 10) > 0 ? value : '0px';
+        curEleC.style.height = parseInt(value, 10) > 0 ? getDPRValue(parseInt(value, 10)) + 'px' : '0px';
         let hdrFntSize: number;
         if (sheet.showHeaders) {
             const hdrRow: HTMLCollectionOf<HTMLTableRowElement> =
@@ -747,12 +767,13 @@ export function setResize(idx: number, index: number, value: string, isCol: bool
             }
         }
     } else if (parseInt(value, 10) > 0) {
+        const DPRValue: string = getDPRValue(parseInt(value, 10)) + 'px'
         if (isCol) {
-            curEleH.style.width = value;
-            curEleC.style.width = value;
+            curEleH.style.width = DPRValue;
+            curEleC.style.width = DPRValue;
         } else {
-            curEleH.style.height = value;
-            curEleC.style.height = value;
+            curEleH.style.height = DPRValue;
+            curEleC.style.height = DPRValue;
         }
         if (sheet.showHeaders && preEle && nxtEle) {
             if (preEle.classList.contains('e-zero')) {
@@ -1232,13 +1253,14 @@ export function setRowEleHeight(
             }
             n = n + lines;
         }
-        height = getTextHeight(parent, cell.style || parent.cellStyle, n) + 1;
+        height = getTextHeightWithBorder(parent, actCell[0], actCell[1], sheet, cell.style || parent.cellStyle, n);
+        //height = getTextHeight(parent, cell.style || parent.cellStyle, n) + 1;
     }
     let frozenCol: number = parent.frozenColCount(sheet);
     row = row || (sheet.frozenRows ? parent.getRow(rowIdx, null, frozenCol) : parent.getRow(rowIdx));
     if (row) { row.style.height = `${height}px`; }
-    hRow = hRow || sheet.frozenColumns ? parent.getRow(rowIdx, null, frozenCol - 1) :
-        parent.getRow(rowIdx, parent.getRowHeaderTable());
+    hRow = hRow || (sheet.frozenColumns ? parent.getRow(rowIdx, null, frozenCol - 1) :
+        parent.getRow(rowIdx, parent.getRowHeaderTable()));
     if (hRow) { hRow.style.height = `${height}px`; }
     setRowHeight(sheet, rowIdx, height);
     parent.setProperties({ sheets: parent.sheets }, true);
@@ -1257,7 +1279,8 @@ export function setRowEleHeight(
 export function getTextHeight(context: Workbook, style: CellStyleModel, lines: number = 1): number {
     const fontSize: string = (style && style.fontSize) || context.cellStyle.fontSize;
     const fontSizePx: number = fontSize.indexOf('pt') > -1 ? parseInt(fontSize, 10) * 1.33 : parseInt(fontSize, 10);
-    return Math.ceil(fontSizePx * (style && style.fontFamily === 'Arial Black' ? 1.44 : 1.24) * lines);
+    const hgt: number = fontSizePx * (style && style.fontFamily === 'Arial Black' ? 1.44 : 1.24) * lines;
+    return Math.ceil(hgt % 1 > 0.9 ? hgt + 1 : hgt); // 0.9 -> if it is nearest value adding extra 1 pixel
 }
 
 /**
@@ -1275,7 +1298,7 @@ export function getTextWidth(text: string, style: CellStyleModel, parentStyle: C
     const context: CanvasRenderingContext2D = canvas.getContext('2d');
     context.font = (style.fontStyle || parentStyle.fontStyle) + ' ' + (style.fontWeight || parentStyle.fontWeight) + ' '
         + (style.fontSize || parentStyle.fontSize) + ' ' + (style.fontFamily || parentStyle.fontFamily);
-    return context.measureText(text).width;
+    return getDPRWidth(context.measureText(text).width);
 }
 
 /**
@@ -1382,6 +1405,12 @@ export function getBorderHeight(rowIdx: number, colIdx: number, sheet: SheetMode
  */
 export function getExcludedColumnWidth(sheet: SheetModel, rowIdx: number, startColIdx: number, endColIdx: number = startColIdx): number {
     return getColumnsWidth(sheet, startColIdx, endColIdx) - (4 + getBorderWidth(rowIdx, startColIdx, sheet)); // 4 -> For cell padding
+}
+
+/** @hidden */
+export function getTextHeightWithBorder(context: Workbook, rowIdx: number, colIdx: number, sheet: SheetModel, style: CellStyleModel, lines?: number): number {
+    const height: number = getTextHeight(context, style, lines) + (getBorderHeight(rowIdx, colIdx, sheet) || 1); // 1 -> For default bottom border
+    return (window.devicePixelRatio % 1 > 0) ? height % 2 === 0 ? height : height + 1 : height;
 }
 
 /**

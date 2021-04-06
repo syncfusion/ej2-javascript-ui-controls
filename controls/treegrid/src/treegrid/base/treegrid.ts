@@ -1833,6 +1833,17 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
                 this.element.style.width = this.width;
             }
             this.element.appendChild(gridContainer);
+            let gridRequiredModules: Function = this.grid.requiredModules;
+            this.grid.requiredModules = function (): ModuleDeclaration[] {
+                let modules: ModuleDeclaration[] = [];
+                modules = gridRequiredModules.apply(this);
+                for (let i: number = 0; i < modules.length; i++) {
+                    if (modules[i].member === 'virtualscroll') {
+                        modules[i].member = 'treeVirtualScroll';
+                    }
+                }
+                return modules;
+            }
             this.grid.appendTo(gridContainer as HTMLElement);
             this.wireEvents();
         }
@@ -2155,6 +2166,9 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
             if (treeGrid.enableImmutableMode) {
                 args.result = args.result.slice();
             }
+            if (treeGrid.initialRender) {
+                this.contentModule.objectEqualityChecker = treeGrid.objectEqualityChecker;
+            }
             // treeGrid.notify(events.beforeDataBound, args);
             if (!(<IGrid>this).isPrinting) {
                 const callBackPromise: Deferred = new Deferred();
@@ -2169,6 +2183,21 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
                 this.loggerModule.log(type, args);
             }
         };
+    }
+    
+    private objectEqualityChecker = (old: Object, current: Object) => {
+      if (old) {
+        let keys: string[] = Object.keys(old);
+        let isEqual: boolean = true;
+        for (let i: number = 0; i < keys.length; i++) {
+            if (old[keys[i]] !== current[keys[i]]) {
+                isEqual = false; break;
+            }
+        }
+        return isEqual;
+      } else {
+        return false;
+      }
     }
     private bindCallBackEvents(): void {
         let beginEdit: Function;
@@ -2741,7 +2770,10 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
             case 'allowFiltering':
                 this.grid.allowFiltering = this.allowFiltering; break;
             case 'filterSettings':
-                this.grid.filterSettings = getActualProperties(this.filterSettings); break;
+                if (!this.initialRender) {
+                    this.grid.filterSettings = getActualProperties(this.filterSettings);
+                }
+                break;
             case 'showColumnMenu':
                 this.grid.showColumnMenu = this.showColumnMenu; break;
             case 'allowRowDragAndDrop':

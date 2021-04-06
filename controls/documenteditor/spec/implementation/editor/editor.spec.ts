@@ -161,6 +161,13 @@ describe("Insert and delete table validation", () => {
         //expect(editor.selection.start.paragraph.isInsideTable).toBe(true);
         expect(editor.pageCount).toBe(2);
     });
+    it("Apply cell format validation", () => {
+        editor.openBlank();
+        editor.editorModule.insertTable(2, 2);
+        editor.selection.selectColumn();
+        editor.selection.cellFormat.preferredWidth = 400;
+        expect(editor.selection.start.paragraph.associatedCell.ownerTable.tableHolder.tableWidth).toBeGreaterThan(630);
+    });
 });
 
 describe("Insert Hyperlink and bookmark validation", () => {

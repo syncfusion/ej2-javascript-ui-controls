@@ -1,7 +1,8 @@
 import { DataManager, Query, Deferred, ReturnOption, QueryOptions } from '@syncfusion/ej2-data';
 import { Workbook, getCell, CellModel, RowModel, SheetModel, setCell } from '../base/index';
 import { getRangeIndexes, checkIsFormula, updateSheetFromDataSource, checkDateFormat, dataSourceChanged } from '../common/index';
-import { ExtendedSheet, ExtendedRange, AutoDetectInfo, getCellIndexes, dataChanged, getCellAddress } from '../common/index';
+import { ExtendedSheet, ExtendedRange, AutoDetectInfo, getCellIndexes, dataChanged, getCellAddress, isInRange } from '../common/index';
+import { triggerDataChange } from '../common/index';
 import { getFormatFromType } from './number-format';
 
 /**
@@ -21,6 +22,7 @@ export class DataBind {
         this.parent.on(updateSheetFromDataSource, this.updateSheetFromDataSourceHandler, this);
         this.parent.on(dataSourceChanged, this.dataSourceChangedHandler, this);
         this.parent.on(dataChanged, this.dataChangedHandler, this);
+        this.parent.on(triggerDataChange, this.triggerDataChangeHandler, this);
     }
 
     private removeEventListener(): void {
@@ -394,8 +396,8 @@ export class DataBind {
      * @returns {void} - Triggers dataSourceChange event when cell data changes
      */
     private dataChangedHandler(args: {
-        sheetIdx: number, activeSheetIndex: number, address: string, startIndex: number, endIndex: number,
-        modelType: string, deletedModel: RowModel[], model: RowModel[], insertType: string, index: number
+        sheetIdx: number, activeSheetIndex: number, address: string, startIndex: number, endIndex: number, modelType: string,
+        deletedModel: RowModel[], model: RowModel[], insertType: string, index: number, type: string, pastedRange: string, range: string, isUndoRedo: boolean, requestType: string
     }): void {
         const changedData: Object[] = [{}];
         let action: string;
@@ -403,16 +405,18 @@ export class DataBind {
         let dataRange: number[];
         let startCell: number[];
         let inRange: boolean;
+        let inRangeCut: boolean;
         let deleteRowDetails: { count: number, index: number };
         const sheetIdx: number = this.parent.activeSheetIndex;
         const sheet: SheetModel = this.parent.sheets[sheetIdx];
         let cellIndices: number[];
+        let cutIndices: number[];
         sheet.ranges.forEach((range: ExtendedRange, idx: number) => {
             if (range.dataSource) {
                 let isNewRow: boolean;
                 startCell = getCellIndexes(range.startCell);
                 dataRange = [...startCell, startCell[0] + range.info.count + (range.showFieldAsHeader ? 0 : -1),
-                    startCell[1] + range.info.fldLen - 1];
+                startCell[1] + range.info.fldLen - 1];
                 if (args.modelType === 'Row') {
                     if (args.insertType) {
                         inRange = ((!range.showFieldAsHeader && args.insertType === 'above') ? dataRange[0] <= args.index
@@ -434,11 +438,15 @@ export class DataBind {
                         action = 'delete';
                     }
                 } else {
-                    cellIndices = getCellIndexes(args.sheetIdx > -1 ? args.address : args.address.split('!')[1]);
-                    inRange = ((range.showFieldAsHeader ? dataRange[0] + 1 : dataRange[0]) <= cellIndices[0])
-                        && dataRange[2] >= cellIndices[0] && dataRange[1] <= cellIndices[1] && dataRange[3] >= cellIndices[1];
+                    cellIndices = getRangeIndexes(args.requestType === 'paste' ? args.pastedRange.split('!')[1] : args.sheetIdx > -1 ? args.address : (args.address || args.range).split('!')[1]);
+                    const dataRangeIndices: number[] = [...[range.showFieldAsHeader ? dataRange[0] + 1 : dataRange[0]], ...dataRange.slice(1, 4)];
+                    inRange = isInRange(dataRangeIndices, cellIndices, true);
+                    if (args.requestType === 'paste' && (args as unknown as { copiedInfo: { isCut: boolean } }).copiedInfo.isCut) {
+                        cutIndices = [].slice.call((args as unknown as { copiedInfo: { range: number[] } }).copiedInfo.range)
+                        inRangeCut = isInRange(dataRangeIndices, cutIndices, true);
+                    }
                 }
-                if (inRange || isNewRow) {
+                if (inRange || isNewRow || inRangeCut) {
                     if (args.modelType === 'Row' && !args.insertType) {
                         args.deletedModel.forEach((row: RowModel, rowIdx: number) => {
                             changedData[rowIdx] = {};
@@ -455,12 +463,25 @@ export class DataBind {
                         deleteRowDetails = { count: args.deletedModel.length, index: args.endIndex };
                     } else {
                         action = isNewRow ? 'add' : 'edit';
-                        for (let i: number = 0; i < (isNewRow ? args.model.length : 1); i++) {
-                            changedData[i] = {};
-                            range.info.flds.forEach((fld: string, idx: number) => {
-                                cell = getCell(cellIndices[0], startCell[1] + idx, sheet);
-                                changedData[i][fld] = (cell && cell.value) || null;
-                            });
+                        let addedCutData: number = 0;
+                        if (inRangeCut) {
+                            addedCutData = cutIndices[2] - cutIndices[0] + 1;
+                            for (let i: number = 0; i < addedCutData; i++) {
+                                changedData[i] = {};
+                                range.info.flds.forEach((fld: string, idx: number) => {
+                                    cell = getCell(cutIndices[0] + i, startCell[1] + idx, sheet);
+                                    changedData[i][fld] = (cell && cell.value) || null;
+                                });
+                            }
+                        }
+                        if (inRange || isNewRow) {
+                            for (let i: number = 0; i < (isNewRow ? args.model.length : (cellIndices[2] - cellIndices[0]) + 1 || 1); i++) {
+                                changedData[i + addedCutData] = {};
+                                range.info.flds.forEach((fld: string, idx: number) => {
+                                    cell = getCell(cellIndices[0] + i, startCell[1] + idx, sheet);
+                                    changedData[i + addedCutData][fld] = (cell && cell.value) || null;
+                                });
+                            }
                         }
                     }
                     this.parent.trigger('dataSourceChanged', { data: changedData, action: action, rangeIndex: idx, sheetIndex: sheetIdx });
@@ -469,6 +490,33 @@ export class DataBind {
                 }
             }
         });
+    }
+
+    private triggerDataChangeHandler(args: { action: string, isUndo: boolean, eventArgs: { modelType: string, type: string, index: number, startIndex: number, endIndex: number, model: object[], deletedModel: object[], insertType: string, requestType: string } }): void {
+        const dataChangingActions: string[] = ['insert', 'delete', 'edit', 'cellDelete', 'cellSave', 'clipboard', 'clear'];
+        let triggerDataChange: boolean = true;
+        if ((args.action === 'delete' || args.action === 'insert') && ['Column', 'Sheet'].indexOf(args.eventArgs.modelType) > -1) {
+            triggerDataChange = false;
+        } else if (args.action === 'clear' && ['Clear Formats', 'Clear Hyperlinks'].indexOf(args.eventArgs.type) > -1) {
+            triggerDataChange = false;
+        } else if (args.action === 'clipboard' && args.eventArgs.requestType === 'Formats') {
+            triggerDataChange = false;
+        }
+        if(args.isUndo && (args.action === 'delete' || args.action === 'insert')) {
+            if(args.action === 'delete') {
+                args.eventArgs.index = args.eventArgs.startIndex;
+                args.eventArgs.model = args.eventArgs.deletedModel;
+                args.eventArgs.insertType = 'below';
+            } else {
+                args.eventArgs.startIndex = args.eventArgs.index;
+                args.eventArgs.endIndex = args.eventArgs.index + args.eventArgs.model.length - 1;
+                args.eventArgs.deletedModel = args.eventArgs.model;
+                delete args.eventArgs.insertType;
+            }
+        }
+        if (triggerDataChange && dataChangingActions.indexOf(args.action) > -1) {
+            this.parent.notify(dataChanged, args.eventArgs);
+        }
     }
 
     /**

@@ -105,11 +105,11 @@ export class Renderer {
         }
         for (let i: number = 0; i < page.bodyWidgets.length; i++) {
             this.render(page, page.bodyWidgets[i]);
-            if (page.footnoteWidget) {
+            if (page.footnoteWidget && this.documentHelper.owner.layoutType === 'Pages') {
                 this.renderfootNoteWidget(page, page.footnoteWidget);
             }
         }
-        if (page.endnoteWidget) {
+        if (page.endnoteWidget && this.documentHelper.owner.layoutType === 'Pages') {
             this.renderfootNoteWidget(page, page.endnoteWidget);
         }
         if (this.documentHelper.owner.enableHeaderAndFooter && !this.isPrinting) {
@@ -297,7 +297,7 @@ export class Renderer {
                 let shapeLeft: number = this.getScaledValue(shape.x, 1);
                 let shapeTop: number = this.getScaledValue(shape.y, 2);
                 this.pageContext.beginPath();
-                if (shape.fillFormat && shape.fillFormat.fill) {
+                if (!isNullOrUndefined(shape.lineFormat.lineFormatType) && shape.fillFormat && shape.fillFormat.fill) {
                     this.pageContext.fillStyle = shape.fillFormat.color;
                     this.pageContext.fillRect(shapeLeft, shapeTop, this.getScaledValue(shape.width), this.getScaledValue(shape.height));
                 }
@@ -1195,7 +1195,7 @@ export class Renderer {
         this.renderCellBackground(height, cellWidget, cellLeftMargin, lineWidth);
         let leftBorderWidth: number = lineWidth;
 
-        if (tableCell.index === 0 || tableCell.cellFormat.rowSpan === 1 || (tableCell.cellFormat.rowSpan > 1 && tableCell.columnIndex === 0)) {
+        if (tableCell.index === 0 || tableCell.cellFormat.rowSpan === 1 || (tableCell.cellFormat.rowSpan > 1 && tableCell.columnIndex !== 0)) {
             this.renderSingleBorder(border.color, cellWidget.x - cellLeftMargin - lineWidth, cellWidget.y - cellTopMargin, cellWidget.x - cellLeftMargin - lineWidth, cellWidget.y + cellWidget.height + cellBottomMargin, lineWidth);
         } else {
             for (let i: number = 0; i < tableCell.ownerTable.childWidgets.length; i++) {
@@ -1288,6 +1288,9 @@ export class Renderer {
                 : TableCellWidget.getCellBottomBorder(tableCell);
             // if (!isNullOrUndefined(border )) {
             //Renders the cell bottom border.
+            if (border.lineStyle === 'None' && tableCell.previousWidget && tableCell.previousWidget instanceof TableCellWidget) {
+                border = (tableCell.previousWidget as TableCellWidget).cellFormat.borders.bottom;
+            }
             lineWidth = HelperMethods.convertPointToPixel(border.getLineWidth());
             this.renderSingleBorder(border.color, cellWidget.x - cellWidget.margin.left - leftBorderWidth / 2, cellWidget.y + cellWidget.height + cellBottomMargin + lineWidth / 2, cellWidget.x + cellWidget.width + cellWidget.margin.right, cellWidget.y + cellWidget.height + cellBottomMargin + lineWidth / 2, lineWidth);
             // }

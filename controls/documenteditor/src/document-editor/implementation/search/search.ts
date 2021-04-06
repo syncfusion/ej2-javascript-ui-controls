@@ -231,7 +231,7 @@ export class Search {
      * @returns {void}
      */
     public replaceAllInternal(textToReplace: string, findOptions?: FindOption): void {
-        if ((textToReplace === '' || isNullOrUndefined(textToReplace))) {
+        if (isNullOrUndefined(textToReplace)) {
             return;
         }
         if (isNullOrUndefined(findOptions)) {

@@ -722,6 +722,9 @@ export class Resize implements IAction {
             pos.left += (this.parent.enableRtl ? 0 - 1 : rect.offsetWidth - 2);
         }
         this.helper.style.cssText = 'height: ' + height + 'px; top: ' + pos.top + 'px; left:' + Math.floor(pos.left) + 'px;';
+        if (this.parent.enableVirtualization) {
+            this.helper.classList.add('e-virtual-rhandler');
+        }
     }
 
     private getScrollBarWidth(height?: boolean): number {

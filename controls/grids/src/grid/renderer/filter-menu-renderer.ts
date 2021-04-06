@@ -302,7 +302,7 @@ export class FilterMenuRenderer {
                 fltrValue = (<HTMLInputElement>element.children[0]).value;
             } else {
                 if (!isBlazor() && !isNullOrUndefined((<EJ2Intance>(element.children[0] as Element)).ej2_instances)) {
-                    fltrValue = ((<EJ2Intance>(element.children[0] as Element)).ej2_instances[0] as
+                    fltrValue = ((<EJ2Intance>(element.querySelector('input') as Element)).ej2_instances[0] as
                         { value?: string | boolean | Date }).value;
                 } else {
                     let eControl: EJ2Intance = ((element.querySelector('.e-control') as Element) as EJ2Intance);

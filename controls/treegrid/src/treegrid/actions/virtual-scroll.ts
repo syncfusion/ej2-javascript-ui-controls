@@ -27,14 +27,6 @@ export class VirtualScroll {
      */
     constructor(parent?: TreeGrid) {
         this.parent = parent;
-        const injectedModules: string = 'injectedModules';
-        const modules: Function[] = Grid.prototype[injectedModules];
-        for (let i: number = 0; i < modules.length; i++) {
-            if (modules[i] === GridVirtualScroll) {
-                modules.splice(i, 1);
-                break;
-            }
-        }
         Grid.Inject(TreeVirtual);
         this.addEventListener();
     }
@@ -155,6 +147,9 @@ export class TreeVirtual extends GridVirtualScroll {
         super(parent, locator);
         getValue('parent', this).off('initial-load', getValue('instantiateRenderer', this), this);
         getValue('parent', this).on('initial-load', this.instantiateRenderers, this);
+    }
+    public getModuleName(): string {
+        return 'treeVirtualScroll';
     }
     protected instantiateRenderers(): void {
         getValue('parent', this).log(['limitation', 'virtual_height'], 'virtualization');

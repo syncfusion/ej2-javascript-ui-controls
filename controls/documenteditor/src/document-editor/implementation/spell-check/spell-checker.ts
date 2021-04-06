@@ -781,10 +781,12 @@ export class SpellChecker {
             const index: number = previousLine.children.length - 1;
             if (!isNullOrUndefined(previousLine.children[index]) && previousLine.children[index] instanceof TextElementBox) {
                 const firstElement: TextElementBox = previousLine.children[index] as TextElementBox;
-                if (currentElement.text.indexOf(' ') !== 0 && firstElement.text.lastIndexOf(' ') !== firstElement.text.length - 1) {
-                    currentText = (currentText.length > 0) ? currentText : prevText;
-                    this.checkElementCanBeCombined(firstElement, underlineY, beforeIndex, true, currentText, false, true, true);
-                    return true;
+                if (!isNullOrUndefined(currentElement.text)) {
+                    if (currentElement.text.indexOf(' ') !== 0 && firstElement.text.lastIndexOf(' ') !== firstElement.text.length - 1) {
+                        currentText = (currentText.length > 0) ? currentText : prevText;
+                        this.checkElementCanBeCombined(firstElement, underlineY, beforeIndex, true, currentText, false, true, true);
+                        return true;
+                    }
                 }
             }
         }

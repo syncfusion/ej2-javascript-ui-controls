@@ -31419,6 +31419,7 @@ $grid-responsive-tbar-btn-bgr-padding: 0 !default;
 $grid-rtl-headercelldiv-left-align-margin: 10px !default;
 $grid-rtl-filtermenudiv-left-align-margin: -5px !default;
 $grid-rtl-sort-num-left-align-margin: 8px -2px 0 0 !default;
+$grid-frozen-mac-scrollbar-background: rgba(0, 0, 0, .5) !default;
 @include export-module('grid-highcontrast-icons') {
   /*!componenticons*/
 
@@ -32555,6 +32556,10 @@ $grid-rtl-sort-num-left-align-margin: 8px -2px 0 0 !default;
     & .e-rhelper {
       position: absolute;
       width: $grid-resize-border-width;
+    }
+
+    & .e-virtual-rhandler {
+      z-index: 1;
     }
 
     &.e-device .e-ricon::before {
@@ -34017,8 +34022,27 @@ $grid-rtl-sort-num-left-align-margin: 8px -2px 0 0 !default;
     }
 
     .e-movablecontent {
+      // Internet Explorer 10+
+      -ms-overflow-style: none; // sass-lint:disable-line no-vendor-prefixes
       flex: 1;
-      overflow-x: hidden;
+      overflow-x: auto;
+      overflow-y: hidden;
+    }
+
+    // Safari and Chrome
+    .e-movablecontent::-webkit-scrollbar { // sass-lint:disable-line no-vendor-prefixes
+      display: none;
+    }
+
+    // Safari with Mac OS
+    .e-content.e-mac-safari::-webkit-scrollbar { // sass-lint:disable-line no-vendor-prefixes
+      width: 7px;
+    }
+
+    // Safari with Mac OS
+    .e-content.e-mac-safari::-webkit-scrollbar-thumb { // sass-lint:disable-line no-vendor-prefixes
+      background-color: $grid-frozen-mac-scrollbar-background;
+      border-radius: 4px;
     }
 
     .e-frozenscrollbar {
@@ -106637,7 +106661,9 @@ $freezepane-color: $hover-bg !default;
     }
 
     & .e-sheet,
-    & .e-row-header .e-header-cell {
+    & .e-row-header .e-header-cell,
+    & .e-column-header .e-header-cell,
+    & .e-selectall-container .e-header-cell {
       background-color: $header-cell-bg-color;
     }
 
@@ -106646,7 +106672,8 @@ $freezepane-color: $hover-bg !default;
       color: $cell-color;
     }
 
-    & .e-main-panel {
+    & .e-main-panel,
+    & .e-header-panel {
       background-color: $cell-background;
     }
 
@@ -106691,13 +106718,13 @@ $freezepane-color: $hover-bg !default;
       border-color: $select-all-bg-color;
       border-top-color: transparent;
 
-      &:hover {
-        border-bottom-color: $select-all-hover-bg-color;
-      }
-
       &.e-highlight {
         border-bottom-color: $select-all-active-bg-color;
       }
+    }
+
+    & .e-select-all-cell:hover .e-selectall:not(.e-highlight) {
+      border-bottom-color: $select-all-hover-bg-color;
     }
 
     & .e-sheet-panel {
@@ -106723,13 +106750,13 @@ $freezepane-color: $hover-bg !default;
         & .e-selectall {
           border-left-color: transparent;
 
-          &:hover {
-            border-right-color: $select-all-hover-bg-color;
-          }
-
           &.e-highlight {
             border-right-color: $select-all-active-bg-color;
           }
+        }
+
+        & .e-select-all-cell:hover .e-selectall:not(.e-highlight) {
+          border-right-color: $select-all-hover-bg-color;
         }
 
         & .e-column-header .e-header-cell.e-prev-highlight,

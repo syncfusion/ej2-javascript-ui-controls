@@ -1,4 +1,4 @@
-import { Spreadsheet } from '../index';
+import { getDPRValue, Spreadsheet } from '../index';
 import { closest, EventHandler } from '@syncfusion/ej2-base';
 import { colWidthChanged, rowHeightChanged, contentLoaded, hideShow, getFilterRange } from '../common/index';
 import { findMaxValue, setResize, autoFit, HideShowEventArgs, completeAction, setAutoFit } from '../common/index';
@@ -381,7 +381,7 @@ export class Resize {
 
     private setColWidth(index: number, viewportIdx: number, width: number, curWidth: number): void {
         const sheet: SheetModel = this.parent.getActiveSheet();
-        let threshold: number = width - curWidth;
+        let threshold: number = getDPRValue(width) - curWidth;
         if (threshold < 0 && curWidth < -(threshold)) {
             threshold = -curWidth;
         }
@@ -440,7 +440,7 @@ export class Resize {
         const sheet: SheetModel = this.parent.getActiveSheet(); const frozenCol: number = this.parent.frozenColCount(sheet);
         const eleHeight: number = parseInt(this.parent.getRow(rowIdx, null, frozenCol).style.height, 10);
         const rowHeight: string = height;
-        let threshold: number = parseInt(rowHeight, 10) - eleHeight;
+        let threshold: number = getDPRValue(parseInt(rowHeight, 10)) - eleHeight;
         if (threshold < 0 && eleHeight < -(threshold)) {
             threshold = -eleHeight;
         }
@@ -503,7 +503,7 @@ export class Resize {
                 const sheet: SheetModel = this.parent.getActiveSheet();
                 const selectedRange: number[] = getSwapRange(getRangeIndexes(sheet.selectedRange));
                 if (actualIdx <= selectedRange[2] && actualIdx > selectedRange[0]) {
-                    rowHeight = sheet.rows[actualIdx].height; let count: number;
+                    rowHeight = getRowHeight(sheet, actualIdx); let count: number;
                     for (let i: number = selectedRange[0]; i <= selectedRange[2]; i++) {
                         if (i === actualIdx) { continue; }
                         prevData = `${getRowHeight(sheet, i)}px`;

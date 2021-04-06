@@ -223,7 +223,7 @@ export function processIdx(model: (SheetModel | RowModel | CellModel)[], isSheet
             });
             context.setSheetPropertyOnMute(
                 model[i], 'usedRange',
-                { rowIndex: (model[i] as SheetModel).rows.length - 1, colIndex: cellCnt }
+                { rowIndex: (model[i] as SheetModel).rows.length ? (model[i] as SheetModel).rows.length - 1 : 0, colIndex: cellCnt }
             );
         }
     }

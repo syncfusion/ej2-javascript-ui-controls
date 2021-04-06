@@ -656,13 +656,7 @@ export class HtmlExport {
             charStyle += 'normal';
         }
         charStyle += ';';
-        // Double strike through will become Single strike through while saving HTML using MS Word.
-        if (characterFormat.strikethrough === 'SingleStrike' || characterFormat.strikethrough === 'DoubleStrike') {
-            charStyle += 'text-decoration';
-            charStyle += ':';
-            charStyle += 'line-through';
-            charStyle += ';';
-        }
+        charStyle += this.serializeTextDecoration(characterFormat);
         //Text Baseline Alignment
         if (characterFormat.baselineAlignment === 'Superscript' || characterFormat.baselineAlignment === 'Subscript') {
             charStyle += 'vertical-align';
@@ -686,12 +680,7 @@ export class HtmlExport {
             charStyle += HelperMethods.getColor(propertyValue);
             charStyle += ';';
         }
-        if (!isNullOrUndefined(characterFormat.underline) && characterFormat.underline !== 'None') {
-            charStyle += 'text-decoration';
-            charStyle += ':';
-            charStyle += 'underline';
-            charStyle += ';';
-        }
+
         if (!isNullOrUndefined(characterFormat.allCaps) && (characterFormat.allCaps)) {
             charStyle += 'text-transform';
             charStyle += ':';
@@ -715,6 +704,24 @@ export class HtmlExport {
         }
         return charStyle.toString();
     }
+    private serializeTextDecoration(characterFormat: any): string {
+        let charStyle: string = 'text-decoration:';
+        let value: string = '';
+        // Double strike through will become Single strike through while saving HTML using MS Word.
+        if (characterFormat.strikethrough === 'SingleStrike' || characterFormat.strikethrough === 'DoubleStrike') {
+            value += 'line-through ';
+        }
+        if (!isNullOrUndefined(characterFormat.underline) && characterFormat.underline !== 'None') {
+            value += 'underline';
+        }
+        if (value.length > 1) {
+            value = charStyle + value + ';';
+        }
+        return value;
+    }
+    /**
+     * @private
+     */
     public serializeParagraphFormat(paragraphFormat: any, isList: boolean): string {
         if (!isNullOrUndefined(paragraphFormat.inlineFormat)) {
             return this.serializeParagraphFormat(paragraphFormat.inlineFormat, isList);

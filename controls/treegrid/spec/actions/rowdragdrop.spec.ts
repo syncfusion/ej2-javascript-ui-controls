@@ -592,4 +592,161 @@ describe('Treegrid Row Drop as Child', () => {
     });
   });
 
+  describe('EJ2-47105-Dropping deep level root record to bottom of parent record', () => {
+    let TreeGridObj: TreeGrid;
+    beforeAll((done: Function) => {
+      TreeGridObj = createGrid(
+        {
+          dataSource: projectData2,
+          idMapping: 'TaskID',
+          parentIdMapping: 'parentID',
+          treeColumnIndex: 1,
+          allowRowDragAndDrop: true,
+          columns: [
+            { field: "TaskID", headerText: "Task Id", width: 90 },
+            { field: 'TaskName', headerText: 'TaskName', width: 60 },
+            { field: 'Progress', headerText: 'Progress', textAlign: 'Right', width: 90 },
+          ],
+        },
+        done
+      );
+    });
+
+    it('Dropping deep level root record to bottom of parent record', () => {
+      TreeGridObj.rowDragAndDropModule.reorderRows([2], 1, 'child');
+      TreeGridObj.rowDragAndDropModule.reorderRows([2], 0, 'below');
+      expect((TreeGridObj.grid.dataSource[0] as ITreeData).childRecords.length).toBe(2);
+      expect((TreeGridObj.grid.dataSource[3].level)).toBe(0);
+    });
+
+    afterAll(() => {
+      destroy(gridObj);
+    });
+  });
+
+  describe('EJ2-47105-Dropping root parent record as child to another root parent record', () => {
+    let TreeGridObj: TreeGrid;
+    beforeAll((done: Function) => {
+      TreeGridObj = createGrid(
+        {
+          dataSource: projectData2,
+          idMapping: 'TaskID',
+          parentIdMapping: 'parentID',
+          treeColumnIndex: 1,
+          allowRowDragAndDrop: true,
+          columns: [
+            { field: "TaskID", headerText: "Task Id", width: 90 },
+            { field: 'TaskName', headerText: 'TaskName', width: 60 },
+            { field: 'Progress', headerText: 'Progress', textAlign: 'Right', width: 90 },
+          ],
+        },
+        done
+      );
+    });
+
+    it('Dropping root parent record as child to another root parent record', () => {
+      TreeGridObj.rowDragAndDropModule.reorderRows([4], 0, 'child');
+      expect((TreeGridObj.grid.dataSource[0] as ITreeData).childRecords.length).toBe(4);
+      expect((TreeGridObj.grid.dataSource[3].level)).toBe(1);
+    });
+
+    afterAll(() => {
+      destroy(gridObj);
+    });
+  });
+
+  describe('EJ2-47105-Dropping root parent record as child to record', () => {
+    let TreeGridObj: TreeGrid;
+    beforeAll((done: Function) => {
+      TreeGridObj = createGrid(
+        {
+          dataSource: projectData2,
+          idMapping: 'TaskID',
+          parentIdMapping: 'parentID',
+          treeColumnIndex: 1,
+          allowRowDragAndDrop: true,
+          columns: [
+            { field: "TaskID", headerText: "Task Id", width: 90 },
+            { field: 'TaskName', headerText: 'TaskName', width: 60 },
+            { field: 'Progress', headerText: 'Progress', textAlign: 'Right', width: 90 },
+          ],
+        },
+        done
+      );
+    });
+
+    it('Dropping root parent record as child to record', () => {
+      TreeGridObj.rowDragAndDropModule.reorderRows([3], 0, 'above');
+      TreeGridObj.rowDragAndDropModule.reorderRows([1], 0, 'child');
+      expect((TreeGridObj.grid.dataSource[0] as ITreeData).childRecords.length).toBe(1);
+      expect((TreeGridObj.grid.dataSource[1].level)).toBe(1);
+    });
+
+    afterAll(() => {
+      destroy(gridObj);
+    });
+  });
+
+  describe('EJ2-47105-Dropping root parent record below a record', () => {
+    let TreeGridObj: TreeGrid;
+    beforeAll((done: Function) => {
+      TreeGridObj = createGrid(
+        {
+          dataSource: projectData2,
+          idMapping: 'TaskID',
+          parentIdMapping: 'parentID',
+          treeColumnIndex: 1,
+          allowRowDragAndDrop: true,
+          columns: [
+            { field: "TaskID", headerText: "Task Id", width: 90 },
+            { field: 'TaskName', headerText: 'TaskName', width: 60 },
+            { field: 'Progress', headerText: 'Progress', textAlign: 'Right', width: 90 },
+          ],
+        },
+        done
+      );
+    });
+
+    it('Dropping root parent record below a record', () => {
+      TreeGridObj.rowDragAndDropModule.reorderRows([6], 4, 'above');
+      TreeGridObj.rowDragAndDropModule.reorderRows([0], 4, 'below');
+      expect((TreeGridObj.grid.dataSource[1] as ITreeData).childRecords.length).toBe(3);
+    });
+
+    afterAll(() => {
+      destroy(gridObj);
+    });
+  });
+  
+  describe('EJ2-47105-Dropping child parent record below a root parent record', () => {
+    let TreeGridObj: TreeGrid;
+    beforeAll((done: Function) => {
+      TreeGridObj = createGrid(
+        {
+          dataSource: projectData2,
+          idMapping: 'TaskID',
+          parentIdMapping: 'parentID',
+          treeColumnIndex: 1,
+          allowRowDragAndDrop: true,
+          columns: [
+            { field: "TaskID", headerText: "Task Id", width: 90 },
+            { field: 'TaskName', headerText: 'TaskName', width: 60 },
+            { field: 'Progress', headerText: 'Progress', textAlign: 'Right', width: 90 },
+          ],
+        },
+        done
+      );
+    });
+
+    it('Dropping child parent record below a root parent record', () => {
+      TreeGridObj.rowDragAndDropModule.reorderRows([4], 0, 'child');
+      TreeGridObj.rowDragAndDropModule.reorderRows([4], 0, 'below');
+      expect((TreeGridObj.grid.dataSource[5].level)).toBe(1);
+    });
+
+    afterAll(() => {
+      destroy(gridObj);
+    });
+  });
+
 });

@@ -132,6 +132,7 @@ export class Layout {
         this.maxBaseline = undefined;
         this.maxTextBaseline = undefined;
         this.isFieldCode = undefined;
+        this.footnoteHeight = undefined;
     }
 
     public layoutItems(sections: BodyWidget[], isReLayout: boolean): void {
@@ -166,7 +167,10 @@ export class Layout {
             this.layoutComments(this.documentHelper.comments);
         }
         this.updateFieldElements();
-        this.layoutEndNoteElement();
+        if (this.documentHelper.owner.layoutType === 'Pages') {
+            this.layoutEndNoteElement();
+        }
+        /* tslint:disable:align */
         setTimeout((): void => {
             if (this.documentHelper) {
                 this.documentHelper.isScrollHandler = true;
@@ -521,33 +525,40 @@ export class Layout {
         return isPageBreak;
     }
 
-    private layoutfootNote(footnote: FootNoteWidget): BlockContainer {
-        const clientActiveArea: Rect = this.viewer.clientActiveArea;
-        const clientArea: Rect = this.viewer.clientArea;
-        if (footnote.footNoteType === 'Footnote') {
-            (this.viewer as PageLayoutViewer).updateFootnoteClientArea(footnote.sectionFormat, footnote);
-        }
-        let paragraph: ParagraphWidget;
-        this.isRelayoutFootnote = false;
-        // eslint-disable-next-line max-len
-        this.viewer.clientActiveArea.y = (this.viewer.clientActiveArea.y - footnote.page.footerWidget.height) + footnote.page.bodyWidgets[0].sectionFormat.footerDistance;
-        for (let i: number = 0; i < footnote.childWidgets.length; i++) {
-            paragraph = footnote.childWidgets[i] as ParagraphWidget;
-            paragraph.index = i;
-            paragraph.containerWidget = footnote;
-            // paragraph.index = i > 1 ? i - 1 : 0;
-            this.viewer.updateClientAreaForBlock(paragraph, true);
-            this.layoutBlock(paragraph, 0);
-            if (i === 0) {
-                footnote.y = paragraph.y;
+    /**
+     * Layouts specified paragraph.
+     * @private
+     * @param footnote     
+     */
+    public layoutfootNote(footnote: FootNoteWidget): BlockContainer {
+        if (this.documentHelper.owner.layoutType === 'Pages') {
+            let clientActiveArea: Rect = this.viewer.clientActiveArea;
+            let clientArea: Rect = this.viewer.clientArea;
+            if (footnote.footNoteType === 'Footnote') {
+                (this.viewer as PageLayoutViewer).updateFootnoteClientArea(footnote.sectionFormat, footnote);
             }
-            this.viewer.updateClientAreaForBlock(paragraph, false);
-        }
-        this.viewer.clientActiveArea = clientActiveArea;
-        this.viewer.clientArea = clientArea;
-        // eslint-disable-next-line max-len
-        if (footnote.page.bodyWidgets[0].lastChild instanceof TableWidget && (((footnote.page.bodyWidgets[0].lastChild as TableWidget).y + (footnote.page.bodyWidgets[0].lastChild as TableWidget).height) > footnote.y)) {
-            this.reLayoutTable(footnote.page.bodyWidgets[0].lastChild as TableWidget);
+            let paragraph: ParagraphWidget;
+            this.isRelayoutFootnote = false;
+            // tslint:disable-next-line:max-line-length
+            this.viewer.clientActiveArea.y = (this.viewer.clientActiveArea.y - footnote.page.footerWidget.height) + footnote.page.bodyWidgets[0].sectionFormat.footerDistance;
+            for (let i: number = 0; i < footnote.childWidgets.length; i++) {
+                paragraph = footnote.childWidgets[i] as ParagraphWidget;
+                paragraph.index = i;
+                paragraph.containerWidget = footnote;
+                // paragraph.index = i > 1 ? i - 1 : 0;
+                this.viewer.updateClientAreaForBlock(paragraph, true);
+                this.layoutBlock(paragraph, 0);
+                if (i === 0) {
+                    footnote.y = paragraph.y;
+                }
+                this.viewer.updateClientAreaForBlock(paragraph, false);
+            }
+            this.viewer.clientActiveArea = clientActiveArea;
+            this.viewer.clientArea = clientArea;
+            // tslint:disable-next-line:max-line-length
+            if (footnote.page.bodyWidgets[0].lastChild instanceof TableWidget && (((footnote.page.bodyWidgets[0].lastChild as TableWidget).y + (footnote.page.bodyWidgets[0].lastChild as TableWidget).height) > footnote.y)) {
+                this.reLayoutTable(footnote.page.bodyWidgets[0].lastChild as TableWidget);
+            }
         }
         return footnote;
     }
@@ -802,7 +813,38 @@ export class Layout {
                 this.cutClientWidth(element.previousElement);
             }
         }
-        if (element instanceof FootnoteElementBox && (!element.isLayout || this.isLayoutWhole)) {
+        if (element instanceof ShapeElementBox) {
+            let position: Point = this.getFloatingItemPoints(element);
+            element.x = position.x;
+            element.y = position.y;
+            let clientArea: Rect = this.viewer.clientArea;
+            let clientActiveArea: Rect = this.viewer.clientActiveArea;
+            let blocks: BlockWidget[] = element.textFrame.childWidgets as BlockWidget[];
+            this.viewer.updateClientAreaForTextBoxShape(element, true);
+
+            for (let i: number = 0; i < blocks.length; i++) {
+                let block: BlockWidget = blocks[i];
+                this.viewer.updateClientAreaForBlock(block, true);
+                if (block instanceof TableWidget) {
+                    this.clearTableWidget(block, true, true);
+                }
+                this.layoutBlock(block, 0);
+
+                this.viewer.updateClientAreaForBlock(block, false);
+
+            }
+            let bodyWidget: BlockContainer = element.paragraph.bodyWidget;
+            if (bodyWidget.floatingElements.indexOf(element) === -1) {
+                bodyWidget.floatingElements.push(element);
+            }
+            if (element.paragraph.floatingElements.indexOf(element) === -1) {
+                element.paragraph.floatingElements.push(element);
+            }
+            this.viewer.clientActiveArea = clientActiveArea;
+            this.viewer.clientArea = clientArea;
+        }
+        // tslint:disable-next-line:max-line-length
+        if (element instanceof FootnoteElementBox && (!element.isLayout || this.isLayoutWhole) && this.documentHelper.owner.layoutType === 'Pages') {
             this.layoutFootEndNoteElement(element);
         }
         if (element instanceof ImageElementBox) {

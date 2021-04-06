@@ -1624,11 +1624,11 @@ export class TableWidget extends BlockWidget {
         } else {
             // Fits the column width based on preferred width. i.e. Fixed layout.
             // eslint-disable-next-line max-len
-            this.tableHolder.fitColumns(containerWidth, tableWidth, isAutoWidth, this.leftIndent + this.rightIndent, isAutoFit);
+            this.tableHolder.fitColumns(containerWidth, tableWidth, isAutoWidth, this.leftIndent + this.rightIndent);
         }
-        if (!isAutoFit && isAutoWidth) {
-            tableWidth = this.tableHolder.tableWidth;
-        }
+        // if (!isAutoFit && isAutoWidth) {
+        //     tableWidth = this.tableHolder.tableWidth;
+        // }
         //Sets the width to cells
         this.setWidthToCells(tableWidth, isAutoWidth);
     }
@@ -5410,19 +5410,19 @@ export class TextFrame extends Widget {
     /**
      * @private
      */
-    public marginLeft: number;
+    public marginLeft: number = 0;
     /**
      * @private
      */
-    public marginRight: number;
+    public marginRight: number = 0;
     /**
      * @private
      */
-    public marginTop: number;
+    public marginTop: number = 0;
     /**
      * @private
      */
-    public marginBottom: number;
+    public marginBottom: number = 0;
 
     public equals(): boolean {
         return false;
@@ -7938,7 +7938,7 @@ export class WTableHolder {
      * @private
      */
     // eslint-disable-next-line max-len
-    public fitColumns(containerWidth: number, preferredTableWidth: number, isAutoWidth: boolean, indent?: number, isAutoFit?: boolean): void {
+    public fitColumns(containerWidth: number, preferredTableWidth: number, isAutoWidth: boolean, indent?: number): void {
         if (isNullOrUndefined(indent)) {
             indent = 0;
         }
@@ -7950,10 +7950,8 @@ export class WTableHolder {
         }
 
         // If auto table width, based on total column widths, minimum value will be updated.
-        if (isAutoWidth && !isAutoFit) {
-            this.tableWidth = preferredTableWidth > totalColumnWidth ? preferredTableWidth : totalColumnWidth;
-        } else if (isAutoWidth) {
-            this.tableWidth = preferredTableWidth > totalColumnWidth ? totalColumnWidth : preferredTableWidth;
+        if (isAutoWidth) {
+            this.tableWidth = totalColumnWidth;
         } else {
             this.tableWidth = preferredTableWidth;
         }

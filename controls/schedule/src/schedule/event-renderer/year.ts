@@ -50,7 +50,7 @@ export class YearEvent extends TimelineEvent {
         for (let month: number = 0; month < 12; month++) {
             const queryString: string = `.e-month-calendar:nth-child(${month + 1}) td.e-work-cells`;
             const workCells: HTMLElement[] = [].slice.call(this.parent.element.querySelectorAll(queryString));
-            const monthDate: Date = new Date(this.parent.selectedDate.getFullYear(), month, this.parent.selectedDate.getDate());
+            const monthDate: Date = new Date(this.parent.selectedDate.getFullYear(), month, 1);
             const monthStart: Date = this.parent.calendarUtil.getMonthStartDate(new Date(monthDate.getTime()));
             const monthEnd: Date = this.parent.calendarUtil.getMonthEndDate(new Date(monthDate.getTime()));
             let startDate: Date = util.getWeekFirstDate(monthStart, this.parent.firstDayOfWeek);

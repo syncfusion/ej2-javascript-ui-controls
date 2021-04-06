@@ -68,4 +68,25 @@ describe('Cell Format ->', () => {
         
     });
 
+    // describe('CR-Issues ->', () => {
+    //     describe('fb22572 ->', () => {
+    //         beforeEach((done: Function) => {
+    //             helper.initializeSpreadsheet({ cellStyle: { fontSize: '8pt' }, sheets: [{ rows: [{ index: 3, cells:
+    //                 [{ index: 3, value: 'test' }] }], selectedRange: 'D4' }] }, done);
+    //         });
+    //         afterEach(() => {
+    //             helper.invoke('destroy');
+    //         });
+    //         it('Cell size is getting changed after applying border', (done: Function) => {
+    //             helper.getElement('#' + helper.id + '_borders').click();
+    //             helper.getElement('.e-menu-item[aria-label="Outside Borders"]').click();
+    //             // Need to re ensure this fix.
+    //             expect(helper.getInstance().sheets[0].rows[3].height).toBe(21);
+    //             //expect(helper.getInstance().sheets[0].rows[3]).toBeNull();
+    //             expect(helper.invoke('getRow', [2]).style.height).toBe('21px');
+    //             //expect(helper.invoke('getRow', [2]).style.height).toBe('20px');
+    //             done();
+    //         });
+    //     });
+    // });
 });

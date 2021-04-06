@@ -60,7 +60,6 @@ export class DocumentHelper {
      * @private
      */
     public owner: DocumentEditor;
-    public viewer: LayoutViewer;
     /**
      * @private
      */
@@ -544,6 +543,12 @@ export class DocumentHelper {
      */
     public get visibleBounds(): Rect {
         return this.visibleBoundsIn;
+    }
+    /**
+     * @private
+     */
+    get viewer(): LayoutViewer {
+        return this.owner.viewer;
     }
     //Document Protection Properties Ends
 
@@ -1341,7 +1346,11 @@ export class DocumentHelper {
         if (Browser.isIE && alt && ctrl) {
             ctrl = false;
         }
-        if (ctrl && event.key === 'v' || ctrl && event.key === 'a' || (ctrl || this.isControlPressed) && event.key === 'p') {
+        // tslint:disable-next-line:max-line-length
+        if (ctrl && event.key === 'v' || ctrl && event.key === 'a' || (ctrl || (this.isControlPressed && Browser.isIE)) && event.key === 'p') {
+            if (Browser.isIE) {
+                this.isControlPressed = false;
+            }
             return;
         }
         if (!this.owner.isReadOnlyMode) {
@@ -1539,6 +1548,8 @@ export class DocumentHelper {
         }
         this.owner.isDocumentLoaded = true;
         this.layout.isInitialLoad = true;
+        this.layout.footHeight = 0;
+        this.layout.footnoteHeight = 0;
         this.layout.layoutItems(sections, false);
         if (this.owner.selection) {
             this.selection.previousSelectedFormField = undefined;
@@ -1664,7 +1675,6 @@ export class DocumentHelper {
     public updateTouchMarkPosition(): void {
         if (this.touchStart.style.display !== 'none' && !isNullOrUndefined(this.selection)) {
             if (!this.selection.isEmpty) {
-                this.viewer = this.owner.viewer;
                 let y: number = this.selection.getCaretBottom(this.selection.start, false);
                 let page: Page = this.selection.getPage(this.selection.start.paragraph);
                 // eslint-disable-next-line max-len

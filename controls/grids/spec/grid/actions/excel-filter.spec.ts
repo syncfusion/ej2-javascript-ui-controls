@@ -935,3 +935,55 @@ describe('Sorting feature testing in excel filter ', () => {
         gridObj = actionComplete = null;
     });
 });
+
+describe('EJ2-47491- Grid destroy with document click event ', () => {
+    let gridObj1: Grid;
+    let gridObj2: Grid;
+    beforeAll((done: Function) => {
+        gridObj1 = createGrid(
+            {
+                dataSource: filterData,
+                allowFiltering: true,
+                allowPaging: true,
+                allowSorting: true,
+                allowGrouping: true,
+                pageSettings: { currentPage: 1 },
+                filterSettings: { type: 'Excel' },
+                columns: [
+                    { field: 'OrderID', type: 'number' },
+                    { field: 'EmployeeID', type: 'number' },
+                    { field: 'Freight', format: 'C2', type: 'number' },
+                    { field: 'ShipCountry' },
+                    { field: 'OrderDate', format: 'yMd', type: 'date' }],
+            }, done);
+
+            gridObj2 = createGrid(
+                {
+                    dataSource: filterData,
+                    allowFiltering: true,
+                    allowPaging: true,
+                    allowSorting: true,
+                    allowGrouping: true,
+                    pageSettings: { currentPage: 1 },
+                    filterSettings: { type: 'Excel' },
+                    columns: [
+                        { field: 'OrderID', type: 'number' },
+                        { field: 'EmployeeID', type: 'number' }],
+                }, done);
+    });
+
+    it('testing the destroy funtionality', (done: Function) => {
+        (gridObj1.element.querySelectorAll(".e-filtermenudiv")[0] as HTMLElement).click();
+        gridObj2.destroy();
+        document.onclick = () => {
+            expect(document.querySelectorAll('.e-excelfilter').length).toBe(0);
+            done();
+        };
+        document.body.click();
+    });
+
+    afterAll(() => {
+        destroy(gridObj1);
+        gridObj1 =  null;
+    });
+});

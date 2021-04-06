@@ -912,6 +912,10 @@
       width: $grid-resize-border-width;
     }
 
+    & .e-virtual-rhandler {
+      z-index: 1;
+    }
+
     &.e-device .e-ricon::before {
       border-bottom: 6px solid transparent;
       border-right: 6px solid ;
@@ -2372,8 +2376,27 @@
     }
 
     .e-movablecontent {
+      // Internet Explorer 10+
+      -ms-overflow-style: none; // sass-lint:disable-line no-vendor-prefixes
       flex: 1;
-      overflow-x: hidden;
+      overflow-x: auto;
+      overflow-y: hidden;
+    }
+
+    // Safari and Chrome
+    .e-movablecontent::-webkit-scrollbar { // sass-lint:disable-line no-vendor-prefixes
+      display: none;
+    }
+
+    // Safari with Mac OS
+    .e-content.e-mac-safari::-webkit-scrollbar { // sass-lint:disable-line no-vendor-prefixes
+      width: 7px;
+    }
+
+    // Safari with Mac OS
+    .e-content.e-mac-safari::-webkit-scrollbar-thumb { // sass-lint:disable-line no-vendor-prefixes
+      background-color: $grid-frozen-mac-scrollbar-background;
+      border-radius: 4px;
     }
 
     .e-frozenscrollbar {

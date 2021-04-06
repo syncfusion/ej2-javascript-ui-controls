@@ -1292,18 +1292,23 @@ export class BasicFormulas {
                     valueCollection.push(this.parent.getValueFromArg(cellCollection[i]));
                 }
                 const colSort: (string | number)[] = [];
+                const totalColumn: number = eColIdx - colIdx + 1;
                 if (argArr[3] === 'TRUE') {
-                    for (let i: number = 0; i < eColIdx; i++) {
-                        colSort.push(isNaN(this.parseDouble(valueCollection[i + ((this.parseDouble(argArr[1]) - 1) * eColIdx)])) ?
-                        valueCollection[i + ((this.parseDouble(argArr[1]) - 1) * eColIdx)] :
-                        this.parseDouble(valueCollection[i + ((this.parseDouble(argArr[1]) - 1) * eColIdx)]));
+                    for (let i: number = 0; i < totalColumn; i++) {
+                        if (valueCollection[i + ((this.parseDouble(argArr[1]) - 1) * totalColumn)]) {
+                            colSort.push(isNaN(this.parseDouble(valueCollection[i + ((this.parseDouble(argArr[1]) - 1) * totalColumn)])) ?
+                            valueCollection[i + ((this.parseDouble(argArr[1]) - 1) * totalColumn)] :
+                            this.parseDouble(valueCollection[i + ((this.parseDouble(argArr[1]) - 1) * totalColumn)]));
+                        }
                     }
                 }
                 if (argArr[3] === 'FALSE') {
-                    for (let i: number = 0; i < eRowIdx; i++) {
-                        colSort.push(isNaN(this.parseDouble(valueCollection[i * eColIdx + this.parseDouble(argArr[1]) - 1])) ?
-                            valueCollection[i * eColIdx + this.parseDouble(argArr[1]) - 1] :
-                            this.parseDouble(valueCollection[i * eColIdx + this.parseDouble(argArr[1]) - 1]));
+                    for (let i: number = 0; i < valueCollection.length; i++) {
+                        if (valueCollection[i * totalColumn + this.parseDouble(argArr[1]) - 1]) {
+                            colSort.push(isNaN(this.parseDouble(valueCollection[i * totalColumn + this.parseDouble(argArr[1]) - 1])) ?
+                            valueCollection[i * totalColumn + this.parseDouble(argArr[1]) - 1] :
+                            this.parseDouble(valueCollection[i * totalColumn + this.parseDouble(argArr[1]) - 1]));
+                        }
                     }
                 }
                 let sortedVal: object[] = DataUtil.sort(colSort, null, DataUtil.fnSort(order)); const id: number[] = [];
@@ -1317,26 +1322,26 @@ export class BasicFormulas {
                 if (argArr[3] === 'TRUE') {
                     for (let startRow: number = rowIdx, rowInc: number = 0; startRow <= eRowIdx; startRow++, rowInc++) {
                         for (let a: number = 0, colInc: number = 0; a < id.length; a++, colInc++) {
-                            const cellValue: string = this.parent.getValueFromArg(sheetIdx + getAlphalabel(id[a] + 1) + startRow);
+                            const cellValue: string = this.parent.getValueFromArg(sheetIdx + getAlphalabel(id[a] + colIdx) + startRow);
                             const activeCell: string = this.parent.actCell; let actRowIdx: number = this.parent.rowIndex(activeCell);
                             const actColIdx: number = this.parent.colIndex(activeCell);
                             (this.parent.parentObject as any).setValueRowCol(this.parent.getSheetID(this.parent.grid) + 1,
                                                                              cellValue, actRowIdx + rowInc, actColIdx + colInc);
                         }
                     }
-                    result = this.parent.getValueFromArg(sheetIdx + getAlphalabel(id[0] + 1) + rowIdx);
+                    result = this.parent.getValueFromArg(sheetIdx + getAlphalabel(id[0] + colIdx) + rowIdx);
                 }
                 if (argArr[3] === 'FALSE') {
                     for (let a: number = 0, rowInc: number = 0; a < id.length; a++, rowInc++) {
                         for (let startCol: number = colIdx, colInc: number = 0; startCol <= eColIdx; startCol++, colInc++) {
-                            const value: string = this.parent.getValueFromArg(sheetIdx + getAlphalabel(startCol) + (id[a] + 1));
+                            const value: string = this.parent.getValueFromArg(sheetIdx + getAlphalabel(startCol) + (id[a] + rowIdx));
                             const activeCell: string = this.parent.actCell; let actRowIdx: number = this.parent.rowIndex(activeCell);
                             const actColIdx: number = this.parent.colIndex(activeCell);
                             (this.parent.parentObject as any).setValueRowCol(this.parent.getSheetID(this.parent.grid) + 1,
                                                                              value, actRowIdx + rowInc, actColIdx + colInc);
                         }
                     }
-                    result = this.parent.getValueFromArg(sheetIdx + getAlphalabel(colIdx) + (id[0] + 1));
+                    result = this.parent.getValueFromArg(sheetIdx + getAlphalabel(colIdx) + (id[0] + rowIdx));
                 }
             }
         }

@@ -1508,7 +1508,7 @@ console.log('in 3*4 table and last column resized with minimum width');
         (tablePropertiesDialog as any).center.click();
         tablePropertiesDialog.applyTableProperties();
         expect(editor.selection.tableFormat.tableAlignment).toBe('Center');
-        expect(editor.selection.tableFormat.table.x).toBe(96);
+        expect(editor.selection.tableFormat.table.x).not.toBe(96);
         expect(Math.round(cellWidget.cellFormat.preferredWidth)).toBe(Math.round(previousCellWidth));
     });
     it('cell with different backgroud validation', () => {

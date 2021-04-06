@@ -408,6 +408,7 @@ export class DropDownList extends DropDownBase implements IInput {
     protected preRender(): void {
         const checkBlazor: boolean = isBlazor() && this.isServerRendered;
         this.isServerBlazor =  (checkBlazor) ? true : false;
+        this.valueTempElement = null;
         if (this.isServerBlazor) {
             this.initializeData();
         } else {

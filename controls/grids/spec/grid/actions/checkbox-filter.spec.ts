@@ -18,6 +18,7 @@ import  {profile , inMB, getMemoryProfile} from '../base/common.spec';
 import { Query } from '@syncfusion/ej2-data';
 import { FilterSearchBeginEventArgs } from '../../../src/grid/base/interface';
 import { select } from '@syncfusion/ej2-base';
+import { L10n } from '@syncfusion/ej2-base';
 
 Grid.Inject(Filter, Page,Toolbar, Selection, Group, Freeze, Edit, Filter, VirtualScroll);
 
@@ -2384,5 +2385,56 @@ describe('EJ2-46285 - Provide support to handle custom filter dataSource in Exce
     afterAll(() => {
         destroy(gridObj);
         gridObj = actionComplete = null;
+    });
+
+    describe('EJ2-43845 - Provided the support to set locale texts for Boolean values in checkbox filter', () => {
+        let gridObj: Grid;
+        let checkBoxFilter: Element; 
+        let actionComplete: () => void;
+        beforeAll((done: Function) => {
+            L10n.load({
+                'de-DE': {
+                    'grid': {
+                        True: 'wahr',
+                        False: 'falsch',
+                        FilterTrue: 'Wahr',
+                        FilterFalse: 'Falsch',
+                        FilterButton: 'Filter',
+                        ClearButton: 'Löschen',
+                    }
+                }
+            });
+            gridObj = createGrid(
+                {
+                    dataSource: filterData, 
+                    locale: 'de-DE', 
+                    allowPaging: true,
+                    allowFiltering: true,
+                    filterSettings: { type: 'CheckBox' },
+                    columns: [
+                        { field: 'OrderID', isPrimaryKey: true, headerText: 'Order ID', textAlign: 'Right', width: 40 },
+                        { field: 'Verified', headerText: 'Verified', type: 'boolean', width: 100 }
+                    ],
+                    actionComplete: actionComplete
+                }, done);
+        });
+
+        it('checking the locale text', (done: Function) => {
+            gridObj.actionComplete = actionComplete = (args?: any): void => {
+                if (args.requestType === "filterchoicerequest") {
+                    checkBoxFilter = gridObj.element.querySelector('.e-checkboxfilter');
+                    expect(checkBoxFilter.querySelectorAll('.e-checkboxfiltertext')[1].innerHTML).toBe('Falsch');
+                    expect(checkBoxFilter.querySelectorAll('.e-checkboxfiltertext')[2].innerHTML).toBe('Wahr');
+                    done();
+                }
+            }
+            gridObj.actionComplete = actionComplete;
+            (gridObj.element.getElementsByClassName('e-filtermenudiv e-icons e-icon-filter')[1] as any).click();
+        });
+        
+        afterAll(() => {
+            destroy(gridObj);
+            gridObj = actionComplete = null;
+        });
     });
 });

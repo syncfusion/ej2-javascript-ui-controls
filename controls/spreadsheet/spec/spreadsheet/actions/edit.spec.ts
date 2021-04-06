@@ -374,4 +374,29 @@ describe('Editing ->', () => {
             });
         });
     });
+
+    describe('CR-Issues ->', () => {
+        describe('I267737, I267730 ->', () => {
+            beforeEach((done: Function) => {
+                helper.initializeSpreadsheet({}, done);
+            });
+            afterEach(() => {
+                helper.invoke('destroy');
+            });
+            it('Serious issues with Time type of cell (Issue in Time number format)', (done: Function) => {
+                helper.edit('A1', '7:00 AM');
+                setTimeout((): void => {
+                    const spreadsheet: Spreadsheet = helper.getInstance();
+                    expect(spreadsheet.sheets[0].rows[0].cells[0].value).toBe('0.2916666666666667');
+                    expect(spreadsheet.sheets[0].rows[0].cells[0].format).toBe('h:mm:ss AM/PM');
+                    expect(helper.invoke('getCell', [0, 0]).textContent).toBe('7:00:00 AM');
+                    helper.invoke('startEdit', []);
+                    setTimeout((): void => {
+                        expect(helper.getElement('#' + helper.id + '_edit').textContent).toBe('1/1/1900 7:00:00 AM');
+                        done();
+                    });
+                });
+            });
+        });
+    });
 });

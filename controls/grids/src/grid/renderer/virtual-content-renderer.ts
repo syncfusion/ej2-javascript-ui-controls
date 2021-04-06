@@ -634,7 +634,7 @@ export class VirtualContentRenderer extends ContentRender implements IRenderer {
         let totalBlocks: number = isGroupAdaptive(this.parent) ? this.getGroupedTotalBlocks() : this.getTotalBlocks();
         if (result + blockHeight > this.offsets[totalBlocks]) {
             result -= (result + blockHeight) - this.offsets[totalBlocks];
-        }    
+        }
         return result;
     }
 

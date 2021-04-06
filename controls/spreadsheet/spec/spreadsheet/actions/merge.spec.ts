@@ -1,6 +1,6 @@
 import { SpreadsheetHelper } from "../util/spreadsheethelper.spec";
 import { defaultData } from '../util/datasource.spec';
-import { CellModel } from "../../../src/index";
+import { CellModel, Spreadsheet } from "../../../src/index";
 import { checkPosition } from "../actions/selection.spec";
 
 describe('Merge ->', () => {
@@ -254,6 +254,41 @@ describe('Merge ->', () => {
                     done();
                 });
             })
+        });
+    });
+
+    describe('CR-Issues ->', () => {
+        describe('I316931 ->', () => {
+            beforeEach((done: Function) => {
+                helper.initializeSpreadsheet(
+                    { sheets: [{ rows: [{ cells: [{ value: 'test' }] }], selectedRange: 'A1:B2' }] }, done);
+            });
+            afterEach(() => {
+                helper.invoke('destroy');
+            });
+            it('Need to improve the wrap text with merge cells for pasted data', (done: Function) => {
+                helper.invoke('merge');
+                helper.invoke('cellFormat', [{ backgroundColor: '#ffff00' }]);
+                helper.invoke('copy').then((): void => {
+                    helper.invoke('selectRange', ['C4']);
+                    setTimeout((): void => {
+                        helper.invoke('paste', ['Sheet1!C4:C4']);
+                        setTimeout((): void => {
+                            const spreadsheet: Spreadsheet = helper.getInstance();
+                            expect(spreadsheet.sheets[0].rows[3].cells[2].rowSpan).toEqual(2);
+                            expect(spreadsheet.sheets[0].rows[3].cells[2].colSpan).toEqual(2);
+                            expect(spreadsheet.sheets[0].rows[3].cells[2].value).toEqual('test');
+                            expect(spreadsheet.sheets[0].rows[3].cells[2].style.backgroundColor).toEqual('#ffff00');
+                            expect(spreadsheet.sheets[0].rows[3].cells[3].colSpan).toBe(-1);
+                            expect(spreadsheet.sheets[0].rows[3].cells[3].style.backgroundColor).toEqual('#ffff00');
+                            expect(spreadsheet.sheets[0].rows[4].cells[2].rowSpan).toBe(-1);
+                            expect(spreadsheet.sheets[0].rows[4].cells[2].style.backgroundColor).toEqual('#ffff00');
+                            expect(spreadsheet.sheets[0].rows[3].cells[4]).toBeUndefined();
+                            done();
+                        });
+                    });
+                });
+            });
         });
     });
 });

@@ -578,7 +578,7 @@ export class NormalEdit {
                     tmpRecord = record;
                     return data[i] === getObject(fieldname, record) || data[i] === record;
                 });
-                data[i] = contained ? tmpRecord : { [fieldname]: data[i] };
+                data[i] = contained ? tmpRecord : data[i][fieldname] ? data[i] : { [fieldname]: data[i] };
             }
         }
         let args: object = {

@@ -1,5 +1,7 @@
-import { SpreadsheetHelper } from "../util/spreadsheethelper.spec";
+import { SpreadsheetHelper } from '../util/spreadsheethelper.spec';
 import { defaultData } from '../util/datasource.spec';
+import { Spreadsheet, dialog as dlg } from '../../../src/index';
+import { Dialog } from '../../../src/spreadsheet/services/index';
 
 describe('Protect sheet ->', () => {
     const helper: SpreadsheetHelper = new SpreadsheetHelper('spreadsheet');
@@ -105,6 +107,82 @@ describe('Protect sheet ->', () => {
             helper.click('#' + helper.id + '_protect');
             expect(helper.getInstance().sheets[0].isProtected).toBeFalsy();
             done();
+        });
+    });
+
+    describe('CR-Issues ->', () => {
+        describe('I275297 ->', () => {
+            beforeEach((done: Function) => {
+                helper.initializeSpreadsheet({
+                    sheets: [{ ranges: [{ dataSource: [{ 'Employee ID': '2963633', 'Employee Name': 'Kylie Phettis', 'Gender': 'Female',
+                    'Department': 'Marketing', 'Date of Joining': '03/18/2011', 'Salary': '$26038.56', 'City': 'Huangzhai' }] }], selectedRange: 'E2:E2' }],
+                    created: (): void => {
+                        const spreadsheet: Spreadsheet = helper.getInstance();
+                        spreadsheet.cellFormat({ fontWeight: 'bold', textAlign: 'center', verticalAlign: 'middle' }, 'A1:F1');
+                        spreadsheet.cellFormat({ fontWeight: 'bold' }, 'E31:F31');
+                        spreadsheet.cellFormat({ textAlign: 'right' }, 'E31');
+                        spreadsheet.numberFormat('$#,##0.00', 'F2:F31');
+                        spreadsheet.protectSheet(
+                            'Sheet1', { selectCells: true, formatCells: false, formatRows: false, formatColumns: false, insertLink: false });
+                    }
+                }, done);
+            });
+            afterEach(() => {
+                helper.invoke('destroy');
+            });
+            it('Unable to lock a cell without protecting the sheet ~ from 275269', (done: Function) => {
+                let cell: HTMLElement = helper.invoke('getCell', [1, 4]);
+                helper.triggerMouseAction('dblclick', { x: cell.getBoundingClientRect().left + 2, y:
+                    cell.getBoundingClientRect().top + 2 }, null, cell);
+                setTimeout((): void => {
+                    let dialog: HTMLElement = helper.getElement('.e-editAlert-dlg');
+                    expect(!!dialog).toBeTruthy();
+                    expect(dialog.classList.contains('e-popup-open')).toBeTruthy();
+                    const editor: HTMLElement = helper.getElement('#' + helper.id + '_edit');
+                    expect(editor.style.display).toBe('');
+                    const spreadsheet: Spreadsheet = helper.getInstance();
+                    (spreadsheet.serviceLocator.getService(dlg) as Dialog).hide();
+                    setTimeout((): void => {
+                        helper.invoke('lockCells', ['A2:AZ100', false]);
+                        cell = helper.invoke('getCell', [1, 4]);
+                        helper.triggerMouseAction('dblclick', {
+                            x: cell.getBoundingClientRect().left + 10, y: cell.getBoundingClientRect().top + 5
+                        }, null, cell);
+                        setTimeout((): void => {
+                            expect(editor.style.display).toBe('block');
+                            helper.invoke('lockCells', ['E2:E4', true]);
+                            helper.invoke('endEdit', []);
+                            helper.triggerMouseAction('dblclick', {
+                                x: cell.getBoundingClientRect().left + 2, y: cell.getBoundingClientRect().top + 2
+                            }, null, cell);
+                            setTimeout((): void => {
+                                dialog = helper.getElement('.e-editAlert-dlg');
+                                expect(!!dialog).toBeTruthy();
+                                expect(dialog.classList.contains('e-popup-open')).toBeTruthy();
+                                expect(dialog.querySelector('.e-dlg-content').textContent).toBe(
+                                    "The cell you're trying to change is protected. To make change, unprotect the sheet.");
+                                expect(editor.style.display).toBe('');
+                                (spreadsheet.serviceLocator.getService(dlg) as Dialog).hide();
+                                done();
+                            });
+                        });
+                    });
+                });
+            });
+        });
+        describe('I321143 ->', () => {
+            beforeEach((done: Function) => {
+                helper.initializeSpreadsheet({ sheets: [{ rows: [{ cells: [{ index: 1, isLocked: true, value: '1' }] }, { cells:
+                    [{ isLocked: true, value: '2' }, { isLocked: true, value: '3' }] }, { cells: [{ isLocked: true, value: '4' },
+                    { isLocked: true, value: '5' }] }], selectedRange: 'A1:B3' }] }, done);
+            });
+            afterEach(() => {
+                helper.invoke('destroy');
+            });
+            it('deleting values from locked cells and warning dialog', (done: Function) => {
+                
+                done();
+            });
         });
     });
 });

@@ -114,12 +114,18 @@ export function isHiddenRow(sheet: SheetModel, index: number): boolean {
  * @param {number} rowIndex - Specifies the rowIndex.
  * @returns {number} - To get the row height.
  */
-export function getRowHeight(sheet: SheetModel, rowIndex: number): number {
+export function getRowHeight(sheet: SheetModel, rowIndex: number, checkDPR: boolean = true): number {
+    let hgt: number;
     if (sheet && sheet.rows && sheet.rows[rowIndex]) {
         if (sheet.rows[rowIndex].hidden) { return 0; }
-        return sheet.rows[rowIndex].height === undefined ? 20 : sheet.rows[rowIndex].height;
+        hgt = sheet.rows[rowIndex].height === undefined ? 20 : sheet.rows[rowIndex].height
     } else {
-        return 20;
+        hgt = 20;
+    }
+    if (checkDPR && window.devicePixelRatio % 1 > 0) {
+        return (hgt % 2 === 0) ? hgt : hgt + 1; // Adding 1 to making it as even number
+    } else {
+        return hgt;
     }
 }
 /**

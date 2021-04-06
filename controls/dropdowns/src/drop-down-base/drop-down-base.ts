@@ -683,7 +683,7 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
             }
             if (typeof getValue((this.fields.value ? this.fields.value : 'value'), item.item as { [key: string]: Object }) === 'boolean'
                 || item.typeof === 'boolean') {
-                return (value === 'true');
+                return ((value === 'true') || ('' + value === 'true'));
             }
         }
         return value;

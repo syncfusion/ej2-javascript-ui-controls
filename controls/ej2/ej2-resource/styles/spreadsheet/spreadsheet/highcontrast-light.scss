@@ -2938,7 +2938,9 @@ $freezepane-color: $selection-bg !default;
     }
 
     & .e-sheet,
-    & .e-row-header .e-header-cell {
+    & .e-row-header .e-header-cell,
+    & .e-column-header .e-header-cell,
+    & .e-selectall-container .e-header-cell {
       background-color: $header-cell-bg-color;
     }
 
@@ -2947,7 +2949,8 @@ $freezepane-color: $selection-bg !default;
       color: $cell-color;
     }
 
-    & .e-main-panel {
+    & .e-main-panel,
+    & .e-header-panel {
       background-color: $cell-background;
     }
 
@@ -2992,13 +2995,13 @@ $freezepane-color: $selection-bg !default;
       border-color: $select-all-bg-color;
       border-top-color: transparent;
 
-      &:hover {
-        border-bottom-color: $select-all-hover-bg-color;
-      }
-
       &.e-highlight {
         border-bottom-color: $select-all-active-bg-color;
       }
+    }
+
+    & .e-select-all-cell:hover .e-selectall:not(.e-highlight) {
+      border-bottom-color: $select-all-hover-bg-color;
     }
 
     & .e-sheet-panel {
@@ -3024,13 +3027,13 @@ $freezepane-color: $selection-bg !default;
         & .e-selectall {
           border-left-color: transparent;
 
-          &:hover {
-            border-right-color: $select-all-hover-bg-color;
-          }
-
           &.e-highlight {
             border-right-color: $select-all-active-bg-color;
           }
+        }
+
+        & .e-select-all-cell:hover .e-selectall:not(.e-highlight) {
+          border-right-color: $select-all-hover-bg-color;
         }
 
         & .e-column-header .e-header-cell.e-prev-highlight,

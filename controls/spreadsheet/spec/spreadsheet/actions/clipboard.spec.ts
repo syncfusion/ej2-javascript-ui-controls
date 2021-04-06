@@ -49,5 +49,34 @@ describe('Clipboard ->', () => {
                 });
             });
         });
+        describe('F162960 ->', () => {
+            beforeEach((done: Function) => {
+                helper.initializeSpreadsheet({
+                    sheets: [{ rows: [{ cells: [{ value: '100' }, { value: '25' }, { value: '1001' }] }, { cells: [{ value: '100' },
+                    { value: '25' }, { value: '1001' }] }], selectedRange: 'A1:B2' }],
+                    created: (): void => helper.getInstance().setRowHeight(45)
+                }, done);
+            });
+            afterEach(() => {
+                helper.invoke('destroy');
+            });
+            it('Row height not persistent after cut/paste', (done: Function) => {
+                const spreadsheet: Spreadsheet = helper.getInstance();
+                expect(spreadsheet.sheets[0].rows[0].height).toEqual(45);
+                expect(spreadsheet.sheets[0].rows[3]).toBeUndefined();
+                helper.invoke('cut').then((): void => {
+                    helper.invoke('selectRange', ['A4']);
+                    setTimeout((): void => {
+                        helper.invoke('paste', ['Sheet1!A4:A4']);
+                        setTimeout((): void => {
+                            expect(spreadsheet.sheets[0].rows[0].height).toEqual(45);
+                            expect(helper.invoke('getRow', [0, 0]).style.height).toEqual('45px');
+                            expect(spreadsheet.sheets[0].rows[3].cells[0].value.toString()).toEqual('100');
+                            done();
+                        });
+                    });
+                });
+            });
+        });
     });
 });

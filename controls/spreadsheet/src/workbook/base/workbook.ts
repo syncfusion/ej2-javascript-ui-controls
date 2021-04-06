@@ -810,9 +810,12 @@ export class Workbook extends Component<HTMLElement> implements INotifyPropertyC
      * @returns {void} - To merge the range of cells.
      */
     public merge(range?: string, type?: MergeType): void {
-        let sheetIdx: number = this.getAddressInfo(range).sheetIndex;
-        let sheet: SheetModel = getSheet(this, sheetIdx);
-        range = range || sheet.selectedRange;
+        let sheetIdx: number; let sheet: SheetModel;
+        if (range) {
+            sheetIdx = this.getAddressInfo(range).sheetIndex; sheet = getSheet(this, sheetIdx);
+        } else {
+            sheet = this.getActiveSheet(); range = sheet.selectedRange;
+        }
         this.notify(setMerge, <MergeArgs>{ merge: true, range: range, type: type || 'All', sheet: sheet, refreshRibbon:
             range.indexOf(sheet.activeCell) > -1 ? true : false, preventRefresh: this.activeSheetIndex !== sheetIdx });
     }

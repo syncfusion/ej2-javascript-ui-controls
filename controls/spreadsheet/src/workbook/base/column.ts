@@ -104,12 +104,18 @@ export function setColumn(sheet: SheetModel, colIndex: number, column: ColumnMod
  * @param {boolean} skipHidden - Specifies the bool.
  * @returns {number} - To get Column width.
  */
-export function getColumnWidth(sheet: SheetModel, index: number, skipHidden?: boolean): number {
+export function getColumnWidth(sheet: SheetModel, index: number, skipHidden?: boolean, checkDPR: boolean = true): number {
+    let width: number;
     if (sheet && sheet.columns && sheet.columns[index]) {
         if (!skipHidden && sheet.columns[index].hidden) { return 0; }
-        return (sheet.columns[index].width || sheet.columns[index].customWidth) ? sheet.columns[index].width : 64;
+        width = (sheet.columns[index].width || sheet.columns[index].customWidth) ? sheet.columns[index].width : 64;
     } else {
-        return 64;
+        width = 64;
+    }
+    if(checkDPR && window.devicePixelRatio % 1 > 0) {
+        return (width % 2 === 0) ? width : width + 1; // Adding 1 to making it as even number
+    } else {
+        return width;
     }
 }
 

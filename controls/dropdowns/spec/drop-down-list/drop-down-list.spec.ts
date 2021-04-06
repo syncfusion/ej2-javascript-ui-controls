@@ -5482,4 +5482,58 @@ describe('DDList', () => {
             expect(listObj.element.getAttribute('data-val')).toBe('false');
         });
     });
+    describe('EJ2-47484', () => {
+        let Country: { [key: string]: Object }[] = [
+            { id: 'list1', text: 'Australia'}, { id: 'list2', text: 'Belgium' },
+            { id: 'list3', text: 'Canada' }, { id: 'list4', text: 'France'}, 
+            { id: 'list5', text: 'India' }];
+        let listObj: any;
+        let element: HTMLInputElement = <HTMLInputElement>createElement('input', { id: 'dropdownlist' });
+        beforeAll(() => {
+            document.body.appendChild(element);
+        });
+        afterAll(() => {
+            listObj.destroy();
+            element.remove();
+        });
+        it('Testing value template after refresh', () => {
+            listObj = new DropDownList({
+                dataSource: Country,
+                fields: { text: "text", value: "text" },
+                popupHeight: "200px",
+                valueTemplate : "<div class='ename'> ${text} </div>",
+                value : "India",
+            });
+            listObj.appendTo(element);
+            let valueEle: HTMLElement = listObj.element.parentElement.querySelector('.e-input-value');
+            expect(valueEle.innerHTML).toEqual('<div class="ename"> India </div>');
+            expect(listObj.element.parentElement.childNodes[1].classList.contains('e-input-value')).toBe(true);
+            expect(listObj.element.style.display).toBe('none');
+            listObj.refresh();
+            expect(valueEle.innerHTML).toEqual('<div class="ename"> India </div>');
+            expect(listObj.element.parentElement.childNodes[1].classList.contains('e-input-value')).toBe(true);
+            expect(listObj.element.style.display).toBe('none');
+        });
+        it('After selected new value testing value template after refresh', () => {
+            listObj = new DropDownList({
+                dataSource: Country,
+                fields: { text: "text", value: "text" },
+                popupHeight: "200px",
+                valueTemplate : "<div class='ename'> ${text} </div>",
+                value : "India",
+            });
+            listObj.appendTo(element);
+            let valueEle: HTMLElement = listObj.element.parentElement.querySelector('.e-input-value');
+            expect(valueEle.innerHTML).toEqual('<div class="ename"> India </div>');
+            listObj.value = 'Australia';
+            listObj.dataBind();
+            expect(valueEle.innerHTML).toEqual('<div class="ename"> Australia </div>');
+            expect(listObj.element.parentElement.childNodes[1].classList.contains('e-input-value')).toBe(true);
+            expect(listObj.element.style.display).toBe('none');            
+            listObj.refresh();
+            expect(valueEle.innerHTML).toEqual('<div class="ename"> Australia </div>');
+            expect(listObj.element.parentElement.childNodes[1].classList.contains('e-input-value')).toBe(true);
+            expect(listObj.element.style.display).toBe('none');
+        });
+    });
 });

@@ -3978,6 +3978,26 @@ describe('Schedule Timeline Month view', () => {
         });
     });
 
+    describe('Initial load with height auto', () => {
+        let schObj: Schedule;
+        afterAll(() => {
+            util.destroy(schObj);
+        });
+        it('Checking vertical scrollbar', (done: DoneFn) => {
+            const model: ScheduleModel = {
+                height: 'auto', width: 500, currentView: 'TimelineMonth',
+                views: ['TimelineMonth'], selectedDate: new Date(2017, 9, 1),
+                dataBound: () => {
+                    const contentArea: HTMLElement = schObj.element.querySelector('.' + cls.CONTENT_WRAP_CLASS) as HTMLElement;
+                    const isVerticalScrollBar = contentArea.scrollHeight > contentArea.clientHeight;
+                    expect(isVerticalScrollBar).toBeFalsy();
+                    done();
+                }
+            };
+            schObj = util.createSchedule(model, []);
+        });
+    });
+
     it('memory leak', () => {
         profile.sample();
         const average: number = inMB(profile.averageChange);

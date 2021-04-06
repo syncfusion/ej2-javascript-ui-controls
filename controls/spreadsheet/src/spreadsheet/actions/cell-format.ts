@@ -1,4 +1,4 @@
-import { Spreadsheet, ICellRenderer, clearViewer, beginAction } from '../../spreadsheet/index';
+import { Spreadsheet, ICellRenderer, clearViewer, beginAction, getTextHeightWithBorder } from '../../spreadsheet/index';
 import { getBorderHeight, getExcludedColumnWidth, selectRange } from '../common/index';
 import { rowHeightChanged, setRowEleHeight, setMaxHgt, getTextHeight, getMaxHgt, getLines, initialLoad } from '../common/index';
 import { CellFormatArgs, getRowHeight, applyCellFormat, CellStyleModel, CellStyleExtendedModel, CellModel} from '../../workbook/index';
@@ -70,7 +70,7 @@ export class CellFormat {
                     if (!args.manualUpdate) {
                         const cellModel: CellModel = getCell(args.rowIdx, args.colIdx, sheet);
                         if (!(cellModel && cellModel.wrap) && this.isHeightCheckNeeded(args.style)) {
-                            setMaxHgt(sheet, args.rowIdx, args.colIdx, getTextHeight(this.parent, args.style));
+                            setMaxHgt(sheet, args.rowIdx, args.colIdx, getTextHeightWithBorder(this.parent, args.rowIdx, args.colIdx, sheet, args.style));
                         }
                         if (args.lastCell) {
                             const height: number = getMaxHgt(sheet, args.rowIdx);
@@ -92,7 +92,7 @@ export class CellFormat {
         }
     }
     private updateRowHeight(
-        rowIdx: number, colIdx: number, isLastCell: boolean, onActionUpdate: boolean, borderSize?: number): void {
+        rowIdx: number, colIdx: number, isLastCell: boolean, onActionUpdate: boolean): void {
         if (this.checkHeight) {
             let hgt: number = 0;
             let maxHgt: number;
@@ -100,13 +100,9 @@ export class CellFormat {
             const cell: CellModel = getCell(rowIdx, colIdx, sheet, null, true);
             const td: HTMLElement = this.parent.getCell(rowIdx, colIdx);
             if (cell && (!cell.rowSpan && !cell.colSpan)) {
-                hgt = getTextHeight(this.parent, (cell.style) || this.parent.cellStyle, (cell.wrap) ?
+                hgt = getTextHeightWithBorder(this.parent, rowIdx, colIdx, sheet, cell.style || this.parent.cellStyle, cell.wrap ?
                     getLines(this.parent.getDisplayText(cell),
-                    getExcludedColumnWidth(sheet, rowIdx, colIdx), cell.style, this.parent.cellStyle)
-                    : 1);
-                if (!borderSize) {
-                    borderSize = getBorderHeight(rowIdx, colIdx, sheet);
-                }
+                    getExcludedColumnWidth(sheet, rowIdx, colIdx), cell.style, this.parent.cellStyle) : 1);
                 if (!isNullOrUndefined(cell.value)) {
                     const val: string = cell.value.toString();
                     if (val.indexOf('\n') > -1) {
@@ -121,17 +117,17 @@ export class CellFormat {
                             }
                             n = n + lines;
                         }
-                        hgt = getTextHeight(this.parent, cell.style || this.parent.cellStyle, n) + 1;
+                        hgt = getTextHeightWithBorder(this.parent, rowIdx, colIdx, sheet, cell.style || this.parent.cellStyle, n);
                     }
                 }
-                if (hgt + borderSize < 20) {
+                if (hgt < 20) {
                     hgt = 20; // default height
                 }
                 if (td && td.children[0] && td.children[0].className === 'e-cf-databar') {
                     (td.children[0] as HTMLElement).style.height = '100%';
                     (td.children[0].firstElementChild.nextElementSibling as HTMLElement).style.height = '100%';
                 }
-                setMaxHgt(sheet, rowIdx, colIdx, hgt + borderSize);
+                setMaxHgt(sheet, rowIdx, colIdx, hgt);
                 if (isLastCell) {
                     this.checkHeight = false;
                     const row: HTMLElement = sheet.frozenRows ? this.parent.getRow(rowIdx, null, sheet.frozenColumns) :
@@ -151,7 +147,8 @@ export class CellFormat {
     private isHeightCheckNeeded(style: CellStyleModel, onActionUpdate?: boolean): boolean {
         const keys: string[] = Object.keys(style);
         return (onActionUpdate ? keys.indexOf('fontSize') > -1 : keys.indexOf('fontSize') > -1
-            && Number(style.fontSize.split('pt')[0]) > 12) || keys.indexOf('fontFamily') > -1;
+            && Number(style.fontSize.split('pt')[0]) > 12) || keys.indexOf('fontFamily') > -1 || keys.indexOf('borderTop') > -1
+            || keys.indexOf('borderBottom') > -1;
     }
     private setLeftBorder(
         border: string, cell: HTMLElement, rowIdx: number, colIdx: number, row: Element, actionUpdate: boolean, first: string): void {
@@ -201,7 +198,7 @@ export class CellFormat {
         if (size > 2 && (!sheet.rows[rowIdx] || !sheet.rows[rowIdx].customHeight)) {
             if (manualUpdate) {
                 if (!this.checkHeight) { this.checkHeight = true; }
-                this.updateRowHeight(rowIdx, colIdx, lastCell, actionUpdate, size);
+                this.updateRowHeight(rowIdx, colIdx, lastCell, actionUpdate);
             } else {
                 const prevHeight: number = getRowHeight(sheet, rowIdx);
                 const height: number = Math.ceil(this.parent.calculateHeight(
@@ -214,7 +211,7 @@ export class CellFormat {
         }
         if (actionUpdate && (lastCell || !this.checkHeight) && size < 3 && (!sheet.rows[rowIdx] || !sheet.rows[rowIdx].customHeight)) {
             if (!this.checkHeight) { this.checkHeight = true; }
-            this.updateRowHeight(rowIdx, colIdx, lastCell, actionUpdate, size);
+            this.updateRowHeight(rowIdx, colIdx, lastCell, actionUpdate);
         }
     }
     private getBorderSize(border: string): number {

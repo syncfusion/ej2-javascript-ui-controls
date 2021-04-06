@@ -10,6 +10,8 @@ export const dataSourceChanged: string = 'dataSourceChanged';
 /** @hidden */
 export const dataChanged: string = 'dataChanged';
 /** @hidden */
+export const triggerDataChange: string = 'triggerDataChange';
+/** @hidden */
 export const workbookOpen: string = 'workbookOpen';
 /** @hidden */
 export const beginSave: string = 'beginSave';

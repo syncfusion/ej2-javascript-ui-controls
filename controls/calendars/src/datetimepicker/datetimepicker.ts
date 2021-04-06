@@ -1746,6 +1746,7 @@ export class DateTimePicker extends DatePicker {
                 this.previousDateTime = new Date(this.inputElement.value);
                 this.updateInput();
                 this.changeTrigger(null);
+                this.preventChange = this.isAngular && this.preventChange ? !this.preventChange : this.preventChange;
                 break;
             case 'min':
             case 'max':
@@ -1829,7 +1830,6 @@ export class DateTimePicker extends DatePicker {
                 this.hide(null);
             }
             this.isDynamicValueChanged = false;
-            this.preventChange = this.isAngular && this.preventChange ? !this.preventChange : this.preventChange;
         }
     }
     /**

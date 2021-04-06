@@ -351,13 +351,21 @@ export function isDaylightSavingTime(date: Date): boolean {
 }
 
 /**
+ * Method to check the device
+ *
+ * @returns {boolean} Returns the boolean value for either device is present or not.
+ */
+export function isMobile(): boolean {
+    return window.navigator.userAgent.toLowerCase().indexOf('mobi') > -1; 
+}
+
+/**
  * Method to check the IPad device
  *
  * @returns {boolean} Returns the boolean value for either IPad device is present or not.
  */
 export function isIPadDevice(): boolean {
-    let deviceCheck: string = window.navigator.userAgent.toLowerCase();
-    return deviceCheck.indexOf('ipad') > -1;
+    return window.navigator.userAgent.toLowerCase().indexOf('ipad') > -1;
 }
 
 /**

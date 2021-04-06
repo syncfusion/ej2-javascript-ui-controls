@@ -3,7 +3,7 @@ import { Spreadsheet } from '../base/index';
 import { contentLoaded, spreadsheetDestroyed, onVerticalScroll, onHorizontalScroll, getScrollBarWidth, IScrollArgs } from '../common/index';
 import { IOffset, onContentScroll, deInitProperties, setScrollEvent, skipHiddenIdx, mouseDown, selectionStatus } from '../common/index';
 import { SheetModel, getRowHeight, getColumnWidth, getCellAddress } from '../../workbook/index';
-import { isFormulaBarEdit, FormulaBarEdit } from '../common/index';
+import { isFormulaBarEdit, FormulaBarEdit, virtualContentLoaded } from '../common/index';
 
 /**
  * The `Scroll` module is used to handle scrolling behavior.
@@ -82,9 +82,10 @@ export class Scroll {
         const threshold: number =  this.parent.getThreshold('row');
         if (this.offset.top.idx > sheet.rowCount - (this.parent.viewport.rowCount + threshold)) {
             this.parent.renderModule.refreshUI(
-                { colIndex: 0, direction: 'first', refresh: 'RowPart' },
+                { rowIndex: sheet.rowCount , colIndex: 0, direction: 'first', refresh: 'RowPart' },
                 `${getCellAddress(sheet.rowCount, 0)}:${getCellAddress(sheet.rowCount + threshold - 1, sheet.colCount - 1)}`);
-            sheet.rowCount += threshold;
+            this.parent.setSheetPropertyOnMute(sheet, 'rowCount', sheet.rowCount + threshold);
+            this.parent.viewport.bottomIndex = sheet.rowCount - 1;
         }
     }
 
@@ -95,7 +96,8 @@ export class Scroll {
             this.parent.renderModule.refreshUI(
                 { rowIndex: 0, colIndex: sheet.colCount, direction: 'first', refresh: 'ColumnPart' },
                 `${getCellAddress(0, sheet.colCount)}:${getCellAddress(sheet.rowCount - 1, sheet.colCount + threshold - 1)}`);
-            sheet.colCount += threshold;
+            this.parent.setSheetPropertyOnMute(sheet, 'colCount', sheet.colCount + threshold);
+            this.parent.viewport.rightIndex = sheet.colCount - 1;
         }
     }
 
@@ -200,6 +202,16 @@ export class Scroll {
         if (this.parent.enableRtl) {
             this.initScrollValue = this.parent.getScrollElement().scrollLeft;
         }
+        if (!this.parent.scrollSettings.enableVirtualization) {
+            const scrollTrack: HTMLElement = this.parent.createElement('div', { className: 'e-virtualtrack' });
+            this.updateNonVirualScrollWidth({ scrollTrack: scrollTrack });
+            this.parent.getScrollElement().appendChild(scrollTrack);
+        }
+    }
+
+    private updateNonVirualScrollWidth(args: { scrollTrack?: HTMLElement }): void {
+        if (!args.scrollTrack) { args.scrollTrack = this.parent.getScrollElement().getElementsByClassName('e-virtualtrack')[0] as HTMLElement; }
+        args.scrollTrack.style.width = Math.abs(this.parent.getContentTable().getBoundingClientRect().width) + 'px';
     }
 
     private onWheel(e: WheelEvent): void {
@@ -239,14 +251,13 @@ export class Scroll {
     }
 
     private setScrollEvent(args: { set: boolean } = { set: true }): void {
-        let mainPanel: Element = this.parent.getMainContent().parentElement;
         if (args.set) {
-            EventHandler.add(this.parent.element.getElementsByClassName('e-main-panel')[0], 'scroll', this.onContentScroll, this);
+            EventHandler.add(this.parent.sheetModule.contentPanel, 'scroll', this.onContentScroll, this);
             EventHandler.add(this.parent.getColumnHeaderContent(), 'wheel', this.onWheel, this);
             EventHandler.add(this.parent.getSelectAllContent(), 'wheel', this.onWheel, this);
             EventHandler.add(this.parent.getScrollElement(), 'scroll', this.scrollHandler, this);
         } else {
-            EventHandler.remove(this.parent.element.getElementsByClassName('e-main-panel')[0], 'scroll', this.onContentScroll);
+            EventHandler.remove(this.parent.sheetModule.contentPanel, 'scroll', this.onContentScroll);
             EventHandler.remove(this.parent.getColumnHeaderContent(), 'wheel', this.onWheel);
             EventHandler.remove(this.parent.getSelectAllContent(), 'wheel', this.onWheel);
             EventHandler.remove(this.parent.getScrollElement(), 'scroll', this.scrollHandler);
@@ -264,7 +275,6 @@ export class Scroll {
      * @returns {void} - To Set padding
      */
     public setPadding(): void {
-        if (!this.parent.allowScrolling) { return; }
         this.parent.sheetModule.contentPanel.style.overflowY = 'scroll';
         const colHeader: HTMLElement = this.parent.getColumnHeaderContent();
         const scrollWidth: number = getScrollBarWidth();
@@ -283,6 +293,9 @@ export class Scroll {
         this.parent.on(spreadsheetDestroyed, this.destroy, this);
         this.parent.on(setScrollEvent, this.setScrollEvent, this);
         this.parent.on(mouseDown, this.mouseDownHandler, this);
+        if (!this.parent.scrollSettings.enableVirtualization) {
+            this.parent.on(virtualContentLoaded, this.updateNonVirualScrollWidth, this);
+        }
     }
 
     private destroy(): void {
@@ -297,5 +310,8 @@ export class Scroll {
         this.parent.off(spreadsheetDestroyed, this.destroy);
         this.parent.off(setScrollEvent, this.setScrollEvent);
         this.parent.off(mouseDown, this.mouseDownHandler);
+        if (!this.parent.scrollSettings.enableVirtualization) {
+            this.parent.off(virtualContentLoaded, this.updateNonVirualScrollWidth);
+        }
     }
 }

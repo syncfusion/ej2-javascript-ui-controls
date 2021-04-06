@@ -47,6 +47,40 @@ export function inRange(range: number[], rowIdx: number, colIdx: number) : boole
     return range && (rowIdx >= range[0] && rowIdx <= range[2] && colIdx >= range[1] && colIdx <= range[3]);
 }
 
+
+/** @hidden */
+export function isInRange(range: number[], testRange: number[], isModify?: boolean) : boolean {
+    let inRange: boolean = range[0] <= testRange[0] && range[2] >= testRange[2] && range[1] <= testRange[1] && range[3] >= testRange[3];
+        if (inRange) { return true; }
+        if (isModify) {
+            if (testRange[0] < range[0] && testRange[2] < range[0] || testRange[0] > range[2] && testRange[2] > range[2]) {
+                return false;
+            } else {
+                if (testRange[0] < range[0] && testRange[2] > range[0]) {
+                    testRange[0] = range[0];
+                    inRange = true;
+                }
+                if (testRange[2] > range[2]) {
+                    testRange[2] = range[2];
+                    inRange = true;
+                }
+            }
+            if (testRange[1] < range[1] && testRange[3] < range[1] || testRange[1] > range[3] && testRange[3] > range[3]) {
+                return false;
+            } else {
+                if (testRange[1] < range[1] && testRange[3] > range[1]) {
+                    testRange[1] = range[1];
+                    inRange = true;
+                }
+                if (testRange[3] > range[3]) {
+                    testRange[3] = range[3];
+                    inRange = true;
+                }
+            }
+        }
+        return inRange;
+}
+
 /**
  * Check whether the cell is locked or not
  *

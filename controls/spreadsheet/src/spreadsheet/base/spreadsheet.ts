@@ -800,28 +800,32 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
      * @hidden
      */
     public getViewportIndex(index: number, isCol?: boolean): number {
-        if (this.scrollSettings.enableVirtualization) {
-            let sheet: SheetModel = this.getActiveSheet();
-            let frozenRow: number = this.frozenRowCount(sheet); let frozenCol: number = this.frozenColCount(sheet);
-            if (isCol) {
-                if (frozenCol) {
-                    let leftIndex: number = getCellIndexes(sheet.topLeftCell)[1];
-                    if (index < frozenCol) {
-                        index -= leftIndex; return index + 1;
-                    } else {
-                        index -= frozenCol;
-                    }
+        let sheet: SheetModel = this.getActiveSheet();
+        if (isCol) {
+            const frozenCol: number = this.frozenColCount(sheet);
+            if (frozenCol) {
+                let leftIndex: number = getCellIndexes(sheet.topLeftCell)[1];
+                if (index < frozenCol) {
+                    index -= leftIndex; return index + 1;
+                } else {
+                    index -= frozenCol;
                 }
+            }
+        } else {
+            const frozenRow: number = this.frozenRowCount(sheet);
+            if (frozenRow) {
+                let topIndex: number = getCellIndexes(sheet.topLeftCell)[0];
+                if (index < frozenRow) {
+                    index -= topIndex; return index + 1;
+                } else {
+                    index -= frozenRow;
+                }
+            }
+        }
+        if (this.scrollSettings.enableVirtualization) {
+            if (isCol) {
                 index -= this.hiddenCount(this.viewport.leftIndex, index, 'columns'); index -= this.viewport.leftIndex;
             } else {
-                if (frozenRow) {
-                    let topIndex: number = getCellIndexes(sheet.topLeftCell)[0];
-                    if (index < frozenRow) {
-                        index -= topIndex; return index + 1;
-                    } else {
-                        index -= frozenRow;
-                    }
-                }
                 index -= this.hiddenCount(this.viewport.topIndex, index); index -= this.viewport.topIndex;
             }
         }
@@ -1227,7 +1231,8 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
      */
     public paste(address?: string, type?: PasteSpecialType): void {
         this.notify(paste, {
-            range: getIndexesFromAddress(address), sIdx: getSheetIndex(this, getSheetNameFromAddress(address)),
+            range: address ? getIndexesFromAddress(address) : address,
+            sIdx: address ? getSheetIndex(this, getSheetNameFromAddress(address)) : address,
             type: type, isAction: false, isInternal: true
         });
     }

@@ -61,7 +61,8 @@ export class Render {
         let isTopLeftCell: boolean = sheet.topLeftCell === 'A1';
         const indexes: number[] = getCellIndexes(sheet.topLeftCell); let isFreezeScrolled: boolean;
         if (sheet.topLeftCell !== sheet.paneTopLeftCell && (sheet.frozenRows || sheet.frozenColumns)) {
-            const paneIndexes: number[] = getCellIndexes(sheet.paneTopLeftCell); isFreezeScrolled = true;
+            const paneIndexes: number[] = getCellIndexes(sheet.paneTopLeftCell);
+            isFreezeScrolled = this.parent.scrollSettings.enableVirtualization;
             isTopLeftCell = sheet.frozenRows && sheet.frozenColumns ? indexes[0] + sheet.frozenRows === paneIndexes[0] &&
                 indexes[1] + sheet.frozenColumns === paneIndexes[1] : (sheet.frozenRows ? indexes[0] + sheet.frozenRows === paneIndexes[0]
                 && indexes[1] === 0 : indexes[1] + sheet.frozenColumns === paneIndexes[1] && indexes[0] === 0);
@@ -179,7 +180,10 @@ export class Render {
                 this.parent.viewport.leftIndex = args.colIndex; this.parent.viewport.rightIndex = lastCol;
                 address = `${getCellAddress(startRow, startCol)}:${getCellAddress(lastRow, lastCol)}`;
             } else {
-                address = `A1:${getCellAddress(sheet.rowCount - 1, sheet.colCount - 1)}`;
+                this.parent.viewport.bottomIndex = sheet.rowCount - 1; this.parent.viewport.rightIndex = sheet.colCount - 1;
+                address = `${getCellAddress(sheet.frozenRows ? getCellIndexes(sheet.topLeftCell)[0] : 0, sheet.frozenColumns ?
+                    getCellIndexes(sheet.topLeftCell)[1] : 0)}:${getCellAddress(
+                    this.parent.viewport.bottomIndex, this.parent.viewport.rightIndex)}`;
             }
         }
         if (args.refresh === 'All') {

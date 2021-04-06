@@ -773,7 +773,8 @@ export class HeaderRender implements IRenderer {
 
     private renderCustomToolbar(): void {
         let gObj: IGrid = this.parent;
-        if (gObj.rowRenderingMode === 'Vertical' && !gObj.toolbar && (gObj.allowSorting || (gObj.allowFiltering && gObj.filterSettings.type !== 'FilterBar'))) {
+        if (gObj.rowRenderingMode === 'Vertical' && !gObj.toolbar
+            && (gObj.allowSorting || (gObj.allowFiltering && gObj.filterSettings.type !== 'FilterBar'))) {
             let div: HTMLElement = gObj.createElement('div', { className: 'e-res-toolbar e-toolbar' });
             let toolbarItems: HTMLElement = gObj.createElement('div', { className: 'e-toolbar-items' });
             let toolbarLeft: HTMLElement = gObj.createElement('div', { className: 'e-toolbar-left' });

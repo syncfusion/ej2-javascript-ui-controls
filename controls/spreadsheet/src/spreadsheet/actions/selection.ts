@@ -294,7 +294,7 @@ export class Selection {
                             this.startCell = [0, colIdx];
                         }
                         this.selectRangeByIdx([sheet.frozenRows ? topLeftIdx[0] : 0, this.startCell[1], sheet.rowCount - 1, colIdx], e);
-                    } else if ((e.target as Element).classList.contains('e-selectall')) {
+                    } else if (closest(e.target as Element, '.e-select-all-cell')) {
                         this.startCell = [sheet.frozenRows ? topLeftIdx[0] : 0, sheet.frozenColumns ? topLeftIdx[1] : 0];
                         this.selectRangeByIdx([].concat(this.startCell, [sheet.rowCount - 1, sheet.colCount - 1]), e);
                     } else if (!(e.target as Element).classList.contains('e-sheet-content')) {
@@ -482,7 +482,7 @@ export class Selection {
         }
         for (let i: number = 0; ; i++) {
             width += getColumnsWidth(sheet, i);
-            if (left < width) {
+            if (left < width || (this.parent.scrollSettings.isFinite && i === sheet.colCount - 1)) {
                 if (!e.isImage) { e.size = left; }
                 e.clientX = i;
                 return i;
@@ -506,7 +506,7 @@ export class Selection {
         }
         for (let i: number = 0; ; i++) {
             height += getRowHeight(sheet, i);
-            if (top < height) {
+            if (top < height || (this.parent.scrollSettings.isFinite && i === sheet.rowCount - 1)) {
                 if (!args.isImage) { args.size = top; }
                 args.clientY = i;
                 return i;

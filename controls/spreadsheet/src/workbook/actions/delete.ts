@@ -171,6 +171,9 @@ export class WorkbookDelete {
         }
         const deletedModel: RowModel[] = [];
         for (let i: number = args.start; i <= args.end; i++) {
+            this.parent.notify(workbookFormulaOperation, {
+                action: 'deleteSheetTab', sheetName: '', index: i + 1
+            });
             if (args.model[modelName][args.start]) {
                 deletedModel.push(args.model[modelName][args.start]);
                 args.model[modelName].splice(args.start, 1);
@@ -196,7 +199,6 @@ export class WorkbookDelete {
             }
         };
         this.parent.notify(workbookFormulaOperation, insertArgs);
-        this.parent.notify(workbookFormulaOperation, eventArgs);
         if (args.modelType !== 'Sheet' && args.model !== this.parent.getActiveSheet()) { return; }
         this.parent.notify(deleteAction, {
             startIndex: args.start, endIndex: args.end, modelType: args.modelType,

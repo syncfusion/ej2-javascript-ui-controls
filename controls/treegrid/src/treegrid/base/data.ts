@@ -322,7 +322,7 @@ export class DataManipulation {
         qry.where(this.parent.parentIdMapping, 'equal', rowDetails.record[this.parent.idMapping]);
         showSpinner(this.parent.element);
         dm.executeQuery(qry).then((e: ReturnOption) => {
-            const datas: ITreeData[] = this.parent.grid.currentViewData;
+            const datas: ITreeData[] = this.parent.grid.currentViewData.slice();
             let inx: number = datas.indexOf(rowDetails.record);
             if (inx === -1) {
                 this.parent.grid.getRowsObject().forEach((rows: Row<Column>) => {

@@ -15,6 +15,25 @@
 - `#297263` - Provided complex column filtering and sorting support with IQueryable.
 - `#307522` - Provided the target indicator support for drag and drop with different Grid.
 
+## 18.4.49 (2021-03-23)
+
+### Grid
+
+#### Bug Fixes
+
+- `#317578` - Throws script error while updating the template column in Batch edit mode issue has been fixed.
+- `#316684, #319594` - Script error when drag rows from grid to other components issue has been fixed.
+- `#317534` - Custom filtering not working when using filter template, has been fixed.
+
+## 18.4.48 (2021-03-16)
+
+### Grid
+
+#### Bug Fixes
+
+- `#315782` - Virtualization with grouping issue has been fixed.
+- `#19156` - Scroll is prevented with infinite scroll's cache mode issue has been fixed.
+
 ## 18.4.47 (2021-03-09)
 
 ### Grid

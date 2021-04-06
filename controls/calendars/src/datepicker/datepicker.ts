@@ -2057,6 +2057,7 @@ export class DatePicker extends Calendar implements IInput {
                     }
                 }
                 this.isInteracted = true;
+                this.preventChange = this.isAngular && this.preventChange ? !this.preventChange : this.preventChange;
                 break;
             case 'format':
                 this.checkFormat();
@@ -2137,7 +2138,6 @@ export class DatePicker extends Calendar implements IInput {
                 this.hide(null);
             }
             this.isDynamicValueChanged = false;
-            this.preventChange = this.isAngular && this.preventChange ? !this.preventChange : this.preventChange;
         }
     }
 }

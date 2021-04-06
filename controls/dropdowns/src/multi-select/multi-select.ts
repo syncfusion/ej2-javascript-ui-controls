@@ -943,7 +943,12 @@ export class MultiSelect extends DropDownBase implements IInput {
         if (!isNullOrUndefined(this.value)) {
             this.tempValues = <string[]>this.value.slice();
         }
-        this.removeValue(value, e);
+        let customValue: string | number | boolean = this.getFormattedValue(value);
+        if (this.allowCustomValue && (value !== 'false' && customValue === false || (!isNullOrUndefined(customValue) &&
+            customValue.toString() === 'NaN'))) {
+            customValue = value;
+        }
+        this.removeValue(customValue, e);
         this.removeChipSelection();
         this.updateDelimeter(this.delimiterChar, e);
         this.makeTextBoxEmpty();
@@ -1305,15 +1310,24 @@ export class MultiSelect extends DropDownBase implements IInput {
             const field: FieldSettingsModel = fields ? fields : this.fields;
             const customData: Object | string = (!isNullOrUndefined(this.mainData) && this.mainData.length > 0) ?
                 (this.mainData as { [key: string]: Object }[])[0] : this.mainData;
-            if (typeof (customData) !== 'string') {
+            if (typeof (customData) !== 'string' && typeof (customData) !== 'number' && typeof (customData) !== 'boolean') {
                 const dataItem: { [key: string]: string | Object } = {};
                 setValue(field.text, value, dataItem);
-                setValue(field.value, value, dataItem);
+                if (typeof getValue((this.fields.value ? this.fields.value : 'value'), customData as { [key: string]: Object })
+                === 'number') {
+                    setValue(field.value, Math.random(), dataItem);
+                } else {
+                    setValue(field.value, value, dataItem);
+                }
                 const tempData: [{ [key: string]: Object }] = JSON.parse(JSON.stringify(this.listData));
                 tempData.splice(0, 0, dataItem);
                 this.resetList(tempData, field, query);
             } else {
                 const tempData: string[] = [this.inputElement.value];
+                (tempData[0] as string | number) = (typeof customData === 'number' && !isNaN(parseFloat(tempData[0]))) ?
+                parseFloat(tempData[0]) : tempData[0];
+                (tempData[0]  as string | boolean) = (typeof customData === 'boolean') ?
+                (tempData[0] === 'true' ? true : (tempData[0] === 'false' ? false : tempData[0])) : tempData[0];
                 this.resetList(tempData, field);
             }
         }

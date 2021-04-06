@@ -3071,4 +3071,91 @@ describe('EJ2-40519 - ActionBegin event arguments cancel property value getting 
         });
 
     });
+
+    describe('EJ2-47605 - Delete issue with records other than current view records', () => {
+        let gridObj: Grid;
+        let length: number = dataSource().length;
+        let actionComplete: () => void;
+        beforeAll((done: Function) => {
+            gridObj = createGrid(
+                {
+                    dataSource: dataSource(),
+                    editSettings: { allowEditing: true, allowAdding: true, allowDeleting: true, mode: 'Normal', },
+                    toolbar: ['Add', 'Edit', 'Delete', 'Update', 'Cancel'],
+                    allowPaging: true,
+                    selectionSettings: { persistSelection: true },
+                    pageSettings: { pageSize: 2 },
+                    columns: [
+                        {type:'checkbox', width:50},
+                        { field: 'OrderID', type: 'number', isPrimaryKey: true },
+                        { field: 'EmployeeID' },
+                        { field: 'Freight', format: 'C2', type: 'number', editType: 'numericedit' },
+                        { field: 'ShipCity', type: 'string', editType: 'dropdownedit' }
+                    ]
+                }, done);
+        });
+
+        it('Delete With record', (done: Function) => {
+            actionComplete = (args?: any): void => {
+                if (args.requestType === 'delete') {
+                    expect((gridObj.dataSource as any).length).toBe(length-1);
+                    gridObj.actionComplete = null;
+                    done();
+                }
+            };
+            gridObj.actionComplete = actionComplete;
+            gridObj.deleteRecord('OrderID', [{OrderID:10258}]);
+        });
+        it('Delete With key', (done: Function) => {
+            actionComplete = (args?: any): void => {
+                if (args.requestType === 'delete') {
+                    expect((gridObj.dataSource as any).length).toBe(length-2);
+                    gridObj.actionComplete = null;
+                    done();
+                }
+            };
+            gridObj.actionComplete = actionComplete;
+            gridObj.deleteRecord('OrderID', [10257]);
+        });
+
+        it('Delete With record', (done: Function) => {
+            actionComplete = (args?: any): void => {
+                if (args.requestType === 'delete') {
+                    expect((gridObj.dataSource as any).length).toBe(length-3);
+                    gridObj.actionComplete = null;
+                    done();
+                }
+            };
+            gridObj.actionComplete = actionComplete;
+            gridObj.deleteRecord('OrderID', [10248]);
+        });
+        it('Delete With multiple records', (done: Function) => {
+            actionComplete = (args?: any): void => {
+                if (args.requestType === 'delete') {
+                    expect((gridObj.dataSource as any).length).toBe(length-5);
+                    gridObj.actionComplete = null;
+                    done();
+                }
+            };
+            gridObj.actionComplete = actionComplete;
+            gridObj.deleteRecord('OrderID', [{OrderID:10251},{OrderID:10255}]);
+        });
+        it('Delete With select all', (done: Function) => {
+            actionComplete = (args?: any): void => {
+                if (args.requestType === 'delete') {
+                    expect((gridObj.dataSource as any).length).toBe(0);
+                    gridObj.actionComplete = null;
+                    done();
+                }
+            };
+            gridObj.actionComplete = actionComplete;
+            (gridObj.element.querySelector('.e-headercelldiv').querySelectorAll('.e-frame.e-icons')[0] as any).click();
+            gridObj.deleteRecord('OrderID', gridObj.getSelectedRecords());
+        });
+        afterAll(() => {
+            destroy(gridObj);
+            gridObj = actionComplete = null;
+        });
+
+    });
 });

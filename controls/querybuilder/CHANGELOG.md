@@ -2,14 +2,28 @@
 
 ## [Unreleased]
 
+## 19.1.55 (2021-04-06)
+
+### QueryBuilder
+
+#### Bug Fixes
+
+- `#317381` - The issue with predicate generation for date is fixed.
+
 ## 19.1.54 (2021-03-30)
 
 ### QueryBuilder
 
 #### New Features
 
-- Provided Complex data binding Support
-- Provided Header Template Support
+- Provided Complex data binding Support.
+- Provided Header Template Support.
+- Provided model support for fields, operators and values.
+
+#### Bug Fixes
+
+- `#F162988` - The issue when field has space is fixed.
+- `#317355` - The issue with disable the condition option when that group has single
 
 ## 18.4.42 (2021-02-09)
 

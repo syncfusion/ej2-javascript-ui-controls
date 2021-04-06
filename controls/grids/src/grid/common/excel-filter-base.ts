@@ -757,7 +757,7 @@ export class ExcelFilterBase extends CheckBoxFilterBase {
                     updateBlazorTemplate(tempID, 'FilterTemplate', columnObj);
                 }
             } else {
-                valueDiv.children[0].id = isComplex ? complexFieldName + elementId : column + elementId;
+                valueDiv.querySelector('input').id = isComplex ? complexFieldName + elementId : column + elementId;
             }
             value.appendChild(valueDiv);
         } else {

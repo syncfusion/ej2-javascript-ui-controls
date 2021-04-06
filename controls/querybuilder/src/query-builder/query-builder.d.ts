@@ -273,6 +273,7 @@ export declare class QueryBuilder extends Component<HTMLDivElement> implements I
     private selectedRule;
     private isNotified;
     private isAddSuccess;
+    private isNotValueChange;
     /**
      * Triggers when the component is created.
      *
@@ -663,9 +664,11 @@ export declare class QueryBuilder extends Component<HTMLDivElement> implements I
     getOperators(field: string): {
         [key: string]: Object;
     }[];
+    private setTime;
     private datePredicate;
     private arrayPredicate;
     private getDate;
+    private isTime;
     private importRules;
     private renderGroup;
     private renderRule;

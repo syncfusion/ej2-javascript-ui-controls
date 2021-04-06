@@ -69,7 +69,9 @@ export class Month extends ViewBase implements IRenderer {
         const content: HTMLElement = this.getContentAreaElement();
         const height: number = this.parent.element.offsetHeight - headerHeight - header.offsetHeight;
         const leftPanel: HTMLElement = this.getLeftPanelElement();
-        this.setContentHeight(content, leftPanel, height);
+        if (this.parent.height !== 'auto') {
+            this.setContentHeight(content, leftPanel, height);
+        }
         const scrollBarWidth: number = util.getScrollBarWidth();
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         (header.firstElementChild as HTMLElement).style[<any>args.cssProperties.rtlBorder] = '';

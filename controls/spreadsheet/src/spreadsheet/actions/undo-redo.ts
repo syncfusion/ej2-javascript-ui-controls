@@ -5,8 +5,8 @@ import { BeforeActionData, PreviousCellDetails, CollaborativeEditArgs, setUndoRe
 import { selectRange, clearUndoRedoCollection, setMaxHgt, getMaxHgt, setRowEleHeight } from '../common/index';
 import { getRangeFromAddress, getRangeIndexes, BeforeCellFormatArgs, getSheet, workbookEditOperation, getSwapRange } from '../../workbook/index';
 import { getCell, setCell, CellModel, BeforeSortEventArgs, getSheetIndex, wrapEvent, getSheetIndexFromId } from '../../workbook/index';
-import { SheetModel, MergeArgs, setMerge, getRangeAddress, getColumnHeaderText, FilterCollectionModel } from '../../workbook/index';
-import { addClass, L10n } from '@syncfusion/ej2-base';
+import { SheetModel, MergeArgs, setMerge, getRangeAddress, FilterCollectionModel, triggerDataChange } from '../../workbook/index';
+import { addClass, extend, L10n } from '@syncfusion/ej2-base';
 import { getFilteredCollection, CellStyleModel, TextDecoration, setCellFormat, refreshRibbonIcons, getRowHeight } from '../../workbook/index';
 /**
  * UndoRedo module allows to perform undo redo functionalities.
@@ -153,6 +153,7 @@ export class UndoRedo {
             completeArgs.requestType = args.isUndo ? 'undo' : 'redo';
             delete completeArgs.beforeActionData;
             if (!args.isPublic) {
+                this.parent.notify(triggerDataChange, extend({ isUndo: args.isUndo }, undoRedoArgs, null, true));
                 this.parent.notify(completeAction, { eventArgs: completeArgs, action: 'undoRedo' });
             }
             this.parent.notify(refreshRibbonIcons, null);

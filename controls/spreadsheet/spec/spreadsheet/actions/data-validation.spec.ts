@@ -1,6 +1,6 @@
 import { SpreadsheetHelper } from "../util/spreadsheethelper.spec";
 import { defaultData } from '../util/datasource.spec';
-import { CellModel } from "../../../src/index";
+import { CellModel, Spreadsheet } from "../../../src/index";
 
 
 describe('Data validation ->', () => {
@@ -206,6 +206,81 @@ describe('Data validation ->', () => {
                         done();
                     });
                 });
+            });
+        });
+    });
+
+    describe('CR-Issues ->', () => {
+        describe('I282749 ->', () => {
+            beforeEach((done: Function) => {
+                helper.initializeSpreadsheet({
+                    sheets: [{ ranges: [{ dataSource: [{ 'Employee ID': '', 'Employee Name': '', 'Gender': '', 'Department': '',
+                    'Date of Joining': '', 'Salary': '', 'City': '' }] }], selectedRange: 'A1:A10' }],
+                    created: (): void => {
+                        const spreadsheet: Spreadsheet = helper.getInstance();
+                        spreadsheet.cellFormat({ fontWeight: 'bold', textAlign: 'center', verticalAlign: 'middle' }, 'A1:F1');
+                        spreadsheet.cellFormat({ fontWeight: 'bold' }, 'E31:F31');
+                        spreadsheet.cellFormat({ textAlign: 'right' }, 'E31');
+                        spreadsheet.numberFormat('$#,##0.00', 'F2:F31');
+                        spreadsheet.addDataValidation(
+                            { type: 'List', operator: 'Between', value1: '1,2', value2: '', ignoreBlank: true, inCellDropDown: true,
+                            isHighlighted: true }, 'A2:A100');
+                    }
+                }, done);
+            });
+            afterEach(() => {
+                helper.invoke('destroy');
+            });
+            it('Cell alignment and filtering issue ~ from 275309 (while applying data validation)', (done: Function) => {
+                helper.getElement('#' + helper.id + '_sorting').click();
+                helper.getElement('#' + helper.id + '_applyfilter').click();
+                helper.invoke('selectRange', ['A2']);
+                setTimeout((): void => {
+                    let ddl: HTMLElement = helper.invoke('getCell', [1, 0]).querySelector('.e-ddl') as HTMLElement;
+                    helper.triggerMouseAction('mousedown', { x: ddl.getBoundingClientRect().left + 2, y:
+                        ddl.getBoundingClientRect().top + 2 }, ddl, ddl);
+                    let cell: HTMLElement = helper.invoke('getCell', [1, 0]);
+                    helper.triggerMouseAction(
+                        'mouseup', { x: cell.getBoundingClientRect().left + 1, y: cell.getBoundingClientRect().top + 1 },
+                        document, cell);
+                    setTimeout((): void => {
+                        helper.getElement('#' + helper.getElement().id + 'listValid_popup .e-list-item').click();
+                        helper.invoke('selectRange', ['A3']);
+                        setTimeout((): void => {
+                            ddl = helper.invoke('getCell', [2, 0]).querySelector('.e-ddl') as HTMLElement;
+                            helper.triggerMouseAction('mousedown', { x: ddl.getBoundingClientRect().left + 2, y:
+                                ddl.getBoundingClientRect().top + 2 }, ddl, ddl);
+                            cell = helper.invoke('getCell', [2, 0]);
+                            helper.triggerMouseAction(
+                                'mouseup', { x: cell.getBoundingClientRect().left + 1, y: cell.getBoundingClientRect().top + 1 },
+                                document, cell);
+                            setTimeout((): void => {
+                                helper.getElement('#' + helper.getElement().id + 'listValid_popup .e-list-item:last-child').click();
+                                helper.invoke('selectRange', ['A1']);
+                                const filterCell: HTMLElement = helper.invoke('getCell', [0, 0]).querySelector('.e-filter-icon');
+                                helper.triggerMouseAction(
+                                    'mousedown', { x: filterCell.getBoundingClientRect().left + 1, y: filterCell.getBoundingClientRect().top + 1 },
+                                    null, filterCell);
+                                cell = helper.invoke('getCell', [0, 0]);
+                                helper.triggerMouseAction(
+                                    'mouseup', { x: cell.getBoundingClientRect().left + 1, y: cell.getBoundingClientRect().top + 1 },
+                                    document, cell);
+                                setTimeout((): void => {
+                                    helper.getElement('.e-excelfilter .e-check:not(.e-selectall)').click();
+                                    helper.getElement('.e-excelfilter .e-footer-content .e-btn.e-primary').click();
+                                    const spreadsheet: Spreadsheet = helper.getInstance();
+                                    expect(spreadsheet.sheets[0].selectedRange).toBe('A1:A1');
+                                    helper.invoke('selectRange', ['A4']);
+                                    setTimeout((): void => {
+                                        expect(!!helper.invoke('getCell', [3, 0]).querySelector('.e-validation-list')).toBeTruthy();
+                                        expect(!!helper.invoke('getCell', [4, 0]).querySelector('.e-validation-list')).toBeFalsy();
+                                        done();
+                                    }, 10);
+                                }, 100);
+                            }, 10);
+                        }, 10);
+                    }, 10);
+                }, 10);
             });
         });
     });

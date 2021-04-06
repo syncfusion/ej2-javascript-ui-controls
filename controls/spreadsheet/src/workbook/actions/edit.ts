@@ -90,17 +90,10 @@ export class WorkbookEdit {
             range = address;
         }
         const sheet: SheetModel = getSheet(this.parent, sheetIdx);
-        if (!sheet.rows[range[0]]) {
-            sheet.rows[range[0]] = {};
-            sheet.rows[range[0]].cells = [];
+        let cell: CellModel = getCell(range[0], range[1], sheet, true);
+        if (!cell) {
+            cell = sheet.rows[range[0]].cells[range[1]] = {};
         }
-        if (!sheet.rows[range[0]].cells) {
-            sheet.rows[range[0]].cells = [];
-        }
-        if (!sheet.rows[range[0]].cells[range[1]]) {
-            sheet.rows[range[0]].cells[range[1]] = {};
-        }
-        const cell: CellModel = getCell(range[0], range[1], sheet);
         if (!isValueOnly) {
             const isFormula: boolean = checkIsFormula(value);
             if (!isFormula) {

@@ -6511,7 +6511,7 @@ export class Editor {
                             break;
                         }
                         let nextPage: Page = section.page.nextPage;
-                        if (nextPage.bodyWidgets[0].equals(section)) {
+                        if (!isNullOrUndefined(nextPage) && nextPage.bodyWidgets[0].equals(section)) {
                             section = nextPage.bodyWidgets[0];
                             break;
                         }
@@ -10994,18 +10994,18 @@ export class Editor {
         for (let i: number = paragraph.childWidgets.length - 1; i >= 0; i--) {
             let lineWidget: LineWidget = paragraph.childWidgets[i] as LineWidget;
             if (startLine === lineWidget && endLine === lineWidget) {
-                this.removeContent(lineWidget, startOffset, endOffset);
+                this.removeContent(lineWidget, startOffset, endOffset, editAction);
                 isRemoved = true;
                 break;
             }
             if (endLine === lineWidget) {
                 isRemoved = true;
-                this.removeContent(lineWidget, 0, endOffset);
+                this.removeContent(lineWidget, 0, endOffset, editAction);
             } else if (startLine === lineWidget) {
-                this.removeContent(lineWidget, startOffset, this.documentHelper.selection.getLineLength(lineWidget));
+                this.removeContent(lineWidget, startOffset, this.documentHelper.selection.getLineLength(lineWidget), editAction);
                 break;
             } else if (isRemoved) {
-                this.removeContent(lineWidget, 0, this.documentHelper.selection.getLineLength(lineWidget));
+                this.removeContent(lineWidget, 0, this.documentHelper.selection.getLineLength(lineWidget), editAction);
             }
         }
         if (this.owner.enableTrackChanges && !this.skipTracking()) {
@@ -11045,8 +11045,10 @@ export class Editor {
         }
         return false;
     }
-
-    private removeContent(lineWidget: LineWidget, startOffset: number, endOffset: number): void {
+    /**
+     * @private
+     */
+    public removeContent(lineWidget: LineWidget, startOffset: number, endOffset: number, editAction?: number): void {
         let count: number = this.selection.getLineLength(lineWidget);
         let isBidi: boolean = lineWidget.paragraph.paragraphFormat.bidi;
         let startText: any = undefined;
@@ -11055,25 +11057,27 @@ export class Editor {
 
         for (let i: number = isBidi ? 0 : lineWidget.children.length - 1; isBidi ? i < lineWidget.children.length : i >= 0; isBidi ? i++ : i--) {
             let inline: ElementBox = lineWidget.children[i];
-            for (let k: number = 0; k < lineWidget.children.length; k++) {
-                let elementbox: ElementBox = lineWidget.children[k];
-                if (elementbox instanceof TextElementBox) {
-                    let text: any = elementbox.text;
-                    if (text.length + textCount > startOffset && !(textCount > startOffset)) {
-                        startText = text[startOffset - textCount - 1];
-                        if (isNullOrUndefined(startText) && (startOffset - textCount) === 0) {
-                            startText = lastText;
+            if (isNullOrUndefined(editAction) || editAction !== 2) {
+                for (let k: number = 0; k < lineWidget.children.length; k++) {
+                    let elementbox: ElementBox = lineWidget.children[k];
+                    if (elementbox instanceof TextElementBox) {
+                        let text: any = elementbox.text;
+                        if (text.length + textCount > startOffset && !(textCount > startOffset)) {
+                            startText = text[startOffset - textCount - 1];
+                            if (isNullOrUndefined(startText) && (startOffset - textCount) === 0) {
+                                startText = lastText;
+                            }
                         }
-                    }
-
-                    if (text.length + textCount > endOffset) {
-                        if ((text[endOffset - textCount] === ' ' && startOffset === 0) || (startText === ' ' && text[endOffset - textCount] === ' ')) {
-                            endOffset += 1;
+                        // tslint:disable-next-line:max-line-length
+                        if (text.length + textCount > endOffset) {
+                            if ((text[endOffset - textCount] === ' ' && startOffset === 0) || (startText === ' ' && text[endOffset - textCount] === ' ')) {
+                                endOffset += 1;
+                            }
                         }
+                        lastText = text[text.length - 1];
                     }
-                    lastText = text[text.length - 1];
+                    textCount += elementbox.length;
                 }
-                textCount += elementbox.length;
             }
             if (endOffset <= count - inline.length) {
                 count -= inline.length;
@@ -11478,7 +11482,8 @@ export class Editor {
                 listLevel.characterFormat.fontFamily = fontFamily;
             } else {
                 listLevel.listLevelPattern = listLevelPattern;
-                let currentFormat: string = listLevel.numberFormat.substring(listLevel.numberFormat.length - 1);
+                listLevel.characterFormat.fontFamily = fontFamily;
+                let currentFormat : string = listLevel.numberFormat.substring(listLevel.numberFormat.length - 1);
                 if (listLevel.numberFormat.length !== format.length && levelNumber > 0) {
                     listLevel.numberFormat = format;
                 } else if (format.substring(format.length - 1) !== listLevel.numberFormat.substring(listLevel.numberFormat.length - 1)) {
@@ -13068,6 +13073,14 @@ export class Editor {
                     let elementIndex: number = (paragraph.childWidgets[prevLastLineIndex] as LineWidget).children.length - 1;
                     for (let i: number = 0; i < nextParagraph.childWidgets.length; i++) {
                         let inline: LineWidget = nextParagraph.childWidgets[i] as LineWidget;
+                        if (nextParagraph.characterFormat.revisions.length > 0) {
+                            for (let i: number = 0; i < nextParagraph.characterFormat.revisions.length; i++) {
+                                for (let j: number = 0; j < nextParagraph.characterFormat.revisions[i].range.length; j++) {
+                                    (nextParagraph.characterFormat.revisions[i].range[j] as any).ownerBase = paragraph;
+                                }
+                                paragraph.characterFormat.revisions.push(nextParagraph.characterFormat.revisions[i]);
+                            }
+                        }
                         nextParagraph.childWidgets.splice(i, 1);
                         paragraph.childWidgets.push(inline);
                         inline.paragraph = paragraph;

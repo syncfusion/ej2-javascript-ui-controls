@@ -1,4 +1,4 @@
-import { remove, addClass, isNullOrUndefined, isBlazor, extend, isUndefined } from '@syncfusion/ej2-base';
+import { remove, addClass, isNullOrUndefined, isBlazor, extend, isUndefined, Browser } from '@syncfusion/ej2-base';
 import { IGrid, IRenderer, IModelGenerator, NotifyArgs } from '../base/interface';
 import { Column } from '../models/column';
 import { HeaderRender } from './header-renderer';
@@ -84,9 +84,13 @@ export class FreezeContentRender extends ContentRender implements IRenderer {
             mDiv = this.parent.createElement('div', { className: 'e-movablecontent' });
             this.getPanel().querySelector('.e-content').appendChild(fDiv);
             this.getPanel().querySelector('.e-content').appendChild(mDiv);
+            (<{ scrollbarWidth?: string }>(mDiv as HTMLElement).style).scrollbarWidth = 'none';
         }
         this.setFrozenContent(fDiv);
         this.setMovableContent(mDiv);
+        if (Browser.userAgent.indexOf('Mac OS') > -1 && Browser.info.name === 'safari' && !this.parent.enableVirtualization) {
+            this.getPanel().firstElementChild.classList.add('e-mac-safari');
+        }
     }
 
     public renderFrozenRigthPanel(): void {
@@ -219,6 +223,9 @@ export class FreezeContentRender extends ContentRender implements IRenderer {
         }
         if (idx === 0) {
             (this.getPanel().firstChild as HTMLElement).style.overflowX = 'hidden';
+            if (this.parent.enableColumnVirtualization) {
+                (this.getMovableContent() as HTMLElement).style.overflowX = 'hidden';
+            }
         }
         if (this.parent.enableColumnVirtualization && args.renderMovableContent
             && args.requestType === 'virtualscroll' && this.getMovableContent().scrollLeft > 0 && args.virtualInfo.columnIndexes[0] !== 0) {

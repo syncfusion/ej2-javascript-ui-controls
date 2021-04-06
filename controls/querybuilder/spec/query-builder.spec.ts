@@ -1593,10 +1593,10 @@ describe('QueryBuilder', () => {
             expect(queryBuilder.getPredicate(queryBuilder.rule).predicates[0].value.toDateString()).toEqual('Wed Feb 10 2021');
             queryBuilder.element.querySelector('.e-rule-delete').click();
             queryBuilder.addRules([{ 'label': 'DOB', 'field': 'DOB', 'type': 'date', 'operator': 'greaterthan', 'value': '2/10/2021' }], 'group0');
-            expect(queryBuilder.getPredicate(queryBuilder.rule).value.toDateString()).toEqual('Thu Feb 11 2021');
+            expect(queryBuilder.getPredicate(queryBuilder.rule).value.toDateString()).toEqual('Wed Feb 10 2021');
             queryBuilder.element.querySelector('.e-rule-delete').click();
             queryBuilder.addRules([{ 'label': 'DOB', 'field': 'DOB', 'type': 'date', 'operator': 'lessthanorequal', 'value': '2/10/2021' }], 'group0');
-            expect(queryBuilder.getPredicate(queryBuilder.rule).value.toDateString()).toEqual('Thu Feb 11 2021');
+            expect(queryBuilder.getPredicate(queryBuilder.rule).value.toDateString()).toEqual('Wed Feb 10 2021');
             let datePObj: DatePicker = queryBuilder.element.querySelectorAll('.e-rule-value .e-control')[0].ej2_instances;
             datePObj[0].show();
             (<HTMLElement>document.querySelectorAll('.e-datepicker.e-popup .e-cell')[5]).click();

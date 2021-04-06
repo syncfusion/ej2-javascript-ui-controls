@@ -857,6 +857,21 @@ export class Clipboard {
             }
             if (td.getAttribute('style')) {
                 styles.push(td.getAttribute('style'));
+                if (td.children && td.children.length) {
+                    for (let i: number = 0, len: number = td.children.length; i < len; i++) {
+                        if (td.children[i] && td.children[i].getAttribute('style')) {
+                            styles.push(td.children[i].getAttribute('style'));
+                            if ((td.children[i] as HTMLElement).children) {
+                                for (let i: number = 0, len: number = (td.children[i] as HTMLElement).children.length; i < len; i++) {
+                                    if (((td.children[i] as HTMLElement).children[i] as HTMLElement) &&
+                                    ((td.children[i] as HTMLElement).children[i] as HTMLElement).getAttribute('style')) {
+                                        styles.push(((td.children[i] as HTMLElement).children[i] as HTMLElement).getAttribute('style'));
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
             }
             if (keys.length) {
                 if (ele.querySelector('style')) {

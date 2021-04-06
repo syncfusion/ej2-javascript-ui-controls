@@ -78,6 +78,7 @@ export class Filter implements IAction {
     /** @hidden */
     public responsiveDialogRenderer: ResponsiveDialogRenderer;
     public menuOperator: { [key: string]: Object }[];
+    private docClickHandler: Function;
 
     /**
      * Constructor for Grid filtering module
@@ -356,7 +357,8 @@ export class Filter implements IAction {
         this.parent.on(events.headerRefreshed, this.render, this);
         this.parent.on(events.contentReady, this.initialEnd, this);
         this.parent.on(events.filterMenuClose, this.filterMenuClose, this);
-        EventHandler.add(document, 'click', this.clickHandler, this);
+        this.docClickHandler = this.clickHandler.bind(this);
+        EventHandler.add(document, 'click', this.docClickHandler, this);
         this.parent.on(events.filterOpen, this.columnMenuFilter, this);
         this.parent.on(events.click, this.filterIconClickHandler, this);
         this.parent.on('persist-data-changed', this.initialEnd, this);
@@ -367,7 +369,7 @@ export class Filter implements IAction {
      * @hidden
      */
     public removeEventListener(): void {
-        EventHandler.remove(document, 'click', this.clickHandler);
+        EventHandler.remove(document, 'click', this.docClickHandler);
         if (this.parent.isDestroyed) { return; }
         this.parent.off(events.setFullScreenDialog, this.setFullScreenDialog);
         this.parent.off(events.uiUpdate, this.enableAfterRender);

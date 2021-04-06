@@ -4667,6 +4667,7 @@ export class DateRangePicker extends CalendarBase {
                     this.updateHeader();
                     this.applyButton.disabled = this.applyButton.element.disabled = false;
                 }
+                this.preventChange = this.isAngular && this.preventChange ? !this.preventChange : this.preventChange;
                 break;
             case 'minDays':
                 this.setProperties({ minDays: newProp.minDays }, true);
@@ -4712,7 +4713,6 @@ export class DateRangePicker extends CalendarBase {
                 this.refreshChange();
                 break;
             }
-            this.preventChange = this.isAngular && this.preventChange ? !this.preventChange : this.preventChange;
         }
     }
 }

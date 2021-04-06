@@ -1,4 +1,3 @@
-
 import { ZipArchive, ZipArchiveItem } from '@syncfusion/ej2-compression';
 import { XmlWriter } from '@syncfusion/ej2-file-utils';
 import { isNullOrUndefined } from '@syncfusion/ej2-base';
@@ -1010,6 +1009,11 @@ export class WordExport {
         //     }
         //     writer.WriteEndElement();
         // }
+        if (pageSetup.restartPageNumbering) {
+            writer.writeStartElement(undefined, 'pgNumType', this.wNamespace);
+            writer.writeAttributeString(undefined, 'start', this.wNamespace, pageSetup.pageStartingNumber.toString());
+            writer.writeEndElement();
+        }
         writer.writeStartElement(undefined, 'pgBorders', this.wNamespace);
         // //zOrder
         // if (pageSetup.PageBordersApplyType === PageBordersApplyType.FirstPage)
@@ -3419,7 +3423,7 @@ export class WordExport {
         writer.writeEndElement();
         writer.writeStartElement('a', 'ln', this.aNamespace);
         writer.writeAttributeString(undefined, 'w', undefined, '12700');
-        if (shape.lineFormat.lineFormatType !== 'None') {
+        if (!isNullOrUndefined(shape.lineFormat.lineFormatType) && shape.lineFormat.lineFormatType !== 'None') {
             writer.writeStartElement('a', 'solidFill', this.aNamespace);
             writer.writeStartElement('a', 'srgbClr', this.aNamespace);
             writer.writeAttributeString(undefined, 'val', undefined, this.getColor(shape.lineFormat.color));
@@ -4024,9 +4028,9 @@ export class WordExport {
             for (let i: number = prevIndex; i < currentIndex; i++) {
                 collKey = prevIndex + 1;
                 prevIndex += 1;
-            }
-            if (collKey === 0 && mVerticalMerge.containsKey(collKey)) {
-                mVerticalMerge = this.createMerge(writer, collKey, cell, mVerticalMerge);
+                if (collKey === 0 && mVerticalMerge.containsKey(collKey)) {
+                    mVerticalMerge = this.createMerge(writer, collKey, cell, mVerticalMerge);
+                }
             }
         }
         if (cellFormat.rowSpan > 1) {

@@ -8,7 +8,7 @@ import { CellModel, SheetModel, getSheetName, getSheetIndex, getCell, getColumn,
 import { getSheetNameFromAddress, getSheet } from '../../workbook/base/index';
 import { RefreshValueArgs } from '../integrations/index';
 import { CellEditEventArgs, CellSaveEventArgs, ICellRenderer, hasTemplate, editAlert, FormulaBarEdit, getTextWidth } from '../common/index';
-import { getSwapRange, getCellIndexes, wrap as wrapText, checkIsFormula, dataChanged, isNumber, isLocked, MergeArgs, isCellReference } from '../../workbook/index';
+import { getSwapRange, getCellIndexes, wrap as wrapText, checkIsFormula, isNumber, isLocked, MergeArgs, isCellReference } from '../../workbook/index';
 import { checkConditionalFormat, initiateFormulaReference, initiateCur, clearCellRef, addressHandle } from '../common/event';
 import { editValue, initiateEdit, forRefSelRender, isFormulaBarEdit, deleteChart, beginAction } from '../common/event';
 import { DropDownButton } from '@syncfusion/ej2-splitbuttons';
@@ -217,6 +217,10 @@ export class Edit {
                                 editorElem.style.height = 'auto';
                             }
                         }
+                        if (getTextWidth(editorElem.textContent, cell.style, this.parent.cellStyle) > parseInt(
+                            editorElem.style.maxWidth, 10) - 5) { // 5 decreased for padding.
+                            editorElem.style.height = 'auto';
+                        }
                         if (actCell[0] < this.parent.frozenRowCount(sheet) && editorElem && !editorElem.style.overflow && getTextWidth(
                             editorElem.textContent, cell.style, this.parent.cellStyle) > parseInt(editorElem.style.maxWidth, 10)) {
                             editorElem.style.overflow = 'auto';
@@ -291,6 +295,8 @@ export class Edit {
                             const islockcell: boolean = sheet.isProtected && this.isLockCellDelete();
                             if (!islockcell) { this.editingHandler('delete');
                             this.parent.notify(activeCellChanged, null);
+                         } else {
+                            this.parent.notify(editAlert, null);
                          }
                         }
                     }
@@ -445,7 +451,6 @@ export class Edit {
                 this.parent.clearRange(address, null, true);
                 this.parent.serviceLocator.getService<ICellRenderer>('cell').refreshRange(range);
                 this.parent.notify(selectionComplete, {});
-                this.parent.notify(dataChanged, { address: address, sheetIdx: this.parent.activeSheetIndex, action: 'delete' });
                 this.parent.notify(completeAction, { action: 'cellDelete', eventArgs: { address: sheet.name + '!' + address }});
             }
             break;
@@ -739,6 +744,9 @@ export class Edit {
             inlineStyles += tdElem.style.cssText;
             const editorElem: HTMLElement = this.getEditElement(sheet, true);
             editorElem.setAttribute('style', inlineStyles);
+            if (getTextWidth(editorElem.textContent, cell.style, this.parent.cellStyle) > editWidth) {
+                editorElem.style.height = 'auto';
+            }
             // we using edit div height as auto , while editing div enlarges and hide active cell bottom border for that
             // we increasing 1px height to active cell.
             (this.parent.element.querySelector('.e-active-cell') as HTMLElement).style.height = (minHeight + 4) + 'px';
@@ -895,7 +903,6 @@ export class Edit {
                     eventArgs.formula = this.editCellData.formula;
                 }
                 eventArgs.originalEvent = event;
-                this.parent.notify(dataChanged, eventArgs);
                 this.parent.notify(completeAction, { eventArgs: eventArgs, action: 'cellSave' });
             }
             if (eventName !== 'cellSave') {

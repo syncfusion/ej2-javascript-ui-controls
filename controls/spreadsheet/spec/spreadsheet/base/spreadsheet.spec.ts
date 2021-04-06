@@ -850,4 +850,116 @@ describe('Spreadsheet base module ->', () => {
 
     // });
 
+    describe('CR-Issues ->', () => {
+        describe('I266607 ->', () => {
+            beforeEach((done: Function) => {
+                model = {
+                    sheets: [{
+                        rows: [{ cells: [{ value: 'columTitle', style: { textAlign: 'left', backgroundColor: '#FFFF33' } }] }],
+                        rowCount: 50, colCount: 50
+                    }]};
+                helper.initializeSpreadsheet(model, done);
+            });
+            afterEach(() => {
+                helper.invoke('destroy');
+            });
+            it('spreedsheet-dataSource-Hidetab (Double time header created while updating the sheet model in the button click)', (done: Function) => {
+                const spreadsheet: Spreadsheet = helper.getInstance();
+                spreadsheet.sheets = [{
+                    rows: [{ cells: [{ value: 'columTitle', style: { textAlign: 'left', backgroundColor: '#FFFF33' } }] }],
+                    rowCount: 50, colCount: 50
+                }];
+                setTimeout((): void => {
+                    expect(helper.getElement().querySelectorAll('.e-colhdr-table').length).toBe(1);
+                    expect(helper.getElement().querySelectorAll('.e-rowhdr-table').length).toBe(1);
+                    done();
+                });
+            });
+        });
+        describe('I256901 ->', () => {
+            beforeEach((done: Function) => {
+                helper.initializeSpreadsheet({ sheets: [{
+                        rows: [{ cells: [{ value: 'Order ID' }, { value: 'Customer ID' }, { value: 'Employee ID' }, { value: 'Ship Name' },
+                                    { value: 'Ship City' }, { value: 'Ship Address' }] },
+                            { cells: [{ value: '10248' }, { value: 'VINET' }, { value: '5' }, { value: 'Vins et alcools Chevalier' },
+                                    { value: 'Reims' }, { value: '59 rue de lAbbaye' }] },
+                            { cells: [{ value: '10249' }, { value: 'TOMSP' }, { value: '6' }, { value: 'Toms Spezialitäten' },
+                                { value: 'Münster' }, { value: 'Luisenstr. 48' }] },
+                            { cells: [{ value: '10250' }, { value: 'HANAR' }, { value: '4' }, { value: 'Hanari Carnes' },
+                                    { value: 'Rio de Janeiro' }, { value: 'Rua do Paço, 67' }] }] }] }, done);
+            });
+            afterEach(() => {
+                helper.invoke('destroy');
+            });
+            it('Used range not setting properly while using cell data binding', (done: Function) => {
+                const spreadsheet: Spreadsheet = helper.getInstance();
+                expect(spreadsheet.sheets[0].usedRange.rowIndex).toBe(3);
+                expect(spreadsheet.sheets[0].usedRange.colIndex).toBe(5);
+                done();
+            });
+        });
+        describe('I316103 ->', () => {
+            beforeEach((done: Function) => {
+                helper.initializeSpreadsheet({ sheets: [{ colCount: 5, rowCount: 10, columns: [
+                    { width: 30 }, { width: 35 }, { width: 40 }, { width: 30 }, { width: 30 } ] }],
+                    scrollSettings: { enableVirtualization: false, isFinite: true }, }, done);
+            });
+            afterEach(() => {
+                helper.invoke('destroy');
+            });
+            it('Need to improve the cell selection with limited column count in virtualization false', (done: Function) => {
+                const spreadsheet: Spreadsheet = helper.getInstance();
+                expect(spreadsheet.sheets[0].columns[0].width).toBe(30);
+                expect(helper.invoke('getCell', [0, 0]).getBoundingClientRect().width).toBe(30);
+                expect(spreadsheet.sheets[0].columns[2].width).toBe(40);
+                expect(helper.invoke('getCell', [0, 2]).getBoundingClientRect().width).toBe(40);
+                expect(helper.getElement('.e-content-table').style.width).toBe('auto');
+                spreadsheet.sheets[0].rowCount = 100; spreadsheet.sheets[0].colCount = 100; spreadsheet.dataBind();
+                setTimeout((): void => {
+                    expect(helper.getElement('.e-content-table').style.width).toBe('');
+                    done();
+                });
+            });
+        });
+        describe('fb22391 ->', () => {
+            beforeEach((done: Function) => {
+                helper.initializeSpreadsheet({ sheets: [{ ranges: [{ dataSource: defaultData }] }] }, done);
+            });
+            afterEach(() => {
+                helper.invoke('destroy');
+            });
+            it('getData doesnot work (Pass args in GetData method without sheet name)', (done: Function) => {
+                helper.invoke('getData', ['A1:A2']).then((cells: Map<string, CellModel>): void => {
+                    cells.forEach((cell: CellModel, key: string): void => {
+                        if (key === 'A1') {
+                            expect(cell.value).toBe('Item Name');
+                        } else {
+                            expect(cell.value).toBe('Casual Shoes');
+                        }
+                    });
+                    done();
+                });
+            });
+        });
+        describe('I314986 ->', () => {
+            beforeEach((done: Function) => {
+                helper.initializeSpreadsheet({ sheets: [{ ranges: [{ dataSource: defaultData }] }], allowInsert: false }, done);
+            });
+            afterEach(() => {
+                helper.invoke('destroy');
+            });
+            it('Need to fix the destroy method issue with allowInsert as false (allowInsert property onproperty change checking)', (done: Function) => {
+                const spreadsheet: Spreadsheet = helper.getInstance();
+                expect(spreadsheet.allowInsert).toBeFalsy();
+                const addSheetBtn: HTMLButtonElement = helper.getElement('#' + helper.id + ' .e-add-sheet-tab');
+                expect(addSheetBtn.disabled).toBeTruthy();
+                expect(addSheetBtn.classList.contains('e-disabled')).toBeTruthy();
+                spreadsheet.allowInsert = true;
+                spreadsheet.dataBind();
+                expect(addSheetBtn.disabled).toBeFalsy();
+                expect(addSheetBtn.classList.contains('e-disabled')).toBeFalsy();
+                done();
+            });
+        });
+    });
 });

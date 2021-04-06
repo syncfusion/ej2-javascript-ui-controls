@@ -309,7 +309,10 @@ export class Text {
     }
     private applyHighlightColor (color: string): void {
         this.appliedHighlightColor = color;
-        const hgltColor: HighlightColor = this.getHighLightColor(color);
+        let hgltColor: HighlightColor = this.getHighLightColor(color);
+        if (hgltColor === 'NoColor') {
+            this.documentEditor.selection.characterFormat.highlightColor = null;
+        }
         this.documentEditor.selection.characterFormat.highlightColor = hgltColor as HighlightColor;
     }
     private getHighLightColor(color: string): HighlightColor {

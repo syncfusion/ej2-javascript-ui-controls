@@ -41,6 +41,7 @@ describe('Dynamic data binding - ', () => {
     });
 
     it('Checking dataChangeEventArgs', (done: Function) => {
+        const spreadsheet: any = helper.getInstance();
         helper.edit('A12', 'Shirts');
         expect(dataChangeArgs).toBeUndefined();
 
@@ -48,10 +49,24 @@ describe('Dynamic data binding - ', () => {
         expect(dataChangeArgs.action).toBe('edit');
         expect(dataChangeArgs.data[0]['Price']).toBe(13);
 
-        helper.getInstance().delete(6, 6, 'Row');
-        expect(dataChangeArgs.action).toBe('delete');
-        expect(dataChangeArgs.data[0]['Item Name']).toBe('Sneakers');
-        done();
+        helper.click('#' + helper.id + '_undo');
+        expect(dataChangeArgs.data[0]['Price']).toBe(10);
+
+        helper.click('#' + helper.id + '_redo');
+        expect(dataChangeArgs.data[0]['Price']).toBe(13);
+
+        spreadsheet.workbookdeleteModule.deleteModel({ start: 6, end: 6, insertType: 'above', modelType: 'Row', name: 'deleteModel', isAction: true, model: spreadsheet.getActiveSheet() });
+            expect(dataChangeArgs.action).toBe('delete');
+            expect(dataChangeArgs.data[0]['Item Name']).toBe('Sneakers');
+
+            helper.click('#' + helper.id + '_undo');
+            expect(dataChangeArgs.action).toBe('add');
+            expect(dataChangeArgs.data[0]['Item Name']).toBe('Sneakers');
+
+            helper.click('#' + helper.id + '_redo');
+            expect(dataChangeArgs.action).toBe('delete');
+            expect(dataChangeArgs.data[0]['Item Name']).toBe('Sneakers');
+            done();
     });
 
     it('Adding new range', (done: Function) => {
@@ -89,7 +104,80 @@ describe('Dynamic data binding - ', () => {
             expect(dataChangeArgs.action).toBe('add');
             spreadsheet.workbookinsertModule.insertModel({ start: 2, end: 3, insertType: 'below', modelType: 'Row', name: 'insertModel', isAction: true, model: spreadsheet.getActiveSheet() });
             expect(dataChangeArgs.data.length).toEqual(2);
+
+            helper.click('#' + helper.id + '_undo');
+            expect(dataChangeArgs.action).toBe('delete');
+            expect(dataChangeArgs.data.length).toEqual(2);
+            expect(dataChangeArgs.data[0]['Item Name']).toBeNull();
+
+            helper.click('#' + helper.id + '_redo');
+            expect(dataChangeArgs.action).toBe('add');
+            expect(dataChangeArgs.data.length).toEqual(2);
+            expect(dataChangeArgs.data[0]['Item Name']).toBeNull();
             done();
         });
+    });
+
+    it('Checking dataChangeEventArgs for paste', (done: Function) => {
+        helper.invoke('copy', ['A16']).then(()=>{
+            helper.invoke('paste', ['A12']);
+            expect(dataChangeArgs.action).toBe('edit');
+            expect(dataChangeArgs.data[0]['Item Name']).toBe('Shirts');
+
+            helper.click('#' + helper.id + '_undo');
+            expect(dataChangeArgs.data[0]['Item Name']).toBe('Loafers');
+
+            helper.click('#' + helper.id + '_redo');
+            setTimeout(() => {
+                expect(dataChangeArgs.data[0]['Item Name']).toBe('Shirts');
+                done();
+            });
+        });
+    });
+
+    it('Checking dataChangeEventArgs for cut', (done: Function) => {
+        helper.invoke('selectRange', ['H6:H8']);
+        helper.invoke('cut').then(()=>{
+            helper.invoke('paste', ['J6']);
+            expect(dataChangeArgs.action).toBe('edit');
+            expect(dataChangeArgs.data[0]['Profit']).toBeNull();
+            expect(dataChangeArgs.data[0]['Item Name']).toBe('Casual Shoes');
+            expect(dataChangeArgs.data.length).toBe(3);
+            expect(dataChangeArgs.data[1]['Profit']).toBeNull();
+
+            helper.click('#' + helper.id + '_undo');
+            expect(dataChangeArgs.action).toBe('edit');
+            expect(dataChangeArgs.data[0]['Profit']).toBe(10);
+            expect(dataChangeArgs.data[2]['Profit']).toBe(27);
+
+            helper.click('#' + helper.id + '_redo');
+            setTimeout(() => {
+                expect(dataChangeArgs.action).toBe('edit');
+                expect(dataChangeArgs.data[0]['Profit']).toBeNull();
+                expect(dataChangeArgs.data[0]['Item Name']).toBe('Casual Shoes');
+                done();
+            });
+        });
+    });
+
+    it('Checking dataChangeEventArgs for clear', (done: Function) => {
+        helper.invoke('selectRange', ['G6:G8']);
+        helper.getInstance().cellformatModule.clearObj({ options: { type: 'Clear All' } });
+        expect(dataChangeArgs.action).toBe('edit');
+        expect(dataChangeArgs.data[0]['Discount']).toBeNull();
+        expect(dataChangeArgs.data[0]['Item Name']).toBe('Casual Shoes');
+        expect(dataChangeArgs.data.length).toBe(3);
+        expect(dataChangeArgs.data[1]['Discount']).toBeNull();
+
+        helper.click('#' + helper.id + '_undo');
+        expect(dataChangeArgs.action).toBe('edit');
+        expect(dataChangeArgs.data[0]['Discount']).toBe(1);
+        expect(dataChangeArgs.data[1]['Discount']).toBe(5);
+
+        helper.click('#' + helper.id + '_redo');
+        expect(dataChangeArgs.action).toBe('edit');
+        expect(dataChangeArgs.data[2]['Discount']).toBeNull();
+        expect(dataChangeArgs.data[2]['Item Name']).toBe('Formal Shoes');
+        done();
     });
 });

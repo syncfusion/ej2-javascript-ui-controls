@@ -120,8 +120,9 @@ export class WorkbookSave extends SaveWorker {
     private processSheets(): void {
         let i: number = 0;
         const sheetCount: number = this.parent.sheets.length;
+        const skipProps: string[] = ['dataSource', 'startCell', 'query', 'showFieldAsHeader'];
         while (i < sheetCount) {
-            executeTaskAsync(this, this.processSheet, this.updateSheet, [this.getStringifyObject(this.parent.sheets[i]), i]);
+            executeTaskAsync(this, this.processSheet, this.updateSheet, [this.getStringifyObject(this.parent.sheets[i], skipProps), i]);
             i++;
         }
     }

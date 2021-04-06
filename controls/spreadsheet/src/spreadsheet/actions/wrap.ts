@@ -2,7 +2,7 @@ import { closest, Browser } from '@syncfusion/ej2-base';
 import { ClickEventArgs } from '@syncfusion/ej2-navigations';
 import { Spreadsheet } from '../base/spreadsheet';
 import { ribbonClick, inView, setMaxHgt, getMaxHgt, WRAPTEXT, setRowEleHeight, rowHeightChanged, beginAction } from '../common/index';
-import { completeAction, BeforeWrapEventArgs, getTextHeight, getLines, getBorderHeight, getExcludedColumnWidth } from '../common/index';
+import { completeAction, BeforeWrapEventArgs, getLines, getExcludedColumnWidth, getTextHeightWithBorder } from '../common/index';
 import { SheetModel, getCell, CellModel, CellStyleModel, wrap as wrapText, wrapEvent, getRow } from '../../workbook/index';
 import { getRowHeight, getAddressFromSelectedRange } from '../../workbook/index';
 
@@ -101,15 +101,14 @@ export class WrapText {
                                 } else {
                                     lines = getLines(displayText, colwidth, cell.style, this.parent.cellStyle);
                                 }
-                                hgt = getTextHeight(this.parent, cell.style || this.parent.cellStyle, lines) + 1 +
-                                    getBorderHeight(i, j, args.sheet);
+                                hgt = getTextHeightWithBorder(this.parent, i, j, args.sheet, cell.style || this.parent.cellStyle, lines);
                                 maxHgt = Math.max(maxHgt, hgt);
                                 setMaxHgt(args.sheet, i, j, hgt);
                             } else {
                                 if (displayText.indexOf('\n') > -1) {
                                     ele.classList.add('e-alt-unwrap');
                                 }
-                                hgt = getTextHeight(this.parent, cell.style || this.parent.cellStyle, 1);
+                                hgt = getTextHeightWithBorder(this.parent, i, j, args.sheet, cell.style || this.parent.cellStyle, 1);
                                 setMaxHgt(args.sheet, i, j, hgt);
                                 maxHgt = Math.max(getMaxHgt(args.sheet, i), 20);
                             }

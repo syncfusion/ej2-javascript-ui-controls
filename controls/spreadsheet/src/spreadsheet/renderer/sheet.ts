@@ -273,6 +273,12 @@ export class SheetRender implements IRenderer {
                 if (this.parent.allowScrolling) { this.parent.getScrollElement().scrollLeft = args.left; }
             }
             this.parent.notify(contentLoaded, null);
+            if (this.parent.scrollSettings.isFinite && sheet.colCount - 1 === this.parent.viewport.rightIndex) {
+                const cellsWidth: number = getColumnsWidth(sheet, this.parent.viewport.leftIndex, this.parent.viewport.rightIndex);
+                if (cellsWidth < this.contentPanel.getBoundingClientRect().width - this.getRowHeaderWidth(sheet)) {
+                    this.getColHeaderTable().style.width = 'auto'; this.getContentTable().style.width = 'auto';
+                }
+            }
             this.parent.notify(editOperation, { action: 'renderEditor' });
             if (!args.initLoad && !this.parent.isOpen) { this.parent.hideSpinner(); }
             setAriaOptions(content, { busy: false });
@@ -503,9 +509,7 @@ export class SheetRender implements IRenderer {
                 }
                 if (frozenRow && indexes[0] === frozenRow - 1) { rowCount = 0; }
             });
-            if (this.parent.scrollSettings.enableVirtualization) {
-                this.parent.notify(virtualContentLoaded, { refresh: 'Column', prevRowColCnt: args.prevRowColCnt });
-            }
+            this.parent.notify(virtualContentLoaded, { refresh: 'Column', prevRowColCnt: args.prevRowColCnt });
             if (this.parent.allowChart) {
                 this.parent.notify(chartRangeSelection, null);
             }

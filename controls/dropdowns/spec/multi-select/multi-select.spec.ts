@@ -7812,4 +7812,217 @@ describe('MultiSelect', () => {
             }
         });
     });
+    describe(' EJ2-47405 ', () => {
+        let listObj: any;
+        let element: HTMLInputElement;
+        let languages: { [key: string]: Object }[] = [
+            { id: '1', text: 'JAVA' },
+            { id: '2', text: 'C#' },
+            { id: '3', text: 'C++' },
+        ];
+        let games: { [key: string]: Object }[] = [
+            { id: 1, text: 'Game1' },
+            { id: 2, text: 'Game2' },
+            { id: 3, text: 'Game3' },
+        ];
+        function commonFun(value : any) : void {
+            (<any>listObj).inputElement.value = value;
+            keyboardEventArgs.keyCode = 113;
+            (<any>listObj).keyDownStatus = true;
+            (<any>listObj).onInput();
+            (<any>listObj).keyUp(keyboardEventArgs);
+            keyboardEventArgs.altKey = false;
+            keyboardEventArgs.keyCode = 70;
+            (<any>listObj).keyDownStatus = true;
+            (<any>listObj).onInput();
+            (<any>listObj).keyUp(keyboardEventArgs);
+            expect((<any>listObj).liCollections.length).toBe(1);
+            mouseEventArgs.target = (<any>listObj).liCollections[0];
+            mouseEventArgs.type = 'click';
+            (<any>listObj).onMouseClick(mouseEventArgs);
+            expect((<any>listObj).value && (<any>listObj).value.length).not.toBeNull();
+        }
+        beforeAll(() => {
+            element = <HTMLInputElement>createElement('input', { id: 'multiSelect' });
+            document.body.appendChild(element);
+        });
+        afterAll(() => {
+            document.body.innerHTML = '';
+            if (element) {
+                element.remove();
+            }
+        });
+        it('Testing with string as dataSource field value', () => {
+            let itemData: any;
+            listObj = new MultiSelect({
+                dataSource: languages,
+                fields: { text: 'text',value:'id' },
+                allowCustomValue : true,
+                customValueSelection: ( e : any): void => {
+                    expect(!isNullOrUndefined(e.newData)).toBe(true);
+                },
+                removing: ( e : any): void => {
+                    itemData = e.itemData;
+                }
+            });
+            listObj.appendTo(element);
+            listObj.showPopup();
+            commonFun('Vue');
+            listObj.showPopup();
+            (<any>listObj).focusAtFirstListItem();
+            keyboardEventArgs.keyCode = 8;
+            (<any>listObj).removelastSelection(keyboardEventArgs);
+            expect(!isNullOrUndefined(itemData)).toBe(true);
+            expect(itemData.text).toBe('Vue');
+            expect(itemData.id).toBe('Vue');
+            listObj.hidePopup(); 
+            listObj.showPopup();
+            commonFun(11);
+            let elem: HTMLElement = (<any>listObj).chipCollectionWrapper.querySelector('span[title="11"]');
+            (<any>listObj).onChipRemove({ which: 1, button: 1, target: elem.lastElementChild, preventDefault: function () { } });
+            expect(!isNullOrUndefined(itemData)).toBe(true);
+            expect(itemData.text).toBe('11');
+            expect(itemData.id).toBe('11');
+            listObj.showPopup();
+            commonFun('12');
+            keyboardEventArgs.which = 1;
+            (<any>listObj).clearAll(keyboardEventArgs);
+            expect(!isNullOrUndefined(itemData)).toBe(true);
+           listObj.destroy();
+        });
+        it('Testing with int as dataSource field value', () => {
+            let itemData: any;
+            listObj = new MultiSelect({
+                dataSource: games,
+                fields: { text: 'text',value:'id' },
+                allowCustomValue : true,
+                removing: ( e : any): void => {
+                    itemData = e.itemData;
+                }
+            });
+            listObj.appendTo(element);
+            listObj.showPopup();
+            commonFun('Vue');
+            listObj.showPopup();
+            (<any>listObj).focusAtFirstListItem();
+            keyboardEventArgs.keyCode = 8;
+            (<any>listObj).removelastSelection(keyboardEventArgs);
+            expect(!isNullOrUndefined(itemData)).toBe(true);
+            expect(itemData.text).toBe('Vue');
+            expect(itemData.id).not.toBe('Vue');
+            expect(typeof itemData.id).toBe('number');
+            listObj.hidePopup(); 
+            listObj.showPopup();
+            commonFun(11);
+            let elem: HTMLElement = (<any>listObj).chipCollectionWrapper.querySelector('span[title="11"]');
+            (<any>listObj).onChipRemove({ which: 1, button: 1, target: elem.lastElementChild, preventDefault: function () { } });
+            expect(!isNullOrUndefined(itemData)).toBe(true);
+            expect(itemData.text).toBe('11');
+            expect(itemData.id).not.toBe('11');
+            expect(typeof itemData.id).toBe('number');
+            listObj.showPopup();
+            commonFun('12');
+            keyboardEventArgs.which = 1;
+            (<any>listObj).clearAll(keyboardEventArgs);
+            expect(!isNullOrUndefined(itemData)).toBe(true);
+           listObj.destroy();
+        });
+        it('Testing with int type number array as dataSource', () => {
+            let itemData: any;
+            listObj = new MultiSelect({
+                dataSource: [1,2,3],
+                allowCustomValue : true,
+                removing: ( e : any): void => {
+                    itemData = e.itemData;
+                }
+            });
+            listObj.appendTo(element);
+            listObj.showPopup();
+            commonFun('Vue');
+            listObj.showPopup();
+            (<any>listObj).focusAtFirstListItem();
+            keyboardEventArgs.keyCode = 8;
+            (<any>listObj).removelastSelection(keyboardEventArgs);
+            expect(!isNullOrUndefined(itemData)).toBe(true);
+            expect(itemData).toBe('Vue');
+            listObj.hidePopup(); 
+            listObj.showPopup();
+            commonFun(11);
+            let elem: HTMLElement = (<any>listObj).chipCollectionWrapper.querySelector('span[title="11"]');
+            (<any>listObj).onChipRemove({ which: 1, button: 1, target: elem.lastElementChild, preventDefault: function () { } });
+            expect(!isNullOrUndefined(itemData)).toBe(true);
+            expect(itemData).toBe(11);
+            expect(typeof itemData).toBe('number');
+            listObj.showPopup();
+            commonFun('12');
+            keyboardEventArgs.which = 1;
+            (<any>listObj).clearAll(keyboardEventArgs);
+            expect(!isNullOrUndefined(itemData)).toBe(true);
+           listObj.destroy();
+        });
+        it('Testing with string type number array as dataSource', () => {
+            let itemData: any;
+            listObj = new MultiSelect({
+                dataSource: ['1','2','3'],
+                allowCustomValue : true,
+                removing: ( e : any): void => {
+                    itemData = e.itemData;
+                }
+            });
+            listObj.appendTo(element);
+            listObj.showPopup();
+            commonFun('Vue');
+            listObj.showPopup();
+            (<any>listObj).focusAtFirstListItem();
+            keyboardEventArgs.keyCode = 8;
+            (<any>listObj).removelastSelection(keyboardEventArgs);
+            expect(!isNullOrUndefined(itemData)).toBe(true);
+            expect(itemData).toBe('Vue');
+            listObj.hidePopup(); 
+            listObj.showPopup();
+            commonFun(11);
+            let elem: HTMLElement = (<any>listObj).chipCollectionWrapper.querySelector('span[title="11"]');
+            (<any>listObj).onChipRemove({ which: 1, button: 1, target: elem.lastElementChild, preventDefault: function () { } });
+            expect(!isNullOrUndefined(itemData)).toBe(true);
+            expect(itemData).toBe('11');
+            listObj.showPopup();
+            commonFun('12');
+            keyboardEventArgs.which = 1;
+            (<any>listObj).clearAll(keyboardEventArgs);
+            expect(!isNullOrUndefined(itemData)).toBe(true);
+           listObj.destroy();
+        });
+        it('Testing with boolean values as dataSource', () => {
+            let itemData: any;
+            listObj = new MultiSelect({
+                dataSource: [true, false],
+                allowCustomValue : true,
+                removing: ( e : any): void => {
+                    itemData = e.itemData;
+                }
+            });
+            listObj.appendTo(element);
+            listObj.showPopup();
+            commonFun('Vue');
+            listObj.showPopup();
+            (<any>listObj).focusAtFirstListItem();
+            keyboardEventArgs.keyCode = 8;
+            (<any>listObj).removelastSelection(keyboardEventArgs);
+            expect(!isNullOrUndefined(itemData)).toBe(true);
+            expect(itemData).toBe('Vue');
+            listObj.hidePopup(); 
+            listObj.showPopup();
+            commonFun(11);
+            let elem: HTMLElement = (<any>listObj).chipCollectionWrapper.querySelector('span[title="11"]');
+            (<any>listObj).onChipRemove({ which: 1, button: 1, target: elem.lastElementChild, preventDefault: function () { } });
+            expect(!isNullOrUndefined(itemData)).toBe(true);
+            expect(itemData).toBe('11');
+            listObj.showPopup();
+            commonFun('12');
+            keyboardEventArgs.which = 1;
+            (<any>listObj).clearAll(keyboardEventArgs);
+            expect(!isNullOrUndefined(itemData)).toBe(true);
+           listObj.destroy();
+        });
+    });
 });

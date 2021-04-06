@@ -2954,3 +2954,75 @@ console.log('copy with content control');
         expect(() => { editor.editorModule.paste(); }).not.toThrowError();
     });
 });
+describe('Text Replace', () => {
+    let editor: DocumentEditor = undefined;
+    beforeAll(() => {
+        let ele: HTMLElement = createElement('div', { id: 'container' });
+        document.body.appendChild(ele);
+        editor = new DocumentEditor({ enableEditor: true, isReadOnly: false });
+        DocumentEditor.Inject(Editor, Selection, EditorHistory); editor.enableEditorHistory = true;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        editor.appendTo('#container');
+    });
+    afterAll((done) => {
+        editor.destroy();
+        document.body.removeChild(document.getElementById('container'));
+        editor = undefined;
+        setTimeout(function () {
+            done();
+        }, 1000);
+    });
+    it('Text replace should not delete, after empty space', () => {
+        editor.openBlank();
+        editor.editorModule.insertText('Test Test Test');
+        editor.selection.start.offset = 5;
+        editor.selection.end.offset = 9;
+        editor.editor.insertText('t');
+        let line: LineWidget = (editor.selection.start.paragraph.childWidgets[0] as LineWidget);
+        let element: TextElementBox = (line.children[0] as TextElementBox)
+        expect(element.text).toBe('Test t Test');
+    });
+});
+describe('Header Footer ', () => {
+    let editor: DocumentEditor = undefined;
+    beforeAll(() => {
+        let ele: HTMLElement = createElement('div', { id: 'container' });
+        document.body.appendChild(ele);
+        editor = new DocumentEditor({ enableEditor: true, isReadOnly: false });
+        DocumentEditor.Inject(Editor, Selection, EditorHistory); editor.enableEditorHistory = true;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        editor.appendTo('#container');
+    });
+    afterAll((done) => {
+        editor.destroy();
+        document.body.removeChild(document.getElementById('container'));
+        editor = undefined;
+        setTimeout(function () {
+            done();
+        }, 1000);
+    });
+    it('Headers and Footers after section breaks dont start Different First Page', () => {
+        editor.openBlank();
+        editor.selection.start.paragraph.bodyWidget.sectionFormat.differentFirstPage = true;
+        editor.selection.sectionFormat.differentFirstPage = true;
+        editor.selection.goToHeader();
+        editor.editor.insertText('First');
+        editor.selection.disableHeaderFooter();
+        editor.editor.insertText('Test');
+        editor.editor.insertPageBreak();
+        editor.selection.goToHeader();
+        editor.editor.insertText('Second');
+        editor.selection.disableHeaderFooter();
+        editor.editor.insertText('Test');
+        editor.editor.insertSectionBreak();
+        editor.selection.goToHeader();
+        let text: string = ((editor.selection.start.paragraph.childWidgets[0] as LineWidget).children[0] as TextElementBox).text;
+        expect(text).toBe('First');
+    });
+});

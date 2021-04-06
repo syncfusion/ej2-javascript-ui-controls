@@ -567,6 +567,7 @@ export class SfdtReader {
                                 blockWidget = cell.lastChild as BlockWidget;
                             }
                         }
+                        if (!isNullOrUndefined(blockWidget)) {
                         if (blockWidget.childWidgets.length === 0) {
                             const lineWidget: LineWidget = new LineWidget(blockWidget as ParagraphWidget);
                             blockWidget.childWidgets.push(lineWidget);
@@ -578,6 +579,7 @@ export class SfdtReader {
                             (blockWidget.lastChild as LineWidget).children.push(blockEndContentControl);
                             blockEndContentControl.line = blockWidget.lastChild as LineWidget;
                         }
+                    }
                     }
                 }
                 if (!isNullOrUndefined(contentControlProperties)) {

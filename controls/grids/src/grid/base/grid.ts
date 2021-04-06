@@ -4904,6 +4904,9 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
         if (this.isFrozenGrid() && this.widthService) {
             this.widthService.refreshFrozenScrollbar();
         }
+        if (this.allowTextWrap && this.textWrapSettings.wrapMode != 'Content') {
+            this.notify(events.refreshHandlers, {});
+        }
     }
 
     /**    

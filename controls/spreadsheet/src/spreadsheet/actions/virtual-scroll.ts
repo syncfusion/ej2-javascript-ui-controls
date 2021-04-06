@@ -99,10 +99,7 @@ export class VirtualScroll {
         this.content.style.width = `${size}px`;
         vTrack.style.height = `${height}px`;
         vTrack.style.width = `${width}px`;
-        if (this.parent.allowScrolling) {
-            let scroll: Element = this.parent.getMainContent().parentElement.nextElementSibling.firstElementChild;
-            scroll.appendChild(colVTrack.cloneNode(true));
-        }
+        if (this.parent.allowScrolling) { this.parent.getScrollElement().appendChild(colVTrack.cloneNode(true)); }
     }
 
     private initScroll(): void {

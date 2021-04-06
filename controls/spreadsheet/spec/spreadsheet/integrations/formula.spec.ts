@@ -227,5 +227,34 @@ describe('Spreadsheet formula module ->', () => {
                 });
             });
         });
+        describe('I261427 ->', () => {
+            beforeEach((done: Function) => {
+                helper.initializeSpreadsheet(
+                    { sheets: [{ rows: [{ cells: [{ value: '1' }] }] }, { rows: [{ cells: [{ value: '2' }] }] }, { rows: [{ cells: [{ formula:
+                        '=Sheet1!A1+Sheet2!A1' }] }] }], activeSheetIndex: 2 }, done);
+            });
+            afterEach(() => {
+                helper.invoke('destroy');
+            });
+            it('Cross tab formula issue', (done: Function) => {
+                const target: HTMLElement = helper.getElement().querySelectorAll('.e-sheet-tab .e-toolbar-item')[1];
+                const spreadsheet: Spreadsheet = helper.getInstance();
+                expect(spreadsheet.sheets[2].rows[0].cells[0].formula).toEqual('=Sheet1!A1+Sheet2!A1');
+                expect(spreadsheet.sheets[2].rows[0].cells[0].value).toEqual('3');
+                helper.triggerMouseAction('contextmenu', { x: target.getBoundingClientRect().left + 20, y:
+                    target.getBoundingClientRect().top + 10 }, null, target);
+                setTimeout(() => {
+                    helper.getElement('#' + helper.id + '_cmenu_delete_sheet').click();
+                    setTimeout(() => {
+                        helper.getElement('.e-footer-content .e-btn.e-primary').click();
+                        setTimeout(() => {
+                            expect(spreadsheet.sheets[1].rows[0].cells[0].formula).toEqual('=SHEET1!A1+#REF!A1');
+                            expect(spreadsheet.sheets[1].rows[0].cells[0].value).toEqual('#REF!');
+                            done();
+                        }, 10);
+                    });
+                });
+            });
+        });
     });
 });

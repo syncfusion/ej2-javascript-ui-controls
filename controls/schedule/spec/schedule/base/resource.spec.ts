@@ -793,15 +793,18 @@ describe('Schedule Resources', () => {
             expect(schObj.element.querySelector('.e-resource-tree-popup-overlay').classList.contains('e-enable')).toEqual(false);
         });
 
-        it('resource node click testing - child node', () => {
+        it('resource node click testing - child node', (done: DoneFn) => {
+            schObj.dataBound = () => {
+                expect(schObj.element.querySelector('.e-resource-level-title .e-resource-name:first-child').innerHTML).toEqual('Room 1');
+                expect(schObj.element.querySelector('.e-resource-level-title .e-resource-name:last-child').innerHTML).toEqual('Michael');
+                done();
+            };
             const menuElement: HTMLElement = schObj.element.querySelector('.e-resource-menu .e-icon-menu');
             util.triggerMouseEvent(menuElement, 'click');
             expect(schObj.element.querySelector('.e-resource-level-title .e-resource-name:first-child').innerHTML).toEqual('Room 1');
             expect(schObj.element.querySelector('.e-resource-level-title .e-resource-name:last-child').innerHTML).toEqual('Nancy');
             const nodeElement: Element = schObj.element.querySelector('.e-resource-tree .e-list-item:not(.e-has-child):not(.e-active)');
             (schObj.resourceBase as any).resourceClick({ event: new MouseEvent('mouseup'), name: 'nodeClicked', node: nodeElement });
-            expect(schObj.element.querySelector('.e-resource-level-title .e-resource-name:first-child').innerHTML).toEqual('Room 1');
-            expect(schObj.element.querySelector('.e-resource-level-title .e-resource-name:last-child').innerHTML).toEqual('Michael');
         });
 
         it('resource node click testing - parent node', () => {

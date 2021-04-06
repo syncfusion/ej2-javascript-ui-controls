@@ -3160,7 +3160,7 @@ export class Selection {
         let childWidget: Widget;
         if (container) {
             if (container instanceof BodyWidget && container.childWidgets.length === 1) {
-               return container.childWidgets[0] as Widget;
+                return container.childWidgets[0] as Widget;
             }
             for (let j: number = 0; j < container.childWidgets.length; j++) {
                 if ((container.childWidgets[j] as Widget).index === blockIndex) {
@@ -8719,6 +8719,17 @@ export class Selection {
         if (isNullOrUndefined(this.owner.sfdtExportModule)) {
             return;
         }
+
+        this.copyToClipboard(this.getHtmlContent());
+        if (isCut && this.owner.editorModule) {
+            this.owner.editorModule.handleCut(this);
+        }
+        this.documentHelper.updateFocus();
+    }
+    /**
+     * @private
+     */
+    public getHtmlContent(): string {
         let startPosition: TextPosition = this.start;
         let endPosition: TextPosition = this.end;
         if (!this.isForward) {
@@ -8731,12 +8742,7 @@ export class Selection {
         if (this.owner.editorModule) {
             this.owner.editorModule.copiedData = JSON.stringify(documentContent);
         }
-        let html: string = this.htmlWriter.writeHtml(documentContent);
-        this.copyToClipboard(html);
-        if (isCut && this.owner.editorModule) {
-            this.owner.editorModule.handleCut(this);
-        }
-        this.documentHelper.updateFocus();
+        return this.htmlWriter.writeHtml(documentContent);
     }
 
     private copyToClipboard(htmlContent: string): boolean {
@@ -9375,6 +9381,9 @@ export class Selection {
         let block: BlockWidget = widget.firstChild as BlockWidget;
         if (block instanceof TableWidget) {
             block = this.getFirstBlockInFirstCell(block);
+            if (block instanceof TableWidget) {
+                block = this.getFirstBlockInFirstCell(block);
+            }
         }
         this.selectParagraphInternal(block as ParagraphWidget, true);
     }

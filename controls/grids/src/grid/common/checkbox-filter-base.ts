@@ -563,6 +563,13 @@ export class CheckBoxFilterBase {
         let moduleName : Function = (<{ getModuleName?: Function }>this.options.dataManager.adaptor).getModuleName;
         if (this.options.type === 'boolean') {
             if (parsed !== undefined &&
+                this.getLocalizedLabel('FilterTrue').toLowerCase().indexOf((parsed as string).toLowerCase()) !== -1) {
+                parsed = 'true';
+            } else if (parsed !== undefined &&
+                this.getLocalizedLabel('FilterFalse').toLowerCase().indexOf((parsed as string).toLowerCase()) !== -1) {
+                parsed = 'false';
+            }
+            if (parsed !== undefined &&
                 this.getLocalizedLabel('FilterTrue').toLowerCase().indexOf((parsed as string).toLowerCase()) !== -1 && moduleName) {
                 parsed = (moduleName() === 'ODataAdaptor' || 'ODataV4Adaptor') ? true : 'true';
             } else if (parsed !== undefined &&
@@ -873,7 +880,7 @@ export class CheckBoxFilterBase {
         label.innerHTML = !isNullOrUndefined(value) && value.toString().length ? value :
             this.getLocalizedLabel('Blanks');
         if (typeof value === 'boolean') {
-            label.innerHTML = value === true ? this.getLocalizedLabel('True') : this.getLocalizedLabel('False');
+            label.innerHTML = value === true ? this.getLocalizedLabel('FilterTrue') : this.getLocalizedLabel('FilterFalse');
         }
         addClass([label], ['e-checkboxfiltertext']);
         if (this.options.template && data[this.options.column.field] !== this.getLocalizedLabel('SelectAll')) {
