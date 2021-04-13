@@ -634,6 +634,7 @@ export class TextSearch {
         let width: number = 0;
         let top: number = 0;
         let left: number = 0;
+        let isRTL: boolean = false;
         if (characterBounds[count]) {
             left = characterBounds[count].X;
             top = characterBounds[count].Y;
@@ -648,7 +649,7 @@ export class TextSearch {
                 // eslint-disable-next-line
                 let charBound: any = characterBounds[count];
                 if (left > charBound.X) {
-                    break;
+                    isRTL = true;
                 }
                 top = (top < charBound.Y) ? top : charBound.Y;
                 const topDifference: number = (top < charBound.Y) ? (charBound.Y - top) : (top - charBound.Y);
@@ -657,20 +658,38 @@ export class TextSearch {
             }
         }
         let isContinuation: boolean = false;
-        if (initial + queryLength !== count) {
-            isContinuation = true;
-            if (characterBounds[count - 1]) {
-                width = (characterBounds[count - 1].X - left);
-            }
-        } else {
-            isContinuation = false;
-            if (characterBounds[count]) {
-                width = (characterBounds[count].X - left);
-            } else {
+        if (!isRTL) {
+            if (initial + queryLength !== count) {
+                isContinuation = true;
                 if (characterBounds[count - 1]) {
                     width = (characterBounds[count - 1].X - left);
                 }
+            } else {
+                isContinuation = false;
+                if (characterBounds[count]) {
+                    width = (characterBounds[count].X - left);
+                } else {
+                    if (characterBounds[count - 1]) {
+                        width = (characterBounds[count - 1].X - left);
+                    }
+                }
             }
+        } else {
+            let charBound: any = characterBounds[(initial + queryLength) - 1];
+            left = charBound.X;
+            width = characterBounds[initial].X - characterBounds[(initial + queryLength) - 1].X;
+            top = (top < charBound.Y) ? top : charBound.Y;
+            const topDifference: number = (top < charBound.Y) ? (charBound.Y - top) : (top - charBound.Y);
+            height = (height > (topDifference + charBound.Height)) ? height : (topDifference + charBound.Height);
+            //some RTL character calculated width is zero and width difference value calculated from Y possition difference in the same line.
+            let widthDifference: number = characterBounds[initial - 1].Y - characterBounds[initial].Y
+            for (let j = (initial + queryLength) - 1; j >= initial; j--) {
+                charBound = characterBounds[j];
+                if (charBound.Width === 0) {
+                    widthDifference = charBound.Y - characterBounds[j - 1].Y;
+                }
+            }
+            width = width + widthDifference;
         }
         this.createSearchTextDiv(index, pageIndex, height, width, top, left, className, isContinuation, divCount);
         return count;

@@ -2395,8 +2395,6 @@ describe('EJ2-46285 - Provide support to handle custom filter dataSource in Exce
             L10n.load({
                 'de-DE': {
                     'grid': {
-                        True: 'wahr',
-                        False: 'falsch',
                         FilterTrue: 'Wahr',
                         FilterFalse: 'Falsch',
                         FilterButton: 'Filter',

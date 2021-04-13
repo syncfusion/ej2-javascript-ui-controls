@@ -723,8 +723,8 @@ export class InfiniteScroll implements IAction {
 
     private restoreInfiniteAdd(): void {
         let content: Element = this.parent.getContent().firstElementChild;
-        if (this.parent.getRowByIndex(0) && this.isNormaledit && this.parent.infiniteScrollSettings.enableCache
-            && this.isAdd && !content.querySelector('.e-addedrow')) {
+        if (this.parent.getCurrentViewRecords().length && this.parent.getRowByIndex(0) && this.isNormaledit &&
+            this.parent.infiniteScrollSettings.enableCache && this.isAdd && !content.querySelector('.e-addedrow')) {
             let isTop: boolean = content.scrollTop < this.parent.getRowHeight();
             if (isTop) {
                 this.parent.isEdit = false;

@@ -5,7 +5,7 @@ import {
     FieldElementBox, BlockWidget, HeaderFooterWidget, BlockContainer, BookmarkElementBox, ElementBox, HeaderFooters,
     EditRangeStartElementBox, EditRangeEndElementBox, TabElementBox, CommentElementBox, CommentCharacterElementBox,
     TextFormField, CheckBoxFormField, DropDownFormField, ShapeElementBox, TextFrame, ContentControl, FieldTextElementBox, FootNoteWidget,
-    FootnoteElementBox
+    FootnoteElementBox, ShapeBase
 } from '../viewer/page';
 import {
     ElementInfo, CaretHeightInfo, IndexInfo, SizeInfo,
@@ -954,10 +954,10 @@ export class Selection {
             width = 0;
         }
         const paragraph: ParagraphWidget = lineWidget.paragraph;
-        const floatingItems: ShapeElementBox[] = [];
+        const floatingItems: ShapeBase[] = [];
         if (paragraph.floatingElements.length > 0) {
             for (let k: number = 0; k < paragraph.floatingElements.length; k++) {
-                const shapeElement: ShapeElementBox = paragraph.floatingElements[k];
+                const shapeElement: ShapeBase = paragraph.floatingElements[k];
                 if (shapeElement.line === lineWidget) {
                     let startTextPos: TextPosition = this.start;
                     let endTextPos: TextPosition = this.end;
@@ -1173,7 +1173,7 @@ export class Selection {
                         canvasContext.fillRect(left, this.documentHelper.render.getScaledValue(top, 2), width, height);
                         if (selectedWidgetInfo.floatingItems && selectedWidgetInfo.floatingItems.length > 0) {
                             for (let j: number = 0; j < selectedWidgetInfo.floatingItems.length; j++) {
-                                const shape: ShapeElementBox = selectedWidgetInfo.floatingItems[i];
+                                const shape: ShapeBase = selectedWidgetInfo.floatingItems[i];
                                 width = this.documentHelper.render.getScaledValue(shape.width);
                                 left = this.documentHelper.render.getScaledValue(shape.x, 1);
                                 top = this.documentHelper.render.getScaledValue(shape.y, 2);
@@ -5236,7 +5236,7 @@ export class Selection {
             lineWidget = element.line;
         }
         top = this.getTop(lineWidget);
-        if (element instanceof ImageElementBox) {
+        if (element instanceof ImageElementBox && element.textWrappingStyle === 'Inline') {
             let format: WCharacterFormat = element.line.paragraph.characterFormat;
             const previousInline: ElementBox = this.getPreviousTextElement(inline as ElementBox);
             if (!isNullOrUndefined(previousInline)) {
@@ -6096,11 +6096,12 @@ export class Selection {
             caretPosition = new Point(left, topMargin > 0 ? top + topMargin : top);
         } else {
             if (!isNullOrUndefined(element)) {
-                if (caretPosition.x > left + element.margin.left || element instanceof ShapeElementBox) {
+                if (caretPosition.x > left + element.margin.left || (element instanceof ShapeBase && element.textWrappingStyle !== 'Inline')) {
                     for (let i: number = widget.children.indexOf(element); i < widget.children.length; i++) {
                         element = widget.children[i];
-                        if (element instanceof ShapeElementBox) {
-                            if (this.documentHelper.isInShapeBorder(element, caretPosition)) {
+                        if (element instanceof ShapeBase && element.textWrappingStyle !== 'Inline') {
+                            if (this.documentHelper.isInShapeBorder(element, caretPosition) &&
+                                !this.documentHelper.isSelectionChangedOnMouseMoved) {
                                 left = element.x;
                                 top = element.y;
                                 break;
@@ -6168,7 +6169,8 @@ export class Selection {
                                         left += prevWidth;
                                     }
                                     charIndex = i - 1;
-                                    if (i === 1 && element !== widget.children[0] && !(widget.children[0] instanceof ShapeElementBox)) {
+                                    if (i === 1 && element !== widget.children[0] && !(widget.children[0] instanceof ShapeBase &&
+                                        (widget.children[0] as ShapeBase).textWrappingStyle !== 'Inline')) {
                                         let curIndex: number = widget.children.indexOf(element);
                                         if (!(widget.children[curIndex - 1] instanceof ListTextElementBox) && !isRtlText) {
                                             element = widget.children[curIndex - 1];
@@ -6268,7 +6270,7 @@ export class Selection {
         let bodyWidget: BlockContainer;
         let isShapeSelected: boolean = false;
         let isInShapeBorder: boolean = false;
-        let floatElement: ShapeElementBox;
+        let floatElement: ShapeBase;
         if (!isNullOrUndefined(widget)) {
             bodyWidget = widget.paragraph.bodyWidget;
             isShapeSelected = false;
@@ -6442,7 +6444,7 @@ export class Selection {
         }
         for (let i: number = 0; i < widget.children.length; i++) {
             const elementBox: ElementBox = widget.children[i];
-            if (elementBox instanceof ShapeElementBox) {
+            if (elementBox instanceof ShapeBase && elementBox.textWrappingStyle !== 'Inline') {
                 continue;
             }
             width += elementBox.margin.left + elementBox.width;
@@ -6494,7 +6496,7 @@ export class Selection {
         }
         for (let i: number = 0; i < count; i++) {
             let widgetInternal: ElementBox = widget.children[i];
-            if (widgetInternal instanceof ShapeElementBox) {
+            if (widgetInternal instanceof ShapeBase && widgetInternal.textWrappingStyle !== 'Inline') {
                 continue;
             }
             if (i === 1 && widget.children[i] instanceof ListTextElementBox) {
@@ -6547,7 +6549,7 @@ export class Selection {
             this.documentHelper.moveCaretPosition = 0;
         } else if (index > 0) {
             if (!isNullOrUndefined(elementBox) && !(elementBox instanceof ListTextElementBox)) {
-                if (!(elementBox instanceof ShapeElementBox)) {
+                if (!(elementBox instanceof ShapeBase && elementBox.textWrappingStyle !== 'Inline')) {
                     left += elementBox.width;
                 }
                 if (index === 2) {

@@ -1237,9 +1237,13 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
         const width: number = this.mapsArea.border.width;
         const background: string = this.mapsArea.background;
         if (width > 0 || (background || this.themeStyle.areaBackgroundColor)) {
+            let mapBorder: BorderModel = {
+                opacity: isNullOrUndefined(this.mapsArea.border.opacity) ? 1 : this.mapsArea.border.opacity, 
+                color: this.mapsArea.border.color, width: this.mapsArea.border.width
+            };
             const rect: RectOption = new RectOption(
                 this.element.id + '_MapAreaBorder', background || this.themeStyle.areaBackgroundColor,
-                this.mapsArea.border, 1, this.mapAreaRect
+                mapBorder, 1, this.mapAreaRect
             );
             this.svgObject.appendChild(this.renderer.drawRectangle(rect) as SVGRectElement);
         }
@@ -1435,8 +1439,12 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
         const width: number = this.border.width;
         const borderElement: Element = this.svgObject.querySelector('#' + this.element.id + '_MapBorder');
         if ((width > 0 || (this.background || this.themeStyle.backgroundColor)) && isNullOrUndefined(borderElement)) {
+            let border: BorderModel = {
+                opacity: isNullOrUndefined(this.border.opacity) ? 1 : this.border.opacity,
+                color: this.border.color, width: this.border.width
+            };
             const borderRect: RectOption = new RectOption(
-                this.element.id + '_MapBorder', this.background || this.themeStyle.backgroundColor, this.border, 1,
+                this.element.id + '_MapBorder', this.background || this.themeStyle.backgroundColor, border, 1,
                 new Rect(width / 2, width / 2, this.availableSize.width - width, this.availableSize.height - width));
             this.svgObject.appendChild(this.renderer.drawRectangle(borderRect) as SVGRectElement);
         } else {

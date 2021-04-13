@@ -163,7 +163,7 @@ export class DataLabel {
             }
         }
         text = (!isNullOrUndefined(datasrcObj)) ? !isNullOrUndefined(datasrcObj[labelpath]) ?
-            datasrcObj[layer.shapeDataPath].toString() : datasrcObj[layer.shapeDataPath] : shapeData['properties'][labelpath];
+            datasrcObj[labelpath].toString() : datasrcObj[layer.shapeDataPath] : shapeData['properties'][labelpath];
         if ((Object.prototype.toString.call(layer.shapePropertyPath) === '[object Array]') &&
             (isNullOrUndefined(text) && layer.dataSource['length'] === 0)) {
             for (let l: number = 0; l < layer.shapePropertyPath.length; l++) {
@@ -218,7 +218,8 @@ export class DataLabel {
                 }
             }
             let eventargs: ILabelRenderingEventArgs = {
-                name: dataLabelRendering, maps: this.maps, cancel: false, border: dataLabel.border, datalabel: dataLabel,
+                name: dataLabelRendering, maps: this.maps, cancel: false, border: { color: dataLabel.border.color,
+                width: dataLabel.border.width, opacity: dataLabel.border.opacity }, datalabel: dataLabel,
                 fill: dataLabel.fill, template: dataLabel.template, text: text
             };
             if (this.maps.isBlazor) {
@@ -356,6 +357,7 @@ export class DataLabel {
                                 x = ((location['x'] + transPoint['x']) * scale) - textSize['width'] / 2;
                                 y = ((location['y'] + transPoint['y'] ) * scale) - textSize['height'] / 2;
                             }
+                            border.opacity = isNullOrUndefined(border.opacity) ? opacity : border.opacity;
                             const rectOptions: RectOption = new RectOption(
                                 this.maps.element.id + '_LayerIndex_' + layerIndex + '_shapeIndex_' + index + '_rectIndex_' + index,
                                 fill, border, opacity, new Rect(x, y, textSize['width'], textSize['height']), rx, ry

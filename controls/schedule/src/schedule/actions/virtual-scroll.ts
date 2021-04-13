@@ -17,6 +17,7 @@ export class VirtualScroll {
     private averageRowHeight: number = 0;
     private timeValue: number;
     private isScrollHeightNull: boolean = true;
+    private focusedEle: Element;
 
     constructor(parent: Schedule) {
         this.parent = parent;
@@ -143,6 +144,8 @@ export class VirtualScroll {
         }
         if (!isNullOrUndefined(resCollection) && resCollection.length > 0) {
             this.parent.showSpinner();
+            let selectedEle: Element[] = this.parent.getSelectedElements();
+            this.focusedEle = selectedEle[selectedEle.length - 1] || this.focusedEle;
             this.updateContent(resWrap, conWrap, eventWrap, resCollection);
             this.setTranslate(resWrap, conWrap, eventWrap, timeIndicator);
             if (this.parent.dragAndDropModule && this.parent.dragAndDropModule.actionObj.action === 'drag') {
@@ -221,6 +224,19 @@ export class VirtualScroll {
         setStyleAttribute(eventWrap, { transform: `translateY(${this.translateY}px)` });
         if (!isNullOrUndefined(timeIndicator)) {
             setStyleAttribute(timeIndicator, { transform: `translateY(${this.translateY}px)` });
+        }
+    }
+    
+    public updateFocusedWorkCell(): void {
+        if (this.focusedEle) {
+            let date: number = parseInt(this.focusedEle.getAttribute('data-date'), 10);
+            let groupIndex: number = parseInt(this.focusedEle.getAttribute('data-group-index'), 10);
+            let ele: HTMLTableCellElement =
+                this.parent.element.querySelector(`.${cls.WORK_CELLS_CLASS}[data-date="${date}"][data-group-index="${groupIndex}"]`);
+            if (ele) {
+                this.parent.addSelectedClass([ele], ele, true);
+            }
+            this.focusedEle = null;
         }
     }
 

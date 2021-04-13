@@ -261,8 +261,15 @@ export class ImageResizer {
         this.imageResizerDiv.style.height = (elementBox.height) + 'px';
         this.currentImageElementBox = elementBox;
         const lineWidget: LineWidget = elementBox.line;
-        let top: number = this.documentHelper.selection.getTop(lineWidget) + elementBox.margin.top;
-        let left: number = this.documentHelper.selection.getLeftInternal(lineWidget, elementBox, 0);
+        let top: number;
+        let left: number;
+        if (elementBox instanceof ImageElementBox && elementBox.textWrappingStyle !== 'Inline') {
+            top = elementBox.y;
+            left = elementBox.x;
+        } else {
+            top = this.documentHelper.selection.getTop(lineWidget) + elementBox.margin.top;
+            left = this.documentHelper.selection.getLeftInternal(lineWidget, elementBox, 0);
+        }
         const page: Page = this.documentHelper.selection.getPage(lineWidget.paragraph);
         this.currentPage = page;
         let x: number = 0;

@@ -290,7 +290,7 @@ export class WordExport {
     private cRelationShipId: number = 0;
     private eRelationShipId: number = 0;
     private efRelationShipId: number = 0;
-    private mDocPrID: number = 0;
+    private mDocPrID: number = 1;
     private chartCount: number = 0;
     private seriesCount: number = 0;
     private chartStringCount: number = 0;
@@ -599,7 +599,7 @@ export class WordExport {
         this.eRelationShipId = 0;
         this.cRelationShipId = 0;
         this.efRelationShipId = 0;
-        this.mDocPrID = 0;
+        this.mDocPrID = 1;
         this.chartCount = 0;
         this.mDifferentFirstPage = false;
         if (this.mHeaderFooterColl) {
@@ -893,21 +893,21 @@ export class WordExport {
     private getFootNoteNumberFormat(numberFormat: string): string {
         let patternType: string;
         switch (numberFormat) {
-        case 'UpperCaseRoman':
-            patternType = 'upperRoman';
-            break;
-        case 'LowerCaseRoman':
-            patternType = 'lowerRoman';
-            break;
-        case 'UpperCaseLetter':
-            patternType = 'upperLetter';
-            break;
-        case 'LowerCaseLetter':
-            patternType = 'lowerLetter';
-            break;
-        default:
-            patternType = 'decimal';
-            break;
+            case 'UpperCaseRoman':
+                patternType = 'upperRoman';
+                break;
+            case 'LowerCaseRoman':
+                patternType = 'lowerRoman';
+                break;
+            case 'UpperCaseLetter':
+                patternType = 'upperLetter';
+                break;
+            case 'LowerCaseLetter':
+                patternType = 'lowerLetter';
+                break;
+            default:
+                patternType = 'decimal';
+                break;
         }
         return patternType;
     }
@@ -915,12 +915,12 @@ export class WordExport {
 
     private getFootNoteNumberRestart(numberRestart: string): string {
         switch (numberRestart) {
-        case 'RestartForEachSection ':
-            return 'eachSect';
-        case 'RestartForEachPage':
-            return 'eachPage';
-        default:
-            return 'continuous';
+            case 'RestartForEachSection ':
+                return 'eachSect';
+            case 'RestartForEachPage':
+                return 'eachPage';
+            default:
+                return 'continuous';
         }
     }
 
@@ -1685,7 +1685,7 @@ export class WordExport {
         }
     }
     private serializeEndnotes(): any {
-        if (isNullOrUndefined(this.document.footnotes)) {
+        if (isNullOrUndefined(this.document.endnotes)) {
             return;
         } else {
             const writer: XmlWriter = new XmlWriter();
@@ -1831,60 +1831,83 @@ export class WordExport {
         if (draw.hasOwnProperty('chartType')) {
             this.serializeInlineCharts(writer, draw);
         } else {
-            this.serializeInlinePictureAndShape(writer, draw);
+            if (draw.textWrappingStyle === 'Inline') {
+                this.serializeInlinePictureAndShape(writer, draw);
+            } else {
+                this.serializeWrappingPictureAndShape(writer, draw);
+            }
         }
         writer.writeEndElement();
     }
-    // Serialize the inline picture.
-    private serializeInlinePictureAndShape(writer: XmlWriter, draw: any): void {
-        if (!isNullOrUndefined(draw.imageString)) {
-            writer.writeStartElement(undefined, 'inline', this.wpNamespace);
+
+    // Serialize the Other Wrapping picture & Shape.
+    private serializeWrappingPictureAndShape(writer: XmlWriter, picture: any): void {
+        writer.writeStartElement('wp', 'anchor', this.wpNamespace);
+        this.serializePictureAndShapeDistance(writer, picture);
+        writer.writeAttributeString(undefined, 'simplePos', undefined, '0');
+        writer.writeAttributeString(undefined, 'relativeHeight', undefined, picture.zOrderPosition ? picture.zOrderPosition.toString() : '0');
+        let behindText: boolean = (picture.textWrappingStyle && picture.textWrappingStyle === 'Behind');
+        writer.writeAttributeString(undefined, 'behindDoc', undefined, behindText ? '1' : '0');
+        const lockAnchor: string = (picture.LockAnchor) ? '1' : '0';
+        writer.writeAttributeString(undefined, 'locked', undefined, lockAnchor);
+        const layoutcell: string = (picture.layoutInCell) ? '1' : '0';
+        writer.writeAttributeString(undefined, 'layoutInCell', undefined, layoutcell);
+        const allowOverlap: string = (picture.allowOverlap) ? '1' : '0';
+        writer.writeAttributeString(undefined, 'allowOverlap', undefined, allowOverlap);
+        writer.writeStartElement('wp', 'simplePos', this.wpNamespace);
+        writer.writeAttributeString(undefined, 'x', undefined, '0');
+        writer.writeAttributeString(undefined, 'y', undefined, '0');
+        writer.writeEndElement();
+        writer.writeStartElement('wp', 'positionH', this.wpNamespace);
+        writer.writeAttributeString(undefined, 'relativeFrom', undefined, picture.horizontalOrigin.toString().toLowerCase());
+        if (picture.horizontalAlignment === 'None') {
+            writer.writeStartElement('wp', 'posOffset', this.wpNamespace);
+            const horPos: number = Math.round(picture.horizontalPosition * this.emusPerPoint);
+            writer.writeString(horPos.toString());
+            writer.writeEndElement(); //end of posOffset
         } else {
-            writer.writeStartElement('wp', 'anchor', this.wpNamespace);
-            this.serializeInlinePictureAndShapeDistance(writer, draw);
-            writer.writeAttributeString(undefined, 'simplePos', undefined, '0');
-            writer.writeAttributeString(undefined, 'relativeHeight', undefined, draw.zOrderPosition.toString());
-            //TextWrappingStyle.InFrontOfText
-            writer.writeAttributeString(undefined, 'behindDoc', undefined, '0');
-            const lockAnchor: string = (draw.LockAnchor) ? '1' : '0';
-            writer.writeAttributeString(undefined, 'locked', undefined, lockAnchor);
-            const layoutcell: string = (draw.layoutInCell) ? '1' : '0';
-            writer.writeAttributeString(undefined, 'layoutInCell', undefined, layoutcell);
-            const allowOverlap: string = (draw.allowOverlap) ? '1' : '0';
-            writer.writeAttributeString(undefined, 'allowOverlap', undefined, allowOverlap);
-            writer.writeStartElement('wp', 'simplePos', this.wpNamespace);
-            writer.writeAttributeString(undefined, 'x', undefined, '0');
-            writer.writeAttributeString(undefined, 'y', undefined, '0');
-            writer.writeEndElement();
-            writer.writeStartElement('wp', 'positionH', this.wpNamespace);
-            writer.writeAttributeString(undefined, 'relativeFrom', undefined, draw.horizontalOrigin.toString().toLowerCase());
-            if (draw.horizontalAlignment === 'None') {
-                writer.writeStartElement('wp', 'posOffset', this.wpNamespace);
-                const horPos: number = Math.round(draw.horizontalPosition * this.emusPerPoint);
-                writer.writeString(horPos.toString());
-                writer.writeEndElement(); //end of posOffset
-            } else {
-                writer.writeStartElement('wp', 'align', this.wpNamespace);
-                const horAlig: string = draw.horizontalAlignment.toString().toLowerCase();
-                writer.writeString(horAlig);
-                writer.writeEndElement(); //end of align
-            }
-            writer.writeEndElement(); //end of postionH
-            writer.writeStartElement('wp', 'positionV', this.wpNamespace);
-            writer.writeAttributeString(undefined, 'relativeFrom', undefined, draw.verticalOrigin.toString().toLowerCase());
-            if (draw.verticalAlignment === 'None') {
-                writer.writeStartElement('wp', 'posOffset', this.wpNamespace);
-                const vertPos: number = Math.round(draw.verticalPosition * this.emusPerPoint);
-                writer.writeString(vertPos.toString());
-                writer.writeEndElement(); // end of posOffset
-            } else {
-                writer.writeStartElement('wp', 'align', this.wpNamespace);
-                const verAlig: string = draw.verticalAlignment.toString().toLowerCase();
-                writer.writeString(verAlig);
-                writer.writeEndElement(); //end of align
-            }
-            writer.writeEndElement(); //end of postionV
+            writer.writeStartElement('wp', 'align', this.wpNamespace);
+            const horAlig: string = picture.horizontalAlignment.toString().toLowerCase();
+            writer.writeString(horAlig);
+            writer.writeEndElement(); //end of align
         }
+        writer.writeEndElement(); //end of postionH
+        writer.writeStartElement('wp', 'positionV', this.wpNamespace);
+        writer.writeAttributeString(undefined, 'relativeFrom', undefined, picture.verticalOrigin.toString().toLowerCase());
+        if (picture.verticalAlignment === 'None') {
+            writer.writeStartElement('wp', 'posOffset', this.wpNamespace);
+            const vertPos: number = Math.round(picture.verticalPosition * this.emusPerPoint);
+            writer.writeString(vertPos.toString());
+            writer.writeEndElement(); // end of posOffset
+        } else {
+            writer.writeStartElement('wp', 'align', this.wpNamespace);
+            const verAlig: string = picture.verticalAlignment.toString().toLowerCase();
+            writer.writeString(verAlig);
+            writer.writeEndElement(); //end of align
+        }
+        writer.writeEndElement(); //end of postionV
+
+        writer.writeStartElement(undefined, 'extent', this.wpNamespace);
+        const cx: number = Math.round(picture.width * this.emusPerPoint);
+        writer.writeAttributeString(undefined, 'cx', undefined, cx.toString());
+        const cy: number = Math.round(picture.height * this.emusPerPoint);
+        writer.writeAttributeString(undefined, 'cy', undefined, cy.toString());
+        writer.writeEndElement();
+
+        if (!isNullOrUndefined(picture.imageString)) {
+            // this.serializePicProperties(writer, draw);
+            this.serializeShapeWrapStyle(writer, picture);
+            this.serializeDrawingGraphics(writer, picture);
+        } else {
+            this.serializeShapeDrawingGraphics(writer, picture);
+        }
+
+        writer.writeEndElement(); // end of anchor
+    }
+
+    // Serialize the inline picture & Shape.
+    private serializeInlinePictureAndShape(writer: XmlWriter, draw: any): void {
+        writer.writeStartElement(undefined, 'inline', this.wpNamespace);
 
         writer.writeStartElement(undefined, 'extent', this.wpNamespace);
         const cx: number = Math.round(draw.width * this.emusPerPoint);
@@ -1904,14 +1927,16 @@ export class WordExport {
         //     m_writer.WriteEndElement();
         // }
         //this.serializePicProperties(writer, image);
-        if (draw.imageString) {
+
+        if (!isNullOrUndefined(draw.imageString)) {
+            this.serializeShapeWrapStyle(writer, draw);
             this.serializeDrawingGraphics(writer, draw);
         } else {
             this.serializeShapeDrawingGraphics(writer, draw);
         }
         writer.writeEndElement();
     }
-    private serializeInlinePictureAndShapeDistance(writer: XmlWriter, draw: any): void {
+    private serializePictureAndShapeDistance(writer: XmlWriter, draw: any): void {
         let top: string = draw.distanceTop ? Math.round(draw.distanceTop * this.emusPerPoint).toString() : '0';
         writer.writeAttributeString(undefined, 'distT', undefined, top);
         let bottom: string = draw.distanceBottom ? Math.round(draw.distanceBottom * this.emusPerPoint).toString() : '0';
@@ -3381,7 +3406,7 @@ export class WordExport {
         let id: number = shape.shapeId;
         this.serializeShapeWrapStyle(writer, shape);
         writer.writeStartElement('wp', 'docPr', this.wpNamespace);
-        writer.writeAttributeString(undefined, 'id', undefined, id.toString());
+        writer.writeAttributeString(undefined, 'id', undefined,  (this.mDocPrID++).toString());
         writer.writeAttributeString(undefined, 'name', undefined, shape.name);
         writer.writeAttributeString(undefined, 'title', undefined, shape.title);
         writer.writeEndElement();
@@ -3481,14 +3506,14 @@ export class WordExport {
     }
     private serializeShapeWrapStyle(writer: XmlWriter, shape: any): void {
         let textWrappingStyle: string = 'wrapNone';
-        if (shape.textWrappingStyle && shape.textWrappingStyle !== 'InFrontOfText') {
+        if (shape.textWrappingStyle && shape.textWrappingStyle !== 'InFrontOfText' && shape.textWrappingStyle !== 'Behind') {
             textWrappingStyle = 'wrap' + shape.textWrappingStyle;
             if (shape.textWrappingStyle === 'Tight') {
                 textWrappingStyle = 'wrap' + 'Square';
             }
         }
         writer.writeStartElement('wp', textWrappingStyle, this.wpNamespace);
-        if (shape.textWrappingStyle && shape.textWrappingStyle !== 'InFrontOfText' &&
+        if (shape.textWrappingStyle && shape.textWrappingStyle !== 'InFrontOfText' && shape.textWrappingStyle !== 'Behind' && 
             shape.textWrappingType) {
             let wrapType: string = shape.textWrappingType === 'Both' ? 'bothSides' : (shape.textWrappingType as string).toLowerCase();
             writer.writeAttributeString(undefined, 'wrapText', undefined, wrapType);
@@ -3506,9 +3531,10 @@ export class WordExport {
         // Processing picture
         writer.writeStartElement('wp', 'docPr', this.wpNamespace);
         writer.writeAttributeString(undefined, 'id', undefined, (this.mDocPrID++).toString());
-        // if (!isNullOrUndefined(picture.AlternativeText))
-        //     m_writer.WriteAttributeString('descr', picture.AlternativeText);
-        writer.writeAttributeString(undefined, 'name', undefined, '1'.toString());
+        if (!isNullOrUndefined(picture.alternativeText)) {
+            writer.writeAttributeString(undefined, 'descr', undefined, picture.alternativeText);
+        }
+        writer.writeAttributeString(undefined, 'name', undefined, !isNullOrUndefined(picture.name) ? picture.name : '');
         // if (!string.IsNullOrEmpty(picture.Title))
         //     m_writer.WriteAttributeString('title', picture.Title);
         // else
@@ -3689,15 +3715,148 @@ export class WordExport {
         let owner: any = this.table;
         this.table = table;
         writer.writeStartElement(undefined, 'tbl', this.wNamespace);
-
+    
         let tableFormat: any = table.rows[0].rowFormat;
         this.serializeTableFormat(writer, tableFormat, table);
-
         this.serializeTableGrid(writer, table);
-        this.serializeTableRows(writer, table.rows);
-
+    
+        let mVerticalMerge: Dictionary<number, number> = new Dictionary<number, number>();
+        let mHorizontalMerge: Dictionary<number, number> = new Dictionary<number, number>();
+        let cellFormats: Dictionary<number, any> = new Dictionary<number, any>();
+        let rows: any = table.rows;
+        if (rows.length > 0) {
+            for (let rowIndex: number = 0; rowIndex < rows.length; rowIndex++) {
+                let row: any = rows[rowIndex];
+                if (row.cells.length > 0) {
+                    if (row.hasOwnProperty('contentControlProperties')) {
+                        this.serializeContentControl(writer, row.contentControlProperties, row);
+                        continue;
+                    }
+    
+                    let owner: any = this.row;
+                    this.row = row;
+                    writer.writeStartElement(undefined, 'tr', this.wNamespace);
+                    this.serializeRowFormat(writer, row);
+    
+                    let cells: any = row.cells;
+                    let cellLength: number = cells.length;
+                    let prevColIndex: number = 0;
+                    for (let i: number = 0; i < cellLength; i++) {
+                        let cell: any = cells[i];
+                        let columnIndex: number = cell.columnIndex;
+                        if (cell.hasOwnProperty('contentControlProperties')) {
+                            this.serializeContentControl(writer, cell.contentControlProperties, cell);
+                            continue;
+                        }
+                        let cellFormat: any = cell.cellFormat;
+                        if ((columnIndex - prevColIndex) > 1) {
+                            let checkIndex: number = i === 0 ? 0 : (prevColIndex + 1);
+                            for (let k: number = checkIndex; k < columnIndex; k++) {
+                                if (mVerticalMerge.containsKey(k)) {
+                                    this.serializeTableCell(writer, cell, cellFormats.get(k), false);
+                                    mVerticalMerge.set(k, mVerticalMerge.get(k) - 1);
+                                    if (mVerticalMerge.get(k) === 1) {
+                                        mVerticalMerge.remove(k);
+                                        cellFormats.remove(k);
+                                        if (mHorizontalMerge.containsKey(k)) {
+                                            mHorizontalMerge.remove(k);
+                                        }
+                                    }
+                                    if (mHorizontalMerge.containsKey(k)) {
+                                        prevColIndex += mHorizontalMerge.get(k) - 1;
+                                        k += mHorizontalMerge.get(k);
+                                    }
+                                }
+                            }
+                        }
+                        prevColIndex = columnIndex;
+                        if (cellFormat.rowSpan > 1) {
+                            mVerticalMerge.add(columnIndex, cellFormat.rowSpan);
+                            cellFormats.add(columnIndex, cellFormat);
+                        }
+                        this.serializeTableCell(writer, cell, cellFormat, true);
+    
+                        if (cellFormat.columnSpan > 1 && cellFormat.rowSpan > 1) {
+                            mHorizontalMerge.add(columnIndex, cellFormat.columnSpan);
+                        }
+    
+                        for (let j: number = columnIndex + 1; ; j++) {
+                            if (mVerticalMerge.containsKey(j)) {
+                                this.serializeTableCell(writer, cell, cellFormats.get(j), false);
+                                mVerticalMerge.set(j, mVerticalMerge.get(j) - 1);
+                                prevColIndex++;
+                                if (mVerticalMerge.get(j) === 1) {
+                                    mVerticalMerge.remove(j);
+                                    cellFormats.remove(j);
+                                    if (mHorizontalMerge.containsKey(j)) {
+                                        mHorizontalMerge.remove(j);
+                                    }
+                                }
+                                if (mHorizontalMerge.containsKey(j)) {
+                                    prevColIndex += mHorizontalMerge.get(j) - 1;
+                                    j += mHorizontalMerge.get(j);
+                                }
+                            } else if (!(i === (cellLength - 1) && j < table.columnCount)) {
+                                break;
+                            }
+                        }
+                    }
+                    writer.writeEndElement(); //end od table row 'tr'
+                    this.row = owner;
+                }
+            }
+        }
         writer.writeEndElement();
         this.table = owner;
+    }
+    
+    private serializeTableCell(xmlWriter: XmlWriter, cell: any, cellFormat: any, mergeStart?: boolean): void {
+        let owner: any = this.blockOwner;
+        this.blockOwner = cell;
+        xmlWriter.writeStartElement(undefined, 'tc', this.wNamespace);
+        xmlWriter.writeStartElement(undefined, 'tcPr', this.wNamespace);
+        this.serializeCellWidth(xmlWriter, cellFormat);
+        this.serializeCellMargins(xmlWriter, cellFormat);
+        xmlWriter.writeStartElement(undefined, 'tcBorders', this.wNamespace);
+        this.serializeBorders(xmlWriter, cellFormat.borders, 8);
+        xmlWriter.writeEndElement(); // end of tcBorders
+        this.serializeShading(xmlWriter, cell.cellFormat.shading);
+        this.serializeTableCellDirection(xmlWriter, cellFormat);
+        this.serializeCellVerticalAlign(xmlWriter, cellFormat.verticalAlignment);
+    
+        if (cellFormat.columnSpan > 1) {
+            let num: number = cellFormat.columnSpan;
+            xmlWriter.writeStartElement(undefined, 'gridSpan', this.wNamespace);
+            xmlWriter.writeAttributeString('w', 'val', this.wNamespace, num.toString());
+            xmlWriter.writeEndElement();
+        }
+        if (cellFormat.rowSpan > 1) {
+            xmlWriter.writeStartElement(undefined, 'vMerge', this.wNamespace);
+            xmlWriter.writeAttributeString('w', 'val', this.wNamespace, mergeStart ? 'restart' : 'continue');
+            xmlWriter.writeEndElement(); // end of vMerge
+        }
+    
+        xmlWriter.writeEndElement(); // end of tcPr
+        if (cell && cell.blocks.length > 0) {
+            let itemIndex: number = 0;
+            let item: any = undefined;
+            while (itemIndex < cell.blocks.length) {
+                item = cell.blocks[itemIndex];
+                this.serializeBodyItem(xmlWriter, item, false);
+                itemIndex += 1;
+            }
+        } else {
+            xmlWriter.writeStartElement(undefined, 'p', this.wNamespace);
+            xmlWriter.writeStartElement(undefined, 'pPr', this.wNamespace);
+            xmlWriter.writeStartElement(undefined, 'pStyle', this.wNamespace);
+            xmlWriter.writeAttributeString('w', 'val', this.wNamespace, 'Normal');
+            xmlWriter.writeEndElement(); //end of pStyle
+    
+            xmlWriter.writeEndElement(); //end of pPr
+            xmlWriter.writeEndElement(); //end of P
+        }
+        xmlWriter.writeEndElement(); //end of table cell 'tc' 
+        this.blockOwner = owner;
     }
     // Serialize the table grid
     private serializeTableGrid(writer: XmlWriter, table: any): void {
@@ -3915,7 +4074,7 @@ export class WordExport {
         //w:cnfStyle -   Table Cell Conditional Formatting
         // SerializeCnfStyleElement(cell);
         //w:tcW -    Preferred Table Cell Width
-        this.serializeCellWidth(writer, cell);
+        this.serializeCellWidth(writer, cellFormat);
         // serialize cell margins
         this.serializeCellMargins(writer, cellFormat);
         if (ensureMerge) {
@@ -3990,8 +4149,7 @@ export class WordExport {
         return mVerticalMerge;
     }
     // Serialize the cell width
-    private serializeCellWidth(writer: XmlWriter, cell: any): void {
-        let cf: any = cell.cellFormat;
+    private serializeCellWidth(writer: XmlWriter, cf: any): void {
         writer.writeStartElement(undefined, 'tcW', this.wNamespace);
         if (cf.preferredWidthType === 'Percent') {
             writer.writeAttributeString(undefined, 'type', this.wNamespace, 'pct');
@@ -4061,7 +4219,7 @@ export class WordExport {
         writer.writeEndElement(); //end tc
         writer.writeStartElement(undefined, 'tc', this.wNamespace);
         writer.writeStartElement(undefined, 'tcPr', this.wNamespace);
-        this.serializeCellWidth(writer, cell);
+        this.serializeCellWidth(writer, cell.cellFormat);
         mVerticalMerge = this.checkMergeCell(collKey, mVerticalMerge);
         return mVerticalMerge;
     }
@@ -5853,8 +6011,10 @@ export class WordExport {
         this.serializeRelationShip(writer, this.getNextRelationShipID(), this.stylesRelType, 'styles.xml');
         this.serializeRelationShip(writer, this.getNextRelationShipID(), this.settingsRelType, 'settings.xml');
         if (this.document.endnotes) {
-            this.serializeRelationShip(writer, this.getNextRelationShipID(), this.footnoteRelType, 'footnotes.xml');
             this.serializeRelationShip(writer, this.getNextRelationShipID(), this.endnoteRelType, 'endnotes.xml');
+        }
+        if(this.document.footnotes) {
+            this.serializeRelationShip(writer, this.getNextRelationShipID(), this.footnoteRelType, 'footnotes.xml');
         }
         if (this.mComments.length > 0) {
             if (!(this.mComments.length === 1 && this.mComments[0].text === '')) {

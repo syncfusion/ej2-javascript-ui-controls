@@ -286,9 +286,11 @@ export class Edit {
                             const pictureElements: HTMLCollection = document.getElementsByClassName('e-ss-overlay-active');
                             const pictureLen: number = pictureElements.length;
                             if (pictureLen > 0) {
-                                this.parent.notify(deleteImage, {
-                                    id: pictureElements[0].id, sheetIdx: this.parent.activeSheetIndex + 1
-                                });
+                                if (keyCode === this.keyCodes.DELETE) {
+                                    this.parent.notify(deleteImage, {
+                                        id: pictureElements[0].id, sheetIdx: this.parent.activeSheetIndex + 1
+                                    });
+                                }
                             } else { this.startEdit(null, null, true, true); }
                         }
                         if (keyCode === this.keyCodes.DELETE) {

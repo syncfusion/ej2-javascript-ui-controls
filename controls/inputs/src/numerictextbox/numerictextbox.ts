@@ -462,7 +462,6 @@ export class NumericTextBox extends Component<HTMLInputElement> implements INoti
             if (!isNullOrUndefined(this.element.getAttribute(prop))) {
                 switch (prop) {
                 case 'disabled':
-                    // eslint-disable-next-line @typescript-eslint/dot-notation
                     if (( isNullOrUndefined(this.numericOptions) || (this.numericOptions['enabled'] === undefined)) || isDynamic) {
                         const enabled: boolean = this.element.getAttribute(prop) === 'disabled' || this.element.getAttribute(prop) === ''
                                 || this.element.getAttribute(prop) === 'true' ? false : true;
@@ -470,7 +469,6 @@ export class NumericTextBox extends Component<HTMLInputElement> implements INoti
                     }
                     break;
                 case 'readonly':
-                    // eslint-disable-next-line @typescript-eslint/dot-notation
                     if (( isNullOrUndefined(this.numericOptions) || (this.numericOptions['readonly'] === undefined)) || isDynamic) {
                         const readonly: boolean = this.element.getAttribute(prop) === 'readonly' || this.element.getAttribute(prop) === ''
                                 || this.element.getAttribute(prop) === 'true' ? true : false;
@@ -478,20 +476,17 @@ export class NumericTextBox extends Component<HTMLInputElement> implements INoti
                     }
                     break;
                 case 'placeholder':
-                    // eslint-disable-next-line @typescript-eslint/dot-notation
                     if (( isNullOrUndefined(this.numericOptions) || (this.numericOptions['placeholder'] === undefined)) || isDynamic) {
                         this.setProperties({placeholder: this.element.placeholder}, !isDynamic);
                     }
                     break;
                 case 'value':
-                    // eslint-disable-next-line @typescript-eslint/dot-notation
                     if (( isNullOrUndefined(this.numericOptions) || (this.numericOptions['value'] === undefined)) || isDynamic){
                         const setNumber: number = this.instance.getNumberParser({ format: 'n' })(this.element.getAttribute(prop));
                         this.setProperties(setValue(prop, setNumber, {}), !isDynamic);
                     }
                     break;
                 case 'min':
-                    // eslint-disable-next-line @typescript-eslint/dot-notation
                     if (( isNullOrUndefined(this.numericOptions) || (this.numericOptions['min'] === undefined)) || isDynamic) {
                         const minValue: number = this.instance.getNumberParser({ format: 'n' })(this.element.getAttribute(prop));
                         if (minValue !== null && !isNaN(minValue)) {
@@ -500,7 +495,6 @@ export class NumericTextBox extends Component<HTMLInputElement> implements INoti
                     }
                     break;
                 case 'max':
-                    // eslint-disable-next-line @typescript-eslint/dot-notation
                     if (( isNullOrUndefined(this.numericOptions) || (this.numericOptions['max'] === undefined)) || isDynamic) {
                         const maxValue: number = this.instance.getNumberParser({ format: 'n' })(this.element.getAttribute(prop));
                         if (maxValue !== null && !isNaN(maxValue)) {
@@ -509,7 +503,6 @@ export class NumericTextBox extends Component<HTMLInputElement> implements INoti
                     }
                     break;
                 case 'step':
-                    // eslint-disable-next-line @typescript-eslint/dot-notation
                     if (( isNullOrUndefined(this.numericOptions) || (this.numericOptions['step'] === undefined)) || isDynamic) {
                         const stepValue: number = this.instance.getNumberParser({ format: 'n' })(this.element.getAttribute(prop));
                         if (stepValue !== null && !isNaN(stepValue)) {

@@ -185,7 +185,7 @@ export class ScrollBar {
         this.startRange = this.axis.visibleRange;
         this.scrollStarted = true;
         this.component.trigger(scrollStart, this.getArgs(scrollStart));
-        if (this.isExist(id, 'scrollBarThumb_')) {
+        if (this.isExist(id, 'scrollBarThumb_') || this.isExist(id, 'gripCircle')) {
             this.isThumbDrag = true;
             (this.svgObject as HTMLElement).style.cursor = '-webkit-grabbing';
         } else if (this.isExist(id, 'scrollBarBackRect_')) {

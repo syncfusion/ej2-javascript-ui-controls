@@ -1050,10 +1050,8 @@ export class DateTimePicker extends DatePicker {
             width: this.setPopupWidth(),
             zIndex: this.zIndex,
             targetType: 'container',
-            // eslint-disable-next-line @typescript-eslint/naming-convention
             collision: Browser.isDevice ? { X: 'fit', Y: 'fit' } : { X: 'flip', Y: 'flip' },
             relateTo: Browser.isDevice ? document.body : this.inputWrapper.container,
-            // eslint-disable-next-line @typescript-eslint/naming-convention
             position: Browser.isDevice ? { X: 'center', Y: 'center' } : { X: 'left', Y: 'bottom' },
             enableRtl: this.enableRtl,
             offsetY: offset,
@@ -1455,7 +1453,6 @@ export class DateTimePicker extends DatePicker {
                     this.step = parseInt(this.inputElement.getAttribute(prop), 10);
                     break;
                 case 'readonly':
-                    // eslint-disable-next-line @typescript-eslint/dot-notation
                     if (( isNullOrUndefined(this.dateTimeOptions) || (this.dateTimeOptions['readonly'] === undefined)) || isDynamic) {
                         const readonly: boolean = this.inputElement.getAttribute(prop) === 'disabled' ||
                                 this.inputElement.getAttribute(prop) === '' ||
@@ -1464,13 +1461,11 @@ export class DateTimePicker extends DatePicker {
                     }
                     break;
                 case 'placeholder':
-                    // eslint-disable-next-line @typescript-eslint/dot-notation
                     if (( isNullOrUndefined(this.dateTimeOptions) || (this.dateTimeOptions['placeholder'] === undefined)) || isDynamic) {
                         this.setProperties({ placeholder: this.inputElement.getAttribute(prop) }, !isDynamic);
                     }
                     break;
                 case 'min':
-                    // eslint-disable-next-line @typescript-eslint/dot-notation
                     if (( isNullOrUndefined(this.dateTimeOptions) || (this.dateTimeOptions['min'] === undefined)) || isDynamic) {
                         value = new Date(this.inputElement.getAttribute(prop));
                         if (!this.isNullOrEmpty(value) && !isNaN(+value)) {
@@ -1479,7 +1474,6 @@ export class DateTimePicker extends DatePicker {
                     }
                     break;
                 case 'disabled':
-                    // eslint-disable-next-line @typescript-eslint/dot-notation
                     if (( isNullOrUndefined(this.dateTimeOptions) || (this.dateTimeOptions['enabled'] === undefined)) || isDynamic) {
                         const enabled: boolean = this.inputElement.getAttribute(prop) === 'disabled' ||
                                 this.inputElement.getAttribute(prop) === 'true' ||
@@ -1488,7 +1482,6 @@ export class DateTimePicker extends DatePicker {
                     }
                     break;
                 case 'value':
-                    // eslint-disable-next-line @typescript-eslint/dot-notation
                     if (( isNullOrUndefined(this.dateTimeOptions) || (this.dateTimeOptions['value'] === undefined)) || isDynamic) {
                         value = new Date(this.inputElement.getAttribute(prop));
                         if (!this.isNullOrEmpty(value) && !isNaN(+value)) {
@@ -1497,7 +1490,6 @@ export class DateTimePicker extends DatePicker {
                     }
                     break;
                 case 'max':
-                    // eslint-disable-next-line @typescript-eslint/dot-notation
                     if (( isNullOrUndefined(this.dateTimeOptions) || (this.dateTimeOptions['max'] === undefined)) || isDynamic) {
                         value = new Date(this.inputElement.getAttribute(prop));
                         if (!this.isNullOrEmpty(value) && !isNaN(+value)) {

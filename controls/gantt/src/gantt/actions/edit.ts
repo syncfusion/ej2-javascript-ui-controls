@@ -1536,8 +1536,8 @@ export class Edit {
         const recordId: string = draggedRecord.level === 0 ? 'R' + draggedRecord.ganttProperties.taskId : 'T' + draggedRecord.ganttProperties.taskId;
         this.parent.getTaskIds().splice(childRecordsLength, 0, recordId);
         if (!droppedRecord.hasChildRecords) {
-            this.parent.setRecordValue('hasChildRecords', true, draggedRecord);
-            this.parent.setRecordValue('expanded', true, draggedRecord);
+            this.parent.setRecordValue('hasChildRecords', true, droppedRecord);
+            this.parent.setRecordValue('expanded', true, droppedRecord);
             if (!droppedRecord.childRecords.length) {
                 droppedRecord.childRecords = [];
                 if (!gObj.taskFields.parentID && isNullOrUndefined(droppedRecord.taskData[this.parent.taskFields.child])) {

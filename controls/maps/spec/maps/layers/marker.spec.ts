@@ -625,9 +625,9 @@ describe('Map marker properties tesing', () => {
             map.loaded = (args: ILoadEventArgs) => {
                 let element: Element = document.getElementById(map.element.id + '_LayerIndex_0_Markers_Template_Group');
                 expect(element.childElementCount).toBeGreaterThanOrEqual(1);
-                spec = getElement(map.element.id + '_LayerIndex_0_MarkerIndex_0_dataIndex_5_cluster_2');
+                spec = getElement(map.element.id + '_LayerIndex_0_MarkerIndex_0_dataIndex_5_cluster_0');
                 trigger.clickEvent(spec);
-                spec = getElement(map.element.id + '_LayerIndex_0_MarkerIndex_0_dataIndex_5_cluster_2');
+                spec = getElement(map.element.id + '_LayerIndex_0_MarkerIndex_0_dataIndex_5_cluster_0');
                 trigger.mousemoveEvent(spec, 0, 0, 0, 0);
             }
             map.layers[0].markerClusterSettings = {
@@ -798,6 +798,7 @@ describe('Map marker properties tesing', () => {
             map.loaded = (args: ILoadedEventArgs) => {
                 let element: Element = document.getElementById(map.element.id + '_LayerIndex_0_MarkerIndex_0_dataIndex_0');
                 expect(element.getAttribute('fill')).toBe('green');
+                expect(element.getAttribute('stroke-opacity')).toBe('0.7');
                 done();
             };
             map.layers[0].markerSettings = [
@@ -805,6 +806,11 @@ describe('Map marker properties tesing', () => {
                     visible: true,
                     colorValuePath: 'Color',
                     shape: 'Circle',
+                    border:{
+                        color: "red",
+                        width: 2,
+                        opacity: 0.7
+                    },
                     dataSource: [
                         { Name: "USA", latitude: 38.8833, longitude: -77.0167, Color: 'green' },
                         { Name: "Brazil", latitude: -15.7833, longitude: -47.8667 },

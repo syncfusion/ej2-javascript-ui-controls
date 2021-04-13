@@ -123,7 +123,7 @@ export class ViewBase {
             let currentCell: HTMLElement;
             let tdLeft: number = 0;
             let colSpan: number = 0;
-            const hiddenLeft: number = isRtl ? target.scrollWidth - target.offsetWidth - target.scrollLeft : target.scrollLeft;
+            const hiddenLeft: number = isRtl ? -(target.scrollLeft) : target.scrollLeft;
             for (const cell of headerCells) {
                 colSpan += parseInt(cell.getAttribute('colSpan'), 10);
                 if (colSpan > Math.floor(hiddenLeft / colWidth)) {

@@ -443,7 +443,9 @@ export class Edit {
         }
         removeClass([row], ['e-editedrow', 'e-batchrow']);
         removeClass(row.querySelectorAll('.e-rowcell'), ['e-editedbatchcell', 'e-updatedtd']);
-        this.parent.grid.focusModule.restoreFocus();
+        if (this.parent['isCellSaveFocus'] != false) {
+            this.parent.grid.focusModule.restoreFocus();
+        }
         editAction({ value: <ITreeData>args.rowData, action: 'edit' }, this.parent, this.isSelfReference,
                    this.addRowIndex, this.selectedIndex, args.columnName);
         if ((row.rowIndex === this.parent.getCurrentViewRecords().length - 1) && this.keyPress === 'enter') {

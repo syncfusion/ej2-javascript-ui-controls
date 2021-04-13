@@ -7,7 +7,7 @@ import {
     Page, Rect, Widget, ImageElementBox, LineWidget, ParagraphWidget,
     BodyWidget, TextElementBox, ElementBox, HeaderFooterWidget, ListTextElementBox,
     TableRowWidget, TableWidget, TableCellWidget, FieldElementBox, TabElementBox, BlockWidget, ErrorTextElementBox,
-    CommentCharacterElementBox, ShapeElementBox, EditRangeStartElementBox, FootNoteWidget
+    CommentCharacterElementBox, ShapeElementBox, EditRangeStartElementBox, FootNoteWidget, ShapeBase
 } from './page';
 import { BaselineAlignment, HighlightColor, Underline, Strikethrough, TabLeader, CollaborativeEditingSettingsModel } from '../../index';
 import { Layout } from './layout';
@@ -18,6 +18,7 @@ import { SelectionWidgetInfo } from '../selection';
 import { SpellChecker } from '../spell-check/spell-checker';
 import { Revision } from '../track-changes/track-changes';
 import { WSectionFormat } from '../format';
+import { TextWrappingStyle } from '../../base';
 
 /**
  * @private
@@ -164,6 +165,7 @@ export class Renderer {
             height = Math.max(page.boundingRectangle.height - headerFooterHeight, footerHeight);
             pageHt = page.boundingRectangle.height - footerDistance;
         }
+        this.renderFloatingItems(page, widget.floatingElements, 'Behind');
         for (let i: number = 0; i < widget.childWidgets.length; i++) {
             const block: BlockWidget = widget.childWidgets[i] as BlockWidget;
             if (!isHeader) {
@@ -173,7 +175,7 @@ export class Renderer {
                 this.renderWidget(page, block);
             }
         }
-        this.renderFloatingItems(page, widget.floatingElements);
+        this.renderFloatingItems(page, widget.floatingElements, "InFrontOfText");
         if (cliped) {
             this.pageContext.restore();
         }
@@ -274,6 +276,10 @@ export class Renderer {
         ctx.closePath();
     }
     private render(page: Page, bodyWidget: BodyWidget): void {
+        if (this.isFieldCode) {
+            this.isFieldCode = false;
+        }
+        this.renderFloatingItems(page, page.bodyWidgets[0].floatingElements, 'Behind');
         for (let i: number = 0; i < bodyWidget.childWidgets.length; i++) {
             const widget: Widget = bodyWidget.childWidgets[i] as ParagraphWidget;
             if (i === 0 && bodyWidget.childWidgets[0] instanceof TableWidget &&
@@ -284,36 +290,52 @@ export class Renderer {
             }
             this.renderWidget(page, widget);
         }
-        this.renderFloatingItems(page, page.bodyWidgets[0].floatingElements);
+        this.renderFloatingItems(page, page.bodyWidgets[0].floatingElements, 'InFrontOfText');
     }
 
-    private renderFloatingItems(page: Page, floatingElements: ShapeElementBox[]): void {
+    private renderFloatingItems(page: Page, floatingElements: ShapeBase[], wrappingType: TextWrappingStyle): void {
         if (!isNullOrUndefined(floatingElements) && floatingElements.length > 0) {
             /* eslint-disable */
             floatingElements.sort(function (a, b) { return a.zOrderPosition - b.zOrderPosition });
             for (let i: number = 0; i < floatingElements.length; i++) {
-                let shape: ShapeElementBox = floatingElements[i];
-                let blocks: BlockWidget[] = shape.textFrame.childWidgets as BlockWidget[];
-                let shapeLeft: number = this.getScaledValue(shape.x, 1);
-                let shapeTop: number = this.getScaledValue(shape.y, 2);
-                this.pageContext.beginPath();
-                if (!isNullOrUndefined(shape.lineFormat.lineFormatType) && shape.fillFormat && shape.fillFormat.fill) {
-                    this.pageContext.fillStyle = shape.fillFormat.color;
-                    this.pageContext.fillRect(shapeLeft, shapeTop, this.getScaledValue(shape.width), this.getScaledValue(shape.height));
+                let shape: ShapeBase = floatingElements[i];
+                if ((wrappingType === "Behind" && shape.textWrappingStyle !== "Behind") ||
+                    (wrappingType !== "Behind" && shape.textWrappingStyle === "Behind")) {
+                    continue;
                 }
-                if (shape.lineFormat.lineFormatType !== 'None') {
-                    this.pageContext.strokeStyle = HelperMethods.getColor(shape.lineFormat.color);
-                    this.pageContext.strokeRect(shapeLeft, shapeTop, this.getScaledValue(shape.width), this.getScaledValue(shape.height));
+                if (shape instanceof ImageElementBox) {
+                    this.renderImageElementBox(shape, shape.x, shape.y, 0);
+                } else if (shape instanceof ShapeElementBox) {
+                    let shapeType: any = shape.autoShapeType;
+                    let blocks: BlockWidget[] = shape.textFrame.childWidgets as BlockWidget[];
+                    let shapeLeft: number = this.getScaledValue(shape.x, 1);
+                    let shapeTop: number = this.getScaledValue(shape.y, 2);
+                    this.pageContext.beginPath();
+                    if (shape.fillFormat && shape.fillFormat.fill) {
+                        this.pageContext.fillStyle = shape.fillFormat.color;
+                        this.pageContext.fillRect(shapeLeft, shapeTop, this.getScaledValue(shape.width), this.getScaledValue(shape.height));
+                    }
+                    if ((shapeType === 'StraightConnector' && shape.lineFormat.line && shape.lineFormat.lineFormatType !== 'None') || (!isNullOrUndefined(shape.lineFormat.lineFormatType) && shape.lineFormat.lineFormatType !== 'None')) {
+                        this.pageContext.strokeStyle = HelperMethods.getColor(shape.lineFormat.color);
+                        this.pageContext.strokeRect(shapeLeft, shapeTop, this.getScaledValue(shape.width), this.getScaledValue(shape.height));
+                    }
+                    this.pageContext.closePath();
+                    let isClipped: boolean = false;
+                    if (shape.width != 0 && shape.height != 0) {
+                        isClipped = true;
+                        this.clipRect(shape.x, shape.y, this.getScaledValue(shape.width), this.getScaledValue(shape.height));
+                    }
+                    for (let i: number = 0; i < blocks.length; i++) {
+                        this.renderWidget(page, blocks[i]);
+                    }
+                    if (isClipped) {
+                        this.pageContext.restore();
+                    }
                 }
-                this.pageContext.closePath();
-                this.clipRect(shape.x, shape.y, this.getScaledValue(shape.width), this.getScaledValue(shape.height));
-                for (let i: number = 0; i < blocks.length; i++) {
-                    this.renderWidget(page, blocks[i]);
-                }
-                this.pageContext.restore();
             }
         }
     }
+
     private renderWidget(page: Page, widget: Widget): void {
         if (this.documentHelper.owner.enableLockAndEdit) {
             this.renderLockRegionBorder(page, widget);
@@ -516,7 +538,8 @@ export class Renderer {
         let isCommentMark: boolean = false;
         for (let i: number = 0; i < lineWidget.children.length; i++) {
             let elementBox: ElementBox = lineWidget.children[i] as ElementBox;
-            if (elementBox instanceof ShapeElementBox) {
+            if (elementBox instanceof ShapeElementBox ||
+                (elementBox instanceof ImageElementBox && elementBox.textWrappingStyle !== 'Inline')) {
                 continue;
             }
             if (elementBox instanceof CommentCharacterElementBox || elementBox instanceof EditRangeStartElementBox) {
@@ -1014,8 +1037,8 @@ export class Renderer {
         }
         while (lineCount < (underline === 'Double' ? 2 : 1)) {
             lineCount++;
-
-            this.pageContext.fillRect(this.getScaledValue(left + elementBox.margin.left, 1), this.getScaledValue(y, 2), this.getScaledValue(elementBox.width), this.getScaledValue(underlineHeight));
+            let width: number = elementBox.width;
+            this.pageContext.fillRect(this.getScaledValue(left + elementBox.margin.left, 1), this.getScaledValue(y, 2), this.getScaledValue(width), this.getScaledValue(underlineHeight));
             y += 2 * lineHeight;
         }
     }
@@ -1061,26 +1084,28 @@ export class Renderer {
             isHeightType = ((containerWid as TableCellWidget).ownerRow.rowFormat.heightType === 'Exactly');
         }
 
-        if (topMargin < 0 || elementBox.line.paragraph.width < elementBox.width) {
-            // if (containerWid instanceof BodyWidget) {
-            //     widgetWidth = containerWid.width + containerWid.x;
-            // } else 
-            if (containerWid instanceof TableCellWidget) {
-                let leftIndent: number = 0;
-                if (containerWid.childWidgets[0] instanceof ParagraphWidget) {
-                    let paraAdv: ParagraphWidget = containerWid.childWidgets[0] as ParagraphWidget;
-                    leftIndent = paraAdv.paragraphFormat.leftIndent;
+        if (elementBox.textWrappingStyle === 'Inline') {
+            if (topMargin < 0 || elementBox.line.paragraph.width < elementBox.width) {
+                // if (containerWid instanceof BodyWidget) {
+                //     widgetWidth = containerWid.width + containerWid.x;
+                // } else 
+                if (containerWid instanceof TableCellWidget) {
+                    let leftIndent: number = 0;
+                    if (containerWid.childWidgets[0] instanceof ParagraphWidget) {
+                        let paraAdv: ParagraphWidget = containerWid.childWidgets[0] as ParagraphWidget;
+                        leftIndent = paraAdv.paragraphFormat.leftIndent;
+                    }
+                    widgetWidth = containerWid.width + containerWid.margin.left - containerWid.leftBorderWidth - leftIndent;
+                    isClipped = true;
+
+                    this.clipRect(left + leftMargin, top + topMargin, this.getScaledValue(widgetWidth), this.getScaledValue(containerWid.height));
                 }
-                widgetWidth = containerWid.width + containerWid.margin.left - containerWid.leftBorderWidth - leftIndent;
+            } else if (isHeightType) {
+                let width: number = containerWid.width + containerWid.margin.left - (containerWid as TableCellWidget).leftBorderWidth;
                 isClipped = true;
 
-                this.clipRect(left + leftMargin, top + topMargin, this.getScaledValue(widgetWidth), this.getScaledValue(containerWid.height));
+                this.clipRect(containerWid.x, containerWid.y, this.getScaledValue(width), this.getScaledValue(containerWid.height));
             }
-        } else if (isHeightType) {
-            let width: number = containerWid.width + containerWid.margin.left - (containerWid as TableCellWidget).leftBorderWidth;
-            isClipped = true;
-
-            this.clipRect(containerWid.x, containerWid.y, this.getScaledValue(width), this.getScaledValue(containerWid.height));
         }
         if (elementBox.isMetaFile && !isNullOrUndefined(elementBox.metaFileImageString)) {
             this.pageContext.drawImage(elementBox.element, this.getScaledValue(left + leftMargin, 1),
@@ -1121,6 +1146,7 @@ export class Renderer {
             this.pageContext.restore();
         }
     }
+
 
     private renderTableOutline(tableWidget: TableWidget): void {
         let layout: Layout = new Layout(this.documentHelper);
@@ -1194,27 +1220,33 @@ export class Renderer {
         lineWidth = HelperMethods.convertPointToPixel(border.getLineWidth()); //Renders the cell left border.
         this.renderCellBackground(height, cellWidget, cellLeftMargin, lineWidth);
         let leftBorderWidth: number = lineWidth;
-
-        if (tableCell.index === 0 || tableCell.cellFormat.rowSpan === 1 || (tableCell.cellFormat.rowSpan > 1 && tableCell.columnIndex !== 0)) {
+        if (tableCell.index === 0 || tableCell.cellFormat.rowSpan === 1 || (tableCell.cellFormat.rowSpan > 1 && tableCell.columnIndex === 0)) {
             this.renderSingleBorder(border.color, cellWidget.x - cellLeftMargin - lineWidth, cellWidget.y - cellTopMargin, cellWidget.x - cellLeftMargin - lineWidth, cellWidget.y + cellWidget.height + cellBottomMargin, lineWidth);
-        } else {
+        } else { 
             for (let i: number = 0; i < tableCell.ownerTable.childWidgets.length; i++) {
-
-                let cell: TableCellWidget = (tableCell.ownerTable.childWidgets[i] as TableRowWidget).childWidgets[tableCell.columnIndex - 1] as TableCellWidget;
-                if (cell && cell.columnIndex === tableCell.columnIndex - 1) {
-                    let borderColor: string = cell.cellFormat.borders.right.color;
+                let row: TableRowWidget = tableCell.ownerTable.childWidgets[i] as TableRowWidget;
+                let cell: TableCellWidget
+                for (let j: number = 0; j < row.childWidgets.length; j++) {
+                    if ((row.childWidgets[j] as TableCellWidget).columnIndex === tableCell.columnIndex - 1) {
+                        cell = row.childWidgets[j] as TableCellWidget;
+                        break;
+                    } else if ((row.childWidgets[j] as TableCellWidget).columnIndex >= tableCell.columnIndex && (row.childWidgets[j] as TableCellWidget).previousWidget) {
+                        cell = (row.childWidgets[j] as TableCellWidget).previousWidget as TableCellWidget;
+                        break;
+                    }
+                }
+                if (cell && cell.columnIndex + cell.cellFormat.columnSpan - 1 === tableCell.columnIndex - 1) {
+                    let border: WBorder = !isBidiTable ? TableCellWidget.getCellRightBorder(cell) : TableCellWidget.getCellLeftBorder(cell);
+                    let lineWidthInt: number = border.lineWidth;
                     if (cell.y + cell.height < tableCell.y) {
                         continue;
                     } else if (cell.y < tableCell.y && cell.y + cell.height > tableCell.y) {
-
-                        this.renderSingleBorder(borderColor, cellWidget.x - cellLeftMargin - lineWidth, cellWidget.y - cellTopMargin, cellWidget.x - cellLeftMargin - lineWidth, cell.y + cell.height + cell.margin.bottom, lineWidth);
-                    } else if ((cell.y === tableCell.y) || (cell.y > tableCell.y && cell.y + cell.height < tableCell.y + cell.height)) {
-
-                        this.renderSingleBorder(borderColor, tableCell.x - tableCell.margin.left - lineWidth, cell.y - cell.margin.top, tableCell.x - tableCell.margin.left - lineWidth, cell.y + cell.height + cell.margin.bottom, lineWidth);
-                    } else if (cell.y < tableCell.y + cell.height && cell.y + cell.height < tableCell.y + tableCell.height) {
-
-                        this.renderSingleBorder(borderColor, cell.x - cell.margin.left - lineWidth, cell.y - cell.margin.top, cell.x - cell.margin.left - lineWidth, cell.y + cellWidget.height + cellBottomMargin, lineWidth);
-                    } else if (cell.y > tableCell.x + tableCell.height) {
+                        this.renderSingleBorder(border.color, tableCell.x - cellLeftMargin - lineWidthInt, tableCell.y - cellTopMargin, tableCell.x - cellLeftMargin - lineWidthInt, cell.y + cell.height + cell.margin.bottom, lineWidthInt);
+                    } else if ((cell.y === tableCell.y) || (cell.y > tableCell.y && cell.y + cell.height < tableCell.y + tableCell.height)) {
+                        this.renderSingleBorder(border.color, tableCell.x - cellLeftMargin - lineWidthInt, cell.y - cell.margin.top, tableCell.x - cellLeftMargin - lineWidthInt, cell.y + cell.height + cell.margin.bottom, lineWidthInt);
+                    } else if (cell.y < tableCell.y + tableCell.height && cell.y + cell.height >= tableCell.y + tableCell.height) {
+                        this.renderSingleBorder(border.color, tableCell.x - cellLeftMargin - lineWidthInt, cell.y - cell.margin.top, tableCell.x - cellLeftMargin - lineWidthInt, cell.y + tableCell.height + cellBottomMargin, lineWidthInt);
+                    } else if (cell.y > tableCell.y + tableCell.height) {
                         break;
                     }
                 }
@@ -1223,13 +1255,16 @@ export class Renderer {
         // }
         if (tableCell.updatedTopBorders && tableCell.updatedTopBorders.length > 1) {
             let cellX: number = cellWidget.x - cellWidget.margin.left - leftBorderWidth / 2;
-            let cellY: number = cellWidget.y - cellWidget.margin.top + lineWidth / 2;
+            let cellY: number = cellWidget.y - cellWidget.margin.top;
             for (let a: number = 0; a < tableCell.updatedTopBorders.length; a++) {
                 let borderInfo: BorderInfo = tableCell.updatedTopBorders[a];
                 border = borderInfo.border;
+                if (border.lineStyle !== 'None' && border.lineWidth < TableCellWidget.getCellTopBorder(tableCell).lineWidth) {
+                    border.lineWidth = TableCellWidget.getCellTopBorder(tableCell).lineWidth;
+                }
                 if (!isNullOrUndefined(border)) {
                     lineWidth = HelperMethods.convertPointToPixel(border.getLineWidth());
-                    this.renderSingleBorder(border.color, cellX, cellY, cellX + borderInfo.width, cellY, lineWidth);
+                    this.renderSingleBorder(border.color, cellX, cellY + lineWidth / 2, cellX + borderInfo.width, cellY + lineWidth / 2, lineWidth);
                     cellX = cellX + borderInfo.width;
                 }
             }
@@ -1237,8 +1272,8 @@ export class Renderer {
             border = TableCellWidget.getCellTopBorder(tableCell);
             // if (!isNullOrUndefined(border )) { //Renders the cell top border.        
             lineWidth = HelperMethods.convertPointToPixel(border.getLineWidth());
-
-            this.renderSingleBorder(border.color, cellWidget.x - cellWidget.margin.left - leftBorderWidth / 2, cellWidget.y - cellWidget.margin.top + lineWidth / 2, cellWidget.x + cellWidget.width + cellWidget.margin.right, cellWidget.y - cellWidget.margin.top + lineWidth / 2, lineWidth);
+            let width: number = 0;
+            this.renderSingleBorder(border.color, cellWidget.x - cellWidget.margin.left - leftBorderWidth / 2, cellWidget.y - cellWidget.margin.top + lineWidth / 2, cellWidget.x + cellWidget.width + cellWidget.margin.right + width, cellWidget.y - cellWidget.margin.top + lineWidth / 2, lineWidth);
             // }
         }
         let isLastCell: boolean = false;
@@ -1247,7 +1282,7 @@ export class Renderer {
         } else {
             isLastCell = tableCell.cellIndex === 0;
         }
-        if (tableCell.ownerTable.tableFormat.cellSpacing > 0 || isLastCell) {
+        if ((tableCell.ownerTable.tableFormat.cellSpacing > 0 || isLastCell) && tableCell.columnIndex + tableCell.cellFormat.columnSpan === tableCell.ownerTable.tableHolder.columns.length) {
             border = isBidiTable ? TableCellWidget.getCellLeftBorder(tableCell) : TableCellWidget.getCellRightBorder(tableCell);
             // if (!isNullOrUndefined(border )) { //Renders the cell right border.           
             lineWidth = HelperMethods.convertPointToPixel(border.getLineWidth());
@@ -1288,8 +1323,8 @@ export class Renderer {
                 : TableCellWidget.getCellBottomBorder(tableCell);
             // if (!isNullOrUndefined(border )) {
             //Renders the cell bottom border.
-            if (border.lineStyle === 'None' && tableCell.previousWidget && tableCell.previousWidget instanceof TableCellWidget) {
-                border = (tableCell.previousWidget as TableCellWidget).cellFormat.borders.bottom;
+            if (tableCell.cellFormat.borders.top.lineStyle === 'Cleared' && tableCell.cellFormat.borders.bottom.lineStyle === 'None' && !isNullOrUndefined(tableCell.nextWidget)) {
+                border = tableCell.cellFormat.borders.bottom;
             }
             lineWidth = HelperMethods.convertPointToPixel(border.getLineWidth());
             this.renderSingleBorder(border.color, cellWidget.x - cellWidget.margin.left - leftBorderWidth / 2, cellWidget.y + cellWidget.height + cellBottomMargin + lineWidth / 2, cellWidget.x + cellWidget.width + cellWidget.margin.right, cellWidget.y + cellWidget.height + cellBottomMargin + lineWidth / 2, lineWidth);

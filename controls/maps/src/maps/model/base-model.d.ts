@@ -129,6 +129,11 @@ export interface BorderModel {
      */
     width?: number;
 
+    /**
+     * Sets and gets the opacity of the border in maps.
+     */
+    opacity?: number;
+
 }
 
 /**

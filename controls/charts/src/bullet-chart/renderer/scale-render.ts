@@ -381,7 +381,7 @@ export class ScaleGroup {
     private calculateFeatureMeasureBounds(value: number, categoryValue: string, isHorizontal: boolean): IFeatureMeasureType {
         const bulletChart: BulletChart = this.bulletChart;
         const min: number = bulletChart.minimum;
-        value = (value < min && min < 0) ? min : value;
+        value = (value < min && min <= 0) ? min : value;
         if (value >= min) {
             let pointX: number;
             let lastPointX: number;

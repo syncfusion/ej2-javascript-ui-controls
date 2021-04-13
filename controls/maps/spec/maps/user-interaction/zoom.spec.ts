@@ -1101,9 +1101,8 @@ describe('Zoom feature tesing for map control', () => {
         });
         it('Checking with Zoom using public methode', () => {
             map.loaded = (args: ILoadedEventArgs) => {
-                let element: Element = document.getElementById('container_tile_parent');
-                expect(element.getAttribute('style')).toBe(
-                    'position: absolute; left: 18px; right: 10px; top: 18px; height: 492px; width: 492px; overflow: hidden;');
+                let element: Element = document.getElementById('container_LayerIndex_0_Markers_Template_Group');
+                expect(element.childElementCount).toBe(1);
             };
             map.zoomToCoordinates(19.1555762, 13.4107368, 52.4643089, 72.8849595);
         });
@@ -1220,7 +1219,8 @@ describe('Zoom feature tesing for map control', () => {
         it('Check map center position', () => {
             map.loaded = (args: ILoadedEventArgs) => {
                 zoomEle = getElement('container_LayerIndex_0_Polygon_Group');
-                expect(zoomEle.getAttribute('transform')).toBe('scale( 1 ) translate( 10 77.26847093771161 ) ');
+                expect(zoomEle.getAttribute('transform') === 'scale( 1.03 ) translate( 49.324999999999875 -15.570708890365978 ) ' || 
+                zoomEle.getAttribute('transform') === 'scale( 1.03 ) translate( 52.324999999999875 -15.570708890365978 ) ').toBe(true);
             };
             map.refresh();
         });
@@ -1991,9 +1991,8 @@ describe('Zoom feature tesing for map control', () => {
         });
         it('Checking with Zoom using public methode', () => {
             map.loaded = (args: ILoadedEventArgs) => {
-                let element: Element = document.getElementById("container_tile_parent");
-                expect(element.getAttribute("style"))
-                .toBe("position: absolute; left: 18px; right: 10px; top: 37px; height: 473px; width: 492px; overflow: hidden;");
+                let element: Element = document.getElementById('container_Annotations_Group');
+                expect(element.childElementCount).toBe(1);
             };
             map.zoomToCoordinates(19.1555762, 13.4107368, 52.4643089, 72.8849595);
         });
@@ -2362,7 +2361,8 @@ describe('Zoom feature tesing for map control', () => {
         it('Checking with Zoom using public method', () => {
             map.loaded = (args: ILoadedEventArgs) => {
                 let element: Element = document.getElementById("container_LayerIndex_0_Polygon_Group");
-                expect(element.getAttribute("transform")).toBe("scale( 4.180794305632649 ) translate( -243.7363423664989 -129.16655152836194 ) ");
+                expect(element.getAttribute("transform") === 'scale( 4.180794305632649 ) translate( -308.55595860551506 -195.7908353585998 ) ' ||
+                element.getAttribute("transform") === 'scale( 4.180794305632649 ) translate( -307.8383916120951 -195.7908353585998 ) ').toBe(true);
             };
             map.zoomToCoordinates(19.1555762, 13.4107368, 52.4643089, 72.8849595);
         });

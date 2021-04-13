@@ -488,7 +488,7 @@ export class MeasureAnnotation {
         this.displayUnit = this.pdfViewer.measurementSettings.displayUnit.toLowerCase() as CalibrationUnit;
         this.ratio = this.pdfViewer.measurementSettings.scaleRatio;
         this.volumeDepth = this.pdfViewer.measurementSettings.depth;
-        this.scaleRatioString = '1 ' + this.unit + ' = ' + '1 ' + this.displayUnit;
+        this.scaleRatioString = '1 ' + this.unit + ' = ' + this.ratio.toString() + ' ' + this.displayUnit;
     }
 
     private createAnnotationObject(annotationModel: PdfAnnotationBaseModel): IMeasureShapeAnnotation {

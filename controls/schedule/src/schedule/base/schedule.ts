@@ -1581,14 +1581,14 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
      * @returns {void}
      * @private
      */
-    public addSelectedClass(cells: HTMLTableCellElement[], focusCell: HTMLTableCellElement): void {
+    public addSelectedClass(cells: HTMLTableCellElement[], focusCell: HTMLTableCellElement, isPreventScroll?: boolean): void {
         for (const cell of cells) {
             cell.setAttribute('aria-selected', 'true');
         }
         addClass(cells, cls.SELECTED_CELL_CLASS);
         if (focusCell) {
             focusCell.setAttribute('tabindex', '0');
-            focusCell.focus();
+            focusCell.focus({ preventScroll: isPreventScroll || false });
         }
     }
 

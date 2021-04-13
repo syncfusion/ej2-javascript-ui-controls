@@ -2442,7 +2442,13 @@ export class Splitter extends Component<HTMLElement> {
     }
 
     private removePaneOrders(paneClass: string): void {
-        const panes: NodeListOf<HTMLElement> = document.querySelectorAll('.' + paneClass) as NodeListOf<HTMLElement>;
+        let childNodes = this.element.childNodes;
+        let panes: HTMLElement[] = [];
+        for (let i: number = 0; childNodes.length < 0; i++) {
+            if ((childNodes[i] as HTMLElement).classList.contains(paneClass)) {
+                panes.push(childNodes[i] as HTMLElement);
+            }
+        }
         for (let i: number = 0; i < panes.length; i++) {
             panes[i].style.removeProperty('order');
         }

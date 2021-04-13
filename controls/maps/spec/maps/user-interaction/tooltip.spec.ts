@@ -272,13 +272,13 @@ describe('Map layer testing', () => {
             tooltip.refresh();
         });
         it('title tooltip checking for right side tooltip', (done: Function) => {
-            tooltip.titleSettings.text = 'world map helloworldhelloo world map world map world map world map world map world map world map world map world map';
+            tooltip.titleSettings.text = 'world map helloworldhelloo world map world map world map world map world map world map world map world map world map world map world map world map world map world map world map hello';
             tooltip.loaded = (args: ILoadedEventArgs) => {
                 let titleId: string = id + '_Map_title';
                 spec = getElement(titleId);
-                trigger.mousemoveEvent(spec, 0, 0, 10, 13);
+                trigger.mousemoveEvent(spec, 0, 0, 345, 13);
                 let tooltipElement: Element = document.getElementById('mapst_EJ2_Title_Tooltip');
-                expect(tooltipElement.textContent).toBe('world map helloworldhelloo world map world map world map world map world map world map world map world map world map');
+                expect(tooltipElement.textContent).toBe('world map helloworldhelloo world map world map world map world map world map world map world map world map world map world map world map world map world map world map world map hello');
                 //expect(tooltipElement.textContent.split('...').length).toBe(2);
                 tooltip.titleSettings.text = '';
                 done();
@@ -286,13 +286,13 @@ describe('Map layer testing', () => {
             tooltip.refresh();
         });
         it('title tooltip checking for left side tooltip', (done: Function) => {
-            tooltip.titleSettings.text = 'world map helloworldhelloo world map world map world map world map world map world map world map';
+            tooltip.titleSettings.text = 'world map helloworldhelloo world map world map world map world map world map world map world map world map world map world map world map world map world map world map world map hello';
             tooltip.loaded = (args: ILoadedEventArgs) => {
                 let titleId: string = id + '_Map_title';
                 spec = getElement(titleId);
-                trigger.mousemoveEvent(spec, 0, 0, 400, 13);
+                trigger.mousemoveEvent(spec, 0, 0, 344, 13);
                 let tooltipElement: Element = document.getElementById('mapst_EJ2_Title_Tooltip');
-                expect(tooltipElement.textContent).toBe('world map helloworldhelloo world map world map world map world map world map world map world map');
+                expect(tooltipElement.textContent).toBe('world map helloworldhelloo world map world map world map world map world map world map world map world map world map world map world map world map world map world map world map hello');
                 //expect(tooltipElement.textContent.split('...').length).toBe(2);
                 tooltip.titleSettings.text = '';
                 done();

@@ -2,7 +2,7 @@ import { WTableFormat, WRowFormat, WCellFormat } from '../format/index';
 import {
     WidthType, WColor, AutoFitType, TextFormFieldType, CheckBoxSizeType, VerticalOrigin, VerticalAlignment,
     HorizontalOrigin, HorizontalAlignment, LineFormatType, LineDashing, AutoShapeType, ContentControlType, ContentControlWidgetType,
-    TextWrappingStyle
+    TextWrappingStyle, TextWrappingType
 } from '../../base/types';
 import { WListLevel } from '../list/list-level';
 import { WParagraphFormat, WCharacterFormat, WSectionFormat, WBorder, WBorders } from '../format/index';
@@ -436,7 +436,7 @@ export abstract class BlockContainer extends Widget {
     /**
      * @private
      */
-    public floatingElements: ShapeElementBox[] = [];
+    public floatingElements: ShapeBase[] = [];
     /**
      * @private
      */
@@ -846,7 +846,7 @@ export class ParagraphWidget extends BlockWidget {
     /**
      * @private
      */
-    public floatingElements: ShapeElementBox[] = [];
+    public floatingElements: ShapeBase[] = [];
     public get isEndsWithPageBreak(): boolean {
         if (this.childWidgets.length > 0) {
             return (this.lastChild as LineWidget).isEndsWithPageBreak;
@@ -864,6 +864,21 @@ export class ParagraphWidget extends BlockWidget {
     public equals(widget: Widget): boolean {
         return widget instanceof ParagraphWidget && widget.paragraphFormat === this.paragraphFormat;
     }
+    public isContainsShapeAlone(): boolean {
+        let containsShape: boolean = false;
+        for (let i: number = 0; i < this.childWidgets.length; i++) {
+            let lineWidget: LineWidget = this.childWidgets[i] as LineWidget;
+            for (let j: number = 0; j < lineWidget.children.length; j++) {
+                let inline: ElementBox = lineWidget.children[j] as ElementBox;
+                if (!(inline instanceof ShapeElementBox)) {
+                    return false;
+                } else {
+                    containsShape = true;
+                }
+            }
+        } 
+        return containsShape ? true : false;
+    }    
     public isEmpty(): boolean {
         if (isNullOrUndefined(this.childWidgets) || this.childWidgets.length === 0) {
             return true;
@@ -1062,6 +1077,12 @@ export class ParagraphWidget extends BlockWidget {
             let line: LineWidget = this.childWidgets[i] as LineWidget;
             let cloneLine: LineWidget = line.clone();
             paragraph.childWidgets.push(cloneLine);
+            for (let j: number = 0; j < cloneLine.children.length; j++) {
+                let element: ElementBox = cloneLine.children[j];
+                if (element instanceof ShapeBase && element.textWrappingStyle !== 'Inline') {
+                    paragraph.floatingElements.push(element);
+                }
+            }
             cloneLine.paragraph = paragraph;
         }
         paragraph.x = this.x;
@@ -2849,7 +2870,13 @@ export class TableCellWidget extends BlockWidget {
             !(leftBorder.lineStyle === 'None' && leftBorder.lineWidth === 0 && leftBorder.color === '#000000')))) {
 
             return leftBorder;
-        } else if (!isNullOrUndefined(leftBorder) && (leftBorder.ownerBase instanceof WBorders) && TableCellWidget.getCellOf(leftBorder.ownerBase as WBorders).columnIndex === 0) {
+            // tslint:disable-next-line:max-line-length
+        } else if (!isNullOrUndefined(leftBorder) && (leftBorder.ownerBase instanceof WBorders) && TableCellWidget.getCellOf(leftBorder.ownerBase as WBorders).cellIndex === 0) {
+            if (TableCellWidget.getCellOf(leftBorder.ownerBase as WBorders).columnIndex !== 0 && TableCellWidget.getCellOf(leftBorder.ownerBase as WBorders).ownerRow.rowFormat.gridBefore < 1
+                && !isNullOrUndefined(rowBorders)
+                && !isNullOrUndefined(rowBorders.vertical) && rowBorders.vertical.lineStyle !== 'None') {
+                return leftBorder = rowBorders.vertical;
+            }
             if (!isNullOrUndefined(tableBorders) && !isNullOrUndefined(tableBorders.left)) {
                 leftBorder = tableBorders.left;
             }
@@ -2926,7 +2953,8 @@ export class TableCellWidget extends BlockWidget {
             //If border defined with default values then border drawn based on hierarchy. 
             !(rightBorder.lineStyle === 'None' && rightBorder.lineWidth === 0 && rightBorder.color === '#000000')))) {
             return rightBorder;
-        } else if (!isNullOrUndefined(rightBorder) && (rightBorder.ownerBase instanceof WBorders) && TableCellWidget.getCellOf(rightBorder.ownerBase).columnIndex === TableCellWidget.getCellOf(rightBorder.ownerBase).ownerRow.childWidgets.length - 1) {
+            // tslint:disable-next-line:max-line-length
+        } else if (!isNullOrUndefined(rightBorder) && (rightBorder.ownerBase instanceof WBorders) && TableCellWidget.getCellOf(rightBorder.ownerBase).cellIndex === TableCellWidget.getCellOf(rightBorder.ownerBase).ownerRow.childWidgets.length - 1) {
             if (!isNullOrUndefined(tableBorders) && !isNullOrUndefined(tableBorders.right)) {
                 rightBorder = tableBorders.right;
             }
@@ -5271,7 +5299,7 @@ export class ShapeBase extends ShapeCommon {
     /**
      * @private
      */
-    public verticalPosition: number;
+    public verticalPosition: number = 0;
     /**
      * @private
      */
@@ -5283,7 +5311,7 @@ export class ShapeBase extends ShapeCommon {
     /**
      * @private
      */
-    public horizontalPosition: number;
+    public horizontalPosition: number = 0;
     /**
      * @private
      */
@@ -5303,27 +5331,27 @@ export class ShapeBase extends ShapeCommon {
     /**
      * @private
      */
-    public textWrappingStyle: TextWrappingStyle;
+    public textWrappingStyle: TextWrappingStyle = 'Inline';
     /**
      * @private
      */
-    public textWrappingType: string;
+    public textWrappingType: TextWrappingType;
     /**
      * @private
      */
-    public distanceBottom: number;
+    public distanceBottom: number = 0;
     /**
      * @private
      */
-    public distanceLeft: number;
+    public distanceLeft: number = 0;
     /**
      * @private
      */
-    public distanceRight: number;
+    public distanceRight: number = 0;
     /**
      * @private
      */
-    public distanceTop: number;
+    public distanceTop: number = 0;
     /**
      * @private
      */
@@ -5465,6 +5493,10 @@ export class LineFormat {
     /**
      * @private
      */
+    public line: boolean;
+    /**
+     * @private
+     */
     public lineFormatType: LineFormatType;
     /**
      * @private
@@ -5534,19 +5566,27 @@ export class ImageElementBox extends ShapeBase {
     /**
      * @private
      */
-    public left: number;
+    public cropWidthScale: number;
     /**
      * @private
      */
-    public top: number;
+    public cropHeightScale: number;
     /**
      * @private
      */
-    public right: number;
+    public left: number = 0;
     /**
      * @private
      */
-    public bottom: number;
+    public top: number = 0;
+    /**
+     * @private
+     */
+    public right: number = 0;
+    /**
+     * @private
+     */
+    public bottom: number = 0;
     /**
      * @private
      */
@@ -5614,17 +5654,17 @@ export class ImageElementBox extends ShapeBase {
         image.imageString = this.imageString;
         image.isMetaFile = this.isMetaFile;
         image.isCompressed = this.isCompressed;
-        image.metaFileImageString =  this.metaFileImageString;
+        image.metaFileImageString = this.metaFileImageString;
         image.width = this.width;
         image.height = this.height;
         if (this.isCrop) {
-            image.verticalPosition = this.top;
-            image.horizontalPosition = this.left;
+            image.top = this.top;
+            image.left = this.left;
             image.bottom = this.bottom;
             image.right = this.right;
             image.isCrop = this.isCrop;
-            image.heightScale = this.heightScale;
-            image.widthScale = this.widthScale;
+            image.cropHeightScale = this.cropHeightScale;
+            image.cropWidthScale = this.cropWidthScale;
         }
         if (this.margin) {
             image.margin = this.margin.clone();
@@ -5634,6 +5674,22 @@ export class ImageElementBox extends ShapeBase {
         } else {
             image.removedIds = this.removedIds.slice();
         }
+        image.name = this.name;
+        image.alternativeText = this.alternativeText;
+        image.title = this.title;
+        image.visible = this.visible;
+        image.widthScale = this.widthScale;
+        image.heightScale = this.heightScale;
+        image.verticalPosition = this.verticalPosition;
+        image.verticalOrigin = this.verticalOrigin;
+        image.verticalAlignment = this.verticalAlignment;
+        image.horizontalPosition = this.horizontalPosition;
+        image.horizontalOrigin = this.horizontalOrigin;
+        image.horizontalAlignment = this.horizontalAlignment;
+        image.allowOverlap = this.allowOverlap;
+        image.textWrappingStyle = this.textWrappingStyle;
+        image.textWrappingType = this.textWrappingType;
+        image.layoutInCell = this.layoutInCell;
         return image;
     }
     /**

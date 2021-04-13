@@ -598,6 +598,13 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
                 }
                 break;
             case 'sortOrder':
+            case 'template':            
+            if (!this.enableVirtualization) {
+                if (!(this.isServerRendered && isBlazor())) {
+                    this.refresh();
+                    }
+                }
+            break;
             case 'showIcon':
                 if (isBlazor() && this.isServerRendered) {
                     // eslint-disable-next-line

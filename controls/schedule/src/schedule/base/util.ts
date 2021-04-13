@@ -351,6 +351,16 @@ export function isDaylightSavingTime(date: Date): boolean {
 }
 
 /**
+ * Method to get UTC time value from date
+ *
+ * @param {Date} date Accepts the date
+ * @returns {number} Returns the UTC time value
+ */
+ export function getUniversalTime(date: Date): number {
+    return Date.UTC(date.getFullYear(), date.getMonth(), date.getDate(), date.getHours(), date.getMinutes(), date.getSeconds(), date.getMilliseconds());
+}
+
+/**
  * Method to check the device
  *
  * @returns {boolean} Returns the boolean value for either device is present or not.

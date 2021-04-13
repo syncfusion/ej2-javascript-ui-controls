@@ -554,4 +554,41 @@ describe('Dialog Editing module', () => {
         });
     });
 
+    describe('EJ2-47615 - Throws script error while updating the data in Dialog editing => ', () => {
+        let gridObj: Grid;
+        let actionComplete: () => void;
+        beforeAll((done: Function) => {
+            gridObj = createGrid(
+                {
+                    dataSource: data,
+                    allowSelection: false,
+                    editSettings: { allowEditing: true, allowAdding: true, allowDeleting: true, mode: 'Dialog'},
+                    toolbar: ['Add', 'Edit', 'Delete', 'Update', 'Cancel'],
+                    columns: [
+                        { field: 'OrderID', type: 'number', isPrimaryKey: true, visible: true  },
+                        { field: 'CustomerID', type: 'string' },
+                        { field: 'EmployeeID', type: 'number' },
+                        { field: 'Freight', format: 'C2', type: 'number', editType: 'numericedit' }
+                    ]
+                }, done);
+        });
+        it('open dialog', () => {
+            (gridObj as any).dblClickHandler({ target: gridObj.element.querySelectorAll('.e-row')[1].firstElementChild });
+        });
+        it('save the data', (done: Function) => {
+            actionComplete = (args?: any): void => {
+                if (args.requestType === 'save') {
+                    done();
+                }               
+            };
+            gridObj.actionComplete = actionComplete;
+            (select('#'+ gridObj.element.id +'_dialogEdit_wrapper', document).querySelectorAll('button') as any)[1].click();
+        });
+
+        afterAll(() => {
+            destroy(gridObj);
+            gridObj = null;
+        });
+    });
+    
 });

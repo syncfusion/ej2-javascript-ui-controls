@@ -352,7 +352,8 @@ export class StripLine {
         textElement(
             chart.renderer,
             new TextOption(id, tx, ty, anchor, stripline.text, 'rotate(' + rotation + ' ' + tx + ',' + ty + ')', 'middle'),
-            stripline.textStyle, stripline.textStyle.color, parent);
+            stripline.textStyle, stripline.textStyle.color, parent, null, null, null, null, null, null, null, null, chart.enableCanvas
+        );
     }
     private invertAlignment(anchor: Anchor): Anchor {
         switch (anchor) {

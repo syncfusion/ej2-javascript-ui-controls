@@ -9,7 +9,7 @@ import { FormValidatorModel } from './form-validator-model';
  */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const regex: any = {
-    /* eslint-disable @typescript-eslint/naming-convention, no-useless-escape */
+    /* eslint-disable no-useless-escape */
     EMAIL: new RegExp('^[A-Za-z0-9._%+-]{1,}@[A-Za-z0-9._%+-]{1,}([.]{1}[a-zA-Z0-9]{2,}' +
         '|[.]{1}[a-zA-Z0-9]{2,4}[.]{1}[a-zA-Z0-9]{2,4})$'),
     URL: /^(?:http(s)?:\/\/)?[\w.-]+(?:\.[\w\.-]+)+[\w\-\._~:/?#[\]@!\$&'\(\)\*\+,;=.]+$/m,
@@ -17,7 +17,7 @@ export const regex: any = {
     DIGITS: new RegExp('^[0-9]*$'),
     PHONE: new RegExp('^[+]?[0-9]{9,13}$'),
     CREDITCARD: new RegExp('^\\d{13,16}$')
-    /* eslint-enable @typescript-eslint/naming-convention, no-useless-escape */
+    /* eslint-enable no-useless-escape */
 };
 
 /**
@@ -29,12 +29,10 @@ export enum ErrorOption {
     /**
      * Defines the error message.
      */
-    // eslint-disable-next-line @typescript-eslint/naming-convention
     Message,
     /**
      * Defines the error element type.
      */
-    // eslint-disable-next-line @typescript-eslint/naming-convention
     Label
 }
 

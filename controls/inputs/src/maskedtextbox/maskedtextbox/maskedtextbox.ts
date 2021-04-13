@@ -449,13 +449,11 @@ export class MaskedTextBox extends Component<HTMLInputElement> implements INotif
             if (!isNullOrUndefined(this.element.getAttribute(key))) {
                 switch (key) {
                 case 'placeholder':
-                    // eslint-disable-next-line @typescript-eslint/dot-notation
                     if (( isNullOrUndefined(this.maskOptions) || (this.maskOptions['placeholder'] === undefined)) || isDynamic) {
                         this.setProperties({placeholder: this.element.placeholder}, !isDynamic);
                     }
                     break;
                 case 'disabled':
-                    // eslint-disable-next-line @typescript-eslint/dot-notation
                     if (( isNullOrUndefined(this.maskOptions) || (this.maskOptions['enabled'] === undefined)) || isDynamic) {
                         const enabled: boolean = this.element.getAttribute(key) === 'disabled' || this.element.getAttribute(key) === '' ||
                                 this.element.getAttribute(key) === 'true' ? false : true;
@@ -463,13 +461,11 @@ export class MaskedTextBox extends Component<HTMLInputElement> implements INotif
                     }
                     break;
                 case 'value':
-                    // eslint-disable-next-line @typescript-eslint/dot-notation
                     if (( isNullOrUndefined(this.maskOptions) || (this.maskOptions['value'] === undefined)) || isDynamic) {
                         this.setProperties({value: this.element.value}, !isDynamic);
                     }
                     break;
                 case 'readonly':
-                    // eslint-disable-next-line @typescript-eslint/dot-notation
                     if (( isNullOrUndefined(this.maskOptions) || (this.maskOptions['readonly'] === undefined)) || isDynamic) {
                         const readonly: boolean = this.element.getAttribute(key) === 'readonly' || this.element.getAttribute(key) === ''
                                 || this.element.getAttribute(key) === 'true' ? true : false;

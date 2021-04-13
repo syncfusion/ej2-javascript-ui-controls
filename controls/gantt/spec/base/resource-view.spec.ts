@@ -447,6 +447,33 @@ describe('Resoure editing using Edit dialog', () => {
         triggerMouseEvent(dragElement, 'mousemove', dragElement.offsetLeft + 180, 0);
         triggerMouseEvent(dragElement, 'mouseup');
     });
+    it('Changing datasource dynamically', () => {
+        ganttObj.collapseAllParentTasks = true;
+        var datasource: object[] = [
+            {
+                TaskID: 1,
+                TaskName: 'Project initiation',
+                StartDate: new Date('03/29/2019'),
+                EndDate: new Date('04/21/2019'),
+                subtasks: [
+                    {
+                        TaskID: 2, TaskName: 'Identify site location', StartDate: new Date('03/29/2019'), Duration: 3,
+                        Progress: 30, work: 10, resources: [{ resourceId: 1, resourceUnit: 50 }]
+                    },
+                    {
+                        TaskID: 3, TaskName: 'Perform soil test', StartDate: new Date('03/29/2019'), Duration: 4,
+                        resources: [{ resourceId: 2, resourceUnit: 70 }], Progress: 30, work: 20
+                    },
+                    {
+                        TaskID: 4, TaskName: 'Soil test approval', StartDate: new Date('03/29/2019'), Duration: 4,
+                        resources: [{ resourceId: 1, resourceUnit: 75 }], Predecessor: 2, Progress: 30, work: 10,
+                    },
+                ]
+            }];
+        ganttObj.dataSource = datasource;
+        ganttObj.dataBind();
+        expect(ganttObj.flatData.length).toBe(8);
+    });
 });
 describe('Self reference data', () => {
     let ganttObj: Gantt;

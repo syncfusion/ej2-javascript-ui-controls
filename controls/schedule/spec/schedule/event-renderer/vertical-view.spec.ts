@@ -861,6 +861,30 @@ describe('Vertical View Event Render Module', () => {
         });
     });
 
+    describe('EJ2-47668 - Issue in rendering of scheduler event height based on the DST timezone', () => {
+        let schObj: Schedule;
+        const eventData: Record<string, any>[] = [{
+            Id: 1,
+            Subject: "Meeting",
+            StartTime: new Date(2021, 2, 27, 11, 0),
+            EndTime: new Date(2021, 2, 28, 7, 0)
+        }];
+        beforeAll((done: DoneFn) => {
+            const model: ScheduleModel = { height: '550px', firstDayOfWeek: 1, selectedDate: new Date(2021, 2, 25) };
+            schObj = util.createSchedule(model, eventData, done);
+        });
+        afterAll(() => {
+            util.destroy(schObj);
+        });
+
+        it('Checking dst event height', () => {
+            const eventNormalElementList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
+            expect(eventNormalElementList.length).toEqual(2);
+            expect((eventNormalElementList[0] as HTMLElement).style.height).toBe('936px');
+            expect((eventNormalElementList[1] as HTMLElement).style.height).toBe('504px');
+        });
+    });
+
     describe('Schedule week view appointment template checking', () => {
         let schObj: Schedule;
         beforeAll((done: DoneFn) => {

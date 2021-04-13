@@ -1250,13 +1250,11 @@ export class DatePicker extends Calendar implements IInput {
         this.popupObj = new Popup(this.popupWrapper as HTMLElement, {
             content: this.isBlazorServer ? null : this.calendarElement,
             relateTo: Browser.isDevice ? document.body : this.inputWrapper.container,
-            // eslint-disable-next-line @typescript-eslint/naming-convention
             position: Browser.isDevice ? { X: 'center', Y: 'center' } : { X: 'left', Y: 'bottom' },
             offsetY: OFFSETVALUE,
             targetType: 'container',
             enableRtl: this.enableRtl,
             zIndex: this.zIndex,
-            // eslint-disable-next-line @typescript-eslint/naming-convention
             collision: Browser.isDevice ? { X: 'fit', Y: 'fit' } : { X: 'flip', Y: 'flip' },
             open: () => {
                 if (this.getModuleName() !== 'datetimepicker') {
@@ -1867,7 +1865,6 @@ export class DatePicker extends Calendar implements IInput {
             if (!isNullOrUndefined(this.inputElement.getAttribute(prop))) {
                 switch (prop) {
                 case 'disabled':
-                    // eslint-disable-next-line @typescript-eslint/dot-notation
                     if (((isNullOrUndefined(this.datepickerOptions) || (this.datepickerOptions['enabled'] === undefined)) || dynamic) &&
                     !this.isBlazorServer) {
                         const enabled: boolean = this.inputElement.getAttribute(prop) === 'disabled' ||
@@ -1877,7 +1874,6 @@ export class DatePicker extends Calendar implements IInput {
                     }
                     break;
                 case 'readonly':
-                    // eslint-disable-next-line @typescript-eslint/dot-notation
                     if (((isNullOrUndefined(this.datepickerOptions) || (this.datepickerOptions['readonly'] === undefined)) || dynamic) &&
                     !this.isBlazorServer) {
                         const readonly: boolean = this.inputElement.getAttribute(prop) === 'readonly' ||
@@ -1886,7 +1882,6 @@ export class DatePicker extends Calendar implements IInput {
                     }
                     break;
                 case 'placeholder':
-                    // eslint-disable-next-line @typescript-eslint/dot-notation
                     if (((isNullOrUndefined(this.datepickerOptions) || (this.datepickerOptions['placeholder'] === undefined)) || dynamic) &&
                     !this.isBlazorServer) {
                         this.setProperties({ placeholder: this.inputElement.getAttribute(prop) }, !dynamic);
@@ -1903,7 +1898,6 @@ export class DatePicker extends Calendar implements IInput {
                     }
                     break;
                 case 'value':
-                    // eslint-disable-next-line @typescript-eslint/dot-notation
                     if (((isNullOrUndefined(this.datepickerOptions) || (this.datepickerOptions['value'] === undefined)) || dynamic) &&
                     !this.isBlazorServer) {
                         const value: string = this.inputElement.getAttribute(prop);

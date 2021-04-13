@@ -23,6 +23,7 @@ import { WTableFormat, WRowFormat, WCellFormat, WParagraphStyle } from '../forma
 import { ParagraphInfo, HelperMethods } from '../editor/editor-helper';
 import { BookmarkInfo } from './history-helper';
 import { DocumentHelper } from '../viewer';
+import { ListLevelPattern} from '../../base/types';
 
 /**
  * @private
@@ -226,6 +227,15 @@ export class BaseHistoryInfo {
         if (this.action === 'InsertCommentWidget' || this.action === 'DeleteCommentWidget') {
             this.revertComment();
             return;
+        }
+        if (this.action === 'ListFormat' && this.owner.editor.listNumberFormat !== '') {
+            let abstractList: WListLevel = this.documentHelper.lists[0].abstractList.levels[this.owner.editor.listLevelNumber];
+            let currentListLevelPattern: ListLevelPattern = abstractList.listLevelPattern;
+            let currentNUmberFormat: string = abstractList.numberFormat
+            abstractList.listLevelPattern = this.owner.editor.listLevelPattern;
+            abstractList.numberFormat = this.owner.editor.listNumberFormat;
+            this.owner.editor.listLevelPattern = currentListLevelPattern;
+            this.owner.editor.listNumberFormat = currentNUmberFormat;
         }
         this.owner.isShiftingEnabled = true;
         let selectionStartTextPosition: TextPosition = undefined;

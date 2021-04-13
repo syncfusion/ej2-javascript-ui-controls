@@ -920,6 +920,11 @@ export class Gantt extends Component<HTMLElement>
     /**
      * @private
      */
+     public isFromOnPropertyChange: boolean = false;
+
+    /**
+     * @private
+     */
     public isGanttChartRendered: boolean = false;
 
     /**
@@ -1695,8 +1700,7 @@ export class Gantt extends Component<HTMLElement>
             this.timelineModule.validateTimelineProp();
         }
         if (isChange) {
-            this.updateProjectDates(
-                this.cloneProjectStartDate, this.cloneProjectEndDate, this.isTimelineRoundOff);
+            this.isFromOnPropertyChange = isChange;
             if (this.enableValidation) {
                 this.dataOperation.updateGanttData();
             }

@@ -153,6 +153,11 @@ export class Border extends ChildProperty<Border> {
      */
     @Property(0)
     public width: number;
+    /**
+     * Sets and gets the opacity of the border in maps.
+     */
+     @Property(null)
+     public opacity: number;
 
 }
 /**

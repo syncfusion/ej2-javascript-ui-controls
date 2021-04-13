@@ -1133,7 +1133,7 @@ export class Zoom {
                     strokeColor = this.selectionColor;
                 }
                 this.currentToolbarEle.appendChild(map.renderer.drawPath(new PathOption(
-                    map.element.id + '_Zooming_ToolBar_' + toolbar, fillColor, 1, strokeColor, 1, null,
+                    map.element.id + '_Zooming_ToolBar_' + toolbar, fillColor, 1, strokeColor, 1, 1, null,
                     direction + '4.114s-1.828,4.114-4.114,4.114S5.943,8.229,5.943,5.943z')
                 ) as SVGPathElement);
                 this.zoomElements = this.currentToolbarEle;
@@ -1143,7 +1143,7 @@ export class Zoom {
             case 'zoomin':
                 direction = 'M 8, 0 L 8, 16 M 0, 8 L 16, 8';
                 this.currentToolbarEle.appendChild(map.renderer.drawPath(new PathOption(
-                    map.element.id + '_Zooming_ToolBar_' + toolbar + '_Path', fill, 3, this.maps.themeStyle.zoomFillColor, 1, null, direction)
+                    map.element.id + '_Zooming_ToolBar_' + toolbar + '_Path', fill, 3, this.maps.themeStyle.zoomFillColor, 1, 1, null, direction)
                 ) as SVGPathElement);
                 this.zoomInElements = this.currentToolbarEle;
                 this.wireEvents(this.currentToolbarEle, this.performToolBarAction);
@@ -1151,7 +1151,7 @@ export class Zoom {
             case 'zoomout':
                 direction = 'M 0, 8 L 16, 8';
                 this.currentToolbarEle.appendChild(map.renderer.drawPath(new PathOption(
-                    map.element.id + '_Zooming_ToolBar_' + toolbar, fill, 3, this.maps.themeStyle.zoomFillColor, 1, null, direction)
+                    map.element.id + '_Zooming_ToolBar_' + toolbar, fill, 3, this.maps.themeStyle.zoomFillColor, 1, 1, null, direction)
                 ) as SVGPathElement);
                 this.zoomOutElements = this.currentToolbarEle;
                 this.wireEvents(this.currentToolbarEle, this.performToolBarAction);
@@ -1169,7 +1169,7 @@ export class Zoom {
                     color = this.selectionColor;
                 }
                 this.currentToolbarEle.appendChild(map.renderer.drawPath(new PathOption(
-                    map.element.id + '_Zooming_ToolBar_' + toolbar, color, 1, color, 1, null,
+                    map.element.id + '_Zooming_ToolBar_' + toolbar, color, 1, color, 1, 1, null,
                     direction)
                 ) as SVGPathElement);
                 this.panColor = color;
@@ -1183,7 +1183,7 @@ export class Zoom {
                 direction += '13.484l-1.055-1.178C9.419,12.672,8.728,12.875,8,12.875c-2.4,0-4.364-2.194-4.364-4.875h2.182L2.909,4.75L0,8h2.182c0,';
                 this.currentToolbarEle.appendChild(map.renderer.drawPath(new PathOption(
                     map.element.id + '_Zooming_ToolBar_' + toolbar, this.fillColor, null, this.maps.themeStyle.zoomFillColor,
-                    1, null, direction + '3.575,2.618,6.5,5.818,6.5C9.128,14.5,10.219,14.134,11.091,13.484L11.091,13.484z')
+                    1, 1, null, direction + '3.575,2.618,6.5,5.818,6.5C9.128,14.5,10.219,14.134,11.091,13.484L11.091,13.484z')
                 ) as HTMLElement);
                 this.wireEvents(this.currentToolbarEle, this.performToolBarAction);
                 break;

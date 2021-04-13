@@ -439,6 +439,9 @@ export class MsWordPaste {
                 collection = [];
                 continue;
             }
+            if (listNodes[i].getAttribute('style') && listNodes[i].getAttribute('style').indexOf('mso-outline-level') !== -1) {
+                listNodes[i].setAttribute('style', listNodes[i].getAttribute('style').replace('mso-outline-level', 'mso-outline'));
+            }
             content = listNodes[i].getAttribute('style');
             if (content && content.indexOf('level') !== -1) {
                 // eslint-disable-next-line

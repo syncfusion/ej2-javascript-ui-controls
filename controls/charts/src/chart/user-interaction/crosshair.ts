@@ -263,7 +263,8 @@ export class Crosshair {
                         const render: SvgRenderer | CanvasRenderer = chart.enableCanvas ? this.svgRenderer : chart.renderer;
                         textElem = textElement(
                             render, options, axis.crosshairTooltip.textStyle,
-                            axis.crosshairTooltip.textStyle.color || chart.themeStyle.crosshairLabel, axisGroup
+                            axis.crosshairTooltip.textStyle.color || chart.themeStyle.crosshairLabel, axisGroup, null, null, null,
+                            null, null, null, null, null, chart.enableCanvas
                         );
                     }
                     direction = findDirection(

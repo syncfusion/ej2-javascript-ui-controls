@@ -2,7 +2,7 @@ import { DocumentEditor } from '../../../src/document-editor/document-editor';
 import { DocumentHelper } from '../../../src/document-editor/implementation/viewer/viewer';
 import { createElement } from '@syncfusion/ej2-base';
 import { TestHelper } from '../../test-helper.spec';
-import { ParagraphWidget, LineWidget, BlockWidget, FootnoteElementBox, ShapeElementBox } from '../../../src/document-editor/implementation/viewer/page';
+import { ParagraphWidget, LineWidget, BlockWidget, FootnoteElementBox, ShapeElementBox, ShapeBase } from '../../../src/document-editor/implementation/viewer/page';
 import { FootnoteType, WSectionFormat, FootnoteRestartIndex, FootEndNoteNumberFormat } from '../../../src';
 
 let footendNoteJson: any = {
@@ -871,14 +871,14 @@ describe('Shape Validation', () => {
         }, 500);
     });
     it('Square, TopAndBottom, Tight Shape', () => {
-        let shape1: ShapeElementBox = para[0].floatingElements[0];
-        let shape2: ShapeElementBox = para[1].floatingElements[0];
-        let shape3: ShapeElementBox = para[2].floatingElements[0];
+        let shape1: ShapeBase = para[0].floatingElements[0];
+        let shape2: ShapeBase = para[1].floatingElements[0];
+        let shape3: ShapeBase = para[2].floatingElements[0];
         expect(shape1.textWrappingStyle).toBe('Square');
         expect(shape1.textWrappingType).toBe('Both');
         expect(shape1.distanceBottom).toBe(0.0);
-        expect(shape1.distanceLeft).toBe(9.0);
-        expect(shape1.distanceRight).toBe(9.0);
+        expect(shape1.distanceLeft).toBe(12.0);
+        expect(shape1.distanceRight).toBe(12.0);
         expect(shape1.distanceTop).toBe(0.0);
 
         expect(shape2.textWrappingStyle).toBe('TopAndBottom');

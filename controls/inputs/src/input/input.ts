@@ -2,7 +2,6 @@
 import { createElement, attributes, addClass, removeClass, detach, classList } from '@syncfusion/ej2-base';
 import { closest, formatUnit, isNullOrUndefined, remove } from '@syncfusion/ej2-base';
 const CLASSNAMES: ClassNames = {
-/* eslint-disable @typescript-eslint/naming-convention */
     RTL: 'e-rtl',
     DISABLE: 'e-disabled',
     INPUT: 'e-input',
@@ -18,7 +17,6 @@ const CLASSNAMES: ClassNames = {
     NOFLOATLABEL: 'e-no-float-label',
     INPUTCUSTOMTAG: 'e-input-custom-tag',
     FLOATCUSTOMTAG: 'e-float-custom-tag'
-/* eslint-enable @typescript-eslint/naming-convention */
 };
 
 /* eslint-disable no-inner-declarations */
@@ -112,7 +110,6 @@ export namespace Input {
         }
     }
 
-    // eslint-disable-next-line no-underscore-dangle
     function _focusFn (): void {
         const label: HTMLElement = <HTMLElement> getParentNode(this).getElementsByClassName('e-float-text')[0];
         if (!isNullOrUndefined(label)) {
@@ -123,7 +120,6 @@ export namespace Input {
         }
     }
 
-    // eslint-disable-next-line no-underscore-dangle
     function _blurFn (): void {
         const parent: HTMLElement = getParentNode(this);
         if ((parent.getElementsByTagName('textarea')[0]) ? parent.getElementsByTagName('textarea')[0].value === '' :
@@ -674,7 +670,6 @@ export namespace Input {
         }
     }
 
-    // eslint-disable-next-line no-underscore-dangle
     function _internalRipple(isRipple: boolean, container: HTMLElement, button?: HTMLElement): void {
         const argsButton: HTMLElement[] = [];
         argsButton.push(button);
@@ -693,14 +688,12 @@ export namespace Input {
         }
     }
 
-    // eslint-disable-next-line no-underscore-dangle
     function _onMouseRipple (container?: HTMLElement, button?: Element): void {
         if (!container.classList.contains('e-disabled') && !container.querySelector('input').readOnly ) {
             button.classList.add('e-input-btn-ripple');
         }
     }
 
-    // eslint-disable-next-line no-underscore-dangle
     function _onMouseDownRipple(): void {
         // eslint-disable-next-line @typescript-eslint/no-this-alias
         const ele: HTMLElement = this;
@@ -711,7 +704,6 @@ export namespace Input {
         _onMouseRipple(parentEle , ele);
     }
 
-    // eslint-disable-next-line no-underscore-dangle
     function _onMouseUpRipple (): void {
         // eslint-disable-next-line @typescript-eslint/no-this-alias
         const ele: HTMLElement = this;
@@ -826,7 +818,6 @@ export namespace Input {
 /* eslint-enable no-inner-declarations */
 
 interface ClassNames {
-/* eslint-disable @typescript-eslint/naming-convention */
     RTL: string
     DISABLE: string
     INPUT: string
@@ -842,7 +833,6 @@ interface ClassNames {
     NOFLOATLABEL: string
     INPUTCUSTOMTAG: string
     FLOATCUSTOMTAG: string
-/* eslint-enable @typescript-eslint/naming-convention */
 }
 export interface InputObject {
     container?: HTMLElement
@@ -942,7 +932,6 @@ export interface IInput {
     change: Function
 }
 
-// eslint-disable-next-line @typescript-eslint/naming-convention
 export type createElementParams = (
     tag: string,
     prop?: { id?: string; className?: string; innerHTML?: string; styles?: string; attrs?: { [key: string]: string } }

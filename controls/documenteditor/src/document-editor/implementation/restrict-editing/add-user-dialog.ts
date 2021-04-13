@@ -103,8 +103,8 @@ export class AddUserDialog {
      * @returns {void}
      */
     public loadUserDetails = (): void => {
-        this.documentHelper.restrictEditingPane.addedUser.dataSource = this.documentHelper.userCollection;
-        this.documentHelper.restrictEditingPane.addedUser.refresh();
+        this.documentHelper.restrictEditingPane.addedUser.dataSource = this.documentHelper.userCollection.slice();
+        this.documentHelper.restrictEditingPane.addedUser.dataBind();
     };
     /**
      * @private
@@ -142,8 +142,8 @@ export class AddUserDialog {
             if (this.documentHelper.userCollection.indexOf(this.textBoxInput.value) === -1) {
                 this.documentHelper.userCollection.push(this.textBoxInput.value);
             }
-            this.userList.dataSource = this.documentHelper.userCollection;
-            this.userList.refresh();
+            this.userList.dataSource = this.documentHelper.userCollection.slice();
+            this.userList.dataBind();
             this.textBoxInput.value = '';
         } else {
             DialogUtility.alert('Invalid user name');
@@ -182,8 +182,8 @@ export class AddUserDialog {
         const index: number = this.documentHelper.userCollection.indexOf(this.userList.getSelectedItems().text as string);
         if (index > -1) {
             this.documentHelper.userCollection.splice(index, 1);
-            this.userList.dataSource = this.documentHelper.userCollection;
-            this.userList.refresh();
+            this.userList.dataSource = this.documentHelper.userCollection.slice();
+            this.userList.dataBind();
         }
     };
 }

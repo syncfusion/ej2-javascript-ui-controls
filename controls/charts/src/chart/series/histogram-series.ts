@@ -80,6 +80,34 @@ export class HistogramSeries extends ColumnSeries {
         return updatedData;
     }
     /**
+     * Calculates bin values.
+     *
+     * @returns null
+     * @private
+     */
+    public calculateBinValues(series: Series): void {
+        let yValuesCount: number = series.histogramValues.yValues.length;
+        let binWidth: number = series.histogramValues.binWidth;
+        let mean: number = series.histogramValues.mean;
+        let sDValue: number = series.histogramValues.sDValue;
+        let pointsCount: number = 500;
+        let min: number = series.xAxis.minimum ? parseInt(series.xAxis.minimum.toString()) : series.xMin;
+        let max: number = series.xAxis.maximum ? parseInt(series.xAxis.maximum.toString()) : series.xMax;
+        let points: number = series.points.length;
+        let xValue: number;
+        let yValue: number;
+        let del: number = (max - min) / (pointsCount - 1);
+        if (points) {
+            for (let i: number = 0; i < pointsCount; i++) {
+                xValue = min + i * del;
+                yValue = (Math.exp(-(xValue - mean) * (xValue - mean) / (2 * sDValue * sDValue)) /
+                    (sDValue * Math.sqrt(2 * Math.PI))) * binWidth * yValuesCount;
+                series.yMin = series.yMin > yValue   ? yValue : series.yMin;
+                series.yMax = series.yMax < yValue   ? yValue : series.yMax;
+            }
+        }
+    }
+    /**
      * Render Normal Distribution for Histogram series.
      *
      * @returns {void}

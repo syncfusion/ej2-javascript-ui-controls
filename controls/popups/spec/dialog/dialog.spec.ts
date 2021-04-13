@@ -3463,3 +3463,25 @@ describe('EJ2-46093 - Modal Dialog can still tab and select other elements issue
         destroyDialog(events);
     });
 });
+
+describe('EJ2-45604 - Dialogs primary button without flat appearance', () => {
+    let dialog: Dialog;
+    beforeEach(() => {
+        let ele: HTMLElement = createElement('div', { id: 'dialog' });
+        document.body.appendChild(ele);
+    });
+    afterEach(() => {
+        destroyDialog(dialog);
+    });
+
+    it('button with isFlat as true', () => {
+        dialog = new Dialog({ header: "Dialog", animationSettings: { effect: 'None' }, buttons: [{ buttonModel: { isPrimary: true, content: 'ok' }, isFlat: true }], }, '#dialog');
+        let buttonElements: NodeListOf <HTMLButtonElement> = document.querySelectorAll('.e-footer-content > button');
+        expect(buttonElements[0].classList.contains('e-flat')).toBe(true);
+    });
+    it('button with isFlat as false', () => {
+        dialog = new Dialog({ header: "Dialog", animationSettings: { effect: 'None' }, buttons: [{ buttonModel: { isPrimary: true, content: 'ok' }, isFlat: false }], }, '#dialog');
+        let buttonElements: NodeListOf <HTMLButtonElement> = document.querySelectorAll('.e-footer-content > button');
+        expect(buttonElements[0].classList.contains('e-flat')).toBe(false);
+    });
+});

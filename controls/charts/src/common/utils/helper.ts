@@ -1079,10 +1079,13 @@ export function chartReactTemplate(
         chart.element.id + '_Series_' + (series.index === undefined ? series.category : series.index) + '_DataLabelCollections'
         );
     if (parentElement) {
+        if (point.index === 0) {
+            chart.dataLabelCollections = []; // clear old datalabel bounds for react callback
+        }
         chart.dataLabelModule.calculateTemplateLabelSize(
             parentElement, childElement, point, series, series.marker.dataLabel,
             labelIndex, series.clipRect, redraw, true
-            );
+        );
     }
 }
 /** @private */
@@ -1138,12 +1141,14 @@ export function getFontStyle(font: FontModel): string {
     return style;
 }
 /** @private */
-export function measureElementRect(element: HTMLElement, redraw: boolean = false): ClientRect {
-    document.body.appendChild(element);
+export function measureElementRect(element: HTMLElement, redraw: boolean = false, isReactCallback?: boolean): ClientRect {
+    if (!isReactCallback) { // If the element is already in DOM, no need to append in the body.
+        document.body.appendChild(element);
+    }
     const bounds: ClientRect = element.getBoundingClientRect();
     if (redraw) {
         remove(element);
-    } else {
+    } else if (!isReactCallback) { // for react chart data label template - (callback function)
         removeElement(element.id);
     }
     return bounds;

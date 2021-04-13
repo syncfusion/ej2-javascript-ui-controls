@@ -100,7 +100,8 @@ export class AgendaBase {
 
     public createAppointment(event: Record<string, any>): HTMLElement[] {
         const fieldMapping: EventFieldsMapping = this.parent.eventFields;
-        let eventSubject: string = (event[fieldMapping.subject] || this.parent.eventSettings.fields.subject.default) as string;
+        let eventSubject: string = (event[fieldMapping.subject] || this.parent.eventSettings.fields.subject.default
+            || this.parent.localeObj.getConstant('addTitle')) as string;
         const eventLocation: string = (event[fieldMapping.location] || this.parent.eventSettings.fields.location.default) as string;
         const appSubjectWrap: HTMLElement = createElement('div', { className: cls.SUBJECT_WRAP });
         if (!isNullOrUndefined(eventLocation) && eventLocation !== '') {

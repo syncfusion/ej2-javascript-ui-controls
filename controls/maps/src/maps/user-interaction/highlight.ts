@@ -150,7 +150,8 @@ export class Highlight {
         }
         const border: BorderModel = {
             color: this.highlightSettings.border.color,
-            width: this.highlightSettings.border.width / (isMarkerSelect ? 1 : this.maps.scale)
+            width: this.highlightSettings.border.width / (isMarkerSelect ? 1 : this.maps.scale),
+            opacity: this.highlightSettings.border.opacity
         };
         let eventArgs: ISelectionEventArgs = {
             opacity: this.highlightSettings.opacity,
@@ -169,6 +170,7 @@ export class Highlight {
             eventArgs = blazorEventArgs;
         }
         this.maps.trigger(itemHighlight, eventArgs, () => {
+            eventArgs.border.opacity = isNullOrUndefined(this.highlightSettings.border.opacity) ? this.highlightSettings.opacity : this.highlightSettings.border.opacity;
             this.highlightMap(targetEle, eventArgs);
         });
     }

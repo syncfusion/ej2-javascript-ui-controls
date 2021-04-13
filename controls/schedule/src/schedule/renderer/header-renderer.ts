@@ -48,11 +48,13 @@ export class HeaderRenderer {
                 addClass([contentWrap], cls.SCROLL_HIDDEN);
             } else {
                 removeClass([contentWrap], cls.SCROLL_HIDDEN);
-                let popupObj: Popup =
-                        ((<HTMLElement>this.element.querySelector('.e-toolbar-pop')) as EJ2Instance).ej2_instances[0] as Popup;
-                if (popupObj && !(!isNullOrUndefined(closestPop) && closestPop.classList.contains('e-hor-nav') &&
-                this.element.querySelector('.e-toolbar-pop').classList.contains(cls.POPUP_OPEN))) {
-                    popupObj.hide();
+                let popupEle: HTMLElement = this.element.querySelector('.e-toolbar-pop') as HTMLElement;
+                if (!isNullOrUndefined(popupEle)) {
+                    let popupObj: Popup = (popupEle as EJ2Instance).ej2_instances[0] as Popup;
+                    if (popupObj && !(!isNullOrUndefined(closestPop) && closestPop.classList.contains('e-hor-nav') &&
+                        popupEle.classList.contains(cls.POPUP_OPEN))) {
+                        popupObj.hide();
+                    }
                 }
             }
         }

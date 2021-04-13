@@ -5448,4 +5448,29 @@ describe('Splitter Control', () => {
             }, 3000);
         });
     });
+    describe('Remove pane Nested Splitter', () => {
+        let splitterObj: any;
+        let innerSplitterObj: any;
+        beforeAll((): void => {
+        let element: HTMLElement = createElement('div', { id: 'default'});
+        let child1: HTMLElement = createElement('div');
+        let child2: HTMLElement = createElement('div', { id: 'innerEle'});
+        element.appendChild(child1);
+        element.appendChild(child2);
+        document.body.appendChild(element);
+        splitterObj = new Splitter({ height: '400px', width: '400px', paneSettings: [{ size: '50%', collapsible: false }, { collapsible: true }]});
+        innerSplitterObj = new Splitter({ height: '400px', width: '400px', paneSettings: [{ size: '50%', collapsible: false }, {  collapsible: true }]});
+        splitterObj.appendTo(document.getElementById('default'));
+        innerSplitterObj.appendTo(document.getElementById('innerEle'));
+        });
+        afterAll((): void => {
+        document.body.innerHTML = '';
+        });
+        it('Check separator', () => {
+        innerSplitterObj.removePane(0);
+        expect(splitterObj.allPanes[0].style.order).toBe("0");
+        expect(splitterObj.allPanes[1].style.order).toBe("2");
+        expect(splitterObj.allBars[0].style.order).toBe("1");
+        });
+    });
  });

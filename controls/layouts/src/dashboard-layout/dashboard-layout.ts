@@ -2318,6 +2318,7 @@ export class DashboardLayout extends Component<HTMLElement> implements INotifyPr
     }
     protected setResizingClass(ele?: HTMLElement, container?: HTMLElement): void {
         this.availableClasses = this.resizableHandles;
+        if (!ele.querySelector(".e-resize")) {
         for (let j: number = 0; j < this.availableClasses.length; j++) {
             const spanEle: HTMLElement = this.createElement('span');
             let addClassValue: string;
@@ -2330,6 +2331,7 @@ export class DashboardLayout extends Component<HTMLElement> implements INotifyPr
             }
             addClass([spanEle], [addClassValue, this.availableClasses[j], resize, resizeicon]);
         }
+      }
     }
     protected setXYAttributes(element: HTMLElement, panelModel: PanelModel): void {
         const value: IAttributes = {

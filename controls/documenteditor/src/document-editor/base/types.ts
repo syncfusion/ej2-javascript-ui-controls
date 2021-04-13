@@ -1456,7 +1456,14 @@ export type AutoShapeType = 'Rectangle' | 'Oval';
  *
  * @private
  */
-export type TextWrappingStyle = 'Inline' | 'InFrontOfText' | 'BehindText' | 'Square' | 'TopAndBottom' | 'Tight';
+export type TextWrappingStyle = 'Inline' | 'InFrontOfText' | 'Behind' | 'Square' | 'TopAndBottom' | 'Tight';
+
+/**
+ * Wrapping Type
+ *
+ * @private
+ */
+ export type TextWrappingType = 'Both' | 'Left' | 'Right' | 'Largest';
 
 /**
  * Form Filling Mode

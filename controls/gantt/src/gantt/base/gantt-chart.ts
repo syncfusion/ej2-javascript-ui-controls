@@ -104,15 +104,22 @@ export class GanttChart {
         }
     }
     private renderChartElements(): void {
-        this.parent.chartRowsModule.renderChartRows();
-        if (this.parent.predecessorModule && this.parent.taskFields.dependency) {
-            this.parent.connectorLineIds = [];
-            this.parent.updatedConnectorLineCollection = [];
-            this.parent.predecessorModule.createConnectorLinesCollection();
-        }
-        this.parent.connectorLineModule.renderConnectorLines(this.parent.updatedConnectorLineCollection);
-        if (this.parent.viewType === 'ResourceView' && this.parent.showOverAllocation) {
-            this.renderOverAllocationContainer();
+        if (this.parent.isFromOnPropertyChange) {
+            this.rangeViewContainer.innerHTML = '';
+            this.parent.updateProjectDates(
+                this.parent.cloneProjectStartDate, this.parent.cloneProjectEndDate, this.parent.isTimelineRoundOff);
+            this.parent.isFromOnPropertyChange = false;
+        } else {
+            this.parent.chartRowsModule.renderChartRows();
+            if (this.parent.predecessorModule && this.parent.taskFields.dependency) {
+                this.parent.connectorLineIds = [];
+                this.parent.updatedConnectorLineCollection = [];
+                this.parent.predecessorModule.createConnectorLinesCollection();
+            }
+            this.parent.connectorLineModule.renderConnectorLines(this.parent.updatedConnectorLineCollection);
+            if (this.parent.viewType === 'ResourceView' && this.parent.showOverAllocation) {
+                this.renderOverAllocationContainer();
+            }
         }
         this.updateWidthAndHeight();
         this.setOverflowStyle();

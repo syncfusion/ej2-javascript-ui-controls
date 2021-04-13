@@ -8,6 +8,13 @@ import {ComponentModel} from '@syncfusion/ej2-base';
 export interface ButtonPropsModel {
 
     /**
+     * Specifies the flat appearance of the dialog buttons
+     *
+     * @default true
+     */
+    isFlat?: boolean;
+
+    /**
      * Specifies the button component properties to render the dialog buttons.
      */
     buttonModel?: ButtonModel;

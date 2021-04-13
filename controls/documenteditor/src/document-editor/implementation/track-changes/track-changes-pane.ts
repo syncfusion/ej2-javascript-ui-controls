@@ -328,10 +328,8 @@ export class TrackChangesPane {
             this.removeAllChanges();
             if (!this.enableButtons && !this.menuoptionEle.classList.contains('e-de-overlay')) {
                 this.menuoptionEle.classList.add('e-de-overlay');
-                this.menuDropDownButton.disabled = true;
             } else if (this.menuoptionEle.classList.contains('e-de-overlay')) {
                 this.menuoptionEle.classList.remove('e-de-overlay');
-                this.menuDropDownButton.disabled = false;
             }
             for (let i: number = 0; i < this.owner.revisions.changes.length; i++) {
                 let revision: Revision = this.owner.revisions.changes[i];

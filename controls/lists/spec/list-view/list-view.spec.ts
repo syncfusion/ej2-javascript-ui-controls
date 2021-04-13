@@ -2081,7 +2081,6 @@ describe('ListView', () => {
             let curUL: any;
             beforeEach((done: Function) => {
                 treeObj.sortOrder = 'Descending';
-                treeObj.dataBind();
                 curUL = treeObj.curUL;
                 treeObj.back();
                 treeObj.actionComplete = () => {
@@ -2091,7 +2090,7 @@ describe('ListView', () => {
 
             it('', () => {
                 expect(curUL).not.toBe(treeObj.curUL);
-                expect(isVisible(curUL)).toBe(false);
+                setTimeout(() => { expect(isVisible(curUL)).toBe(false); }, 100);
             });
         });
 

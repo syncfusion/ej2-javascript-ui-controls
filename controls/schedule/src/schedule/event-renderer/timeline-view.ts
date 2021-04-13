@@ -301,7 +301,7 @@ export class TimelineEvent extends MonthEvent {
     }
 
     private getSameDayEventsWidth(startDate: Date, endDate: Date): number {
-        return (((endDate.getTime() - startDate.getTime())) / (60 * 1000) * (this.cellWidth * this.slotCount) / this.interval);
+        return ((util.getUniversalTime(endDate) - util.getUniversalTime(startDate)) / util.MS_PER_MINUTE * (this.cellWidth * this.slotCount) / this.interval);
     }
 
     private getSpannedEventsWidth(startDate: Date, endDate: Date, diffInDays: number): number {
@@ -330,12 +330,12 @@ export class TimelineEvent extends MonthEvent {
 
     private getAppointmentLeft(schedule: { [key: string]: Date }, startTime: Date, day: number): number {
         const slotTd: number = (this.isSameDay(startTime, schedule.startHour as Date)) ?
-            ((startTime.getTime() - schedule.startHour.getTime()) / ((60 * 1000) * this.interval)) * this.slotCount : 0;
+            ((util.getUniversalTime(startTime) - util.getUniversalTime(schedule.startHour)) / (util.MS_PER_MINUTE * this.interval)) * this.slotCount : 0;
         if (day === 0) {
             return slotTd;
         } else {
             const daySlot: number =
-                Math.round((((schedule.endHour.getTime() - schedule.startHour.getTime()) / (60 * 1000)) / this.interval) * this.slotCount);
+                Math.round((((util.getUniversalTime(schedule.endHour) - util.getUniversalTime(schedule.startHour)) / util.MS_PER_MINUTE) / this.interval) * this.slotCount);
             return (daySlot * day) + slotTd;
         }
     }

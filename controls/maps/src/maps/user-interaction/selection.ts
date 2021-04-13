@@ -133,7 +133,8 @@ export class Selection {
         const selectionsettings: SelectionSettingsModel = this.selectionsettings;
         const border: BorderModel = {
             color: this.selectionsettings.border.color,
-            width: this.selectionsettings.border.width / (this.selectionType === 'Marker' ? 1 : this.maps.scale)
+            width: this.selectionsettings.border.width / (this.selectionType === 'Marker' ? 1 : this.maps.scale),
+            opacity: this.selectionsettings.border.opacity
         };
         let eventArgs: ISelectionEventArgs = {
             opacity: this.selectionsettings.opacity,
@@ -151,6 +152,7 @@ export class Selection {
             eventArgs = blazorEventArgs;
         }
         this.maps.trigger('itemSelection', eventArgs, (observedArgs: ISelectionEventArgs) => {
+            eventArgs.border.opacity = isNullOrUndefined(this.selectionsettings.border.opacity) ? this.selectionsettings.opacity : this.selectionsettings.border.opacity;
             if (!eventArgs.cancel) {
                 if (targetElement.getAttribute('class') === this.selectionType + 'selectionMapStyle') {
                     removeClass(targetElement);

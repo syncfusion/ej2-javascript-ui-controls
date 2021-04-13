@@ -56,6 +56,13 @@ export interface SanitizeRemoveAttrs {
 
 export class ButtonProps extends ChildProperty<ButtonProps> {
     /**
+     * Specifies the flat appearance of the dialog buttons
+     *
+     * @default true
+     */
+    @Property(true)
+    public isFlat: boolean;
+    /**
      * Specifies the button component properties to render the dialog buttons.
      */
     @Property()
@@ -1293,7 +1300,7 @@ export class Dialog extends Component<HTMLElement> implements INotifyPropertyCha
             }
             if (!this.isBlazorServerRender() && !isNullOrUndefined(this.ftrTemplateContent)) {
                 this.btnObj[i].appendTo(this.ftrTemplateContent.children[i] as HTMLElement);
-                this.btnObj[i].element.classList.add('e-flat');
+                if (this.buttons[i].isFlat){ this.btnObj[i].element.classList.add('e-flat'); }
                 this.primaryButtonEle = this.element.getElementsByClassName('e-primary')[0] as HTMLElement;
             }
         }

@@ -59,8 +59,8 @@ describe('Maps Component Base Spec', () => {
         it('Maps checking with loaded event and control class name', (done: Function) => {
             maps.loaded = (args: ILoadedEventArgs) => {
                 expect(args.name).toBe('loaded');
-                expect(args.maps.availableSize.width).toBe(800);
-                expect(args.maps.availableSize.height).toBe(500);
+                expect(args.maps.availableSize.width === 763 || args.maps.availableSize.width === 769).toBe(true);
+                expect(args.maps.availableSize.height).toBe(450);
                 expect(getIdElement(id).getAttribute('class').indexOf('e-maps') > -1).toBe(true);
                 maps.loaded = null;
                 done();
@@ -124,9 +124,143 @@ describe('Maps Component Base Spec', () => {
             maps.width = '70%';
             maps.loaded = (args: ILoadedEventArgs) => {
                 expect(args.maps.availableSize.height).toBe(450);
-                expect(args.maps.availableSize.width).toBe(560);
-                expect(getIdElement(id + '_svg').getAttribute('width')).toBe('560');
+                expect(args.maps.availableSize.width === 376.59999999999997 || args.maps.availableSize.width === 373.8).toBe(true);
+                expect(getIdElement(id + '_svg').getAttribute('width') === "376.59999999999997" || getIdElement(id + '_svg').getAttribute('width') === "373.8").toBe(true);
                 expect(getIdElement(id + '_svg').getAttribute('height')).toBe('450');
+                maps.loaded = null;
+                done();
+            };
+            maps.refresh();
+        });
+    });
+    describe('Maps parent height and width testing spec', () => {
+        let element: Element;
+        let childElement: Element;
+        let maps: Maps;
+        let id: string = 'maps-container';
+        let trigger: MouseEvents = new MouseEvents();
+        beforeAll(() => {
+            element = createElement('div', { id: 'parentElement' });
+            childElement = createElement('div', { id: id });
+            (element as HTMLDivElement).style.width = '800px';
+            (element as HTMLDivElement).style.height = '500px';
+            element.appendChild(childElement);
+            document.body.appendChild(element);
+            maps = new Maps({
+                height:'100%',
+                width:'100%',
+                layers: [{
+                    shapeData: World_Map,
+                    markerSettings: [{ visible: false }],
+                    tooltipSettings: { visible: false },
+                    navigationLineSettings: [{
+                        visible: false
+                    }]
+                }],
+                zoomSettings: { enable: false }
+            });
+        });
+        afterAll(() => {
+            maps.destroy();
+            removeElement(id);
+        });
+        it('Maps checking with loaded event and control class name', (done: Function) => {
+            maps.loaded = (args: ILoadedEventArgs) => {
+                expect(args.name).toBe('loaded');
+                expect(args.maps.availableSize.width).toBe(800);
+                expect(args.maps.availableSize.height).toBe(500);
+                expect(getIdElement(id).getAttribute('class').indexOf('e-maps') > -1).toBe(true);
+                maps.loaded = null;
+                done();
+            };
+            maps.appendTo('#' + id);
+            // To solve coverage issue
+            maps.getPersistData();
+        });
+        it('Maps background onproperty change testing', () => {
+            maps.background = 'aqua';
+            maps.dataBind();
+            expect(getIdElement(id + '_MapBorder').getAttribute('fill')).toBe('aqua');
+        });
+        it('Maps load event checking', (done: Function) => {
+            maps.load = (args: ILoadEventArgs) => {
+                expect(args.name).toBe('load');
+                args.maps.width = '600px';
+                args.maps.height = '450px';
+                maps.load = null;
+            };
+            maps.loaded = (args: ILoadedEventArgs) => {
+                expect(args.maps.availableSize.width).toBe(600);
+                expect(args.maps.availableSize.height).toBe(450);
+                maps.loaded = null;
+                done();
+            };
+            maps.refresh();
+        });
+        it('Maps click event checking', () => {
+            maps.click = (args: IMouseEventArgs) => {
+                expect(args.name).toBe('click');
+                maps.click = null;
+            };
+            trigger.clickEvent(childElement);
+        });
+        it('Maps double click event checking', () => {
+            maps.doubleClick = (args: IMouseEventArgs) => {
+                expect(args.name).toBe('doubleClick');
+                maps.doubleClick = null;
+            };
+            trigger.doubleClickEvent(childElement);
+        });
+        it('Maps right click event checking', () => {
+            maps.rightClick = (args: IMouseEventArgs) => {
+                expect(args.name).toBe('rightClick');
+                maps.rightClick = null;
+            };
+            trigger.rightClickEvent(childElement);
+        });
+        it('Maps resize event checking', (done: Function) => {
+            maps.mapsOnResize(null);
+            maps.resize = (args: IResizeEventArgs) => {
+                expect(args.name).toBe('resize');
+                maps.resize = null;
+                done();
+            };
+            maps.mapsOnResize(null);
+        });
+        it('Maps height and width with(%) checking', (done: Function) => {
+            maps.height = '90%';
+            maps.width = '70%';
+            maps.loaded = (args: ILoadedEventArgs) => {
+                expect(args.maps.availableSize.height).toBe(405);
+                expect(args.maps.availableSize.width).toBe(392);
+                expect(getIdElement(id + '_svg').getAttribute('width')).toBe('392');
+                expect(getIdElement(id + '_svg').getAttribute('height')).toBe('405');
+                maps.loaded = null;
+                done();
+            };
+            maps.refresh();
+        });
+        it('Maps height pixel and width with(%) checking', (done: Function) => {
+            maps.height = '100px';
+            maps.width = '70%';
+            maps.loaded = (args: ILoadedEventArgs) => {
+                expect(args.maps.availableSize.height).toBe(100);
+                expect(args.maps.availableSize.width).toBe(392);
+                expect(getIdElement(id + '_svg').getAttribute('width')).toBe('392');
+                expect(getIdElement(id + '_svg').getAttribute('height')).toBe('100');
+                maps.loaded = null;
+                done();
+            };
+            maps.refresh();
+        });
+        it('Maps height(%) and width pixel checking', (done: Function) => {
+            maps.height = '90%';
+            maps.width = '500px';
+            maps.loaded = (args: ILoadedEventArgs) => {
+                expect(args.maps.availableSize.height).toBe(405);
+                expect(args.maps.availableSize.width).toBe(500);
+                expect(getIdElement(id + '_svg').getAttribute('width')).toBe('500');
+                expect(getIdElement(id + '_svg').getAttribute('height')).toBe('405');
                 maps.loaded = null;
                 done();
             };
@@ -166,7 +300,7 @@ describe('Maps Component Base Spec', () => {
         });
         it('Maps checking default size', (done: Function) => {
             maps.loaded = (args: ILoadedEventArgs) => {
-                expect(getIdElement(id + '_svg').getAttribute('width')).toBe('600');
+                expect(getIdElement(id + '_svg').getAttribute('width') === '763' || getIdElement(id + '_svg').getAttribute('width') === '769').toBe(true);
                 expect(getIdElement(id + '_svg').getAttribute('height')).toBe('450');
                 maps.loaded = null;
                 done();
@@ -176,7 +310,7 @@ describe('Maps Component Base Spec', () => {
         });
         it('dummy spec for coverage', () => {
             let border: BorderModel = { width: 1, color: 'aqua' };
-            let option: PathOption = new PathOption('balloon', 'blueviolet', 2, 'blueviolet', 1);
+            let option: PathOption = new PathOption('balloon', 'blueviolet', 2, 'blueviolet', 1, 1, "");
             let bal: Element = drawBalloon(maps, option, new Size(30, 50), new MapLocation(20, 30), maps.svgObject);
             let circle: Element = drawCircle(maps, new CircleOption('circle', 'orange', border, 1, 25, 95, 20, null), maps.svgObject);
             let pathOpt: PathOption = new PathOption('cross', 'teal', 2, 'red');
@@ -195,11 +329,11 @@ describe('Maps Component Base Spec', () => {
             pathOpt.d = 'M 130 100 L 180 150';
             let path: Element = drawPath(maps, pathOpt, maps.svgObject);
             let line: Element = drawLine(maps, new LineOption('line', new Line(180, 160, 130, 220), 'green', 1, 'violet'), maps.svgObject);
-            let poly: PolygonOption = new PolygonOption('polygon', '300,10 350,190 260,210', 'url(#pat)', 2, 'blueviolet', 1, '5, 5');
+            let poly: PolygonOption = new PolygonOption('polygon', '300,10 350,190 260,210', 'url(#pat)', 2, 'blueviolet', 1, 1, '5, 5');
             new PolygonOption('polygon', '300,10 350,190 260,210', 'url(#pat)', 2, 'blueviolet');
             drawPolygon(maps, poly, maps.svgObject);
             let polylin: PolylineOption = new PolylineOption('polyline', '300,160 350,340 360,450', 'red', 2, 'smokewhite');
-            new PolylineOption('polyline', '300,160 350,340 360,450', 'red', 2, 'smokewhite', 1, '5, 5');
+            new PolylineOption('polyline', '300,160 350,340 360,450', 'red', 2, 'smokewhite', 1, 1, '5, 5');
             drawPolyline(maps, polylin, maps.svgObject);
             let text: TextOption = new TextOption('text', 500, 100, 'middle', 'Maps text render testing');
             text = new TextOption('text', 500, 100, 'middle', 'Maps text render testing', 'translate(0, 0)', 'middle');
@@ -221,9 +355,9 @@ describe('Maps Component Base Spec', () => {
             renderTextElement(text, fontOpt, '#424242', maps.svgObject, true);
             new RectOption('rect', 'url(#pat)', border, 1, new Rect(100, 250, 400, 180), 5, 5, 'translate(0, 0)', '5, 5');
             drawRectangle(maps, new RectOption('rect', 'url(#pat)', border, 1, new Rect(100, 250, 400, 180)), maps.svgObject);
-            let option1: PathOption = new PathOption('balloon1', 'blueviolet', 2, 'white', 1);
+            let option1: PathOption = new PathOption('balloon1', 'blueviolet', 2, 'white', 1, 1, "");
             let bal1: Element = drawBalloon(maps, option1, new Size(30, 50), new MapLocation(20, 30));
-            option1 = new PathOption('balloon2', 'teal', 2, 'white', 1);
+            option1 = new PathOption('balloon2', 'teal', 2, 'white', 1, 1, "");
             let bal2: Element = drawBalloon(maps, option1, new Size(30, 50), new MapLocation(53, 30));
             let patt: PatternOptions = new PatternOptions('pat', 10, 55, 70, 60);
             new PatternOptions('pat', 10, 55, 70, 60, 'objectBoundingBox', 'objectBoundingBox', 'translate(0, 0)', 'url(#rect)');

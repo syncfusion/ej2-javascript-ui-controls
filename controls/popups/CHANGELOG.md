@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 19.1.56 (2021-04-13)
+
+### Dialog
+
+#### New Features
+
+- `#I307667`, `#F164363` - In Dialog, Provided the new API `isFlat` to add or remove the flat appearance of the dialog buttons.
+
 ## 18.4.43 (2021-02-16)
 
 ### Tooltip

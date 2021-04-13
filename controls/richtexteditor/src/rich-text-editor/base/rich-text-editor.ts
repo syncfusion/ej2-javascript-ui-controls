@@ -48,6 +48,7 @@ import { DialogRenderer } from '../renderer/dialog-renderer';
 import { SelectedEventArgs, RemovingEventArgs, UploadingEventArgs, BeforeUploadEventArgs } from '@syncfusion/ej2-inputs';
 import { Resize } from '../actions/resize';
 import { FileManager } from '../actions/file-manager';
+import { EditorManager } from '../../editor-manager';
 
 /**
  * Represents the Rich Text Editor component.
@@ -1515,14 +1516,6 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
         const allowedKeys: boolean = e.which === 32 || e.which === 13 || e.which === 8 || e.which === 46;
         if (((e.key !== 'shift' && !e.ctrlKey) && e.key && e.key.length === 1 || allowedKeys) || (this.editorMode === 'Markdown'
             && ((e.key !== 'shift' && !e.ctrlKey) && e.key && e.key.length === 1 || allowedKeys)) && !this.inlineMode.enable) {
-            if (this.editorMode === 'HTML') {
-                const range: Range = this.getRange();
-                const start: Node = range.startContainer;
-                const startParent: HTMLElement = start.parentNode as HTMLElement;
-                if (start === range.endContainer && start.nodeType === 3 && startParent.innerText.trim().charCodeAt(0) === 8203) {
-                    startParent.innerText = startParent.innerText.replace(/\u200B/g, '');
-                }
-            }
             this.formatter.onKeyHandler(this, e);
         }
         if (this.inputElement && this.inputElement.textContent.length !== 0) {
@@ -1611,6 +1604,19 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
             }
         }
         this.notifyMouseUp(e);
+        if (e.detail === 3) {
+            const range: Range = this.getRange();
+            const selection: Selection = (this.formatter.editorManager as EditorManager).domNode.getSelection();
+            if(/\s+$/.test(selection.toString())) {
+                if (!isNOU(range.startContainer.parentElement) && !isNOU(range.startContainer.parentElement.nextSibling) &&
+                (range.startContainer.parentElement.nextSibling.nodeType !== 3 ||
+                /\s+$/.test(range.startContainer.parentElement.nextSibling.textContent))
+                || range.startContainer.parentElement.tagName.toLocaleLowerCase() === "li") {
+                    range.setStart(range.startContainer, range.startOffset);
+                    range.setEnd(range.startContainer, range.startContainer.textContent.length);
+                }
+            }
+        }
     }
 
     /**
@@ -2706,6 +2712,9 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
             this.isRTE = false;
         }
         this.notify(events.docClick, { args: e });
+        if(e.detail > 3) {
+            e.preventDefault();
+        }
     }
 
     private blurHandler(e: FocusEvent): void {

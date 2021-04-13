@@ -2,7 +2,23 @@
 
 ## [Unreleased]
 
-## 19.1.55 (2021-04-06)
+## 19.1.56 (2021-04-13)
+
+### Chart
+
+#### Bug Fixes
+
+- `#310867` - 100% Stacking area is now working properly on browser resize.
+- `#318354` - Scrollbar issue for bar type series is resolved.
+- `#319835` - Normal distribution line in histogram series is rendering properly.
+
+### Bullet chart
+
+#### Bug Fixes
+
+- `#318856` - Label for the negative data is now rendering properly.
+
+## 19.1.54 (2021-03-30)
 
 ### Chart
 

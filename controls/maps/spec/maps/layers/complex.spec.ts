@@ -235,7 +235,7 @@ describe('Map marker properties tesing', () => {
             it('enable property To check the bubble valuepath which is applied from bubble datasource', (done: Function) => {
                 map.loaded = (args: ILoadedEventArgs) => {
                     let element: Element = document.getElementById(map.element.id + '_LayerIndex_0_BubbleIndex_0_dataIndex_0');
-                    expect(element.getAttribute('opacity')).toBe('0.8');
+                    expect(element.getAttribute('fill-opacity')).toBe('0.8');
                     done();
                 };
                 map.layers[0].bubbleSettings = [

@@ -812,9 +812,6 @@ export class Toolbar {
             }
             classList(this.propertiesPaneButton.element.parentElement, !enable ? ['e-de-overlay'] : [], !enable ? [] : ['e-de-overlay']);
         }
-        if (this.documentEditor.isReadOnly || this.documentEditor.documentHelper.isDocumentProtected) {
-            this.documentEditor.showRevisions = false;
-        }
         if (enable || (this.documentEditor.documentHelper.isDocumentProtected &&
             this.documentEditor.documentHelper.protectionType === 'FormFieldsOnly')) {
             this.enableDisableUndoRedo();

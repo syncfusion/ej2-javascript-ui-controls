@@ -555,7 +555,7 @@ export class SfdtReader {
 
                     this.parseBody(block.blocks, blocks, container, isSectionBreak, blockStartContentControl.contentControlProperties);
                     for (let j: number = 0; j < 2; j++) {
-                        const para: IWidget = j === 0 ? blocks[blocks.length - block.blocks.length] : blocks[blocks.length - 1];
+                        const para: IWidget = (blocks.length < block.blocks.length) ? blocks[0] : j === 0 ? blocks[blocks.length - block.blocks.length] : blocks[blocks.length - 1];
                         let blockWidget: BlockWidget;
                         if (para instanceof ParagraphWidget) {
                             blockWidget = para as BlockWidget;
@@ -567,8 +567,7 @@ export class SfdtReader {
                                 blockWidget = cell.lastChild as BlockWidget;
                             }
                         }
-                        if (!isNullOrUndefined(blockWidget)) {
-                        if (blockWidget.childWidgets.length === 0) {
+                        if (!isNullOrUndefined(blockWidget) && blockWidget.childWidgets.length === 0) {
                             const lineWidget: LineWidget = new LineWidget(blockWidget as ParagraphWidget);
                             blockWidget.childWidgets.push(lineWidget);
                         }
@@ -579,7 +578,6 @@ export class SfdtReader {
                             (blockWidget.lastChild as LineWidget).children.push(blockEndContentControl);
                             blockEndContentControl.line = blockWidget.lastChild as LineWidget;
                         }
-                    }
                     }
                 }
                 if (!isNullOrUndefined(contentControlProperties)) {
@@ -917,8 +915,27 @@ export class SfdtReader {
                 image.left = inline.left;
                 image.bottom = inline.bottom;
                 image.right = inline.right;
-                image.heightScale = inline.getimageheight;
-                image.widthScale = inline.getimagewidth;
+                image.cropHeightScale = inline.getimageheight;
+                image.cropWidthScale = inline.getimagewidth;
+                image.name = inline.name;
+                image.alternativeText = inline.alternativeText;
+                image.title = inline.title;
+                image.visible = inline.visible;
+                image.widthScale = inline.widthScale;
+                image.heightScale = inline.heightScale;
+                image.verticalPosition = HelperMethods.convertPointToPixel(inline.verticalPosition);
+                image.verticalOrigin = inline.verticalOrigin;
+                image.verticalAlignment = inline.verticalAlignment;
+                image.horizontalPosition = HelperMethods.convertPointToPixel(inline.horizontalPosition);
+                image.horizontalOrigin = inline.horizontalOrigin;
+                image.horizontalAlignment = inline.horizontalAlignment;
+                image.allowOverlap = inline.allowOverlap;
+                image.textWrappingStyle = isNullOrUndefined(inline.textWrappingStyle) ? 'Inline' : inline.textWrappingStyle;
+                image.textWrappingType = inline.textWrappingType;
+                image.layoutInCell = inline.layoutInCell;
+                if (image.textWrappingStyle !== 'Inline') {
+                    paragraph.floatingElements.push(image);
+                }
                 this.parseCharacterFormat(inline.characterFormat, image.characterFormat);
                 hasValidElmts = true;
             } else if (inline.hasOwnProperty('hasFieldEnd') || (inline.hasOwnProperty('fieldType') && inline.fieldType === 0)) {
@@ -1108,17 +1125,18 @@ export class SfdtReader {
                 shape.horizontalAlignment = inline.horizontalAlignment;
                 shape.zOrderPosition = inline.zOrderPosition;
                 shape.allowOverlap = inline.allowOverlap;
-                shape.textWrappingStyle = inline.textWrappingStyle;
+                shape.textWrappingStyle = isNullOrUndefined(inline.textWrappingStyle) ? 'InFrontOfText' : inline.textWrappingStyle;
                 shape.textWrappingType = inline.textWrappingType;
-                shape.distanceBottom = inline.distanceBottom;
-                shape.distanceLeft = inline.distanceLeft;
-                shape.distanceRight = inline.distanceRight;
-                shape.distanceTop = inline.distanceTop;
+                shape.distanceBottom = HelperMethods.convertPointToPixel(inline.distanceBottom);
+                shape.distanceLeft = HelperMethods.convertPointToPixel(inline.distanceLeft);
+                shape.distanceRight = HelperMethods.convertPointToPixel(inline.distanceRight);
+                shape.distanceTop = HelperMethods.convertPointToPixel(inline.distanceTop);
                 shape.layoutInCell = inline.layoutInCell;
                 shape.lockAnchor = inline.lockAnchor;
                 shape.autoShapeType = inline.autoShapeType;
                 if (inline.hasOwnProperty('lineFormat')) {
                     let lineFormat: LineFormat = new LineFormat();
+                    lineFormat.line = inline.lineFormat.line;
                     lineFormat.lineFormatType = inline.lineFormat.lineFormatType;
                     lineFormat.color = inline.lineFormat.color;
                     lineFormat.weight = inline.lineFormat.weight;
@@ -1144,7 +1162,9 @@ export class SfdtReader {
                 }
                 shape.line = lineWidget;
                 lineWidget.children.push(shape);
-                paragraph.floatingElements.push(shape);
+                if (shape.textWrappingStyle !== 'Inline') {
+                    paragraph.floatingElements.push(shape);
+                }
             } else if (inline.hasOwnProperty('contentControlProperties')) {
                 let inlineStartContentControl: ContentControl = new ContentControl('Inline');
                 let inlineEndContentControl: ContentControl = new ContentControl('Inline');
@@ -1615,6 +1635,10 @@ export class SfdtReader {
             }
             if (!isNullOrUndefined(sourceFormat.lineSpacingType)) {
                 paragraphFormat.lineSpacingType = sourceFormat.lineSpacingType;
+            } else {
+                if (!isNullOrUndefined(sourceFormat.lineSpacing)) {
+                    paragraphFormat.lineSpacingType = 'Multiple'
+                }
             }
             if (!isNullOrUndefined(sourceFormat.textAlignment)) {
                 paragraphFormat.textAlignment = sourceFormat.textAlignment;

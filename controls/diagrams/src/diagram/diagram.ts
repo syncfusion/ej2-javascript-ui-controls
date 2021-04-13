@@ -2152,6 +2152,17 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
             }
             isLayout = true;
         }
+        const nodes: NodeModel[] = this.nodes;
+        for (let i: number = 0; i < nodes.length; i++) {
+            if (!nodes[i].isExpanded) {
+                collapsedNode.push(nodes[i]);
+            }
+        }
+        if (collapsedNode.length) {
+            for (let i: number = collapsedNode.length - 1; i >= 0; i--) {
+                this.commandHandler.expandNode((collapsedNode[i] as Node), this);
+            }
+        }
         this.doLayout();
         if (isLayout) { this.commandHandler.getBlazorOldValues(); }
         if (this.lineRoutingModule) {
@@ -2211,17 +2222,6 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
         this.isProtectedOnChange = false;
         this.tooltipObject = initTooltip(this);
         this.diagramActions = DiagramAction.Render;
-        const nodes: NodeModel[] = this.nodes;
-        for (let i: number = 0; i < nodes.length; i++) {
-            if (!nodes[i].isExpanded) {
-                collapsedNode.push(nodes[i]);
-            }
-        }
-        if (collapsedNode.length) {
-            for (let i: number = collapsedNode.length - 1; i >= 0; i--) {
-                this.commandHandler.expandNode((collapsedNode[i] as Node), this);
-            }
-        }
         this.initCommands();
         const hiddenUserHandleTemplate: HTMLCollection = document.getElementsByClassName(this.element.id + '_hiddenUserHandleTemplate');
         createUserHandleTemplates(this.userHandleTemplate, hiddenUserHandleTemplate, this.selectedItems,this.element.id );

@@ -154,7 +154,7 @@ export class Clipboard {
         range: number[], sIdx: number, type: PasteSpecialType, isClick?: boolean,
         isAction?: boolean, isInternal?: boolean
     } & ClipboardEvent): void {
-        if (this.parent.isEdit || document.getElementsByClassName('e-dialog').length > 0) {
+        if (this.parent.isEdit || this.parent.element.getElementsByClassName('e-dialog').length > 0) {
             return;
         }
         let rfshRange: number[];

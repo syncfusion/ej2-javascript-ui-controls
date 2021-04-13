@@ -1447,7 +1447,9 @@ export class Toolbar {
             if (isBlazor()) {
                 // eslint-disable-next-line
                 let blazorZoomDropDown: any = this.pdfViewerBase.getElement('_zoomDropDown');
-                blazorZoomDropDown.children[0].children[0].value = currentPercent;
+                if (blazorZoomDropDown && blazorZoomDropDown.children.length > 0) {
+                    blazorZoomDropDown.children[0].children[0].value = currentPercent;
+                }
             } else {
                 if (this.zoomDropDown.text === currentPercent) {
                     (this.zoomDropDown.element as HTMLInputElement).value = currentPercent;
@@ -1718,7 +1720,7 @@ export class Toolbar {
             }
             for (let m: number = 0; m < elements.length; m++) {
                 if (currentElements != null) {
-                    currentElements.items.push({ text: elements[m].customStampName });
+                    currentElements.Items.push({ text: elements[m].customStampName });
                 }
             }
         }

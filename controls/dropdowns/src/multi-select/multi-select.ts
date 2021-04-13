@@ -3935,6 +3935,7 @@ export class MultiSelect extends DropDownBase implements IInput {
                 if (!this.closePopupOnSelect && this.isPopupOpen()) {
                     this.refreshPopup();
                 }
+                this.preventChange = this.isAngular && this.preventChange ? !this.preventChange : this.preventChange;
                 break;
             case 'width':
                 this.setWidth(newProp.width);
@@ -4005,7 +4006,6 @@ export class MultiSelect extends DropDownBase implements IInput {
                 break;
             }
         }
-        this.preventChange = this.isAngular && this.preventChange ? !this.preventChange : this.preventChange;
     }
     private reInitializePoup(): void {
         if (this.popupObj) {

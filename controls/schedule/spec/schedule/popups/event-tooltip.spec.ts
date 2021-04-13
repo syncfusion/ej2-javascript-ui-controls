@@ -356,6 +356,41 @@ describe('Schedule event tooltip module', () => {
         });
     });
 
+    describe('EJ2-48019 - Add title missing in agenda view', () => {
+        let schObj: Schedule;
+        const eventData: Record<string, any>[] = [{
+            Id: 4,
+            StartTime: new Date(2017, 9, 31),
+            EndTime: new Date(2017, 10, 1),
+            IsAllDay: true
+        }];
+        beforeAll((done: DoneFn) => {
+            const schOptions: ScheduleModel = {
+                height: '500px', selectedDate: new Date(2017, 9, 31), currentView: 'Agenda',
+                eventSettings: { enableTooltip: true }
+            };
+            schObj = util.createSchedule(schOptions, eventData, done);
+            util.disableTooltipAnimation((schObj.eventTooltip as any).tooltipObj);
+        });
+        afterAll(() => {
+            util.destroy(schObj);
+        });
+        it('Checking event subject in agenda view', () => {
+            const target: HTMLElement = schObj.element.querySelector('.e-appointment');
+            expect(target.querySelector('.e-subject').innerHTML).toBe('Add title');
+            expect(document.querySelector('.e-schedule-event-tooltip')).toBeNull();    
+            util.triggerMouseEvent(target, 'mouseover');
+            const tooltipEle: HTMLElement = document.querySelector('.e-schedule-event-tooltip') as HTMLElement;
+            expect(isVisible(tooltipEle)).toBe(true);
+            expect(tooltipEle.querySelector('.e-subject').innerHTML).toBe('Add title');
+            expect(tooltipEle.querySelector('.e-location').innerHTML).toBe('');
+            expect(tooltipEle.querySelector('.e-details').innerHTML).toBe('October 31, 2017');
+            expect(tooltipEle.querySelector('.e-all-day').innerHTML).toBe('All day');
+            util.triggerMouseEvent(target, 'mouseleave');
+            expect(document.querySelector('.e-schedule-event-tooltip')).toBeNull();
+        });
+    });
+
     it('memory leak', () => {
         profile.sample();
         const average: number = inMB(profile.averageChange);

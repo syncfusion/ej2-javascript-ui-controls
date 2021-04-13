@@ -2,7 +2,15 @@
 
 ## [Unreleased]
 
-## 19.1.55 (2021-04-06)
+## 19.1.56 (2021-04-13)
+
+### ListView
+
+#### Bug Fixes
+
+- `#309268` - Template content of ListView is not updated when updating the props date using `useState` has been fixed.
+
+## 19.1.54 (2021-03-30)
 
 ### ListView
 

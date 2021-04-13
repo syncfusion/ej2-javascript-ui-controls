@@ -69,6 +69,9 @@ export class EventTooltip {
             return;
         }
         const record: Record<string, any> = this.parent.eventBase.getEventByGuid(args.target.getAttribute('data-guid'));
+        if (isNullOrUndefined(record)) {
+            return;
+        }
         if (!isNullOrUndefined(this.parent.eventSettings.tooltipTemplate)) {
             const contentContainer: HTMLElement = createElement('div');
             const templateId: string = this.parent.element.id + '_tooltipTemplate';
@@ -79,12 +82,13 @@ export class EventTooltip {
         } else {
             const globalize: Internationalization = this.parent.globalize;
             const fields: EventFieldsMapping = this.parent.eventFields;
-            const eventStart: Date = new Date('' + record[fields.startTime]) as Date;
+            const eventStart: Date = new Date('' + record[fields.startTime]);
             let eventEnd: Date = new Date('' + record[fields.endTime]) as Date;
             eventEnd = (eventEnd.getHours() === 0 && eventEnd.getMinutes() === 0) ? new Date(eventEnd.setMilliseconds(-1000)) : eventEnd;
             const startDate: Date = util.resetTime(new Date('' + eventStart));
             const endDate: Date = util.resetTime(new Date('' + eventEnd));
-            const tooltipSubject: string = (record[fields.subject] || this.parent.eventSettings.fields.subject.default) as string;
+            const tooltipSubject: string = (record[fields.subject] || this.parent.eventSettings.fields.subject.default
+                || this.parent.localeObj.getConstant('addTitle')) as string;
             const tooltipLocation: string = !isNullOrUndefined(record[fields.location]) ? <string>record[fields.location] : '';
             let startMonthDate: string = '';
             let startMonthYearDate: string = '';

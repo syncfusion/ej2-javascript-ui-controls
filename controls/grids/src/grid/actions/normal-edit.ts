@@ -333,7 +333,8 @@ export class NormalEdit {
         if (this.parent.editModule.formObj && !this.parent.editModule.formObj.isDestroyed) {
             this.destroyElements();
             this.stopEditStatus();
-            if (this.parent.editSettings.mode === 'Dialog' && (<{ action?: string }>args).action !== 'add') {
+            if (this.parent.editSettings.mode === 'Dialog' && (<{ action?: string }>args).action !== 'add' &&
+                (<{ selectionModule?: { preventFocus: boolean } }>this.parent).selectionModule) {
                 this.parent.element.querySelector('.e-dlgeditrow').classList.remove('e-dlgeditrow');
             }
         }

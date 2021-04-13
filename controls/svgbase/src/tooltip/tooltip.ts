@@ -945,8 +945,18 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
         const width: number = this.elementSize.width + (2 * this.marginX);
         const height: number = this.elementSize.height + (2 * this.marginY);
         const tooltipRect: Rect = new Rect(x + 2 * this.padding, y - height - this.padding, width, height);
-        if (tooltipRect.y < bounds.y) {
-            tooltipRect.y += (tooltipRect.height + 2 * this.padding);
+        if (this.controlInstance) { // fix for shared tooltip crop issue (EJ2-42327)
+            const containerDivID: string = this.controlInstance["element"]["id"];
+            const containerDiv: Element = getElement(containerDivID);
+            const containerDivBounds: DOMRect | ClientRect = containerDiv.getBoundingClientRect();
+            if (tooltipRect.y < containerDivBounds.top) {
+                const yValueAdjacement: number = containerDivBounds.height - (tooltipRect.height + 2 * this.padding);
+                tooltipRect.y = containerDivBounds.top + (yValueAdjacement / 2);
+            }
+        } else {
+            if (tooltipRect.y < bounds.y) {
+                tooltipRect.y += (tooltipRect.height + 2 * this.padding);
+            }
         }
         if (tooltipRect.x + tooltipRect.width > bounds.x + bounds.width) {
             tooltipRect.x -= (tooltipRect.width + 4 * this.padding);

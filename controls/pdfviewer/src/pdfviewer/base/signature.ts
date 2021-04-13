@@ -135,6 +135,7 @@ export class Signature {
                             this.pdfViewer.fireFocusOutFormField(this.pdfViewer.formFieldsModule.currentTarget.name, '');
                         }
                         this.pdfViewerBase.isToolbarSignClicked = false;
+                        this.pdfViewer.formFieldsModule.setFocus();
                     }
                 });
                 this.signatureDialog.buttons = [

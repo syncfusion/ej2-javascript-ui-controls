@@ -2,7 +2,15 @@
 
 ## [Unreleased]
 
-## 19.1.55 (2021-04-06)
+## 19.1.56 (2021-04-13)
+
+### PDF Viewer
+
+#### Bug Fixes
+
+- `#315264` - Now, the User names in comments are working properly.
+
+## 19.1.54 (2021-03-30)
 
 ### PDF Viewer
 

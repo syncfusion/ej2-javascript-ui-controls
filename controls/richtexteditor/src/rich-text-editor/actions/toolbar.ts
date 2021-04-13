@@ -707,6 +707,7 @@ export class Toolbar {
             if (!select('.e-rte-srctextarea', this.parent.element)) {
                 updateUndoRedoStatus(this.baseToolbar, this.parent.formatter.editorManager.undoRedoManager.getUndoStatus());
             }
+            this.parent.notify(events.dynamicModule, {});
         }
     }
 

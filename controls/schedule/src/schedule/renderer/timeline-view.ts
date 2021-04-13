@@ -38,7 +38,8 @@ export class TimelineViews extends VerticalView {
         const queryString: string = '[data-date="' + new Date(currDateTime).getTime().toString() + '"]';
         const firstWorkHourCell: HTMLElement = this.element.querySelector(queryString) as HTMLElement;
         if (firstWorkHourCell) {
-            this.getScrollableElement().scrollLeft = firstWorkHourCell.offsetLeft;
+            this.getContentAreaElement().scrollLeft = !this.parent.enableRtl ? firstWorkHourCell.offsetLeft :
+                -(this.parent.getContentTable().offsetWidth - firstWorkHourCell.offsetLeft - firstWorkHourCell.offsetWidth);
         }
     }
 

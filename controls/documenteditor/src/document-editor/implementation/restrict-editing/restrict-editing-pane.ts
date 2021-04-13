@@ -332,8 +332,8 @@ export class RestrictEditing {
         }
         this.highlightCheckBox.checked = true;
         this.addedUser.enablePersistence = true;
-        this.addedUser.dataSource = this.documentHelper.userCollection;
-        this.addedUser.refresh();
+        this.addedUser.dataSource = this.usersCollection.slice();
+        this.addedUser.dataBind();
         this.showStopProtectionPane(this.documentHelper.isDocumentProtected);
     }
 
@@ -352,8 +352,8 @@ export class RestrictEditing {
                 }
             }
         }
-        this.addedUser.dataSource = this.usersCollection;
-        this.addedUser.refresh();
+        this.addedUser.dataSource = this.documentHelper.userCollection.slice();
+        this.addedUser.dataBind();
     }
     /**
      * @returns {void}

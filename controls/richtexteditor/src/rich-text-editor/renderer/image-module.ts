@@ -75,6 +75,7 @@ export class Image {
         this.parent.on(events.imageSize, this.imageSize, this);
         this.parent.on(events.dropDownSelect, this.alignmentSelect, this);
         this.parent.on(events.initialEnd, this.afterRender, this);
+        this.parent.on(events.dynamicModule, this.afterRender, this);
         this.parent.on(events.paste, this.imagePaste, this);
         this.parent.on(events.destroy, this.removeEventListener, this);
     }
@@ -98,6 +99,7 @@ export class Image {
         this.parent.off(events.imageSize, this.imageSize);
         this.parent.off(events.dropDownSelect, this.alignmentSelect);
         this.parent.off(events.initialEnd, this.afterRender);
+        this.parent.off(events.dynamicModule, this.afterRender);
         this.parent.off(events.paste, this.imagePaste);
         this.parent.off(events.destroy, this.removeEventListener);
         const dropElement: HTMLElement | Document = this.parent.iframeSettings.enable ? this.parent.inputElement.ownerDocument
@@ -1295,7 +1297,7 @@ export class Image {
     }
 
     private onWindowResize():void {
-        if(!isNOU(this.contentModule.getEditPanel().querySelector('.e-img-resize'))) {
+        if (!isNOU(this.contentModule) && !isNOU(this.contentModule.getEditPanel().querySelector('.e-img-resize'))) {
             this.cancelResizeAction();
         }
     }

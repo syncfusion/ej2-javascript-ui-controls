@@ -60,7 +60,7 @@ describe('Map navigation properties tesing', () => {
             map.loaded = (args: ILoadedEventArgs) => {
                 let spec: Element = document.getElementById('container_LayerIndex_0_NavigationIndex_0_Line0');
                 let strokeWidth: string = spec.getAttribute('stroke-width');
-                expect(strokeWidth).toEqual('5');
+                expect(strokeWidth).toEqual('4.854368932038835');
             };
             map.layers[0].navigationLineSettings = [
                 {
@@ -177,7 +177,7 @@ describe('Map navigation properties tesing', () => {
                 let spec: Element = document.getElementById('container_LayerIndex_0_NavigationIndex_0_Line0');
                 let fill: string = spec.getAttribute('d');
                 expect(fill).toEqual(
-                    'M 140.74384333333327,188.237209914718 A 106.87546913903533 106.87546913903533 0,0,0 , 352.5999999999999,216.63496505811577 ');
+                    'M 184.51174583333332,246.77439104673405 A 140.11113332251588 140.11113332251588 0,0,0 , 462.25,284.0031554115543 ');
             };
             map.layers[0].navigationLineSettings = [
                 {

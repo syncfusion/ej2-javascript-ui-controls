@@ -337,10 +337,10 @@ describe('Map layer testing', () => {
             colormap.loaded = (args: ILoadedEventArgs) => {
                 spec = getElementByID(id + '_LayerIndex_0_shapeIndex_14_dataIndex_50');
                 expect(spec.getAttribute('fill')).toBe('#aa2b00');
-                expect(spec.getAttribute('opacity')).toBe('0.5');
+                expect(spec.getAttribute('fill-opacity')).toBe('0.5');
                 let specanother: Element = getElementByID(id + '_LayerIndex_0_shapeIndex_34_dataIndex_14');
                 expect(specanother.getAttribute('fill')).toBe('#24f6f8');
-                expect(specanother.getAttribute('opacity')).toBe('0.7142857142857143');
+                expect(specanother.getAttribute('fill-opacity')).toBe('0.7142857142857143');
                 done();
             };
             colormap.layers[0].shapeSettings.colorValuePath = 'Electors';

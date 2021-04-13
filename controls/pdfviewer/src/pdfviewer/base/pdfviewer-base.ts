@@ -2153,7 +2153,7 @@ export class PdfViewerBase {
         window.sessionStorage.removeItem(this.documentId + '_annotations_freetext');
         window.sessionStorage.removeItem(this.documentId + '_formfields');
         window.sessionStorage.removeItem(this.documentId + '_annotations_sign');
-        window.sessionStorage.getItem(this.documentId + '_pagedata');
+        window.sessionStorage.removeItem(this.documentId + '_pagedata');
         window.sessionStorage.removeItem('hashId');
         window.sessionStorage.removeItem('documentLiveCount');
         window.sessionStorage.removeItem('currentDocument');
@@ -3988,7 +3988,7 @@ export class PdfViewerBase {
                                 context.setTransform(matrix0, matrix1, matrix2, matrix3, matrix4, matrix5);
                                 context.drawImage(image, 0, 0);
                                 this.showPageLoadingIndicator(pageIndex, false);
-                                if (isNaN(data.tileX) && isNaN(data.tileY)) {
+                                if ((data.tileX === 0) && (data.tileY === 0)) {
                                     if (pageIndex === 0 && this.isDocumentLoaded) {
                                         this.renderPDFInformations();
                                         this.isInitialLoaded = true;
@@ -4017,7 +4017,7 @@ export class PdfViewerBase {
                         image.src = imageData;
                     }
                 }
-                if (isNaN(data.tileX) && isNaN(data.tileY)) {
+                if ((data.tileX === 0) && (data.tileY === 0)) {
                     this.onPageRender(data, pageIndex, pageDiv);
                 }
             }
@@ -5255,7 +5255,7 @@ export class PdfViewerBase {
                 }
                 // eslint-disable-next-line
                 let data: any = proxy.getStoredData(pageIndex);
-                const isPageRequestSent: boolean = this.pageRequestSent(pageIndex);
+
                 noTileX = noTileY = tileCount;
                 const tileSettings: TileRenderingSettingsModel = proxy.pdfViewer.tileRenderingSettings;
                 if (tileSettings.enableTileRendering && tileSettings.x > 0 && tileSettings.y > 0) {
@@ -5265,20 +5265,13 @@ export class PdfViewerBase {
                     }
                 }
                 proxy.tileRequestCount = noTileX * noTileY;
-                if (data && (viewPortWidth < pageWidth || this.getZoomFactor() > 2) && tileSettings.enableTileRendering) {
-                    for (let k: number = 0; k < noTileX; k++) {
-                        for (let l: number = 0; l < noTileY; l++) {
-                            if (k === 0 && l === 0) {
-                                continue;
-                            }
-                            const zoomFactor: number = this.retrieveCurrentZoomFactor();
-                            let data: string = JSON.parse(this.getWindowSessionStorageTile(pageIndex, k, l, zoomFactor));
-                            if (!data) {
-                                window.sessionStorage.removeItem(this.documentId + '_' + pageIndex + '_' + zoomFactor);
-                                data = null;
-                            }
-                        }
-                    }
+                const zoomFactor: number = this.retrieveCurrentZoomFactor();
+                let isPageRequestSent: boolean;
+                if (tileCount === 1) {
+                    data = proxy.getStoredData(pageIndex);
+                    isPageRequestSent = proxy.pageRequestSent(pageIndex, 0, 0);
+                } else {
+                    data = JSON.parse(proxy.getWindowSessionStorageTile(pageIndex, 0, 0, zoomFactor));
                 }
                 if (data && data.uniqueId === proxy.documentId) {
                     canvas.style.backgroundColor = '#fff';
@@ -5305,8 +5298,7 @@ export class PdfViewerBase {
                                 if (k === 0 && l === 0) {
                                     continue;
                                 }
-                                const zoomFactor: number = this.retrieveCurrentZoomFactor();
-                                const data: string = JSON.parse(this.getWindowSessionStorageTile(pageIndex, k, l, zoomFactor));
+                                data = JSON.parse(this.getWindowSessionStorageTile(pageIndex, k, l, zoomFactor));
                                 if (data) {
                                     proxy.tileRenderPage(data, pageIndex);
                                 }
@@ -5314,7 +5306,7 @@ export class PdfViewerBase {
                         }
                     }
                     data = null;
-                } else if (!isPageRequestSent) {
+                } else if (data === null || !isPageRequestSent) {
                     if (this.getPagesPinchZoomed()) {
                         proxy.showPageLoadingIndicator(pageIndex, false);
                     } else {
@@ -5362,7 +5354,7 @@ export class PdfViewerBase {
                             proxy.pageRequestHandler.url = proxy.pdfViewer.serviceUrl + '/' + proxy.pdfViewer.serverActionSettings.renderPages;
                             proxy.pageRequestHandler.responseType = 'json';
                             proxy.pageRequestHandler.send(jsonObject);
-                            proxy.requestLists.push(proxy.documentId + '_' + pageIndex + '_' + zoomFactor);
+                            proxy.requestLists.push(proxy.documentId + '_' + pageIndex + '_' + x + '_' + y + '_' + zoomFactor);
                             // eslint-disable-next-line
                             proxy.pageRequestHandler.onSuccess = function (result: any) {
                                 // eslint-disable-next-line max-len
@@ -5418,9 +5410,9 @@ export class PdfViewerBase {
         }
     }
 
-    private pageRequestSent(pageIndex: number): boolean {
+    private pageRequestSent(pageIndex: number, tileX?: number, tileY?: number): boolean {
         const zoomFactor: number = this.retrieveCurrentZoomFactor();
-        const currentString: string = this.documentId + '_' + pageIndex + '_' + zoomFactor;
+        const currentString: string = this.documentId + '_' + pageIndex + '_' + tileX + '_' + tileY + '_' + zoomFactor;
         if (this.requestLists && this.requestLists.indexOf(currentString) > -1) {
             return true;
         }
@@ -5493,12 +5485,12 @@ export class PdfViewerBase {
         const blobUrl: string = Url.createObjectURL(blobObj);
         // eslint-disable-next-line
         let storeObject: any;
-        if (isNaN(tileX) && isNaN(tileY)) {
+        if ((isNaN(tileX) && isNaN(tileY)) || (tileX === 0 && tileY === 0)) {
             storeObject = {
                 // eslint-disable-next-line
                 image: blobUrl, transformationMatrix: data['transformationMatrix'], hyperlinks: data['hyperlinks'], hyperlinkBounds: data['hyperlinkBounds'], linkAnnotation: data['linkAnnotation'], linkPage: data['linkPage'], annotationLocation: data['annotationLocation'],
                 // eslint-disable-next-line
-                textContent: data['textContent'], textBounds: data['textBounds'], pageText: data['pageText'], rotation: data['rotation'], scaleFactor: data['scaleFactor'], uniqueId: data['uniqueId'], zoomFactor: data['zoomFactor']
+                textContent: data['textContent'], textBounds: data['textBounds'], pageText: data['pageText'], rotation: data['rotation'], scaleFactor: data['scaleFactor'], uniqueId: data['uniqueId'], zoomFactor: data['zoomFactor'], tileX: tileX, tileY: tileY
             };
             if (this.pageSize[pageIndex]) {
                 // eslint-disable-next-line
@@ -6685,6 +6677,9 @@ export class PdfViewerBase {
                             stampName = stampObj.id;
                         }
                         this.customStampCollection.push({ customStampName: stampName, customStampImageSource: stampObj.data });
+                    }
+                    if (this.pdfViewer.customStampSettings.enableCustomStamp && this.pdfViewer.customStampSettings.isAddToMenu) {
+                        this.stampAdded = true;
                     }
                     this.isAlreadyAdded = false;
                     stampModule.updateDeleteItems(stampObj.pageIndex, stampObj, stampObj.opacity);

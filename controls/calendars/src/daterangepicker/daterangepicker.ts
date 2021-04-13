@@ -1252,7 +1252,6 @@ export class DateRangePicker extends CalendarBase {
             if (!isNullOrUndefined(this.inputElement.getAttribute(prop))) {
                 switch (prop) {
                 case 'disabled':
-                    // eslint-disable-next-line @typescript-eslint/dot-notation
                     if (( isNullOrUndefined(this.dateRangeOptions) || (this.dateRangeOptions['enabled'] === undefined)) || isDynamic) {
                         const disabled: boolean = this.inputElement.getAttribute(prop) === 'disabled' ||
                             this.inputElement.getAttribute(prop) === '' || this.inputElement.getAttribute(prop) === 'true' ? true : false;
@@ -1260,7 +1259,6 @@ export class DateRangePicker extends CalendarBase {
                     }
                     break;
                 case 'readonly':
-                    // eslint-disable-next-line @typescript-eslint/dot-notation
                     if (( isNullOrUndefined(this.dateRangeOptions) || (this.dateRangeOptions['readonly'] === undefined)) || isDynamic) {
                         const readonly: boolean = this.inputElement.getAttribute(prop) === 'readonly' ||
                         this.inputElement.getAttribute(prop) === 'true' || this.inputElement.getAttribute(prop) === '' ? true : false;
@@ -1268,13 +1266,11 @@ export class DateRangePicker extends CalendarBase {
                     }
                     break;
                 case 'placeholder':
-                    // eslint-disable-next-line @typescript-eslint/dot-notation
                     if (( isNullOrUndefined(this.dateRangeOptions) || (this.dateRangeOptions['placeholder'] === undefined)) || isDynamic) {
                         this.setProperties({ placeholder: this.inputElement.getAttribute(prop) }, !isDynamic);
                     }
                     break;
                 case 'value':
-                    // eslint-disable-next-line @typescript-eslint/dot-notation
                     if (( isNullOrUndefined(this.dateRangeOptions) || (this.dateRangeOptions['value'] === undefined)) || isDynamic) {
                         const value: string = this.inputElement.getAttribute(prop);
                         this.setProperties(setValue(prop, value, {}), !isDynamic);
@@ -1510,13 +1506,15 @@ export class DateRangePicker extends CalendarBase {
             model: (isBlazor() && this.isServerRendered) ? null : this
         };
         if (!this.preventFocus) {
-            this.preventFocus = true;
             this.trigger('focus', focusArguments);
         }
         this.updateClearIconState();
         this.updateHiddenInput();
-        if (this.openOnFocus) {
+        if (this.openOnFocus && !this.preventFocus) {
+            this.preventFocus = true;
             this.show();
+        } else {
+            this.preventFocus = true;
         }
     }
 
@@ -3221,6 +3219,7 @@ export class DateRangePicker extends CalendarBase {
         if (li && li.classList.contains(LISTCLASS)) {
             this.setListSelection(li, event);
         }
+        this.preventFocus = true;
         this.inputElement.focus();
         if (!this.isMobile) {
             this.preventFocus = true;
@@ -3379,15 +3378,12 @@ export class DateRangePicker extends CalendarBase {
                 (!isNullOrUndefined(this.targetElement) ? this.targetElement : this.inputWrapper.container),
             position: (this.isMobile ?
                 (!isUndefined(this.presets[0].start && this.presets[0].end && this.presets[0].label) && !this.isCustomWindow ?
-                    // eslint-disable-next-line @typescript-eslint/naming-convention
                     { X: 'left', Y: 'bottom' } : { X: 'center', Y: 'center' }) :
-                // eslint-disable-next-line @typescript-eslint/naming-convention
                 this.enableRtl ? { X: 'left', Y: 'bottom' } : { X: 'right', Y: 'bottom' }),
             offsetX: this.isMobile || this.enableRtl ? 0 : -popupWidth,
             offsetY: OFFSETVALUE,
             collision: this.isMobile ?
                 (!isUndefined(this.presets[0].start && this.presets[0].end && this.presets[0].label) && !this.isCustomWindow ?
-                    // eslint-disable-next-line @typescript-eslint/naming-convention
                     { X: 'fit' } : { X: 'fit', Y: 'fit' }) : { X: 'fit', Y: 'flip' },
             targetType: this.isMobile && this.isCustomWindow ? 'container' : 'relative',
             enableRtl: this.enableRtl,

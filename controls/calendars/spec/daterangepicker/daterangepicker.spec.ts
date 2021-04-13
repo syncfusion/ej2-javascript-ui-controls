@@ -9295,6 +9295,95 @@ describe('DateRangePicker', () => {
             expect(daterangePicker.inputElement.value === "1/1/2020 - 2/2/2020").toBe(true)
         });
     });
+    describe('EJ2-47722 - If openOnFocus property is enabled then DateRangePicker popup does not closed properly',function(){
+        let dateRangePicker:any;
+        beforeEach(function(){
+            let element: HTMLElement = createElement('input',{id:'date'});
+            document.body.appendChild(element);
+            dateRangePicker = new DateRangePicker({
+                openOnFocus : true,
+                presets: [{
+                    label: 'Today', start: new Date(), end: new Date() },
+                    { label: 'Last week', start: new Date(new Date().setDate(new Date().getDate() - 7)), end: new Date()
+                }],
+            });
+            dateRangePicker.appendTo('#date');
+        });
+        afterEach(function(){
+            if(dateRangePicker){
+                dateRangePicker.destroy();
+            }
+            document.body.innerHTML = '';
+        });
+        it('check the popup open by focus the control',function(){
+            dateRangePicker.inputFocusHandler();
+            expect(dateRangePicker.popupObj.element.querySelector('.e-date-range-container')).not.toBe(null);
+            expect(dateRangePicker.popupObj.element.querySelector('.e-presets')).not.toBe(null);
+            <HTMLElement>(dateRangePicker.popupObj.element.querySelector('.e-presets li:first-child')).click();
+            expect(document.body.contains(dateRangePicker.popupObj)).toBe(false);
+            dateRangePicker.preventFocus = false;
+            dateRangePicker.inputFocusHandler();
+            expect(dateRangePicker.popupObj.element.querySelector('.e-date-range-container')).toBe(null);
+            expect(dateRangePicker.popupObj.element.querySelector('.e-presets')).not.toBe(null);
+            expect(dateRangePicker.popupObj.element.querySelector('.e-presets li:first-child').classList.contains('e-active')).toBe(true);
+            dateRangePicker.popupObj.element.querySelector('.e-presets li:first-child').nextElementSibling.click();
+            expect(document.body.contains(dateRangePicker.popupObj)).toBe(false);
+            dateRangePicker.preventFocus = false;
+            dateRangePicker.inputFocusHandler();
+            expect(dateRangePicker.popupObj.element.querySelector('.e-date-range-container')).toBe(null);
+            expect(dateRangePicker.popupObj.element.querySelector('.e-presets')).not.toBe(null);
+            expect(dateRangePicker.popupObj.element.querySelector('.e-presets li:first-child').nextElementSibling.classList.contains('e-active')).toBe(true);
+            <HTMLElement>(dateRangePicker.popupObj.element.querySelector('.e-presets li:first-child')).click();
+            expect(document.body.contains(dateRangePicker.popupObj)).toBe(false);
+            dateRangePicker.preventFocus = false;
+            dateRangePicker.inputFocusHandler();
+            <HTMLElement>(dateRangePicker.popupObj.element.querySelector('.e-presets li:last-child')).click();
+            expect(dateRangePicker.popupObj.element.querySelector('.e-date-range-container')).not.toBe(null);
+            expect(dateRangePicker.popupObj.element.querySelector('.e-presets')).not.toBe(null);
+            document.getElementsByClassName('e-day')[15].dispatchEvent(clickEvent);
+            document.getElementsByClassName('e-day')[16].dispatchEvent(clickEvent);
+            dateRangePicker.applyButton.element.click();           
+            dateRangePicker.preventFocus = false;
+            dateRangePicker.inputFocusHandler();
+            expect(dateRangePicker.popupObj.element.querySelector('.e-date-range-container')).not.toBe(null);
+            expect(dateRangePicker.popupObj.element.querySelector('.e-presets')).not.toBe(null);
+            <HTMLElement>(dateRangePicker.popupObj.element.querySelector('.e-presets li:first-child')).click();
+            expect(document.body.contains(dateRangePicker.popupObj)).toBe(false);
+        });
+        it('check the popup open by focus the control as well as by click the date range icon',function(){
+            (<HTMLElement>document.getElementsByClassName(' e-input-group-icon e-range-icon e-icons')[0]).dispatchEvent(clickEvent);
+            expect(dateRangePicker.popupObj.element.querySelector('.e-date-range-container')).not.toBe(null);
+            expect(dateRangePicker.popupObj.element.querySelector('.e-presets')).not.toBe(null);
+            <HTMLElement>(dateRangePicker.popupObj.element.querySelector('.e-presets li:first-child')).click();
+            expect(document.body.contains(dateRangePicker.popupObj)).toBe(false);
+            dateRangePicker.preventFocus = false;
+            dateRangePicker.inputFocusHandler();
+            expect(dateRangePicker.popupObj.element.querySelector('.e-date-range-container')).toBe(null);
+            expect(dateRangePicker.popupObj.element.querySelector('.e-presets')).not.toBe(null);
+            expect(dateRangePicker.popupObj.element.querySelector('.e-presets li:first-child').classList.contains('e-active')).toBe(true);
+            dateRangePicker.popupObj.element.querySelector('.e-presets li:first-child').nextElementSibling.click();
+            expect(document.body.contains(dateRangePicker.popupObj)).toBe(false);
+            (<HTMLElement>document.getElementsByClassName(' e-input-group-icon e-range-icon e-icons')[0]).dispatchEvent(clickEvent);
+            expect(dateRangePicker.popupObj.element.querySelector('.e-date-range-container')).toBe(null);
+            expect(dateRangePicker.popupObj.element.querySelector('.e-presets')).not.toBe(null);
+            expect(dateRangePicker.popupObj.element.querySelector('.e-presets li:first-child').nextElementSibling.classList.contains('e-active')).toBe(true);
+            <HTMLElement>(dateRangePicker.popupObj.element.querySelector('.e-presets li:first-child')).click();
+            expect(document.body.contains(dateRangePicker.popupObj)).toBe(false);
+            dateRangePicker.preventFocus = false;
+            dateRangePicker.inputFocusHandler();
+            <HTMLElement>(dateRangePicker.popupObj.element.querySelector('.e-presets li:last-child')).click();
+            expect(dateRangePicker.popupObj.element.querySelector('.e-date-range-container')).not.toBe(null);
+            expect(dateRangePicker.popupObj.element.querySelector('.e-presets')).not.toBe(null);
+            document.getElementsByClassName('e-day')[15].dispatchEvent(clickEvent);
+            document.getElementsByClassName('e-day')[16].dispatchEvent(clickEvent);
+            dateRangePicker.applyButton.element.click();
+            (<HTMLElement>document.getElementsByClassName(' e-input-group-icon e-range-icon e-icons')[0]).dispatchEvent(clickEvent);
+            expect(dateRangePicker.popupObj.element.querySelector('.e-date-range-container')).not.toBe(null);
+            expect(dateRangePicker.popupObj.element.querySelector('.e-presets')).not.toBe(null);
+            <HTMLElement>(dateRangePicker.popupObj.element.querySelector('.e-presets li:first-child')).click();
+            expect(document.body.contains(dateRangePicker.popupObj)).toBe(false);
+        });
+    });
 });
 interface CalendarElement {
     leftCalTitle: HTMLElement;

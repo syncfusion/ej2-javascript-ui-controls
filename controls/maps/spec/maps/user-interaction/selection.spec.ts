@@ -125,6 +125,11 @@ describe('Selection Settings', () => {
                 selectionSettings: {
                     enable: true,
                     enableMultiSelect: false,
+                    border:{
+                        width: 2,
+                        color: "red",
+                        opacity: 0.7
+                    }
                 },
                         shapeDataPath: 'Country',
                         shapePropertyPath: 'name',

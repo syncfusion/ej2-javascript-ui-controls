@@ -519,8 +519,8 @@ export class Axis extends ChildProperty<Axis> {
     public calculateCategoryAxisLabels(): void {
         let labels: string[] = this.labels ? this.labels : [];
         labels = (labels.length > 0) ? labels : this.jsonCellLabel;
-        let min: number = !isNullOrUndefined(this.minimum) ? <number>this.minimum : 0;
-        let max: number = !isNullOrUndefined(this.maximum) ? <number>this.maximum : this.maxLength;
+        let min: number = !isNullOrUndefined(this.minimum) && !(this.minimum instanceof Date) ? <number>this.minimum : 0;
+        let max: number = !isNullOrUndefined(this.maximum) && !(this.maximum instanceof Date) ? <number>this.maximum : this.maxLength;
         const interval: number = this.interval ? this.interval : 1;
         let temp: number;
         if (!isNullOrUndefined(this.minimum) && !isNullOrUndefined(this.maximum) && min > max) {

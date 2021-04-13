@@ -174,7 +174,8 @@ describe('Map layer testing', () => {
             bubble.layers[1].bubbleSettings = [{
                 border: {
                     color: 'red',
-                    width: 2
+                    width: 2,
+                    opacity: 0.7
                 },
                 visible: true,
                 fill: 'orange',
@@ -192,7 +193,8 @@ describe('Map layer testing', () => {
             bubble.loaded = (args: ILoadedEventArgs) => {
                 spec = getElementByID(specId + '0');
                 expect(spec.getAttribute('fill')).toBe('orange');
-                expect(spec.getAttribute('opacity')).toBe('0.5');
+                expect(spec.getAttribute('fill-opacity')).toBe('0.5');
+                expect(spec.getAttribute('stroke-opacity')).toBe('0.7');
                 expect(spec.getAttribute('stroke-width')).toBe('2');
                 expect(spec.getAttribute('stroke')).toBe('red');
                 expect(parseInt(spec.getAttribute('height'), 10)).toBe(24);

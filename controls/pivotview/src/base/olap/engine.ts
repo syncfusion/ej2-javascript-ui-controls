@@ -2716,8 +2716,8 @@ export class OlapEngine {
             let memberType: string = member.querySelector('MEMBER_TYPE').textContent;
             let memberUqName: string = member.querySelector('UName').textContent;
             let caption: string = member.querySelector('Caption').textContent;
-            let nodeAttr: { [key: string]: string } = { 'data-fieldName': fieldName };
             let parentUqName: string = member.querySelector('PARENT_UNIQUE_NAME') ? member.querySelector('PARENT_UNIQUE_NAME').textContent : '';
+            let nodeAttr: { [key: string]: string } = { 'data-fieldName': fieldName, 'data-memberId': memberUqName };
             if (parentUqName === '' && memberType === '1') {
                 filterMembers = {
                     hasChildren: (field.querySelector('CHILDREN_CARDINALITY') ? (field.querySelector('CHILDREN_CARDINALITY').textContent !== '0') ? true : false : false),

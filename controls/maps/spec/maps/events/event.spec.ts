@@ -628,7 +628,7 @@ describe('Map Events tesing', () => {
             map.loaded = (args: ILoadedEventArgs): void => {
                 spec = getElement('container_LayerIndex_0_shapeIndex_2_dataIndex_26');
                 trigger.mousemoveEvent(spec, 0 , 0, 0, 0);
-                expect(spec.getAttribute('opacity')).toBe('1');
+                expect(spec.getAttribute('fill-opacity')).toBe('1');
                 done();
             };
             map.refresh();
@@ -806,7 +806,7 @@ describe('Map Events tesing', () => {
             map.loaded = (args: ILoadedEventArgs): void => {
                 spec = getElement('container_LayerIndex_0_shapeIndex_2_dataIndex_26');
                 trigger.mousemoveEvent(spec, 0 , 0, 0, 0);
-                expect(spec.getAttribute('opacity')).toBe('1');
+                expect(spec.getAttribute('fill-opacity')).toBe('1');
                 done();
             };
             map.refresh();
@@ -912,7 +912,7 @@ describe('Map Events tesing', () => {
             map.loaded = (args: ILoadedEventArgs): void => {
                 spec = getElement('container_LayerIndex_0_shapeIndex_9_dataIndex_5');
                 trigger.clickEvent(spec);
-                expect(spec.getAttribute('opacity')).toBe('1');
+                expect(spec.getAttribute('fill-opacity')).toBe('1');
                 done();
             };
             map.refresh();

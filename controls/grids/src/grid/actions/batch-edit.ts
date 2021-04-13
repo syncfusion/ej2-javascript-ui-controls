@@ -191,7 +191,9 @@ export class BatchEdit {
                 case 'enter':
                 case 'shiftEnter':
                     e.keyArgs.preventDefault();
-                    if (isEdit) {
+                    let args = {cancel: false, keyArgs: e.keyArgs};
+                    this.parent.notify('beforeFocusCellEdit', args);
+                    if (!args.cancel && isEdit) {
                         this.editCell(rowIndex, this.cellDetails.column.field);
                     }
                     break;
@@ -1121,7 +1123,7 @@ export class BatchEdit {
     }
 
     public saveCell(isForceSave?: boolean): void {
-        if (this.preventSaveCell) { return; }
+        if (this.preventSaveCell || !this.form) { return; }
         let gObj: IGrid = this.parent;
         if (!isForceSave && (!gObj.isEdit || this.validateFormObj())) {
             return;

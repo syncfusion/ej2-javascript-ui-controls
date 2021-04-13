@@ -541,7 +541,7 @@ export class StampAnnotation {
         let isStampSaved: boolean = false;
         annotation.modifiedDate = this.pdfViewer.annotation.stickyNotesAnnotationModule.getDateAndTime();
         // eslint-disable-next-line max-len
-        annotation.author = (this.pdfViewer.stampSettings.author !== 'Guest') ? this.pdfViewer.stampSettings.author : this.pdfViewer.annotationSettings.author ? this.pdfViewer.annotationSettings.author : 'Guest';
+        annotation.author = (this.pdfViewer.annotationSettings.author !== 'Guest') ? this.pdfViewer.annotationSettings.author : this.pdfViewer.stampSettings.author ? this.pdfViewer.stampSettings.author : 'Guest';
         if (opacity) {
             let annotationName: string = this.pdfViewer.annotation.createGUID();
             let commentsDivid: string = this.pdfViewer.annotation.stickyNotesAnnotationModule.addComments('stamp', pageNumber + 1);
@@ -804,6 +804,7 @@ export class StampAnnotation {
                         };
                     }
                     break;
+                case 'NotApproved':
                 case 'Not Approved': {
                     stampCollection = {
                         iconName: 'Not Approved',
@@ -858,6 +859,7 @@ export class StampAnnotation {
                     };
                 }
                     break;
+                case 'InitialHere':
                 case 'Initial Here': {
                     stampCollection = {
                         iconName: 'Initial Here',
@@ -867,6 +869,7 @@ export class StampAnnotation {
                     };
                 }
                     break;
+                case 'SignHere':
                 case 'Sign Here': {
                     stampCollection = {
                         iconName: 'Sign Here',
@@ -903,6 +906,7 @@ export class StampAnnotation {
                     };
                 }
                     break;
+                case 'NotApproved':
                 case 'Not Approved': {
                     stampCollection = {
                         iconName: 'Not Approved',
@@ -939,6 +943,7 @@ export class StampAnnotation {
                     };
                 }
                     break;
+                case 'ForPublicRelease':
                 case 'For Public Release': {
                     stampCollection = {
                         iconName: 'For Public Release',
@@ -948,6 +953,7 @@ export class StampAnnotation {
                     };
                 }
                     break;
+                case 'NotForPublicRelease':
                 case 'Not For Public Release': {
                     stampCollection = {
                         iconName: 'Not For Public Release',
@@ -957,6 +963,7 @@ export class StampAnnotation {
                     };
                 }
                     break;
+                case 'ForComment':
                 case 'For Comment': {
                     stampCollection = {
                         iconName: 'For Comment',
@@ -975,6 +982,7 @@ export class StampAnnotation {
                     };
                 }
                     break;
+                case 'PreliminaryResults':
                 case 'Preliminary Results': {
                     stampCollection = {
                         iconName: 'Preliminary Results',
@@ -984,6 +992,7 @@ export class StampAnnotation {
                     };
                 }
                     break;
+                case 'InformationOnly':
                 case 'Information Only': {
                     stampCollection = {
                         iconName: 'Information Only',

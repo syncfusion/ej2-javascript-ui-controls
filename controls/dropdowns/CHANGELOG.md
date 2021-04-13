@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 19.1.54 (2021-03-30)
+
+### Dropdown Tree
+
+#### Bug Fixes
+
+`#317088` - The issue with "The popup is not opened for the second time in the Dropdown Tree component when it is rendered inside the Dialog" has been resolved.
+
 ## 18.4.47 (2021-03-09)
 
 ### MultiSelect

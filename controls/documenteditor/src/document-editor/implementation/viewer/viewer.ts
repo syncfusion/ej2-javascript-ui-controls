@@ -10,7 +10,7 @@ import { createElement, Browser } from '@syncfusion/ej2-base';
 import {
     Page, Rect, Widget, ListTextElementBox, FieldElementBox, ParagraphWidget, HeaderFooterWidget, EditRangeStartElementBox,
     CommentElementBox, CommentCharacterElementBox, Padding, DropDownFormField, TextFormField, CheckBoxFormField, ShapeElementBox,
-    TextFrame, BlockContainer, ContentControl, Footnote, FootnoteElementBox, FootNoteWidget, IWidget, TextElementBox
+    TextFrame, BlockContainer, ContentControl, Footnote, FootnoteElementBox, FootNoteWidget, IWidget, TextElementBox, ShapeBase, ImageElementBox
 } from './page';
 import { DocumentEditor } from '../../document-editor';
 import {
@@ -986,6 +986,9 @@ export class DocumentHelper {
             this.owner.commentReviewPane.reviewTab.hideTab(0, isCommentTabVisible);
             this.showRevision = false;
         }
+        if (show) {
+            this.owner.trackChangesPane.enableDisableButton(!this.owner.isReadOnly);
+        }
     }
     /**
      * Initializes components.
@@ -1318,8 +1321,8 @@ export class DocumentHelper {
     }
     /* eslint-disable @typescript-eslint/no-explicit-any */
     private onImageResizer(args: any): void {
-        if (!isNullOrUndefined(this.owner) && !isNullOrUndefined(this.owner.imageResizerModule) && this.owner.imageResizerModule.isImageResizerVisible
-            && this.owner.imageResizerModule.isImageResizing) {
+        if (!isNullOrUndefined(this.owner) && !isNullOrUndefined(this.owner.imageResizerModule) &&
+            this.owner.imageResizerModule.isImageResizerVisible && this.owner.imageResizerModule.isImageResizing) {
             if (args instanceof MouseEvent) {
                 this.onMouseUpInternal(args);
             } else if (args instanceof TouchEvent) {
@@ -1353,7 +1356,7 @@ export class DocumentHelper {
             }
             return;
         }
-        if (!this.owner.isReadOnlyMode) {
+        if (!this.owner.isReadOnlyMode || (this.selection && this.selection.isInlineFormFillMode())) {
             const key: number = event.keyCode || event.charCode;
             let char: string = '';
             if (key) {
@@ -1361,7 +1364,7 @@ export class DocumentHelper {
             } else if (event.key) {
                 char = event.key;
             }
-            if (char !== ' ' && char !== '\r' && char !== '\b' && char !== '\u001B' && !this.owner.isReadOnlyMode && !ctrl) {
+            if (char !== ' ' && char !== '\r' && char !== '\b' && char !== '\u001B' && !ctrl) {
                 this.owner.editorModule.handleTextInput(char);
             } else if (char === ' ') {
                 this.triggerSpellCheck = true;
@@ -2109,16 +2112,20 @@ export class DocumentHelper {
         }
         return false;
     }
-    public isInShapeBorder(floatElement: ShapeElementBox, cursorPoint: Point): boolean {
-        if (!isNullOrUndefined(floatElement) && floatElement instanceof ShapeElementBox) {
+    public isInShapeBorder(floatElement: ShapeBase, cursorPoint: Point): boolean {
+        if (!isNullOrUndefined(floatElement)) {
             let width: number = floatElement.width;
             let height: number = floatElement.height;
-            let lineWidth: number = floatElement.lineFormat.weight;
             if (this.isInsideRect(floatElement.x - floatElement.margin.left, floatElement.y - floatElement.margin.top, width, height, cursorPoint)) {
                 // this.selectionLineWidget = this.getLineWidget(cursorPoint);
-                if (!(this.isInsideRect(floatElement.x + lineWidth, floatElement.y + lineWidth + floatElement.textFrame.marginTop,
-                    width - (lineWidth * 2), height - ((lineWidth * 2) + floatElement.textFrame.marginTop + floatElement.textFrame.marginBottom), cursorPoint))) {
+                if (floatElement instanceof ImageElementBox) {
                     return true;
+                } else if (floatElement instanceof ShapeElementBox) {
+                    let lineWidth: number = floatElement.lineFormat.weight;
+                    if (!(this.isInsideRect(floatElement.x + lineWidth, floatElement.y + lineWidth + floatElement.textFrame.marginTop,
+                        width - (lineWidth * 2), height - ((lineWidth * 2) + floatElement.textFrame.marginTop + floatElement.textFrame.marginBottom), cursorPoint))) {
+                        return true;
+                    }
                 }
             }
         }
@@ -2761,7 +2768,9 @@ export class DocumentHelper {
                     if (shapeInfo.isInShapeBorder) {
                         return shapeInfo.element.line;
                     }
-                    widget = this.selection.getLineWidgetBodyWidget((shapeInfo.element as ShapeElementBox).textFrame, cursorPoint);
+                    if (shapeInfo.element instanceof ShapeElementBox) {
+                        widget = this.selection.getLineWidgetBodyWidget((shapeInfo.element as ShapeElementBox).textFrame, cursorPoint);
+                    }
                 } else if (isMouseDragged && this.isFootnoteWidget) {
                     if (this.selection.start.paragraph.footNoteReference !== undefined && this.selection.start.paragraph.containerWidget instanceof FootNoteWidget && this.selection.start.paragraph.containerWidget.footNoteType === 'Footnote') {
                         return this.selection.getLineWidgetBodyWidget(this.currentPage.footnoteWidget, cursorPoint);
@@ -2810,7 +2819,7 @@ export class DocumentHelper {
     private checkFloatingItems(blockContainer: BlockContainer, cursorPoint: Point, isMouseDragged: boolean): ShapeInfo {
         let isInShape: boolean = false;
         let isInShapeBorder: boolean = false;
-        let floatElement: ShapeElementBox;
+        let floatElement: ShapeBase;
         let selectionInShape: boolean = this.selection.isInShape;
         let isMouseDraggedInShape: boolean = isMouseDragged && selectionInShape;
         if (blockContainer.floatingElements.length > 0) {

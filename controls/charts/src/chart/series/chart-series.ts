@@ -1067,6 +1067,8 @@ export class SeriesBase extends ChildProperty<SeriesBase> {
                 this.chart[
                     'spline' + (isArea ? 'Area' : '') + 'SeriesModule'
                 ].findSplinePoint(this);
+            } else if(this.type.indexOf('Histogram') > -1 && (this.xAxis.maximum || this.xAxis.minimum)) {
+                this.chart['histogramSeriesModule'].calculateBinValues(this);
             }
         }
     }

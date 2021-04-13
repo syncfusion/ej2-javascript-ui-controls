@@ -2310,7 +2310,7 @@ export class Selection implements IAction {
             if (gObj.selectionSettings.cellSelectionMode.indexOf('Box') > -1 && !this.isRowType() && !this.isSingleSel()) {
                 this.isCellDrag = true;
                 isDrag = true;
-            } else if (gObj.allowRowDragAndDrop && !gObj.isEdit) {
+            } else if (gObj.allowRowDragAndDrop && !gObj.isEdit && !this.parent.selectionSettings.checkboxOnly) {
                 if (!this.isRowType() || this.isSingleSel() || closest(target, 'td').classList.contains('e-selectionbackground')) {
                     this.isDragged = false;
                     return;
@@ -2639,7 +2639,10 @@ export class Selection implements IAction {
                 }
             }
         }
-        this.totalRecordsCount = this.parent.pageSettings.totalRecordsCount;
+        this.totalRecordsCount = this.parent.getCurrentViewRecords().length;
+        if (this.parent.allowPaging) {
+            this.totalRecordsCount = this.parent.pageSettings.totalRecordsCount;
+        }
         if (rows !== null && rows.length > 0 && (this.parent.isPersistSelection || this.chkField)) {
             let indexes: number[] = [];
             for (let j: number = 0; j < rows.length; j++) {

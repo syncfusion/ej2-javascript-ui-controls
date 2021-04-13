@@ -792,7 +792,6 @@ export class CalendarBase extends Component<HTMLElement> implements INotifyPrope
         if (isBlazor() && this.blazorRef) {
             (this.tableBodyElement as HTMLElement).focus();
             const targetEle: HTMLElement = e.target as HTMLElement;
-            /* eslint-disable @typescript-eslint/naming-convention */
             const args: object = {
                 Action: e.action, Key: e.key, Events: e,
                 SelectDate: selectedDate ? selectedDate.id : null,
@@ -801,7 +800,6 @@ export class CalendarBase extends Component<HTMLElement> implements INotifyPrope
                 Id: focusedDate ? focusedDate.id : selectedDate ? selectedDate.id : null,
                 TargetClassList: targetEle.classList.toString()
             };
-            /* eslint-enable @typescript-eslint/naming-convention */
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             (this.blazorRef as any).invokeMethodAsync('OnCalendarKeyboardEvent', args);
             if (targetEle.classList.contains('e-today')) {
@@ -2371,9 +2369,6 @@ export class Calendar extends CalendarBase {
             let timeZoneDiff: number = serverTimezoneDiff + clientTimeZoneDiff;
             timeZoneDiff = this.isDayLightSaving() ? timeZoneDiff-- : timeZoneDiff;
             this.value = new Date(this.value.getTime() + (timeZoneDiff * 60 * 60 * 1000));
-        } else if (!isNullOrUndefined(this.timezone)) {
-            const date: Date = this.value || new Date();
-            this.setProperties({ value: super.getDate(date, this.timezone) }, true);
         }
     }
     protected formResetHandler(): void {
@@ -2418,7 +2413,10 @@ export class Calendar extends CalendarBase {
 
     protected generateTodayVal(value: Date) : Date {
         let tempValue: Date = new Date();
-        if (value) {
+        if (!isNullOrUndefined(this.timezone)) {
+            tempValue = super.getDate(tempValue, this.timezone);
+        }
+        if (value && isNullOrUndefined(this.timezone)) {
             tempValue.setHours(value.getHours());
             tempValue.setMinutes(value.getMinutes());
             tempValue.setSeconds(value.getSeconds());
@@ -2432,7 +2430,7 @@ export class Calendar extends CalendarBase {
     protected todayButtonClick(e?: MouseEvent | KeyboardEvent): void {
         if (this.showTodayButton) {
             const tempValue: Date = this.generateTodayVal(this.value);
-            this.setProperties({ value: super.getDate(tempValue, this.timezone) }, true);
+            this.setProperties({ value: tempValue }, true);
             this.isTodayClicked = true;
             this.todayButtonEvent = e;
             if (this.isMultiSelection) {

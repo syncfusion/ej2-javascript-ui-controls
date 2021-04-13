@@ -1131,7 +1131,7 @@ export class PivotButton implements IAction {
     public nodeStateModified(args: NodeCheckEventArgs): void {
         let target: Element = closest(args.node as Element, 'li');
         let fieldName: string = target.getAttribute('data-fieldname');
-        if (target.getAttribute('data-uid') === 'all') {
+        if (target.getAttribute('data-memberId') === 'all') {
             this.memberTreeView.nodeChecked = null;
             if (args.action === 'check') {
                 this.memberTreeView.checkAll();
@@ -1153,10 +1153,10 @@ export class PivotButton implements IAction {
                 // console.log('getAllCheckedNodes:' + st2);
                 this.updateNodeStates(checkedNodes, fieldName, args.action);
             }
-            let pos: number = this.parent.pivotCommon.currentTreeItemsPos[target.getAttribute('data-uid')].index;
+            let pos: number = this.parent.pivotCommon.currentTreeItemsPos[target.getAttribute('data-memberId')].index;
             if (this.parent.pivotCommon.currentTreeItems[pos]) {
                 this.parent.pivotCommon.currentTreeItems[pos].isSelected = args.action === 'check';
-                this.parent.pivotCommon.currentTreeItemsPos[target.getAttribute('data-uid')].isSelected = args.action === 'check';
+                this.parent.pivotCommon.currentTreeItemsPos[target.getAttribute('data-memberId')].isSelected = args.action === 'check';
             }
         }
         this.parent.pivotCommon.filterDialog.updateCheckedState();
@@ -1166,12 +1166,12 @@ export class PivotButton implements IAction {
         /* eslint-disable @typescript-eslint/no-explicit-any */
         for (let item of this.parent.pivotCommon.searchTreeItems) {
             item.isSelected = state === 'check';
-            searchItemObj[(item as any).id] = (item as any).id;
+            searchItemObj[(item as any).htmlAttributes['data-memberId']] = (item as any).htmlAttributes['data-memberId'];
         }
         for (let item of this.parent.pivotCommon.currentTreeItems) {
-            if (searchItemObj[(item as any).id] !== undefined) {
+            if (searchItemObj[(item as any).htmlAttributes['data-memberId']] !== undefined) {
                 item.isSelected = state === 'check';
-                this.parent.pivotCommon.currentTreeItemsPos[(item as any).id].isSelected = state === 'check';
+                this.parent.pivotCommon.currentTreeItemsPos[(item as any).htmlAttributes['data-memberId']].isSelected = state === 'check';
             }
         }
         /* eslint-enable @typescript-eslint/no-explicit-any */
@@ -1189,8 +1189,8 @@ export class PivotButton implements IAction {
                 }
                 if (currentMembers[member]) {
                     currentMembers[member].isSelected = false;
-                    if (this.memberTreeView.element.querySelector('li[data-uid="' + member + '"]')) {
-                        let element: HTMLElement = this.memberTreeView.element.querySelector('li[data-uid="' + member + '"]');
+                    if (this.memberTreeView.element.querySelector('li[data-memberId="' + member + '"]')) {
+                        let element: HTMLElement = this.memberTreeView.element.querySelector('li[data-memberId="' + member + '"]');
                         if (element && !element.querySelector('ul')) {
                             this.parent.pivotCommon.eventBase.updateChildNodeStates(fieldList.filterMembers, fieldName, member, false);
                         }
@@ -1199,8 +1199,8 @@ export class PivotButton implements IAction {
             }
             for (let node of checkedNodes) {
                 if (currentMembers[node]) {
-                    if (this.memberTreeView.element.querySelector('li[data-uid="' + node + '"]')) {
-                        let element: HTMLElement = this.memberTreeView.element.querySelector('li[data-uid="' + node + '"]');
+                    if (this.memberTreeView.element.querySelector('li[data-memberId="' + node + '"]')) {
+                        let element: HTMLElement = this.memberTreeView.element.querySelector('li[data-memberId="' + node + '"]');
                         if (element && !element.querySelector('ul')) {
                             currentMembers[node].isSelected = true;
                             this.parent.pivotCommon.eventBase.updateChildNodeStates(fieldList.filterMembers, fieldName, node, true);
@@ -1257,7 +1257,7 @@ export class PivotButton implements IAction {
                     if (this.parent.pivotCommon.isDateField) {
                         filterItem.items.push(item.name as string);
                     } else {
-                        filterItem.items.push(item.id as string);
+                        filterItem.items.push((item as any).htmlAttributes['data-memberId'] as string);
                     }
                 }
             }

@@ -340,6 +340,48 @@ describe('Year and TimelineYear View Event Render Module', () => {
         });
     });
 
+    describe('Testing the Appointment rendering for longer appointments renders after shorter one', () => {
+        let schObj: Schedule;
+        beforeAll((done: DoneFn) => {
+            const yearData: Record<string, any>[] = [{
+                Id: 1,
+                Subject: "Short Event",
+                StartTime: new Date(2019, 1, 1, 10, 0, 0),
+                EndTime: new Date(2019, 1, 5, 10, 0, 0),
+                IsAllDay: true
+            }];
+            const model: ScheduleModel = {
+                width: '500px', selectedDate: new Date(2019, 0, 1),
+                views: [
+                    { option: 'TimelineYear', displayName: 'Horizontal' }
+                ]
+            };
+            schObj = util.createSchedule(model, yearData, done);
+        });
+
+        afterAll(() => {
+            util.destroy(schObj);
+        });
+
+        it('Before rendering longer appointments', () => {
+            expect(schObj.element.querySelectorAll('.e-more-indicator').length).toEqual(0);
+        });
+
+        it('After rendering longer appointemnt checking', (done: DoneFn) => {
+            schObj.dataBound = () => {
+                expect(schObj.element.querySelectorAll('.e-more-indicator').length).toEqual(9);
+                done();
+            };
+            schObj.addEvent([{
+                Id: 2,
+                Subject: "Long Event",
+                StartTime: new Date(2019, 1, 2, 10, 0, 0),
+                EndTime: new Date(2019, 1, 10, 10, 0, 0),
+                IsAllDay: true
+            }]);
+        });
+    });
+
 
     it('memory leak', () => {
         profile.sample();

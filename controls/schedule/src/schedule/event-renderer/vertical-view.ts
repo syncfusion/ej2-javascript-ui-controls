@@ -103,7 +103,7 @@ export class VerticalEvent extends EventBase {
     }
 
     public getHeight(start: Date, end: Date): number {
-        let appHeight: number = (end.getTime() - start.getTime()) / (60 * 1000) * (this.cellHeight * this.slotCount) / this.interval;
+        let appHeight: number = (util.getUniversalTime(end) - util.getUniversalTime(start)) / util.MS_PER_MINUTE * (this.cellHeight * this.slotCount) / this.interval;
         appHeight = (appHeight <= 0) ? this.cellHeight : appHeight;
         return appHeight;
     }

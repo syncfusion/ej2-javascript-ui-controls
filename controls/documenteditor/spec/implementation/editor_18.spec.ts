@@ -1148,3 +1148,248 @@ describe('Insert comment validation at end of paragraph', () => {
   });
 
 });
+let multilevelList: any = {
+  "sections": [
+    {
+      "sectionFormat": {
+        "pageWidth": 612,
+        "pageHeight": 792,
+        "leftMargin": 72,
+        "rightMargin": 72,
+        "topMargin": 72,
+        "bottomMargin": 72,
+        "differentFirstPage": true,
+        "differentOddAndEvenPages": false,
+        "headerDistance": 36,
+        "footerDistance": 36,
+        "bidi": false
+      },
+      "blocks": [
+        {
+          "paragraphFormat": {
+            "textAlignment": "Justify",
+            "styleName": "Normal",
+            "listFormat": {
+              "listId": 0,
+              "listLevelNumber": 1
+            }
+          },
+          "characterFormat": {
+            "fontSize": 11,
+            "fontColor": "empty",
+            "fontSizeBidi": 11
+          },
+          "inlines": [
+            {
+              "characterFormat": {},
+              "bookmarkType": 0,
+              "name": "1.1"
+            },
+            {
+              "characterFormat": {
+                "fontSize": 11,
+                "fontFamily": "Arial",
+                "fontColor": "empty",
+                "fontSizeBidi": 11,
+                "fontFamilyBidi": "Arial"
+              },
+              "text": "The "
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "lists": [
+    {
+      "abstractListId": 0,
+      "levelOverrides": [],
+      "listId": 0
+    }
+  ],
+  "abstractLists": [
+    {
+      "abstractListId": 0,
+      "levels": [
+        {
+          "characterFormat": {
+            "fontColor": "empty"
+          },
+          "paragraphFormat": {
+            "leftIndent": 28.350000381469727,
+            "firstLineIndent": -28.350000381469727,
+            "listFormat": {}
+          },
+          "followCharacter": "Tab",
+          "listLevelPattern": "Arabic",
+          "numberFormat": "%1",
+          "restartLevel": 0,
+          "startAt": 1
+        },
+        {
+          "characterFormat": {
+            "fontColor": "empty"
+          },
+          "paragraphFormat": {
+            "leftIndent": 28.350000381469727,
+            "firstLineIndent": -28.350000381469727,
+            "listFormat": {}
+          },
+          "followCharacter": "Tab",
+          "listLevelPattern": "Arabic",
+          "numberFormat": "%1.%2",
+          "restartLevel": 1,
+          "startAt": 1
+        },
+        {
+          "characterFormat": {
+            "fontColor": "empty"
+          },
+          "paragraphFormat": {
+            "leftIndent": 51.04999923706055,
+            "firstLineIndent": -22.700000762939453,
+            "listFormat": {}
+          },
+          "followCharacter": "Tab",
+          "listLevelPattern": "LowLetter",
+          "numberFormat": "(%3)",
+          "restartLevel": 2,
+          "startAt": 1
+        },
+        {
+          "characterFormat": {
+            "fontColor": "empty"
+          },
+          "paragraphFormat": {
+            "leftIndent": 73.75,
+            "firstLineIndent": -22.700000762939453,
+            "listFormat": {}
+          },
+          "followCharacter": "Tab",
+          "listLevelPattern": "LowRoman",
+          "numberFormat": "(%4)",
+          "restartLevel": 3,
+          "startAt": 1
+        },
+        {
+          "characterFormat": {
+            "fontColor": "empty"
+          },
+          "paragraphFormat": {
+            "leftIndent": 96.44999694824219,
+            "firstLineIndent": -22.700000762939453,
+            "listFormat": {}
+          },
+          "followCharacter": "Tab",
+          "listLevelPattern": "Arabic",
+          "numberFormat": "(%5).",
+          "restartLevel": 4,
+          "startAt": 1
+        },
+        {
+          "characterFormat": {
+            "fontColor": "empty"
+          },
+          "paragraphFormat": {
+            "leftIndent": 119.1500015258789,
+            "firstLineIndent": -22.700000762939453,
+            "listFormat": {}
+          },
+          "followCharacter": "Tab",
+          "listLevelPattern": "UpLetter",
+          "numberFormat": "(%6).",
+          "restartLevel": 5,
+          "startAt": 1
+        },
+        {
+          "characterFormat": {
+            "fontColor": "empty"
+          },
+          "paragraphFormat": {
+            "leftIndent": 162,
+            "firstLineIndent": -54,
+            "listFormat": {}
+          },
+          "followCharacter": "Tab",
+          "listLevelPattern": "Arabic",
+          "numberFormat": "%1.%2.%3.%4.%5.%6.%7",
+          "restartLevel": 6,
+          "startAt": 1
+        },
+        {
+          "characterFormat": {
+            "fontColor": "empty"
+          },
+          "paragraphFormat": {
+            "leftIndent": 187.1999969482422,
+            "firstLineIndent": -61.20000076293945,
+            "listFormat": {}
+          },
+          "followCharacter": "Tab",
+          "listLevelPattern": "Arabic",
+          "numberFormat": "%1.%2.%3.%4.%5.%6.%7.%8",
+          "restartLevel": 7,
+          "startAt": 1
+        },
+        {
+          "characterFormat": {
+            "fontColor": "empty"
+          },
+          "paragraphFormat": {
+            "leftIndent": 216,
+            "firstLineIndent": -72,
+            "listFormat": {}
+          },
+          "followCharacter": "Tab",
+          "listLevelPattern": "Arabic",
+          "numberFormat": "%1.%2.%3.%4.%5.%6.%7.%8.%9",
+          "restartLevel": 8,
+          "startAt": 1
+        }
+      ]
+    }
+  ]
+};
+describe('Multilevel list undo and redo validation', () => {
+  let container: DocumentEditor;
+  beforeAll(() => {
+    document.body.innerHTML = '';
+    let ele: HTMLElement = createElement('div', { id: 'container' });
+    document.body.appendChild(ele);
+    DocumentEditor.Inject(Editor, Selection, EditorHistory);
+    container = new DocumentEditor({ enableEditor: true, isReadOnly: false, enableEditorHistory: true ,enableComment:true });
+    (container.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+    (container.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+    (container.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+    (container.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+    container.appendTo('#container');
+  });
+  afterAll((done): void => {
+    container.destroy();
+    document.body.removeChild(document.getElementById('container'));
+    container = undefined;
+    document.body.innerHTML = '';
+    setTimeout(function () {
+      done();
+    }, 1000);
+  });
+  it('Inserting a list', function () {
+    container.open(JSON.stringify(multilevelList));
+    expect(container.documentHelper.lists[0].abstractList.levels[1].numberFormat).toBe('%1.%2');
+    expect(container.documentHelper.lists[0].abstractList.levels[1].listLevelPattern).toBe('Arabic');
+    container.selection.selectAll();
+    container.editor.applyNumbering('%1.', 'UpLetter');
+    expect(container.documentHelper.lists[0].abstractList.levels[1].numberFormat).toBe('%1.');
+    expect(container.documentHelper.lists[0].abstractList.levels[1].listLevelPattern).toBe('UpLetter');
+  });
+  it('undo the list validation', function () {
+    container.editorHistory.undo();
+    expect(container.documentHelper.lists[0].abstractList.levels[1].numberFormat).toBe('%1.%2');
+    expect(container.documentHelper.lists[0].abstractList.levels[1].listLevelPattern).toBe('Arabic');
+  });
+  it('redo the list validation', function () {
+    container.editorHistory.redo();
+    expect(container.documentHelper.lists[0].abstractList.levels[1].numberFormat).toBe('%1.');
+    expect(container.documentHelper.lists[0].abstractList.levels[1].listLevelPattern).toBe('UpLetter');
+  });
+});

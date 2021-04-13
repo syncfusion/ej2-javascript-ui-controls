@@ -194,7 +194,8 @@ export class Toolkit {
                     0 + size.width / 2, 0 + size.height * 3 / 4,
                     'middle', this.chart.getLocalizedLabel('ResetZoom'), 'rotate(0,' + (0) + ',' + (0) + ')', 'auto'
                 ),
-                { size: '12px' }, 'black', childElement);
+                { size: '12px' }, 'black', childElement, null, null, null, null, null, null, null, null, chart.enableCanvas
+            );
         }
 
         parentElement.appendChild(childElement);

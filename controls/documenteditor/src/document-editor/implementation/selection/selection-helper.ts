@@ -10,6 +10,7 @@ import { LayoutViewer } from '../index';
 import { isNullOrUndefined } from '@syncfusion/ej2-base';
 import { Selection } from './selection';
 import { HyperlinkType } from '../../index';
+import { ShapeBase } from '../viewer';
 /* eslint-disable */
 /**
  * @private
@@ -296,6 +297,18 @@ export class TextPosition {
         return this.currentWidget === textPosition.currentWidget
             && this.offset === textPosition.offset;
     }
+
+    /**
+     * Return true if text position is in same paragraph index
+     * @private
+     */
+     public isInSameParagraphIndex(textPosition: TextPosition): boolean {
+        if (isNullOrUndefined(textPosition)) {
+            throw new Error('textPosition is undefined.');
+        }
+        return this.paragraph.index === textPosition.paragraph.index;
+    }
+
     /**
      * Return true if text position is in same paragraph
      *
@@ -2094,7 +2107,7 @@ export class SelectionWidgetInfo {
     private widthIn: number = 0;
     public color: string = '';
 
-    public floatingItems: ShapeElementBox[];
+    public floatingItems: ShapeBase[];
     /**
      * @private
      */

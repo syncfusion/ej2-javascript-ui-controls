@@ -8,7 +8,19 @@
 
 ## [Unreleased]
 
-## 19.1.55 (2021-04-06)
+## 19.1.56 (2021-04-13)
+
+### Maps
+
+#### New Features
+
+- `#315251` - The `opacity` property for `border` in `shapeSettings` is exposed to provide opacity for the border of the shapes.
+
+#### Bug Fixes
+
+- `#F163539` - The data labels will now render properly when the value of `labelPath` of `dataLabelSettings` is different from the value of `shapePropertyPath` and `shapeDataPath`.
+
+## 19.1.54 (2021-03-30)
 
 ### Maps
 
@@ -180,7 +192,6 @@
 #### Bug Fixes
 
 - `#I240804` - The issue with dynamically updating the zoom factor along with the initial case of the zoom factor  has been fixed.
-
 - `#I240836` - The issue with border that was not applied for marker highlight and selection has been fixed.
 
 ## 17.2.36 (2019-07-24)

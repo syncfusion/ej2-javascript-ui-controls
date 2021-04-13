@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 19.1.56 (2021-04-13)
+
+### Barcode
+
+#### Bug Fixes
+
+- `#316606` - "Text alignment was not proper with UPCA type barcode" issue has been fixed.
+
 ## 18.4.30 (2020-12-17)
 
 ### Barcode

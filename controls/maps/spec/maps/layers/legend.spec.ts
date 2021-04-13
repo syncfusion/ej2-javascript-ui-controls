@@ -321,8 +321,8 @@ describe('Map marker properties tesing', () => {
                 expect(element.getAttribute('stroke-width')).toBe('3');
                 expect(element.getAttribute('x')).toBe('10');
                 expect(element.getAttribute('y')).toBe('28');
-                expect(element.getAttribute('height')).toBe('474');
-                expect(element.getAttribute('width')).toBe('492');
+                expect(element.getAttribute('height')).toBe('412');
+                expect(element.getAttribute('width') === '743' || element.getAttribute('width') === '749').toBe(true);
             };
             map.refresh();
         });
@@ -1553,7 +1553,7 @@ describe('Map marker properties tesing', () => {
                     expect(spec.getAttribute('fill')).toBe("rgb(153,174,214)");
                     expect(spec.getAttribute('stroke')).toBe("#000000");
                     expect(spec.getAttribute('stroke-width')).toBe("0");
-                    expect(spec.getAttribute("opacity")).toBe("1");
+                    expect(spec.getAttribute("fill-opacity")).toBe("1");
                 }
                 map.legendSettings.toggleLegendSettings.enable = true;
                 map.refresh();
@@ -1690,7 +1690,7 @@ describe('Map marker properties tesing', () => {
                         expect(spec.getAttribute('fill')).toBe("rgb(153,174,214)");
                         expect(spec.getAttribute('stroke')).toBe("#000000");
                         expect(spec.getAttribute('stroke-width')).toBe("0");
-                        expect(spec.getAttribute("opacity")).toBe("1");
+                        expect(spec.getAttribute("fill-opacity")).toBe("1");
                     }
                     map.legendSettings.toggleLegendSettings.enable = true;
                     map.refresh();

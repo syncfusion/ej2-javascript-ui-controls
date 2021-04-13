@@ -1253,7 +1253,9 @@ export class StickyNotesAnnotation {
                 accordionPageContainer.remove();
             }
             accordionContentContainer = this.createPageAccordion(pageIndex);
-            accordionContentContainer.ej2_instances[0].expandItem(true);
+            if (accordionContentContainer) {
+                accordionContentContainer.ej2_instances[0].expandItem(true);
+            }
         }
         const accordionContent: HTMLElement = document.getElementById(this.pdfViewer.element.id + '_accordioncontent' + pageIndex);
         // eslint-disable-next-line max-len
@@ -1268,14 +1270,14 @@ export class StickyNotesAnnotation {
         this.commentsCount = this.commentsCount + 1;
         this.commentsContainer.appendChild(commentDiv);
         this.updateCommentPanelScrollTop(pageIndex);
-        if (data) {
+        if (data && accordionContent) {
             if (data.position || data.position === 0) {
                 accordionContent.insertBefore(this.commentsContainer, accordionContent.children[data.position]);
             } else {
                 accordionContent.appendChild(this.commentsContainer);
             }
         }
-        if (data) {
+        if (data && accordionContent) {
             if (data.indent) {
                 this.commentsContainer.setAttribute('name', 'shape_measure');
                 this.createTitleContainer(commentDiv, 'shape_measure', data.subject, data.modifiedDate, data.author);

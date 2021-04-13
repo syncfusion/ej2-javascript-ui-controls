@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 19.1.54 (2021-03-30)
+
+### ProgressBar
+
+#### Bug Fixes
+
+- `#F159325` - ProgressBar renders inside the Grid with out any console error.
+
 ## 18.2.47 (2020-07-28)
 
 ### ProgressBar

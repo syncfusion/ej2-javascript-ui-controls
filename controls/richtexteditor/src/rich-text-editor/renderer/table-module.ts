@@ -61,6 +61,7 @@ export class Table {
         }
         this.parent.on(events.createTable, this.renderDlgContent, this);
         this.parent.on(events.initialEnd, this.afterRender, this);
+        this.parent.on(events.dynamicModule, this.afterRender, this);
         this.parent.on(events.docClick, this.docClick, this);
         this.parent.on(events.editAreaClick, this.editAreaClickHandler, this);
         this.parent.on(events.tableToolbarAction, this.onToolbarAction, this);
@@ -76,6 +77,7 @@ export class Table {
         }
         this.parent.off(events.createTable, this.renderDlgContent);
         this.parent.off(events.initialEnd, this.afterRender);
+        this.parent.off(events.dynamicModule, this.afterRender);
         this.parent.off(events.docClick, this.docClick);
         this.parent.off(events.editAreaClick, this.editAreaClickHandler);
         this.parent.off(events.tableToolbarAction, this.onToolbarAction);

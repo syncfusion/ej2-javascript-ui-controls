@@ -285,7 +285,7 @@ export class PolarRadarPanel extends LineBase {
 
             textElement(
                 chart.renderer, options, axis.labelStyle, axis.labelStyle.color || chart.themeStyle.axisLabel, labelElement,
-                false, chart.redraw, true, true
+                false, chart.redraw, true, true, null, null, null, null, chart.enableCanvas
             );
         }
         chart.yAxisElements.appendChild(labelElement);
@@ -577,7 +577,7 @@ export class PolarRadarPanel extends LineBase {
             this.visibleAxisLabelRect.push(labelRegions[i]);
             textElement(
                 chart.renderer, options, label.labelStyle, label.labelStyle.color || chart.themeStyle.axisLabel, labelElement,
-                false, chart.redraw, true, true
+                false, chart.redraw, true, true, null, null, null, null, chart.enableCanvas
             );
         }
         this.element.appendChild(labelElement);

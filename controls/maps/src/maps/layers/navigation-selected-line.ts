@@ -112,7 +112,7 @@ export class NavigationLine {
                         markerEle.setAttribute('refY', divide.toString());
                         markerEle.setAttribute('orient', 'auto');
                         const d2: string = 'M 0,0  L 0,' + arrowSize + ' L ' + divide + ', ' + divide + ' Z';
-                        pathOption = new PathOption(triId, arrowColor, width, color, 1, dashArray, d2);
+                        pathOption = new PathOption(triId, arrowColor, width, color, 1, 1, dashArray, d2);
                         navigationEle = this.maps.renderer.drawPath(pathOption);
                         markerEle.appendChild(navigationEle);
                         defElement.appendChild(markerEle);
@@ -124,7 +124,7 @@ export class NavigationLine {
                         'M ' + point[j]['x'] + ',' + point[j]['y'] + ' A ' + (radius / 2 + (1 - angle) * radius / (angle * 10)) +
                             ' ' + (radius / 2 + (1 - angle) * radius / (angle * 10)) + ' ' + 0 + ',' + 0 + ','
                             + direction + ' , ' + point[j + 1]['x'] + ',' + point[j + 1]['y'] + ' ';
-                    pathOption = new PathOption(arcId, 'none', width, color, 1, dashArray, d);
+                    pathOption = new PathOption(arcId, 'none', width, color, 1, 1, dashArray, d);
                     navigationEle = this.maps.renderer.drawPath(pathOption) as SVGLineElement;
                     if (!isNullOrUndefined(arrowPosition)) {
                         const position: void = (arrowPosition === 'Start') ? navigationEle.setAttribute('marker-start', startArrow)

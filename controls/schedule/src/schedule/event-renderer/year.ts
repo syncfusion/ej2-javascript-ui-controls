@@ -132,7 +132,13 @@ export class YearEvent extends TimelineEvent {
                             eventObj.Guid === eventData.Guid);
                         const isSpanned: Record<string, any>[] = isSpannedCollection.filter((eventObj: Record<string, any>) =>
                             eventObj.Guid === eventData.Guid);
-                        if (isRendered.length > 0 || isSpanned.length > 0) { continue; }
+                        if (isRendered.length > 0 && isRendered[0].MoreIndicator || isSpanned.length > 0 && isSpanned[0].MoreIndicator) {
+                            const moreIndex: number = this.parent.activeViewOptions.orientation === 'Horizontal' ? row : dayIndex;
+                            this.renderMoreIndicatior(eventWrapper, count - index, dayStart, moreIndex, leftValue, rightValue);
+                            break;
+                        } else if (isRendered.length > 0 || isSpanned.length > 0) {
+                            continue;
+                        }
                     }
                     const isRowAutoHeight: boolean = this.parent.rowAutoHeight && this.parent.activeViewOptions.orientation === 'Horizontal';
                     if (isRowAutoHeight || this.cellHeight > availedHeight) {
@@ -145,8 +151,9 @@ export class YearEvent extends TimelineEvent {
                         if (this.parent.activeViewOptions.orientation === 'Horizontal') {
                             for (let a: number = index; a < dayEvents.length; a++) {
                                 const moreData: Record<string, any> =
-                                    extend({}, dayEvents[a], { Index: overlapIndex + a }, true) as Record<string, any>;
+                                    extend({}, dayEvents[a], { Index: overlapIndex + a, MoreIndicator: true }, true) as Record<string, any>;
                                 this.renderedEvents.push(moreData);
+                                eventData.MoreIndicator = true;
                                 isSpannedCollection.push(eventData);
                             }
                         }
@@ -320,7 +327,8 @@ export class YearEvent extends TimelineEvent {
     }
 
     private createEventElement(record: Record<string, any>): HTMLElement {
-        const eventSubject: string = (record[this.fields.subject] || this.parent.eventSettings.fields.subject.default) as string;
+        const eventSubject: string = (record[this.fields.subject] || this.parent.eventSettings.fields.subject.default
+            || this.parent.localeObj.getConstant('addTitle')) as string;
         const eventWrapper: HTMLElement = createElement('div', {
             className: cls.APPOINTMENT_CLASS,
             attrs: {

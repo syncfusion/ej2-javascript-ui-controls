@@ -74,16 +74,6 @@ export class Marker {
                 };
                 eventArgs = markerColorChoose(eventArgs, data);
                 eventArgs = markerShapeChoose(eventArgs, data);
-                if (this.maps.isBlazor) {
-                    const { maps, marker, ...blazorEventArgs }: IMarkerRenderingEventArgs = eventArgs;
-                    eventArgs = blazorEventArgs;
-                    markerSettings.longitudeValuePath = !isNullOrUndefined(markerSettings.longitudeValuePath) ?
-                        markerSettings.longitudeValuePath : !isNullOrUndefined(data['Longitude']) ? 'Longitude' :
-                            !isNullOrUndefined(data['longitude']) ? 'longitude' : null;
-                    markerSettings.latitudeValuePath = !isNullOrUndefined(markerSettings.latitudeValuePath) ?
-                        markerSettings.latitudeValuePath : !isNullOrUndefined(data['Latitude']) ? 'Latitude' :
-                            !isNullOrUndefined(data['latitude']) ? 'latitude' : null;
-                }
                 // eslint-disable-next-line @typescript-eslint/naming-convention
                 this.maps.trigger('markerRendering', eventArgs, (MarkerArgs: IMarkerRenderingEventArgs) => {
                     if (markerSettings.colorValuePath !== eventArgs.colorValuePath ) {
@@ -98,22 +88,6 @@ export class Marker {
                     const lat: number = (!isNullOrUndefined(markerSettings.latitudeValuePath)) ?
                         Number(getValueFromObject(data, markerSettings.latitudeValuePath)) : !isNullOrUndefined(data['latitude']) ?
                             parseFloat(data['latitude']) : !isNullOrUndefined(data['Latitude']) ? parseFloat(data['Latitude']) : 0;
-                    if (this.maps.isBlazor) {
-                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                        const data1: any = {};
-                        const text: string[] = [];
-                        let j: number = 0;
-                        for (let i: number = 0; i < Object.keys(data).length; i++) {
-                            if (Object.keys(data)[i].toLowerCase() !== 'latitude' && Object.keys(data)[i].toLowerCase() !== 'longitude'
-                                && Object.keys(data)[i].toLowerCase() !== 'name' && Object.keys(data)[i].toLowerCase() !== 'blazortemplateid'
-                                && Object.keys(data)[i].toLowerCase() !== 'text') {
-                                text[j] = data[Object.keys(data)[i].toLowerCase()];
-                                data1['text'] = text;
-                                j++;
-                            }
-                        }
-                        data['text'] = data1['text'];
-                    }
                     const offset: Point = markerSettings.offset;
                     if (!eventArgs.cancel && markerSettings.visible && !isNullOrUndefined(lng) && !isNullOrUndefined(lat)) {
                         const markerID: string = this.maps.element.id + '_LayerIndex_' + layerIndex + '_MarkerIndex_'
@@ -375,10 +349,6 @@ export class Marker {
             latitude: options.data['latitude'] || options.data['Latitude'], longitude: options.data['longitude'] || options.data['Longitude'],
             markerClusterCollection: options['markCollection']
         };
-        if (this.maps.isBlazor) {
-            const { maps, latitude, longitude, ...blazorEventArgs }: IMarkerClusterClickEventArgs = eventArgs;
-            eventArgs = blazorEventArgs;
-        }
         this.maps.trigger(markerClusterClick, eventArgs);
     }
     /**
@@ -456,10 +426,6 @@ export class Marker {
             cancel: false, name: markerMouseMove, data: options.data,
             maps: this.maps, target: targetId, x: e.clientX, y: e.clientY
         };
-        if (this.maps.isBlazor) {
-            const { maps, ...blazorEventArgs }: IMarkerMoveEventArgs = eventArgs;
-            eventArgs = blazorEventArgs;
-        }
         this.maps.trigger(markerMouseMove, eventArgs);
     }
     // eslint-disable-next-line valid-jsdoc
@@ -483,10 +449,6 @@ export class Marker {
             cancel: false, name: markerClusterMouseMove, data: options.data, maps: this.maps,
             target: targetId, x: e.clientX, y: e.clientY
         };
-        if (this.maps.isBlazor) {
-            const { maps, ...blazorEventArgs }: IMarkerClusterMoveEventArgs = eventArgs;
-            eventArgs = blazorEventArgs;
-        }
         this.maps.trigger(markerClusterMouseMove, eventArgs);
     }
     /**

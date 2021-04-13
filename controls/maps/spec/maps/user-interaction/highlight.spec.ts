@@ -113,14 +113,16 @@ describe('Testing bubble, marker and navigation line highlight', () => {
                                 enableMultiSelect: false,
                                 border: {
                                     color: 'red',
-                                    width: 4
+                                    width: 4,
+                                    opacity: 0.7
                                 }
                             },
                             highlightSettings: {
                                 enable: true,
                                 border: {
                                     color: 'red',
-                                    width: 4
+                                    width: 4,
+                                    opacity: 0.7
                                 }
                             },
                             color: 'purple',
@@ -144,10 +146,20 @@ describe('Testing bubble, marker and navigation line highlight', () => {
                     dataSource: randomcountriesData1,
                     bubbleSettings: [{
                         selectionSettings: {
-                            enable: true
+                            enable: true,
+                            border: {
+                                color: 'red',
+                                width: 4,
+                                opacity: 0.7
+                            }
                         },
                         highlightSettings: {
-                            enable: true
+                            enable: true,
+                            border: {
+                                color: 'red',
+                                width: 4,
+                                opacity: 0.7
+                            }
                         },
                         visible: true,
                         dataSource: randomcountriesData1,
@@ -160,10 +172,20 @@ describe('Testing bubble, marker and navigation line highlight', () => {
                     markerSettings: [
                         {
                             selectionSettings: {
-                                enable: true
+                                enable: true,
+                                border: {
+                                    color: 'red',
+                                    width: 4,
+                                    opacity: 0.7
+                                }
                             },
                             highlightSettings: {
-                                enable: true
+                                enable: true,
+                                border: {
+                                    color: 'red',
+                                    width: 4,
+                                    opacity: 0.7
+                                }
                             },
                             fill: '#A569BD',
                             height: 30,
@@ -251,7 +273,12 @@ describe('Highlight Settings', () => {
                 legendSettings: {
                     visible: true,
                     position: 'Top',
-                    shapeBorder: { color: 'orange', width: 1}
+                    shapeBorder: { color: 'orange', width: 1, opacity: 0.7},
+                    border: {
+                        width: 2,
+                        color:"red",
+                        opacity:0.5  
+                    }
                 },
                 layers: [{
                     highlightSettings: {
@@ -390,8 +417,12 @@ describe('Highlight Settings', () => {
             let shapeEle = getElement('container_LayerIndex_0_shapeIndex_4_dataIndex_4');
             trigger.mousemoveEvent(shapeEle, 0, 0, 0, 0);
             expect(shapeEle.getAttribute('stroke') === 'lime').toBe(true);
+            expect(shapeEle.getAttribute('stroke-opacity') === '1').toBe(true);
             spec = getElement('container_Legend_Index_0');
             trigger.clickEvent(spec);
+            let shapeOpacity = getElement('container_Legend_Index_0');            
+            expect(shapeOpacity.getAttribute('fill-opacity') === '1').toBe(true);
+            expect(shapeOpacity.getAttribute('stroke-opacity') === '0.7').toBe(true);
             done();
         };
             highlight.legendSettings.toggleLegendSettings.enable = true;

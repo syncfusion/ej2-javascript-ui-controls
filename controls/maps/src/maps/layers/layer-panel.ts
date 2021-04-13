@@ -386,7 +386,8 @@ export class LayerPanel {
                 let k: number;
                 const borderValue: BorderModel = {
                     color: shapeSettings.border.color,
-                    width: shapeSettings.border.width
+                    width: shapeSettings.border.width,
+                    opacity: shapeSettings.border.opacity
                 };
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 const currentShapeData: any[] = <any[]>this.currentLayer.layerData[i];
@@ -442,7 +443,7 @@ export class LayerPanel {
                     data: this.currentLayer.dataSource ? this.currentLayer.dataSource[k] : null,
                     maps: this.mapObject,
                     shape: shapeSettings, fill: fill,
-                    border: { width: borderValue.width, color: borderValue.color }
+                    border: { width: borderValue.width, color: borderValue.color, opacity: borderValue.opacity}
                 };
                 if (this.mapObject.isBlazor) {
                     const { maps, ...blazorEventArgs }: IShapeRenderingEventArgs = eventArgs;
@@ -469,6 +470,7 @@ export class LayerPanel {
                         eventArgs.border.width = shapeSettings.border.width;
                         this.mapObject.layers[layerIndex].shapeSettings.border = shapeSettings.border;
                     }
+                    eventArgs.border.opacity = isNullOrUndefined(eventArgs.border.opacity) ? opacity : eventArgs.border.opacity;
                     if (this.groupElements.length < 1) {
                         groupElement = this.mapObject.renderer.createGroup({
                             id: this.mapObject.element.id + '_LayerIndex_' + layerIndex + '_' + drawingType + '_Group', transform: ''
@@ -506,7 +508,7 @@ export class LayerPanel {
                         if (path.length > 3) {
                             pathOptions = new PathOption(
                                 shapeID, eventArgs.fill, eventArgs.border.width, eventArgs.border.color,
-                                opacity, shapeSettings.dashArray, path);
+                                opacity, eventArgs.border.opacity, shapeSettings.dashArray, path);
                             pathEle = this.mapObject.renderer.drawPath(pathOptions) as SVGPathElement;
                         }
                         break;
@@ -517,7 +519,7 @@ export class LayerPanel {
                         });
                         polyLineOptions = new PolylineOption(
                             shapeID, points, eventArgs.fill, eventArgs.border.width, eventArgs.border.color,
-                            opacity, shapeSettings.dashArray);
+                            opacity, eventArgs.border.opacity, shapeSettings.dashArray);
                         pathEle = this.mapObject.renderer.drawPolyline(polyLineOptions) as SVGPolylineElement;
                         break;
                     case 'Point':
@@ -531,8 +533,8 @@ export class LayerPanel {
                     case 'Path':
                         path = <string>currentShapeData['point'];
                         pathOptions = new PathOption(
-                            shapeID, eventArgs.fill, eventArgs.border.width, eventArgs.border.color, opacity,
-                            shapeSettings.dashArray, path);
+                            shapeID, eventArgs.fill, eventArgs.border.width, eventArgs.border.color,
+                            opacity, eventArgs.border.opacity, shapeSettings.dashArray, path);
                         pathEle = this.mapObject.renderer.drawPath(pathOptions) as SVGPathElement;
                         break;
                     }
@@ -559,7 +561,8 @@ export class LayerPanel {
                                 if (this.mapObject.toggledShapeElementId[j] === pathEle.id) {
                                     pathEle.setAttribute('fill', styleProperty.fill);
                                     pathEle.setAttribute('stroke', styleProperty.border.color);
-                                    pathEle.setAttribute('opacity', (styleProperty.opacity).toString());
+                                    pathEle.setAttribute('fill-opacity', (styleProperty.opacity).toString());
+                                    pathEle.setAttribute('stroke-opacity', (isNullOrUndefined(styleProperty.border.opacity) ? styleProperty.opacity : styleProperty.border.opacity).toString());
                                     pathEle.setAttribute('stroke-width', (styleProperty.border.width).toString());
                                 }
                             }

@@ -128,6 +128,10 @@ export class ThumbnailView {
                         // eslint-disable-next-line max-len
                         proxy.pdfViewerBase.navigationPane.sideBarTitle.textContent = proxy.pdfViewer.localeObj.getConstant('Page Thumbnails');
                         document.getElementById(proxy.pdfViewer.element.id + '_thumbnail_view').style.display = 'flex';
+                        let bookmarkContent:  HTMLElement = proxy.pdfViewer.element.querySelector('.e-pv-bookmark-view');
+                        if (bookmarkContent) {
+                            bookmarkContent.style.display = 'none';
+                        }
                         proxy.pdfViewerBase.navigationPane.setThumbnailSelectionIconTheme();
                         proxy.pdfViewerBase.navigationPane.updateViewerContainerOnExpand();
                         proxy.pdfViewerBase.navigationPane.isBookmarkOpen = false;

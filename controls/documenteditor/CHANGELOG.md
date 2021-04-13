@@ -2,6 +2,52 @@
 
 ## [Unreleased]
 
+## 19.1.56 (2021-04-13)
+
+### Document Editor
+
+#### Bug Fixes
+
+- `#I319991` - Inline form filling is now working properly in Internet Explorer.
+- `#I320821`, `#I320991` - Table is now drawn with proper line width.
+- `#I319987` - Table with merged cells now layout properly.
+- `#I320513` - Header content is not rendered properly.
+- `#I321397` - Table with merged cells is now exported properly.
+- `#I317683` - Exported document with footnote is no longer corrupted.
+- `#I313465` - Insert image renders the image properly.
+- `#I308899` - Track changes is now listed properly in revision pane.
+- `#I320270` - Table track changes is now tracked in paste.
+- `#I319403`, `#I317463` - Resolved file corruption issue while exporting the document with shapes.
+- `#I319185` - Resolved left border rendering issue in merged cells.
+- `#I313943` - Tab character is now layout properly.
+- `#I313821` - Fixed layouting issue in table with preferred width type as auto.
+- `#F162726` - Line spacing is now updated properly.
+- `#I319819` - Issue with Undo/Redo in multilevel list is resolved.
+- `#I318381` - Comment is not added properly.
+- `#I317743` - Accept track changes script error is resolved.
+- `#I307321` - Checkbox with tab width rendered properly.
+- `#FB23691` - Updated the track changes behaviour in read only mode.
+
+## 19.1.55 (2021-04-06)
+
+### Document Editor
+
+#### Bug Fixes
+
+- `#I318381` - Resolved the script error in adding comments across two pages.
+- `#I318283` - Handled the "Different First Page" in Headers and Footers after section breaks.
+- `#I319182` - Selection issue after editing header is resolved.
+- `#I315240` - Shape parsing script error is resolved.
+- `#I319182` - Resolved the script error while editing the header/footer.
+- `#F163188` - Highlight color is now working properly.
+- `#I320821` - Resolved the script error in opening document with table.
+- `#319403`, `#317463` - Resolved file corruption issue while exporting the document with shapes.
+- `#319185` - Resolved left border rendering issue in merged cells.
+- `#313943` - Tab character is now layout properly.
+- `#313821` - Fixed layouting issue in table with preferred width type as auto.
+- `#318786` - Resolved the document with footnote opening issue.
+Table column width is now updated properly.
+
 ## 19.1.54 (2021-03-30)
 
 ### Document Editor

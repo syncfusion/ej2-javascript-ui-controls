@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 19.1.56 (2021-04-13)
+
+### Spreadsheet
+
+#### Bug Fixes
+
+`#I323532` - Pressing any key on chart throws script error issue has been fixed.
+
 ## 19.1.55 (2021-04-06)
 
 ### Spreadsheet

@@ -89,6 +89,9 @@ export class MonthEvent extends EventBase {
         }
         if (this.parent.activeViewOptions.group.resources.length > 0) {
             this.renderResourceEvents();
+            if (this.parent.virtualScrollModule) {
+                this.parent.virtualScrollModule.updateFocusedWorkCell();
+            }
         } else {
             this.renderEventsHandler(this.parent.activeView.renderDates, this.parent.activeViewOptions.workDays);
         }

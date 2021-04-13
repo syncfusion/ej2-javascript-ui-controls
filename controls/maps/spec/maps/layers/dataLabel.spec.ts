@@ -101,7 +101,7 @@ describe('Map layer testing', () => {
         it('label smartmode Trim  testing spec', () => {
             label.loaded = (args: ILoadedEventArgs) => {
                 let spec: string = document.getElementById('label_LayerIndex_0_shapeIndex_3_LabelIndex_3').textContent
-                expect(spec).toEqual('North ...');
+                expect(spec).toEqual('North Dak...');
             }
             label.layers[0].dataLabelSettings.smartLabelMode = "Trim";
             label.layers[0].dataLabelSettings.textStyle.size = "15px";
@@ -245,10 +245,13 @@ describe('Map layer testing', () => {
         it('label border ,opacity testing spec', () => {
             label.loaded = (args: ILoadedEventArgs) => {
                 let spec = document.getElementById('label_LayerIndex_0_shapeIndex_0_rectIndex_0')
-                let opacity = spec.getAttribute('opacity');
+                let opacity = spec.getAttribute('fill-opacity');
                 expect(opacity).toEqual('2');
+                let borderOpacity = spec.getAttribute('stroke-opacity');
+                expect(borderOpacity).toEqual('0.7');
             }
             label.layers[0].dataLabelSettings.border.width = 2;
+            label.layers[0].dataLabelSettings.border.opacity = 0.7;
             label.layers[0].dataLabelSettings.opacity = 2;
             label.refresh();
         })
@@ -418,6 +421,60 @@ describe('Map layer testing', () => {
     label.layers[0].dataLabelSettings.template = "string";
     label.refresh();
 });
+    it('checking with datalabel with labelPath and datasource and unique value', () => {
+        label.loaded = (args: ILoadedEventArgs) => {
+        let element: Element = document.getElementById('label_LayerIndex_0_dataLableIndex_Group');
+        expect(element.childElementCount).toBeGreaterThanOrEqual(5);
+        };
+        label.layers[0].shapePropertyPath= "name";
+        label.layers[0].shapeDataPath= 'name';
+        label.layers[0].dataSource = [
+            {"name": "Afghanistan", "value": 1, "countryCode": "AF"},
+            {"name": "China", "value": 1, "countryCode": "CN"}, 
+            {"name": "New Zealand", "value": 1, "countryCode": "NZ"}, 
+            {"name": "United States", "value": 2, "countryCode": "US"},
+            {"name": "Mexico", "value": 2, "countryCode": "MEX"}
+        ];
+        label.layers[0].dataLabelSettings.labelPath = "value";
+        label.layers[0].dataLabelSettings.template = "";
+        label.refresh();
+    });
+    it('checking with datalabel with labelPath and datasource and country value', () => {
+        label.loaded = (args: ILoadedEventArgs) => {
+        let spec: string = document.getElementById('label_LayerIndex_0_shapeIndex_0_LabelIndex_0').textContent
+        expect(spec).toEqual('AF');
+        };
+        label.layers[0].shapePropertyPath= "countryCode";
+        label.layers[0].shapeDataPath= 'countryCode';
+        label.layers[0].dataSource = [
+            {"name": "Afghanistan", "value": 1, "countryCode": "AF"},
+            {"name": "China", "value": 1, "countryCode": "CN"}, 
+            {"name": "New Zealand", "value": 1, "countryCode": "NZ"}, 
+            {"name": "United States", "value": 2, "countryCode": "US"},
+            {"name": "Mexico", "value": 2, "countryCode": "MEX"}
+        ];
+        label.layers[0].dataLabelSettings.labelPath = "countryCode";
+        label.layers[0].dataLabelSettings.template = "";
+        label.refresh();
+    });
+    it('checking with datalabel with labelPath and datasource without template', () => {
+        label.loaded = (args: ILoadedEventArgs) => {
+        let element: Element = document.getElementById('label_LayerIndex_0_dataLableIndex_Group');
+        expect(element.childElementCount).toBeGreaterThanOrEqual(176);
+        };
+        label.layers[0].shapePropertyPath= "name";
+        label.layers[0].shapeDataPath= 'name';
+        label.layers[0].dataSource = [
+            {"name": "Afghanistan", "value": 1, "countryCode": "AF"},
+            {"name": "China", "value": 1, "countryCode": "CN"}, 
+            {"name": "New Zealand", "value": 1, "countryCode": "NZ"}, 
+            {"name": "United States", "value": 2, "countryCode": "US"},
+            {"name": "Mexico", "value": 2, "countryCode": "MEX"}
+        ];
+        label.layers[0].dataLabelSettings.labelPath = "name";
+        label.layers[0].dataLabelSettings.template = "";
+        label.refresh();
+    });
   });
 	describe('datalabel for sublayer with point type data', () => {
         let id: string = 'label';

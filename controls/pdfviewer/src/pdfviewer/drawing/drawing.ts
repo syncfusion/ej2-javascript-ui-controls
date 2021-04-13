@@ -2378,21 +2378,30 @@ export class Drawing {
                     actualObject.font.isItalic = node.font.isItalic;
                 }
                 if (node.font.isUnderline !== undefined) {
-                    actualObject.font.isStrikeout = false;
+                    if (node.font.isUnderline) {
+                        actualObject.font.isStrikeout = false;
+                    }
                     if (node.font.isUnderline === true) {
                         children[1].style.textDecoration = 'Underline';
-                    } else {
-                        children[1].style.textDecoration = 'None';
+                    }
+                    else {
+                        if (!node.font.isStrikeout) {
+                            children[1].style.textDecoration = 'None';
+                        }
                     }
                     actualObject.font.isUnderline = node.font.isUnderline;
                 }
                 if (node.font.isStrikeout !== undefined) {
-                    actualObject.font.isUnderline = false;
+                    if (node.font.isStrikeout) {
+                        actualObject.font.isUnderline = false;
+                    }
                     if (node.font.isStrikeout === true) {
                         children[1].style.textDecoration = 'LineThrough';
-                    } else {
-                        children[1].style.textDecoration = 'None';
-
+                    }
+                    else {
+                        if (!node.font.isUnderline) {
+                            children[1].style.textDecoration = 'None';
+                        }
                     }
                     actualObject.font.isStrikeout = node.font.isStrikeout;
                 }

@@ -930,7 +930,7 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
     private getPopups(): Element[] {
         const popups: Element[] = [];
         [].slice.call(document.querySelectorAll('.' + POPUP)).forEach((elem: Element) => {
-            if (this.getIndex(elem.querySelector('.' + ITEM).id, true).length) {
+            if (!isNullOrUndefined(elem.querySelector('.' + ITEM)) && this.getIndex(elem.querySelector('.' + ITEM).id, true).length) {
                 popups.push(elem);
             }
         });

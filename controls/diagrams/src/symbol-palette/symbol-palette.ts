@@ -500,87 +500,93 @@ export class SymbolPalette extends Component<HTMLElement> implements INotifyProp
         let refresh: boolean = false;
         for (const prop of Object.keys(newProp)) {
             switch (prop) {
-            case 'width':
-                this.element.style.width = this.width.toString(); break;
-            case 'height':
-                this.element.style.height = this.height.toString(); break;
-            case 'symbolPreview':
-                break;
-            case 'symbolWidth':
-            case 'symbolHeight':
-            case 'getSymbolInfo':
-                refresh = true; break;
-            case 'enableSearch':
-                if (newProp.enableSearch && !isBlazor()) {
-                    this.createTextbox();
-                } else {
-                    const divElement: HTMLElement = document.getElementById(this.element.id + '_search');
-                    if (divElement) { divElement.parentNode.removeChild(divElement); }
-                }
-                break;
-            case 'palettes':
-                for (const i of Object.keys(newProp.palettes)) {
-                    const index: number = Number(i);
-                    if (!isBlazor() && !this.accordionElement.items[index]) {
-                        this.accordionElement.items[index] = {
-                            header: newProp.palettes[index].title || '',
-                            expanded: newProp.palettes[index].expanded,
-                            iconCss: newProp.palettes[index].iconCss || ''
-                        };
-                    }
-                    if (newProp.palettes[index].height) {
-                        const paletteDiv: HTMLElement = document.getElementById((this.palettes[index] as Palette).id + '_content');
-                        paletteDiv.style.height = newProp.palettes[index].height + 'px';
-                    }
-                    if (newProp.palettes[index].iconCss !== undefined) {
-                        if (!isBlazor()) {
-                            this.accordionElement.items[index].iconCss = newProp.palettes[index].iconCss || '';
-                            refresh = true;
-                        }
-                    }
-                    if (newProp.palettes[index].expanded !== undefined && !isBlazor()) {
-                        if (!(this.palettes[index] as Palette).isInteraction) {
-                            this.accordionElement.items[index].expanded = newProp.palettes[index].expanded;
-                            this.isExpand = true;
-                        } else {
-                            (this.palettes[index] as Palette).isInteraction = false;
-                        }
-                        if (!this.isExpandMode && !this.isMethod && !this.isExpand) {
-                            this.isExpand = true;
-                        }
-                    }
-                    if (isBlazor() && newProp.palettes[index].symbols !== null) { refresh = true; }
-                    if (isBlazor() && newProp.palettes[index].symbols === null) {
-                        this.updateBlazorProperties(newProp);
-                    }
-                }
-                break;
-            case 'enableAnimation':
-                if (!isBlazor()) {
-                    if (!this.enableAnimation) {
-                        this.accordionElement.animation = { expand: { duration: 0 }, collapse: { duration: 0 } };
+                case 'width':
+                    this.element.style.width = this.width.toString(); break;
+                case 'height':
+                    this.element.style.height = this.height.toString(); break;
+                case 'symbolPreview':
+                    break;
+                case 'symbolWidth':
+                case 'symbolHeight':
+                case 'getSymbolInfo':
+                    if ((this as any).isReact) {
+                        refresh = false;
                     } else {
-                        this.accordionElement.animation = { expand: { duration: 400 }, collapse: { duration: 400 } };
+                        refresh = true;
                     }
-                }
-                break;
-            case 'expandMode':
-                if (!isBlazor()) {
-                    this.accordionElement.expandMode = this.expandMode;
-                    refresh = true; this.isExpandMode = true;
-                }
-                break;
-            case 'allowDrag':
-                this.allowDrag = newProp.allowDrag;
-                if (!this.allowDrag) {
+                    break;
+                case 'enableSearch':
+                    if (newProp.enableSearch && !isBlazor()) {
+                        this.createTextbox();
+                    } else {
+                        const divElement: HTMLElement = document.getElementById(this.element.id + '_search');
+                        if (divElement) { divElement.parentNode.removeChild(divElement); }
+                    }
+                    break;
+                case 'palettes':
+                    for (const i of Object.keys(newProp.palettes)) {
+                        const index: number = Number(i);
+                        if (!isBlazor() && !this.accordionElement.items[index]) {
+                            this.accordionElement.items[index] = {
+                                header: newProp.palettes[index].title || '',
+                                expanded: newProp.palettes[index].expanded,
+                                iconCss: newProp.palettes[index].iconCss || ''
+                            };
+                        }
+                        if (newProp.palettes[index].height) {
+                            const paletteDiv: HTMLElement = document.getElementById((this.palettes[index] as Palette).id + '_content');
+                            paletteDiv.style.height = newProp.palettes[index].height + 'px';
+                        }
+                        if (newProp.palettes[index].iconCss !== undefined) {
+                            if (!isBlazor()) {
+                                this.accordionElement.items[index].iconCss = newProp.palettes[index].iconCss || '';
+                                refresh = true;
+                            }
+                        }
+                        if (newProp.palettes[index].expanded !== undefined && !isBlazor()) {
+                            if (!(this.palettes[index] as Palette).isInteraction) {
+                                this.accordionElement.items[index].expanded = newProp.palettes[index].expanded;
+                                this.isExpand = true;
+                            } else {
+                                (this.palettes[index] as Palette).isInteraction = false;
+                            }
+                            if (!this.isExpandMode && !this.isMethod && !this.isExpand) {
+                                this.isExpand = true;
+                            }
+                        }
+                        if (isBlazor() && newProp.palettes[index].symbols !== null) { refresh = true; }
+                        if (isBlazor() && newProp.palettes[index].symbols === null) {
+                            this.updateBlazorProperties(newProp);
+                        }
+                    }
+                    break;
+                case 'enableAnimation':
+                    if (!isBlazor()) {
+                        if (!this.enableAnimation) {
+                            this.accordionElement.animation = { expand: { duration: 0 }, collapse: { duration: 0 } };
+                        } else {
+                            this.accordionElement.animation = { expand: { duration: 400 }, collapse: { duration: 400 } };
+                        }
+                    }
+                    break;
+                case 'expandMode':
+                    if (!isBlazor()) {
+                        this.accordionElement.expandMode = this.expandMode;
+                        refresh = true; this.isExpandMode = true;
+                    }
+                    break;
+                case 'allowDrag':
+                    this.allowDrag = newProp.allowDrag;
+                    if (!this.allowDrag) {
 
-                    this.draggable.helper = (): Function => {
-                        return null;
-                    };
-                } else {
-                    this.initDraggable();
-                    this.draggable.helper = this.helper; }
-                break;
+                        this.draggable.helper = (): Function => {
+                            return null;
+                        };
+                    } else {
+                        this.initDraggable();
+                        this.draggable.helper = this.helper;
+                    }
+                    break;
             }
         }
         if (refresh) { this.refreshPalettes(); }
@@ -669,8 +675,10 @@ export class SymbolPalette extends Component<HTMLElement> implements INotifyProp
             this.accordionElement.expanding = (args: ExpandEventArgs) => {
                 if (this.checkOnRender) {
                     // eslint-disable-next-line
-                    const diagramArgs: IPaletteExpandArgs  = {element: args.element, content: args.content, index: args.index, cancel: false,
-                        isExpanded: args.isExpanded, palette: this.palettes[args.index]};
+                    const diagramArgs: IPaletteExpandArgs = {
+                        element: args.element, content: args.content, index: args.index, cancel: false,
+                        isExpanded: args.isExpanded, palette: this.palettes[args.index]
+                    };
                     const event: string = 'paletteExpanding';
                     this.trigger(event, diagramArgs);
                     args.cancel = diagramArgs.cancel;
@@ -1240,10 +1248,10 @@ export class SymbolPalette extends Component<HTMLElement> implements INotifyProp
         if (symbol.shape.type === 'Native') {
             canvas = createSvgElement(
                 'svg', {
-                    id: symbol.id + '_preview',
-                    width: Math.ceil(symbolPreviewWidth) + 1,
-                    height: Math.ceil(symbolPreviewHeight) + 1
-                });
+                id: symbol.id + '_preview',
+                width: Math.ceil(symbolPreviewWidth) + 1,
+                height: Math.ceil(symbolPreviewHeight) + 1
+            });
             const gElement: SVGElement = createSvgElement('g', { id: symbol.id + '_g' });
             canvas.appendChild(gElement);
             previewContainer.appendChild(canvas);
@@ -1313,10 +1321,10 @@ export class SymbolPalette extends Component<HTMLElement> implements INotifyProp
         const height: number = size.height + 1;
         const container: HTMLElement = createHtmlElement(
             'div', {
-                id: symbol.id + '_container',
-                style: 'width:' + width + 'px;height:' + height + 'px;float:left;overflow:hidden',
-                title: symbolInfo.tooltip ? symbolInfo.tooltip : symbol.id
-            });
+            id: symbol.id + '_container',
+            style: 'width:' + width + 'px;height:' + height + 'px;float:left;overflow:hidden',
+            title: symbolInfo.tooltip ? symbolInfo.tooltip : symbol.id
+        });
         parentDiv.appendChild(container);
         let canvas: HTMLCanvasElement | SVGElement;
         let gElement: SVGElement;
@@ -1324,10 +1332,10 @@ export class SymbolPalette extends Component<HTMLElement> implements INotifyProp
         if (symbol.shape.type === 'Native') {
             canvas = createSvgElement(
                 'svg', {
-                    id: symbol.id,
-                    width: Math.ceil(symbol.wrapper.actualSize.width) + 1,
-                    height: Math.ceil(symbol.wrapper.actualSize.height) + 1
-                });
+                id: symbol.id,
+                width: Math.ceil(symbol.wrapper.actualSize.width) + 1,
+                height: Math.ceil(symbol.wrapper.actualSize.height) + 1
+            });
             gElement = createSvgElement('g', { id: symbol.id + '_g' });
             canvas.appendChild(gElement);
             container.appendChild(canvas);
@@ -1396,17 +1404,17 @@ export class SymbolPalette extends Component<HTMLElement> implements INotifyProp
             'div', { 'id': item.id + (isPreview ? '_html_div_preview' : '_html_div') });
         const htmlLayer: HTMLElement = createHtmlElement(
             'div', {
-                'id': item.id + (isPreview ? '_htmlLayer_preview' : '_htmlLayer'),
-                'style': 'width:' + Math.ceil(width + 1) + 'px;' +
+            'id': item.id + (isPreview ? '_htmlLayer_preview' : '_htmlLayer'),
+            'style': 'width:' + Math.ceil(width + 1) + 'px;' +
                 'height:' + Math.ceil(height + 1) + 'px;position:absolute',
-                'class': 'e-html-layer'
-            });
+            'class': 'e-html-layer'
+        });
         const htmlLayerDiv: HTMLElement = createHtmlElement(
             'div', {
-                'id': item.id + (isPreview ? '_htmlLayer_div_preview' : '_htmlLayer_div'),
-                'style': 'width:' + Math.ceil(width + 1) + 'px;' +
+            'id': item.id + (isPreview ? '_htmlLayer_div_preview' : '_htmlLayer_div'),
+            'style': 'width:' + Math.ceil(width + 1) + 'px;' +
                 'height:' + Math.ceil(height + 1) + 'px;position:absolute'
-            });
+        });
         htmlLayer.appendChild(htmlLayerDiv);
         div.appendChild(htmlLayer);
         canvas = CanvasRenderer.createCanvas(
@@ -1423,22 +1431,22 @@ export class SymbolPalette extends Component<HTMLElement> implements INotifyProp
     ): HTMLElement {
         const div: HTMLElement = createHtmlElement(
             'div', {
-                'id': symbol.id + (isPreview ? '_html_div_preview' : '_html_div')
-            }
+            'id': symbol.id + (isPreview ? '_html_div_preview' : '_html_div')
+        }
         );
         const htmlLayer: HTMLElement = createHtmlElement(
             'div', {
-                'id': symbol.id + (isPreview ? '_htmlLayer_preview' : '_htmlLayer'),
-                'style': 'width:' + Math.ceil(width + 1) + 'px;' +
+            'id': symbol.id + (isPreview ? '_htmlLayer_preview' : '_htmlLayer'),
+            'style': 'width:' + Math.ceil(width + 1) + 'px;' +
                 'height:' + Math.ceil(height + 1) + 'px;position:absolute',
-                'class': 'e-html-layer'
-            });
+            'class': 'e-html-layer'
+        });
         const htmlLayerDiv: HTMLElement = createHtmlElement(
             'div', {
-                'id': symbol.id + (isPreview ? '_htmlLayer_div_preview' : '_htmlLayer_div'),
-                'style': 'width:' + Math.ceil(width + 1) + 'px;' +
+            'id': symbol.id + (isPreview ? '_htmlLayer_div_preview' : '_htmlLayer_div'),
+            'style': 'width:' + Math.ceil(width + 1) + 'px;' +
                 'height:' + Math.ceil(height + 1) + 'px;position:absolute'
-            });
+        });
         htmlLayer.appendChild(htmlLayerDiv);
         div.appendChild(htmlLayer);
         canvas = CanvasRenderer.createCanvas(

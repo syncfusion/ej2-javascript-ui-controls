@@ -231,7 +231,7 @@ export class FilterDialog {
         });
         this.editorSearch.isStringTemplate = true;
         this.editorSearch.appendTo(editorSearch);
-        let nodeAttr: { [key: string]: string } = { 'data-fieldName': fieldName };
+        let nodeAttr: { [key: string]: string } = { 'data-fieldName': fieldName, 'data-memberId': 'all' };
         let data: { [key: string]: Object }[] = [{ id: 'all', name: this.parent.localeObj.getConstant('all'), isSelected: true, htmlAttributes: nodeAttr }];
         this.allMemberSelect = new TreeView({
             fields: { dataSource: data, id: 'id', text: 'name', isChecked: 'isSelected' },
@@ -451,11 +451,14 @@ export class FilterDialog {
                 (members.sort((a, b) => (a.actualText < b.actualText) ? 1 :
                     ((b.actualText < a.actualText) ? -1 : 0))) : members;
         /* eslint-enable  */
+        let modifiedFieldName: string = fieldName.replace(/[^a-zA-Z0-9 ]/g, '_');
         for (let i: number = 0, lnt: number = members.length; i < lnt; i++) {
             if (order === 'None') {
                 let memberName: string = (this.parent.isDateField ? members[i].formattedText : members[i].actualText).toString();
+                let nodeAttr: { [key: string]: string } = { 'data-fieldName': fieldName, 'data-memberId': members[i].actualText.toString() };
                 let obj: { [key: string]: Object } = {  /* eslint-disable-line */
-                    id: members[i].actualText.toString(),
+                    id: modifiedFieldName + '_' + (i + 1),
+                    htmlAttributes: nodeAttr,
                     actualText: members[i].actualText,
                     name: memberName,
                     isSelected: this.parent.currentTreeItemsPos[members[i].actualText as string].isSelected

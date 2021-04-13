@@ -541,3 +541,8 @@ export const renderFileManager: string = 'renderFileManager';
  * @deprecated
  */
 export const beforeImageDrop: string = 'beforeImageDrop';
+/**
+ * @hidden
+ * @deprecated
+ */
+ export const dynamicModule: string = 'dynamicModule';

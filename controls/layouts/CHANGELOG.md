@@ -4,6 +4,14 @@
 
 ## 19.1.55 (2021-04-06)
 
+### Splitter
+
+#### Bug Fixes
+
+- `#320479` - The issue with "`addPane` public method does not work when rendered with the nested splitter" has been resolved.
+
+## 19.1.54 (2021-03-30)
+
 ### Dashboard Layout
 
 #### Bug Fixes

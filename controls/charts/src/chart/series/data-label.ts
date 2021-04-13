@@ -276,7 +276,8 @@ export class DataLabel {
                                     ),
                                     argsData.font, argsData.font.color ||
                                 ((contrast >= 128 || series.type === 'Hilo') ? 'black' : 'white'),
-                                    series.textElement, false, redraw, true, false, series.chart.duration, series.clipRect
+                                    series.textElement, false, redraw, true, false, series.chart.duration, series.clipRect, null, null,
+                                    chart.enableCanvas
                                 );
                             }
                         }
@@ -341,17 +342,19 @@ export class DataLabel {
         parentElement: HTMLElement, childElement: HTMLElement, point: Points, series: Series, dataLabel: DataLabelSettingsModel,
         labelIndex: number, clip: Rect, redraw: boolean, isReactCallback?: boolean
         ): void {
-        const elementRect: ClientRect = measureElementRect(childElement, redraw);
+        const elementRect: ClientRect = measureElementRect(childElement, redraw, isReactCallback);
         const rect: Rect = this.calculateTextPosition(
             point, series, { width: elementRect.width, height: elementRect.height },
             dataLabel, labelIndex
         );
         let clipWidth: number = 0;
         let clipHeight: number = 0;
+        let isOverlap: boolean = false;
         if (isReactCallback) {
-            clipWidth = ((series.clipRect.x + rect.x) + elementRect.width) > parentElement.clientWidth ?
-                (parentElement.clientWidth - (series.clipRect.x + rect.x)) : 0;
-            clipHeight = (series.points.length - 1 === point.index) ? elementRect.height / 2 : 0;
+            isOverlap = (elementRect.width === 0 || elementRect.height === 0); // To check the data label already overlap before react callback call
+            // clipWidth = ((series.clipRect.x + rect.x) + elementRect.width) > parentElement.clientWidth ?
+            //     (parentElement.clientWidth - (series.clipRect.x + rect.x)) : 0;
+            // clipHeight = (series.points.length - 1 === point.index) ? elementRect.height / 2 : 0;
         }
         childElement.style.left = ((this.chart.chartAreaType === 'PolarRadar' ? 0 : series.clipRect.x) + rect.x - clipWidth) + 'px';
         childElement.style.top = ((this.chart.chartAreaType === 'PolarRadar' ? 0 : series.clipRect.y) + rect.y + clipHeight) + 'px';
@@ -360,7 +363,7 @@ export class DataLabel {
         const hAxis: Axis = series.chart.requireInvertedAxis ? series.yAxis : series.xAxis;
         childElement.style.color = dataLabel.font.color ||
             ((Math.round((rgbValue.r * 299 + rgbValue.g * 587 + rgbValue.b * 114) / 1000)) >= 128 ? 'black' : 'white');
-        if (childElement.childElementCount && (!isCollide(rect, this.chart.dataLabelCollections, clip) ||
+        if (childElement.childElementCount && !isOverlap && (!isCollide(rect, this.chart.dataLabelCollections, clip) ||
             dataLabel.labelIntersectAction === 'None') && (series.seriesType !== 'XY' || point.yValue === undefined ||
                 withIn(point.yValue, series.yAxis.visibleRange) || (series.type.indexOf('Stacking') > -1) ||
                 (series.type.indexOf('100') > -1 && withIn(series.stackedValues.endValues[point.index], series.yAxis.visibleRange))) &&

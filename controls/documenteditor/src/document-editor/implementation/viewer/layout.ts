@@ -15,7 +15,7 @@ import {
     ElementBox, ErrorTextElementBox, FieldElementBox, FieldTextElementBox, HeaderFooterWidget, ImageElementBox, IWidget, LineWidget,
     ListTextElementBox, Margin, Page, ParagraphWidget, Rect, TabElementBox, TableCellWidget, TableRowWidget,
     TableWidget, TextElementBox, Widget, CheckBoxFormField, DropDownFormField, FormField, ShapeElementBox, TextFrame, ContentControl,
-    FootnoteElementBox, FootNoteWidget
+    FootnoteElementBox, FootNoteWidget, ShapeBase
 } from './page';
 import { TextSizeInfo } from './text-helper';
 import { DocumentHelper, LayoutViewer, PageLayoutViewer, WebLayoutViewer } from './viewer';
@@ -413,6 +413,10 @@ export class Layout {
                 nextBlock = nextBlockToLayout;
             }
         } else {
+            (block as TableWidget).calculateGrid();
+            (block as TableWidget).isGridUpdated = false;
+            (block as TableWidget).buildTableColumns();
+            (block as TableWidget).isGridUpdated = true;
             nextBlock = this.layoutTable(block as TableWidget, index);
             this.updateTableYPositionBasedonTextWrap(nextBlock as TableWidget);
         }
@@ -440,7 +444,10 @@ export class Layout {
             let block: BlockWidget = paragraph.previousWidget as BlockWidget;
             //If shape affects any previous para
             for (let i: number = 0; i < paragraph.floatingElements.length; i++) {
-                let element: ShapeElementBox = paragraph.floatingElements[i];
+                let element: ShapeBase = paragraph.floatingElements[i];
+                if (element.textWrappingStyle === 'InFrontOfText' || element.textWrappingStyle === "Behind") {
+                    continue;
+                }
                 let shapeRect: Rect = new Rect(element.x, element.y, element.width, element.height);
                 while (block) {
                     if (block instanceof ParagraphWidget) {
@@ -593,6 +600,9 @@ export class Layout {
                 line = this.layoutLine(line, 0);
                 paragraph = line.paragraph;
                 line = line.nextLine;
+                if (paragraph.isContainsShapeAlone() && paragraph.height === 0) {
+                   this.layoutEmptyLineWidget(paragraph, false, paragraph.childWidgets[0] as LineWidget);
+                }
             }
         }
         this.updateWidgetToPage(this.viewer, paragraph);
@@ -603,44 +613,50 @@ export class Layout {
         this.maxTextBaseline = 0;
         this.maxTextHeight = 0;
     }
-    private layoutFloatElements(paragraph: ParagraphWidget): void {
-        paragraph.floatingElements.forEach((shape: ShapeElementBox) => {
-            if (shape instanceof ShapeElementBox) {
-                if (!this.isRelayoutOverlap) {
-                    this.layoutShape(shape);
+     private layoutFloatElements(paragraph: ParagraphWidget): void {
+        for (let j: number = 0; j < paragraph.childWidgets.length; j++) {
+            let line: LineWidget = paragraph.childWidgets[j] as LineWidget;
+            for (let k: number = 0; k < line.children.length; k++) {
+                let element: ElementBox = line.children[k];
+                if (element instanceof ShapeBase && element.textWrappingStyle != 'Inline') {
+                    this.layoutShape(element);
                 }
             }
-        });
+        }
     }
-    private layoutShape(element: ShapeElementBox): void {
-        let position: Point = this.getFloatingItemPoints(element);
-        element.x = position.x;
-        element.y = position.y;
-        let clientArea: Rect = this.viewer.clientArea;
-        let clientActiveArea: Rect = this.viewer.clientActiveArea;
-        let blocks: BlockWidget[] = element.textFrame.childWidgets as BlockWidget[];
-        this.viewer.updateClientAreaForTextBoxShape(element, true);
 
-        for (let i: number = 0; i < blocks.length; i++) {
-            let block: BlockWidget = blocks[i];
-            this.viewer.updateClientAreaForBlock(block, true);
-            if (block instanceof TableWidget) {
-                this.clearTableWidget(block, true, true);
+    private layoutShape(element: ShapeBase): void {
+        if (element.textWrappingStyle !== 'Inline') {
+            let position: Point = this.getFloatingItemPoints(element);
+            element.x = position.x;
+            element.y = position.y;
+            let clientArea: Rect = this.viewer.clientArea;
+            let clientActiveArea: Rect = this.viewer.clientActiveArea;
+            if (element instanceof ShapeElementBox) {
+                let blocks: BlockWidget[] = element.textFrame.childWidgets as BlockWidget[];
+                this.viewer.updateClientAreaForTextBoxShape(element, true);
+                for (let i: number = 0; i < blocks.length; i++) {
+                    let block: BlockWidget = blocks[i];
+                    this.viewer.updateClientAreaForBlock(block, true);
+                    if (block instanceof TableWidget) {
+                        this.clearTableWidget(block, true, true);
+                    }
+                    this.layoutBlock(block, 0);
+                    this.viewer.updateClientAreaForBlock(block, false);
+                }
             }
-            this.layoutBlock(block, 0);
-            this.viewer.updateClientAreaForBlock(block, false);
+            let bodyWidget: BlockContainer = element.paragraph.bodyWidget;
+            if (bodyWidget.floatingElements.indexOf(element) === -1) {
+                bodyWidget.floatingElements.push(element);
+                /* eslint:disable */
+                bodyWidget.floatingElements.sort(function (a, b) { return a.y - b.y; });
+            }
+            if (element.paragraph.floatingElements.indexOf(element) === -1) {
+                element.paragraph.floatingElements.push(element);
+            }
+            this.viewer.clientActiveArea = clientActiveArea;
+            this.viewer.clientArea = clientArea;
         }
-        let bodyWidget: BlockContainer = element.paragraph.bodyWidget;
-        if (bodyWidget.floatingElements.indexOf(element) === -1) {
-            bodyWidget.floatingElements.push(element);
-            /* eslint:disable */
-            bodyWidget.floatingElements.sort(function (a, b) { return a.y - b.y; });
-        }
-        if (element.paragraph.floatingElements.indexOf(element) === -1) {
-            element.paragraph.floatingElements.push(element);
-        }
-        this.viewer.clientActiveArea = clientActiveArea;
-        this.viewer.clientArea = clientArea;
     }
     private moveElementFromNextLine(line: LineWidget): void {
         let nextLine: LineWidget = line.nextLine;
@@ -688,6 +704,9 @@ export class Layout {
     }
     /* eslint-disable  */
     private layoutElement(element: ElementBox, paragraph: ParagraphWidget): void {
+        if (element instanceof ImageElementBox && element.textWrappingStyle !== 'Inline') {
+            return;
+        }
         let line: LineWidget = element.line;
         let text: string = '';
         let index: number = element.indexInOwner;
@@ -813,35 +832,8 @@ export class Layout {
                 this.cutClientWidth(element.previousElement);
             }
         }
-        if (element instanceof ShapeElementBox) {
-            let position: Point = this.getFloatingItemPoints(element);
-            element.x = position.x;
-            element.y = position.y;
-            let clientArea: Rect = this.viewer.clientArea;
-            let clientActiveArea: Rect = this.viewer.clientActiveArea;
-            let blocks: BlockWidget[] = element.textFrame.childWidgets as BlockWidget[];
-            this.viewer.updateClientAreaForTextBoxShape(element, true);
-
-            for (let i: number = 0; i < blocks.length; i++) {
-                let block: BlockWidget = blocks[i];
-                this.viewer.updateClientAreaForBlock(block, true);
-                if (block instanceof TableWidget) {
-                    this.clearTableWidget(block, true, true);
-                }
-                this.layoutBlock(block, 0);
-
-                this.viewer.updateClientAreaForBlock(block, false);
-
-            }
-            let bodyWidget: BlockContainer = element.paragraph.bodyWidget;
-            if (bodyWidget.floatingElements.indexOf(element) === -1) {
-                bodyWidget.floatingElements.push(element);
-            }
-            if (element.paragraph.floatingElements.indexOf(element) === -1) {
-                element.paragraph.floatingElements.push(element);
-            }
-            this.viewer.clientActiveArea = clientActiveArea;
-            this.viewer.clientArea = clientArea;
+        if (element instanceof ShapeElementBox && element.textWrappingStyle==='Inline') {
+           this.layoutShape(element);
         }
         // tslint:disable-next-line:max-line-length
         if (element instanceof FootnoteElementBox && (!element.isLayout || this.isLayoutWhole) && this.documentHelper.owner.layoutType === 'Pages') {
@@ -1253,7 +1245,7 @@ export class Layout {
                     // }
                     //Combines the consecutive LTR and Number
                 } else if (characterType === 'LTR' && (characterRangeTypes[j + charTypeIndex - 1] === 'Number'
-                        || characterRangeTypes[j + charTypeIndex - 1] === 'LTR')) {
+                    || characterRangeTypes[j + charTypeIndex - 1] === 'LTR')) {
                     splittedText[j - 1] = splittedText[j - 1] + splittedText[j];
                     characterRangeTypes[j + charTypeIndex - 1] = 'LTR';
                     splittedText.splice(j, 1);
@@ -1375,6 +1367,9 @@ export class Layout {
             if (previousNode instanceof FieldElementBox && previousNode.fieldType === 2) {
                 const formFieldData: FormField = fieldBegin.formFieldData;
                 if (formFieldData instanceof CheckBoxFormField) {
+                    // Check box character is rendered smaller when compared to MS Word
+                    // So, mutiplied the font side by below factor to render check box character large.
+                    let factor: number = 1.2;
                     const checkBoxTextElement: TextElementBox = new TextElementBox();
                     checkBoxTextElement.characterFormat = fieldBegin.characterFormat.cloneFormat();
                     if (formFieldData.checked) {
@@ -1383,7 +1378,9 @@ export class Layout {
                         checkBoxTextElement.text = String.fromCharCode(9744);
                     }
                     if (formFieldData.sizeType !== 'Auto') {
-                        checkBoxTextElement.characterFormat.fontSize = formFieldData.size;
+                        checkBoxTextElement.characterFormat.fontSize = formFieldData.size * factor;
+                    } else {
+                        checkBoxTextElement.characterFormat.fontSize = checkBoxTextElement.characterFormat.fontSize * factor;
                     }
                     checkBoxTextElement.line = fieldBegin.line;
                     const index: number = fieldBegin.line.children.indexOf(fieldBegin.fieldEnd);
@@ -1631,7 +1628,7 @@ export class Layout {
     }
 
     private addElementToLine(paragraph: ParagraphWidget, element: ElementBox): void {
-        if (!(element instanceof ShapeElementBox)) {
+        if (!(element instanceof ShapeBase && element.textWrappingStyle !== 'Inline')) {
             this.viewer.cutFromLeft(this.viewer.clientActiveArea.x + element.width);
         }
         if (paragraph.paragraphFormat.textAlignment === 'Justify' && element instanceof TextElementBox) {
@@ -1764,7 +1761,7 @@ export class Layout {
                     spittedElement.revisions.push(currentRevision);
                     let rangeIndex: number = currentRevision.range.length - 1;
                     if (currentRevision.range[rangeIndex] instanceof WCharacterFormat) {
-                        currentRevision.range.splice(rangeIndex, 0, spittedElement);
+                        currentRevision.range.splice(rangeIndex - 1, 0, spittedElement);
                     } else {
                         rangeIndex = currentRevision.range.indexOf(item);
                         if (rangeIndex < 0) {
@@ -1963,7 +1960,7 @@ export class Layout {
             let bottomMargin: number = 0;
             let leftMargin: number = 0;
             let elementBox: ElementBox = line.children[i];
-            if (elementBox instanceof ShapeElementBox) {
+            if (elementBox instanceof ShapeBase && elementBox.textWrappingStyle !== 'Inline') {
                 continue;
             }
             let alignElements: LineElementInfo = this.alignLineElements(elementBox, topMargin, bottomMargin, maxDescent, addSubWidth, subWidth, textAlignment, whiteSpaceCount, i === line.children.length - 1);
@@ -1985,7 +1982,8 @@ export class Layout {
             }
             topMargin += beforeSpacing;
             bottomMargin += afterSpacing;
-            if (i === 0 || (!(elementBox instanceof ShapeElementBox) && elementBox.previousElement instanceof ShapeElementBox)) {
+            if (i === 0 || (!(elementBox instanceof ShapeBase && elementBox.textWrappingStyle !== 'Inline') &&
+                elementBox.previousElement instanceof ShapeBase && elementBox.previousElement.textWrappingStyle !== 'Inline')) {
                 line.height = topMargin + elementBox.height + bottomMargin;
                 if (textAlignment === 'Right' || (textAlignment === 'Justify' && paraFormat.bidi && isParagraphEnd)) {
                     //Aligns the text as right justified and consider subwidth for bidirectional paragrph with justify.
@@ -2004,12 +2002,12 @@ export class Layout {
     //Checks Inbetween Overlap & Updates Line marginTop
     private checkInbetweenShapeOverlap(line: LineWidget): void {
         if (!(line.paragraph.containerWidget instanceof TextFrame) && line.paragraph.bodyWidget) {
-            let overlapShape: ShapeElementBox;
+            let overlapShape: ShapeBase;
             let lineY: number = this.getLineY(line);
             let isInsideTable: boolean = line.paragraph.isInsideTable;
             /* eslint:disable */
             line.paragraph.bodyWidget.floatingElements.sort(function (a, b) { return a.y - b.y; });
-            line.paragraph.bodyWidget.floatingElements.forEach((shape: ShapeElementBox) => {
+            line.paragraph.bodyWidget.floatingElements.forEach((shape: ShapeBase) => {
                 if (isInsideTable && !shape.line.paragraph.isInsideTable) {
                     return
                 }
@@ -2019,14 +2017,13 @@ export class Layout {
                     || this.isRelayout && this.isRelayoutOverlap && this.viewer.documentHelper.selection.isExistAfter(shape.line.paragraph, this.endOverlapWidget)) {
                     return;
                 }
-
                 let considerShape: boolean = (shape.textWrappingStyle === 'TopAndBottom' || shape.textWrappingStyle === 'Square');
 
                 if (overlapShape && considerShape &&
                     overlapShape.y + overlapShape.height + overlapShape.distanceBottom + line.height > shape.y - shape.distanceTop &&
                     overlapShape.y - overlapShape.distanceTop < shape.y - shape.distanceTop &&
                     shape.y + shape.height + shape.distanceBottom > overlapShape.y + overlapShape.height + overlapShape.distanceBottom) {
-                        overlapShape = shape;
+                    overlapShape = shape;
                     line.marginTop = ((shape.y + shape.height + shape.distanceBottom) - lineY);
 
                 } else if (considerShape && !overlapShape && lineRect.isIntersecting(shapeRect)) {
@@ -2056,7 +2053,7 @@ export class Layout {
     private updateLineWidget(line: LineWidget): void {
         for (let i: number = 0; i < line.children.length; i++) {
             let element: ElementBox = line.children[i];
-            if (element instanceof ShapeElementBox) {
+            if (element instanceof ShapeBase && element.textWrappingStyle !== 'Inline') {
                 continue;
             }
             if (element instanceof TextElementBox || element instanceof ListTextElementBox) {
@@ -2141,7 +2138,7 @@ export class Layout {
             let block: BlockWidget = this.endOverlapWidget.previousRenderedWidget as BlockWidget;
             let para: BlockWidget = line.paragraph;
             while (para) {
-                (para as ParagraphWidget).floatingElements.forEach((shape: ShapeElementBox) => {
+                (para as ParagraphWidget).floatingElements.forEach((shape: ShapeBase) => {
                     if (block.bodyWidget.floatingElements.indexOf(shape) !== -1) {
                         block.bodyWidget.floatingElements.splice(block.bodyWidget.floatingElements.indexOf(shape), 1);
                         line.paragraph.bodyWidget.floatingElements.push(shape);
@@ -2622,6 +2619,8 @@ export class Layout {
         let isCustomTab: boolean = false;
         let tabs: WTabStop[] = paragraph.paragraphFormat.getUpdatedTabs();
         let isList: boolean = false;
+        let sectionFormat: WSectionFormat = paragraph.bodyWidget.sectionFormat;
+        let leftMargin: number = HelperMethods.convertPointToPixel(sectionFormat.leftMargin);
         if (!isNullOrUndefined(paragraph.paragraphFormat.listFormat.listLevel) && !isNullOrUndefined(paragraph.paragraphFormat.listFormat.listLevel.paragraphFormat)) {
             let listFormat: WParagraphFormat = paragraph.paragraphFormat.listFormat.listLevel.paragraphFormat;
             if (paragraph.paragraphFormat.leftIndent !== listFormat.leftIndent) {
@@ -2631,11 +2630,9 @@ export class Layout {
         let clientWidth: number = 0;
         let clientActiveX: number = viewer.clientActiveArea.x;
         let firstLineIndent: number = HelperMethods.convertPointToPixel(paragraph.paragraphFormat.firstLineIndent);
+        let leftIndent: number = HelperMethods.convertPointToPixel(paragraph.paragraphFormat.leftIndent);
         if (!isNullOrUndefined(element) && lineWidget.isFirstLine()) {
             clientWidth = this.viewer.clientArea.x + firstLineIndent;
-            //if (!isList) {
-            //    clientActiveX = clientActiveX + firstLineIndent;
-            //}
         } else {
             clientWidth = this.viewer.clientArea.x;
         }
@@ -2643,10 +2640,10 @@ export class Layout {
             return viewer.clientArea.x - viewer.clientActiveArea.x;
         }
         // Calculates tabwidth based on pageleftmargin and defaulttabwidth property
-        let leftIndent: number = HelperMethods.convertPointToPixel(paragraph.paragraphFormat.leftIndent);
         let position: number = viewer.clientActiveArea.x -
             (viewer.clientArea.x - HelperMethods.convertPointToPixel(paragraph.paragraphFormat.leftIndent));
         let defaultTabWidth: number = HelperMethods.convertPointToPixel(this.documentHelper.defaultTabWidth);
+        let breakInLeftIndent: boolean = false;
         if (tabs.length === 0 && (position > 0 && defaultTabWidth > position && isList ||
             defaultTabWidth === this.defaultTabWidthPixel && defaultTabWidth > position)) {
             return defaultTabWidth - position;
@@ -2655,7 +2652,12 @@ export class Layout {
                 for (let i: number = 0; i < tabs.length; i++) {
                     let tabStop: WTabStop = tabs[i];
                     let tabPosition: number = HelperMethods.convertPointToPixel(tabs[i].position);
-                    if ((position + elementWidth) < tabPosition) {
+                    if ((leftMargin + tabPosition + elementWidth) > viewer.clientArea.x) {
+                        breakInLeftIndent = true;
+                    } else {
+                        breakInLeftIndent = false;
+                    }
+                    if (Math.floor(position + elementWidth) <= tabPosition) {
                         isCustomTab = true;
                         if (tabStop.tabJustification === 'Left' || tabStop.tabJustification === 'List') {
                             fPosition = tabPosition;
@@ -2700,6 +2702,9 @@ export class Layout {
                 let diff: number = ((Math.round(position) * 100) % (Math.round(defaultTabWidth) * 100)) / 100;
                 let cnt: number = (Math.round(position) - diff) / Math.round(defaultTabWidth);
                 fPosition = (cnt + 1) * defaultTabWidth;
+            }
+            if (breakInLeftIndent && leftIndent > 0 && viewer.clientArea.x > clientActiveX) {
+                return viewer.clientArea.x - clientActiveX;
             }
             return (fPosition - position) > 0 ? fPosition - position : defaultTabWidth;
         }
@@ -2943,7 +2948,11 @@ export class Layout {
             }
         }
         cell.margin = new Margin(left, top, right, bottom);
-        cell.width = HelperMethods.convertPointToPixel(cell.cellFormat.cellWidth);
+        let cellWidth: number = cell.cellFormat.cellWidth;
+        if (cellWidth > cell.cellFormat.preferredWidth && cell.cellFormat.preferredWidth !== 0 && cell.cellFormat.preferredWidthType !== 'Percent') {
+            cellWidth = cell.cellFormat.preferredWidth;
+        }
+        cell.width = HelperMethods.convertPointToPixel(cellWidth);
         if (!isNullOrUndefined(cell.previousWidget)) {
             prevColumnIndex = (cell.previousWidget as TableCellWidget).columnIndex + (cell.previousWidget as TableCellWidget).cellFormat.columnSpan;
         }
@@ -3823,32 +3832,32 @@ export class Layout {
 
     public getListLevelPattern(value: number): ListLevelPattern {
         switch (value) {
-        case 0:
-            return 'Arabic';
-        case 1:
-            return 'LowLetter';
-        case 2:
-            return 'LowRoman';
-        case 3:
-            return 'UpLetter';
-        case 4:
-            return 'UpRoman';
-        case 5:
-            return 'Ordinal';
-        case 6:
-            return 'Number';
-        case 7:
-            return 'OrdinalText';
-        case 8:
-            return 'LeadingZero';
-        case 9:
-            return 'Bullet';
-        case 10:
-            return 'FarEast';
-        case 11:
-            return 'Special';
-        default:
-            return 'None';
+            case 0:
+                return 'Arabic';
+            case 1:
+                return 'LowLetter';
+            case 2:
+                return 'LowRoman';
+            case 3:
+                return 'UpLetter';
+            case 4:
+                return 'UpRoman';
+            case 5:
+                return 'Ordinal';
+            case 6:
+                return 'Number';
+            case 7:
+                return 'OrdinalText';
+            case 8:
+                return 'LeadingZero';
+            case 9:
+                return 'Bullet';
+            case 10:
+                return 'FarEast';
+            case 11:
+                return 'Special';
+            default:
+                return 'None';
         }
     }
 
@@ -4335,6 +4344,7 @@ export class Layout {
 
     // eslint-disable-next-line max-len
     public reLayoutParagraph(paragraphWidget: ParagraphWidget, lineIndex: number, elementBoxIndex: number, isBidi?: boolean, isSkip?: boolean): void {
+        this.isRelayout = true;
         isBidi = isNullOrUndefined(isBidi) ? false : isBidi;
         this.isRelayout = true;
         if (this.documentHelper.blockToShift === paragraphWidget) {
@@ -4771,12 +4781,17 @@ export class Layout {
     }
     private getAdjacentRowCell(cell: TableCellWidget, cellStartPos: number, cellEndPos: number, rowIndex: number): TableCellWidget[] {
         const adjCells: TableCellWidget[] = [];
-        const adjRow: TableRowWidget = cell.ownerRow.ownerTable.childWidgets[rowIndex] as TableRowWidget;
+        let adjRow: TableRowWidget = cell.ownerRow.ownerTable.childWidgets[rowIndex] as TableRowWidget;
+        let previouRow: boolean = false;
         if (adjRow) {
+            if ((adjRow.childWidgets[0] as TableCellWidget).x > cell.x && rowIndex !== 0) {
+                adjRow = cell.ownerRow.ownerTable.childWidgets[rowIndex - 1] as TableRowWidget;
+                previouRow = true;
+            }
             for (let i: number = 0; i < adjRow.childWidgets.length; i++) {
                 const adjCell: TableCellWidget = adjRow.childWidgets[i] as TableCellWidget;
-                const adjCellStartPos: number = adjCell.x;
-                const adjCellEndPos: number = adjCellStartPos + adjCell.width;
+                const adjCellStartPos: number = adjCell.x - adjCell.margin.left;
+                const adjCellEndPos: number = adjCell.x + adjCell.width + adjCell.margin.right;
                 // eslint-disable-next-line max-len
                 if ((HelperMethods.round(adjCellEndPos, 2) > HelperMethods.round(cellStartPos, 2) && HelperMethods.round(adjCellEndPos, 2) <= HelperMethods.round(cellEndPos, 2))
                     // eslint-disable-next-line max-len
@@ -4789,7 +4804,16 @@ export class Layout {
                     }
                 }
                 if (HelperMethods.round(adjCellEndPos, 2) >= HelperMethods.round(cellEndPos, 2)) {
-                    break;
+                    if (previouRow) {
+                        adjRow = cell.ownerRow.ownerTable.childWidgets[rowIndex] as TableRowWidget;
+                        previouRow = false;
+                    } else {
+                        break;
+                    }
+                }
+                if (i === adjRow.childWidgets.length - 1 && previouRow) {
+                    adjRow = cell.ownerRow.ownerTable.childWidgets[rowIndex] as TableRowWidget;
+                    previouRow = false;
                 }
             }
         }
@@ -4967,7 +4991,7 @@ export class Layout {
         if (cell.ownerTable.tableFormat.cellSpacing === 0) {
             const cellTopBorder: WBorder = cell.cellFormat.borders.top;
             const cellStartPos: number = cell.x - cell.margin.left;
-            const cellEndPos: number = cell.x + cell.width + cell.margin.left + cell.margin.right;
+            const cellEndPos: number = cell.x + cell.width + cell.margin.right;
             const adjCells: TableCellWidget[] = this.getAdjacentRowCell(cell, cellStartPos, cellEndPos, cell.ownerRow.indexInOwner - 1);
             for (let j: number = 0; j < adjCells.length; j++) {
                 const adjCell: TableCellWidget = adjCells[j];
@@ -4989,8 +5013,8 @@ export class Layout {
                     border = cell.getBorderBasedOnPriority(cellTopBorder, prevCellBottomBorder);
                 }
                 if (border) {
-                    const adjCellStartPos: number = adjCell.x;
-                    const adjCellEndPos: number = adjCell.x + adjCell.width + adjCell.margin.left + adjCell.margin.right;
+                    const adjCellStartPos: number = adjCell.x - adjCell.margin.left;
+                    const adjCellEndPos: number = adjCell.x + adjCell.width + adjCell.margin.right;
                     let width: number = 0;
                     // eslint-disable-next-line max-len
                     if (HelperMethods.round(adjCellEndPos, 2) === HelperMethods.round(cellEndPos, 2) && HelperMethods.round(adjCellStartPos, 2) === HelperMethods.round(cellStartPos, 2)) {
@@ -5574,11 +5598,13 @@ export class Layout {
         bodyWidget.childWidgets.splice(index, 0, widget);
         if (widget instanceof ParagraphWidget && !isNullOrUndefined(widget.floatingElements)) {
             for (let i: number = 0; i < widget.floatingElements.length; i++) {
-                const shape: ShapeElementBox = widget.floatingElements[i];
-                bodyWidget.floatingElements.push(shape);
-                widget.bodyWidget.floatingElements.splice(widget.bodyWidget.floatingElements.indexOf(shape), 1);
-                /* eslint:disable */
-                bodyWidget.floatingElements.sort(function (a, b) { return a.y - b.y; });
+                const shape: ShapeBase = widget.floatingElements[i];
+                if (shape.textWrappingStyle !== 'Inline') {
+                    bodyWidget.floatingElements.push(shape);
+                    widget.bodyWidget.floatingElements.splice(widget.bodyWidget.floatingElements.indexOf(shape), 1);
+                    /* eslint:disable */
+                    bodyWidget.floatingElements.sort(function (a, b) { return a.y - b.y; });
+                }
             }
         }
         bodyWidget.height += bodyWidget.height;
@@ -5679,7 +5705,7 @@ export class Layout {
             }
             lastBlock.containerWidget = nextBody;
             nextBody.height += lastBlock.height;
-        // eslint-disable-next-line no-constant-condition
+            // eslint-disable-next-line no-constant-condition
         } while (true);
         return nextBody;
     }
@@ -5947,23 +5973,25 @@ export class Layout {
     }
     private shiftLayoutFloatingItems(paragraph: ParagraphWidget): void {
         for (let i: number = 0; i < (paragraph as ParagraphWidget).floatingElements.length; i++) {
-            let element: ShapeElementBox = (paragraph as ParagraphWidget).floatingElements[i];
+            let element: ShapeBase = (paragraph as ParagraphWidget).floatingElements[i];
             let position: Point = this.getFloatingItemPoints(element);
             let height: number = position.y - element.y;
             element.x = position.x;
             element.y = position.y;
-            for (let j: number = 0; j < element.textFrame.childWidgets.length; j++) {
-                let block: BlockWidget = element.textFrame.childWidgets[j] as BlockWidget;
-                if (block instanceof ParagraphWidget) {
-                    block.y = block.y + height;
-                } else if (block instanceof TableWidget) {
-                    this.shiftChildLocationForTableWidget(block, height);
+            if (element instanceof ShapeElementBox) {
+                for (let j: number = 0; j < element.textFrame.childWidgets.length; j++) {
+                    let block: BlockWidget = element.textFrame.childWidgets[j] as BlockWidget;
+                    if (block instanceof ParagraphWidget) {
+                        block.y = block.y + height;
+                    } else if (block instanceof TableWidget) {
+                        this.shiftChildLocationForTableWidget(block, height);
+                    }
                 }
             }
         }
     }
     //RTL feature layout end
-    private getFloatingItemPoints(floatElement: ShapeElementBox): Point {
+    private getFloatingItemPoints(floatElement: ShapeBase): Point {
         let paragraph: ParagraphWidget = floatElement.line.paragraph;
         let sectionFormat: WSectionFormat = paragraph.bodyWidget.sectionFormat;
         let indentX: number = 0;
@@ -6006,7 +6034,10 @@ export class Layout {
             let vertPosition: number = floatElement.verticalPosition;
             let horzPosition: number = floatElement.horizontalPosition;
             let layoutInCell: boolean = floatElement.layoutInCell;
-            let autoShape: any = floatElement.autoShapeType;
+            let autoShape: any;
+            if (floatElement instanceof ShapeElementBox) {
+                autoShape = floatElement.autoShapeType;
+            }
             //Word 2013 Layout picture in table cell even layoutInCell property was False.
             if (paragraph.isInsideTable && layoutInCell) {
                 isLayoutInCell = true;
@@ -6235,7 +6266,7 @@ export class Layout {
                 //     //exceeds the page width when floating item and it wrapping style is not equal to  
                 //     // infront of text and behind text and also vertical origin is not equal to paragraph.
                 // } else 
-                if (paragraph && textWrapStyle !== 'InFrontOfText' && textWrapStyle !== 'BehindText' &&
+                if (paragraph && textWrapStyle !== 'InFrontOfText' && textWrapStyle !== 'Behind' &&
                     vertOrigin === 'Paragraph' && shapeWidth >= pageWidth) {
                     indentX = 0;
                 } else {
@@ -6307,7 +6338,7 @@ export class Layout {
                             } else {
                                 //Re Update the x position to the page left when word version not equal to 2013 
                                 //and wrapping style not equal to infront of text and behind text. 
-                                if ((textWrapStyle === 'InFrontOfText' || textWrapStyle === 'BehindText')) {
+                                if ((textWrapStyle === 'InFrontOfText' || textWrapStyle === 'Behind')) {
                                     if (autoShape === 'StraightConnector') {
                                         indentX = horzPosition + HelperMethods.convertPointToPixel(sectionFormat.leftMargin);
                                     } else {
@@ -6320,7 +6351,7 @@ export class Layout {
                             //Update the Wrapping element right position as page right when 
                             //wrapping element right position  exceeds the page right except position 
                             //InFrontOfText and behindText wrapping style.
-                            if (textWrapStyle !== 'InFrontOfText' && textWrapStyle !== 'BehindText'
+                            if (textWrapStyle !== 'InFrontOfText' && textWrapStyle !== 'Behind'
                                 && Math.round(indentX + shapeWidth) > Math.round(pageWidth) && shapeWidth < pageWidth) {
                                 indentX = (pageWidth - shapeWidth);
                             }
@@ -6404,7 +6435,7 @@ export class Layout {
                     //right position exceeds the page width and it wrapping style is not equal to  
                     // InFrontOfText and behind text and also vertical origin is not equal to paragraph.
                     if (paragraph && textWrapStyle !== 'InFrontOfText'
-                        && textWrapStyle !== 'BehindText' && vertOrigin === 'Paragraph' && pageWidth < indentX + shapeWidth) {
+                        && textWrapStyle !== 'Behind' && vertOrigin === 'Paragraph' && pageWidth < indentX + shapeWidth) {
                         indentX = pageWidth - shapeWidth;
                     }
                 }
@@ -6428,7 +6459,7 @@ export class Layout {
             case 'None':
                 break;
         }
-        if (indentX < 0 && textWrapStyle !== 'InFrontOfText' && textWrapStyle !== 'BehindText') {
+        if (indentX < 0 && textWrapStyle !== 'InFrontOfText' && textWrapStyle !== 'Behind') {
             indentX = 0;
         }
         return indentX;
@@ -6449,7 +6480,7 @@ export class Layout {
             case 'None':
                 break;
         }
-        if ((indentX < 0 || indentX + shapeWidth > pageWidth) && textWrapStyle !== 'InFrontOfText' && textWrapStyle !== 'BehindText') {
+        if ((indentX < 0 || indentX + shapeWidth > pageWidth) && textWrapStyle !== 'InFrontOfText' && textWrapStyle !== 'Behind') {
             indentX = pageWidth - shapeWidth;
         }
         return indentX;
@@ -6457,7 +6488,7 @@ export class Layout {
     private getVerticalPosition(paraItem: ElementBox, vertPosition: number, vertOrigin: VerticalOrigin, textWrapStyle: TextWrappingStyle): number {
         let paragraph: ParagraphWidget = paraItem.line.paragraph;
         //ParagraphLayoutInfo paragraphLayoutInfo = (paragraph as IWidget).LayoutInfo as ParagraphLayoutInfo;
-        let shape: ShapeElementBox = paraItem as ShapeElementBox;
+        let shape: ShapeBase = paraItem as ShapeBase;
         //WPicture pic = paraItem as WPicture;
         let indentY: number = 0;
         let topMargin: number = paragraph.associatedCell.y;
@@ -6548,19 +6579,19 @@ export class Layout {
         let image: ImageElementBox = element;
         image.isCrop = true;
         if (image.left !== 0) {
-            image.x = (image.left * image.widthScale) / 100;
+            image.x = (image.left * image.cropWidthScale) / 100;
         }
         if (image.top !== 0) {
-            image.y = (image.top * image.heightScale) / 100;
+            image.y = (image.top * image.cropHeightScale) / 100;
         }
         if (image.right !== 0) {
-            right = (image.right * image.widthScale) / 100;
+            right = (image.right * image.cropWidthScale) / 100;
         }
         if (image.bottom !== 0) {
-            bottom = (image.bottom * image.heightScale) / 100;
+            bottom = (image.bottom * image.cropHeightScale) / 100;
         }
-        image.cropWidth = (image.widthScale - (image.x + right));
-        image.cropHeight = (image.heightScale - (image.y + bottom));
+        image.cropWidth = (image.cropWidthScale - (image.x + right));
+        image.cropHeight = (image.cropHeightScale - (image.y + bottom));
     }
 
     public isTocField(element: FieldElementBox): boolean {

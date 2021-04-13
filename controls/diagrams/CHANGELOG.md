@@ -2,7 +2,16 @@
 
 ## [Unreleased]
 
-## 19.1.55 (2021-04-06)
+## 19.1.56 (2021-04-13)
+
+### Diagram
+
+#### Bug Fixes
+
+- `#316688` - The issue "Symbol palette component gets rendered on every state change" has been fixed.
+- `317943` - This issue "While render the layout's nodes with the collapsed state, the nodes are not properly aligned " has been fixed.
+
+## 19.1.54 (2021-03-30)
 
 ### Diagram
 

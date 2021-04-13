@@ -1974,8 +1974,14 @@ export class Annotation {
             redoClonedObject.font.isItalic = fontInfo.isItalic;
         } else if (action === 'underline') {
             redoClonedObject.font.isUnderline = fontInfo.isUnderline;
+            if (redoClonedObject.font.isUnderline && redoClonedObject.font.isStrikeout) {
+                redoClonedObject.font.isStrikeout = false;
+            }
         } else if (action === 'strikeout') {
             redoClonedObject.font.isStrikeout = fontInfo.isStrikeout;
+            if (redoClonedObject.font.isUnderline && redoClonedObject.font.isStrikeout) {
+                redoClonedObject.font.isUnderline = false;
+            }
         }
         this.pdfViewer.nodePropertyChange(currentAnnotation, { font: fontInfo });
         this.modifyInCollections(currentAnnotation, 'textPropertiesChange');

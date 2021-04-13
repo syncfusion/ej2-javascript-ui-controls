@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 19.1.56 (2021-04-13)
+
+### DataManager
+
+#### Bug Fixes
+
+- `#I268513` - Wrong `$filter` issue has been fixed.
+
 ## 19.1.55 (2021-04-06)
 
 ### DataManager

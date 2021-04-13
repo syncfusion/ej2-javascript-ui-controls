@@ -437,7 +437,6 @@ export class TextBox extends Component<HTMLInputElement | HTMLTextAreaElement> i
             if (!isNullOrUndefined(this.element.getAttribute(key))) {
                 switch (key) {
                 case 'disabled':
-                    // eslint-disable-next-line @typescript-eslint/dot-notation
                     if (( isNullOrUndefined(this.textboxOptions) || (this.textboxOptions['enabled'] === undefined)) || isDynamic) {
                         const enabled: boolean = this.element.getAttribute(key) === 'disabled' || this.element.getAttribute(key) === '' ||
                             this.element.getAttribute(key) === 'true' ? false : true;
@@ -445,7 +444,6 @@ export class TextBox extends Component<HTMLInputElement | HTMLTextAreaElement> i
                     }
                     break;
                 case 'readonly':
-                    // eslint-disable-next-line @typescript-eslint/dot-notation
                     if (( isNullOrUndefined(this.textboxOptions) || (this.textboxOptions['readonly'] === undefined)) || isDynamic) {
                         const readonly: boolean = this.element.getAttribute(key) === 'readonly' || this.element.getAttribute(key) === ''
                             || this.element.getAttribute(key) === 'true' ? true : false;
@@ -453,26 +451,22 @@ export class TextBox extends Component<HTMLInputElement | HTMLTextAreaElement> i
                     }
                     break;
                 case 'placeholder':
-                    // eslint-disable-next-line @typescript-eslint/dot-notation
                     if (( isNullOrUndefined(this.textboxOptions) || (this.textboxOptions['placeholder'] === undefined)) || isDynamic) {
                         this.setProperties({placeholder: this.element.placeholder}, !isDynamic);
                     }
                     break;
                 case 'autocomplete':
-                    // eslint-disable-next-line @typescript-eslint/dot-notation
                     if (( isNullOrUndefined(this.textboxOptions) || (this.textboxOptions['autocomplete'] === undefined)) || isDynamic) {
                         const autoCompleteTxt: string = this.element.autocomplete === 'off' ? 'off' : 'on';
                         this.setProperties({ autocomplete: autoCompleteTxt }, !isDynamic);
                     }
                     break;
                 case 'value':
-                    // eslint-disable-next-line @typescript-eslint/dot-notation
                     if (( isNullOrUndefined(this.textboxOptions) || (this.textboxOptions['value'] === undefined)) || isDynamic) {
                         this.setProperties({value: this.element.value}, !isDynamic);
                     }
                     break;
                 case 'type':
-                    // eslint-disable-next-line @typescript-eslint/dot-notation
                     if (( isNullOrUndefined(this.textboxOptions) || (this.textboxOptions['type'] === undefined)) || isDynamic) {
                         this.setProperties({type: this.element.type}, !isDynamic);
                     }
@@ -537,7 +531,6 @@ export class TextBox extends Component<HTMLInputElement | HTMLTextAreaElement> i
         }
         if (this.autocomplete !== 'on' && this.autocomplete !== '') {
             this.respectiveElement.autocomplete = this.autocomplete;
-            // eslint-disable-next-line @typescript-eslint/dot-notation
         } else if (!isNullOrUndefined(this.textboxOptions) && (this.textboxOptions['autocomplete'] !== undefined)) {
             this.removeAttributes(['autocomplete']);
         }

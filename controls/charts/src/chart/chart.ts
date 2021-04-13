@@ -2327,7 +2327,8 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
             );
             const element: Element = redrawElement(this.redraw, this.element.id + '_ChartTitle', options, this.renderer) ||
                 textElement(
-                    this.renderer, options, this.titleStyle, this.titleStyle.color || this.themeStyle.chartTitle, this.svgObject
+                    this.renderer, options, this.titleStyle, this.titleStyle.color || this.themeStyle.chartTitle, this.svgObject,
+                    null, null, null, null, null, null, null, null, this.enableCanvas
                 );
             if (element) {
                 element.setAttribute('aria-label', this.description || this.title);
@@ -2365,7 +2366,8 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
         );
         const element: Element = redrawElement(this.redraw, this.element.id + '_ChartSubTitle', subTitleOptions, this.renderer) ||
             textElement(
-                this.renderer, subTitleOptions, this.subTitleStyle, this.subTitleStyle.color || this.themeStyle.chartTitle, this.svgObject
+                this.renderer, subTitleOptions, this.subTitleStyle, this.subTitleStyle.color || this.themeStyle.chartTitle, this.svgObject,
+                null, null, null, null, null, null, null, null, this.enableCanvas
             );
         if (element) {
             element.setAttribute('aria-label', this.description || this.subTitle);

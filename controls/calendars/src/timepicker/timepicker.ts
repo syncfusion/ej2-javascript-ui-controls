@@ -116,7 +116,7 @@ export interface PopupEventArgs {
 }
 // eslint-disable-next-line @typescript-eslint/no-namespace
 export namespace TimePickerBase {
-    // eslint-disable-next-line max-len, jsdoc/require-jsdoc, @typescript-eslint/member-delimiter-style
+    // eslint-disable-next-line max-len, jsdoc/require-jsdoc
     export function createListItems(createdEl: createElementParams, min: Date, max: Date, globalize: Internationalization, timeFormat: string, step: number): { collection: number[], list: HTMLElement } {
         let formatOptions: object;
         if (this.calendarMode === 'Gregorian') {
@@ -933,9 +933,7 @@ export class TimePicker extends Component<HTMLElement> implements IInput {
             width: this.setPopupWidth(this.width),
             zIndex: this.zIndex,
             targetType: 'relative',
-            // eslint-disable-next-line @typescript-eslint/naming-convention
             position: Browser.isDevice ? { X: 'center', Y: 'center' } : { X: 'left', Y: 'bottom' },
-            // eslint-disable-next-line @typescript-eslint/naming-convention
             collision: Browser.isDevice ? { X: 'fit', Y: 'fit' } : { X: 'flip', Y: 'flip' },
             enableRtl: this.enableRtl,
             relateTo: Browser.isDevice ? document.body : this.inputWrapper.container,
@@ -960,7 +958,6 @@ export class TimePicker extends Component<HTMLElement> implements IInput {
             }
         });
         if (!Browser.isDevice) {
-            // eslint-disable-next-line @typescript-eslint/naming-convention
             this.popupObj.collision = { X: 'none', Y: 'flip' };
         }
         this.popupObj.element.style.maxHeight = POPUPDIMENSION;
@@ -1745,7 +1742,6 @@ export class TimePicker extends Component<HTMLElement> implements IInput {
             if (!isNullOrUndefined(this.inputElement.getAttribute(prop))) {
                 switch (prop) {
                 case 'disabled':
-                    // eslint-disable-next-line @typescript-eslint/dot-notation
                     if (( isNullOrUndefined(this.timeOptions) || (this.timeOptions['enabled'] === undefined)) || isDynamic) {
                         const enabled: boolean = this.inputElement.getAttribute(prop) === 'disabled' ||
                         this.inputElement.getAttribute(prop) === '' || this.inputElement.getAttribute(prop) === 'true' ? false : true;
@@ -1756,7 +1752,6 @@ export class TimePicker extends Component<HTMLElement> implements IInput {
                     this.inputStyle = this.inputElement.getAttribute(prop);
                     break;
                 case 'readonly':
-                    // eslint-disable-next-line @typescript-eslint/dot-notation
                     if (( isNullOrUndefined(this.timeOptions) || (this.timeOptions['readonly'] === undefined)) || isDynamic) {
                         const readonly: boolean = this.inputElement.getAttribute(prop) === 'readonly' ||
                         this.inputElement.getAttribute(prop) === '' || this.inputElement.getAttribute(prop) === 'true' ? true : false;
@@ -1770,14 +1765,12 @@ export class TimePicker extends Component<HTMLElement> implements IInput {
                     this.step = parseInt(this.inputElement.getAttribute(prop), 10);
                     break;
                 case 'placeholder':
-                    // eslint-disable-next-line @typescript-eslint/dot-notation
                     if (( isNullOrUndefined(this.timeOptions) || (this.timeOptions['placeholder'] === undefined)) || isDynamic) {
                         this.setProperties({ placeholder: this.inputElement.getAttribute(prop) }, !isDynamic);
                     }
                     break;
                 case 'min':
                     if (!this.isBlazorServer) {
-                        // eslint-disable-next-line @typescript-eslint/dot-notation
                         if ((isNullOrUndefined(this.timeOptions) || (this.timeOptions['min'] === undefined)) || isDynamic) {
                             value = new Date(this.inputElement.getAttribute(prop));
                             if (!isNullOrUndefined(this.checkDateValue(value))) {
@@ -1788,7 +1781,6 @@ export class TimePicker extends Component<HTMLElement> implements IInput {
                     break;
                 case 'max':
                     if (!this.isBlazorServer) {
-                        // eslint-disable-next-line @typescript-eslint/dot-notation
                         if ((isNullOrUndefined(this.timeOptions) || (this.timeOptions['max'] === undefined)) || isDynamic) {
                             value = new Date(this.inputElement.getAttribute(prop));
                             if (!isNullOrUndefined(this.checkDateValue(value))) {
@@ -1799,7 +1791,6 @@ export class TimePicker extends Component<HTMLElement> implements IInput {
                     break;
                 case 'value':
                     if (!this.isBlazorServer) {
-                        // eslint-disable-next-line @typescript-eslint/dot-notation
                         if ((isNullOrUndefined(this.timeOptions) || (this.timeOptions['value'] === undefined)) || isDynamic) {
                             value = new Date(this.inputElement.getAttribute(prop));
                             if (!isNullOrUndefined(this.checkDateValue(value))) {
@@ -2642,7 +2633,6 @@ export class TimePicker extends Component<HTMLElement> implements IInput {
                 this.popupObj.relateTo = this.anchor = document.body;
                 this.popupObj.offsetY = 0;
                 this.popupObj.targetType = 'container';
-                // eslint-disable-next-line @typescript-eslint/naming-convention
                 this.popupObj.collision = { X: 'fit', Y: 'fit' };
             }
         }

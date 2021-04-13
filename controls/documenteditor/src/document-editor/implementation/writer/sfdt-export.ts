@@ -508,7 +508,11 @@ export class SfdtExport {
     }
     private blockContentControl(widget: ParagraphWidget): any {
         let block: any = {};
-        block.blocks = this.writeParagraphs(widget);
+        if (widget.childWidgets.length === 0) {
+            this.nextBlock = widget.nextWidget;
+            return undefined;
+        }
+        block.blocks = this.writeParagraphs(widget);        
         if (!isNullOrUndefined(block.blocks)) {
             let child: LineWidget = widget.childWidgets[0] as LineWidget;
             let firstChild: ElementBox = child.children[0];
@@ -732,7 +736,7 @@ export class SfdtExport {
         } else if (element instanceof ImageElementBox) {
             inline.imageString = element.imageString;
             inline.metaFileImageString = element.metaFileImageString;
-            inline.isMetaFile =  element.isMetaFile;
+            inline.isMetaFile = element.isMetaFile;
             inline.isCompressed = element.isCompressed;
             inline.width = HelperMethods.convertPixelToPoint(element.width);
             inline.height = HelperMethods.convertPixelToPoint(element.height);
@@ -740,11 +744,27 @@ export class SfdtExport {
             if (element.isCrop) {
                 inline.bottom = element.bottom;
                 inline.right = element.right;
-                inline.left = element.horizontalPosition;
-                inline.top = element.verticalPosition;
-                inline.getimagewidth = element.widthScale;
-                inline.getimageheight = element.heightScale;
+                inline.left = element.left;
+                inline.top = element.top;
+                inline.getimagewidth = element.cropWidthScale;
+                inline.getimageheight = element.cropHeightScale;
             }
+            inline.name = element.name;
+            inline.alternativeText = element.alternativeText;
+            inline.title = element.title;
+            inline.visible = element.visible;
+            inline.widthScale = element.widthScale;
+            inline.heightScale = element.heightScale;
+            inline.verticalPosition = HelperMethods.convertPixelToPoint(element.verticalPosition);
+            inline.verticalOrigin = element.verticalOrigin;
+            inline.verticalAlignment = element.verticalAlignment;
+            inline.horizontalPosition = HelperMethods.convertPixelToPoint(element.horizontalPosition);
+            inline.horizontalOrigin = element.horizontalOrigin;
+            inline.horizontalAlignment = element.horizontalAlignment;
+            inline.allowOverlap = element.allowOverlap;
+            inline.textWrappingStyle = element.textWrappingStyle;
+            inline.textWrappingType = element.textWrappingType;
+            inline.layoutInCell = element.layoutInCell;
         } else if (element instanceof BookmarkElementBox) {
             inline.bookmarkType = element.bookmarkType;
             inline.name = element.name;
@@ -841,10 +861,10 @@ export class SfdtExport {
         inline.allowOverlap = element.allowOverlap;
         inline.textWrappingStyle = element.textWrappingStyle;
         inline.textWrappingType = element.textWrappingType;
-        inline.distanceBottom = element.distanceBottom;
-        inline.distanceLeft = element.distanceLeft;
-        inline.distanceRight = element.distanceRight;
-        inline.distanceTop = element.distanceTop;
+        inline.distanceBottom = HelperMethods.convertPixelToPoint(element.distanceBottom);
+        inline.distanceLeft = HelperMethods.convertPixelToPoint(element.distanceLeft);
+        inline.distanceRight = HelperMethods.convertPixelToPoint(element.distanceRight);
+        inline.distanceTop = HelperMethods.convertPixelToPoint(element.distanceTop);
         inline.layoutInCell = element.layoutInCell;
         inline.lockAnchor = element.lockAnchor;
         inline.autoShapeType = element.autoShapeType;

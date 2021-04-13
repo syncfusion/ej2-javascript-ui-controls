@@ -482,7 +482,9 @@ export class ProgressBar extends Component<HTMLElement> implements INotifyProper
         this.renderTrack();
         this.renderProgress();
         this.renderLabel();
-        this.renderAnnotations();
+        if (this.annotations.length > 0) {
+            this.renderAnnotations();
+        }
     }
 
     private createSecElement(): void {
@@ -505,9 +507,11 @@ export class ProgressBar extends Component<HTMLElement> implements INotifyProper
     private setSecondaryElementPosition(): void {
         const element: HTMLElement = this.secElement;
         const rect: ClientRect = this.element.getBoundingClientRect();
-        const svgRect: ClientRect = getElement(this.svgObject.id).getBoundingClientRect();
-        element.style.left = Math.max(svgRect.left - rect.left, 0) + 'px';
-        element.style.top = Math.max(svgRect.top - rect.top, 0) + 'px';
+        if (getElement(this.svgObject.id)) {
+            const svgRect: ClientRect = getElement(this.svgObject.id).getBoundingClientRect();
+            element.style.left = Math.max(svgRect.left - rect.left, 0) + 'px';
+            element.style.top = Math.max(svgRect.top - rect.top, 0) + 'px';
+        }
     }
 
     private createSVG(): void {
@@ -697,7 +701,7 @@ export class ProgressBar extends Component<HTMLElement> implements INotifyProper
                 arg.currentSize = this.progressSize;
                 this.trigger('resized', arg);
                 if ((this.width === null || this.height === null) && !arg.cancel) {
-                    this.secElement.innerHTML = '';
+                    this.secElement ? this.secElement.innerHTML = '' : this.secElement;
                     this.calculateProgressBarSize();
                     this.createSVG();
                     this.renderElements();

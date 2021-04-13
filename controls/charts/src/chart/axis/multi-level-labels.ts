@@ -332,7 +332,7 @@ export class MultiLevelLabel {
                             argsData.text, argsData.textStyle) : options.text;
                     textElement(
                         this.chart.renderer, options, argsData.textStyle, argsData.textStyle.color || this.chart.themeStyle.axisLabel,
-                        this.labelElement, this.chart.redraw, true
+                        this.labelElement, this.chart.redraw, true, null, null, null, null, null, null, this.chart.enableCanvas
                     );
                     if (multiLevel.border.width > 0 && multiLevel.border.type !== 'WithoutBorder') {
                         path = this.renderYAxisLabelBorder(
@@ -347,7 +347,9 @@ export class MultiLevelLabel {
                 }
             });
         });
-        parent.appendChild(this.multiElements);
+        if (!this.chart.enableCanvas) {
+            parent.appendChild(this.multiElements);
+        }
     }
     /**
      * render y axis multi level labels border

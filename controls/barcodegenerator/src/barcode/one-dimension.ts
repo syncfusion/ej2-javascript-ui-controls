@@ -298,6 +298,24 @@ export abstract class OneDimension extends BarcodeBase {
                             } else {
                                 this.getAlignmentPosition(textOptions, endValue, startValue, textSize);
                             }
+                            if (type === 'UpcA') {
+                                let checkVAl: boolean = (textOptions.string === this.value.substr(0, 6)) ? true : false;
+                                textOptions.string = checkVAl ? this.value.substr(0, 1) : textOptions.string.substr(0, 5);
+                                let xPosition: number = checkVAl ? options[0].x / 2 : options[options.length - 1].x + textOptions.stringSize;
+                                if (checkVAl) {
+                                    let tempPosition: number = textOptions.x;
+                                    textOptions.x = xPosition;
+                                    this.drawText(canvas as HTMLCanvasElement, textOptions);
+                                    textOptions.x = tempPosition;
+                                    textOptions.string = this.value.substr(1, 5);
+                                    this.updateOverlappedTextPosition((endValue - startValue), textOptions, textSize, startValue, textProperty, endValue);
+                                } else {
+                                    this.updateOverlappedTextPosition((endValue - startValue), textOptions, textSize, startValue, textProperty, endValue);
+                                    this.drawText(canvas as HTMLCanvasElement, textOptions);
+                                    textOptions.string = this.value.substr(11, 12);
+                                    textOptions.x = xPosition;
+                                }
+                            }
                             this.alignDisplayText(textOptions, textProperty, startValue, endValue, textSize);
                             this.drawText(canvas as HTMLCanvasElement, textOptions);
                         }

@@ -404,11 +404,14 @@ export class EventBase {
         for (let item of filterItems) {
             filterObj[item] = item;
         }
+        let modifiedFieldName: string = fieldName.replace(/[^a-zA-Z0-9 ]/g, '_');
         for (let member of members) {
             let memberName: string = this.parent.isDateField ? member.formattedText : member.actualText.toString();
             /* eslint-disable */
+            let nodeAttr: { [key: string]: string } = { 'data-fieldName': fieldName, 'data-memberId': member.actualText.toString() };
             let obj: { [key: string]: Object } = {
-                id: member.actualText.toString(),
+                id: modifiedFieldName + '_' + memberCount,
+                htmlAttributes: nodeAttr,
                 actualText: member.actualText,
                 name: memberName,
                 isSelected: isInclude ? false : true

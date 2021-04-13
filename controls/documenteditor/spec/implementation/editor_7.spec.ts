@@ -33,7 +33,7 @@ describe('Cell content alignment validation in empty selection- Align Center Lef
         }, 1000);
     });
     it('Align Center left in empty selection', () => {
-console.log('Align Center left in empty selection');
+        console.log('Align Center left in empty selection');
         editor.editor.insertTable(2, 2);
         editor.selection.rowFormat.heightType = 'Exactly';
         editor.selection.rowFormat.height = 30;
@@ -43,19 +43,19 @@ console.log('Align Center left in empty selection');
         expect(editor.selection.start.paragraph.paragraphFormat.textAlignment).toBe('Left');
     });
     it(' undo operation after Align Center left in empty selection', () => {
-console.log(' undo operation after Align Center left in empty selection');
+        console.log(' undo operation after Align Center left in empty selection');
         editor.editorHistory.undo();
         expect(editor.selection.cellFormat.verticalAlignment).toBe('Top');
         expect(editor.selection.start.paragraph.paragraphFormat.textAlignment).toBe('Left');
     });
     it(' redo operation after Align Center left in empty selection', () => {
-console.log(' redo operation after Align Center left in empty selection');
+        console.log(' redo operation after Align Center left in empty selection');
         editor.editorHistory.redo();
         expect(editor.selection.cellFormat.verticalAlignment).toBe('Center');
         expect(editor.selection.start.paragraph.paragraphFormat.textAlignment).toBe('Left');
     });
     it(' undo operation after Align Center left in empty selection and multiple undo operation', () => {
-console.log(' undo operation after Align Center left in empty selection and multiple undo operation');
+        console.log(' undo operation after Align Center left in empty selection and multiple undo operation');
         let i: number = 0;
         while (i < 5) {
             editor.editorHistory.undo();
@@ -91,7 +91,7 @@ describe('Cell content alignment validation in empty selection- Align Center Cen
         }, 1000);
     });
     it('Align Center left in empty selection', () => {
-console.log('Align Center left in empty selection');
+        console.log('Align Center left in empty selection');
         editor.editor.insertTable(2, 2);
         editor.selection.rowFormat.heightType = 'Exactly';
         editor.selection.rowFormat.height = 30;
@@ -101,19 +101,19 @@ console.log('Align Center left in empty selection');
         expect(editor.selection.start.paragraph.paragraphFormat.textAlignment).toBe('Center');
     });
     it(' undo operation after Align Center left in empty selection', () => {
-console.log(' undo operation after Align Center left in empty selection');
+        console.log(' undo operation after Align Center left in empty selection');
         editor.editorHistory.undo();
         expect(editor.selection.cellFormat.verticalAlignment).toBe('Top');
         expect(editor.selection.start.paragraph.paragraphFormat.textAlignment).toBe('Left');
     });
     it(' redo operation after Align Center left in empty selection', () => {
-console.log(' redo operation after Align Center left in empty selection');
+        console.log(' redo operation after Align Center left in empty selection');
         editor.editorHistory.redo();
         expect(editor.selection.cellFormat.verticalAlignment).toBe('Center');
         expect(editor.selection.start.paragraph.paragraphFormat.textAlignment).toBe('Center');
     });
     it(' undo operation after Align Center left in empty selection and multiple undo operation', () => {
-console.log(' undo operation after Align Center left in empty selection and multiple undo operation');
+        console.log(' undo operation after Align Center left in empty selection and multiple undo operation');
         let i: number = 0;
         while (i < 5) {
             editor.editorHistory.undo();
@@ -148,7 +148,7 @@ describe('Cell content alignment validation in empty selection- Align Center Rig
         }, 1000);
     });
     it('Align Center left in empty selection', () => {
-console.log('Align Center left in empty selection');
+        console.log('Align Center left in empty selection');
         editor.editor.insertTable(2, 2);
         editor.selection.rowFormat.heightType = 'Exactly';
         editor.selection.rowFormat.height = 30;
@@ -158,19 +158,19 @@ console.log('Align Center left in empty selection');
         expect(editor.selection.start.paragraph.paragraphFormat.textAlignment).toBe('Right');
     });
     it(' undo operation after Align Center left in empty selection', () => {
-console.log(' undo operation after Align Center left in empty selection');
+        console.log(' undo operation after Align Center left in empty selection');
         editor.editorHistory.undo();
         expect(editor.selection.cellFormat.verticalAlignment).toBe('Top');
         expect(editor.selection.start.paragraph.paragraphFormat.textAlignment).toBe('Left');
     });
     it(' redo operation after Align Center left in empty selection', () => {
-console.log(' redo operation after Align Center left in empty selection');
+        console.log(' redo operation after Align Center left in empty selection');
         editor.editorHistory.redo();
         expect(editor.selection.cellFormat.verticalAlignment).toBe('Center');
         expect(editor.selection.start.paragraph.paragraphFormat.textAlignment).toBe('Right');
     });
     it(' undo operation after Align Center left in empty selection and multiple undo operation', () => {
-console.log(' undo operation after Align Center left in empty selection and multiple undo operation');
+        console.log(' undo operation after Align Center left in empty selection and multiple undo operation');
         let i: number = 0;
         while (i < 5) {
             editor.editorHistory.undo();
@@ -207,7 +207,7 @@ describe('Cell content alignment validation in empty selection- Align Bottom Rig
         }, 1000);
     });
     it('Align Center left in empty selection', () => {
-console.log('Align Center left in empty selection');
+        console.log('Align Center left in empty selection');
         editor.editor.insertTable(2, 2);
         editor.selection.rowFormat.heightType = 'Exactly';
         editor.selection.rowFormat.height = 30;
@@ -217,19 +217,19 @@ console.log('Align Center left in empty selection');
         expect(editor.selection.start.paragraph.paragraphFormat.textAlignment).toBe('Right');
     });
     it(' undo operation after Align Center left in empty selection', () => {
-console.log(' undo operation after Align Center left in empty selection');
+        console.log(' undo operation after Align Center left in empty selection');
         editor.editorHistory.undo();
         expect(editor.selection.cellFormat.verticalAlignment).toBe('Top');
         expect(editor.selection.start.paragraph.paragraphFormat.textAlignment).toBe('Left');
     });
     it(' redo operation after Align Center left in empty selection', () => {
-console.log(' redo operation after Align Center left in empty selection');
+        console.log(' redo operation after Align Center left in empty selection');
         editor.editorHistory.redo();
         expect(editor.selection.cellFormat.verticalAlignment).toBe('Bottom');
         expect(editor.selection.start.paragraph.paragraphFormat.textAlignment).toBe('Right');
     });
     it(' undo operation after Align Center left in empty selection and multiple undo operation', () => {
-console.log(' undo operation after Align Center left in empty selection and multiple undo operation');
+        console.log(' undo operation after Align Center left in empty selection and multiple undo operation');
         let i: number = 0;
         while (i < 5) {
             editor.editorHistory.undo();
@@ -265,7 +265,7 @@ describe('Cell content alignment validation in empty selection- Align Bottom Cen
         }, 1000);
     });
     it('Align Center left in empty selection', () => {
-console.log('Align Center left in empty selection');
+        console.log('Align Center left in empty selection');
         editor.editor.insertTable(2, 2);
         editor.selection.rowFormat.heightType = 'Exactly';
         editor.selection.rowFormat.height = 30;
@@ -275,19 +275,19 @@ console.log('Align Center left in empty selection');
         expect(editor.selection.start.paragraph.paragraphFormat.textAlignment).toBe('Center');
     });
     it(' undo operation after Align Center left in empty selection', () => {
-console.log(' undo operation after Align Center left in empty selection');
+        console.log(' undo operation after Align Center left in empty selection');
         editor.editorHistory.undo();
         expect(editor.selection.cellFormat.verticalAlignment).toBe('Top');
         expect(editor.selection.start.paragraph.paragraphFormat.textAlignment).toBe('Left');
     });
     it(' redo operation after Align Center left in empty selection', () => {
-console.log(' redo operation after Align Center left in empty selection');
+        console.log(' redo operation after Align Center left in empty selection');
         editor.editorHistory.redo();
         expect(editor.selection.cellFormat.verticalAlignment).toBe('Bottom');
         expect(editor.selection.start.paragraph.paragraphFormat.textAlignment).toBe('Center');
     });
     it(' undo operation after Align Center left in empty selection and multiple undo operation', () => {
-console.log(' undo operation after Align Center left in empty selection and multiple undo operation');
+        console.log(' undo operation after Align Center left in empty selection and multiple undo operation');
         let i: number = 0;
         while (i < 5) {
             editor.editorHistory.undo();
@@ -323,7 +323,7 @@ describe('Cell content alignment validation in empty selection- Align Bottom Lef
         }, 1000);
     });
     it('Align Center left in empty selection', () => {
-console.log('Align Center left in empty selection');
+        console.log('Align Center left in empty selection');
         editor.editor.insertTable(2, 2);
         editor.selection.rowFormat.heightType = 'Exactly';
         editor.selection.rowFormat.height = 30;
@@ -334,19 +334,19 @@ console.log('Align Center left in empty selection');
         expect(editor.selection.start.paragraph.paragraphFormat.textAlignment).toBe('Left');
     });
     it(' undo operation after Align Center left in empty selection', () => {
-console.log(' undo operation after Align Center left in empty selection');
+        console.log(' undo operation after Align Center left in empty selection');
         editor.editorHistory.undo();
         expect(editor.selection.cellFormat.verticalAlignment).toBe('Bottom');
         expect(editor.selection.start.paragraph.paragraphFormat.textAlignment).toBe('Center');
     });
     it(' redo operation after Align Center left in empty selection', () => {
-console.log(' redo operation after Align Center left in empty selection');
+        console.log(' redo operation after Align Center left in empty selection');
         editor.editorHistory.redo();
         expect(editor.selection.cellFormat.verticalAlignment).toBe('Bottom');
         expect(editor.selection.start.paragraph.paragraphFormat.textAlignment).toBe('Left');
     });
     it(' undo operation after Align Center left in empty selection and multiple undo operation', () => {
-console.log(' undo operation after Align Center left in empty selection and multiple undo operation');
+        console.log(' undo operation after Align Center left in empty selection and multiple undo operation');
         let i: number = 0;
         while (i < 5) {
             editor.editorHistory.undo();
@@ -382,7 +382,7 @@ describe('Cell content alignment validation in empty selection- Align Top Left',
         }, 1000);
     });
     it('Align Center left in empty selection', () => {
-console.log('Align Center left in empty selection');
+        console.log('Align Center left in empty selection');
         editor.editor.insertTable(2, 2);
         editor.selection.rowFormat.heightType = 'Exactly';
         editor.selection.rowFormat.height = 30;
@@ -393,19 +393,19 @@ console.log('Align Center left in empty selection');
         expect(editor.selection.start.paragraph.paragraphFormat.textAlignment).toBe('Left');
     });
     it(' undo operation after Align Center left in empty selection', () => {
-console.log(' undo operation after Align Center left in empty selection');
+        console.log(' undo operation after Align Center left in empty selection');
         editor.editorHistory.undo();
         expect(editor.selection.cellFormat.verticalAlignment).toBe('Bottom');
         expect(editor.selection.start.paragraph.paragraphFormat.textAlignment).toBe('Center');
     });
     it(' redo operation after Align Center left in empty selection', () => {
-console.log(' redo operation after Align Center left in empty selection');
+        console.log(' redo operation after Align Center left in empty selection');
         editor.editorHistory.redo();
         expect(editor.selection.cellFormat.verticalAlignment).toBe('Top');
         expect(editor.selection.start.paragraph.paragraphFormat.textAlignment).toBe('Left');
     });
     it(' undo operation after Align Center left in empty selection and multiple undo operation', () => {
-console.log(' undo operation after Align Center left in empty selection and multiple undo operation');
+        console.log(' undo operation after Align Center left in empty selection and multiple undo operation');
         let i: number = 0;
         while (i < 5) {
             editor.editorHistory.undo();
@@ -440,7 +440,7 @@ describe('Cell content alignment validation in empty selection- Align Top Center
         }, 1000);
     });
     it('Align Center left in empty selection', () => {
-console.log('Align Center left in empty selection');
+        console.log('Align Center left in empty selection');
         editor.editor.insertTable(2, 2);
         editor.selection.rowFormat.heightType = 'Exactly';
         editor.selection.rowFormat.height = 30;
@@ -452,19 +452,19 @@ console.log('Align Center left in empty selection');
         expect(editor.selection.start.paragraph.paragraphFormat.textAlignment).toBe('Center');
     });
     it(' undo operation after Align Center left in empty selection', () => {
-console.log(' undo operation after Align Center left in empty selection');
+        console.log(' undo operation after Align Center left in empty selection');
         editor.editorHistory.undo();
         expect(editor.selection.cellFormat.verticalAlignment).toBe('Bottom');
         expect(editor.selection.start.paragraph.paragraphFormat.textAlignment).toBe('Left');
     });
     it(' redo operation after Align Center left in empty selection', () => {
-console.log(' redo operation after Align Center left in empty selection');
+        console.log(' redo operation after Align Center left in empty selection');
         editor.editorHistory.redo();
         expect(editor.selection.cellFormat.verticalAlignment).toBe('Top');
         expect(editor.selection.start.paragraph.paragraphFormat.textAlignment).toBe('Center');
     });
     it(' undo operation after Align Center left in empty selection and multiple undo operation', () => {
-console.log(' undo operation after Align Center left in empty selection and multiple undo operation');
+        console.log(' undo operation after Align Center left in empty selection and multiple undo operation');
         let i: number = 0;
         while (i < 5) {
             editor.editorHistory.undo();
@@ -500,7 +500,7 @@ describe('Cell content alignment validation in empty selection- Align Top Right'
         }, 1000);
     });
     it('Align Center left in empty selection', () => {
-console.log('Align Center left in empty selection');
+        console.log('Align Center left in empty selection');
         editor.editor.insertTable(2, 2);
         editor.selection.rowFormat.heightType = 'Exactly';
         editor.selection.rowFormat.height = 30;
@@ -512,19 +512,19 @@ console.log('Align Center left in empty selection');
         expect(editor.selection.start.paragraph.paragraphFormat.textAlignment).toBe('Right');
     });
     it(' undo operation after Align Center left in empty selection', () => {
-console.log(' undo operation after Align Center left in empty selection');
+        console.log(' undo operation after Align Center left in empty selection');
         editor.editorHistory.undo();
         expect(editor.selection.cellFormat.verticalAlignment).toBe('Bottom');
         expect(editor.selection.start.paragraph.paragraphFormat.textAlignment).toBe('Left');
     });
     it(' redo operation after Align Center left in empty selection', () => {
-console.log(' redo operation after Align Center left in empty selection');
+        console.log(' redo operation after Align Center left in empty selection');
         editor.editorHistory.redo();
         expect(editor.selection.cellFormat.verticalAlignment).toBe('Top');
         expect(editor.selection.start.paragraph.paragraphFormat.textAlignment).toBe('Right');
     });
     it(' undo operation after Align Center left in empty selection and multiple undo operation', () => {
-console.log(' undo operation after Align Center left in empty selection and multiple undo operation');
+        console.log(' undo operation after Align Center left in empty selection and multiple undo operation');
         let i: number = 0;
         while (i < 5) {
             editor.editorHistory.undo();
@@ -560,7 +560,7 @@ describe('Cell content alignment validation in Non-empty selection-Top Right and
         }, 1000);
     });
     it('Align Center left in empty selection', () => {
-console.log('Align Center left in empty selection');
+        console.log('Align Center left in empty selection');
         editor.editor.insertTable(2, 2);
         editor.selection.rowFormat.heightType = 'Exactly';
         editor.selection.rowFormat.height = 30;
@@ -578,19 +578,19 @@ console.log('Align Center left in empty selection');
         expect(editor.selection.start.paragraph.paragraphFormat.textAlignment).toBe('Left');
     });
     it(' undo operation after Align Center left in empty selection', () => {
-console.log(' undo operation after Align Center left in empty selection');
+        console.log(' undo operation after Align Center left in empty selection');
         editor.editorHistory.undo();
         expect(editor.selection.cellFormat.verticalAlignment).toBe('Top');
         expect(editor.selection.start.paragraph.paragraphFormat.textAlignment).toBe('Right');
     });
     it(' redo operation after Align Center left in empty selection', () => {
-console.log(' redo operation after Align Center left in empty selection');
+        console.log(' redo operation after Align Center left in empty selection');
         editor.editorHistory.redo();
         expect(editor.selection.cellFormat.verticalAlignment).toBe('Center');
         expect(editor.selection.start.paragraph.paragraphFormat.textAlignment).toBe('Left');
     });
     it(' undo operation after Align Center left in empty selection and multiple undo operation', () => {
-console.log(' undo operation after Align Center left in empty selection and multiple undo operation');
+        console.log(' undo operation after Align Center left in empty selection and multiple undo operation');
         let i: number = 0;
         while (i < 5) {
             editor.editorHistory.undo();
@@ -627,7 +627,7 @@ describe('Cell content alignment validation in Non-empty selection-Top Center an
         }, 1000);
     });
     it('Align Center left in empty selection', () => {
-console.log('Align Center left in empty selection');
+        console.log('Align Center left in empty selection');
         editor.editor.insertTable(2, 2);
         editor.selection.rowFormat.heightType = 'Exactly';
         editor.selection.rowFormat.height = 30;
@@ -645,19 +645,19 @@ console.log('Align Center left in empty selection');
         expect(editor.selection.start.paragraph.paragraphFormat.textAlignment).toBe('Right');
     });
     it(' undo operation after Align Center left in empty selection', () => {
-console.log(' undo operation after Align Center left in empty selection');
+        console.log(' undo operation after Align Center left in empty selection');
         editor.editorHistory.undo();
         expect(editor.selection.cellFormat.verticalAlignment).toBe('Top');
         expect(editor.selection.start.paragraph.paragraphFormat.textAlignment).toBe('Center');
     });
     it(' redo operation after Align Center left in empty selection', () => {
-console.log(' redo operation after Align Center left in empty selection');
+        console.log(' redo operation after Align Center left in empty selection');
         editor.editorHistory.redo();
         expect(editor.selection.cellFormat.verticalAlignment).toBe('Center');
         expect(editor.selection.start.paragraph.paragraphFormat.textAlignment).toBe('Right');
     });
     it(' undo operation after Align Center left in empty selection and multiple undo operation', () => {
-console.log(' undo operation after Align Center left in empty selection and multiple undo operation');
+        console.log(' undo operation after Align Center left in empty selection and multiple undo operation');
         let i: number = 0;
         while (i < 5) {
             editor.editorHistory.undo();
@@ -694,7 +694,7 @@ describe('Cell content alignment validation in Non-empty selection-Bottom Center
         }, 1000);
     });
     it('Align Center left in empty selection', () => {
-console.log('Align Center left in empty selection');
+        console.log('Align Center left in empty selection');
         editor.editor.insertTable(2, 2);
         editor.selection.rowFormat.heightType = 'Exactly';
         editor.selection.rowFormat.height = 30;
@@ -712,19 +712,19 @@ console.log('Align Center left in empty selection');
         expect(editor.selection.start.paragraph.paragraphFormat.textAlignment).toBe('Left');
     });
     it(' undo operation after Align Center left in empty selection', () => {
-console.log(' undo operation after Align Center left in empty selection');
+        console.log(' undo operation after Align Center left in empty selection');
         editor.editorHistory.undo();
         expect(editor.selection.cellFormat.verticalAlignment).toBe('Bottom');
         expect(editor.selection.start.paragraph.paragraphFormat.textAlignment).toBe('Center');
     });
     it(' redo operation after Align Center left in empty selection', () => {
-console.log(' redo operation after Align Center left in empty selection');
+        console.log(' redo operation after Align Center left in empty selection');
         editor.editorHistory.redo();
         expect(editor.selection.cellFormat.verticalAlignment).toBe('Top');
         expect(editor.selection.start.paragraph.paragraphFormat.textAlignment).toBe('Left');
     });
     it(' undo operation after Align Center left in empty selection and multiple undo operation', () => {
-console.log(' undo operation after Align Center left in empty selection and multiple undo operation');
+        console.log(' undo operation after Align Center left in empty selection and multiple undo operation');
         let i: number = 0;
         while (i < 5) {
             editor.editorHistory.undo();
@@ -762,7 +762,7 @@ describe('Cell content alignment validation in Non-empty selection-Center Right 
         }, 1000);
     });
     it('Align Center left in empty selection', () => {
-console.log('Align Center left in empty selection');
+        console.log('Align Center left in empty selection');
         editor.editor.insertTable(2, 2);
         editor.selection.rowFormat.heightType = 'Exactly';
         editor.selection.rowFormat.height = 30;
@@ -780,19 +780,19 @@ console.log('Align Center left in empty selection');
         expect(editor.selection.start.paragraph.paragraphFormat.textAlignment).toBe('Left');
     });
     it(' undo operation after Align Center left in empty selection', () => {
-console.log(' undo operation after Align Center left in empty selection');
+        console.log(' undo operation after Align Center left in empty selection');
         editor.editorHistory.undo();
         expect(editor.selection.cellFormat.verticalAlignment).toBe('Center');
         expect(editor.selection.start.paragraph.paragraphFormat.textAlignment).toBe('Right');
     });
     it(' redo operation after Align Center left in empty selection', () => {
-console.log(' redo operation after Align Center left in empty selection');
+        console.log(' redo operation after Align Center left in empty selection');
         editor.editorHistory.redo();
         expect(editor.selection.cellFormat.verticalAlignment).toBe('Bottom');
         expect(editor.selection.start.paragraph.paragraphFormat.textAlignment).toBe('Left');
     });
     it(' undo operation after Align Center left in empty selection and multiple undo operation', () => {
-console.log(' undo operation after Align Center left in empty selection and multiple undo operation');
+        console.log(' undo operation after Align Center left in empty selection and multiple undo operation');
         let i: number = 0;
         while (i < 5) {
             editor.editorHistory.undo();
@@ -830,7 +830,7 @@ describe('Cell content alignment validation in Non-empty selection-Align Bottom 
         }, 1000);
     });
     it('Align Center left in empty selection', () => {
-console.log('Align Center left in empty selection');
+        console.log('Align Center left in empty selection');
         editor.editor.insertTable(2, 2);
         editor.selection.rowFormat.heightType = 'Exactly';
         editor.selection.rowFormat.height = 30;
@@ -847,19 +847,19 @@ console.log('Align Center left in empty selection');
         expect(editor.selection.start.paragraph.paragraphFormat.textAlignment).toBe('Right');
     });
     it(' undo operation after Align Center left in empty selection', () => {
-console.log(' undo operation after Align Center left in empty selection');
+        console.log(' undo operation after Align Center left in empty selection');
         editor.editorHistory.undo();
         expect(editor.selection.cellFormat.verticalAlignment).toBe('Top');
         expect(editor.selection.start.paragraph.paragraphFormat.textAlignment).toBe('Left');
     });
     it(' redo operation after Align Center left in empty selection', () => {
-console.log(' redo operation after Align Center left in empty selection');
+        console.log(' redo operation after Align Center left in empty selection');
         editor.editorHistory.redo();
         expect(editor.selection.cellFormat.verticalAlignment).toBe('Bottom');
         expect(editor.selection.start.paragraph.paragraphFormat.textAlignment).toBe('Right');
     });
     it(' undo operation after Align Center left in empty selection and multiple undo operation', () => {
-console.log(' undo operation after Align Center left in empty selection and multiple undo operation');
+        console.log(' undo operation after Align Center left in empty selection and multiple undo operation');
         let i: number = 0;
         while (i < 5) {
             editor.editorHistory.undo();
@@ -896,7 +896,7 @@ describe('Cell content alignment validation Without History', () => {
         }, 1000);
     });
     it('Align Bottom Right without history in empty selection', () => {
-console.log('Align Bottom Right without history in empty selection');
+        console.log('Align Bottom Right without history in empty selection');
         editor.editor.insertTable(2, 2);
         editor.editor.insertText('Sample');
         editor.editor.onEnter()
@@ -906,14 +906,14 @@ console.log('Align Bottom Right without history in empty selection');
         expect(editor.selection.start.paragraph.paragraphFormat.textAlignment).toBe('Right');
     });
     it('Align Top Center without history in non empty selection', () => {
-console.log('Align Top Center without history in non empty selection');
+        console.log('Align Top Center without history in non empty selection');
         editor.editor.onCellContentAlignment('Top', 'Center');
         expect(editor.selection.cellFormat.verticalAlignment).toBe('Top');
         expect(editor.selection.start.paragraph.paragraphFormat.textAlignment).toBe('Center');
     });
 
     it('Align Center Right without history', () => {
-console.log('Align Center Right without history');
+        console.log('Align Center Right without history');
         editor.editor.onCellContentAlignment('Center', 'Right');
         expect(editor.selection.cellFormat.verticalAlignment).toBe('Center');
         expect(editor.selection.start.paragraph.paragraphFormat.textAlignment).toBe('Right');
@@ -944,7 +944,7 @@ describe('Cell content alignment validation invalid cases', () => {
         }, 1000);
     });
     it('Align Bottom Right selection including paragraph and table', () => {
-console.log('Align Bottom Right selection including paragraph and table');
+        console.log('Align Bottom Right selection including paragraph and table');
         editor.editor.insertText('Sample');
         editor.editor.onEnter();
         editor.editor.insertTable(2, 2);
@@ -955,7 +955,7 @@ console.log('Align Bottom Right selection including paragraph and table');
         expect(editor.selection.start.paragraph.paragraphFormat.textAlignment).toBe('Left');
     });
     it('Align Bottom Right selection in empty selection and not in Table', () => {
-console.log('Align Bottom Right selection in empty selection and not in Table');
+        console.log('Align Bottom Right selection in empty selection and not in Table');
         editor.openBlank();
         editor.editor.insertText('Sample');
         editor.editor.onCellContentAlignment('Bottom', 'Right');
@@ -988,7 +988,7 @@ describe('Table center alignment validation', () => {
         }, 1000);
     });
     it('Table center alightment relayout validation', () => {
-console.log('Table center alightment relayout validation');
+        console.log('Table center alightment relayout validation');
         editor.editorModule.insertTable(2, 2);
         expect(editor.selection.start.paragraph.associatedCell.ownerTable.x).toBeLessThan(100);
         editor.selection.start.paragraph.associatedCell.ownerTable.tableFormat.tableAlignment = 'Center';
@@ -1052,7 +1052,7 @@ describe('Table relayouting with row span', () => {
         }, 1000);
     });
     it('Layout table with allow row break across pages', () => {
-console.log('Layout table with allow row break across pages');
+        console.log('Layout table with allow row break across pages');
         editor.open(JSON.stringify(sfdt));
         editor.editorModule.insertTable(2, 2);
         editor.selection.handleRightKey();
@@ -1064,7 +1064,7 @@ console.log('Layout table with allow row break across pages');
         expect(() => { editor.editorModule.onEnter() }).not.toThrowError();
     });
     it('Layout table without allow row break across pages', () => {
-console.log('Layout table without allow row break across pages');
+        console.log('Layout table without allow row break across pages');
         editor.open(JSON.stringify(sfdt));
         editor.editorModule.insertTable(2, 2);
         editor.selection.rowFormat.allowBreakAcrossPages = false;
@@ -1103,7 +1103,7 @@ describe('form field validation', () => {
         }, 1000);
     });
     it('insert text form field', () => {
-console.log('insert text form field');
+        console.log('insert text form field');
         editor.editor.insertFormField('Text');
         let formfield: FieldElementBox[] = editor.documentHelper.formFields;
         expect((formfield[0].formFieldData as TextFormField).name).toBe('Text1');
@@ -1112,7 +1112,7 @@ console.log('insert text form field');
         expect((formfield[0].formFieldData as TextFormField).maxLength).toBe(0);
     });
     it('insert checkbox form field', () => {
-console.log('insert checkbox form field');
+        console.log('insert checkbox form field');
         editor.editor.insertFormField('CheckBox');
         let formfield: FieldElementBox[] = editor.documentHelper.formFields;
         expect((formfield[1].formFieldData as CheckBoxFormField).name).toBe('CheckBox1');
@@ -1121,14 +1121,14 @@ console.log('insert checkbox form field');
         expect((formfield[1].formFieldData as CheckBoxFormField).sizeType).toBe('Auto');
     });
     it('insert drop down form field', () => {
-console.log('insert drop down form field');
+        console.log('insert drop down form field');
         editor.editor.insertFormField('DropDown');
         let formfield: FieldElementBox[] = editor.documentHelper.formFields;
         expect((formfield[2].formFieldData as DropDownFormField).name).toBe('DropDown1');
         expect((formfield[2].formFieldData as DropDownFormField).selectedIndex).toBe(0);
     });
     it('edit text form field', () => {
-console.log('edit text form field');
+        console.log('edit text form field');
         let formfields: FieldElementBox[] = editor.documentHelper.formFields;
         let formfield: TextFormField = formfields[0].formFieldData as TextFormField;
         formfield.defaultValue = 'Check';
@@ -1142,7 +1142,7 @@ console.log('edit text form field');
         expect((formfields[0].formFieldData as TextFormField).maxLength).toBe(10);
     });
     it('edit checkbox form field', () => {
-console.log('edit checkbox form field');
+        console.log('edit checkbox form field');
         let formfields: FieldElementBox[] = editor.documentHelper.formFields;
         let formfield: CheckBoxFormField = formfields[1].formFieldData as CheckBoxFormField;
         formfield.defaultValue = true;
@@ -1155,7 +1155,7 @@ console.log('edit checkbox form field');
         expect((formfields[1].formFieldData as CheckBoxFormField).sizeType).toBe('Exactly');
     });
     it('edit dropdown form field', () => {
-console.log('edit dropdown form field');
+        console.log('edit dropdown form field');
         let formfields: FieldElementBox[] = editor.documentHelper.formFields;
         let formfield: DropDownFormField = formfields[2].formFieldData as DropDownFormField;
         formfield.dropdownItems = ['one', 'two', 'three'];
@@ -1165,13 +1165,13 @@ console.log('edit dropdown form field');
         expect((formfields[2].formFieldData as DropDownFormField).selectedIndex).toBe(1);
     });
     it('update text form field', () => {
-console.log('update text form field');
+        console.log('update text form field');
         let formfields: FieldElementBox[] = editor.documentHelper.formFields;
         editor.editor.updateFormField(formfields[0], 'result', true);
         expect(formfields[0].resultText).toBe('RESULT');
     });
     it('update checkbox form field', () => {
-console.log('update checkbox form field');
+        console.log('update checkbox form field');
         let formfields: FieldElementBox[] = editor.documentHelper.formFields;
         editor.editor.toggleCheckBoxFormField(formfields[1], true, true);
         expect((formfields[1].formFieldData as CheckBoxFormField).checked).toBe(true);
@@ -1179,7 +1179,7 @@ console.log('update checkbox form field');
         expect((formfields[1].formFieldData as CheckBoxFormField).checked).toBe(false);
     });
     it('get default text dropdown', () => {
-console.log('get default text dropdown');
+        console.log('get default text dropdown');
         editor.editor.insertFormField('DropDown');
         let formfields: FieldElementBox[] = editor.documentHelper.formFields;
         let formfield: DropDownFormField = formfields[3].formFieldData as DropDownFormField;
@@ -1190,7 +1190,7 @@ console.log('get default text dropdown');
         expect(text).toBe('one');
     });
     it('get default text dropdown with no drop down items', () => {
-console.log('get default text dropdown with no drop down items');
+        console.log('get default text dropdown with no drop down items');
         editor.editor.insertFormField('DropDown');
         let formfields: FieldElementBox[] = editor.documentHelper.formFields;
         let formfield: DropDownFormField = formfields[4].formFieldData as DropDownFormField;
@@ -1202,7 +1202,7 @@ console.log('get default text dropdown with no drop down items');
         expect(text).toBe(value);
     });
     it('get default text textform', () => {
-console.log('get default text textform');
+        console.log('get default text textform');
         let formfields: FieldElementBox[] = editor.documentHelper.formFields;
         let formfield: TextFormField = formfields[0].formFieldData as TextFormField;
         formfield.defaultValue = '';
@@ -1211,14 +1211,14 @@ console.log('get default text textform');
         expect(text).toBe(value);
     });
     it('update with null', () => {
-console.log('update with null');
+        console.log('update with null');
         let formfields: FieldElementBox[] = editor.documentHelper.formFields;
         editor.editor.updateFormField(formfields[0], '', true);
         let value: string = editor.documentHelper.textHelper.repeatChar(editor.documentHelper.textHelper.getEnSpaceCharacter(), 5);
         expect(formfields[0].resultText).toBe(value);
     });
     it('update dropdown form field', () => {
-console.log('update dropdown form field');
+        console.log('update dropdown form field');
         let formfields: FieldElementBox[] = editor.documentHelper.formFields;
         let formfield: DropDownFormField = formfields[4].formFieldData as DropDownFormField;
         formfield.dropdownItems = ['one', 'two', 'three'];
@@ -1226,12 +1226,12 @@ console.log('update dropdown form field');
         expect((formfields[4].formFieldData as DropDownFormField).selectedIndex).toBe(1);
     });
     it('insert with selection', () => {
-console.log('insert with selection');
+        console.log('insert with selection');
         editor.selection.select({ x: 97.5 + editor.selection.start.paragraph.bodyWidget.page.boundingRectangle.x, y: 108 });
         editor.editor.insertFormField('Text');
     });
     it('update dropdown form field', () => {
-console.log('update dropdown form field');
+        console.log('update dropdown form field');
         let formfields: FieldElementBox[] = editor.documentHelper.formFields;
         let formfield: DropDownFormField = formfields[4].formFieldData as DropDownFormField;
         formfield.dropdownItems = ['one', 'two', 'three'];
@@ -1240,12 +1240,50 @@ console.log('update dropdown form field');
     });
 
     it('insert text form field with word document', () => {
-console.log('insert text form field with word document');
+        console.log('insert text form field with word document');
         editor.open(JSON.stringify(formfield));
         let formfields: FieldElementBox[] = editor.documentHelper.formFields;
         expect((formfields[0].formFieldData as TextFormField).name).toBe('Text1');
         editor.editor.updateFormField(formfields[0], 'result', true);
         expect(formfields[0].resultText).toBe('result');
+    });
+});
+
+describe("Form field inline editing validation", () => {
+    let container: DocumentEditor;
+    beforeAll(() => {
+        document.body.innerHTML = '';
+        let ele: HTMLElement = createElement('div', { id: 'container' });
+        document.body.appendChild(ele);
+        DocumentEditor.Inject(Editor, Selection, EditorHistory);
+        container = new DocumentEditor({ enableEditor: true, isReadOnly: false, enableEditorHistory: true });
+        (container.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (container.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (container.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (container.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        container.appendTo('#container');
+        container.documentEditorSettings.formFieldSettings.formFillingMode = "Inline";
+    });
+    afterAll((done) => {
+        container.destroy();
+        document.body.removeChild(document.getElementById('container'));
+        container = undefined;
+        setTimeout(() => {
+            done();
+        }, 700);
+    });
+    it("Inline editing text validation", () => {
+        container.editor.insertFormField("Text");
+        container.editor.addProtection("", "FormFieldsOnly");
+        var value = "a";
+        let event: any = {
+            offsetX: 100, offsetY: 100, preventDefault: function () { return true; },
+            ctrlKey: false, shiftKey: false, which: 0, key: value
+        };
+        container.selection.movePreviousPosition();
+        container.documentHelper.onKeyPressInternal(event);
+        var formFieldDate = container.exportFormData();
+        expect(formFieldDate[0].value).toBe(value);
     });
 });
 
@@ -1273,7 +1311,7 @@ describe('Track changes Validation For FormField', () => {
         }, 1000);
     });
     it('Inserting form fields Validation For revision content  ', function () {
-console.log('Inserting form fields Validation For revision content  ');
+        console.log('Inserting form fields Validation For revision content  ');
         container.openBlank();
         container.enableTrackChanges = true;
         container.editor.insertText("hello");
@@ -1286,7 +1324,7 @@ console.log('Inserting form fields Validation For revision content  ');
     });
 
     it('form fields undo and redo Validation For revision content  ', function () {
-console.log('form fields undo and redo Validation For revision content  ');
+        console.log('form fields undo and redo Validation For revision content  ');
         container.openBlank();
         container.enableTrackChanges = true;
         container.editor.insertText("hello");
@@ -1304,7 +1342,7 @@ console.log('form fields undo and redo Validation For revision content  ');
         expect(count).toBe(6);
     });
     it('form fields BackSpace Validation For revision content  ', function () {
-console.log('form fields BackSpace Validation For revision content  ');
+        console.log('form fields BackSpace Validation For revision content  ');
         container.openBlank();
         container.enableTrackChanges = true;
         container.editor.insertText("hello");
@@ -1319,7 +1357,7 @@ console.log('form fields BackSpace Validation For revision content  ');
         expect(count).toBe(6);
     });
     it('form fields Delete Validation For revision content  ', function () {
-console.log('form fields Delete Validation For revision content  ');
+        console.log('form fields Delete Validation For revision content  ');
         container.openBlank();
         container.enableTrackChanges = true;
         container.editor.insertText("hello");

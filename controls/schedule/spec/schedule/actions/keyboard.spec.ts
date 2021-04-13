@@ -2995,6 +2995,134 @@ describe('Keyboard interaction', () => {
             expect(focuesdEle.cellIndex).toEqual(12);
             expect((focuesdEle.parentNode as HTMLTableRowElement).sectionRowIndex).toEqual(13);
         });
+        it('tab key on resource cells', () => {
+            const targetEle: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-resource-tree-icon'));
+            targetEle[0].click();
+            targetEle[1].click();
+            (schObj.element.querySelector('.e-resource-cells[data-group-index="' + 10 + '"]') as HTMLElement).focus();
+            expect(schObj.element.querySelector('.e-content-wrap').scrollTop).toEqual(0);
+            keyModule.keyActionHandler({ action: 'tab', target: document.activeElement, shiftKey: false });
+            expect(schObj.element.querySelector('.e-content-wrap').scrollTop).toBeGreaterThan(0);
+            keyModule.keyActionHandler({ action: 'tab', target: schObj.element.querySelector('.e-resource-cells'), shiftKey: false });
+            expect(schObj.element.querySelector('.e-content-wrap').scrollTop).toEqual(0);
+        });
+    });
+
+    describe('Keyboard interaction with enabled virtual scroll', () => {
+        let schObj: Schedule;
+        let keyModule: any;
+        beforeAll((done: DoneFn) => {
+            const model: ScheduleModel = {
+                height: '550px', width: '100%', currentView: 'TimelineMonth',
+                views: [
+                    { option: 'TimelineDay' },
+                    { option: 'TimelineWeek', allowVirtualScrolling: true },
+                    { option: 'TimelineMonth', allowVirtualScrolling: true }
+                ],
+                group: { resources: ['Floors', 'Halls', 'Rooms', 'Owners'] },
+                resources: [{
+                    field: 'FId', title: 'Floor', name: 'Floors', allowMultiple: false,
+                    dataSource: [
+                        { FloorText: 'Floor 1', Id: 1, FloorColor: '#cb6bb2' },
+                        { FloorText: 'Floor 2', Id: 2, FloorColor: '#cb6bb2' }
+                    ],
+                    textField: 'FloorText', idField: 'Id', colorField: 'FloorColor'
+                }, {
+                    field: 'HallId', title: 'Hall', name: 'Halls', allowMultiple: false,
+                    dataSource: [
+                        { HallText: 'Hall 1', Id: 1, HallGroupId: 1, HallColor: '#cb6bb2' },
+                        { HallText: 'Hall 2', Id: 2, HallGroupId: 2, HallColor: '#56ca85' },
+                        { HallText: 'Hall 3', Id: 3, HallGroupId: 2, HallColor: '#56ca85' }
+                    ],
+                    textField: 'HallText', idField: 'Id', groupIDField: 'HallGroupId', colorField: 'HallColor'
+                }, {
+                    field: 'RoomId', title: 'Room', name: 'Rooms', allowMultiple: false,
+                    dataSource: [
+                        { RoomText: 'ROOM 1', Id: 1, RoomGroupId: 1, RoomColor: '#cb6bb2' },
+                        { RoomText: 'ROOM 2', Id: 2, RoomGroupId: 2, RoomColor: '#56ca85' },
+                        { RoomText: 'ROOM 3', Id: 3, RoomGroupId: 1, RoomColor: '#56ca85' },
+                        { RoomText: 'ROOM 4', Id: 4, RoomGroupId: 2, RoomColor: '#56ca85' },
+                        { RoomText: 'ROOM 5', Id: 5, RoomGroupId: 3, RoomColor: '#56ca85' }
+                    ],
+                    textField: 'RoomText', idField: 'Id', groupIDField: 'RoomGroupId', colorField: 'RoomColor'
+                }, {
+                    field: 'OwnerId', title: 'Owner', name: 'Owners', allowMultiple: true,
+                    dataSource: [
+                        { OwnerText: 'Nancy', Id: 1, OwnerGroupId: 1, OwnerColor: '#ffaa00' },
+                        { OwnerText: 'Steven', Id: 2, OwnerGroupId: 2, OwnerColor: '#f8a398' },
+                        { OwnerText: 'Michael', Id: 3, OwnerGroupId: 3, OwnerColor: '#7499e1' },
+                        { OwnerText: 'Oliver', Id: 4, OwnerGroupId: 1, OwnerColor: '#ffaa00' },
+                        { OwnerText: 'John', Id: 5, OwnerGroupId: 2, OwnerColor: '#f8a398' },
+                        { OwnerText: 'Barry', Id: 6, OwnerGroupId: 3, OwnerColor: '#7499e1' },
+                        { OwnerText: 'Felicity', Id: 7, OwnerGroupId: 1, OwnerColor: '#ffaa00' },
+                        { OwnerText: 'Cisco', Id: 8, OwnerGroupId: 3, OwnerColor: '#f8a398' },
+                        { OwnerText: 'Sara', Id: 9, OwnerGroupId: 2, OwnerColor: '#7499e1' },
+                        { OwnerText: 'John', Id: 10, OwnerGroupId: 4, OwnerColor: '#f8a398' },
+                        { OwnerText: 'Barry', Id: 11, OwnerGroupId: 4, OwnerColor: '#7499e1' },
+                        { OwnerText: 'Felicity', Id: 12, OwnerGroupId: 4, OwnerColor: '#ffaa00' },
+                        { OwnerText: 'Cisco', Id: 13, OwnerGroupId: 4, OwnerColor: '#f8a398' },
+                        { OwnerText: 'Sara', Id: 14, OwnerGroupId: 4, OwnerColor: '#7499e1' },
+                        { OwnerText: 'Barry', Id: 15, OwnerGroupId: 5, OwnerColor: '#7499e1' },
+                        { OwnerText: 'Felicity', Id: 16, OwnerGroupId: 5, OwnerColor: '#ffaa00' },
+                        { OwnerText: 'Cisco', Id: 17, OwnerGroupId: 5, OwnerColor: '#f8a398' },
+                        { OwnerText: 'Sara', Id: 18, OwnerGroupId: 5, OwnerColor: '#7499e1' }
+                    ],
+                    textField: 'OwnerText', idField: 'Id', groupIDField: 'OwnerGroupId',
+                    colorField: 'OwnerColor'
+                }],
+                selectedDate: new Date(2018, 4, 1),
+                dataBound: () => {
+                    keyModule = schObj.keyboardInteractionModule;
+                    done();
+                }
+            };
+            schObj = util.createSchedule(model, timelineResourceData, done);
+        });
+        afterAll(() => {
+            util.destroy(schObj);
+        });
+        it('Selecting work cell enabled virtual scroll', (done: DoneFn) => {
+            const targetCell: HTMLElement = schObj.element.querySelectorAll('.e-work-cells')[220] as HTMLElement;
+            const contentArea: HTMLElement = schObj.element.querySelector('.e-content-wrap') as HTMLElement;
+            targetCell.click();
+            keyModule.keyActionHandler({ action: 'escape' });
+            expect(schObj.element.querySelector('.e-work-cells').getAttribute('data-group-index')).toBe('0');
+            expect(schObj.element.querySelector('.e-selected-cell').getAttribute('data-group-index')).toBe('7');
+            util.triggerScrollEvent(contentArea, 400);
+            setTimeout(() => { done(); }, 500);
+        });
+        it('To check selected cell after scrolling', (done: DoneFn) => {
+            const contentArea: HTMLElement = schObj.element.querySelector('.e-content-wrap') as HTMLElement;
+            expect(contentArea.scrollTop).toEqual(400);
+            expect(schObj.element.querySelector('.e-work-cells').getAttribute('data-group-index')).toBe('6');
+            expect(schObj.element.querySelector('.e-selected-cell').getAttribute('data-group-index')).toBe('7');
+            const focuesdEle: HTMLTableCellElement = document.activeElement as HTMLTableCellElement;
+            expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(1);
+            expect(focuesdEle.classList).toContain('e-selected-cell');
+            expect(focuesdEle.classList).toContain('e-work-cells');
+            expect(focuesdEle.classList).toContain('e-child-node');
+            expect(focuesdEle.classList).not.toContain('e-resource-group-cells');
+            expect(focuesdEle.getAttribute('aria-selected')).toEqual('true');
+            util.triggerScrollEvent(contentArea, 450);
+            expect(contentArea.scrollTop).toEqual(450);
+            setTimeout(() => { done(); }, 500);
+        });
+        it('Tab key with enabled virtual scroll', (done: DoneFn) => {
+            keyModule.keyActionHandler({ action: 'tab', target: schObj.element.querySelector('.e-schedule-toolbar'),
+                shiftKey: false, preventDefault: (): void => { /** Null */ } });
+            expect(schObj.element.querySelector('.e-resource-cells').getAttribute('tabindex')).toBe('-1');
+            expect(schObj.element.querySelectorAll('.e-resource-cells')[1].getAttribute('tabindex')).toBe('0');
+            expect(schObj.element.querySelector('.e-resource-cells').getAttribute('data-group-index')).toBe('6');
+            expect(schObj.element.querySelectorAll('.e-resource-cells')[3].classList.contains('e-child-node')).toBe(true);
+            keyModule.keyActionHandler({ action: 'tab', target: schObj.element.querySelectorAll('.e-resource-cells')[2],
+                shiftKey: false, preventDefault: (): void => { /** Null */ } });
+            setTimeout(() => { done(); }, 500);
+        });
+        it('Resource cells updated with work cells on tab key', () => {
+            expect(schObj.element.querySelector('.e-resource-cells').getAttribute('tabindex')).toEqual('-1');
+            expect(schObj.element.querySelector('.e-resource-cells').getAttribute('data-group-index')).toEqual('6');
+            expect(schObj.element.querySelectorAll('.e-resource-cells')[2].classList.contains('e-parent-node')).toBe(false);
+        });
     });
 
     it('memory leak', () => {

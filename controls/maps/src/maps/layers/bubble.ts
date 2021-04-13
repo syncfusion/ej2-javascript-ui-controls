@@ -7,6 +7,7 @@ import { isNullOrUndefined } from '@syncfusion/ej2-base';
 import { CircleOption, MapLocation, findMidPointOfPolygon, Point, drawCircle, elementAnimate, getTranslate } from '../utils/helper';
 import { RectOption, Rect, drawRectangle, checkPropertyPath, getZoomTranslate, getRatioOfBubble, maintainSelection,
     getValueFromObject } from '../utils/helper';
+import { BorderModel } from '../model/base-model';
 
 /**
  * Bubble module class
@@ -98,13 +99,17 @@ export class Bubble {
         }
         const projectionType: string = this.maps.projectionType;
         let centerY: number; let eventArgs: IBubbleRenderingEventArgs;
+        let bubbleBorder: BorderModel = {
+            color: bubbleSettings.border.color, opacity: bubbleSettings.border.opacity,
+            width: bubbleSettings.border.width
+        };
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const center: any = findMidPointOfPolygon(shapePoints[midIndex], projectionType);
         if (bubbleSettings.visible) {
             if (!isNullOrUndefined(center)) {
                 centerY = this.maps.projectionType === 'Mercator' ? center['y'] : (-center['y']);
                 eventArgs = {
-                    cancel: false, name: bubbleRendering, border: bubbleSettings.border,
+                    cancel: false, name: bubbleRendering, border: bubbleBorder,
                     cx: center['x'], cy: centerY, data: shapeData, fill: bubbleColor,
                     maps: this.maps.isBlazor ? null : this.maps, radius: radius
                 };
@@ -112,7 +117,7 @@ export class Bubble {
                 const shapePointsLength: number = shapePoints.length - 1;
                 if (shapePoints[shapePointsLength]['x'] && shapePoints[shapePointsLength]['y']) {
                     eventArgs = {
-                        cancel: false, name: bubbleRendering, border: bubbleSettings.border,
+                        cancel: false, name: bubbleRendering, border: bubbleBorder,
                         cx: shapePoints[shapePointsLength]['x'], cy: shapePoints[shapePointsLength]['y'],
                         data: shapeData, fill: bubbleColor, maps: this.maps.isBlazor ? null : this.maps,
                         radius: radius
@@ -130,6 +135,7 @@ export class Bubble {
                     return;
                 }
                 let bubbleElement: Element;
+                eventArgs.border.opacity = isNullOrUndefined(eventArgs.border.opacity) ? opacity : eventArgs.border.opacity;
                 if (bubbleSettings.bubbleType === 'Circle') {
                     const circle: CircleOption = new CircleOption(
                         bubbleID, eventArgs.fill, eventArgs.border, opacity,

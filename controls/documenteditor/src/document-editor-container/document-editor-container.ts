@@ -733,6 +733,7 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
         }
         this.showPropertiesPane = !restrictEditing;
         this.showHidePropertiesPane(!restrictEditing);
+        this.documentEditor.trackChangesPane.enableDisableButton(!restrictEditing);
     }
 
     private setFormat(): void {

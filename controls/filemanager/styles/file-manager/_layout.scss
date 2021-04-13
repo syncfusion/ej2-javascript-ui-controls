@@ -291,6 +291,10 @@
       }
     }
 
+    .e-view-container .e-grid .e-gridcontent .e-emptyrow {
+      display: table-row;
+    }
+
     .e-grid {
       @include checkbox($fe-cb-line-height);
       border-width: 0;

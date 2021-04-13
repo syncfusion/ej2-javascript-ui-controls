@@ -148,8 +148,10 @@ export class TableCommand {
 
     private insertRow(e: IHtmlItem): void {
         let isBelow: boolean = e.item.subCommand === 'InsertRowBefore' ? false : true;
-        let selectedCell: Node = e.item.selection.range.startContainer;
-        selectedCell = (selectedCell.nodeType === 3) ? selectedCell.parentNode : selectedCell;
+        let selectedCell: HTMLElement = e.item.selection.range.startContainer as HTMLElement;
+        if (selectedCell.nodeType === 3) {
+            selectedCell = closest(selectedCell.parentElement, 'td,th') as HTMLElement;
+        }
         if (selectedCell.nodeName.toLowerCase() === 'th' && e.item.subCommand === 'InsertRowBefore') {
             return;
         }
@@ -200,9 +202,10 @@ export class TableCommand {
     }
 
     private insertColumn(e: IHtmlItem): void {
-        let selectedCell: Node = e.item.selection.range.startContainer;
-        selectedCell = (selectedCell.nodeType === 3) ? selectedCell.parentNode : selectedCell;
-        selectedCell = (selectedCell.nodeName !== 'TD') ? closest(selectedCell, 'td,th') : selectedCell;
+        let selectedCell: HTMLElement = e.item.selection.range.startContainer as HTMLElement;
+        if (selectedCell.nodeType === 3) {
+            selectedCell = closest(selectedCell.parentElement, 'td,th') as HTMLElement;
+        }
         const curRow: HTMLElement = closest(selectedCell as HTMLElement, 'tr') as HTMLElement;
         let curCell: Element;
         const allRows: HTMLCollectionOf<HTMLTableRowElement> = (closest((curRow), 'table') as HTMLTableElement).rows;
@@ -236,12 +239,12 @@ export class TableCommand {
     }
 
     private deleteColumn(e: IHtmlItem): void {
-        let selectedCell: Node = e.item.selection.range.startContainer;
-        selectedCell = (selectedCell.nodeType === 3) ? selectedCell.parentNode : selectedCell;
-        const selectedCellIndex: number = (selectedCell as HTMLTableDataCellElement).cellIndex;
+        let selectedCell: HTMLElement = e.item.selection.range.startContainer as HTMLElement;
+        if (selectedCell.nodeType === 3) {
+            selectedCell = closest(selectedCell.parentElement, 'td,th') as HTMLElement;
+        }
         this.curTable = closest(selectedCell, 'table') as HTMLTableElement;
         const curRow: HTMLTableRowElement = closest(selectedCell as HTMLElement, 'tr') as HTMLTableRowElement;
-        const allRows: HTMLCollectionOf<HTMLTableRowElement> = (closest(curRow, 'table') as HTMLTableElement).rows;
         if (curRow.querySelectorAll('th,td').length === 1) {
             e.item.selection.restore();
             detach(closest(selectedCell.parentElement, 'table'));
@@ -276,7 +279,9 @@ export class TableCommand {
             if (sContainer.nodeName !== 'TD') {
                 const startChildLength: number = this.parent.nodeSelection.getRange(this.parent.currentDocument).startOffset;
                 const focusNode: Element = (sContainer as HTMLElement).children[startChildLength];
-                this.parent.nodeSelection.setCursorPoint(this.parent.currentDocument, focusNode, 0);
+                if (focusNode) {
+                    this.parent.nodeSelection.setCursorPoint(this.parent.currentDocument, focusNode, 0);
+                }
             }
             e.callBack({
                 requestType: e.item.subCommand,
@@ -289,7 +294,10 @@ export class TableCommand {
     }
 
     private deleteRow(e: IHtmlItem): void {
-        let selectedCell: Node = e.item.selection.range.startContainer;
+        let selectedCell: HTMLElement = e.item.selection.range.startContainer as HTMLElement;
+        if (selectedCell.nodeType === 3) {
+            selectedCell = closest(selectedCell.parentElement, 'td,th') as HTMLElement;
+        }
         this.curTable = closest(selectedCell, 'table') as HTMLTableElement;
         let currentRow: HTMLTableRowElement;
         let allCells: HTMLElement[][] = this.getCorrespondingColumns();

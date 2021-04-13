@@ -2805,6 +2805,7 @@ export class DropDownList extends DropDownBase implements IInput {
                         }
                     }
                     this.updateInputFields();
+                    this.preventChange = this.isAngular && this.preventChange ? !this.preventChange : this.preventChange;
                 }
                 break;
             case 'index': if (newProp.index === null) {
@@ -2862,7 +2863,6 @@ export class DropDownList extends DropDownBase implements IInput {
                 break;
             }
         }
-        this.preventChange = this.isAngular && this.preventChange ? !this.preventChange : this.preventChange;
     }
 
     private checkValidLi(element: Element): boolean {

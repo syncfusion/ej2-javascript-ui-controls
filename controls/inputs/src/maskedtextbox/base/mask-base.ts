@@ -18,7 +18,6 @@ const BOTTOMLABEL: string = 'e-label-bottom';
  * Built-in masking elements collection.
  */
 export const regularExpressions: { [key: string]: string } = {
-/* eslint-disable @typescript-eslint/naming-convention */
     '0': '[0-9]',
     '9': '[0-9 ]',
     '#': '[0-9 +-]',
@@ -28,7 +27,6 @@ export const regularExpressions: { [key: string]: string } = {
     'C': '[^\x7f]+',
     'A': '[A-Za-z0-9]',
     'a': '[A-Za-z0-9 ]'
-/* eslint-enable @typescript-eslint/naming-convention */
 };
 
 interface MaskFocusEventArgs extends BaseEventArgs {
@@ -252,7 +250,6 @@ export function strippedValue(element: HTMLInputElement, maskValues: string): st
             }
             if (!checkMask) {
                 if ((maskValue[i] !== this.promptChar) && (!isNullOrUndefined(this.customRegExpCollec[k]) &&
-                    // eslint-disable-next-line no-underscore-dangle
                     ((this._callPasteHandler || !isNullOrUndefined(this.regExpCollec[this.customRegExpCollec[k]])) ||
                         (this.customRegExpCollec[k].length > 2 && this.customRegExpCollec[k][0] === '[' &&
                             this.customRegExpCollec[k][this.customRegExpCollec[k].length - 1] === ']') ||
@@ -400,7 +397,6 @@ function maskInputPasteHandler(event: KeyboardEvent): void {
         const eIndex: number = this.element.selectionEnd;
         const oldValue: string = this.element.value;
         setElementValue.call(this, '');
-        // eslint-disable-next-line no-underscore-dangle
         this._callPasteHandler = true;
         setTimeout(
             () => {
@@ -417,7 +413,6 @@ function maskInputPasteHandler(event: KeyboardEvent): void {
                     validateValue.call(this, value[i], false, null); ++i;
                 } while (i < value.length);
                 this.maskKeyPress = false;
-                // eslint-disable-next-line no-underscore-dangle
                 this._callPasteHandler = false;
                 if (this.element.value === oldValue) {
                     let i: number = 0;
@@ -474,7 +469,6 @@ function maskInputHandler(event: KeyboardEvent): void {
             this.element.value = this.element.value + this.promptMask;
             this.element.setSelectionRange(1, 1);
         }
-        // eslint-disable-next-line no-underscore-dangle
         if (!this._callPasteHandler) {
             removeMaskInputValues.call(this, event);
         }

@@ -552,7 +552,8 @@ export class CartesianAxisLayoutPanel {
     private renderScrollbar(chart: Chart, axis: Axis): void {
         const isZoomed: boolean = isNullOrUndefined(chart.zoomModule) ? false : chart.zoomModule.isZoomed;
         if (((isZoomed && (axis.zoomFactor < 1 || axis.zoomPosition > 0)) || (axis.scrollbarSettings.enable &&
-            (axis.zoomFactor <= 1 || axis.zoomPosition >= 0))) && !axis.zoomingScrollBar.isScrollUI) {
+            (axis.zoomFactor <= 1 || axis.zoomPosition >= 0))) && 
+            (!axis.zoomingScrollBar.isScrollUI || chart.visibleSeries[0].type.indexOf('Bar') >= 0)) {
             if (!chart.scrollElement) {
                 chart.scrollElement = redrawElement(chart.redraw, chart.element.id + '_scrollElement') || createElement(
                     'div', { id: chart.element.id + '_scrollElement' }
@@ -835,7 +836,7 @@ export class CartesianAxisLayoutPanel {
             }
             textElement(
                 chart.renderer, options, axis.labelStyle, axis.labelStyle.color || chart.themeStyle.axisLabel,
-                labelElement, false, chart.redraw, true, true
+                labelElement, false, chart.redraw, true, true, null, null, null, null, chart.enableCanvas
             );
         }
         if (!this.chart.enableCanvas) {
@@ -963,7 +964,8 @@ export class CartesianAxisLayoutPanel {
                 axis.titleCollection, 'rotate(' + labelRotation + ',' + (x) + ',' + (y) + ')', null, labelRotation
             );
             const element: Element = textElement(
-                chart.renderer, options, axis.titleStyle, axis.titleStyle.color || chart.themeStyle.axisTitle, parent
+                chart.renderer, options, axis.titleStyle, axis.titleStyle.color || chart.themeStyle.axisTitle, parent, null, null,
+                null, null, null, null, null, null, chart.enableCanvas
             );
             element.setAttribute('tabindex', axis.tabIndex.toString());
             element.setAttribute('aria-label', axis.description || axis.title);
@@ -1383,7 +1385,7 @@ export class CartesianAxisLayoutPanel {
             textElement(
                 chart.renderer, options, label.labelStyle, label.labelStyle.color || chart.themeStyle.axisLabel,
                 labelElement, (axis.opposedPosition !== (axis.labelPosition === 'Inside')), chart.redraw, true,
-                null, null, null, label.size, isRotatedLabelIntersect
+                null, null, null, label.size, isRotatedLabelIntersect, chart.enableCanvas
             );
         }
         if (!this.chart.enableCanvas) {
@@ -1566,7 +1568,8 @@ export class CartesianAxisLayoutPanel {
                 rect.y + padding, 'middle', axis.titleCollection
             );
             const element: Element = textElement(
-                chart.renderer, options, axis.titleStyle, axis.titleStyle.color || chart.themeStyle.axisTitle, parent
+                chart.renderer, options, axis.titleStyle, axis.titleStyle.color || chart.themeStyle.axisTitle, parent,
+                null, null, null, null, null, null, null, null, chart.enableCanvas
             );
             element.setAttribute('aria-label', axis.description || axis.title);
             element.setAttribute('tabindex', axis.tabIndex.toString());

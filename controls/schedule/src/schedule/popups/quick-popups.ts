@@ -331,7 +331,8 @@ export class QuickPopups {
             });
         } else {
             for (const eventData of eventCollection) {
-                const eventText: string = (eventData[fields.subject] || this.parent.eventSettings.fields.subject.default) as string;
+                const eventText: string = (eventData[fields.subject] || this.parent.eventSettings.fields.subject.default
+                    || this.parent.localeObj.getConstant('addTitle')) as string;
                 const appointmentElement: HTMLElement = createElement('div', {
                     className: cls.APPOINTMENT_CLASS,
                     attrs: {

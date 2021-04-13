@@ -312,13 +312,13 @@ describe('Barcode Control ', () => {
         it('upcTestCase bar testing for all lines check  upcTestCase barcode', (done: Function) => {
             let barcode = document.getElementById('codabar1')
             let children: HTMLElement = barcode.children[0] as HTMLElement
-            expect(Math.round(Number(children.children[0].getAttribute('x'))) === 34
+            expect(Math.round(Number(children.children[0].getAttribute('x'))) === 11
                 && Math.round(Number(children.children[0].getAttribute('y'))) === 132 && (children.children[0] as HTMLElement).style.fontSize === '15.4px').toBe(true);
-            for (var j = 0; j < children.children.length - 2; j++) {
-                expect(Math.round(Number(children.children[j + 2].getAttribute('x'))) === output1[j].x
-                    && Math.round(Number(children.children[j + 2].getAttribute('y'))) === output1[j].y
-                    && parseFloat((children.children[j + 2].getAttribute('width'))).toFixed(2) === output1[j].width
-                    && parseFloat((children.children[j + 2].getAttribute('height'))).toFixed(2) === output1[j].height).toBe(true);
+            for (var j = 0; j < children.children.length - 4; j++) {
+                expect(Math.round(Number(children.children[j + 4].getAttribute('x'))) === output1[j].x
+                    && Math.round(Number(children.children[j + 4].getAttribute('y'))) === output1[j].y
+                    && parseFloat((children.children[j + 4].getAttribute('width'))).toFixed(2) === output1[j].width
+                    && parseFloat((children.children[j + 4].getAttribute('height'))).toFixed(2) === output1[j].height).toBe(true);
 
             }
             done();

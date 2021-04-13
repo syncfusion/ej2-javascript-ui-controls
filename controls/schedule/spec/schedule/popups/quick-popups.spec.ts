@@ -2327,6 +2327,27 @@ describe('Quick Popups', () => {
         });
     });
 
+    describe('EJ2-47988 - Using quickInfoOnSelectionEnd creates quick popup twice on the instance', () => {
+        let schObj: Schedule;
+        let count: number = 0;
+        beforeAll((done: DoneFn) => {
+            const schOptions: ScheduleModel = { width: '500px', height: '500px', quickInfoOnSelectionEnd: true, selectedDate: new Date(2017, 10, 1) };
+            schObj = util.createSchedule(schOptions, defaultData, done);
+        });
+        afterAll(() => {
+            util.destroy(schObj);
+        });
+
+        it('checking quick popup rendering count when quickInfoOnSelectionEnd property is true', () => {
+            schObj.popupOpen = () => {
+                count = count + 1;
+            };
+            expect(count).toBe(0);
+            (schObj.element.querySelector('.e-work-hours') as HTMLElement).click();
+            expect(count).toBe(1);
+        });
+    });
+
     describe('Multiple resource grouping without enableRtl', () => {
         let schObj: Schedule;
         beforeAll((done: DoneFn) => {

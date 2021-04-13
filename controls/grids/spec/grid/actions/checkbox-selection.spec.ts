@@ -916,4 +916,35 @@ describe('Grid checkbox selection functionality', () => {
             gridObj = null;
         });
     });
+    
+    describe('EJ2-47543 Column header checkbox icon turned to intermediate state when we remove pager', () => {
+        let gridObj: Grid;
+        let chkAll: HTMLElement;
+        beforeAll((done: Function) => {
+            gridObj = createGrid(
+                {
+                    dataSource: filterData,
+                    selectionSettings: { persistSelection: true },
+                    columns: [
+                        { type: 'checkbox', width: 120 },
+                        { field: 'OrderID', headerText: 'Order ID', isPrimaryKey: true, width: 120, textAlign: 'Right', minWidth: 10 },
+                        { field: 'Freight', width: 125, minWidth: 10 },
+                        { field: 'CustomerID', headerText: 'Customer ID', width: 130, minWidth: 10 },
+                    ],
+                }, done);
+        });
+
+        it('Click the header checkbox', () => {
+            chkAll = gridObj.element.querySelector('.e-checkselectall').nextElementSibling as HTMLElement;
+            chkAll.click();
+        });
+        it('Check the Header CheckBox state', () => {
+            expect(chkAll.classList.contains('e-check')).toBeTruthy();
+        });
+
+        afterAll(() => {
+            destroy(gridObj);
+            gridObj = chkAll = null;
+        });
+    });
 });

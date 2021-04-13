@@ -98,6 +98,9 @@ export class StackingAreaSeries extends LineBase {
                 const previousSeries: Series = this.getPreviousSeries(series);
                 if (previousSeries.emptyPointSettings.mode !== 'Drop' || !previousSeries.points[j].isEmpty) {
                     point2 = getCoordinate(visiblePoints[j].xValue, stackedvalue.startValues[j], xAxis, yAxis, isInverted, series);
+                    if (stackedvalue.startValues[j] === stackedvalue.endValues[j]) {
+                        point2.y = Math.floor(point2.y);
+                     }
                     lineDirection = lineDirection.concat(((j === (pointsLength - 1) && polarAreaType) ? 'M' : 'L')
                         + ' ' + (point2.x) + ' ' + (point2.y) + ' ');
                 }

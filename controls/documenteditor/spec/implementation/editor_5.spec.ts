@@ -118,12 +118,34 @@ console.log('paragraph,table, paragraph combinations with undo, redo validation'
         editor.editorHistory.undo();
         expect((((editor.documentHelper.pages[0].bodyWidgets[0].childWidgets[13] as ParagraphWidget).childWidgets[0] as LineWidget).children[0] as TextElementBox).text).toBe('lazy');
     });
+});
+describe('Insert table validation1', () => {
+    let editor: DocumentEditor = undefined;
+    beforeEach(() => {
+        let ele: HTMLElement = createElement('div', { id: 'container' });
+        document.body.appendChild(ele);
+        editor = new DocumentEditor({ enableEditor: true, isReadOnly: false });
+        DocumentEditor.Inject(Editor, Selection, EditorHistory); editor.enableEditorHistory = true;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        editor.appendTo('#container');
+    });
+    afterEach((done) => {
+        editor.destroy();
+        document.body.removeChild(document.getElementById('container'));
+        editor = undefined;
+        setTimeout(function () {
+            done();
+        }, 1000);
+    });
     it('paragraph, image, table, paragraph combinations with undo, redo validation', () => {
 console.log('paragraph, image, table, paragraph combinations with undo, redo validation');
         let imageString: string = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACgAAAAoCAIAAAADnC86AAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAADQSURBVFhH7ZbRDYQgDIYZ5UZhFEdxlBuFUUhY4N7vwWtTURJz5tem8GAbTYS0/eGjWsN7hJVSAuku3c2FuyF31BvqBNu90/mLmnSRjKDbMZULt2csz/kV8hRbVjSkSZkxRC0yKcbl+6FLhttSDIV5W6vYnKeZVWkR1WyFGbhIHrAbCzPhEcL1XCvqptYMd7xXExUXM4+pT3ENe53OP5yGqJ8kDDZGpIld6E730uFR/uuDs1J6OmolQDzcUeOslJ6OWgkQD3fUOCulJ6Ome4j9AGEu0k90WN54AAAAAElFTkSuQmCC';
         editor.editorModule.insertText('The quick brown fox jumps over the lazy dog');
         editor.editorModule.insertText('The quick brown fox jumps over the lazy dog');
-        editor.editor.insertImage(imageString, 100, 100);
+        //editor.editor.insertImage(imageString, 10, 10);
         tableWithPara(editor);
         let count: number = 1;
         while (count <= 30) {

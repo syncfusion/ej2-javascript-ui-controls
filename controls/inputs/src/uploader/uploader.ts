@@ -1250,7 +1250,6 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
     }
 
     protected preRender(): void {
-        // eslint-disable-next-line @typescript-eslint/naming-convention
         this.localeText = { Browse  : 'Browse...', Clear : 'Clear', Upload : 'Upload',
             dropFilesHint : 'Or drop files here', invalidMaxFileSize : 'File size is too large',
             invalidMinFileSize : 'File size is too small', invalidFileType: 'File type is not allowed',
@@ -2272,7 +2271,6 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
             fileData =  this.checkExtension(fileData);
         }
         this.trigger('selected', eventArgs, (eventArgs: SelectedEventArgs) => {
-            // eslint-disable-next-line no-underscore-dangle
             this._internalRenderSelect(eventArgs, fileData);
         });
     }
@@ -3344,7 +3342,6 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
             if (!isNullOrUndefined(this.element.getAttribute(prop))) {
                 switch (prop) {
                 case 'accept':
-                    // eslint-disable-next-line @typescript-eslint/dot-notation
                     if ((isNullOrUndefined(this.uploaderOptions) || (this.uploaderOptions['allowedExtensions'] === undefined))
                         || isDynamic) {
                         this.setProperties({allowedExtensions: this.element.getAttribute('accept')}, !isDynamic);
@@ -3352,7 +3349,6 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
                     }
                     break;
                 case 'multiple':
-                    // eslint-disable-next-line @typescript-eslint/dot-notation
                     if ((isNullOrUndefined(this.uploaderOptions) || (this.uploaderOptions['multiple'] === undefined)) || isDynamic) {
                         const isMutiple: boolean = this.element.getAttribute(prop) === 'multiple' ||
                                 this.element.getAttribute(prop) === '' || this.element.getAttribute(prop) === 'true' ? true : false;
@@ -3361,7 +3357,6 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
                     }
                     break;
                 case 'disabled':
-                    // eslint-disable-next-line @typescript-eslint/dot-notation
                     if ((isNullOrUndefined(this.uploaderOptions) || (this.uploaderOptions['enabled'] === undefined)) || isDynamic) {
                         const isDisabled: boolean = this.element.getAttribute(prop) === 'disabled' ||
                                 this.element.getAttribute(prop) === '' || this.element.getAttribute(prop) === 'true' ? false : true;
