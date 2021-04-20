@@ -549,6 +549,10 @@
     content: '\e688';
   }
 
+  .e-menu-item .e-de-open-properties::before {
+    content: '\e605';
+  }
+
   .e-btn-icon .e-de-paste::before,
   .e-icon-btn .e-de-paste::before {
     content: '\e68a';

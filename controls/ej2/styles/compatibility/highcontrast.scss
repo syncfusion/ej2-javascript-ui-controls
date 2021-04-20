@@ -3,7 +3,7 @@ $imported-modules: () !default;
 .e-lib {
     @at-root
     {
-        @import url("../../highcontrast.scss");
+        @import "../../highcontrast.scss";
     }
 
     & .e-js [class^='e-'], & .e-js [class*=' e-'] {

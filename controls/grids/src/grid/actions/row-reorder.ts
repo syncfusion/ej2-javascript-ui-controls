@@ -10,6 +10,7 @@ import * as events from '../base/constant';
 import { Scroll } from '../actions/scroll';
 import { RowDropEventArgs } from '../base/interface';
 import { Query } from '@syncfusion/ej2-data';
+import { Grid } from '../base';
 
 /**
  * 
@@ -203,9 +204,10 @@ export class RowDD {
                         islastRowIndex = trElement && parseInt(trElement.getAttribute('aria-rowindex'), 10) ===
                             this.parent.renderModule.data.dataManager.dataSource.json.length - 1;
                     } else {
-                        islastRowIndex = trElement &&
-                            this.parent.getRowByIndex(this.parent.getCurrentViewRecords().length - 1).getAttribute('data-uid') ===
-                            trElement.getAttribute('data-uid');
+                        let lastRowUid: string = this.parent.getRowByIndex(this.parent.getCurrentViewRecords().length - 1).
+                            getAttribute('data-uid');
+                        islastRowIndex = trElement && lastRowUid === trElement.getAttribute('data-uid') && lastRowUid !==
+                            this.startedRow.getAttribute('data-uid');
                     }
                     if (islastRowIndex && !this.parent.rowDropSettings.targetID) {
                         let bottomborder: HTMLElement = this.parent.createElement('div', { className: 'e-lastrow-dragborder' });
@@ -558,6 +560,28 @@ export class RowDD {
     }
 
     private rowOrder(args: RowDropEventArgs): void {
+        if (args.dropIndex === args.fromIndex || isNaN(args.dropIndex)) {
+            return;
+        }
+        if (this.parent.childGrid) {
+            (<Grid>this.parent).detailCollapseAll();
+            let rows: HTMLTableRowElement[] = [].slice.call(this.parent.getContentTable().querySelector('tbody').children);
+            let rowObjects: Row<Column>[] = this.parent.getRowsObject();
+            rows.filter((row: HTMLTableRowElement) => {
+                if (row.classList.contains('e-detailrow')) {
+                    row.remove();
+                }
+            });
+            for (let i: number = 0, len: number = rowObjects.length; i < len; i++) {
+                if (!rowObjects[i]) {
+                    break;
+                }
+                if (rowObjects[i].isDetailRow) {
+                    this.parent.getRowsObject().splice(i, 1);
+                    i--;
+                }
+            }
+        }
         if (args.target.classList.contains('e-rowcelldrag')) {
             args.target = args.target.parentElement;
         }
@@ -706,7 +730,7 @@ export class RowDD {
         let cliRect: ClientRect = this.isDropGrid.getContent().getBoundingClientRect();
         let rowHeight: number = this.isDropGrid.getRowHeight() - 15;
         let scrollElem: Element = this.isDropGrid.getContent().firstElementChild;
-        if (cliRect.top + rowHeight >= y) {
+        if (cliRect.top >= y) {
             let scrollPixel: number = -(this.isDropGrid.getRowHeight());
             this.isOverflowBorder = false;
             this.timer = window.setInterval(
@@ -743,9 +767,9 @@ export class RowDD {
         let cloneElement: HTMLElement = this.parent.element.querySelector('.e-cloneproperties') as HTMLElement;
         this.removeFirstRowBorder(element);
         this.removeLastRowBorder(element);
-        if (parentsUntil(element, 'e-grid') && (!this.parent.rowDropSettings.targetID &&
+        if (parentsUntil(element, 'e-grid') && (!this.parent.rowDropSettings.targetID && element.classList.contains('e-row') &&
             parentsUntil(cloneElement.parentElement, 'e-grid').id === parentsUntil(element, 'e-grid').id) || this.istargetGrid) {
-            removeClass(node.querySelectorAll('.e-rowcell,.e-rowdragdrop'), ['e-dragborder']);
+            removeClass(node.querySelectorAll('.e-rowcell,.e-rowdragdrop,.e-detailrowcollapse'), ['e-dragborder']);
             let rowElement: HTMLElement[] = [];
             let targetRowIndex: number = parseInt(targetRow.getAttribute('aria-rowindex'), 10);
             if (targetRow && targetRowIndex === 0) {

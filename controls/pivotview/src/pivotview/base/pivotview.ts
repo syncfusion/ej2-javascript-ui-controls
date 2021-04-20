@@ -3660,7 +3660,7 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
                     transform: horiOffset + 0 + 'px)'
                 });
                 /* eslint-disable */
-                (this.grid.element.querySelector('.' + cls.MOVABLECHILD_DIV) as any).style.width = vWidth + 'px';
+                (this.grid.element.querySelector('.' + cls.MOVABLECHILD_DIV) as any).style.width = (vWidth + (mCnt.parentElement.offsetWidth - mCnt.parentElement.clientWidth)) + 'px';
                 if (this.grid.height !== 'auto') {
                     (this.grid.contentModule as any).setHeightToContent(this.virtualDiv.offsetHeight + movableTable.clientHeight);
                 } else {

@@ -2303,6 +2303,21 @@
     display: none;
   }
 
+  input.e-input[type='search']::-webkit-search-decoration,
+  input.e-input[type='search']::-webkit-search-cancel-button,
+  input.e-input[type='search']::-webkit-search-results-button,
+  input.e-input[type='search']::-webkit-search-results-decoration,
+  .e-float-input input[type='search']::-webkit-search-decoration,
+  .e-float-input input[type='search']::-webkit-search-cancel-button,
+  .e-float-input input[type='search']::-webkit-search-results-button,
+  .e-float-input input[type='search']::-webkit-search-results-decoration,
+  .e-float-input.e-control-wrapper input[type='search']::-webkit-search-decoration,
+  .e-float-input.e-control-wrapper input[type='search']::-webkit-search-cancel-button,
+  .e-float-input.e-control-wrapper input[type='search']::-webkit-search-results-button,
+  .e-float-input.e-control-wrapper input[type='search']::-webkit-search-results-decoration {
+    -webkit-appearance: none;
+  }
+
   .e-float-input.e-input-group .e-float-line,
   .e-float-input.e-input-group.e-control-wrapper .e-float-line,
   .e-float-input.e-control-wrapper.e-input-group .e-float-line,

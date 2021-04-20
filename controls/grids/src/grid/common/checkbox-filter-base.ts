@@ -100,7 +100,10 @@ export class CheckBoxFilterBase {
         EventHandler.add(this.dlg, 'click', this.clickHandler, this);
         EventHandler.add(this.dlg, 'keyup', this.keyupHandler, this);
         this.searchHandler = debounce(this.searchBoxKeyUp, 200);
-        EventHandler.add(this.dialogObj.element.querySelector('.e-searchinput'), 'keyup', this.searchHandler, this);
+        let elem: Element = this.dialogObj.element.querySelector('.e-searchinput');
+        if (elem) {
+            EventHandler.add(elem, 'keyup', this.searchHandler, this);
+        }
     }
 
     private unWireEvents(): void {
@@ -428,7 +431,10 @@ export class CheckBoxFilterBase {
             this.options.operator = optr = ddlValue.ej2_instances[0].value as string;
         }
         this.isMenuNotEqual = this.options.operator === 'notequal';
-        let searchInput: HTMLInputElement = this.searchBox.querySelector('.e-searchinput') as HTMLInputElement;
+        let searchInput: HTMLInputElement;
+        if (!this.options.hideSearchbox) {
+            searchInput = this.searchBox.querySelector('.e-searchinput') as HTMLInputElement;
+        }
         let caseSen: boolean = this.options.allowCaseSensitive;
         let defaults: {
             predicate?: string, field?: string, type?: string, uid?: string
@@ -438,7 +444,7 @@ export class CheckBoxFilterBase {
             operator: optr, type: this.options.type, matchCase: caseSen, ignoreAccent: this.options.ignoreAccent
         };
         let isNotEqual: boolean = this.itemsCnt !== checked.length && this.itemsCnt - checked.length < checked.length;
-        if (isNotEqual && searchInput.value === '') {
+        if (isNotEqual && searchInput && searchInput.value === '') {
             optr = this.isMenuNotEqual ? 'equal' : 'notequal';
             checked = [].slice.call(this.cBox.querySelectorAll('.e-uncheck:not(.e-selectall)'));
             defaults.predicate = this.isMenuNotEqual ? 'or' : 'and';
@@ -449,7 +455,7 @@ export class CheckBoxFilterBase {
         let length: number;
         let fObj: PredicateModel;
         let coll: PredicateModel[] = [];
-        if (checked.length !== this.itemsCnt || (searchInput.value && searchInput.value !== '')) {
+        if (checked.length !== this.itemsCnt || (searchInput && searchInput.value && searchInput.value !== '')) {
             for (let i: number = 0; i < checked.length; i++) {
                 value = this.values[parentsUntil(checked[i], 'e-ftrchk').getAttribute('uid')];
                 fObj = extend({}, { value: value }, defaults) as {
@@ -782,7 +788,9 @@ export class CheckBoxFilterBase {
         }
         let data: object[] = args1.executeQuery ? this.filteredData : args1.dataSource ;
         this.processDataSource(null, true, data, args1);
-        this.sInput.focus();
+        if (this.sInput) {
+            this.sInput.focus();
+        }
         let args: Object = {
             requestType: events.filterAfterOpen,
             columnName: this.options.field, columnType: this.options.type

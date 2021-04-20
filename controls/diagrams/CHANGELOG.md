@@ -2,6 +2,15 @@
 
 ## [Unreleased]
 
+## 19.1.57 (2021-04-20)
+
+### Diagram
+
+#### Bug Fixes
+
+- `F164350` - The issue "Annotation hyper link is not working" has been fixed.
+- `#319911` - The issue "Customized style disappears when serializing the BPMN shapes" has been fixed.
+
 ## 19.1.56 (2021-04-13)
 
 ### Diagram

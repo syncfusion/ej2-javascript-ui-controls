@@ -2954,6 +2954,51 @@ console.log('copy with content control');
         expect(() => { editor.editorModule.paste(); }).not.toThrowError();
     });
 });
+describe('Content control in header footer', () => {
+    let editor: DocumentEditor = undefined;
+    beforeAll(() => {
+        let ele: HTMLElement = createElement('div', { id: 'container' });
+        document.body.appendChild(ele);
+        editor = new DocumentEditor({ enableEditor: true, isReadOnly: false });
+        DocumentEditor.Inject(Editor, Selection, SfdtExport, EditorHistory);
+        editor.enableEditorHistory = true;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        editor.appendTo('#container');
+    });
+    afterAll((done) => {
+        editor.destroy();
+        document.body.removeChild(document.getElementById('container'));
+        editor = undefined;
+        setTimeout(function () {
+            done();
+        }, 1000);
+    });
+    it('content control linking validation', () => {
+        let contentcontrol: string = '{"sections":[{"blocks":[{"characterFormat":{"fontSize":72.0,"fontColor":"empty","fontSizeBidi":72.0},"paragraphFormat":{"styleName":"Normal"},"inlines":[{"text":"Hello World","characterFormat":{"fontSize":72.0,"fontColor":"empty","fontSizeBidi":72.0}}]},{"characterFormat":{"fontSize":72.0,"fontColor":"empty","fontSizeBidi":72.0},"paragraphFormat":{"styleName":"Normal"},"inlines":[{"text":"Hello World","characterFormat":{"fontSize":72.0,"fontColor":"empty","fontSizeBidi":72.0}}]},{"characterFormat":{"fontSize":72.0,"fontColor":"empty","fontSizeBidi":72.0},"paragraphFormat":{"styleName":"Normal"},"inlines":[{"text":"Hello World","characterFormat":{"fontSize":72.0,"fontColor":"empty","fontSizeBidi":72.0}}]},{"characterFormat":{"fontSize":72.0,"fontColor":"empty","fontSizeBidi":72.0},"paragraphFormat":{"styleName":"Normal"},"inlines":[{"text":"Hello World","characterFormat":{"fontSize":72.0,"fontColor":"empty","fontSizeBidi":72.0}}]},{"characterFormat":{"fontSize":72.0,"fontColor":"empty","fontSizeBidi":72.0},"paragraphFormat":{"styleName":"Normal"},"inlines":[{"text":"Hello World","characterFormat":{"fontSize":72.0,"fontColor":"empty","fontSizeBidi":72.0}}]},{"characterFormat":{"fontSize":72.0,"fontColor":"empty","fontSizeBidi":72.0},"paragraphFormat":{"styleName":"Normal"},"inlines":[{"text":"Hello World","characterFormat":{"fontSize":72.0,"fontColor":"empty","fontSizeBidi":72.0}}]},{"characterFormat":{"fontSize":72.0,"fontColor":"empty","fontSizeBidi":72.0},"paragraphFormat":{"styleName":"Normal"},"inlines":[{"text":"Hello World","characterFormat":{"fontSize":72.0,"fontColor":"empty","fontSizeBidi":72.0}}]},{"characterFormat":{"fontSize":72.0,"fontColor":"empty","fontSizeBidi":72.0},"paragraphFormat":{"styleName":"Normal"},"inlines":[{"text":"Hello World","characterFormat":{"fontSize":72.0,"fontColor":"empty","fontSizeBidi":72.0}}]},{"characterFormat":{"fontColor":"empty"},"paragraphFormat":{"styleName":"Normal"},"inlines":[]},{"characterFormat":{"fontColor":"empty"},"paragraphFormat":{"styleName":"Normal"},"inlines":[]}],"headersFooters":{"header":{"blocks":[{"characterFormat":{"fontColor":"empty"},"paragraphFormat":{"styleName":"Header"},"inlines":[{"text":"Name ","characterFormat":{"fontColor":"empty"}},{"inlines":[{"text":"Enter you name","characterFormat":{"fontColor":"empty"}}],"contentControlProperties":{"lockContentControl":false,"lockContents":false,"color":"#00000000","type":"Text","hasPlaceHolderText":false,"multiline":false,"isTemporary":false,"dateCalendarType":"Gregorian","isChecked":false,"characterFormat":{"fontColor":"empty"}}}]}]},"footer":{"blocks":[{"inlines":[]}]},"evenHeader":{"blocks":[{"inlines":[]}]},"evenFooter":{"blocks":[{"inlines":[]}]},"firstPageHeader":{"blocks":[{"inlines":[]}]},"firstPageFooter":{"blocks":[{"inlines":[]}]}},"sectionFormat":{"headerDistance":36.0,"footerDistance":36.0,"pageWidth":612.0,"pageHeight":792.0,"leftMargin":72.0,"rightMargin":72.0,"topMargin":72.0,"bottomMargin":72.0,"differentFirstPage":false,"differentOddAndEvenPages":false,"bidi":false,"restartPageNumbering":false,"pageStartingNumber":0,"endnoteNumberFormat":"LowerCaseRoman","footNoteNumberFormat":"Arabic","restartIndexForFootnotes":"DoNotRestart","restartIndexForEndnotes":"DoNotRestart"}}],"characterFormat":{"fontSize":11.0,"fontFamily":"Calibri","fontColor":"empty","fontSizeBidi":11.0,"fontFamilyBidi":"Arial"},"paragraphFormat":{"afterSpacing":8.0,"lineSpacing":1.0791666507720947,"lineSpacingType":"Multiple"},"background":{"color":"#FFFFFFFF"},"styles":[{"type":"Paragraph","name":"Normal","next":"Normal","characterFormat":{"fontColor":"empty"}},{"type":"Character","name":"Default Paragraph Font","characterFormat":{"fontColor":"empty"}},{"type":"Paragraph","name":"Header","basedOn":"Normal","next":"Header","link":"Header Char","characterFormat":{"fontColor":"empty"},"paragraphFormat":{"afterSpacing":0.0,"lineSpacing":1.0,"lineSpacingType":"Multiple","tabs":[{"tabJustification":"Center","position":234.0,"tabLeader":"None","deletePosition":0.0},{"tabJustification":"Right","position":468.0,"tabLeader":"None","deletePosition":0.0}]}},{"type":"Character","name":"Header Char","basedOn":"Default Paragraph Font","characterFormat":{"fontColor":"empty"}},{"type":"Paragraph","name":"Footer","basedOn":"Normal","next":"Footer","link":"Footer Char","characterFormat":{"fontColor":"empty"},"paragraphFormat":{"afterSpacing":0.0,"lineSpacing":1.0,"lineSpacingType":"Multiple","tabs":[{"tabJustification":"Center","position":234.0,"tabLeader":"None","deletePosition":0.0},{"tabJustification":"Right","position":468.0,"tabLeader":"None","deletePosition":0.0}]}},{"type":"Character","name":"Footer Char","basedOn":"Default Paragraph Font","characterFormat":{"fontColor":"empty"}},{"type":"Character","name":"Placeholder Text","basedOn":"Default Paragraph Font","characterFormat":{"fontColor":"#808080FF"}}],"defaultTabWidth":36.0,"formatting":false,"trackChanges":false,"protectionType":"NoProtection","enforcement":false,"dontUseHTMLParagraphAutoSpacing":false,"alignTablesRowByRow":false,"formFieldShading":true,"footnotes":{"separator":[{"characterFormat":{"fontColor":"empty"},"paragraphFormat":{"afterSpacing":0.0,"lineSpacing":1.0,"lineSpacingType":"Multiple","styleName":"Normal"},"inlines":[{"text":"\\u0003","characterFormat":{"fontColor":"empty"}}]}],"continuationSeparator":[{"characterFormat":{"fontColor":"empty"},"paragraphFormat":{"afterSpacing":0.0,"lineSpacing":1.0,"lineSpacingType":"Multiple","styleName":"Normal"},"inlines":[{"text":"\\u0004","characterFormat":{"fontColor":"empty"}}]}],"continuationNotice":[{"inlines":[]}]},"endnotes":{"separator":[{"characterFormat":{"fontColor":"empty"},"paragraphFormat":{"afterSpacing":0.0,"lineSpacing":1.0,"lineSpacingType":"Multiple","styleName":"Normal"},"inlines":[{"text":"\\u0003","characterFormat":{"fontColor":"empty"}}]}],"continuationSeparator":[{"characterFormat":{"fontColor":"empty"},"paragraphFormat":{"afterSpacing":0.0,"lineSpacing":1.0,"lineSpacingType":"Multiple","styleName":"Normal"},"inlines":[{"text":"\\u0004","characterFormat":{"fontColor":"empty"}}]}],"continuationNotice":[{"inlines":[]}]}}';
+        editor.open(contentcontrol);
+        expect(editor.documentHelper.contentControlCollection.length).toBe(2);
+        expect(editor.documentHelper.contentControlCollection[0].line.paragraph.bodyWidget.page.index).toBe(0);
+        expect(editor.documentHelper.contentControlCollection[0].reference.line.paragraph.bodyWidget.page.index).toBe(0);
+        expect(editor.documentHelper.contentControlCollection[1].line.paragraph.bodyWidget.page.index).toBe(1);
+        expect(editor.documentHelper.contentControlCollection[1].reference.line.paragraph.bodyWidget.page.index).toBe(1);
+    });
+    it('Remove content control from content controll collection', () => {
+        editor.selection.handleShiftDownKey();
+        editor.selection.handleShiftDownKey();
+        editor.selection.handleShiftDownKey();
+        editor.selection.handleShiftDownKey();
+        editor.selection.handleShiftDownKey();
+        editor.editor.delete();
+        expect(editor.documentHelper.contentControlCollection.length).toBe(1);
+        editor.editorHistory.undo();
+        expect(editor.documentHelper.contentControlCollection.length).toBe(2);
+        editor.editorHistory.redo();
+        expect(editor.documentHelper.contentControlCollection.length).toBe(1);
+    });
+});
 describe('Text Replace', () => {
     let editor: DocumentEditor = undefined;
     beforeAll(() => {

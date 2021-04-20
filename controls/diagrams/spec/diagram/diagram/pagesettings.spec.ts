@@ -741,3 +741,44 @@ describe('Page Settings with orientation', () => {
         done();
     });
 })
+
+describe('BPMN Shape Style Change', () => {
+    let diagram: Diagram;
+    let ele: HTMLElement;
+    let scroller: DiagramScroller;
+    let mouseEvents: MouseEvents = new MouseEvents();
+    beforeAll((): void => {
+        const isDef = (o: any) => o !== undefined && o !== null;
+        if (!isDef(window.performance)) {
+            console.log("Unsupported environment, window.performance.memory is unavailable");
+            this.skip(); //Skips test (in Chai)
+            return;
+        }
+
+        ele = createElement('div', { id: 'diagram' });
+        document.body.appendChild(ele);
+        let node: NodeModel = {
+            id: 'node12', width: 100, height: 100, offsetX: 1100, offsetY: 100,
+            shape: {
+                type: 'Bpmn', shape: 'Event',
+                event: { event: 'End', trigger: 'None' }
+            },
+        };
+        diagram = new Diagram({
+            width: 800, height: 800, nodes: [node],
+        });
+        diagram.appendTo('#diagram');
+
+    });
+    afterAll((): void => {
+        diagram.destroy();
+        ele.remove();
+    });
+    it('Check BPMN Node color after save and load', (done: Function) => {
+        diagram.nodes[0].style.fill = "red";
+        let save: string = diagram.saveDiagram();
+        diagram.loadDiagram(save);
+        expect(diagram.nodes[0].style.fill === "red").toBe(true);
+        done();
+    });
+})

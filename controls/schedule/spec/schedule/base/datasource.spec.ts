@@ -1687,3 +1687,75 @@ export function yearDataGenerator(count: number = 100, date: Date = new Date(), 
     }
     return dateCollections;
 }
+
+/**
+ * Method to generate resources event dynamically
+ *
+ * @param {Date} start Accepts the start Date
+ * @param {number} resCount Accepts resource count
+ * @param {number} overlapCount Accepts resource anme
+ * @returns {Object[]} Returns the collection of resource datas
+ * @private
+ */
+export function generateEvents(start: Date, resCount: number, overlapCount: Number) {
+    let data = [];
+    let id = 1;
+    for (let i = 0; i < resCount; i++) {
+        let random = 0;
+        for (let j = 0; j < overlapCount; j++) {
+            let startDate = new Date(start.getTime() + random * (1000 * 60));
+            let endDate = new Date(startDate.getTime() + 15 * (1000 * 60));
+            data.push({
+                Id: id,
+                Subject: "Event #" + id,
+                StartTime: startDate,
+                EndTime: endDate,
+                IsAllDay: false,
+                ResourceId: i + 1
+            });
+            id++;
+            random = random + 15;
+        }
+    }
+    console.log('data returned');
+    return data;
+}
+
+/**
+ * Method to generate resource data dynamically
+ *
+ * @param {number} start Accepts the start number
+ * @param {number} endId Accepts resource count
+ * @param {string} text Accepts resource anme
+ * @returns {Object[]} Returns the collection of resource datas
+ * @private
+ */
+
+export function generateResourceDatasource(startId: number, endId: number, text: string) {
+    let data = [];
+    let colors = [
+        "#ff8787",
+        "#9775fa",
+        "#748ffc",
+        "#3bc9db",
+        "#69db7c",
+        "#fdd835",
+        "#748ffc",
+        "#9775fa",
+        "#df5286",
+        "#7fa900",
+        "#fec200",
+        "#5978ee",
+        "#00bdae",
+        "#ea80fc"
+    ];
+    for (let a = startId; a <= endId; a++) {
+        let n = Math.floor(Math.random() * colors.length);
+        data.push({
+            Id: a,
+            Text: text + " " + a,
+            Color: colors[n]
+        });
+    }
+    return data;
+}

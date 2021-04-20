@@ -10,7 +10,6 @@ describe('Spreadsheet Ribbon integration module ->', (): void => {
     let model: SpreadsheetModel;
 
     describe('Public method ->', (): void => {
-        let instance: Spreadsheet;
         beforeAll((done: Function) => {
             model = {
                 sheets: [
@@ -20,7 +19,6 @@ describe('Spreadsheet Ribbon integration module ->', (): void => {
                 ]
             };
             helper.initializeSpreadsheet(model, done);
-            instance = helper.getInstance();
         });
 
         afterAll((): void => {
@@ -78,13 +76,6 @@ describe('Spreadsheet Ribbon integration module ->', (): void => {
             expect(helper.getElementFromSpreadsheet('.e-ribbon #' + helper.id + '_File').classList).toContain('e-menu-hide');
             helper.invoke('hideFileMenuItems', [['File'], false]);
             expect(helper.getElementFromSpreadsheet('.e-ribbon #' + helper.id + '_File').classList).not.toContain('e-menu-hide');
-            done();
-        });
-
-        it('Add toolbar items', (done: Function): void => { // Check this now
-            helper.invoke('addToolbarItems', ['Home', [{ type: 'Separator' }, { text: 'Custom', tooltipText: 'Custom Btn' }], 20]);
-            // expect(helper.getElementFromSpreadsheet('.e-ribbon .e-content .e-toolbar-items').children[20].classList).toContain('e-separator');
-            // expect(helper.getElementFromSpreadsheet('.e-ribbon .e-content .e-toolbar-items').children[21].textContent).toBe('Custom');
             done();
         });
 
@@ -412,5 +403,20 @@ describe('Spreadsheet Ribbon integration module ->', (): void => {
         });
 
     });
-
+    describe('CR-Issues ->', () => {
+        describe('I257035 ->', () => {
+            beforeEach((done: Function) => {
+                helper.initializeSpreadsheet({ showRibbon: true }, done);
+            });
+            afterEach(() => {
+                helper.invoke('destroy');
+            });
+            it('Add toolbar items', (done: Function): void => {
+                helper.invoke('addToolbarItems', ['Home', [{ type: 'Separator' }, { text: 'Custom', tooltipText: 'Custom Btn' }], 20]);
+                expect(helper.getElementFromSpreadsheet('.e-ribbon .e-content .e-toolbar-items .e-hscroll-content').children[20].classList).toContain('e-separator');
+                expect(helper.getElementFromSpreadsheet('.e-ribbon .e-content .e-toolbar-items .e-hscroll-content').children[21].textContent).toBe('Custom');
+                done();
+            });
+        });
+    });
 });

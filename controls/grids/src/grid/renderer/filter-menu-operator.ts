@@ -52,6 +52,7 @@ export class FlMenuOptrUI {
             fields: { text: 'text', value: 'value' },
             open: this.dropDownOpen.bind(this),
             cssClass: 'e-popup-flmenu',
+            enableRtl: this.parent.enableRtl,
             text: selectedValue
         });
         this.dropOptr.appendTo('#' + column.uid + '-floptr');

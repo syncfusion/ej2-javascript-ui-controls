@@ -931,7 +931,7 @@ export class Workbook extends Component<HTMLElement> implements INotifyPropertyC
         sheetIndex = getSheetIndexFromId(this, sheetIndex + 1);
         let sheet: SheetModel = getSheet(this, sheetIndex);
         let cell: CellModel = getCell(rowIndex - 1, colIndex - 1, sheet);
-        return (cell && cell.value) || '';
+        return cell && cell.value;
     }
 
     /** @hidden

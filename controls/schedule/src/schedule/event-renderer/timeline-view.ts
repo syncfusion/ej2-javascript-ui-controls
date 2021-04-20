@@ -382,20 +382,10 @@ export class TimelineEvent extends MonthEvent {
         return false;
     }
 
-    private getCellHeight(resIndex: number): number {
-        let heightValue: number = 0;
-        for (let i: number = 0; i < resIndex; i++) {
-            heightValue += (this.parent.element.querySelector('.' + cls.WORK_CELLS_CLASS +
-                '[data-group-index="' + i.toString() + '"]') as HTMLElement).offsetHeight;
-        }
-        return heightValue;
-    }
-
     public getRowTop(resIndex: number): number {
         if (this.parent.activeViewOptions.group.resources.length > 0 && !this.parent.uiStateValues.isGroupAdaptive) {
-            return ((this.parent.activeViewOptions.group.resources.length > 1 || this.parent.virtualScrollModule ||
-                this.parent.rowAutoHeight) ? (<HTMLElement>this.parent.element.querySelector('.' + cls.CONTENT_WRAP_CLASS +
-                    ' ' + 'tbody td[data-group-index="' + resIndex.toString() + '"]')).offsetTop : this.getCellHeight(resIndex));
+            return (<HTMLElement>this.parent.element.querySelector('.' + cls.CONTENT_WRAP_CLASS +
+                ' ' + 'tbody td[data-group-index="' + resIndex.toString() + '"]')).offsetTop;
         }
         return 0;
     }

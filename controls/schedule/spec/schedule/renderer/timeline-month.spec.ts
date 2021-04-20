@@ -7,7 +7,7 @@ import {
 import * as cls from '../../../src/schedule/base/css-constant';
 import { timelineData, resourceData, timelineResourceData, resourceGroupData, levelBasedData } from '../base/datasource.spec';
 import { DateTimePicker } from '@syncfusion/ej2-calendars';
-import { blockData } from '../base/datasource.spec';
+import { blockData, generateResourceDatasource, generateEvents } from '../base/datasource.spec';
 import * as util from '../util.spec';
 import { profile, inMB, getMemoryProfile } from '../../common.spec';
 /**
@@ -3991,6 +3991,58 @@ describe('Schedule Timeline Month view', () => {
                     const contentArea: HTMLElement = schObj.element.querySelector('.' + cls.CONTENT_WRAP_CLASS) as HTMLElement;
                     const isVerticalScrollBar = contentArea.scrollHeight > contentArea.clientHeight;
                     expect(isVerticalScrollBar).toBeFalsy();
+                    done();
+                }
+            };
+            schObj = util.createSchedule(model, []);
+        });
+    });
+
+    describe('Performance checking for TimelineMonth', () => {
+        let schObj: Schedule;
+        afterAll(() => {
+            util.destroy(schObj);
+        });
+        it('Checking inital load performance for 20 resource 400 events', (done: DoneFn) => {
+            const eventTemplate: string = '<div class="time">(Start date : ${data.StartTime.getDate()}.${(data.StartTime.getMonth() + 1)})'
+                + ' - (End date : ${data.EndTime.getDate()}.${(data.EndTime.getMonth() + 1)})</div>';
+            let eventStartTime: number = 0;
+            const date: Date = new Date();
+            const startDate: Date = new Date(
+                date.getFullYear(),
+                date.getMonth(),
+                date.getDate(),
+                date.getHours() - 3,
+                0
+            );
+            const res: Record<string, any>[] = generateResourceDatasource(1, 20, 'Resource');
+            const events: Record<string, any>[] = generateEvents(startDate, 20, 10);
+            const model: ScheduleModel = {
+                height: '550px', width: '100%',
+                currentView: 'TimelineWeek',
+                views: [
+                    { option: 'TimelineWeek', eventTemplate: eventTemplate, allowVirtualScrolling: false }
+                ],
+                group: {
+                    resources: ["Resources"]
+                },
+                resources: [
+                    {
+                        field: 'ResourceId', title: 'Resource',
+                        name: 'Resources', allowMultiple: true,
+                        dataSource: res,
+                        textField: 'Text', idField: 'Id', colorField: 'Color'
+                    }
+                ],
+                selectedDate: startDate,
+                eventSettings: { dataSource: events },
+                dataBinding: function () {
+                    eventStartTime = window.performance.now();
+                },
+                dataBound: function () {
+                    let eventEndTime: number = window.performance.now();
+                    // ~ 250 - 300ms
+                    expect(eventEndTime - eventStartTime).toBeLessThan(6000);
                     done();
                 }
             };

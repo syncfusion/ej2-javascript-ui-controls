@@ -874,6 +874,7 @@ export class SfdtExport {
             inline.lineFormat.color = element.lineFormat.color;
             inline.lineFormat.weight = element.lineFormat.weight;
             inline.lineFormat.lineStyle = element.lineFormat.dashStyle;
+            inline.lineFormat.line = element.lineFormat.line;
         }
         if (element.textFrame) {
             inline.textFrame = {};

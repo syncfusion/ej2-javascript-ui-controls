@@ -245,13 +245,13 @@ export class KeyboardNavigation {
         const hCont: Element = this.parent.getScrollElement();
         const sheet: SheetModel = this.parent.getActiveSheet();
         const selectedRange: number[] =  getSwapRange(getRangeIndexes(sheet.selectedRange));
-        const entireCol: boolean = selectedRange[2] - selectedRange[0] >= 199;
-        const entireRow: boolean = selectedRange[3] - selectedRange[1] >= 99;
         const topLeftIdxes: number[] = getCellIndexes(sheet.topLeftCell);
         const frozenRow: number = this.parent.frozenRowCount(sheet); const frozenCol: number = this.parent.frozenColCount(sheet);
         const paneTopLeftIdxes: number[] = getCellIndexes(sheet.paneTopLeftCell);
         const topIdx: number = actIdxes[0] < frozenRow ? topLeftIdxes[0] : paneTopLeftIdxes[0];
         const leftIdx: number = actIdxes[1] < frozenCol ? topLeftIdxes[1] : paneTopLeftIdxes[1];
+        const offsetLeftSize: number = this.parent.scrollModule.offset.left.size;
+        const offsetTopSize: number = this.parent.scrollModule.offset.top.size
         if (frozenRow && actIdxes[0] !== selectedRange[2] && cont.scrollTop) {
             if (actIdxes[0] === frozenRow) {
                 cont.scrollTop = 0; return;
@@ -264,29 +264,15 @@ export class KeyboardNavigation {
             }
             if (actIdxes[1] === frozenCol - 1) { hCont.scrollLeft = 0; }
         }
-        if (!entireCol && !entireRow) {
-            if (this.getBottomIdx(topIdx) <= actIdxes[0] || isScroll) {
-                cont.scrollTop += getRowHeight(sheet, paneTopLeftIdxes[0]);
-            } else if (topIdx > actIdxes[0]) {
-                cont.scrollTop -= getRowHeight(sheet, actIdxes[0]);
-            }
-            if (this.getRightIdx(leftIdx) <= actIdxes[1] || isScroll) {
-                hCont.scrollLeft += getColumnWidth(sheet, paneTopLeftIdxes[1]) * x;
-            } else if (leftIdx > actIdxes[1]) {
-                hCont.scrollLeft -= getColumnWidth(sheet, actIdxes[1]) * x;
-            }
-        } else if (entireCol) {
-            if (this.getRightIdx(leftIdx) <= actIdxes[1] || isScroll) {
-                hCont.scrollLeft += getColumnWidth(sheet, paneTopLeftIdxes[1]) * x;
-            } else if (leftIdx > actIdxes[1]) {
-                hCont.scrollLeft -= getColumnWidth(sheet, actIdxes[1]) * x;
-            }
-        } else if (entireRow) {
-            if (this.getBottomIdx(topIdx) <= actIdxes[0] || isScroll) {
-                cont.scrollTop += getRowHeight(sheet, paneTopLeftIdxes[0]);
-            } else if (topIdx > actIdxes[0]) {
-                cont.scrollTop -= getRowHeight(sheet, actIdxes[0]);
-            }
+        if (this.getBottomIdx(topIdx) <= actIdxes[0] || isScroll) {
+            cont.scrollTop = offsetTopSize + getRowHeight(sheet, paneTopLeftIdxes[0], true);
+        } else if (topIdx > actIdxes[0]) {
+            cont.scrollTop = offsetTopSize - Math.ceil(getRowHeight(sheet, actIdxes[0], true));
+        }
+        if (this.getRightIdx(leftIdx) <= actIdxes[1] || isScroll) {
+            hCont.scrollLeft = offsetLeftSize + getColumnWidth(sheet, paneTopLeftIdxes[1], null, true) * x;
+        } else if (leftIdx > actIdxes[1]) {
+            hCont.scrollLeft = offsetLeftSize - getColumnWidth(sheet, actIdxes[1], null, true) * x;
         }
     }
 
@@ -296,7 +282,7 @@ export class KeyboardNavigation {
         const viewPortHeight: number = (sheet.frozenRows ? this.parent.viewport.height - this.parent.sheetModule.getColHeaderHeight(
             sheet, true) : this.parent.viewport.height) - 17 || 20;
         for (let i: number = top; ; i++) {
-            hgt += getRowHeight(sheet, i);
+            hgt += getRowHeight(sheet, i, true);
             if (hgt >= viewPortHeight) { return i; }
         }
     }
@@ -307,7 +293,7 @@ export class KeyboardNavigation {
         const contWidth: number = (this.parent.getMainContent() as HTMLElement).parentElement.offsetWidth -
             this.parent.sheetModule.getRowHeaderWidth(sheet);
         for (let i: number = left; ; i++) {
-            width += getColumnWidth(sheet, i);
+            width += getColumnWidth(sheet, i, null, true);
             if (width >= contWidth - 17) {
                 return i;
             }

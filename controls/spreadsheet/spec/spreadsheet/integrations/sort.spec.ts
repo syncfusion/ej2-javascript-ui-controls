@@ -170,7 +170,7 @@ describe('Spreadsheet sorting module ->', () => {
     });
 
     describe('CR-Issues ->', () => {
-        describe('I311230 ->', () => {
+        describe('I311230, I311230, I309407, I300737, I315895 ->', () => {
             beforeAll((done: Function) => {
                 model = {
                     sheets: [{
@@ -268,7 +268,7 @@ describe('Spreadsheet sorting module ->', () => {
             });
         });
 
-        describe('I309407 ->', () => {
+        describe('I309407, I301769 ->', () => {
             beforeEach((done: Function) => {
                 helper.initializeSpreadsheet({ sheets: [{ ranges: [{ dataSource: defaultData }] }] }, done);
             });

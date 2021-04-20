@@ -1816,7 +1816,6 @@ export class Tab extends Component<HTMLElement> implements INotifyPropertyChange
     }
 
     private initializeDrag(target: HTEle): void {
-        this.draggingItems = this.items.map((x: TabItemModel) => x);
         this.dragArea = !isNOU(this.dragArea) ? this.dragArea : '#' + this.element.id + ' ' + ('.' + CLS_HEADER);
         let dragObj: Draggable = new Draggable(target, {
             dragArea: this.dragArea,
@@ -1917,6 +1916,7 @@ export class Tab extends Component<HTMLElement> implements INotifyPropertyChange
     }
 
     private itemDragStart(e: DragArgs & BlazorDragEventArgs): void {
+        this.draggingItems = this.items.map((x: TabItemModel) => x);
         this.dragItem = e.element;
         let dragArgs: DragEventArgs = {
             draggedItem: e.element,
@@ -2303,6 +2303,12 @@ export class Tab extends Component<HTMLElement> implements INotifyPropertyChange
                 this.prevIndex = this.selectedItem;
                 if (this.tbItem[args].classList.contains(CLS_TB_POPUP)) {
                     this.setActive(this.popupHandler(this.tbItem[args]));
+                    if ((!isNOU(this.items) && this.items.length > 0) && this.allowDragAndDrop) {
+                        this.tbItem = selectAll('.' + CLS_TB_ITEMS + ' .' + CLS_TB_ITEM, this.hdrEle);
+                        let item: TabItemModel = this.items[args];
+                        this.items.splice(args, 1);
+                        this.items.splice(this.tbItem.length - 1, 0, item);
+                    }
                 } else {
                     this.setActive(args);
                 }

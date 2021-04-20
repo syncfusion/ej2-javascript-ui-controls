@@ -2,7 +2,7 @@
  * crud-actions.ts file
  */
 import { ITreeData } from '../base/interface';
-import { isNullOrUndefined, extend, getValue, isBlazor } from '@syncfusion/ej2-base';
+import { isNullOrUndefined, extend, getValue } from '@syncfusion/ej2-base';
 import { TreeGrid } from '../base';
 import { DataManager } from '@syncfusion/ej2-data';
 import { extendArray, getPlainData, getParentData } from '../utils';
@@ -82,11 +82,7 @@ export function editAction(details: { value: ITreeData, action: string }, contro
                                     const editedData: ITreeData = getParentData(control, (<ITreeData>modifiedData[k]).uniqueID);
                                     treeData[i][keys[j]] = modifiedData[k][keys[j]];
                                     if (editedData && editedData.taskData) {
-                                        if (isBlazor()) { const taskData: string = 'taskData'; editedData.taskData[keys[j]]
-                                            = editedData[keys[j]] = control.grid.currentViewData[i][keys[j]]
-                                            =  control.grid.currentViewData[i][taskData][keys[j]] = treeData[i][keys[j]];
-                                        } else {
-                                            editedData.taskData[keys[j]] = editedData[keys[j]] = treeData[i][keys[j]]; }
+                                        editedData.taskData[keys[j]] = editedData[keys[j]] = treeData[i][keys[j]];
                                     }
                                 }
                             }

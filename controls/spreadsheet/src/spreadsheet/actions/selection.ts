@@ -110,9 +110,9 @@ export class Selection {
                     setPosition(this.parent, ele, e.range as number[], 'e-active-cell');
                 } else {
                     if (cellIndex[0] === args.rowIdx) {
-                        ele.style.height = `${parseInt(ele.style.height, 10) + args.threshold}px`;
+                        ele.style.height = `${parseFloat(ele.style.height) + args.threshold}px`;
                     } else if (cellIndex[0] > args.rowIdx) {
-                        ele.style.top = `${parseInt(ele.style.top, 10) + args.threshold}px`;
+                        ele.style.top = `${parseFloat(ele.style.top) + args.threshold}px`;
                     }
                 }
             }
@@ -129,9 +129,9 @@ export class Selection {
                 let rowStart: number = sRange[0];
                 let rowEnd: number = sRange[2];
                 if (rowStart <= args.rowIdx && rowEnd >= args.rowIdx && ele) {
-                    ele.style.height = `${parseInt(ele.style.height, 10) + args.threshold}px`;
+                    ele.style.height = `${parseFloat(ele.style.height) + args.threshold}px`;
                 } else if (rowStart > args.rowIdx && ele) {
-                    ele.style.top = `${parseInt(ele.style.top, 10) + args.threshold}px`;
+                    ele.style.top = `${parseFloat(ele.style.top) + args.threshold}px`;
                 }
             }
         });
@@ -149,9 +149,9 @@ export class Selection {
                     setPosition(this.parent, ele, mergeArgs.range as number[], 'e-active-cell');
                 } else {
                     if (cellIndex[1] === args.colIdx) {
-                        ele.style.width = `${parseInt(ele.style.width, 10) + args.threshold}px`;
+                        ele.style.width = `${parseFloat(ele.style.width) + args.threshold}px`;
                     } else if (cellIndex[1] > args.colIdx) {
-                        ele.style.left = `${parseInt(ele.style.left, 10) + args.threshold}px`;
+                        ele.style.left = `${parseFloat(ele.style.left) + args.threshold}px`;
                     }
                 }
             }
@@ -164,9 +164,9 @@ export class Selection {
             if (sheet.frozenRows || sheet.frozenColumns) { setPosition(this.parent, ele, selectedRange); return; }
             const colStart: number = sRange[1]; const colEnd: number = sRange[3];
             if (colStart <= args.colIdx && colEnd >= args.colIdx && ele) {
-                ele.style.width = `${parseInt(ele.style.width, 10) + args.threshold}px`;
+                ele.style.width = `${parseFloat(ele.style.width) + args.threshold}px`;
             } else if (colStart > args.colIdx && ele) {
-                ele.style.left = `${parseInt(ele.style.left, 10) + args.threshold}px`;
+                ele.style.left = `${parseFloat(ele.style.left) + args.threshold}px`;
             }
         });
     }
@@ -481,7 +481,7 @@ export class Selection {
             }
         }
         for (let i: number = 0; ; i++) {
-            width += getColumnsWidth(sheet, i);
+            width += getColumnWidth(sheet, i, null, true);
             if (left < width || (this.parent.scrollSettings.isFinite && i === sheet.colCount - 1)) {
                 if (!e.isImage) { e.size = left; }
                 e.clientX = i;
@@ -505,7 +505,7 @@ export class Selection {
             }
         }
         for (let i: number = 0; ; i++) {
-            height += getRowHeight(sheet, i);
+            height += getRowHeight(sheet, i, true);
             if (top < height || (this.parent.scrollSettings.isFinite && i === sheet.rowCount - 1)) {
                 if (!args.isImage) { args.size = top; }
                 args.clientY = i;

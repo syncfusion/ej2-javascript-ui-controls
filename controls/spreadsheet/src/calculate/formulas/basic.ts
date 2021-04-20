@@ -1549,6 +1549,9 @@ export class BasicFormulas {
         let cellColl: string[] | string;
         const cellValue: string[] = [];
         let lookupVal: string = argArr[0].split(this.parent.tic).join('');
+        if (this.parent.isCellReference(lookupVal)) {
+            lookupVal = this.parent.getValueFromArg(lookupVal);
+        }
         argArr[2] = isNullOrUndefined(argArr[2]) ? '1' : argArr[2].split(this.parent.tic).join('');
         if (argArr[2].split(this.parent.tic).join('') === this.parent.trueValue) {
             argArr[2] = '1';

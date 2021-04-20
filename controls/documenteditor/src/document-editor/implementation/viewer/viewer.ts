@@ -3457,6 +3457,13 @@ export abstract class LayoutViewer {
         this.clientActiveArea.x = widget.x;
         this.clientActiveArea.y = widget.y;
     }
+    /**
+     * @private
+     */
+    public updateClientAreaForTextWrap(area: Rect): void {
+        this.clientActiveArea = new Rect(area.x, area.y, area.width, area.height);
+    }
+
     public updateClientAreaByWidget(widget: ParagraphWidget): void {
         this.clientArea.x = widget.x;
         this.clientArea.y = widget.y;

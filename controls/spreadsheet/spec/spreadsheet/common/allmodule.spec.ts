@@ -1,5 +1,5 @@
-import { Spreadsheet, AllModule, SpreadsheetModel } from "../../../src/spreadsheet/index";
-import { SpreadsheetHelper } from "../util/spreadsheethelper.spec";
+import { Spreadsheet, AllModule, SpreadsheetModel } from '../../../src/spreadsheet/index';
+import { SpreadsheetHelper } from '../util/spreadsheethelper.spec';
 
 Spreadsheet.Inject(AllModule)
 

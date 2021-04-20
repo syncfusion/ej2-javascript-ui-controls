@@ -441,6 +441,8 @@ export class DrillThroughDialog {
                         editType = 'numericedit';
                     } else if (this.engine.fieldList[key].type === 'date') {
                         editType = 'datepickeredit';
+                    } else if (this.engine.fieldList[key].type === 'datetime') {
+                        editType = 'datetimepickeredit';
                     } else {
                         editType = 'defaultedit';
                     }

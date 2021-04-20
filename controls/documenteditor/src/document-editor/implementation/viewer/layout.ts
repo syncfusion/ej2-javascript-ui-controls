@@ -85,6 +85,11 @@ export class Layout {
     private startOverlapWidget: BlockWidget;
     private endOverlapWidget: BlockWidget;
 
+    private isWrapText: boolean = false;
+    private isYPositionUpdated: boolean = false;
+    private isXPositionUpdated: boolean = false;
+    private hasFloatingElement: boolean = false;
+
     private isSameStyle(currentParagraph: ParagraphWidget, isAfterSpacing: boolean): boolean {
         let nextOrPrevSibling: ParagraphWidget = undefined;
         if (isAfterSpacing) {
@@ -601,7 +606,7 @@ export class Layout {
                 paragraph = line.paragraph;
                 line = line.nextLine;
                 if (paragraph.isContainsShapeAlone() && paragraph.height === 0) {
-                   this.layoutEmptyLineWidget(paragraph, false, paragraph.childWidgets[0] as LineWidget);
+                    this.layoutEmptyLineWidget(paragraph, false, paragraph.childWidgets[0] as LineWidget);
                 }
             }
         }
@@ -613,38 +618,20 @@ export class Layout {
         this.maxTextBaseline = 0;
         this.maxTextHeight = 0;
     }
-     private layoutFloatElements(paragraph: ParagraphWidget): void {
-        for (let j: number = 0; j < paragraph.childWidgets.length; j++) {
-            let line: LineWidget = paragraph.childWidgets[j] as LineWidget;
-            for (let k: number = 0; k < line.children.length; k++) {
-                let element: ElementBox = line.children[k];
-                if (element instanceof ShapeBase && element.textWrappingStyle != 'Inline') {
-                    this.layoutShape(element);
+    private layoutFloatElements(paragraph: ParagraphWidget): void {
+        paragraph.floatingElements.forEach((shape: ShapeBase) => {
+            if (shape instanceof ShapeBase) {
+                if (!this.isRelayoutOverlap) {
+                    this.layoutShape(shape);
                 }
             }
-        }
+        });
     }
-
     private layoutShape(element: ShapeBase): void {
         if (element.textWrappingStyle !== 'Inline') {
             let position: Point = this.getFloatingItemPoints(element);
             element.x = position.x;
             element.y = position.y;
-            let clientArea: Rect = this.viewer.clientArea;
-            let clientActiveArea: Rect = this.viewer.clientActiveArea;
-            if (element instanceof ShapeElementBox) {
-                let blocks: BlockWidget[] = element.textFrame.childWidgets as BlockWidget[];
-                this.viewer.updateClientAreaForTextBoxShape(element, true);
-                for (let i: number = 0; i < blocks.length; i++) {
-                    let block: BlockWidget = blocks[i];
-                    this.viewer.updateClientAreaForBlock(block, true);
-                    if (block instanceof TableWidget) {
-                        this.clearTableWidget(block, true, true);
-                    }
-                    this.layoutBlock(block, 0);
-                    this.viewer.updateClientAreaForBlock(block, false);
-                }
-            }
             let bodyWidget: BlockContainer = element.paragraph.bodyWidget;
             if (bodyWidget.floatingElements.indexOf(element) === -1) {
                 bodyWidget.floatingElements.push(element);
@@ -654,9 +641,24 @@ export class Layout {
             if (element.paragraph.floatingElements.indexOf(element) === -1) {
                 element.paragraph.floatingElements.push(element);
             }
-            this.viewer.clientActiveArea = clientActiveArea;
-            this.viewer.clientArea = clientArea;
         }
+        let clientArea: Rect = this.viewer.clientArea;
+        let clientActiveArea: Rect = this.viewer.clientActiveArea;
+        if (element instanceof ShapeElementBox) {
+            let blocks: BlockWidget[] = element.textFrame.childWidgets as BlockWidget[];
+            this.viewer.updateClientAreaForTextBoxShape(element, true);
+            for (let i: number = 0; i < blocks.length; i++) {
+                let block: BlockWidget = blocks[i];
+                this.viewer.updateClientAreaForBlock(block, true);
+                if (block instanceof TableWidget) {
+                    this.clearTableWidget(block, true, true);
+                }
+                this.layoutBlock(block, 0);
+                this.viewer.updateClientAreaForBlock(block, false);
+            }
+        }
+        this.viewer.clientActiveArea = clientActiveArea;
+        this.viewer.clientArea = clientArea;
     }
     private moveElementFromNextLine(line: LineWidget): void {
         let nextLine: LineWidget = line.nextLine;
@@ -685,6 +687,7 @@ export class Layout {
         this.clearLineMeasures();
         line.marginTop = 0;
         while (element instanceof ElementBox) {
+            element.padding.left = 0;
             this.layoutElement(element, paragraph);
             line = element.line;
             if (element instanceof TextElementBox) {
@@ -694,7 +697,11 @@ export class Layout {
                 }
             }
             if (!this.isRTLLayout) {
-                element = element.nextElement;
+                if (this.hasFloatingElement) {
+                    this.hasFloatingElement = false;
+                } else {
+                    element = element.nextElement;
+                }
             } else {
                 element = undefined;
                 this.isRTLLayout = false;
@@ -704,7 +711,7 @@ export class Layout {
     }
     /* eslint-disable  */
     private layoutElement(element: ElementBox, paragraph: ParagraphWidget): void {
-        if (element instanceof ImageElementBox && element.textWrappingStyle !== 'Inline') {
+        if (element instanceof ShapeBase && element.textWrappingStyle !== 'Inline') {
             return;
         }
         let line: LineWidget = element.line;
@@ -765,9 +772,16 @@ export class Layout {
                 if (element.type === 0) {
                     this.documentHelper.contentControlCollection.push(element);
                 } else if (element.type === 1) {
+                    let endPage: Page = element.paragraph.bodyWidget.page;
                     for (let i: number = 0; i < this.documentHelper.contentControlCollection.length; i++) {
                         let cCStart: ContentControl = this.documentHelper.contentControlCollection[i];
-                        if (element.contentControlProperties === cCStart.contentControlProperties) {
+                        let isInHeaderFooter: boolean = cCStart.line.paragraph.isInHeaderFooter;
+                        // Link content control present in same header.
+                        if (isInHeaderFooter && element.contentControlProperties === cCStart.contentControlProperties
+                            && endPage === cCStart.line.paragraph.bodyWidget.page) {
+                            element.reference = cCStart;
+                            cCStart.reference = element;
+                        } else if (!isInHeaderFooter && element.contentControlProperties === cCStart.contentControlProperties) {
                             element.reference = cCStart;
                             cCStart.reference = element;
                         }
@@ -819,10 +833,16 @@ export class Layout {
                 element.width = this.getTabWidth(paragraph, this.viewer, index, line, element as TabElementBox);
             }
         }
+        if (!isNullOrUndefined(paragraph.containerWidget) && paragraph.bodyWidget.floatingElements.length > 0 &&
+            !(element instanceof ShapeElementBox) && !(paragraph.containerWidget instanceof TextFrame)) {
+            this.adjustPosition(element, element.line.paragraph.bodyWidget);
+        }
         if (this.viewer instanceof PageLayoutViewer &&
             ((element instanceof ShapeElementBox && element.textWrappingStyle === 'Inline') || !(element instanceof ShapeElementBox))
             && this.viewer.clientActiveArea.height < element.height && this.viewer.clientActiveArea.y !== this.viewer.clientArea.y) {
-            this.moveToNextPage(this.viewer, line);
+            if ((element instanceof TextElementBox && element.text !== '\f') || !(element instanceof TextElementBox)) {
+                this.moveToNextPage(this.viewer, line);
+            }
             if (element instanceof FieldTextElementBox) {
                 this.updateFieldText(element);
             }
@@ -832,8 +852,8 @@ export class Layout {
                 this.cutClientWidth(element.previousElement);
             }
         }
-        if (element instanceof ShapeElementBox && element.textWrappingStyle==='Inline') {
-           this.layoutShape(element);
+        if (element instanceof ShapeElementBox && element.textWrappingStyle === 'Inline') {
+            this.layoutShape(element);
         }
         // tslint:disable-next-line:max-line-length
         if (element instanceof FootnoteElementBox && (!element.isLayout || this.isLayoutWhole) && this.documentHelper.owner.layoutType === 'Pages') {
@@ -891,6 +911,10 @@ export class Layout {
             }
         }
         if (element.line.isLastLine() && isNullOrUndefined(element.nextElement) || text === '\v' || text === '\f') {
+            if (this.isXPositionUpdated) {
+                this.isXPositionUpdated = false;
+                return;
+            }
             this.moveToNextLine(element.line);
             if (text === '\v' && isNullOrUndefined(element.nextNode)) {
                 this.layoutEmptyLineWidget(paragraph, true, line, true);
@@ -902,6 +926,460 @@ export class Layout {
                 }
             }
         }
+        this.isXPositionUpdated = false;
+    }
+
+    /**
+    * @private
+    */
+    public adjustPosition(element: ElementBox, bodyWidget: BlockContainer) {
+        let clientArea: Rect = this.viewer.clientActiveArea;
+        const previousLeft: number = this.viewer.clientActiveArea.x;
+        let adjustedRect: Rect = this.adjustClientAreaBasedOnTextWrap(element, new Rect(clientArea.x, clientArea.y, clientArea.width, clientArea.height));
+        this.viewer.clientActiveArea.width = adjustedRect.width;
+        //Updated element padding for wrapping.
+        // if (this.isWrapText) {
+        let wrapDiff: number = this.viewer.clientActiveArea.x - previousLeft;
+        // if (element.indexInOwner === 0 && element.line.isFirstLine()) {
+        //     wrapDiff -= HelperMethods.convertPointToPixel(element.line.paragraph.paragraphFormat.firstLineIndent);
+        // }
+        element.padding.left = wrapDiff;
+        //this.isWrapText = false;
+        // }
+        if (this.viewer.clientActiveArea.width === 0) {
+            this.isWrapText = false;
+        }
+    }
+
+    private isFirstitemInPage(element: ElementBox, yposition: number): boolean {
+        if (!element.line.paragraph.isInHeaderFooter && Math.round(yposition) == this.viewer.clientArea.y) {
+            return true;
+        }
+        return false;
+    }
+    private isTextFitBelow(rect: Rect, top: number, element: ElementBox): boolean {
+        //TODO: After shape implementation.
+        return false;
+    }
+
+    private isNeedToWrapForSquareTightAndThrough(bodyWidget: BlockContainer, elementBox: ElementBox, wrapOwnerIndex: number, wrapItemIndex: number, textWrappingStyle: TextWrappingStyle, textWrappingBounds: Rect, allowOverlap: boolean, wrapCollectionIndex: number, floatingEntity: ShapeBase, isTextRangeInTextBox: boolean, rect: Rect, width: number, height: number): boolean {
+        return (bodyWidget.floatingElements.length > 0
+            && wrapOwnerIndex !== wrapCollectionIndex
+            && wrapItemIndex !== wrapCollectionIndex
+            && textWrappingStyle !== 'Inline'
+            && textWrappingStyle !== 'Behind'
+            && textWrappingStyle !== 'InFrontOfText'
+            && (Math.round((rect.y + height)) > Math.round(textWrappingBounds.y) ||
+                this.isTextFitBelow(textWrappingBounds, rect.y + height, floatingEntity))
+            && Math.round(rect.y) < Math.round((textWrappingBounds.y + textWrappingBounds.height))
+            && !(allowOverlap && (isTextRangeInTextBox || ((elementBox instanceof ImageElementBox)
+                && elementBox.textWrappingStyle !== 'Inline' && elementBox.allowOverlap))));
+    }
+    private isNeedToWrapLeafWidget(pargaraph: ParagraphWidget, elementBox: ElementBox): boolean {
+        let IsNeedToWrap: boolean = true;
+        return (pargaraph.bodyWidget.floatingElements.length > 0 && IsNeedToWrap
+            && (!pargaraph.isInHeaderFooter || pargaraph.associatedCell)
+            && !(elementBox instanceof ImageElementBox));
+    }
+    private getMinWidth(currTextRange: TextElementBox, width: number, height: number, rect: Rect): number {
+        let text: string = currTextRange.text;
+        let split: string[] = text.split(' ');
+
+        // Gets the minimum width from the text when it contains only empty space.
+        if (text != '' && text.trim() == ''
+            && currTextRange && currTextRange.line.paragraph
+            && currTextRange.previousNode && currTextRange.nextNode
+            && currTextRange.line.paragraph.isEmpty) {
+            split = [""];
+        }
+        // Initialized the text with additional empty string.
+        // It avoids the minimum width calculation from next sibling (GetNextTextRangeWidth).
+
+        let minwidth: number = this.documentHelper.textHelper.measureText(split[0], currTextRange.characterFormat).Width;
+        //Need to layout the unicode characters (chinese) character by character.
+        // if (DrawingContext.IsUnicodeText(text)) {
+        //     minwidth = DrawingContext.MeasureTextRange(currTextRange, text[0].ToString()).Width;
+        // }
+
+        let nextSibling: TextElementBox = this.getNextSibling(currTextRange) as TextElementBox;
+        if (split.length == 1 && nextSibling) {
+            let nextSiblingText: string = nextSibling.text;
+            minwidth += this.getNextTextRangeWidth(nextSibling, nextSiblingText, width, height, rect);
+        }// Add the minimum character width of that paragraph, if this text range is para mark
+        return minwidth;
+    }
+    private getNextTextRangeWidth(nextSiblingTextRange: ElementBox, nextSiblingText: string, width: number, height: number, rect: Rect): number {
+        let nextsibling: TextElementBox = nextSiblingTextRange as TextElementBox;
+        // if (nextSiblingTextRange instanceof WFootnote)
+        //     nextsibling = ((nextSiblingTextRange as IWidget).LayoutInfo as LayoutFootnoteInfoImpl).TextRange;
+        let sizeNext: Rect = new Rect(0, 0, 0, 0);
+        let isNextSiblingSizeNeedToBeMeasure: boolean = this.isNextSibligSizeNeedToBeMeasure(sizeNext, nextSiblingTextRange, rect, width, height);
+        while (isNextSiblingSizeNeedToBeMeasure
+            && this.isLeafWidgetNextSiblingIsTextRange(nextsibling)
+            && width + sizeNext.width < rect.width) {
+            nextsibling = this.getNextSibling(nextsibling) as TextElementBox;
+            if (!this.isNextSibligSizeNeedToBeMeasure(sizeNext, nextsibling, rect, width, height)) {
+                break;
+            }
+            nextSiblingText += nextsibling.text;
+        }
+        return sizeNext.width;
+    }
+    private isLeafWidgetNextSiblingIsTextRange(textRange: TextElementBox): boolean {
+        let nextSiblingTextRange: TextElementBox = this.getNextSibling(textRange) as TextElementBox;
+        if (nextSiblingTextRange && nextSiblingTextRange instanceof TextElementBox) {
+            return true;
+        }
+        return false;
+    }
+    private isNextSibligSizeNeedToBeMeasure(sizeNext: Rect, nextSiblingwidget: ElementBox, rect: Rect, width: number, height: number): boolean {
+        let text: string = null;
+        let nextSiblingTextRange: TextElementBox = nextSiblingwidget as TextElementBox;
+        if (nextSiblingTextRange) {
+            text = nextSiblingTextRange.text;
+            if (text.indexOf(" ") != -1 || (text.indexOf("-") != -1 || (text.indexOf("_") != -1)
+                && ((width + sizeNext.width + (this.documentHelper.textHelper.measureText(text.split('-')[0], nextSiblingTextRange.characterFormat)).Width) < rect.width))
+                || ((nextSiblingTextRange).text == '\t')) {
+                let elementWidth: number = nextSiblingTextRange.width;
+                if (text != text.split(' ')[0]) {
+                    elementWidth = this.documentHelper.textHelper.measureText(text.split(' ')[0], nextSiblingTextRange.characterFormat).Width;
+                }
+                if ((width + sizeNext.width + elementWidth) > rect.width && text.indexOf('-')) {
+                    if (text != text.split('-')[0] + '-') {
+                        elementWidth = this.documentHelper.textHelper.measureText(text.split('-')[0] + '-', nextSiblingTextRange.characterFormat).Width;
+                    }
+                }
+                sizeNext.width += elementWidth;
+                return false;
+            }
+            else {
+                if (nextSiblingTextRange.text.length > 0) {
+                    let textInfo = this.documentHelper.textHelper.measureText(nextSiblingTextRange.text, nextSiblingTextRange.characterFormat);
+                    sizeNext.height += textInfo.Height;
+                    sizeNext.width += textInfo.Width;
+                }
+            }
+        }
+        return true;
+    }
+    private isNeedDoIntermediateWrapping(remainingClientWidth: number, textWrappingStyle: string, rect: Rect, width: number, paragraph: ParagraphWidget, textWrappingBounds: Rect, leafWidget: ElementBox, minwidth: number, minimumWidthRequired: number): boolean {
+        //return false;
+        // return ((remainingClientWidth > minimumWidthRequired
+        //     && (((Math.round(rect.width) <= Math.round(minwidth) || (rect.width < width && (leafWidget as TextElementBox).text == '\t')) && textWrappingType !== 'Left')
+        //         || textWrappingType === 'Right')) // Check whether the right side width is greater than the left side when the wrap type as largest
+        //     || ((textWrappingBounds.x -
+        //         paragraph.x + paragraph.leftIndent < minimumWidthRequired    // Check whether the left side of text wrap object is have minimum width to layout or not
+        //         || (leafWidget instanceof TextElementBox))
+        //         && (textWrappingType != 'Left' || remainingClientWidth < minimumWidthRequired)));
+
+
+        return (((remainingClientWidth > minimumWidthRequired)
+            && (((Math.round(rect.width) <= Math.round(minwidth)
+                || (rect.width < width && leafWidget.paragraph.isInsideTable))
+                && textWrappingStyle != 'Left'                 // Skip to update width when the wrap type as left
+                && textWrappingStyle != 'Largest')
+                || textWrappingStyle == 'Right'  //To layout right side when the wrap type as right
+                || (rect.width < remainingClientWidth && textWrappingStyle == 'Largest'))) // Check whether the right side width is greater than the left side when the wrap type as largest
+            || ((Math.round(textWrappingBounds.x - paragraph.x + paragraph.leftIndent) < minimumWidthRequired    // Check whether the left side of text wrap object is have minimum width to layout or not
+                || (leafWidget instanceof TextElementBox && this.isFloatingItemOnLeft(rect, minwidth, textWrappingBounds)))
+                && (textWrappingStyle !== 'Left' || remainingClientWidth < minimumWidthRequired)));
+    }
+    private isFloatingItemOnLeft(rect: Rect, minWidth: number, bounds: Rect): boolean {
+        return false;
+    }
+    private getNextSibling(currentElementBox: TextElementBox): TextElementBox {
+        let paragraph: ParagraphWidget = currentElementBox.line.paragraph;
+        let nextSibling: ElementBox = currentElementBox.nextNode;
+        let isFieldCode: boolean = false;
+        while (nextSibling) {
+            if ((nextSibling instanceof FieldElementBox) || (nextSibling instanceof BookmarkElementBox) || isFieldCode || nextSibling instanceof ListTextElementBox) {
+                if (nextSibling instanceof FieldElementBox) {
+                    if (nextSibling.fieldType === 0) {
+                        isFieldCode = true;
+                    } else if (nextSibling.fieldType === 2) {
+                        isFieldCode = false;
+                    }
+                }
+            } else if (nextSibling instanceof TextElementBox) {
+                break;
+            }
+            nextSibling = nextSibling.nextNode;
+        }
+        return nextSibling as TextElementBox;
+    }
+    private adjustClientAreaBasedOnTextWrap(elementBox: ElementBox, rect: Rect): Rect {
+        let ownerPara: ParagraphWidget = elementBox.line.paragraph;
+        let bodyWidget: BlockContainer = ownerPara.bodyWidget;
+        let yValue: number = 0;
+        let layouter: LayoutViewer = this.viewer;
+        let yposition = rect.y;
+        let isFirstItem: boolean = this.isFirstitemInPage(elementBox, yposition);
+        if (isFirstItem) {
+            yValue = yposition;
+        }
+        isFirstItem = isNullOrUndefined(ownerPara.previousWidget);
+        if (this.isNeedToWrapLeafWidget(ownerPara, elementBox)) {
+            let clientLayoutArea: Rect = layouter.clientArea;
+            //Need to handle sorting floating items.
+            // Sort based on Y position
+            bodyWidget.floatingElements.sort(function (a, b) { return a.y - b.y; });
+            // Sort based on X position
+            bodyWidget.floatingElements.sort(function (a, b) { return a.x - b.x; });
+            for (let i: number = 0; i < bodyWidget.floatingElements.length; i++) {
+                let floatingItem: ShapeBase = bodyWidget.floatingElements[i];
+                let allowOverlap: boolean = floatingItem.allowOverlap;
+                // if (ownerPara.IsInCell && allowOverlap
+                //     && (ownerPara.GetOwnerEntity() as WTableCell).OwnerRow.OwnerTable.TableFormat.Positioning.AllowOverlap)
+                // {
+                //     WParagraph ownerParagraph = (m_lcOperator as Layouter).FloatingItems[i].OwnerParagraph;
+                //     if (!(ownerParagraph !== null
+                //         && ownerParagraph.IsInCell
+                //         && ownerPara.GetOwnerEntity() === ownerParagraph.GetOwnerEntity()))
+                //     {
+                //         continue;
+                //     }
+                // }
+                let xPosition: number = floatingItem.x;
+                let textWrappingBounds: Rect = new Rect(floatingItem.x - floatingItem.distanceLeft, floatingItem.y - floatingItem.distanceTop,
+                    floatingItem.width + floatingItem.distanceLeft + floatingItem.distanceRight,
+                    floatingItem.height + floatingItem.distanceTop + floatingItem.distanceBottom);
+                let textWrappingStyle: TextWrappingStyle = floatingItem.textWrappingStyle;
+                let textWrappingType: string = floatingItem.textWrappingType;
+
+                //  //Need to skip the wrapping for line break when it is first item of corresponding paragraph and that paragraph contains First line indent as per Word 2010 and its lower version behavior.
+                //  if (IsLineBreakIntersectOnFloatingItem(leafWidget, textWrappingStyle, textWrappingBounds, rect, size, ownerPara))
+                //  continue;
+                let minimumWidthRequired: number = 18;
+                let bottom: number = layouter.clientArea.y + floatingItem.height;
+
+                // if (this.isNeedToWrapParaMarkToRightSide(elementBox, ownerPara, textWrappingBounds, bottom, layouter, this.viewer.clientArea, textWrappingType, minimumWidthRequired)) {
+                //     if (lineBreakPosition !== 0) {
+                //         this.viewer.clientArea.y = lineBreakPosition;
+                //         //m_layoutArea.UpdateBoundsBasedOnTextWrap(lineBreakPosition);
+                //     }
+                //     this.viewer.clientArea.x += textWrappingBounds.width;
+                //     //(LeafWidget as IWidget).LayoutInfo.IsLineBreak = false;
+                //     elementBox.height = 0;
+                //     elementBox.width = textWrappingBounds.width;
+                //     return;
+                // }
+
+                if (!(clientLayoutArea.x > (textWrappingBounds.right + minimumWidthRequired) || clientLayoutArea.right < textWrappingBounds.x - minimumWidthRequired)) {
+                    if (this.isNeedToWrapForSquareTightAndThrough(bodyWidget, elementBox, -1, -1, textWrappingStyle, textWrappingBounds, allowOverlap, 1, floatingItem, false, rect, elementBox.width, elementBox.height)) {
+                        let rightIndent: number = 0;
+                        let leftIndent: number = 0;
+                        let listLeftIndent: number = 0;
+                        let firstLineIndent: number = HelperMethods.convertPointToPixel(elementBox.paragraph.paragraphFormat.firstLineIndent);
+                        let paragraphLeftIndent: number = HelperMethods.convertPointToPixel(ownerPara.paragraphFormat.leftIndent);
+                        firstLineIndent = ((elementBox.indexInOwner === 0 && elementBox.line.isFirstLine()) && firstLineIndent > 0) ? firstLineIndent : 0;
+                        let currTextRange: ElementBox = elementBox;
+                        let isnewline: boolean = false;
+                        if (elementBox.line.paragraph) {
+                            //Right indent is considered only if the rect.X greater than the floating item's X position and
+                            //Text wrapping style should not be left
+                            if (rect.x >= textWrappingBounds.x && textWrappingType !== 'Left') {
+                                rightIndent = ownerPara.paragraphFormat.rightIndent;
+                            }
+                            //Left indent is considered only if the rect.X less than the floating item's X position and
+                            //Text wrapping style should not be right
+                            if (rect.x < textWrappingBounds.x && textWrappingType !== 'Right') {
+                                leftIndent = paragraphLeftIndent;
+                            }
+                            let listFormat: WListFormat = ownerPara.paragraphFormat.listFormat;
+                            let listLevel: WListLevel = this.getListLevel(listFormat.list, listFormat.listLevelNumber);
+                            if (rect.x == (clientLayoutArea.x + paragraphLeftIndent)
+                                && listFormat && listFormat.baseStyle
+                                && listLevel && listLevel.paragraphFormat.leftIndent != 0) {
+                                listLeftIndent = paragraphLeftIndent;
+                                isnewline = true;// to denote the current line is new line of the paragraph
+                            }
+                        }
+                        // if (this.isXPositionUpdated && textWrappingType === 'Both' && this.layoutState === 'Splitted') {
+                        //     rect.width = bodyWidget.width - this.viewer.clientActiveArea.x;
+                        //     rect.x = textWrappingBounds.right;
+                        //     this.viewer.updateClientAreaForTextWrap(rect);
+                        //     return rect;
+                        // }
+                        // Skip to update when the wrap type as left
+                        if (rect.x >= textWrappingBounds.x && rect.x < textWrappingBounds.right && textWrappingType !== 'Left') // Skip to update when the wrap type as left
+                        {
+                            rect.width = rect.width - (textWrappingBounds.right - rect.x) - rightIndent;
+                            this.isWrapText = true;
+                            let isEntityFitInCurrentLine: boolean = true;
+                            if (!isEntityFitInCurrentLine || Math.round(rect.width) < minimumWidthRequired || (rect.width < elementBox.width && (elementBox as TextElementBox).text === '\t')
+                                || (textWrappingBounds.x < ownerPara.x + paragraphLeftIndent)) // check whether the TextWrap X position is less than the paragraph X position
+                            {
+                                //TODO
+                                rect.width = this.viewer.clientArea.right - textWrappingBounds.right - (isnewline ? listLeftIndent : 0);
+                                let minwidth: number = 0;
+                                if (currTextRange) {
+                                    minwidth = this.getMinWidth(elementBox as TextElementBox, elementBox.width, elementBox.height, rect);
+                                } else {
+                                    minwidth = elementBox.width;
+                                }
+                                if (Math.round(rect.width) < minimumWidthRequired || rect.width < minwidth) {
+                                    if (isEntityFitInCurrentLine && (textWrappingBounds.x - (ownerPara.x + ownerPara.leftIndent)) > minimumWidthRequired
+                                        && (this.viewer.clientArea.right - textWrappingBounds.right) > minimumWidthRequired) {
+                                        rect.width = 0;
+                                    } else {
+                                        let topMarginValue = 0;
+                                        //topMarginValue = GetTopMarginValueForFloatingTable(ownerPara,
+                                        //layouter.FloatingItems[i].FloatingEntity, rect.Y);
+                                        let isPositionsUpdated: boolean = false;
+                                        //Check whether left side of current floating item has enoush place to fit current widget.
+                                        //If it has, need to fit left side of the floating item, instead of moving to bottom.
+                                        // if (layouter.clientArea.x + elementBox.width < floatingItem.x) {
+                                        //     //Current item should preserve below to the floating item,which preserved left side of the floating item.
+                                        //     //If left side has multiple items or none of items this may fail, need to handle this cases.
+                                        //     let tempBounds: Rect = GetIntersectingItemBounds(floatingItem, yposition);
+                                        //     if (tempBounds.bottom !== 0 && tempBounds.bottom <= textWrappingBounds.bottom) {
+                                        //         rect.x = clientLayoutArea.x;
+                                        //         rect.width = clientLayoutArea.width;
+                                        //         rect.y = tempBounds.bottom + topMarginValue;
+                                        //         rect.height = clientLayoutArea.bottom - tempBounds.bottom;
+                                        //         this.isYPositionUpdated = true;
+                                        //         isPositionsUpdated = true;
+                                        //     }
+                                        // }
+                                        if (!isPositionsUpdated) {
+                                            this.isYPositionUpdated = true;
+                                            rect.width = this.viewer.clientArea.width;
+                                            rect.height -= (textWrappingBounds.bottom + topMarginValue - rect.y);
+                                            rect.y = textWrappingBounds.bottom + topMarginValue;
+                                        }
+                                    }
+                                    this.viewer.updateClientAreaForTextWrap(rect);//
+                                    this.isWrapText = false;
+                                } else {
+                                    let xposition = rect.x;
+                                    //TabsLayoutInfo tabsInfo = null;
+                                    rect.x = textWrappingBounds.right + (isnewline ? listLeftIndent : 0) + firstLineIndent;
+                                    rect.width -= firstLineIndent;
+
+                                    //When there is no space to fit the content in right, then update the y position.
+                                    if (textWrappingStyle == 'Square' && rect.width < 0 && elementBox.width > 0) {
+                                        // let topMarginValue = GetTopMarginValueForFloatingTable(ownerPara, layouter.FloatingItems[i].FloatingEntity, rect.Y);
+                                        let topMarginValue: number = 0;
+                                        this.isYPositionUpdated = true;
+                                        rect.width = this.viewer.clientArea.width;
+                                        rect.height -= (textWrappingBounds.bottom + topMarginValue - rect.y);
+                                        rect.y = textWrappingBounds.bottom + topMarginValue;
+                                        rect.x = xposition;
+                                    } else {
+                                        // this.isXPositionUpdated = true;
+                                    }
+                                    this.viewer.updateClientAreaForTextWrap(rect);//
+                                    // if (!(leafWidget is Break))
+                                    // AdjustClientAreaBasedOnExceededTab(leafWidget, size, ref rect, ownerPara);
+
+                                    // if (leafWidget != null)
+                                    //     tabsInfo = (leafWidget as ILeafWidget).LayoutInfo as TabsLayoutInfo;
+                                    //if (tabsInfo == null) {
+                                    //this.isWrapText = true;
+                                    //this.viewer.updateClientAreaForTextWrap(rect);//
+                                    // if (layouter.FloatingItems[i].FloatingEntity is WTable)
+                                    // layouter.FloatingTableBottom = textWrappingBounds.Bottom;
+                                    //}
+                                }
+                            } else {
+                                //Check whether the RightPositionOfTabStopInterSectingFloattingItems have the value or not.
+                                //if contains value means continue the layouting even x position exceeds the page right position.
+
+                                let xposition: number = rect.x;
+                                rect.x = textWrappingBounds.right + (isnewline ? listLeftIndent : 0) + firstLineIndent;
+                                rect.width = this.viewer.clientArea.right - textWrappingBounds.right - (isnewline ? listLeftIndent : 0) - firstLineIndent;
+
+                                //When there is no space to fit the content in right, then update the y position.
+                                if (textWrappingStyle == 'Square' && rect.width < 0 && elementBox.width > 0) {
+                                    // float topMarginValue = GetTopMarginValueForFloatingTable(ownerPara,
+                                    //     layouter.FloatingItems[i].FloatingEntity, rect.Y);
+                                    let topMarginValue: number = 0;
+                                    this.isYPositionUpdated = true;
+                                    rect.width = this.viewer.clientArea.width;
+                                    rect.height -= (textWrappingBounds.bottom + topMarginValue - rect.y);
+                                    rect.y = textWrappingBounds.bottom + topMarginValue;
+                                    rect.x = xposition;
+                                }
+                                else
+                                    // this.isXPositionUpdated = true;
+                                // if (!(leafWidget is Break))
+                                //     AdjustClientAreaBasedOnExceededTab(leafWidget, size, ref rect, ownerPara);
+
+                                // //Microsoft Word 2013 doesn't split text character by character, when current line has floating item.
+                                // if (ownerPara != null && ownerPara.Document.Settings.CompatibilityMode == CompatibilityMode.Word2013)
+                                //     layouter.m_canSplitbyCharacter = false;
+                                this.isWrapText = true;
+                                this.viewer.updateClientAreaForTextWrap(rect);//
+
+                            }
+                        } else if (textWrappingBounds.x >= rect.x && rect.right > textWrappingBounds.x) {
+                            rect.width = textWrappingBounds.x - rect.x - rightIndent;
+                            //Remaining right side width
+                            let remainingClientWidth: number = this.viewer.clientArea.right - textWrappingBounds.right;
+                            remainingClientWidth = remainingClientWidth > 0 ? remainingClientWidth : 0;
+                            this.isWrapText = true;
+                            let minwidth: number = 0;
+                            if (currTextRange) {
+                                minwidth = this.getMinWidth(currTextRange as TextElementBox, elementBox.width, elementBox.height, rect);
+                            } else {
+                                minwidth = elementBox.width;
+                            }
+                            if (this.isNeedDoIntermediateWrapping(remainingClientWidth, textWrappingType, rect, elementBox.width, elementBox.paragraph, textWrappingBounds, elementBox, minwidth, minimumWidthRequired)) {
+                                rect.width = remainingClientWidth;
+                                this.isWrapText = true;
+                                if (rect.x + minwidth > textWrappingBounds.x || textWrappingType == 'Right') //Update X position when the wrap type as largest or right or the minimum width + rect.X > wrap x position
+                                {
+                                    rect.x = textWrappingBounds.right;
+                                    // let listFormat: WListFormat = null;
+                                    // let listLevel: WListLevel = null;
+                                    // if (elementBox.line.isFirstLine
+                                    //    && (listFormat = ownerPara.GetListFormatValue()) != null
+                                    //    && listFormat.CurrentListStyle != null
+                                    //    && (listLevel = ownerPara.GetListLevel(listFormat)) != null
+                                    //    && listLevel.ParagraphFormat.LeftIndent != 0)
+                                    // {
+                                    //     float x = 0;
+                                    //     float width = rect.Width;
+                                    //     //Updates the paragraph firstline horizontal positions, such as first line indent and listtab value
+                                    //     UpdateParaFirstLineHorizontalPositions(paragraphLayoutInfo, ownerPara, ref x, ref width);
+                                    //     rect.X += (x + (float)paragraphLayoutInfo.Margins.Left);
+                                    //     rect.Width -= (x + (float)paragraphLayoutInfo.Margins.Left);
+                                    // }
+                                    // this.isXPositionUpdated = true;
+                                    // if (textWrappingStyle == TextWrappingStyle.Through
+                                    //     && layouter.FloatingItems[i].IsDoesNotDenotesRectangle) {
+                                    //     UpdateXposition(textWrappingBounds, i, ref rect, size, minwidth);
+                                    // }
+                                    if (rect.width > minwidth || textWrappingType == 'Right') {
+                                        this.viewer.updateClientAreaForTextWrap(rect);
+                                    }
+                                }
+                            } else {
+                                //While text intersecting with SQUARE type floating item and there is no space
+                                //available to fit this text in current line then move the text to bottom
+                                //of the floating item and this behavior is applicable only for Word 2013.
+                                //Lower versions split the text character by character.
+                                if ((elementBox.line.isFirstLine() && elementBox.indexInOwner === 0) && textWrappingStyle === 'Square'
+                                    && Math.round(rect.width) <= Math.round(minwidth)
+                                    && ownerPara.containerWidget === floatingItem.line.paragraph.containerWidget) {
+                                    rect.x = clientLayoutArea.x;
+                                    rect.y = textWrappingBounds.bottom;
+                                    rect.width = clientLayoutArea.width;
+                                    rect.height -= (textWrappingBounds.bottom - rect.y);
+                                } else if (Math.round(rect.width) <= Math.round(minwidth) && Math.round(rect.x - leftIndent) !== Math.round(this.viewer.clientArea.x)) {
+                                    rect.width = 0;
+                                }
+                                this.viewer.updateClientAreaForTextWrap(rect);//
+                            }
+                        }
+                        if (textWrappingType != 'Both') {
+                            this.isWrapText = false;
+                        }
+                    }
+                }
+            }
+        }
+        return rect;
     }
 
     private startAt(element: FootnoteElementBox, text: string): string {
@@ -1312,6 +1790,11 @@ export class Layout {
             }
         }
         const splitCurrentWidget: boolean = this.viewer.clientActiveArea.width - width < 0;
+        if (currentElement.line.paragraph.bodyWidget.floatingElements.length > 0) {
+            this.hasFloatingElement = true;
+            this.isXPositionUpdated = true;
+            return false;
+        }
         if (!splitCurrentWidget) {
             this.viewer.cutFromLeft(this.viewer.clientActiveArea.x + width);
             if (currentElement.line.paragraph.paragraphFormat.textAlignment === 'Justify' &&
@@ -1599,6 +2082,13 @@ export class Layout {
         }
     }
     private addSplittedLineWidget(lineWidget: LineWidget, elementIndex: number, splittedElementBox?: ElementBox): void {
+        if (this.isWrapText) {
+            if (!isNullOrUndefined(splittedElementBox)) {
+                lineWidget.children.splice(elementIndex + 1, 0, splittedElementBox);
+                splittedElementBox.line = lineWidget;
+            }
+            return;
+        }
         const paragraph: ParagraphWidget = lineWidget.paragraph;
         const movedElementBox: ElementBox[] = [];
         const lineIndex: number = paragraph.childWidgets.indexOf(lineWidget);
@@ -1629,6 +2119,10 @@ export class Layout {
 
     private addElementToLine(paragraph: ParagraphWidget, element: ElementBox): void {
         if (!(element instanceof ShapeBase && element.textWrappingStyle !== 'Inline')) {
+            if (this.isWrapText) {
+                this.isWrapText = false;
+                this.viewer.clientActiveArea.width = this.viewer.clientArea.right - this.viewer.clientActiveArea.x;
+            }
             this.viewer.cutFromLeft(this.viewer.clientActiveArea.x + element.width);
         }
         if (paragraph.paragraphFormat.textAlignment === 'Justify' && element instanceof TextElementBox) {
@@ -1786,6 +2280,9 @@ export class Layout {
     private splitTextElementWordByWord(textElement: TextElementBox): void {
         const lineWidget: LineWidget = textElement.line;
         let indexOf: number = lineWidget.children.indexOf(textElement);
+        let startIndex: number = indexOf;
+        let paddingLeft: number = textElement.padding.left;
+        textElement.padding.left = 0;
         let text: string = textElement.text;
         let format: WCharacterFormat;
         const characterUptoWs: number = text.trim().indexOf(' ');
@@ -1832,6 +2329,7 @@ export class Layout {
             textElement.text = text;
             lineWidget.children.splice(indexOf, 0, textElement);
         }
+        lineWidget.children[startIndex].padding.left = paddingLeft;
     }
 
     private splitTextForClientArea(lineWidget: LineWidget, element: TextElementBox, text: string, width: number, characterFormat: WCharacterFormat): void {
@@ -2017,7 +2515,7 @@ export class Layout {
                     || this.isRelayout && this.isRelayoutOverlap && this.viewer.documentHelper.selection.isExistAfter(shape.line.paragraph, this.endOverlapWidget)) {
                     return;
                 }
-                let considerShape: boolean = (shape.textWrappingStyle === 'TopAndBottom' || shape.textWrappingStyle === 'Square');
+                let considerShape: boolean = (shape.textWrappingStyle === 'TopAndBottom');
 
                 if (overlapShape && considerShape &&
                     overlapShape.y + overlapShape.height + overlapShape.distanceBottom + line.height > shape.y - shape.distanceTop &&
@@ -2633,10 +3131,15 @@ export class Layout {
         let leftIndent: number = HelperMethods.convertPointToPixel(paragraph.paragraphFormat.leftIndent);
         if (!isNullOrUndefined(element) && lineWidget.isFirstLine()) {
             clientWidth = this.viewer.clientArea.x + firstLineIndent;
+            if (isList) {
+                clientActiveX = clientActiveX + firstLineIndent;
+            }
         } else {
             clientWidth = this.viewer.clientArea.x;
         }
-        if (clientActiveX < clientWidth) {
+        if (clientActiveX < clientWidth
+            || (element instanceof ListTextElementBox && lineWidget.isFirstLine()
+                && leftIndent > 0 && firstLineIndent < 0)) {
             return viewer.clientArea.x - viewer.clientActiveArea.x;
         }
         // Calculates tabwidth based on pageleftmargin and defaulttabwidth property
@@ -2783,6 +3286,7 @@ export class Layout {
         let width: number = 0;
         let trimSpace: boolean = true;
         let lineText: string = '';
+        let isWrapped: boolean = false;
         for (let i: number = lineWidget.children.length - 1; i >= 0; i--) {
             let element: ElementBox = lineWidget.children[i];
             if (element.width > 0 && element instanceof TextElementBox) {
@@ -2801,10 +3305,18 @@ export class Layout {
             } else {
                 lineText = 'a' + lineText;
                 trimSpace = false;
+                if (element instanceof ShapeBase && element.textWrappingStyle !== 'Inline') {
+                    continue;
+                }
                 width += element.width;
             }
             if (!justify) {
-                width = Math.round(width);
+                width = Math.round(width + element.padding.left);
+            } else {
+                width = width + element.padding.left;
+            }
+            if (element.padding.left > 0) {
+                isWrapped = true;
             }
         }
         lineText = lineText.trim();
@@ -2821,7 +3333,12 @@ export class Layout {
             } else {
                 spaceCount = 0;
             }
-
+        }
+        // Need to implement sub width for each wrapping region.
+        // So set sub width to zero to layout the element in left alignment
+        // Need to remove is once after implementing subwidth update separatly
+        if (isWrapped) {
+            subWidth = 0;
         }
         return { 'subWidth': subWidth, 'spaceCount': spaceCount };
     }

@@ -145,7 +145,7 @@ export function findToolToActivate(
                     if (wrapper.id && (wrapper.id.indexOf(userid) > -1)) { return 'FixedUserHandle'; }
                 }
             }
-            if (canMove(obj) && wrapper instanceof TextElement && wrapper.hyperlink.link) {
+            if (wrapper instanceof TextElement && wrapper.hyperlink.link) {
                 return 'Hyperlink';
             }
             if (canMove(obj) && isSelected(diagram, obj, false) && (diagram.selectedItems as Selector).annotation === undefined) {

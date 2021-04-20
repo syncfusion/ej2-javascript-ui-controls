@@ -306,6 +306,7 @@ export class Renderer {
                 if (shape instanceof ImageElementBox) {
                     this.renderImageElementBox(shape, shape.x, shape.y, 0);
                 } else if (shape instanceof ShapeElementBox) {
+                    let isZeroShapeHeight: boolean = (shape.height === 0) ? true : false;
                     let shapeType: any = shape.autoShapeType;
                     let blocks: BlockWidget[] = shape.textFrame.childWidgets as BlockWidget[];
                     let shapeLeft: number = this.getScaledValue(shape.x, 1);
@@ -327,6 +328,12 @@ export class Renderer {
                     }
                     for (let i: number = 0; i < blocks.length; i++) {
                         this.renderWidget(page, blocks[i]);
+                        if (isZeroShapeHeight && shapeType !== 'StraightConnector') {
+                            shape.height += blocks[i].height;
+                        }
+                    }
+                    if (isZeroShapeHeight) {
+                        isZeroShapeHeight = false;
                     }
                     if (isClipped) {
                         this.pageContext.restore();
@@ -625,6 +632,7 @@ export class Renderer {
                 this.renderImageElementBox(elementBox, left, top, underlineY);
             } else {
                 elementBox.isVisible = true;
+                left += elementBox.padding.left;
                 this.renderTextElementBox(elementBox as TextElementBox, left, top, underlineY);
             }
             left += elementBox.width + elementBox.margin.left;
@@ -1038,6 +1046,9 @@ export class Renderer {
         while (lineCount < (underline === 'Double' ? 2 : 1)) {
             lineCount++;
             let width: number = elementBox.width;
+            if (elementBox instanceof TextElementBox && isNullOrUndefined(elementBox.nextNode)) {              
+                width = this.documentHelper.textHelper.getWidth(HelperMethods.trimEnd(elementBox.text), elementBox.characterFormat);
+            }
             this.pageContext.fillRect(this.getScaledValue(left + elementBox.margin.left, 1), this.getScaledValue(y, 2), this.getScaledValue(width), this.getScaledValue(underlineHeight));
             y += 2 * lineHeight;
         }
@@ -1227,8 +1238,9 @@ export class Renderer {
                 let row: TableRowWidget = tableCell.ownerTable.childWidgets[i] as TableRowWidget;
                 let cell: TableCellWidget
                 for (let j: number = 0; j < row.childWidgets.length; j++) {
-                    if ((row.childWidgets[j] as TableCellWidget).columnIndex === tableCell.columnIndex - 1) {
-                        cell = row.childWidgets[j] as TableCellWidget;
+                    let currentCell :TableCellWidget = row.childWidgets[j] as TableCellWidget;
+                    if ((currentCell.columnIndex + currentCell.cellFormat.columnSpan - 1) === tableCell.columnIndex - 1) {
+                        cell = currentCell as TableCellWidget;
                         break;
                     } else if ((row.childWidgets[j] as TableCellWidget).columnIndex >= tableCell.columnIndex && (row.childWidgets[j] as TableCellWidget).previousWidget) {
                         cell = (row.childWidgets[j] as TableCellWidget).previousWidget as TableCellWidget;

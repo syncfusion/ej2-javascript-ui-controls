@@ -15,11 +15,19 @@ import { ExcelExportProperties, ExcelRow } from '@syncfusion/ej2-grids';
  */
 
 export class PivotUtil {
-    public static getType(value: Date): string {
+    public static getType(value: any): string {
         let val: string;
-        val = (value && value.getDay) ? (value.getHours() > 0 || value.getMinutes() > 0 ||
-            value.getSeconds() > 0 || value.getMilliseconds() > 0 ? 'datetime' : 'date') : !isNaN(Number(value)) ?
-                'number' : typeof (value);
+        let dateValue: any = new Date(value);
+        if (typeof value === 'boolean') {
+            val = 'boolean';
+        } else if (!isNaN(Number(value))) {
+            val = 'number';
+        } else if (dateValue instanceof Date && !isNaN(dateValue.valueOf())) {
+            val = (dateValue && dateValue.getDay() && (dateValue.getHours() > 0 || dateValue.getMinutes() > 0 ||
+                dateValue.getSeconds() > 0 || dateValue.getMilliseconds() > 0) ? 'datetime' : 'date');
+        } else {
+            val = typeof (value);;
+        }
         return val;
     }
 

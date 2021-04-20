@@ -2091,12 +2091,10 @@ export class DropDownList extends DropDownBase implements IInput {
                     this.popupObj.element.classList.add(dropDownListClasses.device);
                     if (this.getModuleName() === 'dropdownlist' || (this.getModuleName() === 'combobox'
                         && !this.allowFiltering && this.isDropDownClick)) {
-                        // eslint-disable-next-line @typescript-eslint/naming-convention
                         this.popupObj.collision = { X: 'fit', Y: 'fit' };
                     }
                     if (this.isFilterLayout()) {
                         this.popupObj.element.classList.add(dropDownListClasses.mobileFilter);
-                        // eslint-disable-next-line @typescript-eslint/naming-convention
                         this.popupObj.position = { X: 0, Y: 0 };
                         this.popupObj.dataBind();
                         attributes(this.popupObj.element, { style: 'left:0px;right:0px;top:0px;bottom:0px;' });
@@ -2200,9 +2198,7 @@ export class DropDownList extends DropDownBase implements IInput {
     private createPopup(element: HTMLElement, offsetValue: number, left: number): void {
         this.popupObj = new Popup(element, {
             width: this.setWidth(), targetType: 'relative',
-            // eslint-disable-next-line @typescript-eslint/naming-convention
             relateTo: this.inputWrapper.container, collision: { X: 'flip', Y: 'flip' }, offsetY: offsetValue,
-            // eslint-disable-next-line @typescript-eslint/naming-convention
             enableRtl: this.enableRtl, offsetX: left, position: { X: 'left', Y: 'bottom' },
             zIndex: this.zIndex,
             close: () => {

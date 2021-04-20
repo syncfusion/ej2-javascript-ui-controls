@@ -274,13 +274,14 @@ export class Resize {
             const headerTable: HTMLElement = isCol ? this.parent.getColHeaderTable() : this.parent.getRowHeaderTable();
             headerTable.getElementsByTagName('tr') as HTMLCollectionOf<HTMLTableRowElement>;
         }
-        let isWrap: boolean = false;
+        let isWrap: boolean = false; let wrapCount: number = 0;
         if (isCol) {
             const rowLength: number = sheet.rows.length;
             for (let rowIdx: number = 0; rowIdx < rowLength; rowIdx++) {
                 if (sheet.rows[rowIdx] && sheet.rows[rowIdx].cells && sheet.rows[rowIdx].cells[idx]) {
                     if (getCell(rowIdx, idx, sheet).wrap) {
                         isWrap = true;
+                        wrapCount++;
                     }
                     const td: HTMLElement = this.parent.createElement('td', { className: 'e-cell' });
                     td.textContent = this.parent.getDisplayText(sheet.rows[rowIdx].cells[idx]);
@@ -303,6 +304,7 @@ export class Resize {
                 if (sheet.rows[idx] && sheet.rows[idx].cells[colIdx]) {
                     if (getCell(idx, colIdx, sheet).wrap) {
                         isWrap = true;
+                        wrapCount++;
                     }
                     const td: HTMLElement = this.parent.createElement('td');
                     td.textContent = this.parent.getDisplayText(sheet.rows[idx].cells[colIdx]);
@@ -320,45 +322,47 @@ export class Resize {
                 }
             }
         }
-        let contentFit: number = findMaxValue(contentTable, contentClone, isCol, this.parent, prevData, isWrap);
-        if (isCol) {
-            contentFit = this.getFloatingElementWidth(contentFit, idx);
-        }
-        let autofitValue: number = contentFit === 0 ? parseInt(oldValue, 10) : contentFit;
-        const threshold: number = parseInt(oldValue, 10) > autofitValue ?
-            -(parseInt(oldValue, 10) - autofitValue) : autofitValue - parseInt(oldValue, 10);
-        if (isCol) {
-            if (idx >= this.parent.viewport.leftIndex && idx <= this.parent.viewport.rightIndex) {
-                getColumn(sheet, idx).width = autofitValue > 0 ? autofitValue : 0;
-                this.resizeStart(idx, this.parent.getViewportIndex(idx, true), autofitValue + 'px', isCol, true, prevData);
-                this.parent.notify(colWidthChanged, { threshold: threshold, colIdx: idx });
-            } else {
-                const oldWidth: number = getColumnWidth(sheet, idx);
-                let threshold: number;
-                if (autofitValue > 0) {
-                    threshold = -(oldWidth - autofitValue);
-                } else {
-                    threshold = -oldWidth;
-                }
-                this.parent.notify(colWidthChanged, { threshold, colIdx: idx });
-                getColumn(sheet, idx).width = autofitValue > 0 ? autofitValue : 0;
+        if (wrapCount === 0) {
+            let contentFit: number = findMaxValue(contentTable, contentClone, isCol, this.parent, prevData, isWrap);
+            if (isCol) {
+                contentFit = this.getFloatingElementWidth(contentFit, idx);
             }
-        } else if (!isCol) {
-            if (idx >= this.parent.viewport.topIndex && idx <= this.parent.viewport.bottomIndex) {
-                autofitValue = autofitValue > 20 ? autofitValue : 20;
-                setRowHeight(sheet, idx, autofitValue > 0 ? autofitValue : 0);
-                this.resizeStart(idx, this.parent.getViewportIndex(idx), autofitValue + 'px', isCol, true, prevData);
-                this.parent.notify(rowHeightChanged, { threshold: threshold, rowIdx: idx });
-            } else {
-                const oldHeight: number = getRowHeight(sheet, idx);
-                let threshold: number;
-                if (autofitValue > 0) {
-                    threshold = -(oldHeight - autofitValue);
+            let autofitValue: number = contentFit === 0 ? parseInt(oldValue, 10) : contentFit;
+            const threshold: number = parseInt(oldValue, 10) > autofitValue ?
+                -(parseInt(oldValue, 10) - autofitValue) : autofitValue - parseInt(oldValue, 10);
+            if (isCol) {
+                if (idx >= this.parent.viewport.leftIndex && idx <= this.parent.viewport.rightIndex) {
+                    getColumn(sheet, idx).width = autofitValue > 0 ? autofitValue : 0;
+                    this.resizeStart(idx, this.parent.getViewportIndex(idx, true), autofitValue + 'px', isCol, true, prevData);
+                    this.parent.notify(colWidthChanged, { threshold: threshold, colIdx: idx });
                 } else {
-                    threshold = -oldHeight;
+                    const oldWidth: number = getColumnWidth(sheet, idx);
+                    let threshold: number;
+                    if (autofitValue > 0) {
+                        threshold = -(oldWidth - autofitValue);
+                    } else {
+                        threshold = -oldWidth;
+                    }
+                    this.parent.notify(colWidthChanged, { threshold, colIdx: idx });
+                    getColumn(sheet, idx).width = autofitValue > 0 ? autofitValue : 0;
                 }
-                this.parent.notify(rowHeightChanged, { threshold, rowIdx: idx });
-                setRowHeight(sheet, idx, autofitValue > 0 ? autofitValue : 0);
+            } else if (!isCol) {
+                if (idx >= this.parent.viewport.topIndex && idx <= this.parent.viewport.bottomIndex) {
+                    autofitValue = autofitValue > 20 ? autofitValue : 20;
+                    setRowHeight(sheet, idx, autofitValue > 0 ? autofitValue : 0);
+                    this.resizeStart(idx, this.parent.getViewportIndex(idx), autofitValue + 'px', isCol, true, prevData);
+                    this.parent.notify(rowHeightChanged, { threshold: threshold, rowIdx: idx });
+                } else {
+                    const oldHeight: number = getRowHeight(sheet, idx);
+                    let threshold: number;
+                    if (autofitValue > 0) {
+                        threshold = -(oldHeight - autofitValue);
+                    } else {
+                        threshold = -oldHeight;
+                    }
+                    this.parent.notify(rowHeightChanged, { threshold, rowIdx: idx });
+                    setRowHeight(sheet, idx, autofitValue > 0 ? autofitValue : 0);
+                }
             }
         }
     }

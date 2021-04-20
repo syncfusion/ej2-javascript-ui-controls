@@ -417,8 +417,8 @@ export class BordersAndShadingDialog {
         });
         const divsion: HTMLDivElement = <HTMLDivElement>createElement('div', { styles: 'width:100px;position:absolute;' });
         const ulelementShading: HTMLSelectElement = <HTMLSelectElement>createElement('select', {
-            innerHTML: '<option>' + localeValue.getConstant('Cell') + '</option>'
-                + '<option>' + localeValue.getConstant('Table') + '</option>',
+            innerHTML: '<option value="Cell">' + localeValue.getConstant('Cell') + '</option>'
+                + '<option value="Table">' + localeValue.getConstant('Table') + '</option>',
             id: this.target.id + '_shading'
         });
         divsion.appendChild(ulelementShading);

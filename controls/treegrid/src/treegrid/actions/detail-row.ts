@@ -1,7 +1,7 @@
 import { Grid, getObject, Row, DetailDataBoundEventArgs, Cell, Column } from '@syncfusion/ej2-grids';
 import { DetailRow as detailrow } from '@syncfusion/ej2-grids';
 import { TreeGrid, ITreeData, CellSaveEventArgs } from '../base';
-import { isNullOrUndefined, addClass, isBlazor } from '@syncfusion/ej2-base';
+import { isNullOrUndefined, addClass } from '@syncfusion/ej2-base';
 import { getExpandStatus, isRemoteData  } from '../utils';
 import { FocusStrategy } from '@syncfusion/ej2-grids/src/grid/services/focus-strategy';
 
@@ -86,18 +86,16 @@ export class DetailRow {
         }
     }
     private detaildataBound(args: DetailDataBoundEventArgs): void {
-        if (!isBlazor() || !this.parent.isServerRendered) {
-            const data: ITreeData = <ITreeData>args.data;
-            const row: HTMLElement = args.detailElement.parentElement.previousSibling as HTMLElement;
-            const index: number = !isNullOrUndefined(data.parentItem) ? data.parentItem.index : data.index;
-            const expandClass: string = 'e-gridrowindex' + index + 'level' + data.level;
-            const classlist: DOMTokenList = row.querySelector('.' + expandClass).classList;
-            const gridClas: string[] = [].slice.call(classlist).filter((gridclass: string) => (gridclass === expandClass));
-            const newNo: number = gridClas[0].length;
-            const slicedclas: string = gridClas.toString().slice(6, newNo);
-            const detailClass: string = 'e-griddetail' + slicedclas;
-            addClass([args.detailElement.parentElement], detailClass);
-        }
+        const data: ITreeData = <ITreeData>args.data;
+        const row: HTMLElement = args.detailElement.parentElement.previousSibling as HTMLElement;
+        const index: number = !isNullOrUndefined(data.parentItem) ? data.parentItem.index : data.index;
+        const expandClass: string = 'e-gridrowindex' + index + 'level' + data.level;
+        const classlist: DOMTokenList = row.querySelector('.' + expandClass).classList;
+        const gridClas: string[] = [].slice.call(classlist).filter((gridclass: string) => (gridclass === expandClass));
+        const newNo: number = gridClas[0].length;
+        const slicedclas: string = gridClas.toString().slice(6, newNo);
+        const detailClass: string = 'e-griddetail' + slicedclas;
+        addClass([args.detailElement.parentElement], detailClass);
     }
 
     private actioncomplete(args: CellSaveEventArgs): void {

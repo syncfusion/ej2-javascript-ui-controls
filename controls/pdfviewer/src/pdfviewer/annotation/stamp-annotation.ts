@@ -1050,7 +1050,8 @@ export class StampAnnotation {
     public storeStampInSession(pageNumber: number, annotation: IStampAnnotation): any {
         // eslint-disable-next-line
         let sessionSize: any = Math.round(JSON.stringify(window.sessionStorage).length / 1024);
-        if (sessionSize > 4500) {
+        let currentAnnotation: any = Math.round(JSON.stringify(annotation).length / 1024);
+        if (sessionSize > 4500 || currentAnnotation > 4500) {
             this.pdfViewerBase.isStorageExceed = true;
             this.pdfViewer.annotationModule.clearAnnotationStorage();
         }

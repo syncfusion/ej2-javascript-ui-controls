@@ -71,12 +71,12 @@
     }
 
     .e-de-cmt-rply-icon::before {
-      content: '\e7a7';
+      content: '\e815';
       font-family: 'e-icons';
     }
 
     .e-de-cmt-cancel::before {
-      content: '\e7fc';
+      content: '\e7a7';
       font-family: 'e-icons';
     }
 
@@ -96,11 +96,11 @@
     }
 
     .e-de-nav-right-arrow::before {
-      content: '\e913';
+      content: '\e830';
     }
 
     .e-de-nav-left-arrow::before {
-      content: '\e904';
+      content: '\e829';
     }
 
     .e-de-save-icon::before {
@@ -558,7 +558,7 @@
     content: '\e688';
   }
 
-  .e-icon-btn.e-de-paste::before {
+  .e-icon-btn .e-de-paste::before {
     content: '\e68a';
   }
 }

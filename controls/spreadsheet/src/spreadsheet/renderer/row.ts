@@ -29,7 +29,7 @@ export class RowRenderer implements IRowRenderer {
         row.classList.add('e-row');
         const sheet: SheetModel = this.parent.getActiveSheet();
         attributes(row, { 'aria-rowindex': (index + 1).toString() });
-        row.style.height = `${getRowHeight(sheet, index)}px`;
+        row.style.height = `${getRowHeight(sheet, index, true)}px`;
         if (isRowHeader && !skipHidden) {
             if (isHiddenRow(sheet, index + 1) && !isHiddenRow(sheet, index - 1)) {
                 row.classList.add('e-hide-start');

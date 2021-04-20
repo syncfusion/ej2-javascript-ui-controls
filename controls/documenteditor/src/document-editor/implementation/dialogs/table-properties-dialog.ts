@@ -436,8 +436,8 @@ export class TablePropertiesDialog {
         this.preferredWidth = <HTMLInputElement>createElement('input', { id: element.id + 'preferred_Width' });
         const controlDiv: HTMLDivElement = createElement('div') as HTMLDivElement;
         const tableWidthType: HTMLSelectElement = createElement('select', {
-            innerHTML: '<option>' + localValue.getConstant('Points') +
-                '</option><option>' + localValue.getConstant('Percent') + '</option>', id: element.id + '_width_dropdown'
+            innerHTML: '<option value="Points">' + localValue.getConstant('Points') +
+                '</option><option value="Percent">' + localValue.getConstant('Percent') + '</option>', id: element.id + '_width_dropdown'
         }) as HTMLSelectElement;
         const labeltext: HTMLInputElement = <HTMLInputElement>createElement('label', {
             innerHTML: localValue.getConstant('Measure in'), styles: 'width: 60px;font-size: 11px; font-weight: normal;'
@@ -822,8 +822,8 @@ export class TablePropertiesDialog {
         const child4: HTMLDivElement = createElement('div') as HTMLDivElement;
         const controlDiv: HTMLDivElement = createElement('div') as HTMLDivElement;
         const rowHeightType: HTMLSelectElement = createElement('select', {
-            innerHTML: '<option>' + localValue.getConstant('At least')
-                + '</option><option>' + localValue.getConstant('Exactly') + '</option>',
+            innerHTML: '<option value="At least">' + localValue.getConstant('At least')
+                + '</option><option value="Exactly">' + localValue.getConstant('Exactly') + '</option>',
             id: element.id + '_height_type'
         }) as HTMLSelectElement;
         const labeltext: HTMLLabelElement = <HTMLLabelElement>createElement('label', {
@@ -1021,7 +1021,7 @@ export class TablePropertiesDialog {
         const child4: HTMLDivElement = <HTMLDivElement>createElement('div');
         const controlDiv: HTMLDivElement = createElement('div') as HTMLDivElement;
         const cellWidthType: HTMLSelectElement = createElement('select', {
-            innerHTML: '<option>' + localValue.getConstant('Points') + '</option><option>' +
+            innerHTML: '<option value="Points">' + localValue.getConstant('Points') + '</option><option value="Percent">' +
                 localValue.getConstant('Percent') + '</option>', 'id': element.id + '_measure_type_cell'
         }) as HTMLSelectElement;
         const labeltext: HTMLLabelElement = createElement('label', {

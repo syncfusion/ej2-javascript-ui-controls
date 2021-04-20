@@ -1409,6 +1409,7 @@ export class Splitter extends Component<HTMLElement> {
     }
 
     private expandPane(e: Event): void {
+        this.removeStaticPanes();
         const collapseCount: number = this.element.querySelectorAll('.' + COLLAPSE_PANE).length;
         const flexStatus: boolean = (!this.previousPane.classList.contains(COLLAPSE_PANE) &&
             this.previousPane.classList.contains(STATIC_PANE) && !this.nextPane.classList.contains(COLLAPSE_PANE) &&
@@ -1572,6 +1573,7 @@ export class Splitter extends Component<HTMLElement> {
     }
 
     private collapsePane(e: Event): void {
+        this.removeStaticPanes();
         const collapseCount: number = this.element.querySelectorAll('.' + COLLAPSE_PANE).length;
         const flexStatus: boolean = (this.previousPane.classList.contains(STATIC_PANE) &&
             !this.previousPane.classList.contains(COLLAPSE_PANE) && !this.nextPane.classList.contains(COLLAPSE_PANE) &&
@@ -1603,6 +1605,14 @@ export class Splitter extends Component<HTMLElement> {
         if (flexStatus) {
             this.nextPane.classList.remove(EXPAND_PANE);
             this.nextPane.style.flexGrow = '';
+        }
+    }
+    
+    private removeStaticPanes(): void {
+        for (let i: number = 0; i < this.allPanes.length; i++) {
+            if (isNullOrUndefined(this.paneSettings[i].size)) {
+                this.allPanes[i].classList.remove(STATIC_PANE);
+            }
         }
     }
 

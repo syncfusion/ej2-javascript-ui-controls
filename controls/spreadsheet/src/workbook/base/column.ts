@@ -104,7 +104,7 @@ export function setColumn(sheet: SheetModel, colIndex: number, column: ColumnMod
  * @param {boolean} skipHidden - Specifies the bool.
  * @returns {number} - To get Column width.
  */
-export function getColumnWidth(sheet: SheetModel, index: number, skipHidden?: boolean, checkDPR: boolean = true): number {
+export function getColumnWidth(sheet: SheetModel, index: number, skipHidden?: boolean, checkDPR?: boolean): number {
     let width: number;
     if (sheet && sheet.columns && sheet.columns[index]) {
         if (!skipHidden && sheet.columns[index].hidden) { return 0; }
@@ -113,7 +113,8 @@ export function getColumnWidth(sheet: SheetModel, index: number, skipHidden?: bo
         width = 64;
     }
     if(checkDPR && window.devicePixelRatio % 1 > 0) {
-        return (width % 2 === 0) ? width : width + 1; // Adding 1 to making it as even number
+        const pointValue = (width * window.devicePixelRatio) % 1
+        return width + (pointValue ? ((pointValue > 0.5 ? (1 - pointValue) : -1 * pointValue) / window.devicePixelRatio) : 0);
     } else {
         return width;
     }
@@ -126,7 +127,7 @@ export function getColumnWidth(sheet: SheetModel, index: number, skipHidden?: bo
  * @param {number} endCol - Specifies the endCol.
  * @returns {number} - returns the column width.
  */
-export function getColumnsWidth(sheet: SheetModel, startCol: number, endCol: number = startCol): number {
+export function getColumnsWidth(sheet: SheetModel, startCol: number, endCol: number = startCol, checkDPR?: boolean): number {
     let width: number = 0;
     if (startCol > endCol) {
         const swap: number = startCol;
@@ -134,7 +135,7 @@ export function getColumnsWidth(sheet: SheetModel, startCol: number, endCol: num
         endCol = swap;
     }
     for (let i: number = startCol; i <= endCol; i++) {
-        width += getColumnWidth(sheet, i);
+        width += getColumnWidth(sheet, i, null, checkDPR);
     }
     return width;
 }

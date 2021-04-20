@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 19.1.57 (2021-04-20)
+
+### PDF Viewer
+
+#### Bug Fixes
+
+- `#317344` - The Script error will no longer be thrown if we add the custom stamp image more than 4MB size.
+
 ## 19.1.56 (2021-04-13)
 
 ### PDF Viewer

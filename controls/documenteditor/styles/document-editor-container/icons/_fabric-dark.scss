@@ -8,11 +8,11 @@
   }
 
   .e-de-ctnr-undo::before {
-    content: '\eb71';
+    content: '\ebed';
   }
 
   .e-de-ctnr-find::before {
-    content: '\eb65';
+    content: '\e275';
   }
 
   .e-de-ctnr-lock::before {
@@ -36,11 +36,11 @@
   }
 
   .e-de-ctnr-link::before {
-    content: '\eb9d';
+    content: '\e290';
   }
 
   .e-de-ctnr-table::before {
-    content: '\eb70';
+    content: '\e294';
   }
 
   .e-de-ctnr-download::before {
@@ -64,11 +64,11 @@
   }
 
   .e-de-ctnr-new::before {
-    content: '\eb90';
+    content: '\e7d5';
   }
 
   .e-de-ctnr-paste::before {
-    content: '\eb91';
+    content: '\e601';
   }
 
   .e-de-ctnr-bold::before {
@@ -108,7 +108,7 @@
   }
 
   .e-de-ctnr-redo::before {
-    content: '\eb8e';
+    content: '\ebfa';
   }
 
   .e-de-ctnr-bookmark::before {
@@ -128,11 +128,11 @@
   }
 
   .e-de-ctnr-open::before {
-    content: '\eb83';
+    content: '\ebdd';
   }
 
   .e-de-ctnr-underline::before {
-    content: '\eb7b';
+    content: '\ebf0';
   }
 
   .e-de-ctnr-superscript::before {
@@ -140,7 +140,7 @@
   }
 
   .e-de-ctnr-alignleft::before {
-    content: '\eb78';
+    content: '\ebeb';
   }
 
   .e-de-ctnr-numbering::before {
@@ -309,7 +309,7 @@
   }
 
   .e-de-ctnr-upload::before {
-    content: '\e58f';
+    content: '\e60f';
   }
 
   .e-de-flip {
@@ -378,6 +378,16 @@
 
   .e-de-update-field::before {
     content: '\e19e';
+    font-family: 'e-icons';
+  }
+
+  .e-de-footnote::before {
+    content: '\e435';
+    font-family: 'e-icons';
+  }
+
+  .e-de-endnote::before {
+    content: '\e436';
     font-family: 'e-icons';
   }
 }

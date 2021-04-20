@@ -2,6 +2,33 @@
 
 ## [Unreleased]
 
+## 19.1.57 (2021-04-20)
+
+### Grid
+
+#### Bug Fixes
+
+- `#I323673` - Paging issue while deleting records in last page has been fixed.
+- `#I321175` - Previous filter value is reappearing on the excel filter input issue has been fixed.
+- `#I323060` - Excel custom filter issue has been fixed.
+- `#I322391` - Provided the support for `rtl` in menu filter in dropdown component.
+- `#I321693` - `RowDeselected` event data property issue has been resolved.
+- `#I321908` - Throws script error while dragging page number index in Grid is fixed.
+
+## 19.1.56 (2021-04-13)
+
+### Grid
+
+#### Bug Fixes
+
+- `#I319687` - Child grid row drag and drop issue has been fixed.
+- `#I321090` - Throws script error while using `hideSearchbox` in filter is fixed.
+- `#I163579` - Focus issue while render multiple inputs in column template, issue has been fixed.
+- `#I320238` - Change content casing of `No matches found` has been resolved.
+- `#I317408` - Warning error thrown when binding a data dynamically by using `asyncpipe` binding issue has been fixed.
+- `#I321142` - Exporting is not working properly in `foreignKeyColumn` issue has been fixed.
+- `#I317066, #I317853` - When we right-click the bottom row in the current view area, the grid automatically scrolls issue has been fixed.
+
 ## 19.1.55 (2021-04-06)
 
 ### Grid

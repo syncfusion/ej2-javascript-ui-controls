@@ -2,7 +2,23 @@
 
 ## [Unreleased]
 
+## 19.1.57 (2021-04-20)
+
+### Common
+
+#### Bug Fixes
+
+- `F163648` - Resolved the day periods not parsing lower case (am/pm) issue.
+
 ## 19.1.56 (2021-04-13)
+
+### Common
+
+#### Bug Fixes
+
+- Resolved Unwanted Swipe event trigger in Firefox only on `Mac` machines.
+
+## 19.1.54 (2021-03-30)
 
 ### Common
 

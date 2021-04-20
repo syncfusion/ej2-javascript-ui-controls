@@ -4732,7 +4732,11 @@ export class Annotation {
                 }
             }
         }
-        if (isSettings) {
+        let settings: any = annotation.annotationSettings;
+        if (settings && (settings.minWidth || settings.maxWidth || settings.minHeight || settings.maxHeight)) {
+            return this.updateSettings(settings);
+        }
+        else if (isSettings) {
             return this.updateSettings(annotSettings);
         } else {
             return annotSettings;

@@ -249,7 +249,7 @@ export class ProgressAnimation {
         labelPath.setAttribute('visibility', 'Hidden');
         if (progress.type === 'Linear') {
             startPos = (progress.enableRtl) ? (progress.progressRect.x + progress.progressRect.width) + (textSize / 2) :
-                progress.progressRect.x - (textSize / 2);
+                       start - (textSize / 2);
             startPos = (startPos <= 0) ? 0 : startPos;
             endPos = (progress.enableRtl) ? startPos - posX : posX - startPos;
         }

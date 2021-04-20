@@ -2,6 +2,18 @@
 
 ## [Unreleased]
 
+## 19.1.57 (2021-04-20)
+
+### RichTextEditor
+
+#### New Features
+
+- `#I262768`, `#I284171`, `#I285060`, `#I303859`, `#I312806`, `#I322378`, `#I292004` - The Rich Text Editor Base64 image handling performance has been improved.
+
+#### Bug Fixes
+
+- `#I318379`- The issue with "Applying heading to the content in the Rich Text Editor, applies heading to the next element" has been resolved.
+
 ## 19.1.56 (2021-04-13)
 
 ### RichTextEditor
@@ -13,8 +25,6 @@
 - `#I320606` - The issue with "Pasting list with 'outline level' style in the MS Word not working properly in the Rich Text Editor" has been resolved.
 
 - `#I322143`- The issue with "Console error occurs when deleting the last row of the table" has been resolved.
-
-- `#I318379`- The issue with "Applying heading to the content in the Rich Text Editor, applies heading to the next element" has been resolved.
 
 ## 19.1.54 (2021-03-30)
 

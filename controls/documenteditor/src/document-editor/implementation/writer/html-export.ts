@@ -82,7 +82,7 @@ export class HtmlExport {
         if (isList && !isPreviousList) {
             blockStyle += this.getHtmlList(listLevel, paragraph.paragraphFormat.listFormat.listLevelNumber);
         }
-        tagAttributes.push('style="' + this.serializeParagraphStyle(paragraph, '', isList) + '"');
+        tagAttributes.push('style="' + this.serializeParagraphStyle(paragraph, '', isList) + ';' + 'white-space:pre' + '"' );
         if (isList) {
             blockStyle += this.createAttributesTag('li', tagAttributes);
         } else {

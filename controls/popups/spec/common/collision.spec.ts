@@ -82,7 +82,7 @@ describe('Collision Module Specs', () => {
             it('Validation Element position - Right', () => {
                 removePopup();
                 let elem: Element =<Element>getPop('Am a Right Element');
-                collision.flip(<HTMLElement>elem, <HTMLElement>getElem('#targetElement'), 0, 0, 'Right', 'top');
+                collision.flip(<HTMLElement>elem, <HTMLElement>getElem('#targetElement'), 0, 0, 'right', 'top');
                 //Expected - target element position right top.
                 //ToEqual - popup Element position left top.
                 let elementRect = elem.getBoundingClientRect()
@@ -639,7 +639,7 @@ describe('Collision Module Specs', () => {
              element.style.width="150px";
              collision.flip(element,target,0,0,"right","top",targetContainer);
              expect(calculatePosition(target,"left","top")).
-                    toEqual(calculatePosition(element,"right","top", false, target.getBoundingClientRect()));
+                    toEqual(calculatePosition(element,"right","top"));
             removeContainerContent();
          });
          it('collide Element position - Bottom', () => {
@@ -725,7 +725,7 @@ describe('Collision Module Specs', () => {
              element.style.width = "150px";
              collision.flip(element,target,0,0,"right","top");
              expect(calculatePosition(target,"left","top")).
-                    toEqual(calculatePosition(element,"right","top",false,target.getBoundingClientRect()));
+                    toEqual(calculatePosition(element,"right","top"));
             removeContainerContent();
          });
          it('collide Element position - Bottom', () => {

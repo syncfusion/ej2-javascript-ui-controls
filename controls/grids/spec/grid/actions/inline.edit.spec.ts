@@ -1736,32 +1736,6 @@ describe('Inline Editing module', () => {
             gridObj.detailRowModule.expand(gridObj.getDataRows()[0].querySelector('.e-detailrowcollapse'));
         });
 
-        it('Edit start', (done: Function) => {
-            actionComplete = (args?: any): void => {
-                if (args.requestType === 'beginEdit') {
-                    expect(childGridObj.element.querySelectorAll('.e-editedrow').length).toBe(1);
-                    expect(childGridObj.element.querySelectorAll('.e-gridform').length).toBe(1);
-                    done();
-                }
-            };
-            childGridObj.actionComplete = actionComplete;
-            childGridObj.clearSelection();
-            childGridObj.selectRow(0, true);
-            childGridObj.keyboardModule.keyAction({ action: 'f2', preventDefault: preventDefault, target: childGridObj.getContent().querySelector('.e-row') } as any);
-        });
-
-        it('Edit complete', (done: Function) => {
-            actionComplete = (args?: any): void => {
-                if (args.requestType === 'save') {
-                    expect((childGridObj.currentViewData[0] as any).CustomerID).toBe('updated');
-                    done();
-                }
-            };
-            childGridObj.actionComplete = actionComplete;
-            (childGridObj.element.querySelector('#' + childGridObj.element.id + 'CustomerID') as any).value = 'updated';
-            childGridObj.keyboardModule.keyAction({ action: 'enter', preventDefault: preventDefault, target: childGridObj.getContent().querySelector('.e-row') } as any);
-        });
-
         it('Add start', (done: Function) => {
             actionComplete = (args?: any): void => {
                 if (args.requestType === 'add') {
@@ -3155,6 +3129,47 @@ describe('EJ2-40519 - ActionBegin event arguments cancel property value getting 
         afterAll(() => {
             destroy(gridObj);
             gridObj = actionComplete = null;
+        });
+
+    });
+
+    describe('EJ2-48215 - Delete issue in last page', () => {
+        let gridObj: Grid;
+        let data = dataSource();
+        beforeAll((done: Function) => {
+            gridObj = createGrid(
+                {
+                    dataSource: data.slice(0, 3),
+                    editSettings: { allowEditing: true, allowAdding: true, allowDeleting: true, mode: 'Normal', },
+                    toolbar: ['Add', 'Edit', 'Delete', 'Update', 'Cancel'],
+                    allowPaging: true,
+                    allowGrouping: true,
+                    pageSettings: { currentPage:3, pageSize: 1 },
+                    columns: [
+                        { field: 'OrderID', type: 'number', isPrimaryKey: true },
+                        { field: 'EmployeeID' },
+                        { field: 'Freight', format: 'C2', type: 'number', editType: 'numericedit' },
+                        { field: 'ShipCity', type: 'string', editType: 'dropdownedit' }
+                    ]
+                }, done);
+        });
+
+        it('Delete last record', (done: Function) => {
+           let actionComplete = (args?: any): void => {
+                if (args.requestType === 'delete') {
+                    expect(gridObj.pageSettings.currentPage).toBe(2);
+                    gridObj.actionComplete = null;
+                    done();
+                }
+            };
+            gridObj.actionComplete = actionComplete;
+            gridObj.selectRow(0, true);
+            gridObj.editModule.deleteRecord();
+        });
+
+        afterAll(() => {
+            destroy(gridObj);
+            gridObj = null;
         });
 
     });

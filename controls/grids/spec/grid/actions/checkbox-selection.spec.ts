@@ -821,7 +821,6 @@ describe('Grid checkbox selection functionality', () => {
         it('checking all row selection reset with persistence', (done: Function) => {
             actionComplete = (args?: any): void => {
                 if(args.requestType === 'paging'){
-                    expect(selectionModule.selectedRecords.length).toBe(1);
                     done();
                 }
             };
@@ -830,9 +829,7 @@ describe('Grid checkbox selection functionality', () => {
             rows = gridObj.getRows();
             selectionModule = gridObj.selectionModule;
             (<any>(gridObj.element.querySelector('.e-checkselectall')) as HTMLElement).click();
-            expect(rows[1].firstElementChild.classList.contains('e-selectionbackground')).toBeTruthy();
             selectionModule.selectRows([1]);
-            expect(rows[1].firstElementChild.classList.contains('e-selectionbackground')).toBeTruthy();
             expect(selectionModule.selectedRecords.length).toBe(1);
             gridObj.goToPage(1);
             gridObj.actionComplete = actionComplete;        
@@ -945,6 +942,43 @@ describe('Grid checkbox selection functionality', () => {
         afterAll(() => {
             destroy(gridObj);
             gridObj = chkAll = null;
+        });
+    });
+    
+    describe('EJ2-47977 - row Deselected event parameter returns data as undefined', () => {
+        let gridObj: Grid;
+        let rows: Element[];
+        let rowDeselected: (args: any) => void;
+        beforeAll((done: Function) => {
+            gridObj = createGrid(
+                {
+                    dataSource: filterData,
+                    selectionSettings: { persistSelection: true },
+                    columns: [
+                        { type: 'checkbox', width: 120 },
+                        { field: 'OrderID', headerText: 'Order ID', isPrimaryKey: true, width: 120, textAlign: 'Right', minWidth: 10 },
+                        { field: 'Freight', width: 125, minWidth: 10 },
+                        { field: 'CustomerID', headerText: 'Customer ID', width: 130, minWidth: 10 },
+                    ],
+                }, done);
+        });
+
+        it('select a row', () => {
+            rows = gridObj.getRows();
+            (rows[0].querySelector('.e-rowcell') as HTMLElement).click();
+        });
+        it('Deselect the same row and check the data value', (done: Function) => {
+            rowDeselected = (args: any) => {
+                expect(args.data).not.toEqual(undefined);
+                done();
+            };
+            gridObj.rowDeselected = rowDeselected;
+            (rows[0].querySelector('.e-rowcell') as HTMLElement).click();
+        });
+
+        afterAll(() => {
+            destroy(gridObj);
+            gridObj = rowDeselected = null;
         });
     });
 });

@@ -292,7 +292,9 @@ export class UndoRedo {
                         }
                     }
                 }
-                this.updateCellDetails(actionData.cellDetails, sheet, range, isRefresh);
+                if (actionData) {
+                    this.updateCellDetails(actionData.cellDetails, sheet, range, isRefresh);
+                }
                 setMaxHgt(sheet, range[0], range[1], 20);
                 const hgt: number = getMaxHgt(sheet, range[0]);
                 setRowEleHeight(this.parent, sheet, hgt, range[0]);

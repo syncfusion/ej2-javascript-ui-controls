@@ -65,7 +65,6 @@ export class AxisLayoutPanel {
                 isNullOrUndefined(this.gauge.centerX) && isNullOrUndefined(this.gauge.centerY)) {
                 let startAngle: number; let endAngle: number;
                 startAngle = axis.startAngle;
-                startAngle = !isCompleteAngle(startAngle, axis.endAngle) ? startAngle : [0, endAngle = 360][0];
                 let startPoint: GaugeLocation = getLocationFromAngle(startAngle - 90, currentRadius, this.gauge.midPoint);
                 endAngle = axis.endAngle;
                 endAngle -= isCompleteAngle(startAngle, endAngle) ? 0.0001 : 0;

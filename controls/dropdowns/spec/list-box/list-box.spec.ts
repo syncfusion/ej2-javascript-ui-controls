@@ -769,5 +769,61 @@ describe('ListBox', () => {
             expect(listObj.getItems()[3].classList).toContain(cssClass.selected);
         });
     });
+    describe('Customer Reported Bug', () => {
+        let elem: HTMLElement = createElement('input');
+        beforeAll(() => {
+            document.body.appendChild(elem);
+        });
+
+        afterEach(() => {
+            listObj.destroy();
+        });
+
+        it('EJ2-48312', () => {
+            let vegetableData: { [key: string]: Object }[] = [];
+            listObj = new ListBox({ dataSource: vegetableData , allowFiltering: true }, elem);
+            var ele = listObj.list.getElementsByClassName('e-input-filter')[0];
+            var clearEle = listObj.list.getElementsByClassName('e-input-group-icon')[0];
+            expect(listObj.list.getElementsByClassName('e-ul')[0].childElementCount).toEqual(1);
+            ele.click();
+            ele.value = "c";
+            listObj.dataBind();
+            listObj.keyDownStatus = true;
+            listObj.onInput();
+            listObj.KeyUp({
+                preventDefault: function () { },
+                altKey: false,
+                ctrlKey: false,
+                shiftKey: false,
+                char: '',
+                key: 'c',
+                charCode: 22,
+                keyCode: 67,
+                which: 22,
+                code: 22
+            });
+            expect(listObj.list.getElementsByClassName('e-ul')[0].childElementCount).toEqual(1);
+            ele.click();
+            listObj.dataBind();
+            listObj.keyDownStatus = true;
+            listObj.onInput();
+            listObj.KeyUp({
+                preventDefault: function () { },
+                altKey: false,
+                ctrlKey: false,
+                shiftKey: false,
+                metaKey: false,
+                char: '',
+                key: 'Backspace',
+                charCode: 0,
+                keyCode: 8,
+                which: 8,
+                code: "Backspace"
+            });
+            expect(listObj.list.getElementsByClassName('e-ul')[0].childElementCount).toEqual(1);
+            clearEle.click();
+            expect(listObj.list.getElementsByClassName('e-ul')[0].childElementCount).toEqual(1);
+        });
+    });
 
 });

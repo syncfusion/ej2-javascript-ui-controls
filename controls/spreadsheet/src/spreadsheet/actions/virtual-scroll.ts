@@ -48,16 +48,16 @@ export class VirtualScroll {
         let startIndex: number = this.parent.frozenRowCount(sheet); const indexes: number[] = getCellIndexes(sheet.topLeftCell);
         if (args.top) {
             height = args.top;
-            if (sheet.frozenRows) { height += getRowsHeight(sheet, indexes[0], startIndex - 1); }
+            if (sheet.frozenRows) { height += getRowsHeight(sheet, indexes[0], startIndex - 1, true); }
             startIndex = getCellIndexes(sheet.paneTopLeftCell)[0];
         }
-        height += getRowsHeight(sheet, startIndex, this.scroll[this.parent.activeSheetIndex].rowCount - 1);
+        height += getRowsHeight(sheet, startIndex, this.scroll[this.parent.activeSheetIndex].rowCount - 1, true);
         endIndex = this.parent.viewport.rightIndex;
         let size: number = 0;
         const frozenCol: number = this.parent.frozenColCount(sheet);
         if (args.left) {
             size = args.left;
-            if (frozenCol) { size += getColumnsWidth(sheet, indexes[1], frozenCol - 1); }
+            if (frozenCol) { size += getColumnsWidth(sheet, indexes[1], frozenCol - 1, true); }
             startIndex = getCellIndexes(sheet.paneTopLeftCell)[1];
         } else {
             startIndex = frozenCol;
@@ -66,18 +66,18 @@ export class VirtualScroll {
             if (!this.parent.scrollSettings.isFinite && sheet.colCount <= sheet.usedRange.colIndex) {
                 this.parent.setSheetPropertyOnMute(sheet, 'colCount', sheet.usedRange.colIndex + 1);
             }
-            size += getColumnsWidth(sheet, startIndex, endIndex);
+            size += getColumnsWidth(sheet, startIndex, endIndex, true);
             this.setScrollCount(sheet.colCount, 'col');
-            width = size + getColumnsWidth(sheet, endIndex + 1, this.scroll[this.parent.activeSheetIndex].colCount - 1);
+            width = size + getColumnsWidth(sheet, endIndex + 1, this.scroll[this.parent.activeSheetIndex].colCount - 1, true);
         } else {
             if (!this.parent.scrollSettings.isFinite) { this.parent.setSheetPropertyOnMute(sheet, 'colCount', endIndex + 1); }
-            size += getColumnsWidth(sheet, startIndex, sheet.colCount - 1);
+            size += getColumnsWidth(sheet, startIndex, sheet.colCount - 1, true);
             this.scroll[this.parent.activeSheetIndex].colCount = sheet.colCount; width = size;
         }
         if (isNullOrUndefined(this.parent.viewport.leftIndex)) { this.parent.viewport.leftIndex = 0; }
         if (isNullOrUndefined(this.parent.viewport.topIndex)) { this.parent.viewport.topIndex = 0; }
         if (args.left) {
-            size = getColumnsWidth(sheet, this.parent.viewport.leftIndex + frozenCol, endIndex);
+            size = getColumnsWidth(sheet, this.parent.viewport.leftIndex + frozenCol, endIndex, true);
         }
         if (isNullOrUndefined(this.translateX)) { this.translateX = 0; } if (isNullOrUndefined(this.translateY)) { this.translateY = 0; }
         container = this.parent.getRowHeaderContent();
@@ -382,7 +382,7 @@ export class VirtualScroll {
     private getThresholdHeight(idx: number, threshold: number): number {
         let height: number = 0; const sheet: SheetModel = this.parent.getActiveSheet();
         for (let i: number = idx; i < idx + threshold; i++) {
-            height += getRowHeight(sheet, i);
+            height += getRowHeight(sheet, i, true);
         }
         return height;
     }
@@ -390,7 +390,7 @@ export class VirtualScroll {
     private getThresholdWidth(idx: number, threshold: number): number {
         let width: number = 0; const sheet: SheetModel = this.parent.getActiveSheet();
         for (let i: number = idx; i < idx + threshold; i++) {
-            width += getColumnWidth(sheet, i);
+            width += getColumnWidth(sheet, i, null, true);
         }
         return width;
     }
@@ -412,7 +412,7 @@ export class VirtualScroll {
             this.content.style.width = '';
             const sheet: SheetModel = this.parent.getActiveSheet();
             const width: number = getColumnsWidth(
-                sheet, this.parent.viewport.leftIndex + this.parent.frozenColCount(sheet), this.parent.viewport.rightIndex);
+                sheet, this.parent.viewport.leftIndex + this.parent.frozenColCount(sheet), this.parent.viewport.rightIndex, true);
             this.colHeader.style.width = width + 'px';
             this.content.style.width = width + 'px';
             if (this.parent.allowScrolling) {
@@ -448,9 +448,9 @@ export class VirtualScroll {
             if (args.index !== this.scroll[this.parent.activeSheetIndex].rowCount - 1) {
                 const height: number = this.getVTrackHeight('height'); let newHeight: number = height;
                 if (args.index >= this.scroll[this.parent.activeSheetIndex].rowCount) {
-                    newHeight += getRowsHeight(sheet, this.scroll[this.parent.activeSheetIndex].rowCount, args.index);
+                    newHeight += getRowsHeight(sheet, this.scroll[this.parent.activeSheetIndex].rowCount, args.index, true);
                 } else {
-                    newHeight -= getRowsHeight(sheet, args.index + 1, this.scroll[this.parent.activeSheetIndex].rowCount - 1);
+                    newHeight -= getRowsHeight(sheet, args.index + 1, this.scroll[this.parent.activeSheetIndex].rowCount - 1, true);
                 }
                 if (newHeight < height) { return; }
                 this.scroll[this.parent.activeSheetIndex].rowCount = args.index + 1;
@@ -462,7 +462,7 @@ export class VirtualScroll {
         } else {
             if (args.index > this.scroll[this.parent.activeSheetIndex].colCount) {
                 let width: number = this.getVTrackHeight('width');
-                width += getColumnsWidth(sheet, this.scroll[this.parent.activeSheetIndex].colCount, args.index);
+                width += getColumnsWidth(sheet, this.scroll[this.parent.activeSheetIndex].colCount, args.index, true);
                 this.scroll[this.parent.activeSheetIndex].colCount = args.index + 1;
                 this.updateVTrack(this.colHeader, width, 'width');
                 if (this.scroll[this.parent.activeSheetIndex].colCount > sheet.colCount) {
@@ -479,7 +479,7 @@ export class VirtualScroll {
             const heightArr: string[] = height.split('e+');
             return Number(heightArr[0]) * Math.pow(10, Number(heightArr[1]));
         } else {
-            return parseInt(height, 10);
+            return parseFloat(height);
         }
     }
 
@@ -494,14 +494,14 @@ export class VirtualScroll {
         if (args.colIdx >= this.parent.viewport.leftIndex && args.colIdx <= this.parent.viewport.rightIndex) {
             const hdrVTrack: HTMLElement =
                     this.parent.getColumnHeaderContent().getElementsByClassName('e-virtualtrack')[0] as HTMLElement;
-                hdrVTrack.style.width = parseInt(hdrVTrack.style.width, 10) + args.threshold + 'px';
+                hdrVTrack.style.width = parseFloat(hdrVTrack.style.width) + args.threshold + 'px';
             const cntVTrack: HTMLElement = this.parent.getMainContent().getElementsByClassName('e-virtualtrack')[0] as HTMLElement;
-            cntVTrack.style.width = parseInt(cntVTrack.style.width, 10) + args.threshold + 'px';
+            cntVTrack.style.width = parseFloat(cntVTrack.style.width) + args.threshold + 'px';
             const hdrColumn: HTMLElement =
                     this.parent.getColumnHeaderContent().getElementsByClassName('e-virtualable')[0] as HTMLElement;
-                hdrColumn.style.width = parseInt(hdrColumn.style.width, 10) + args.threshold + 'px';
+                hdrColumn.style.width = parseFloat(hdrColumn.style.width) + args.threshold + 'px';
             const cntColumn: HTMLElement = this.parent.getMainContent().getElementsByClassName('e-virtualable')[0] as HTMLElement;
-            cntColumn.style.width = parseInt(cntColumn.style.width, 10) + args.threshold + 'px';
+            cntColumn.style.width = parseFloat(cntColumn.style.width) + args.threshold + 'px';
         }
     }
 

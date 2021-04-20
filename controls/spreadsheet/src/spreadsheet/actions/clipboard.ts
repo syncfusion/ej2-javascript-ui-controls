@@ -6,15 +6,15 @@ import { CellStyleModel, getRangeAddress, workbookEditOperation, getSheetIndexFr
 import { RowModel, getFormattedCellObject, workbookFormulaOperation, checkIsFormula, Sheet, mergedRange } from '../../workbook/index';
 import { ExtendedSheet, Cell, pasteMerge, setMerge, MergeArgs, getCellIndexes, getCellAddress, ChartModel } from '../../workbook/index';
 import { ribbonClick, ICellRenderer, cut, copy, paste, PasteSpecialType, initiateFilterUI, focus, setPosition } from '../common/index';
-import { BeforePasteEventArgs, hasTemplate, createImageElement } from '../common/index';
+import { BeforePasteEventArgs, hasTemplate, getTextHeightWithBorder, getLines, getExcludedColumnWidth } from '../common/index';
 import { enableToolbarItems, rowHeightChanged, completeAction, beginAction, DialogBeforeOpenEventArgs } from '../common/index';
-import { clearCopy, selectRange, dialog, contentLoaded, tabSwitch, cMenuBeforeOpen, locale } from '../common/index';
+import { clearCopy, selectRange, dialog, contentLoaded, tabSwitch, cMenuBeforeOpen, locale, createImageElement } from '../common/index';
 import { getMaxHgt, setMaxHgt, setRowEleHeight, deleteImage, getRowIdxFromClientY, getColIdxFromClientX } from '../common/index';
 import { Dialog } from '../services/index';
 import { Deferred } from '@syncfusion/ej2-data';
 import { BeforeOpenEventArgs } from '@syncfusion/ej2-popups';
 import { refreshRibbonIcons, isCellReference, getColumn, isLocked as isCellLocked, FilterCollectionModel } from '../../workbook/index';
-import { getFilteredCollection, setChart, parseIntValue, isSingleCell, activeCellMergedRange } from '../../workbook/index';
+import { getFilteredCollection, setChart, parseIntValue, isSingleCell, activeCellMergedRange, getRowsHeight } from '../../workbook/index';
 
 /**
  * Represents clipboard support for Spreadsheet.
@@ -307,9 +307,11 @@ export class Clipboard {
                                         } else {
                                             this.externalMerge = false;
                                         }
-                                        const newFormula: string = this.isFormula([x + l, colInd]);
-                                        if (!isNullOrUndefined(newFormula)) {
-                                            cell.formula = newFormula;
+                                        if (!isExtend) {
+                                            const newFormula: string = this.isFormula([x + l, colInd]);
+                                            if (!isNullOrUndefined(newFormula)) {
+                                                cell.formula = newFormula;
+                                            }
                                         }
                                         let toSkip: boolean = false;
                                         if (this.parent.filteredRows && this.parent.filteredRows.rowIdxColl && this.parent.filteredRows.sheetIdxColl) {
@@ -322,7 +324,7 @@ export class Clipboard {
                                             }
                                         }
                                         if (!toSkip) {
-                                            this.setCell(x + l, colInd, curSheet, cell, isExtend, false, y === selIdx[3]);
+                                            this.setCell(x + l, colInd, curSheet, cell, isExtend, false, y === selIdx[3], isExternal as boolean);
                                         }
                                         const sId: number = this.parent.activeSheetIndex;
                                         const cellElem: HTMLTableCellElement = this.parent.getCell(x + l, colInd) as HTMLTableCellElement;
@@ -391,7 +393,9 @@ export class Clipboard {
                         pastedRange: getSheetName(this.parent) + '!' + getRangeAddress(rfshRange),
                         type: pasteType || 'All'
                     };
-                    this.parent.notify(completeAction, { eventArgs: eventArgs, action: 'clipboard' });
+                    if (!isExternal) {
+                        this.parent.notify(completeAction, { eventArgs: eventArgs, action: 'clipboard' });
+                    }
                 }
                 if (isCut) {
                     this.updateFilter(copyInfo, rfshRange);
@@ -540,7 +544,7 @@ export class Clipboard {
         }
     }
     private setCell(
-        rIdx: number, cIdx: number, sheet: SheetModel, cell: CellModel, isExtend?: boolean, isCut?: boolean, lastCell?: boolean): void {
+        rIdx: number, cIdx: number, sheet: SheetModel, cell: CellModel, isExtend?: boolean, isCut?: boolean, lastCell?: boolean, isExternal?: boolean): void {
         setCell(rIdx, cIdx, sheet, isCut ? null : cell, isExtend);
         if (cell && cell.formula) {
             this.parent.notify(workbookFormulaOperation, {
@@ -558,6 +562,22 @@ export class Clipboard {
         }
         if (sheet.name === this.parent.getActiveSheet().name) {
             this.parent.serviceLocator.getService<ICellRenderer>('cell').refresh(rIdx, cIdx, lastCell);
+        }
+        if (cell && cell.style && isExternal) {
+            let hgt = getTextHeightWithBorder(this.parent, rIdx, cIdx, sheet, cell.style || this.parent.cellStyle, cell.wrap ?
+                getLines(this.parent.getDisplayText(cell),
+                    getExcludedColumnWidth(sheet, rIdx, cIdx), cell.style, this.parent.cellStyle) : 1);
+            hgt = Math.round(hgt);
+            if (hgt < 20) {
+                hgt = 20; // default height
+            }
+            setMaxHgt(sheet, rIdx, cIdx, hgt);
+            const prevHeight: number = getRowsHeight(sheet, rIdx);
+            let maxHgt: number = getMaxHgt(sheet, rIdx);
+            const heightChanged: boolean = maxHgt > prevHeight;
+            if (heightChanged) {
+                setRowEleHeight(this.parent, sheet, maxHgt, rIdx);
+            }
         }
     }
 
@@ -803,13 +823,15 @@ export class Clipboard {
                         td.textContent = td.textContent.replace(/(\r\n|\n|\r)/gm, '');
                         const cSpan: number = isNaN(parseInt(td.getAttribute('colspan'), 10)) ? 1 : parseInt(td.getAttribute('colspan'), 10);
                         const rSpan: number = isNaN(parseInt(td.getAttribute('rowspan'), 10)) ? 1 : parseInt(td.getAttribute('rowspan'), 10);
+                        let wrap: boolean;
+                        if ((cellStyle as { whiteSpace: string }).whiteSpace) {
+                            wrap = true;
+                            delete cellStyle['whiteSpace'];
+                        }
                         cells[j] = {
                             value: td.textContent ? <string>parseIntValue(td.textContent.trim()) : null, style: cellStyle, colSpan: cSpan,
-                            rowSpan: rSpan
+                            rowSpan: rSpan, wrap: wrap
                         };
-                        if ((cellStyle as { whiteSpace: string }).whiteSpace) {
-                            cells[j].wrap = true;
-                        }
                     });
                     (rows as RowModel[]).push({ cells: cells });
                     cells = [];
@@ -826,10 +848,12 @@ export class Clipboard {
             text.trim().split('\n').forEach((row: string) => {
                 row.split('\t').forEach((col: string, j: number) => {
                     if (col) {
-                        cells[j] = { style: cellStyle };
+                        let wrap: boolean;
                         if (cellStyle && (cellStyle as { whiteSpace: string }).whiteSpace) {
-                            cells[j].wrap = true;
+                            wrap = true;
+                            delete cellStyle['whiteSpace'];
                         }
+                        cells[j] = { style: cellStyle, wrap: wrap };
                         if (checkIsFormula(col)) {
                             cells[j].formula = col;
                         } else {
@@ -861,9 +885,9 @@ export class Clipboard {
                     for (let i: number = 0, len: number = td.children.length; i < len; i++) {
                         if (td.children[i] && td.children[i].getAttribute('style')) {
                             styles.push(td.children[i].getAttribute('style'));
-                            if ((td.children[i] as HTMLElement).children) {
+                            if ((td.children[i] as HTMLElement) && (td.children[i] as HTMLElement).children) {
                                 for (let i: number = 0, len: number = (td.children[i] as HTMLElement).children.length; i < len; i++) {
-                                    if (((td.children[i] as HTMLElement).children[i] as HTMLElement) &&
+                                    if (((td.children[i] as HTMLElement) && (td.children[i] as HTMLElement).children[i] as HTMLElement) &&
                                     ((td.children[i] as HTMLElement).children[i] as HTMLElement).getAttribute('style')) {
                                         styles.push(((td.children[i] as HTMLElement).children[i] as HTMLElement).getAttribute('style'));
                                     }

@@ -67,12 +67,12 @@ export class Render {
                 indexes[1] + sheet.frozenColumns === paneIndexes[1] : (sheet.frozenRows ? indexes[0] + sheet.frozenRows === paneIndexes[0]
                 && indexes[1] === 0 : indexes[1] + sheet.frozenColumns === paneIndexes[1] && indexes[0] === 0);
             if (indexes[0] && paneIndexes[0] > indexes[0]) {
-                this.parent.viewport.beforeFreezeHeight = getRowsHeight(sheet, 0, indexes[0] - 1);
+                this.parent.viewport.beforeFreezeHeight = getRowsHeight(sheet, 0, indexes[0] - 1, true);
             } else {
                 this.parent.viewport.beforeFreezeHeight = 0
             }
             if (indexes[1] && paneIndexes[1] > indexes[1]) {
-                this.parent.viewport.beforeFreezeWidth = getColumnsWidth(sheet, 0, indexes[1] - 1);
+                this.parent.viewport.beforeFreezeWidth = getColumnsWidth(sheet, 0, indexes[1] - 1, true);
             } else {
                 this.parent.viewport.beforeFreezeWidth = 0;
             }

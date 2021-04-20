@@ -8,11 +8,11 @@
   }
 
   .e-de-ctnr-undo::before {
-    content: '\eb38';
+    content: '\e341';
   }
 
   .e-de-ctnr-find::before {
-    content: '\eb39';
+    content: '\e60e';
   }
 
   .e-de-ctnr-lock::before {
@@ -32,7 +32,7 @@
   }
 
   .e-de-ctnr-italic::before {
-    content: '\eb3b';
+    content: '\e35a';
   }
 
   .e-de-ctnr-link::before {
@@ -52,7 +52,7 @@
   }
 
   .e-de-ctnr-justify::before {
-    content: '\eb40';
+    content: '\e334';
   }
 
   .e-de-ctnr-tableofcontent::before {
@@ -64,15 +64,15 @@
   }
 
   .e-de-ctnr-highlight::before {
-    content: '\eb44';
+    content: '\ec15';
   }
 
   .e-de-ctnr-new::before {
-    content: '\eb45';
+    content: '\e823';
   }
 
   .e-de-ctnr-paste::before {
-    content: '\eb46';
+    content: '\e355';
   }
 
   .e-de-ctnr-bold::before {
@@ -80,19 +80,15 @@
   }
 
   .e-de-ctnr-subscript::before {
-    content: '\eb48';
+    content: '\e357';
   }
 
   .e-de-ctnr-aligntop::before {
     content: '\eb49';
   }
 
-  .e-de-ctnr-aligncenter::before {
-    content: '\eb4a';
-  }
-
   .e-de-ctnr-fontcolor::before {
-    content: '\eb4b';
+    content: '\ec22';
   }
 
   .e-de-ctnr-change-case::before {
@@ -108,7 +104,7 @@
   }
 
   .e-de-ctnr-strikethrough::before {
-    content: '\eb4e';
+    content: '\e332';
   }
 
   .e-de-ctnr-image::before {
@@ -116,7 +112,7 @@
   }
 
   .e-de-ctnr-redo::before {
-    content: '\eb50';
+    content: '\e354';
   }
 
   .e-de-ctnr-bookmark::before {
@@ -124,7 +120,7 @@
   }
 
   .e-de-ctnr-increaseindent::before {
-    content: '\eb52';
+    content: '\e33f';
   }
 
   .e-de-ctnr-header::before {
@@ -136,27 +132,27 @@
   }
 
   .e-de-ctnr-open::before {
-    content: '\eb55';
+    content: '\e609';
   }
 
   .e-de-ctnr-underline::before {
-    content: '\eb56';
+    content: '\e343';
   }
 
   .e-de-ctnr-superscript::before {
-    content: '\eb57';
+    content: '\e352';
   }
 
   .e-de-ctnr-alignleft::before {
-    content: '\eb58';
+    content: '\e33a';
   }
 
   .e-de-ctnr-numbering::before {
-    content: '\eb59';
+    content: '\e346';
    }
 
   .e-de-ctnr-aligncenter::before {
-    content: '\eb5a';
+    content: '\e35e';
   }
 
   .e-de-ctnr-bullets::before {
@@ -164,7 +160,7 @@
   }
 
   .e-de-ctnr-decreaseindent::before {
-    content: '\eb5c';
+    content: '\e35d';
   }
 
   .e-de-ctnr-showhide::before {
@@ -185,7 +181,7 @@
   }
 
   .e-de-ctnr-clearall::before {
-    content: '\eb61';
+    content: '\e340';
   }
 
   .e-de-ctnr-outsideborder::before {
@@ -230,7 +226,7 @@
   }
 
   .e-de-ctnr-highlightcolor::before {
-    content: '\eb44';
+    content: '\ec15';
   }
 
   .e-de-ctnr-mergecell::before {
@@ -259,14 +255,6 @@
 
   .e-de-ctnr-deletecolumns::before {
     content: '\eb94';
-  }
-
-  .e-de-ctnr-aligntop::before {
-    content: '\eb35';
-  }
-
-  .e-de-ctnr-alignbottom::before {
-    content: '\eb0e';
   }
 
   .e-de-ctnr-aligncenter-table::before {
@@ -323,7 +311,7 @@
   }
 
   .e-de-ctnr-upload::before {
-    content: '\eba4';
+    content: '\e60f';
   }
 
   .e-de-flip {
@@ -392,6 +380,17 @@
 
   .e-de-update-field::before {
     content: '\e19e';
+    font-family: 'e-icons';
+  }
+
+  .e-de-footnote::before {
+    content: '\e435';
+    font-family: 'e-icons';
+    font-weight: 800;
+  }
+
+  .e-de-endnote::before {
+    content: '\e436';
     font-family: 'e-icons';
   }
 }

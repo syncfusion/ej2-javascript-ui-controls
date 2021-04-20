@@ -4,7 +4,7 @@ import { Column, RecordDoubleClickEventArgs, RowInfo, parentsUntil } from '@sync
 import { TreeGrid } from '../base/treegrid';
 import { ITreeData, CellSaveEventArgs } from '../base/interface';
 import * as events from '../base/constant';
-import { isNullOrUndefined, extend, setValue, removeClass, KeyboardEventArgs, addClass, getValue, isBlazor } from '@syncfusion/ej2-base';
+import { isNullOrUndefined, extend, setValue, removeClass, KeyboardEventArgs, addClass, getValue } from '@syncfusion/ej2-base';
 import { updateBlazorTemplate } from '@syncfusion/ej2-base';
 import { DataManager, Deferred, RemoteSaveAdaptor, AdaptorOptions, Query } from '@syncfusion/ej2-data';
 import { findChildrenRecords, getParentData, isCountRequired, isRemoteData  } from '../utils';
@@ -270,7 +270,7 @@ export class Edit {
     }
 
     private keyPressed(args: KeyboardEventArgs): void {
-        if (this.isOnBatch || (this.parent.editSettings.mode === 'Cell' && isBlazor() && this.parent.isServerRendered)) {
+        if (this.isOnBatch) {
             this.keyPress = args.action;
         }
         if (args.action === 'f2') {
@@ -390,7 +390,6 @@ export class Edit {
                 if ((row.rowIndex === this.parent.getCurrentViewRecords().length - 1) && this.keyPress === 'tab') {
                     this.isTabLastRow = true;
                 }
-                this.blazorTemplates(args);
                 if (!isRemoteData(this.parent) &&
                 !(this.parent.dataSource instanceof DataManager && this.parent.dataSource.adaptor instanceof RemoteSaveAdaptor )) {
                     if (isCountRequired(this.parent)) {
@@ -468,29 +467,7 @@ export class Edit {
                 this.enableToolbarItems('edit');
             }
         }
-    }
-
-    private blazorTemplates(args: CellSaveArgs): void {
-        if (isBlazor() && this.parent.isServerRendered) {
-            const cols: Column[] = this.parent.grid.getColumns();
-            const colModel: string = 'columnModel';
-            const columnModel: Column[] = this.parent.grid[colModel];
-            const str: string = 'isStringTemplate';
-            for (let i: number = 0; i < cols.length; i++) {
-                if (columnModel[i].template) {
-                    const templateID: string = this.parent.grid.element.id + cols[i].uid;
-                    columnModel[i].getColumnTemplate()(extend({ 'index': [i] }, args.rowData), this.parent.grid, 'template',
-                                                       templateID, this.parent.grid[str], null);
-                }
-                if (cols[i].editTemplate) {
-                    updateBlazorTemplate(this.parent.grid.element.id + cols[i].uid + 'editTemplate', 'EditTemplate', cols[i]);
-                }
-                if (cols[i].template) {
-                    updateBlazorTemplate(this.parent.grid.element.id + cols[i].uid, 'Template', cols[i], false);
-                }
-            }
-        }
-    }
+    }    
 
     private updateCell(args: CellSaveArgs, rowIndex: number): void {
         this.parent.grid.editModule.updateRow(rowIndex, args.rowData);

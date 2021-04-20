@@ -516,6 +516,7 @@ export interface IGrid extends Component<HTMLElement> {
     tableIndex?: number;
     isVue?: boolean;
     adaptiveDlgTarget?: HTMLElement;
+    parentDetails?: ParentDetails;
 
     /**
      * @hidden
@@ -2155,6 +2156,7 @@ export interface IFocus {
     onClick?: Function;
     onFocus?: Function;
     lastIdxCell: boolean;
+    target?: HTMLElement;
     jump?: (action: string, current: number[]) => SwapInfo;
     getFocusInfo?: () => FocusInfo;
     getFocusable?: (element: HTMLElement) => HTMLElement;

@@ -1043,7 +1043,7 @@ export class PivotEngine {
             let field: ICalculatedFields = this.calculatedFields[fieldKeys[calc]];
             let calcProperties: ICalculatedFields = (<{ [key: string]: Object }>field).properties as ICalculatedFields;
             let actualFormula: string =
-                (calcProperties ? calcProperties.formula : field.formula).replace(/ +/g, '');
+                (calcProperties ? calcProperties.formula : field.formula).trim();
             let formula: string = actualFormula.replace(/"/g, '');
             field.formula = formula.indexOf('^') > -1 ? this.powerFunction(formula) : formula;
             if (field.formula.indexOf('Math.min(') === -1 && field.formula.indexOf('min(') > -1) {
@@ -1061,7 +1061,7 @@ export class PivotEngine {
             keys.push(field.name);
             let formulaType: string[] = actualFormula.split('\"');
             for (let len: number = 0, lmt: number = formulaType.length; len < lmt; len++) {
-                let type: string = formulaType[len];
+                let type: string = formulaType[len].trim();
                 let aggregateValue: string[] = type.split(/[ .:;?!~,`"&|()<>{}\[\]\r\n/\\]+/);
                 let matchStrings: string[] = type.match(/^([^()]+)\((.*)\)$/);
                 let selectedString: string = (aggregateValue[0] === 'DistinctCount' ?

@@ -4,7 +4,15 @@
 
 ## [Unreleased]
 
-## 19.1.56 (2021-04-13)
+## 19.1.55 (2021-04-06)
+
+### CircularGauge
+
+#### Bug Fixes
+
+- `#319856` - The axis with same start and end angle will now render properly.
+
+## 19.1.54 (2021-03-30)
 
 ### CircularGauge
 

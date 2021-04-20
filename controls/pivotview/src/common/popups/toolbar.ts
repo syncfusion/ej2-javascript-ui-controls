@@ -1231,8 +1231,8 @@ export class Toolbar {
             case (this.parent.element.id + 'excel'):
                 exportArgs = {
                     excelExportProperties: { fileName: 'Export.xlsx' },
-                    isBlob: false,
-                    isMultipleExport: false,
+                    isBlob: undefined,
+                    isMultipleExport: undefined,
                     workbook: undefined
                 };
                 this.parent.trigger(events.beforeExport, exportArgs, (observedArgs: BeforeExportEventArgs) => {
@@ -1544,7 +1544,7 @@ export class Toolbar {
         } else {
             let multipleAxisCheckBox: CheckBox = (getInstance('#' + this.parent.element.id + '_DialogMultipleAxis', CheckBox) as CheckBox);
             multipleAxisCheckBox.disabled = false;
-            (getInstance('#' + this.parent.element.id + '_AxisModeOption', DropDownList) as DropDownList).enabled =  multipleAxisCheckBox.checked;
+            (getInstance('#' + this.parent.element.id + '_AxisModeOption', DropDownList) as DropDownList).enabled = multipleAxisCheckBox.checked;
         }
     }
 

@@ -12,6 +12,7 @@ Chart.Inject(
 AccumulationChart.Inject(AccumulationLegend, PieSeries, AccumulationTooltip, AccumulationDataLabel);
 import { SvgRenderer } from '@syncfusion/ej2-svg-base';
 import { createElement } from '@syncfusion/ej2-base';
+import { isNullOrUndefined } from '@syncfusion/ej2-base';
 /**
  * Chart component is used to convert office charts to ej2-charts.
  */
@@ -366,13 +367,13 @@ export class ChartComponent {
         return primaryYAxis;
     }
     private checkAndSetAxisValue(primaryYAxis: any, data: any): any {
-        if (data.minimumValue !== 0) {
+        if (!(isNullOrUndefined(data.minimumValue))) {
             primaryYAxis.minimum = data.minimumValue;
         }
-        if (data.maximumValue !== 0) {
+        if (!(isNullOrUndefined(data.maximumValue)) && data.maximumValue !== 0) {
             primaryYAxis.maximum = data.maximumValue;
         }
-        if (data.majorUnit !== 0) {
+        if (!(isNullOrUndefined(data.majorUnit)) && data.majorUnit !== 0) {
             primaryYAxis.interval = data.majorUnit;
         }
     }

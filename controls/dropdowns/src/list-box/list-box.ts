@@ -630,6 +630,7 @@ export class ListBox extends DropDownBase {
     }
 
     private onInput(): void {
+        this.isDataSourceUpdate = false;
         if (this.keyDownStatus) {
             this.isValidKey = true;
         } else {
@@ -664,6 +665,12 @@ export class ListBox extends DropDownBase {
                 searchEle = this.list.getElementsByClassName('e-filter-parent')[0];
             } else {
                 searchEle = this.list.getElementsByClassName('e-filter-parent')[0].cloneNode(true) as Element;
+            }
+        }
+        if (list.length === 0) {
+            const noRecElem: Element = ulElement.getElementsByClassName('e-list-nrt')[0];
+            if (noRecElem) {
+                ulElement.removeChild(noRecElem);
             }
         }
         super.onActionComplete(ulElement, list, e);
@@ -1739,6 +1746,7 @@ export class ListBox extends DropDownBase {
                 if (isRefresh) {
                     tListBox.ulElement.innerHTML = tListBox.renderItems(tListData as obj[], tListBox.fields).innerHTML;
                     tListBox.setSelection();
+                    fListBox.trigger('actionComplete', { items: tempItems, eventName: this.toolbarAction });
                 }
                 fListBox.updateSelectedOptions();
             }

@@ -2,6 +2,22 @@
 
 ## [Unreleased]
 
+## 19.1.57 (2021-04-20)
+
+### Tree Grid
+
+#### Bug Fixes
+
+- `#I317066` - Right-clicking on the bottom rows in the current view works fine with Virtualization.
+
+## 19.1.56 (2021-04-13)
+
+### Tree Grid
+
+#### Bug Fixes
+
+- `#321468` - Updating datasource dynamically with column template and stacked header enabled works fine.
+
 ## 19.1.55 (2021-04-06)
 
 ### Tree Grid

@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 19.1.57 (2021-04-20)
+
+### Schedule
+
+#### Bug Fixes
+
+- `#I312919` - An issue with the scheduler performance with resources has been resolved.
+
 ## 19.1.56 (2021-04-13)
 
 ### Schedule

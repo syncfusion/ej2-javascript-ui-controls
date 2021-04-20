@@ -8025,4 +8025,55 @@ describe('MultiSelect', () => {
            listObj.destroy();
         });
     });
+    describe('EJ2-47806 - When we clear the value, the previously selected data appears in popup', () => {
+        let listObj: MultiSelect;
+        let originalTimeout: number;
+        let element: HTMLInputElement = <HTMLInputElement>createElement('input', { id: 'multiselect' });
+        beforeAll(() => {
+            document.body.innerHTML = '';
+            document.body.appendChild(element);
+            originalTimeout = jasmine.DEFAULT_TIMEOUT_INTERVAL;
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+        });
+        afterAll(() => {
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = originalTimeout;
+            if (element) {
+                element.remove();
+            }
+        });
+        it('Testing the li element count in popup after removed the typed custom value and resolve coverage issue', (done) => {
+            listObj = new MultiSelect({
+                allowCustomValue: true, allowFiltering : true,
+                dataSource: new DataManager({
+                    url: "https://services.odata.org/V4/Northwind/Northwind.svc/Customers",
+                    adaptor: new ODataV4Adaptor(),
+                    crossDomain: true
+                }),
+                query: new Query().select(["ContactName", "CustomerID"]).take(3),
+                fields: { text: "ContactName", value: "CustomerID" },
+                value : ["ALFKI"],
+            });
+            listObj.appendTo(element);
+            listObj.showPopup();
+            (<any>listObj).inputFocus = true;
+            (<any>listObj).inputElement.value = "ma";
+            keyboardEventArgs.altKey = false;
+            keyboardEventArgs.keyCode = 70;
+            setTimeout(() => {
+                (<any>listObj).keyDownStatus = true;
+                (<any>listObj).onInput();
+                (<any>listObj).keyUp(keyboardEventArgs);
+                setTimeout(() => {
+                    (<any>listObj).inputElement.value = '';
+                    keyboardEventArgs.altKey = false;
+                    keyboardEventArgs.keyCode = 8;
+                    (<any>listObj).keyDownStatus = true;
+                    (<any>listObj).onInput();
+                    (<any>listObj).keyUp(keyboardEventArgs);
+                    expect(listObj.ulElement.querySelectorAll("li.e-list-item").length).toBe(3);
+                    done();
+                }, 2000);
+            }, 800);        
+        });
+    });
 });

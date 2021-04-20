@@ -3,7 +3,7 @@ $imported-modules: () !default;
 .e-lib {
     @at-root
     {
-        @import url("../material-dark.scss");
+        @import "../material-dark.scss";
     }
 
     & .e-js [class^='e-'], & .e-js [class*=' e-'] {

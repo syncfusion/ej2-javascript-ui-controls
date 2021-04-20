@@ -1608,9 +1608,9 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
             const range: Range = this.getRange();
             const selection: Selection = (this.formatter.editorManager as EditorManager).domNode.getSelection();
             if(/\s+$/.test(selection.toString())) {
-                if (!isNOU(range.startContainer.parentElement) && !isNOU(range.startContainer.parentElement.nextSibling) &&
+                if (!isNOU(range.startContainer.parentElement) && (!isNOU(range.startContainer.parentElement.nextSibling) &&
                 (range.startContainer.parentElement.nextSibling.nodeType !== 3 ||
-                /\s+$/.test(range.startContainer.parentElement.nextSibling.textContent))
+                /\s+$/.test(range.startContainer.parentElement.nextSibling.textContent)) || range.startOffset === range.endOffset)
                 || range.startContainer.parentElement.tagName.toLocaleLowerCase() === "li") {
                     range.setStart(range.startContainer, range.startOffset);
                     range.setEnd(range.startContainer, range.startContainer.textContent.length);

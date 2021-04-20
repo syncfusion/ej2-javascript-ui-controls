@@ -311,7 +311,7 @@ function leftFlip(
     if ((tEdge.TL.left - getBodyScrollLeft()) <= ContainerLeft()) {
         collideSide.leftSide = false;
     }
-    if (tEdge.TR.left >= ContainerRight()) {
+    if (tEdge.TR.left > ContainerRight()) {
         collideSide.rightSide = false;
     }
     if ((collideSide.leftSide && !collideSide.rightSide) || (!collideSide.leftSide && collideSide.rightSide)) {
@@ -464,6 +464,7 @@ function getViewPortHeight(): number {
  */
 function getViewPortWidth(): number {
     const windowWidth : number = window.innerWidth;
-    const offsetWidth: number = (isNullOrUndefined(document.documentElement)) ? 0 : document.documentElement.offsetWidth;
+    let documentReact: ClientRect = document.documentElement.getBoundingClientRect();
+    let offsetWidth: number = (isNullOrUndefined(document.documentElement)) ? 0 : documentReact.width;
     return windowWidth - (windowWidth - offsetWidth);
 }

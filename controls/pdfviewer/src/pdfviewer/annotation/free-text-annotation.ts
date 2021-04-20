@@ -352,6 +352,7 @@ export class FreeTextAnnotation {
                         };
                         if (isImportAction) {
                             annot.id = annotation.AnnotName;
+                            annot.previousFontSize = annotation.FontSize ? annotation.FontSize : this.fontSize;
                         }
                         const addedAnnot: PdfAnnotationBaseModel = this.pdfViewer.add(annot as PdfAnnotationBase);
                         this.pdfViewer.annotationModule.storeAnnotations(pageNumber, annot, '_annotations_freetext');
@@ -606,10 +607,7 @@ export class FreeTextAnnotation {
         if (!this.pdfViewerBase.isFreeTextContextMenu) {
             this.pdfViewer.fireBeforeAddFreeTextAnnotation(this.inputBoxElement.value);
             // eslint-disable-next-line
-            let pageIndex: number = parseInt(this.inputBoxElement.id.split('_')[2]);
-            if (isNullOrUndefined(pageIndex)) {
-                pageIndex = this.pdfViewerBase.currentPageNumber - 1;
-            }
+            let pageIndex: number = this.pdfViewerBase.currentPageNumber - 1;
             const pageDiv: HTMLElement = this.pdfViewerBase.getElement('_pageDiv_' + (pageIndex));
             let inputEleHeight: number = parseFloat(this.inputBoxElement.style.height);
             let inputEleWidth: number = parseFloat(this.inputBoxElement.style.width);

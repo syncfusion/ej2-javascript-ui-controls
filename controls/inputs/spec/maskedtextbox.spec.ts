@@ -2,7 +2,7 @@
  * MaskedTextBox spec document
  */
 
-import { createElement, KeyboardEvents, EmitType, EventHandler, extend, Browser, isBlazor, Event } from '@syncfusion/ej2-base';
+import { createElement, KeyboardEvents, EmitType, EventHandler, extend, Browser, isBlazor, Event, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { MaskedTextBox, MaskChangeEventArgs, MaskFocusEventArgs, MaskBlurEventArgs} from '../src/maskedtextbox/maskedtextbox/maskedtextbox';
 import { maskInput, setMaskValue, getVal, getMaskedVal, mobileRemoveFunction, maskInputDropHandler, maskInputBlurHandler } from '../src/maskedtextbox/base/mask-base';
 import  {profile , inMB, getMemoryProfile} from './common.spec';
@@ -3244,5 +3244,65 @@ describe('EJ2-41360- Masked Textbox focus behavior checking', function () {
         focusEvent.initEvent('focus', true, true)
         input.dispatchEvent(focusEvent);
         expect(isFocus).toBe(true);
+    });
+});
+describe('EJ2-48023', function () {
+    let maskBox: any;
+    let isBlurTriggerd: boolean = false;
+    beforeEach(function () {
+        let ele: HTMLElement = createElement('input', { id: 'mask1' });
+        document.body.appendChild(ele);
+    });
+    afterEach(function () {
+        if (maskBox) {
+            maskBox.destroy();
+        }
+        document.body.innerHTML = '';
+        isBlurTriggerd = false;
+    });
+    it('Testing blur event firing while rendering and focus out the control with placeholder', function () {
+        maskBox = new MaskedTextBox({
+            mask: "000-0000-000",
+            placeholder : "Enter phone number",
+            blur: (args : any) => {
+                isBlurTriggerd = true;
+                expect(!isNullOrUndefined(args.event)).toBe(true);
+            }
+        });
+        maskBox.appendTo('#mask1');
+        expect(isBlurTriggerd).toBe(false);
+        let input: HTMLInputElement = <HTMLInputElement>document.getElementById('mask1');
+        focusEvent.initEvent('focus');
+        input.dispatchEvent(focusEvent);
+        focusEvent.initEvent('blur');
+        input.dispatchEvent(focusEvent);
+        expect(isBlurTriggerd).toBe(true);
+        focusEvent.initEvent('focus');
+        input.dispatchEvent(focusEvent);
+        focusEvent.initEvent('blur');
+        input.dispatchEvent(focusEvent);
+        expect(isBlurTriggerd).toBe(true);
+    });
+    it('Testing blur event firing while rendering and focus out the control without placeholder', function () {
+        maskBox = new MaskedTextBox({
+            mask: "000-0000-000",
+            blur: (args : any) => {
+                isBlurTriggerd = true;
+                expect(!isNullOrUndefined(args.event)).toBe(true);
+            }
+        });
+        maskBox.appendTo('#mask1');
+        expect(isBlurTriggerd).toBe(false);
+        let input: HTMLInputElement = <HTMLInputElement>document.getElementById('mask1');
+        focusEvent.initEvent('focus');
+        input.dispatchEvent(focusEvent);
+        focusEvent.initEvent('blur');
+        input.dispatchEvent(focusEvent);
+        expect(isBlurTriggerd).toBe(true);
+        focusEvent.initEvent('focus');
+        input.dispatchEvent(focusEvent);
+        focusEvent.initEvent('blur');
+        input.dispatchEvent(focusEvent);
+        expect(isBlurTriggerd).toBe(true);
     });
 });

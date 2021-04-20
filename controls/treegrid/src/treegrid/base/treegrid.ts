@@ -1,5 +1,5 @@
 import { Component, addClass, createElement, EventHandler, isNullOrUndefined, Ajax, ModuleDeclaration, extend} from '@syncfusion/ej2-base';
-import { removeClass, EmitType, Complex, Collection, KeyboardEventArgs, isBlazor, getElement, getValue } from '@syncfusion/ej2-base';
+import { removeClass, EmitType, Complex, Collection, KeyboardEventArgs, getValue } from '@syncfusion/ej2-base';
 import {Event, Property, NotifyPropertyChanges, INotifyPropertyChanged, setValue, KeyboardEvents, L10n } from '@syncfusion/ej2-base';
 import { Column, ColumnModel } from '../models/column';
 import { BeforeBatchSaveArgs, BeforeBatchAddArgs, BatchDeleteArgs, BeforeBatchDeleteArgs, InfiniteScroll } from '@syncfusion/ej2-grids';
@@ -14,7 +14,7 @@ import { TextWrapSettings } from '../models/textwrap-settings';
 import { TextWrapSettingsModel } from '../models/textwrap-settings-model';
 import {Filter} from '../actions/filter';
 import { Logger as TreeLogger } from '../actions/logger';
-import { gridObserver, BeforeCopyEventArgs, BeforePasteEventArgs } from '@syncfusion/ej2-grids';
+import { BeforeCopyEventArgs, BeforePasteEventArgs } from '@syncfusion/ej2-grids';
 import { TreeClipboard } from '../actions/clipboard';
 import {Aggregate} from '../actions/summary';
 import { Reorder } from '../actions/reorder';
@@ -1334,10 +1334,6 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
         excelExportProperties?: ExcelExportProperties | TreeGridExcelExportProperties, isMultipleExport?: boolean,
         workbook?: any, isBlob?: boolean): Promise<any> {
           /* eslint-enable */
-        if (isBlazor()) {
-            this.excelExportModule.Map(excelExportProperties, isMultipleExport, workbook, isBlob, false);
-            return null;
-        }
         return this.excelExportModule.Map(excelExportProperties, isMultipleExport, workbook, isBlob, false);
     }
     /**
@@ -1355,10 +1351,6 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
         excelExportProperties?: ExcelExportProperties,
         isMultipleExport?: boolean, workbook?: any, isBlob?: boolean): Promise<any> {
           /* eslint-enable */
-        if (isBlazor()) {
-            this.excelExportModule.Map(excelExportProperties, isMultipleExport, workbook, isBlob, true);
-            return null;
-        }
         return this.excelExportModule.Map(excelExportProperties, isMultipleExport, workbook, isBlob, true);
     }
     /**
@@ -1374,10 +1366,6 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
     public pdfExport(
         pdfExportProperties?: PdfExportProperties | TreeGridPdfExportProperties,
         isMultipleExport?: boolean, pdfDoc?: Object, isBlob?: boolean): Promise<Object> {
-        if (isBlazor()) {
-            this.pdfExportModule.Map(pdfExportProperties, isMultipleExport, pdfDoc, isBlob);
-            return null;
-        }
         return this.pdfExportModule.Map(pdfExportProperties, isMultipleExport, pdfDoc, isBlob);
     }
 
@@ -1808,45 +1796,39 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
         this.renderModule = new Render(this);
         this.dataModule = new DataManipulation(this);
         this.printModule = new Print(this);
-        const clientRender: string = 'isClientRender';
-        if (this[clientRender]) {
-            this.isServerRendered = false;
-        }
         this.trigger(events.load);
         this.autoGenerateColumns();
         this.initialRender = true;
         if (!isNullOrUndefined(this.dataSource)) {
             this.convertTreeData(this.dataSource);
         }
-        if (!isBlazor() || !this.isServerRendered) {
-            this.loadGrid();
-            if (this.element.classList.contains('e-treegrid') && this.rowDropSettings.targetID) {
-                this.grid.rowDropSettings.targetID += '_gridcontrol';
-            }
-            this.addListener();
-            const gridContainer: Element = createElement('div', { id: this.element.id + '_gridcontrol' });
-            addClass([this.element], 'e-treegrid');
-            if (!isNullOrUndefined(this.height) && typeof (this.height) === 'string' && this.height.indexOf('%') !== -1) {
-                this.element.style.height = this.height;
-            }
-            if (!isNullOrUndefined(this.width) && typeof (this.width) === 'string' && this.width.indexOf('%') !== -1) {
-                this.element.style.width = this.width;
-            }
-            this.element.appendChild(gridContainer);
-            let gridRequiredModules: Function = this.grid.requiredModules;
-            this.grid.requiredModules = function (): ModuleDeclaration[] {
-                let modules: ModuleDeclaration[] = [];
-                modules = gridRequiredModules.apply(this);
-                for (let i: number = 0; i < modules.length; i++) {
-                    if (modules[i].member === 'virtualscroll') {
-                        modules[i].member = 'treeVirtualScroll';
-                    }
-                }
-                return modules;
-            }
-            this.grid.appendTo(gridContainer as HTMLElement);
-            this.wireEvents();
+        this.loadGrid();
+        if (this.element.classList.contains('e-treegrid') && this.rowDropSettings.targetID) {
+            this.grid.rowDropSettings.targetID += '_gridcontrol';
         }
+        this.addListener();
+        const gridContainer: Element = createElement('div', { id: this.element.id + '_gridcontrol' });
+        addClass([this.element], 'e-treegrid');
+        if (!isNullOrUndefined(this.height) && typeof (this.height) === 'string' && this.height.indexOf('%') !== -1) {
+            this.element.style.height = this.height;
+        }
+        if (!isNullOrUndefined(this.width) && typeof (this.width) === 'string' && this.width.indexOf('%') !== -1) {
+            this.element.style.width = this.width;
+        }
+        this.element.appendChild(gridContainer);
+        let gridRequiredModules: Function = this.grid.requiredModules;
+        this.grid.requiredModules = function (): ModuleDeclaration[] {
+            let modules: ModuleDeclaration[] = [];
+            modules = gridRequiredModules.apply(this);
+            for (let i: number = 0; i < modules.length; i++) {
+                if (modules[i].member === 'virtualscroll') {
+                    modules[i].member = 'treeVirtualScroll';
+                }
+            }
+            return modules;
+        }
+        this.grid.appendTo(gridContainer as HTMLElement);
+        this.wireEvents();
         this.renderComplete();
         const destroyTemplate: string = 'destroyTemplate';
         const destroyTemplateFn: Function = this.grid[destroyTemplate] as Function;
@@ -1858,10 +1840,6 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
                 this.clearTemplate(args, index);
             }
         };
-        if (isBlazor() && this.isServerRendered) {
-            const fn: Function = (args: { grid: Grid, id: string }) => this.gridRendered(args);
-            gridObserver.on('component-rendered', fn, this);
-        }
     }
 
     private afterGridRender(): void {
@@ -1871,66 +1849,6 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
         this.clipboardModule = this.grid.clipboardModule = new TreeClipboard(this);
     }
 
-    private gridRendered(args: { grid: Grid, id: string }): void {
-        if (args.id === this.element.id + '_gridcontrol') {
-            this.grid = args.grid;
-        } else {
-            return;
-        }
-        this.grid.query.queries = [];
-        const isJsComponent: string = 'isJsComponent';
-        const isHybrid: string = 'isHybrid';
-        if (!this.isServerRendered) {
-            this.grid[isJsComponent] = true;
-        } else {
-            this.grid[isHybrid] = true;
-        }
-        this.setBlazorGUID();
-        this.setColIndex(this.grid.columns as GridColumnModel[]);
-        this.bindGridEvents();
-        const headerCheckbox: string = 'headerCheckbox';
-        if (!isNullOrUndefined(this.selectionModule)) {
-            this.grid.on('colgroup-refresh', this.selectionModule[headerCheckbox], this.selectionModule);
-        }
-        for (let i: number = 0; i < this.columns.length; i++) {
-            (this.columns[i] as Column).uid = (this.grid.columns[i] as ColumnModel).uid;
-        }
-        this.wireEvents();
-        this.afterGridRender();
-        const processModel: string = 'processModel';
-        this.grid[processModel]();
-        gridObserver.off('component-rendered', this.gridRendered);
-    }
-    private setColIndex(columnModel: GridColumnModel[], ind: number = 0): number {
-        for (let i: number = 0, len: number = columnModel.length; i < len; i++) {
-            if ((columnModel[i] as GridColumn).columns) {
-                (columnModel[i] as GridColumn).index = isNullOrUndefined((columnModel[i] as GridColumn).index) ? ind :
-                    (columnModel[i] as GridColumn).index;
-                ind++;
-                ind = this.setColIndex(<GridColumn[]>(columnModel[i] as GridColumn).columns, ind);
-            } else {
-                (columnModel[i] as GridColumn).index = isNullOrUndefined((columnModel[i] as GridColumn).index) ? ind :
-                    (columnModel[i] as GridColumn).index;
-                ind++;
-            }
-        }
-        return ind;
-    }
-    private setBlazorGUID(): void {
-        const guid: string = 'guid';
-        if (this.editSettings) {
-            this.grid.editSettings[guid] = this.editSettings[guid];
-            this.grid.editSettings.template = this.editSettings.template;
-        }
-        for (let i: number = 0; i < this.aggregates.length; i++) {
-            for (let j: number = 0; j < this.aggregates[i].columns.length; j++) {
-                this.grid.aggregates[i].columns[j][guid] = this.aggregates[i].columns[j][guid];
-            }
-        }
-        for (let i: number = 0; i < this.columns.length; i++) {
-            this.grid.columns[i][guid] = this.columns[i][guid];
-        }
-    }
     private convertTreeData(data: Object): void {
         if (isCountRequired(this)) {
             data = getValue('result', data);
@@ -2030,13 +1948,7 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
             this.trigger(events.rowSelecting, args);
         };
         this.grid.rowSelected = (args: RowDeselectEventArgs): void => {
-            if (!isBlazor()) {
-                this.selectedRowIndex = this.grid.selectedRowIndex;
-            } else if (isBlazor() && this.isServerRendered) {
-                this.allowServerDataBinding = false;
-                this.setProperties({ selectedRowIndex: this.grid.selectedRowIndex}, true);
-                this.allowServerDataBinding = true;
-            }
+            this.selectedRowIndex = this.grid.selectedRowIndex;
             this.notify(events.rowSelected, args);
             this.trigger(events.rowSelected, args);
         };
@@ -2200,12 +2112,6 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
       }
     }
     private bindCallBackEvents(): void {
-        let beginEdit: Function;
-        if (isBlazor() && this.isServerRendered) {
-            if (!isNullOrUndefined(this.grid.beginEdit)) {
-                beginEdit = this.grid.beginEdit;
-            }
-        }
         this.grid.toolbarClick = (args: ClickEventArgs): Deferred | void => {
             const callBackPromise: Deferred = new Deferred();
             this.trigger(events.toolbarClick, args, (toolbarargs: ClickEventArgs) => {
@@ -2224,11 +2130,6 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
             return callBackPromise;
         };
         this.grid.beginEdit = (args: BeginEditArgs): Deferred | void => {
-            if (isBlazor() && this.isServerRendered) {
-                if (beginEdit && typeof beginEdit === 'function') {
-                    beginEdit.apply(this, [args]);
-                }
-            }
             if (!isNullOrUndefined(args.row) && args.row.classList.contains('e-summaryrow')) {
                 args.cancel = true;
                 return;
@@ -2241,24 +2142,6 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
         };
     }
     private extendedGridEditEvents(): void {
-        const keypressed: string = 'key-pressed';
-        const editKeyPress: string = 'keyPressed';
-        const localobserver: string = 'localObserver';
-        let cellEdit: Function;
-        let cellSave: Function;
-        if (isBlazor() && this.isServerRendered) {
-            if (!isNullOrUndefined(this.grid.cellEdit)) {
-                cellEdit = this.grid.cellEdit;
-            }
-            if (!isNullOrUndefined(this.grid.cellSave)) {
-                cellSave = this.grid.cellSave;
-            }
-        }
-        if (this.editModule && isBlazor() && this.isServerRendered) {
-            this.grid.on(keypressed, this.editModule[editKeyPress], this.editModule);
-            const events: [] = this.grid[localobserver].boundedEvents['key-pressed'];
-            events.splice(0, 0, events.pop());
-        }
         this.grid.dataStateChange = (args: DataStateChangeEventArgs): void => {
             if (this.isExpandRefresh) {
                 this.isExpandRefresh = false;
@@ -2268,11 +2151,6 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
             }
         };
         this.grid.cellSave = (args: CellSaveArgs): Deferred | void => {
-            if (isBlazor() && this.isServerRendered) {
-                if (cellSave && typeof cellSave === 'function') {
-                    cellSave.apply(this, [args]);
-                }
-            }
             if (this.grid.isContextMenuOpen()) {
                 const contextitems: HTMLElement = <HTMLElement>this.grid.contextMenuModule.contextMenu.element.getElementsByClassName('e-selected')[0];
                 if ((isNullOrUndefined(contextitems) || contextitems.id !== this.element.id + '_gridcontrol_cmenu_Save')) {
@@ -2281,9 +2159,6 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
             }
             const callBackPromise: Deferred = new Deferred();
             this.trigger(events.cellSave, args, (cellsaveArgs: CellSaveArgs) => {
-                if (isBlazor() && !this.isServerRendered) {
-                    cellsaveArgs.cell = getElement(cellsaveArgs.cell);
-                }
                 if (!cellsaveArgs.cancel) {
                     this.notify(events.cellSave, cellsaveArgs);
                 }
@@ -2296,11 +2171,6 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
             this.notify(events.cellSaved, args);
         };
         this.grid.cellEdit = (args: BatchAddArgs): Deferred | void => {
-            if (isBlazor() && this.isServerRendered) {
-                if (cellEdit && typeof cellEdit === 'function') {
-                    cellEdit.apply(this, [args]);
-                }
-            }
             const prom: string = 'promise';
             const promise: Deferred = new Deferred();
             args[prom] = promise;
@@ -2336,16 +2206,7 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
     }
 
     private updateRowTemplate(): void {
-        if (isBlazor() && !this.isServerRendered) {
-            setTimeout(
-                () => {
-                    this.treeColumnRowTemplate();
-                },
-                1000
-            );
-        } else {
-            this.treeColumnRowTemplate();
-        }
+        this.treeColumnRowTemplate();
     }
 
     private bindedDataSource(): void {
@@ -2353,9 +2214,6 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
         const isDataAvailable: string = 'isDataAvailable';
         const adaptor: string = 'adaptor';
         const ready: string = 'ready';
-        const adaptorName: string = 'adaptorName';
-        const dotnetInstance: string = 'dotnetInstance';
-        const key: string = 'key';
         if (this.dataSource && isCountRequired(this)) {
             const data: Object[] = this.flatData;
             const datacount: number = getValue('count', this.dataSource);
@@ -2363,11 +2221,6 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
         } else {
             this.grid.dataSource = !(this.dataSource instanceof DataManager) ?
                 this.flatData : new DataManager(this.dataSource.dataSource, this.dataSource.defaultQuery, this.dataSource.adaptor);
-        }
-        if (isBlazor() && this.dataSource instanceof DataManager) {
-            this.grid.dataSource[adaptorName] = this.dataSource[adaptorName];
-            this.grid.dataSource[dotnetInstance] = this.dataSource[dotnetInstance];
-            this.grid.dataSource[key] = this.dataSource[key];
         }
         if (this.dataSource instanceof DataManager && (this.dataSource.dataSource.offline || this.dataSource.ready)) {
             this.grid.dataSource[dataSource].json = extendArray(this.dataSource[dataSource].json);
@@ -2384,13 +2237,7 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
         }
     }
 
-    private extendedGridActionEvents(): void {
-        let actionComplete: Function;
-        if (isBlazor() && this.isServerRendered) {
-            if (!isNullOrUndefined(this.grid.actionComplete)) {
-                actionComplete = this.grid.actionComplete;
-            }
-        }
+    private extendedGridActionEvents(): void {       
         this.grid.actionBegin = (args: ActionEventArgs): Deferred| void => {
             if (args.requestType === 'sorting' && args.target && args.target.parentElement &&
             args.target.parentElement.classList.contains('e-hierarchycheckbox')) {
@@ -2407,56 +2254,15 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
                 this.grid.dataSource = this.dataResults.result;
             }
             const callBackPromise: Deferred = new Deferred();
-            if (isBlazor() && args.requestType === 'delete' && !this.isServerRendered) {
-                const data: string = 'data'; args[data] = args[data][0];
-            }
             this.trigger(events.actionBegin, args, (actionArgs: ActionEventArgs) => {
-                if (isBlazor() && actionArgs.requestType === 'delete' && !this.isServerRendered) {
-                    const data: string = 'data'; actionArgs[data] = [actionArgs[data]];
-                }
                 if (!actionArgs.cancel) {
                     this.notify(events.beginEdit, actionArgs);
-                }
-                if (isBlazor() && actionArgs.requestType === 'beginEdit' && !this.isServerRendered) {
-                    actionArgs.row = getElement(actionArgs.row);
                 }
                 callBackPromise.resolve(actionArgs);
             });
             return callBackPromise;
         };
         this.grid.actionComplete = (args: ActionEventArgs) => {
-            if (isBlazor() && this.isServerRendered && args.requestType !== 'filterAfterOpen') {
-                const rows: HTMLTableRowElement[] = this.getRows();
-                for (let i: number = 0; i < rows.length; i++) {
-                    if (rows[i].classList.contains('e-treerowcollapsed') || rows[i].classList.contains('e-treerowexpanded')) {
-                        if (this.enableCollapseAll && args.requestType === 'paging') {
-                            removeClass([rows[i]], 'e-treerowexpanded');
-                        } else {
-                            removeClass([rows[i]], 'e-treerowcollapsed');
-                        }
-                        if (this.enableCollapseAll && args.requestType === 'paging') {
-                            addClass([rows[i]], 'e-treerowcollapsed');
-                        } else {
-                            addClass([rows[i]], 'e-treerowexpanded');
-                        }
-                    }
-                    const cells: NodeListOf<Element> = rows[i].querySelectorAll('.e-rowcell');
-                    const expandicon: Element = cells[this.treeColumnIndex].getElementsByClassName('e-treegridcollapse')[0] ||
-                                    cells[this.treeColumnIndex].getElementsByClassName('e-treegridexpand')[0];
-                    if (expandicon) {
-                        if (this.enableCollapseAll && args.requestType === 'paging') {
-                            removeClass([expandicon], 'e-treegridexpand');
-                            addClass([expandicon], 'e-treegridcollapse');
-                        } else {
-                            removeClass([expandicon], 'e-treegridcollapse');
-                            addClass([expandicon], 'e-treegridexpand');
-                        }
-                    }
-                }
-                if (actionComplete && typeof actionComplete === 'function') {
-                    actionComplete.apply(this, [args]);
-                }
-            }
             this.notify('actioncomplete', args);
             this.updateColumnModel(); this.updateTreeGridModel();
             if (args.requestType === 'reorder') {
@@ -2470,9 +2276,6 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
                 this.notify(events.batchSave, args);
             }
             this.notify('updateGridActions', args);
-            if (isBlazor() && args.requestType === 'delete' && !this.isServerRendered) {
-                const data: string = 'data'; args[data] = args[data][0];
-            }
             this.trigger(events.actionComplete, args);
         };
     }
@@ -2707,18 +2510,17 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
                 gridColumn.field =  treeGridColumn.field = <string>this.columns[i];
             } else {
                 for (const prop of Object.keys(column[i])) {
-                    if (i === this.treeColumnIndex && prop === 'template' && !isBlazor()) {
+                    if (i === this.treeColumnIndex && prop === 'template') {
                         treeGridColumn[prop] = column[i][prop];
+                    } else if (prop === 'columns') {
+                          gridColumn[prop] = this.getGridColumns(column[i][prop] as Column[]);
+                          treeGridColumn[prop] = column[i][prop];
                     } else {
                         gridColumn[prop] = treeGridColumn[prop] = column[i][prop];
                     }
                 }
             }
-            if (column[i].columns) {
-                this.getGridColumns(columns[i].columns as Column[]);
-            } else {
-                this.columnModel.push(new Column(treeGridColumn));
-            }
+            this.columnModel.push(new Column(treeGridColumn));
             gridColumnCollection.push(gridColumn);
         }
         return gridColumnCollection;
@@ -2734,13 +2536,10 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
     public onPropertyChanged(newProp: TreeGridModel): void {
         const properties: string[] = Object.keys(newProp);
         let requireRefresh: boolean = false;
-        const preventUpdate: string = 'preventUpdate';
         for (const prop of properties) {
             switch (prop) {
             case 'columns':
-                if (!(isBlazor() && this.isServerRendered && this[preventUpdate])) {
-                    this.grid.columns = this.getGridColumns(this.columns as Column[]);
-                }
+                 this.grid.columns = this.getGridColumns(this.columns as Column[]);
                 break;
             case 'treeColumnIndex':
                 this.grid.refreshColumns(); break;
@@ -2926,9 +2725,7 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
      */
     public dataBind(): void {
         super.dataBind();
-        if (!(isBlazor() && this.isServerRendered) || getValue('isRendered', this.grid) && !this.initialRender) {
-            this.grid.dataBind();
-        }
+        this.grid.dataBind();
     }
 
     /**
@@ -3267,21 +3064,12 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
      * @returns {Column} - Returns tree grid column
      */
     public getColumnByField(field: string): Column {
-        if (isBlazor() && this.isServerRendered) {
-            return iterateArrayOrObject<Column, Column>(<Column[]>this.grid.columns, (item: Column) => {
-                if (item.field === field) {
-                    return item;
-                }
-                return undefined;
-            })[0];
-        } else {
             return iterateArrayOrObject<Column, Column>(<Column[]>this.columnModel, (item: Column) => {
                 if (item.field === field) {
                     return item;
                 }
                 return undefined;
             })[0];
-        }
     }
 
     /**
@@ -3407,12 +3195,8 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
      * @returns {Column[]} - Returns treegrid columns collection
      */
     public getColumns(isRefresh?: boolean): Column[] {
-        if (isBlazor() && this.isServerRendered) {
-            return <Column[]>this.grid.columns;
-        } else {
-            this.updateColumnModel(this.grid.getColumns(isRefresh));
-            return this.columnModel;
-        }
+        this.updateColumnModel(this.grid.getColumns(isRefresh));
+        return this.columnModel;
     }
 
     private updateColumnModel(column?: GridColumn[]): ColumnModel[] {
@@ -3430,26 +3214,22 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
         for (let i: number = 0; i < gridColumns.length; i++) {
             gridColumn = {};
             for (const prop of Object.keys(gridColumns[i])) {
-                if (!isBlazor() || prop !== 'edit') {
-                    gridColumn[prop] = gridColumns[i][prop];
-                }
+                gridColumn[prop] = gridColumns[i][prop];
             }
             this.columnModel.push(new Column(gridColumn));
             if (field === this.columnModel[i].field && (!isNullOrUndefined(temp) && temp !== '')) {
                 this.columnModel[i].template = temp;
             }
         }
-        if (!isBlazor() || !this.isServerRendered) {
-            const merge: string = 'deepMerge';
-            this[merge] = ['columns']; // Workaround for blazor updateModel
-            if (this.grid.columns.length !== this.columnModel.length) {
-                stackedHeader = true;
-            }
-            if (!stackedHeader) {
-                this.setProperties({ columns: this.columnModel }, true);
-            }
-            this[merge] = undefined;  // Workaround for blazor updateModel
+        const merge: string = 'deepMerge';
+        this[merge] = ['columns']; // Workaround for blazor updateModel
+        if (this.grid.columns.length !== this.columnModel.length) {
+            stackedHeader = true;
         }
+        if (!stackedHeader) {
+            this.setProperties({ columns: this.columnModel }, true);
+        }
+        this[merge] = undefined;  // Workaround for blazor updateModel
         return this.columnModel;
     }
 
@@ -4202,12 +3982,7 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
         const rows: HTMLTableRowElement[] = rowDetails.rows;
         let childRecord: ITreeData;
         for (let i: number = 0; i < rows.length; i++) {
-            if (isBlazor() && this.isServerRendered) {
-                removeClass([rows[i]], 'e-treerowexpanded');
-                addClass([rows[i]], 'e-treerowcollapsed');
-            } else {
-                rows[i].style.display = 'none';
-            }
+            rows[i].style.display = 'none';
             const collapsingTd: Element = rows[i].querySelector('.e-detailrowexpand');
             if (!isNullOrUndefined(collapsingTd)) {
                 this.grid.detailRowModule.collapse(collapsingTd);

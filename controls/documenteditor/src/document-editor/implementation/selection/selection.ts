@@ -1173,7 +1173,7 @@ export class Selection {
                         canvasContext.fillRect(left, this.documentHelper.render.getScaledValue(top, 2), width, height);
                         if (selectedWidgetInfo.floatingItems && selectedWidgetInfo.floatingItems.length > 0) {
                             for (let j: number = 0; j < selectedWidgetInfo.floatingItems.length; j++) {
-                                const shape: ShapeBase = selectedWidgetInfo.floatingItems[i];
+                                const shape: ShapeBase = selectedWidgetInfo.floatingItems[j];
                                 width = this.documentHelper.render.getScaledValue(shape.width);
                                 left = this.documentHelper.render.getScaledValue(shape.x, 1);
                                 top = this.documentHelper.render.getScaledValue(shape.y, 2);
@@ -6112,42 +6112,42 @@ export class Selection {
                         if (element instanceof ListTextElementBox || element instanceof TextElementBox) {
                             isCurrentParaBidi = element.line.paragraph.paragraphFormat.bidi;
                         }
-                        if (caretPosition.x < left + element.margin.left + element.width || i === widget.children.length - 1
+                        if (caretPosition.x < left + element.margin.left + element.width + element.padding.left || i === widget.children.length - 1
                             || ((widget.children[i + 1] instanceof ListTextElementBox) && isCurrentParaBidi)) {
                             break;
                         }
-                        left += element.margin.left + element.width;
+                        left += element.margin.left + element.width + element.padding.left;
                     }
                     if (element instanceof TextElementBox) {
                         isRtlText = element.isRightToLeft;
                         isParaBidi = (element as TextElementBox).line.paragraph.paragraphFormat.bidi;
                     }
-                    if (caretPosition.x > left + element.margin.left + element.width) {
+                    if (caretPosition.x > left + element.margin.left + element.width + element.padding.left) {
                         //Line End
                         index = element instanceof TextElementBox ? (element as TextElementBox).length : 1;
                         if (isRtlText && isParaBidi) {
                             index = 0;
                         }
                         if ((element instanceof TextElementBox && ((element as TextElementBox).text !== "\v" || (element as TextElementBox).text !== '\f')) || includeParagraphMark) {
-                            left += element.margin.left + element.width;
+                            left += element.margin.left + element.width + element.padding.left;
                         }
                     } else if (element instanceof TextElementBox) {
                         if (element instanceof TextElementBox && isRtlText) {
-                            left += element.width;
+                            left += element.width + element.padding.left;
                         }
                         let x: number = 0;
                         if (isRtlText) {
                             x = (left + element.margin.left) - caretPosition.x;
                         } else {
-                            x = caretPosition.x - left - element.margin.left;
+                            x = caretPosition.x - left - element.margin.left - element.padding.left;
                         }
-                        left += element.margin.left;
+                        left += (element.margin.left + element.padding.left);
                         let prevWidth: number = 0;
                         let charIndex: number = 0;
                         for (let i: number = 1; i <= (element as TextElementBox).length; i++) {
                             let width: number = 0;
                             if (i === (element as TextElementBox).length) {
-                                width = element.width;
+                                width = element.width + element.padding.left;
                             } else {
                                 width = this.documentHelper.textHelper.getWidth((element as TextElementBox).text.substr(0, i), element.characterFormat);
                                 (element as TextElementBox).trimEndWidth = width;
@@ -6187,7 +6187,7 @@ export class Selection {
                         isImageSelected = element instanceof ImageElementBox || element instanceof ShapeElementBox;
                         if (caretPosition.x - left - element.margin.left > element.width / 2) {
                             index = 1;
-                            left += element.margin.left + element.width;
+                            left += (element.margin.left + element.width + element.padding.left);
                         } else if (element !== widget.children[0] && !isImageSelected) {
                             let curIndex: number = widget.children.indexOf(element);
                             if (!(widget.children[curIndex - 1] instanceof ListTextElementBox)) {
@@ -6202,7 +6202,7 @@ export class Selection {
                 } else {
                     isRtlText = element.isRightToLeft;
                     isParaBidi = element.line.paragraph.paragraphFormat.bidi;
-                    if (element instanceof TextElementBox && (isParaBidi || isRtlText) && caretPosition.x < left + element.margin.left + element.width) {
+                    if (element instanceof TextElementBox && (isParaBidi || isRtlText) && caretPosition.x < left + element.margin.left + element.width + element.padding.left) {
                         index = this.getTextLength(element.line, element) + (element as TextElementBox).length;
                     } else {
                         index = this.getTextLength(element.line, element);
@@ -6248,7 +6248,7 @@ export class Selection {
                         }
                         //Include width of line break mark.
                     } else if (isLineEnd) {
-                        width = element.width;
+                        width = element.width + element.padding.left;
                         left += width;
                         index = inline.length;
                     }
@@ -6447,7 +6447,7 @@ export class Selection {
             if (elementBox instanceof ShapeBase && elementBox.textWrappingStyle !== 'Inline') {
                 continue;
             }
-            width += elementBox.margin.left + elementBox.width;
+            width += (elementBox.margin.left + elementBox.width + elementBox.padding.left);
         }
         if (includeParagraphMark && widget.paragraph.childWidgets.indexOf(widget) === widget.paragraph.childWidgets.length - 1
             && isNullOrUndefined(widget.paragraph.nextSplitWidget)) {
@@ -6504,11 +6504,14 @@ export class Selection {
             } else if (widget.children[i] instanceof TabElementBox && elementBox === widgetInternal) {
                 left += widget.children[i].margin.left;
             } else {
-                left += widget.children[i].margin.left + widget.children[i].width;
+                left += widget.children[i].margin.left + widget.children[i].width + widget.children[i].padding.left;
             }
         }
         if (!isNullOrUndefined(elementBox)) {
-            left += elementBox.margin.left;
+            left += (elementBox.margin.left + elementBox.padding.left);
+            if (elementBox instanceof ShapeBase && !isNullOrUndefined(elementBox.nextElement)) {
+                left += (elementBox.nextElement.margin.left + elementBox.nextElement.padding.left)
+            }
             if ((isRtlText && !isParaBidi) || (this.documentHelper.moveCaretPosition === 1 && !isRtlText && isParaBidi)) {
                 left += elementBox.width;
             }

@@ -4,7 +4,7 @@ import { getCellIndexes, getRangeIndexes } from './../../workbook/common/address
 import { getColumnsWidth, getColumnWidth } from '../../workbook/base/column';
 import { contentLoaded, editOperation, getUpdateUsingRaf, IRowRenderer, removeAllChildren, SheetRenderArgs } from '../common/index';
 import { IRenderer, beforeContentLoaded, getColGroupWidth, virtualContentLoaded, setAriaOptions, dataBound } from '../common/index';
-import { CellRenderArgs, ICellRenderer, created, spreadsheetDestroyed, skipHiddenIdx, isReact } from '../common/index';
+import { CellRenderArgs, ICellRenderer, created, spreadsheetDestroyed, skipHiddenIdx, isReact, getDPRValue } from '../common/index';
 import { checkMerge, forRefSelRender, initiateEdit, chartRangeSelection, renderReactTemplates, rowHeightChanged } from '../common/index';
 import { colWidthChanged, clearUndoRedoCollection } from '../common/index';
 import { CellModel, SheetModel, ExtendedRange, getCell, getRowsHeight } from '../../workbook/index';
@@ -79,7 +79,7 @@ export class SheetRender implements IRenderer {
             const frozenCol: HTMLElement = document.getElementById(this.parent.element.id + '_sheet').getElementsByClassName(
                 'e-frozen-column')[0] as HTMLElement;
             frozenCol.style.height = `calc(100% - ${scrollSize}px)`;
-            frozenCol.style[offset] = width - 1 + 'Px'; frozenCol.style.display = '';
+            frozenCol.style[offset] = width - getDPRValue(1) + 'Px'; frozenCol.style.display = '';
         }
         this.setHeaderPanelWidth(this.getSelectAllContent(), width);
         this.getColHeaderPanel().style.width = `calc(100% - ${width}px)`;
@@ -110,7 +110,7 @@ export class SheetRender implements IRenderer {
         let scrollSize: number = !!parseInt(this.headerPanel.style[prop], 10) ? parseInt(this.headerPanel.style[prop], 10) : 0;
         if (sheet.frozenRows) {
             const topIndex: number = getCellIndexes(sheet.topLeftCell)[0];
-            const frozenHeight: number = (sheet.showHeaders ? 31 : 0) + getRowsHeight(sheet, topIndex, topIndex + sheet.frozenRows - 1);
+            const frozenHeight: number = (sheet.showHeaders ? getDPRValue(31) : 0) + getRowsHeight(sheet, topIndex, topIndex + sheet.frozenRows - 1, true);
             if (!sheet.showHeaders && !sheet.frozenColumns) {
                 this.headerPanel.style.height = frozenHeight + 'px';
             } else {
@@ -432,7 +432,7 @@ export class SheetRender implements IRenderer {
 
     public updateCol(sheet: SheetModel, idx: number, appendTo?: Element): Element {
         const col: HTMLElement = this.col.cloneNode() as HTMLElement;
-        col.style.width = formatUnit(getColumnWidth(sheet, idx));
+        col.style.width = formatUnit(getColumnWidth(sheet, idx, null, true));
         if (appendTo) {
             const empty: Element = appendTo.querySelector('.e-empty');
             return empty ? appendTo.insertBefore(col, empty) : appendTo.appendChild(col);
@@ -466,7 +466,7 @@ export class SheetRender implements IRenderer {
                 if (indexes[0] === args.indexes[0]) {
                     if (args.direction === 'last') {
                         col = this.col.cloneNode() as HTMLElement;
-                        col.style.width = formatUnit(getColumnWidth(sheet, indexes[1]));
+                        col.style.width = formatUnit(getColumnWidth(sheet, indexes[1], null, true));
                         colGrp.insertBefore(col, colRefChild); hColGrp.insertBefore(col.cloneNode(), hColRefChild);
                         hRow.insertBefore(this.cellRenderer.renderColHeader(indexes[1]), hRefChild);
                     } else {
@@ -703,15 +703,15 @@ export class SheetRender implements IRenderer {
         let width: number = 0;
         if (!skipFreezeCheck && sheet.frozenColumns) {
             const leftIdx: number = getCellIndexes(sheet.topLeftCell)[1];
-            width = getColumnsWidth(sheet, leftIdx, leftIdx + sheet.frozenColumns - 1)
+            width = getColumnsWidth(sheet, leftIdx, leftIdx + sheet.frozenColumns - 1, true)
         }
-        width += sheet.showHeaders ? this.colGroupWidth : 0;
+        width += sheet.showHeaders ? getDPRValue(this.colGroupWidth) : 0;
         return width;
     }
 
     public getColHeaderHeight(sheet: SheetModel, skipHeader?: boolean): number {
         const topIndex: number = getCellIndexes(sheet.topLeftCell)[0];
-        return (sheet.showHeaders && !skipHeader ? 31 : 0) + getRowsHeight(sheet, topIndex, topIndex + sheet.frozenRows - 1);
+        return (sheet.showHeaders && !skipHeader ? 31 : 0) + getRowsHeight(sheet, topIndex, topIndex + sheet.frozenRows - 1, true);
     }
 
     /**

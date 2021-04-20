@@ -104,7 +104,7 @@ export class StyleDialog {
         let styleTypeDivElement: HTMLElement = createElement('div', { className: 'e-de-style-style-type-div' });
         let styleTypeValue: HTMLSelectElement = createElement('select', { id: 'e-de-style-style-type' }) as HTMLSelectElement;
 
-        styleTypeValue.innerHTML = '<option>' + localValue.getConstant('Paragraph') + '</option><option>' + localValue.getConstant('Character') + '</option><option>' + localValue.getConstant('Linked Style') + '</option>'; //<option>Linked(Paragraph and Character)</option><option>Table</option><option>List</option>';
+        styleTypeValue.innerHTML = '<option value="Paragraph">' + localValue.getConstant('Paragraph') + '</option><option value="Character">' + localValue.getConstant('Character') + '</option><option>' + localValue.getConstant('Linked Style') + '</option>'; //<option>Linked(Paragraph and Character)</option><option>Table</option><option>List</option>';
         styleTypeDivElement.appendChild(styleTypeValue);
         this.styleType = new DropDownList({ change: this.styleTypeChange, popupHeight: '253px', width: '210px', enableRtl: isRtl });
         this.styleType.appendTo(styleTypeValue);

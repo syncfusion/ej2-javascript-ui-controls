@@ -1083,12 +1083,14 @@ export class FormFields {
         let top: number = parseInt(inputdiv.style.top);
         let width: number = parseFloat(inputdiv.style.width);
         let height: number = parseFloat(inputdiv.style.height);
-        let signIconWidth: number = parseFloat(signIcon.style.width);
-        let signIconHeght: number = parseFloat(signIcon.style.height);
+        let signIconWidth: number;
+        let signIconHeght: number;
         let hightDifference: number;
         let widthDifference: number;
         let zoomvalue: number = this.pdfViewerBase.getZoomFactor();
         if (signIcon) {
+            signIconWidth = parseFloat(signIcon.style.width);
+            signIconHeght = parseFloat(signIcon.style.height);
             if (signIcon.style.transform == 'rotate(90deg)') {
                 signIcon.style.transform = 'rotate(0deg)';
                 hightDifference = height / 2;

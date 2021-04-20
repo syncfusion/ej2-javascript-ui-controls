@@ -1,6 +1,6 @@
 {
 	"name": "@syncfusion/ej2-office-chart",
-	"version": "17.2.48",
+	"version": "19.1.54",
 	"description": "Essential JS 2 Component",
 	"author": "Syncfusion Inc.",
 	"license": "SEE LICENSE IN license",
@@ -12,7 +12,7 @@
 	},
 	"devDependencies": {
 		"@types/chai": "^3.4.28",
-		"@types/jasmine": "2.8.9",
+		"@types/jasmine": "^2.2.29",
 		"@types/jasmine-ajax": "^3.1.27",
 		"@types/requirejs": "^2.1.26",
 		"es6-promise": "^3.2.1",

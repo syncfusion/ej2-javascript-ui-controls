@@ -42,7 +42,7 @@ describe('HTML Writer validation', () => {
         editor.selection.selectAll();
         editor.selection.characterFormat.underline = 'Single';
         editor.selection.characterFormat.strikethrough = 'SingleStrike';
-        expect(editor.selection.getHtmlContent()).toEqual('<div style="font-weight:normal;font-style:normal;text-decoration:line-through underline;color:empty;font-size:11pt;font-family:Calibri;text-align:left;margin-top:0pt; margin-right:0pt; margin-bottom:0pt; margin-left:0pt; line-height:1"><span style="font-weight:normal;font-style:normal;text-decoration:line-through underline;">hello world</span></div>');
+        expect(editor.selection.getHtmlContent()).toEqual('<div style="font-weight:normal;font-style:normal;text-decoration:line-through underline;color:empty;font-size:11pt;font-family:Calibri;text-align:left;margin-top:0pt; margin-right:0pt; margin-bottom:0pt; margin-left:0pt; line-height:1;white-space:pre"><span style="font-weight:normal;font-style:normal;text-decoration:line-through underline;">hello world</span></div>');
     })
     it('Strikethrough validation.', () => {
         console.log('Strikethrough validation.');
@@ -50,7 +50,7 @@ describe('HTML Writer validation', () => {
         editor.editorModule.insertText('hello world');
         editor.selection.selectAll();        
         editor.selection.characterFormat.strikethrough = 'SingleStrike';
-        expect(editor.selection.getHtmlContent()).toEqual('<div style="font-weight:normal;font-style:normal;text-decoration:line-through ;color:empty;font-size:11pt;font-family:Calibri;text-align:left;margin-top:0pt; margin-right:0pt; margin-bottom:0pt; margin-left:0pt; line-height:1"><span style="font-weight:normal;font-style:normal;text-decoration:line-through ;">hello world</span></div>');
+        expect(editor.selection.getHtmlContent()).toEqual('<div style="font-weight:normal;font-style:normal;text-decoration:line-through ;color:empty;font-size:11pt;font-family:Calibri;text-align:left;margin-top:0pt; margin-right:0pt; margin-bottom:0pt; margin-left:0pt; line-height:1;white-space:pre"><span style="font-weight:normal;font-style:normal;text-decoration:line-through ;">hello world</span></div>');
     })
     it('Underline validation.', () => {
         console.log('Underline validation.');
@@ -58,6 +58,6 @@ describe('HTML Writer validation', () => {
         editor.editorModule.insertText('hello world');
         editor.selection.selectAll();
         editor.selection.characterFormat.underline = 'Single';
-        expect(editor.selection.getHtmlContent()).toEqual('<div style="font-weight:normal;font-style:normal;text-decoration:underline;color:empty;font-size:11pt;font-family:Calibri;text-align:left;margin-top:0pt; margin-right:0pt; margin-bottom:0pt; margin-left:0pt; line-height:1"><span style="font-weight:normal;font-style:normal;text-decoration:underline;">hello world</span></div>');
+        expect(editor.selection.getHtmlContent()).toEqual('<div style="font-weight:normal;font-style:normal;text-decoration:underline;color:empty;font-size:11pt;font-family:Calibri;text-align:left;margin-top:0pt; margin-right:0pt; margin-bottom:0pt; margin-left:0pt; line-height:1;white-space:pre"><span style="font-weight:normal;font-style:normal;text-decoration:underline;">hello world</span></div>');
     })
 })

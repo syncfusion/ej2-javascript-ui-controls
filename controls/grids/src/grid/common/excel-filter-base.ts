@@ -358,7 +358,9 @@ export class ExcelFilterBase extends CheckBoxFilterBase {
                     } else {
                         (row.querySelector('#' + this.options.column.field + '-xlfl-frstvalue') as HTMLElement).focus();
                     }
-                } else { (row.cells[1].querySelector('input:not([type=hidden])') as HTMLElement).focus(); }
+                } else {
+                    //(row.cells[1].querySelector('input:not([type=hidden])') as HTMLElement).focus();
+                }
             },
             close: this.removeDialog.bind(this),
             created: this.createdDialog.bind(this, target, column),
@@ -775,6 +777,9 @@ export class ExcelFilterBase extends CheckBoxFilterBase {
                     (isFirst ? predicates[0] : undefined);
 
                 flValue = (predicate && predicate.operator === optr.operator) ? predicate.value : undefined;
+                if (isNullOrUndefined(flValue)) {
+                    flValue = undefined;
+                }
             }
             let types: Object = {
                 'string': this.renderAutoComplete.bind(this),

@@ -30,7 +30,7 @@ import { FilterOptions, FilterEventArgs, ProtectSettingsModel, findKeyUp, refres
 import { Workbook } from '../../workbook/base/workbook';
 import { SpreadsheetModel } from './spreadsheet-model';
 import { getRequiredModules, ScrollSettings, ScrollSettingsModel, SelectionSettingsModel, enableToolbarItems } from '../common/index';
-import { SelectionSettings, BeforeSelectEventArgs, SelectEventArgs, getStartEvent, enableRibbonTabs } from '../common/index';
+import { SelectionSettings, BeforeSelectEventArgs, SelectEventArgs, getStartEvent, enableRibbonTabs, getDPRValue } from '../common/index';
 import { createSpinner, showSpinner, hideSpinner } from '@syncfusion/ej2-popups';
 import { setRowHeight, getRowsHeight, getColumnWidth, getRowHeight, setColumn, setRow } from './../../workbook/base/index';
 import { getRangeIndexes, getIndexesFromAddress, getCellIndexes, WorkbookNumberFormat, WorkbookFormula } from '../../workbook/index';
@@ -1112,10 +1112,10 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
         if (indexes[0] === frozenRow) {
             offset = 0;
         } else {
-            offset = getRowsHeight(sheet, frozenRow, indexes[0] - 1);
+            offset = getRowsHeight(sheet, frozenRow, indexes[0] - 1, true);
             if (this.scrollSettings.enableVirtualization) {
                 scrollableSize = offset + this.getContentTable().getBoundingClientRect().height;
-                vHeight = parseInt((content.querySelector('.e-virtualtrack') as HTMLElement).style.height, 10);
+                vHeight = parseFloat((content.querySelector('.e-virtualtrack') as HTMLElement).style.height);
                 if (scrollableSize > vHeight) {
                     scrollableSize += 10;
                     vTrack = content.querySelector('.e-virtualtrack') as HTMLElement;
@@ -1129,10 +1129,10 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
         if (indexes[1] === frozenCol) {
             offset = 0;
         } else {
-            offset = getColumnsWidth(sheet, frozenCol, indexes[1] - 1);
+            offset = getColumnsWidth(sheet, frozenCol, indexes[1] - 1, true);
             if (this.scrollSettings.enableVirtualization) {
                 scrollableSize = offset + this.getContentTable().getBoundingClientRect().width;
-                vWidth = parseInt((content.querySelector('.e-virtualtrack') as HTMLElement).style.width, 10);
+                vWidth = parseFloat((content.querySelector('.e-virtualtrack') as HTMLElement).style.width);
                 if (scrollableSize > vWidth) {
                     scrollableSize += 10;
                     vTrack = content.querySelector('.e-virtualtrack') as HTMLElement;
@@ -1289,8 +1289,8 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
                         trgt = this.getContentTable().getElementsByClassName('e-row')[0]
                             .getElementsByClassName('e-cell')[colIndex] as HTMLElement;
                     }
-                    const eleWidth: number = parseInt(this.getMainContent().getElementsByTagName('col')[colIndex].style.width, 10);
-                    let threshold: number = parseInt(colWidth, 10) - eleWidth;
+                    const eleWidth: number = getColumnWidth(sheet, colIndex, null, true);
+                    let threshold: number = getDPRValue(parseInt(colWidth, 10)) - eleWidth;
                     if (threshold < 0 && eleWidth < -(threshold)) {
                         getCellIndexes(sheet.activeCell);
                         threshold = -eleWidth;
@@ -1342,8 +1342,8 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
                     } else {
                         trgt = this.getContentTable().getElementsByClassName('e-row')[rowIndex] as HTMLElement;
                     }
-                    const eleHeight: number = parseInt(this.getMainContent().getElementsByTagName('tr')[rowIndex].style.height, 10);
-                    let threshold: number = parseInt(rowHeight, 10) - eleHeight;
+                    const eleHeight: number = getRowHeight(sheet, rowIndex, true);
+                    let threshold: number = getDPRValue(parseInt(rowHeight, 10)) - eleHeight;
                     if (threshold < 0 && eleHeight < -(threshold)) {
                         threshold = -eleHeight;
                     }

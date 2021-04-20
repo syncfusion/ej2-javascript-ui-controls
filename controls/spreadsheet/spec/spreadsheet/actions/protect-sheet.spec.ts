@@ -1,7 +1,8 @@
 import { SpreadsheetHelper } from '../util/spreadsheethelper.spec';
 import { defaultData } from '../util/datasource.spec';
-import { Spreadsheet, dialog as dlg } from '../../../src/index';
-import { Dialog } from '../../../src/spreadsheet/services/index';
+import { Spreadsheet, dialog as dlg, DialogBeforeOpenEventArgs, BeforeSelectEventArgs, getRangeIndexes, getCell, CellModel } from '../../../src/index';
+import { SheetModel } from '../../../src/index';
+import { Dialog, Overlay } from '../../../src/spreadsheet/services/index';
 
 describe('Protect sheet ->', () => {
     const helper: SpreadsheetHelper = new SpreadsheetHelper('spreadsheet');
@@ -170,18 +171,119 @@ describe('Protect sheet ->', () => {
                 });
             });
         });
-        describe('I321143 ->', () => {
+        describe('I321143, F161227 ->', () => {
             beforeEach((done: Function) => {
-                helper.initializeSpreadsheet({ sheets: [{ rows: [{ cells: [{ index: 1, isLocked: true, value: '1' }] }, { cells:
-                    [{ isLocked: true, value: '2' }, { isLocked: true, value: '3' }] }, { cells: [{ isLocked: true, value: '4' },
-                    { isLocked: true, value: '5' }] }], selectedRange: 'A1:B3' }] }, done);
+                helper.initializeSpreadsheet({ sheets: [{ rows: [{ cells: [{ value: 'spreadsheet' }] }], isProtected: true }] }, done);
             });
             afterEach(() => {
                 helper.invoke('destroy');
             });
-            it('deleting values from locked cells and warning dialog', (done: Function) => {
-                
-                done();
+            it('Deleting values from locked cells and warning dialog', (done: Function) => {
+                helper.getElement().focus();
+                helper.triggerKeyEvent('keydown', 46, null, null, null, helper.invoke('getCell', [0, 0]));
+                const spreadsheet: Spreadsheet = helper.getInstance();
+                expect(spreadsheet.sheets[0].rows[0].cells[0].value).toBe('spreadsheet');
+                setTimeout((): void => {
+                    done();
+                });
+            });
+        });
+        describe('I282699 ->', () => {
+            beforeEach((done: Function) => {
+                helper.initializeSpreadsheet({ sheets: [{ rows: [{ cells: [{ value: 'spreadsheet' }] }], isProtected: true }] }, done);
+            });
+            afterEach(() => {
+                helper.invoke('destroy');
+            });
+            it('Prevent protected sheet dialog box', (done: Function) => {
+                helper.getElement().focus();                
+                const spreadsheet: Spreadsheet = helper.getInstance();
+                spreadsheet.dialogBeforeOpen = (args: DialogBeforeOpenEventArgs): void => {
+                    args.cancel = true;
+                };
+                spreadsheet.dataBind();
+                helper.triggerKeyEvent('keydown', 46, null, null, null, helper.invoke('getCell', [0, 0]));
+                expect(spreadsheet.sheets[0].rows[0].cells[0].value).toBe('spreadsheet');
+                setTimeout((): void => {
+                    expect(helper.getElement('#' + helper.id + ' .e-editAlert-dlg').classList).toContain('e-popup-close');
+                    done();
+                });
+            });
+        });
+        describe('F161227, I264291 ->', () => {
+            beforeEach((done: Function) => {
+                helper.initializeSpreadsheet({}, done);
+            });
+            afterEach(() => {
+                helper.invoke('destroy');
+            });
+            it('Aggregate after open from json throw error issue and cell cannot be copy/paste after using openFromJson', (done: Function) => {
+                const json: object = { "Workbook": { "sheets": [{ "rows": [{ "cells": [{ "value": "20" }, { "value": "10" }] }, { "cells":
+                    [{ "value": "5" }, { "value": "7" }] }], "selectedRange": "A1:B2" }] } };
+                const spreadsheet: Spreadsheet = helper.getInstance();
+                spreadsheet.openFromJson({ file: json });
+                setTimeout((): void => {
+                    helper.getElement('#' + helper.id + '_aggregate').click();
+                    const aggregatePopup: HTMLElement = helper.getElement('#' + helper.id + '_aggregate-popup');
+                    expect(aggregatePopup.classList).toContain('e-popup-open');
+                    expect(aggregatePopup.firstElementChild.childElementCount).toBe(5);
+                    expect(aggregatePopup.querySelector('.e-item').textContent).toBe('Count: 4');
+                    helper.invoke('copy').then((): void => {
+                        helper.invoke('paste', ['C3']);
+                        setTimeout((): void => {
+                            expect(spreadsheet.sheets[0].rows[2].cells[2].value.toString()).toBe('20');
+                            expect(spreadsheet.sheets[0].rows[3].cells[3].value.toString()).toBe('7');
+                            done();
+                        });
+                    });
+                });
+            });
+        });
+        describe('F161227 ->', () => {
+            beforeEach((done: Function) => {
+                helper.initializeSpreadsheet({ allowResizing: false, enableContextMenu: false, allowUndoRedo: false, allowScrolling: false,
+                    allowFindAndReplace: false, showRibbon: false, showFormulaBar: false, showSheetTabs: false, allowOpen: false, allowSave:
+                    false, allowSorting: false, allowFiltering: false, allowNumberFormatting: false, allowHyperlink: false, allowInsert:
+                    false, allowDelete: false, allowDataValidation: false, allowChart: false, allowConditionalFormat: false, height: 1500,
+                    sheets: [{ isProtected: true, protectSettings: { selectCells: true, formatCells: false, formatRows: false, insertLink:
+                        false, formatColumns: false }, rowCount: 16, rows: [{ cells: [{ image: [{ src:
+                        "https://ravennaareachamber.com/wp-content/uploads/2017/03/your-company-lsiting.png", height: 70, width: 100,
+                        top: 2, left: 10 }] }, { index: 2, value: 'LOCKED' }, { value: 'LOCKED' }] }, { cells: [{index: 2, value: 'LOCKED'
+                        }, { value: 'UNLOCKED' }] }, { cells: [{ value: 'LOCKED' }, { value: 'LOCKED' }, { value: 'LOCKED' }, { value:
+                        'LOCKED' }, { value: 'LOCKED' }] }, { index: 15, cells: [{ value: 'LOCKED' }, { index: 4, value: 'LOCKED' }] }] }],
+                    beforeSelect: (args: BeforeSelectEventArgs): void => {
+                        const range: number[] = getRangeIndexes(args.range);
+                        const sheet: SheetModel = helper.getInstance().getActiveSheet();
+                        const cell: CellModel = getCell(range[0], range[1], sheet);
+                        if (sheet.isProtected) args.cancel = true;
+                        if (cell && cell.isLocked == false) args.cancel = false;
+                    },
+                    created: (): void => {
+                        const spreadsheet: Spreadsheet = helper.getInstance();
+                        spreadsheet.merge("D2:E2"); spreadsheet.merge("A1:B3"); spreadsheet.merge("A4:E4");
+                        spreadsheet.lockCells("D1", false); spreadsheet.lockCells("D3", false); spreadsheet.lockCells("A6:E15", false);
+                        spreadsheet.lockCells("A17", false);
+                    }
+                }, done);
+            });
+            afterEach(() => {
+                helper.invoke('destroy');
+            });
+            it('Preventing delete when a range contains locked cell', (done: Function) => {
+                helper.getElement().focus();
+                helper.invoke('selectRange', ['A6:D1'])
+                setTimeout((): void => {
+                    helper.triggerKeyNativeEvent(46);
+                    const spreadsheet: Spreadsheet = helper.getInstance();
+                    expect(spreadsheet.sheets[0].rows[0].cells[0].image).toBeDefined();
+                    expect(spreadsheet.sheets[0].rows[0].cells[2].value).toBe('LOCKED');
+                    expect(spreadsheet.sheets[0].rows[1].cells[3].value).toBe('UNLOCKED');
+                    expect(spreadsheet.sheets[0].rows[2].cells[0].rowSpan).toBe(-2);
+                    expect(spreadsheet.sheets[0].rows[2].cells[3].value).toBe('LOCKED');
+                    expect(spreadsheet.sheets[0].rows[2].cells[3].isLocked).toBeFalsy();
+                    (helper.getInstance().serviceLocator.getService('shape') as Overlay).destroy();// Need to remove once destory of overlay service handled in image.
+                    done();
+                });
             });
         });
     });

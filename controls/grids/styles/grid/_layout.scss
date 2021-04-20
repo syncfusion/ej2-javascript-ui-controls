@@ -562,7 +562,8 @@
     &.e-rtl .e-gridheader {
         & tr.e-row:first-child .e-rowcell.e-dragborder,
         & .e-rowcell.e-dragborder,
-        & .e-rowdragdrop.e-dragborder {
+        & .e-rowdragdrop.e-dragborder,
+        & .e-detailrowcollapse.e-dragborder {
         box-shadow: $grid-dragborder-box-shadow;
         position: $grid-dragborder-position;
         z-index: $grid-dragborder-z-index;
@@ -2384,7 +2385,7 @@
     }
 
     // Safari and Chrome
-    .e-movablecontent::-webkit-scrollbar { // sass-lint:disable-line no-vendor-prefixes
+    &:not(.sf-grid) .e-movablecontent::-webkit-scrollbar { // sass-lint:disable-line no-vendor-prefixes
       display: none;
     }
 

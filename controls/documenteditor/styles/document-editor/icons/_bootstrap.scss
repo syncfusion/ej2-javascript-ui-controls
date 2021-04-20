@@ -317,6 +317,10 @@
     content: '\e279';
   }
 
+  .e-menu-item .e-de-open-properties::before {
+    content: '\e605';
+  }
+
   .e-menu-item .e-de-spellcheck::before {
     content: '\e689';
   }

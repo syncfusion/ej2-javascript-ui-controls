@@ -197,19 +197,15 @@ export class ConditionalFormatting {
             header: args.action.replace('...', ''),
             target: document.querySelector('.e-control.e-spreadsheet') as HTMLElement,
             beforeOpen: (): void => {
-                dialogInst.dialogInstance.content = this.cFDlgContent(args.action);
-                dialogInst.dialogInstance.dataBind();
+                dialogInst.dialogInstance.content = this.cFDlgContent(args.action); dialogInst.dialogInstance.dataBind();
                 focus(this.parent.element);
             },
             buttons: [{
-                buttonModel: {
-                    content: l10n.getConstant('Ok'),
-                    isPrimary: true,
-                    cssClass: 'e-btn e-clearall-btn e-flat'
-                },
+                buttonModel: { content: l10n.getConstant('Ok'), isPrimary: true, cssClass: 'e-btn e-clearall-btn e-flat' },
                 click: (): void => {
-                    this.dlgClickHandler(args.action);
-                    dialogInst.hide();
+                    if (!(dialogInst.dialogInstance.element.getElementsByClassName('e-clearall-btn')[0] as HTMLButtonElement).disabled) {
+                        this.dlgClickHandler(args.action); dialogInst.hide();
+                    }
                 }
             }]
         });
@@ -326,8 +322,8 @@ export class ConditionalFormatting {
         const subDiv: HTMLElement = this.parent.createElement('div', { className: 'e-cfsub' });
 
         const value1Text: HTMLElement = this.parent.createElement('span', { className: 'e-header e-top-header', innerHTML: dlgText });
-        const value1Inp: HTMLElement =
-            this.parent.createElement('input', { className: 'e-input', id: 'valueInput', attrs: { type: 'text' } });
+        const value1Inp: HTMLInputElement =
+            this.parent.createElement('input', { className: 'e-input', id: 'valueInput', attrs: { type: 'text' } }) as HTMLInputElement;
         const duplicateSelectEle: HTMLElement = this.parent.createElement('input', { className: 'e-select' });
 
         const subDivText: HTMLElement = this.parent.createElement('span', { className: 'e-header', innerHTML: l10n.getConstant('With') });
@@ -335,15 +331,14 @@ export class ConditionalFormatting {
         dlgContent.appendChild(mainDiv);
         dlgContent.appendChild(subDiv);
 
-        mainDiv.appendChild(value1Text);
+        mainDiv.appendChild(value1Text); let setValidation: boolean;
         if (action !== l10n.getConstant('DuplicateValues') + '...') {
             if (action !== l10n.getConstant('AboveAverage') + '...' && action !== l10n.getConstant('BelowAverage') + '...') {
-                mainDiv.appendChild(value1Inp);
-                if (action === l10n.getConstant('Top10Items') + '...' || action === l10n.getConstant('Top10') + ' %...' ||
-                    action === l10n.getConstant('Bottom10Items') + '...' || action === l10n.getConstant('Bottom10') + ' %...') {
-                    const numeric: NumericTextBox = new NumericTextBox({
-                        value: 10
-                    });
+                mainDiv.appendChild(value1Inp); setValidation = true;
+                const percent: boolean = action === l10n.getConstant('Top10') + ' %...' || action === l10n.getConstant('Bottom10') + ' %...';
+                value1Inp.maxLength = percent ? 3 : 4;
+                if (action === l10n.getConstant('Top10Items') + '...' || action === l10n.getConstant('Bottom10Items') + '...' || percent) {
+                    const numeric: NumericTextBox = new NumericTextBox({ value: 10, min: 1, max: percent ? 100 : 1000, format: '###' });
                     numeric.appendTo(value1Inp);
                 }
             }
@@ -363,9 +358,14 @@ export class ConditionalFormatting {
         if (action === l10n.getConstant('Between') + '...') {
             const value2Text: HTMLElement = this.parent.createElement(
                 'span', { className: 'e-header e-header-2', innerHTML: l10n.getConstant('And') });
-            const value2Inp: HTMLElement = this.parent.createElement('input', { className: 'e-input' });
+            const value2Inp: HTMLElement = this.parent.createElement('input', { className: 'e-input e-between' });
             mainDiv.appendChild(value2Text);
             mainDiv.appendChild(value2Inp);
+            value2Inp.addEventListener('input', this.validateCfInput.bind(this));
+        }
+        if (setValidation) {
+            this.validateCfInput({ target: value1Inp });
+            value1Inp.addEventListener('input', this.validateCfInput.bind(this));
         }
         subDiv.appendChild(subDivText);
         subDiv.appendChild(colorSelectEle);
@@ -384,6 +384,17 @@ export class ConditionalFormatting {
         });
         colorList.appendTo(colorSelectEle);
         return dlgContent;
+    }
+
+    private validateCfInput(e: { target: HTMLElement }): void {
+        const dialogInst: Dialog = (this.parent.serviceLocator.getService(dialog) as Dialog);
+        let text: string = (e.target as HTMLInputElement).value;
+        const btn: HTMLButtonElement = dialogInst.dialogInstance.element.getElementsByClassName('e-clearall-btn')[0] as HTMLButtonElement;
+        if (text && (e.target.classList.contains('e-between') || e.target.parentElement.querySelector('.e-between'))) {
+            text = (e.target.parentElement.querySelector(
+                (e.target.classList.contains('e-between') ? '.e-input' : '.e-between')) as HTMLInputElement).value;
+        }
+        btn.disabled = !text;
     }
 
     private checkCellHandler(rowIdx: number, colIdx: number, conditionalFormat: ConditionalFormatModel): boolean {
@@ -638,7 +649,7 @@ export class ConditionalFormatting {
                 }
                 td.removeAttribute('style');
             }
-            const cell: CellModel = getCell(rIdx, cIdx, this.parent.getActiveSheet());
+            const cell: CellModel = getCell(rIdx, cIdx, this.parent.getActiveSheet(), null, true);
             const style: CellStyleModel = cell.style ? cell.style : {};
             this.parent.notify(applyCellFormat, <CellFormatArgs>{
                 style: style, rowIdx: rIdx, colIdx: cIdx

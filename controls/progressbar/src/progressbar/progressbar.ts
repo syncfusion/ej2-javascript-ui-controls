@@ -467,7 +467,7 @@ export class ProgressBar extends Component<HTMLElement> implements INotifyProper
     }
 
     /**
-     * Render Annotation
+     * Render Annotation in progress bar
      */
     private renderAnnotations(): void {
         this.createSecElement();
@@ -615,13 +615,13 @@ export class ProgressBar extends Component<HTMLElement> implements INotifyProper
             }
             if (!refresh) {
                 rect = new RectOption(
-                    this.element.id + '_clippathrect', 'transparent', 1, 'transparent', 1,
+                    this.element.id + '_clippathrect' + (isLabel ? 'label' :''), 'transparent', 1, 'transparent', 1,
                     new Rect(posx, posy, thickness, pathWidth)
                 );
                 path = this.renderer.drawRectangle(rect);
                 clipPath.appendChild(path);
             } else {
-                path = getElement(this.element.id + '_clippathrect');
+                path = getElement(this.element.id + '_clippathrect' + (isLabel ? 'label' :''));
                 path.setAttribute('width', (pathWidth).toString());
                 if (this.isActive) {
                     path.setAttribute('x', (posx).toString());
@@ -819,6 +819,9 @@ export class ProgressBar extends Component<HTMLElement> implements INotifyProper
                     }
                 } else {
                     this.linear.renderLinearProgress(!isNullOrUndefined(oldProp.value), this.previousWidth);
+                    if (this.showProgressValue) {
+                        this.linear.renderLinearLabel();
+                    }
                 }
                 break;
             case 'animation':

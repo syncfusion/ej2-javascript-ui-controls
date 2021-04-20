@@ -550,7 +550,7 @@ export class SheetTabs {
             const key: string = this.aggregateContent;
             const content: string = `${key}: ${eventArgs[key]}`;
             if (!this.aggregateDropDown) {
-                const aggregateEle: HTMLElement = this.parent.createElement('button');
+                const aggregateEle: HTMLElement = this.parent.createElement('button', { id: this.parent.element.id + '_aggregate' });
                 document.getElementById(`${this.parent.element.id}_sheet_tab_panel`).appendChild(aggregateEle);
                 this.aggregateDropDown = new DropDownButton({
                     content: content,
@@ -624,7 +624,7 @@ export class SheetTabs {
         this.dropDownInstance = null;
         this.tabInstance.destroy();
         this.tabInstance = null;
-        this.aggregateDropDown = null;
+        this.removeAggregate();
         this.aggregateContent = null;
         this.addBtnRipple();
         this.addBtnRipple = null;

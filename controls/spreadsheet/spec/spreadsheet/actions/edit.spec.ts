@@ -398,5 +398,85 @@ describe('Editing ->', () => {
                 });
             });
         });
+        describe('I301868, I301863 ->', () => {
+            beforeEach((done: Function) => {
+                helper.initializeSpreadsheet({ sheets: [{ rows: [{ cells: [{ index: 1, value: '56' }, { value: '35' }, { formula: '=B1-C1' }] }] }] }, done);
+            });
+            afterEach(() => {
+                helper.invoke('destroy');
+            });
+            it('number max 9 digits, at 10 or move through javascript error and unexpected auto formating on TEXT formated cell', (done: Function) => {
+                helper.edit('D1', '1234567890'); // editing the cell conataining formula with number more than 9 digit.
+                setTimeout((): void => {
+                    const spreadsheet: Spreadsheet = helper.getInstance();
+                    expect(spreadsheet.sheets[0].rows[0].cells[3].value.toString()).toBe('1234567890');
+                    expect(spreadsheet.sheets[0].rows[0].cells[3].formula).toBe('');
+                    helper.invoke('selectRange', ['A2']);
+                    setTimeout((): void => {
+                        helper.edit('A2', '10/10/2020'); // Updated the date format value using Edting.
+                        setTimeout((): void => {
+                            expect(spreadsheet.sheets[0].rows[1].cells[0].value).toBe('44114');
+                            expect(spreadsheet.sheets[0].rows[1].cells[0].format).toBe('mm-dd-yyyy');
+                            expect(helper.invoke('getCell', [1, 0]).textContent).toBe('10/10/2020');
+                            done();
+                        });
+                    });
+                });
+            });
+        });
+        describe('I308693 ->', () => {
+            beforeEach((done: Function) => {
+                helper.initializeSpreadsheet({ sheets: [{ ranges: [{ dataSource: defaultData }], selectedRange: 'A1:C3' }] }, done);
+            });
+            afterEach(() => {
+                helper.invoke('destroy');
+            });
+            it('merge cell related issue (Merged cell edited state contains 2 values)', (done: Function) => {
+                helper.invoke('merge');
+                helper.invoke('startEdit');
+                setTimeout((): void => {
+                    expect(helper.getElement('#' +helper.id + '_edit').textContent).toBe('Item Name');
+                    done();
+                });
+            });
+        });
+        describe('fb21593 ->', () => {
+            beforeAll((done: Function) => {
+                helper.initializeSpreadsheet({ sheets: [{ rows: [{ cells: [{ value: 'text' }] }] }, {}] }, done);
+            });
+            afterAll(() => {
+                helper.invoke('destroy');
+            });
+            it('Style applied is getting omitted when redo the changes', (done: Function) => {
+                const spreadsheet: Spreadsheet = helper.getInstance();
+                helper.getElement('#' + helper.id + '_underline').click();
+                expect(spreadsheet.sheets[0].rows[0].cells[0].style.textDecoration).toBe('underline');
+                helper.getElement('#' + helper.id + '_line-through').click();
+                expect(spreadsheet.sheets[0].rows[0].cells[0].style.textDecoration).toBe('underline line-through');
+                helper.getElement('#' + helper.id + '_undo').click();
+                expect(spreadsheet.sheets[0].rows[0].cells[0].style.textDecoration).toBe('underline');
+                helper.getElement('#' + helper.id + '_undo').click();
+                expect(spreadsheet.sheets[0].rows[0].cells[0].style).toBeNull();
+                helper.getElement('#' + helper.id + '_redo').click();
+                expect(spreadsheet.sheets[0].rows[0].cells[0].style.textDecoration).toBe('underline');
+                helper.getElement('#' + helper.id + '_redo').click();
+                expect(spreadsheet.sheets[0].rows[0].cells[0].style.textDecoration).toBe('underline line-through');
+                helper.invoke('selectRange', ['A2']);
+                done();
+            });
+            it('Style applied is getting omitted when redo the changes', (done: Function) => {
+                const spreadsheet: Spreadsheet = helper.getInstance();
+                helper.invoke('startEdit');
+                (spreadsheet as any).editModule.editCellData.value = 'edited';
+                helper.getElement('#' + helper.id + ' .e-sheet-tab .e-tab-header .e-toolbar-item:nth-child(3)').click();
+                setTimeout((): void => {
+                    helper.getElement('#' + helper.id + ' .e-sheet-tab .e-tab-header .e-toolbar-item').click();
+                    setTimeout((): void => {
+                        expect(spreadsheet.sheets[0].rows[1].cells[0].value).toBe('edited');
+                        done();
+                    });
+                });
+            });
+        });
     });
 });

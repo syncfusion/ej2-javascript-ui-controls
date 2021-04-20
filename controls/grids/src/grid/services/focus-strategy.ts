@@ -613,6 +613,7 @@ export class ContentFocus implements IFocus {
     public parent: IGrid;
     public keyActions: { [x: string]: number[] };
     public lastIdxCell: boolean = false;
+    public target: HTMLElement;
     public indexesByKey: (action: string) => number[];
     constructor(parent: IGrid) {
         this.parent = parent;
@@ -693,6 +694,7 @@ export class ContentFocus implements IFocus {
 
     public onClick(e: Event, force?: boolean): void | boolean {
         let target: HTMLTableCellElement = <HTMLTableCellElement>e.target;
+        this.target = target;
         target = <HTMLTableCellElement>(target.classList.contains('e-rowcell') ? target : closest(target, 'td'));
         target = target ? target : <HTMLTableCellElement>closest(<Element>e.target, 'td.e-detailrowcollapse')
             || <HTMLTableCellElement>closest(<Element>e.target, 'td.e-detailrowexpand');
@@ -724,6 +726,7 @@ export class ContentFocus implements IFocus {
 
     public getFocusable(element: HTMLElement): HTMLElement {
         let query: string = 'button, [href], input:not([type="hidden"]), select, textarea, [tabindex]:not([tabindex="-1"])';
+        let isTemplate: boolean = !isNullOrUndefined(closest(<HTMLElement>element, '.e-templatecell'));
         if (this.parent.isEdit) {
             query = 'input:not([type="hidden"]), select:not([aria-hidden="true"]), textarea';
         }
@@ -733,7 +736,7 @@ export class ContentFocus implements IFocus {
          * if no child found then select the cell itself.
          * if Grid is in editable state, check for editable control inside child.
          */
-        return child.length ? child[0] : element;
+        return child.length ? isTemplate ? this.target : child[0] : element;
     }
 
     public selector(row: Row<Column>, cell: Cell<Column>, isRowTemplate?: boolean): boolean {

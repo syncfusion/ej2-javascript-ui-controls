@@ -3,7 +3,7 @@ import { Page as GridPage } from '@syncfusion/ej2-grids';
 import { TreeGrid, ITreeData, RowCollapsedEventArgs } from '../base';
 import * as events from '../base/constant';
 import { DataManager, Query, Predicate } from '@syncfusion/ej2-data';
-import { getValue, isNullOrUndefined, isBlazor, addClass, removeClass } from '@syncfusion/ej2-base';
+import { getValue, isNullOrUndefined, addClass, removeClass } from '@syncfusion/ej2-base';
 import { getExpandStatus, isFilterChildHierarchy } from '../utils';
 
 /**
@@ -95,11 +95,6 @@ export class Page {
     private collapseExpandPagedchilds(rowDetails: { action: string, row: HTMLTableRowElement,
         record: ITreeData, args: RowCollapsedEventArgs }): void {
         rowDetails.record.expanded = rowDetails.action === 'collapse' ? false : true;
-        if (isBlazor()) {
-            (this.parent.flatData.filter((e: ITreeData) => {
-                return e.uniqueID === rowDetails.record.uniqueID;
-            })[0] as ITreeData).expanded = rowDetails.action === 'collapse' ? false : true;
-        }
         const ret: Object = {
             result: this.parent.flatData,
             row: rowDetails.row,

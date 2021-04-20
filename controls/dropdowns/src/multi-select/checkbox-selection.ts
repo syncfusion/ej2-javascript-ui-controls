@@ -337,7 +337,6 @@ export class CheckBoxSelection {
     private setDeviceSearchBox(): void {
         this.parent.popupObj.element.classList.add(device);
         this.parent.popupObj.element.classList.add(mobileFilter);
-        // eslint-disable-next-line @typescript-eslint/naming-convention
         this.parent.popupObj.position = { X: 0, Y: 0 };
         this.parent.popupObj.dataBind();
         this.setSearchBoxPosition();

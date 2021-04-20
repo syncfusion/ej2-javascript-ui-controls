@@ -203,7 +203,8 @@ export class Edit {
         const trgtElem: HTMLElement = <HTMLElement>e.target; const keyCode: number = e.keyCode;
         const sheet: SheetModel = this.parent.getActiveSheet(); const actCell: number[] = getCellIndexes(sheet.activeCell);
         const cell: CellModel = getCell(actCell[0], actCell[1], sheet) || {};
-        if (!closest(e.target as Element, '.e-findtool-dlg') && !closest(e.target as Element, '.e-validationerror-dlg')) {
+        if (!closest(e.target as Element, '.e-findtool-dlg') && !closest(e.target as Element, '.e-validationerror-dlg')
+            && !closest(e.target as Element, '.e-hyperlink-dlg')) {
             if (!sheet.isProtected || closest(e.target as Element, '.e-sheet-rename') || !isLocked(cell, getColumn(sheet, actCell[1]))) {
                 if (this.isEdit) {
                     const editorElem: HTMLElement = this.getEditElement(sheet);

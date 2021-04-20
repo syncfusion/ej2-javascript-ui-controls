@@ -1,5 +1,6 @@
 import { SpreadsheetHelper } from "../util/spreadsheethelper.spec";
 import { defaultData } from '../util/datasource.spec';
+import { Spreadsheet } from '../../../src/index';
 
 describe('Wrap ->', () => {
     let helper: SpreadsheetHelper = new SpreadsheetHelper('spreadsheet');
@@ -56,5 +57,27 @@ describe('Wrap ->', () => {
         //     expect(td.parentElement.style.height).toBe('56px');
         //     done();
         // });
+    });
+    describe('CR-Issues ->', () => {
+        describe('I316931, I31444 ->', () => {
+            beforeEach((done: Function) => {
+                helper.initializeSpreadsheet({ sheets: [{ rows: [{ cells: [{ wrap: true }] }] }] }, done);
+            });
+            afterEach(() => {
+                helper.invoke('destroy');
+            });
+            it('UpdateCell method is not working in wrap cell after calling setRowHeight', (done: Function) => {
+                helper.invoke('setRowHeight', [55]);
+                const spreadsheet: Spreadsheet = helper.getInstance();
+                expect(spreadsheet.sheets[0].rows[0].height).toBe(55);
+                expect(spreadsheet.sheets[0].rows[0].cells[0].value).toBeUndefined();
+                expect( helper.invoke('getRow', [0]).style.height).toBe('55px');
+                helper.invoke('updateCell', [{ value: 'Welcome to Spreadsheet!!!' }]);
+                expect(spreadsheet.sheets[0].rows[0].cells[0].value).toBe('Welcome to Spreadsheet!!!');
+                expect(spreadsheet.sheets[0].rows[0].height).toBe(55);
+                expect( helper.invoke('getRow', [0]).style.height).toBe('55px');
+                done();
+            });
+        });
     });
 });

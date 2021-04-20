@@ -199,7 +199,7 @@ export class PivotButton implements IAction {
                             if ((this.parent.getModuleName() === 'pivotview' && !this.parent.isAdaptive) ||
                                 this.parent.getModuleName() === 'pivotfieldlist') {
                                 this.createDraggable(field[i], this.parent.getModuleName() === 'pivotview' ? contentElement : dragWrapper);
-                                (buttonElement as any).querySelector('.' + cls.BUTTON_DRAGGABLE).ej2_instances[0].dragArea = this.parentElement;
+                                (buttonElement as any).querySelector('.' + cls.BUTTON_DRAGGABLE).ej2_instances[0].enableAutoScroll = false;
                             }
                         }
                     }

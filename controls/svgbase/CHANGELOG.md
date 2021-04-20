@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 19.1.57 (2021-04-20)
+
+### Svg Base
+
+#### Bug Fixes
+
+- `#I296201` - Shared tooltip crop issue fixed.
+
 ## 19.1.54 (2021-03-30)
 
 ### Svg Base

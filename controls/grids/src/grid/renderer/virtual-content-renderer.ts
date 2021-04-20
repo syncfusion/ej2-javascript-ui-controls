@@ -86,6 +86,7 @@ export class VirtualContentRenderer extends ContentRender implements IRenderer {
     private orderRowObj: Row<Column>[] = [];
     private mvbOrderRowObj: Row<Column>[] = [];
     private frOrderRowObj: Row<Column>[] = [];
+    private isContextMenuOpen: boolean = false;
 
     constructor(parent: IGrid, locator?: ServiceLocator) {
         super(parent, locator);
@@ -765,6 +766,7 @@ export class VirtualContentRenderer extends ContentRender implements IRenderer {
         this.parent[action](events.virtualScrollEditCancel, this.editCancel, this);
         this.parent[action](events.refreshVirtualCacheOnRowDD, this.refreshVirtualCacheOnRowDD, this);
         this.parent[action](events.refreshVirtualMaxPage, this.refreshMaxPage, this);
+        this.parent[action](events.selectRowOnContextOpen, this.selectRowOnContextOpen, this);
         let event: string[] = this.actions;
         for (let i: number = 0; i < event.length; i++) {
             this.parent[action](`${event[i]}-begin`, this.onActionBegin, this);
@@ -791,6 +793,10 @@ export class VirtualContentRenderer extends ContentRender implements IRenderer {
         data.virtualData = this.virtualData;
         data.isAdd = this.isAdd;
         data.isCancel = this.isCancel;
+    }
+
+    private selectRowOnContextOpen(args: { isOpen: boolean }): void {
+        this.isContextMenuOpen = args.isOpen;
     }
 
     private editCancel(args: { data: Object }): void {
@@ -1162,7 +1168,7 @@ export class VirtualContentRenderer extends ContentRender implements IRenderer {
     }
 
     private selectVirtualRow(args: { selectedIndex: number }): void {
-        if (this.activeKey !== 'upArrow' && this.activeKey !== 'downArrow'
+        if (!this.isContextMenuOpen && this.activeKey !== 'upArrow' && this.activeKey !== 'downArrow'
             && !this.requestTypes.some((value: string) => value === this.requestType) && !this.parent.selectionModule.isInteracted) {
             let selectedRow: Element = this.parent.getRowByIndex(args.selectedIndex);
             let rowHeight: number = this.parent.getRowHeight();

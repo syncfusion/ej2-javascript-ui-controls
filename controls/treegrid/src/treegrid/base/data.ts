@@ -1,4 +1,4 @@
-import { extend, isNullOrUndefined, setValue, getValue, Ajax, isBlazor, addClass, removeClass } from '@syncfusion/ej2-base';
+import { extend, isNullOrUndefined, setValue, getValue, Ajax, addClass, removeClass } from '@syncfusion/ej2-base';
 import { DataManager, Query, Group, DataUtil, QueryOptions, ReturnOption, ParamOption } from '@syncfusion/ej2-data';
 import { ITreeData, RowExpandedEventArgs } from './interface';
 import { TreeGrid } from './treegrid';
@@ -99,7 +99,6 @@ export class DataManipulation {
         this.parent.flatData = <Object[]>(Object.keys(data).length === 0 && !(this.parent.dataSource instanceof DataManager) ?
             this.parent.dataSource : []);
         this.parent.parentData = [];
-        const adaptorName: string = 'adaptorName';
         if ((isRemoteData(this.parent) && !isOffline(this.parent)) && data instanceof DataManager && !(data instanceof Array)) {
             const dm: DataManager = <DataManager>this.parent.dataSource;
             if (this.parent.parentIdMapping) {
@@ -112,8 +111,7 @@ export class DataManipulation {
                         this.parent.query.addParams('IdMapping', this.parent.idMapping);
                     }
                 }
-                const clientRender: string = 'isClientRender';
-                if (!this.parent.hasChildMapping && !(this.parent.dataSource[adaptorName] === 'BlazorAdaptor' && !this.parent[clientRender])) {
+                if (!this.parent.hasChildMapping) {
                     let qry: Query = this.parent.query.clone();
                     qry.queries = [];
                     qry = qry.select([this.parent.parentIdMapping]);
@@ -215,14 +213,11 @@ export class DataManipulation {
      */
     private updateParentRemoteData(args?: BeforeDataBoundArgs) : void {
         const records: ITreeData[] = args.result;
-        const adaptorName: string = 'adaptorName';
-        const clientRender: string = 'isClientRender';
-        if (!this.parent.hasChildMapping && !this.parentItems.length &&
-      (!(this.parent.dataSource[adaptorName] === 'BlazorAdaptor' && !this.parent[clientRender]) && !this.parent.loadChildOnDemand)) {
+        if (!this.parent.hasChildMapping && !this.parentItems.length && !this.parent.loadChildOnDemand) {
             this.zerothLevelData = args;
             setValue('cancel', true, args);
         } else {
-            if (!(this.parent.dataSource[adaptorName] === 'BlazorAdaptor' && !this.parent[clientRender]) && !this.parent.loadChildOnDemand) {
+            if (!this.parent.loadChildOnDemand) {
                 for (let rec: number = 0; rec < records.length; rec++) {
                     if (isCountRequired(this.parent) && records[rec].hasChildRecords && this.parent.initialRender) {
                         records[rec].expanded = false;
@@ -246,8 +241,7 @@ export class DataManipulation {
                 }
             }
         }
-        args.result = (this.parent.dataSource[adaptorName] === 'BlazorAdaptor' && !this.parent[clientRender] && !isNullOrUndefined(records))
-                      || this.parent.loadChildOnDemand ? this.parent.flatData : records;
+        args.result = this.parent.loadChildOnDemand ? this.parent.flatData : records;
         this.parent.notify('updateResults', args);
     }
     /**
@@ -269,21 +263,13 @@ export class DataManipulation {
             gridRows = [].slice.call(rows);
         }
         let childRecord: ITreeData;
-        const adaptorName: string = 'adaptorName';
-        const clientRender: string = 'isClientRender';
         if (rowDetails.rows.length > 0) {
             if (!isChild) {
                 rowDetails.record.expanded = true;
             }
             for (let i: number = 0; i < rowDetails.rows.length; i++) {
-                if (isBlazor() && this.parent.isServerRendered) {
-                    removeClass([rowDetails.rows[i]], 'e-treerowcollapsed');
-                    addClass([rowDetails.rows[i]], 'e-treerowexpanded');
-                } else {
-                    rowDetails.rows[i].style.display = 'table-row';
-                }
-                if ((isBlazor() && (this.parent.dataSource[adaptorName] === 'BlazorAdaptor' && !this.parent[clientRender]))
-            || this.parent.loadChildOnDemand) {
+                rowDetails.rows[i].style.display = 'table-row';
+                if (this.parent.loadChildOnDemand) {
                     const targetEle: Element = rowDetails.rows[i].getElementsByClassName('e-treegridcollapse')[0];
                     childRecord = this.parent.rowTemplate ? this.parent.grid.getCurrentViewRecords()[rowDetails.rows[i].rowIndex] :
                         this.parent.grid.getRowObjectFromUID(rowDetails.rows[i].getAttribute('data-Uid')).data;

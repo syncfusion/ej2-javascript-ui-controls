@@ -3810,6 +3810,10 @@ export abstract class ElementBox {
     /**
      * @private
      */
+    public padding: Margin = new Margin(0, 0, 0, 0);
+    /**
+     * @private
+     */
     public line: LineWidget;
     /**
      * @private
@@ -5519,6 +5523,7 @@ export class LineFormat {
         lineFormat.color = this.color;
         lineFormat.weight = this.weight;
         lineFormat.dashStyle = this.dashStyle;
+        lineFormat.line = this.line;
         return lineFormat;
     }
 }
@@ -7750,6 +7755,8 @@ export class Page {
         if (this.headerWidget) {
             if (this.viewer && this.documentHelper.owner.editor) {
                 this.documentHelper.owner.editor.removeFieldInWidget(this.headerWidget);
+                // Remove content control
+                this.documentHelper.owner.editor.removeFieldInWidget(this.headerWidget, false, true);
             }
             this.headerWidget.destroy();
         }
@@ -7757,6 +7764,8 @@ export class Page {
         if (this.footerWidget) {
             if (this.viewer && this.documentHelper.owner.editor) {
                 this.documentHelper.owner.editor.removeFieldInWidget(this.footerWidget);
+                // Remove content control
+                this.documentHelper.owner.editor.removeFieldInWidget(this.footerWidget, false, true);
             }
             this.footerWidget.destroy();
         }

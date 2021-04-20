@@ -4331,3 +4331,26 @@ describe('EJ2-46060: 8203 character not removed after start typing', () => {
         destroy(rteObj);
     });
 });
+
+describe('EJ2-47075: Applying heading to the content in the Rich Text Editor applies heading to the next element', () => {
+    let rteObj: RichTextEditor;
+    let domSelection: NodeSelection = new NodeSelection();
+    beforeEach(() => { });
+    it('Checking the alignment applied for element.', (done: Function) => {
+        rteObj = renderRTE({
+            value: `<h3 id="node1"><span>Plan voor training en bewustzijn</span></h3><p>Om bij het personeel van Spectator bewustzijn met betrekking tot
+            informatiebeveiliging te creëren worden verschillende activiteiten georganiseerd. <br /> </p>
+          <p /><p>In de bijlage van het ISMS is een aanwezigheidsregistratie opgenomen waarin per activiteit aangegeven staat welke
+            medewerkers hierbij aanwezig geweest zijn, daarnaast is er een bijlage beschikbaar met een overzicht van de trainingen en details hierover.</p>`,
+        });
+        let node: Node = document.getElementById('node1');
+        rteObj.formatter.editorManager.nodeSelection.setSelectionText(document, node.childNodes[0].childNodes[0], (node as any).nextElementSibling, 0, 0);
+        (rteObj as any).mouseUp({ target: node.childNodes[0], detail: 3 });
+        rteObj.executeCommand('justifyRight');
+        expect((rteObj.inputElement.querySelector('#node1') as any).style.textAlign).toBe('right');
+        done();
+    });
+    afterEach(() => {
+        destroy(rteObj);
+    });
+});

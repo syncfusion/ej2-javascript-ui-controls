@@ -225,7 +225,7 @@ export class FontDialog {
         const underlineLabel: HTMLElement = createElement('label', { className: 'e-de-font-dlg-header', innerHTML: html });
         let underlineElement: HTMLSelectElement;
         underlineElement = createElement('select', { id: this.target.id + '_underLine', styles: styles }) as HTMLSelectElement;
-        underlineElement.innerHTML = '<option>' + locale.getConstant('None') + '</option><option>________</option>';
+        underlineElement.innerHTML = '<option  value="None">' + locale.getConstant('None') + '</option><option>________</option>';
         sizeSubDiv2.appendChild(underlineLabel);
         sizeSubDiv2.appendChild(underlineElement);
         sizeDiv.appendChild(sizeSubDiv2);
@@ -262,9 +262,9 @@ export class FontDialog {
         fontStyleLabel = createElement('label', { className: 'e-de-font-dlg-header', innerHTML: locale.getConstant('Font style') });
         const fontStyle: string = 'font-family:Roboto;font-size:14px;opacity:0.8;';
         fontStyleValues = createElement('select', { id: this.target.id + '_fontStyle', styles: fontStyle }) as HTMLSelectElement;
-        fontStyleValues.innerHTML = '<option>' +
-            locale.getConstant('Regular') + '</option><option>' + locale.getConstant('Bold') + '</option><option>' +
-            locale.getConstant('Italic') + '</option><option>' + locale.getConstant('Bold') + locale.getConstant('Italic') + '</option>';
+        fontStyleValues.innerHTML = '<option value="Regular">' +
+            locale.getConstant('Regular') + '</option><option value="Bold">' + locale.getConstant('Bold') + '</option><option value="Italic">' +
+            locale.getConstant('Italic') + '</option><option value="BoldItalic">' + locale.getConstant('Bold') + locale.getConstant('Italic') + '</option>';
         fontSubDiv2.appendChild(fontStyleLabel);
         fontSubDiv2.appendChild(fontStyleValues);
         fontDiv.appendChild(fontSubDiv2);

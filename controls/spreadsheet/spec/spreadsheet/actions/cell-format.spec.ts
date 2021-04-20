@@ -68,25 +68,49 @@ describe('Cell Format ->', () => {
         
     });
 
-    // describe('CR-Issues ->', () => {
-    //     describe('fb22572 ->', () => {
-    //         beforeEach((done: Function) => {
-    //             helper.initializeSpreadsheet({ cellStyle: { fontSize: '8pt' }, sheets: [{ rows: [{ index: 3, cells:
-    //                 [{ index: 3, value: 'test' }] }], selectedRange: 'D4' }] }, done);
-    //         });
-    //         afterEach(() => {
-    //             helper.invoke('destroy');
-    //         });
-    //         it('Cell size is getting changed after applying border', (done: Function) => {
-    //             helper.getElement('#' + helper.id + '_borders').click();
-    //             helper.getElement('.e-menu-item[aria-label="Outside Borders"]').click();
-    //             // Need to re ensure this fix.
-    //             expect(helper.getInstance().sheets[0].rows[3].height).toBe(21);
-    //             //expect(helper.getInstance().sheets[0].rows[3]).toBeNull();
-    //             expect(helper.invoke('getRow', [2]).style.height).toBe('21px');
-    //             //expect(helper.invoke('getRow', [2]).style.height).toBe('20px');
-    //             done();
-    //         });
-    //     });
-    // });
+    describe('CR-Issues ->', () => {
+        describe('fb22572 ->', () => {
+            beforeEach((done: Function) => {
+                helper.initializeSpreadsheet({ cellStyle: { fontSize: '8pt' }, sheets: [{ rows: [{ index: 3, cells:
+                    [{ index: 3, value: 'test' }] }], selectedRange: 'D4' }] }, done);
+            });
+            afterEach(() => {
+                helper.invoke('destroy');
+            });
+            it('Cell size is getting changed after applying border', (done: Function) => {
+                helper.getElement('#' + helper.id + '_borders').click();
+                helper.getElement('.e-menu-item[aria-label="Outside Borders"]').click();
+                expect(helper.getInstance().sheets[0].rows[2]).toBeNull();
+                expect(helper.getInstance().sheets[0].rows[3].height).toBeUndefined();
+                expect(helper.invoke('getRow', [2]).style.height).toBe('20px');
+                expect(helper.invoke('getRow', [3]).style.height).toBe('20px');
+                done();
+            });
+        });
+        describe('fb21556, fb21625 ->', () => {
+            beforeEach((done: Function) => {
+                helper.initializeSpreadsheet({ sheets: [{ rows: [{ cells: [{ value: 'Item Name' }] }] }] }, done);
+            });
+            afterEach(() => {
+                helper.invoke('destroy');
+            });
+            it('When wrap text is applied to the cell, horizontal/vertical alignment is not working properly', (done: Function) => {
+                helper.invoke('setRowHeight', [100]);
+                helper.invoke('setColWidth', [150]);
+                helper.getElement('#' + helper.id + '_wrap').click();
+                helper.getElement('#' + helper.id + '_vertical_align').click();
+                helper.getElement('#' + helper.id + '_vertical_align-popup .e-item:nth-child(2)').click();
+                const wrapContent: HTMLElement = helper.invoke('getCell', [0, 0]).querySelector('.e-wrap-content');
+                expect(getComputedStyle(wrapContent).bottom).toBe('33px');
+                expect(getComputedStyle(wrapContent).transform).toBe('matrix(1, 0, 0, 1, 0, -8.5)');
+                expect(getComputedStyle(wrapContent).left).toBe('0px');
+                helper.getElement('#' + helper.id + '_vertical_align').click();
+                helper.getElement('#' + helper.id + '_vertical_align-popup .e-item').click();
+                expect(getComputedStyle(wrapContent).transform).toBe('none');
+                expect(getComputedStyle(wrapContent).top).toBe('0px');
+                helper.getElement('#' + helper.id + '_wrap').click();
+                done();
+            });
+        });
+    });
 });

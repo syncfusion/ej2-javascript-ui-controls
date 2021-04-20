@@ -52,7 +52,7 @@ export function calculatePosition(
     currentElement: Element, positionX?: string, positionY?: string, parentElement?: boolean,
     targetValues?: ClientRect): OffsetPosition {
     //eslint-disable-next-line
-    (positionY + positionX === 'topright') ? popupRect = undefined : popupRect = targetValues;
+    popupRect = undefined;
     popupRect = targetValues;
     fixedParent = parentElement ? true : false;
     if (!currentElement) {
@@ -179,7 +179,7 @@ function getElementLeft(): number {
  * @returns {number} - specifies the number value
  */
 function getElementRight(): number {
-    return elementRect.right + getBodyScrollLeft() - (popupRect ? popupRect.width : 0);
+    return elementRect.right + getBodyScrollLeft() - (popupRect && (elementRect.width >= popupRect.width) ? popupRect.width : 0);
 }
 /**
  * @returns {number} - specifies the number value

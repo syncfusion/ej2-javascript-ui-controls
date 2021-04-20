@@ -18,7 +18,7 @@ import { Query, DataManager, Group } from '@syncfusion/ej2-data';
 import { Grid } from '../base/grid';
 import { Cell } from '../models/cell';
 import { getPrintGridModel, getUid, isExportColumns, updateColumnTypeForExportColumns, prepareColumns,
-    measureColumnDepth } from '../base/util';
+    measureColumnDepth} from '../base/util';
 import { L10n } from '@syncfusion/ej2-base';
 import { ServiceLocator } from '../services/service-locator';
 import { AutoFilters } from '@syncfusion/ej2-excel-export/src/auto-filters';
@@ -360,7 +360,7 @@ export class ExcelExport {
         if (gObj.childGrid && !isNullOrUndefined(exportProperties)) {
             gObj.hierarchyPrintMode = exportProperties.hierarchyExportMode || 'Expanded';
         }
-        let helper: ExportHelper = new ExportHelper(gObj);
+        let helper: ExportHelper = new ExportHelper(gObj, this.helper.getForeignKeyData());
         let gColumns: Column[] = isExportColumns(exportProperties) ?
             prepareColumns(exportProperties.columns, gObj.enableColumnVirtualization) :
             helper.getGridExportColumns(isFrozen ? gObj.getColumns() : gObj.columns as Column[]);

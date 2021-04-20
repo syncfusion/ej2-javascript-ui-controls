@@ -303,6 +303,7 @@ export class ContextMenu implements IAction {
         if (args.items.length > 0 && args.items[0][parent] instanceof Menu) {
             this.updateItemStatus();
         }
+        this.parent.notify(events.selectRowOnContextOpen, { isOpen: false });
     }
     private getLocaleText(item: string): string {
         return this.l10n.getConstant(this.localeText[item]);
@@ -334,6 +335,7 @@ export class ContextMenu implements IAction {
             this.targetRowdata = this.parent.getRowInfo(args.event.target as Element);
             if ((isNullOrUndefined(args.parentItem)) && this.targetColumn) {
                 if (this.targetRowdata.cell) {
+                    this.parent.notify(events.selectRowOnContextOpen, { isOpen: true });
                     this.selectRow(args.event, (this.targetRowdata.cell.classList.contains('e-selectionbackground')
                     && this.parent.selectionSettings.type === 'Multiple') ? false : true);
                 }

@@ -205,7 +205,10 @@ export class WParagraphFormat {
                 let currentFormat: WParagraphFormat = this;
                 let baseStyle: any = this.baseStyle;
                 while (!isNullOrUndefined(baseStyle)) {
-                    const listParaFormat: WParagraphFormat = baseStyle.paragraphFormat.getListPargaraphFormat(property);
+                    let listParaFormat: WParagraphFormat;
+                    if (!this.listFormat.hasValue('listId')) {
+                        listParaFormat = baseStyle.paragraphFormat.getListPargaraphFormat(property);
+                    }
                     if (baseStyle.paragraphFormat.hasValue(property)) {
                         currentFormat = baseStyle.paragraphFormat;
                         break;

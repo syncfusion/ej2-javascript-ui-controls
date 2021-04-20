@@ -221,5 +221,102 @@ describe('Selection ->', () => {
                 });
             });
         });
+        describe('I300950 ->', () => {
+            beforeEach((done: Function) => {
+                helper.initializeSpreadsheet(
+                    { sheets: [{ rows: [{ index: 1, cells: [{ value: 'foo bar foo bar \r\n foo bar foo bar' }] }] }] }, done);
+            });
+            afterEach(() => {
+                helper.invoke('destroy');
+            });
+            it('Issue with line feed and smaul column (selection issue with "/r/n" in spreadsheet cell data)', (done: Function) => {
+                helper.invoke('selectRange', ['A2']);
+                setTimeout(() => {
+                    const spreadsheet: Spreadsheet = helper.getInstance();
+                    expect(spreadsheet.sheets[0].rows[1].height).toBe(74);
+                    expect(helper.getElement().querySelector('.e-active-cell').style.height).toBe('75px');
+                    done();
+                });
+            });
+        });
+        describe('I300737 ->', () => {
+            beforeEach((done: Function) => {
+                helper.initializeSpreadsheet({}, done);
+            });
+            afterEach(() => {
+                helper.invoke('destroy');
+            });
+            it('Selection issue with the rowCount 99 (After scrolled to 50 rows and select all selection not proper)', (done: Function) => {
+                helper.invoke('goTo', ['A50']);
+                setTimeout(() => {
+                    const selectAl: HTMLElement = helper.getElement('#' + helper.id + '_select_all');
+                    helper.triggerMouseAction(
+                        'mousedown', { x: selectAl.getBoundingClientRect().left + 1, y: selectAl.getBoundingClientRect().top + 1 }, null,
+                        selectAl);
+                    helper.triggerMouseAction(
+                        'mouseup', { x: selectAl.getBoundingClientRect().left + 1, y: selectAl.getBoundingClientRect().top + 1 }, document,
+                        selectAl);
+                    setTimeout(() => {
+                        const selection: HTMLElement = helper.getElement().querySelector('.e-selection');
+                        let sizeMatch: boolean = helper.getElement('#' + helper.id + '_main_content').getBoundingClientRect().height ===
+                            selection.getBoundingClientRect().height;
+                        expect(sizeMatch).toBeTruthy();
+                        sizeMatch = helper.getElement().querySelector('.e-virtualtrack').style.width === selection.style.width;
+                        expect(sizeMatch).toBeTruthy();
+                        expect(selection.style.top).toBe('0px');
+                        expect(selection.style.left).toBe('0px');
+                        done();
+                    });
+                });
+            });
+        });
+        describe('I296146 ->', () => {
+            beforeEach((done: Function) => {
+                helper.initializeSpreadsheet({ sheets: [{ selectedRange: 'C3' }] }, done);
+            });
+            afterEach(() => {
+                helper.invoke('destroy');
+            });
+            it('issue with the selectedRange updation model binding (ex: C3)', (done: Function) => {
+                const spreadsheet: Spreadsheet = helper.getInstance();
+                expect(spreadsheet.sheets[0].selectedRange).toBe('C3:C3');
+                const cell: HTMLElement = helper.invoke('getCell', [2, 1]);
+                helper.triggerMouseAction(
+                    'mousedown', { x: cell.getBoundingClientRect().left + 1, y: cell.getBoundingClientRect().top + 1 }, null,
+                    cell);
+                helper.triggerMouseAction(
+                    'mouseup', { x: cell.getBoundingClientRect().left + 1, y: cell.getBoundingClientRect().top + 1 }, document,
+                    cell);
+                setTimeout((): void => {
+                    expect(spreadsheet.sheets[0].selectedRange).toBe('B3:B3');
+                    helper.getElement('#' + helper.id + '_bold').click();
+                    expect(spreadsheet.sheets[0].rows[2].cells[2]).toBeUndefined();
+                    expect(spreadsheet.sheets[0].rows[2].cells[1].style.fontWeight).toBe('bold');
+                    done();
+                });
+            });
+        });
+        describe('I308987, F162287 ->', () => {
+            beforeEach((done: Function) => {
+                helper.initializeSpreadsheet({}, done);
+            });
+            afterEach(() => {
+                helper.invoke('destroy');
+            });
+            it('Shift+arrowkey selection', (done: Function) => {
+                const spreadsheet: Spreadsheet = helper.getInstance();
+                expect(spreadsheet.sheets[0].selectedRange).toBe('A1:A1');
+                helper.getElement().focus();
+                helper.triggerKeyEvent('keydown', 39, null, null, true, helper.invoke('getCell', [0, 0]));
+                setTimeout((): void => {
+                    expect(spreadsheet.sheets[0].selectedRange).toBe('A1:B1');
+                    helper.triggerKeyEvent('keydown', 40, null, null, true, helper.invoke('getCell', [0, 1]));
+                    setTimeout((): void => {
+                        expect(spreadsheet.sheets[0].selectedRange).toBe('A1:B2');
+                        done();
+                    });
+                });
+            });
+        });
     });
 });

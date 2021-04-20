@@ -516,3 +516,5 @@ export const rowModeChange: string = 'row-mode-change';
 export const enterKeyHandler: string = 'enter-key-handler';
 /** @hidden */
 export const refreshVirtualMaxPage: string = 'refresh-virtual-max-page';
+/** @hidden */
+export const selectRowOnContextOpen: string = 'select-row-on-context-open';

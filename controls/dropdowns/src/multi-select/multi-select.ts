@@ -1053,8 +1053,9 @@ export class MultiSelect extends DropDownBase implements IInput {
             this.checkForCustomValue(this.tempQuery, this.fields);
             return;
         }
-        if (this.value && this.value.length && ((this.mode !== 'CheckBox' && this.inputElement.value !== '') ||
-            this.mode === 'CheckBox')) {
+        if (this.value && this.value.length && ((this.mode !== 'CheckBox' && this.inputElement.value.trim() !== '') ||
+            this.mode === 'CheckBox' || ((this.keyCode === 8|| this.keyCode === 46) && this.allowFiltering && 
+            this.allowCustomValue && this.dataSource instanceof DataManager && this.inputElement.value === ''))) {
             this.refreshSelection();
         }
         this.updateListARIA();
@@ -1325,9 +1326,9 @@ export class MultiSelect extends DropDownBase implements IInput {
             } else {
                 const tempData: string[] = [this.inputElement.value];
                 (tempData[0] as string | number) = (typeof customData === 'number' && !isNaN(parseFloat(tempData[0]))) ?
-                parseFloat(tempData[0]) : tempData[0];
+                    parseFloat(tempData[0]) : tempData[0];
                 (tempData[0]  as string | boolean) = (typeof customData === 'boolean') ?
-                (tempData[0] === 'true' ? true : (tempData[0] === 'false' ? false : tempData[0])) : tempData[0];
+                    (tempData[0] === 'true' ? true : (tempData[0] === 'false' ? false : tempData[0])) : tempData[0];
                 this.resetList(tempData, field);
             }
         }
@@ -1671,6 +1672,7 @@ export class MultiSelect extends DropDownBase implements IInput {
         if (this.readonly || !this.enabled && this.mode !== 'CheckBox') {
             return;
         }
+        this.keyCode = e.keyCode;
         this.keyDownStatus = true;
         if (e.keyCode > 111 && e.keyCode < 124) {
             return;
@@ -2567,9 +2569,7 @@ export class MultiSelect extends DropDownBase implements IInput {
                 this.list.style.maxHeight = formatUnit(this.popupHeight);
             }
             this.popupObj = new Popup(this.popupWrapper, {
-                // eslint-disable-next-line @typescript-eslint/naming-convention
                 width: this.calcPopupWidth(), targetType: 'relative', position: { X: 'left', Y: 'bottom' },
-                // eslint-disable-next-line @typescript-eslint/naming-convention
                 relateTo: this.overAllWrapper, collision: { X: 'flip', Y: 'flip' }, offsetY: 1,
                 enableRtl: this.enableRtl, zIndex: this.zIndex,
                 close: () => {
@@ -2786,6 +2786,9 @@ export class MultiSelect extends DropDownBase implements IInput {
         });
     }
     protected search(e: KeyboardEventArgs): void {
+        if (!isNullOrUndefined(e)) {
+            this.keyCode = e.keyCode;
+        }
         if (!this.isPopupOpen() && this.openOnClick) {
             this.showPopup();
         }
@@ -2794,9 +2797,6 @@ export class MultiSelect extends DropDownBase implements IInput {
             this.focusAtFirstListItem();
         } else {
             const text: string = this.targetElement();
-            if (!isNullOrUndefined(e)) {
-                this.keyCode = e.keyCode;
-            }
             if (this.allowFiltering) {
                 const eventArgs: { [key: string]: Object } = {
                     preventDefaultAction: false,
@@ -3176,6 +3176,7 @@ export class MultiSelect extends DropDownBase implements IInput {
         this.updateData(delimChar, e);
     }
     private onMouseClick(e: MouseEvent): void {
+        this.keyCode = null;
         this.scrollFocusStatus = false;
         let target: Element = <Element>e.target;
         const li: HTMLElement = <HTMLElement>closest(target, '.' + dropDownBaseClasses.li);
@@ -4500,7 +4501,6 @@ export interface MultiSelectChangeEventArgs {
      */
     element: HTMLElement
 }
-// eslint-disable-next-line @typescript-eslint/naming-convention
 export type visualMode = 'Default' | 'Delimiter' | 'Box' | 'CheckBox';
 
 export interface ISelectAllEventArgs {

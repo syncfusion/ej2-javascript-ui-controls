@@ -114,7 +114,7 @@ export function isHiddenRow(sheet: SheetModel, index: number): boolean {
  * @param {number} rowIndex - Specifies the rowIndex.
  * @returns {number} - To get the row height.
  */
-export function getRowHeight(sheet: SheetModel, rowIndex: number, checkDPR: boolean = true): number {
+export function getRowHeight(sheet: SheetModel, rowIndex: number, checkDPR?: boolean): number {
     let hgt: number;
     if (sheet && sheet.rows && sheet.rows[rowIndex]) {
         if (sheet.rows[rowIndex].hidden) { return 0; }
@@ -123,7 +123,8 @@ export function getRowHeight(sheet: SheetModel, rowIndex: number, checkDPR: bool
         hgt = 20;
     }
     if (checkDPR && window.devicePixelRatio % 1 > 0) {
-        return (hgt % 2 === 0) ? hgt : hgt + 1; // Adding 1 to making it as even number
+        const pointValue = (hgt * window.devicePixelRatio) % 1;
+        return hgt + (pointValue ? ((pointValue > 0.5 ? (1 - pointValue) : -1 * pointValue) / window.devicePixelRatio) : 0);
     } else {
         return hgt;
     }
@@ -150,7 +151,7 @@ export function setRowHeight(sheet: SheetModel, rowIndex: number, height: number
  * @param {number} endRow - Specifies the endRow.
  * @returns {number} - To get the rows height.
  */
-export function getRowsHeight(sheet: SheetModel, startRow: number, endRow: number = startRow): number {
+export function getRowsHeight(sheet: SheetModel, startRow: number, endRow: number = startRow, checkDPR?: boolean): number {
     let height: number = 0;
     let swap: number;
     if (startRow > endRow) {
@@ -159,7 +160,7 @@ export function getRowsHeight(sheet: SheetModel, startRow: number, endRow: numbe
         endRow = swap;
     }
     for (let i: number = startRow; i <= endRow; i++) {
-        height += getRowHeight(sheet, i);
+        height += getRowHeight(sheet, i, checkDPR);
     }
     return height;
 }

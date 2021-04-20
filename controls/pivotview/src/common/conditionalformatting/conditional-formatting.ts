@@ -401,7 +401,8 @@ export class ConditionalFormatting {
         this.fontColor[i] = new ColorPicker({
             cssClass: cls.FORMAT_COLOR_PICKER + ' ' + cls.FORMAT_FONT_COLOR_PICKER,
             value: color, mode: 'Palette',
-            change: this.fontColorChange.bind(this, i)
+            change: this.fontColorChange.bind(this, i),
+            locale: this.parent.locale
         });
         this.fontColor[i].isStringTemplate = true;
         this.fontColor[i].appendTo('#' + this.parentID + 'fontcolor' + i);
@@ -413,7 +414,8 @@ export class ConditionalFormatting {
         (select('#' + this.parentID + 'valuepreview' + i, document) as HTMLElement).style.fontSize = format.style.fontSize;
         this.backgroundColor[i] = new ColorPicker({
             cssClass: cls.FORMAT_COLOR_PICKER, value: color, mode: 'Palette',
-            change: this.backColorChange.bind(this, i)
+            change: this.backColorChange.bind(this, i),
+            locale: this.parent.locale
         });
         this.backgroundColor[i].isStringTemplate = true;
         this.backgroundColor[i].appendTo('#' + this.parentID + 'backgroundcolor' + i);

@@ -7830,27 +7830,6 @@ export class PdfViewerBase {
         window.sessionStorage.removeItem(this.documentId + '_annotations_freetext');
         window.sessionStorage.removeItem(this.documentId + '_annotations_ink');
         if (this.downloadCollections) {
-            if (this.downloadCollections.textMarkupObject) {
-                window.sessionStorage.setItem(this.documentId + '_annotations_textMarkup', this.downloadCollections.textMarkupObject);
-            }
-            if (this.downloadCollections.shapeObject) {
-                window.sessionStorage.setItem(this.documentId + '_annotations_shape', this.downloadCollections.shapeObject);
-            }
-            if (this.downloadCollections.measureShapeObject) {
-                window.sessionStorage.setItem(this.documentId + '_annotations_shape_measure', this.downloadCollections.measureShapeObject);
-            }
-            if (this.downloadCollections.stampObject) {
-                window.sessionStorage.setItem(this.documentId + '_annotations_stamp', this.downloadCollections.stampObject);
-            }
-            if (this.downloadCollections.stickyObject) {
-                window.sessionStorage.setItem(this.documentId + '_annotations_sticky', this.downloadCollections.stickyObject);
-            }
-            if (this.downloadCollections.freeTextObject) {
-                window.sessionStorage.setItem(this.documentId + '_annotations_freetext', this.downloadCollections.freeTextObject);
-            }
-            if (this.downloadCollections.inkObject) {
-                window.sessionStorage.setItem(this.documentId + '_annotations_ink', this.downloadCollections.inkObject);
-            }
             if (this.isStorageExceed) {
                 this.annotationStorage[this.documentId + '_annotations_textMarkup'] = this.downloadCollections.textMarkupObject;
                 this.annotationStorage[this.documentId + '_annotations_shape'] = this.downloadCollections.shapeObject;
@@ -7859,6 +7838,28 @@ export class PdfViewerBase {
                 this.annotationStorage[this.documentId + '_annotations_sticky'] = this.downloadCollections.stickyObject;
                 this.annotationStorage[this.documentId + '_annotations_freetext'] = this.downloadCollections.freeTextObject;
                 this.annotationStorage[this.documentId + '_annotations_ink'] = this.downloadCollections.inkObject;
+            } else {
+                if (this.downloadCollections.textMarkupObject) {
+                    window.sessionStorage.setItem(this.documentId + '_annotations_textMarkup', this.downloadCollections.textMarkupObject);
+                }
+                if (this.downloadCollections.shapeObject) {
+                    window.sessionStorage.setItem(this.documentId + '_annotations_shape', this.downloadCollections.shapeObject);
+                }
+                if (this.downloadCollections.measureShapeObject) {
+                    window.sessionStorage.setItem(this.documentId + '_annotations_shape_measure', this.downloadCollections.measureShapeObject);
+                }
+                if (this.downloadCollections.stampObject) {
+                    window.sessionStorage.setItem(this.documentId + '_annotations_stamp', this.downloadCollections.stampObject);
+                }
+                if (this.downloadCollections.stickyObject) {
+                    window.sessionStorage.setItem(this.documentId + '_annotations_sticky', this.downloadCollections.stickyObject);
+                }
+                if (this.downloadCollections.freeTextObject) {
+                    window.sessionStorage.setItem(this.documentId + '_annotations_freetext', this.downloadCollections.freeTextObject);
+                }
+                if (this.downloadCollections.inkObject) {
+                    window.sessionStorage.setItem(this.documentId + '_annotations_ink', this.downloadCollections.inkObject);
+                }
             }
         }
     }

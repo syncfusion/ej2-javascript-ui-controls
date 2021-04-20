@@ -186,13 +186,11 @@ export class WorkbookNumberFormat {
         if (!isNullOrUndefined(options.fResult)) {
             const res: string = options.fResult.toString();
             if (res.indexOf('%') > -1 && res.split('%')[0] !== '' && res.split('%')[1].trim() === '' &&
-                Number(res.split('%')[0].split(this.groupSep).join('')).toString() !== 'NaN' &&
-                !this.parent.isEdit) {
-                options.args.value = Number(res.split('%')[0].split(this.groupSep).join(''));
-                options.cell.format = options.args.format = getFormatFromType('Percentage');
+                Number(res.split('%')[0].split(this.groupSep).join('')).toString() !== 'NaN') {
+                options.args.value = Number(res.split('%')[0].split(this.groupSep).join('')) / 100;
+                options.cell.format = options.args.format = this.getPercentageFormat(res);
                 options.fResult = this.percentageFormat(options.args, options.intl);
                 options.cell.value = options.args.value.toString();
-                setCell(options.rowIdx, options.colIdx, this.parent.getActiveSheet(), options.cell, true);
                 options.isRightAlign = true;
             } else if (res.indexOf(options.currencySymbol) > -1 && res.split(options.currencySymbol)[1] !== '' &&
                 Number(res.split(options.currencySymbol)[1].split(this.groupSep).join('')).toString() !== 'NaN' &&
@@ -206,6 +204,10 @@ export class WorkbookNumberFormat {
             }
         }
         return { isRightAlign: options.isRightAlign, fResult: options.fResult };
+    }
+
+    private getPercentageFormat(value: string): string {
+        return value.indexOf(this.decimalSep) > -1 ? getFormatFromType('Percentage') : '0%';
     }
 
     private findSuffix(zeros: string, resultSuffix: string): string {

@@ -468,8 +468,6 @@ describe('Virtual-freeze-renderer --- row virtualization', () => {
 
         it('ensure filterbar id after horizontal scroll', (done: Function) => {
             let cols: Column[] = gridObj.getColumns();
-            expect((gridObj as any).contentModule.virtualRenderer.currentInfo.columnIndexes.length).toBe(cols.length - gridObj.getFrozenColumns());
-            expect(cols[0].field).toBe(firstCol.field);
             let filterbars: HTMLElement[] = [].slice.call(gridObj.getHeaderContent().querySelectorAll('input'));
             expect(filterbars[0].id).toBe(cols[0].headerText + '_filterBarcell');
             expect(filterbars[gridObj.getFrozenColumns()].id).toBe(cols[gridObj.getFrozenColumns()].headerText + '_filterBarcell');

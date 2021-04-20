@@ -20,8 +20,11 @@ export class ExportHelper {
     private colDepth: number;
     private hideColumnInclude: boolean = false;
     private foreignKeyData: { [key: string]: Object[] } = {};
-    public constructor(parent: IGrid) {
+    public constructor(parent: IGrid, foreignKeyData?: { [key: string]: Object[] }) {
         this.parent = parent;
+        if (!parent.parentDetails && foreignKeyData) {
+            this.foreignKeyData = foreignKeyData;
+        }
     }
     public static getQuery(parent: IGrid, data: Data): Query {
         let query: Query = data.generateQuery(true).requiresCount();
@@ -266,6 +269,11 @@ export class ExportHelper {
             }
         }
         return actualGridColumns;
+    }
+
+    /** @hidden */
+    public getForeignKeyData(): { [key: string]: Object[] } {
+        return this.foreignKeyData;
     }
 }
 

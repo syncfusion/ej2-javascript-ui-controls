@@ -109,7 +109,7 @@ describe('Spreadsheet formula module ->', () => {
         it('Text formula', (done: Function) => {
             helper.edit('J5', '=Text(D2, "0%")');
             expect(helper.invoke('getCell', [4, 9]).textContent).toBe('1150%');
-            expect(helper.getInstance().sheets[0].rows[4].cells[9].value).toBe("1150%");
+            expect(helper.getInstance().sheets[0].rows[4].cells[9].value).toBe("11.5");
             done();
         });
 
@@ -207,14 +207,14 @@ describe('Spreadsheet formula module ->', () => {
     });
 
     describe('CR-Issues ->', () => {
-        describe('I311951 ->', () => {
+        describe('I311951, I309076 ->', () => {
             beforeEach((done: Function) => {
                 helper.initializeSpreadsheet({ sheets: [{ rows: [{ cells: [{ value: '25' }] }] }] }, done);
             });
             afterEach(() => {
                 helper.invoke('destroy');
             });
-            it('Formula with percentage not working', (done: Function) => {
+            it('Formula with percentage not working and formula parsing issue', (done: Function) => {
                 helper.edit('A2', '=A1*5%');
                 const inst: Spreadsheet = helper.getInstance();
                 expect(inst.sheets[0].rows[1].cells[0].formula).toEqual('=A1*5%');
@@ -223,7 +223,17 @@ describe('Spreadsheet formula module ->', () => {
                 helper.invoke('selectRange', ['A2']);
                 setTimeout(() => {
                     expect(helper.getElement('#' + helper.id + '_formula_input').value).toEqual('=A1*5%');
-                    done();
+                    helper.invoke('selectRange', ['A3']);
+                    setTimeout(() => {
+                        helper.edit('A3', '=425/25*-1');
+                        expect(inst.sheets[0].rows[2].cells[0].formula).toEqual('=425/25*-1');
+                        expect(inst.sheets[0].rows[2].cells[0].value).toEqual('-17');
+                        expect(inst.getCell(2, 0).textContent).toEqual('-17');
+                        setTimeout((): void => {
+                            expect(helper.getElement('#' + helper.id + '_formula_input').value).toEqual('=425/25*-1');
+                            done();
+                        });
+                    });
                 });
             });
         });
@@ -254,6 +264,142 @@ describe('Spreadsheet formula module ->', () => {
                         }, 10);
                     });
                 });
+            });
+        });
+        describe('I288646, I296410, I305593 ->', () => {
+            beforeEach((done: Function) => {
+                helper.initializeSpreadsheet(
+                    { sheets: [{ rows: [{ cells: [{  value: '10' }, { value: '20' }] }, { cells: [{ formula: '=ROUNDUP(10.6)' },
+                    { index: 4, formula: '=INT(10.2)' }, { formula: '=SUMPRODUCT(A1:B1)' }] }] }] }, done);
+            });
+            afterEach(() => {
+                helper.invoke('destroy');
+            });
+            it('Include the unsupported formula (ROUNDUP, INT, SUMPRODUCT)', (done: Function) => {
+                const spreadsheet: Spreadsheet = helper.getInstance();
+                expect(spreadsheet.sheets[0].rows[1].cells[0].formula).toBe('=ROUNDUP(10.6)');
+                expect(spreadsheet.sheets[0].rows[1].cells[0].value.toString()).toBe('11');
+                expect(helper.invoke('getCell', [1, 0]).textContent).toBe('11');
+                expect(spreadsheet.sheets[0].rows[1].cells[4].formula).toBe('=INT(10.2)');
+                expect(spreadsheet.sheets[0].rows[1].cells[4].value.toString()).toBe('10');
+                expect(helper.invoke('getCell', [1, 4]).textContent).toBe('10');
+                expect(spreadsheet.sheets[0].rows[1].cells[5].formula).toBe('=SUMPRODUCT(A1:B1)');
+                expect(spreadsheet.sheets[0].rows[1].cells[5].value.toString()).toBe('30');
+                expect(helper.invoke('getCell', [1, 5]).textContent).toBe('30');
+                done();
+            });
+        });
+        describe('I312700 ->', () => {
+            beforeEach((done: Function) => {
+                helper.initializeSpreadsheet(
+                    { sheets: [{ rows: [{ cells: [{ formula: '=COUNTIF(AR1:AT1,"=10")' }, { index: 4, formula: '=SUMIF(AR1:AT1,"=10")' },
+                    { index: 43, value: '10' }, { value: '5' }, { value: '10' }] }] }] }, done);
+            });
+            afterEach(() => {
+                helper.invoke('destroy');
+            });
+            it('Improve the formulas with the range greater than AA and countif, countifs, sumif, sumifs formula with this ranges', (done: Function) => {
+                const spreadsheet: Spreadsheet = helper.getInstance();
+                expect(spreadsheet.sheets[0].rows[0].cells[0].formula).toBe('=COUNTIF(AR1:AT1,"=10")');
+                expect(spreadsheet.sheets[0].rows[0].cells[0].value.toString()).toBe('2');
+                expect(helper.invoke('getCell', [0, 0]).textContent).toBe('2');
+                expect(spreadsheet.sheets[0].rows[0].cells[4].formula).toBe('=SUMIF(AR1:AT1,"=10")');
+                expect(spreadsheet.sheets[0].rows[0].cells[4].value.toString()).toBe('20');
+                expect(helper.invoke('getCell', [0, 4]).textContent).toBe('20');
+                done();
+            });
+        });
+        describe('I296802, F162534 ->', () => {
+            beforeEach((done: Function) => {
+                helper.initializeSpreadsheet({ sheets: [{ rows: [{ cells: [{ index: 3, value: '100' }, { value: '50' }, { formula: '=D1+E1' }] }],
+                    selectedRange: 'D1:D1' }] }, done);
+            });
+            afterEach(() => {
+                helper.invoke('destroy');
+            });
+            it('formula dependency not updated issue', (done: Function) => {
+                const spreadsheet: Spreadsheet = helper.getInstance();
+                expect(spreadsheet.sheets[0].rows[0].cells[5].value).toEqual('150');
+                helper.invoke('insertColumn', [4]);
+                setTimeout((): void => {
+                    expect(spreadsheet.sheets[0].rows[0].cells[6].formula).toEqual('=D1+F1');
+                    expect(spreadsheet.sheets[0].rows[0].cells[6].value).toEqual('150');
+                    helper.edit('F1', '100');
+                    expect(spreadsheet.sheets[0].rows[0].cells[6].value).toEqual('200');
+                    expect(helper.invoke('getCell', [0, 6]).textContent).toEqual('200');
+                    setTimeout((): void => {
+                        done();
+                    }, 10);
+                });
+            });
+        });
+        describe('I305406, I280608, I296710, I257045, I274819, I282974, I288646 ->', () => {
+            beforeEach((done: Function) => {
+                helper.initializeSpreadsheet({}, done);
+            });
+            afterEach(() => {
+                helper.invoke('destroy');
+            });
+            it('Formula selection support while editing the formula range, Highlight reference selection in formula and formula reference selection issue', (done: Function) => {
+                const spreadsheet: Spreadsheet = helper.getInstance();
+                helper.invoke('startEdit');
+                setTimeout((): void => {
+                    const editor: HTMLElement = helper.getElement('#' +helper.id + '_edit');
+                    editor.textContent = '=SUM(';
+                    (spreadsheet as any).editModule.editCellData.value = '=SUM(';
+                    let cell: HTMLElement = helper.invoke('getCell', [0, 1]);
+                    helper.triggerMouseAction(
+                        'mousedown', { x: cell.getBoundingClientRect().left + 1, y: cell.getBoundingClientRect().top + 1 }, null,
+                        cell);
+                    helper.triggerMouseAction(
+                        'mouseup', { x: cell.getBoundingClientRect().left + 1, y: cell.getBoundingClientRect().top + 1 }, document,
+                        cell);
+                    setTimeout((): void => {
+                        expect(editor.textContent).toEqual('=SUM(B1');
+                        editor.textContent = '=SUM(A3';
+                        editor.focus();
+                        helper.triggerKeyEvent('keydown', 51, null, null, null, editor);
+                        helper.triggerKeyEvent('keyup', 51, null, null, null, editor);
+                        cell = helper.invoke('getCell', [2, 0]);
+                        expect(cell.classList).toContain('e-formularef-selection');
+                        expect(cell.classList).toContain('e-vborderright');
+                        expect(cell.classList).toContain('e-vborderbottom');
+                        done();
+                    });
+                });
+            });
+        });
+        describe('I293654, I296802, I307653, I264424, I298789, I300031 ->', () => {
+            beforeEach((done: Function) => {
+                helper.initializeSpreadsheet({ sheets: [{ name: 'Cover', rows: [{ index: 5, height: 30, cells: [{ colSpan: 8, formula: '=Lookup!B1', style:
+                { fontWeight: 'bold', textAlign: 'center', verticalAlign: 'middle' } }] }, { index: 7, cells: [{ colSpan: 6, value:
+                'Company No.12345678' }] }, { cells: [{ colSpan: 4, formula: '=IF(Lookup!B3="ABRIDGED",IF(IF(Lookup!B4="",FALSE,TRUE),"Directors'
+                + "'" + '","Director' + "'" + 's")&" Report and "&IF(Lookup!B5="Audited","Audited","Unaudited")&" Abridged Accounts",IF(IF(Lookup!B4="",FALSE,TRUE),"Directors'
+                + "'" + '","Director' + "'" + 's")&" Report and "&IF(Lookup!B5="Audited","Audited","Unaudited")&" Accounts")' }] }, { cells: [{ formula:
+                '=TEXT(Lookup!B6,"dd MMMM yyyy")' }, { index: 3, value: '37087.58' }, { value: '38767.36' }, { wrap: true, formula:
+                '=IF(OR(AND(ABS(D10)>ABS(E10),D10<0),AND(ABS(D10)<=ABS(E10),E10<0)),-1*(IF(D10=0,((ABS(E10)-ABS(D10))/1)*100,((ABS(E10)-ABS(D10))/ABS(D10))*100)),IF(D10=0,((ABS(E10)-ABS(D10))/1)*100,((ABS(E10)-ABS(D10))/ABS(D10))*100))'
+                }] }, { cells: [{ formula: '=1-0/0' }] }, { cells: [{ formula: '=(10-3)/1' }] }] }, { name: 'Lookup', rows: [{ cells: [{ value: 'CLIENTNAME' },
+                { value: 'Example Limited Company' }] }, { cells: [{ value: 'REGISTRATIONNUMBER' }, { value: '12345678' }] }, { cells: [{ value: 'ACCOUNT' }] }, { cells: [{ value: 'DIRECTOR2' },
+                { value: 'abc' }] }, { cells: [{ value: 'AUDITED' }, { value: 'Audited' }] }, { cells: [{ value: 'PERIODEND' }, { value: '9/1/2019' }] }] }] }, done);
+            });
+            afterEach(() => {
+                helper.invoke('destroy');
+            });
+            it('Opening the attached pre formatted excel file it is giving errors in the last two rows though the formula is correct and date format is also correct', (done: Function) => {
+                const spreadsheet: Spreadsheet = helper.getInstance();
+                expect(spreadsheet.sheets[0].rows[5].cells[0].value).toBe('Example Limited Company');
+                expect(helper.invoke('getCell', [5, 0]).textContent).toBe('Example Limited Company');
+                expect(spreadsheet.sheets[0].rows[8].cells[0].value).toBe("Directors' Report and Audited Accounts");
+                expect(helper.invoke('getCell', [8, 0]).textContent).toBe("Directors' Report and Audited Accounts");
+                expect(spreadsheet.sheets[0].rows[9].cells[0].value).toBe('September 1, 2019');
+                expect(helper.invoke('getCell', [9, 0]).textContent).toBe('September 1, 2019');
+                expect(spreadsheet.sheets[0].rows[9].cells[5].value).toBe('4.529225');
+                expect(helper.invoke('getCell', [9, 5]).textContent).toBe('4.529225');
+                expect(spreadsheet.sheets[0].rows[10].cells[0].value).toBe('#DIV/0!');
+                expect(helper.invoke('getCell', [10, 0]).textContent).toBe('#DIV/0!');
+                expect(spreadsheet.sheets[0].rows[11].cells[0].value).toBe('7');
+                expect(helper.invoke('getCell', [11, 0]).textContent).toBe('7');
+                done();
             });
         });
     });

@@ -144,7 +144,7 @@ export class Render {
                 let dataLength: number = (<{ data?: NotifyArgs[] }>args).data.length;
                 let count: number = gObj.pageSettings.totalRecordsCount - dataLength;
                 let currentViewData: number = gObj.getCurrentViewRecords().length;
-                if (!(currentViewData - dataLength) && count && currentViewData !== dataLength) {
+                if (!(currentViewData - dataLength) && count && ((gObj.pageSettings.currentPage -1) * gObj.pageSettings.pageSize) == count) {
                     gObj.prevPageMoving = true;
                     gObj.setProperties({
                         pageSettings: {
@@ -376,7 +376,7 @@ export class Render {
         tr = this.parent.createElement('tr', { className: 'e-emptyrow' });
         tr.appendChild(this.parent.createElement('td', {
             innerHTML: this.l10n.getConstant('EmptyRecord'),
-            attrs: { colspan: (gObj.getColumns().length + spanCount).toString() }
+            attrs: { colspan: (gObj.getVisibleColumns().length + spanCount).toString() }
         }));
         tbody.appendChild(tr);
         this.contentRenderer.renderEmpty(<HTMLElement>tbody);
@@ -505,7 +505,7 @@ export class Render {
                 this.updatesOnInitialRender(dataArgs);
             }
             if (!this.isColTypeDef && gObj.getCurrentViewRecords()) {
-                if (this.data.dataManager.dataSource.offline && (gObj.dataSource as object[]).length) {
+                if (this.data.dataManager.dataSource.offline && gObj.dataSource && (gObj.dataSource as object[]).length) {
                     this.updateColumnType(gObj.dataSource[0]);
                 } else { this.updateColumnType(gObj.getCurrentViewRecords()[0]); }
             }

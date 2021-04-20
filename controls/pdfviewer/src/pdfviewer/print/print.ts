@@ -218,6 +218,14 @@ export class Print {
                         // eslint-disable-next-line
                         let font: any = currentData['Font'];
                         this.applyPosition(inputField, bounds, font, heightRatio, widthRatio);
+                        inputField.InsertSpaces = currentData.InsertSpaces;
+                        if (inputField.InsertSpaces) {
+                            // eslint-disable-next-line
+                            let font: number = ((parseInt(inputField.style.width) / inputField.maxLength) - (parseInt(inputField.style.fontSize) / 2)) - 0.5;
+                            // eslint-disable-next-line
+                            inputField.style.letterSpacing = '' + font + 'px';
+                            inputField.style.fontFamily = 'monospace';
+                        }
                         inputField.style.backgroundColor = 'transparent';
                         if (!currentData.IsSignatureField) {
                             inputField.style.borderColor = 'transparent';

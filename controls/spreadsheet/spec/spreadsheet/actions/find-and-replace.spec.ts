@@ -201,4 +201,34 @@ describe('Find & Replace ->', () => {
             });
         });
     });
+    describe('CR-Issues ->', () => {
+        describe('I298335 ->', () => {
+            beforeEach((done: Function) => {
+                helper.initializeSpreadsheet({ sheets: [{ ranges: [{ dataSource: defaultData }] }] }, done);
+            });
+            afterEach(() => {
+                helper.invoke('destroy');
+            });
+            it('Fix search issues (Find details checking 0 of 5)', (done: Function) => {
+                helper.triggerKeyNativeEvent(70, true);
+                setTimeout((): void => {
+                    const findEditor: HTMLInputElement = helper.getElement('#' + helper.id + ' .e-text-findNext-short');
+                    findEditor.value = 'ShOeS';
+                    findEditor.focus();
+                    helper.triggerKeyNativeEvent(13, false, false, findEditor, 'keyup');
+                    expect(findEditor.nextElementSibling.textContent).toBe('0 of 5');
+                    helper.triggerKeyNativeEvent(13, false, false, findEditor);
+                    helper.triggerKeyNativeEvent(13, false, false, findEditor, 'keyup');
+                    expect(findEditor.nextElementSibling.textContent).toBe('1 of 5');
+                    helper.triggerKeyNativeEvent(13, false, false, findEditor);
+                    helper.triggerKeyNativeEvent(13, false, false, findEditor, 'keyup');
+                    expect(findEditor.nextElementSibling.textContent).toBe('2 of 5');
+                    helper.getElement('#' + helper.id + ' .e-findtool-dlg .e-findRib-close').click();
+                    setTimeout((): void => {
+                        done();
+                    });
+                });
+            });
+        });
+    });
 });

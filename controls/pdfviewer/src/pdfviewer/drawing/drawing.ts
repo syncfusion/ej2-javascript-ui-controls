@@ -1,5 +1,5 @@
 /* eslint-disable */
-import { PdfViewer } from '../index';
+import { PdfViewer, LineTool } from '../index';
 import { PdfAnnotationBaseModel } from './pdf-annotation-model';
 import { ZOrderPageTable, PdfAnnotationBase } from './pdf-annotation';
 // eslint-disable-next-line max-len
@@ -2890,16 +2890,26 @@ export class Drawing {
             if (connector.shapeAnnotationType === 'Distance') {
                 let leader: Leader = isLeader(connector, endPoint);
                 if (endPoint === 'Leader0') {
-                    tx = point.x - leader.point.x;
-                    ty = point.y - leader.point.y;
-                    connector.vertexPoints[0].x += tx;
-                    connector.vertexPoints[0].y += ty;
+                    if (this.pdfViewer.viewerBase.tool instanceof LineTool) {
+                        connector.vertexPoints[0].x = point.x;
+                        connector.vertexPoints[0].y = point.y;
+                    } else {
+                        tx = point.x - leader.point.x;
+                        ty = point.y - leader.point.y;
+                        connector.vertexPoints[0].x += tx;
+                        connector.vertexPoints[0].y += ty;
+                    }
                 } else if (endPoint === 'Leader1') {
                     let length: number = connector.vertexPoints.length - 1;
-                    tx = point.x - leader.point.x;
-                    ty = point.y - leader.point.y;
-                    connector.vertexPoints[length].x += tx;
-                    connector.vertexPoints[length].y += ty;
+                    if (this.pdfViewer.viewerBase.tool instanceof LineTool) {
+                        connector.vertexPoints[length].x = point.x;
+                        connector.vertexPoints[length].y = point.y; 
+                    } else {
+                        tx = point.x - leader.point.x;
+                        ty = point.y - leader.point.y;
+                        connector.vertexPoints[length].x += tx;
+                        connector.vertexPoints[length].y += ty;
+                    }
                 } else {
                     var angle = Point.findAngle(connector.sourcePoint, connector.targetPoint);
                     var center = obj.wrapper.children[0].bounds.center;

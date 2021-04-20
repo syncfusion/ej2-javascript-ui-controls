@@ -78,5 +78,76 @@ describe('Clipboard ->', () => {
                 });
             });
         });
+        describe('I299870, I298549, I296802 ->', () => {
+            beforeEach((done: Function) => {
+                helper.initializeSpreadsheet({
+                    sheets: [{ rows: [{ cells: [{ value: 'Value' }] }], selectedRange: 'A1' }],
+                    cellSave: (): void => {
+                        (helper.getInstance() as Spreadsheet).insertRow([{ index: 1, cells: [{ value: 'Added' }] }]);
+                    }
+                }, done);
+            });
+            afterEach(() => {
+                helper.invoke('destroy');
+            });
+            it('Trigger the cellSave event for paste action and while insertRow inn actionComplete script error throws', (done: Function) => {
+                const spreadsheet: Spreadsheet = helper.getInstance();
+                helper.invoke('copy').then((): void => {
+                    helper.invoke('selectRange', ['A4']);
+                    setTimeout((): void => {
+                        helper.invoke('paste');
+                        setTimeout((): void => {
+                            expect(spreadsheet.sheets[0].rows[4].cells[0].value).toEqual('Value');
+                            expect(spreadsheet.sheets[0].rows[1].cells[0].value).toEqual('Added');
+                            done();
+                        });
+                    });
+                });
+            });
+        });
+        describe('I301708 ->', () => {
+            beforeEach((done: Function) => {
+                helper.initializeSpreadsheet({
+                    sheets: [{ selectedRange: 'C2' }],
+                    created: (): void => {
+                        (helper.getInstance() as Spreadsheet).setBorder({ border: '1px solid #000' }, 'C2');
+                    }
+                }, done);
+            });
+            afterEach(() => {
+                helper.invoke('destroy');
+            });
+            it('Border copy paste issue (copy the border and paste it in adjacent cells, border removed)', (done: Function) => {
+                const spreadsheet: Spreadsheet = helper.getInstance();
+                let dataSourceChangedFunction: () => void = jasmine.createSpy('dataSourceChanged');
+                spreadsheet.dataSourceChanged = dataSourceChangedFunction;
+                spreadsheet.dataBind();
+                expect(helper.invoke('getCell', [1, 1]).style.borderRight).toEqual('1px solid rgb(0, 0, 0)');
+                expect(helper.invoke('getCell', [0, 2]).style.borderBottom).toEqual('1px solid rgb(0, 0, 0)');
+                expect(helper.invoke('getCell', [1, 2]).style.borderRight).toEqual('1px solid rgb(0, 0, 0)');
+                expect(helper.invoke('getCell', [1, 2]).style.borderBottom).toEqual('1px solid rgb(0, 0, 0)');
+                helper.invoke('copy').then((): void => {
+                    helper.invoke('selectRange', ['B2']);
+                    setTimeout((): void => {
+                        helper.invoke('paste');
+                        setTimeout((): void => {
+                            //expect(dataSourceChangedFunction).toHaveBeenCalled();
+                            expect(spreadsheet.sheets[0].rows[1].cells[1].style.border).toBeUndefined();
+                            expect(spreadsheet.sheets[0].rows[1].cells[1].style.borderLeft).toEqual('1px solid #000');
+                            expect(spreadsheet.sheets[0].rows[1].cells[1].style.borderTop).toEqual('1px solid #000');
+                            expect(spreadsheet.sheets[0].rows[1].cells[1].style.borderRight).toEqual('1px solid #000');
+                            expect(spreadsheet.sheets[0].rows[1].cells[1].style.borderBottom).toEqual('1px solid #000');
+                            expect(helper.invoke('getCell', [1, 0]).style.borderRight).toEqual('1px solid rgb(0, 0, 0)');
+                            expect(helper.invoke('getCell', [0, 1]).style.borderBottom).toEqual('1px solid rgb(0, 0, 0)');
+                            expect(helper.invoke('getCell', [1, 1]).style.borderRight).toEqual('1px solid rgb(0, 0, 0)');
+                            expect(helper.invoke('getCell', [1, 1]).style.borderBottom).toEqual('1px solid rgb(0, 0, 0)');
+                            expect(helper.invoke('getCell', [1, 2]).style.borderRight).toEqual('1px solid rgb(0, 0, 0)');
+                            expect(helper.invoke('getCell', [1, 2]).style.borderBottom).toEqual('1px solid rgb(0, 0, 0)');
+                            done();
+                        });
+                    });
+                });
+            });
+        });
     });
 });

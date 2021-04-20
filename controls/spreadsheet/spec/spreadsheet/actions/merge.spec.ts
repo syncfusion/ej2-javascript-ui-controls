@@ -258,7 +258,7 @@ describe('Merge ->', () => {
     });
 
     describe('CR-Issues ->', () => {
-        describe('I316931 ->', () => {
+        describe('I316931, I309395 ->', () => {
             beforeEach((done: Function) => {
                 helper.initializeSpreadsheet(
                     { sheets: [{ rows: [{ cells: [{ value: 'test' }] }], selectedRange: 'A1:B2' }] }, done);

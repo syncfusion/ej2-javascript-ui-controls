@@ -2,6 +2,20 @@
 
 ## [Unreleased]
 
+## 19.1.56 (2021-04-13)
+
+### Pivot Table
+ 
+#### Bug Fixes
+ 
+- `#318017`,`#318625` - Export customization set in the `beforeExport` event is now working.
+- `#320952` - Members with special characters are now accepted by the member editor.
+- `#F163080` - Even if the fields have special characters, calculated fields can now be created.
+
+#### New Features
+ 
+- `#321444` - Date/time values in the editing dialog can now be edited using the date/time picker.
+
 ## 19.1.54 (2021-03-30)
  
 ### Pivot Table

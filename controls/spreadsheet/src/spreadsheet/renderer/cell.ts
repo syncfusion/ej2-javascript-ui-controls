@@ -1,6 +1,6 @@
 import { Spreadsheet } from '../base/index';
 import { ICellRenderer, CellRenderEventArgs, inView, CellRenderArgs, renderFilterCell, checkConditionalFormat } from '../common/index';
-import { hasTemplate, createHyperlinkElement, checkPrevMerge, createImageElement, IRenderer } from '../common/index';
+import { hasTemplate, createHyperlinkElement, checkPrevMerge, createImageElement, IRenderer, getDPRValue } from '../common/index';
 import { getColumnHeaderText, CellStyleModel, CellFormatArgs, getRangeIndexes, getRangeAddress } from '../../workbook/common/index';
 import { CellStyleExtendedModel, setChart, refreshChart, getCellAddress, ValidationModel, MergeArgs } from '../../workbook/common/index';
 import { CellModel, SheetModel, skipDefaultValue, isHiddenRow, RangeModel, isHiddenCol, ColumnModel } from '../../workbook/base/index';
@@ -157,12 +157,6 @@ export class CellRenderer implements ICellRenderer {
             if (args.cell.hyperlink) {
                 this.parent.notify(createHyperlinkElement, { cell: args.cell, td: args.td, rowIdx: args.rowIdx, colIdx: args.colIdx });
             }
-            if (args.cell.wrap) {
-                this.parent.notify(wrapEvent, {
-                    range: [args.rowIdx, args.colIdx, args.rowIdx, args.colIdx], wrap: true, sheet:
-                    sheet, initial: true, td: args.td, row: args.row, hRow: args.hRow
-                });
-            }
             if (args.cell.rowSpan > 1) {
                 const rowSpan: number = args.cell.rowSpan - this.parent.hiddenCount(args.rowIdx, args.rowIdx + (args.cell.rowSpan - 1));
                 if (rowSpan > 1) {
@@ -235,6 +229,13 @@ export class CellRenderer implements ICellRenderer {
                 }
             }
             this.parent.notify(createHyperlinkElement, { cell: args.cell, td: args.td, rowIdx: args.rowIdx, colIdx: args.colIdx });
+        }
+        if (args.cell && args.cell.wrap) {
+            const prevHgt: number = getRowHeight(sheet, args.rowIdx);
+            this.parent.notify(wrapEvent, {
+                range: [args.rowIdx, args.colIdx, args.rowIdx, args.colIdx], wrap: true, sheet:
+                sheet, initial: true, td: args.td, row: args.row, hRow: args.hRow, isCustomHgt: !args.isRefresh && prevHgt > 20
+            });
         }
     }
     private checkMerged(args: CellRenderArgs): boolean {
@@ -389,7 +390,7 @@ export class CellRenderer implements ICellRenderer {
                 if (frozenCol + emptyCols.length > i) { continue; }
                 col = colGrp.childNodes[0].cloneNode() as HTMLElement;
                 col.classList.add('e-empty'); col.style.visibility = 'hidden';
-                width = getColumnWidth(sheet, i); col.style.width = width + 'px';
+                width = getColumnWidth(sheet, i, null, true); col.style.width = width + 'px';
                 colGrp.appendChild(col);
                 if (i === len) {
                     this.parent.serviceLocator.getService<IRenderer>('sheet').setPanelWidth(
@@ -496,8 +497,9 @@ export class CellRenderer implements ICellRenderer {
             const previouseHeight: number = getRowHeight(sheet, args.rowIdx);
             const rowHeight: number = this.getRowHeightOnInit();
             if (rowHeight > previouseHeight) {
-                tableRow.style.height = `${rowHeight}px`;
-                (args.hRow || this.parent.getRow(args.rowIdx, this.parent.getRowHeaderTable())).style.height = `${rowHeight}px`;
+                const dprHgt: number = getDPRValue(rowHeight);
+                tableRow.style.height = `${dprHgt}px`;
+                (args.hRow || this.parent.getRow(args.rowIdx, this.parent.getRowHeaderTable())).style.height = `${dprHgt}px`;
                 setRowHeight(sheet, args.rowIdx, rowHeight);
             }
             this.tableRow.innerHTML = '';

@@ -940,9 +940,10 @@ export class Selection implements IAction {
         if ((this.selectionSettings.persistSelection && (this.isRowClicked || this.checkSelectAllClicked)) ||
             !this.selectionSettings.persistSelection) {
             let cancl: string = 'cancel';
+            let isSingleDeSel: boolean = rowIndex.length === 1;
             let rowDeselectObj: RowDeselectEventArgs = {
-                rowIndex: rowIndex[0], data: this.selectionSettings.persistSelection && this.parent.checkAllRows === 'Uncheck'
-                    && this.selectionSettings.checkboxMode !== 'ResetOnRowClick' ?
+                rowIndex: rowIndex[0], data: this.selectionSettings.persistSelection && (this.parent.checkAllRows === 'Uncheck' &&
+                    !isSingleDeSel) && this.selectionSettings.checkboxMode !== 'ResetOnRowClick' ?
                     this.persistSelectedData : data, foreignKeyData: foreignKeyData,
                 cancel: false, isInteracted: this.isInteracted, isHeaderCheckboxClicked: this.isHeaderCheckboxClicked
             };

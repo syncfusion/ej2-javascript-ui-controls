@@ -1277,6 +1277,7 @@ export class DashboardLayout extends Component<HTMLElement> implements INotifyPr
                     const row: number = parseInt(ele.getAttribute('data-row'), 10);
                     const col: number = parseInt(ele.getAttribute('data-col'), 10);
                     this.panelPropertyChange(cellInstance, { row: row, col: col });
+                    this.updatePanelLayout(ele, cellInstance);
                     this.setHeightAndWidth(ele, this.getCellInstance(ele.id));
                     this.setPanelPosition(ele, row, col);
                     this.updateRowHeight();

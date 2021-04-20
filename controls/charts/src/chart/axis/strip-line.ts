@@ -379,7 +379,7 @@ export class StripLine {
         if (axis.valueType === 'DateTime') {
             return (this.getToValue(
                 null, startValue,
-                this.isCoreDate(stripline.repeatEvery) ? this.dateToMilliSeconds(stripline.repeatEvery, chart) : +stripline.repeatEvery,
+                +stripline.repeatEvery,
                 axis, null, stripline
             ));
         } else {

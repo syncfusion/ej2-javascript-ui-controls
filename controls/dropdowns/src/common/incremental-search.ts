@@ -80,7 +80,6 @@ export function incrementalSearch(
  * @param {boolean} ignoreCase - Specifies the case sensitive option for search operation.
  * @returns {Element | number} Returns the search matched items.
  */
-// eslint-disable-next-line @typescript-eslint/naming-convention
 export function Search(
     inputVal: string, items: HTMLElement[], searchType: SearchType, ignoreCase?: boolean): { [key: string]: Element | number } {
     const listItems: Element[] = items;

@@ -351,6 +351,7 @@ export class DateParser {
                     } else {
                         matchString = ((prop === 'month') && (!(<any>parseOptions).isIslamic) && ((<any>parseOptions).culture === 'en' || (<any>parseOptions).culture === 'en-GB' || (<any>parseOptions).culture === 'en-US')) 
                         ? matchString[0].toUpperCase() + matchString.substring(1).toLowerCase() : matchString;
+                        matchString = prop === 'designator' && /^(AM|PM)$/i.test(matchString) ? matchString.toUpperCase() : matchString;
                         (<any>retOptions)[prop] = (<any>parseOptions)[prop][matchString];
                     }
                 }

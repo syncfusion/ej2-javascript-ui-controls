@@ -353,6 +353,10 @@
     content: '\e286';
   }
 
+  .e-menu-item .e-de-open-properties::before {
+    content: '\e605';
+  }
+
   .e-menu-item .e-de-fonts::before {
     content: '\e273';
   }
@@ -542,5 +546,10 @@
 
   .e-item .e-de-paste-merge::before {
     content: '\e688';
+  }
+
+  .e-btn-icon .e-de-paste::before,
+  .e-icon-btn .e-de-paste::before {
+    content: '\e68a';
   }
 }

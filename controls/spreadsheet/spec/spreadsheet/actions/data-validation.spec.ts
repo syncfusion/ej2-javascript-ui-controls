@@ -1,6 +1,7 @@
 import { SpreadsheetHelper } from "../util/spreadsheethelper.spec";
 import { defaultData } from '../util/datasource.spec';
-import { CellModel, Spreadsheet } from "../../../src/index";
+import { CellModel, DialogBeforeOpenEventArgs, Spreadsheet, dialog } from "../../../src/index";
+import { Dialog } from "../../../src/spreadsheet/services/index";
 
 
 describe('Data validation ->', () => {
@@ -211,7 +212,7 @@ describe('Data validation ->', () => {
     });
 
     describe('CR-Issues ->', () => {
-        describe('I282749 ->', () => {
+        describe('I282749, I300338, I303567 ->', () => {
             beforeEach((done: Function) => {
                 helper.initializeSpreadsheet({
                     sheets: [{ ranges: [{ dataSource: [{ 'Employee ID': '', 'Employee Name': '', 'Gender': '', 'Department': '',
@@ -275,12 +276,98 @@ describe('Data validation ->', () => {
                                         expect(!!helper.invoke('getCell', [3, 0]).querySelector('.e-validation-list')).toBeTruthy();
                                         expect(!!helper.invoke('getCell', [4, 0]).querySelector('.e-validation-list')).toBeFalsy();
                                         done();
-                                    }, 10);
+                                    }, 101);
                                 }, 100);
                             }, 10);
                         }, 10);
                     }, 10);
                 }, 10);
+            });
+        });
+        describe('I301019, I300657 ->', () => {
+            beforeAll((done: Function) => {
+                helper.initializeSpreadsheet(
+                    { sheets: [{ rows: [{ cells: [{ value: 'Food', validation: { type: 'Decimal', operator: 'NotEqualTo', ignoreBlank: true,
+                    value1: '0' } }] }], selectedRange: 'A1:A1' }] }, done);
+            });
+            afterAll(() => {
+                helper.invoke('destroy');
+            });
+            it('unexcepted set validations from cellbuilder', (done: Function) => {
+                helper.getElement('#' + helper.id + '_ribbon .e-tab-header .e-toolbar-item:nth-child(6)').click();
+                helper.getElement('#' + helper.id + '_datavalidation').click();
+                helper.getElement('#' + helper.id + '_datavalidation-popup .e-item').click();
+                setTimeout((): void => { // Data validation model is not set properly in dialog.
+                    let dlg: HTMLElement = helper.getElement().querySelector('.e-datavalidation-dlg') as HTMLElement;
+                    expect(!!dlg).toBeTruthy();
+                    expect((dlg.querySelector('.e-cellrange .e-input') as HTMLInputElement).value).toBe('A1:A1');
+                    expect((dlg.querySelector('.e-ignoreblank .e-checkbox') as HTMLInputElement).checked).toBeTruthy();
+                    (helper.getInstance().serviceLocator.getService(dialog) as Dialog).hide();
+                    setTimeout((): void => {
+                        done();
+                    });
+                });
+            });
+            it('custom message on spreadsheet validation', (done: Function) => {
+                const spreadsheet: Spreadsheet = helper.getInstance();
+                spreadsheet.dialogBeforeOpen = (args: DialogBeforeOpenEventArgs): void => {
+                    if (args.dialogName === 'ValidationErrorDialog') { args.content = 'Invalid value'; }
+                };
+                spreadsheet.dataBind();
+                helper.edit('A1', '0');
+                setTimeout((): void => {
+                    let dlg: HTMLElement = helper.getElement().querySelector('.e-validationerror-dlg') as HTMLElement;
+                    expect(!!dlg).toBeTruthy();
+                    expect(dlg.querySelector('.e-dlg-content').textContent).toBe('Invalid value');
+                    (spreadsheet.serviceLocator.getService(dialog) as Dialog).hide();
+                    setTimeout((): void => {
+                        done();
+                    });
+                });
+            });
+        });
+        describe('I275309 ->', () => {
+            beforeEach((done: Function) => {
+                helper.initializeSpreadsheet({
+                    created: (): void => {
+                        const spreadsheet: Spreadsheet = helper.getInstance();
+                        spreadsheet.addDataValidation(
+                            { type: 'List', operator: 'Between', value1: '1', value2:'1', ignoreBlank: true, inCellDropDown: true,
+                            isHighlighted: true }, 'X1:X10');
+                        spreadsheet.addDataValidation(
+                            { type: 'List', operator: 'Between', value1: '2', value2:'2', ignoreBlank: true, inCellDropDown: true,
+                            isHighlighted: true }, 'Y1:Y10');
+                        spreadsheet.addDataValidation(
+                            { type: 'List', operator: 'Between', value1: '3', value2:'3', ignoreBlank: true, inCellDropDown: true,
+                            isHighlighted: true }, 'Z1:Z10');
+                        spreadsheet.autoFit('1:100');
+                    }
+                }, done);
+            });
+            afterEach(() => {
+                helper.invoke('destroy');
+            });
+            it('Dropdownlist added randomly in cells while directly scrolling the spreadsheet', (done: Function) => {
+                helper.invoke('goTo', ['G1']);
+                setTimeout((): void => {
+                    helper.invoke('goTo', ['Q1']);
+                    setTimeout((): void => {
+                        helper.invoke('goTo', ['V1']);
+                        helper.invoke('selectRange', ['X1']);
+                        setTimeout((): void => {
+                            expect(!!helper.invoke('getCell', [0, 23]).querySelector('.e-validation-list')).toBeTruthy();
+                            helper.invoke('selectRange', ['Z1']);
+                            setTimeout((): void => {
+                                expect(!!helper.invoke('getCell', [0, 25]).querySelector('.e-validation-list')).toBeTruthy();
+                                helper.invoke('selectRange', ['AA1']);
+                                setTimeout((): void => {
+                                    expect(!!helper.invoke('getCell', [0, 26]).querySelector('.e-validation-list')).toBeFalsy();
+                                    done();
+                                });
+                            });
+                        });
+                    });
+                });
             });
         });
     });

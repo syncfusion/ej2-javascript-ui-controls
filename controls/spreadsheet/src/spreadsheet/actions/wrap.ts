@@ -41,7 +41,7 @@ export class WrapText {
     private wrapTextHandler(
         args: {
             range: number[], wrap: boolean, sheet: SheetModel, initial: boolean, td: Element, row: HTMLElement,
-            hRow: HTMLElement
+            hRow: HTMLElement, isCustomHgt?: boolean
         }): void {
         if (inView(this.parent, args.range, true)) {
             let ele: Element;
@@ -52,7 +52,7 @@ export class WrapText {
             let hgt: number;
             for (let i: number = args.range[0]; i <= args.range[2]; i++) {
                 maxHgt = 0;
-                isCustomHgt = getRow(args.sheet, i).customHeight;
+                isCustomHgt = getRow(args.sheet, i).customHeight || args.isCustomHgt;
                 for (let j: number = args.range[1]; j <= args.range[3]; j++) {
                     ele = args.initial ? args.td : this.parent.getCell(i, j);
                     if (ele) {

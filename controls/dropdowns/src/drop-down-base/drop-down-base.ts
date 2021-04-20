@@ -726,7 +726,6 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
         }
     }
 
-    // eslint-disable-next-line @typescript-eslint/naming-convention
     protected DropDownBaseupdateBlazorTemplates(
         item: boolean, group: boolean, noRecord: boolean, action: boolean,
         value?: boolean, header?: boolean, footer?: boolean, isEmpty?: boolean): void {
@@ -754,7 +753,6 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
             }
         }
     }
-    // eslint-disable-next-line @typescript-eslint/naming-convention
     protected DropDownBaseresetBlazorTemplates(
         item: boolean, group: boolean, noRecord: boolean, action: boolean,
         value?: boolean, header?: boolean, footer?: boolean): void {

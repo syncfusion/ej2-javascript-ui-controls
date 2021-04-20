@@ -236,7 +236,7 @@ export class PdfExport {
             allowHorizontalOverflow = isNullOrUndefined(pdfExportProperties.allowHorizontalOverflow) ?
             true : pdfExportProperties.allowHorizontalOverflow;
         }
-        let helper: ExportHelper = new ExportHelper(gObj);
+        let helper: ExportHelper = new ExportHelper(gObj, this.helper.getForeignKeyData());
         let dataSource: Object[] | Group = this.processExportProperties(pdfExportProperties, returnType.result);
         let columns: Column[] = isExportColumns(pdfExportProperties) ?
             prepareColumns(pdfExportProperties.columns, gObj.enableColumnVirtualization) :

@@ -945,19 +945,26 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
         const width: number = this.elementSize.width + (2 * this.marginX);
         const height: number = this.elementSize.height + (2 * this.marginY);
         const tooltipRect: Rect = new Rect(x + 2 * this.padding, y - height - this.padding, width, height);
-        if (this.controlInstance) { // fix for shared tooltip crop issue (EJ2-42327)
+        const tooltipDivEndValue: number = tooltipRect.y + tooltipRect.height;
+        const boundsEndValue: number = bounds.y + bounds.height;
+        let isStockChart: boolean = false;
+        let heightDifference: number;
+        if (this.controlInstance) {
             const containerDivID: string = this.controlInstance["element"]["id"];
-            const containerDiv: Element = getElement(containerDivID);
-            const containerDivBounds: DOMRect | ClientRect = containerDiv.getBoundingClientRect();
-            if (tooltipRect.y < containerDivBounds.top) {
-                const yValueAdjacement: number = containerDivBounds.height - (tooltipRect.height + 2 * this.padding);
-                tooltipRect.y = containerDivBounds.top + (yValueAdjacement / 2);
-            }
-        } else {
-            if (tooltipRect.y < bounds.y) {
-                tooltipRect.y += (tooltipRect.height + 2 * this.padding);
-            }
+            isStockChart = containerDivID.indexOf("stockChart") !== -1;
         }
+        // To check whether the tooltip crop at bottom
+        if (boundsEndValue < tooltipDivEndValue) {
+            heightDifference = tooltipDivEndValue - boundsEndValue;
+            tooltipRect.y -= (heightDifference + 2 * this.padding);
+        }
+
+        // To check whether the tooltip crop at top
+        if (tooltipRect.y < bounds.y) {
+            heightDifference = bounds.y - tooltipRect.y;
+            tooltipRect.y += isStockChart ? (tooltipRect.height + 2 * this.padding) : (heightDifference + 2 * this.padding);
+        }
+
         if (tooltipRect.x + tooltipRect.width > bounds.x + bounds.width) {
             tooltipRect.x -= (tooltipRect.width + 4 * this.padding);
         }

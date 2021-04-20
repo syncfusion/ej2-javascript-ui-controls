@@ -1057,7 +1057,7 @@ describe('Popup # Custom Flip Checkup with element viewport # ', () => {
         let target: HTMLElement = <HTMLElement>getElem('#target'),element: HTMLElement = <HTMLElement>getElem('#popup'), targetContainer = <HTMLElement>getElem('#targetContainer');
         popObj = new Popup(element,{position:{X:'right', Y:'center'},viewPortElement:<HTMLElement>getElem('#targetContainer'), targetType:'relative', collision:{X:'flip',Y:'none'},relateTo:target, offsetX:0,offsetY:0});
         popObj.show();
-        expect(calculatePosition(element,"right","top", false, target.getBoundingClientRect())).toEqual(calculatePosition(target,"left","center"));
+        expect(calculatePosition(element,"right","top")).toEqual(calculatePosition(target,"right","center"));
         removeContainerContent();
     });
     it("Popup element Test Cases- top left flip", function () {

@@ -338,6 +338,26 @@ describe('Circular-Gauge Control', () => {
             gauge.axes[0].ranges[0].end = 120;
             gauge.refresh();
         });
+		it('Checking Axis start angle and end angle same', (done: Function) => {
+            gauge.loaded = (args: ILoadedEventArgs): void => {
+            svg = document.getElementById('container_AxisLine_0');
+            expect(svg.getAttribute('fill') == "transparent").toBe(true);
+            done();   
+            };
+            gauge.axes[0].startAngle = 190;
+            gauge.axes[0].endAngle = 190;
+            gauge.refresh();
+        });
+        it('Checking Axis start angle and end angle less than 360', (done: Function) => {
+            gauge.loaded = (args: ILoadedEventArgs): void => {
+            svg = document.getElementById('container_AxisLine_0');
+            expect(svg.getAttribute('opacity') == "null").toBe(true);
+            done();   
+            };
+            gauge.axes[0].startAngle = 350;
+            gauge.axes[0].endAngle = 350;
+            gauge.refresh();
+        });
 
     });
 

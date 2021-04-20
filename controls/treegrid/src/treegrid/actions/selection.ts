@@ -1,6 +1,6 @@
 import { TreeGrid } from '../base/treegrid';
 import { ColumnModel } from '../models/column';
-import { isNullOrUndefined, removeClass, isBlazor } from '@syncfusion/ej2-base';
+import { isNullOrUndefined, removeClass } from '@syncfusion/ej2-base';
 import { createCheckBox } from '@syncfusion/ej2-buttons';
 import { QueryCellInfoEventArgs, parentsUntil, getObject } from '@syncfusion/ej2-grids';
 import { CellSaveEventArgs } from '../base/interface';
@@ -177,12 +177,10 @@ export class Selection {
     }
 
     public selectCheckboxes(rowIndexes: number[]): void {
-        const adaptorName: string = 'adaptorName';
         for (let i: number = 0; i < rowIndexes.length; i++) {
             let record: ITreeData = this.parent.getCurrentViewRecords()[rowIndexes[i]];
             const flatRecord: ITreeData = getParentData(this.parent, record.uniqueID);
-            record = (isBlazor() && this.parent.dataSource[adaptorName] === 'BlazorAdaptor') ?
-                record : flatRecord;
+            record = flatRecord;
             const checkboxState: string = (record.checkboxState === 'uncheck') ? 'check' : 'uncheck';
             record.checkboxState = checkboxState;
             const keys: string[] = Object.keys(record);
@@ -231,7 +229,6 @@ export class Selection {
     }
 
     private updateParentSelection(parentRecord: ITreeData): void {
-        const adaptorName: string = 'adaptorName';
         let length: number = 0; let childRecords: ITreeData[] = [];
         const record: ITreeData = getParentData(this.parent, parentRecord.uniqueID);
         if (record && record.childRecords) {
@@ -245,12 +242,8 @@ export class Selection {
         let indeter: number = 0; let checkChildRecords: number = 0;
         if (!isNullOrUndefined(record)) {
             for (let i: number = 0; i < childRecords.length; i++) {
-                const childRecord: ITreeData[] = this.parent.getCurrentViewRecords().filter((e: ITreeData) => {
-                    return e.uniqueID === childRecords[i].uniqueID;
-                });
                 const currentRecord: ITreeData = getParentData(this.parent, childRecords[i].uniqueID);
-                const checkBoxRecord: ITreeData = (isBlazor() && this.parent.dataSource[adaptorName] === 'BlazorAdaptor') ?
-                    childRecord[0] : currentRecord;
+                const checkBoxRecord: ITreeData = currentRecord;
                 if (!isNullOrUndefined(checkBoxRecord)) {
                     if (checkBoxRecord.checkboxState === 'indeterminate') {
                         indeter++;
@@ -274,13 +267,11 @@ export class Selection {
     }
 
     private headerSelection(checkAll?: boolean): void {
-        const adaptorName: string = 'adaptorName';
         let index: number = -1; let length: number = 0;
         let data: ITreeData[] = (!isNullOrUndefined(this.parent.filterModule) &&
           this.parent.filterModule.filteredResult.length > 0) ? this.parent.filterModule.filteredResult :
             this.parent.flatData;
-        data = (isBlazor() && this.parent.dataSource[adaptorName] === 'BlazorAdaptor') || isRemoteData(this.parent) ?
-            this.parent.getCurrentViewRecords() : data;
+        data = isRemoteData(this.parent) ? this.parent.getCurrentViewRecords() : data;
         if (!isNullOrUndefined(checkAll)) {
             for (let i: number = 0; i < data.length; i++) {
                 if (checkAll) {
@@ -329,7 +320,6 @@ export class Selection {
             return e.uniqueID === currentRecord.uniqueID;
         });
         let checkedRecord: ITreeData;
-        const adaptorName: string = 'adaptorName';
         const recordIndex: number = this.parent.getCurrentViewRecords().indexOf(record[0]);
         const checkboxRecord: ITreeData = getParentData(this.parent, currentRecord.uniqueID);
         let checkbox: HTMLElement;
@@ -345,8 +335,7 @@ export class Selection {
                 removeClass([checkbox], ['e-check', 'e-stop', 'e-uncheck']);
             }
         }
-        checkedRecord = (isBlazor() && this.parent.dataSource[adaptorName] === 'BlazorAdaptor') ?
-            record[0] : checkboxRecord;
+        checkedRecord = checkboxRecord;
         if (isNullOrUndefined(checkedRecord)) {
             checkedRecord = currentRecord;
         }

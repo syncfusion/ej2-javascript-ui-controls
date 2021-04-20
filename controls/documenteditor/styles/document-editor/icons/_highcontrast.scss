@@ -345,6 +345,10 @@
     content: '\e278';
   }
 
+  .e-menu-item .e-de-open-properties::before {
+    content: '\e605';
+  }
+
   .e-menu-item .e-de-copy-hyperlink::before {
     content: '\e295';
   }

@@ -98,6 +98,7 @@ export class VirtualTreeContentRenderer extends VirtualContentRenderer {
             this.parent[action]('edit-reset', this.resetIseditValue, this);
             this.parent[action]('get-virtual-data', this.getData, this);
             this.parent[action]('virtual-scroll-edit-cancel', this.cancelEdit, this);
+            this.parent[action]('select-row-on-context-open', this.toSelectRowOnContextOpen, this);
         } else {
             super.eventListener('on');
         }
@@ -211,6 +212,11 @@ export class VirtualTreeContentRenderer extends VirtualContentRenderer {
     private cancelEdit(args: { data: Object }): void {
         const editCancel: string = 'editCancel';
         super[editCancel](args);
+    }
+
+    private toSelectRowOnContextOpen(args: { isOpen: boolean }): void {
+        const selectRowOnContextOpen: string = 'selectRowOnContextOpen';
+        super[selectRowOnContextOpen](args);
     }
 
     private restoreNewRow(): void {
@@ -360,6 +366,7 @@ export class VirtualTreeContentRenderer extends VirtualContentRenderer {
         this.parent.off('edit-reset', this.resetIseditValue);
         this.parent.off('get-virtual-data', this.getData);
         this.parent.off('virtual-scroll-edit-cancel', this.cancelEdit);
+        this.parent.off('select-row-on-context-open', this.toSelectRowOnContextOpen);
     }
 
 }

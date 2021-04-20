@@ -1,5 +1,7 @@
-import { SpreadsheetHelper } from "../util/spreadsheethelper.spec";
+import { SpreadsheetHelper } from '../util/spreadsheethelper.spec';
 import { defaultData } from '../util/datasource.spec';
+import { Spreadsheet, dialog } from '../../../src/index';
+import { Dialog } from '../../../src/spreadsheet/services/index';
 
 
 describe('Conditional formatting ->', () => {
@@ -128,5 +130,119 @@ describe('Conditional formatting ->', () => {
 
     describe('UI Interaction ->', () => {
         
+    });
+    describe('CR-Issues ->', () => {
+        describe('fb22057 ->', () => {
+            beforeEach((done: Function) => {
+                helper.initializeSpreadsheet({ sheets: [{ conditionalFormats: [{ type: 'ContainsText', value: '1', cFColor: 'GreenFT',
+                range: 'A1:A1' }, { type: 'ContainsText', value: '2', cFColor: 'RedF', range: 'A1:A1' }, { type: 'ContainsText', value:
+                '3', cFColor: 'YellowFT', range: 'A1:A1' }] }] }, done);
+            });
+            afterEach(() => {
+                helper.invoke('destroy');
+            });
+            it('Conditional Formatting not properly working while more than one condition applied', (done: Function) => {
+                const cell: HTMLElement = helper.invoke('getCell', [0, 0]);
+                helper.invoke('updateCell', [{ value: '1' }]);
+                expect(cell.classList).toContain('e-greenft');
+                helper.invoke('updateCell', [{ value: '2' }]);
+                expect(cell.classList).toContain('e-redf');
+                helper.invoke('updateCell', [{ value: '3' }]);
+                expect(cell.classList).toContain('e-yellowft');
+                done();
+            });
+        });
+        describe('I304843 ->', () => {
+            beforeEach((done: Function) => {
+                helper.initializeSpreadsheet({}, done);
+            });
+            afterEach(() => {
+                helper.invoke('destroy');
+            });
+            it('Conditional Formatting not properly working while more than one condition applied', (done: Function) => {
+                const spreadsheet: Spreadsheet = helper.getInstance();
+                spreadsheet.openFromJson({ file: { "Workbook": { "sheets": [{ "conditionalFormats": [{ "format": { "style": { "backgroundColor": "#FFFF00" } },
+                    "range": "H7:BP40", "value": "IF(COUNT(H7)<1,NOT(ISBLANK(H7)),FALSE),", "type": "GreaterThan", "cFColor": "RedFT" }],
+                    "protectSettings": { "selectCells": true, "formatCells": false, "insertLink": false, "formatColumns": false, "formatRows": false },
+                    "isProtected": true, "name": "CA55", "rowCount": 240, "selectedRange": "A4:A6", "usedRange": { "rowIndex": 239, "colIndex": 68 }, "activeCell": "A4",
+                    "rows": [{ "cells": [{ "index": 3, "isLocked": true, "colSpan": 7,
+                        "style": { "fontFamily": "Arial", "backgroundColor": "#FFC000", "fontSize": "12pt", "fontWeight": "Bold", "textAlign": "Center", "verticalAlign": "Middle" },
+                        "value": "Please ensure date entered on the STL is the same as the visit date entered in EDC." }], "height": 71 },
+                    { "index": 3, "cells": [{ "rowSpan": 3, "value": "Initials" }, { "rowSpan": 3, "value": "Subject Number" },
+                    { "rowSpan": 3, "value": "Source of Subject Referral\n(Please select from list)" },
+                    { "rowSpan": 3, "value": "Date Consent Signed" }, { "rowSpan": 3, "value": "# of Amendments to Consent" },
+                    { "rowSpan": 3, "value": "Visit 1\nScreening" }, { "rowSpan": 3, "value": "Screening\nUrine Preg Test" },
+                    { "rowSpan": 3, "value": "Visit 2\nBaseline\n(BSV)" }, { "rowSpan": 3, "value": "Baseline\nUrine Preg Test" },
+                    { "rowSpan": 3, "value": "Visit 3 \nDay 1\nRandomization" }, { "rowSpan": 3, "value": "Day 1\nUrine Preg Test" },
+                    { "rowSpan": 3, "value": "Visit 4\n4 Weeks" }, { "rowSpan": 3, "value": "4 Weeks\nUrine Preg Test" },
+                    { "rowSpan": 3, "value": "Phone Call 1" }, { "rowSpan": 3, "value": "Phone Call 2" },
+                    { "rowSpan": 3, "value": "Visit 5\n27 Weeks" }, { "rowSpan": 3, "value": "27 Weeks\nUrine Preg Test" },
+                    { "rowSpan": 3, "value": "Visit 6\n44-49 Weeks" }, { "rowSpan": 3, "value": "44-49 Weeks\nUrine Preg Test" },
+                    { "rowSpan": 3, "value": "Visit 7\n52-57 Weeks" }, { "rowSpan": 3, "value": "52-57 Weeks\nUrine Preg Test" },
+                    { "rowSpan": 3, "value": "Phone Call 3\nFollow Up" }, { "rowSpan": 3, "value": "SAE" },
+                    { "rowSpan": 3, "value": "Unscheduled Visit" }, { "rowSpan": 3, "value": "Unscheduled Visit" },
+                    { "rowSpan": 3, "value": "COMMENTS" }], "height": 115 }] }] } } });
+                setTimeout((): void => {
+                    spreadsheet.cellFormat({ fontFamily: 'Arial', fontSize: '10pt', fontWeight: 'bold', textAlign: 'center', verticalAlign: 'middle' }, 'A2:G2');
+                    spreadsheet.cellFormat({
+                        fontFamily: 'Arial', backgroundColor: '#FFFF99', border: '1px solid #000000', fontSize: '9pt', fontWeight: 'bold', textAlign: 'center', verticalAlign: 'middle'
+                    }, 'A4:Z4');
+                    spreadsheet.wrap('A4:Z4');
+                    spreadsheet.cellFormat({
+                        fontFamily: 'Arial', border: '1px solid #000000', fontSize: '9pt', fontWeight: 'bold', textAlign: 'center', verticalAlign: 'middle'
+                    }, 'A7:BQ40');
+                    spreadsheet.cellFormat({ backgroundColor: '#B8CCE4' }, 'E7:E40');
+                    spreadsheet.addDataValidation({ type: 'List', value1: '=$A$200:$A$205' }, 'E7:E40');
+                    spreadsheet.numberFormat('mm-dd-yyyy', 'F7:F40');
+                    spreadsheet.addDataValidation({ type: 'Date', value1: '5/26/2020', value2: 'TODAY()' }, 'F7:F40');
+                    spreadsheet.addDataValidation({ value1: '0', value2: '5' }, 'G7:G40');
+                    spreadsheet.numberFormat('mm-dd-yyyy', 'D7:Z40');
+                    spreadsheet.addDataValidation({ type: 'Date', value1: '5/26/2020', value2: 'TODAY()' }, 'H7:Z40');
+                    setTimeout((): void => {
+                        expect(spreadsheet.sheets[0].rows[6].cells[4].validation.type).toBe('List');
+                        expect(spreadsheet.sheets[0].rows[7].cells[5].validation.type).toBe('Date');
+                        expect(spreadsheet.sheets[0].rows[8].cells[6].validation.type).toBeUndefined();
+                        done();
+                    });
+                });
+            });
+        });
+        describe('fb24298 ->', () => {
+            beforeEach((done: Function) => {
+                helper.initializeSpreadsheet(
+                    { sheets: [{ rows: [{ cells: [{ value: '7' }] }, { cells: [{ value: '35' }] }, { cells: [{ value: '20' }] }],
+                    selectedRange: 'A1:A3' }] }, done);
+            });
+            afterEach(() => {
+                helper.invoke('destroy');
+            });
+            it('Cells are getting highlighted even if no value for conditional formatting is applied', (done: Function) => {
+                helper.getElement('#' + helper.id + '_conditionalformatting').click();
+                const target: HTMLElement = helper.getElement('#' + helper.id + '_conditionalformatting-popup .e-menu-item');
+                helper.triggerMouseAction(
+                    'mouseover', { x: target.getBoundingClientRect().left + 5, y: target.getBoundingClientRect().top + 5 }, document,
+                    target);
+                setTimeout((): void => {
+                    helper.getElement('#cf_greaterthan').click();
+                    setTimeout((): void => {
+                        const btn: HTMLButtonElement = helper.getElement('#' + helper.id + ' .e-clearall-btn.e-btn');
+                        expect(btn.disabled).toBeTruthy();
+                        let input: HTMLInputElement = helper.getElement('#' + helper.id + ' .e-conditionalformatting-dlg .e-cfmain .e-input');
+                        let evt: Event;
+                        ['1', ''].forEach((text: string): void => {
+                            input.value = text;
+                            evt = document.createEvent('Event'); evt.initEvent('input', true, true); input.dispatchEvent(evt);
+                            if (text === '1') {
+                                expect(btn.disabled).toBeFalsy();
+                            } else {
+                                expect(btn.disabled).toBeTruthy();
+                            }
+                        });
+                        (helper.getInstance().serviceLocator.getService(dialog) as Dialog).hide();
+                        done();
+                    });
+                });
+            });
+        });
     });
 });

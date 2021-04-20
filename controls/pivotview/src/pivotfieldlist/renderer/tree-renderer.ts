@@ -128,7 +128,7 @@ export class TreeViewRenderer implements IAction {
         /* eslint-disable */
         let dragEle: HTMLElement = this.parent.renderMode === "Fixed" ? this.parent.element : this.parentElement;
         if (!isNullOrUndefined(dragEle.querySelector('.' + cls.FIELD_LIST_CLASS))) {
-            (dragEle.querySelector('.' + cls.FIELD_LIST_CLASS) as any).ej2_instances[0].dragArea = dragEle;
+            (dragEle.querySelector('.' + cls.FIELD_LIST_CLASS) as any).ej2_instances[0].dragObj.enableAutoScroll = false;
         }
         /* eslint-enable */
     }

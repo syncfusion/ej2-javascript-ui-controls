@@ -233,7 +233,7 @@ export class SelectionCharacterFormat {
      * Sets the highlight color of selected contents.
      */
     public set highlightColor(value: HighlightColor) {
-        if (value === this.highlightColorIn) {
+        if (value === this.highlightColorIn && value !== "NoColor") {
             return;
         }
         this.highlightColorIn = value;

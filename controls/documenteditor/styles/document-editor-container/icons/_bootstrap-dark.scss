@@ -8,11 +8,11 @@
   }
 
   .e-de-ctnr-undo::before {
-    content: '\eb19';
+    content: '\ebc5';
   }
 
   .e-de-ctnr-find::before {
-    content: '\eb32';
+    content: '\e60e';
   }
 
   .e-de-ctnr-lock::before {
@@ -36,15 +36,11 @@
   }
 
   .e-de-ctnr-justify::before {
-    content: '\eb2d';
+    content: '\e334';
   }
 
   .e-de-ctnr-tableofcontent::before {
     content: '\eb10';
-  }
-
-  .e-de-ctnr-strokesize::before {
-    content: '\eb12';
   }
 
   .e-de-ctnr-pagenumber::before {
@@ -52,7 +48,7 @@
   }
 
   .e-de-ctnr-highlight::before {
-    content: '\eb0f';
+    content: '\ebc6';
   }
 
   .e-de-ctnr-new::before {
@@ -60,7 +56,7 @@
   }
 
   .e-de-ctnr-paste::before {
-    content: '\eb29';
+    content: '\e601';
   }
 
   .e-de-ctnr-bold::before {
@@ -68,7 +64,7 @@
   }
 
   .e-de-ctnr-subscript::before {
-    content: '\eb2e';
+    content: '\e357';
   }
 
   .e-de-ctnr-fontcolor::before {
@@ -88,7 +84,7 @@
   }
 
   .e-de-ctnr-strikethrough::before {
-    content: '\eb17';
+    content: '\ebc9';
   }
 
   .e-de-ctnr-image::before {
@@ -96,7 +92,7 @@
   }
 
   .e-de-ctnr-redo::before {
-    content: '\eb16';
+    content: '\ebd3';
   }
 
   .e-de-ctnr-bookmark::before {
@@ -104,7 +100,7 @@
   }
 
   .e-de-ctnr-increaseindent::before {
-    content: '\eb2c';
+    content: '\e33f';
   }
 
   .e-de-ctnr-header::before {
@@ -120,31 +116,31 @@
   }
 
   .e-de-ctnr-underline::before {
-    content: '\eb13';
+    content: '\ebc8';
   }
 
   .e-de-ctnr-superscript::before {
-    content: '\eb14';
+    content: '\e352';
   }
 
   .e-de-ctnr-alignleft::before {
-    content: '\eb34';
+    content: '\e33a';
   }
 
   .e-de-ctnr-numbering::before {
-    content: '\eb18';
-   }
+    content: '\e346';
+  }
+
+  .e-de-ctnr-decreaseindent::before {
+    content: '\e35d';
+  }
 
   .e-de-ctnr-aligncenter::before {
-    content: '\eb15';
+    content: '\e35e';
   }
 
   .e-de-ctnr-bullets::before {
     content: '\eb25';
-  }
-
-  .e-de-ctnr-decreaseindent::before {
-    content: '\eb24';
   }
 
   .e-de-ctnr-showhide::before {
@@ -157,7 +153,7 @@
   }
 
   .e-de-ctnr-alignright::before {
-    content: '\eb21';
+    content: '\e34d';
   }
 
   .e-de-ctnr-footer::before {
@@ -209,7 +205,7 @@
   }
 
   .e-de-ctnr-highlightcolor::before {
-    content: '\eb0f';
+    content: '\ebc6';
   }
 
   .e-de-ctnr-mergecell::before {
@@ -382,6 +378,16 @@
 
   .e-de-update-field::before {
     content: '\e19e';
+    font-family: 'e-icons';
+  }
+
+  .e-de-footnote::before {
+    content: '\e435';
+    font-family: 'e-icons';
+  }
+
+  .e-de-endnote::before {
+    content: '\e436';
     font-family: 'e-icons';
   }
 }

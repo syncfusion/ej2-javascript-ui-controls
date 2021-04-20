@@ -1839,7 +1839,6 @@ export class WordExport {
         }
         writer.writeEndElement();
     }
-
     // Serialize the Other Wrapping picture & Shape.
     private serializeWrappingPictureAndShape(writer: XmlWriter, picture: any): void {
         writer.writeStartElement('wp', 'anchor', this.wpNamespace);
@@ -1904,11 +1903,10 @@ export class WordExport {
 
         writer.writeEndElement(); // end of anchor
     }
-
     // Serialize the inline picture & Shape.
     private serializeInlinePictureAndShape(writer: XmlWriter, draw: any): void {
         writer.writeStartElement(undefined, 'inline', this.wpNamespace);
-
+        this.writeDefaultDistAttribute(writer);
         writer.writeStartElement(undefined, 'extent', this.wpNamespace);
         const cx: number = Math.round(draw.width * this.emusPerPoint);
         writer.writeAttributeString(undefined, 'cx', undefined, cx.toString());
@@ -1946,13 +1944,16 @@ export class WordExport {
         let right: string = draw.distanceRight ? Math.round(draw.distanceRight * this.emusPerPoint).toString() : '114300';
         writer.writeAttributeString(undefined, 'distR', undefined, right);
     }
-    // serialize inline chart
-    private serializeInlineCharts(writer: XmlWriter, item: any): void {
-        writer.writeStartElement(undefined, 'inline', this.wpNamespace);
+    private writeDefaultDistAttribute(writer: XmlWriter): void {
         writer.writeAttributeString(undefined, 'distT', undefined, '0');
         writer.writeAttributeString(undefined, 'distB', undefined, '0');
         writer.writeAttributeString(undefined, 'distL', undefined, '0');
         writer.writeAttributeString(undefined, 'distR', undefined, '0');
+    }
+    // serialize inline chart
+    private serializeInlineCharts(writer: XmlWriter, item: any): void {
+        writer.writeStartElement(undefined, 'inline', this.wpNamespace);
+        this.writeDefaultDistAttribute(writer);
         writer.writeStartElement(undefined, 'extent', this.wpNamespace);
         const cx: number = Math.round(item.width * this.emusPerPoint);
         writer.writeAttributeString(undefined, 'cx', undefined, cx.toString());
@@ -3406,7 +3407,7 @@ export class WordExport {
         let id: number = shape.shapeId;
         this.serializeShapeWrapStyle(writer, shape);
         writer.writeStartElement('wp', 'docPr', this.wpNamespace);
-        writer.writeAttributeString(undefined, 'id', undefined,  (this.mDocPrID++).toString());
+        writer.writeAttributeString(undefined, 'id', undefined, (this.mDocPrID++).toString());
         writer.writeAttributeString(undefined, 'name', undefined, shape.name);
         writer.writeAttributeString(undefined, 'title', undefined, shape.title);
         writer.writeEndElement();
@@ -3448,7 +3449,8 @@ export class WordExport {
         writer.writeEndElement();
         writer.writeStartElement('a', 'ln', this.aNamespace);
         writer.writeAttributeString(undefined, 'w', undefined, '12700');
-        if (!isNullOrUndefined(shape.lineFormat.lineFormatType) && shape.lineFormat.lineFormatType !== 'None') {
+        if ((!isNullOrUndefined(shape.lineFormat.lineFormatType) && shape.lineFormat.lineFormatType !== 'None')
+            || shape.lineFormat.line) {
             writer.writeStartElement('a', 'solidFill', this.aNamespace);
             writer.writeStartElement('a', 'srgbClr', this.aNamespace);
             writer.writeAttributeString(undefined, 'val', undefined, this.getColor(shape.lineFormat.color));
@@ -3513,7 +3515,7 @@ export class WordExport {
             }
         }
         writer.writeStartElement('wp', textWrappingStyle, this.wpNamespace);
-        if (shape.textWrappingStyle && shape.textWrappingStyle !== 'InFrontOfText' && shape.textWrappingStyle !== 'Behind' && 
+        if (shape.textWrappingStyle && shape.textWrappingStyle !== 'InFrontOfText' && shape.textWrappingStyle !== 'Behind' &&
             shape.textWrappingType) {
             let wrapType: string = shape.textWrappingType === 'Both' ? 'bothSides' : (shape.textWrappingType as string).toLowerCase();
             writer.writeAttributeString(undefined, 'wrapText', undefined, wrapType);
@@ -3715,11 +3717,9 @@ export class WordExport {
         let owner: any = this.table;
         this.table = table;
         writer.writeStartElement(undefined, 'tbl', this.wNamespace);
-    
         let tableFormat: any = table.rows[0].rowFormat;
         this.serializeTableFormat(writer, tableFormat, table);
         this.serializeTableGrid(writer, table);
-    
         let mVerticalMerge: Dictionary<number, number> = new Dictionary<number, number>();
         let mHorizontalMerge: Dictionary<number, number> = new Dictionary<number, number>();
         let cellFormats: Dictionary<number, any> = new Dictionary<number, any>();
@@ -3732,12 +3732,10 @@ export class WordExport {
                         this.serializeContentControl(writer, row.contentControlProperties, row);
                         continue;
                     }
-    
                     let owner: any = this.row;
                     this.row = row;
                     writer.writeStartElement(undefined, 'tr', this.wNamespace);
                     this.serializeRowFormat(writer, row);
-    
                     let cells: any = row.cells;
                     let cellLength: number = cells.length;
                     let prevColIndex: number = 0;
@@ -3749,11 +3747,12 @@ export class WordExport {
                             continue;
                         }
                         let cellFormat: any = cell.cellFormat;
-                        if ((columnIndex - prevColIndex) > 1) {
+                        if ((columnIndex - prevColIndex) > 0) {
                             let checkIndex: number = i === 0 ? 0 : (prevColIndex + 1);
                             for (let k: number = checkIndex; k < columnIndex; k++) {
                                 if (mVerticalMerge.containsKey(k)) {
-                                    this.serializeTableCell(writer, cell, cellFormats.get(k), false);
+                                    let format: any = this.getMergeCellFormat(cellFormat, cellFormats.get(k), k < cell.columnIndex);
+                                    this.serializeTableCell(writer, cell, format, false);
                                     mVerticalMerge.set(k, mVerticalMerge.get(k) - 1);
                                     if (mVerticalMerge.get(k) === 1) {
                                         mVerticalMerge.remove(k);
@@ -3775,14 +3774,13 @@ export class WordExport {
                             cellFormats.add(columnIndex, cellFormat);
                         }
                         this.serializeTableCell(writer, cell, cellFormat, true);
-    
                         if (cellFormat.columnSpan > 1 && cellFormat.rowSpan > 1) {
                             mHorizontalMerge.add(columnIndex, cellFormat.columnSpan);
                         }
-    
                         for (let j: number = columnIndex + 1; ; j++) {
                             if (mVerticalMerge.containsKey(j)) {
-                                this.serializeTableCell(writer, cell, cellFormats.get(j), false);
+                                let mergeFormat: any = this.getMergeCellFormat(cellFormat, cellFormats.get(j), j < cell.columnIndex);
+                                this.serializeTableCell(writer, cell, mergeFormat, false);
                                 mVerticalMerge.set(j, mVerticalMerge.get(j) - 1);
                                 prevColIndex++;
                                 if (mVerticalMerge.get(j) === 1) {
@@ -3809,7 +3807,15 @@ export class WordExport {
         writer.writeEndElement();
         this.table = owner;
     }
-    
+    private getMergeCellFormat(cellFormat: any, mergedCellFormat: any, before: boolean): any {
+        let format: any = mergedCellFormat;
+        if (before) {
+            format.borders.right = cellFormat.borders.left;
+        } else {
+            format.borders.left = cellFormat.borders.right;
+        }
+        return format;
+    }
     private serializeTableCell(xmlWriter: XmlWriter, cell: any, cellFormat: any, mergeStart?: boolean): void {
         let owner: any = this.blockOwner;
         this.blockOwner = cell;
@@ -3823,7 +3829,6 @@ export class WordExport {
         this.serializeShading(xmlWriter, cell.cellFormat.shading);
         this.serializeTableCellDirection(xmlWriter, cellFormat);
         this.serializeCellVerticalAlign(xmlWriter, cellFormat.verticalAlignment);
-    
         if (cellFormat.columnSpan > 1) {
             let num: number = cellFormat.columnSpan;
             xmlWriter.writeStartElement(undefined, 'gridSpan', this.wNamespace);
@@ -3835,7 +3840,6 @@ export class WordExport {
             xmlWriter.writeAttributeString('w', 'val', this.wNamespace, mergeStart ? 'restart' : 'continue');
             xmlWriter.writeEndElement(); // end of vMerge
         }
-    
         xmlWriter.writeEndElement(); // end of tcPr
         if (cell && cell.blocks.length > 0) {
             let itemIndex: number = 0;
@@ -3851,7 +3855,6 @@ export class WordExport {
             xmlWriter.writeStartElement(undefined, 'pStyle', this.wNamespace);
             xmlWriter.writeAttributeString('w', 'val', this.wNamespace, 'Normal');
             xmlWriter.writeEndElement(); //end of pStyle
-    
             xmlWriter.writeEndElement(); //end of pPr
             xmlWriter.writeEndElement(); //end of P
         }
@@ -5005,7 +5008,11 @@ export class WordExport {
 
             if (!isNullOrUndefined(lf.listId)) {
                 writer.writeStartElement(undefined, 'numId', this.wNamespace);
-                writer.writeAttributeString('w', 'val', this.wNamespace, (lf.listId + 1).toString());
+                let listId = (lf.listId + 1).toString()
+                if (lf.listId === -1) {
+                    listId = '';
+                }
+                writer.writeAttributeString('w', 'val', this.wNamespace, listId);
                 writer.writeEndElement();
             }
 
@@ -6013,7 +6020,7 @@ export class WordExport {
         if (this.document.endnotes) {
             this.serializeRelationShip(writer, this.getNextRelationShipID(), this.endnoteRelType, 'endnotes.xml');
         }
-        if(this.document.footnotes) {
+        if (this.document.footnotes) {
             this.serializeRelationShip(writer, this.getNextRelationShipID(), this.footnoteRelType, 'footnotes.xml');
         }
         if (this.mComments.length > 0) {

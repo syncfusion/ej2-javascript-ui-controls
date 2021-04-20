@@ -2,6 +2,26 @@
 
 ## [Unreleased]
 
+## 19.1.57 (2021-04-20)
+
+### ListBox
+
+#### Bug Fixes
+
+- `#311323` - Issue with 'No Records Found' text occurred twice has been resolved.
+
+## 19.1.56 (2021-04-13)
+
+### ListBox
+
+#### Bug Fixes
+
+- `#316046` - Action complete event not triggered when sort order property is given issue is fixed.
+
+- `#311323` - DataSource missing while filtering is applied issue has been resolved.
+
+- `#163935` - Previous index is wrong in drag and drop event has been fixed.
+
 ## 19.1.54 (2021-03-30)
 
 ### Dropdown Tree

@@ -123,27 +123,29 @@ export class Scroll {
         } else {
             count = Infinity;
         }
+        scrollTop = Math.round(scrollTop);
         while (i < count) {
             if (scrollDown) {
-                temp += getRowHeight(sheet, i - 1 + frozenRow);
-                if (temp === scrollTop) {
+                temp += getRowHeight(sheet, i - 1 + frozenRow, true);
+                if (Math.abs(Math.round(temp) - scrollTop) <= 1) { // <=1 -> For other resolution scrollTop value slightly various with row height
                     return { idx: i, size: temp };
                 }
-                if (temp > scrollTop) {
-                    return { idx: i - 1, size: temp - getRowHeight(sheet, i - 1 + frozenRow) };
+                if (Math.round(temp) > scrollTop) {
+                    return { idx: i - 1, size: temp - getRowHeight(sheet, i - 1 + frozenRow, true) };
                 }
                 i++;
             } else {
                 if (temp === 0) { return { idx: 0, size: 0 }; }
-                temp -= getRowHeight(sheet, i + frozenRow);
-                if (temp === scrollTop) {
+                temp -= getRowHeight(sheet, i + frozenRow, true);
+                if (temp < 0) { temp = 0 };
+                if (Math.abs(Math.round(temp) - scrollTop) <= 1) {
                     return { idx: i, size: temp };
                 }
-                if (temp < scrollTop) {
-                    temp += getRowHeight(sheet, i + frozenRow);
-                    if (temp > scrollTop) {
-                        return { idx: i, size: temp - getRowHeight(sheet, i + frozenRow) < 0 ? 0 :
-                            temp - getRowHeight(sheet, i + frozenRow) };
+                if (Math.round(temp) < scrollTop) {
+                    temp += getRowHeight(sheet, i + frozenRow, true);
+                    if (Math.round(temp) > scrollTop) {
+                        return { idx: i, size: temp - getRowHeight(sheet, i + frozenRow, true) < 0 ? 0 :
+                            temp - getRowHeight(sheet, i + frozenRow, true) };
                     } else {
                         return { idx: i + 1, size: temp };
                     }
@@ -167,26 +169,27 @@ export class Scroll {
         } else {
             count = Infinity;
         }
+        scrollLeft = Math.round(scrollLeft);
         while (i < count) {
             if (increase) {
-                temp += getColumnWidth(sheet, i - 1 + frozenCol, skipHidden);
-                if (temp === scrollLeft) {
+                temp += getColumnWidth(sheet, i - 1 + frozenCol, skipHidden, true);
+                if (Math.round(temp) === scrollLeft) {
                     return { idx: i, size: temp };
                 }
-                if (temp > scrollLeft) {
-                    return { idx: i - 1, size: temp - getColumnWidth(sheet, i - 1 + frozenCol, skipHidden) };
+                if (Math.round(temp) > scrollLeft) {
+                    return { idx: i - 1, size: temp - getColumnWidth(sheet, i - 1 + frozenCol, skipHidden, true) };
                 }
                 i++;
             } else {
                 if (temp === 0) { return { idx: 0, size: 0 }; }
-                temp -= getColumnWidth(sheet, i + frozenCol, skipHidden);
-                if (temp === scrollLeft) {
+                temp -= getColumnWidth(sheet, i + frozenCol, skipHidden, true);
+                if (Math.round(temp) === scrollLeft) {
                     return { idx: i, size: temp };
                 }
-                if (temp < scrollLeft) {
-                    temp += getColumnWidth(sheet, i + frozenCol, skipHidden);
-                    if (temp > scrollLeft) {
-                        return { idx: i, size: temp - getColumnWidth(sheet, i + frozenCol, skipHidden) };
+                if (Math.round(temp) < scrollLeft) {
+                    temp += getColumnWidth(sheet, i + frozenCol, skipHidden, true);
+                    if (Math.round(temp) > scrollLeft) {
+                        return { idx: i, size: temp - getColumnWidth(sheet, i + frozenCol, skipHidden, true) };
                     } else {
                         return { idx: i + 1, size: temp };
                     }
@@ -285,7 +288,7 @@ export class Scroll {
             colHeader.style[cssProps.border] = '1px';
         }
     }
-
+    
     private addEventListener(): void {
         this.parent.on(contentLoaded, this.contentLoaded, this);
         this.parent.on(onContentScroll, this.onContentScroll, this);

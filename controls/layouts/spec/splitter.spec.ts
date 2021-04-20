@@ -4986,6 +4986,17 @@ describe('Splitter Control', () => {
             expect(splitterObj.allBars[0].childNodes[1].classList.contains('e-hide-handler')).toBe(true);
             expect(splitterObj.allBars[1].childNodes[1].classList.contains('e-hide-handler')).toBe(false);
         });
+        it('Second Pane alone static', function() {
+            splitterObj = new Splitter({ paneSettings: [{ content: 'First Pane',collapsed : true, collapsible: true }, { size: '40%', content: 'Middle Pane', collapsible: true }, {content: 'Last Pane', collapsible: true }] });
+            splitterObj.appendTo(document.getElementById('default'));
+            expect(splitterObj.allPanes[0].classList.contains('e-static-pane')).toBe(false);
+            expect(splitterObj.allPanes[1].classList.contains('e-static-pane')).toBe(true);
+            expect(splitterObj.allPanes[2].classList.contains('e-static-pane')).toBe(false);
+            splitterObj.allBars[0].lastElementChild.click();
+            expect(splitterObj.allPanes[0].classList.contains('e-static-pane')).toBe(false);
+            expect(splitterObj.allPanes[1].classList.contains('e-static-pane')).toBe(true);
+            expect(splitterObj.allPanes[2].classList.contains('e-static-pane')).toBe(false);
+        });
     });
 
     describe('Resizing iframe pane', () => {

@@ -1866,7 +1866,6 @@ describe('Grid Selection module', () => {
             let preventDefault: Function = new Function();
             let args: any = { action: 'downArrow', preventDefault: preventDefault };
             gridObj.keyboardModule.keyAction(args);
-            expect(gridObj.element.querySelectorAll('.e-row')[0].hasAttribute('aria-selected')).toBeFalsy();
 
             //for coverage
             (<any>gridObj.selectionModule).mouseDownHandler({ target: gridObj.element, preventDefault: () => { } });

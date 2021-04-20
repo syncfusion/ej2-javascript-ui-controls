@@ -1,7 +1,7 @@
 import { TreeGrid } from '..';
 import { QueryCellInfoEventArgs, IGrid, RowDataBoundEventArgs, getObject, appendChildren } from '@syncfusion/ej2-grids';
 import { templateCompiler, extend } from '@syncfusion/ej2-grids';
-import { addClass, createElement, isNullOrUndefined, getValue, isBlazor } from '@syncfusion/ej2-base';
+import { addClass, createElement, isNullOrUndefined, getValue } from '@syncfusion/ej2-base';
 import { ITreeData } from '../base/interface';
 import * as events from '../base/constant';
 import { isRemoteData, isOffline, getExpandStatus, isFilterChildHierarchy } from '../utils';
@@ -193,7 +193,7 @@ export class Render {
         if (isNullOrUndefined(treeColumn.field)) {
             args.cell.setAttribute('aria-colindex', colindex + '');
         }
-        if (treeColumn.field === args.column.field && !isNullOrUndefined(treeColumn.template) && !isBlazor()) {
+        if (treeColumn.field === args.column.field && !isNullOrUndefined(treeColumn.template)) {
             args.column.template = treeColumn.template;
             args.column[templateFn] = templateCompiler(args.column.template);
             args.cell.classList.add('e-templatecell');
@@ -207,7 +207,7 @@ export class Render {
         } else if (args.cell.classList.contains('e-templatecell')) {
             let len: number = args.cell.children.length;
             const tempID: string = this.parent.element.id + args.column.uid;
-            if (treeColumn.field === args.column.field && !isNullOrUndefined(treeColumn.template) && !isBlazor()) {
+            if (treeColumn.field === args.column.field && !isNullOrUndefined(treeColumn.template)) {
                 const portals: string = 'portals';
                 const renderReactTemplates: string = 'renderReactTemplates';
                 if ((<{ isReact?: boolean }>this.parent).isReact) {

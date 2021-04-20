@@ -2113,12 +2113,24 @@ export class Editor {
     private mapMatchedRevisions(revisions: Revision[], revisionElement: any, elementToInclude: any, isBegin: boolean): any {
         for (let i: number = 0; i < revisions.length; i++) {
             let currentRevision: Revision = revisions[i];
-            elementToInclude.revisions.splice(0, 0, currentRevision);
-            let rangeIndex: number = currentRevision.range.indexOf(revisionElement);
-            currentRevision.range.splice((isBegin) ? rangeIndex : rangeIndex + 1, 0, elementToInclude);
+            if (!this.isRevisionAlreadyIn(elementToInclude, currentRevision)) {
+                elementToInclude.revisions.splice(0, 0, currentRevision);
+                let rangeIndex: number = currentRevision.range.indexOf(revisionElement);
+                currentRevision.range.splice((isBegin) ? rangeIndex : rangeIndex + 1, 0, elementToInclude);
+            }
         }
     }
-
+    private isRevisionAlreadyIn(element: any, revision: Revision): boolean {
+        if (element.revisions.length > 0) {
+            for (let i = 0; i < element.revisions.length; i++) {
+                let elementRevision: Revision = element.revisions[i];
+                if (elementRevision.revisionID === revision.revisionID) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
     private getMatchedRevisionsToCombine(revisions: Revision[], revisionType: RevisionType): Revision[] {
         let matchedRevisions: Revision[] = [];
         for (let i: number = 0; i < revisions.length; i++) {
@@ -3200,6 +3212,14 @@ export class Editor {
         fieldEnd.line.children.splice(spanIndex + 1, 0, span);
         span.line = fieldEnd.line;
         let lineIndex: number = fieldEnd.line.paragraph.childWidgets.indexOf(fieldEnd.line);
+        if (this.owner.enableTrackChanges) {
+            let isBidi: boolean = this.documentHelper.textHelper.getRtlLanguage(text).isRtl;
+            let revisionType: RevisionType = 'Insertion';
+            let isRevisionCombined: boolean = this.checkToMapRevisionWithInlineText(fieldEnd, index, span, isBidi, revisionType);
+            if (!isRevisionCombined && span.revisions.length === 0) {
+                isRevisionCombined = this.checkToMapRevisionWithNextNode(fieldEnd.nextNode, span, isBidi, revisionType);
+            }
+        }
         this.documentHelper.layout.reLayoutParagraph(fieldEnd.line.paragraph, lineIndex, spanIndex);
     }
     private insertImageText(image: ImageElementBox, selection: Selection, text: string, index: number): void {
@@ -4033,8 +4053,56 @@ export class Editor {
         return this.documentHelper.lists.filter((list: WList) => {
             return list.abstractList.levels[lstLevelNo].listLevelPattern === listLevel.listLevelPattern
                 && list.abstractList.levels[lstLevelNo].numberFormat === listLevel.numberFormat
-                && (listLevel.listLevelPattern === 'Bullet' || list.abstractList.levels[lstLevelNo].startAt === listLevel.startAt);
+                && (listLevel.listLevelPattern === 'Bullet' || list.abstractList.levels[lstLevelNo].startAt === listLevel.startAt)
+                && this.isEqualParagraphFormat(list.abstractList.levels[lstLevelNo].paragraphFormat, listLevel.paragraphFormat);
         })[0];
+    }
+    private isEqualParagraphFormat(source: WParagraphFormat, dest: any): boolean {
+        if ((isNullOrUndefined(dest.leftIndent) && source.leftIndent !== 0)
+            || (!isNullOrUndefined(dest.leftIndent) && Math.round(source.leftIndent) !== Math.round(dest.leftIndent))) {
+            return false;
+        }
+        if ((isNullOrUndefined(dest.rightIndent) && source.rightIndent !== 0)
+            || (!isNullOrUndefined(dest.rightIndent) && Math.round(source.rightIndent) !== Math.round(dest.rightIndent))) {
+            return false;
+        }
+        if ((isNullOrUndefined(dest.firstLineIndent) && source.firstLineIndent !== 0)
+            || (!isNullOrUndefined(dest.firstLineIndent) && Math.round(source.firstLineIndent) !== Math.round(dest.firstLineIndent))) {
+            return false;
+        }
+        if ((isNullOrUndefined(dest.beforeSpacing) && source.beforeSpacing !== 0)
+            || (!isNullOrUndefined(dest.beforeSpacing) && Math.round(source.beforeSpacing) !== Math.round(dest.beforeSpacing))) {
+            return false;
+        }
+        if ((isNullOrUndefined(dest.afterSpacing) && source.afterSpacing !== 0)
+            || (!isNullOrUndefined(dest.afterSpacing) && Math.round(source.afterSpacing) !== Math.round(dest.afterSpacing))) {
+            return false;
+        }
+        if ((isNullOrUndefined(dest.textAlignment) && source.textAlignment !== 'Left')
+            || (!isNullOrUndefined(dest.textAlignment) && source.textAlignment !== dest.textAlignment)) {
+            return false;
+        }
+        if ((isNullOrUndefined(dest.bidi) && source.bidi !== false)
+            || (!isNullOrUndefined(dest.bidi) && source.bidi !== dest.bidi)) {
+            return false;
+        }
+        if ((isNullOrUndefined(dest.contextualSpacing) && source.contextualSpacing !== false)
+            || (!isNullOrUndefined(dest.contextualSpacing) && source.contextualSpacing !== dest.contextualSpacing)) {
+            return false;
+        }
+        if ((isNullOrUndefined(dest.outlineLevel) && source.outlineLevel !== 'BodyText')
+            || (!isNullOrUndefined(dest.outlineLevel) && source.outlineLevel !== dest.outlineLevel)) {
+            return false;
+        }
+        if ((isNullOrUndefined(dest.lineSpacing) && source.lineSpacing !== 1)
+            || (!isNullOrUndefined(dest.lineSpacing) && Math.round(source.lineSpacing) !== Math.round(dest.lineSpacing))) {
+            return false;
+        }
+        if ((isNullOrUndefined(dest.lineSpacingType) && source.lineSpacingType !== 'Multiple')
+            || (!isNullOrUndefined(dest.lineSpacingType) && source.lineSpacingType !== dest.lineSpacingType)) {
+            return false;
+        }
+        return true;
     }
     private getBlocksToUpdate(blocks: any): any[] {
         let blcks: any[] = [];
@@ -5206,7 +5274,7 @@ export class Editor {
         this.insertPicture(imageString, width, height);
         setTimeout((): void => {
             this.viewer.updateScrollBars();
-        }, 0);
+        }, 10);
     }
     /**
      * Inserts a table of specified size at cursor position
@@ -8100,8 +8168,10 @@ export class Editor {
             }
             if (!isNullOrUndefined(prevElement) && prevElement.revisions.length > 0) {
                 let currentRevision: Revision = prevElement.revisions[prevElement.revisions.length - 1];
-                currentElement.revisions.push(currentRevision);
-                currentRevision.range.push(currentElement);
+                if (!this.isRevisionAlreadyIn(currentElement, currentRevision)) {
+                    currentElement.revisions.push(currentRevision);
+                    currentRevision.range.push(currentElement);
+                }
 
             } else {
                 this.insertRevision(currentElement, 'Insertion');
@@ -12804,6 +12874,15 @@ export class Editor {
         selection.selectContent(textPosition, true);
         this.reLayout(selection);
     }
+    private removeContentControlMark(start: ContentControl, end : ContentControl): boolean {
+        if (!start.contentControlProperties.lockContentControl) {
+            this.selection.start.setPositionParagraph(start.line, start.line.getOffset(start, 0));
+            this.selection.end.setPositionParagraph(end.line, end.line.getOffset(end, 0) + 1);
+            this.deleteEditElement(this.selection);
+            return true;
+        }
+        return false;
+    }
     /**
      * Remove single character on right of cursor position
      *
@@ -12925,16 +13004,22 @@ export class Editor {
                 inline = inline.nextNode;
                 paragraph = inline.line.paragraph;
                 offset = inline.line.getOffset(inline, 0);
+                // Move cursor inbetween content control
                 selection.start.setPositionParagraph(inline.line, offset);
+                selection.end.setPositionParagraph(inline.line, offset);
+                return;
             }
             if (inline && inline.length === 1 && inline.nextNode instanceof ContentControl
                 && inline.previousNode instanceof ContentControl) {
-                let cCstart: ContentControl = inline.previousNode;
-                let cCend: ContentControl = inline.nextNode;
-                if (!cCstart.contentControlProperties.lockContentControl) {
-                    selection.start.setPositionParagraph(cCstart.line, cCstart.line.getOffset(cCstart, 0));
-                    selection.end.setPositionParagraph(cCend.line, cCend.line.getOffset(cCend, 0) + 1);
-                    this.deleteEditElement(selection);
+                if (this.removeContentControlMark(inline.previousNode, inline.nextNode)) {
+                    return;
+                }
+            }
+            // Remove content if content control is empty
+            if (inline instanceof ContentControl && inline.previousNode instanceof ContentControl
+                && inline.previousNode.reference === inline) {
+                // Remove content control if there is no element presen in between start and end mark.
+                if (this.removeContentControlMark(inline.previousNode, inline)) {
                     return;
                 }
             }
@@ -13570,7 +13655,7 @@ export class Editor {
         for (let j: number = 0; j < this.documentHelper.pages.length; j++) {
             let page: Page = this.documentHelper.pages[j];
             if (page.bodyWidgets[0].index === sectionIndex) {
-                currentBlock = page.bodyWidgets[0].firstChild as BlockWidget;
+                currentBlock = this.getNextBlockForList(page.bodyWidgets[0].firstChild as BlockWidget);
                 if (!isNullOrUndefined(currentBlock)) {
                     break;
                 }
@@ -13583,7 +13668,20 @@ export class Editor {
                 break;
             }
             currentBlock = currentBlock.getSplitWidgets().pop().nextRenderedWidget as BlockWidget;
+            if (!isNullOrUndefined(currentBlock)) {
+                currentBlock = this.getNextBlockForList(currentBlock);
+            }
         } while (currentBlock);
+    }
+    private getNextBlockForList(currentBlock: BlockWidget): BlockWidget {
+        if (currentBlock instanceof ParagraphWidget &&
+            this.documentHelper.layout.isFirstElementWithPageBreak(currentBlock)) {
+            let nextBlock: BlockWidget = currentBlock.nextRenderedWidget as BlockWidget;
+            if (nextBlock.equals(currentBlock)) {
+                return nextBlock as BlockWidget;
+            }
+        }
+        return currentBlock;
     }
 
     private updateListItems(blockAdv: BlockWidget, block: BlockWidget): boolean {

@@ -73,8 +73,8 @@ export class Linear {
         let segmentWidth: number;
         let strippedStroke: string; const ismaximum: boolean = (progress.value === progress.maximum);
         const progressWidth: number = progress.calculateProgressRange(progress.argsData.value);
-        progress.previousWidth = linearProgressWidth = progress.progressRect.width *
-            ((progress.isIndeterminate && !progress.enableProgressSegments) ? 1 : progressWidth);
+        linearProgressWidth = progress.progressRect.width *
+                              ((progress.isIndeterminate && !progress.enableProgressSegments) ? 1 : progressWidth);
         if (!refresh) {
             linearProgressGroup = progress.renderer.createGroup({ 'id': progress.element.id + '_LinearProgressGroup' });
         } else {
@@ -263,6 +263,9 @@ export class Linear {
         const fontBackground: string = this.checkingLinearProgressColor();
         const progressWidth: number = progress.progressRect.width * progress.calculateProgressRange(progress.value);
         const linearLabelGroup: Element = progress.renderer.createGroup({ 'id': progress.element.id + '_LinearLabelGroup' });
+        if (document.getElementById(linearLabelGroup.id)) {
+            document.getElementById(linearLabelGroup.id).remove();
+        }
         const labelValue: number = ((progress.value - progress.minimum) / (progress.maximum - progress.minimum)) * percentage;
         const linearValue: number = (progress.value < progress.minimum || progress.value > progress.maximum) ? 0 : Math.round(labelValue);
         // Checking the font color
@@ -334,9 +337,10 @@ export class Linear {
                 );
                 linearLabelGroup.appendChild(clipPath);
                 linearlabel.setAttribute('style', 'clip-path:url(#' + progress.element.id + '_clippathLabel)');
-                this.animation.doLabelAnimation(linearlabel, 0, progressWidth, progress, this.delay, textSize.width);
+                this.animation.doLabelAnimation(linearlabel, (progress.previousWidth ? progress.previousWidth :0), progressWidth, progress, this.delay, textSize.width);
             }
             progress.svgObject.appendChild(linearLabelGroup);
+            progress.previousWidth = progressWidth;
         }
     }
 

@@ -140,7 +140,7 @@ describe('Checkbox Filter module => ', () => {
                 expect(checkBoxFilter.querySelectorAll('.e-check').length).toBe(0);
                 expect(checkBoxFilter.querySelectorAll('.e-uncheck').length).toBe(0);              
                 expect(checkBoxFilter.querySelectorAll('.e-stop').length).toBe(0);              
-                expect(checkBoxFilter.querySelector('.e-checkboxlist').children[0].innerHTML).toBe('No Matches Found');
+                expect(checkBoxFilter.querySelector('.e-checkboxlist').children[0].innerHTML).toBe('No matches found');
                 gridObj.actionComplete =null;
                 done();
                 }
@@ -2434,5 +2434,45 @@ describe('EJ2-46285 - Provide support to handle custom filter dataSource in Exce
             destroy(gridObj);
             gridObj = actionComplete = null;
         });
+    });
+});
+
+describe('EJ2-47692 - Throws script error while using hideSearchbox as true in IFilter.', () => {
+    let gridObj: Grid;
+    let actionComplete: () => void;
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: filterData,
+                allowFiltering: true,
+                filterSettings: { type: 'Menu' },
+                height: 500,
+                columns: [
+                    { field: 'OrderID', headerText: 'Order ID', width: 120, textAlign: 'Right' },
+                    { field: 'EmployeeID', headerText: 'EmployeeID', width: 150, filter: {
+                        type: "CheckBox",
+                        hideSearchbox: true,
+                        params: {
+                          showSpinButton: false
+                        }
+                      } },
+                ],
+                actionComplete: actionComplete
+            }, done);
+    });
+    
+    it('checking the Filter popup open', (done: Function) => {
+        gridObj.actionComplete = actionComplete = (args?: any): void => {
+            if (args.requestType === "filterchoicerequest") {
+                done();
+            }
+        }
+        gridObj.actionComplete = actionComplete;
+        (gridObj.element.getElementsByClassName('e-filtermenudiv e-icons e-icon-filter')[1] as any).click();
+    });
+    
+    afterAll(() => {
+        destroy(gridObj);
+        gridObj = actionComplete = null;
     });
 });

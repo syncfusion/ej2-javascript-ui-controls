@@ -419,18 +419,18 @@ export class BpmnDiagrams {
             outerEvtNode.visible = false;
             break;
         case 'Intermediate':
-            innerEvtNode.style.fill = 'white';
+            innerEvtNode.style.fill = node.style.fill;
             innerEvtNode.style.gradient = null;
             break;
         case 'NonInterruptingIntermediate':
-            innerEvtNode.style.fill = 'white';
+            innerEvtNode.style.fill = node.style.fill;
             innerEvtNode.style.gradient = null;
             innerEvtNode.style.strokeDashArray = '2 3';
             outerEvtNode.style.strokeDashArray = '2 3';
             break;
         case 'ThrowingIntermediate':
         case 'End':
-            innerEvtNode.style.fill = event !== 'End' ? 'white' : 'black';
+            innerEvtNode.style.fill = event !== 'End' ? node.style.fill : node.style.fill !== 'white' ? node.style.fill: 'black';
             innerEvtNode.style.gradient = null;
             triggerNode.style.fill = 'black';
             triggerNode.style.strokeColor = 'white';

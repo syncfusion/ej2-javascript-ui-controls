@@ -3,7 +3,7 @@ import { StyleType, CollaborativeEditArgs, CellSaveEventArgs, ICellRenderer, IAr
 import { IOffset, clearViewer, deleteImage, createImageElement, refreshImgCellObj } from './index';
 import { Spreadsheet } from '../base/index';
 import { SheetModel, getRowsHeight, getColumnsWidth, getSwapRange, CellModel, CellStyleModel, clearCells, setCellFormat, RowModel } from '../../workbook/index';
-import { RangeModel, getRangeIndexes, Workbook, wrap, setRowHeight, insertModel, InsertDeleteModelArgs  } from '../../workbook/index';
+import { RangeModel, getRangeIndexes, Workbook, wrap, setRowHeight, insertModel, InsertDeleteModelArgs, getColumnWidth } from '../../workbook/index';
 import { BeforeSortEventArgs, SortEventArgs, initiateSort, getIndexesFromAddress, getRowHeight, setMerge } from '../../workbook/index';
 import { ValidationModel, setValidation, removeValidation, clearCFRule, setCFRule, ConditionalFormatModel } from '../../workbook/index';
 import { removeSheetTab, rowHeightChanged } from './index';
@@ -171,11 +171,11 @@ export function getCellPosition(
         if (frozenRow) {
             if (frozenRow - 1 < indexes[0] && i < frozenRow) { continue; }
         }
-        top += getRowsHeight(sheet, i);
+        top += getRowHeight(sheet, i, true);
     }
     for (i = offset.left.idx; i < indexes[1]; i++) {
         if (frozenColumn && frozenColumn - 1 < indexes[1] && i < frozenColumn) { continue; }
-        left += getColumnsWidth(sheet, i);
+        left += getColumnWidth(sheet, i, null, true);
     }
     if (frozenRow && indexes[0] < frozenRow) {
         if (sheet.showHeaders) { top += 30; }
@@ -371,11 +371,13 @@ export function locateElem(
     let cellPosition: { top: number, left: number } = getCellPosition(
         sheet, swapRange, frozenRow, frozenColumn, freezeScrollHeight, freezeScrollWidth, rowHdrWidth);
     let startIndex: number[] = [skipHiddenIdx(sheet, 0, true), skipHiddenIdx(sheet, 0, true, 'columns')];
+    const height: number = getRowsHeight(sheet, range[0], range[2], true);
+    const width: number = getColumnsWidth(sheet, range[1], range[3], true);
     let attrs: { [key: string]: string } = {
-        'top': (swapRange[0] === startIndex[0] ? cellPosition.top : cellPosition.top - 1) + 'px',
-        'height': getRowsHeight(sheet, range[0], range[2]) + (swapRange[0] === startIndex[0] ? 0 : 1) + 'px',
-        'width': getColumnsWidth(sheet, range[1], range[3]) + (swapRange[1] === startIndex[1] ? 0 : 1) + (isActiveCell && frozenColumn &&
-            swapRange[1] < frozenColumn && swapRange[3] >= frozenColumn ? 1 : 0) + 'px'
+        'top': (swapRange[0] === startIndex[0] ? cellPosition.top : cellPosition.top - getDPRValue(1)) + 'px',
+        'height': height && height + (swapRange[0] === startIndex[0] ? 0 : getDPRValue(1)) + 'px',
+        'width': width && width + (swapRange[1] === startIndex[1] ? 0 : getDPRValue(1)) + (isActiveCell
+            && frozenColumn && swapRange[1] < frozenColumn && swapRange[3] >= frozenColumn ? 1 : 0) + 'px'
     };
     attrs[isRtl ? 'right' : 'left'] = (swapRange[1] === startIndex[1] ? cellPosition.left : cellPosition.left - 1) + 'px';
     if (ele) { setStyleAttribute([{ element: ele, attrs: attrs }]); }
@@ -490,17 +492,11 @@ export function getClientY(e: MouseEvent & TouchEvent): number {
  * Get even number based on device pixel ratio
  * @hidden
  */
-export function getDPRValue(value: number) {
-    return window.devicePixelRatio % 1 > 0 ? value % 2 === 0 ? value : value + 1 : value;
-}
-
-/**
- * @hidden
- */
-function getDPRWidth(value: number) {
+export function getDPRValue(value: number, preventDecrease?: boolean) {
     if (window.devicePixelRatio % 1 > 0) {
         const pointValue = (value * window.devicePixelRatio) % 1;
-        return value + (pointValue ? (1 - parseFloat(pointValue.toFixed(2))) / window.devicePixelRatio : 0);
+        return value + (pointValue ? (((pointValue > 0.5 || preventDecrease) ? (1 - pointValue) : -1 * pointValue)
+            / window.devicePixelRatio) : 0);
     } else {
         return value;
     }
@@ -1239,7 +1235,7 @@ export function hasTemplate(workbook: Workbook, rowIdx: number, colIdx: number, 
 export function setRowEleHeight(
     parent: Spreadsheet, sheet: SheetModel, height: number, rowIdx: number, row?: HTMLElement,
     hRow?: HTMLElement, notifyRowHgtChange: boolean = true): void {
-    const prevHgt: number = getRowHeight(sheet, rowIdx);
+    const prevHgt: number = getRowHeight(sheet, rowIdx, true);
     const edit: HTMLElement = parent.element.querySelector('.e-spreadsheet-edit');
     if (edit && (edit.innerHTML.indexOf('\n') > -1)) {
         const actCell: number[] = getCellIndexes(parent.getActiveSheet().activeCell);
@@ -1254,18 +1250,18 @@ export function setRowEleHeight(
             n = n + lines;
         }
         height = getTextHeightWithBorder(parent, actCell[0], actCell[1], sheet, cell.style || parent.cellStyle, n);
-        //height = getTextHeight(parent, cell.style || parent.cellStyle, n) + 1;
     }
     let frozenCol: number = parent.frozenColCount(sheet);
+    const dprHgt: number = getDPRValue(height);
     row = row || (sheet.frozenRows ? parent.getRow(rowIdx, null, frozenCol) : parent.getRow(rowIdx));
-    if (row) { row.style.height = `${height}px`; }
+    if (row) { row.style.height = `${dprHgt}px`; }
     hRow = hRow || (sheet.frozenColumns ? parent.getRow(rowIdx, null, frozenCol - 1) :
         parent.getRow(rowIdx, parent.getRowHeaderTable()));
-    if (hRow) { hRow.style.height = `${height}px`; }
+    if (hRow) { hRow.style.height = `${dprHgt}px`; }
     setRowHeight(sheet, rowIdx, height);
     parent.setProperties({ sheets: parent.sheets }, true);
     if (notifyRowHgtChange) {
-        parent.notify(rowHeightChanged, { rowIdx: rowIdx, threshold: height - prevHgt });
+        parent.notify(rowHeightChanged, { rowIdx: rowIdx, threshold: dprHgt - prevHgt });
     }
 }
 
@@ -1298,7 +1294,7 @@ export function getTextWidth(text: string, style: CellStyleModel, parentStyle: C
     const context: CanvasRenderingContext2D = canvas.getContext('2d');
     context.font = (style.fontStyle || parentStyle.fontStyle) + ' ' + (style.fontWeight || parentStyle.fontWeight) + ' '
         + (style.fontSize || parentStyle.fontSize) + ' ' + (style.fontFamily || parentStyle.fontFamily);
-    return getDPRWidth(context.measureText(text).width);
+    return getDPRValue(context.measureText(text).width, true);
 }
 
 /**
@@ -1320,6 +1316,9 @@ export function getLines(text: string, colwidth: number, style: CellStyleModel, 
         let lWidth: number = 0;
         let cWidth: number = 0;
         width = getTextWidth(txt, style, parentStyle);
+        if (textArr[textArr.length - 1] !== txt) {
+            width = width + spaceWidth;
+        }
         lines = (prevWidth + width) / colwidth;
         if (lines >= 1) {
             if (prevWidth) {
@@ -1336,10 +1335,10 @@ export function getLines(text: string, colwidth: number, style: CellStyleModel, 
                 });
                 prevWidth = lWidth + spaceWidth;
             } else {
-                prevWidth = width + spaceWidth;
+                prevWidth = width;
             }
         } else {
-            prevWidth += (width + spaceWidth);
+            prevWidth += width;
         }
     });
     if (prevWidth) {
@@ -1404,13 +1403,12 @@ export function getBorderHeight(rowIdx: number, colIdx: number, sheet: SheetMode
  * @hidden
  */
 export function getExcludedColumnWidth(sheet: SheetModel, rowIdx: number, startColIdx: number, endColIdx: number = startColIdx): number {
-    return getColumnsWidth(sheet, startColIdx, endColIdx) - (4 + getBorderWidth(rowIdx, startColIdx, sheet)); // 4 -> For cell padding
+    return getColumnsWidth(sheet, startColIdx, endColIdx, true) - getDPRValue((4 + getBorderWidth(rowIdx, startColIdx, sheet))); // 4 -> For cell padding
 }
 
 /** @hidden */
 export function getTextHeightWithBorder(context: Workbook, rowIdx: number, colIdx: number, sheet: SheetModel, style: CellStyleModel, lines?: number): number {
-    const height: number = getTextHeight(context, style, lines) + (getBorderHeight(rowIdx, colIdx, sheet) || 1); // 1 -> For default bottom border
-    return (window.devicePixelRatio % 1 > 0) ? height % 2 === 0 ? height : height + 1 : height;
+    return getTextHeight(context, style, lines) + (getBorderHeight(rowIdx, colIdx, sheet) || 1); // 1 -> For default bottom border
 }
 
 /**
