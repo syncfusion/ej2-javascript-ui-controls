@@ -1,4 +1,4 @@
-import { Component, Property, NotifyPropertyChanges, INotifyPropertyChanged, Collection, Complex, EmitType } from '@syncfusion/ej2-base';import { initSheet, getSheet, getSheetIndexFromId, getSheetIndexByName, getSheetIndex, Sheet } from './sheet';import { Event, ModuleDeclaration, merge, L10n, isNullOrUndefined } from '@syncfusion/ej2-base';import { getWorkbookRequiredModules } from '../common/module';import { SheetModel, CellModel, ColumnModel, RowModel, getData, clearRange } from './index';import { OpenOptions, BeforeOpenEventArgs, OpenFailureArgs, CellValidationEventArgs } from '../../spreadsheet/common/interface';import { DefineName, CellStyle, updateUsedRange, getIndexesFromAddress, localeData, workbookLocale, BorderType, SortCollection, SortCollectionModel } from '../common/index';import * as events from '../common/event';import { CellStyleModel, DefineNameModel, HyperlinkModel, insertModel, InsertDeleteModelArgs, getAddressInfo } from '../common/index';import { setCellFormat, sheetCreated, deleteModel, ModelType, ProtectSettingsModel, ValidationModel, setLockCells } from '../common/index';import { BeforeSaveEventArgs, SaveCompleteEventArgs, BeforeCellFormatArgs, UnprotectArgs } from '../common/interface';import { SaveOptions, SetCellFormatArgs, ClearOptions } from '../common/interface';import { SortOptions, BeforeSortEventArgs, SortEventArgs, FindOptions, CellInfoEventArgs, ConditionalFormatModel } from '../common/index';import { FilterEventArgs, FilterOptions, BeforeFilterEventArgs, ChartModel, getCellIndexes, getCellAddress } from '../common/index';import { setMerge, MergeType, MergeArgs, ImageModel, FilterCollectionModel } from '../common/index';import { getCell, skipDefaultValue, setCell, wrap as wrapText } from './cell';import { DataBind, setRow, setColumn } from '../index';import { WorkbookSave, WorkbookFormula, WorkbookOpen, WorkbookSort, WorkbookFilter, WorkbookImage } from '../integrations/index';import { WorkbookChart } from '../integrations/index';import { WorkbookNumberFormat } from '../integrations/number-format';import { WorkbookEdit, WorkbookCellFormat, WorkbookHyperlink, WorkbookInsert, WorkbookProtectSheet } from '../actions/index';import { WorkbookDataValidation, WorkbookMerge } from '../actions/index';import { ServiceLocator } from '../services/index';import { setLinkModel, setImage, setChart } from '../common/event';import { beginAction, completeAction, deleteChart } from '../../spreadsheet/common/event';import { WorkbookFindAndReplace } from '../actions/find-and-replace';import { WorkbookConditionalFormat } from '../actions/conditional-formatting';
+import { Component, Property, NotifyPropertyChanges, INotifyPropertyChanged, Collection, Complex, EmitType } from '@syncfusion/ej2-base';import { initSheet, getSheet, getSheetIndexFromId, getSheetIndexByName, getSheetIndex, Sheet } from './sheet';import { Event, ModuleDeclaration, merge, L10n, isNullOrUndefined } from '@syncfusion/ej2-base';import { getWorkbookRequiredModules } from '../common/module';import { SheetModel, CellModel, ColumnModel, RowModel, getData, clearRange } from './index';import { OpenOptions, BeforeOpenEventArgs, OpenFailureArgs, CellValidationEventArgs } from '../../spreadsheet/common/interface';import { DefineName, CellStyle, updateUsedRange, getIndexesFromAddress, localeData, workbookLocale, BorderType, SortCollectionModel } from '../common/index';import * as events from '../common/event';import { CellStyleModel, DefineNameModel, HyperlinkModel, insertModel, InsertDeleteModelArgs, getAddressInfo } from '../common/index';import { setCellFormat, sheetCreated, deleteModel, ModelType, ProtectSettingsModel, ValidationModel, setLockCells } from '../common/index';import { BeforeSaveEventArgs, SaveCompleteEventArgs, BeforeCellFormatArgs, UnprotectArgs } from '../common/interface';import { SaveOptions, SetCellFormatArgs, ClearOptions } from '../common/interface';import { SortOptions, BeforeSortEventArgs, SortEventArgs, FindOptions, CellInfoEventArgs, ConditionalFormatModel } from '../common/index';import { FilterEventArgs, FilterOptions, BeforeFilterEventArgs, ChartModel, getCellIndexes, getCellAddress } from '../common/index';import { setMerge, MergeType, MergeArgs, ImageModel, FilterCollectionModel } from '../common/index';import { getCell, skipDefaultValue, setCell, wrap as wrapText } from './cell';import { DataBind, setRow, setColumn } from '../index';import { WorkbookSave, WorkbookFormula, WorkbookOpen, WorkbookSort, WorkbookFilter, WorkbookImage } from '../integrations/index';import { WorkbookChart } from '../integrations/index';import { WorkbookNumberFormat } from '../integrations/number-format';import { WorkbookEdit, WorkbookCellFormat, WorkbookHyperlink, WorkbookInsert, WorkbookProtectSheet } from '../actions/index';import { WorkbookDataValidation, WorkbookMerge } from '../actions/index';import { ServiceLocator } from '../services/index';import { setLinkModel, setImage, setChart } from '../common/event';import { beginAction, completeAction, deleteChart } from '../../spreadsheet/common/event';import { WorkbookFindAndReplace } from '../actions/find-and-replace';import { WorkbookConditionalFormat } from '../actions/conditional-formatting';
 import {ComponentModel} from '@syncfusion/ej2-base';
 
 /**
@@ -28,6 +28,7 @@ export interface WorkbookModel extends ComponentModel{
      * ...
      *  }, '#Spreadsheet');
      * ```
+     *
      * @default []
      */
     sheets?: SheetModel[];
@@ -43,6 +44,7 @@ export interface WorkbookModel extends ComponentModel{
      * ...
      *  }, '#Spreadsheet');
      * ```
+     *
      * @default 0
      * @asptype int
      */
@@ -60,6 +62,7 @@ export interface WorkbookModel extends ComponentModel{
      * ...
      *  }, '#Spreadsheet');
      * ```
+     *
      * @default '100%'
      */
     height?: string | number;
@@ -96,6 +99,7 @@ export interface WorkbookModel extends ComponentModel{
      * ...
      *  }, '#Spreadsheet');
      * ```
+     *
      * @default '100%'
      */
     width?: string | number;
@@ -166,7 +170,7 @@ export interface WorkbookModel extends ComponentModel{
 
     /**
      * It allows you to apply styles (font size, font weight, font family, fill color, and more) to the spreadsheet cells.
-     * 
+     *
      * @default true
      */
     allowCellFormatting?: boolean;
@@ -194,6 +198,7 @@ export interface WorkbookModel extends ComponentModel{
 
     /**
      * It allows you to merge the range of cells.
+     *
      * @default true
      */
     allowMerge?: boolean;
@@ -234,31 +239,35 @@ export interface WorkbookModel extends ComponentModel{
      * ```typescript
      * new Spreadsheet({
      *      ...
-     *          cellStyle: { fontWeight: 'bold', fontSize: 12, 
-     *              fontStyle: 'italic', textIndent: '2pt' 
+     *          cellStyle: { fontWeight: 'bold', fontSize: 12,
+     *              fontStyle: 'italic', textIndent: '2pt'
      *              backgroundColor: '#4b5366', color: '#ffffff'
      *      },
      *      ...
      *  }, '#Spreadsheet');
      * ```
+     *
      * @default {}
      */
     cellStyle?: CellStyleModel;
 
     /**
      * Specifies the service URL to open excel file in spreadsheet.
+     *
      * @default ''
      */
     openUrl?: string;
 
     /**
      * Specifies the service URL to save spreadsheet as Excel file.
+     *
      * @default ''
      */
     saveUrl?: string;
 
     /**
      * Specifies the password.
+     *
      * @default ''
      */
     password?: string;
@@ -282,6 +291,7 @@ export interface WorkbookModel extends ComponentModel{
      *      ...
      *  }, '#Spreadsheet');
      * ```
+     *
      * @default []
      */
     definedNames?: DefineNameModel[];
@@ -298,7 +308,8 @@ export interface WorkbookModel extends ComponentModel{
      *      ...
      *  }, '#Spreadsheet');
      * ```
-     * @event
+     *
+     * @event beforeOpen
      */
     beforeOpen?: EmitType<BeforeOpenEventArgs>;
 
@@ -314,7 +325,8 @@ export interface WorkbookModel extends ComponentModel{
      *      ...
      *  }, '#Spreadsheet');
      * ```
-     * @event
+     *
+     * @event openFailure
      */
     openFailure?: EmitType<OpenFailureArgs>;
 
@@ -330,7 +342,8 @@ export interface WorkbookModel extends ComponentModel{
      *      ...
      *  }, '#Spreadsheet');
      * ```
-     * @event
+     *
+     * @event beforeSave
      */
     beforeSave?: EmitType<BeforeSaveEventArgs>;
 
@@ -346,7 +359,8 @@ export interface WorkbookModel extends ComponentModel{
      *      ...
      *  }, '#Spreadsheet');
      * ```
-     * @event
+     *
+     * @event saveComplete
      */
     saveComplete?: EmitType<SaveCompleteEventArgs>;
 
@@ -362,7 +376,8 @@ export interface WorkbookModel extends ComponentModel{
      *      ...
      *  }, '#Spreadsheet');
      * ```
-     * @event
+     *
+     * @event beforeCellFormat
      */
     beforeCellFormat?: EmitType<BeforeCellFormatArgs>;
 
@@ -378,7 +393,8 @@ export interface WorkbookModel extends ComponentModel{
      *      ...
      *  }, '#Spreadsheet');
      * ```
-     * @event
+     *
+     * @event queryCellInfo
      */
     queryCellInfo?: EmitType<CellInfoEventArgs>;
 

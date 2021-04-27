@@ -617,7 +617,6 @@ export class Toolbar {
             this.container.enableTrackChanges = !enable;
         }
         this.container.enableTrackChanges = !this.container.enableTrackChanges;
-        this.container.documentEditor.showRevisions = this.container.enableTrackChanges;
         this.toggleButton(id, this.container.enableTrackChanges);
     }
     private togglePropertiesPane(): void {

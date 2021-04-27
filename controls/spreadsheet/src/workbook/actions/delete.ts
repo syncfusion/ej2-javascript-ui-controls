@@ -11,7 +11,7 @@ export class WorkbookDelete {
     /**
      * Constructor for the workbook delete module.
      *
-     * @param {Workbook} - Specify the workbook
+     * @param {Workbook} parent - Specify the workbook
      * @private
      */
     constructor(parent: Workbook) {
@@ -191,13 +191,13 @@ export class WorkbookDelete {
                 activeSheetIndex: this.parent.activeSheetIndex, name: 'delete'
             }
         };
-        const eventArgs: { [key: string]: Object } = {
-            action: 'refreshInsDelFormula', insertArgs: {
-                model: deletedModel, startIndex: args.start, endIndex: args.end, modelType: args.modelType,
-                name: 'delete', activeSheetIndex:
-                    args.activeSheetIndex, sheetCount: this.parent.sheets.length
-            }
-        };
+        // const eventArgs: { [key: string]: Object } = {
+        //     action: 'refreshInsDelFormula', insertArgs: {
+        //         model: deletedModel, startIndex: args.start, endIndex: args.end, modelType: args.modelType,
+        //         name: 'delete', activeSheetIndex:
+        //             args.activeSheetIndex, sheetCount: this.parent.sheets.length
+        //     }
+        // };
         this.parent.notify(workbookFormulaOperation, insertArgs);
         if (args.modelType !== 'Sheet' && args.model !== this.parent.getActiveSheet()) { return; }
         this.parent.notify(deleteAction, {

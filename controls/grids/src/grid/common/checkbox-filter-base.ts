@@ -395,7 +395,7 @@ export class CheckBoxFilterBase {
                             (this.options.column.type === 'string' ? 'contains' : 'equal') :
                             (this.options.column.type === 'date' || this.options.column.type === 'datetime' ||
                                 this.options.column.type === 'boolean' ? 'equal' : 'contains'),
-                        value: value, matchCase: false, type: this.options.column.type
+                        value: value, matchCase: false, type: this.options.column.type, ignoreAccent: this.options.ignoreAccent
                     },
                     field: this.options.field
                 };

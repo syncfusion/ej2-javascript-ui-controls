@@ -998,9 +998,6 @@ export class DashboardLayout extends Component<HTMLElement> implements INotifyPr
             } else if (panelModel.maxSizeY && this.elementHeight + dY > this.getMaxHeight(panelModel)) {
                 currentY = this.getMaxHeight(panelModel) - this.elementHeight;
                 this.mOffY = dY - currentY;
-            } else if (this.elementY + this.elementHeight + dY > this.maxTop) {
-                currentY = this.maxTop - this.elementY - this.elementHeight;
-                this.mOffY = dY - currentY;
             }
             this.elementHeight += currentY;
         }

@@ -2,6 +2,23 @@
 
 ## [Unreleased]
 
+## 19.1.58 (2021-04-27)
+
+### Pivot Table
+ 
+#### Bug Fixes
+ 
+- `#316510` - The pivot table is now scrollable in mobile devices when virtual scrolling is enabled.
+- `#322256` - The pivot chart's title can now be dynamically updated.
+
+## 19.1.57 (2021-04-20)
+
+### Pivot Table
+ 
+#### Bug Fixes
+ 
+- `#323557` - The color picker in the conditional formatting dialog now supports language translation.
+
 ## 19.1.56 (2021-04-13)
 
 ### Pivot Table

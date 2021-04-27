@@ -1,3 +1,4 @@
+/* eslint-disable camelcase */
 /*eslint camelcase: ["error", {properties: "never"}]*/
 /**
  * @hidden

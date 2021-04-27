@@ -1,4 +1,3 @@
-/* eslint-disable-next-line max-len */
 import { Workbook, getSheetName, getSheetIndex, getSheet, SheetModel, RowModel, CellModel, getSheetIndexByName, getCell } from '../base/index';
 import { getSingleSelectedRange } from '../base/index';
 import { workbookFormulaOperation, getColumnHeaderText, aggregateComputation, AggregateArgs, getRangeIndexes } from '../common/index';
@@ -94,12 +93,14 @@ export class WorkbookFormula {
         const action: string = <string>args.action;
         const formulas: Map<string, IFormulaColl> = this.calculateInstance.getLibraryFormulas();
         const formulaInfo: IFormulaColl[] = (Array.from(formulas.values()));
+        let collection: string[];
+        let length: number;
         switch (action) {
         case 'getLibraryFormulas':
             args.formulaCollection = Array.from(formulas.keys());
             break;
         case 'getFormulaCategory':
-            let collection: string[] = ['All'];
+            collection = ['All'];
             for (let i: number = 1; i < Array.from(formulas.values()).length; i++) {
                 if (collection.indexOf(formulaInfo[i].category) < 0) {
                     collection.push(formulaInfo[i].category);
@@ -161,7 +162,7 @@ export class WorkbookFormula {
             args.sheetInfo = this.sheetInfo;
             break;
         case 'deleteSheetTab':
-            let length: number = this.sheetInfo.length;
+            length = this.sheetInfo.length;
             for (let i: number = 0; i < length; i++) {
                 if (this.sheetInfo[i].index === (args.index as number)) {
                     args.sheetName = this.sheetInfo[i].sheet; this.sheetInfo.splice(i, 1); break;
@@ -188,7 +189,7 @@ export class WorkbookFormula {
             this.refreshInsDelFormula(<InsertDeleteEventArgs>args.insertArgs);
             break;
         case 'refreshNamedRange':
-            this.refreshNamedRange(<InsertDeleteEventArgs>args.insertArgs, action);
+            this.refreshNamedRange(<InsertDeleteEventArgs>args.insertArgs);
             break;
         }
     }
@@ -329,6 +330,7 @@ export class WorkbookFormula {
 
     private parseSheetRef(value: string): string {
         let regx: RegExp;
+        // eslint-disable-next-line no-useless-escape
         const escapeRegx: RegExp = new RegExp('[!@#$%^&()+=\';,.{}|\":<>~_-]', 'g');
         let i: number = 0;
         const sheetCount: number = this.parent.sheets.length;
@@ -382,7 +384,7 @@ export class WorkbookFormula {
         if (isFormula) {
             value = this.parseSheetRef(value);
             const cellArgs: ValueChangedArgs = new ValueChangedArgs(rowIdx + 1, colIdx + 1, value);
-            let usedRange: number[] = [this.parent.getActiveSheet().usedRange.rowIndex, this.parent.getActiveSheet().usedRange.colIndex];
+            const usedRange: number[] = [this.parent.getActiveSheet().usedRange.rowIndex, this.parent.getActiveSheet().usedRange.colIndex];
             this.calculateInstance.valueChanged(sheetName, cellArgs, true, usedRange);
             const referenceCollection: string[] = this.calculateInstance.randCollection;
             if (this.calculateInstance.isRandomVal === true) {
@@ -419,13 +421,13 @@ export class WorkbookFormula {
             this.calculateInstance.refreshRandValues(cellRef);
         }
         this.calculateInstance.cell = '';
-        let updatedCell: CellModel = getCell(rowIdx, colIdx, this.parent.getActiveSheet());
+        const updatedCell: CellModel = getCell(rowIdx, colIdx, this.parent.getActiveSheet());
         if (updatedCell && value && value.toString().toUpperCase().indexOf('=SUM(') === 0) {
-            let errorStrings: string[] = ['#N/A', '#VALUE!', '#REF!', '#DIV/0!', '#NUM!', '#NAME?', '#NULL!', 'invalid arguments'];
-            let val: string = value.toString().toUpperCase().replace('=SUM', '').replace('(', '').replace(')', '').split(':')[0];
+            const errorStrings: string[] = ['#N/A', '#VALUE!', '#REF!', '#DIV/0!', '#NUM!', '#NAME?', '#NULL!', 'invalid arguments'];
+            const val: string = value.toString().toUpperCase().replace('=SUM', '').replace('(', '').replace(')', '').split(':')[0];
             if (isCellReference(val)) {
-                let index: number[] = getRangeIndexes(val);
-                let fCell: CellModel = getCell(index[0], index[1], this.parent.getActiveSheet());
+                const index: number[] = getRangeIndexes(val);
+                const fCell: CellModel = getCell(index[0], index[1], this.parent.getActiveSheet());
                 if (fCell && fCell.value && fCell.format &&
                     errorStrings.indexOf(updatedCell.value) < 0 && errorStrings.indexOf(fCell.value) < 0) {
                     updatedCell.format = fCell.format;
@@ -617,7 +619,7 @@ export class WorkbookFormula {
         const actCell: number[] = getRangeIndexes(sheet.activeCell);
         const actCellModel: CellModel = sheet.rows[actCell[0]] ? sheet.rows[actCell[0]].cells ?
             sheet.rows[actCell[0]].cells[actCell[1]] : {} : {};
-            const actCellfrmt: string = (actCellModel) ? actCellModel.format : '';
+        const actCellfrmt: string = (actCellModel) ? actCellModel.format : '';
         let cellValue: string;
         const cellCol: string | string[] = this.calculateInstance.getCellCollection(range);
         for (i = 0; i < cellCol.length; i++) {
@@ -669,7 +671,6 @@ export class WorkbookFormula {
         let splitFormula: string[] = [];
         let fArg: string;
         let ridx: number;
-        let hasREFVal: boolean = false;
         let pVal: string;
         if (checkIsFormula(val)) {
             if (status === 'delete') {
@@ -701,13 +702,11 @@ export class WorkbookFormula {
                             getRangeAddress([diff1, range[1], diff, range[3]]).split(':')[0];
                     } else {
                         nAlpha = '#REF!';
-                        hasREFVal = true;
                     }
                     if (status === 'delete') {
                         ridx = parseInt(type === 'Row' ? fArg.replace(/[A-Z]/g, '') : (fArg.replace(/[0-9]/g, '')), 10);
                         if (deleteIdxs.indexOf(ridx) > -1) {
                             nAlpha = '#REF!';
-                            hasREFVal = true;
                         }
                     }
                     splitFormula[i] = nAlpha;
@@ -840,7 +839,7 @@ export class WorkbookFormula {
         return formula.replace(/%/g, '%' + this.uniqueModOperator);
     }
 
-    private refreshNamedRange(args: InsertDeleteEventArgs, action: string): void {
+    private refreshNamedRange(args: InsertDeleteEventArgs): void {
         let isChanged: boolean = false;
         let modelDefinedNames: DefineNameModel[] = this.parent.definedNames;
         const definedNames: DefineNameModel[] = Object.assign({}, modelDefinedNames);

@@ -2844,3 +2844,25 @@ export function getSymbolSize(sourceElement: SymbolPaletteModel, clonedObject: N
     }
     return previewSize;
 }
+
+/**
+ * findParent method \
+ *
+ * @returns {string} findParent method .\
+ * @param { Node } clonedObject - provide the clonedObject  value.
+ * @param { Diagram } wrapper - provide the diagram  element.
+ * @param { string } size - provide the parent id.
+ * @private
+ */
+export function findParent(node: Node, diagram: Diagram, parent: string): string {
+    if (node && node.parentId) {
+        node = diagram.nameTable[node.parentId];
+        if (node.parentId) {
+            parent = this.findParent(node, diagram, parent);
+        }
+        else {
+            parent = node.id;
+        }
+    }
+    return parent;
+}

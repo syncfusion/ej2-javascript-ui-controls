@@ -9,8 +9,8 @@ describe('Clipboard ->', () => {
     let helper: SpreadsheetHelper = new SpreadsheetHelper('spreadsheet');
     let model: SpreadsheetModel;
     describe('CR-Issues ->', () => {
-        describe('F163240 ->', () => {
-            beforeEach((done: Function) => {
+        describe('F163240, FB23869 ->', () => {
+            beforeAll((done: Function) => {
                 model = {
                     sheets: [{ ranges: [{ dataSource: defaultData }] }],
                     created: (): void => {
@@ -19,7 +19,7 @@ describe('Clipboard ->', () => {
                 };
                 helper.initializeSpreadsheet(model, done);
             });
-            afterEach(() => {
+            afterAll(() => {
                 helper.invoke('destroy');
             });
             it('Paste behaviour erroneous after cut', (done: Function) => {
@@ -45,6 +45,18 @@ describe('Clipboard ->', () => {
                                 done();
                             });
                         });
+                    });
+                });
+            });
+
+            it('Paste values only for formula is not working', (done: Function) => {
+                helper.edit('I1', '=SUM(F2:F8)');
+                helper.invoke('copy', ['I1']).then(() => {
+                    helper.invoke('paste', ['I2', 'Values']);
+                    setTimeout(() => {
+                        expect(helper.invoke('getCell', [1, 8]).textContent).toBe('2700');
+                        expect(helper.getInstance().sheets[0].rows[1].cells[8].formula).toBe('');
+                        done();
                     });
                 });
             });

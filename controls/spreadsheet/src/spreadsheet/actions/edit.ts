@@ -1,17 +1,16 @@
 import { Spreadsheet } from '../index';
-import { EventHandler, KeyboardEventArgs, Browser, closest, isUndefined, isNullOrUndefined, select, detach, remove } from '@syncfusion/ej2-base';
+import { EventHandler, KeyboardEventArgs, Browser, closest, isUndefined, isNullOrUndefined, select, detach } from '@syncfusion/ej2-base';
 import { getRangeIndexes, getRangeFromAddress, getIndexesFromAddress, getRangeAddress, isSingleCell } from '../../workbook/common/address';
 import { keyDown, editOperation, clearCopy, mouseDown, selectionComplete, enableToolbarItems, completeAction } from '../common/event';
 import { formulaBarOperation, formulaOperation, setActionData, keyUp, getCellPosition, deleteImage, focus } from '../common/index';
 import { workbookEditOperation, getFormattedBarText, getFormattedCellObject, wrapEvent, isValidation, activeCellMergedRange, activeCellChanged } from '../../workbook/common/event';
-import { CellModel, SheetModel, getSheetName, getSheetIndex, getCell, getColumn, ColumnModel, getRowsHeight, getColumnsWidth } from '../../workbook/base/index';
+import { CellModel, SheetModel, getSheetName, getSheetIndex, getCell, getColumn, ColumnModel, getRowsHeight, getColumnsWidth, Workbook } from '../../workbook/base/index';
 import { getSheetNameFromAddress, getSheet } from '../../workbook/base/index';
 import { RefreshValueArgs } from '../integrations/index';
 import { CellEditEventArgs, CellSaveEventArgs, ICellRenderer, hasTemplate, editAlert, FormulaBarEdit, getTextWidth } from '../common/index';
 import { getSwapRange, getCellIndexes, wrap as wrapText, checkIsFormula, isNumber, isLocked, MergeArgs, isCellReference } from '../../workbook/index';
 import { checkConditionalFormat, initiateFormulaReference, initiateCur, clearCellRef, addressHandle } from '../common/event';
 import { editValue, initiateEdit, forRefSelRender, isFormulaBarEdit, deleteChart, beginAction } from '../common/event';
-import { DropDownButton } from '@syncfusion/ej2-splitbuttons';
 
 /**
  * The `Protect-Sheet` module is used to handle the Protecting functionalities in Spreadsheet.
@@ -134,8 +133,8 @@ export class Edit {
                 this.isNewValueEdit = <boolean>args.isNewValueEdit;
                 this.startEdit(<string>args.address, <string>args.value, <boolean>args.refreshCurPos);
             } else {
-                let isEdit: boolean = false;
-                let arg: FormulaBarEdit = { isEdit: isEdit };
+                const isEdit: boolean = false;
+                const arg: FormulaBarEdit = { isEdit: isEdit };
                 this.parent.notify(isFormulaBarEdit, arg);
                 if (arg.isEdit) {
                     this.isNewValueEdit = <boolean>args.isNewValueEdit;
@@ -170,7 +169,7 @@ export class Edit {
             args.sheetIndex = this.editCellData.sheetIndex;
             break;
         }
-    } 
+    }
 
     private keyUpHandler(e: KeyboardEventArgs): void {
         if (this.isEdit) {
@@ -230,39 +229,39 @@ export class Edit {
                     }
                     if (!e.altKey) {
                         switch (keyCode) {
-                            case this.keyCodes.ENTER:
-                                if (Browser.isWindows) {
-                                    e.preventDefault();
+                        case this.keyCodes.ENTER:
+                            if (Browser.isWindows) {
+                                e.preventDefault();
+                            }
+                            if (this.isAltEnter) {
+                                const text: string = editorElem.textContent;
+                                if (text && text.indexOf('\n') > -1) {
+                                    wrapText(this.parent.getActiveSheet().selectedRange, true, this.parent as Workbook);
+                                    this.refreshEditor(editorElem.textContent, this.isCellEdit);
+                                    this.isAltEnter = false;
                                 }
-                                if (this.isAltEnter) {
-                                    const text: string = editorElem.textContent;
-                                    if (text && text.indexOf('\n') > -1) {
-                                        wrapText(this.parent.getActiveSheet().selectedRange, true, this.parent);
-                                        this.refreshEditor(editorElem.textContent, this.isCellEdit);
-                                        this.isAltEnter = false;
-                                    }
+                            }
+                            if (!isFormulaEdit) {
+                                this.endEdit(false, e);
+                            } else {
+                                const formulaRefIndicator: HTMLElement = this.parent.element.querySelector('.e-formularef-indicator');
+                                if (formulaRefIndicator) {
+                                    formulaRefIndicator.parentElement.removeChild(formulaRefIndicator);
                                 }
-                                if (!isFormulaEdit) {
+                                if (this.editCellData.sheetIndex === sheet.id - 1) {
                                     this.endEdit(false, e);
                                 } else {
-                                    const formulaRefIndicator: HTMLElement = this.parent.element.querySelector('.e-formularef-indicator');
-                                    if (formulaRefIndicator) {
-                                        formulaRefIndicator.parentElement.removeChild(formulaRefIndicator);
-                                    }
-                                    if (this.editCellData.sheetIndex === sheet.id - 1) {
-                                        this.endEdit(false, e);
-                                    } else {
-                                        this.parent.goTo(this.editCellData.fullAddr);
-                                        this.endEdit(false, e);
-                                    }
+                                    this.parent.goTo(this.editCellData.fullAddr);
+                                    this.endEdit(false, e);
                                 }
-                                break;
-                            case this.keyCodes.TAB:
-                                if (!this.hasFormulaSuggSelected()) { this.endEdit(false, e); }
-                                break;
-                            case this.keyCodes.ESC:
-                                this.cancelEdit(true, true, e);
-                                break;
+                            }
+                            break;
+                        case this.keyCodes.TAB:
+                            if (!this.hasFormulaSuggSelected()) { this.endEdit(false, e); }
+                            break;
+                        case this.keyCodes.ESC:
+                            this.cancelEdit(true, true, e);
+                            break;
                         }
                     }
                 } else {
@@ -297,10 +296,10 @@ export class Edit {
                         if (keyCode === this.keyCodes.DELETE) {
                             const islockcell: boolean = sheet.isProtected && this.isLockCellDelete();
                             if (!islockcell) { this.editingHandler('delete');
-                            this.parent.notify(activeCellChanged, null);
-                         } else {
-                            this.parent.notify(editAlert, null);
-                         }
+                                this.parent.notify(activeCellChanged, null);
+                            } else {
+                                this.parent.notify(editAlert, null);
+                            }
                         }
                     }
                 }
@@ -316,8 +315,8 @@ export class Edit {
                         return;
                     }
                     if (!this.parent.element.querySelector('.e-editAlert-dlg') && !e.ctrlKey && e.keyCode !== 70 &&
-                        !trgtElem.parentElement.classList.contains("e-unprotectpwd-content") &&
-                        !trgtElem.parentElement.classList.contains("e-password-content")) {
+                        !trgtElem.parentElement.classList.contains('e-unprotectpwd-content') &&
+                        !trgtElem.parentElement.classList.contains('e-password-content')) {
                         this.parent.notify(editAlert, null);
                     }
                 }
@@ -386,7 +385,7 @@ export class Edit {
         const sheet: SheetModel = this.parent.getActiveSheet();
         const range: number[] = getCellIndexes(sheet.activeCell);
         const cell: CellModel = getCell(range[0], range[1], sheet, false, true);
-        if (hasTemplate(this.parent, range[0], range[1], this.parent.activeSheetIndex)) {
+        if (hasTemplate(this.parent as Workbook, range[0], range[1], this.parent.activeSheetIndex)) {
             const cellEle: HTMLTableCellElement = this.parent.getCell(range[0], range[1]) as HTMLTableCellElement;
             let isDelTemplate: boolean = false; const value: string = cellEle.innerHTML;
             if (cellEle) {
@@ -462,24 +461,24 @@ export class Edit {
     private mouseDownHandler(e: MouseEvent & TouchEvent): void {
         if (!closest(e.target as Element, '.e-findtool-dlg')) {
             if (this.isEdit) {
-                let selection: Selection = window.getSelection();
+                const selection: Selection = window.getSelection();
                 if (this.editorElem.textContent === this.editCellData.value) {
-                this.selectionStart = selection.anchorOffset;
-                this.selectionEnd = selection.focusOffset;
-                if (this.selectionStart > this.selectionEnd) {
-                    let x : number = this.selectionStart;
-                    this.selectionStart = this.selectionEnd;
-                    this.selectionEnd = x;
-                }
-                this.curStartPos = this.selectionStart;
-                this.curEndPos = this.selectionEnd;
+                    this.selectionStart = selection.anchorOffset;
+                    this.selectionEnd = selection.focusOffset;
+                    if (this.selectionStart > this.selectionEnd) {
+                        const x : number = this.selectionStart;
+                        this.selectionStart = this.selectionEnd;
+                        this.selectionEnd = x;
+                    }
+                    this.curStartPos = this.selectionStart;
+                    this.curEndPos = this.selectionEnd;
                 }
                 if ( selection && selection.focusNode && (selection.focusNode as Element).classList &&
                  (selection.focusNode as Element).classList.contains('e-formula-bar-panel') &&
                   this.editorElem.textContent === this.editCellData.value) {
-                    let formulaBar: Element = (selection.focusNode as Element).getElementsByClassName('e-formula-bar e-css')[0];
-                    this.selectionStart = (formulaBar as any).selectionStart;
-                    this.selectionEnd = (formulaBar as any).selectionEnd;
+                    const formulaBar: Element = (selection.focusNode as Element).getElementsByClassName('e-formula-bar e-css')[0];
+                    this.selectionStart = (formulaBar as HTMLTextAreaElement).selectionStart;
+                    this.selectionEnd = (formulaBar as HTMLTextAreaElement).selectionEnd;
                     this.curStartPos = this.selectionStart;
                     this.curEndPos = this.selectionEnd;
                 }
@@ -496,18 +495,19 @@ export class Edit {
                         const editText: string = editorElem.textContent;
                         if (editText && editText.indexOf('\n') > -1) {
                             this.isAltEnter = false;
-                            wrapText(this.parent.getActiveSheet().selectedRange, true, this.parent);
+                            wrapText(this.parent.getActiveSheet().selectedRange, true, this.parent as Workbook);
                             this.refreshEditor(editorElem.textContent, this.isCellEdit);
                         }
                     }
                     if (!isFormula) {
                         this.endEdit(false, e);
                     } else {
-                        let curPos: number = this.selectionEnd;
-                        let actCellIdx: number[] = getCellIndexes(sheet.activeCell);
-                        let cell: CellModel = getCell(actCellIdx[0], actCellIdx[1], sheet);
+                        const curPos: number = this.selectionEnd;
+                        const actCellIdx: number[] = getCellIndexes(sheet.activeCell);
+                        const cell: CellModel = getCell(actCellIdx[0], actCellIdx[1], sheet);
                         if (this.selectionStart !== this.selectionEnd && this.editCellData.value === editorElem.textContent &&
-                            this.validCharacters.indexOf(editorElem.textContent.substring((this.selectionStart - 1), this.selectionStart)) !== -1) {
+                            this.validCharacters.indexOf(editorElem.textContent.substring((this.selectionStart - 1),
+                                                                                          this.selectionStart)) !== -1) {
                             if (isCellReference(editorElem.textContent.substring(this.selectionStart, this.selectionEnd)) &&
                                 editorElem.textContent.indexOf(':') !== this.selectionEnd) {
                                 this.editCellData.value = editorElem.textContent.substring(0, this.selectionStart) +
@@ -563,21 +563,22 @@ export class Edit {
                                     }
                                     this.endEdit(false, e);
                                 } else
-                                    if (this.validCharacters.indexOf(editorElem.textContent.substring(curPos - 1, curPos)) === -1 ||
+                                if (this.validCharacters.indexOf(editorElem.textContent.substring(curPos - 1, curPos)) === -1 ||
                                         (editorElem.textContent.substring(curPos, curPos + 1) !== ')' &&
                                             this.validCharacters.indexOf(editorElem.textContent.substring(curPos, curPos + 1)) === -1)) {
-                                        if (formulaRefIndicator) {
-                                            formulaRefIndicator.parentElement.removeChild(formulaRefIndicator);
-                                        }
-                                        this.endEdit(false, e);
+                                    if (formulaRefIndicator) {
+                                        formulaRefIndicator.parentElement.removeChild(formulaRefIndicator);
                                     }
+                                    this.endEdit(false, e);
+                                }
                             }
                         }
                     }
                 } else {
                     if (isFormula && this.editCellData.value === editorElem.textContent && editorElem.textContent.indexOf('(') !==
                         editorElem.textContent.length - 1 && !this.isCellEdit &&
-                         this.validCharacters.indexOf(this.editCellData.value.substring(this.selectionStart -1, this.selectionStart)) === -1 ) {
+                        this.validCharacters.indexOf(this.editCellData.value.substring(this.selectionStart - 1,
+                                                                                       this.selectionStart)) === -1) {
                         if (this.editCellData.sheetIndex === sheet.id - 1) {
                             const curPos: number = window.getSelection().focusOffset;
                             if (this.validCharacters.indexOf(editorElem.textContent.substring(curPos - 1, curPos)) === -1) {
@@ -633,20 +634,20 @@ export class Edit {
         let sheet: SheetModel;
         if (!this.editCellData.sheetIndex) {
             if (addr && addr.split('!').length > 1) {
-                sheetIdx = getSheetIndex(this.parent, getSheetNameFromAddress(addr));
+                sheetIdx = getSheetIndex(this.parent as Workbook, getSheetNameFromAddress(addr));
             } else {
                 sheetIdx = this.parent.activeSheetIndex;
             }
         }
         if (!this.editCellData.addr) {
-            sheet = getSheet(this.parent, sheetIdx);
+            sheet = getSheet(this.parent as Workbook, sheetIdx);
             if (addr) {
                 addr = getRangeFromAddress(addr);
             } else {
                 addr = sheet.activeCell;
             }
         } else if (checkIsFormula(this.editCellData.value)) {
-            sheet = getSheet(this.parent, sheetIdx);
+            sheet = getSheet(this.parent as Workbook, sheetIdx);
             this.isNewValueEdit = false;
         }
         if (addr) {
@@ -659,7 +660,7 @@ export class Edit {
                 this.parent.viewport.beforeFreezeHeight, this.parent.viewport.beforeFreezeWidth, this.parent.sheetModule.colGroupWidth);
             this.editCellData = {
                 addr: addr,
-                fullAddr: getSheetName(this.parent, sheetIdx) + '!' + addr,
+                fullAddr: getSheetName(this.parent as Workbook, sheetIdx) + '!' + addr,
                 rowIndex: rowIdx,
                 colIndex: colIdx,
                 sheetIndex: sheetIdx,
@@ -673,7 +674,7 @@ export class Edit {
     private initiateEditor(refreshCurPos: boolean): void {
         const data: Promise<Map<string, CellModel>> = this.parent.getData(this.editCellData.fullAddr);
         data.then((values: Map<string, CellModel>): void => {
-            (values as Map<string, CellModel>).forEach((cell: CellModel, key: string): void => {
+            (values as Map<string, CellModel>).forEach((cell: CellModel): void => {
                 const args: { [key: string]: CellModel | string } = { cell: cell, value: cell ? cell.value : '' };
                 this.parent.notify(getFormattedBarText, args);
                 let value: string = cell ? <string>args.value : '';
@@ -773,9 +774,9 @@ export class Edit {
         /* To set the before cell details for undo redo. */
         this.parent.notify(setActionData, { args: { action: 'beforeCellSave', eventArgs: { address: this.editCellData.addr } } });
         if (this.parent.allowDataValidation && ((cell && cell.validation) || (column && column.validation)))  {
-            let value: string = this.getEditElement(sheet).innerText;
-            let isCell: boolean = true;
-            let sheetIdx: number = this.parent.activeSheetIndex;
+            const value: string = this.getEditElement(sheet).innerText;
+            const isCell: boolean = true;
+            const sheetIdx: number = this.parent.activeSheetIndex;
             let range: number[];
             if (typeof address === 'string') {
                 range = getRangeIndexes(address);
@@ -818,7 +819,7 @@ export class Edit {
                 && this.parent.activeSheetIndex === sheetIdx) {
                 const td: HTMLElement = this.parent.getCell(rowIdx, colIdx);
                 if (td) {
-                    const sheet: SheetModel = getSheet(this.parent, sheetIdx);
+                    const sheet: SheetModel = getSheet(this.parent as Workbook, sheetIdx);
                     const cell: CellModel = getCell(rowIdx, colIdx, sheet);
                     const eventArgs: RefreshValueArgs = this.getRefreshNodeArgs(cell);
                     this.parent.refreshNode(td, eventArgs);
@@ -990,19 +991,19 @@ export class Edit {
     }
 
     private addressHandler(args: { range: string, isSelect: boolean, isMultiple: boolean }): void {
-        let selection: Selection = window.getSelection();
+        const selection: Selection = window.getSelection();
         this.selectionStart = selection.anchorOffset;
         this.selectionEnd = selection.focusOffset;
         if (this.selectionStart > this.selectionEnd) {
-            let x : number = this.selectionStart;
+            const x : number = this.selectionStart;
             this.selectionStart = this.selectionEnd;
             this.selectionEnd = x;
         }
         if ((selection && selection.focusNode && (selection.focusNode as Element).classList &&
             (selection.focusNode as Element).classList.contains('e-formula-bar-panel'))) {
-            let formulaBar: Element = (selection.focusNode as Element).getElementsByClassName('e-formula-bar e-css')[0];
-            this.selectionStart = (formulaBar as any).selectionStart;
-            this.selectionEnd = (formulaBar as any).selectionEnd;
+            const formulaBar: Element = (selection.focusNode as Element).getElementsByClassName('e-formula-bar e-css')[0];
+            this.selectionStart = (formulaBar as HTMLTextAreaElement).selectionStart;
+            this.selectionEnd = (formulaBar as HTMLTextAreaElement).selectionEnd;
         }
         const eventArgs: { action: string, editedValue: string } = { action: 'getCurrentEditValue', editedValue: '' };
         this.parent.notify(editOperation, eventArgs);
@@ -1017,42 +1018,42 @@ export class Edit {
             this.parent.notify(initiateFormulaReference, { range: eventArgs.editedValue + address, formulaSheetIdx: sheetIdx });
         } else {
             const sheetName: string = this.editCellData.fullAddr.substring(0, this.editCellData.fullAddr.indexOf('!'));
-            if (this.parent.getActiveSheet().name == sheetName) {
-            const editedValue: string = eventArgs.editedValue;
-            if (this.selectionStart !== this.selectionEnd) {
-                this.formulaBarCurStartPos = this.selectionStart;
-                this.curStartPos = this.selectionStart;
-                this.curEndPos = this.selectionStart + address.length;
-                editorEle.textContent = editedValue.substring(0, this.selectionStart)
+            if (this.parent.getActiveSheet().name === sheetName) {
+                const editedValue: string = eventArgs.editedValue;
+                if (this.selectionStart !== this.selectionEnd) {
+                    this.formulaBarCurStartPos = this.selectionStart;
+                    this.curStartPos = this.selectionStart;
+                    this.curEndPos = this.selectionStart + address.length;
+                    editorEle.textContent = editedValue.substring(0, this.selectionStart)
                     + address + editedValue.substring(this.selectionStart);
-            }
-            else if (editedValue.indexOf(')') === editedValue.length - 1 && this.selectionEnd === editedValue.length) {
-                editorEle.textContent = editedValue.substring(0, editedValue.length - 1)
+                }
+                else if (editedValue.indexOf(')') === editedValue.length - 1 && this.selectionEnd === editedValue.length) {
+                    editorEle.textContent = editedValue.substring(0, editedValue.length - 1)
                     + address + editedValue.substring(editedValue.length - 1);
-                this.curEndPos = editorEle.textContent.length - 1;
-            } else if (editedValue.indexOf(')') !== editedValue.length - 1) {
-                editorEle.textContent = editedValue + address;
-                this.curEndPos = editorEle.textContent.length;
-            } else if (editorEle.textContent != editedValue) {
-                editorEle.textContent = editedValue.substring(0, this.curStartPos)
+                    this.curEndPos = editorEle.textContent.length - 1;
+                } else if (editedValue.indexOf(')') !== editedValue.length - 1) {
+                    editorEle.textContent = editedValue + address;
+                    this.curEndPos = editorEle.textContent.length;
+                } else if (editorEle.textContent !== editedValue) {
+                    editorEle.textContent = editedValue.substring(0, this.curStartPos)
                     + address + editedValue.substring(this.curStartPos);
-                this.curEndPos = this.curStartPos + address.length;
-            } else if (this.selectionStart === this.selectionEnd &&
-                this.validCharacters.indexOf(editedValue.substring(this.selectionStart - 1, this.selectionEnd)) != -1 &&
-                (this.validCharacters.indexOf(editedValue.substring(this.selectionStart, this.selectionEnd + 1)) != -1 ||
+                    this.curEndPos = this.curStartPos + address.length;
+                } else if (this.selectionStart === this.selectionEnd &&
+                this.validCharacters.indexOf(editedValue.substring(this.selectionStart - 1, this.selectionEnd)) !== -1 &&
+                (this.validCharacters.indexOf(editedValue.substring(this.selectionStart, this.selectionEnd + 1)) !== -1 ||
                     editedValue.substring(this.selectionStart, this.selectionEnd + 1) === ')')) {
-                editorEle.textContent = editedValue.substring(0, this.selectionStart)
+                    editorEle.textContent = editedValue.substring(0, this.selectionStart)
                     + address + editedValue.substring(this.selectionEnd);
-                this.curStartPos = this.selectionStart;
-                this.curEndPos = this.selectionStart + address.length;
-                this.formulaBarCurStartPos = this.curStartPos;
+                    this.curStartPos = this.selectionStart;
+                    this.curEndPos = this.selectionStart + address.length;
+                    this.formulaBarCurStartPos = this.curStartPos;
+                }
             }
-        }
         }
     }
 
     private updateFormulaBarValue(): void {
-        let selection: Selection = window.getSelection();
+        const selection: Selection = window.getSelection();
         const value: string = this.editCellData.value;
         let address: string = this.parent.getActiveSheet().selectedRange;
         address = isSingleCell(getIndexesFromAddress(address)) ? address.split(':')[0] : address;
@@ -1088,8 +1089,8 @@ export class Edit {
     }
 
     private initiateCurPosition(): void {
-        let el: HTMLElement = this.getEditElement(this.parent.getActiveSheet(), true);
-        let value: string = el.innerText;
+        const el: HTMLElement = this.getEditElement(this.parent.getActiveSheet(), true);
+        const value: string = el.innerText;
         const selection: Selection = window.getSelection();
         if ((selection && selection.focusNode && (selection.focusNode as Element).classList &&
             (selection.focusNode as Element).classList.contains('e-formula-bar-panel'))) {

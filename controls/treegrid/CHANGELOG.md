@@ -2,6 +2,15 @@
 
 ## [Unreleased]
 
+## 19.1.58 (2021-04-27)
+
+### Tree Grid
+
+#### Bug Fixes
+
+- `#F163555` - Updating datasource dynamically with Virtualization enabled works fine.
+- `#I324405` - Running Tree Grid application in production mode works fine.
+
 ## 19.1.57 (2021-04-20)
 
 ### Tree Grid

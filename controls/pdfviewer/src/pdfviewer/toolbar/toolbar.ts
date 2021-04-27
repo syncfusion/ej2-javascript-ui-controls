@@ -1334,6 +1334,7 @@ export class Toolbar {
             const commentsButton: HTMLElement = document.getElementById(this.pdfViewer.element.id + '_comment');
             commentsButton.classList.add('e-pv-select');
         }
+        this.updateStampItems();
         document.getElementById(this.pdfViewer.element.id + '_pageDiv_' + (this.pdfViewerBase.currentPageNumber - 1)).addEventListener
         ('mousedown', this.pdfViewer.annotationModule.stickyNotesAnnotationModule.drawIcons.bind(this));
     }
@@ -1732,9 +1733,26 @@ export class Toolbar {
             showItemOnClick = true;
         }
     }
+    /**
+     * @private
+     */
+    // eslint-disable-next-line
+    public updateStampItems(): void {
+        if (this.pdfViewer.annotationModule && this.pdfViewer.annotationModule.stampAnnotationModule && this.pdfViewer.annotationModule.stampAnnotationModule.isNewStampAnnot) {
+            if (this.pdfViewer.selectedItems.annotations[0]) {
+                this.pdfViewer.remove(this.pdfViewer.selectedItems.annotations[0]);
+                this.pdfViewer.clearSelection(this.pdfViewer.currentPageNumber - 1);
+                this.pdfViewer.renderDrawing();
+                this.pdfViewerBase.tool = null;
+            }
+            this.pdfViewerBase.isAlreadyAdded = false;
+            this.pdfViewer.annotationModule.stampAnnotationModule.isNewStampAnnot = false;
+        }
+    }
     // eslint-disable-next-line
     private stampSelect(args: any, stampParentID: string): void {
         this.pdfViewerBase.isAlreadyAdded = false;
+        this.updateStampItems();
         if (args.Item.Text === 'Custom Stamp') {
             this.annotationToolbarModule.checkStampAnnotations();
             this.pdfViewer.annotation.stampAnnotationModule.isStampAddMode = true;

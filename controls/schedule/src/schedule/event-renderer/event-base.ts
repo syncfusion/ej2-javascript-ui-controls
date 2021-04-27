@@ -493,12 +493,14 @@ export class EventBase {
         return [].slice.call(this.parent.element.querySelectorAll('.' + cls.APPOINTMENT_BORDER + ',.' + cls.APPOINTMENT_CLASS + ':focus'));
     }
 
-    public focusElement(): void {
+    public focusElement(isFocused?: boolean): void {
         if (this.parent.eventWindow.dialogObject && this.parent.eventWindow.dialogObject.visible) {
             return;
         }
+        const activeEle: Element = document.activeElement;
         const selectedCell: Element[] = this.parent.getSelectedElements();
-        if (selectedCell.length > 0) {
+        if (selectedCell.length > 0 && ((activeEle && (this.parent.element.contains(activeEle) ||
+            selectedCell.indexOf(activeEle) !== -1)) || isFocused)) {
             if (this.parent.keyboardInteractionModule) {
                 const target: HTMLTableCellElement = ((!isNullOrUndefined(this.parent.activeCellsData) &&
                     this.parent.activeCellsData.element) || selectedCell[selectedCell.length - 1]) as HTMLTableCellElement;
@@ -682,7 +684,7 @@ export class EventBase {
         if (target.classList.contains(cls.DRAG_CLONE_CLASS) || target.classList.contains(cls.RESIZE_CLONE_CLASS)) {
             return;
         }
-        if (eventData.ctrlKey && eventData.which === 1 && this.parent.keyboardInteractionModule) {
+        if ((eventData.ctrlKey || eventData.metaKey) && eventData.which === 1 && this.parent.keyboardInteractionModule) {
             this.parent.quickPopup.quickPopup.hide();
             this.parent.selectedElements = [].slice.call(this.parent.element.querySelectorAll('.' + cls.APPOINTMENT_BORDER)) as Element[];
             const target: Element = closest(<Element>eventData.target, '.' + cls.APPOINTMENT_CLASS) as Element;

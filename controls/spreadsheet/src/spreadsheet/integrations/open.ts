@@ -128,7 +128,7 @@ export class Open {
         }
         this.parent.trigger('openComplete', { response: response });
         this.parent.notify(completeAction, {response: response, action: 'import'});
-        this.parent.renderModule.refreshSheet();
+        this.parent.renderModule.refreshSheet(true);
         this.parent.notify(refreshSheetTabs, this);
         this.parent.hideSpinner();
     }

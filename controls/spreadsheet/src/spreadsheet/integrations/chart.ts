@@ -2,12 +2,12 @@
  * Open properties.
  */
 import { Spreadsheet } from '../base/index';
-import { getSheetIndex, SheetModel, isHiddenRow, CellModel, getCell, setCell, getRowsHeight, getColumnsWidth } from '../../workbook/index';
+import { getSheetIndex, SheetModel, isHiddenRow, CellModel, getCell, setCell, getRowsHeight, getColumnsWidth, Workbook } from '../../workbook/index';
 import { initiateChart, ChartModel, getRangeIndexes, isNumber, isDateTime, dateToInt, LegendPosition } from '../../workbook/common/index';
 import { Overlay, Dialog } from '../services/index';
 import { overlay, locale, refreshChartCellObj, getRowIdxFromClientY, getColIdxFromClientX, deleteChart, dialog, overlayEleSize } from '../common/index';
 import { BeforeImageRefreshData, BeforeChartEventArgs, beginAction, completeAction, clearChartBorder, focusBorder } from '../common/index';
-import { Chart, ColumnSeries, Category, ILoadedEventArgs, StackingColumnSeries, BarSeries, ChartSeriesType, AccumulationLabelPosition, inside } from '@syncfusion/ej2-charts';
+import { Chart, ColumnSeries, Category, ILoadedEventArgs, StackingColumnSeries, BarSeries, ChartSeriesType, AccumulationLabelPosition } from '@syncfusion/ej2-charts';
 import { AreaSeries, StackingAreaSeries, AccumulationChart, IAccLoadedEventArgs } from '@syncfusion/ej2-charts';
 import { Legend, StackingBarSeries, SeriesModel, LineSeries, StackingLineSeries, AxisModel, ScatterSeries } from '@syncfusion/ej2-charts';
 import { AccumulationLegend, PieSeries, AccumulationTooltip, AccumulationDataLabel, AccumulationSeriesModel } from '@syncfusion/ej2-charts';
@@ -153,6 +153,7 @@ export class SpreadsheetChart {
                 if (cell) {
                     this.parent.notify(getFormattedCellObject, formatObj);
                     if (typeof (formatObj.value) === 'number') {
+                        // eslint-disable-next-line no-useless-escape
                         const escapeRegx: RegExp = new RegExp('[!@#$%^&()+=\';,{}|\":<>~_-]', 'g');
                         formatObj.formattedText = (formatObj.formattedText.toString()).replace(escapeRegx, '');
                         value = parseInt(formatObj.formattedText.toString(), 10);
@@ -203,8 +204,8 @@ export class SpreadsheetChart {
                     prevChartObj.top = args.currentTop;
                     prevChartObj.left = args.currentLeft;
                     prevCellChart.splice(i, 1);
-                    for (let idx: number = 0, chartCollLen = this.parent.chartColl.length; idx < chartCollLen; idx++) {
-                        if (prevChartObj.id === this.parent.chartColl[idx].id) { 
+                    for (let idx: number = 0, chartCollLen: number = this.parent.chartColl.length; idx < chartCollLen; idx++) {
+                        if (prevChartObj.id === this.parent.chartColl[idx].id) {
                             prevChartObj.height = args.currentHeight;
                             this.parent.chartColl[idx].width = args.currentWidth;
                             this.parent.chartColl[idx].top = args.currentTop;
@@ -219,8 +220,11 @@ export class SpreadsheetChart {
                     currChartObj.push(prevChartObj);
                 }
             }
-            currChartObj ? setCell(args.currentRowIdx, args.currentColIdx, sheet, { chart: currChartObj }, true) :
+            if (currChartObj) {
+                setCell(args.currentRowIdx, args.currentColIdx, sheet, { chart: currChartObj }, true);
+            } else {
                 setCell(args.currentRowIdx, args.currentColIdx, sheet, { chart: [prevChartObj] }, true);
+            }
             if (args.requestType === 'chartRefresh' && !args.isUndoRedo) {
                 const eventArgs: BeforeImageRefreshData = {
                     requestType: 'chartRefresh', currentRowIdx: args.currentRowIdx, currentColIdx: args.currentColIdx,
@@ -456,8 +460,8 @@ export class SpreadsheetChart {
                     };
                 } else if (type === 'Pie' || type === 'Doughnut') {
                     const innerRadius: string = options.type === 'Pie' ? '0%' : '40%';
-                    let visible: boolean = dataLabel.visible;
-                    let position: AccumulationLabelPosition =  isNullOrUndefined(dataLabel.position)? 'Inside' : dataLabel.position === 'Outer' ? 'Outside' : 'Inside';
+                    const visible: boolean = dataLabel.visible;
+                    const position: AccumulationLabelPosition =  isNullOrUndefined(dataLabel.position) ? 'Inside' : dataLabel.position === 'Outer' ? 'Outside' : 'Inside';
                     pObj = {
                         dataSource: pArr,
                         dataLabel: {
@@ -538,7 +542,10 @@ export class SpreadsheetChart {
         if (isFreezePane && range) {
             this.parent.notify(focusBorder, {
                 startcell: { rowIndex: Math.min(range[0], yRange[0]), colIndex: Math.min(range[1], yRange[1]) },
-                endcell: { rowIndex: Math.max(range[2], yRange[2]), colIndex: Math.max(range[3], yRange[3]) }, classes: [border[4], border[5]]
+                endcell: {
+                    rowIndex: Math.max(range[2], yRange[2]), colIndex: Math.max(range[3],
+                                                                                yRange[3])
+                }, classes: [border[4], border[5]]
             });
         } else {
             this.parent.notify(focusBorder, {
@@ -558,9 +565,9 @@ export class SpreadsheetChart {
         const mainCont: Element = this.parent.getMainContent();
         const border: string[] =
             ['e-rcborderright', 'e-rcborderbottom', 'e-vcborderright', 'e-vcborderbottom', 'e-bcborderright', 'e-bcborderbottom'];
-        for (let borderIdx: number = 0, borderLen = border.length; borderIdx < borderLen; borderIdx++) {
+        for (let borderIdx: number = 0, borderLen: number = border.length; borderIdx < borderLen; borderIdx++) {
             const eleColl: NodeListOf<Element> = mainCont.querySelectorAll('.' + border[borderIdx]);
-            for (let tdIdx: number = 0, eleCollLen = eleColl.length; tdIdx < eleCollLen; tdIdx++) {
+            for (let tdIdx: number = 0, eleCollLen: number = eleColl.length; tdIdx < eleCollLen; tdIdx++) {
                 const td: HTMLElement = eleColl[tdIdx] as HTMLElement;
                 td.classList.remove(border[borderIdx]);
             }
@@ -589,7 +596,7 @@ export class SpreadsheetChart {
             return seriesModel;
         }
         const sheetIdx: number = (chart.range && chart.range.indexOf('!') > 0) ?
-            getSheetIndex(this.parent, chart.range.split('!')[0]) : this.parent.activeSheetIndex;
+            getSheetIndex(this.parent as Workbook, chart.range.split('!')[0]) : this.parent.activeSheetIndex;
         const args: {
             sheetIndex: number, reqType: string, type: string, shapeType: string, action: string,
             options: ChartModel, range: string, operation: string
@@ -620,9 +627,11 @@ export class SpreadsheetChart {
         const chartOptions: { series: SeriesModel[] | AccumulationSeriesModel[], xRange: number[], yRange: number[], lRange: number[] } =
             this.processChartSeries(options, argsOpt.dataSheetIdx, xRange, yRange, lRange);
         const primaryXAxis: AxisModel = {
-            majorGridLines: chart.primaryXAxis && chart.primaryXAxis.majorGridLines && !isNullOrUndefined(chart.primaryXAxis.majorGridLines.width) ?
+            majorGridLines: chart.primaryXAxis && chart.primaryXAxis.majorGridLines &&
+                !isNullOrUndefined(chart.primaryXAxis.majorGridLines.width) ?
                 { width: chart.primaryXAxis.majorGridLines.width } : { width: 0 },
-            minorGridLines: chart.primaryXAxis && chart.primaryXAxis.minorGridLines && !isNullOrUndefined(chart.primaryXAxis.minorGridLines.width) ?
+            minorGridLines: chart.primaryXAxis && chart.primaryXAxis.minorGridLines &&
+                !isNullOrUndefined(chart.primaryXAxis.minorGridLines.width) ?
                 { width: chart.primaryXAxis.minorGridLines.width } : { width: 0 },
             minorTicksPerInterval: chart.primaryXAxis && chart.primaryXAxis.minorGridLines && chart.primaryXAxis.minorGridLines.width > 0 ?
                 5 : 0,
@@ -633,9 +642,11 @@ export class SpreadsheetChart {
         };
         const primaryYAxis: AxisModel = {
             lineStyle: { width: 0 },
-            majorGridLines: chart.primaryYAxis && chart.primaryYAxis.majorGridLines && !isNullOrUndefined(chart.primaryYAxis.majorGridLines.width) ?
+            majorGridLines: chart.primaryYAxis && chart.primaryYAxis.majorGridLines &&
+                !isNullOrUndefined(chart.primaryYAxis.majorGridLines.width) ?
                 { width: chart.primaryYAxis.majorGridLines.width } : { width: 1 },
-            minorGridLines: chart.primaryYAxis && chart.primaryYAxis.minorGridLines && !isNullOrUndefined(chart.primaryYAxis.minorGridLines.width) ?
+            minorGridLines: chart.primaryYAxis && chart.primaryYAxis.minorGridLines &&
+                !isNullOrUndefined(chart.primaryYAxis.minorGridLines.width) ?
                 { width: chart.primaryYAxis.minorGridLines.width } : { width: 0 },
             minorTicksPerInterval: chart.primaryYAxis && chart.primaryYAxis.minorGridLines && chart.primaryYAxis.minorGridLines.width > 0 ?
                 5 : 0,
@@ -664,7 +675,7 @@ export class SpreadsheetChart {
         const id: string = chart.id + '_overlay';
         const sheetIndex: number = argsOpt.isPaste ? this.parent.getActiveSheet().index :
             (argsOpt.option.range && argsOpt.option.range.indexOf('!') > 0) ?
-                getSheetIndex(this.parent, argsOpt.option.range.split('!')[0]) : this.parent.activeSheetIndex;
+                getSheetIndex(this.parent as Workbook, argsOpt.option.range.split('!')[0]) : this.parent.activeSheetIndex;
         const overlayObj: Overlay = this.parent.serviceLocator.getService(overlay) as Overlay;
         const eleRange: string = !isNullOrUndefined(argsOpt.isInitCell) && argsOpt.isInitCell ? argsOpt.range : range;
         const element: HTMLElement = overlayObj.insertOverlayElement(id, eleRange, sheetIndex);
@@ -794,10 +805,9 @@ export class SpreadsheetChart {
         }
         let rowIdx: number; let colIdx: number;
         let prevCellChart: object[];
-        let chartLength: number;
         let isRemoveEle: boolean = false;
         let chartObj: ChartModel;
-        for (let i: number = 0, chartCollLen = this.parent.chartColl.length; i < chartCollLen; i++) {
+        for (let i: number = 0, chartCollLen: number = this.parent.chartColl.length; i < chartCollLen; i++) {
             if (this.parent.chartColl[i].id === args.id.split('_overlay')[0]) {
                 chartObj = this.parent.chartColl[i];
                 break;
@@ -809,8 +819,8 @@ export class SpreadsheetChart {
             top: chartObj.top, left: chartObj.left, cancel: false
         };
         if (chartElements) {
-            let chartTop: { clientY: number, isImage?: boolean, target?: Element }
-            let chartleft: { clientX: number, isImage?: boolean, target?: Element }
+            let chartTop: { clientY: number, isImage?: boolean, target?: Element };
+            let chartleft: { clientX: number, isImage?: boolean, target?: Element };
             if (sheet.frozenRows || sheet.frozenColumns) {
                 const clientRect: ClientRect = chartElements.getBoundingClientRect();
                 chartTop = { clientY: clientRect.top }; chartleft = { clientX: clientRect.left };
@@ -831,7 +841,7 @@ export class SpreadsheetChart {
             sheet = this.parent.sheets[this.parent.activeSheetIndex];
         } else {
             this.parent.notify(deleteChartColl, { id: args.id });
-            const sheetIndex: number = args.range && args.range.indexOf('!') > 0 ? getSheetIndex(this.parent, args.range.split('!')[0]) :
+            const sheetIndex: number = args.range && args.range.indexOf('!') > 0 ? getSheetIndex(this.parent as Workbook, args.range.split('!')[0]) :
                 this.parent.activeSheetIndex;
             const rangeVal: string = args.range ? args.range.indexOf('!') > 0 ? args.range.split('!')[1] : args.range.split('!')[0] :
                 this.parent.getActiveSheet().selectedRange;
@@ -843,7 +853,7 @@ export class SpreadsheetChart {
         if (cellObj) {
             prevCellChart = cellObj.chart;
         }
-        chartLength = prevCellChart ? prevCellChart.length : chartLength;
+        const chartLength: number = prevCellChart ? prevCellChart.length : null;
         for (let i: number = 0; i < chartLength; i++) {
             const overlayEle: HTMLElement = document.getElementById(args.id);
             const chartEleClassName: HTMLElement = document.getElementById((prevCellChart[i] as ChartModel).id);
@@ -858,19 +868,20 @@ export class SpreadsheetChart {
         setCell(rowIdx, colIdx, sheet, { chart: prevCellChart }, true);
         eventArgs.posRange = getCellAddress(rowIdx, colIdx);
         if (!args.isUndoRedo) {
-        this.parent.notify(completeAction, { eventArgs: eventArgs, action: 'deleteChart' });
+            this.parent.notify(completeAction, { eventArgs: eventArgs, action: 'deleteChart' });
         }
     }
 
     private updateChartModel
-    (eleId: string, chartComp: Chart | AccumulationChart, currCellObj: CellModel, chartCollId: number, isAccumulationChart?: boolean): void {
-        let accumulationChartComp: AccumulationChart = chartComp as AccumulationChart;
+    (eleId: string, chartComp: Chart | AccumulationChart, currCellObj: CellModel,
+     chartCollId: number, isAccumulationChart?: boolean): void {
+        const accumulationChartComp: AccumulationChart = chartComp as AccumulationChart;
         chartComp = chartComp as Chart;
         const chartId: string = this.parent.chartColl[chartCollId].id;
         if (isAccumulationChart &&
             ['PHAxes', 'PVAxes', 'PHAxisTitle', 'PVAxisTitle', 'GLMajorHorizontal',
-                'GLMajorVertical', 'GLMinorHorizontal', 'GLMinorVertical'].indexOf(eleId) > -1) { return }
-        for (let idx: number = 0, chartsCount = currCellObj.chart.length; idx < chartsCount; idx++) {
+                'GLMajorVertical', 'GLMinorHorizontal', 'GLMinorVertical'].indexOf(eleId) > -1) { return; }
+        for (let idx: number = 0, chartsCount: number = currCellObj.chart.length; idx < chartsCount; idx++) {
             if (currCellObj.chart[idx].id === chartId) {
                 switch (eleId) {
                 case 'PHAxes': case 'PHAxisTitle':
@@ -914,7 +925,7 @@ export class SpreadsheetChart {
                         } else {
                             position = chartComp.series[0].marker.dataLabel.position;
                         }
-                        currCellObj.chart[idx].dataLabelSettings.position = position
+                        currCellObj.chart[idx].dataLabelSettings.position = position;
                         this.parent.chartColl[chartCollId].dataLabelSettings.position = position;
                     } break;
                 case 'GLMajorHorizontal':
@@ -969,111 +980,114 @@ export class SpreadsheetChart {
                     this.parent.chartColl[chartCollId].legendSettings.visible = chartComp.legendSettings.visible;
                     if (eleId !== 'LegendNone') {
                         currCellObj.chart[idx].legendSettings.position = chartComp.legendSettings.position as LegendPosition;
-                        this.parent.chartColl[chartCollId].legendSettings.position = chartComp.legendSettings.position as LegendPosition; break;
+                        this.parent.chartColl[chartCollId].legendSettings.position =
+                         chartComp.legendSettings.position as LegendPosition; break;
                     }
                 }
             }
         }
     }
 
-    private updateChartElement(value: string, chartComp: Chart | AccumulationChart, currCellObj: CellModel, chartCollId: number, title: string, isAccumulationChart?: boolean): void {
+    private updateChartElement(value: string, chartComp: Chart | AccumulationChart, currCellObj: CellModel,
+                               chartCollId: number, title: string, isAccumulationChart?: boolean): void {
         if (isAccumulationChart &&
             ['PHAxes', 'PVAxes', 'PHAxisTitle', 'PVAxisTitle', 'GLMajorHorizontal',
-                'GLMajorVertical', 'GLMinorHorizontal', 'GLMinorVertical'].indexOf(value) > -1) { return }
+                'GLMajorVertical', 'GLMinorHorizontal', 'GLMinorVertical'].indexOf(value) > -1) { return; }
+        let chartSeries: SeriesModel[] | AccumulationSeriesModel[];
         switch (value) {
-            case 'PHAxes':
-                chartComp = chartComp as Chart;
-                chartComp.primaryXAxis.visible = !chartComp.primaryXAxis.visible;
-                break;
-            case 'PVAxes':
-                chartComp = chartComp as Chart;
-                chartComp.primaryYAxis.visible = !chartComp.primaryYAxis.visible;
-                break;
-            case 'PHAxisTitle':
-                chartComp = chartComp as Chart;
-                chartComp.primaryXAxis.title = title;
-                break;
-            case 'PVAxisTitle':
-                chartComp = chartComp as Chart;
-                chartComp.primaryYAxis.title = title;
-                break;
-            case 'ChartTitleNone':
-                chartComp.title = '';
-                break;
-            case 'ChartTitleAbove':
-                chartComp.title = title;
-                break;
-            case 'DLNone':
-            case 'DLCenter':
-            case 'DLInsideend':
-            case 'DLInsidebase':
-            case 'DLOutsideend':
-                chartComp = isAccumulationChart ? chartComp as AccumulationChart : chartComp as Chart;
-                let chartSeries: SeriesModel[] | AccumulationSeriesModel[] = chartComp.series;
-                if (value === 'DLNone') {
-                    for (let idx: number = 0, len = chartSeries.length; idx < len; idx++) {
-                        if (isAccumulationChart) {
-                            (chartSeries as AccumulationSeriesModel)[idx].dataLabel.visible = false;
-                        } else {
-                            (chartSeries[idx] as SeriesModel).marker.dataLabel.visible = false;
-                        }
+        case 'PHAxes':
+            chartComp = chartComp as Chart;
+            chartComp.primaryXAxis.visible = !chartComp.primaryXAxis.visible;
+            break;
+        case 'PVAxes':
+            chartComp = chartComp as Chart;
+            chartComp.primaryYAxis.visible = !chartComp.primaryYAxis.visible;
+            break;
+        case 'PHAxisTitle':
+            chartComp = chartComp as Chart;
+            chartComp.primaryXAxis.title = title;
+            break;
+        case 'PVAxisTitle':
+            chartComp = chartComp as Chart;
+            chartComp.primaryYAxis.title = title;
+            break;
+        case 'ChartTitleNone':
+            chartComp.title = '';
+            break;
+        case 'ChartTitleAbove':
+            chartComp.title = title;
+            break;
+        case 'DLNone':
+        case 'DLCenter':
+        case 'DLInsideend':
+        case 'DLInsidebase':
+        case 'DLOutsideend':
+            chartComp = isAccumulationChart ? chartComp as AccumulationChart : chartComp as Chart;
+            chartSeries = chartComp.series;
+            if (value === 'DLNone') {
+                for (let idx: number = 0, len: number = chartSeries.length; idx < len; idx++) {
+                    if (isAccumulationChart) {
+                        (chartSeries as AccumulationSeriesModel)[idx].dataLabel.visible = false;
+                    } else {
+                        (chartSeries[idx] as SeriesModel).marker.dataLabel.visible = false;
                     }
-                } else {
-                    for (let idx: number = 0, len = chartSeries.length; idx < len; idx++) {
-                        if (isAccumulationChart) {
-                            const position: AccumulationLabelPosition = value === 'DLOutsideend' ? 'Outside' : 'Inside';
-                            (chartSeries as AccumulationSeriesModel)[idx].dataLabel.visible = true;
-                            (chartSeries as AccumulationSeriesModel)[idx].dataLabel.position = position;
-                        } else {
-                            const position: LabelPosition =
+                }
+            } else {
+                for (let idx: number = 0, len: number = chartSeries.length; idx < len; idx++) {
+                    if (isAccumulationChart) {
+                        const position: AccumulationLabelPosition = value === 'DLOutsideend' ? 'Outside' : 'Inside';
+                        (chartSeries as AccumulationSeriesModel)[idx].dataLabel.visible = true;
+                        (chartSeries as AccumulationSeriesModel)[idx].dataLabel.position = position;
+                    } else {
+                        const position: LabelPosition =
                                 value === 'DLCenter' ? 'Middle' : value === 'DLInsideend' ? 'Top' : value === 'DLInsidebase' ?
                                     'Bottom' : value === 'DLOutsideend' ? 'Outer' : (chartSeries[0] as SeriesModel).marker.dataLabel.position;
-                            (chartSeries[idx] as SeriesModel).marker.dataLabel.visible = true;
-                            (chartSeries[idx] as SeriesModel).marker.dataLabel.position = position;
-                        }
+                        (chartSeries[idx] as SeriesModel).marker.dataLabel.visible = true;
+                        (chartSeries[idx] as SeriesModel).marker.dataLabel.position = position;
                     }
                 }
-                chartComp.series = chartSeries;
-                if (isAccumulationChart) {
+            }
+            chartComp.series = chartSeries;
+            if (isAccumulationChart) {
                 chartComp.refresh();
-                }
-                break;
-            case 'GLMajorHorizontal':
-                chartComp = chartComp as Chart;
-                chartComp.primaryYAxis.majorGridLines.width = chartComp.primaryYAxis.majorGridLines.width === 0 ? 1 : 0;
-                break;
-            case 'GLMajorVertical':
-                chartComp = chartComp as Chart;
-                chartComp.primaryXAxis.majorGridLines.width = chartComp.primaryXAxis.majorGridLines.width === 0 ? 1 : 0;
-                break;
-            case 'GLMinorHorizontal':
-                chartComp = chartComp as Chart;
-                chartComp.primaryYAxis.minorTicksPerInterval = chartComp.primaryYAxis.minorGridLines.width === 0 ? 5 : 0;
-                chartComp.primaryYAxis.minorGridLines.width = chartComp.primaryYAxis.minorGridLines.width === 0 ? 1 : 0;
-                break;
-            case 'GLMinorVertical':
-                chartComp = chartComp as Chart;
-                chartComp.primaryXAxis.minorTicksPerInterval = chartComp.primaryXAxis.minorGridLines.width === 0 ? 5 : 0;
-                chartComp.primaryXAxis.minorGridLines.width = chartComp.primaryXAxis.minorGridLines.width === 0 ? 1 : 0;
-                break;
-            case 'LegendNone':
-                chartComp.legendSettings.visible = false;
-                break;
-            case 'LegendsRight':
-            case 'LegendsLeft':
-            case 'LegendsBottom':
-            case 'LegendsTop':
-                chartComp.legendSettings.visible = true;
-                chartComp.legendSettings.position = value === 'LegendsRight' ? 'Right' : value === 'LegendsLeft' ? 'Left' : value ===
+            }
+            break;
+        case 'GLMajorHorizontal':
+            chartComp = chartComp as Chart;
+            chartComp.primaryYAxis.majorGridLines.width = chartComp.primaryYAxis.majorGridLines.width === 0 ? 1 : 0;
+            break;
+        case 'GLMajorVertical':
+            chartComp = chartComp as Chart;
+            chartComp.primaryXAxis.majorGridLines.width = chartComp.primaryXAxis.majorGridLines.width === 0 ? 1 : 0;
+            break;
+        case 'GLMinorHorizontal':
+            chartComp = chartComp as Chart;
+            chartComp.primaryYAxis.minorTicksPerInterval = chartComp.primaryYAxis.minorGridLines.width === 0 ? 5 : 0;
+            chartComp.primaryYAxis.minorGridLines.width = chartComp.primaryYAxis.minorGridLines.width === 0 ? 1 : 0;
+            break;
+        case 'GLMinorVertical':
+            chartComp = chartComp as Chart;
+            chartComp.primaryXAxis.minorTicksPerInterval = chartComp.primaryXAxis.minorGridLines.width === 0 ? 5 : 0;
+            chartComp.primaryXAxis.minorGridLines.width = chartComp.primaryXAxis.minorGridLines.width === 0 ? 1 : 0;
+            break;
+        case 'LegendNone':
+            chartComp.legendSettings.visible = false;
+            break;
+        case 'LegendsRight':
+        case 'LegendsLeft':
+        case 'LegendsBottom':
+        case 'LegendsTop':
+            chartComp.legendSettings.visible = true;
+            chartComp.legendSettings.position = value === 'LegendsRight' ? 'Right' : value === 'LegendsLeft' ? 'Left' : value ===
                     'LegendsBottom' ? 'Bottom' : value === 'LegendsTop' ? 'Top' : chartComp.legendSettings.position;
-                break;
+            break;
         }
         this.updateChartModel(value, chartComp, currCellObj, chartCollId, isAccumulationChart);
     }
 
     private chartDesignTabHandler(
         args: { switchRowColumn?: boolean, chartType?: ChartType, chartTheme?: ChartTheme, addChartEle?: string }): void {
-        let title: string = '';
+        const title: string = '';
         let isAccumulationChart: boolean = false;
         const sheet: SheetModel = this.parent.sheets[this.parent.activeSheetIndex];
         const switchRowColumn: boolean = args.switchRowColumn;
@@ -1086,8 +1100,8 @@ export class SpreadsheetChart {
         if (!overlayElem) {
             return;
         }
-        let chartTop: { clientY: number, isImage?: boolean, target?: Element }
-        let chartleft: { clientX: number, isImage?: boolean, target?: Element }
+        let chartTop: { clientY: number, isImage?: boolean, target?: Element };
+        let chartleft: { clientX: number, isImage?: boolean, target?: Element };
         if (sheet.frozenRows || sheet.frozenColumns) {
             const clientRect: ClientRect = overlayElem.getBoundingClientRect();
             chartTop = { clientY: clientRect.top }; chartleft = { clientX: clientRect.left };
@@ -1109,7 +1123,7 @@ export class SpreadsheetChart {
             chartObj = overlayElem.querySelector('.e-accumulationchart');
         }
         const chartId: string = chartObj.getAttribute('id');
-        for (let idx: number = 0, chartCollLen = this.parent.chartColl.length; idx < chartCollLen; idx++) {
+        for (let idx: number = 0, chartCollLen: number = this.parent.chartColl.length; idx < chartCollLen; idx++) {
             if (chartId === this.parent.chartColl[idx].id) {
                 chartCollId = idx;
             }
@@ -1125,7 +1139,7 @@ export class SpreadsheetChart {
             this.parent.chartColl[chartCollId].isSeriesInRows =
                 isNullOrUndefined(this.parent.chartColl[chartCollId].isSeriesInRows) ?
                     true : !this.parent.chartColl[chartCollId].isSeriesInRows;
-            for (let idx: number = 0, chartCount = currCellObj.chart.length; idx < chartCount; idx++) {
+            for (let idx: number = 0, chartCount: number = currCellObj.chart.length; idx < chartCount; idx++) {
                 if (currCellObj.chart[idx].id === chartId) {
                     currCellObj.chart[idx].isSeriesInRows =
                         isNullOrUndefined(currCellObj.chart[idx].isSeriesInRows) ? true : !currCellObj.chart[idx].isSeriesInRows;
@@ -1136,9 +1150,9 @@ export class SpreadsheetChart {
             chartComp.series = chartSeries;
         }
         if (chartType) {
-            let type: ChartType = this.parent.chartColl[chartCollId].type;
+            const type: ChartType = this.parent.chartColl[chartCollId].type;
             this.parent.chartColl[chartCollId].type = chartType;
-            for (let idx: number = 0, chartCount = currCellObj.chart.length; idx < chartCount; idx++) {
+            for (let idx: number = 0, chartCount: number = currCellObj.chart.length; idx < chartCount; idx++) {
                 if (currCellObj.chart[idx].id === chartId) {
                     currCellObj.chart[idx].type = chartType;
                 }
@@ -1148,7 +1162,7 @@ export class SpreadsheetChart {
                     this.changeCharType(chartCollId);
                 } else {
                     const chartSeries: SeriesModel[] = chartComp.series as SeriesModel[];
-                    for (let idx: number = 0, len = chartSeries.length; idx < len; idx++) {
+                    for (let idx: number = 0, len: number = chartSeries.length; idx < len; idx++) {
                         chartSeries[idx].type = chartType as ChartSeriesType;
                     }
                     chartComp.series = chartSeries;
@@ -1157,7 +1171,7 @@ export class SpreadsheetChart {
             } else {
                 if (type === 'Pie' || type === 'Doughnut') {
                     const chartSeries: AccumulationSeriesModel[] = chartComp.series as AccumulationSeriesModel[];
-                    for (let idx: number = 0, len = chartSeries.length; idx < len; idx++) {
+                    for (let idx: number = 0, len: number = chartSeries.length; idx < len; idx++) {
                         chartSeries[idx].innerRadius = chartType === 'Pie' ? '0%' : '40%';
                     }
                     chartComp.series = chartSeries;
@@ -1169,7 +1183,7 @@ export class SpreadsheetChart {
         }
         if (chartTheme) {
             this.parent.chartColl[chartCollId].theme = chartTheme;
-            for (let idx: number = 0, chartCount = currCellObj.chart.length; idx < chartCount; idx++) {
+            for (let idx: number = 0, chartCount: number = currCellObj.chart.length; idx < chartCount; idx++) {
                 if (currCellObj.chart[idx].id === chartId) {
                     currCellObj.chart[idx].theme = chartTheme;
                 }
@@ -1201,13 +1215,13 @@ export class SpreadsheetChart {
         });
         chartEle = document.getElementById(this.parent.chartColl[chartCollId].id);
         chartParEle = closest(chartEle, '.e-datavisualization-chart');
-        chartParEle
         if (!chartParEle.classList.contains('e-ss-overlay-active')) {
             chartParEle.classList.add('e-ss-overlay-active');
         }
     }
 
-    private titleDlgHandler(addChartEle: string, chartComp: Chart, currCellObj: CellModel, chartCollId: number, isAccumulationChart?: boolean): void {
+    private titleDlgHandler(addChartEle: string, chartComp: Chart, currCellObj: CellModel,
+                            chartCollId: number, isAccumulationChart?: boolean): void {
         let title: string = '';
         if (isAccumulationChart && (addChartEle === 'PHAxisTitle' || addChartEle === 'PVAxisTitle')) {
             return;

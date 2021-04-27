@@ -22,7 +22,7 @@ export function getRangeIndexes(range: string): number[] {
 
 /**
  * To get single cell indexes
- * 
+ *
  * @param {string} address - Specifies the address.
  * @returns {number[]} - To get single cell indexes
  */
@@ -48,7 +48,7 @@ export function getColIndex(text: string): number {
 
 /**
  * To get cell address from given row and column index.
- * 
+ *
  * @param {number} sRow - Specifies the row.
  * @param {number} sCol - Specifies the col.
  * @returns {string} - To get cell address from given row and column index.
@@ -70,7 +70,7 @@ export function getRangeAddress(range: number[]): string {
 
 /**
  * To get column header cell text
- * 
+ *
  * @param {number} colIndex - Specifies the colIndex.
  * @returns {string} - Get Column Header Text
  */
@@ -114,10 +114,10 @@ export function getAddressFromSelectedRange(sheet: SheetModel): string {
 }
 
 /**
- * @hidden
  * @param {Workbook} context - Specifies the context.
  * @param {string} address - Specifies the address.
- * @returns {number, number[]} - To get Address Info
+ * @returns {Object} - To get Address Info
+ * @hidden
  */
 export function getAddressInfo(context: Workbook, address: string): { sheetIndex: number, indices: number[] } {
     let sIdx: number;
@@ -149,7 +149,7 @@ export function getSwapRange(range: number[]): number[] {
 
 /**
  * Interchange values in an array
- * 
+ *
  * @param {number[]} range - Specifies the range.
  * @param {number} x - Specifies the x.
  * @param {number} y - Specifies the y.

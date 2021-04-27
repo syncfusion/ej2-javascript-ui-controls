@@ -998,7 +998,6 @@ export class Selection {
                         selectionWidgetCollection = [];
                         widgets.add(lineWidget, selectionWidgetCollection);
                     }
-
                 } else {
                     selectionWidgetCollection = widgets.get(lineWidget) as SelectionWidgetInfo[];
                 }
@@ -1007,9 +1006,24 @@ export class Selection {
                     selectionWidgetCollection = [];
                     widgets.add(lineWidget, selectionWidgetCollection);
                 } else {
-                    selectionWidget = new SelectionWidgetInfo(left, width);
-                    selectionWidget.floatingItems = floatingItems;
-                    widgets.add(lineWidget, selectionWidget);
+                    const wrapPosition: ClipInfo[] = this.getWrapPosition(lineWidget, paragraph);
+                    if (wrapPosition.length > 0) {
+                        let selectionWidgetInfos: SelectionWidgetInfo[] = this.splitSelectionHighlightPosition(left, width, wrapPosition);
+                        if (selectionWidgetInfos.length > 0) {
+                            selectionWidgetInfos[0].floatingItems = floatingItems;
+                            widgets.add(lineWidget, selectionWidgetInfos);
+                            this.renderHighlight(page, lineWidget, selectionWidgetInfos, top, floatingItems);
+                            return
+                        } else {
+                            selectionWidget = new SelectionWidgetInfo(left, width);
+                            selectionWidget.floatingItems = floatingItems;
+                            widgets.add(lineWidget, selectionWidget);
+                        }
+                    } else {
+                        selectionWidget = new SelectionWidgetInfo(left, width);
+                        selectionWidget.floatingItems = floatingItems;
+                        widgets.add(lineWidget, selectionWidget);
+                    }
                 }
             }
             if (selectionWidget === undefined) {
@@ -1018,37 +1032,105 @@ export class Selection {
                 widgets.add(lineWidget, selectionWidget);
             }
         }
+        this.renderHighlight(page,lineWidget,[selectionWidget],top,floatingItems);
+        if (isElementBoxHighlight) {
+            selectionWidgetCollection.push(selectionWidget);
+        }
+    }
+
+    private renderHighlight(page: Page, lineWidget: LineWidget, selectionWidget:SelectionWidgetInfo[], top: number, floatingItems: ShapeBase[]): void {
         const documentHelper: DocumentHelper = this.owner.documentHelper;
         const pageTop: number = this.getPageTop(page);
         const pageLeft: number = page.boundingRectangle.x;
+        const height: number = lineWidget.height;
         if (this.viewer.containerTop <= pageTop
             || pageTop < this.viewer.containerTop + documentHelper.selectionCanvas.height) {
             const zoomFactor: number = documentHelper.zoomFactor;
             this.clipSelection(page, pageTop);
-            if (this.documentHelper.isComposingIME) {
-
-                this.renderDashLine(documentHelper.selectionContext, page, lineWidget, (pageLeft + (left * zoomFactor)) - this.viewer.containerLeft, top, width * zoomFactor, height);
-            } else {
-                this.documentHelper.selectionContext.fillStyle = 'gray';
-                documentHelper.selectionContext.globalAlpha = 0.4;
-
-                documentHelper.selectionContext.fillRect((pageLeft + (left * zoomFactor)) - this.viewer.containerLeft, (pageTop + (top * zoomFactor)) - this.viewer.containerTop, width * zoomFactor, height * zoomFactor);
-                if (floatingItems.length > 0) {
-                    for (let z: number = 0; z < floatingItems.length; z++) {
-                        left = floatingItems[z].x;
-                        top = floatingItems[z].y;
-                        width = floatingItems[z].width;
-                        height = floatingItems[z].height;
-
-                        documentHelper.selectionContext.fillRect((pageLeft + (left * zoomFactor)) - this.viewer.containerLeft, (pageTop + (top * zoomFactor)) - this.viewer.containerTop, width * zoomFactor, height * zoomFactor);
-                    }
+            for (let i: number = 0; i < selectionWidget.length; i++) {
+                let selectedWidget: SelectionWidgetInfo = selectionWidget[i];
+                let left: number = selectedWidget.left;
+                let width: number = selectedWidget.width;
+                if (this.documentHelper.isComposingIME) {
+                    this.renderDashLine(documentHelper.selectionContext, page, lineWidget, (pageLeft + (left * zoomFactor)) - this.viewer.containerLeft, top, width * zoomFactor, height);
+                } else {
+                    this.documentHelper.selectionContext.fillStyle = 'gray';
+                    documentHelper.selectionContext.globalAlpha = 0.4;
+                    documentHelper.selectionContext.fillRect((pageLeft + (left * zoomFactor)) - this.viewer.containerLeft, (pageTop + (top * zoomFactor)) - this.viewer.containerTop, width * zoomFactor, height * zoomFactor);
+                }
+            }
+            if (floatingItems.length > 0) {
+                for (let z: number = 0; z < floatingItems.length; z++) {
+                    const left: number = floatingItems[z].x;
+                    const shapeTop: number = floatingItems[z].y;
+                    const shapeWidth: number = floatingItems[z].width;
+                    const shapeHeight: number = floatingItems[z].height;
+                    documentHelper.selectionContext.fillRect((pageLeft + (left * zoomFactor)) - this.viewer.containerLeft, (pageTop + (shapeTop * zoomFactor)) - this.viewer.containerTop, shapeWidth * zoomFactor, shapeHeight * zoomFactor);
                 }
             }
             documentHelper.selectionContext.restore();
         }
-        if (isElementBoxHighlight) {
-            selectionWidgetCollection.push(selectionWidget);
+    }
+
+    private getWrapPosition(lineWidget: LineWidget, paragraph: ParagraphWidget): ClipInfo[] {
+        const bodyWidget: BlockContainer = paragraph.bodyWidget as BlockContainer;
+        if (!isNullOrUndefined(bodyWidget) && bodyWidget.floatingElements.length > 0 && lineWidget.children.length > 0) {
+            let startLeft: number = this.getLeftInternal(lineWidget, lineWidget.children[0], 0);
+            let width: number = 0;
+            const wrapPos: ClipInfo[] = [];
+            let isStarted: boolean = false;
+            for (var z = 0; z < lineWidget.children.length; z++) {
+                var element = lineWidget.children[z];
+                if (element instanceof ShapeBase && element.textWrappingStyle !== 'Inline') {
+                    continue;
+                }
+                if (element.padding.left > 0) {
+                    if (wrapPos.length === 1 && wrapPos[0].end === 0) {
+                        wrapPos[0].end = wrapPos[0].start - paragraph.x;
+                        wrapPos[0].start = paragraph.x;
+                        startLeft = paragraph.x;
+                    }
+                    let clipInfo: ClipInfo = {};
+                    clipInfo.start = startLeft + width;
+                    clipInfo.end = 0;
+                    if (isStarted) {
+                        clipInfo.end = startLeft + width + element.padding.left;
+                    }
+                    wrapPos.push(clipInfo);
+                }
+                width += element.padding.left + element.width;
+                if (element instanceof TextElementBox) {
+                    isStarted = true;
+                }
+            }
+            if (wrapPos.length === 1 && wrapPos[0].end === 0) {
+                wrapPos[0].end =  wrapPos[0].start - paragraph.x;
+                wrapPos[0].start = paragraph.x;
+            }
+            return wrapPos;
         }
+        return [];
+    }
+    private splitSelectionHighlightPosition(left: number, width: number, clipInfo: ClipInfo[]): SelectionWidgetInfo[] {
+        const selectedWidget: SelectionWidgetInfo[] = [];
+        for (let m: number = 0; m < clipInfo.length; m++) {
+            const info: ClipInfo = clipInfo[m];
+            if ((left < info.start && left + width < info.end) || left > (info.end)) {
+                continue;
+            }
+            if (left < info.start && left + width > info.end) {
+                selectedWidget.push(new SelectionWidgetInfo(left, info.start - left));
+                width = (left + width) - info.end;
+                left = info.end;
+            } else if (left === info.start) {
+                left += info.end;
+                width = width - info.end
+            }
+            if (m === clipInfo.length - 1) {
+                selectedWidget.push(new SelectionWidgetInfo(left, width));
+            }
+        }
+        return selectedWidget;
     }
 
     private addEditRegionHighlight(lineWidget: LineWidget, left: number, width: number): SelectionWidgetInfo {
@@ -1147,7 +1229,7 @@ export class Selection {
      */
     public addSelectionHighlight(canvasContext: CanvasRenderingContext2D, widget: LineWidget, top: number): void {
         if (this.selectedWidgets.containsKey(widget)) {
-            let height: number = widget.height;
+            let height: number = this.documentHelper.render.getScaledValue(widget.height);
             const widgetInfo: object = this.selectedWidgets.get(widget);
             let widgetInfoCollection: SelectionWidgetInfo[] = undefined;
             if (widgetInfo instanceof SelectionWidgetInfo) {
@@ -1167,7 +1249,6 @@ export class Selection {
                     if (this.documentHelper.isComposingIME) {
                         this.renderDashLine(canvasContext, page, widget, left, top, width, height);
                     } else {
-                        height = this.documentHelper.render.getScaledValue(height);
                         canvasContext.globalAlpha = 0.4;
                         canvasContext.fillStyle = 'gray';
                         canvasContext.fillRect(left, this.documentHelper.render.getScaledValue(top, 2), width, height);
@@ -1176,9 +1257,8 @@ export class Selection {
                                 const shape: ShapeBase = selectedWidgetInfo.floatingItems[j];
                                 width = this.documentHelper.render.getScaledValue(shape.width);
                                 left = this.documentHelper.render.getScaledValue(shape.x, 1);
-                                top = this.documentHelper.render.getScaledValue(shape.y, 2);
-                                height = this.documentHelper.render.getScaledValue(shape.height);
-                                canvasContext.fillRect(left, top, width, height);
+                                let shapeTop: number = this.documentHelper.render.getScaledValue(shape.y, 2);
+                                canvasContext.fillRect(left, shapeTop, width, this.documentHelper.render.getScaledValue(shape.height));
                             }
                         }
                     }
@@ -10165,4 +10245,9 @@ export interface SelectionSettings {
      * Specifies whether to extend or update selection
      */
     extend?: boolean;
+}
+
+interface ClipInfo {
+    start?: number
+    end?: number
 }

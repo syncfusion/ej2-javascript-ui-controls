@@ -12,7 +12,7 @@ export class WorkbookChart {
 
     /**
      * Constructor for WorkbookChart module.
-     * 
+     *
      * @param {Workbook} parent - Constructor for WorkbookChart module.
      */
     constructor(parent: Workbook) {
@@ -169,7 +169,7 @@ export class WorkbookChart {
 
     /**
      * To Remove the event listeners.
-     * 
+     *
      * @returns {void} - To Remove the event listeners.
      */
     public destroy(): void {
@@ -179,7 +179,7 @@ export class WorkbookChart {
 
     /**
      * Get the workbook chart module name.
-     * 
+     *
      * @returns {string} - Get the workbook chart module name.
      */
     public getModuleName(): string {

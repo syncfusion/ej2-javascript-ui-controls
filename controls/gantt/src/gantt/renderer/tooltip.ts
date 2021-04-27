@@ -198,7 +198,7 @@ export class Tooltip {
         } else {
             tooltipPositionX = tooltipPositionX + 10;
         }
-        if (topEnd < (tooltipPositionY + args.element.offsetHeight + 20)) {
+        if ((topEnd < (tooltipPositionY + args.element.offsetHeight + 20)) && this.parent.chartPane.offsetHeight + 20 > tooltipPositionY) {
             tooltipPositionY = tooltipPositionY - args.element.offsetHeight - 10;
         } else {
             tooltipUpdated = true;

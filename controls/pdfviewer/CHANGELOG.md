@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 19.1.58 (2021-04-27)
+
+### PDF Viewer
+
+#### Bug Fixes
+
+- `#322799` - The imported stamp annotation position is updated correctly in the MVC platform.
+
 ## 19.1.57 (2021-04-20)
 
 ### PDF Viewer

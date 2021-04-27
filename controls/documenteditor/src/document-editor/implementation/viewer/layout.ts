@@ -428,20 +428,22 @@ export class Layout {
         return nextBlock.nextRenderedWidget as BlockWidget;
     }
     private updateTableYPositionBasedonTextWrap(table: TableWidget): void {
-        let tableY: number = table.y;
-        let tableRect: Rect = new Rect(table.x, table.y, table.width, table.height);
-        table.bodyWidget.floatingElements.forEach((shape: ShapeElementBox) => {
-            if (!shape.paragraph.isInsideTable) {
-                let shapeRect: Rect = new Rect(shape.x, shape.y, shape.width, shape.height);
-                let considerShape: boolean = (shape.textWrappingStyle === 'TopAndBottom' || shape.textWrappingStyle === 'Square');
-                if (considerShape && tableRect.isIntersecting(shapeRect)) {
-                    table.y = shape.y + shape.height + shape.distanceBottom;
-                    this.updateChildLocationForTable(table.y, table);
-                    let height: number = table.y - tableY;
-                    this.viewer.cutFromTop(this.viewer.clientActiveArea.y + height);
+        if (!isNullOrUndefined(table.bodyWidget)) {
+            let tableY: number = table.y;
+            let tableRect: Rect = new Rect(table.x, table.y, table.width, table.height);
+            table.bodyWidget.floatingElements.forEach((shape: ShapeElementBox) => {
+                if (!shape.paragraph.isInsideTable) {
+                    let shapeRect: Rect = new Rect(shape.x, shape.y, shape.width, shape.height);
+                    let considerShape: boolean = (shape.textWrappingStyle === 'TopAndBottom' || shape.textWrappingStyle === 'Square');
+                    if (considerShape && tableRect.isIntersecting(shapeRect)) {
+                        table.y = shape.y + shape.height + shape.distanceBottom;
+                        this.updateChildLocationForTable(table.y, table);
+                        let height: number = table.y - tableY;
+                        this.viewer.cutFromTop(this.viewer.clientActiveArea.y + height);
+                    }
                 }
-            }
-        });
+            });
+        }
     }
     private checkPreviousParaShapeOverlap(paragraph: ParagraphWidget): BlockWidget {
         if (!(paragraph.containerWidget instanceof TextFrame) && !this.isRelayoutOverlap &&
@@ -711,9 +713,6 @@ export class Layout {
     }
     /* eslint-disable  */
     private layoutElement(element: ElementBox, paragraph: ParagraphWidget): void {
-        if (element instanceof ShapeBase && element.textWrappingStyle !== 'Inline') {
-            return;
-        }
         let line: LineWidget = element.line;
         let text: string = '';
         let index: number = element.indexInOwner;
@@ -752,7 +751,8 @@ export class Layout {
         }
         if (element instanceof ListTextElementBox || this.isFieldCode || element instanceof BookmarkElementBox ||
             element instanceof EditRangeEndElementBox || element instanceof EditRangeStartElementBox
-            || element instanceof ContentControl) {
+            || element instanceof ContentControl ||
+            (element instanceof ShapeBase && element.textWrappingStyle !== 'Inline')) {
             if (element instanceof BookmarkElementBox) {
                 if (element.bookmarkType === 0 && !this.documentHelper.bookmarks.containsKey(element.name)) {
                     this.documentHelper.bookmarks.add(element.name, element);
@@ -968,6 +968,7 @@ export class Layout {
             && wrapItemIndex !== wrapCollectionIndex
             && textWrappingStyle !== 'Inline'
             && textWrappingStyle !== 'Behind'
+            && textWrappingStyle != 'TopAndBottom'
             && textWrappingStyle !== 'InFrontOfText'
             && (Math.round((rect.y + height)) > Math.round(textWrappingBounds.y) ||
                 this.isTextFitBelow(textWrappingBounds, rect.y + height, floatingEntity))
@@ -1790,7 +1791,9 @@ export class Layout {
             }
         }
         const splitCurrentWidget: boolean = this.viewer.clientActiveArea.width - width < 0;
-        if (currentElement.line.paragraph.bodyWidget.floatingElements.length > 0) {
+        const paragarph: ParagraphWidget = currentElement.line.paragraph;
+        const bodyWidget: BlockContainer = paragarph.bodyWidget as BlockContainer;
+        if (bodyWidget && bodyWidget.floatingElements.length > 0) {
             this.hasFloatingElement = true;
             this.isXPositionUpdated = true;
             return false;
@@ -3760,7 +3763,7 @@ export class Layout {
         cellSpacing = (!isNullOrUndefined(row.ownerTable) && !isNullOrUndefined(row.ownerTable.tableFormat)) ? HelperMethods.convertPointToPixel(row.ownerTable.tableFormat.cellSpacing) : 0;
         while (count < rowWidgets.length) {
             count = rowWidgets.length;
-            if (row.ownerTable.isInsideTable || (this.documentHelper.splittedCellWidgets.length === 0 && tableRowWidget.y + tableRowWidget.height + cellSpacing <= viewer.clientArea.bottom)) {
+            if (row.ownerTable.isInsideTable || (this.documentHelper.splittedCellWidgets.length === 0 && tableRowWidget.y + tableRowWidget.height + cellSpacing + this.footnoteHeight <= viewer.clientArea.bottom)) {
                 if (this.isVerticalMergedCellContinue(row) && (tableRowWidget.y === viewer.clientArea.y
                     || tableRowWidget.y === this.viewer.clientArea.y + tableRowWidget.ownerTable.headerHeight)) {
                     this.insertSplittedCellWidgets(viewer, tableWidgets, tableRowWidget, tableRowWidget.index - 1);

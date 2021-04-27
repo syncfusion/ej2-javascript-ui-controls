@@ -5000,3 +5000,54 @@ describe('EJ2-46492 - Preventing row deselection in the rowDeselecting event is 
         gridObj = null;
     });
 });
+
+describe('EJ2-48271 - Selected Row Index issue after deselection with checkbox', () => {
+    let gridObj: Grid;
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: data,
+                columns: [
+                    { type: "checkbox"},
+                    { field: 'OrderID', isPrimaryKey: true, headerText: 'Order ID' },
+                    { field: 'CustomerID', headerText: 'CustomerID' },
+                    { field: 'EmployeeID', headerText: 'Employee ID' },
+                    { field: "ShipCity", headerText: "Ship City", width: 250 },
+                ],
+                height: 700,
+            }, done);
+    });
+    it('checking selected row Index in rowDeselected ', () => {
+        let rowDeselected = (e: any) => {
+            expect(gridObj.selectedRowIndex).toBe(6);
+            gridObj.rowDeselected= null;
+        };
+        gridObj.rowDeselected = rowDeselected;
+        gridObj.selectRows([0,4,2,6]);
+        expect(gridObj.selectedRowIndex).toBe(6);
+        (gridObj.element.querySelectorAll('.e-rowcell')[4] as any).click();
+
+    });
+    it('checking selected row Index in rowDeselected with last row', () => {
+        let rowDeselected = (e: any) => {
+            expect(gridObj.selectedRowIndex).toBe(2);
+            gridObj.rowDeselected= null;
+        };
+        gridObj.rowDeselected = rowDeselected;
+        (gridObj.element.querySelectorAll('.e-rowcell')[6] as any).click();
+
+    });
+    it('clear all Rows', () => {
+        let rowDeselected = (e: any) => {
+            expect(gridObj.selectedRowIndex).toBe(-1);
+            gridObj.rowDeselected= null;
+        };
+        gridObj.rowDeselected = rowDeselected;
+        gridObj.clearSelection();
+
+    });
+    afterAll(() => {
+        destroy(gridObj);
+        gridObj = null;
+    });
+});

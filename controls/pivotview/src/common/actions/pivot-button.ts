@@ -1432,6 +1432,29 @@ export class PivotButton implements IAction {
         if (this.menuOption) {
             this.menuOption.destroy();
         }
+        if (this.valueFiedDropDownList && !this.valueFiedDropDownList.isDestroyed) {
+            this.valueFiedDropDownList.destroy();
+            this.valueFiedDropDownList = null;
+        }
+        if (this.columnFieldDropDownList && !this.columnFieldDropDownList.isDestroyed) {
+            this.columnFieldDropDownList.destroy();
+            this.columnFieldDropDownList = null;
+        }
+        if (this.memberTreeView && !this.memberTreeView.isDestroyed) {
+            this.memberTreeView.destroy();
+            this.memberTreeView = null;
+        }
+        if (this.dialogPopUp && !this.dialogPopUp.isDestroyed) {
+            this.dialogPopUp.destroy();
+            this.dialogPopUp = null;
+        }
+        if (this.draggable && !this.draggable.isDestroyed) {
+            this.draggable.destroy();
+            this.draggable = null;
+        }
+        if (this.axisField) {
+            this.axisField = null;
+        }
         this.removeEventListener();
         this.isDestroyed = true;
     }

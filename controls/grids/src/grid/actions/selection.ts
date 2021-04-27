@@ -574,6 +574,7 @@ export class Selection implements IAction {
                 }
                 this.selectedRowIndexes.splice(this.selectedRowIndexes.indexOf(rowIndex), 1);
                 this.selectedRecords.splice(this.selectedRecords.indexOf(selectedRow), 1);
+                this.selectRowIndex(this.selectedRowIndexes.length ? this.selectedRowIndexes[this.selectedRowIndexes.length-1] : -1);
                 selectedRow.removeAttribute('aria-selected');
                 this.addRemoveClassesForRow(selectedRow, false, null, 'e-selectionbackground', 'e-active');
                 if (selectedMovableRow) {

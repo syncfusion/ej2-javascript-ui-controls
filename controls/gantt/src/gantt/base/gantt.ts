@@ -155,9 +155,9 @@ export class Gantt extends Component<HTMLElement>
     /** @hidden */
     public nonWorkingDayIndex?: number[];
     /** @hidden */
-    public durationUnitTexts?: Record<string, unknown>;
+    public durationUnitTexts?: Object; // eslint-disable-line
     /** @hidden */
-    public durationUnitEditText?: Record<string, unknown>;
+    public durationUnitEditText?: Object;  // eslint-disable-line
     /** @hidden */
     // eslint-disable-next-line
     public isMileStoneEdited?: Object;
@@ -395,7 +395,7 @@ export class Gantt extends Component<HTMLElement>
      * @default []
      */
     @Property([])
-    public dataSource: Record<string, unknown>[] | DataManager | Object;   // eslint-disable-line
+    public dataSource: Object[] | DataManager | Object;   // eslint-disable-line
     /**
      * `durationUnit` Specifies the duration unit for each tasks whether day or hour or minute.
      * * `day`: Sets the duration unit as day.
@@ -942,7 +942,7 @@ export class Gantt extends Component<HTMLElement>
      * @event beforeExcelExport
      */
     @Event()
-    public beforeExcelExport: EmitType<Record<string, unknown>>;
+    public beforeExcelExport: EmitType<Object>; // eslint-disable-line
     /**
      * Triggers after Gantt data is exported to Excel file.
      *
@@ -1042,7 +1042,7 @@ export class Gantt extends Component<HTMLElement>
      * @blazorType Syncfusion.EJ2.Blazor.Gantt.ActionBeginArgs<TValue>
      */
     @Event()
-    public actionBegin: EmitType<Record<string, unknown> | PageEventArgs | FilterEventArgs | SortEventArgs | ITimeSpanEventArgs | IDependencyEventArgs | ITaskAddedEventArgs | ZoomEventArgs>; // eslint-disable-line max-len
+    public actionBegin: EmitType<Object | PageEventArgs | FilterEventArgs | SortEventArgs | ITimeSpanEventArgs | IDependencyEventArgs | ITaskAddedEventArgs | ZoomEventArgs>;  // eslint-disable-line
 
     /**
      * Triggers when Gantt actions such as sorting, filtering, searching etc. are completed.
@@ -3749,7 +3749,7 @@ export class Gantt extends Component<HTMLElement>
      * @public
      */
     // eslint-disable-next-line
-    public updateDataSource(dataSource: Record<string, unknown>[], args: object): void {
+    public updateDataSource(dataSource: Object[], args: object): void {       // eslint-disable-line
         if (!isNullOrUndefined(args)) {
             // eslint-disable-next-line
             for (let prop of Object.keys(args)) {

@@ -1,11 +1,10 @@
 import { Grid, Edit as GridEdit, SaveEventArgs, CellSaveArgs, CellEditArgs, getUid, getObject,
-    NotifyArgs, Row, ActionEventArgs, resetRowIndex} from '@syncfusion/ej2-grids';
+    NotifyArgs, Row, ActionEventArgs, resetRowIndex, BatchChanges} from '@syncfusion/ej2-grids';
 import { Column, RecordDoubleClickEventArgs, RowInfo, parentsUntil } from '@syncfusion/ej2-grids';
 import { TreeGrid } from '../base/treegrid';
 import { ITreeData, CellSaveEventArgs } from '../base/interface';
 import * as events from '../base/constant';
 import { isNullOrUndefined, extend, setValue, removeClass, KeyboardEventArgs, addClass, getValue } from '@syncfusion/ej2-base';
-import { updateBlazorTemplate } from '@syncfusion/ej2-base';
 import { DataManager, Deferred, RemoteSaveAdaptor, AdaptorOptions, Query } from '@syncfusion/ej2-data';
 import { findChildrenRecords, getParentData, isCountRequired, isRemoteData  } from '../utils';
 import { editAction, updateParentRow } from './crud-actions';
@@ -442,7 +441,7 @@ export class Edit {
         }
         removeClass([row], ['e-editedrow', 'e-batchrow']);
         removeClass(row.querySelectorAll('.e-rowcell'), ['e-editedbatchcell', 'e-updatedtd']);
-        if (this.parent['isCellSaveFocus'] != false) {
+        if (this.parent['isCellSaveFocus'] !== false) {
             this.parent.grid.focusModule.restoreFocus();
         }
         editAction({ value: <ITreeData>args.rowData, action: 'edit' }, this.parent, this.isSelfReference,
@@ -467,7 +466,7 @@ export class Edit {
                 this.enableToolbarItems('edit');
             }
         }
-    }    
+    }
 
     private updateCell(args: CellSaveArgs, rowIndex: number): void {
         this.parent.grid.editModule.updateRow(rowIndex, args.rowData);
@@ -826,20 +825,36 @@ export class Edit {
 
     public addRecord(data?: Object, index?: number, position?: RowPosition): void {
         this.previousNewRowPosition = this.parent.editSettings.newRowPosition;
-        if (data) {
-            if (index > -1 ) {
-                this.selectedIndex = index;
-                this.addRowIndex = index;
+        if (!this.isSelfReference && !isNullOrUndefined(data) && Object.hasOwnProperty.call(data, this.parent.childMapping)) {
+            const addRecords: ITreeData[] = [];
+            const previousEditMode: string = this.parent.editSettings.mode;
+            const previousGridEditMode: string = this.parent.grid.editSettings.mode;
+            addRecords.push(data);
+            this.parent.setProperties({ editSettings: { mode: 'Batch' } }, true);
+            this.parent.grid.setProperties({ editSettings: { mode: 'Batch' } }, true);
+            if (!isNullOrUndefined(position)) { this.parent.setProperties({ editSettings: { newRowPosition: position } }, true); }
+            const updatedRecords: BatchChanges = { addedRecords: addRecords, changedRecords: [], deletedRecords: [] };
+            this.parent.notify(events.batchSave, { updatedRecords, index });
+            this.parent.setProperties({ editSettings: { mode: previousEditMode } }, true);
+            this.parent.grid.setProperties({ editSettings: { mode: previousGridEditMode } }, true);
+            this.parent.refresh();
+        }
+        else {
+            if (data) {
+                if (index > -1) {
+                    this.selectedIndex = index;
+                    this.addRowIndex = index;
+                } else {
+                    this.selectedIndex = this.parent.selectedRowIndex;
+                    this.addRowIndex = this.parent.selectedRowIndex;
+                }
+                if (position) {
+                    this.parent.setProperties({ editSettings: { newRowPosition: position } }, true);
+                }
+                this.parent.grid.editModule.addRecord(data, index);
             } else {
-                this.selectedIndex = this.parent.selectedRowIndex;
-                this.addRowIndex = this.parent.selectedRowIndex;
+                this.parent.grid.editModule.addRecord(data, index);
             }
-            if (position) {
-                this.parent.setProperties({editSettings: {newRowPosition:  position}}, true);
-            }
-            this.parent.grid.editModule.addRecord(data, index);
-        } else {
-            this.parent.grid.editModule.addRecord(data, index);
         }
     }
 

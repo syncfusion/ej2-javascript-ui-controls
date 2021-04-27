@@ -249,7 +249,7 @@ export class EventWindow {
                 }
                 if (!this.isCrudAction) {
                     this.resetForm();
-                    this.parent.eventBase.focusElement();
+                    this.parent.eventBase.focusElement(true);
                     this.eventCrudData = null;
                 }
             }

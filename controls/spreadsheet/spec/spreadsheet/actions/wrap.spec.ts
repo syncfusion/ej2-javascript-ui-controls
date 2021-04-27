@@ -75,7 +75,34 @@ describe('Wrap ->', () => {
                 helper.invoke('updateCell', [{ value: 'Welcome to Spreadsheet!!!' }]);
                 expect(spreadsheet.sheets[0].rows[0].cells[0].value).toBe('Welcome to Spreadsheet!!!');
                 expect(spreadsheet.sheets[0].rows[0].height).toBe(55);
-                expect( helper.invoke('getRow', [0]).style.height).toBe('55px');
+                expect(helper.invoke('getRow', [0]).style.height).toBe('55px');
+                done();
+            });
+        });
+        describe('fb23856 ->', () => {
+            beforeEach((done: Function) => {
+                helper.initializeSpreadsheet({ sheets: [{ selectedRange: 'A1:B2' }] }, done);
+            });
+            afterEach(() => {
+                helper.invoke('destroy');
+            });
+            it('Size of cell is increased for merge - top left allignment', (done: Function) => {
+                const spreadsheet: Spreadsheet = helper.getInstance();
+                helper.getElement('#' + helper.id + '_merge').click();
+                helper.getElement('#' + helper.id + '_wrap').click();
+                expect(spreadsheet.sheets[0].rows[0].height).toBeUndefined();
+                helper.invoke('startEdit');
+                (spreadsheet as any).editModule.editCellData.value = 'text\ntext';
+                helper.getElement('#' + helper.id + '_edit').textContent = 'text\ntext';
+                helper.triggerKeyNativeEvent(13);
+                expect(spreadsheet.sheets[0].rows[0].height).toBeUndefined();
+                helper.invoke('selectRange', ['A1:B2']);
+                helper.invoke('startEdit');
+                (spreadsheet as any).editModule.editCellData.value = 'text\n\ntext';
+                helper.getElement('#' + helper.id + '_edit').textContent = 'text\n\ntext';
+                helper.triggerKeyNativeEvent(13);
+                expect(spreadsheet.sheets[0].rows[0].height).toBe(36);
+                expect(spreadsheet.sheets[0].rows[1].height).toBeUndefined();
                 done();
             });
         });

@@ -46,18 +46,21 @@ export class WorkbookNumberFormat {
     /**
      * @hidden
      *
-     * @param {{ [key: string]: string | number | boolean | CellModel }} args - Specifies the args.
+     * @param {Object} args - Specifies the args.
      * @returns {string} - to get formatted cell.
      */
     public getFormattedCell(args: { [key: string]: string | number | boolean | CellModel }): string {
         const fResult: string = isNullOrUndefined(args.value as string) ? '' : args.value as string;
         const sheet: SheetModel = this.parent.sheets[isNullOrUndefined(args.sheetIndex) ? this.parent.activeSheetIndex :
             <number>args.sheetIndex];
-            const range: number[] = getRangeIndexes(sheet.activeCell);
+        const range: number[] = getRangeIndexes(sheet.activeCell);
         const sheetIdx: number = Number(args.sheetIndex) ? Number(args.sheetIndex) : this.parent.activeSheetIndex;
         let cell: CellModel = args.cell as CellModel ? args.cell as CellModel : getCell(range[0], range[1], sheet);
         let rightAlign: boolean = false;
-        const currencySymbol: string = getNumberDependable(this.parent.locale, 'USD');
+        const option: { currency?: string } = {};
+        const intl: Internationalization = new Internationalization();
+        intl.getNumberFormat(option);
+        const currencySymbol: string = getNumberDependable(this.parent.locale, option.currency);
         if (args.format === '' || args.format === 'General') {
             cell = cell ? cell : {};
             const dateEventArgs: { [key: string]: string | number | boolean } = {
@@ -76,7 +79,8 @@ export class WorkbookNumberFormat {
             }
         }
         args.type = args.format ? getTypeFromFormat(args.format as string) : 'General';
-        const result: { [key: string]: string | boolean } = this.processFormats(args, fResult, rightAlign, cell);
+        const result: { [key: string]: string | boolean } = this.processFormats(
+            args, fResult, rightAlign, cell, intl, currencySymbol, option.currency);
         if ((this.parent.getActiveSheet().id - 1 === sheetIdx)) {
             this.parent.notify(refreshCellElement, {
                 isRightAlign: result.rightAlign, result: result.fResult || args.value as string,
@@ -95,9 +99,8 @@ export class WorkbookNumberFormat {
 
     private processFormats(
         args: { [key: string]: string | number | boolean | CellModel },
-        fResult: string, isRightAlign: boolean, cell?: CellModel): { [key: string]: string | boolean } {
-        const intl: Internationalization = new Internationalization();
-        const currencySymbol: string = getNumberDependable(this.parent.locale, 'USD');
+        fResult: string, isRightAlign: boolean, cell: CellModel, intl: Internationalization,
+        currencySymbol: string, currencyCode: string): { [key: string]: string | boolean } {
         let result: { [key: string]: string | boolean };
         args.format = args.format ? args.format : 'General';
         if (fResult !== '') {
@@ -105,7 +108,7 @@ export class WorkbookNumberFormat {
             case 'General':
                 result = this.autoDetectGeneralFormat({
                     args: args, currencySymbol: currencySymbol, fResult: fResult, intl: intl,
-                    isRightAlign: isRightAlign, curCode: 'USD', cell: cell, rowIdx: Number(args.rowIdx),
+                    isRightAlign: isRightAlign, curCode: currencyCode, cell: cell, rowIdx: Number(args.rowIdx),
                     colIdx: Number(args.colIdx)
                 });
                 fResult = result.fResult as string;
@@ -119,7 +122,7 @@ export class WorkbookNumberFormat {
                 break;
             case 'Currency':
                 if (isNumber(fResult)) {
-                    fResult = this.currencyFormat(args, intl);
+                    fResult = this.currencyFormat(args, intl, currencyCode);
                     isRightAlign = true;
                 }
                 break;
@@ -131,7 +134,7 @@ export class WorkbookNumberFormat {
                 break;
             case 'Accounting':
                 if (isNumber(fResult)) {
-                    fResult = this.accountingFormat(args, intl);
+                    fResult = this.accountingFormat(args, intl, currencySymbol, currencyCode);
                     isRightAlign = true;
                 }
                 break;
@@ -173,7 +176,7 @@ export class WorkbookNumberFormat {
                 if (options.args.format.toString().indexOf('%') > -1) {
                     options.fResult = this.percentageFormat(options.args, options.intl);
                 } else if (options.args.format.toString().indexOf(options.currencySymbol) > -1) {
-                    options.fResult = this.currencyFormat(options.args, options.intl);
+                    options.fResult = this.currencyFormat(options.args, options.intl, options.curCode);
                 } else {
                     options.fResult = this.applyNumberFormat(options.args, options.intl);
                 }
@@ -197,7 +200,7 @@ export class WorkbookNumberFormat {
                 !this.parent.isEdit) {
                 options.args.value = Number(res.split(options.currencySymbol)[1].split(this.groupSep).join(''));
                 options.cell.format = options.args.format = getFormatFromType('Currency');
-                options.fResult = this.currencyFormat(options.args, options.intl);
+                options.fResult = this.currencyFormat(options.args, options.intl, options.curCode);
                 options.cell.value = options.args.value.toString();
                 setCell(options.rowIdx, options.colIdx, this.parent.getActiveSheet(), options.cell, true);
                 options.isRightAlign = true;
@@ -221,7 +224,7 @@ export class WorkbookNumberFormat {
         const formatArr: string[] = args.format.toString().split(';');
         if (Number(args.value) > 0) {
             args.format = formatArr[0];
-        } else if (Number(args.value) == 0) {
+        } else if (Number(args.value) === 0) {
             args.format = formatArr[2] ? formatArr[2] : formatArr[0];
             if (args.format.indexOf('"') > -1 && args.format.indexOf('#') === -1) {
                 args.format = args.format.split('_').join(' ').split('*').join(' ').split('?').join(' ').split('"').join('');
@@ -255,6 +258,9 @@ export class WorkbookNumberFormat {
         } else {
             args.format = args.format.split('?').join(' ');
         }
+        if (Number(args.value) < 0 && (args.cell as CellModel)) {
+            args.format = (args.cell as CellModel).format;
+        }
         return intl.formatNumber(Number(args.value), {
             format: args.format as string
         });
@@ -268,7 +274,8 @@ export class WorkbookNumberFormat {
         format = format.toString().split('_)').join(' ').split('_(').join(' ').split('[Red]').join('');
         return format;
     }
-    private currencyFormat(args: { [key: string]: string | number | boolean | CellModel }, intl: Internationalization): string {
+    private currencyFormat(
+        args: { [key: string]: string | number | boolean | CellModel }, intl: Internationalization, currencyCode: string): string {
         args.format = args.format === '' ? getFormatFromType('Currency') : args.format;
         args.format = args.format.toString().split('_(').join(' ').split('_)').join(' ').split('[Red]').join('');
         const formatArr: string[] = args.format.toString().split(';');
@@ -278,10 +285,7 @@ export class WorkbookNumberFormat {
             args.format = isNullOrUndefined(formatArr[1]) ? formatArr[0] : formatArr[1].split('*').join(' ');
         }
         args.format = this.getFormatForOtherCurrency(args.format);
-        return intl.formatNumber(Number(args.value), {
-            format: args.format as string,
-            currency: 'USD'
-        });
+        return intl.formatNumber(Number(args.value), { format: args.format as string, currency: currencyCode });
     }
 
     private percentageFormat(args: { [key: string]: string | number | boolean | CellModel }, intl: Internationalization): string {
@@ -291,10 +295,11 @@ export class WorkbookNumberFormat {
         });
     }
 
-    private accountingFormat(args: { [key: string]: string | number | boolean | CellModel }, intl: Internationalization): string {
+    private accountingFormat(
+        args: { [key: string]: string | number | boolean | CellModel }, intl: Internationalization, currencySymbol: string,
+        currencyCode: string): string {
         args.format = args.format === '' ? getFormatFromType('Accounting') : args.format;
         args.format = (args.format as string).split('_(').join(' ').split('_)').join(' ').split('[Red]').join('').split('_').join('');
-        const currencySymbol: string = getNumberDependable(this.parent.locale, 'USD');
         const formatArr: string[] = (args.format as string).split(';');
         if (Number(args.value) >= 0) {
             args.format = formatArr[0];
@@ -305,10 +310,7 @@ export class WorkbookNumberFormat {
         if (Number(args.value) === 0) {
             return currencySymbol + '- ';
         } else {
-            return intl.formatNumber(Number(args.value), {
-                format: args.format as string,
-                currency: 'USD'
-            }).split('-').join('');
+            return intl.formatNumber(Number(args.value), { format: args.format as string, currency: currencyCode }).split('-').join('');
         }
     }
 
@@ -403,10 +405,12 @@ export class WorkbookNumberFormat {
     }
 
     private findDecimalPlaces(code: string, type: string): number {
+        let eIndex: number;
+        let decIndex: number;
         switch (type) {
         case 'Scientific':
-            let eIndex: number = code.toUpperCase().indexOf('E');
-            let decIndex: number = code.indexOf(this.decimalSep);
+            eIndex = code.toUpperCase().indexOf('E');
+            decIndex = code.indexOf(this.decimalSep);
             if (eIndex > -1) {
                 return code.substring(decIndex + 1, eIndex).length;
             }
@@ -470,7 +474,7 @@ export class WorkbookNumberFormat {
 
     private formattedBarText(args: { [key: string]: CellModel | string }): void {
         const type: string = getTypeFromFormat((<CellModel>args.cell) ? (<CellModel>args.cell).format : '');
-        let intl: Internationalization = new Internationalization();
+        const intl: Internationalization = new Internationalization();
         const beforeText: string = <string>args.value;
         const date: string = (type === 'ShortDate' && args.cell && (<CellModel>args.cell).format) ?
             (<CellModel>args.cell).format : getFormatFromType('ShortDate');
@@ -636,15 +640,15 @@ export function getTypeFromFormat(format: string): string {
         code = 'Text';
         break;
     default:
-            if (format) {
-                if (format.indexOf('[$') > -1) {
-                    if(format.indexOf('* ') > -1){
-                        code = 'Accounting';
-                    } else {
-                        code = 'Currency';
-                    }
+        if (format) {
+            if (format.indexOf('[$') > -1) {
+                if (format.indexOf('* ') > -1){
+                    code = 'Accounting';
+                } else {
+                    code = 'Currency';
                 }
             }
+        }
         break;
     }
     return code;

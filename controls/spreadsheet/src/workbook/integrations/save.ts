@@ -31,7 +31,8 @@ export class WorkbookSave extends SaveWorker {
 
     /**
      * Get the module name.
-     * @return {string} - To Get the module name.
+     *
+     * @returns {string} - To Get the module name.
      * @private
      */
     public getModuleName(): string {
@@ -41,7 +42,7 @@ export class WorkbookSave extends SaveWorker {
     /**
      * To destroy the WorkbookSave module.
      *
-     * @return {void} - To destroy the WorkbookSave module. 
+     * @returns {void} - To destroy the WorkbookSave module.
      * @hidden
      */
     public destroy(): void {
@@ -71,7 +72,7 @@ export class WorkbookSave extends SaveWorker {
      * Initiate save process.
      *
      * @hidden
-     * @param {{ [key: string]: Object }} args - Specify the args.
+     * @param {Object} args - Specify the args.
      * @returns {void} - Initiate save process.
      */
     private initiateSave(args: { [key: string]: Object }): void {
@@ -80,7 +81,7 @@ export class WorkbookSave extends SaveWorker {
         this.saveSettings = {
             saveType: saveSettings.saveType,
             url: saveSettings.url,
-            fileName: saveSettings.fileName || 'Sample',
+            fileName: saveSettings.fileName || 'Sample'
             //passWord: saveSettings.passWord
         };
         this.isFullPost = args.isFullPost as boolean;
@@ -158,7 +159,7 @@ export class WorkbookSave extends SaveWorker {
      * @returns {void} - Save process.
      */
     private save(saveSettings: SaveOptions): void {
-        let args: { cancel: boolean, jsonObject: object } = { cancel: false, jsonObject: this.saveJSON };
+        const args: { cancel: boolean, jsonObject: object } = { cancel: false, jsonObject: this.saveJSON };
         this.parent.notify(events.onSave, args);
         if (!args.cancel) {
             if (this.isFullPost) {
@@ -176,11 +177,11 @@ export class WorkbookSave extends SaveWorker {
      * Update final save data.
      *
      * @hidden
-     * @para {{ [key: string]: Object } | Blob} result - specify the sve result.
+     * @param {Object | Blob} result - specify the sve result.
      * @returns {void} - Update final save data.
      */
     private updateSaveResult(result: { [key: string]: Object } | Blob): void {
-        let args: SaveCompleteEventArgs = {
+        const args: SaveCompleteEventArgs = {
             status: 'Success',
             message: '',
             url: this.saveSettings.url,
@@ -197,14 +198,14 @@ export class WorkbookSave extends SaveWorker {
             if (this.needBlobData) {
                 args.blobData = result as Blob;
             } else {
-                this.ClientFileDownload(result as Blob, this.saveSettings.fileName);
+                this.ClientFileDownload(result as Blob);
             }
         }
         this.parent.trigger('saveComplete', args);
         this.parent.notify(events.saveCompleted, args);
     }
 
-    private ClientFileDownload(blobData: Blob, fileName: string): void {
+    private ClientFileDownload(blobData: Blob): void {
         const anchor: HTMLAnchorElement = this.parent.createElement(
             'a', { attrs: { download: this.getFileNameWithExtension() } }) as HTMLAnchorElement;
         const url: string = URL.createObjectURL(blobData);
@@ -261,6 +262,7 @@ export class WorkbookSave extends SaveWorker {
             if (skipProp.indexOf(key) > -1) {
                 return undefined;
             } else {
+                // eslint-disable-next-line no-prototype-builtins
                 if (value && typeof value === 'object' && value.hasOwnProperty('properties')) {
                     return value.properties;
                 } else if (value !== null) {

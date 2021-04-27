@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { getValue, INotifyPropertyChanged, EmitType, Event, ModuleDeclaration, NotifyPropertyChanges, Base, Property, isNullOrUndefined, isUndefined } from '@syncfusion/ej2-base';
 import { BasicFormulas } from './../formulas/index';
 import { CalculateModel } from './calculate-model';
@@ -12,11 +13,10 @@ import { Parser } from './parser';
 @NotifyPropertyChanges
 export class Calculate extends Base<HTMLElement> implements INotifyPropertyChanged {
     private lFormulas: Map<string, IFormulaColl> = new Map<string, IFormulaColl>();
-    /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
     get libraryFormulas(): any {
         return this.lFormulas;
     }
-    /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
+    // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
     set libraryFormulas(formulaColl: any) {
         this.lFormulas.set(
             formulaColl.fName, { handler: formulaColl.handler, category: formulaColl.category, description: formulaColl.description });
@@ -42,6 +42,7 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
     /** @hidden */
     public parentObject: Object | Calculate;
     /** @hidden */
+    // eslint-disable-next-line no-useless-escape
     public tic: string = '\"';
     /** @hidden */
     public singleTic: string = '\'';
@@ -269,6 +270,7 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
         return this.injectedModules;
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     public onPropertyChanged(newProp: CalculateModel, oldProp: CalculateModel): void {
         /** code snippets */
     }
@@ -2098,6 +2100,7 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
                 if (!this.getDependentFormulaCells().has(this.cell)) {
                     this.clearFormulaDependentCells(this.cell);
                 }
+                // eslint-disable-next-line no-throw-literal
                 throw this.formulaErrorStrings[FormulasErrorsStrings.circular_reference] + s;
             }
             pObjCVal = this.getParentObjectCellValue(s);
@@ -2309,11 +2312,9 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
     private getParentCellValue(row: number, col: number, grd: Object): number | string {
         // formulainfotable
         let cValue: number | string;
-        /* eslint-disable-next-line */
         if ((this.parentObject as any).getValueRowCol === undefined) {
             cValue = this.getValueRowCol(this.getSheetID(grd), row, col);
         } else {
-            /* eslint-disable-next-line */
             cValue = (this.parentObject as any).getValueRowCol(this.getSheetID(grd), row, col);
             return isNullOrUndefined(cValue) ? this.emptyString : cValue.toString();
         }
@@ -2334,6 +2335,7 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
      * @param {number} col - Column index of the parent object.
      * @returns {string} - Getting the formula result.
      */
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     public getValueRowCol(grid: Object, row: number, col: number): string {
         const key: string = this.rowsToKeyMap.get(row).toString();
         let result: string = this.getKeyValue(key).toString();
@@ -2495,6 +2497,7 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
      * @param {number} col - specify the col.
      * @returns {void} - to set value row and column.
      */
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     public setValueRowCol(value: number, formulaValue: string | number, row: number, col: number): void {
         /* No Implementation */
     }
@@ -2946,7 +2949,6 @@ export class CalcSheetFamilyItem {
  * @param {number} col - Specify the column
  * @returns {string} - To returns get Alphalabel.
  */
-
 export function getAlphalabel(col: number): string {
     const cols: string[] = [];
     let n: number = 0;
@@ -3003,9 +3005,9 @@ export class ValueChangedArgs {
         this.getValue = (): number | string => {
             return value;
         };
-        this.setValue = (value: number): void => {
-            value = value;
-        };
+        // this.setValue = (value: number): void => {
+        //     value = value;
+        // };
         return this;
     }
 }

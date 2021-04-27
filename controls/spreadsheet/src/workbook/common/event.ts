@@ -212,3 +212,5 @@ export const saveError: string = 'saveError';
 export const validationHighlight: string = 'validationHighlight';
 /** @hidden */
 export const dataRefresh: string = 'dataRefresh';
+/** @hidden */
+export const updateFilter: string = 'updateFilter';

@@ -376,11 +376,11 @@ describe('Editing ->', () => {
     });
 
     describe('CR-Issues ->', () => {
-        describe('I267737, I267730 ->', () => {
-            beforeEach((done: Function) => {
+        describe('I267737, I267730, FB21561 ->', () => {
+            beforeAll((done: Function) => {
                 helper.initializeSpreadsheet({}, done);
             });
-            afterEach(() => {
+            afterAll(() => {
                 helper.invoke('destroy');
             });
             it('Serious issues with Time type of cell (Issue in Time number format)', (done: Function) => {
@@ -393,9 +393,21 @@ describe('Editing ->', () => {
                     helper.invoke('startEdit', []);
                     setTimeout((): void => {
                         expect(helper.getElement('#' + helper.id + '_edit').textContent).toBe('1/1/1900 7:00:00 AM');
+                        helper.invoke('endEdit', []);
                         done();
                     });
                 });
+            });
+
+            it('Typing percentage value is auto formatted', (done: Function) => {
+                helper.edit('B1', '25%');
+                expect(helper.invoke('getCell', [0, 1]).textContent).toBe('25%');
+                expect(helper.getInstance().sheets[0].rows[0].cells[1].value).toBe('0.25');
+                expect(helper.getInstance().sheets[0].rows[0].cells[1].format).toBe('0%');
+                helper.invoke('selectRange', ['A1']);
+                helper.invoke('selectRange', ['B1']);
+                expect(helper.getElementFromSpreadsheet('#' + helper.id + '_number_format').textContent).toBe('Percentage');
+                done();
             });
         });
         describe('I301868, I301863 ->', () => {

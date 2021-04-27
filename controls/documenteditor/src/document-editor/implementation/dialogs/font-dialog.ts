@@ -225,7 +225,7 @@ export class FontDialog {
         const underlineLabel: HTMLElement = createElement('label', { className: 'e-de-font-dlg-header', innerHTML: html });
         let underlineElement: HTMLSelectElement;
         underlineElement = createElement('select', { id: this.target.id + '_underLine', styles: styles }) as HTMLSelectElement;
-        underlineElement.innerHTML = '<option  value="None">' + locale.getConstant('None') + '</option><option>________</option>';
+        underlineElement.innerHTML = '<option value="None">' + locale.getConstant('None') + '</option><option value="Single">________</option>';
         sizeSubDiv2.appendChild(underlineLabel);
         sizeSubDiv2.appendChild(underlineElement);
         sizeDiv.appendChild(sizeSubDiv2);

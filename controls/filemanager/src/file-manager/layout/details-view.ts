@@ -319,8 +319,8 @@ export class DetailsView {
 
     private onActionBegin(args: SortEventArgs): void {
         if (args.requestType === 'sorting') {
-            this.parent.sortOrder = args.direction;
-            this.parent.sortBy = args.columnName;
+            this.parent.setProperties({ sortOrder: args.direction }, true);
+            this.parent.setProperties({ sortBy: args.columnName }, true);
             if (this.parent.selectedItems.length !== 0) {
                 this.sortItem = true;
                 const rows: number[] = this.gridObj.getSelectedRowIndexes();

@@ -499,6 +499,7 @@ export interface MinorGridLinesModel {
 
     /**
      * The width of the line in pixels.
+     *
      * @default 0
      */
     width?: number;

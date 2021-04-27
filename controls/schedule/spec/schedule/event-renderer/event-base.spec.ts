@@ -2,6 +2,7 @@
 /**
  * Events base methods testing
  */
+import { createElement, remove } from '@syncfusion/ej2-base';
 import { Schedule, Day, Week, WorkWeek, Month, Agenda, Timezone, ScheduleModel, CallbackFunction } from '../../../src/schedule/index';
 import { profile, inMB, getMemoryProfile } from '../../common.spec';
 import * as util from '../util.spec';
@@ -454,6 +455,59 @@ describe('Event Base Module', () => {
             };
             schObj.currentView = 'Month';
             schObj.dataBind();
+        });
+    });
+
+    describe('checking focus on element outside schedule', () => {
+        let schObj: Schedule;
+        let keyModule: any;
+        let inputObj: HTMLElement;
+        const eventData: Record<string, any>[] = [{
+            Id: 1,
+            StartTime: new Date(2018, 9, 1, 9, 0),
+            EndTime: new Date(2018, 9, 1, 9, 30)
+        }, {
+            Id: 2,
+            StartTime: new Date(2018, 9, 3, 10, 30),
+            EndTime: new Date(2018, 9, 3, 12, 0)
+        }];
+        beforeAll((done: DoneFn) => {
+            const options: ScheduleModel = {
+                height: '550px', width: '100%', selectedDate: new Date(2018, 9, 1)
+            };
+            schObj = util.createSchedule(options, eventData, done);
+            inputObj = createElement('input',  { className: 'e-input-element' });
+            document.body.appendChild(inputObj);
+            keyModule = schObj.keyboardInteractionModule;
+        });
+        afterAll(() => {
+            util.destroy(schObj);
+            remove(inputObj);
+        });
+        it('To check outside element focus after focussing work cell', () => {
+            const workCell: HTMLTableCellElement = schObj.element.querySelectorAll('.e-work-cells')[170] as HTMLTableCellElement;
+            workCell.click();
+            keyModule.keyActionHandler({ action: 'escape' });
+            const inputEle: HTMLElement = document.querySelector('.e-input-element') as HTMLElement;
+            inputEle.focus();
+            expect(document.activeElement).toEqual(inputEle);
+        });
+        it ('To maintain outside element focus on resize', () => {
+            const workCell: HTMLTableCellElement = schObj.element.querySelectorAll('.e-work-cells')[170] as HTMLTableCellElement;
+            workCell.click();
+            const inputEle: HTMLElement = document.querySelector('.e-input-element') as HTMLElement;
+            inputEle.focus();
+            schObj.element.style.width = '80%';
+            (schObj as any).onScheduleResize();
+            expect(document.activeElement).toEqual(inputEle);
+        });
+        it('To check outside element focus after focussing appointment', () => {
+            const appointmentEle: HTMLTableCellElement = schObj.element.querySelectorAll('.e-appointment')[1] as HTMLTableCellElement;
+            appointmentEle.click();
+            keyModule.keyActionHandler({ action: 'escape' });
+            const inputEle: HTMLElement = document.querySelector('.e-input-element') as HTMLElement;
+            inputEle.focus();
+            expect(document.activeElement).toEqual(inputEle);
         });
     });
 

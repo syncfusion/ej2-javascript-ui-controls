@@ -485,7 +485,7 @@ export class ColumnChooser implements IAction {
 
         } else {
             fltrCol = new DataManager((this.getColumns() as Object[]) as JSON[]).executeLocal(new Query()
-                .where('headerText', this.searchOperator, searchVal, true)) as Column[];
+                .where('headerText', this.searchOperator, searchVal, true, this.parent.columnChooserSettings.ignoreAccent)) as Column[];
         }
 
         if (fltrCol.length) {

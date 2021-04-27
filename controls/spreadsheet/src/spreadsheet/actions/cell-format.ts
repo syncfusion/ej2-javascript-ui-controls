@@ -1,7 +1,7 @@
 import { Spreadsheet, ICellRenderer, clearViewer, beginAction, getTextHeightWithBorder } from '../../spreadsheet/index';
-import { getBorderHeight, getExcludedColumnWidth, selectRange } from '../common/index';
+import { getExcludedColumnWidth, selectRange } from '../common/index';
 import { rowHeightChanged, setRowEleHeight, setMaxHgt, getTextHeight, getMaxHgt, getLines, initialLoad } from '../common/index';
-import { CellFormatArgs, getRowHeight, applyCellFormat, CellStyleModel, CellStyleExtendedModel, CellModel} from '../../workbook/index';
+import { CellFormatArgs, getRowHeight, applyCellFormat, CellStyleModel, CellStyleExtendedModel, CellModel, Workbook} from '../../workbook/index';
 import { SheetModel, isHiddenRow, getCell, getRangeIndexes, getSheetIndex, clearCFRule } from '../../workbook/index';
 import {  wrapEvent, getRangeAddress, ClearOptions,  clear } from '../../workbook/index';
 import { removeClass, isNullOrUndefined } from '@syncfusion/ej2-base';
@@ -61,7 +61,7 @@ export class CellFormat {
                 Object.assign(cell.style, args.style);
                 const CellElem: CellModel = getCell(args.rowIdx, args.colIdx, sheet); // Need to remove after adding span support to merge
                 if (CellElem && (CellElem.rowSpan || CellElem.colSpan) && cell.offsetHeight > 0) {
-                    let height: number = getTextHeight(this.parent, CellElem.style || this.parent.cellStyle);
+                    const height: number = getTextHeight(this.parent as Workbook, CellElem.style || this.parent.cellStyle);
                     if (height > cell.offsetHeight) { setRowEleHeight(this.parent, sheet, cell.offsetHeight, args.rowIdx); }
                 }
             }
@@ -70,7 +70,8 @@ export class CellFormat {
                     if (!args.manualUpdate) {
                         const cellModel: CellModel = getCell(args.rowIdx, args.colIdx, sheet);
                         if (!(cellModel && cellModel.wrap) && this.isHeightCheckNeeded(args.style)) {
-                            setMaxHgt(sheet, args.rowIdx, args.colIdx, getTextHeightWithBorder(this.parent, args.rowIdx, args.colIdx, sheet, args.style));
+                            setMaxHgt(sheet, args.rowIdx, args.colIdx,
+                                      getTextHeightWithBorder(this.parent as Workbook, args.rowIdx, args.colIdx, sheet, args.style));
                         }
                         if (args.lastCell) {
                             const height: number = getMaxHgt(sheet, args.rowIdx);
@@ -100,9 +101,10 @@ export class CellFormat {
             const cell: CellModel = getCell(rowIdx, colIdx, sheet, null, true);
             const td: HTMLElement = this.parent.getCell(rowIdx, colIdx);
             if (cell && (!cell.rowSpan && !cell.colSpan)) {
-                hgt = getTextHeightWithBorder(this.parent, rowIdx, colIdx, sheet, cell.style || this.parent.cellStyle, cell.wrap ?
-                    getLines(this.parent.getDisplayText(cell),
-                    getExcludedColumnWidth(sheet, rowIdx, colIdx), cell.style, this.parent.cellStyle) : 1);
+                hgt = getTextHeightWithBorder(this.parent as Workbook, rowIdx, colIdx, sheet, cell.style ||
+                    this.parent.cellStyle, cell.wrap ? getLines(this.parent.getDisplayText(cell),
+                                                                getExcludedColumnWidth(sheet, rowIdx, colIdx),
+                                                                cell.style, this.parent.cellStyle) : 1);
                 if (!isNullOrUndefined(cell.value)) {
                     const val: string = cell.value.toString();
                     if (val.indexOf('\n') > -1) {
@@ -117,7 +119,8 @@ export class CellFormat {
                             }
                             n = n + lines;
                         }
-                        hgt = getTextHeightWithBorder(this.parent, rowIdx, colIdx, sheet, cell.style || this.parent.cellStyle, n);
+                        hgt =
+                         getTextHeightWithBorder(this.parent as Workbook, rowIdx, colIdx, sheet, cell.style || this.parent.cellStyle, n);
                     }
                 }
                 if (hgt < 20) {
@@ -224,7 +227,7 @@ export class CellFormat {
         const range: string = options.range ? (options.range.indexOf('!') > 0) ? options.range.split('!')[1] : options.range.split('!')[0]
             : this.parent.getActiveSheet().selectedRange;
         const sheetIndex: number = (options.range && options.range.indexOf('!') > 0) ?
-            getSheetIndex(this.parent, options.range.split('!')[0]) : this.parent.activeSheetIndex;
+            getSheetIndex(this.parent as Workbook, options.range.split('!')[0]) : this.parent.activeSheetIndex;
         const rangeIdx: number[] = getRangeIndexes(range);
         const sheet: SheetModel = this.parent.sheets[sheetIndex];
         let sRIdx: number = rangeIdx[0];
@@ -267,7 +270,7 @@ export class CellFormat {
             eventArgs = { range: sheet.name + '!' + range, type: options.type, sheetIndex: sheetIndex };
             this.parent.notify('actionComplete', { eventArgs: eventArgs, action: 'clear' });
         }
-        this.parent.notify(selectRange, {address: range})
+        this.parent.notify(selectRange, {address: range});
     }
 
     private addEventListener(): void {

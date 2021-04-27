@@ -23,6 +23,7 @@ export class WorkbookSort {
 
     /**
      * To destroy the sort module.
+     *
      * @returns {void} - To destroy the sort module.
      */
     protected destroy(): void {
@@ -43,6 +44,7 @@ export class WorkbookSort {
     /**
      * Sorts range of cells in the sheet.
      *
+     * @param {{ args: BeforeSortEventArgs, promise: Promise<SortEventArgs> }} eventArgs - Specify the arguments.
      * @param {BeforeSortEventArgs} eventArgs.args - arguments for sorting.
      * @param {Promise<SortEventArgs>} eventArgs.promise - Specify the promise.
      * @returns {void} - Sorts range of cells in the sheet.
@@ -113,7 +115,7 @@ export class WorkbookSort {
                     sortDescriptors = { field: header };
                 }
                 if (!sortDescriptors.field) { sortDescriptors.field = header; }
-                let comparerFn: Function = sortDescriptors.sortComparer
+                const comparerFn: Function = sortDescriptors.sortComparer
                     || this.sortComparer.bind(this, sortDescriptors, sortOptions.caseSensitive);
                 query.sortBy(sortDescriptors.field, comparerFn);
             }

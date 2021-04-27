@@ -30,7 +30,11 @@ export class ShowHide {
         if (args.startIndex > args.endIndex) { const temp: number = args.startIndex;
             args.startIndex = args.endIndex; args.endIndex = temp; }
         if (args.actionUpdate) { this.parent.notify(beginAction, { eventArgs: args, action: 'hideShow' }); }
-        args.isCol ? this.hideCol(args) : this.hideRow(args);
+        if (args.isCol) {
+            this.hideCol(args);
+        } else {
+            this.hideRow(args);
+        }
         if (args.actionUpdate) { this.parent.notify(completeAction, { eventArgs: args, action: 'hideShow' }); }
     }
     private hideRow(args: HideShowEventArgs): void {
@@ -148,7 +152,7 @@ export class ShowHide {
                 if (sheet.showHeaders) {
                     hRow = rowRenderer.refresh(i, null, null, true);
                     hFrag.appendChild(hRow);
-                     if (rTBody) { detach(rTBody.lastElementChild); }
+                    if (rTBody) { detach(rTBody.lastElementChild); }
                 }
                 row = frag.appendChild(rowRenderer.refresh(i, row, hRow));
                 if (tBody) { detach(tBody.lastElementChild); }
@@ -426,7 +430,11 @@ export class ShowHide {
                     address: getCellAddress(startIdx, idx), lastCell: idx === modelLen, isHeightCheckNeeded: true,
                     first: idx !== skipHiddenIdx(sheet, 0, true, 'columns') && idx === this.parent.viewport.leftIndex ? 'Column' : '',
                     checkNextBorder: index === modelLen ? 'Column' : '' });
-                refCell ? row.insertBefore(cell, refCell) : row.appendChild(cell);
+                if (refCell) {
+                    row.insertBefore(cell, refCell);
+                } else {
+                    row.appendChild(cell);
+                }
                 if (index === 0 && cell.previousSibling) {
                     const borderLeft: string = this.parent.getCellStyleValue(
                         ['borderLeft'], [rowIdx, skipHiddenIdx(sheet, indexes[indexes.length - 1] + 1, true, 'columns')]).borderLeft;

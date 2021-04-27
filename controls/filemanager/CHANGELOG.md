@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 19.1.58 (2021-04-27)
+
+### File Manager
+
+#### Bug Fixes
+
+- `#I321258`, `#I320950` - The issue with "Error as occurred while sorting the path column at second time in File Manager component" has been fixed.
+
 ## 18.4.41 (2021-02-02)
 
 ### File Manager

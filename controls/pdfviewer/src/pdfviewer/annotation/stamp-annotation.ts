@@ -158,12 +158,7 @@ export class StampAnnotation {
                     // eslint-disable-next-line
                     this.retrieveDynamicStampAnnotation(annotation['Subject']);
                     this.isExistingStamp = true;
-                    let currentLocation: IRectCollection;
-                    if (isImport) {
-                        currentLocation = this.calculateImagePosition(position, false, true);
-                    } else {
-                        currentLocation = this.calculateImagePosition(position, true);
-                    }
+                    let currentLocation: IRectCollection = this.calculateImagePosition(position, true);
                     // eslint-disable-next-line
                     let rotation: number = annotation['RotateAngle'];
                     for (let d: number = 0; d < Apperance.length; d++) {
@@ -196,12 +191,7 @@ export class StampAnnotation {
                     // eslint-disable-next-line
                     this.retrievestampAnnotation(annotation['Subject']);
                     this.isExistingStamp = true;
-                    let currentLocation: IRectCollection;
-                    if (isImport) {
-                        currentLocation = this.calculateImagePosition(position, false, true);
-                    } else {
-                        currentLocation = this.calculateImagePosition(position, true);
-                    }
+                    let currentLocation: IRectCollection = this.calculateImagePosition(position, true);
                     // eslint-disable-next-line
                     let rotation: number = annotation['RotateAngle'];
                     // eslint-disable-next-line max-len
@@ -227,12 +217,7 @@ export class StampAnnotation {
                                 // eslint-disable-next-line
                                 let proxy: any = this;
                                 image.onload = (): void => {
-                                    let currentLocation: IRectCollection;
-                                    if (isImport) {
-                                        currentLocation = proxy.calculateImagePosition(position, false, false);
-                                    } else {
-                                        currentLocation = proxy.calculateImagePosition(position, true);
-                                    }
+                                    let currentLocation: IRectCollection = proxy.calculateImagePosition(position, true);
                                     // eslint-disable-next-line max-len
                                     annotation.AnnotationSettings = annotation.AnnotationSettings ? annotation.AnnotationSettings : proxy.pdfViewer.customStampSettings.annotationSettings;
                                     // eslint-disable-next-line max-len
@@ -302,7 +287,7 @@ export class StampAnnotation {
         return (number * (96 / 72));
     }
     // eslint-disable-next-line
-    private calculateImagePosition(position: any, flags?: boolean, isImport?: boolean): any {
+    private calculateImagePosition(position: any, flags?: boolean): any {
         let positions: IRectCollection = { width: 0, height: 0, left: 0, top: 0 };
         let x: number = parseFloat(position.x ? position.x : position.X);
         let y: number = parseFloat(position.y ? position.y : position.Y);
@@ -313,12 +298,6 @@ export class StampAnnotation {
             let height: number = this.ConvertPointToPixel(newHeight);
             let left: number = this.ConvertPointToPixel(x);
             let top: number = this.ConvertPointToPixel(y);
-            positions = { width: width, height: height, left: left, top: top };
-        } else if (isImport) {
-            let width: number = newWidth - 15;
-            let height: number = newHeight - 15;
-            let left: number = x + 5;
-            let top: number = y + 5;
             positions = { width: width, height: height, left: left, top: top };
         } else {
             positions = { width: newWidth, height: newHeight, left: x, top: y };
@@ -1197,7 +1176,7 @@ export class StampAnnotation {
                 note: annotation.Note, strokeColor: annotation.StrokeColor, fillColor: annotation.FillColor, opacity: annotation.Opacity, stampFillcolor: annotation.FillColor,
                 // eslint-disable-next-line max-len
                 rotateAngle: annotation.RotateAngle, creationDate: annotation.ModifiedDate, pageNumber: pageNumber, icon: '', stampAnnotationPath: this.findImageData(annotation.Apperarance), randomId: 'image', isDynamicStamp: this.pdfViewerBase.isDynamicStamp, dynamicText: ' ',
-                bounds: this.calculateImagePosition(annotation.Rect, false, false), annotName: annotation.AnnotName, comments: this.pdfViewer.annotationModule.getAnnotationComments(annotation.Comments, annotation, annotation.Author), review: { state: annotation.State, stateModel: annotation.StateModel, author: annotation.Author, modifiedDate: annotation.ModifiedDate }, shapeAnnotationType: 'stamp',
+                bounds: this.calculateImagePosition(annotation.Rect, true), annotName: annotation.AnnotName, comments: this.pdfViewer.annotationModule.getAnnotationComments(annotation.Comments, annotation, annotation.Author), review: { state: annotation.State, stateModel: annotation.StateModel, author: annotation.Author, modifiedDate: annotation.ModifiedDate }, shapeAnnotationType: 'stamp',
                 // eslint-disable-next-line max-len
                 annotationSelectorSettings: this.getSettings(annotation), annotationSettings: annotation.annotationSettings, customData: this.pdfViewer.annotation.getCustomData(annotation), isPrint: annotation.isPrint, isCommentLock: annotation.IsCommentLock
             };
@@ -1211,7 +1190,7 @@ export class StampAnnotation {
                 // eslint-disable-next-line max-len
                 rotateAngle: annotation.RotateAngle, creationDate: annotation.ModifiedDate, pageNumber: pageNumber, icon: stampAnnotation.iconName, stampAnnotationPath: stampAnnotation.pathdata, randomId: 'stamp', isDynamicStamp: false, dynamicText: this.dynamicText,
                 // eslint-disable-next-line max-len
-                bounds: this.calculateImagePosition(annotation.Rect, false, true), annotName: annotation.AnnotName, comments: this.pdfViewer.annotationModule.getAnnotationComments(annotation.Comments, annotation, annotation.Author), review: { state: annotation.State, stateModel: annotation.StateModel, author: annotation.Author, modifiedDate: annotation.ModifiedDate }, shapeAnnotationType: 'stamp',
+                bounds: this.calculateImagePosition(annotation.Rect, true), annotName: annotation.AnnotName, comments: this.pdfViewer.annotationModule.getAnnotationComments(annotation.Comments, annotation, annotation.Author), review: { state: annotation.State, stateModel: annotation.StateModel, author: annotation.Author, modifiedDate: annotation.ModifiedDate }, shapeAnnotationType: 'stamp',
                 // eslint-disable-next-line max-len
                 annotationSelectorSettings: this.getSettings(annotation), annotationSettings: annotation.AnnotationSettings, customData: this.pdfViewer.annotation.getCustomData(annotation), isPrint: annotation.isPrint, isCommentLock: annotation.IsCommentLock
             };

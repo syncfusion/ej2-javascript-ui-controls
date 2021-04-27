@@ -79,12 +79,14 @@ export class Sort {
     /**
      * sort while importing.
      *
+     * @param {any} args - Specifies the args
+     * @param {number} args.sheetIdx - Specifies the sheet index
      * @returns {void}
      */
     private sortImport(args ?: { sheetIdx: number}): void {
-        let sort: SortCollectionModel[] = this.parent.sortCollection; let cell: HTMLElement;
-        let rowId: number = this.parent.getActiveSheet().usedRange.rowIndex - 1;
-        let sheetIdx: number = args ? args.sheetIdx : this.parent.activeSheetIndex;
+        const sort: SortCollectionModel[] = this.parent.sortCollection; let cell: HTMLElement;
+        const rowId: number = this.parent.getActiveSheet().usedRange.rowIndex - 1;
+        const sheetIdx: number = args ? args.sheetIdx : this.parent.activeSheetIndex;
         for (let j : number = 0; j < sort.length; j++) {
             if (sort[j].sheetIndex === sheetIdx) {
                 for (let i: number = 0; i < rowId; i++) {
@@ -189,7 +191,7 @@ export class Sort {
     /**
      * Validates the errors of the sort criteria and displays the error.
      *
-     * @param {{[key: string]: string }} json - listview datasource.
+     * @param {Object} json - listview datasource.
      * @param {HTMLElement} dialogElem - dialog content element.
      * @param {HTMLElement} errorElem - element to display error.
      * @returns {boolean} - Return boolean value.
@@ -264,7 +266,7 @@ export class Sort {
     /**
      * Gets the fields data from the selected range.
      *
-     * @returns {{[key: string]: string}} - Gets the fields data from the selected range.
+     * @returns {Object} - Gets the fields data from the selected range.
      */
     private getFields(): { [key: string]: string }[] {
         const sheet: SheetModel = this.parent.getActiveSheet();
@@ -306,8 +308,8 @@ export class Sort {
      *
      * @param {HTMLElement} dialogElem - dialog content element.
      * @param {ListView} listviewObj - listview instance.
-     * @param {{[key: string]: string}} fields - fields data.
-     * @returns {void}
+     * @param {Object} fields - fields data.
+     * @returns {void} - set header tab.
      */
     private setHeaderTab(dialogElem: HTMLElement, listviewObj: ListView, fields: { [key: string]: string }[]): void {
         const l10n: L10n = this.parent.serviceLocator.getService(locale);

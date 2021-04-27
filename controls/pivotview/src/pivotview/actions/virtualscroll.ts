@@ -50,7 +50,8 @@ export class VirtualScroll {
             EventHandler.clearEvents(mCont);
             EventHandler.clearEvents(fCont);
             if (this.engineModule) {
-                EventHandler.add(mCont.parentElement.parentElement.querySelector('.' + cls.MOVABLESCROLL_DIV), 'scroll touchmove pointermove', this.onHorizondalScroll(mHdr, mCont, fCont), this);
+                let ele: HTMLElement = this.parent.isAdaptive ? mCont : mCont.parentElement.parentElement.querySelector('.' + cls.MOVABLESCROLL_DIV);
+                EventHandler.add(ele, 'scroll touchmove pointermove', this.onHorizondalScroll(mHdr, mCont, fCont), this);
                 EventHandler.add(mCont.parentElement, 'scroll wheel touchmove pointermove keyup keydown', this.onVerticalScroll(fCont, mCont), this);
                 EventHandler.add(mCont.parentElement.parentElement, 'mouseup touchend', this.common(mHdr, mCont, fCont), this);
                 // EventHandler.add(fCont.parentElement, 'wheel', this.onWheelScroll(mCont, fCont), this);
@@ -58,6 +59,8 @@ export class VirtualScroll {
                 // EventHandler.add(fCont.parentElement, 'touchmove pointermove', this.onTouchScroll(mHdr, mCont, fCont), this);
                 EventHandler.add(mHdr, 'touchstart pointerdown', this.setPageXY(), this);
                 EventHandler.add(mHdr, 'touchmove pointermove', this.onTouchScroll(mHdr, mCont, fCont), this);
+                EventHandler.add(mCont, 'touchstart pointerdown', this.setPageXY(), this);
+                EventHandler.add(mCont, 'touchmove pointermove', this.onTouchScroll(mHdr, mCont, fCont), this);
             }
             this.parent.grid.on('check-scroll-reset', (args: any) => {  /* eslint-disable-line */
                 args.cancel = true;
@@ -101,21 +104,20 @@ export class VirtualScroll {
             }
             let pageXY: { x: number; y: number } = this.getPointXY(e);
             let top: number = element.parentElement.scrollTop + (this.pageXY.y - pageXY.y);
-            let left: number = element.parentElement.parentElement.querySelector('.' + cls.MOVABLESCROLL_DIV).scrollLeft + (this.pageXY.x - pageXY.x);
-            if (this.parent.element.querySelector('.' + cls.HEADERCONTENT).contains(e.target as Element)) {
-                if (this.frozenPreviousValues.left === left || left < 0) {
-                    return;
-                }
-                mHdr.scrollLeft = left;
-                this.pageXY.x = pageXY.x;
-                this.frozenPreviousValues.left = left;
-            } else {
-                if (this.frozenPreviousValues.top === top || top < 0) {
-                    return;
-                }
-                this.pageXY.y = pageXY.y;
-                this.frozenPreviousValues.top = top;
+            let ele: HTMLElement = this.parent.isAdaptive ? mCont : element.parentElement.parentElement.querySelector('.' + cls.MOVABLESCROLL_DIV);
+            let left: number = ele.scrollLeft + (this.pageXY.x - pageXY.x);
+            if (this.frozenPreviousValues.left === left || left < 0) {
+                return;
             }
+            mHdr.scrollLeft = left;
+            ele.scrollLeft = left;
+            this.pageXY.x = pageXY.x;
+            this.frozenPreviousValues.left = left;
+            if (this.frozenPreviousValues.top === top || top < 0) {
+                return;
+            }
+            this.pageXY.y = pageXY.y;
+            this.frozenPreviousValues.top = top;
             this.eventType = e.type;
         };
     }
@@ -259,9 +261,10 @@ export class VirtualScroll {
 
     private common(mHdr: HTMLElement, mCont: HTMLElement, fCont: HTMLElement): Function {   /* eslint-disable-line */
         return (e: Event) => {
+            let ele: HTMLElement = this.parent.isAdaptive ? mCont : mCont.parentElement.parentElement.querySelector('.' + cls.MOVABLESCROLL_DIV);
             this.update(
                 mHdr, mCont, mCont.parentElement.scrollTop * this.parent.verticalScrollScale,
-                mCont.parentElement.parentElement.querySelector('.' + cls.MOVABLESCROLL_DIV).scrollLeft * this.parent.horizontalScrollScale, e);
+                ele.scrollLeft * this.parent.horizontalScrollScale, e);
         };
     }
 
@@ -269,12 +272,13 @@ export class VirtualScroll {
         /* eslint-disable-next-line */
         let timeOutObj: any;
         return (e: Event) => {
-            let left: number = mCont.parentElement.parentElement.querySelector('.' + cls.MOVABLESCROLL_DIV).scrollLeft * this.parent.horizontalScrollScale;
+            let ele: HTMLElement = this.parent.isAdaptive ? mCont : mCont.parentElement.parentElement.querySelector('.' + cls.MOVABLESCROLL_DIV);
+            let left: number = ele.scrollLeft * this.parent.horizontalScrollScale;
             if (e.type === 'wheel' || e.type === 'touchmove' || this.eventType === 'wheel' || this.eventType === 'touchmove') {
                 clearTimeout(timeOutObj);
                 /* eslint-disable */
                 timeOutObj = setTimeout(() => {
-                    left = e.type === 'touchmove' ? mCont.parentElement.parentElement.querySelector('.' + cls.MOVABLESCROLL_DIV).scrollLeft : left;
+                    left = e.type === 'touchmove' ? ele.scrollLeft : left;
                     this.update(mHdr, mCont, mCont.parentElement.scrollTop * this.parent.verticalScrollScale, left, e);
                 }, 300);
             }
@@ -282,10 +286,10 @@ export class VirtualScroll {
                 return;
             }
             this.parent.scrollDirection = this.direction = 'horizondal';
-            let horiOffset: number = -((left - this.parent.scrollPosObject.horizontalSection - mCont.parentElement.parentElement.querySelector('.' + cls.MOVABLESCROLL_DIV).scrollLeft));
+            let horiOffset: number = -((left - this.parent.scrollPosObject.horizontalSection - ele.scrollLeft));
             let vertiOffset: string = (mCont.querySelector('.' + cls.TABLE) as HTMLElement).style.transform.split(',').length > 1 ?
                 (mCont.querySelector('.' + cls.TABLE) as HTMLElement).style.transform.split(',')[1].trim() : "0px)";
-            if (mCont.parentElement.parentElement.querySelector('.' + cls.MOVABLESCROLL_DIV).scrollLeft < this.parent.scrollerBrowserLimit) {
+            if (ele.scrollLeft < this.parent.scrollerBrowserLimit) {
                 setStyleAttribute(mCont.querySelector('.e-table') as HTMLElement, {
                     transform: 'translate(' + horiOffset + 'px,' + vertiOffset
                 });
@@ -331,7 +335,7 @@ export class VirtualScroll {
             this.previousValues.left = left;
             this.frozenPreviousValues.left = left;
             this.eventType = '';
-            mHdr.scrollLeft = mCont.parentElement.parentElement.querySelector('.' + cls.MOVABLESCROLL_DIV).scrollLeft;
+            mHdr.scrollLeft = ele.scrollLeft;
         }
     }
 
@@ -340,10 +344,11 @@ export class VirtualScroll {
         return (e: Event | KeyboardEventArgs) => {
             let top: number = mCont.parentElement.scrollTop * this.parent.verticalScrollScale;
             if (e.type === 'wheel' || e.type === 'touchmove' || this.eventType === 'wheel' || this.eventType === 'touchmove' || e.type === 'keyup' || e.type === 'keydown') {
+                let ele: HTMLElement = this.parent.isAdaptive ? mCont : mCont.parentElement.parentElement.querySelector('.' + cls.MOVABLESCROLL_DIV);
                 clearTimeout(timeOutObj);
                 timeOutObj = setTimeout(() => {
                     this.update(null, mCont, mCont.parentElement.scrollTop * this.parent.verticalScrollScale,
-                        mCont.parentElement.parentElement.querySelector('.' + cls.MOVABLESCROLL_DIV).scrollLeft * this.parent.horizontalScrollScale, e);
+                        ele.scrollLeft * this.parent.horizontalScrollScale, e);
                 }, 300);
             }
             /* eslint-enable */

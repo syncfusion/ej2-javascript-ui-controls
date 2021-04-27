@@ -251,6 +251,7 @@ export class Page implements IAction {
         this.parent.element.appendChild(this.element);
         this.parent.setGridPager(this.element);
         this.pagerObj.isReact = this.parent.isReact;
+        this.pagerObj.isVue = this.parent.isVue;
         this.pagerObj.appendTo(this.element);
         this.isInitialLoad = false;
     }

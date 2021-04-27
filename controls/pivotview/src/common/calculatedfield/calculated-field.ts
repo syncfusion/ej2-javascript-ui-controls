@@ -111,7 +111,7 @@ export class CalculatedField implements IAction {
      * @returns {string} - Module name.
      */
     protected getModuleName(): string {
-        return 'calculatedfield';
+        return 'calculatedField';
     }
 
     private keyActionHandler(e: KeyboardEventArgs): void {

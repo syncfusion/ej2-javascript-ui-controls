@@ -154,7 +154,8 @@ export class Render {
             setStyleAttribute(mHdr.querySelector('.e-table') as HTMLElement, {
                 transform: ((mCont.querySelector('.e-table') as HTMLElement).style.transform).split(',')[0] + ',' + 0 + 'px)'
             });
-            mHdr.scrollLeft = mCont.parentElement.parentElement.querySelector('.' + cls.MOVABLESCROLL_DIV).scrollLeft;
+            let ele: HTMLElement = this.parent.isAdaptive ? mCont : mCont.parentElement.parentElement.querySelector('.' + cls.MOVABLESCROLL_DIV);
+            mHdr.scrollLeft = ele.scrollLeft;
         }
     }
     /* eslint-disable-next-line */

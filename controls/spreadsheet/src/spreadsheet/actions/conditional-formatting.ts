@@ -5,7 +5,7 @@ import { CellModel, SheetModel, getCell, setRow, setCell } from '../../workbook/
 import { getRangeIndexes, checkDateFormat, cFInitialCheck, isNumber, cFRender, cFDelete, DataBar } from '../../workbook/common/index';
 import { CellFormatArgs, isDateTime, dateToInt, CellStyleModel, applyCellFormat, clearCF } from '../../workbook/common/index';
 import { setCFRule, clearCells } from '../../workbook/common/index';
-import { isNullOrUndefined, L10n } from '@syncfusion/ej2-base';
+import { extend, isNullOrUndefined, L10n } from '@syncfusion/ej2-base';
 import { Dialog } from '../services';
 import { DropDownList } from '@syncfusion/ej2-dropdowns';
 import { ColorScale, IconSet, HighlightCell, TopBottom, CFColor, ConditionalFormatModel } from '../../workbook/common/index';
@@ -548,7 +548,6 @@ export class ConditionalFormatting {
                 range = range.indexOf(':') > -1 ? range : range + ':' + range;
                 indexes = getRangeIndexes(range);
                 if (args.rowIdx >= indexes[0] && args.colIdx >= indexes[1] && args.rowIdx <= indexes[2] && args.colIdx <= indexes[3]) {
-                    const cFRIdx: number = cFRuleIdx;
                     result = true;
                     break;
                 }
@@ -570,15 +569,15 @@ export class ConditionalFormatting {
                         let range: string = cFRanges[rangeIdx];
                         range = range.indexOf(':') > -1 ? range : range + ':' + range;
                         indexes = getRangeIndexes(range);
-                        for (let rIdx: number = indexes[0]; rIdx <= indexes[2]; rIdx++) {
-                            if (!sheet.rows[rIdx]) { setRow(sheet, rIdx, {}); }
-                            for (let cIdx: number = indexes[1]; cIdx <= indexes[3]; cIdx++) {
-                                if (!sheet.rows[rIdx].cells || !sheet.rows[rIdx].cells[cIdx]) { setCell(rIdx, cIdx, sheet, {}); }
-                                const cellVal: string = getCell(rIdx, cIdx, sheet) && getCell(rIdx, cIdx, sheet).value ?
-                                    getCell(rIdx, cIdx, sheet).value : '';
-                                isApply = this.cFRCheck(sheet.conditionalFormats[cFRuleIdx], cellVal, td, rIdx, cIdx, false);
-                                td = this.parent.getCell(rIdx, cIdx);
-                                this.setColor(td, rIdx, cIdx, cFRuleIdx, isApply);
+                        for (let rowIdx: number = indexes[0]; rowIdx <= indexes[2]; rowIdx++) {
+                            if (!sheet.rows[rowIdx]) { setRow(sheet, rowIdx, {}); }
+                            for (let colIdx: number = indexes[1]; colIdx <= indexes[3]; colIdx++) {
+                                if (!sheet.rows[rowIdx].cells || !sheet.rows[rowIdx].cells[colIdx]) { setCell(rowIdx, colIdx, sheet, {}); }
+                                const cellVal: string = getCell(rowIdx, colIdx, sheet) && getCell(rowIdx, colIdx, sheet).value ?
+                                    getCell(rowIdx, colIdx, sheet).value : '';
+                                isApply = this.cFRCheck(sheet.conditionalFormats[cFRuleIdx], cellVal, td, rowIdx, colIdx, false);
+                                td = this.parent.getCell(rowIdx, colIdx);
+                                this.setColor(td, rowIdx, colIdx, cFRuleIdx, isApply);
                             }
                         }
                     }
@@ -650,7 +649,7 @@ export class ConditionalFormatting {
                 td.removeAttribute('style');
             }
             const cell: CellModel = getCell(rIdx, cIdx, this.parent.getActiveSheet(), null, true);
-            const style: CellStyleModel = cell.style ? cell.style : {};
+            const style: CellStyleModel = extend({}, this.parent.commonCellStyle, cell.style);
             this.parent.notify(applyCellFormat, <CellFormatArgs>{
                 style: style, rowIdx: rIdx, colIdx: cIdx
             });
@@ -709,6 +708,7 @@ export class ConditionalFormatting {
                 'FiveRating' + 'ThreeTriangles' + 'ThreeStars' + 'FiveBoxes').includes(type)) {
             type = 'IconSet';
         }
+        let dateEventArgs: { [key: string]: string | number } = {};
         switch (type) {
         case 'GreaterThan':
             isApply = this.isGreaterThanLessThan(cFRule, cellValue as string, cFRuleValue1 as string, true);
@@ -726,7 +726,7 @@ export class ConditionalFormatting {
             isApply = this.isContainsText(cellValue as string, cFRuleValue1);
             break;
         case 'DateOccur':
-            const dateEventArgs: { [key: string]: string | number } = {
+            dateEventArgs = {
                 value: cFRuleValue1,
                 rowIndex: 0,
                 colIndex: 0,
@@ -740,7 +740,7 @@ export class ConditionalFormatting {
             break;
         case 'Unique':
         case 'Duplicate':
-            isApply = this.isDuplicateUnique(cellValue, cFRule, false);
+            isApply = this.isDuplicateUnique(cellValue, cFRule);
             break;
         case 'Top10Items':
             isApply = this.isTopBottomTenValue(cellValue, cFRuleValue1, cFRule, true);
@@ -778,9 +778,13 @@ export class ConditionalFormatting {
         rIdx: number, cIdx: number, isInitial: boolean): void {
         const sheet: SheetModel = this.parent.getActiveSheet();
         if (isInitial) {
-            type === 'DataBar' ? this.applyDataBars(cellValue, cFRule, td, rIdx, cIdx) : type === 'ColorScale' ?
-                this.applyColorScale(cellValue, cFRule, td, rIdx, cIdx, isInitial) :
-                this.applyIconSet(cellValue, cFRule, td, rIdx, cIdx, isInitial);
+            if (type === 'DataBar') {
+                this.applyDataBars(cellValue, cFRule, td, rIdx, cIdx);
+            } else if (type === 'ColorScale') {
+                this.applyColorScale(cellValue, cFRule, td, rIdx, cIdx);
+            } else {
+                this.applyIconSet(cellValue, cFRule, td, rIdx, cIdx);
+            }
         } else {
             td = null;
             const rangeArr: string[] = cFRule.range.split(',');
@@ -791,10 +795,13 @@ export class ConditionalFormatting {
                         if (getCell(rIdx, cIdx, sheet)) {
                             const cellVal: string = getCell(rIdx, cIdx, sheet).value;
                             td = this.parent.getCell(rIdx, cIdx);
-                            type === 'DataBar' ? this.applyDataBars(cellVal, cFRule, td, rIdx, cIdx) :
-                                type === 'ColorScale' ?
-                                    this.applyColorScale(cellVal, cFRule, td, rIdx, cIdx, isInitial) :
-                                    this.applyIconSet(cellVal, cFRule, td, rIdx, cIdx, isInitial);
+                            if (type === 'DataBar') {
+                                this.applyDataBars(cellVal, cFRule, td, rIdx, cIdx);
+                            } else if (type === 'ColorScale') {
+                                this.applyColorScale(cellVal, cFRule, td, rIdx, cIdx);
+                            } else {
+                                this.applyIconSet(cellVal, cFRule, td, rIdx, cIdx);
+                            }
                         }
                     }
                 }
@@ -804,7 +811,7 @@ export class ConditionalFormatting {
 
     private applyIconSet(
         val: string, cFRule: ConditionalFormatModel, tdEle: HTMLElement, rIdx: number,
-        cIdx: number, isInitial: boolean): void {
+        cIdx: number): void {
         const value: number = parseInt(val, 10);
         const iconList: string[] = this.getIconList(cFRule.type).split(',');
         let valArr: number[] = [];
@@ -916,7 +923,7 @@ export class ConditionalFormatting {
     }
 
     private applyColorScale(
-        val: string, cFRule: ConditionalFormatModel, tdEle: HTMLElement, rIdx: number, cIdx: number, isInitial: boolean): void {
+        val: string, cFRule: ConditionalFormatModel, tdEle: HTMLElement, rIdx: number, cIdx: number): void {
         const sheet: SheetModel = this.parent.getActiveSheet();
         const value: number = parseInt(val, 10);
         let id: number;
@@ -981,7 +988,13 @@ export class ConditionalFormatting {
             valArr = this.getNumericArray(selIndexes, valArr);
         }
         for (let idx: number = 0; idx < valArr.length; idx++) {
-            valArr[idx] > 0 ? posArr.push(valArr[idx]) : negArr.push(valArr[idx]);
+            for (let idx: number = 0; idx < valArr.length; idx++) {
+                if (valArr[idx] > 0) {
+                    posArr.push(valArr[idx]);
+                } else {
+                    negArr.push(valArr[idx]);
+                }
+            }
         }
         cFColor = cFColor === 'BlueDataBar' ? 'B' : cFColor === 'GreenDataBar' ? 'G' : cFColor === 'RedDataBar' ? 'R' :
             cFColor === 'OrangeDataBar' ? 'O' : cFColor === 'LightBlueDataBar' ? 'LB' : cFColor === 'PurpleDataBar' ? 'P' : '';
@@ -1126,7 +1139,7 @@ export class ConditionalFormatting {
     }
 
     private getLinear(s: string, e: string, x: number): string {
-        const r: String = this.byteLinear(s[1] + s[2], e[1] + e[2], x);
+        const r: string = this.byteLinear(s[1] + s[2], e[1] + e[2], x);
         const g: string = this.byteLinear(s[3] + s[4], e[3] + e[4], x);
         const b: string = this.byteLinear(s[5] + s[6], e[5] + e[6], x);
         return '#' + r + g + b;
@@ -1363,7 +1376,7 @@ export class ConditionalFormatting {
         return result;
     }
 
-    private isDuplicateUnique(val: string, cFRule: ConditionalFormatModel, isAbove: boolean): boolean {
+    private isDuplicateUnique(val: string, cFRule: ConditionalFormatModel): boolean {
         const type: string = cFRule.type;
         let count: number = 0;
         const sheet: SheetModel = this.parent.getActiveSheet();

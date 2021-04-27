@@ -5,7 +5,7 @@ import { ConnectorModel } from '../../../src/diagram/objects/connector-model';
 import { NodeModel } from '../../../src/diagram/objects/node-model';
 import { BpmnDiagrams } from '../../../src/diagram/objects/bpmn';
 import { DiagramScroller } from '../../../src/diagram/interaction/scroller';
-import { Rect } from '../../../src/index';
+import { LayerModel, Rect } from '../../../src/index';
 import { MouseEvents } from '../../../spec/diagram/interaction/mouseevents.spec';
 import { profile, inMB, getMemoryProfile } from '../../../spec/common.spec';
 Diagram.Inject(BpmnDiagrams);
@@ -521,7 +521,7 @@ describe('PageSettings boundary constraints', () => {
             diagram.pageSettings.boundaryConstraints = 'Page';
             diagram.drawingObject = { id: 'connector11', type: 'Straight' };
             mouseEvents.dragAndDropEvent(diagramCanvas, 250, 400, 250, 520);
-            expect((diagram.connectors[2].targetPoint.y === 392)|| diagram.connectors[2].targetPoint.y === 400).toBe(true);
+            expect((diagram.connectors[2].targetPoint.y === 392) || diagram.connectors[2].targetPoint.y === 400).toBe(true);
             done();
         });
         it('branch coverage for drag', (done: Function) => {
@@ -779,6 +779,266 @@ describe('BPMN Shape Style Change', () => {
         let save: string = diagram.saveDiagram();
         diagram.loadDiagram(save);
         expect(diagram.nodes[0].style.fill === "red").toBe(true);
+        done();
+    });
+})
+
+describe('Node undo-redo style change', () => {
+    let diagram: Diagram;
+    let ele: HTMLElement;
+    let scroller: DiagramScroller;
+    let mouseEvents: MouseEvents = new MouseEvents();
+    beforeAll((): void => {
+        const isDef = (o: any) => o !== undefined && o !== null;
+        if (!isDef(window.performance)) {
+            console.log("Unsupported environment, window.performance.memory is unavailable");
+            this.skip(); //Skips test (in Chai)
+            return;
+        }
+
+        ele = createElement('div', { id: 'diagram' });
+        document.body.appendChild(ele);
+        let node: NodeModel = {
+            id: 'node1', width: 100, height: 100, offsetX: 100, offsetY: 100,
+        };
+        diagram = new Diagram({
+            width: 800, height: 800, nodes: [node],
+        });
+        diagram.appendTo('#diagram');
+
+    });
+    afterAll((): void => {
+        diagram.destroy();
+        ele.remove();
+    });
+    it('Check node color after undo and redo', (done: Function) => {
+        diagram.nodes[0].style = {
+            fill: '#d8ecdc',
+            strokeColor: '#78BE83',
+            strokeWidth: 3,
+            gradient: {
+                // Start point of linear gradient
+                x1: 0,
+                y1: 0,
+                // End point of linear gradient
+                x2: 100,
+                y2: 100,
+                // Sets an array of stop objects
+                stops: [
+                    {
+                        color: 'white',
+                        offset: 30,
+                        opacity: 0.1
+                    },
+                    {
+                        color: '#d8ecdc',
+                        offset: 100,
+                        opacity: 0.1
+                    }
+                ],
+                type: 'Linear'
+            }
+        };
+        diagram.dataBind();
+        diagram.undo();
+        expect(diagram.nodes[0].style.fill === "white").toBe(true);
+        diagram.redo();
+        expect(diagram.nodes[0].style.fill === "#d8ecdc").toBe(true);
+        done();
+    });
+    it('Add layer', (done: Function) => {
+        var newNode = {
+            id: 'new', offsetX: 300, offsetY: 300, height: 50, width: 50
+        }
+        diagram.addLayer({ objects: [], visible: true }, [newNode]);
+        expect(diagram.layers.length === 2).toBe(true);
+        done();
+    });
+    it('Remove layer', (done: Function) => {
+        diagram.removeLayer(diagram.layers[1].id);
+        expect(diagram.layers.length === 1).toBe(true);
+        done();
+    });
+})
+describe('Swimlane child disappears', () => {
+    let diagram: Diagram;
+    let ele: HTMLElement;
+    let scroller: DiagramScroller;
+    let mouseEvents: MouseEvents = new MouseEvents();
+    beforeAll((): void => {
+        const isDef = (o: any) => o !== undefined && o !== null;
+        if (!isDef(window.performance)) {
+            console.log("Unsupported environment, window.performance.memory is unavailable");
+            this.skip(); //Skips test (in Chai)
+            return;
+        }
+
+        ele = createElement('div', { id: 'diagramlane' });
+        document.body.appendChild(ele);
+        let nodes: NodeModel[] = [
+            {
+                id: 'swimlane',
+                shape: {
+                    type: 'SwimLane',
+                    orientation: 'Horizontal',
+                    header: {
+                        annotation: { content: 'ONLINE PURCHASE STATUS', style: { fill: '#111111' } },
+                        height: 50, style: { fontSize: 11 },
+                    },
+                    lanes: [
+                        {
+                            id: 'stackCanvas1',
+                            header: {
+                                annotation: { content: 'CUSTOMER' }, width: 50,
+                                style: { fontSize: 11 }
+                            },
+                            height: 100,
+                            children: [
+                                {
+                                    id: 'Order',
+                                    annotations: [
+                                        {
+                                            content: 'ORDER',
+                                            style: { fontSize: 11 }
+                                        }
+                                    ],
+                                    margin: { left: 60, top: 20 },
+                                    height: 40, width: 100
+                                },
+                                {
+                                    id: 'selectItemaddcart',
+                                    annotations: [{ content: 'Select item\nAdd cart' }],
+                                    margin: { left: 190, top: 20 },
+                                    height: 40, width: 100
+                                },
+                            ],
+                        },
+
+                    ],
+
+                },
+                offsetX: 420, offsetY: 270,
+                height: 100,
+                width: 650
+            },
+        ];
+        let connectors: ConnectorModel[] = [
+            {
+                id: 'connector1', sourceID: 'Order',
+                targetID: 'selectItemaddcart'
+            },
+
+        ];
+        diagram = new Diagram({
+            width: 800, height: 800, nodes: nodes,
+            connectors: connectors
+        });
+        diagram.appendTo('#diagramlane');
+
+    });
+    afterAll((): void => {
+        diagram.destroy();
+        ele.remove();
+    });
+    it('Send swimlane child back and Check lane selection', (done: Function) => {
+        diagram.select([diagram.getObject('Order')]);
+        diagram.sendToBack();
+        diagram.clearSelection();
+        let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
+        mouseEvents.clickEvent(diagramCanvas, 200, 300);
+        expect(diagram.selectedItems.nodes[0].id === "swimlanestackCanvas10").toBe(true);
+        done();
+    });
+})
+describe('Swimlane send to back', () => {
+    let diagram: Diagram;
+    let ele: HTMLElement;
+    let scroller: DiagramScroller;
+    let mouseEvents: MouseEvents = new MouseEvents();
+    beforeAll((): void => {
+        const isDef = (o: any) => o !== undefined && o !== null;
+        if (!isDef(window.performance)) {
+            console.log("Unsupported environment, window.performance.memory is unavailable");
+            this.skip(); //Skips test (in Chai)
+            return;
+        }
+
+        ele = createElement('div', { id: 'diagramlane' });
+        document.body.appendChild(ele);
+        let nodes: NodeModel[] = [
+            {
+                id: 'swimlane',
+                shape: {
+                    type: 'SwimLane',
+                    orientation: 'Horizontal',
+                    header: {
+                        annotation: { content: 'ONLINE PURCHASE STATUS', style: { fill: '#111111' } },
+                        height: 50, style: { fontSize: 11 },
+                    },
+                    lanes: [
+                        {
+                            id: 'stackCanvas1',
+                            header: {
+                                annotation: { content: 'CUSTOMER' }, width: 50,
+                                style: { fontSize: 11 }
+                            },
+                            height: 100,
+                            children: [
+                                {
+                                    id: 'Order',
+                                    annotations: [
+                                        {
+                                            content: 'ORDER',
+                                            style: { fontSize: 11 }
+                                        }
+                                    ],
+                                    margin: { left: 60, top: 20 },
+                                    height: 40, width: 100
+                                },
+                                {
+                                    id: 'selectItemaddcart',
+                                    annotations: [{ content: 'Select item\nAdd cart' }],
+                                    margin: { left: 190, top: 20 },
+                                    height: 40, width: 100
+                                },
+                            ],
+                        },
+
+                    ],
+
+                },
+                offsetX: 420, offsetY: 270,
+                height: 100,
+                width: 650
+            },
+        ];
+        let connectors: ConnectorModel[] = [
+            {
+                id: 'connector1', sourceID: 'Order',
+                targetID: 'selectItemaddcart'
+            },
+
+        ];
+        diagram = new Diagram({
+            width: 800, height: 800, nodes: nodes,
+            connectors: connectors
+        });
+        diagram.appendTo('#diagramlane');
+
+    });
+    afterAll((): void => {
+        diagram.destroy();
+        ele.remove();
+    });
+    it('Send swimlane back and check 1st index swimlane got selected', (done: Function) => {
+        diagram.select([diagram.getObject('swimlane')]);
+        diagram.copy();
+        diagram.paste();
+        diagram.sendToBack();
+        diagram.clearSelection();
+        let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
+        mouseEvents.clickEvent(diagramCanvas, 550, 300);
+        expect(diagram.selectedItems.nodes[0].id === "swimlanestackCanvas10").toBe(true);
         done();
     });
 })

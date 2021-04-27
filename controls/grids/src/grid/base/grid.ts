@@ -4871,6 +4871,9 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
         if (perPixel >= 1) {
             indentWidth = (30 / perPixel);
         }
+        if (indentWidth < 1) {
+            indentWidth = 1;
+        }
         if (this.enableColumnVirtualization || this.isAutoGen) { indentWidth = 30; }
         while (i < this.groupSettings.columns.length) {
             applyWidth(i, indentWidth);
@@ -6127,17 +6130,22 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     public getRowIndexByPrimaryKey(value: string | Object): number {
         let pkName: string = this.getPrimaryKeyFieldNames()[0];
         value = typeof value === 'object' ? value[pkName] : value;
-        for (let i: number = 0; i < this.getRowsObject().length; i++) {
-            let pKvalue = this.getRowsObject()[i].data[pkName];
+        let rows: Row<Column>[] = this.getRowsObject();
+        for (let i: number = 0; i < rows.length; i++) {
+            if (rows[i].isDetailRow || rows[i].isCaptionRow) {
+                continue;
+            }
+            let pKvalue = rows[i].data[pkName];
             if (pkName.split('.').length > 1) {
-                pKvalue = performComplexDataOperation(pkName, this.getRowsObject()[i].data);
+                pKvalue = performComplexDataOperation(pkName, rows[i].data);
             }
             if (pKvalue === value) {
-                return this.getRowsObject()[i].index;
+                return rows[i].index;
             }
         }
         return -1;
     };
+
     /** 
     * @hidden
     */

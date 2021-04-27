@@ -19,6 +19,7 @@ export interface SpreadsheetModel extends WorkbookModel{
      *  ...
      * }, '#spreadsheet');
      * ```
+     *
      * @default ''
      */
     cssClass?: string;
@@ -103,6 +104,7 @@ export interface SpreadsheetModel extends WorkbookModel{
      * * Multiple: Allows multiple selection of cell, row, or column and disables single selection.
      *
      * ```
+     *
      * @default { mode: 'Multiple' }
      */
     selectionSettings?: SelectionSettingsModel;
@@ -123,6 +125,7 @@ export interface SpreadsheetModel extends WorkbookModel{
      * ```
      *
      * > The `allowScrolling` property should be `true`.
+     *
      * @default { isFinite: false, enableVirtualization: true }
      */
     scrollSettings?: ScrollSettingsModel;
@@ -140,7 +143,7 @@ export interface SpreadsheetModel extends WorkbookModel{
      *  }, '#Spreadsheet');
      * ```
      *
-     * @event
+     * @event beforeCellRender
      */
     beforeCellRender?: EmitType<CellRenderEventArgs>;
 
@@ -157,7 +160,7 @@ export interface SpreadsheetModel extends WorkbookModel{
      *  }, '#Spreadsheet');
      * ```
      *
-     * @event
+     * @event beforeSelect
      */
     beforeSelect?: EmitType<BeforeSelectEventArgs>;
 
@@ -174,7 +177,7 @@ export interface SpreadsheetModel extends WorkbookModel{
      *  }, '#Spreadsheet');
      * ```
      *
-     * @event
+     * @event select
      */
     select?: EmitType<SelectEventArgs>;
 
@@ -191,7 +194,7 @@ export interface SpreadsheetModel extends WorkbookModel{
      *  }, '#Spreadsheet');
      * ```
      *
-     * @event
+     * @event contextMenuBeforeOpen
      */
     contextMenuBeforeOpen?: EmitType<BeforeOpenCloseMenuEventArgs>;
 
@@ -208,7 +211,7 @@ export interface SpreadsheetModel extends WorkbookModel{
      *  }, '#Spreadsheet');
      * ```
      *
-     * @event
+     * @event fileMenuBeforeOpen
      */
     fileMenuBeforeOpen?: EmitType<BeforeOpenCloseMenuEventArgs>;
 
@@ -225,7 +228,7 @@ export interface SpreadsheetModel extends WorkbookModel{
      *  }, '#Spreadsheet');
      * ```
      *
-     * @event
+     * @event contextMenuBeforeClose
      */
     contextMenuBeforeClose?: EmitType<BeforeOpenCloseMenuEventArgs>;
 
@@ -242,7 +245,7 @@ export interface SpreadsheetModel extends WorkbookModel{
      *  }, '#Spreadsheet');
      * ```
      *
-     * @event
+     * @event dialogBeforeOpen
      */
     dialogBeforeOpen?: EmitType<DialogBeforeOpenEventArgs>;
 
@@ -259,7 +262,7 @@ export interface SpreadsheetModel extends WorkbookModel{
      *  }, '#Spreadsheet');
      * ```
      *
-     * @event
+     * @event fileMenuBeforeClose
      */
     fileMenuBeforeClose?: EmitType<BeforeOpenCloseMenuEventArgs>;
 
@@ -276,7 +279,7 @@ export interface SpreadsheetModel extends WorkbookModel{
      *  }, '#Spreadsheet');
      * ```
      *
-     * @event
+     * @event contextMenuItemSelect
      */
     contextMenuItemSelect?: EmitType<MenuSelectEventArgs>;
 
@@ -293,7 +296,7 @@ export interface SpreadsheetModel extends WorkbookModel{
      *  }, '#Spreadsheet');
      * ```
      *
-     * @event
+     * @event fileMenuItemSelect
      */
     fileMenuItemSelect?: EmitType<MenuSelectEventArgs>;
 
@@ -310,7 +313,7 @@ export interface SpreadsheetModel extends WorkbookModel{
      *  }, '#Spreadsheet');
      * ```
      *
-     * @event
+     * @event beforeDataBound
      */
     beforeDataBound?: EmitType<Object>;
 
@@ -327,7 +330,7 @@ export interface SpreadsheetModel extends WorkbookModel{
      *  }, '#Spreadsheet');
      * ```
      *
-     * @event 
+     * @event dataBound
      */
     dataBound?: EmitType<Object>;
 
@@ -344,7 +347,7 @@ export interface SpreadsheetModel extends WorkbookModel{
      *  }, '#Spreadsheet');
      * ```
      *
-     * @event
+     * @event dataSourceChanged
      */
     dataSourceChanged?: EmitType<DataSourceChangedEventArgs>;
 
@@ -361,7 +364,7 @@ export interface SpreadsheetModel extends WorkbookModel{
      *  }, '#Spreadsheet');
      * ```
      *
-     * @event
+     * @event cellEdit
      */
     cellEdit?: EmitType<CellEditEventArgs>;
 
@@ -379,7 +382,7 @@ export interface SpreadsheetModel extends WorkbookModel{
      *  }, '#Spreadsheet');
      * ```
      *
-     * @event
+     * @event cellEditing
      */
     cellEditing?: EmitType<CellEditEventArgs>;
 
@@ -397,7 +400,7 @@ export interface SpreadsheetModel extends WorkbookModel{
      *  }, '#Spreadsheet');
      * ```
      *
-     * @event
+     * @event cellSave
      */
     cellSave?: EmitType<CellSaveEventArgs>;
 
@@ -415,7 +418,7 @@ export interface SpreadsheetModel extends WorkbookModel{
      *  }, '#Spreadsheet');
      * ```
      *
-     * @event
+     * @event beforeCellSave
      */
     beforeCellSave?: EmitType<CellEditEventArgs>;
 
@@ -433,7 +436,7 @@ export interface SpreadsheetModel extends WorkbookModel{
      *  }, '#Spreadsheet');
      * ```
      *
-     * @event
+     * @event created
      */
     created?: EmitType<Event>;
 
@@ -451,7 +454,7 @@ export interface SpreadsheetModel extends WorkbookModel{
      *  }, '#Spreadsheet');
      * ```
      *
-     * @event
+     * @event beforeSort
      */
     beforeSort?: EmitType<BeforeSortEventArgs>;
 
@@ -469,7 +472,7 @@ export interface SpreadsheetModel extends WorkbookModel{
      *  }, '#Spreadsheet');
      * ```
      *
-     * @event
+     * @event beforeHyperlinkCreate
      */
     beforeHyperlinkCreate?: EmitType<BeforeHyperlinkArgs>;
 
@@ -487,7 +490,7 @@ export interface SpreadsheetModel extends WorkbookModel{
      *  }, '#Spreadsheet');
      * ```
      *
-     * @event
+     * @event afterHyperlinkCreate
      */
     afterHyperlinkCreate?: EmitType<AfterHyperlinkArgs>;
 
@@ -505,7 +508,7 @@ export interface SpreadsheetModel extends WorkbookModel{
      *  }, '#Spreadsheet');
      * ```
      *
-     * @event
+     * @event beforeHyperlinkClick
      */
     beforeHyperlinkClick?: EmitType<BeforeHyperlinkArgs>;
 
@@ -523,7 +526,7 @@ export interface SpreadsheetModel extends WorkbookModel{
      *  }, '#Spreadsheet');
      * ```
      *
-     * @event
+     * @event afterHyperlinkClick
      */
     afterHyperlinkClick?: EmitType<AfterHyperlinkArgs>;
 
@@ -578,7 +581,7 @@ export interface SpreadsheetModel extends WorkbookModel{
      *  }, '#Spreadsheet');
      * ```
      *
-     * @event
+     * @event openComplete
      */
     openComplete?: EmitType<Object>;
 
@@ -596,7 +599,7 @@ export interface SpreadsheetModel extends WorkbookModel{
      *  }, '#Spreadsheet');
      * ```
      *
-     * @event
+     * @event sortComplete
      */
     sortComplete?: EmitType<SortEventArgs>;
 

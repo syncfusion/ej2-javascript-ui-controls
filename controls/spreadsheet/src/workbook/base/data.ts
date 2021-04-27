@@ -1,5 +1,3 @@
-/* eslint-disable @typescript-eslint/ban-types */
-
 import { Workbook, Cell, getSheetNameFromAddress, getSheetIndex, getSheet } from '../base/index';
 import { getCellAddress, getIndexesFromAddress, getColumnHeaderText, updateSheetFromDataSource, checkDateFormat } from '../common/index';
 import { queryCellInfo, CellInfoEventArgs, CellStyleModel, cFDelete } from '../common/index';
@@ -15,13 +13,15 @@ import { setCell } from './cell';
  * @param {boolean} columnWiseData - Specifies the bool value.
  * @param {boolean} valueOnly - Specifies the valueOnly.
  * @param {number[]} frozenIndexes - Specifies the freeze row and column start indexes, if it is scrolled.
- * @returns {{[key: string]: CellModel }} - To get the data
+ * @param {boolean} filterDialog - Specifies the bool value.
+ * @returns {Promise<Map<string, CellModel> | Object[]>} - To get the data
  * @hidden
  */
 export function getData(
     context: Workbook, address: string, columnWiseData?: boolean,
     valueOnly?: boolean, frozenIndexes?: number[],
     filterDialog?: boolean): Promise<Map<string, CellModel> | { [key: string]: CellModel }[]> {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     return new Promise((resolve: Function, reject: Function) => {
         resolve((() => {
             let i: number;
@@ -35,11 +35,12 @@ export function getData(
             let index: number = 0;
             const args: { sheet: SheetModel, indexes: number[], promise?: Promise<Cell> } = {
                 sheet: sheet, indexes: indexes, promise:
+                    // eslint-disable-next-line @typescript-eslint/no-unused-vars
                     new Promise((resolve: Function, reject: Function) => { resolve((() => { /** */ })()); })
             };
             context.notify(updateSheetFromDataSource, args);
             return args.promise.then(() => {
-                let frozenRow: number = context.frozenRowCount(sheet); let frozenCol: number = context.frozenColCount(sheet);
+                const frozenRow: number = context.frozenRowCount(sheet); const frozenCol: number = context.frozenColCount(sheet);
                 while (sRow <= indexes[2]) {
                     const cells: { [key: string]: CellModel | string | Date } = {};
                     row = getRow(sheet, sRow);

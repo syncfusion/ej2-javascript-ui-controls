@@ -115,7 +115,7 @@ export interface GanttModel extends ComponentModel{
      * @isGenericType true
      * @default []
      */
-    dataSource?: Record<string, unknown>[] | DataManager | Object;   // eslint-disable-line
+    dataSource?: Object[] | DataManager | Object;   // eslint-disable-line
 
     /**
      * `durationUnit` Specifies the duration unit for each tasks whether day or hour or minute.
@@ -603,7 +603,7 @@ export interface GanttModel extends ComponentModel{
      * @deprecated
      * @event beforeExcelExport
      */
-    beforeExcelExport?: EmitType<Record<string, unknown>>;
+    beforeExcelExport?: EmitType<Object>; // eslint-disable-line
 
     /**
      * Triggers after Gantt data is exported to Excel file.
@@ -696,7 +696,7 @@ export interface GanttModel extends ComponentModel{
      * @blazorproperty 'OnActionBegin'
      * @blazorType Syncfusion.EJ2.Blazor.Gantt.ActionBeginArgs<TValue>
      */
-    actionBegin?: EmitType<Record<string, unknown> | PageEventArgs | FilterEventArgs | SortEventArgs | ITimeSpanEventArgs | IDependencyEventArgs | ITaskAddedEventArgs | ZoomEventArgs>; // eslint-disable-line max-len
+    actionBegin?: EmitType<Object | PageEventArgs | FilterEventArgs | SortEventArgs | ITimeSpanEventArgs | IDependencyEventArgs | ITaskAddedEventArgs | ZoomEventArgs>;  // eslint-disable-line
 
     /**
      * Triggers when Gantt actions such as sorting, filtering, searching etc. are completed.

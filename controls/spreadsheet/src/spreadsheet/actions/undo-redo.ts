@@ -3,11 +3,11 @@ import { performUndoRedo, updateUndoRedoCollection, enableToolbarItems, ICellRen
 import { UndoRedoEventArgs, setActionData, getBeforeActionData, updateAction, initiateFilterUI } from '../common/index';
 import { BeforeActionData, PreviousCellDetails, CollaborativeEditArgs, setUndoRedo } from '../common/index';
 import { selectRange, clearUndoRedoCollection, setMaxHgt, getMaxHgt, setRowEleHeight } from '../common/index';
-import { getRangeFromAddress, getRangeIndexes, BeforeCellFormatArgs, getSheet, workbookEditOperation, getSwapRange } from '../../workbook/index';
+import { getRangeFromAddress, getRangeIndexes, BeforeCellFormatArgs, getSheet, workbookEditOperation, getSwapRange, Workbook } from '../../workbook/index';
 import { getCell, setCell, CellModel, BeforeSortEventArgs, getSheetIndex, wrapEvent, getSheetIndexFromId } from '../../workbook/index';
 import { SheetModel, MergeArgs, setMerge, getRangeAddress, FilterCollectionModel, triggerDataChange } from '../../workbook/index';
 import { addClass, extend, L10n } from '@syncfusion/ej2-base';
-import { getFilteredCollection, CellStyleModel, TextDecoration, setCellFormat, refreshRibbonIcons, getRowHeight } from '../../workbook/index';
+import { getFilteredCollection, CellStyleModel, TextDecoration, setCellFormat, refreshRibbonIcons } from '../../workbook/index';
 /**
  * UndoRedo module allows to perform undo redo functionalities.
  */
@@ -30,16 +30,18 @@ export class UndoRedo {
         let cutCellDetails: PreviousCellDetails[] = [];
         const args: CollaborativeEditArgs = options.args;
         const eventArgs: UndoRedoEventArgs = args.eventArgs;
+        let copiedInfo: { [key: string]: Object } = {};
         switch (args.action) {
         case 'format':
             address = getRangeIndexes((args.eventArgs as BeforeCellFormatArgs).range);
             break;
         case 'clipboard':
-            const copiedInfo: { [key: string]: Object } = eventArgs.copiedInfo;
+            copiedInfo = eventArgs.copiedInfo;
             address = getRangeIndexes(getRangeFromAddress(eventArgs.pastedRange));
             if (copiedInfo.isCut) {
                 cutCellDetails = this.getCellDetails(
-                    copiedInfo.range as number[], getSheet(this.parent, getSheetIndexFromId(this.parent, <number>copiedInfo.sId)));
+                    copiedInfo.range as number[], getSheet(this.parent as Workbook,
+                                                           getSheetIndexFromId(this.parent as Workbook, <number>copiedInfo.sId)));
             }
             break;
         case 'beforeSort':
@@ -141,7 +143,11 @@ export class UndoRedo {
                 updateAction(undoRedoArgs, this.parent, !args.isUndo);
                 break;
             }
-            args.isUndo ? this.redoCollection.push(undoRedoArgs) : this.undoCollection.push(undoRedoArgs);
+            if (args.isUndo) {
+                this.redoCollection.push(undoRedoArgs);
+            } else {
+                this.undoCollection.push(undoRedoArgs);
+            }
             if (this.undoCollection.length > this.undoRedoStep) {
                 this.undoCollection.splice(0, 1);
             }
@@ -210,8 +216,8 @@ export class UndoRedo {
         const eventArgs: UndoRedoEventArgs = args.eventArgs;
         const address: string[] = eventArgs.pastedRange.split('!');
         const range: number[] = getRangeIndexes(address[1]);
-        const sheetIndex: number = getSheetIndex(this.parent, address[0]);
-        const sheet: SheetModel = getSheet(this.parent, sheetIndex);
+        const sheetIndex: number = getSheetIndex(this.parent as Workbook, address[0]);
+        const sheet: SheetModel = getSheet(this.parent as Workbook, sheetIndex);
         const copiedInfo: { [key: string]: Object } = eventArgs.copiedInfo;
         const actionData: BeforeActionData = eventArgs.beforeActionData;
         const isRefresh: boolean = this.checkRefreshNeeded(sheetIndex);
@@ -265,25 +271,25 @@ export class UndoRedo {
                 if (copiedInfo.isCut) {
                     const cells: PreviousCellDetails[] = actionData.cutCellDetails;
                     this.updateCellDetails(
-                        cells, getSheet(this.parent, getSheetIndexFromId(this.parent, <number>copiedInfo.sId)),
+                        cells, getSheet(this.parent as Workbook, getSheetIndexFromId(this.parent as Workbook, <number>copiedInfo.sId)),
                         getSwapRange(copiedInfo.range as number[]), isRefresh);
                     this.parent.notify(getFilteredCollection, null);
                     for (let i: number = 0; i < this.parent.sheets.length; i++) {
-                        const sheetIndex: number = getSheetIndexFromId(this.parent, <number>copiedInfo.sId);
+                        const sheetIndex: number = getSheetIndexFromId(this.parent as Workbook, <number>copiedInfo.sId);
                         if (this.parent.filterCollection && this.parent.filterCollection[i] &&
                             this.parent.filterCollection[i].sheetIndex === eventArgs.pasteSheetIndex) {
                             const filterCol: FilterCollectionModel = this.parent.filterCollection[i];
-                            const fRange: number[] = getRangeIndexes(filterCol.filterRange); let pRange: number[] = getSwapRange(range);
+                            const fRange: number[] = getRangeIndexes(filterCol.filterRange); const pRange: number[] = getSwapRange(range);
                             if (fRange[0] >= pRange[0] && fRange[2] <= pRange[2]) {
                                 this.parent.notify(initiateFilterUI, {
                                     predicates: null, range: filterCol.filterRange,
                                     sIdx: eventArgs.pasteSheetIndex, isCut: true
                                 });
                                 let diff: number[] = [Math.abs(pRange[0] - fRange[0]), Math.abs(pRange[1] - fRange[1]),
-                                Math.abs(pRange[2] - fRange[2]), Math.abs(pRange[3] - fRange[3])];
-                                let copiedRange: number[] = getSwapRange(copiedInfo.range as number[]);
+                                    Math.abs(pRange[2] - fRange[2]), Math.abs(pRange[3] - fRange[3])];
+                                const copiedRange: number[] = getSwapRange(copiedInfo.range as number[]);
                                 diff = [copiedRange[0] + diff[0], copiedRange[1] + diff[1],
-                                Math.abs(copiedRange[2] - diff[2]), Math.abs(copiedRange[3] - diff[3])];
+                                    Math.abs(copiedRange[2] - diff[2]), Math.abs(copiedRange[3] - diff[3])];
                                 this.parent.notify(initiateFilterUI, {
                                     predicates: null,
                                     range: getRangeAddress(diff), sIdx: sheetIndex, isCut: true
@@ -344,8 +350,8 @@ export class UndoRedo {
             || args.action === 'cellDelete') ? eventArgs.address.split('!') : eventArgs.range.split('!');
         const range: number[] = getRangeIndexes(address[1]);
         const indexes: number[] = range;
-        const sheetIndex: number = getSheetIndex(this.parent, address[0]);
-        const sheet: SheetModel = getSheet(this.parent, sheetIndex);
+        const sheetIndex: number = getSheetIndex(this.parent as Workbook, address[0]);
+        const sheet: SheetModel = getSheet(this.parent as Workbook, sheetIndex);
         const actionData: BeforeActionData = eventArgs.beforeActionData;
         const isRefresh: boolean = this.checkRefreshNeeded(sheetIndex);
         if (this.isUndo) {
@@ -408,7 +414,7 @@ export class UndoRedo {
                 (argsEventArgs.style as CellStyleModel).textDecoration = value;
                 args.eventArgs = argsEventArgs as UndoRedoEventArgs;
             } else {
-                updateAction(args, this.parent);
+                updateAction(args, this.parent, true);
             }
         }
         if (isRefresh) {
@@ -419,12 +425,12 @@ export class UndoRedo {
     private getCellDetails(address: number[], sheet: SheetModel): PreviousCellDetails[] {
         const cells: PreviousCellDetails[] = [];
         let cell: CellModel;
-        address = getSwapRange(address)
+        address = getSwapRange(address);
         for (let i: number = address[0]; i <= address[2]; i++) {
             for (let j: number = address[1]; j <= address[3]; j++) {
                 cell = getCell(i, j, sheet);
                 cells.push({
-                    rowIndex: i, colIndex: j, format: cell ? cell.format : null,
+                    rowIndex: i, colIndex: j, format: cell ? cell.format : null, isLocked: cell ? cell.isLocked : null,
                     style: cell && cell.style ? Object.assign({}, cell.style) : null, value: cell ? cell.value : '', formula: cell ?
                         cell.formula : '', wrap: cell && cell.wrap, rowSpan: cell && cell.rowSpan, colSpan: cell && cell.colSpan,
                     hyperlink: cell && cell.hyperlink, image: cell && cell.image && cell.chart
@@ -440,19 +446,17 @@ export class UndoRedo {
         let cellElem: HTMLElement;
         for (let i: number = 0; i < len; i++) {
             setCell(cells[i].rowIndex, cells[i].colIndex, sheet, {
-                value: cells[i].value, format: cells[i].format,
+                value: cells[i].value, format: cells[i].format, isLocked: cells[i].isLocked,
                 style: cells[i].style && Object.assign({}, cells[i].style), formula: cells[i].formula,
                 wrap: cells[i].wrap, rowSpan: cells[i].rowSpan,
                 colSpan: cells[i].colSpan, hyperlink: cells[i].hyperlink
             });
-            if (cells[i].formula) {
-                this.parent.notify(
-                    workbookEditOperation,
-                    {
-                        action: 'updateCellValue', address: [cells[i].rowIndex, cells[i].colIndex, cells[i].rowIndex,
-                            cells[i].colIndex], value: cells[i].formula
-                    });
-            }
+            this.parent.notify(
+                workbookEditOperation,
+                {
+                    action: 'updateCellValue', address: [cells[i].rowIndex, cells[i].colIndex, cells[i].rowIndex,
+                    cells[i].colIndex], value: cells[i].formula ? cells[i].formula : cells[i].value
+                });
             if (args && args.action === 'wrap' && args.eventArgs.wrap) {
                 this.parent.notify(wrapEvent, {
                     range: [cells[i].rowIndex, cells[i].colIndex, cells[i].rowIndex,

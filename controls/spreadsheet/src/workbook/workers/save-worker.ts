@@ -27,7 +27,7 @@ export class SaveWorker {
      * @hidden
      */
     protected processSheet(sheet: string, sheetIndex: number): Object {
-        let parsedSheet: { [key: string]: Object } = JSON.parse(sheet, (key: string, value: Object) => {
+        const parsedSheet: { [key: string]: Object } = JSON.parse(sheet, (key: string, value: Object) => {
             //Remove empty properties
             if ((Array.isArray(value) || typeof value === 'string') && !value.length) {
                 return undefined;
@@ -42,7 +42,7 @@ export class SaveWorker {
      * Process save action.
      *
      * @param {Object} saveJSON - specify the object
-     * @param {SaveOptions | { [key: string]: string }} saveSettings - specify the saveSettings
+     * @param {SaveOptions | Object} saveSettings - specify the saveSettings
      * @param {Object} customParams - specify the customParams
      * @returns {void} - Process save action.
      * @hidden
@@ -73,9 +73,9 @@ export class SaveWorker {
                     });
                 }
             })
-                .then((data: Blob) => {
+            .then((data: Blob) => {
                 new Promise((resolve: Function) => {
-                    let reader: FileReader = new FileReader();
+                    const reader: FileReader = new FileReader();
                     reader.onload = () => {
                         let result: string = reader.result.toString();
                         if (result.indexOf('data:text/plain;base64,') > -1 || result.indexOf('data:text/html;base64,') > -1 ||
@@ -87,9 +87,9 @@ export class SaveWorker {
                                 str = atob(result).split('.');
                             } else {
                                 str = atob(result).split(/(\r\n|\n|\r)/gm);
-                            }    
+                            }
                             if (str.length) {
-                                let text: string = str[0].length > 1 && str[0][0] === '"' ? str[0].split('"')[1] + '.' : str[0];
+                                const text: string = str[0].length > 1 && str[0][0] === '"' ? str[0].split('"')[1] + '.' : str[0];
                                 (postMessage as Function)({ dialog: text });
                             }
                         } else {

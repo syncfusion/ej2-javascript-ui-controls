@@ -7,7 +7,7 @@ import { InfiniteScrollSettings as GridInfiniteScrollSettings} from '@syncfusion
 /**
  * Configures the infinite scroll behavior of Tree Grid.
  */
- export class InfiniteScrollSettings extends ChildProperty<GridInfiniteScrollSettings> {
+export class InfiniteScrollSettings extends ChildProperty<GridInfiniteScrollSettings> {
     /**
      * If `enableCache` is set to true, the Tree Grid will cache the loaded data to be reused next time it is needed.
      *

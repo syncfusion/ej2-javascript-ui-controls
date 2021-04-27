@@ -888,4 +888,56 @@ describe('Gantt dialog module', () => {
             expect(ganttObj.currentViewData[2].level).toBe(1);
         });
     });
+    describe('CR-issues', function () {
+        let ganttObj: Gantt;
+        beforeAll(function (done) {
+            ganttObj = createGantt({
+                dataSource: dialogEditData,
+                allowSorting: true,
+                allowSelection: true,
+                taskFields: {
+                    id: 'TaskID',
+                    name: 'TaskName',
+                    startDate: 'StartDate',
+                    duration: 'Duration',
+                    progress: 'Progress',
+                    endDate: 'EndDate',
+                    child: 'subtasks',
+                    resourceInfo: 'Resource',
+                },
+                editSettings: {
+                    allowEditing: true,
+                    allowDeleting: true,
+                    allowTaskbarEditing: true,
+                    showDeleteConfirmDialog: true
+                },
+                toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'Indent', 'Outdent'],
+            }, done);
+        });
+        afterAll(function () {
+            if (ganttObj) {
+                destroyGantt(ganttObj);
+            }
+        });
+        beforeEach(function (done) {
+            setTimeout(done, 1000);
+            ganttObj.openEditDialog(4);
+        });
+        it('EJ2-48224 - Schedule validation- endDate', () => {
+            ganttObj.dataBind();
+            let ED: any = (<EJ2Instance>document.getElementById(ganttObj.element.id + 'EndDate')).ej2_instances[0];
+            ED.value = new Date('04/09/2019');
+            ED.dataBind();
+            let saveRecord: HTMLElement = ganttObj.element.querySelector('#' + ganttObj.element.id + '_dialog > div.e-footer-content > button.e-control.e-btn.e-lib.e-primary.e-flat') as HTMLElement;
+            triggerMouseEvent(saveRecord, 'click');
+            expect(ganttObj.flatData[3].ganttProperties.duration).toBe(6);
+            ganttObj.openEditDialog(4);
+            let ED1: any = (<EJ2Instance>document.getElementById(ganttObj.element.id + 'EndDate')).ej2_instances[0];
+            ED1.value = new Date('04/12/2019');
+            ED1.dataBind();
+            let saveRecord1: HTMLElement = ganttObj.element.querySelector('#' + ganttObj.element.id + '_dialog > div.e-footer-content > button.e-control.e-btn.e-lib.e-primary.e-flat') as HTMLElement;
+            triggerMouseEvent(saveRecord1 , 'click');
+            expect(ganttObj.flatData[3].ganttProperties.duration).toBe(9);
+        });
+    });
 });

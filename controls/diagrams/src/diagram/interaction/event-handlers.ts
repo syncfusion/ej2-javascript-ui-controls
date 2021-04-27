@@ -28,7 +28,7 @@ import { CommandHandler } from './command-manager';
 import { Actions, findToolToActivate, isSelected, getCursor, contains } from './actions';
 import { DiagramAction, KeyModifiers, Keys, DiagramEvent, DiagramTools, RendererAction, DiagramConstraints } from '../enum/enum';
 import { BlazorAction, ScrollActions } from '../enum/enum';
-import { isPointOverConnector, findObjectType, insertObject, getObjectFromCollection, getTooltipOffset } from '../utility/diagram-util';
+import { isPointOverConnector, findObjectType, insertObject, getObjectFromCollection, getTooltipOffset, findParent } from '../utility/diagram-util';
 import { getObjectType, getInOutConnectPorts, removeChildNodes, cloneBlazorObject, checkPort } from '../utility/diagram-util';
 import { canZoomPan, canDraw, canDrag, canZoomTextEdit, canVitualize, canPreventClearSelection } from './../utility/constraints-util';
 import { canMove, canEnablePointerEvents, canSelect, canEnableToolTip } from './../utility/constraints-util';
@@ -739,7 +739,7 @@ export class DiagramEventHandler {
                         this.diagram.diagramActions = this.diagram.diagramActions & ~DiagramAction.Interactions;
                     }
                     this.eventArgs.clickCount = evt.detail;
-                    
+
                     if (this.diagram.selectedObject.helperObject && (this.tool instanceof MoveTool || this.tool instanceof ResizeTool)) {
                         if (this.diagram.selectedObject.actualObject &&
                             (this.diagram.selectedObject.actualObject as Node).parentId !== '') {
@@ -1241,22 +1241,22 @@ export class DiagramEventHandler {
             let left: number = 0; let top: number = 0;
             const point: PointModel = { x: pos.x, y: pos.y };
             switch (position) {
-            case 'right':
-                point.x = pos.x + 10;
-                left = 10;
-                break;
-            case 'left':
-                point.x = pos.x - 10;
-                left = -10;
-                break;
-            case 'bottom':
-                point.y = pos.y + 10;
-                top = 10;
-                break;
-            case 'top':
-                point.y = pos.y - 10;
-                top = -10;
-                break;
+                case 'right':
+                    point.x = pos.x + 10;
+                    left = 10;
+                    break;
+                case 'left':
+                    point.x = pos.x - 10;
+                    left = -10;
+                    break;
+                case 'bottom':
+                    point.y = pos.y + 10;
+                    top = 10;
+                    break;
+                case 'top':
+                    point.y = pos.y - 10;
+                    top = -10;
+                    break;
             }
             this.eventArgs.position = { x: point.x, y: point.y };
             this.currentPosition = this.eventArgs.position;
@@ -1428,9 +1428,9 @@ export class DiagramEventHandler {
                                 id = obj.wrapper.children[1].id.split('_')[1];
                             }
                             this.diagram.startTextEdit
-                            // eslint-disable-next-line no-unexpected-multiline
-                            (obj, id || (annotation instanceof TextElement ?
-                                (annotation.id).split((obj as Node).id + '_')[1] : undefined));
+                                // eslint-disable-next-line no-unexpected-multiline
+                                (obj, id || (annotation instanceof TextElement ?
+                                    (annotation.id).split((obj as Node).id + '_')[1] : undefined));
                         }
                     }
                 }
@@ -1627,81 +1627,81 @@ export class DiagramEventHandler {
     /** @private */
     public getTool(action: Actions): ToolBase {
         switch (action) {
-        case 'Select':
-            return new SelectTool(this.commandHandler, true);
-        case 'Drag':
-            return new MoveTool(this.commandHandler);
-        case 'Rotate':
-            return new RotateTool(this.commandHandler);
-        case 'LayoutAnimation':
-            return new ExpandTool(this.commandHandler);
-        case 'FixedUserHandle':
-            return new FixedUserHandleTool(this.commandHandler, true);
+            case 'Select':
+                return new SelectTool(this.commandHandler, true);
+            case 'Drag':
+                return new MoveTool(this.commandHandler);
+            case 'Rotate':
+                return new RotateTool(this.commandHandler);
+            case 'LayoutAnimation':
+                return new ExpandTool(this.commandHandler);
+            case 'FixedUserHandle':
+                return new FixedUserHandleTool(this.commandHandler, true);
 
-        case 'Hyperlink':
-            return new LabelTool(this.commandHandler);
-        case 'ResizeSouthEast':
-        case 'ResizeSouthWest':
-        case 'ResizeNorthEast':
-        case 'ResizeNorthWest':
-        case 'ResizeSouth':
-        case 'ResizeNorth':
-        case 'ResizeWest':
-        case 'ResizeEast':
-            return new ResizeTool(this.commandHandler, action);
-        case 'ConnectorSourceEnd':
-        case 'ConnectorTargetEnd':
-        case 'BezierSourceThumb':
-        case 'BezierTargetThumb':
-            return new ConnectTool(this.commandHandler, action);
-        case 'SegmentEnd':
-        case 'OrthoThumb':
-            return new ConnectorEditing(this.commandHandler, action);
-        case 'Draw':
-            const shape: string = 'shape'; const basicShape: string = 'basicShape';
-            const type: string = findObjectType(this.diagram.drawingObject);
-            if (type === 'Node' && this.diagram.drawingObject.shape.type === 'Text') {
-                return new TextDrawingTool(this.commandHandler);
-            } else if (type === 'Node' && (this.diagram.drawingObject.shape[shape] === 'Polygon' ||
+            case 'Hyperlink':
+                return new LabelTool(this.commandHandler);
+            case 'ResizeSouthEast':
+            case 'ResizeSouthWest':
+            case 'ResizeNorthEast':
+            case 'ResizeNorthWest':
+            case 'ResizeSouth':
+            case 'ResizeNorth':
+            case 'ResizeWest':
+            case 'ResizeEast':
+                return new ResizeTool(this.commandHandler, action);
+            case 'ConnectorSourceEnd':
+            case 'ConnectorTargetEnd':
+            case 'BezierSourceThumb':
+            case 'BezierTargetThumb':
+                return new ConnectTool(this.commandHandler, action);
+            case 'SegmentEnd':
+            case 'OrthoThumb':
+                return new ConnectorEditing(this.commandHandler, action);
+            case 'Draw':
+                const shape: string = 'shape'; const basicShape: string = 'basicShape';
+                const type: string = findObjectType(this.diagram.drawingObject);
+                if (type === 'Node' && this.diagram.drawingObject.shape.type === 'Text') {
+                    return new TextDrawingTool(this.commandHandler);
+                } else if (type === 'Node' && (this.diagram.drawingObject.shape[shape] === 'Polygon' ||
                     (isBlazor() && this.diagram.drawingObject.shape[basicShape] === 'Polygon')) &&
                     !((this.diagram.drawingObject.shape as BasicShapeModel).points)) {
-                return new PolygonDrawingTool(this.commandHandler);
-            } else if (type === 'Node' ||
+                    return new PolygonDrawingTool(this.commandHandler);
+                } else if (type === 'Node' ||
                     (type === 'Node' && this.diagram.drawingObject.shape[shape] === 'Polygon' &&
                         ((this.diagram.drawingObject.shape as BasicShapeModel).points))) {
-                return new NodeDrawingTool(this.commandHandler, this.diagram.drawingObject as Node);
-            } else if (type === 'Connector' && (this.diagram.drawingObject as Connector).type === 'Polyline') {
-                return new PolyLineDrawingTool(
-                    this.commandHandler);
-            } else if (type === 'Connector') {
+                    return new NodeDrawingTool(this.commandHandler, this.diagram.drawingObject as Node);
+                } else if (type === 'Connector' && (this.diagram.drawingObject as Connector).type === 'Polyline') {
+                    return new PolyLineDrawingTool(
+                        this.commandHandler);
+                } else if (type === 'Connector') {
+                    return new ConnectorDrawingTool(
+                        this.commandHandler, 'ConnectorSourceEnd', this.diagram.drawingObject as Connector);
+                }
+                break;
+            case 'Pan':
+                return new ZoomPanTool(this.commandHandler, false);
+            case 'PinchZoom':
+                return new ZoomPanTool(this.commandHandler, true);
+            case 'PortDrag':
+                return new MoveTool(this.commandHandler, 'Port');
+            case 'PortDraw':
                 return new ConnectorDrawingTool(
                     this.commandHandler, 'ConnectorSourceEnd', this.diagram.drawingObject as Connector);
-            }
-            break;
-        case 'Pan':
-            return new ZoomPanTool(this.commandHandler, false);
-        case 'PinchZoom':
-            return new ZoomPanTool(this.commandHandler, true);
-        case 'PortDrag':
-            return new MoveTool(this.commandHandler, 'Port');
-        case 'PortDraw':
-            return new ConnectorDrawingTool(
-                this.commandHandler, 'ConnectorSourceEnd', this.diagram.drawingObject as Connector);
-        case 'LabelSelect':
-            return new SelectTool(this.commandHandler, true, 'LabelSelect');
-        case 'LabelDrag':
-            return new LabelDragTool(this.commandHandler);
-        case 'LabelResizeSouthEast':
-        case 'LabelResizeSouthWest':
-        case 'LabelResizeNorthEast':
-        case 'LabelResizeNorthWest':
-        case 'LabelResizeSouth':
-        case 'LabelResizeNorth':
-        case 'LabelResizeWest':
-        case 'LabelResizeEast':
-            return new LabelResizeTool(this.commandHandler, action);
-        case 'LabelRotate':
-            return new LabelRotateTool(this.commandHandler);
+            case 'LabelSelect':
+                return new SelectTool(this.commandHandler, true, 'LabelSelect');
+            case 'LabelDrag':
+                return new LabelDragTool(this.commandHandler);
+            case 'LabelResizeSouthEast':
+            case 'LabelResizeSouthWest':
+            case 'LabelResizeNorthEast':
+            case 'LabelResizeNorthWest':
+            case 'LabelResizeSouth':
+            case 'LabelResizeNorth':
+            case 'LabelResizeWest':
+            case 'LabelResizeEast':
+                return new LabelResizeTool(this.commandHandler, action);
+            case 'LabelRotate':
+                return new LabelRotateTool(this.commandHandler);
 
             //for coverage
             // case 'Custom':
@@ -2019,7 +2019,7 @@ export class DiagramEventHandler {
                         },
                         annotations: (target as Node).annotations, verticalAlignment: 'Stretch', horizontalAlignment: 'Stretch',
                         constraints: (NodeConstraints.Default | NodeConstraints.HideThumbs) & ~
-                        (NodeConstraints.Rotate | NodeConstraints.Drag | NodeConstraints.Resize),
+                            (NodeConstraints.Rotate | NodeConstraints.Drag | NodeConstraints.Resize),
                         minHeight: 25
                     } as NodeModel,
                     true);
@@ -2138,7 +2138,7 @@ class ObjectFinder {
                 parentObj = diagram.nameTable[(parentObj as Node).parentId];
             }
         }
-        this.checkSwimlane(actualTarget);
+        this.checkSwimlane(actualTarget, diagram);
         if (eventArgs && !eventArgs.source) {
             for (let i: number = 0; i < actualTarget.length; i++) {
                 const parentNode: NodeModel = diagram.nameTable[(actualTarget[i] as Node).parentId];
@@ -2153,7 +2153,7 @@ class ObjectFinder {
         return actualTarget as IElement[];
     }
     /** @private */
-    public checkSwimlane(actualTarget: (NodeModel | ConnectorModel)[]): void {
+    public checkSwimlane(actualTarget: (NodeModel | ConnectorModel)[], diagram: Diagram): void {
         let isNode: Boolean;
         for (let m: number = 0; m < actualTarget.length; m++) {
             let obj: NodeModel | ConnectorModel = actualTarget[m];
@@ -2166,13 +2166,34 @@ class ObjectFinder {
             if (parentNode === '') {
                 isNode = true;
             }
+            let parent: NodeModel = diagram.nameTable[parentNode];
+            if (parent && (parent as Node).zIndex > (obj as Node).zIndex && (parent as Node).isLane) {
+                actualTarget[m] = parent;
+            }
             if (m > 0 && isNode && node && (node.isLane || node.isPhase || node.isHeader)) {
-                let swap: NodeModel | ConnectorModel = actualTarget[m];
-                actualTarget[m] = actualTarget[m - 1];
-                actualTarget[m - 1] = swap;
+                if ((actualTarget[m] as Node).zIndex < (actualTarget[m - 1] as Node).zIndex) {
+                    let swap: NodeModel | ConnectorModel = actualTarget[m];
+                    actualTarget[m] = actualTarget[m - 1];
+                    actualTarget[m - 1] = swap;
+                }
+            }
+        }
+        if (actualTarget.length >= 2) {
+            let parent: string = '';
+            for (let i: number = actualTarget.length - 1; i >= 0; i--) {
+                if ((actualTarget[i] as Node).parentId) {
+                    let parent1: string = findParent(actualTarget[i] as Node, diagram, parent);
+                    let parent2: string = findParent(actualTarget[i - 1] as Node, diagram, parent);
+                    let parentNode1: Node = diagram.nameTable[parent1];
+                    let parentNode2: Node = diagram.nameTable[parent2];
+                    if (parentNode2 && parent1 !== parent2 && parentNode1.zIndex < parentNode2.zIndex) {
+                        actualTarget.splice(i, 1);
+                    }
+                }
             }
         }
     }
+
     /** @private */
     public isTarget(actualTarget: Node, diagram: Diagram, action: string): IElement {
         const connector: ConnectorModel = diagram.selectedItems.connectors[0];

@@ -883,9 +883,10 @@ export class Parser {
                 while (leftParens > -1 && (formula[leftParens] !== '(' || parenCount !== 0)) {
                     if (formula[leftParens] === ')') {
                         parenCount++;
-                    } else if (formula[leftParens] === ')') {
-                        parenCount--;
                     }
+                    // else if (formula[leftParens] === ')') {
+                    //     parenCount--;
+                    // }
                     leftParens--;
                 }
                 if (leftParens === -1) {

@@ -1196,6 +1196,10 @@ export class TextMarkupAnnotation {
     // eslint-disable-next-line max-len
     private drawLine(opacity: number, x: number, y: number, width: number, height: number, color: string, factor: number, context: any, pageNumber: number): void {
         context.globalAlpha = opacity;
+        if (isBlazor()) {
+            y = y - 1;
+        }
+        height = height - 1;
         context.beginPath();
         const pageDetails: ISize = this.pdfViewerBase.pageSize[pageNumber];
         if (pageDetails.rotation === 1) {

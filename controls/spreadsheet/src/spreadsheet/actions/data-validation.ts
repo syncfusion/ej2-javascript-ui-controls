@@ -8,13 +8,13 @@ import { Dialog } from '../services/dialog';
 import { dialog, locale, initiateDataValidation, invalidData, ICellRenderer, editOperation, keyUp, focus } from '../common/index';
 import { formulaBarOperation, removeDataValidation } from '../common/index';
 import { CheckBox } from '@syncfusion/ej2-buttons';
-import { setRow, getRow } from '../../workbook/base/row';
+import { setRow } from '../../workbook/base/row';
 import { SheetModel } from '../../workbook/base/sheet-model';
-import { getRangeIndexes, getIndexesFromAddress, getCellIndexes, getColIndex } from '../../workbook/common/address';
+import { getRangeIndexes, getIndexesFromAddress, getCellIndexes } from '../../workbook/common/address';
 import { CellFormatArgs } from '../../workbook/common/interface';
 import { DropDownList, PopupEventArgs } from '@syncfusion/ej2-dropdowns';
 import { DialogModel, BeforeOpenEventArgs } from '@syncfusion/ej2-popups';
-import { ValidationModel, ValidationType, ValidationOperator, CellStyleModel, getSheet, getSheetIndex, ColumnModel } from '../../workbook/index';
+import { ValidationModel, ValidationType, ValidationOperator, CellStyleModel, getSheet, getSheetIndex, ColumnModel, Workbook } from '../../workbook/index';
 import { getColumn, isLocked } from '../../workbook/index';
 
 /**
@@ -76,8 +76,9 @@ export class DataValidation {
         }
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     private removeValidationHandler(e: MouseEvent): void {
-        let range: string = this.getRange(this.parent.getActiveSheet().selectedRange);
+        const range: string = this.getRange(this.parent.getActiveSheet().selectedRange);
         this.parent.removeDataValidation(range);
     }
 
@@ -137,7 +138,7 @@ export class DataValidation {
                 this.data = [];
             }
             if (cell && cell.validation) {
-               validation = cell.validation;
+                validation = cell.validation;
             } else if (column && column.validation) {
                 validation = column.validation;
             }
@@ -175,9 +176,7 @@ export class DataValidation {
                 }
             }
             if (cell && cell.validation) {
-                cell.validation = validation
-            } else if (column && column.validation) {
-                validation = validation;
+                cell.validation = validation;
             }
         }
     }
@@ -188,7 +187,7 @@ export class DataValidation {
         const isRange: boolean = value.indexOf('=') !== -1;
         if (isRange) {
             const sheet: SheetModel = value.indexOf('!') > -1 ?
-                getSheet(this.parent, getSheetIndex(this.parent, value.split('=')[1].split('!')[0])) : this.parent.getActiveSheet();
+                getSheet(this.parent as Workbook, getSheetIndex(this.parent as Workbook, value.split('=')[1].split('!')[0])) : this.parent.getActiveSheet();
             const address: string = value.indexOf('!') > -1 ? value.split('!')[1] : value.split('=')[1];
             let indexes: number[];
             const range: string[] = address.split(':');
@@ -241,13 +240,13 @@ export class DataValidation {
     }
 
     private getRange(range: string): string {
-        let sheet: SheetModel = this.parent.getActiveSheet();
-        let indexes: number[] = getRangeIndexes(range);
-        let maxRowCount: number = sheet.rowCount;
-        let maxColCount: number = sheet.colCount;
+        const sheet: SheetModel = this.parent.getActiveSheet();
+        const indexes: number[] = getRangeIndexes(range);
+        const maxRowCount: number = sheet.rowCount;
+        const maxColCount: number = sheet.colCount;
         if (indexes[2] === maxRowCount - 1 && indexes[0] === 0) {
             range = range.replace(/[0-9]/g, '');
-        } else if (indexes[3] === maxColCount - 1 && indexes[2] == 0) {
+        } else if (indexes[3] === maxColCount - 1 && indexes[2] === 0) {
             range = range.replace(/\D/g, '');
         }
         return range;
@@ -265,7 +264,7 @@ export class DataValidation {
         const sheet: SheetModel = this.parent.getActiveSheet();
         let cell: CellModel;
         let range: string = sheet.selectedRange;
-        let indexes: number[] = getRangeIndexes(range);
+        const indexes: number[] = getRangeIndexes(range);
         range = this.getRange(range);
         for (let rowIdx: number = indexes[0]; rowIdx <= indexes[2]; rowIdx++) {
             if (sheet.rows[rowIdx]) {
@@ -583,7 +582,7 @@ export class DataValidation {
                 if (value1.indexOf(':') !== -1) {
                     const address: string = value1.indexOf('!') > -1 ? value1.split('!')[1] : value1.split('=')[1];
                     const isSheetNameValid: boolean = value1.indexOf('!') > -1 ?
-                        getSheetIndex(this.parent, value1.split('=')[1].split('!')[0]) > -1 : true;
+                        getSheetIndex(this.parent as Workbook, value1.split('=')[1].split('!')[0]) > -1 : true;
                     rangeAdd = address.split(':');
                     const isSingleCol: boolean = address.match(/[a-z]/gi) ?
                         rangeAdd[0].replace(/[0-9]/g, '') === rangeAdd[1].replace(/[0-9]/g, '') : false;
@@ -717,20 +716,20 @@ export class DataValidation {
         const cell: CellModel = getCell(args.range[0], args.range[1], sheet);
         const column: ColumnModel = getColumn(sheet, args.range[1]);
         if (cell && cell.validation) {
-            validation = cell.validation
+            validation = cell.validation;
         } else if (column && column.validation) {
             validation = column.validation;
         }
         if (validation) {
-        let value: string | number = args.value;
-        let value1: string | number = validation.value1;
-        let value2: string | number = validation.value2;
-        const opt: string = validation.operator;
-        const type: string = validation.type;
-        const ignoreBlank: boolean = !isNullOrUndefined(validation.ignoreBlank) ? validation.ignoreBlank : true;
-        const formValidation: { isValidate: boolean, errorMsg: string } = this.formatValidation(args.value, type);
-        isValidate = formValidation.isValidate;
-        errorMsg = formValidation.errorMsg;
+            let value: string | number = args.value;
+            let value1: string | number = validation.value1;
+            let value2: string | number = validation.value2;
+            const opt: string = validation.operator;
+            const type: string = validation.type;
+            const ignoreBlank: boolean = !isNullOrUndefined(validation.ignoreBlank) ? validation.ignoreBlank : true;
+            const formValidation: { isValidate: boolean, errorMsg: string } = this.formatValidation(args.value, type);
+            isValidate = formValidation.isValidate;
+            errorMsg = formValidation.errorMsg;
             if (isValidate) {
                 isValidate = false;
                 if (type === 'Date' || type === 'Time') {
@@ -784,80 +783,80 @@ export class DataValidation {
                         value2 = value2 ? parseInt(value2.toString(), 10) : null;
                     }
                     switch (opt) {
-                        case 'EqualTo':
-                            if (value === value1) {
-                                isValidate = true;
-                            } else if (ignoreBlank && enterValue === '') {
-                                isValidate = true;
-                            } else {
-                                isValidate = false;
-                            }
-                            break;
-                        case 'NotEqualTo':
-                            if (value !== value1) {
-                                isValidate = true;
-                            } else if (ignoreBlank && enterValue === '') {
-                                isValidate = true;
-                            } else {
-                                isValidate = false;
-                            }
-                            break;
-                        case 'Between':
-                            if (value >= value1 && value <= value2) {
-                                isValidate = true;
-                            } else if (ignoreBlank && enterValue === '') {
-                                isValidate = true;
-                            } else {
-                                isValidate = false;
-                            }
-                            break;
-                        case 'NotBetween':
-                            if (value >= value1 && value <= value2) {
-                                isValidate = false;
-                            } else if (ignoreBlank && enterValue === '') {
-                                isValidate = true;
-                            } else {
-                                isValidate = true;
-                            }
-                            break;
-                        case 'GreaterThan':
-                            if (value > value1) {
-                                isValidate = true;
-                            } else if (ignoreBlank && enterValue === '') {
-                                isValidate = true;
-                            } else {
-                                isValidate = false;
-                            }
-                            break;
-                        case 'LessThan':
-                            if (value < value1) {
-                                isValidate = true;
-                            } else if (ignoreBlank && enterValue === '') {
-                                isValidate = true;
-                            } else {
-                                isValidate = false;
-                            }
-                            break;
-                        case 'GreaterThanOrEqualTo':
-                            if (value >= value1) {
-                                isValidate = true;
-                            } else if (ignoreBlank && enterValue === '') {
-                                isValidate = true;
-                            } else {
-                                isValidate = false;
-                            }
-                            break;
-                        case 'LessThanOrEqualTo':
-                            if (value <= value1) {
-                                isValidate = true;
-                            } else if (ignoreBlank && enterValue === '') {
-                                isValidate = true;
-                            } else {
-                                isValidate = false;
-                            }
-                            break;
-                        default:
-                            break;
+                    case 'EqualTo':
+                        if (value === value1) {
+                            isValidate = true;
+                        } else if (ignoreBlank && enterValue === '') {
+                            isValidate = true;
+                        } else {
+                            isValidate = false;
+                        }
+                        break;
+                    case 'NotEqualTo':
+                        if (value !== value1) {
+                            isValidate = true;
+                        } else if (ignoreBlank && enterValue === '') {
+                            isValidate = true;
+                        } else {
+                            isValidate = false;
+                        }
+                        break;
+                    case 'Between':
+                        if (value >= value1 && value <= value2) {
+                            isValidate = true;
+                        } else if (ignoreBlank && enterValue === '') {
+                            isValidate = true;
+                        } else {
+                            isValidate = false;
+                        }
+                        break;
+                    case 'NotBetween':
+                        if (value >= value1 && value <= value2) {
+                            isValidate = false;
+                        } else if (ignoreBlank && enterValue === '') {
+                            isValidate = true;
+                        } else {
+                            isValidate = true;
+                        }
+                        break;
+                    case 'GreaterThan':
+                        if (value > value1) {
+                            isValidate = true;
+                        } else if (ignoreBlank && enterValue === '') {
+                            isValidate = true;
+                        } else {
+                            isValidate = false;
+                        }
+                        break;
+                    case 'LessThan':
+                        if (value < value1) {
+                            isValidate = true;
+                        } else if (ignoreBlank && enterValue === '') {
+                            isValidate = true;
+                        } else {
+                            isValidate = false;
+                        }
+                        break;
+                    case 'GreaterThanOrEqualTo':
+                        if (value >= value1) {
+                            isValidate = true;
+                        } else if (ignoreBlank && enterValue === '') {
+                            isValidate = true;
+                        } else {
+                            isValidate = false;
+                        }
+                        break;
+                    case 'LessThanOrEqualTo':
+                        if (value <= value1) {
+                            isValidate = true;
+                        } else if (ignoreBlank && enterValue === '') {
+                            isValidate = true;
+                        } else {
+                            isValidate = false;
+                        }
+                        break;
+                    default:
+                        break;
                     }
                 }
             }
@@ -944,9 +943,9 @@ export class DataValidation {
 
     private InvalidElementHandler(
         args: { isRemoveHighlightedData: boolean, rowIdx: number, colIdx: number, td?: HTMLElement }): void {
-        let rowIdx: number = args.rowIdx;
-        let colIdx: number = args.colIdx;
-        let isRemoveHighlightedData: boolean = args.isRemoveHighlightedData;
+        const rowIdx: number = args.rowIdx;
+        const colIdx: number = args.colIdx;
+        const isRemoveHighlightedData: boolean = args.isRemoveHighlightedData;
         if (!isRemoveHighlightedData) {
             this.parent.notify(applyCellFormat, <CellFormatArgs>{
                 style: { backgroundColor: '#ffff00', color: '#ff0000' }, rowIdx: rowIdx, colIdx: colIdx, cell: args.td
@@ -1021,7 +1020,7 @@ export class DataValidation {
             }
         } else {
             const indexes: number[] = getCellIndexes(this.parent.getActiveSheet().activeCell);
-            let cell: CellModel  = getCell(indexes[0], indexes[1], this.parent.getActiveSheet());
+            const cell: CellModel  = getCell(indexes[0], indexes[1], this.parent.getActiveSheet());
             const value: string = cell ? this.parent.getDisplayText(cell) : '';
             this.parent.notify(editOperation, {
                 action: 'cancelEdit', value: value, refreshFormulaBar: true,

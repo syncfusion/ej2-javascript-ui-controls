@@ -226,6 +226,18 @@ export class Print {
                             inputField.style.letterSpacing = '' + font + 'px';
                             inputField.style.fontFamily = 'monospace';
                         }
+                        // eslint-disable-next-line
+                        let pageDetails: any = this.pdfViewerBase.pageSize[pageIndex];
+                        if (pageDetails.width > pageDetails.height) {
+                            inputField.style.transform = 'rotate(-90deg)';
+                            let previousLeft: number = parseFloat(inputField.style.left);
+                            let currentWidthPosition: number = parseFloat(inputField.style.width) / 2;
+                            let currentHeightPosition: number = parseFloat(inputField.style.height) / 2;
+                            let currentTop: number = parseFloat(inputField.style.top);
+                            let currentHeight: number = parseFloat(inputField.style.height);
+                            inputField.style.left = (currentHeightPosition - currentWidthPosition + currentTop) + 'px';
+                            inputField.style.top = (pageDetails.width - currentHeight - (currentWidthPosition - currentHeightPosition + previousLeft)) + 'px';
+                        }
                         inputField.style.backgroundColor = 'transparent';
                         if (!currentData.IsSignatureField) {
                             inputField.style.borderColor = 'transparent';
@@ -310,8 +322,15 @@ export class Print {
             if (this.pdfViewer.formFieldsModule) {
                 const pageWidth: number = this.pdfViewerBase.pageSize[i].width;
                 const pageHeight: number = this.pdfViewerBase.pageSize[i].height;
-                const heightRatio: number = pageHeight / 1056;
-                const widthRatio: number = pageWidth / 816;
+                var heightRatio: number;
+                var widthRatio: number;
+                if (pageHeight < pageWidth) {
+                    heightRatio = pageHeight / 816;
+                    widthRatio = pageWidth / 1056;
+                } else {
+                    heightRatio = pageHeight / 1056;
+                    widthRatio = pageWidth / 816;
+                }
                 this.renderFieldsForPrint(i, heightRatio, widthRatio);
             }
         }

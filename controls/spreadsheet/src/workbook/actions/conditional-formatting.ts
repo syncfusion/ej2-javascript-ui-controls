@@ -1,5 +1,5 @@
 import { Workbook, setCell, SheetModel, setRow, CellModel, getSheet } from '../base/index';
-import { setCFRule, clearCFRule, getRangeAddress, CellStyleModel, applyCellFormat } from '../common/index';
+import { setCFRule, clearCFRule, getRangeAddress, CellStyleModel, applyCellFormat, getSwapRange } from '../common/index';
 import { getRangeIndexes, CellFormatArgs, ConditionalFormatModel } from '../common/index';
 import { cFInitialCheck, clearCF } from '../common/index';
 import { completeAction } from '../../spreadsheet/common/event';
@@ -49,8 +49,8 @@ export class WorkbookConditionalFormat {
         const sheetIndex: number = this.parent.getAddressInfo(range).sheetIndex;
         const sheet: SheetModel = getSheet(this.parent, sheetIndex);
         range = range || sheet.selectedRange;
-        conditionalFormat.range = range;
-        const indexes: number[] = getRangeIndexes(range);
+        const indexes: number[] = getSwapRange(getRangeIndexes(range));
+        conditionalFormat.range = getRangeAddress(indexes);
         if (!sheet.conditionalFormats) {
             this.parent.setSheetPropertyOnMute(sheet, 'conditionalFormats', []);
         }

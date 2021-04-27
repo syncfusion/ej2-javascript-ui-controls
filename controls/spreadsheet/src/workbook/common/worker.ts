@@ -1,8 +1,8 @@
 /**
  * Worker task.
- * 
+ *
  * @param {Object} context - Specify the context.
- * @param {Function | { [key: string]: Function | string[] }} taskFn - Specify the task.
+ * @param {Function | Object} taskFn - Specify the task.
  * @param {Function} callbackFn - Specify the callbackFn.
  * @param {Object[]} data - Specify the data.
  * @param {boolean} preventCallback - Specify the preventCallback.
@@ -16,7 +16,7 @@ export function executeTaskAsync(
 
 /**
  * @hidden
- * 
+ *
  * The `WorkerHelper` module is used to perform multiple actions using Web Worker asynchronously.
  */
 class WorkerHelper {
@@ -33,7 +33,7 @@ class WorkerHelper {
      *
      * @private
      * @param {Object} context - Specify the context.
-     * @param {Function | { [key: string]: Function | string[] }} task - Specify the task.
+     * @param {Function | Object} task - Specify the task.
      * @param {Function} defaultListener - Specify the defaultListener.
      * @param {Object[]} taskData - Specify the taskData.
      * @param {boolean} preventCallback - Specify the preventCallback.
@@ -67,7 +67,7 @@ class WorkerHelper {
      * @returns {void} - To initiate the worker.
      */
     private initWorker(): void {
-        let taskBlob: Blob = new Blob([this.getFnCode()], { type: 'text/javascript' });
+        const taskBlob: Blob = new Blob([this.getFnCode()], { type: 'text/javascript' });
         this.workerUrl = URL.createObjectURL(taskBlob);
         this.worker = new Worker(this.workerUrl);
         this.worker.onmessage = this.messageFromWorker.bind(this);
@@ -90,8 +90,9 @@ class WorkerHelper {
     /**
      * Method for getting error message from worker if failed.
      *
-     * @private
+     * @param {ErrorEvent} args - Specify the args.
      * @returns {void} - Method for getting error message from worker if failed.
+     * @private
      */
     private onError(args: ErrorEvent): void {
         this.terminate();

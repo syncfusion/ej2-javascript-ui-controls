@@ -3,7 +3,7 @@ import { Spreadsheet } from '../base/index';
 import { contentLoaded, spreadsheetDestroyed, onVerticalScroll, onHorizontalScroll, getScrollBarWidth, IScrollArgs } from '../common/index';
 import { IOffset, onContentScroll, deInitProperties, setScrollEvent, skipHiddenIdx, mouseDown, selectionStatus } from '../common/index';
 import { SheetModel, getRowHeight, getColumnWidth, getCellAddress } from '../../workbook/index';
-import { isFormulaBarEdit, FormulaBarEdit, virtualContentLoaded } from '../common/index';
+import { isFormulaBarEdit, FormulaBarEdit, virtualContentLoaded, colWidthChanged } from '../common/index';
 
 /**
  * The `Scroll` module is used to handle scrolling behavior.
@@ -137,7 +137,7 @@ export class Scroll {
             } else {
                 if (temp === 0) { return { idx: 0, size: 0 }; }
                 temp -= getRowHeight(sheet, i + frozenRow, true);
-                if (temp < 0) { temp = 0 };
+                if (temp < 0) { temp = 0; }
                 if (Math.abs(Math.round(temp) - scrollTop) <= 1) {
                     return { idx: i, size: temp };
                 }
@@ -247,8 +247,8 @@ export class Scroll {
         }
     }
 
-    private mouseUpHandler(e: MouseEvent): void {
-        let sheetContent: HTMLElement = document.getElementById(this.parent.element.id + '_sheet');
+    private mouseUpHandler(): void {
+        const sheetContent: HTMLElement = document.getElementById(this.parent.element.id + '_sheet');
         EventHandler.remove(sheetContent, 'touchmove', this.mouseMoveHandler);
         EventHandler.remove(sheetContent, 'touchend', this.mouseUpHandler);
     }
@@ -288,7 +288,7 @@ export class Scroll {
             colHeader.style[cssProps.border] = '1px';
         }
     }
-    
+
     private addEventListener(): void {
         this.parent.on(contentLoaded, this.contentLoaded, this);
         this.parent.on(onContentScroll, this.onContentScroll, this);
@@ -298,6 +298,7 @@ export class Scroll {
         this.parent.on(mouseDown, this.mouseDownHandler, this);
         if (!this.parent.scrollSettings.enableVirtualization) {
             this.parent.on(virtualContentLoaded, this.updateNonVirualScrollWidth, this);
+            this.parent.on(colWidthChanged, this.updateNonVirualScrollWidth, this);
         }
     }
 
@@ -315,6 +316,7 @@ export class Scroll {
         this.parent.off(mouseDown, this.mouseDownHandler);
         if (!this.parent.scrollSettings.enableVirtualization) {
             this.parent.off(virtualContentLoaded, this.updateNonVirualScrollWidth);
+            this.parent.off(colWidthChanged, this.updateNonVirualScrollWidth);
         }
     }
 }

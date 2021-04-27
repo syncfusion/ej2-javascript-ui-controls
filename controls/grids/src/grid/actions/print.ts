@@ -98,6 +98,7 @@ export class Print {
         let element: HTMLElement = createElement('div', {
             id: this.parent.element.id + '_print', className: gObj.element.className + ' e-print-grid'
         });
+        element.classList.remove('e-gridhover');
         document.body.appendChild(element);
         let printGrid: IGrid = new Grid(getPrintGridModel(gObj, gObj.hierarchyPrintMode) as Object);
         if (gObj.isFrozenGrid() && !gObj.getFrozenColumns()) {

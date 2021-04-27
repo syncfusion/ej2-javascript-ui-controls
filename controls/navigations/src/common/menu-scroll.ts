@@ -14,38 +14,51 @@ import { HScroll } from './h-scroll';
  * @returns {HTMLElement} - Element
  * @hidden
  */
-export function addScrolling(
-    createElement: createElementType, container: HTMLElement, content: HTMLElement, scrollType: string, enableRtl: boolean,
+ export function addScrolling(
+    createElem: createElementType, container: HTMLElement, content: HTMLElement, scrollType: string, enableRtl: boolean,
     offset?: number): HTMLElement {
     let containerOffset: number; let contentOffset: number;
+    let parentElem: Element = container.parentElement;
     if (scrollType === 'vscroll') {
         containerOffset = offset || container.getBoundingClientRect().height; contentOffset = content.getBoundingClientRect().height;
     } else {
         containerOffset = container.getBoundingClientRect().width; contentOffset = content.getBoundingClientRect().width;
     }
     if (containerOffset < contentOffset) {
-        const scrollEle: HTMLElement = createElement('div', { className: 'e-menu-' + scrollType });
-        container.appendChild(scrollEle);
-        scrollEle.appendChild(content);
-        if (offset) {
-            scrollEle.style.overflow = 'hidden';
-            scrollEle.style.height = offset + 'px';
-        } else {
-            scrollEle.style.maxHeight = container.style.maxHeight;
-            container.style.overflow = 'hidden';
+        return createScrollbar(createElem, container, content, scrollType, enableRtl, offset);
+    } else if (parentElem) {
+        let width: number = parentElem.getBoundingClientRect().width;
+        if (width < containerOffset) {
+            contentOffset = width;
+            container.style.maxWidth= width + "px";
+            return createScrollbar(createElem, container, content, scrollType, enableRtl, offset);
         }
-        let scrollObj: VScroll | HScroll;
-        if (scrollType === 'vscroll') {
-            scrollObj = new VScroll({ enableRtl: enableRtl }, scrollEle);
-            scrollObj.scrollStep = (select('.e-' + scrollType + '-bar', container) as HTMLElement).offsetHeight / 2;
-        } else {
-            scrollObj = new HScroll({ enableRtl: enableRtl }, scrollEle);
-            scrollObj.scrollStep = (select('.e-' + scrollType + '-bar', container) as HTMLElement).offsetWidth;
-        }
-        return scrollEle;
+        return content;
     } else {
         return content;
     }
+}
+function createScrollbar (createElement: createElementType, container: HTMLElement, content: HTMLElement, scrollType: string, enableRtl: boolean,
+    offset?: number): HTMLElement {
+    const scrollEle: HTMLElement = createElement('div', { className: 'e-menu-' + scrollType });
+    container.appendChild(scrollEle);
+    scrollEle.appendChild(content);
+    if (offset) {
+        scrollEle.style.overflow = 'hidden';
+        scrollEle.style.height = offset + 'px';
+    } else {
+        scrollEle.style.maxHeight = container.style.maxHeight;
+        container.style.overflow = 'hidden';
+    }
+    let scrollObj: VScroll | HScroll;
+    if (scrollType === 'vscroll') {
+        scrollObj = new VScroll({ enableRtl: enableRtl }, scrollEle);
+        scrollObj.scrollStep = (select('.e-' + scrollType + '-bar', container) as HTMLElement).offsetHeight / 2;
+    } else {
+        scrollObj = new HScroll({ enableRtl: enableRtl }, scrollEle);
+        scrollObj.scrollStep = (select('.e-' + scrollType + '-bar', container) as HTMLElement).offsetWidth;
+    }
+    return scrollEle;
 }
 
 /**

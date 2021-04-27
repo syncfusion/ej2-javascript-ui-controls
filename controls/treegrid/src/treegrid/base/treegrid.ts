@@ -2,7 +2,7 @@ import { Component, addClass, createElement, EventHandler, isNullOrUndefined, Aj
 import { removeClass, EmitType, Complex, Collection, KeyboardEventArgs, getValue } from '@syncfusion/ej2-base';
 import {Event, Property, NotifyPropertyChanges, INotifyPropertyChanged, setValue, KeyboardEvents, L10n } from '@syncfusion/ej2-base';
 import { Column, ColumnModel } from '../models/column';
-import { BeforeBatchSaveArgs, BeforeBatchAddArgs, BatchDeleteArgs, BeforeBatchDeleteArgs, InfiniteScroll } from '@syncfusion/ej2-grids';
+import { BeforeBatchSaveArgs, BeforeBatchAddArgs, BatchDeleteArgs, BeforeBatchDeleteArgs } from '@syncfusion/ej2-grids';
 import { GridModel, ColumnQueryModeType, HeaderCellInfoEventArgs, EditSettingsModel as GridEditModel } from '@syncfusion/ej2-grids';
 import {RowDragEventArgs, RowDropEventArgs, RowDropSettingsModel, RowDropSettings, getUid } from '@syncfusion/ej2-grids';
 import { ActionEventArgs } from'@syncfusion/ej2-grids';
@@ -94,7 +94,6 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
     constructor(options?: TreeGridModel, element?: Element) {
         super(options, <HTMLButtonElement | string>element);
         TreeGrid.Inject(TreeGridSelection);
-        Grid.Inject(InfiniteScroll);
         setValue('mergePersistData', this.mergePersistTreeGridData, this);
         const logger: string = 'Logger';
         if (!isNullOrUndefined(this.injectedModules[logger])) {
@@ -1816,7 +1815,7 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
             this.element.style.width = this.width;
         }
         this.element.appendChild(gridContainer);
-        let gridRequiredModules: Function = this.grid.requiredModules;
+        const gridRequiredModules: Function = this.grid.requiredModules;
         this.grid.requiredModules = function (): ModuleDeclaration[] {
             let modules: ModuleDeclaration[] = [];
             modules = gridRequiredModules.apply(this);
@@ -1826,7 +1825,7 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
                 }
             }
             return modules;
-        }
+        };
         this.grid.appendTo(gridContainer as HTMLElement);
         this.wireEvents();
         this.renderComplete();
@@ -2096,20 +2095,20 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
             }
         };
     }
-    
+
     private objectEqualityChecker = (old: Object, current: Object) => {
-      if (old) {
-        let keys: string[] = Object.keys(old);
-        let isEqual: boolean = true;
-        for (let i: number = 0; i < keys.length; i++) {
-            if (old[keys[i]] !== current[keys[i]]) {
-                isEqual = false; break;
+        if (old) {
+            const keys: string[] = Object.keys(old);
+            let isEqual: boolean = true;
+            for (let i: number = 0; i < keys.length; i++) {
+                if (old[keys[i]] !== current[keys[i]]) {
+                    isEqual = false; break;
+                }
             }
+            return isEqual;
+        } else {
+            return false;
         }
-        return isEqual;
-      } else {
-        return false;
-      }
     }
     private bindCallBackEvents(): void {
         this.grid.toolbarClick = (args: ClickEventArgs): Deferred | void => {
@@ -2237,7 +2236,7 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
         }
     }
 
-    private extendedGridActionEvents(): void {       
+    private extendedGridActionEvents(): void {
         this.grid.actionBegin = (args: ActionEventArgs): Deferred| void => {
             if (args.requestType === 'sorting' && args.target && args.target.parentElement &&
             args.target.parentElement.classList.contains('e-hierarchycheckbox')) {
@@ -2513,8 +2512,8 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
                     if (i === this.treeColumnIndex && prop === 'template') {
                         treeGridColumn[prop] = column[i][prop];
                     } else if (prop === 'columns') {
-                          gridColumn[prop] = this.getGridColumns(column[i][prop] as Column[]);
-                          treeGridColumn[prop] = column[i][prop];
+                        gridColumn[prop] = this.getGridColumns(column[i][prop] as Column[]);
+                        treeGridColumn[prop] = column[i][prop];
                     } else {
                         gridColumn[prop] = treeGridColumn[prop] = column[i][prop];
                     }
@@ -2539,7 +2538,7 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
         for (const prop of properties) {
             switch (prop) {
             case 'columns':
-                 this.grid.columns = this.getGridColumns(this.columns as Column[]);
+                this.grid.columns = this.getGridColumns(this.columns as Column[]);
                 break;
             case 'treeColumnIndex':
                 this.grid.refreshColumns(); break;
@@ -3064,12 +3063,12 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
      * @returns {Column} - Returns tree grid column
      */
     public getColumnByField(field: string): Column {
-            return iterateArrayOrObject<Column, Column>(<Column[]>this.columnModel, (item: Column) => {
-                if (item.field === field) {
-                    return item;
-                }
-                return undefined;
-            })[0];
+        return iterateArrayOrObject<Column, Column>(<Column[]>this.columnModel, (item: Column) => {
+            if (item.field === field) {
+                return item;
+            }
+            return undefined;
+        })[0];
     }
 
     /**
@@ -3385,6 +3384,7 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
      * @returns {void}
      */
     public refresh(): void {
+        this.uniqueIDCollection = {};
         this.convertTreeData(this.dataSource);
         if (!isCountRequired(this)) {
             this.grid.dataSource = !(this.dataSource instanceof DataManager) ? this.flatData :

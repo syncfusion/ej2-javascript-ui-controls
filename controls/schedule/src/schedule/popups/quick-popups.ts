@@ -1022,7 +1022,7 @@ export class QuickPopups {
         };
         this.parent.trigger(event.popupClose, args, (popupCloseArgs: PopupCloseEventArgs) => {
             if (!popupCloseArgs.cancel) {
-                this.parent.eventBase.focusElement();
+                this.parent.eventBase.focusElement(true);
             }
         });
     }

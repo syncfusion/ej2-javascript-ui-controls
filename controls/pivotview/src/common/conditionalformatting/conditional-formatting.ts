@@ -53,7 +53,7 @@ export class ConditionalFormatting {
      * @returns {string} - Module name.
      */
     protected getModuleName(): string {
-        return 'conditionalformatting';
+        return 'conditionalFormatting';
     }
 
     private createDialog(): void {

@@ -132,13 +132,13 @@ export class KeyboardNavigation {
         }
     }
 
-    private shiftSelection(e: KeyboardEvent) {
+    private shiftSelection(e: KeyboardEvent): void {
         const sheet: SheetModel = this.parent.getActiveSheet();
-        let selectedRange: number[] = getRangeIndexes(sheet.selectedRange);
-        let swapRange: number[] = getSwapRange(selectedRange); let noHidden: boolean = true;
+        const selectedRange: number[] = getRangeIndexes(sheet.selectedRange);
+        const swapRange: number[] = getSwapRange(selectedRange); let noHidden: boolean = true;
         if (e.keyCode === 38) { // shift + up arrow
             for (let i: number = swapRange[1]; i <= swapRange[3]; i++) {
-                let cell: CellModel = getCell(selectedRange[2], i, this.parent.getActiveSheet());
+                const cell: CellModel = getCell(selectedRange[2], i, this.parent.getActiveSheet());
                 if (!isNullOrUndefined(cell) && cell.rowSpan && cell.rowSpan < 0) {
                     selectedRange[2] = selectedRange[2] - (Math.abs(cell.rowSpan) + 1);
                     noHidden = false;
@@ -154,7 +154,7 @@ export class KeyboardNavigation {
         }
         if (e.keyCode === 40) { // shift + down arrow
             for (let i: number = swapRange[1]; i <= swapRange[3]; i++) {
-                let cell: CellModel = getCell(selectedRange[2], i, this.parent.getActiveSheet());
+                const cell: CellModel = getCell(selectedRange[2], i, this.parent.getActiveSheet());
                 if (!isNullOrUndefined(cell) && cell.rowSpan && cell.rowSpan > 0) {
                     selectedRange[2] = selectedRange[2] + Math.abs(cell.rowSpan);
                     noHidden = false;
@@ -167,7 +167,7 @@ export class KeyboardNavigation {
         }
         if (e.keyCode === 39) { // shift + right arrow
             for (let i: number = swapRange[0]; i <= swapRange[2]; i++) {
-                let cell: CellModel = getCell(i, selectedRange[3], this.parent.getActiveSheet());
+                const cell: CellModel = getCell(i, selectedRange[3], this.parent.getActiveSheet());
                 if (!isNullOrUndefined(cell) && cell.colSpan && cell.colSpan > 0) {
                     selectedRange[3] = selectedRange[3] + Math.abs(cell.colSpan);
                     noHidden = false;
@@ -180,7 +180,7 @@ export class KeyboardNavigation {
         }
         if (e.keyCode === 37) { // shift + left arrow
             for (let i: number = swapRange[0]; i <= swapRange[2]; i++) {
-                let cell: CellModel = getCell(i, selectedRange[3], this.parent.getActiveSheet());
+                const cell: CellModel = getCell(i, selectedRange[3], this.parent.getActiveSheet());
                 if (!isNullOrUndefined(cell) && cell.colSpan && cell.colSpan < 0) {
                     selectedRange[3] = selectedRange[3] - (Math.abs(cell.colSpan) + 1);
                     noHidden = false;
@@ -215,7 +215,7 @@ export class KeyboardNavigation {
                     selectedRange[3] = usedRange[1];
                 } else {
                     selectedRange[3] = this.parent.getActiveSheet().colCount;
-                } 
+                }
             }
             if (e.keyCode === 40) {
                 if (selectedRange[2] <= usedRange[0]) {
@@ -251,7 +251,7 @@ export class KeyboardNavigation {
         const topIdx: number = actIdxes[0] < frozenRow ? topLeftIdxes[0] : paneTopLeftIdxes[0];
         const leftIdx: number = actIdxes[1] < frozenCol ? topLeftIdxes[1] : paneTopLeftIdxes[1];
         const offsetLeftSize: number = this.parent.scrollModule.offset.left.size;
-        const offsetTopSize: number = this.parent.scrollModule.offset.top.size
+        const offsetTopSize: number = this.parent.scrollModule.offset.top.size;
         if (frozenRow && actIdxes[0] !== selectedRange[2] && cont.scrollTop) {
             if (actIdxes[0] === frozenRow) {
                 cont.scrollTop = 0; return;

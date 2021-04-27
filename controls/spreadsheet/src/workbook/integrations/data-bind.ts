@@ -36,6 +36,7 @@ export class DataBind {
     /**
      * Update given data source to sheet.
      *
+     * @param {Object} args - Specify the args.
      * @param {ExtendedSheet} args.sheet - Specify the sheet.
      * @param {number[]} args.indexes - Specify the indexes.
      * @param {Promise<CellModel>} args.promise - Specify the promise.
@@ -47,7 +48,7 @@ export class DataBind {
         let cell: CellModel; let flds: string[]; let sCellIdx: number[];
         let result: Object[]; let remoteUrl: string; let isLocal: boolean; let dataManager: DataManager;
         const requestedRange: boolean[] = []; const sRanges: number[] = []; let rowIdx: number;
-        let deferred: Deferred = new Deferred(); let sRowIdx: number; let sColIdx: number;
+        const deferred: Deferred = new Deferred(); let sRowIdx: number; let sColIdx: number;
         let loadedInfo: { isNotLoaded: boolean, unloadedRange: number[] };
         args.promise = deferred.promise;
         if (args.sheet && args.sheet.ranges.length) {
@@ -102,8 +103,12 @@ export class DataBind {
                                 let insertCount: number = 0;
                                 range.info.insertColumnRange.forEach((insertRange: number[]): void => {
                                     for (let i: number = insertRange[0]; i <= insertRange[1]; i++) {
-                                        i <= sColIdx ? flds.splice(0, 0, `emptyCell${insertCount}`) : flds.splice(
-                                            i - sColIdx, 0, `emptyCell${insertCount}`);
+                                        if (i <= sColIdx) {
+                                            flds.splice(0, 0, `emptyCell${insertCount}`);
+                                        } else {
+                                            flds.splice(
+                                                i - sColIdx, 0, `emptyCell${insertCount}`);
+                                        }
                                         insertCount++;
                                     }
                                 });
@@ -164,9 +169,10 @@ export class DataBind {
                                 if (!args.rangeSettingCount) { args.rangeSettingCount = []; }
                                 args.rangeSettingCount.push(k);
                                 //if (remoteUrl) {
-                                let unloadedArgs: { sheet: ExtendedSheet, indexes: number[], promise: Promise<CellModel>,
+                                const unloadedArgs: { sheet: ExtendedSheet, indexes: number[], promise: Promise<CellModel>,
                                     rangeSettingCount?: number[] } = {
                                     sheet: args.sheet, indexes: [0, 0, args.sheet.usedRange.rowIndex, args.sheet.usedRange.colIndex],
+                                    // eslint-disable-next-line @typescript-eslint/no-unused-vars
                                     promise: new Promise((resolve: Function, reject: Function) => { resolve((() => { /** */ })()); }),
                                     rangeSettingCount: args.rangeSettingCount
                                 };
@@ -324,7 +330,8 @@ export class DataBind {
 
     /**
      * Remove old data from sheet.
-     * 
+     *
+     * @param {Object} args - Specify the args.
      * @param {Workbook} args.oldProp - Specify the oldProp.
      * @param {string} args.sheetIdx - Specify the sheetIdx.
      * @param {string} args.rangeIdx - Specify the rangeIdx.
@@ -358,6 +365,7 @@ export class DataBind {
             const refreshRange: number[] = [viewport.topIndex, viewport.leftIndex, viewport.bottomIndex, viewport.rightIndex];
             const args: { sheet: ExtendedSheet, indexes: number[], promise: Promise<CellModel> } = {
                 sheet: sheet as ExtendedSheet, indexes: refreshRange, promise:
+                    // eslint-disable-next-line @typescript-eslint/no-unused-vars
                     new Promise((resolve: Function, reject: Function) => { resolve((() => { /** */ })()); })
             };
             this.updateSheetFromDataSourceHandler(args);
@@ -369,7 +377,7 @@ export class DataBind {
 
     private checkRangeHasChanges(sheet: SheetModel, rangeIdx: string): boolean {
         if ((this.parent as unknown as { isAngular: boolean }).isAngular) {
-            let changedRangeIdx: string = 'changedRangeIdx';
+            const changedRangeIdx: string = 'changedRangeIdx';
             if (sheet[changedRangeIdx] === parseInt(rangeIdx, 10)) {
                 delete sheet[changedRangeIdx];
                 return true;
@@ -383,6 +391,7 @@ export class DataBind {
     /**
      * Triggers dataSourceChange event when cell data changes
      *
+     * @param {Object} args - Specify the args.
      * @param {number} args.sheetIdx - Specify the sheetIdx.
      * @param {number} args.activeSheetIndex - Specify the activeSheetIndex.
      * @param {string} args.address - Specify the address.
@@ -393,11 +402,17 @@ export class DataBind {
      * @param {RowModel[]} args.model - Specify the model.
      * @param {string} args.insertType - Specify the insertType.
      * @param {number} args.index - Specify the index.
+     * @param {string} args.type - Specify the type.
+     * @param {string} args.pastedRange - Specify the pasted range.
+     * @param {string} args.range - Specify the range.
+     * @param {boolean}  args.isUndoRedo - Specify the boolean value.
+     * @param {string} args.requestType - Specify the requestType.
      * @returns {void} - Triggers dataSourceChange event when cell data changes
      */
     private dataChangedHandler(args: {
         sheetIdx: number, activeSheetIndex: number, address: string, startIndex: number, endIndex: number, modelType: string,
-        deletedModel: RowModel[], model: RowModel[], insertType: string, index: number, type: string, pastedRange: string, range: string, isUndoRedo: boolean, requestType: string
+        deletedModel: RowModel[], model: RowModel[], insertType: string, index: number, type: string, pastedRange: string,
+        range: string, isUndoRedo: boolean, requestType: string
     }): void {
         const changedData: Object[] = [{}];
         let action: string;
@@ -416,7 +431,7 @@ export class DataBind {
                 let isNewRow: boolean;
                 startCell = getCellIndexes(range.startCell);
                 dataRange = [...startCell, startCell[0] + range.info.count + (range.showFieldAsHeader ? 0 : -1),
-                startCell[1] + range.info.fldLen - 1];
+                    startCell[1] + range.info.fldLen - 1];
                 if (args.modelType === 'Row') {
                     if (args.insertType) {
                         inRange = ((!range.showFieldAsHeader && args.insertType === 'above') ? dataRange[0] <= args.index
@@ -439,10 +454,11 @@ export class DataBind {
                     }
                 } else {
                     cellIndices = getRangeIndexes(args.requestType === 'paste' ? args.pastedRange.split('!')[1] : args.sheetIdx > -1 ? args.address : (args.address || args.range).split('!')[1]);
-                    const dataRangeIndices: number[] = [...[range.showFieldAsHeader ? dataRange[0] + 1 : dataRange[0]], ...dataRange.slice(1, 4)];
+                    const dataRangeIndices: number[] =
+                        [...[range.showFieldAsHeader ? dataRange[0] + 1 : dataRange[0]], ...dataRange.slice(1, 4)];
                     inRange = isInRange(dataRangeIndices, cellIndices, true);
                     if (args.requestType === 'paste' && (args as unknown as { copiedInfo: { isCut: boolean } }).copiedInfo.isCut) {
-                        cutIndices = [].slice.call((args as unknown as { copiedInfo: { range: number[] } }).copiedInfo.range)
+                        cutIndices = [].slice.call((args as unknown as { copiedInfo: { range: number[] } }).copiedInfo.range);
                         inRangeCut = isInRange(dataRangeIndices, cutIndices, true);
                     }
                 }
@@ -492,7 +508,12 @@ export class DataBind {
         });
     }
 
-    private triggerDataChangeHandler(args: { action: string, isUndo: boolean, eventArgs: { modelType: string, type: string, index: number, startIndex: number, endIndex: number, model: object[], deletedModel: object[], insertType: string, requestType: string } }): void {
+    private triggerDataChangeHandler(args: {
+        action: string, isUndo: boolean, eventArgs: {
+            modelType: string, type: string, index: number,
+            startIndex: number, endIndex: number, model: object[], deletedModel: object[], insertType: string, requestType: string
+        }
+    }): void {
         const dataChangingActions: string[] = ['insert', 'delete', 'edit', 'cellDelete', 'cellSave', 'clipboard', 'clear'];
         let triggerDataChange: boolean = true;
         if ((args.action === 'delete' || args.action === 'insert') && ['Column', 'Sheet'].indexOf(args.eventArgs.modelType) > -1) {
@@ -502,8 +523,8 @@ export class DataBind {
         } else if (args.action === 'clipboard' && args.eventArgs.requestType === 'Formats') {
             triggerDataChange = false;
         }
-        if(args.isUndo && (args.action === 'delete' || args.action === 'insert')) {
-            if(args.action === 'delete') {
+        if (args.isUndo && (args.action === 'delete' || args.action === 'insert')) {
+            if (args.action === 'delete') {
                 args.eventArgs.index = args.eventArgs.startIndex;
                 args.eventArgs.model = args.eventArgs.deletedModel;
                 args.eventArgs.insertType = 'below';
@@ -532,7 +553,7 @@ export class DataBind {
     /**
      * Destroys the Data binding module.
      *
-     * @return {void} - Destroys the Data binding module.
+     * @returns {void} - Destroys the Data binding module.
      */
     public destroy(): void {
         this.removeEventListener();

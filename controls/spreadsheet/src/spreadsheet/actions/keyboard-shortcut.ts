@@ -84,7 +84,7 @@ export class KeyboardShortcut {
                 this.parent.notify(ribbonFind, null);
             }
             if ((!isLocked || !actSheet.isProtected) && e.keyCode !== 70) {
-                 if (e.keyCode === 71) {
+                if (e.keyCode === 71) {
                     e.preventDefault(); this.parent.notify(gotoDlg, null);
                 } else if (e.keyCode === 72) {
                     e.preventDefault(); this.parent.notify(findDlg, null);

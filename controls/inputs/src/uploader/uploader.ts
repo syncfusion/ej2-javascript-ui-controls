@@ -2478,31 +2478,31 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
         this.createParentUL();
         resetBlazorTemplate(this.element.id + 'Template', 'Template');
         for (const listItem of fileData) {
-            const liElement: HTMLElement = this.createElement('li', { className: FILE, attrs: { 'data-file-name': listItem.name } });
+            const listElement: HTMLElement = this.createElement('li', { className: FILE, attrs: { 'data-file-name': listItem.name } });
             this.uploadTemplateFn = this.templateComplier(this.template);
             const liTempCompiler: any = this.uploadTemplateFn(
-                listItem, this, 'template', this.element.id + 'Template', this.isStringTemplate, null, liElement);
+                listItem, this, 'template', this.element.id + 'Template', this.isStringTemplate, null, listElement);
             if (liTempCompiler) {
                 const fromElements: HTMLElement[] = [].slice.call(liTempCompiler);
-                append(fromElements, liElement);
+                append(fromElements, listElement);
             }
             const index: number = fileData.indexOf(listItem);
             const eventArgs: RenderingEventArgs = {
-                element: liElement,
+                element: listElement,
                 fileInfo: listItem,
                 index: index,
                 isPreload: this.isPreLoadFile(listItem)
             };
             const eventsArgs: FileListRenderingEventArgs = {
-                element: liElement,
+                element: listElement,
                 fileInfo: listItem,
                 index: index,
                 isPreload: this.isPreLoadFile(listItem)
             };
             this.trigger('rendering', eventArgs);
             this.trigger('fileListRendering', eventsArgs);
-            this.listParent.appendChild(liElement);
-            this.fileList.push(liElement);
+            this.listParent.appendChild(listElement);
+            this.fileList.push(listElement);
         }
         this.renderReactTemplates();
         updateBlazorTemplate(this.element.id + 'Template', 'Template', this, false);

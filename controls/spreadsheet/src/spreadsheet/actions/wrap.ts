@@ -3,7 +3,7 @@ import { ClickEventArgs } from '@syncfusion/ej2-navigations';
 import { Spreadsheet } from '../base/spreadsheet';
 import { ribbonClick, inView, setMaxHgt, getMaxHgt, WRAPTEXT, setRowEleHeight, rowHeightChanged, beginAction } from '../common/index';
 import { completeAction, BeforeWrapEventArgs, getLines, getExcludedColumnWidth, getTextHeightWithBorder } from '../common/index';
-import { SheetModel, getCell, CellModel, CellStyleModel, wrap as wrapText, wrapEvent, getRow } from '../../workbook/index';
+import { SheetModel, getCell, CellModel, wrap as wrapText, wrapEvent, getRow, getRowsHeight, Workbook } from '../../workbook/index';
 import { getRowHeight, getAddressFromSelectedRange } from '../../workbook/index';
 
 
@@ -54,9 +54,15 @@ export class WrapText {
                 maxHgt = 0;
                 isCustomHgt = getRow(args.sheet, i).customHeight || args.isCustomHgt;
                 for (let j: number = args.range[1]; j <= args.range[3]; j++) {
+                    cell = getCell(i, j, args.sheet, null, true);
+                    if (cell.rowSpan < 0 || cell.colSpan < 0) { continue; }
                     ele = args.initial ? args.td : this.parent.getCell(i, j);
                     if (ele) {
-                        args.wrap ? ele.classList.add(WRAPTEXT) : ele.classList.remove(WRAPTEXT);
+                        if (args.wrap) {
+                            ele.classList.add(WRAPTEXT);
+                        } else {
+                            ele.classList.remove(WRAPTEXT);
+                        }
                         if (isCustomHgt) {
                             if (ele.children.length === 0 || !ele.querySelector('.e-wrap-content')) {
                                 ele.innerHTML
@@ -71,7 +77,6 @@ export class WrapText {
                         ele.classList.add('e-ie-wrap');
                     }
                     if (!isCustomHgt) {
-                        cell = getCell(i, j, args.sheet);
                         colwidth = getExcludedColumnWidth(args.sheet, i, j, cell.colSpan > 1 ? j + cell.colSpan - 1 : j);
                         let displayText: string = this.parent.getDisplayText(cell);
                         if (displayText.indexOf('\n') < 0) {
@@ -101,14 +106,21 @@ export class WrapText {
                                 } else {
                                     lines = getLines(displayText, colwidth, cell.style, this.parent.cellStyle);
                                 }
-                                hgt = getTextHeightWithBorder(this.parent, i, j, args.sheet, cell.style || this.parent.cellStyle, lines);
+                                hgt = getTextHeightWithBorder(
+                                    this.parent as Workbook, i, j, args.sheet, cell.style || this.parent.cellStyle, lines);
                                 maxHgt = Math.max(maxHgt, hgt);
+                                if (cell.rowSpan > 1) {
+                                    const prevHeight: number = getRowsHeight(args.sheet, i, i + (cell.rowSpan - 1));
+                                    if (prevHeight >= maxHgt) { return; }
+                                    hgt = maxHgt = getRowHeight(args.sheet, i) + (maxHgt - prevHeight);
+                                }
                                 setMaxHgt(args.sheet, i, j, hgt);
                             } else {
                                 if (displayText.indexOf('\n') > -1) {
                                     ele.classList.add('e-alt-unwrap');
                                 }
-                                hgt = getTextHeightWithBorder(this.parent, i, j, args.sheet, cell.style || this.parent.cellStyle, 1);
+                                hgt = getTextHeightWithBorder(
+                                    this.parent as Workbook, i, j, args.sheet, cell.style || this.parent.cellStyle, 1);
                                 setMaxHgt(args.sheet, i, j, hgt);
                                 maxHgt = Math.max(getMaxHgt(args.sheet, i), 20);
                             }
@@ -133,7 +145,7 @@ export class WrapText {
             const eventArgs: BeforeWrapEventArgs = { address: address, wrap: wrap, cancel: false };
             this.parent.notify(beginAction, { action: 'beforeWrap', eventArgs: eventArgs });
             if (!eventArgs.cancel) {
-                wrapText(this.parent.getActiveSheet().selectedRange, wrap, this.parent);
+                wrapText(this.parent.getActiveSheet().selectedRange, wrap, this.parent as Workbook);
                 this.parent.notify(completeAction, { action: 'wrap', eventArgs: { address: address, wrap: wrap } });
             }
         }

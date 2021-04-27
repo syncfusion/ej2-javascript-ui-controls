@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import { Component, Property, NotifyPropertyChanges, INotifyPropertyChanged, Event, EmitType, ChildProperty } from '@syncfusion/ej2-base';
 import { getComponent, closest, EventHandler, getUniqueID, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { Collection, Complex } from '@syncfusion/ej2-base';
@@ -394,7 +395,7 @@ export class Ribbon extends Component<HTMLDivElement> implements INotifyProperty
      *
      * @param {string[]} items - Items that needs to be enabled / disabled.
      * @param {boolean} enable - Set `true` / `false` to enable / disable the menu items.
-     * @param {boolean} isUniqueId? - Set `true` if the given menu items `text` is a unique id.
+     * @param {boolean} isUniqueId - Set `true` if the given menu items `text` is a unique id.
      * @returns {void} - To enable / disable the ribbon menu items.
      */
     public enableMenuItems(items: string[], enable: boolean = true, isUniqueId?: boolean): void {
@@ -413,7 +414,11 @@ export class Ribbon extends Component<HTMLDivElement> implements INotifyProperty
     public hideMenuItems(items: string[], hide: boolean = true, isUniqueId?: boolean): void {
         if (!this.menuItems.length) { return; }
         const menuInstance: Menu = getComponent(document.getElementById(`${this.element.id}_menu`), 'menu') as Menu;
-        hide ? menuInstance.hideItems(items, isUniqueId) : menuInstance.showItems(items, isUniqueId);
+        if (hide) {
+            menuInstance.hideItems(items, isUniqueId);
+        } else {
+            menuInstance.showItems(items, isUniqueId);
+        }
     }
 
     /**
@@ -429,7 +434,11 @@ export class Ribbon extends Component<HTMLDivElement> implements INotifyProperty
     public addMenuItems(items: MenuItemModel[], text: string, insertAfter: boolean = true, isUniqueId?: boolean): void {
         if (!this.menuItems.length) { return; }
         const menuInstance: Menu = getComponent(document.getElementById(`${this.element.id}_menu`), 'menu') as Menu;
-        insertAfter ? menuInstance.insertAfter(items.reverse(), text, isUniqueId) : menuInstance.insertBefore(items, text, isUniqueId);
+        if (insertAfter) {
+            menuInstance.insertAfter(items.reverse(), text, isUniqueId);
+        } else {
+            menuInstance.insertBefore(items, text, isUniqueId);
+        }
     }
 
     /**
@@ -463,7 +472,9 @@ export class Ribbon extends Component<HTMLDivElement> implements INotifyProperty
             }
         });
         this.setProperties({ 'items': this.items }, true);
-        this.tabObj.items = this.tabObj.items; this.tabObj.dataBind();
+        // eslint-disable-next-line no-self-assign
+        this.tabObj.items = this.tabObj.items;
+        this.tabObj.dataBind();
         if (hide) { isAllHidden = this.isAllHidden(); if (isAllHidden) { activeTab = false; } }
         if (!hide && isAllHidden) { activeTab = activeTab ? false : true; }
         if (stateChanged && isAllHidden) {

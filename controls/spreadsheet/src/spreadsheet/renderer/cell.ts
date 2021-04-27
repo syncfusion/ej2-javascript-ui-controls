@@ -3,7 +3,7 @@ import { ICellRenderer, CellRenderEventArgs, inView, CellRenderArgs, renderFilte
 import { hasTemplate, createHyperlinkElement, checkPrevMerge, createImageElement, IRenderer, getDPRValue } from '../common/index';
 import { getColumnHeaderText, CellStyleModel, CellFormatArgs, getRangeIndexes, getRangeAddress } from '../../workbook/common/index';
 import { CellStyleExtendedModel, setChart, refreshChart, getCellAddress, ValidationModel, MergeArgs } from '../../workbook/common/index';
-import { CellModel, SheetModel, skipDefaultValue, isHiddenRow, RangeModel, isHiddenCol, ColumnModel } from '../../workbook/base/index';
+import { CellModel, SheetModel, skipDefaultValue, isHiddenRow, RangeModel, isHiddenCol, ColumnModel, Workbook } from '../../workbook/base/index';
 import { getRowHeight, setRowHeight, getCell, getColumn, getColumnWidth } from '../../workbook/base/index';
 import { addClass, attributes, getNumberDependable, extend, compile, isNullOrUndefined, detach } from '@syncfusion/ej2-base';
 import { getFormattedCellObject, applyCellFormat, workbookFormulaOperation, wrapEvent, cFRender } from '../../workbook/common/index';
@@ -45,9 +45,9 @@ export class CellRenderer implements ICellRenderer {
         return headerCell;
     }
     public render(args: CellRenderArgs): Element {
-        let sheet: SheetModel = this.parent.getActiveSheet();
-        let cell: CellModel = getCell(args.rowIdx, args.colIdx, sheet);
-        let column: ColumnModel = getColumn(sheet, args.colIdx);
+        const sheet: SheetModel = this.parent.getActiveSheet();
+        const cell: CellModel = getCell(args.rowIdx, args.colIdx, sheet);
+        const column: ColumnModel = getColumn(sheet, args.colIdx);
         let validation: ValidationModel;
         if (cell && cell.validation) {
             validation = cell.validation;
@@ -83,7 +83,7 @@ export class CellRenderer implements ICellRenderer {
                 (args.td.children[0].firstElementChild.nextElementSibling as HTMLElement).style.height = '100%';
             }
         }
-        if (!hasTemplate(this.parent, args.rowIdx, args.colIdx, this.parent.activeSheetIndex)) {
+        if (!hasTemplate(this.parent as Workbook, args.rowIdx, args.colIdx, this.parent.activeSheetIndex)) {
             this.parent.notify(renderFilterCell, { td: args.td, rowIndex: args.rowIdx, colIndex: args.colIdx });
         }
         const evtArgs: CellRenderEventArgs = { cell: args.cell, element: args.td, address: args.address };
@@ -111,7 +111,7 @@ export class CellRenderer implements ICellRenderer {
     }
 
     private update(args: CellRenderArgs): void {
-        let sheet: SheetModel = this.parent.getActiveSheet();
+        const sheet: SheetModel = this.parent.getActiveSheet();
         if (args.isRefresh) {
             if (args.td.rowSpan) {
                 this.mergeFreezeRow(sheet, args.rowIdx, args.colIdx, args.td.rowSpan, args.row, true);
@@ -126,7 +126,7 @@ export class CellRenderer implements ICellRenderer {
                 args.td.removeChild(args.td.querySelector('.e-hyperlink'));
             }
         }
-        if (args.cell && args.cell.formula && !args.cell.value) {
+        if (args.cell && args.cell.formula && (!args.cell.value || args.isRefreshing)) {
             const isFormula: boolean = checkIsFormula(args.cell.formula);
             const eventArgs: { [key: string]: string | number | boolean } = {
                 action: 'refreshCalculate', value: args.cell.formula, rowIndex: args.rowIdx, colIndex: args.colIdx, isFormula: isFormula };
@@ -187,9 +187,6 @@ export class CellRenderer implements ICellRenderer {
             }
         }
         if (args.isRefresh) { this.removeStyle(args.td, args.rowIdx, args.colIdx); }
-        if (this.parent.allowConditionalFormat && args.lastCell) {
-            this.parent.notify(checkConditionalFormat, { rowIdx: args.rowIdx , colIdx: args.colIdx, cell: args.cell });
-        }
         if (this.parent.allowChart && args.lastCell) {
             this.parent.notify(refreshChart, {
                 cell: args.cell, rIdx: args.rowIdx, cIdx: args.colIdx, sheetIdx: this.parent.activeSheetIndex
@@ -200,6 +197,9 @@ export class CellRenderer implements ICellRenderer {
                 style: extend({}, this.parent.commonCellStyle, style), rowIdx: args.rowIdx, colIdx: args.colIdx, cell: args.td,
                 first: args.first, row: args.row, lastCell: args.lastCell, hRow: args.hRow, pRow: args.pRow, isHeightCheckNeeded:
                 args.isHeightCheckNeeded, manualUpdate: args.manualUpdate});
+        }
+        if (this.parent.allowConditionalFormat && args.lastCell) {
+            this.parent.notify(checkConditionalFormat, { rowIdx: args.rowIdx , colIdx: args.colIdx, cell: args.cell });
         }
         if (args.checkNextBorder === 'Row') {
             const borderTop: string = this.parent.getCellStyleValue(
@@ -216,7 +216,8 @@ export class CellRenderer implements ICellRenderer {
                     cell: args.td });
             }
         }
-        if (args.cell && args.cell.hyperlink && !hasTemplate(this.parent, args.rowIdx, args.colIdx, this.parent.activeSheetIndex)) {
+        if (args.cell && args.cell.hyperlink && !hasTemplate(this.parent as Workbook,
+                                                             args.rowIdx, args.colIdx, this.parent.activeSheetIndex)) {
             let address: string; if (typeof (args.cell.hyperlink) === 'string') {
                 address = args.cell.hyperlink;
                 if (address.indexOf('http://') !== 0 && address.indexOf('https://') !== 0 && address.indexOf('ftp://') !== 0) {
@@ -268,14 +269,14 @@ export class CellRenderer implements ICellRenderer {
             if (args.cell.rowSpan < 0) {
                 args.isRow = true; this.parent.notify(checkPrevMerge, args);
                 if (args.cell && args.cell.rowSpan && args.cell.rowSpan < 0) {
-                    let prevCell: HTMLElement = this.parent.getCell(args.rowIdx, args.colIdx - 1, <HTMLTableRowElement>args.row);
-                    let border = 'none';
+                    const prevCell: HTMLElement = this.parent.getCell(args.rowIdx, args.colIdx - 1, <HTMLTableRowElement>args.row);
+                    let border: string = 'none';
                     border = args.cell && args.cell.style && args.cell.style.borderLeft ? args.cell.style.borderLeft : 'none';
                     if (prevCell && border) {
                         prevCell.style.borderRight = (border === 'none') ? prevCell.style.borderRight : border;
                     }
                 }
-             }
+            }
             return true;
         }
         return false;
@@ -331,7 +332,6 @@ export class CellRenderer implements ICellRenderer {
                 row.parentElement.appendChild(rowEle);
             }
             this.updateSpanTop(colIdx, frozenCol, spanRowTop);
-            
         }
     }
 
@@ -344,7 +344,7 @@ export class CellRenderer implements ICellRenderer {
         if (frozenCol && colIdx < frozenCol && (update || !parseInt(mainPanel.style.top, 10) || top <
             parseInt(mainPanel.style.top, 10))) {
             mainPanel.style.top = top + 'px';
-            let scroll: HTMLElement = mainPanel.nextElementSibling as HTMLElement;
+            const scroll: HTMLElement = mainPanel.nextElementSibling as HTMLElement;
             if (scroll) { scroll.style.top = top + 'px'; }
         }
     }
@@ -352,8 +352,8 @@ export class CellRenderer implements ICellRenderer {
     private mergeFreezeCol(sheet: SheetModel, rowIdx: number, colIdx: number, colSpan: number, unMerge?: boolean): void {
         const frozenCol: number = this.parent.frozenColCount(sheet);
         if (frozenCol && colIdx < frozenCol && colIdx + (colSpan - 1) >= frozenCol) {
-            let col: HTMLElement; let width: number; let colGrp: Element; const frozenRow: number = this.parent.frozenRowCount(sheet);
-            colGrp = (rowIdx < frozenRow ? this.parent.getSelectAllContent() : this.parent.getRowHeaderContent()).querySelector('colgroup');
+            let col: HTMLElement; let width: number; const frozenRow: number = this.parent.frozenRowCount(sheet);
+            const colGrp: Element = (rowIdx < frozenRow ? this.parent.getSelectAllContent() : this.parent.getRowHeaderContent()).querySelector('colgroup');
             const emptyCols: Element[] = [].slice.call(colGrp.querySelectorAll('.e-empty'));
             if (unMerge) {
                 const curEmptyLength: number = colIdx + colSpan - frozenCol;
@@ -551,7 +551,7 @@ export class CellRenderer implements ICellRenderer {
      * @hidden
      * @param {number[]} range - Specifies the range.
      * @returns {void}
-    */
+     */
     public refreshRange(range: number[]): void {
         const sheet: SheetModel = this.parent.getActiveSheet();
         const cRange: number[] = range.slice();

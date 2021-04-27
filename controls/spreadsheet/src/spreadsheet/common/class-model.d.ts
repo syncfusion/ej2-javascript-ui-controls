@@ -33,6 +33,7 @@ export interface SelectionSettingsModel {
      * * `None`: It disables UI selection.
      * * `Single`: It allows single selection of cell / row / column and disables multiple selection.
      * * `Multiple`: It allows single / multiple selection of cell / row / column.
+     *
      * @default 'Multiple'
      */
     mode?: SelectionMode;

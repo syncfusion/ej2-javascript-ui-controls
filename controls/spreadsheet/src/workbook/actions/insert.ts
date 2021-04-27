@@ -43,7 +43,7 @@ export class WorkbookInsert {
                     model.splice(0, 0, {});
                 }
             }
-            let frozenRow: number = this.parent.frozenRowCount(args.model);
+            const frozenRow: number = this.parent.frozenRowCount(args.model);
             if (index < frozenRow) {
                 this.parent.setSheetPropertyOnMute(args.model, 'frozenRows', args.model.frozenRows + model.length); freezePane = true;
             }
@@ -68,7 +68,7 @@ export class WorkbookInsert {
             args.model = <SheetModel>args.model;
             if (!args.model.columns) { args.model.columns = []; }
             args.model.columns.splice(index, 0, ...model);
-            let frozenCol: number = this.parent.frozenColCount(args.model);
+            const frozenCol: number = this.parent.frozenColCount(args.model);
             if (index < frozenCol) {
                 this.parent.setSheetPropertyOnMute(args.model, 'frozenColumns', args.model.frozenColumns + model.length); freezePane = true;
             }
@@ -105,7 +105,7 @@ export class WorkbookInsert {
             mergeCollection.forEach((mergeArgs: MergeArgs): void => { this.parent.notify(insertMerge, mergeArgs); });
         } else {
             if (args.checkCount !== undefined && args.checkCount === this.parent.sheets.length) { return; }
-            let sheetModel: SheetModel[] = model as SheetModel[];
+            const sheetModel: SheetModel[] = model as SheetModel[];
             for (let i: number = 0; i < sheetModel.length; i++) {
                 if (sheetModel[i].name) {
                     for (let j: number = 0; j < this.parent.sheets.length; j++) {

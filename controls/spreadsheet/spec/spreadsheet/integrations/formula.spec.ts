@@ -207,7 +207,7 @@ describe('Spreadsheet formula module ->', () => {
     });
 
     describe('CR-Issues ->', () => {
-        describe('I311951, I309076 ->', () => {
+        describe('I311951, I309076, FB24295 ->', () => {
             beforeEach((done: Function) => {
                 helper.initializeSpreadsheet({ sheets: [{ rows: [{ cells: [{ value: '25' }] }] }] }, done);
             });
@@ -235,6 +235,14 @@ describe('Spreadsheet formula module ->', () => {
                         });
                     });
                 });
+            });
+
+            it('Count value is not calculated properly in aggregate when selected range contains zero value', (done: Function) => {
+                helper.edit('B1', '0');
+                helper.invoke('selectRange', ['A1:B1']);
+                helper.click('#' + helper.id + '_aggregate');
+                expect(helper.getElement('#' + helper.id + '_aggregate-popup ul li').textContent).toBe('Count: 2');
+                done();
             });
         });
         describe('I261427 ->', () => {
@@ -400,6 +408,43 @@ describe('Spreadsheet formula module ->', () => {
                 expect(spreadsheet.sheets[0].rows[11].cells[0].value).toBe('7');
                 expect(helper.invoke('getCell', [11, 0]).textContent).toBe('7');
                 done();
+            });
+        });
+        describe('FB23112 ->', () => {
+            beforeAll((done: Function) => {
+                helper.initializeSpreadsheet({ sheets: [{ ranges: [{ dataSource: defaultData }] }] }, done);
+            });
+            afterAll(() => {
+                helper.invoke('destroy');
+            });
+            it('Match function is not working for cell reference', (done: Function) => {
+                helper.edit('I2', 'Running Shoes');
+                helper.edit('I3', '=Match(I2, A2:A11)');
+                expect(helper.invoke('getCell', [2, 8]).textContent).toBe('7');
+                expect(helper.getInstance().sheets[0].rows[2].cells[8].value).toBe(7);
+                done();
+            });
+        });
+        describe('fb23644 ->', () => {
+            beforeEach((done: Function) => {
+                helper.initializeSpreadsheet(
+                    { sheets: [{ rows: [{ cells: [{ value: '1' }] }, { cells: [{ value: '2' }] }, { cells: [{ value: '3' }] }, { cells:
+                        [{ value: '5' }] }, { cells: [{ formula: '=SUM(A1:A4)' }] }], selectedRange: 'A4' }] }, done);
+            });
+            afterEach(() => {
+                helper.invoke('destroy');
+            });
+            it('Dependent cells not updated for loaded JSON using openFromJson method', (done: Function) => {
+                const spreadsheet: Spreadsheet = helper.getInstance();
+                expect(spreadsheet.sheets[0].rows[4].cells[0].value.toString()).toEqual('11');
+                helper.invoke('refresh');
+                setTimeout((): void => {
+                    helper.edit('A4', '10');
+                    expect(spreadsheet.sheets[0].rows[4].cells[0].value.toString()).toEqual('16');
+                    setTimeout((): void => {
+                        done();
+                    });
+                });
             });
         });
     });

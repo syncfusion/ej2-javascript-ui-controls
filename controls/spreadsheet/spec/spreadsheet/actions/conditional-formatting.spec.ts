@@ -132,13 +132,13 @@ describe('Conditional formatting ->', () => {
         
     });
     describe('CR-Issues ->', () => {
-        describe('fb22057 ->', () => {
-            beforeEach((done: Function) => {
-                helper.initializeSpreadsheet({ sheets: [{ conditionalFormats: [{ type: 'ContainsText', value: '1', cFColor: 'GreenFT',
+        describe('fb22057, FB24222, FB23945 ->', () => {
+            beforeAll((done: Function) => {
+                helper.initializeSpreadsheet({ cellStyle: { color: '#0000FF' }, sheets: [{ conditionalFormats: [{ type: 'ContainsText', value: '1', cFColor: 'GreenFT',
                 range: 'A1:A1' }, { type: 'ContainsText', value: '2', cFColor: 'RedF', range: 'A1:A1' }, { type: 'ContainsText', value:
-                '3', cFColor: 'YellowFT', range: 'A1:A1' }] }] }, done);
+                '3', cFColor: 'YellowFT', range: 'A1:A1' }], rows: [{ cells:[{ index: 2, value: 'Romona Heaslip' }, { value: 'Eamon Traise' }, { value: 'Julius Gorner'}] }] }] }, done);
             });
-            afterEach(() => {
+            afterAll(() => {
                 helper.invoke('destroy');
             });
             it('Conditional Formatting not properly working while more than one condition applied', (done: Function) => {
@@ -149,6 +149,32 @@ describe('Conditional formatting ->', () => {
                 expect(cell.classList).toContain('e-redf');
                 helper.invoke('updateCell', [{ value: '3' }]);
                 expect(cell.classList).toContain('e-yellowft');
+                done();
+            });
+
+            it('Conditional Formatting font color changed to default color', (done: Function) => {
+                helper.invoke('addDataValidation', [{ type: "List", operator: "Between", value1: "a,b,c" }, 'B1']);
+                helper.invoke('conditionalFormat', [{ type: "ContainsText", cFColor: "YellowFT", value: "a", range: "B1" }]);
+                helper.invoke('selectRange', ['B1']);
+                const td: HTMLElement = helper.invoke('getCell', [0, 1]);
+                (td.querySelector('.e-dropdownlist') as any).ej2_instances[0].dropDownClick({ preventDefault: function () { }, target: td.children[0] });
+                setTimeout(() => {
+                    helper.click('.e-ddl.e-popup li:nth-child(1)');
+                    expect(helper.invoke('getCell', [0, 1]).style.color).toBe('rgb(156, 101, 0)');
+                    (td.querySelector('.e-dropdownlist') as any).ej2_instances[0].dropDownClick({ preventDefault: function () { }, target: td.children[0] });
+                    setTimeout(() => {
+                        helper.click('.e-ddl.e-popup li:nth-child(2)');
+                        expect(helper.invoke('getCell', [0, 1]).style.color).toBe('rgb(0, 0, 255)');
+                        done();
+                    });
+                });
+            });
+
+            it('Conditional Formatting does not work when range is selected from right to left', (done: Function) => {
+                helper.invoke('selectRange', ['E1:C1'])
+                helper.invoke('conditionalFormat', [{ type: 'ContainsText', cFColor: 'RedFT', value: 'Ju' }]);
+                expect(helper.invoke('getCell', [0, 4]).classList).toContain('e-redft');
+                expect(helper.getInstance().sheets[0].conditionalFormats[4].range).toBe('C1:E1');
                 done();
             });
         });

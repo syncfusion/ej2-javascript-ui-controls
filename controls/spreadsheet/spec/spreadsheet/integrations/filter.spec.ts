@@ -43,7 +43,7 @@ describe('Filter ->', () => {
     });
 
     describe('CR-Issues ->', () => {
-        describe('I289560 ->', () => {
+        describe('I289560, FB22087 ->', () => {
             beforeEach((done: Function) => {
                 helper.initializeSpreadsheet({
                     sheets: [{ ranges: [{ dataSource: defaultData }] }],
@@ -64,6 +64,22 @@ describe('Filter ->', () => {
                 expect(!!helper.invoke('getCell', [0, 5]).querySelector('.e-filter-iconbtn')).toBeTruthy();
                 expect(!!helper.invoke('getCell', [0, 6]).querySelector('.e-filter-iconbtn')).toBeFalsy();
                 done();
+            });
+
+            it('Filter icon disappears after refresh', (done: Function) => {
+                const spreadsheet: Spreadsheet = helper.getInstance();
+                spreadsheet.applyFilter([{ field: 'H', predicate: 'or', operator: 'contains', value: '10' }]);
+                setTimeout(() => {
+                    spreadsheet.refresh();
+                    setTimeout(() => {
+                        setTimeout(() => {
+                            expect(helper.invoke('getCell', [0, 0]).querySelector('.e-filter-iconbtn')).not.toBeNull();
+                            expect(helper.invoke('getCell', [0, 7]).querySelector('.e-filtered')).not.toBeNull();
+                            expect(helper.invoke('getCell', [1, 7]).textContent).toBe('10');
+                            done();
+                        });
+                    });
+                });
             });
         });
     });

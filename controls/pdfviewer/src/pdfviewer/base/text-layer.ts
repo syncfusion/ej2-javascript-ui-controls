@@ -603,6 +603,9 @@ export class TextLayer {
                     notificationElement.textContent = text;
                     notificationElement.innerHTML = text;
                 }
+                if (this.pdfViewer.textSearchModule) {
+                    this.pdfViewer.textSearch.isMessagePopupOpened = false;
+                }
                 this.pdfViewer._dotnetInstance.invokeMethodAsync('OpenNotificationPopup');
             }
         }

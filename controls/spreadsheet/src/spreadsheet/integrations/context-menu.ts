@@ -67,6 +67,9 @@ export class ContextMenu {
     private selectHandler(args: MenuEventArgs): void {
         const selectArgs: MenuSelectEventArgs = extend({ cancel: false }, args) as MenuSelectEventArgs;
         this.parent.trigger('contextMenuItemSelect', selectArgs); const id: string = this.parent.element.id + '_cmenu';
+        let field: string;
+        let sheet: SheetModel;
+        let isActive: boolean;
         if (!selectArgs.cancel) {
             let indexes: number[];
             switch (args.item.id) {
@@ -111,7 +114,7 @@ export class ContextMenu {
                 this.parent.notify(filterByCellValue, null);
                 break;
             case id + '_clearfilter':
-                const field: string = getColumnHeaderText(getCellIndexes(this.parent.getActiveSheet().activeCell)[1] + 1);
+                field = getColumnHeaderText(getCellIndexes(this.parent.getActiveSheet().activeCell)[1] + 1);
                 this.parent.notify(clearFilter, { field: field });
                 break;
             case id + '_reapplyfilter':
@@ -180,9 +183,10 @@ export class ContextMenu {
                 this.parent.removeHyperlink(this.parent.getActiveSheet().selectedRange);
                 break;
             case id + '_protect':
-                const sheet: SheetModel = this.parent.getActiveSheet();
-                this.parent.setSheetPropertyOnMute(sheet, 'isProtected', !sheet.isProtected); let isActive: boolean;
-                sheet.isProtected ? isActive = false : isActive = true;  this.parent.notify(applyProtect, { isActive: isActive });
+                sheet = this.parent.getActiveSheet();
+                this.parent.setSheetPropertyOnMute(sheet, 'isProtected', !sheet.isProtected);
+                isActive = sheet.isProtected ? false : true;
+                this.parent.notify(applyProtect, { isActive: isActive });
                 break;
             }
         }
@@ -240,6 +244,7 @@ export class ContextMenu {
 
     /**
      * To get target area based on right click.
+     *
      * @param {Element} target - Specify the target
      * @returns {string} - To get target area based on right click.
      */
@@ -439,7 +444,7 @@ export class ContextMenu {
         if (indexes[0] === indexes[1]) {
             items.push({ text: l10n.getConstant(`Hide${layout}`), id: id + `_hide_${layout.toLowerCase()}` });
         } else {
-            let StartIdx:  number = indexes[0];
+            const StartIdx:  number = indexes[0];
             indexes[0] = indexes[0] > indexes[1] ? indexes[1] : indexes[0];
             indexes[1] = indexes[1] > StartIdx ? indexes[1] : StartIdx;
             items.push({ text: l10n.getConstant(`Hide${layout}s`), id: id + `_hide_${layout.toLowerCase()}` });
@@ -477,6 +482,7 @@ export class ContextMenu {
     /**
      * To remove context menu items.
      *
+     * @param {RemoveArgs} args - Specifies the args
      * @returns {void} - To remove context menu items.
      */
     private removeItemsHandler(args: RemoveArgs): void {
@@ -486,7 +492,7 @@ export class ContextMenu {
     /**
      * To enable / disable context menu items.
      *
-     * @param {enableItemsHandler} args - Specifies the args
+     * @param {EnableDisableArgs} args - Specifies the args
      * @returns {void} - To enable / disable context menu items.
      */
     private enableItemsHandler(args: EnableDisableArgs): void {

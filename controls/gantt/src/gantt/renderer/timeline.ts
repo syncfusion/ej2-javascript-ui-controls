@@ -69,8 +69,10 @@ export class Timeline {
         this.initProperties();
         this.processTimelineUnit();
         this.parent.dataOperation.calculateProjectDates();
-        this.parent.updateProjectDates(
-            this.parent.cloneProjectStartDate, this.parent.cloneProjectEndDate, this.parent.isTimelineRoundOff);
+        if (!this.parent.isFromOnPropertyChange) {
+            this.parent.updateProjectDates(
+                this.parent.cloneProjectStartDate, this.parent.cloneProjectEndDate, this.parent.isTimelineRoundOff);
+        }
     }
 
     /**

@@ -1,8 +1,9 @@
+/* eslint-disable no-useless-escape */
 import { Spreadsheet, locale, dialog, mouseDown, renderFilterCell, initiateFilterUI, FilterInfoArgs } from '../index';
 import { reapplyFilter, filterCellKeyDown, DialogBeforeOpenEventArgs } from '../index';
 import { getFilteredColumn, cMenuBeforeOpen, filterByCellValue, clearFilter, getFilterRange, applySort, getCellPosition } from '../index';
 import { filterRangeAlert, filterComplete, beforeFilter, clearAllFilter, getFilteredCollection, sortImport } from '../../workbook/common/event';
-import { FilterCollectionModel, getRangeIndexes } from '../../workbook/index';
+import { FilterCollectionModel, getRangeIndexes, Workbook, getCellAddress, updateFilter } from '../../workbook/index';
 import { getIndexesFromAddress, getSwapRange, SheetModel, getColumnHeaderText, CellModel } from '../../workbook/index';
 import { getData, getTypeFromFormat, getCell, getCellIndexes, getRangeAddress, getSheet } from '../../workbook/index';
 import { FilterOptions, BeforeFilterEventArgs, FilterEventArgs } from '../../workbook/common/interface';
@@ -14,7 +15,7 @@ import { Button } from '@syncfusion/ej2-buttons';
 import { Query, DataManager, Predicate } from '@syncfusion/ej2-data';
 import { SortOrder, MenuItemModel } from '@syncfusion/ej2-navigations';
 import { BeforeOpenEventArgs } from '@syncfusion/ej2-popups';
-import { beginAction, completeAction } from '../../spreadsheet/index';
+import { beginAction, completeAction, contentLoaded } from '../../spreadsheet/index';
 
 /**
  * `Filter` module is used to handle the filter action in Spreadsheet.
@@ -68,6 +69,8 @@ export class Filter {
         this.parent.on(getFilterRange, this.getFilterRangeHandler, this);
         this.parent.on(filterCellKeyDown, this.filterCellKeyDownHandler, this);
         this.parent.on(getFilteredCollection, this.getFilteredCollection, this);
+        this.parent.on(contentLoaded, this.updateFilter, this);
+        this.parent.on(updateFilter, this.updateFilter, this);
     }
 
     private removeEventListener(): void {
@@ -88,6 +91,8 @@ export class Filter {
             this.parent.off(getFilterRange, this.getFilterRangeHandler);
             this.parent.off(filterCellKeyDown, this.filterCellKeyDownHandler);
             this.parent.off(getFilteredCollection, this.getFilteredCollection);
+            this.parent.off(contentLoaded, this.updateFilter);
+            this.parent.off(updateFilter, this.updateFilter);
         }
     }
 
@@ -116,6 +121,7 @@ export class Filter {
     /**
      * Shows the range error alert dialog.
      *
+     * @param {any} args - Specifies the args
      * @param {string} args.error - range error string.
      * @returns {void} - Shows the range error alert dialog.
      */
@@ -141,6 +147,7 @@ export class Filter {
     /**
      * Triggers before filter context menu opened and used to add sorting items.
      *
+     * @param {any} args - Specifies the args
      * @param {HTMLElement} args.element - Specify the element
      * @returns {void} - Triggers before filter context menu opened and used to add sorting items.
      */
@@ -172,6 +179,7 @@ export class Filter {
     /**
      * Initiates the filter UI for the selected range.
      *
+     * @param {any} args - Specifies the args
      * @param {PredicateModel[]} args.predicates - Specify the predicates.
      * @param {number} args.range - Specify the range.
      * @param {number} args.sIdx - Specify the sIdx
@@ -189,7 +197,7 @@ export class Filter {
             this.removeFilter(sheetIdx);
             if (!predicates) { return; }
         }
-        const sheet: SheetModel = getSheet(this.parent, sheetIdx);
+        const sheet: SheetModel = getSheet(this.parent  as Workbook, sheetIdx);
         if (this.isInValidFilterRange(sheet, args.range)) {
             const l10n: L10n = this.parent.serviceLocator.getService(locale);
             this.filterRangeAlertHandler({ error: l10n.getConstant('FilterOutOfRangeError') });
@@ -216,7 +224,7 @@ export class Filter {
             const range: number[] = this.filterRange.get(sheetIdx).slice();
             range[0] = range[0] + 1; // to skip first row.
             range[2] = sheet.usedRange.rowIndex; //filter range should be till used range.
-            getData(this.parent, `${sheet.name}!${getRangeAddress(range)}`, true, true).then((jsonData: { [key: string]: CellModel }[]) => {
+            getData(this.parent as Workbook, `${sheet.name}!${getRangeAddress(range)}`, true, true).then((jsonData: { [key: string]: CellModel }[]) => {
                 this.filterSuccessHandler(
                     new DataManager(jsonData), {
                         action: 'filtering',
@@ -299,7 +307,7 @@ export class Filter {
             operator: type === 'date' || type === 'datetime' || type === 'boolean' ? 'equal' : 'contains',
             value: getCell(cell[0], cell[1], sheet).value, matchCase: false, type: type
         }];
-        getData(this.parent, `${sheet.name}!${getRangeAddress(range)}`, true, true).then((jsonData: { [key: string]: CellModel }[]) => {
+        getData(this.parent as Workbook, `${sheet.name}!${getRangeAddress(range)}`, true, true).then((jsonData: { [key: string]: CellModel }[]) => {
             this.filterSuccessHandler(
                 new DataManager(jsonData), { action: 'filtering', filterCollection: predicates, field: field });
         });
@@ -308,12 +316,12 @@ export class Filter {
     /**
      * Creates filter buttons and renders the filter applied cells.
      *
+     * @param { any} args - Specifies the args
      * @param { HTMLElement} args.td - specify the element
      * @param { number} args.rowIndex - specify the rowIndex
      * @param { number} args.colIndex - specify the colIndex
      * @param { number} args.sIdx - specify the sIdx
      * @returns {void} - Creates filter buttons and renders the filter applied cells.
-     *
      */
     private renderFilterCellHandler(args: { td: HTMLElement, rowIndex: number, colIndex: number, sIdx?: number }): void {
         let sheetIdx: number = args.sIdx;
@@ -399,6 +407,7 @@ export class Filter {
     /**
      * Gets the filter information from active cell
      *
+     * @param {any} args - Specifies the args
      * @param {string} args.field - Specify the field
      * @param {string} args.clearFilterText - Specify the clearFilterText
      * @param {boolean} args.isFiltered - Specify the isFiltered
@@ -423,7 +432,7 @@ export class Filter {
                 const headerCell: CellModel = getCell(range[0], cell[1], sheet);
                 const cellValue: string = this.parent.getDisplayText(headerCell);
                 args.clearFilterText = l10n.getConstant('ClearFilterFrom') + '\"'
-                    + (cellValue ? cellValue.toString() : 'Column ' + args.field) + '\"';
+                + (cellValue ? cellValue.toString() : 'Column ' + args.field) + '\"';
                 filterCollection.some((value: PredicateModel) => {
                     args.isFiltered = value.field === args.field;
                     return args.isFiltered;
@@ -435,6 +444,7 @@ export class Filter {
     /**
      * Triggers before context menu created to enable or disable items.
      *
+     * @param {any} e - Specifies the args
      * @param {HTMLElement} e.element - Specify the element
      * @param {MenuItemModel[]} e.items - Specify the items
      * @param {MenuItemModel} e.parentItem - Specify the parentItem
@@ -533,10 +543,10 @@ export class Filter {
         const displayName: string = this.parent.getDisplayText(filterCell);
         range[0] = range[0] + 1; // to skip first row.
         range[2] = sheet.usedRange.rowIndex; //filter range should be till used range.
-        getData(this.parent, `${sheet.name}!${getRangeAddress(range)}`, true,
-            true, null, true).then((jsonData: { [key: string]: CellModel }[]) => {
-                //to avoid undefined array data
-                let checkBoxData: DataManager;
+        getData(this.parent as Workbook, `${sheet.name}!${getRangeAddress(range)}`, true,
+                true, null, true).then((jsonData: { [key: string]: CellModel }[]) => {
+            //to avoid undefined array data
+            let checkBoxData: DataManager;
             jsonData.some((value: { [key: string]: CellModel }, index: number) => {
                 if (value) { checkBoxData = new DataManager(jsonData.slice(index)); }
                 return !!value;
@@ -558,6 +568,7 @@ export class Filter {
     /**
      * Formats cell value for listing it in filter popup.
      *
+     * @param {any} args - Specifies the args
      * @param {string | number} args.value - Specify the value
      * @param {object} args.column - Specify the column
      * @param {object} args.data - Specify the data
@@ -623,6 +634,7 @@ export class Filter {
      * Triggers when OK button or clear filter item is selected
      *
      * @param {DataManager} dataSource - Specify the data source
+     * @param {Object} args - Specify the data source
      * @param {string} args.action - Specify the action
      * @param {PredicateModel[]} args.filterCollection - Specify the filter collection.
      * @param {string} args.field - Specify the field.
@@ -668,7 +680,7 @@ export class Filter {
             datasource: dataSource,
             predicates: this.getPredicates(sheetIdx)
         };
-        this.filterRange.get(sheetIdx)[2] = getSheet(this.parent, sheetIdx).usedRange.rowIndex; //extend the range if filtered
+        this.filterRange.get(sheetIdx)[2] = getSheet(this.parent as Workbook, sheetIdx).usedRange.rowIndex; //extend the range if filtered
         this.applyFilter(filterOptions, getRangeAddress(this.filterRange.get(sheetIdx)));
     }
 
@@ -686,6 +698,7 @@ export class Filter {
         this.parent.showSpinner();
         this.parent.filter(filterOptions, range).then((args: FilterEventArgs) => {
             this.refreshFilterRange();
+            this.parent.notify(getFilteredCollection, null);
             this.parent.hideSpinner();
             this.parent.trigger(filterComplete, args);
             return Promise.resolve(args);
@@ -783,6 +796,7 @@ export class Filter {
     /**
      * Clear filter from the field.
      *
+     * @param {any} args - Specifies the args
      * @param {{ field: string }} args.field - Specify the args
      * @returns {void} - Clear filter from the field.
      */
@@ -889,5 +903,72 @@ export class Filter {
         if (fil) {
             this.parent.filterCollection = col;
         }
+    }
+
+    private updateFilter(args?: { initLoad: boolean, isOpen: boolean }): void {
+        if (this.parent.filterCollection && (args.initLoad || args.isOpen)) {
+            for (let i: number = 0; i < this.parent.filterCollection.length; i++) {
+                let filterCol: FilterCollectionModel = this.parent.filterCollection[i];
+                let sIdx: number = filterCol.sheetIndex;
+                if (i === 0) {
+                    sIdx = 0;
+                }
+                let predicates: PredicateModel[] = [];
+                if (filterCol.column) {
+                    for (let j: number = 0; j < filterCol.column.length; j++) {
+                        let predicateCol: PredicateModel = {
+                            field: getCellAddress(0, filterCol.column[j]).charAt(0),
+                            operator: this.getFilterOperator(filterCol.criteria[j]), value: filterCol.value[j].toString().split('*').join('')
+                        };
+                        predicates.push(predicateCol);
+                    }
+                }
+                for (let i: number = 0; i < predicates.length - 1; i++) {
+                    if (predicates[i].field === predicates[i + 1].field) {
+                        if (!predicates[i].predicate) {
+                            predicates[i].predicate = 'or';
+                        }
+                        predicates[i + 1].predicate = 'or';
+                    }
+                }
+                this.parent.notify(initiateFilterUI, { predicates: predicates !== [] ? predicates : null, range: filterCol.filterRange, sIdx: sIdx });
+            }
+            if (this.parent.sortCollection) {
+                this.parent.notify(sortImport, null);
+            }
+        }
+    }
+
+    private getFilterOperator(value: string): string {
+        switch (value) {
+            case "BeginsWith":
+                value = "startswith";
+                break;
+            case "Less":
+                value = "lessthan";
+                break;
+            case "EndsWith":
+                value = "endswith";
+                break;
+            case "Equal":
+                value = "equal";
+                break;
+            case "Notequal":
+                value = "notEqual";
+                break;
+            case "Greater":
+                value = "greaterthan";
+                break;
+            case "Contains":
+                value = "contains";
+                break;
+            case "LessOrEqual":
+                value = "lessthanorequal";
+                break;
+            case "GreaterOrEqual":
+                value = "greaterthanorequal";
+                break;
+        }
+        return value;
     }
 }

@@ -231,8 +231,9 @@ export class ActionBase {
             element.parentElement.appendChild(cloneElement);
         }
         cloneElement.style.width = formatUnit(cloneElement.offsetWidth - 2);
-        if (this.parent.eventDragArea && this.actionObj.action === 'drag') {
-            document.querySelector(this.parent.eventDragArea).appendChild(cloneElement);
+        const dragElement: HTMLElement = document.querySelector(this.parent.eventDragArea);
+        if (this.parent.eventDragArea && this.actionObj.action === 'drag' && dragElement) {
+            dragElement.appendChild(cloneElement);
         }
         setStyleAttribute(cloneElement, { border: '0px' });
         return cloneElement;

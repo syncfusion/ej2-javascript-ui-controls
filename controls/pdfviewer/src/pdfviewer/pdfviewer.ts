@@ -3995,10 +3995,12 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
                 this.height = newProp.height;
                 this.viewerBase.updateHeight();
                 this.viewerBase.onWindowResize();
-                if (this.toolbar.annotationToolbarModule && this.toolbar.annotationToolbarModule.isToolbarHidden) {
-                    this.toolbar.annotationToolbarModule.adjustViewer(false);
-                } else {
-                    this.toolbar.annotationToolbarModule.adjustViewer(true);
+                if (this.toolbar && this.toolbar.annotationToolbarModule) {
+                    if (this.toolbar.annotationToolbarModule.isToolbarHidden) {
+                        this.toolbar.annotationToolbarModule.adjustViewer(false);
+                    } else {
+                        this.toolbar.annotationToolbarModule.adjustViewer(true);
+                    }
                 }
                 break;
             case 'width':
@@ -4158,7 +4160,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
         'Opacity edit': 'Change Opacity',
         'Highlight context': 'Highlight',
         'Underline context': 'Underline',
-        'Strikethrough context': 'Strike through',
+        'Strikethrough context': 'Strikethrough',
         // eslint-disable-next-line max-len
         'Server error': 'Web-service is not listening. PDF Viewer depends on web-service for all it\'s features. Please start the web service to continue.',
         // eslint-disable-next-line max-len

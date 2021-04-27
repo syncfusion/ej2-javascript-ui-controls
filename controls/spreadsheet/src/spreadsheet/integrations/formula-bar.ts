@@ -2,9 +2,9 @@ import { Spreadsheet } from '../base/index';
 import { formulaBar, locale, selectionComplete, enableFormulaInput, DialogBeforeOpenEventArgs, focus } from '../common/index';
 import { mouseUpAfterSelection, click } from '../common/index';
 import { getRangeIndexes, getRangeFromAddress, getCellAddress, getCellIndexes } from './../../workbook/common/address';
-import { CellModel, getSheetName, getTypeFromFormat, getSheet, SheetModel, checkIsFormula } from '../../workbook/index';
+import { CellModel, getSheetName, getTypeFromFormat, getSheet, SheetModel, checkIsFormula, Workbook } from '../../workbook/index';
 import { updateSelectedRange, getSheetNameFromAddress, getSheetIndex, DefineNameModel } from '../../workbook/index';
-import { ComboBox, ChangeEventArgs, DropDownList, SelectEventArgs as DdlSelectArgs } from '@syncfusion/ej2-dropdowns';
+import { ComboBox, DropDownList, SelectEventArgs as DdlSelectArgs } from '@syncfusion/ej2-dropdowns';
 import { BeforeOpenEventArgs } from '@syncfusion/ej2-popups';
 import { rippleEffect, L10n, EventHandler, detach, Internationalization, isNullOrUndefined, closest, select } from '@syncfusion/ej2-base';
 import { isUndefined } from '@syncfusion/ej2-base';
@@ -138,7 +138,7 @@ export class FormulaBar {
         }
     }
 
-    private nameBoxBlur(args: Object): void {
+    private nameBoxBlur(): void {
         if (this.comboBoxInstance.element.classList.contains('e-name-editing')) {
             this.comboBoxInstance.element.classList.remove('e-name-editing');
             this.UpdateValueAfterMouseUp();
@@ -148,9 +148,9 @@ export class FormulaBar {
     private nameBoxSelect(args: DdlSelectArgs): void {
         if (args.isInteracted) {
             const refersTo: string = (<DefineNameModel>args.itemData).refersTo.substr(1);
-            const sheetIdx: number = getSheetIndex(this.parent, getSheetNameFromAddress(refersTo));
+            const sheetIdx: number = getSheetIndex(this.parent as Workbook, getSheetNameFromAddress(refersTo));
             let range: string = getRangeFromAddress(refersTo);
-            const sheet: SheetModel = getSheet(this.parent, sheetIdx);
+            const sheet: SheetModel = getSheet(this.parent as Workbook, sheetIdx);
             if (range.indexOf(':') !== -1) {
                 const colIndex: number = range.indexOf(':');
                 let left: string = range.substr(0, colIndex);
@@ -171,7 +171,7 @@ export class FormulaBar {
                 this.parent.selectRange(range);
                 focus(this.parent.element);
             } else {
-                updateSelectedRange(this.parent, range, sheet);
+                updateSelectedRange(this.parent as Workbook, range, sheet);
                 this.parent.activeSheetIndex = sheetIdx;
             }
         }
@@ -189,14 +189,14 @@ export class FormulaBar {
             address = `${Math.abs(indexes1[0] - indexes2[0]) + 1}R x ${Math.abs(indexes1[1] - indexes2[1]) + 1}C`;
             if (this.parent.isEdit) {
                 if (e.target as Element && !(e.target as Element).classList.contains('e-spreadsheet-edit')) {
-                 this.parent.notify(editValue, null);
+                    this.parent.notify(editValue, null);
                 } else if (editorEle) {
-                 formulaBar.value = editorEle.textContent;
+                    formulaBar.value = editorEle.textContent;
                 }
-             }
+            }
         } else {
             address = range[0];
-            const data: Promise<Map<string, CellModel>> = this.parent.getData(`${getSheetName(this.parent)}!${address}`);
+            const data: Promise<Map<string, CellModel>> = this.parent.getData(`${getSheetName(this.parent as Workbook)}!${address}`);
             data.then((values: Map<string, CellModel>): void => {
                 let value: string = '';
                 let intDate: Date;
@@ -244,11 +244,11 @@ export class FormulaBar {
                             editOperation, { action: 'refreshEditor', value: formulaInp.value, refreshEditorElem: true });
                     }
                     if (this.parent.isEdit) {
-                       if (e.target && !(e.target as Element).classList.contains('e-spreadsheet-edit')) {
-                        this.parent.notify(editValue, null);
-                       } else if (editorEle) {
-                        formulaBar.value = editorEle.textContent;
-                       }
+                        if (e.target && !(e.target as Element).classList.contains('e-spreadsheet-edit')) {
+                            this.parent.notify(editValue, null);
+                        } else if (editorEle) {
+                            formulaBar.value = editorEle.textContent;
+                        }
                     }
                 });
             });
@@ -260,7 +260,7 @@ export class FormulaBar {
     }
     private updateComboBoxValue(value: string): void {
         const sheet: SheetModel = this.parent.getActiveSheet();
-        const range: string = getSheetName(this.parent) + '!' + sheet.selectedRange;
+        const range: string = getSheetName(this.parent as Workbook) + '!' + sheet.selectedRange;
         const eventArgs: { action: string, range: string, definedName: DefineNameModel } = {
             action: 'getNameFromRange', range: range, definedName: null
         };
@@ -321,7 +321,7 @@ export class FormulaBar {
             let isOpen: boolean = !this.parent.isEdit;
             const args: { [key: string]: Object } = { action: 'getCurrentEditValue', editedValue: '' };
             if (!isOpen) {
-                let eventArgs: { [key: string]: Object } = { action: 'isFormulaEditing', isFormulaEdit: false };
+                const eventArgs: { [key: string]: Object } = { action: 'isFormulaEditing', isFormulaEdit: false };
                 this.parent.notify(formulaOperation, eventArgs); isOpen = <boolean>eventArgs.isFormulaEdit;
                 this.parent.notify(editOperation, args);
             }
@@ -332,9 +332,9 @@ export class FormulaBar {
                     'div', { className: 'e-formula-description', id: this.parent.element.id + '_description_content' });
                 const categoryContent: HTMLElement = this.parent.createElement(
                     'div', {
-                    className: 'e-category-content', id: this.parent.element.id + '_category_content',
-                    innerHTML: l10n.getConstant('PickACategory')
-                });
+                        className: 'e-category-content', id: this.parent.element.id + '_category_content',
+                        innerHTML: l10n.getConstant('PickACategory')
+                    });
                 const dropDownElement: HTMLElement = this.parent.createElement(
                     'input', { className: 'e-formula-category', id: this.parent.element.id + '_formula_category' });
                 const listViewElement: HTMLElement = this.parent.createElement(
@@ -389,7 +389,7 @@ export class FormulaBar {
         }
     }
     private toggleFormulaBar(target: HTMLElement): void {
-        const parent: Element = target.parentElement; let l10n: L10n = this.parent.serviceLocator.getService(locale);
+        const parent: Element = target.parentElement; const l10n: L10n = this.parent.serviceLocator.getService(locale);
         if (parent.classList.contains('e-expanded')) {
             parent.classList.remove('e-expanded');
             (document.getElementById(this.parent.element.id + '_formula_input') as HTMLTextAreaElement).rows = 1;
@@ -423,7 +423,7 @@ export class FormulaBar {
 
     private selectFormula(dialog: Dialog, formulaBarObj: FormulaBar): void {
         const formulaText: string | string[] | number | number[] = formulaBarObj.formulaList.getSelectedItems().text;
-        const sheet: SheetModel = getSheet(this.parent, this.parent.activeSheetIndex);
+        const sheet: SheetModel = getSheet(this.parent as Workbook, this.parent.activeSheetIndex);
         if (this.parent.isEdit) {
             this.parent.notify(editOperation, {
                 action: 'refreshEditor', value: formulaText + '(', refreshFormulaBar: true,
@@ -487,7 +487,7 @@ export class FormulaBar {
     }
     private formulaClickHandler(args: MouseEvent & TouchEvent): void {
         const trgtElem: HTMLElement = <HTMLElement>args.target;
-        const sheet: SheetModel = getSheet(this.parent, this.parent.activeSheetIndex);
+        const sheet: SheetModel = getSheet(this.parent as Workbook, this.parent.activeSheetIndex);
         if (trgtElem.offsetParent.classList.contains('e-text-content') || trgtElem.classList.contains('e-list-item')) {
             if (this.parent.isEdit) {
                 this.parent.notify(editOperation, {

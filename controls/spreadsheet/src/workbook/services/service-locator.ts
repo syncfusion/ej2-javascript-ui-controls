@@ -11,6 +11,7 @@ export class ServiceLocator {
 
     public getService<T>(name: string): T {
         if (isNullOrUndefined(this.services[name])) {
+            // eslint-disable-next-line no-throw-literal
             throw `The service ${name} is not registered`;
         }
         return <T>this.services[name];

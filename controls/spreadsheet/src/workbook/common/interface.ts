@@ -1,6 +1,6 @@
 import { CellStyleModel, HyperlinkModel } from './class-model';
 import { SaveType, SortOrder, FormatType, BorderType, ModelType, MergeType, ClearType } from './index';
-import { Sheet, RangeModel, CellModel, SheetModel, WorkbookModel, ColumnModel, RowModel, UsedRangeModel } from '../base/index';
+import { Sheet, RangeModel, CellModel, SheetModel, ColumnModel, RowModel, UsedRangeModel } from '../base/index';
 import { DataManager, Predicate } from '@syncfusion/ej2-data';
 
 export interface SaveOptions {

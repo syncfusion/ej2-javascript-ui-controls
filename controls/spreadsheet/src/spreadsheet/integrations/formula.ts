@@ -6,7 +6,7 @@ import { AutoComplete } from '@syncfusion/ej2-dropdowns';
 import { BeforeOpenEventArgs } from '@syncfusion/ej2-popups';
 import { PopupEventArgs, SelectEventArgs, AutoCompleteModel } from '@syncfusion/ej2-dropdowns';
 import { KeyboardEventArgs, L10n, detach, isNullOrUndefined, select } from '@syncfusion/ej2-base';
-import { checkIsFormula, getSheet, SheetModel, getSheetName, DefineNameModel, getCellIndexes } from '../../workbook/index';
+import { checkIsFormula, getSheet, SheetModel, getSheetName, DefineNameModel, getCellIndexes, Workbook } from '../../workbook/index';
 import { Dialog } from '../services/index';
 import { dialog, locale, focus } from '../common/index';
 
@@ -65,7 +65,7 @@ export class Formula {
     /**
      * To destroy the formula module.
      *
-     * @returns {void} - To destroy the formula module. 
+     * @returns {void} - To destroy the formula module.
      * @hidden
      */
     public destroy(): void {
@@ -100,7 +100,8 @@ export class Formula {
 
     private performFormulaOperation(args: { [key: string]: Object }): void {
         const action: string = <string>args.action;
-
+        const l10n: L10n = this.parent.serviceLocator.getService(locale);
+        let dialogInst: Dialog;
         switch (action) {
         case 'renderAutoComplete':
             this.renderAutoComplete();
@@ -113,7 +114,7 @@ export class Formula {
             break;
         case 'getNames':
             if (!args.sheetName) {
-                args.sheetName = getSheetName(this.parent);
+                args.sheetName = getSheetName(this.parent as Workbook);
             }
             args.names = this.getNames(<string>args.sheetName);
             break;
@@ -124,8 +125,7 @@ export class Formula {
             args.isFormulaEdit = this.isFormula;
             break;
         case 'isCircularReference':
-            let l10n: L10n = this.parent.serviceLocator.getService(locale);
-            const dialogInst: Dialog = (this.parent.serviceLocator.getService(dialog) as Dialog);
+            dialogInst = (this.parent.serviceLocator.getService(dialog) as Dialog);
             dialogInst.show({
                 height: 180, width: 400, isModal: true, showCloseIcon: true,
                 content: l10n.getConstant('CircularReference'),
@@ -181,6 +181,7 @@ export class Formula {
         e.popup.offsetY = (position.top + position.height);
         e.popup.refreshPosition();
         (<HTMLElement>e.popup.element.firstChild).style.maxHeight = '180px';
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         new Promise((resolve: Function, reject: Function) => {
             setTimeout(() => { resolve(); }, 100);
         }).then(() => {
@@ -424,8 +425,8 @@ export class Formula {
         const name: string = definedName.name;
         let isAdded: boolean = false;
         if (!definedName.refersTo) {
-            const sheet: SheetModel = getSheet(this.parent, this.parent.activeSheetIndex);
-            let sheetName: string = getSheetName(this.parent);
+            const sheet: SheetModel = getSheet(this.parent as Workbook, this.parent.activeSheetIndex);
+            let sheetName: string = getSheetName(this.parent as Workbook);
             sheetName = sheetName.indexOf(' ') !== -1 ? '\'' + sheetName + '\'' : sheetName;
             let selectRange: string = sheet.selectedRange;
             if (!isNullOrUndefined(selectRange)) {

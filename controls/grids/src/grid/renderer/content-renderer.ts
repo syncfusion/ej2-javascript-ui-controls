@@ -1,7 +1,7 @@
 import { Droppable, DropEventArgs, isBlazor, addClass } from '@syncfusion/ej2-base';
 import { isNullOrUndefined, extend } from '@syncfusion/ej2-base';
 import { setStyleAttribute, remove, updateBlazorTemplate, removeClass } from '@syncfusion/ej2-base';
-import { getUpdateUsingRaf, appendChildren } from '../base/util';
+import { getUpdateUsingRaf, appendChildren, setDisplayValue } from '../base/util';
 import * as events from '../base/constant';
 import { IRenderer, IGrid, NotifyArgs, IModelGenerator, RowDataBoundEventArgs, CellFocusArgs, InfiniteScrollArgs } from '../base/interface';
 import { VirtualInfo } from '../base/interface';
@@ -954,22 +954,7 @@ export class ContentRender implements IRenderer {
      * @hidden
      */
     public setDisplayNone(tr: Object, idx: number, displayVal: string, rows: Row<Column>[]): void {
-        let trs: string[] = Object.keys(tr);
-        for (let i: number = 0; i < trs.length; i++) {
-            let td: HTMLElement = tr[trs[i]].querySelectorAll('td.e-rowcell')[idx];
-            if (tr[trs[i]].querySelectorAll('td.e-rowcell').length && td) {
-                setStyleAttribute(<HTMLElement>tr[trs[i]].querySelectorAll('td.e-rowcell')[idx], { 'display': displayVal });
-                if (tr[trs[i]].querySelectorAll('td.e-rowcell')[idx].classList.contains('e-hide')) {
-                    removeClass([tr[trs[i]].querySelectorAll('td.e-rowcell')[idx]], ['e-hide']);
-                }
-                if (this.parent.isRowDragable()) {
-                    let index: number = this.parent.getFrozenColumns() ? idx : idx + 1;
-                    rows[trs[i]].cells[index].visible = displayVal === '' ? true : false;
-                } else {
-                    rows[trs[i]].cells[idx].visible = displayVal === '' ? true : false;
-                }
-            }
-        }
+        setDisplayValue(tr, idx, displayVal, rows, this.parent, this.parent.isRowDragable());
         this.parent.notify(events.infiniteShowHide, { visible: displayVal, index: idx, isFreeze: this.isInfiniteFreeze });
     }
 

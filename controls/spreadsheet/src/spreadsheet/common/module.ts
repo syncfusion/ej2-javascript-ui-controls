@@ -1,18 +1,19 @@
 import { ModuleDeclaration } from '@syncfusion/ej2-base';
 import { Spreadsheet } from '../base/index';
 import { getWorkbookRequiredModules } from '../../workbook/common/module';
+import { Workbook } from '../../workbook';
 
 /**
  * To get Spreadsheet required modules.
  *
  * @hidden
  * @param {Spreadsheet} context - To get Spreadsheet required modules.
- * @returns {modules} - To get Spreadsheet required modules.
+ * @returns {ModuleDeclaration[]} - To get Spreadsheet required modules.
  */
 export function getRequiredModules(context: Spreadsheet): ModuleDeclaration[] {
     const modules: ModuleDeclaration[] = [];
     pushBasicModules(context, modules);
-    getWorkbookRequiredModules(context, modules);
+    getWorkbookRequiredModules(context as Workbook, modules);
     return modules;
 }
 

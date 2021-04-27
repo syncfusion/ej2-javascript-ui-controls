@@ -4,7 +4,7 @@ import { TreeGrid } from '../base';
 import * as events from '../base/constant';
 import { DataManager } from '@syncfusion/ej2-data';
 import { findChildrenRecords, getParentData, extendArray } from '../utils';
-import { BeforeBatchSaveArgs, getUid, CellSaveArgs, NotifyArgs, Column, Row } from '@syncfusion/ej2-grids';
+import { BeforeBatchSaveArgs, getUid, CellSaveArgs, NotifyArgs, Column, Row, BatchChanges } from '@syncfusion/ej2-grids';
 import { BatchAddArgs, BeforeBatchAddArgs } from '@syncfusion/ej2-grids';
 import { updateParentRow, editAction } from './crud-actions';
 import { FocusStrategy } from '@syncfusion/ej2-grids/src/grid/services/focus-strategy';
@@ -418,9 +418,9 @@ export class BatchEdit {
         this.parent.grid.renderModule.refresh();
     }
 
-    private batchSave(): void {
+    private batchSave(args: { updatedRecords: BatchChanges, index: number }) : void {
         if (this.parent.editSettings.mode === 'Batch') {
-            let i: number; const batchChanges: Object = this.parent.getBatchChanges(); const deletedRecords: string = 'deletedRecords';
+            let i: number; const batchChanges: Object = Object.hasOwnProperty.call(args, 'updatedRecords') ? args.updatedRecords : this.parent.getBatchChanges(); const deletedRecords: string = 'deletedRecords';
             const addedRecords: string = 'addedRecords'; const index: string = 'index'; const uniqueID: string = 'uniqueID';
             const data: Object[] = <Object[]>(this.parent.grid.dataSource instanceof DataManager ?
                 this.parent.grid.dataSource.dataSource.json : this.parent.grid.dataSource);
@@ -446,6 +446,7 @@ export class BatchEdit {
                     currentViewRecords = totalRecords.splice(startIndex, endIndex);
                 }
             }
+            if (this.batchAddRowRecord.length === 0) { this.batchAddRowRecord.push(this.parent.flatData[args.index]); }
             for (i = 0; i < addRecords.length; i++) {
                 const taskData: ITreeData = extend({}, addRecords[i]);
                 delete taskData.parentItem; delete taskData.uniqueID; delete taskData.index; delete taskData.level;

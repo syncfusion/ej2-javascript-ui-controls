@@ -673,6 +673,7 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
     private parentCheckData :  { [key: string]: Object }[];
     // eslint-disable-next-line
     private validArr :  { [key: string]: Object }[] = [];
+    private validNodes : string[] = [];
     private expandChildren: string[] = [];
     private isBlazorPlatform: boolean;
     private isFieldChange: boolean = false;
@@ -1438,6 +1439,7 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
      * Update the checkedNodes from datasource at initial rendering
      */
     private updateCheckedStateFromDS(id?: string): void {
+        this.validNodes = [];
         if (this.treeData && this.showCheckBox) {
             if (this.dataType === 1) {
                 let mapper: FieldsSettingsModel = this.fields;
@@ -1470,12 +1472,21 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
                         this.getCheckedNodeDetails(mapper, checkState);
                         this.checkIndeterminateState(checkState[0]);
                     }
+                    if(checkState.length > 0) {
+                        let checkedId: string = checkState[0][this.fields.id] ? checkState[0][this.fields.id].toString() : null;
+                        if (this.checkedNodes.indexOf(checkedId) > -1 && this.validNodes.indexOf(checkedId) === -1) {
+                            this.validNodes.push(checkedId);
+                        }
+                    }
                     let checkedData: { [key: string]: Object }[] = <{ [key: string]: Object }[]>new DataManager(this.treeData).
                         executeLocal(new Query().where(mapper.parentID, 'equal', this.checkedNodes[i], true));
                     for (let index: number = 0; index < checkedData.length; index++) {
                         let checkedId: string = checkedData[index][this.fields.id] ? checkedData[index][this.fields.id].toString() : null;
                         if (this.checkedNodes.indexOf(checkedId) === -1 && this.autoCheck) {
                             this.checkedNodes.push(checkedId);
+                        }
+                        if (this.checkedNodes.indexOf(checkedId) > -1 && this.validNodes.indexOf(checkedId) === -1) {
+                            this.validNodes.push(checkedId);
                         }
                     }
                 }
@@ -1486,12 +1497,16 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
                     if (this.treeData[index][this.fields.isChecked] && !(this.isLoaded) && this.checkedNodes.indexOf(fieldId) === -1) {
                         this.checkedNodes.push(fieldId);
                     }
+                    if (this.checkedNodes.indexOf(fieldId) > -1 && this.validNodes.indexOf(fieldId) === -1) {
+                        this.validNodes.push(fieldId);
+                    }
                     let childItems: { [key: string]: Object }[] = getValue(this.fields.child.toString(), this.treeData[index]);
                     if (childItems) {
                         this.updateChildCheckState(childItems, this.treeData[index]);
                     }
                 }
             }
+            this.setProperties({ checkedNodes: this.validNodes }, true);
         }
     }
     /**
@@ -1600,6 +1615,9 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
             }
             if (this.checkedNodes.indexOf(checkedChild) !== -1 && this.autoCheck) {
                 count++;
+            }
+            if (this.checkedNodes.indexOf(checkedChild) > -1 && this.validNodes.indexOf(checkedChild) === -1){
+                this.validNodes.push(checkedChild);
             }
             let subChildItems: { [key: string]: Object }[] = getValue(this.fields.child.toString(), childItems[index]);
             if (subChildItems) {
@@ -4017,6 +4035,9 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
         } else {
             this.trigger('nodeDropped', this.getDragEvent(e.event, dragObj, dropTarget, e.target, <HTMLLIElement>e.element,
                 null, level, drop));
+        }
+        if (dragObj.element.id !== this.element.id) {
+            dragObj.triggerEvent();
         }
         this.triggerEvent();
     }

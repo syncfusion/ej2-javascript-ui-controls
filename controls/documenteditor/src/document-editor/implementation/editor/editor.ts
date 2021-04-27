@@ -10877,6 +10877,7 @@ export class Editor {
     private deleteCell(cell: TableCellWidget, selection: Selection, editAction: number, copyChildToClipboard: boolean): boolean {
         //Checks whether this is last paragraph of owner textbody.
         let block: BlockWidget = cell.childWidgets[0] as BlockWidget;
+        let bookmarkCollection: ElementBox[] = [];
         if (cell.childWidgets.length === 1 && block instanceof ParagraphWidget && (block as ParagraphWidget).isEmpty()) {
             return false;
         }
@@ -10887,6 +10888,7 @@ export class Editor {
                 if (block instanceof ParagraphWidget && cell.childWidgets.length === 1) {
                     //Preserves empty paragraph, to ensure minimal content.
                     let paragraph: ParagraphWidget = block as ParagraphWidget;
+                    bookmarkCollection = this.paragrapghBookmarkCollection(paragraph, bookmarkCollection);
                     //Removes all the inlines in the paragraph.
                     for (let j: number = 0; j < paragraph.childWidgets.length; j++) {
                         let inline: LineWidget = paragraph.childWidgets[j] as LineWidget;
@@ -10912,6 +10914,9 @@ export class Editor {
                     }
                     break;
                 }
+                if (block instanceof ParagraphWidget) {
+                    bookmarkCollection = this.paragrapghBookmarkCollection(block, bookmarkCollection);
+                }
                 this.removeBlock(block);
                 i--;
                 if (this.checkClearCells(selection)) {
@@ -10919,7 +10924,24 @@ export class Editor {
                 }
             }
         }
+        for (let j: number = 0; j < bookmarkCollection.length; j++) {
+            ((cell.childWidgets[0] as ParagraphWidget).childWidgets[0] as LineWidget).children.push(bookmarkCollection[j]);
+            ((cell.childWidgets[0] as ParagraphWidget).childWidgets[0] as LineWidget).children.push((bookmarkCollection[j] as BookmarkElementBox).reference);
+            bookmarkCollection[j].line = (cell.childWidgets[0] as ParagraphWidget).childWidgets[0] as LineWidget;
+            (bookmarkCollection[j] as BookmarkElementBox).reference.line = (cell.childWidgets[0] as ParagraphWidget).childWidgets[0] as LineWidget;
+            this.documentHelper.bookmarks.add((bookmarkCollection[j] as BookmarkElementBox).name,bookmarkCollection[j] as BookmarkElementBox);
+        }
         return true;
+    }
+    private paragrapghBookmarkCollection(block: ParagraphWidget, existingBookmark: ElementBox[]): ElementBox[] {
+        let bookmarkCol: Dictionary<string, BookmarkElementBox> = this.documentHelper.bookmarks;
+        for (let i: number = 0; i < bookmarkCol.length; i++) {
+            let bookmark: BookmarkElementBox = this.documentHelper.bookmarks.get(bookmarkCol.keys[i]);
+            if (bookmark.paragraph === block) {
+                existingBookmark.push(bookmark);
+            }
+        }
+        return existingBookmark;
     }
     private deleteContainer(cell: TableCellWidget, selection: Selection, start: TextPosition, end: TextPosition, editAction: number): void {
         let ownerTable: TableWidget = cell.ownerTable;

@@ -453,9 +453,9 @@ export class MaskedTextBox extends Component<HTMLInputElement> implements INotif
                     break;
                 case 'disabled':
                     if (( isNullOrUndefined(this.maskOptions) || (this.maskOptions['enabled'] === undefined)) || isDynamic) {
-                        const enabled: boolean = this.element.getAttribute(key) === 'disabled' || this.element.getAttribute(key) === '' ||
+                        const isEnabled: boolean = this.element.getAttribute(key) === 'disabled' || this.element.getAttribute(key) === '' ||
                                 this.element.getAttribute(key) === 'true' ? false : true;
-                        this.setProperties({ enabled: enabled }, !isDynamic);
+                        this.setProperties({ enabled: isEnabled }, !isDynamic);
                     }
                     break;
                 case 'value':
@@ -465,9 +465,9 @@ export class MaskedTextBox extends Component<HTMLInputElement> implements INotif
                     break;
                 case 'readonly':
                     if (( isNullOrUndefined(this.maskOptions) || (this.maskOptions['readonly'] === undefined)) || isDynamic) {
-                        const readonly: boolean = this.element.getAttribute(key) === 'readonly' || this.element.getAttribute(key) === ''
+                        const isReadonly: boolean = this.element.getAttribute(key) === 'readonly' || this.element.getAttribute(key) === ''
                                 || this.element.getAttribute(key) === 'true' ? true : false;
-                        this.setProperties({readonly: readonly}, !isDynamic);
+                        this.setProperties({readonly: isReadonly}, !isDynamic);
                     }
                     break;
                 }

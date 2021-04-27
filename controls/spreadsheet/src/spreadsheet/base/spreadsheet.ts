@@ -1,3 +1,4 @@
+// eslint-disable-next-line @typescript-eslint/triple-slash-reference
 /// <reference path='../../workbook/base/workbook-model.d.ts'/>
 import { Property, NotifyPropertyChanges, INotifyPropertyChanged, ModuleDeclaration, Event, isUndefined } from '@syncfusion/ej2-base';
 import { addClass, removeClass, EmitType, Complex, formatUnit, L10n, isNullOrUndefined, Browser } from '@syncfusion/ej2-base';
@@ -73,6 +74,7 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
      *  ...
      * }, '#spreadsheet');
      * ```
+     *
      * @default ''
      */
     @Property('')
@@ -166,6 +168,7 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
      * * Multiple: Allows multiple selection of cell, row, or column and disables single selection.
      *
      * ```
+     *
      * @default { mode: 'Multiple' }
      */
     @Complex<SelectionSettingsModel>({}, SelectionSettings)
@@ -187,6 +190,7 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
      * ```
      *
      * > The `allowScrolling` property should be `true`.
+     *
      * @default { isFinite: false, enableVirtualization: true }
      */
     @Complex<ScrollSettingsModel>({}, ScrollSettings)
@@ -205,7 +209,7 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
      *  }, '#Spreadsheet');
      * ```
      *
-     * @event
+     * @event beforeCellRender
      */
     @Event()
     public beforeCellRender: EmitType<CellRenderEventArgs>;
@@ -223,7 +227,7 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
      *  }, '#Spreadsheet');
      * ```
      *
-     * @event
+     * @event beforeSelect
      */
     @Event()
     public beforeSelect: EmitType<BeforeSelectEventArgs>;
@@ -241,7 +245,7 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
      *  }, '#Spreadsheet');
      * ```
      *
-     * @event
+     * @event select
      */
     @Event()
     public select: EmitType<SelectEventArgs>;
@@ -259,7 +263,7 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
      *  }, '#Spreadsheet');
      * ```
      *
-     * @event
+     * @event contextMenuBeforeOpen
      */
     @Event()
     public contextMenuBeforeOpen: EmitType<BeforeOpenCloseMenuEventArgs>;
@@ -277,7 +281,7 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
      *  }, '#Spreadsheet');
      * ```
      *
-     * @event
+     * @event fileMenuBeforeOpen
      */
     @Event()
     public fileMenuBeforeOpen: EmitType<BeforeOpenCloseMenuEventArgs>;
@@ -295,7 +299,7 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
      *  }, '#Spreadsheet');
      * ```
      *
-     * @event
+     * @event contextMenuBeforeClose
      */
     @Event()
     public contextMenuBeforeClose: EmitType<BeforeOpenCloseMenuEventArgs>;
@@ -313,7 +317,7 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
      *  }, '#Spreadsheet');
      * ```
      *
-     * @event
+     * @event dialogBeforeOpen
      */
     @Event()
     public dialogBeforeOpen: EmitType<DialogBeforeOpenEventArgs>;
@@ -331,7 +335,7 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
      *  }, '#Spreadsheet');
      * ```
      *
-     * @event
+     * @event fileMenuBeforeClose
      */
     @Event()
     public fileMenuBeforeClose: EmitType<BeforeOpenCloseMenuEventArgs>;
@@ -349,7 +353,7 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
      *  }, '#Spreadsheet');
      * ```
      *
-     * @event
+     * @event contextMenuItemSelect
      */
     @Event()
     public contextMenuItemSelect: EmitType<MenuSelectEventArgs>;
@@ -367,12 +371,12 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
      *  }, '#Spreadsheet');
      * ```
      *
-     * @event
+     * @event fileMenuItemSelect
      */
     @Event()
     public fileMenuItemSelect: EmitType<MenuSelectEventArgs>;
 
-    /** 
+    /**
      * Triggers before the data is populated to the worksheet.
      * ```html
      * <div id='Spreadsheet'></div>
@@ -385,12 +389,12 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
      *  }, '#Spreadsheet');
      * ```
      *
-     * @event
+     * @event beforeDataBound
      */
     @Event()
     public beforeDataBound: EmitType<Object>;
 
-    /** 
+    /**
      * Triggers when the data is populated in the worksheet.
      * ```html
      * <div id='Spreadsheet'></div>
@@ -403,7 +407,7 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
      *  }, '#Spreadsheet');
      * ```
      *
-     * @event 
+     * @event dataBound
      */
     @Event()
     public dataBound: EmitType<Object>;
@@ -421,7 +425,7 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
      *  }, '#Spreadsheet');
      * ```
      *
-     * @event
+     * @event dataSourceChanged
      */
     @Event()
     public dataSourceChanged: EmitType<DataSourceChangedEventArgs>;
@@ -439,7 +443,7 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
      *  }, '#Spreadsheet');
      * ```
      *
-     * @event
+     * @event cellEdit
      */
     @Event()
     public cellEdit: EmitType<CellEditEventArgs>;
@@ -458,7 +462,7 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
      *  }, '#Spreadsheet');
      * ```
      *
-     * @event
+     * @event cellEditing
      */
     @Event()
     public cellEditing: EmitType<CellEditEventArgs>;
@@ -477,7 +481,7 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
      *  }, '#Spreadsheet');
      * ```
      *
-     * @event
+     * @event cellSave
      */
     @Event()
     public cellSave: EmitType<CellSaveEventArgs>;
@@ -496,7 +500,7 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
      *  }, '#Spreadsheet');
      * ```
      *
-     * @event
+     * @event beforeCellSave
      */
     @Event()
     public beforeCellSave: EmitType<CellEditEventArgs>;
@@ -515,7 +519,7 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
      *  }, '#Spreadsheet');
      * ```
      *
-     * @event
+     * @event created
      */
     @Event()
     public created: EmitType<Event>;
@@ -534,7 +538,7 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
      *  }, '#Spreadsheet');
      * ```
      *
-     * @event
+     * @event beforeSort
      */
     @Event()
     public beforeSort: EmitType<BeforeSortEventArgs>;
@@ -553,7 +557,7 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
      *  }, '#Spreadsheet');
      * ```
      *
-     * @event
+     * @event beforeHyperlinkCreate
      */
     @Event()
     public beforeHyperlinkCreate: EmitType<BeforeHyperlinkArgs>;
@@ -572,7 +576,7 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
      *  }, '#Spreadsheet');
      * ```
      *
-     * @event
+     * @event afterHyperlinkCreate
      */
     @Event()
     public afterHyperlinkCreate: EmitType<AfterHyperlinkArgs>;
@@ -591,7 +595,7 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
      *  }, '#Spreadsheet');
      * ```
      *
-     * @event
+     * @event beforeHyperlinkClick
      */
     @Event()
     public beforeHyperlinkClick: EmitType<BeforeHyperlinkArgs>;
@@ -610,7 +614,7 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
      *  }, '#Spreadsheet');
      * ```
      *
-     * @event
+     * @event afterHyperlinkClick
      */
     @Event()
     public afterHyperlinkClick: EmitType<AfterHyperlinkArgs>;
@@ -670,7 +674,7 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
      *  }, '#Spreadsheet');
      * ```
      *
-     * @event
+     * @event openComplete
      */
     @Event()
     public openComplete: EmitType<Object>;
@@ -689,7 +693,7 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
      *  }, '#Spreadsheet');
      * ```
      *
-     * @event
+     * @event sortComplete
      */
     @Event()
     public sortComplete: EmitType<SortEventArgs>;
@@ -754,13 +758,14 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
      *
      * @param {number} index - specify the index.
      * @param {HTMLTableElement} table - specify the table.
+     * @param {number} colIdx - specify the column index.
      * @returns {HTMLTableRowElement} - Get cell element
      * @hidden
      */
     public getRow(index: number, table?: HTMLTableElement, colIdx?: number): HTMLTableRowElement {
         if (!table) {
-            let sheet: SheetModel = this.getActiveSheet();
-            let frozenRow: number = this.frozenRowCount(sheet); let frozenCol: number = this.frozenColCount(sheet);
+            const sheet: SheetModel = this.getActiveSheet();
+            const frozenRow: number = this.frozenRowCount(sheet); const frozenCol: number = this.frozenColCount(sheet);
             if (isNullOrUndefined(colIdx) || index > frozenRow - 1 && colIdx > frozenCol - 1) {
                 table = this.getContentTable();
             } else {
@@ -800,11 +805,11 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
      * @hidden
      */
     public getViewportIndex(index: number, isCol?: boolean): number {
-        let sheet: SheetModel = this.getActiveSheet();
+        const sheet: SheetModel = this.getActiveSheet();
         if (isCol) {
             const frozenCol: number = this.frozenColCount(sheet);
             if (frozenCol) {
-                let leftIndex: number = getCellIndexes(sheet.topLeftCell)[1];
+                const leftIndex: number = getCellIndexes(sheet.topLeftCell)[1];
                 if (index < frozenCol) {
                     index -= leftIndex; return index + 1;
                 } else {
@@ -814,7 +819,7 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
         } else {
             const frozenRow: number = this.frozenRowCount(sheet);
             if (frozenRow) {
-                let topIndex: number = getCellIndexes(sheet.topLeftCell)[0];
+                const topIndex: number = getCellIndexes(sheet.topLeftCell)[0];
                 if (index < frozenRow) {
                     index -= topIndex; return index + 1;
                 } else {
@@ -894,7 +899,7 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
         if (this.scrollSettings.enableVirtualization) {
             new VirtualScroll(this);
         }
-        this.renderModule.render();
+        this.renderModule.render(this.refreshing);
         new ShowHide(this);
     }
 
@@ -931,7 +936,7 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
      */
     public protectSheet(sheet?: number | string, protectSettings?: ProtectSettingsModel): void {
         if (typeof (sheet) === 'string') {
-            sheet = getSheetIndex(this, sheet);
+            sheet = getSheetIndex(this as Workbook, sheet);
         }
         if (sheet) {
             this.setSheetPropertyOnMute(this.sheets[sheet], 'isProtected', true);
@@ -952,7 +957,7 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
      */
     public unprotectSheet(sheet?: number | string): void {
         if (typeof (sheet) === 'string') {
-            sheet = getSheetIndex(this, sheet);
+            sheet = getSheetIndex(this as Workbook, sheet);
         }
         if (sheet) {
             this.sheets[sheet].isProtected = false;
@@ -1039,7 +1044,7 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
     public goTo(address: string): void {
         if (address.includes('!')) {
             const addrArr: string[] = address.split('!');
-            const idx: number = getSheetIndex(this, addrArr[0]);
+            const idx: number = getSheetIndex(this as Workbook, addrArr[0]);
             if (idx === undefined) { return; }
             if (idx !== this.activeSheetIndex) {
                 const activeCell: string = addrArr[1].split(':')[0];
@@ -1051,7 +1056,7 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
                     const topLeftCell: number[] = getCellIndexes(sheet.topLeftCell);
                     if (!((sheet.frozenRows && cellIndex[0] < topLeftCell[0]) || (sheet.frozenColumns && cellIndex[1] < topLeftCell[1]))) {
                         const frozenRow: number = this.frozenRowCount(sheet); const frozenCol: number = this.frozenColCount(sheet);
-                        let curCell: number[] = []; let paneCell: number[] = [];
+                        const curCell: number[] = []; const paneCell: number[] = [];
                         const paneTopLeftCell: number[] = getCellIndexes(sheet.paneTopLeftCell);
                         if (frozenRow) {
                             curCell.push(topLeftCell[0]);
@@ -1071,7 +1076,7 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
                                 paneCell.push(paneTopLeftCell[1]);
                             }
                         } else {
-                            curCell.push(cellIndex[1]); paneCell.push(cellIndex[1]);   
+                            curCell.push(cellIndex[1]); paneCell.push(cellIndex[1]);
                         }
                         this.setSheetPropertyOnMute(sheet, 'topLeftCell', getCellAddress(curCell[0], curCell[1]));
                         this.setSheetPropertyOnMute(sheet, 'paneTopLeftCell', getCellAddress(paneCell[0], paneCell[1]));
@@ -1153,7 +1158,12 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
         }
     }
 
-    /** @hidden */
+    /**
+     * @hidden
+     * @param {number} rowIndex - Specifies the row index.
+     * @param {number} colIndex - Specifies the column index.
+     * @returns {boolean} - Specifies the boolean value.
+     */
     public insideViewport(rowIndex: number, colIndex: number): boolean {
         const sheet: SheetModel = this.getActiveSheet();
         if (sheet.frozenRows || sheet.frozenColumns) {
@@ -1191,10 +1201,11 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
      */
     public cut(address?: string): Promise<Object> {
         const promise: Promise<Object> =
+            // eslint-disable-next-line @typescript-eslint/no-unused-vars
             new Promise((resolve: Function, reject: Function) => { resolve((() => { /** */ })()); });
         this.notify(cut, address ? {
             range: getIndexesFromAddress(address),
-            sId: this.sheets[getSheetIndex(this, getSheetNameFromAddress(address))].id,
+            sId: this.sheets[getSheetIndex(this as Workbook, getSheetNameFromAddress(address))].id,
             promise: promise
         } : { promise: promise });
         return promise;
@@ -1210,11 +1221,12 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
      */
     public copy(address?: string): Promise<Object> {
         const promise: Promise<Object> =
+            // eslint-disable-next-line @typescript-eslint/no-unused-vars
             new Promise((resolve: Function, reject: Function) => { resolve((() => { /** */ })()); });
         this.notify(copy, address ? {
             range: getIndexesFromAddress(address),
-            sId: this.sheets[getSheetIndex(this, getSheetNameFromAddress(address))] ?
-                this.sheets[getSheetIndex(this, getSheetNameFromAddress(address))].id : this.activeSheetIndex,
+            sId: this.sheets[getSheetIndex(this as Workbook, getSheetNameFromAddress(address))] ?
+                this.sheets[getSheetIndex(this as Workbook, getSheetNameFromAddress(address))].id : this.activeSheetIndex,
             promise: promise
         } : { promise: promise });
         return promise;
@@ -1232,7 +1244,7 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
     public paste(address?: string, type?: PasteSpecialType): void {
         this.notify(paste, {
             range: address ? getIndexesFromAddress(address) : address,
-            sIdx: address ? getSheetIndex(this, getSheetNameFromAddress(address)) : address,
+            sIdx: address ? getSheetIndex(this as Workbook, getSheetNameFromAddress(address)) : address,
             type: type, isAction: false, isInternal: true
         });
     }
@@ -1419,7 +1431,7 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
      * @param {string} range - specify the range.
      * @returns {number | boolean} - to get the index.
      *
-    */
+     */
     public getIndexes(range: string): { startIdx: number, endIdx: number, isCol: boolean } {
         let startIsCol: boolean;
         let endIsCol: boolean;
@@ -1548,12 +1560,12 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
      */
     public insertHyperlink(hyperlink: string | HyperlinkModel, address: string, displayText: string, isMethod: boolean): void {
         if (this.allowHyperlink) {
-            let value: string;
+            //let value: string;
             let addrRange: string[];
             let sheetIdx: number;
             let cellIdx: number[];
             let sheet: SheetModel = this.getActiveSheet();
-            let isEmpty: boolean;
+            // let isEmpty: boolean;
             address = address ? address : this.getActiveSheet().activeCell;
             const befArgs: BeforeHyperlinkArgs = { hyperlink: hyperlink, cell: address, cancel: false };
             const aftArgs: AfterHyperlinkArgs = { hyperlink: hyperlink, cell: address };
@@ -1580,14 +1592,14 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
                 }
                 address = address ? address : this.getActiveSheet().activeCell;
                 cellIdx = getRangeIndexes(address);
-                if (typeof (hyperlink) === 'string') {
-                    value = hyperlink;
-                } else {
-                    value = hyperlink.address;
-                }
+                // if (typeof (hyperlink) === 'string') {
+                //     value = hyperlink;
+                // } else {
+                //     value = hyperlink.address;
+                // }
                 const mCell: CellModel = sheet.rows[cellIdx[0]].cells[cellIdx[1]];
                 if (isNullOrUndefined(mCell.value) || mCell.value === '') {
-                    isEmpty = true;
+                    // isEmpty = true;
                     if (!isNullOrUndefined(displayText) && displayText !== '') {
                         mCell.value = displayText;
                     }
@@ -1699,7 +1711,7 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
      *
      * @param {OpenOptions} options - Options for opening the excel file.
      * @returns {void} - Open the Excel file.
-    */
+     */
     public open(options: OpenOptions): void {
         this.isOpen = true;
         super.open(options);
@@ -1763,7 +1775,11 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
         if (this[isReact]) {
             this[clearTemplate]();
         }
-        (isNew) ? this.notify(blankWorkbook, {}) : super.refresh();
+        if (isNew) {
+            this.notify(blankWorkbook, {});
+        } else {
+            super.refresh();
+        }
     }
 
     /**
@@ -1960,7 +1976,7 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
             value = circularArgs.argValue;
         }
         super.setValueRowCol(sheetIndex, value, rowIndex, colIndex);
-        sheetIndex = getSheetIndexFromId(this, sheetIndex);
+        sheetIndex = getSheetIndexFromId(this as Workbook, sheetIndex);
         this.notify(
             editOperation, {
                 action: 'refreshDependentCellValue', rowIdx: rowIndex, colIdx: colIndex,
@@ -2016,7 +2032,11 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
                     }
                     value = args.result;
                 }
-                args.isRightAlign ? td.classList.add(alignClass) : td.classList.remove(alignClass);
+                if (args.isRightAlign) {
+                    td.classList.add(alignClass);
+                } else {
+                    td.classList.remove(alignClass);
+                }
             }
             value = !isNullOrUndefined(value) ? value : '';
             if (!isNullOrUndefined(td)) {
@@ -2059,7 +2079,7 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
      * @param {number} endIdx - Specify the end index.
      * @param {string} layout - Specify the rows.
      * @returns {number[]} - To skip the hidden rows.
-    */
+     */
     public skipHidden(startIdx: number, endIdx: number, layout: string = 'rows'): number[] {
         const sheet: SheetModel = this.getActiveSheet(); let totalCount: number;
         if (this.scrollSettings.isFinite) { totalCount = (layout === 'rows' ? sheet.rowCount : sheet.colCount) - 1; }
@@ -2191,18 +2211,18 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
         this.notify(beginAction, { eventArgs: args, action: 'freezePanes' });
         if (args.cancel) { return; }
         this.on(contentLoaded, this.freezePaneUpdated, this);
-        const indexes: number[] = getCellIndexes(this.getActiveSheet().topLeftCell);
+        // const indexes: number[] = getCellIndexes(this.getActiveSheet().topLeftCell);
         if (e.row || e.column) {
             let hasFilter: boolean = false;
             this.notify(getFilteredCollection, null);
-			if (this.filterCollection) {
-				for (let i: number = 0, len: number = this.filterCollection.length; i < len; i++) {
-						if (this.filterCollection[i].sheetIndex === this.activeSheetIndex) {
-						hasFilter = true;
-						break;
-					}
-				}
-			}
+            if (this.filterCollection) {
+                for (let i: number = 0, len: number = this.filterCollection.length; i < len; i++) {
+                    if (this.filterCollection[i].sheetIndex === this.activeSheetIndex) {
+                        hasFilter = true;
+                        break;
+                    }
+                }
+            }
             if (hasFilter) {
                 this.clearFilter();
             }
@@ -2417,7 +2437,7 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
      *
      * @param {string} tab - Specifies the ribbon tab header text under which the specified items needs to be hidden / shown.
      * @param {number[]} indexes - Specifies the toolbar indexes which needs to be shown/hidden from UI.
-     * @param {boolean} hide? - Set `true` / `false` to hide / show the toolbar items.
+     * @param {boolean} hide - Set `true` / `false` to hide / show the toolbar items.
      * @returns {void} - To show/hide the existing Spreadsheet ribbon toolbar items.
      */
     public hideToolbarItems(tab: string, indexes: number[], hide: boolean = true): void {
@@ -2495,17 +2515,19 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
     public onPropertyChanged(newProp: SpreadsheetModel, oldProp: SpreadsheetModel): void {
         super.onPropertyChanged(newProp, oldProp);
         for (const prop of Object.keys(newProp)) {
+            let header: HTMLElement;
+            let addBtn: HTMLButtonElement;
             switch (prop) {
             case 'enableRtl':
-                let header: HTMLElement = this.getColumnHeaderContent();
+                header = this.getColumnHeaderContent();
                 if (header) { header = header.parentElement; }
                 if (!header) { break; }
                 if (newProp.enableRtl) {
                     header.style.marginLeft = getScrollBarWidth() + 'px'; header.style.marginRight = '';
-                    document.getElementById(this.element.id + '_sheet_panel').classList.add('e-rtl')
+                    document.getElementById(this.element.id + '_sheet_panel').classList.add('e-rtl');
                 } else {
                     header.style.marginRight = getScrollBarWidth() + 'px'; header.style.marginLeft = '';
-                    document.getElementById(this.element.id + '_sheet_panel').classList.remove('e-rtl')
+                    document.getElementById(this.element.id + '_sheet_panel').classList.remove('e-rtl');
                 }
                 this.renderModule.refreshSheet();
                 break;
@@ -2543,7 +2565,7 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
                 }
                 break;
             case 'allowInsert':
-                let addBtn: HTMLButtonElement = this.element.getElementsByClassName('e-add-sheet-tab')[0] as HTMLButtonElement;
+                addBtn = this.element.getElementsByClassName('e-add-sheet-tab')[0] as HTMLButtonElement;
                 if (addBtn) {
                     addBtn.disabled = !this.allowInsert;
                     if (this.allowInsert) {
@@ -2592,7 +2614,7 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
                 break;
             case 'password':
                 if (this.password.length > 0) {
-                    if (this.showSheetTabs) { 
+                    if (this.showSheetTabs) {
                         this.element.querySelector('.e-add-sheet-tab').setAttribute('disabled', 'true');
                         this.element.querySelector('.e-add-sheet-tab').classList.add('e-disabled');
                     }
@@ -2600,7 +2622,7 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
                 break;
             case 'isProtected':
                 if (this.isProtected) {
-                    let addBtn: HTMLButtonElement = this.element.getElementsByClassName('e-add-sheet-tab')[0] as HTMLButtonElement;
+                    const addBtn: HTMLButtonElement = this.element.getElementsByClassName('e-add-sheet-tab')[0] as HTMLButtonElement;
                     if (addBtn) {
                         addBtn.disabled = this.isProtected;
                         if (this.isProtected) {

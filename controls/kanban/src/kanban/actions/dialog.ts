@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { append, createElement, remove, isNullOrUndefined, closest, extend } from '@syncfusion/ej2-base';
-import { DropDownList, DropDownListModel } from '@syncfusion/ej2-dropdowns';
+import { DropDownList, DropDownListModel, MultiSelect } from '@syncfusion/ej2-dropdowns';
+import { CheckBox } from '@syncfusion/ej2-buttons';
 import { FormValidator, NumericTextBox, TextBox } from '@syncfusion/ej2-inputs';
 import { Dialog, DialogModel, BeforeOpenEventArgs, ButtonPropsModel, BeforeCloseEventArgs } from '@syncfusion/ej2-popups';
 import { Kanban } from '../base/kanban';
@@ -378,12 +379,18 @@ export class KanbanDialog {
 
     private getValueFromElement(element: HTMLElement): number | string | Date | boolean | string[] | number[] {
         let value: number | string | Date | boolean | string[] | number[];
-        const instance: Record<string, number | string | Date | boolean | string[] | number[]>[] = (element as EJ2Instance).ej2_instances;
-        if (instance && instance.length > 0) {
-            value = (instance[0] as { [key: string]: number | string | Date | boolean | string[] | number[] }).value ||
-                (instance[0] as { [key: string]: number | string | Date | boolean | string[] | number[] }).checked;
+        if (element.classList.contains('e-dropdownlist')) {
+            value = ((element as EJ2Instance).ej2_instances[0] as DropDownList).value as string | number;
+        } else if (element.classList.contains('e-multiselect')) {
+            value = ((element as EJ2Instance).ej2_instances[0] as MultiSelect).value as string[] | number[];
+        } else if (element.classList.contains('e-checkbox')) {
+            value = ((element as EJ2Instance).ej2_instances[0] as CheckBox).checked as boolean;
         } else {
-            value = (element as HTMLInputElement).value;
+            if ((element as HTMLInputElement).type === 'checkbox') {
+                value = (element as HTMLInputElement).checked as boolean;
+            } else {
+                value = (element as HTMLInputElement).value as string;
+            }
         }
         return value;
     }

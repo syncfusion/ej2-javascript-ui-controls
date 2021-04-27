@@ -51,8 +51,8 @@ export class RowDD {
         let tbody: Element = this.parent.createElement('tbody');
 
         if (document.getElementsByClassName('e-griddragarea').length ||
-            (gObj.rowDropSettings.targetID && (!(target as Element).classList.contains('e-selectionbackground')
-                && gObj.selectionSettings.type !== 'Single')) ||
+            (gObj.rowDropSettings.targetID && ((!(target as Element).classList.contains('e-selectionbackground')
+                && gObj.selectionSettings.type !== 'Single') || !parentsUntil(target as Element, 'e-rowcell'))) ||
             (!gObj.rowDropSettings.targetID && !parentsUntil(target as Element, 'e-rowdragdrop'))) {
             return false;
         }

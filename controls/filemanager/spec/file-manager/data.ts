@@ -789,6 +789,16 @@ export let searchpng: any = {
     "details": null
 }
 
+//Search 'apple' key in FileContent
+export let searchapp: any = {
+    "cwd":{"path":null,"action":null,"newName":null,"names":null,"name":"Files","size":0,"previousName":null,"dateModified":"2021-04-20T12:00:49.4556427+00:00","dateCreated":"2021-04-20T12:00:48.5928243+00:00","hasChild":true,"isFile":false,"type":"","id":null,"filterPath":"","filterId":null,"parentId":null,"targetPath":null,"renameFiles":null,"uploadFiles":null,"caseSensitive":false,"searchString":null,"showHiddenItems":false,"data":null,"targetData":null,"permission":{"copy":true,"download":true,"write":true,"writeContents":true,"read":true,"upload":true,"message":""}},
+    "files":[
+        {"path":null,"action":null,"newName":null,"names":null,"name":"Apple pie.png","size":101767,"previousName":null,"dateModified":"2019-11-04T11:53:34.2696436+00:00","dateCreated":"2021-04-20T12:00:49.9815567+00:00","hasChild":false,"isFile":true,"type":".png","id":null,"filterPath":"\\Pictures\\Food\\","filterId":null,"parentId":null,"targetPath":null,"renameFiles":null,"uploadFiles":null,"caseSensitive":false,"searchString":null,"showHiddenItems":false,"data":null,"targetData":null,"permission":{"copy":true,"download":true,"write":true,"writeContents":true,"read":true,"upload":true,"message":""}}
+    ],
+    "error":null,
+    "details":null
+}
+
 //Search 'hello.png' key in FileContent
 export let searchhellopng: any = {
     "cwd": { "name": "FileContent", "size": 0, "dateModified": "2019-03-14T09:41:18.6337978+05:30", "dateCreated": "2019-03-07T14:49:02.6184375+05:30", "hasChild": true, "isFile": false, "type": "", "filterPath": "" },

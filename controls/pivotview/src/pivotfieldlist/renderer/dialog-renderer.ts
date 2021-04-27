@@ -1,4 +1,4 @@
-import { createElement, isNullOrUndefined, addClass, removeClass, closest, isBlazor, select } from '@syncfusion/ej2-base';
+import { createElement, isNullOrUndefined, addClass, removeClass, closest, isBlazor, select, remove } from '@syncfusion/ej2-base';
 import { EventHandler, setStyleAttribute, extend } from '@syncfusion/ej2-base';
 import { PivotFieldList } from '../base/field-list';
 import * as cls from '../../common/base/css-constant';
@@ -567,5 +567,37 @@ export class DialogRenderer {
     private unWireDialogEvent(element: Element): void {
         EventHandler.remove(element, 'keydown', this.keyPress);
         EventHandler.remove(element, 'click', this.onShowFieldList);
+    }
+
+    /**
+     * Destroys the Field Table component.
+     * @function destroy
+     * @returns {void}
+     */
+    public destroy(): void {
+        if (this.parent.renderMode === 'Popup') {
+            this.unWireDialogEvent(this.parent.element.querySelector('.' + cls.TOGGLE_FIELD_LIST_CLASS));
+        }
+        if (this.deferUpdateCheckBox && !this.deferUpdateCheckBox.isDestroyed) {
+            this.deferUpdateCheckBox.destroy();
+            this.deferUpdateCheckBox = null;
+        }
+        if (this.deferUpdateApplyButton && !this.deferUpdateApplyButton.isDestroyed) {
+            this.deferUpdateApplyButton.destroy();
+            this.deferUpdateApplyButton = null;
+        }
+        if (this.deferUpdateCancelButton && !this.deferUpdateCancelButton.isDestroyed) {
+            this.deferUpdateCancelButton.destroy();
+            this.deferUpdateCancelButton = null;
+        }
+        if (this.parent.renderMode === 'Popup') {
+            if (this.fieldListDialog && !this.fieldListDialog.isDestroyed) {
+                this.fieldListDialog.destroy();
+                this.fieldListDialog = null;
+            }
+            if (document.getElementById(this.parent.element.id + '_Wrapper')) {
+                remove(document.getElementById(this.parent.element.id + '_Wrapper'));
+            }
+        }
     }
 }

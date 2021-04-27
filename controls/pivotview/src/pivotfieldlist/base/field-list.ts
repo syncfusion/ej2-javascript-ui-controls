@@ -434,7 +434,7 @@ export class PivotFieldList extends Component<HTMLElement> implements INotifyPro
     public requiredModules(): ModuleDeclaration[] {
         let modules: ModuleDeclaration[] = [];
         if (this.allowCalculatedField) {
-            modules.push({ args: [this], member: 'calculatedfield' });
+            modules.push({ args: [this], member: 'calculatedField' });
         }
         return modules;
     }
@@ -1549,30 +1549,85 @@ export class PivotFieldList extends Component<HTMLElement> implements INotifyPro
      */
     public destroy(): void {
         this.unWireEvent();
+        if (this.engineModule) {
+            this.engineModule.fieldList = {};
+            this.engineModule.rMembers = null;
+            this.engineModule.cMembers = null;
+            (this.engineModule as any).valueMatrix = null;
+            (this.engineModule as any).indexMatrix = null;
+            this.engineModule = {} as PivotEngine;
+        }
+        if (this.olapEngineModule) {
+            this.olapEngineModule.fieldList = {};
+            this.olapEngineModule = {} as OlapEngine;
+        }
+        if (this.pivotFieldList) {
+            this.pivotFieldList = {};
+        }
+        if (this.captionData) {
+            this.captionData = null;
+        }
+        if (this.contextMenuModule) {
+            this.contextMenuModule.destroy();
+        }
         if (this.treeViewModule) {
             this.treeViewModule.destroy();
         }
         if (this.pivotButtonModule) {
             this.pivotButtonModule.destroy();
         }
-        if (this.allowDeferLayoutUpdate && this.dialogRenderer &&
-            this.dialogRenderer.deferUpdateCheckBox && !this.dialogRenderer.deferUpdateCheckBox.isDestroyed) {
-            this.dialogRenderer.deferUpdateCheckBox.destroy();
+        if (this.pivotCommon) {
+            this.pivotCommon.destroy();
+        }
+        if (this.dialogRenderer) {
+            this.dialogRenderer.destroy();
+        }
+        if (this.calculatedFieldModule) {
+            this.calculatedFieldModule.destroy();
         }
         super.destroy();
+        if (this.contextMenuModule) {
+            this.contextMenuModule = null;
+        }
+        if (this.treeViewModule) {
+            this.treeViewModule = null;
+        }
+        if (this.pivotButtonModule) {
+            this.pivotButtonModule = null;
+        }
+        if (this.pivotCommon) {
+            this.pivotCommon = null;
+        }
+        if (this.dialogRenderer) {
+            this.dialogRenderer = null;
+        }
+        if (this.calculatedFieldModule) {
+            this.calculatedFieldModule = null;
+        }
+        if (this.axisFieldModule) {
+            this.axisFieldModule = null;
+        }
+        if (this.axisTableModule) {
+            this.axisTableModule = null;
+        }
+        if (this.renderModule) {
+            this.renderModule = null;
+        }
+        if (this.clonedDataSet) {
+            this.clonedDataSet = null;
+        }
+        if (this.clonedFieldList) {
+            this.clonedFieldList = null;
+        }
+        if (this.localeObj) {
+            this.localeObj = null;
+        }
+        if (this.defaultLocale) {
+            this.defaultLocale = null;
+        }
         this.element.innerHTML = '';
         removeClass([this.element], cls.ROOT);
         removeClass([this.element], cls.RTL);
         removeClass([this.element], cls.DEVICE);
-        if (this.renderMode === 'Popup') {
-            if (this.dialogRenderer.fieldListDialog && !this.dialogRenderer.fieldListDialog.isDestroyed) {
-                this.dialogRenderer.fieldListDialog.destroy();
-            }
-            if (document.getElementById(this.element.id + '_Wrapper')) {
-                remove(document.getElementById(this.element.id + '_Wrapper'));
-            }
-        }
     }
 }
-
-

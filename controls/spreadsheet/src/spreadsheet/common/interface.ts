@@ -46,6 +46,7 @@ export interface SheetRenderArgs {
     left?: number;
     initLoad?: boolean;
     prevRowColCnt?: SheetModel;
+    isRefreshing?: boolean;
 }
 
 /** @hidden */
@@ -96,12 +97,7 @@ export interface ReplaceAllEventArgs {
     replaceValue: string;
     addressCollection: string[];
 }
-/**
- * @hidden
- */
-export interface FormulaBarEdit {
-    isEdit: boolean;
-}
+
 /**
  * @hidden
  */
@@ -189,11 +185,11 @@ export interface DialogBeforeOpenEventArgs {
     /**
      * Returns the target element of the dialog.
      */
-    target: HTMLElement | String;
+    target: HTMLElement | string;
     /**
      * Returns the name of the dialog.
      */
-    dialogName: String;
+    dialogName: string;
     /**
      * Defines the value that can be displayed in dialog’s content area, you can override it with your own custom message.
      */
@@ -258,6 +254,7 @@ export interface CellRenderArgs {
     isRow?: boolean;
     isFreezePane?: boolean;
     insideFreezePane?: boolean;
+    isRefreshing?: boolean;
 }
 /** @hidden */
 export interface IAriaOptions<T> {
@@ -408,6 +405,7 @@ export interface PreviousCellDetails {
     colSpan: number;
     hyperlink: string | HyperlinkModel;
     image: ImageModel[];
+    isLocked?: boolean;
 }
 
 export interface BeforePasteEventArgs {

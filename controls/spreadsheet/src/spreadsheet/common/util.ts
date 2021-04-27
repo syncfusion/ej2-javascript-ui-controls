@@ -1,8 +1,8 @@
-import { Browser, setStyleAttribute as setBaseStyleAttribute, getComponent, detach, isNullOrUndefined, closest } from '@syncfusion/ej2-base';
+import { Browser, setStyleAttribute as setBaseStyleAttribute, getComponent, detach, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { StyleType, CollaborativeEditArgs, CellSaveEventArgs, ICellRenderer, IAriaOptions } from './index';
 import { IOffset, clearViewer, deleteImage, createImageElement, refreshImgCellObj } from './index';
 import { Spreadsheet } from '../base/index';
-import { SheetModel, getRowsHeight, getColumnsWidth, getSwapRange, CellModel, CellStyleModel, clearCells, setCellFormat, RowModel } from '../../workbook/index';
+import { SheetModel, getRowsHeight, getColumnsWidth, getSwapRange, CellModel, CellStyleModel, clearCells, RowModel } from '../../workbook/index';
 import { RangeModel, getRangeIndexes, Workbook, wrap, setRowHeight, insertModel, InsertDeleteModelArgs, getColumnWidth } from '../../workbook/index';
 import { BeforeSortEventArgs, SortEventArgs, initiateSort, getIndexesFromAddress, getRowHeight, setMerge } from '../../workbook/index';
 import { ValidationModel, setValidation, removeValidation, clearCFRule, setCFRule, ConditionalFormatModel } from '../../workbook/index';
@@ -28,11 +28,10 @@ export function getUpdateUsingRaf(fn: Function): void {
  * The function used to remove the dom element children.
  *
  * @param  {Element} parent - Specify the parent
- * @param {number} index - specify the index.
  * @returns {void} - The function used to get colgroup width based on the row index.
  * @hidden
  */
-export function removeAllChildren(parent: Element, index?: number): void {
+export function removeAllChildren(parent: Element): void {
     while (parent.firstChild) {
         parent.removeChild(parent.firstChild);
     }
@@ -155,9 +154,12 @@ export function inView(context: Spreadsheet, range: number[], isModify?: boolean
  *
  * @hidden
  * @param {SheetModel} sheet - Specify the sheet.
- * @param {number[]} indexes - specify the indexes.
- * @param {number} frozenRow - Specidy the frozen row.
+ * @param {number[]} indexes - Specify the indexes.
+ * @param {number} frozenRow - Specify the frozen row.
  * @param {number} frozenColumn - Specify the frozen column
+ * @param {number} freezeScrollHeight - Specify the freeze scroll height
+ * @param {number} freezeScrollWidth - Specify the freeze scroll width
+ * @param {number} rowHdrWidth - Specify the row header width
  * @returns {number} - To get the top left cell position in viewport.
  */
 export function getCellPosition(
@@ -189,13 +191,18 @@ export function getCellPosition(
 }
 
 /**
+ * @param {Spreadsheet} parent - Specify the parent
+ * @param {HTMLElement} ele - Specify the element
+ * @param {number[]} range - Specify the range
+ * @param {string} cls - Specify the class name
+ * @returns {void} - To set the position
  * @hidden
  */
 export function setPosition(parent: Spreadsheet, ele: HTMLElement, range: number[], cls: string = 'e-selection'): void {
     const sheet: SheetModel = parent.getActiveSheet();
     if (sheet.frozenRows || sheet.frozenColumns) {
         let content: HTMLElement;
-        const frozenRow: number = parent.frozenRowCount(sheet); let frozenCol: number = parent.frozenColCount(sheet);
+        const frozenRow: number = parent.frozenRowCount(sheet); const frozenCol: number = parent.frozenColCount(sheet);
         if (cls === 'e-active-cell') {
             if (range[0] < frozenRow || range[1] < frozenCol) {
                 ele.style.display = 'none';
@@ -277,7 +284,7 @@ export function setPosition(parent: Spreadsheet, ele: HTMLElement, range: number
                         if (frozenRow) {
                             if (rng[2] + 1 === frozenRow) {
                                 ranges.forEach((subRng: number[]): void => {
-                                    if (subRng != rng) {
+                                    if (subRng !== rng) {
                                         removeEle = rangeEle.getElementsByClassName('e-bottom')[0];
                                         if (removeEle && subRng[0] === frozenRow) { detach(removeEle); }
                                     }
@@ -285,7 +292,7 @@ export function setPosition(parent: Spreadsheet, ele: HTMLElement, range: number
                             }
                             if (rng[0] === frozenRow && content.parentElement.classList.contains('e-main-panel')) {
                                 ranges.forEach((subRng: number[]): void => {
-                                    if (subRng != rng) {
+                                    if (subRng !== rng) {
                                         removeEle = rangeEle.getElementsByClassName('e-top')[0];
                                         if (removeEle && subRng[2] + 1 === frozenRow) { detach(removeEle); }
                                     }
@@ -295,7 +302,7 @@ export function setPosition(parent: Spreadsheet, ele: HTMLElement, range: number
                         if (frozenCol) {
                             if (rng[3] + 1 === frozenCol) {
                                 ranges.forEach((subRng: number[]): void => {
-                                    if (subRng != rng) {
+                                    if (subRng !== rng) {
                                         removeEle = rangeEle.getElementsByClassName('e-right')[0];
                                         if (removeEle && subRng[1] === frozenCol) { detach(removeEle); }
                                     }
@@ -303,7 +310,7 @@ export function setPosition(parent: Spreadsheet, ele: HTMLElement, range: number
                             }
                             if (rng[1] === frozenCol && (content.classList.contains('e-sheet-content') || content.classList.contains('e-column-header'))) {
                                 ranges.forEach((subRng: number[]): void => {
-                                    if (subRng != rng) {
+                                    if (subRng !== rng) {
                                         removeEle = rangeEle.getElementsByClassName('e-left')[0];
                                         if (removeEle && subRng[3] + 1 === frozenCol) { detach(removeEle); }
                                     }
@@ -337,12 +344,15 @@ export function setPosition(parent: Spreadsheet, ele: HTMLElement, range: number
     }
 }
 /**
- * @hidden
+ * @param {Element} content - Specify the content element.
+ * @param {HTMLElement} checkElement - Specify the element.
+ * @param {boolean} checkActiveCell - Specify the boolean value.
+ * @returns {void} - remove element with given range
  */
-export function removeRangeEle(content: Element, checkEle: HTMLElement, checkActiveCell: boolean): void {
+export function removeRangeEle(content: Element, checkElement: HTMLElement, checkActiveCell: boolean): void {
     let ele: HTMLElement;
     if (checkActiveCell) {
-        if (content !== checkEle) {
+        if (content !== checkElement) {
             ele = content.querySelector('.e-active-cell');
             if (ele) { detach(ele); }
         }
@@ -362,18 +372,22 @@ export function removeRangeEle(content: Element, checkEle: HTMLElement, checkAct
  * @param {boolean} isRtl - Specify the boolean value.
  * @param {number} frozenRow - Specidy the frozen row.
  * @param {number} frozenColumn - Specify the frozen column
+ * @param {boolean} isActiveCell - Specidy the boolean value.
+ * @param {number} freezeScrollHeight - Specify the freeze scroll height
+ * @param {number} freezeScrollWidth - Specify the freeze scroll width
+ * @param {number} rowHdrWidth - Specify the row header width
  * @returns {void} - Position element with given range
  */
 export function locateElem(
     ele: HTMLElement, range: number[], sheet: SheetModel, isRtl: boolean, frozenRow?: number, frozenColumn?: number,
     isActiveCell?: boolean, freezeScrollHeight?: number, freezeScrollWidth?: number, rowHdrWidth?: number): void {
-    let swapRange: number[] = getSwapRange(range);
-    let cellPosition: { top: number, left: number } = getCellPosition(
+    const swapRange: number[] = getSwapRange(range);
+    const cellPosition: { top: number, left: number } = getCellPosition(
         sheet, swapRange, frozenRow, frozenColumn, freezeScrollHeight, freezeScrollWidth, rowHdrWidth);
-    let startIndex: number[] = [skipHiddenIdx(sheet, 0, true), skipHiddenIdx(sheet, 0, true, 'columns')];
+    const startIndex: number[] = [skipHiddenIdx(sheet, 0, true), skipHiddenIdx(sheet, 0, true, 'columns')];
     const height: number = getRowsHeight(sheet, range[0], range[2], true);
     const width: number = getColumnsWidth(sheet, range[1], range[3], true);
-    let attrs: { [key: string]: string } = {
+    const attrs: { [key: string]: string } = {
         'top': (swapRange[0] === startIndex[0] ? cellPosition.top : cellPosition.top - getDPRValue(1)) + 'px',
         'height': height && height + (swapRange[0] === startIndex[0] ? 0 : getDPRValue(1)) + 'px',
         'width': width && width + (swapRange[1] === startIndex[1] ? 0 : getDPRValue(1)) + (isActiveCell
@@ -459,6 +473,8 @@ export function isMouseDown(e: MouseEvent): boolean {
 }
 
 /**
+ * @param {MouseEvent} e - Specify the event.
+ * @returns {boolean} - To get boolean value.
  * @hidden
  */
 export function isMouseMove(e: MouseEvent): boolean {
@@ -466,6 +482,8 @@ export function isMouseMove(e: MouseEvent): boolean {
 }
 
 /**
+ * @param {MouseEvent} e - Specify the event.
+ * @returns {boolean} - To get boolean value
  * @hidden
  */
 export function isMouseUp(e: MouseEvent): boolean {
@@ -473,6 +491,8 @@ export function isMouseUp(e: MouseEvent): boolean {
 }
 
 /**
+ * @param {MouseEvent | TouchEvent} e - To specify the mouse or touch event.
+ * @returns {number} - To get client X value.
  * @hidden
  */
 export function getClientX(e: TouchEvent & MouseEvent): number {
@@ -490,11 +510,15 @@ export function getClientY(e: MouseEvent & TouchEvent): number {
 
 /**
  * Get even number based on device pixel ratio
+ *
+ * @param {number} value - Specify the number
+ * @param {boolean} preventDecrease - Specify the boolean value
+ * @returns {number} - To get DPR value
  * @hidden
  */
-export function getDPRValue(value: number, preventDecrease?: boolean) {
+export function getDPRValue(value: number, preventDecrease?: boolean): number {
     if (window.devicePixelRatio % 1 > 0) {
-        const pointValue = (value * window.devicePixelRatio) % 1;
+        const pointValue: number = (value * window.devicePixelRatio) % 1;
         return value + (pointValue ? (((pointValue > 0.5 || preventDecrease) ? (1 - pointValue) : -1 * pointValue)
             / window.devicePixelRatio) : 0);
     } else {
@@ -540,6 +564,7 @@ export function destroyComponent(element: HTMLElement, component: Object): void 
 
 /**
  * @hidden
+ * @param {number} idx - Specify the index
  * @param {number} index - Specify the index
  * @param {string} value - Specify the value.
  * @param {boolean} isCol - Specify the boolean value.
@@ -559,7 +584,7 @@ export function setResize(idx: number, index: number, value: string, isCol: bool
     const sheet: SheetModel = parent.getActiveSheet();
     const frozenRow: number = parent.frozenRowCount(sheet); const frozenCol: number = parent.frozenColCount(sheet);
     if (isCol) {
-        let header: Element = idx < frozenCol ? parent.getSelectAllContent() : parent.getColumnHeaderContent();
+        const header: Element = idx < frozenCol ? parent.getSelectAllContent() : parent.getColumnHeaderContent();
         curEle = header.getElementsByTagName('th')[index]; curEleH = header.getElementsByTagName('col')[index];
         curEleC = (idx < frozenCol ? parent.getRowHeaderContent() : parent.getMainContent()).getElementsByTagName('col')[index];
     } else {
@@ -763,7 +788,7 @@ export function setResize(idx: number, index: number, value: string, isCol: bool
             }
         }
     } else if (parseInt(value, 10) > 0) {
-        const DPRValue: string = getDPRValue(parseInt(value, 10)) + 'px'
+        const DPRValue: string = getDPRValue(parseInt(value, 10)) + 'px';
         if (isCol) {
             curEleH.style.width = DPRValue;
             curEleC.style.width = DPRValue;
@@ -906,8 +931,8 @@ export function findMaxValue(
     document.body.appendChild(myTableDiv);
     let offsetWidthValue: number;
     let offsetHeightValue: number;
-    let tableMaxWidth: number = myTable.getBoundingClientRect().width;
-    let tableMaxHeight: number = myTable.getBoundingClientRect().height;
+    const tableMaxWidth: number = myTable.getBoundingClientRect().width;
+    const tableMaxHeight: number = myTable.getBoundingClientRect().height;
     if (!isWrap) {
         offsetHeightValue = tableMaxHeight;
         offsetWidthValue = tableMaxWidth;
@@ -923,7 +948,7 @@ export function findMaxValue(
             offsetHeightValue = tableMaxHeight;
         } else {
             offsetHeightValue = parseInt(prevData, 10);
-        }  
+        }
     }
     document.body.removeChild(myTableDiv);
     if (isCol) {
@@ -942,25 +967,36 @@ export function findMaxValue(
 export function updateAction(options: CollaborativeEditArgs, spreadsheet: Spreadsheet, isRedo?: boolean): void {
     /* eslint-disable-next-line  @typescript-eslint/no-explicit-any */
     const eventArgs: any = options.eventArgs;
+    let chartElement: HTMLElement;
+    let element: HTMLElement;
+    let args: BeforeSortEventArgs;
+    let promise: Promise<SortEventArgs>;
+    let sortArgs: { [key: string]: BeforeSortEventArgs | Promise<SortEventArgs> };
+    let cellEvtArgs: CellSaveEventArgs;
+    let cellValue: CellModel;
+    let clipboardPromise: Promise<Object>;
+    let model: RowModel[];
     switch (options.action) {
     case 'sorting':
-        const args: BeforeSortEventArgs = {
+        args = {
             range: (options.eventArgs as SortEventArgs).range,
             sortOptions: (options.eventArgs as SortEventArgs).sortOptions,
             cancel: false
         };
-        const promise: Promise<SortEventArgs> = new Promise((resolve: Function, reject: Function) => {
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        promise = new Promise((resolve: Function, reject: Function) => {
             resolve((() => { /** */ })());
         });
-        const sortArgs: { [key: string]: BeforeSortEventArgs | Promise<SortEventArgs> } = { args: args, promise: promise };
+        sortArgs = { args: args, promise: promise };
         spreadsheet.notify(initiateSort, sortArgs);
         (sortArgs.promise as Promise<SortEventArgs>).then((args: SortEventArgs) => {
             spreadsheet.serviceLocator.getService<ICellRenderer>('cell').refreshRange(getIndexesFromAddress(args.range));
         });
         break;
     case 'cellSave':
-        const cellEvtArgs: CellSaveEventArgs = options.eventArgs as CellSaveEventArgs;
-        const cellValue: CellModel = eventArgs.formula ? { formula: cellEvtArgs.formula } : { value: cellEvtArgs.value };
+        cellEvtArgs = options.eventArgs as CellSaveEventArgs;
+        cellValue = eventArgs.formula ? (isRedo ? { value: cellEvtArgs.formula } : { formula: cellEvtArgs.formula })
+         : { value: cellEvtArgs.value };
         spreadsheet.updateCell(cellValue, cellEvtArgs.address);
         break;
     case 'cellDelete':
@@ -970,7 +1006,7 @@ export function updateAction(options: CollaborativeEditArgs, spreadsheet: Spread
     case 'format':
         if (eventArgs.requestType === 'CellFormat') {
             if (eventArgs.style && eventArgs.style.border && !isNullOrUndefined(eventArgs.borderType)) {
-                let style: CellStyleModel = {};
+                const style: CellStyleModel = {};
                 Object.assign(style, eventArgs.style, null, true);
                 eventArgs.style.border = undefined;
                 spreadsheet.cellFormat(eventArgs.style, eventArgs.range);
@@ -988,9 +1024,9 @@ export function updateAction(options: CollaborativeEditArgs, spreadsheet: Spread
         if (eventArgs.copiedInfo.isCut && !isRedo) {
             return;
         }
-        const clipboardPromise: Promise<Object> = eventArgs.copiedInfo.isCut ? spreadsheet.cut(eventArgs.copiedRange)
+        clipboardPromise = eventArgs.copiedInfo.isCut ? spreadsheet.cut(eventArgs.copiedRange)
             : spreadsheet.copy(eventArgs.copiedRange);
-        clipboardPromise.then((args: Object) => {
+        clipboardPromise.then(() => {
             spreadsheet.paste(eventArgs.pastedRange, eventArgs.type);
         });
         break;
@@ -1028,11 +1064,14 @@ export function updateAction(options: CollaborativeEditArgs, spreadsheet: Spread
         });
         break;
     case 'wrap':
-        wrap(options.eventArgs.address, options.eventArgs.wrap, spreadsheet);
+        wrap(options.eventArgs.address, options.eventArgs.wrap, spreadsheet as Workbook);
         break;
     case 'hideShow':
-        eventArgs.isCol ? spreadsheet.hideColumn(eventArgs.startIndex, eventArgs.endIndex, eventArgs.hide) :
+        if (eventArgs.isCol) {
+            spreadsheet.hideColumn(eventArgs.startIndex, eventArgs.endIndex, eventArgs.hide);
+        } else {
             spreadsheet.hideRow(eventArgs.startIndex, eventArgs.endIndex, eventArgs.hide);
+        }
         break;
     case 'replace':
         spreadsheet.updateCell({ value: eventArgs.compareVal }, eventArgs.address);
@@ -1078,13 +1117,13 @@ export function updateAction(options: CollaborativeEditArgs, spreadsheet: Spread
         break;
     case 'merge':
         options.eventArgs.isAction = false;
-        let model: RowModel[] = [];
-        for (let rIdx: number = 0, rCnt = eventArgs.model.length; rIdx < rCnt; rIdx++) {
+        model = [];
+        for (let rIdx: number = 0, rCnt: number = eventArgs.model.length; rIdx < rCnt; rIdx++) {
             model.push({ cells: [] });
-             for (let cIdx: number = 0, cCnt = eventArgs.model[rIdx].cells.length; cIdx < cCnt; cIdx++) {
+            for (let cIdx: number = 0, cCnt: number = eventArgs.model[rIdx].cells.length; cIdx < cCnt; cIdx++) {
                 model[rIdx].cells[cIdx] = {};
                 Object.assign(model[rIdx].cells[cIdx], eventArgs.model[rIdx].cells[cIdx]);
-             }
+            }
         }
         spreadsheet.notify(setMerge, options.eventArgs);
         eventArgs.model = model;
@@ -1129,7 +1168,7 @@ export function updateAction(options: CollaborativeEditArgs, spreadsheet: Spread
         }
         break;
     case 'imageRefresh':
-        const element: HTMLElement = document.getElementById(options.eventArgs.id);
+        element = document.getElementById(options.eventArgs.id);
         if (isRedo) {
             options.eventArgs.isUndoRedo = true;
             spreadsheet.notify(refreshImgCellObj, options.eventArgs);
@@ -1175,7 +1214,7 @@ export function updateAction(options: CollaborativeEditArgs, spreadsheet: Spread
         }
         break;
     case 'chartRefresh':
-        const chartElement: HTMLElement = document.getElementById(options.eventArgs.id);
+        chartElement = document.getElementById(options.eventArgs.id);
         if (chartElement) {
             chartElement.style.height = isRedo ? options.eventArgs.currentHeight + 'px' : options.eventArgs.prevHeight + 'px';
             chartElement.style.width = isRedo ? options.eventArgs.currentWidth + 'px' : options.eventArgs.prevWidth + 'px';
@@ -1236,22 +1275,7 @@ export function setRowEleHeight(
     parent: Spreadsheet, sheet: SheetModel, height: number, rowIdx: number, row?: HTMLElement,
     hRow?: HTMLElement, notifyRowHgtChange: boolean = true): void {
     const prevHgt: number = getRowHeight(sheet, rowIdx, true);
-    const edit: HTMLElement = parent.element.querySelector('.e-spreadsheet-edit');
-    if (edit && (edit.innerHTML.indexOf('\n') > -1)) {
-        const actCell: number[] = getCellIndexes(parent.getActiveSheet().activeCell);
-        const cell: CellModel = getCell(actCell[0], actCell[1], sheet); let i: number;
-        const splitVal: string[] = edit.innerHTML.split('\n');
-        let n: number = 0; const valLength: number = splitVal.length;
-        for (i = 0; i < valLength; i++) {
-            let lines: number = getLines(splitVal[i], getExcludedColumnWidth(sheet, actCell[0], actCell[1]), cell.style, parent.cellStyle);
-            if (lines === 0) {
-                lines = 1; // for empty new line
-            }
-            n = n + lines;
-        }
-        height = getTextHeightWithBorder(parent, actCell[0], actCell[1], sheet, cell.style || parent.cellStyle, n);
-    }
-    let frozenCol: number = parent.frozenColCount(sheet);
+    const frozenCol: number = parent.frozenColCount(sheet);
     const dprHgt: number = getDPRValue(height);
     row = row || (sheet.frozenRows ? parent.getRow(rowIdx, null, frozenCol) : parent.getRow(rowIdx));
     if (row) { row.style.height = `${dprHgt}px`; }
@@ -1349,11 +1373,16 @@ export function getLines(text: string, colwidth: number, style: CellStyleModel, 
 
 /**
  * calculation for width taken by border inside a cell
+ *
+ * @param {number} rowIdx - Specify the row index.
+ * @param {number} colIdx - Specify the column index.
+ * @param {SheetModel} sheet - Specify the sheet.
+ * @returns {number} - get border width.
  */
 function getBorderWidth(rowIdx: number, colIdx: number, sheet: SheetModel): number {
     let width: number = 0;
-    let cell: CellModel = getCell(rowIdx, colIdx, sheet, null, true);
-    let rightSideCell: CellModel = getCell(rowIdx, colIdx + 1, sheet, null, true);
+    const cell: CellModel = getCell(rowIdx, colIdx, sheet, null, true);
+    const rightSideCell: CellModel = getCell(rowIdx, colIdx + 1, sheet, null, true);
     if (cell.style) {
         if (cell.style.border) {
             width = (colIdx === 0 ? 2 : 1) * parseFloat(cell.style.border.split('px')[0]);
@@ -1372,14 +1401,19 @@ function getBorderWidth(rowIdx: number, colIdx: number, sheet: SheetModel): numb
     return width;
 }
 
-/** 
+/**
  * calculation for height taken by border inside a cell
+ *
+ * @param {number} rowIdx - Specify the row index.
+ * @param {number} colIdx - Specify the column index.
+ * @param {SheetModel} sheet - Specify the sheet.
+ * @returns {number} - get border height.
  * @hidden
  */
 export function getBorderHeight(rowIdx: number, colIdx: number, sheet: SheetModel): number {
     let height: number = 0;
-    let cell: CellModel = getCell(rowIdx, colIdx, sheet, null, true);
-    let bottomSideCell: CellModel = getCell(rowIdx + 1, colIdx, sheet, null, true);
+    const cell: CellModel = getCell(rowIdx, colIdx, sheet, null, true);
+    const bottomSideCell: CellModel = getCell(rowIdx + 1, colIdx, sheet, null, true);
     if (cell.style) {
         if (cell.style.border) {
             height = (rowIdx === 0 ? 2 : 1) * parseFloat(cell.style.border.split('px')[0]);
@@ -1400,14 +1434,30 @@ export function getBorderHeight(rowIdx: number, colIdx: number, sheet: SheetMode
 
 /**
  * Calculating column width by excluding cell padding and border width
+ *
+ * @param {SheetModel} sheet - Specify the sheet
+ * @param {number} rowIdx - Specify the row index.
+ * @param {number} startColIdx - Specify the start column index.
+ * @param {number} endColIdx - Specify the end column index.
+ * @returns {number} - get excluded column width.
  * @hidden
  */
 export function getExcludedColumnWidth(sheet: SheetModel, rowIdx: number, startColIdx: number, endColIdx: number = startColIdx): number {
     return getColumnsWidth(sheet, startColIdx, endColIdx, true) - getDPRValue((4 + getBorderWidth(rowIdx, startColIdx, sheet))); // 4 -> For cell padding
 }
 
-/** @hidden */
-export function getTextHeightWithBorder(context: Workbook, rowIdx: number, colIdx: number, sheet: SheetModel, style: CellStyleModel, lines?: number): number {
+/**
+ * @param {Workbook} context - Specify the Workbook.
+ * @param {number} rowIdx - Specify the row index.
+ * @param {number} colIdx - Specify the column index.
+ * @param {SheetModel} sheet - Specify the sheet.
+ * @param {CellStyleModel} style - Specify the style.
+ * @param {number} lines - Specify the lines.
+ * @returns {number} - get text height with border.
+ * @hidden
+ */
+export function getTextHeightWithBorder(context: Workbook, rowIdx: number,
+                                        colIdx: number, sheet: SheetModel, style: CellStyleModel, lines?: number): number {
     return getTextHeight(context, style, lines) + (getBorderHeight(rowIdx, colIdx, sheet) || 1); // 1 -> For default bottom border
 }
 
@@ -1460,7 +1510,11 @@ export function getMaxHgt(sheet: SheetModel, rIdx: number): number {
 export function skipHiddenIdx(sheet: SheetModel, index: number, increase: boolean, layout: string = 'rows'): number {
     if (index < 0) { index = -1; }
     if ((sheet[layout])[index] && (sheet[layout])[index].hidden) {
-        increase ? index++ : index--;
+        if (increase) {
+            index++;
+        } else {
+            index--;
+        }
         index = skipHiddenIdx(sheet, index, increase, layout);
     }
     return index;

@@ -63,7 +63,7 @@ export class GroupingBar implements IAction {
      * @private
      */
     protected getModuleName(): string {
-        return 'groupingbar';
+        return 'groupingBar';
     }
 
     /* eslint-disable-next-line */

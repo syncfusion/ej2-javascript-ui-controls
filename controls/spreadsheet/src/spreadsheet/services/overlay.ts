@@ -67,7 +67,8 @@ export class Overlay {
         if (indexes[0] >= frozenRow && indexes[1] < frozenCol) {
             const mainPanel: HTMLElement = this.parent.sheetModule.contentPanel;
             if (mainPanel.scrollTop) {
-                pos.top -= mainPanel.scrollTop; pos.top += this.parent.getColumnHeaderContent().parentElement.getBoundingClientRect().height;
+                pos.top -= mainPanel.scrollTop; pos.top +=
+                    this.parent.getColumnHeaderContent().parentElement.getBoundingClientRect().height;
             }
         }
         if (indexes[1] >= frozenCol && indexes[0] < frozenRow) {
@@ -120,16 +121,22 @@ export class Overlay {
     }
 
     private overlayMouseMoveHandler(e: MouseEvent & TouchEvent): void {
-        let target: HTMLElement = e.target as HTMLElement;
+        const target: HTMLElement = e.target as HTMLElement;
         const overlayElem: HTMLElement = document.getElementsByClassName('e-ss-overlay-active')[0] as HTMLElement;
         const sheet: SheetModel = this.parent.getActiveSheet();
         const checkOffset: number[] = sheet.frozenRows || sheet.frozenColumns ? [29, this.parent.sheetModule.getRowHeaderWidth(
             sheet, true)] : [-1, -1];
+        let height1: number;
+        let top: number;
+        let width1: number;
+        let height2: number;
+        let width2: number;
+        let left: number;
         if (this.isOverlayClicked && this.isResizerClicked) {
             switch (this.resizer) {
             case 'e-ss-overlay-t':
-                const height1: number = Math.max(this.originalMouseY - e.clientY + this.originalHeight, 20);
-                const top: number = e.clientY - (this.originalMouseY - this.originalResizeTop);
+                height1 = Math.max(this.originalMouseY - e.clientY + this.originalHeight, 20);
+                top = e.clientY - (this.originalMouseY - this.originalResizeTop);
                 if (height1 > 180 && top > checkOffset[0]) {
                     overlayElem.style.height = height1 + 'px';
                     overlayElem.style.top = top + 'px';
@@ -140,7 +147,7 @@ export class Overlay {
                 }
                 break;
             case 'e-ss-overlay-r':
-                const width1: number = this.originalWidth + (e.pageX - this.originalMouseX);
+                width1 = this.originalWidth + (e.pageX - this.originalMouseX);
                 if (width1 > 180) {
                     overlayElem.style.width = width1 + 'px';
                     this.currentWidth = width1;
@@ -149,7 +156,7 @@ export class Overlay {
                 }
                 break;
             case 'e-ss-overlay-b':
-                const height2: number = this.originalHeight + (e.pageY - this.originalMouseY);
+                height2 = this.originalHeight + (e.pageY - this.originalMouseY);
                 if (height2 > 180) {
                     overlayElem.style.height = height2 + 'px';
                     this.currenHeight = height2;
@@ -158,8 +165,8 @@ export class Overlay {
                 }
                 break;
             case 'e-ss-overlay-l':
-                const width2: number = Math.max(this.originalMouseX - e.clientX + this.originalWidth, 20);
-                const left: number = e.clientX - (this.originalMouseX - this.originalResizeLeft);
+                width2 = Math.max(this.originalMouseX - e.clientX + this.originalWidth, 20);
+                left = e.clientX - (this.originalMouseX - this.originalResizeLeft);
                 if (width2 > 180 && left > checkOffset[1]) {
                     overlayElem.style.width = width2 + 'px';
                     overlayElem.style.left = left + 'px';
@@ -194,7 +201,7 @@ export class Overlay {
         }
         this.isResizerClicked = false;
         let elem: HTMLElement = (e.target as HTMLElement);
-        let overlayElems: HTMLCollectionOf<Element> =
+        const overlayElems: HTMLCollectionOf<Element> =
             document.getElementsByClassName('e-datavisualization-chart e-ss-overlay-active');
         if (!elem.classList.contains('e-ss-overlay')) {
             elem = closest(e.target as Element, '.e-datavisualization-chart') ?
@@ -210,11 +217,12 @@ export class Overlay {
             requestType: 'imageRefresh', prevHeight: this.originalHeight, prevWidth: this.originalWidth
         };
         if (this.isOverlayClicked || isMouseUp) {
-            let prevRowIdx: { clientY: number, isImage?: boolean, target?: Element, size?: number };
             let currRowIdx: { clientY: number, isImage?: boolean, target?: Element, size?: number };
-            let prevColIdx: { clientX: number, isImage?: boolean, target?: Element, size?: number };
             let currColIdx: { clientX: number, isImage?: boolean, target?: Element, size?: number };
-            prevRowIdx = { clientY: eventArgs.prevTop, isImage: true }; prevColIdx = { clientX: eventArgs.prevLeft, isImage: true };
+            const prevRowIdx: { clientY: number, isImage?: boolean, target?: Element, size?: number } =
+             { clientY: eventArgs.prevTop, isImage: true };
+            const prevColIdx: { clientX: number, isImage?: boolean, target?: Element, size?: number } =
+             { clientX: eventArgs.prevLeft, isImage: true };
             const overlayEle: HTMLElement = this.parent.element.getElementsByClassName('e-ss-overlay-active')[0] as HTMLElement;
             if (sheet.frozenRows || sheet.frozenColumns) {
                 if (!overlayEle) { return; }

@@ -104,6 +104,7 @@ export class Common implements IAction {
         this.removeEventListener();
         if (this.parent.pivotCommon) {
             this.parent.pivotCommon.destroy();
+            this.parent.pivotCommon = null;
         }
     }
 }

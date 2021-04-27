@@ -369,7 +369,7 @@ export class Magnification {
             }
             if (!this.isInitialLoading) {
                 if (this.previousZoomFactor !== this.zoomFactor) {
-                    this.pdfViewer.zoomValue = this.zoomFactor * 100;
+                    this.pdfViewer.zoomValue = parseInt((this.zoomFactor * 100).toString());
                     this.pdfViewer.fireZoomChange();
                 }
             }

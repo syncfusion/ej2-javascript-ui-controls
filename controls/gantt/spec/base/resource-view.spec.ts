@@ -471,6 +471,18 @@ describe('Resoure editing using Edit dialog', () => {
                 ]
             }];
         ganttObj.dataSource = datasource;
+        ganttObj.timelineSettings = {
+            timelineViewMode: "Day",
+            topTier: {
+                unit: "Day",
+                format: "EEEE MMMM dd, yyyy"
+            },
+            bottomTier: {
+                unit: "Hour",
+                format: "h a",
+                count: 4
+            }
+        };
         ganttObj.dataBind();
         expect(ganttObj.flatData.length).toBe(8);
     });

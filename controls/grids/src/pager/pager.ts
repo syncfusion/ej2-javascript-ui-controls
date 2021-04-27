@@ -167,6 +167,11 @@ export class Pager extends Component<HTMLElement> implements INotifyPropertyChan
      */
     public isReact: boolean;
 
+    /** 
+     * @hidden
+     */
+    public isVue: boolean;
+
     /**
      * Constructor for creating the component.
      * @hidden
@@ -462,7 +467,7 @@ export class Pager extends Component<HTMLElement> implements INotifyPropertyChan
             this.renderReactTemplates();
         } else {
             result = isBlazor() ? this.getPagerTemplate()(data, this, 'template', tempId, this.isStringTemplate) as Element[] :
-                this.getPagerTemplate()(data);
+                this.isVue ? this.getPagerTemplate()(data, this) as Element[] : this.getPagerTemplate()(data);
             appendChildren(this.element, result);
         }
     }

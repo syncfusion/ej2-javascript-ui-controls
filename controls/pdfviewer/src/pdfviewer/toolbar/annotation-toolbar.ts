@@ -1937,6 +1937,9 @@ export class AnnotationToolbar {
     private onToolbarClicked(args: ClickEventArgs): void {
         // eslint-disable-next-line
         let annotation: any = this.pdfViewer.selectedItems.annotations[0];
+        if ((args.originalEvent.target as HTMLElement).id) {
+            this.pdfViewer.toolbarModule.updateStampItems();
+        }
         switch ((args.originalEvent.target as HTMLElement).id) {
         case this.pdfViewer.element.id + '_highlight':
         case this.pdfViewer.element.id + '_highlightIcon':

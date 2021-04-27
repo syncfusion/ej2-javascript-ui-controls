@@ -2,7 +2,7 @@
 import { SheetRender, RowRenderer, CellRenderer } from './index';
 import { Spreadsheet } from '../base/index';
 import { remove } from '@syncfusion/ej2-base';
-import { CellModel, SheetModel, getSheetName, getRowsHeight, getColumnsWidth, getData } from '../../workbook/base/index';
+import { CellModel, SheetModel, getSheetName, getRowsHeight, getColumnsWidth, getData, Workbook } from '../../workbook/base/index';
 import { dataRefresh, getCellAddress, getCellIndexes, workbookFormulaOperation } from '../../workbook/common/index';
 import { RefreshArgs, sheetTabs, onContentScroll, deInitProperties, beforeDataBound, isReact } from '../common/index';
 import { spreadsheetDestroyed, isFormulaBarEdit, editOperation, FormulaBarEdit, renderReactTemplates } from '../common/index';
@@ -20,7 +20,7 @@ export class Render {
         this.addEventListener();
     }
 
-    public render(): void {
+    public render(isRefreshing: boolean): void {
         this.parent.activeSheetIndex = this.parent.skipHiddenSheets(this.parent.activeSheetIndex);
         if (!this.parent.isMobileView()) {
             this.parent.notify(ribbon, null);
@@ -34,7 +34,7 @@ export class Render {
         if (this.parent.showSheetTabs) {
             this.parent.notify(sheetTabs, null);
         } else { // for formula calculation
-            const sheetName: string = getSheetName(this.parent, 0);
+            const sheetName: string = getSheetName(this.parent as Workbook, 0);
             const arg: { [key: string]: Object } = { action: 'addSheet', sheetName: 'Sheet1', index: 1, visibleName: sheetName };
             this.parent.notify(workbookFormulaOperation, arg);
             this.parent.notify(workbookFormulaOperation, { action: 'initiateDefinedNames' });
@@ -43,19 +43,19 @@ export class Render {
             this.parent.notify(formulaBar, null);
             this.parent.notify(ribbon, null);
         }
-        if(this.parent.password.length > 0 || this.parent.isProtected) {
+        if (this.parent.password.length > 0 || this.parent.isProtected) {
             this.parent.isProtected = true;
-            if (this.parent.showSheetTabs) { 
+            if (this.parent.showSheetTabs) {
                 this.parent.element.querySelector('.e-add-sheet-tab').setAttribute('disabled', 'true');
                 this.parent.element.querySelector('.e-add-sheet-tab').classList.add('e-disabled');
             }
         }
         this.setSheetPanelSize();
         this.renderSheet(sheetPanel);
-        this.checkTopLeftCell(true);
+        this.checkTopLeftCell(true, isRefreshing);
     }
 
-    private checkTopLeftCell(initLoad?: boolean): void {
+    private checkTopLeftCell(initLoad?: boolean, isRefreshing?: boolean): void {
         const sheet: SheetModel = this.parent.getActiveSheet();
         this.parent.showSpinner();
         let isTopLeftCell: boolean = sheet.topLeftCell === 'A1';
@@ -69,7 +69,7 @@ export class Render {
             if (indexes[0] && paneIndexes[0] > indexes[0]) {
                 this.parent.viewport.beforeFreezeHeight = getRowsHeight(sheet, 0, indexes[0] - 1, true);
             } else {
-                this.parent.viewport.beforeFreezeHeight = 0
+                this.parent.viewport.beforeFreezeHeight = 0;
             }
             if (indexes[1] && paneIndexes[1] > indexes[1]) {
                 this.parent.viewport.beforeFreezeWidth = getColumnsWidth(sheet, 0, indexes[1] - 1, true);
@@ -80,13 +80,13 @@ export class Render {
             this.parent.viewport.beforeFreezeHeight = this.parent.viewport.beforeFreezeWidth = 0;
         }
         if (!this.parent.scrollSettings.enableVirtualization || isTopLeftCell) {
-            this.refreshUI({ rowIndex: indexes[0], colIndex: indexes[1], refresh: 'All' }, null, initLoad);
+            this.refreshUI({ rowIndex: indexes[0], colIndex: indexes[1], refresh: 'All' }, null, initLoad, isRefreshing);
             if (isFreezeScrolled) {
                 this.parent.viewport.topIndex = skipHiddenIdx(sheet, 0, true);
                 this.parent.viewport.leftIndex = skipHiddenIdx(sheet, 0, true, 'columns');
             }
         } else {
-            const pIndexes = sheet.paneTopLeftCell === sheet.topLeftCell ? indexes : getCellIndexes(sheet.paneTopLeftCell);
+            const pIndexes: number[] = sheet.paneTopLeftCell === sheet.topLeftCell ? indexes : getCellIndexes(sheet.paneTopLeftCell);
             const frozenRow: number = this.parent.frozenRowCount(sheet); const frozenCol: number = this.parent.frozenColCount(sheet);
             const eventArgs: { scrollLeft?: number, scrollTop?: number, preventScroll: boolean } = { preventScroll: true };
             eventArgs.scrollTop = pIndexes[0] > frozenRow ? getRowsHeight(sheet, frozenRow ? frozenRow : 0, pIndexes[0] - 1) : 0;
@@ -99,7 +99,7 @@ export class Render {
             if (sheet.frozenRows) { frozenIndexes.push(pIndexes[0] - threshold > frozenRow ? (pIndexes[0] - threshold) : frozenRow); }
             threshold = this.parent.getThreshold('col');
             const colIndex: number = sheet.frozenColumns ? indexes[1] :
-                (indexes[1] > threshold ? skipHiddenIdx(sheet,indexes[1] - threshold, true, 'columns') : 0);
+                (indexes[1] > threshold ? skipHiddenIdx(sheet, indexes[1] - threshold, true, 'columns') : 0);
             if (sheet.frozenColumns) {
                 if (!frozenIndexes.length) { frozenIndexes.push(frozenRow); }
                 frozenIndexes.push(pIndexes[1] - threshold > frozenCol ? pIndexes[1] - threshold : frozenCol);
@@ -108,7 +108,7 @@ export class Render {
             }
             this.refreshUI(
                 { rowIndex: rowIndex, colIndex: colIndex, refresh: 'All', top: eventArgs.scrollTop, left: eventArgs.scrollLeft,
-                frozenIndexes: frozenIndexes }, null, initLoad);
+                    frozenIndexes: frozenIndexes }, null, initLoad, isRefreshing);
             if (isFreezeScrolled) {
                 if (frozenIndexes[0] >= frozenRow) {
                     this.parent.viewport.topIndex = skipHiddenIdx(sheet, frozenIndexes[0] - frozenRow, true);
@@ -134,11 +134,11 @@ export class Render {
      * @returns {void}
      */
     // tslint:disable-next-line:max-func-body-length
-    public refreshUI(args: RefreshArgs, address?: string, initLoad?: boolean): void {
+    public refreshUI(args: RefreshArgs, address?: string, initLoad?: boolean, isRefreshing?: boolean): void {
         if (args.refresh !== 'All') { this.parent.showSpinner(); }
         const sheetModule: IRenderer = <IRenderer>this.parent.serviceLocator.getService('sheet');
-        const sheet: SheetModel = this.parent.getActiveSheet(); const sheetName: string = getSheetName(this.parent);
-        let prevRowColCnt: SheetModel = { rowCount: sheet.rowCount, colCount: sheet.colCount };
+        const sheet: SheetModel = this.parent.getActiveSheet(); const sheetName: string = getSheetName(this.parent as Workbook);
+        const prevRowColCnt: SheetModel = { rowCount: sheet.rowCount, colCount: sheet.colCount };
         args.frozenIndexes = args.frozenIndexes ? args.frozenIndexes : [];
         if (!address) {
             if (this.parent.scrollSettings.enableVirtualization) {
@@ -191,7 +191,7 @@ export class Render {
         }
         setAriaOptions(this.parent.getMainContent() as HTMLElement, { busy: true });
         const sheetsLen: number = this.parent.sheets.length;
-        getData(this.parent, `${sheetName}!${address}`, null, null, args.frozenIndexes).then((values: Map<string, CellModel>): void => {
+        getData(this.parent as Workbook, `${sheetName}!${address}`, null, null, args.frozenIndexes).then((values: Map<string, CellModel>): void => {
             if (sheetsLen < this.parent.sheets.length) { return; }
             const sheetIdx: number = this.parent.sheets.indexOf(sheet);
             if (sheetIdx === -1 || sheetIdx !== this.parent.activeSheetIndex) {
@@ -199,37 +199,40 @@ export class Render {
                 return;
             }
             const indexes: number[] = [args.rowIndex, args.colIndex, ...getCellIndexes(address.split(':')[1])];
+            let isEdit: boolean;
+            let arg: FormulaBarEdit;
             switch (args.refresh) {
             case 'All':
-                sheetModule.renderTable({ cells: values, indexes: indexes, top: args.top, left: args.left, initLoad: initLoad });
+                sheetModule.renderTable(
+                    { cells: values, indexes: indexes, top: args.top, left: args.left, initLoad: initLoad, isRefreshing: isRefreshing });
                 break;
             case 'Row':
                 sheetModule.refreshRowContent(
                     { cells: values, indexes: indexes, skipUpdateOnFirst: args.skipUpdateOnFirst, prevRowColCnt: prevRowColCnt });
-                const isEdit: boolean = false;
-                const arg: FormulaBarEdit = { isEdit: isEdit };
+                isEdit = false;
+                arg = { isEdit: isEdit };
                 this.parent.notify(isFormulaBarEdit, arg);
                 if (arg.isEdit) {
                     this.parent.notify(editOperation, { action: 'startEdit', refreshCurPos: false });
                 }
                 break;
             case 'Column':
-                    sheetModule.refreshColumnContent({
-                        cells: values, indexes: indexes, skipUpdateOnFirst: args.skipUpdateOnFirst,
-                        prevRowColCnt: prevRowColCnt
-                    });
+                sheetModule.refreshColumnContent({
+                    cells: values, indexes: indexes, skipUpdateOnFirst: args.skipUpdateOnFirst,
+                    prevRowColCnt: prevRowColCnt
+                });
                 break;
             case 'RowPart':
-                    sheetModule.updateRowContent({
-                        cells: values, indexes: indexes, direction: args.direction, skipUpdateOnFirst: args.skipUpdateOnFirst,
-                        prevRowColCnt: prevRowColCnt
-                    });
+                sheetModule.updateRowContent({
+                    cells: values, indexes: indexes, direction: args.direction, skipUpdateOnFirst: args.skipUpdateOnFirst,
+                    prevRowColCnt: prevRowColCnt
+                });
                 break;
             case 'ColumnPart':
-                    sheetModule.updateColContent({
-                        cells: values, indexes: indexes, direction: args.direction, skipUpdateOnFirst: args.skipUpdateOnFirst,
-                        prevRowColCnt: prevRowColCnt
-                    });
+                sheetModule.updateColContent({
+                    cells: values, indexes: indexes, direction: args.direction, skipUpdateOnFirst: args.skipUpdateOnFirst,
+                    prevRowColCnt: prevRowColCnt
+                });
                 break;
             }
             if (this.parent[isReact]) { this.parent[renderReactTemplates](); }
@@ -246,11 +249,11 @@ export class Render {
      *
      * @returns {void}
      */
-    public refreshSheet(): void {
+    public refreshSheet(isOpen?: boolean): void {
         this.removeSheet();
         this.renderSheet();
         this.parent.notify(deInitProperties, {});
-        this.checkTopLeftCell();
+        this.checkTopLeftCell(false, isOpen);
     }
 
     /**

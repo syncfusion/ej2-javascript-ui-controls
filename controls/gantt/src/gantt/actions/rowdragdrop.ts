@@ -362,11 +362,11 @@ export class RowDD {
     private updateSharedResourceTask(): void {
         for (let i: number = 0; i < this.parent.getTaskIds().length; i++) {
             if (this.parent.getTaskIds()[i] === 'T' + this.draggedRecord.ganttProperties.taskId) {
-                this.parent.editModule.updateGanttProperties(this.draggedRecord, this.parent.currentViewData[i]);
-                this.parent.dataOperation.updateTaskData(this.parent.currentViewData[i]);
+                this.parent.editModule.updateGanttProperties(this.draggedRecord, this.parent.flatData[i]);
+                this.parent.dataOperation.updateTaskData(this.parent.flatData[i]);
                 /* eslint-disable-next-line */
-                if (!isNullOrUndefined(this.parent.currentViewData[i].parentItem && this.updateParentRecords.indexOf(this.parent.currentViewData[i].parentItem) !== -1)) {
-                    this.updateParentRecords.push(this.parent.currentViewData[i].parentItem);
+                if (!isNullOrUndefined(this.parent.flatData[i].parentItem && this.updateParentRecords.indexOf(this.parent.flatData[i].parentItem) !== -1)) {
+                    this.updateParentRecords.push(this.parent.flatData[i].parentItem);
                 }
             }
         }
@@ -375,7 +375,7 @@ export class RowDD {
         const existingTasks: IGanttData[] = [];
         for (let i: number = 0; i < this.parent.getTaskIds().length; i++) {
             if (this.parent.getTaskIds()[i] === 'T' + record.ganttProperties.taskId) {
-                existingTasks.push(this.parent.currentViewData[i]);
+                existingTasks.push(this.parent.flatData[i]);
             }
         }
         return existingTasks;

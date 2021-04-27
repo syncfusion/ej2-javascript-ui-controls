@@ -912,5 +912,17 @@ export class TreeViewRenderer implements IAction {
      */
     public destroy(): void {
         this.removeEventListener();
+        if (this.fieldTable && !this.fieldTable.isDestroyed) {
+            this.fieldTable.destroy();
+            this.fieldTable = null;
+        }
+        if (this.fieldDialog && !this.fieldDialog.isDestroyed) {
+            this.fieldDialog.destroy();
+            this.fieldDialog = null;
+        }
+        if (this.editorSearch && !this.editorSearch.isDestroyed) {
+            this.editorSearch.destroy();
+            this.editorSearch = null;
+        }
     }
 }

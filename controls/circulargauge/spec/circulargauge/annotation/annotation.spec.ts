@@ -61,6 +61,29 @@ describe('Circular-Gauge Control', () => {
             gauge.refresh();
         });
 
+        it('checking annotation numeric text', (done: Function) => {
+            gauge.loaded = (args: ILoadedEventArgs): void => {
+                svg = document.getElementById('container_Secondary_Element');
+                expect(svg.childElementCount == 1).toBe(true);
+                svg = document.getElementById('container_Annotations_0');
+                expect(svg.textContent).toBe('30');
+                svg = document.getElementById('container_Axis_0_Annotation_0');
+                expect(svg.childElementCount == 1).toBe(true);
+                expect(svg.children[0]['style'].color).toBe("red");
+                expect(svg.children[0]['style']["font-size"]).toBe("50px");
+                expect(svg.children[0]['style']["font-family"]).toBe("Roboto");
+                done();
+            };
+            gauge.axes[0].annotations[0].content = '30';
+            gauge.axes[0].annotations[0].textStyle = {
+                    size: "50px",
+                    color: "red",
+                    fontFamily: "Roboto",
+                    fontStyle: "Regular"
+                  }
+            gauge.refresh();
+        })
+
         it('checking annotation template', (done: Function) => {
             gauge.loaded = (args: ILoadedEventArgs): void => {
                 svg = document.getElementById('container_Secondary_Element');

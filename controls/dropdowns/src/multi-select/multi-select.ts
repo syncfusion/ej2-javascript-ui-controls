@@ -2782,6 +2782,7 @@ export class MultiSelect extends DropDownBase implements IInput {
     }
     private pasteHandler (event: KeyboardEventArgs): void {
         setTimeout((): void => {
+            this.expandTextbox();
             this.search(event);
         });
     }

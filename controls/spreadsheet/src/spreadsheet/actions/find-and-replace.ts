@@ -345,7 +345,7 @@ export class FindAndReplace {
     }
 
     private findKeyUp(e: KeyboardEvent): void {
-        if (e.target as HTMLElement, 'e-text-findNext') {
+        if ((e.target as HTMLElement).classList.contains('e-text-findNext')) {
             const findValue: string = (this.parent.element.querySelector('.e-text-findNext') as HTMLInputElement).value;
             if (!isNullOrUndefined(findValue) && findValue !== '') {
                 const prevButton: HTMLElement = this.parent.element.querySelector('.e-btn-findPrevious') as HTMLElement;

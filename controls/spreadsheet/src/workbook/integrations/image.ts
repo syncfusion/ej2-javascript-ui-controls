@@ -41,6 +41,8 @@ export class WorkbookImage {
 
     /**
      * Removing event listener for number format.
+     *
+     * @returns {void}
      */
     private removeEventListener(): void {
         if (!this.parent.isDestroyed) {

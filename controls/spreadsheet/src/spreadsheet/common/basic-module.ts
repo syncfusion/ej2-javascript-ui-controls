@@ -39,7 +39,7 @@ export class BasicModule {
     /**
      * Destroys the Spreadsheet basic module.
      *
-     * @return {void} - Destroys the Spreadsheet basic module.
+     * @returns {void} - Destroys the Spreadsheet basic module.
      */
     public destroy(): void {
         /* code snippet */

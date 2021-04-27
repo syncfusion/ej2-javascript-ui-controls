@@ -425,7 +425,7 @@ export class WorkbookFindAndReplace {
                     findPrevArgs.rowIndex = sheet.usedRange.rowIndex;
                     findPrevArgs.colIndex = sheet.usedRange.colIndex;
                 }
-                let row: RowModel = sheet.rows[findPrevArgs.rowIndex];
+                const row: RowModel = sheet.rows[findPrevArgs.rowIndex];
                 if (row) {
                     if (findPrevArgs.colIndex === -1) {
                         findPrevArgs.colIndex = sheet.usedRange.colIndex;
@@ -496,7 +496,7 @@ export class WorkbookFindAndReplace {
                     findPrevArgs.colIndex = sheet.usedRange.colIndex;
                     findPrevArgs.rowIndex--;
                 }
-                let row: RowModel = sheet.rows[findPrevArgs.rowIndex]
+                const row: RowModel = sheet.rows[findPrevArgs.rowIndex];
                 if (row) {
                     if (sheet.rows[findPrevArgs.rowIndex].cells[findPrevArgs.colIndex]) {
                         if (findPrevArgs.rowIndex === -1) {
@@ -670,7 +670,7 @@ export class WorkbookFindAndReplace {
                     startSheet++; sheet = this.parent.sheets[startSheet];
                     if (sheet) {
                         startColumn = 0; startRow = 0; endColumn = sheet.usedRange.colIndex;
-                        endRow = sheet.usedRange.rowIndex; sheet = sheet;
+                        endRow = sheet.usedRange.rowIndex;
                     }
                 }
             }
@@ -819,7 +819,7 @@ export class WorkbookFindAndReplace {
         if (count !== 0) {
             const activecel: number[] = getCellIndexes(sheet.activeCell);
             const val: string = sheet.rows[activecel[0]] ?
-            this.parent.getDisplayText(sheet.rows[activecel[0]].cells[activecel[1]]).toString().toLowerCase() : null;
+                this.parent.getDisplayText(sheet.rows[activecel[0]].cells[activecel[1]]).toString().toLowerCase() : null;
             if (val && val.indexOf(args.value.toString().toLowerCase()) === -1) {
                 count = count - 1;
             }
@@ -907,7 +907,7 @@ export class WorkbookFindAndReplace {
                     sheet = this.parent.sheets[startSheet];
                     if (sheet) {
                         rowIndex = 0; columnIndex = 0; endColumn = sheet.usedRange.colIndex;
-                        endRow = sheet.usedRange.rowIndex; sheet = sheet;
+                        endRow = sheet.usedRange.rowIndex;
                     }
                 }
             }

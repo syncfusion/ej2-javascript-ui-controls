@@ -224,7 +224,7 @@ export class Drawing {
             case 'Stamp':
                 isStamp = true;
                 this.isDynamicStamps = true;
-                if (obj && obj.annotationAddMode && obj.annotationAddMode === 'Existing Annotation') {
+                if (obj && obj.annotationAddMode && (obj.annotationAddMode === 'Existing Annotation' || obj.annotationAddMode === 'Imported Annotation')) {
                     obj.bounds.width = obj.bounds.width - 20;
                     obj.bounds.height = obj.bounds.height - 20;
                 }

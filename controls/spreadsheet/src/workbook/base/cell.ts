@@ -144,7 +144,7 @@ export class Cell extends ChildProperty<RowModel> {
  * @param {boolean} isInitRow - Specifies the isInitRow.
  * @param {boolean} returnEmptyObjIfNull - Specifies the bool value.
  * @returns {CellModel} - get the cell.
-*/
+ */
 export function getCell(
     rowIndex: number, colIndex: number, sheet: SheetModel, isInitRow?: boolean, returnEmptyObjIfNull?: boolean): CellModel {
     const row: RowModel = getRow(sheet, rowIndex);
@@ -170,7 +170,7 @@ export function getCell(
  * @param {CellModel} cell - Specifies the cell.
  * @param {boolean} isExtend - Specifies the bool value.
  * @returns {void} - set the cell.
-*/
+ */
 export function setCell(rowIndex: number, colIndex: number, sheet: SheetModel, cell: CellModel, isExtend?: boolean): void {
     if (!sheet.rows[rowIndex]) {
         sheet.rows[rowIndex] = { cells: [] };
@@ -188,8 +188,8 @@ export function setCell(rowIndex: number, colIndex: number, sheet: SheetModel, c
  * @hidden
  * @param {CellStyleModel} style - Specifies the style.
  * @param {boolean} defaultKey - Specifies the defaultKey.
- * @returns {CellStyleModel} - Specifies the CellStyleModel. 
-*/
+ * @returns {CellStyleModel} - Specifies the CellStyleModel.
+ */
 export function skipDefaultValue(style: CellStyleModel, defaultKey?: boolean): CellStyleModel {
     const defaultProps: CellStyleModel = { fontFamily: 'Calibri', verticalAlign: 'bottom', textIndent: '0pt', backgroundColor: '#ffffff',
         color: '#000000', textAlign: 'left', fontSize: '11pt', fontWeight: 'normal', fontStyle: 'normal', textDecoration: 'none',
@@ -209,7 +209,7 @@ export function skipDefaultValue(style: CellStyleModel, defaultKey?: boolean): C
  * @param {boolean} wrap - Specifies the wrap.
  * @param {Workbook} context - Specifies the context.
  * @returns {void} - Specifies the wrap.
-*/
+ */
 export function wrap(address: string, wrap: boolean = true, context?: Workbook): void {
     const addressInfo: { sheetIndex: number, indices: number[] } = context.getAddressInfo(address);
     const rng: number[] = addressInfo.indices;

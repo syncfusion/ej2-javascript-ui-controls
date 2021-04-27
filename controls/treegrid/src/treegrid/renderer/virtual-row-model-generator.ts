@@ -25,7 +25,7 @@ export class TreeVirtualRowModelGenerator extends VirtualRowModelGenerator {
     }
     public generateRows(data: Object[], notifyArgs?: NotifyArgs): Row<Column>[] {
         if ((this.parent.dataSource instanceof DataManager && (this.parent.dataSource as DataManager).dataSource.url !== undefined
-            && (this.parent.dataSource as DataManager).dataSource.url !== '') || isCountRequired(this.parent)) {
+        && !(this.parent.dataSource as DataManager).dataSource.offline && (this.parent.dataSource as DataManager).dataSource.url !== '') || isCountRequired(this.parent)) {
             return super.generateRows(data, notifyArgs);
         } else {
             if (!isNullOrUndefined(notifyArgs.requestType) && notifyArgs.requestType.toString() === 'collapseAll') {
@@ -42,7 +42,7 @@ export class TreeVirtualRowModelGenerator extends VirtualRowModelGenerator {
         const clear: boolean = ['paging', 'refresh', 'sorting', 'filtering', 'searching', 'reorder',
             'save', 'delete'].some((value: string) => action === value);
         if ((this.parent.dataSource instanceof DataManager && (this.parent.dataSource as DataManager).dataSource.url !== undefined
-            && (this.parent.dataSource as DataManager).dataSource.url !== '') || isCountRequired(this.parent)) {
+        && !(this.parent.dataSource as DataManager).dataSource.offline && (this.parent.dataSource as DataManager).dataSource.url !== '') || isCountRequired(this.parent)) {
             const model: string = 'model';
             const currentPage: number = this[model].currentPage;
             if (clear) {

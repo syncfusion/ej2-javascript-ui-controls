@@ -397,6 +397,7 @@ export function getSheetIndexFromId(context: Workbook, id: number): number {
  * @returns {address} - To get Sheet Name From Address.
  */
 export function getSheetNameFromAddress(address: string): string {
+    // eslint-disable-next-line no-useless-escape
     return address.split('!')[0].replace(/\'/gi, '');
 }
 
@@ -427,6 +428,7 @@ export function getSheetIndexByName
  * @param {Workbook} context - Specifies the context.
  * @param {string} range - Specifies the range.
  * @param {SheetModel} sheet - Specifies the sheet.
+ * @param {boolean} isMultiRange - Specifies the boolean value.
  * @returns {void} - Update the selected range.
  */
 export function updateSelectedRange(context: Workbook, range: string, sheet: SheetModel = {}, isMultiRange?: boolean): void {
@@ -435,6 +437,7 @@ export function updateSelectedRange(context: Workbook, range: string, sheet: She
 
 /**
  * get selected range
+ *
  * @hidden
  * @param {SheetModel} sheet - Specifies the sheet.
  * @returns {string} - Get selected range.
@@ -445,9 +448,8 @@ export function getSelectedRange(sheet: SheetModel): string {
 
 /**
  * @hidden
- * @param {Workbook} context - Specifies the context.
- * @param {number} idx - Specifies the idx.
- * @returns {SheetModel} - To get sheet.
+ * @param {SheetModel} sheet - Specifies the sheet.
+ * @returns {string} - To get single selected range.
  */
 export function getSingleSelectedRange(sheet: SheetModel): string {
     return sheet.selectedRange.split(' ')[0];
@@ -456,6 +458,9 @@ export function getSingleSelectedRange(sheet: SheetModel): string {
 
 /**
  * @hidden
+ * @param {Workbook} context - Specifies the context.
+ * @param {number} idx - Specifies the idx.
+ * @returns {SheetModel} - To get sheet.
  */
 export function getSheet(context: Workbook, idx: number): SheetModel {
     return context.sheets[idx];

@@ -1,10 +1,10 @@
 import { Spreadsheet, DialogBeforeOpenEventArgs } from '../index';
 import { initiateHyperlink, locale, dialog, click, keyUp, createHyperlinkElement, getUpdateUsingRaf, focus } from '../common/index';
-import { editHyperlink, removeHyperlink, openHyperlink, editAlert } from '../common/index';
+import { editHyperlink, openHyperlink, editAlert } from '../common/index';
 import { L10n, isNullOrUndefined, closest } from '@syncfusion/ej2-base';
 import { Dialog } from '../services';
 import { SheetModel } from '../../workbook/base/sheet-model';
-import { getRangeIndexes, getCellIndexes, getCellAddress, getRangeAddress } from '../../workbook/common/address';
+import { getRangeIndexes, getCellIndexes, getRangeAddress } from '../../workbook/common/address';
 import { CellModel, HyperlinkModel, BeforeHyperlinkArgs, AfterHyperlinkArgs, getTypeFromFormat, getCell } from '../../workbook/index';
 import { beforeHyperlinkClick, afterHyperlinkClick } from '../../workbook/common/event';
 import { isCellReference, DefineNameModel } from '../../workbook/index';
@@ -138,7 +138,7 @@ export class SpreadsheetHyperlink {
                         content: l10n.getConstant('Insert'), isPrimary: true, disabled: true
                     },
                     click: (): void => {
-                        this.dlgClickHandler(dialogInst);
+                        this.dlgClickHandler();
                         dialogInst.hide();
                     }
                 }]
@@ -146,10 +146,10 @@ export class SpreadsheetHyperlink {
         }
     }
 
-    private dlgClickHandler(dialogInst: Dialog): void {
+    private dlgClickHandler(): void {
         let value: string;
         let address: string;
-        const spreadsheetInst: Spreadsheet = this.parent;
+        //const spreadsheetInst: Spreadsheet = this.parent;
         const item: HTMLElement = this.parent.element.querySelector('.e-link-dialog').
             getElementsByClassName('e-content')[0].querySelector('.e-item.e-active') as HTMLElement;
         if (item) {
@@ -164,12 +164,12 @@ export class SpreadsheetHyperlink {
                 const dlgContent: HTMLElement = item.getElementsByClassName('e-cont')[2] as HTMLElement;
                 if (dlgContent.getElementsByClassName('e-list-item')[0].querySelector('.e-active')) {
                     const sheetName: string = item.getElementsByClassName('e-cont')[2].querySelector('.e-active').textContent;
-                    const sheets: SheetModel[] = spreadsheetInst.sheets;
-                    for (let idx: number = 0; idx < sheets.length; idx++) {
-                        if (sheets[idx].name === sheetName) {
-                            const sheetIdx: number = idx + 1;
-                        }
-                    }
+                    // const sheets: SheetModel[] = spreadsheetInst.sheets;
+                    // for (let idx: number = 0; idx < sheets.length; idx++) {
+                    //     if (sheets[idx].name === sheetName) {
+                    //         const sheetIdx: number = idx + 1;
+                    //     }
+                    // }
                     address = sheetName + '!' + address.toUpperCase();
                     const args: HyperlinkModel = { address: address };
                     this.parent.insertHyperlink(args, this.parent.getActiveSheet().activeCell, value, false);
@@ -197,7 +197,7 @@ export class SpreadsheetHyperlink {
             className: 'e-hyperlink-alert-span',
             innerHTML: l10n.getConstant('HyperlinkAlert')
         });
-        let dlgEle: HTMLElement =
+        const dlgEle: HTMLElement =
             this.parent.element.querySelector('.e-hyperlink-dlg') || this.parent.element.querySelector('.e-edithyperlink-dlg');
         (dlgEle.querySelector('.e-dlg-content')).appendChild(hyperlinkSpan);
     }
@@ -233,7 +233,7 @@ export class SpreadsheetHyperlink {
                     content: l10n.getConstant('Update'), isPrimary: true
                 },
                 click: (): void => {
-                    this.dlgClickHandler(dialogInst);
+                    this.dlgClickHandler();
                     dialogInst.hide();
                 }
             }]
@@ -252,7 +252,7 @@ export class SpreadsheetHyperlink {
     private hlOpenHandler(trgt: HTMLElement): void {
         if (trgt.classList.contains('e-hyperlink')) {
             let range: string[] = ['', ''];
-            let selRange: string;
+            // let selRange: string;
             let rangeIndexes: number[];
             let isEmpty: boolean = true;
             trgt.style.color = '#551A8B';
@@ -292,7 +292,7 @@ export class SpreadsheetHyperlink {
                         range[0] = this.parent.getActiveSheet().name;
                         range[1] = address;
                     }
-                    selRange = range[1];
+                    // selRange = range[1];
                     let sheetIdx: number;
                     for (let idx: number = 0; idx < this.parent.sheets.length; idx++) {
                         if (this.parent.sheets[idx].name === range[0]) {
@@ -307,13 +307,13 @@ export class SpreadsheetHyperlink {
                         left = left.replace('$', '');
                         right = right.replace('$', '');
                         if (right.match(/\D/g) && !right.match(/[0-9]/g) && left.match(/\D/g) && !left.match(/[0-9]/g)) {
-                            selRange = left + '1' + ':' + right + sheet.rowCount;
+                            // selRange = left + '1' + ':' + right + sheet.rowCount;
                             left = left + '1';
                             right = right + sheet.rowCount;
                             range[1] = left + ':' + right;
                         } else if (!right.match(/\D/g) && right.match(/[0-9]/g) && !left.match(/\D/g) && left.match(/[0-9]/g)) {
-                            selRange = getCellAddress(parseInt(left, 10) - 1, 0) + ':' +
-                                getCellAddress(parseInt(right, 10) - 1, sheet.colCount - 1);
+                            // selRange = getCellAddress(parseInt(left, 10) - 1, 0) + ':' +
+                            //     getCellAddress(parseInt(right, 10) - 1, sheet.colCount - 1);
                             rangeIndexes = [parseInt(left, 10) - 1, 0, parseInt(right, 10) - 1, sheet.colCount - 1];
                             isEmpty = false;
                         }
@@ -364,6 +364,7 @@ export class SpreadsheetHyperlink {
     }
 
     private isValidUrl(url: string): boolean {
+        // eslint-disable-next-line no-useless-escape
         return /(ftp|http|https):\/\/(\w+:{0,1}\w*@)?(\S+)(:[0-9]+)?(\/|\/([\w#!:.?+=&%@!\-\/]))?/.test(url);
     }
 
@@ -521,14 +522,14 @@ export class SpreadsheetHyperlink {
         }
         let definedNamesCount: number = 0;
         let rangeCount: number = 0;
-        let definedNames: DefineNameModel[] = this.parent.definedNames;
-        let sheets: SheetModel[] = this.parent.sheets;
-        for (let idx: number = 0, len = definedNames.length; idx < len; idx++) {
+        const definedNames: DefineNameModel[] = this.parent.definedNames;
+        const sheets: SheetModel[] = this.parent.sheets;
+        for (let idx: number = 0, len: number = definedNames.length; idx < len; idx++) {
             if (definedNames[idx].name === address) {
                 definedNamesCount++;
             }
         }
-        for (let idx: number = 0, len = sheets.length; idx < len; idx++) {
+        for (let idx: number = 0, len: number = sheets.length; idx < len; idx++) {
             if (address.includes(sheets[idx].name)) {
                 rangeCount++;
             }
@@ -551,8 +552,8 @@ export class SpreadsheetHyperlink {
             const docContElem: HTMLElement = item.querySelector('.e-document') as HTMLElement;
             docContElem.getElementsByClassName('e-cont')[0].getElementsByClassName('e-text')[0].setAttribute('value', value);
             let rangeArr: string[];
-            let sheet: SheetModel = this.parent.getActiveSheet();
-            let sheetIdx: number;
+            // let sheet: SheetModel = this.parent.getActiveSheet();
+            // let sheetIdx: number;
             if (this.parent.definedNames) {
                 for (let idx: number = 0; idx < this.parent.definedNames.length; idx++) {
                     if (this.parent.definedNames[idx].name === address) {
@@ -576,8 +577,8 @@ export class SpreadsheetHyperlink {
             } else {
                 if (address && address.indexOf('!') !== -1) {
                     rangeArr = address.split('!');
-                    sheetIdx = parseInt(rangeArr[0].replace(/\D/g, ''), 10) - 1;
-                    sheet = this.parent.sheets[sheetIdx];
+                    // sheetIdx = parseInt(rangeArr[0].replace(/\D/g, ''), 10) - 1;
+                    // sheet = this.parent.sheets[sheetIdx];
                 }
                 const sheetName: string = rangeArr[0];
                 docContElem.getElementsByClassName('e-cont')[1].querySelector('.e-text').setAttribute('value', rangeArr[1]);
@@ -638,14 +639,14 @@ export class SpreadsheetHyperlink {
             if (address) {
                 let defNamesCnt: number = 0;
                 let rangeCnt: number = 0;
-                let definedNames: DefineNameModel[] = this.parent.definedNames;
-                let sheets: SheetModel[] = this.parent.sheets;
-                for (let idx: number = 0, len = sheets.length; idx < len; idx++) {
+                const definedNames: DefineNameModel[] = this.parent.definedNames;
+                const sheets: SheetModel[] = this.parent.sheets;
+                for (let idx: number = 0, len: number = sheets.length; idx < len; idx++) {
                     if (address.includes(sheets[idx].name)) {
                         rangeCnt++;
                     }
                 }
-                for (let idx: number = 0, len = definedNames.length; idx < len; idx++) {
+                for (let idx: number = 0, len: number = definedNames.length; idx < len; idx++) {
                     if (definedNames[idx].name === address) {
                         defNamesCnt++;
                     }

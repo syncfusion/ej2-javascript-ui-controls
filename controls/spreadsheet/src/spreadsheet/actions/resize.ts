@@ -124,7 +124,7 @@ export class Resize {
         const resizeHandler: HTMLElement = colResizeHandler || rowResizeHandler;
         if (resizeHandler) {
             document.getElementById(this.parent.element.id + '_sheet').removeChild(resizeHandler);
-            this.updateCursor(e);
+            this.updateCursor();
         }
         EventHandler.remove(document, 'mouseup', this.mouseUpHandler);
         EventHandler.remove(this.parent.element, 'mousemove', this.mouseMoveHandler);
@@ -380,7 +380,7 @@ export class Resize {
             editor.style.top = this.event.clientY - sheet.getBoundingClientRect().top + 'px';
         }
         sheet.appendChild(editor);
-        this.updateCursor(this.event);
+        this.updateCursor();
     }
 
     private setColWidth(index: number, viewportIdx: number, width: number, curWidth: number): void {
@@ -563,7 +563,6 @@ export class Resize {
     }
 
     private resizeStart(idx: number, viewportIdx: number, value: string, isCol?: boolean, isFit?: boolean, prevData?: string): void {
-        let sheet: SheetModel = this.parent.getActiveSheet();
         setResize(idx, viewportIdx, value, isCol, this.parent);
         const action: string = isFit ? 'resizeToFit' : 'resize';
         let eventArgs: object;
@@ -580,7 +579,7 @@ export class Resize {
         }
     }
 
-    private updateCursor(e: MouseEvent): void {
+    private updateCursor(): void {
         if (this.parent.element.getElementsByClassName('e-colresize-handler')[0]) {
             this.parent.element.classList.add('e-col-resizing');
         } else if (this.parent.element.classList.contains('e-col-resizing')) {

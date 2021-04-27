@@ -8076,4 +8076,114 @@ describe('MultiSelect', () => {
             }, 800);        
         });
     });
+    describe('EJ2-48286 - When we paste the content in the MultiSelect, the pasted content gets hidden in the input', () => {
+        let element: HTMLInputElement;
+        let dataList: { [key: string]: Object }[] = [
+            { id: 'list1', text: 'JAVA' },
+            { id: 'list2', text: 'C#' },
+            { id: 'list3', text: 'C++' },
+            { id: 'list4', text: '.NET' },
+            { id: 'list5', text: 'Oracle' },
+            { id: 'list6', text: 'GO' },
+            { id: 'list7', text: 'Haskell' }
+        ];
+        let mulObj: any;
+        let PasteEventArgs: any = { preventDefault: (): void => { /** NO Code */ }, type: "paste" };
+        beforeAll(() => {
+            element = <HTMLInputElement>createElement('input', { id: 'multiSelect' });
+            document.body.appendChild(element);
+        });
+        afterAll(() => {
+            document.body.innerHTML = '';
+            if (element) {
+                element.remove();
+            }
+        });
+        it('Check with default case with long content', (done) => {
+            mulObj = new MultiSelect({
+                dataSource: dataList,
+                fields: { text: 'text',value:'text' },
+                value: ['JAVA'],
+            });
+            mulObj.appendTo(element);
+            expect(mulObj.inputElement.size).toBe(5);
+            mulObj.showPopup();
+            mulObj.inputElement.value = 'MultiSelect Dropdown';
+            PasteEventArgs.target = mulObj.inputElement;
+            mulObj.pasteHandler(PasteEventArgs);
+            setTimeout(() => {
+                expect(mulObj.inputElement.size).not.toBe(5);
+                expect(mulObj.inputElement.size).toBe(20);
+                let listElement: any = (<any>mulObj).ulElement.querySelectorAll("li.e-list-item");
+                expect(listElement.length).toBe(7);
+                mulObj.destroy();
+                done();
+            }, 0);
+        });
+        it('Check with custom value case with long content', (done) => {
+            mulObj = new MultiSelect({
+                dataSource: dataList,
+                fields: { text: 'text',value:'text' },
+                value: ['JAVA'],
+                allowCustomValue : true,
+            });
+            mulObj.appendTo(element);
+            expect(mulObj.inputElement.size).toBe(5);
+            mulObj.showPopup();
+            mulObj.inputElement.value = 'MultiSelect Dropdown';
+            PasteEventArgs.target = mulObj.inputElement;
+            mulObj.pasteHandler(PasteEventArgs);
+            setTimeout(() => {
+                expect(mulObj.inputElement.size).not.toBe(5);
+                expect(mulObj.inputElement.size).toBe(20);
+                let listElement: any = (<any>mulObj).ulElement.querySelectorAll("li.e-list-item");
+                expect(listElement.length).toBe(1);
+                expect(listElement[0].innerHTML).toBe('MultiSelect Dropdown')
+                mulObj.destroy();
+                done();
+            }, 0);
+        });
+        it('Check with short placeholder and with long content', (done) => {
+            mulObj = new MultiSelect({
+                dataSource: dataList,
+                fields: { text: 'text',value:'text' },
+                placeholder : 'Search'
+            });
+            mulObj.appendTo(element);
+            expect(mulObj.inputElement.size).toBe(6);
+            mulObj.showPopup();
+            mulObj.inputElement.value = 'MultiSelect Dropdown';
+            PasteEventArgs.target = mulObj.inputElement;
+            mulObj.pasteHandler(PasteEventArgs);
+            setTimeout(() => {
+                expect(mulObj.inputElement.size).not.toBe(6);
+                expect(mulObj.inputElement.size).toBe(20);
+                let listElement: any = (<any>mulObj).ulElement.querySelectorAll("li.e-list-item");
+                expect(listElement.length).toBe(7);
+                mulObj.destroy();
+                done();
+            }, 0);
+        });    
+        it('Check with long placeholder and with long content', (done) => {
+            mulObj = new MultiSelect({
+                dataSource: dataList,
+                fields: { text: 'text',value:'text' },
+                placeholder : 'Search any dropdown component'
+            });
+            mulObj.appendTo(element);
+            expect(mulObj.inputElement.size).toBe(29);
+            mulObj.showPopup();
+            mulObj.inputElement.value = 'MultiSelect Dropdown';
+            PasteEventArgs.target = mulObj.inputElement;
+            mulObj.pasteHandler(PasteEventArgs);
+            setTimeout(() => {
+                expect(mulObj.inputElement.size).not.toBe(20);
+                expect(mulObj.inputElement.size).toBe(29);
+                let listElement: any = (<any>mulObj).ulElement.querySelectorAll("li.e-list-item");
+                expect(listElement.length).toBe(7);
+                mulObj.destroy();
+                done();
+            }, 0);
+        });    
+    });
 });

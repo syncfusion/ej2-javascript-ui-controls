@@ -784,11 +784,17 @@ export class PdfViewerBase {
         // eslint-disable-next-line
         let toolbarModule: any = this.pdfViewer.toolbarModule;
         if (toolbarModule) {
-            if (this.pdfViewer.enableToolbar) {
-                toolbarModule.toolbar.refreshOverflow();
-            }
-            if (this.pdfViewer.enableAnnotationToolbar && toolbarModule.annotationToolbarModule) {
-                toolbarModule.annotationToolbarModule.toolbar.refreshOverflow();
+            if (isBlazor()) {
+                if (this.pdfViewer.enableToolbar || this.pdfViewer.enableAnnotationToolbar) {
+                    this.pdfViewer._dotnetInstance.invokeMethodAsync('RefreshToolbarItems');
+                }
+            } else {
+                if (this.pdfViewer.enableToolbar) {
+                    toolbarModule.toolbar.refreshOverflow();
+                }
+                if (this.pdfViewer.enableAnnotationToolbar && toolbarModule.annotationToolbarModule) {
+                    toolbarModule.annotationToolbarModule.toolbar.refreshOverflow();
+                }
             }
         }
     }

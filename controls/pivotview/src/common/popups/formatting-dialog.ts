@@ -38,7 +38,7 @@ export class NumberFormatting implements IAction {
      * @returns {string} - string
      */
     protected getModuleName(): string {
-        return 'numberformatting';
+        return 'numberFormatting';
     }
 
     /**

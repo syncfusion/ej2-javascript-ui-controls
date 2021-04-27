@@ -55,7 +55,7 @@ export class Crud {
                 this.crudObj.sourceEvent = [];
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 const crudData: Record<string, any>[] = args.data instanceof Array ? (args.data.length === 0 &&
-                    args.requestType === 'eventRemoved' ? (args.promise as any).deletedRecords : args.data) :
+                    args.requestType === 'eventRemoved' ? args.editParams.deletedRecords : args.data) :
                     ((typeof args.data === 'string' || typeof args.data === 'number') && args.requestType === 'eventRemoved') ?
                         args.editParams.deletedRecords : [args.data];
                 for (const data of crudData) {

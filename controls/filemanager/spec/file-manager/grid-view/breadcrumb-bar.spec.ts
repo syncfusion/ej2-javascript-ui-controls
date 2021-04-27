@@ -6,7 +6,7 @@ import { NavigationPane } from '../../../src/file-manager/layout/navigation-pane
 import { DetailsView } from '../../../src/file-manager/layout/details-view';
 import { Toolbar } from '../../../src/file-manager/actions/toolbar';
 import { createElement } from '@syncfusion/ej2-base';
-import { data1, data17, data18, data19, data20, data21, data22, searchpng, searchhellopng, doubleClickRead, searchdocstart, searchdoccase, data15 } from '../data';
+import { data1, data17, data18, data19, data20, data21, data22, searchpng, searchapp, searchhellopng, doubleClickRead, searchdocstart, searchdoccase, data15 } from '../data';
 import { BeforeSendEventArgs } from '../../../src';
 
 FileManager.Inject(Toolbar, NavigationPane, DetailsView);
@@ -125,6 +125,29 @@ describe('FileManager control Grid view', () => {
                     expect(gridLi.length).toEqual(3);
                     done();
                 }, 500);
+            }, 500);
+        });
+        it('Search sort testing (path)', (done: Function) => {
+            let searchEle: any = feObj.element.querySelector("#file_search");
+            let searchObj: any = searchEle.ej2_instances[0];
+            searchEle.value = 'apple';
+            searchObj.value = 'apple';
+            let eventArgs: any = { value: 'apple', container: searchEle };
+            searchObj.change(eventArgs);
+            this.request = jasmine.Ajax.requests.mostRecent();
+            this.request.respondWith({
+                status: 200,
+                responseText: JSON.stringify(searchapp)
+            });
+            setTimeout(function () {
+                let gridLi: any = document.getElementById('file_grid').querySelectorAll('.e-row');
+                (<HTMLElement>document.querySelector('.e-headercell.e-lastcell')).click();
+                expect(feObj.sortBy).toBe('filterPath');
+                expect(feObj.sortOrder).toBe('Ascending');
+                (<HTMLElement>document.querySelector('.e-headercell.e-lastcell')).click();
+                expect(feObj.sortBy).toBe('filterPath');
+                expect(feObj.sortOrder).toBe('Descending');
+                done();
             }, 500);
         });
         it('Search sort testing (layout change && clear search)', (done: Function) => {

@@ -39,6 +39,7 @@ export class DragAndDrop extends ActionBase {
     private isAllDayTarget: boolean = false;
     private targetTd: HTMLElement = null;
     public wireDragEvent(element: HTMLElement): void {
+        const dragElement: HTMLElement = document.querySelector(this.parent.eventDragArea);
         const dragObj: Draggable = new Draggable(element, {
             abort: '.' + cls.EVENT_RESIZE_CLASS,
             clone: true,
@@ -46,9 +47,8 @@ export class DragAndDrop extends ActionBase {
             enableTapHold: this.parent.isAdaptive as boolean,
             enableTailMode: (this.parent.eventDragArea) ? true : false,
             cursorAt: (this.parent.eventDragArea) ? { left: -20, top: -20 } : { left: 0, top: 0 },
-            dragArea: (this.parent.eventDragArea) ?
-                document.querySelector(this.parent.eventDragArea) as HTMLElement :
-                this.parent.element.querySelector('.' + cls.CONTENT_TABLE_CLASS) as HTMLElement,
+            dragArea: (this.parent.eventDragArea && dragElement) ?
+                dragElement : this.parent.element.querySelector('.' + cls.CONTENT_TABLE_CLASS) as HTMLElement,
             dragStart: this.dragStart.bind(this),
             drag: this.drag.bind(this),
             dragStop: this.dragStop.bind(this),
@@ -1071,8 +1071,9 @@ export class DragAndDrop extends ActionBase {
 
     private appendCloneElement(element: HTMLElement, cloneElement: HTMLElement = null): void {
         cloneElement = isNullOrUndefined(cloneElement) ? this.actionObj.clone : cloneElement;
-        if (this.parent.eventDragArea) {
-            document.querySelector(this.parent.eventDragArea).appendChild(cloneElement);
+        const dragElement: HTMLElement = document.querySelector(this.parent.eventDragArea);
+        if (this.parent.eventDragArea && dragElement) {
+            dragElement.appendChild(cloneElement);
         } else {
             element.appendChild(cloneElement);
         }

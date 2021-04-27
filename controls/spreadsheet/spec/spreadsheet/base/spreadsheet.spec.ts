@@ -6,8 +6,7 @@ import { SpreadsheetHelper } from '../util/spreadsheethelper.spec';
 import { defaultData, productData } from '../util/datasource.spec';
 import '../../../node_modules/es6-promise/dist/es6-promise';
 import { CellModel, getModel, SheetModel, RowModel } from '../../../src/workbook/index';
-import { EmitType } from '@syncfusion/ej2-base';
-import { Query } from '@syncfusion/ej2-data';
+import { EmitType, setCurrencyCode } from '@syncfusion/ej2-base';
 
 Spreadsheet.Inject(BasicModule);
 
@@ -902,7 +901,7 @@ describe('Spreadsheet base module ->', () => {
         describe('I316103 ->', () => {
             beforeEach((done: Function) => {
                 helper.initializeSpreadsheet({ sheets: [{ colCount: 5, rowCount: 10, columns: [
-                    { width: 30 }, { width: 35 }, { width: 40 }, { width: 30 }, { width: 30 } ] }],
+                    { width: 30 }, { width: 35 }, { width: 40 }, { width: 30 }, { width: 30 } ], rows: [{ cells: [{ value: 'Welcome!' }] }] }],
                     scrollSettings: { enableVirtualization: false, isFinite: true }, }, done);
             });
             afterEach(() => {
@@ -914,10 +913,10 @@ describe('Spreadsheet base module ->', () => {
                 expect(helper.invoke('getCell', [0, 0]).getBoundingClientRect().width).toBe(30);
                 expect(spreadsheet.sheets[0].columns[2].width).toBe(40);
                 expect(helper.invoke('getCell', [0, 2]).getBoundingClientRect().width).toBe(40);
-                expect(helper.getElement('.e-content-table').style.width).toBe('auto');
+                expect(helper.getElement('#' + helper.id + '_main_content').style.width).toBe('165px');
                 spreadsheet.sheets[0].rowCount = 100; spreadsheet.sheets[0].colCount = 100; spreadsheet.dataBind();
                 setTimeout((): void => {
-                    expect(helper.getElement('.e-content-table').style.width).toBe('');
+                    expect(helper.getElement('#' + helper.id + '_main_content').style.width).toBe('calc(100% - 30px)');
                     done();
                 });
             });
@@ -1083,6 +1082,41 @@ describe('Spreadsheet base module ->', () => {
                     helper.getInstance().serviceLocator.getService('dialog').hide();
                     done();
                 });
+            });
+        });
+        describe('F163837 ->', () => {
+            beforeEach((done: Function) => {
+                setCurrencyCode('EUR');
+                helper.initializeSpreadsheet({ sheets: [{ rows: [{ cells: [{ value: '7', format: '$#,##0.00' }] }] }] }, done);
+            });
+            afterEach(() => {
+                helper.invoke('destroy');
+                setCurrencyCode('USD');
+            });
+            it('Speadsheet globalization - setCurrencyCode conflict with component language', (done: Function) => {
+                expect(helper.invoke('getCell', [0, 0]).textContent).toBe('€7.00');
+                helper.getElement('#' + helper.id + '_number_format').click();
+                expect(helper.getElement('#' + helper.id + '_Currency .e-numformat-preview-text').textContent).toBe('€7.00');
+                done();
+            });
+        });
+        describe('fb24579 ->', () => {
+            beforeEach((done: Function) => {
+                helper.initializeSpreadsheet({ sheets: [{ showHeaders: false }] }, done);
+            });
+            afterEach(() => {
+                helper.invoke('destroy');
+            });
+            it('Gridlines disappear when "Hide Headers" option is selected and sheet is scrolled to right', (done: Function) => {
+                expect(helper.getElement('#' + helper.id + '_sheet').classList).toContain('e-hide-headers');
+                helper.invoke('goTo', ['AA30']);
+                setTimeout((): void => {
+                    expect(helper.getInstance().sheets[0].topLeftCell).toBe('AA30');
+                    expect(helper.invoke('getScrollElement').scrollLeft).toBeGreaterThan(0);
+                    expect(helper.invoke('getMainContent').scrollLeft).toBeGreaterThan(0);
+                    expect(helper.invoke('getCell', [29, 26])).toBeDefined(0);
+                    done();
+                }, 20);
             });
         });
     });

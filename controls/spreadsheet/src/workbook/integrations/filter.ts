@@ -47,6 +47,7 @@ export class WorkbookFilter {
     /**
      * Filters a range of cells in the sheet.
      *
+     * @param { {args: BeforeFilterEventArgs, promise: Promise<FilterEventArgs>}} eventArgs - Specify the event args.
      * @param {BeforeFilterEventArgs} eventArgs.args - arguments for filtering..
      * @param {Promise<FilterEventArgs>} eventArgs.promise - Specify the promise.
      * @returns {void} - Filters a range of cells in the sheet.
@@ -103,15 +104,15 @@ export class WorkbookFilter {
             const rowKey: string = '__rowIndex';
             jsonData.forEach((data: { [key: string]: CellModel }) => {
                 if (!data) { return; }
-                let rowIdx: number = parseInt(data[rowKey] as string, 10);
+                const rowIdx: number = parseInt(data[rowKey] as string, 10);
                 this.parent.hideRow(rowIdx - 1, undefined, result.indexOf(data) < 0);
                 if (isNullOrUndefined(this.parent.filteredRows)) {
                     this.parent.filteredRows = {};
                     this.parent.filteredRows.rowIdxColl = [];
                     this.parent.filteredRows.sheetIdxColl = [];
                 }
-                let filterRows: number[] = this.parent.filteredRows.rowIdxColl;
-                let filterSheet: number[] = this.parent.filteredRows.sheetIdxColl;
+                const filterRows: number[] = this.parent.filteredRows.rowIdxColl;
+                const filterSheet: number[] = this.parent.filteredRows.sheetIdxColl;
                 if (result.indexOf(data) < 0) {
                     if (filterRows && filterSheet) {
                         for (let i: number = 0, len: number = filterSheet.length; i < len; i++) {

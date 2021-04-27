@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/explicit-module-boundary-types */
 import { isNullOrUndefined, getDefaultDateObject, Internationalization } from '@syncfusion/ej2-base';
 
 /**
@@ -43,10 +44,13 @@ export function intToDate(val: number): Date {
     return new Date(((val - 1) * (1000 * 3600 * 24)) + new Date('01/01/1900').getTime());
 }
 
+/* eslint-disable  @typescript-eslint/no-explicit-any */
 /**
  * @hidden
+ * @param {number} val - Specifies the value.
+ * @param {boolean} isTime - Specifies the boolean value.
+ * @returns {number} - Returns number.
  */
-/* eslint-disable  @typescript-eslint/no-explicit-any */
 export function dateToInt(val: any, isTime?: boolean): number {
     const startDate: Date = new Date('01/01/1900');
     const date: Date = isDateTime(val) ? val : new Date(val);
@@ -73,7 +77,6 @@ export function isDateTime(date: any): boolean {
  * @hidden
  * @param {string} val - Specifies the value.
  * @returns {boolean} - Returns boolean value.
-
  */
 export function isNumber(val: string | number): boolean {
     return val as number - parseFloat(val as string) >= 0;
@@ -88,7 +91,7 @@ export function isNumber(val: string | number): boolean {
  */
 export function toDate(text: Date | string | number, intl: Internationalization, format?: string): ToDateArgs {
     const defaultDateFormats: Object = getDefaultDateObject();
-    let availabelDateTimeFormat: Object = (defaultDateFormats as any).dateTimeFormats.availableFormats;
+    const availabelDateTimeFormat: Object = (defaultDateFormats as any).dateTimeFormats.availableFormats;
     const dObj: ToDateArgs = { dateObj: null, isCustom: false, type: '' };
     if (typeof text === 'string') {
         text = text.toUpperCase();
@@ -144,6 +147,8 @@ export function toDate(text: Date | string | number, intl: Internationalization,
 
 /**
  * @hidden
+ * @param {string} value - Specifies the value.
+ * @returns { string | number} - ReturnsparseIntValue.
  */
 export function parseIntValue(value: string): string | number {
     return (value && /^\d*\.?\d*$/.test(value)) ? parseFloat(value) : value;

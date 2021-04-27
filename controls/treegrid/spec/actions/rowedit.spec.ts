@@ -2596,3 +2596,371 @@ describe('Updaterow method with self reference data', () => {
     destroy(gridObj);
   });
 });
+
+describe('EJ2-48145 - Adding parent and child together with addRecord method', () => {
+  let gridObj: TreeGrid;
+  let d: string = 'dataSource'; let t: string = 'taskID'; let c: any = 'subtasks';
+  let actionComplete: () => void;
+  let arr: Object[] = [{
+    taskID: 1000,
+    taskName: 'Parent',
+    startDate: new Date('02/17/2017'),
+    endDate: new Date('02/27/2017'),
+    priority: 'Normal',
+    approved: false,
+    duration: 11,
+    progress: 69,
+    subtasks: [{
+      taskID: 1001,
+      taskName: 'Child 1',
+      startDate: new Date('02/17/2017'),
+      endDate: new Date('02/27/2017'),
+      priority: 'High',
+      approved: false,
+      duration: 11,
+      progress: 69,
+      subtasks: [{
+        taskID: 1002,
+        taskName: 'Child 2',
+        startDate: new Date('02/17/2017'),
+        endDate: new Date('02/27/2017'),
+        priority: 'High',
+        approved: false,
+        duration: 11,
+        progress: 69,
+        subtasks: [{
+          taskID: 1003,
+          taskName: 'Child 3',
+          startDate: new Date('02/17/2017'),
+          endDate: new Date('02/27/2017'),
+          priority: 'High',
+          approved: false,
+          duration: 11,
+          progress: 69,
+        }]
+      }]
+    }]
+  }];
+  beforeAll((done: Function) => {
+    gridObj = createGrid(
+      {
+        dataSource: sampleData,
+        childMapping: 'subtasks',
+        editSettings: { allowEditing: true, allowDeleting: true, allowAdding: true },
+        treeColumnIndex: 1,
+        columns: [{ field: 'taskID', headerText: 'Task ID', isPrimaryKey: true },
+        { field: 'taskName', headerText: 'Task Name' },
+        { field: 'progress', headerText: 'Progress' }]
+      },
+      done
+    );
+  });
+  it('addRecordmethod - add at default newRowPosition', (done: Function) => {
+    actionComplete = (): void => {
+      expect(gridObj[d][0][t]).toBe(1000);
+      expect(gridObj.grid[d][0][t]).toBe(1000);
+      expect(gridObj[d][0][c][0][t]).toBe(1001);
+      expect(gridObj.grid[d][0][c][0][t]).toBe(1001);
+      expect(gridObj[d][0][c][0][c][0][t]).toBe(1002);
+      expect(gridObj.grid[d][0][c][0][c][0][t]).toBe(1002);
+      expect(gridObj[d][0][c][0][c][0][c][0][t]).toBe(1003);
+      expect(gridObj.grid[d][0][c][0][c][0][c][0][t]).toBe(1003);
+      done();
+    }
+    gridObj.actionComplete = actionComplete;
+    gridObj.addRecord(arr[0], 0);
+  });
+  it('addRecordmethod - add with newRowPosition as top', (done: Function) => {
+    actionComplete = (): void => {
+      expect(gridObj[d][0][t]).toBe(1000);
+      expect(gridObj.grid[d][0][t]).toBe(1000);
+      expect(gridObj[d][0][c][0][t]).toBe(1001);
+      expect(gridObj.grid[d][0][c][0][t]).toBe(1001);
+      expect(gridObj[d][0][c][0][c][0][t]).toBe(1002);
+      expect(gridObj.grid[d][0][c][0][c][0][t]).toBe(1002);
+      expect(gridObj[d][0][c][0][c][0][c][0][t]).toBe(1003);
+      expect(gridObj.grid[d][0][c][0][c][0][c][0][t]).toBe(1003);
+      done();
+    }
+    gridObj.actionComplete = actionComplete;
+    gridObj.addRecord(arr[0], 0, 'Top');
+  });
+  it('addRecordmethod - add with newRowPosition as bottom', (done: Function) => {
+    actionComplete = (): void => {
+      let index: number = (gridObj.dataSource as ITreeData[]).length - 1;
+      expect(gridObj[d][index][t]).toBe(1000);
+      expect(gridObj.grid[d][44][t]).toBe(1000);
+      expect(gridObj[d][index][c][0][t]).toBe(1001);
+      expect(gridObj.grid[d][45][t]).toBe(1001);
+      expect(gridObj[d][index][c][0][c][0][t]).toBe(1002);
+      expect(gridObj.grid[d][46][t]).toBe(1002);
+      expect(gridObj[d][index][c][0][c][0][c][0][t]).toBe(1003);
+      expect(gridObj.grid[d][47][t]).toBe(1003);
+      done();
+    }
+    gridObj.actionComplete = actionComplete;
+    gridObj.addRecord(arr[0], 0, 'Bottom');
+  });
+  it('addRecordmethod - add with newRowPosition as Above', (done: Function) => {
+    actionComplete = (): void => {
+      expect(gridObj[d][2][c][0][t]).toBe(1000);
+      expect(gridObj.grid[d][9][t]).toBe(1000);
+      expect(gridObj[d][2][c][0][c][0][t]).toBe(1001);
+      expect(gridObj.grid[d][9][c][0][t]).toBe(1001);
+      expect(gridObj[d][2][c][0][c][0][c][0][t]).toBe(1002);
+      expect(gridObj.grid[d][9][c][0][c][0][t]).toBe(1002);
+      expect(gridObj[d][2][c][0][c][0][c][0][c][0][t]).toBe(1003);
+      expect(gridObj.grid[d][9][c][0][c][0][c][0][t]).toBe(1003);
+      done();
+    }
+    gridObj.actionComplete = actionComplete;
+    gridObj.addRecord(arr[0], 9, 'Above');
+  });
+  it('addRecordmethod - add with newRowPosition as Below', (done: Function) => {
+    actionComplete = (): void => {
+      expect(gridObj[d][4][t]).toBe(1000);
+      expect(gridObj.grid[d][23][t]).toBe(1000);
+      expect(gridObj[d][4][c][0][t]).toBe(1001);
+      expect(gridObj.grid[d][23][c][0][t]).toBe(1001);
+      expect(gridObj[d][4][c][0][c][0][t]).toBe(1002);
+      expect(gridObj.grid[d][23][c][0][c][0][t]).toBe(1002);
+      expect(gridObj[d][4][c][0][c][0][c][0][t]).toBe(1003);
+      expect(gridObj.grid[d][23][c][0][c][0][c][0][t]).toBe(1003);
+      done();
+    }
+    gridObj.actionComplete = actionComplete;
+    gridObj.addRecord(arr[0], 17, 'Below');
+  });
+  afterAll(() => {
+    destroy(gridObj);
+  });
+});
+
+describe('EJ2-48145 - Adding parent and child together with addRecord method and toolbar', () => {
+  let gridObj: TreeGrid;
+  let actionComplete: () => void;
+  let arr: Object[] = [{
+    taskID: 1000,
+    taskName: 'Parent',
+    startDate: new Date('02/17/2017'),
+    endDate: new Date('02/27/2017'),
+    priority: 'Normal',
+    approved: false,
+    duration: 11,
+    progress: 69,
+    subtasks: [{
+      taskID: 1001,
+      taskName: 'Child 1',
+      startDate: new Date('02/17/2017'),
+      endDate: new Date('02/27/2017'),
+      priority: 'High',
+      approved: false,
+      duration: 11,
+      progress: 69,
+      subtasks: [{
+        taskID: 1002,
+        taskName: 'Child 2',
+        startDate: new Date('02/17/2017'),
+        endDate: new Date('02/27/2017'),
+        priority: 'High',
+        approved: false,
+        duration: 11,
+        progress: 69,
+        subtasks: [{
+          taskID: 1003,
+          taskName: 'Child 3',
+          startDate: new Date('02/17/2017'),
+          endDate: new Date('02/27/2017'),
+          priority: 'High',
+          approved: false,
+          duration: 11,
+          progress: 69,
+        }]
+      }]
+    }]
+  }];
+  beforeAll((done: Function) => {
+    gridObj = createGrid(
+      {
+        dataSource: sampleData,
+        childMapping: 'subtasks',
+        editSettings: { allowEditing: true, allowDeleting: true, allowAdding: true },
+        treeColumnIndex: 1,
+        toolbar: ['Add', 'Update', 'Delete', 'Cancel'],
+        columns: [{ field: 'taskID', headerText: 'Task ID', isPrimaryKey: true },
+        { field: 'taskName', headerText: 'Task Name' },
+        { field: 'progress', headerText: 'Progress' }]
+      },
+      done
+    );
+  });
+  it('Adding a record using add button', (done: Function) => {
+    actionComplete = (args?: Object): void => {
+      if (args['requestType'] == "save") {
+        expect(gridObj.dataSource[0].taskID === 50).toBe(true);
+        done();
+      }
+    }
+    gridObj.grid.actionComplete = actionComplete;
+    (<any>gridObj.grid.toolbarModule).toolbarClickHandler({ item: { id: gridObj.grid.element.id + '_add' } });
+    gridObj.grid.editModule.formObj.element.getElementsByTagName('input')[0].value = '50';
+    gridObj.grid.editModule.formObj.element.getElementsByTagName('input')[1].value = 'Add';
+    gridObj.grid.editModule.formObj.element.getElementsByTagName('input')[2].value = '10';
+    (<any>gridObj.grid.toolbarModule).toolbarClickHandler({ item: { id: gridObj.grid.element.id + '_update' } });
+  });
+  it('Adding a record Top of newly added record', function (done) {
+    actionComplete = (args?: Object): void => {
+      if (args['requestType'] == "refresh") {
+        expect(gridObj.dataSource[0].taskID === 1000).toBe(true);
+        expect(gridObj.dataSource[1].taskID === 50).toBe(true);
+        done();
+      }
+    };
+    gridObj.grid.actionComplete = actionComplete;
+    gridObj.addRecord(arr[0], 0, 'Above');
+  });
+});
+
+describe('EJ2-48145 - Adding parent and child together with addRecord method and sorting enabled', () => {
+  let gridObj: TreeGrid;
+  let actionComplete: () => void;
+  let arr: Object[] = [{
+    taskID: 1000,
+    taskName: 'Parent',
+    startDate: new Date('02/17/2017'),
+    endDate: new Date('02/27/2017'),
+    priority: 'Normal',
+    approved: false,
+    duration: 11,
+    progress: 69,
+    subtasks: [{
+      taskID: 1001,
+      taskName: 'Child 1',
+      startDate: new Date('02/17/2017'),
+      endDate: new Date('02/27/2017'),
+      priority: 'High',
+      approved: false,
+      duration: 11,
+      progress: 69,
+      subtasks: [{
+        taskID: 1002,
+        taskName: 'Child 2',
+        startDate: new Date('02/17/2017'),
+        endDate: new Date('02/27/2017'),
+        priority: 'High',
+        approved: false,
+        duration: 11,
+        progress: 69,
+        subtasks: [{
+          taskID: 1003,
+          taskName: 'Child 3',
+          startDate: new Date('02/17/2017'),
+          endDate: new Date('02/27/2017'),
+          priority: 'High',
+          approved: false,
+          duration: 11,
+          progress: 69,
+        }]
+      }]
+    }]
+  }];
+  beforeAll((done: Function) => {
+    gridObj = createGrid(
+      {
+        dataSource: sampleData,
+        childMapping: 'subtasks',
+        editSettings: { allowEditing: true, allowDeleting: true, allowAdding: true },
+        treeColumnIndex: 1,
+        allowSorting: true,
+        toolbar: ['Add', 'Update', 'Delete', 'Cancel'],
+        columns: [{ field: 'taskID', headerText: 'Task ID', isPrimaryKey: true },
+        { field: 'taskName', headerText: 'Task Name' },
+        { field: 'progress', headerText: 'Progress' }]
+      },
+      done
+    );
+  });
+  it('Adding a record Top of newly added record', function (done) {
+    actionComplete = (args?: Object): void => {
+      if (args['requestType'] == "refresh") {
+        expect(gridObj.dataSource[0].taskID === 1000).toBe(true);
+        done();
+      }
+    };
+    gridObj.grid.actionComplete = actionComplete;
+    gridObj.addRecord(arr[0], 0);
+    gridObj.sortByColumn("taskID", "Descending", false);
+  });
+});
+
+describe('EJ2-48145 - Adding parent and child together with addRecord method and paging enabled', () => {
+  let gridObj: TreeGrid;
+  let actionComplete: () => void;
+  let arr: Object[] = [{
+    taskID: 1000,
+    taskName: 'Parent',
+    startDate: new Date('02/17/2017'),
+    endDate: new Date('02/27/2017'),
+    priority: 'Normal',
+    approved: false,
+    duration: 11,
+    progress: 69,
+    subtasks: [{
+      taskID: 1001,
+      taskName: 'Child 1',
+      startDate: new Date('02/17/2017'),
+      endDate: new Date('02/27/2017'),
+      priority: 'High',
+      approved: false,
+      duration: 11,
+      progress: 69,
+      subtasks: [{
+        taskID: 1002,
+        taskName: 'Child 2',
+        startDate: new Date('02/17/2017'),
+        endDate: new Date('02/27/2017'),
+        priority: 'High',
+        approved: false,
+        duration: 11,
+        progress: 69,
+        subtasks: [{
+          taskID: 1003,
+          taskName: 'Child 3',
+          startDate: new Date('02/17/2017'),
+          endDate: new Date('02/27/2017'),
+          priority: 'High',
+          approved: false,
+          duration: 11,
+          progress: 69,
+        }]
+      }]
+    }]
+  }];
+  beforeAll((done: Function) => {
+    gridObj = createGrid(
+      {
+        dataSource: sampleData,
+        childMapping: 'subtasks',
+        editSettings: { allowEditing: true, allowDeleting: true, allowAdding: true },
+        treeColumnIndex: 1,
+        allowPaging: true,
+        toolbar: ['Add', 'Update', 'Delete', 'Cancel'],
+        columns: [{ field: 'taskID', headerText: 'Task ID', isPrimaryKey: true },
+        { field: 'taskName', headerText: 'Task Name' },
+        { field: 'progress', headerText: 'Progress' }]
+      },
+      done
+    );
+  });
+  it('Adding a record', function (done) {
+    actionComplete = (args?: Object): void => {
+      if (args['requestType'] == "refresh") {
+        expect(gridObj.dataSource[0].taskID === 1000).toBe(true);
+        done();
+      }
+    };
+    gridObj.grid.actionComplete = actionComplete;
+    gridObj.goToPage(2);
+    gridObj.addRecord(arr[0], 0);
+  });
+});

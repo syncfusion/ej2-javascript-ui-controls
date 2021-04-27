@@ -218,6 +218,7 @@ export class RowDD {
             }
             if (isNullOrUndefined(this.dropPosition)) {
                 this.dropPosition = 'bottomSegment';
+                // eslint-disable-next-line max-len
                 args.dropIndex = this.parent.getCurrentViewRecords().length > 1 ? this.parent.getCurrentViewRecords().length - 1 : args.dropIndex;
                 args.data = args.data.map((i: ITreeData) => {
                     if (i.hasChildRecords && isNullOrUndefined(i.parentItem)) {
@@ -258,6 +259,7 @@ export class RowDD {
         } else {
             tempDataSource = proxy.dataSource;
         }
+        // eslint-disable-next-line max-len
         if (tempDataSource && (!isNullOrUndefined(droppedRecord) && !droppedRecord.parentItem) && !isNullOrUndefined(droppedRecord.taskData)) {
             for (let i: number = 0; i < Object.keys(tempDataSource).length; i++) {
                 if (tempDataSource[i][this.parent.childMapping] === droppedRecord.taskData[this.parent.childMapping]) {

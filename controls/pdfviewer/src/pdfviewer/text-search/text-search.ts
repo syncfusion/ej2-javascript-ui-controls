@@ -460,7 +460,7 @@ export class TextSearch {
                 } else {
                     const searchPageIndex: number = this.getSearchPage(pageIndex);
                     // eslint-disable-next-line max-len
-                    if (this.searchMatches && !this.searchMatches[this.searchPageIndex] && this.searchMatches.length === 0 && this.searchedPages.length === this.pdfViewerBase.pageCount) {
+                    if (this.searchMatches && this.searchMatches[this.searchPageIndex].length === 0 && this.searchedPages.length === this.pdfViewerBase.pageCount) {
                         // eslint-disable-next-line max-len
                         if (!this.isMessagePopupOpened) {
                             this.onMessageBoxOpen();
@@ -1143,6 +1143,7 @@ export class TextSearch {
      * @private
      */
     public searchButtonClick(element: HTMLElement, inputElement: HTMLElement): void {
+        this.isMessagePopupOpened = false;
         if (isBlazor() && (Browser.isDevice && !this.pdfViewer.enableDesktopMode)) {
             const searchElement: HTMLElement = this.pdfViewerBase.getElement('_search_box-icon');
             element = searchElement.children[0].children[0] as HTMLElement;

@@ -1,4 +1,4 @@
-import { Workbook, setCell, SheetModel, setRow, CellModel, getSheet, getColumn, getRow, ColumnModel } from '../base/index';
+import { Workbook, setCell, SheetModel, setRow, CellModel, getSheet, getColumn, ColumnModel } from '../base/index';
 import { setValidation, applyCellFormat, isValidation, removeValidation, addHighlight, CellStyleModel, getCellAddress, validationHighlight } from '../common/index';
 import { removeHighlight } from '../common/index';
 import { getRangeIndexes } from '../common/index';
@@ -65,12 +65,10 @@ export class WorkbookDataValidation {
             onlyRange = range.split('!')[1];
             sheetName = range.split('!')[0];
         }
-        let inputRange: string = onlyRange;
         const sheet: SheetModel = getSheet(this.parent, this.parent.getAddressInfo(sheetName + 'A1:A1').sheetIndex);
         let isfullCol: boolean = false;
-        let maxRowCount: number = sheet.rowCount;
-        let maxColCount: number = sheet.colCount; 
-        let rangeArr: string[] = onlyRange.split(':');
+        const maxRowCount: number = sheet.rowCount;
+        const rangeArr: string[] = onlyRange.split(':');
         if (onlyRange.match(/\D/g) && !onlyRange.match(/[0-9]/g)) {
             rangeArr[0] += 1;
             rangeArr[1] += maxRowCount;
@@ -88,7 +86,7 @@ export class WorkbookDataValidation {
         const indexes: number[] = getRangeIndexes(range);
         if (isfullCol) {
             for (let colIdx: number = indexes[1]; colIdx <= indexes[3]; colIdx++) {
-                let column: ColumnModel = getColumn(sheet, colIdx);
+                const column: ColumnModel = getColumn(sheet, colIdx);
                 if (isRemoveValidation && column && column.validation) {
                     delete (sheet.columns[colIdx].validation);
                 } else {
@@ -102,39 +100,39 @@ export class WorkbookDataValidation {
                             (rules.value1 as string).substring(0, 255) : rules.value1 as string,
                         value2: rules.value2 as string,
                         inCellDropDown: rules.inCellDropDown,
-                        ignoreBlank: rules.ignoreBlank,
+                        ignoreBlank: rules.ignoreBlank
                     };
                 }
             }
         } else {
-        for (let rowIdx: number = indexes[0]; rowIdx <= indexes[2]; rowIdx++) {
-            if (!sheet.rows[rowIdx]) { setRow(sheet, rowIdx, {}); }
-            for (let colIdx: number = indexes[1]; colIdx <= indexes[3]; colIdx++) {
-                if (!sheet.rows[rowIdx].cells || !sheet.rows[rowIdx].cells[colIdx]) { setCell(rowIdx, colIdx, sheet, {}); }
-                cell = sheet.rows[rowIdx].cells[colIdx];
-                if (isRemoveValidation) {
-                    if (cell.validation) {
-                        delete (cell.validation);
-                        const style: CellStyleModel =
+            for (let rowIdx: number = indexes[0]; rowIdx <= indexes[2]; rowIdx++) {
+                if (!sheet.rows[rowIdx]) { setRow(sheet, rowIdx, {}); }
+                for (let colIdx: number = indexes[1]; colIdx <= indexes[3]; colIdx++) {
+                    if (!sheet.rows[rowIdx].cells || !sheet.rows[rowIdx].cells[colIdx]) { setCell(rowIdx, colIdx, sheet, {}); }
+                    cell = sheet.rows[rowIdx].cells[colIdx];
+                    if (isRemoveValidation) {
+                        if (cell.validation) {
+                            delete (cell.validation);
+                            const style: CellStyleModel =
                             this.parent.getCellStyleValue(['backgroundColor', 'color'], [rowIdx, colIdx]);
-                        this.parent.notify(applyCellFormat, <CellFormatArgs>{
-                            style: style, rowIdx: rowIdx, colIdx: colIdx
-                        });
+                            this.parent.notify(applyCellFormat, <CellFormatArgs>{
+                                style: style, rowIdx: rowIdx, colIdx: colIdx
+                            });
+                        }
+                    } else {
+                        cell.validation = {
+                            type: rules.type as ValidationType,
+                            operator: rules.operator as ValidationOperator,
+                            value1: (rules.type === 'List' && rules.value1.length > 256) ?
+                                (rules.value1 as string).substring(0, 255) : rules.value1 as string,
+                            value2: rules.value2 as string,
+                            ignoreBlank: rules.ignoreBlank,
+                            inCellDropDown: rules.inCellDropDown
+                        };
                     }
-                } else {
-                    cell.validation = {
-                        type: rules.type as ValidationType,
-                        operator: rules.operator as ValidationOperator,
-                        value1: (rules.type === 'List' && rules.value1.length > 256) ?
-                            (rules.value1 as string).substring(0, 255) : rules.value1 as string,
-                        value2: rules.value2 as string,
-                        ignoreBlank: rules.ignoreBlank,
-                        inCellDropDown: rules.inCellDropDown
-                    };
                 }
             }
         }
-    }
     }
 
     private addHighlightHandler(args: { range: string, td? : HTMLElement }): void {
@@ -146,13 +144,13 @@ export class WorkbookDataValidation {
     }
 
     private getRange(range: string): string {
-        let indexes: number[] = getRangeIndexes(range);
-        let sheet: SheetModel = this.parent.getActiveSheet();
-        let maxColCount: number = sheet.colCount;
-        let maxRowCount: number = sheet.rowCount;
+        const indexes: number[] = getRangeIndexes(range);
+        const sheet: SheetModel = this.parent.getActiveSheet();
+        const maxColCount: number = sheet.colCount;
+        const maxRowCount: number = sheet.rowCount;
         if (indexes[2] === maxRowCount - 1 && indexes[0] === 0) {
             range = range.replace(/[0-9]/g, '');
-        } else if (indexes[3] === maxColCount - 1 && indexes[2] == 0) {
+        } else if (indexes[3] === maxColCount - 1 && indexes[2] === 0) {
             range = range.replace(/\D/g, '');
         }
         return range;
@@ -179,10 +177,10 @@ export class WorkbookDataValidation {
                 const lastColIdx: number = range ? indexes[3] : sheet.rows[rowIdx].cells.length;
                 for (colIdx; colIdx <= lastColIdx; colIdx++) {
                     if (sheet.rows[rowIdx].cells[colIdx]) {
-                        let column: ColumnModel = getColumn(sheet, colIdx);
+                        const column: ColumnModel = getColumn(sheet, colIdx);
                         cell = sheet.rows[rowIdx].cells[colIdx];
                         if (cell && cell.validation) {
-                            validation = cell.validation
+                            validation = cell.validation;
                             if (isRemoveHighlightedData) {
                                 if (validation.isHighlighted) {
                                     cell.validation.isHighlighted = false;

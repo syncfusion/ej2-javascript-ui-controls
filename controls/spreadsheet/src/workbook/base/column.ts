@@ -102,6 +102,7 @@ export function setColumn(sheet: SheetModel, colIndex: number, column: ColumnMod
  * @param {SheetModel} sheet - Specifies the sheet.
  * @param {number} index - Specifies the index.
  * @param {boolean} skipHidden - Specifies the bool.
+ * @param {boolean} checkDPR - Specifies the bool.
  * @returns {number} - To get Column width.
  */
 export function getColumnWidth(sheet: SheetModel, index: number, skipHidden?: boolean, checkDPR?: boolean): number {
@@ -112,8 +113,8 @@ export function getColumnWidth(sheet: SheetModel, index: number, skipHidden?: bo
     } else {
         width = 64;
     }
-    if(checkDPR && window.devicePixelRatio % 1 > 0) {
-        const pointValue = (width * window.devicePixelRatio) % 1
+    if (checkDPR && window.devicePixelRatio % 1 > 0) {
+        const pointValue: number = (width * window.devicePixelRatio) % 1;
         return width + (pointValue ? ((pointValue > 0.5 ? (1 - pointValue) : -1 * pointValue) / window.devicePixelRatio) : 0);
     } else {
         return width;
@@ -125,6 +126,7 @@ export function getColumnWidth(sheet: SheetModel, index: number, skipHidden?: bo
  * @param {SheetModel} sheet - Specifies the sheet.
  * @param {number} startCol - Specifies the startCol.
  * @param {number} endCol - Specifies the endCol.
+ * @param {boolean} checkDPR - Specifies the boolean value.
  * @returns {number} - returns the column width.
  */
 export function getColumnsWidth(sheet: SheetModel, startCol: number, endCol: number = startCol, checkDPR?: boolean): number {
@@ -144,8 +146,8 @@ export function getColumnsWidth(sheet: SheetModel, startCol: number, endCol: num
  * @hidden
  * @param {SheetModel} sheet - Specifies the sheet.
  * @param {number} index - Specifies the index.
- * @returns {boolean} - returns the boolean value. 
-*/
+ * @returns {boolean} - returns the boolean value.
+ */
 export function isHiddenCol(sheet: SheetModel, index: number): boolean {
     return sheet.columns[index] && sheet.columns[index].hidden;
 }

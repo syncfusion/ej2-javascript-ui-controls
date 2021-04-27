@@ -184,7 +184,7 @@ export class SfdtReader {
     public parseRevisions(data: any, revisions: Revision[]): void {
         for (let i: number = 0; i < data.revisions.length; i++) {
             const revisionData: any = data.revisions[i];
-            if (!isNullOrUndefined(revisionData.revisionId)) {
+            if (!isNullOrUndefined(revisionData.revisionId) && !isNullOrUndefined(revisionData.revisionType)) {
                 const revision: Revision = this.parseRevision(revisionData);
                 let revisionCheck: boolean = true;
                 if (!this.documentHelper.owner.sfdtExportModule.copyWithTrackChange && this.isPaste) {

@@ -819,7 +819,7 @@ export function getTemplateFunction(template: string, gauge: CircularGauge): any
             template = numb ? template.replace(numb, '') : template;
             template = template.indexOf('/') !== -1 ? template.replace('/', '') : template;
         }
-        if (document.querySelectorAll(template).length) {
+        if (isNaN(parseFloat(template)) && document.querySelectorAll(template).length) {
             if ((template.charAt(0) !== 'a' || template.charAt(0) !== 'A') && template.length !== 1) {
                 templateFn = templateComplier(document.querySelector(template).innerHTML.trim());
             }

@@ -36,7 +36,7 @@ export class FieldList implements IAction {
      */
     protected getModuleName(): string {
         /* eslint-enable */
-        return 'fieldlist';
+        return 'fieldList';
     }
 
     private initiateModule(): void {
@@ -164,8 +164,9 @@ export class FieldList implements IAction {
      */
     public destroy(): void {
         this.removeEventListener();
-        if (this.parent.pivotFieldListModule) {
+        if (this.parent.pivotFieldListModule && !this.parent.pivotFieldListModule.isDestroyed) {
             this.parent.pivotFieldListModule.destroy();
+            this.parent.pivotFieldListModule = null;
             if (!isNullOrUndefined(select('#' + this.parent.element.id + '_PivotFieldList', document))) {
                 remove(select('#' + this.parent.element.id + '_PivotFieldList', document));
             }

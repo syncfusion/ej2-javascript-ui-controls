@@ -219,7 +219,7 @@ export class ContextMenu implements IContextMenu {
                     case 'Underline':
                         menuItem = 'Underline context';
                         break;
-                    case 'Strike through':
+                    case 'Strikethrough':
                         menuItem = 'Strikethrough context';
                         break;
                     case 'Delete':
@@ -236,9 +236,6 @@ export class ContextMenu implements IContextMenu {
                         break;
                     }
                     let menuName: string = this.pdfViewer.localeObj.getConstant(menuItem);
-                    if (menuName === 'Strike through') {
-                        menuName = 'Strikethrough';
-                    }
                     if (menuName === 'Scale Ratio') {
                         menuName = 'ScaleRatio';
                     }

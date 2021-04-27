@@ -13,4 +13,11 @@ export class ColumnChooserSettings extends ChildProperty<ColumnChooserSettings> 
      */
     @Property('startsWith')
     public operator: string;
+
+    /**
+     * If ignoreAccent set to true, then ignores the diacritic characters or accents while searching in column chooser dialog.
+     * @default false
+     */
+     @Property(false)
+     public ignoreAccent: boolean;
 }

@@ -1,8 +1,8 @@
 import { Spreadsheet } from '../base/index';
 import { contentLoaded, mouseDown, virtualContentLoaded, cellNavigate, getUpdateUsingRaf, IOffset, focusBorder } from '../common/index';
-import { showAggregate, refreshImgElem, getRowIdxFromClientY, getColIdxFromClientX, clearChartBorder, IScrollArgs } from '../common/index';
-import { SheetModel, getColumnsWidth, updateSelectedRange, getColumnWidth, mergedRange, activeCellMergedRange } from '../../workbook/index';
-import { getRowHeight, isSingleCell, activeCellChanged, CellModel, MergeArgs, checkIsFormula, getSheetIndex } from '../../workbook/index';
+import { showAggregate, refreshImgElem, getRowIdxFromClientY, getColIdxFromClientX, clearChartBorder } from '../common/index';
+import { SheetModel, updateSelectedRange, getColumnWidth, mergedRange, activeCellMergedRange, Workbook } from '../../workbook/index';
+import { getRowHeight, isSingleCell, activeCellChanged, MergeArgs, checkIsFormula, getSheetIndex } from '../../workbook/index';
 import { EventHandler, addClass, removeClass, isNullOrUndefined, Browser, closest, remove, detach } from '@syncfusion/ej2-base';
 import { BeforeSelectEventArgs, selectionComplete, getMoveEvent, getEndEvent, isTouchStart, isMouseUp } from '../common/index';
 import { isTouchEnd, isTouchMove, getClientX, getClientY, mouseUpAfterSelection, selectRange, rowHeightChanged } from '../common/index';
@@ -118,16 +118,16 @@ export class Selection {
             }
             ele = this.getSelectionElement();
             if (ele) {
-                let selectedRange: number[] = getRangeIndexes(sheet.selectedRange);
-                let sRange: number[] = getSwapRange(selectedRange);
+                const selectedRange: number[] = getRangeIndexes(sheet.selectedRange);
+                const sRange: number[] = getSwapRange(selectedRange);
                 const mergeArgs: MergeArgs = { range: sRange, isActiveCell: false, skipChecking: true };
                 this.parent.notify(mergedRange, mergeArgs);
                 if (mergeArgs.isActiveCell || (sRange[0] === sRange[2] && sRange[1] === sRange[3])) { return; }
                 if (sheet.frozenRows || sheet.frozenColumns) {
                     setPosition(this.parent, ele, selectedRange); return;
                 }
-                let rowStart: number = sRange[0];
-                let rowEnd: number = sRange[2];
+                const rowStart: number = sRange[0];
+                const rowEnd: number = sRange[2];
                 if (rowStart <= args.rowIdx && rowEnd >= args.rowIdx && ele) {
                     ele.style.height = `${parseFloat(ele.style.height) + args.threshold}px`;
                 } else if (rowStart > args.rowIdx && ele) {
@@ -178,10 +178,10 @@ export class Selection {
 
     private init(): void {
         this.createSelectionElement();
-        let sheet: SheetModel = this.parent.getActiveSheet();
-        let sRange: number[] = getSwapRange(getRangeIndexes(sheet.selectedRange));
-        let actRange: number[] = getCellIndexes(sheet.activeCell);
-        let inRange: boolean = sRange[0] <= actRange[0] && sRange[2] >= actRange[0] && sRange[1] <= actRange[1]
+        const sheet: SheetModel = this.parent.getActiveSheet();
+        const sRange: number[] = getSwapRange(getRangeIndexes(sheet.selectedRange));
+        const actRange: number[] = getCellIndexes(sheet.activeCell);
+        const inRange: boolean = sRange[0] <= actRange[0] && sRange[2] >= actRange[0] && sRange[1] <= actRange[1]
             && sRange[3] >= actRange[1];
         this.selectMultiRange(sheet.selectedRange, true, inRange);
     }
@@ -189,7 +189,7 @@ export class Selection {
     private selectMultiRange(address: string, isInit?: boolean, inRange?: boolean, skipChecking?: boolean): void {
         let sheetIdx: number = this.parent.activeSheetIndex;
         if (address.indexOf('!') > -1) {
-            sheetIdx = getSheetIndex(this.parent, getSheetNameFromAddress(address));
+            sheetIdx = getSheetIndex(this.parent as Workbook, getSheetNameFromAddress(address));
             address = address.split('!')[1];
         }
         if (this.parent.activeSheetIndex === sheetIdx) {
@@ -199,7 +199,7 @@ export class Selection {
                     skipChecking);
             });
         } else {
-            updateSelectedRange(this.parent, address, this.parent.sheets[sheetIdx]);
+            updateSelectedRange(this.parent as Workbook, address, this.parent.sheets[sheetIdx]);
         }
     }
 
@@ -333,7 +333,7 @@ export class Selection {
         const clientRect: ClientRect = verticalContent.getBoundingClientRect(); const frozenCol: number = this.parent.frozenColCount(sheet);
         const left: number = clientRect.left + this.parent.sheetModule.getRowHeaderWidth(sheet);
         const top: number = clientRect.top; const right: number = clientRect.right; const bottom: number = clientRect.bottom;
-        const clientX: number = getClientX(e); let clientY: number = getClientY(e);
+        const clientX: number = getClientX(e); const clientY: number = getClientY(e);
         // remove math.min or handle top and left auto scroll
         let colIdx: number = this.isRowSelected ? sheet.colCount - 1 :
             this.getColIdxFromClientX({ clientX: Math.min(clientX, right), target: e.target as Element });
@@ -375,7 +375,7 @@ export class Selection {
                 this.selectRangeByIdx([].concat(prevIndex[0], prevIndex[1], [rowIdx, colIdx]), e);
             }, 100);
         } else {
-            let indexes: number[] = [].concat(prevIndex[0], prevIndex[1], [rowIdx, colIdx]);
+            const indexes: number[] = [].concat(prevIndex[0], prevIndex[1], [rowIdx, colIdx]);
             if (frozenRow && indexes[0] < frozenRow && indexes[2] >= frozenRow && verticalContent.scrollTop) {
                 verticalContent.scrollTop = 0; indexes[2] = frozenRow;
             }
@@ -533,7 +533,7 @@ export class Selection {
         this.parent.notify(editOperation, eventArgs);
         const isFormulaEdit: boolean = checkIsFormula(eventArgs.editedValue) ||
             (eventArgs.editedValue && eventArgs.editedValue.toString().indexOf('=') === 0);
-        let isMultiRange: boolean = e && e.ctrlKey && isMouseDown(e);
+        const isMultiRange: boolean = e && e.ctrlKey && isMouseDown(e);
         const ele: HTMLElement = this.getSelectionElement(e, selectedRowColIdx);
         const sheet: SheetModel = this.parent.getActiveSheet();
         const formulaRefIndicator: HTMLElement = this.parent.element.querySelector('.e-formularef-indicator');
@@ -592,14 +592,14 @@ export class Selection {
         if (e && e.ctrlKey && (isMouseMove(e) || isMouseUp(e))) {
             selRange = sheet.selectedRange.slice(0, sheet.selectedRange.lastIndexOf(' ')) + ' ' + selRange;
         } else if (selectedRowColIdx > -1) {
-            let selRanges: string[] = sheet.selectedRange.split(' ');
+            const selRanges: string[] = sheet.selectedRange.split(' ');
             selRanges[selectedRowColIdx] = selRange;
             selRange = selRanges.join(' ');
         }
         if (!isFormulaEdit) {
-            updateSelectedRange(this.parent, selRange, sheet, isMultiRange);
+            updateSelectedRange(this.parent as Workbook, selRange, sheet, isMultiRange);
         } else if (!isInit) {
-            updateSelectedRange(this.parent, selRange, sheet, isMultiRange);
+            updateSelectedRange(this.parent as Workbook, selRange, sheet, isMultiRange);
         }
         this.UpdateRowColSelected(range);
         this.highlightHdr(range, e && e.ctrlKey);
@@ -679,16 +679,16 @@ export class Selection {
             if (isMouseUp(e) || isMouseMove(e)) {
                 return this.parent.getMainContent().querySelector('.e-selection:last-child');
             } else {
-                let selElem: Element = this.parent.element.getElementsByClassName('e-selection')[0];
+                const selElem: Element = this.parent.element.getElementsByClassName('e-selection')[0];
                 selElem.classList.remove('e-hide');
-                let ele: HTMLElement = selElem.cloneNode() as HTMLElement;
+                const ele: HTMLElement = selElem.cloneNode() as HTMLElement;
                 ele.classList.add('e-multi-range');
                 return this.parent.getMainContent().appendChild(ele);
             }
         } else if (selectedRowColIdx > -1) {
             return this.parent.getMainContent().getElementsByClassName('e-selection')[selectedRowColIdx] as HTMLElement;
         } else {
-            let elems: NodeListOf<Element> = [].slice.call(this.parent.element.getElementsByClassName('e-multi-range'));
+            const elems: NodeListOf<Element> = [].slice.call(this.parent.element.getElementsByClassName('e-multi-range'));
             elems.forEach((ele: Element) => {
                 remove(ele);
             });
@@ -832,7 +832,7 @@ export class Selection {
                 if (i > 0) {
                     if (parsedVal[i - 1].indexOf('!') === parsedVal[i - 1].length - 1) {
                         const splitStr: string[] = parsedVal[i - 1].split('!');
-                        formulaSheetIdx = getSheetIndex(this.parent, splitStr[0].substring(1, splitStr[0].length - 1));
+                        formulaSheetIdx = getSheetIndex(this.parent as Workbook, splitStr[0].substring(1, splitStr[0].length - 1));
                     }
                 }
                 if (parsedVal[i + 1] === ':') {
@@ -852,7 +852,7 @@ export class Selection {
         }
     }
 
-    private updateFormulaEditRange(str: string, i: number, formulaBorder: String[][]): void {
+    private updateFormulaEditRange(str: string, i: number, formulaBorder: string[][]): void {
         const indices: number[] = getRangeIndexes(str);
         this.formulaRange[i] = str;
         this.dStartCell = { rowIndex: indices[0], colIndex: indices[1] };
@@ -892,7 +892,7 @@ export class Selection {
                         td.classList.add('e-formularef-selection');
                     }
                 }
-            }); // top                     
+            }); // top
         }
         (this.getEleFromRange([minr, maxc, maxr, maxc])).forEach((td: HTMLElement): void => {
             if (td) {
@@ -922,8 +922,7 @@ export class Selection {
         }
     }
 
-    private getEleFromRange(range: number[], sheetIdx?: number): HTMLElement[] {
-        sheetIdx = this.parent.getActiveSheet().index;
+    private getEleFromRange(range: number[]): HTMLElement[] {
         let startRIndex: number = range[0]; let startCIndex: number = range[1];
         let endRIndex: number = range[2]; let endCIndex: number = range[3];
         let i: number; let rowIdx: number;
@@ -945,7 +944,7 @@ export class Selection {
             for (i = startRIndex; i <= endRIndex; i++) {
                 rowIdx = i;
                 if (rowIdx > -1) {
-                    const row: Element = this.parent.getRow(rowIdx, null, );
+                    const row: Element = this.parent.getRow(rowIdx, null );
                     if (row) {
                         rowCells = row.getElementsByClassName('e-cell') as HTMLCollectionOf<Element>;
                         tempCells = (endCIndex === startCIndex) ?
@@ -994,9 +993,9 @@ export class Selection {
                 td.classList.remove(classArr[idx]);
             }
         }
-        for (let idx: number = 0; idx < borderEleColl.length; idx++) {
-            const td: HTMLElement = borderEleColl[idx] as HTMLElement;
-        }
+        // for (let idx: number = 0; idx < borderEleColl.length; idx++) {
+        //     const td: HTMLElement = borderEleColl[idx] as HTMLElement;
+        // }
     }
 
     private parseFormula(formulaStr: string): string[] {

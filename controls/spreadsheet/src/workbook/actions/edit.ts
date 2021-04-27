@@ -132,7 +132,7 @@ export class WorkbookEdit {
             }
             cell.value = value;
         }
-        this.parent.setUsedRange(range[0], range[1]);
+        this.parent.setUsedRange(range[0], range[1], sheet);
         if (this.parent.allowChart) {
             this.parent.notify(refreshChart, {cell: cell, rIdx: range[0], cIdx: range[1], sheetIdx: sheetIdx });
         }

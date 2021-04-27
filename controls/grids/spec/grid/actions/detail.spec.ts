@@ -737,5 +737,41 @@ describe('Detail template module', () => {
             destroy(gridObj);
             gridObj = rowDataBound = null;
         });
-    });    
+    });
+    
+    describe('EJ2-48397 - getRowIndexByPrimaryKey thrown script error while render child grid', () => {
+        let gridObj: Grid;
+        beforeAll((done: Function) => {
+            const isDef = (o: any) => o !== undefined && o !== null;
+            if (!isDef(window.performance)) {
+                console.log("Unsupported environment, window.performance.memory is unavailable");
+                this.skip(); //Skips test (in Chai)
+            }
+            gridObj = createGrid(
+                {
+                    dataSource: filterData,
+                    allowPaging: true,
+                    detailTemplate: `<div>Hello</div>`,
+                    columns: [
+                        { field: 'OrderID', headerText: 'Order ID', width: 120, textAlign: 'Right', isPrimaryKey: true },
+                        { field: 'CustomerID', headerText: 'Customer ID', width: 125 },
+                        { field: 'Freight', width: 120, format: 'C', textAlign: 'Right' },
+                        { field: 'ShipCity', headerText: 'Ship City', width: 150 }
+                    ]
+                }, done);
+        });
+        it('Test script error', (done: Function) => {
+            let detailDataBound = (e: any) => {
+                gridObj.getRowIndexByPrimaryKey(10249);
+                gridObj.detailDataBound = null;
+                done();
+            }
+            gridObj.detailDataBound = detailDataBound;
+            (gridObj.getDataRows()[0].querySelector('.e-detailrowcollapse') as HTMLElement).click();
+        });
+        afterAll(() => {
+            destroy(gridObj);
+            gridObj = null;
+        });
+    });
 });

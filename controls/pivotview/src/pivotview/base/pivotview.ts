@@ -1609,21 +1609,21 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
      */
     public requiredModules(): ModuleDeclaration[] {
         let modules: ModuleDeclaration[] = [];
-        modules.push({ args: [this], member: 'groupingbar' });
+        modules.push({ args: [this], member: 'groupingBar' });
         if (this.allowConditionalFormatting) {
-            modules.push({ args: [this], member: 'conditionalformatting' });
+            modules.push({ args: [this], member: 'conditionalFormatting' });
         }
         if (this.allowNumberFormatting) {
-            modules.push({ args: [this], member: 'numberformatting' });
+            modules.push({ args: [this], member: 'numberFormatting' });
         }
         if (this.allowCalculatedField) {
-            modules.push({ args: [this], member: 'calculatedfield' });
+            modules.push({ args: [this], member: 'calculatedField' });
         }
         if (this.showToolbar && (this.toolbar.length > 0 || this.toolbarTemplate)) {
             modules.push({ args: [this], member: 'toolbar' });
         }
         if (this.showFieldList) {
-            modules.push({ args: [this], member: 'fieldlist' });
+            modules.push({ args: [this], member: 'fieldList' });
         }
         if (this.allowExcelExport) {
             modules.push({ args: [this], member: 'excelExport' });
@@ -2542,9 +2542,13 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
     public getPersistData(): string {
         let keyEntity: string[] = ['dataSourceSettings', 'pivotValues', 'gridSettings', 'chartSettings', 'displayOption'];
         /* eslint-disable */
+        let columnRender: any = this.gridSettings['columnRender'];
+        this.gridSettings['columnRender'] = undefined;
         this.chartSettings['tooltipRender'] = undefined;
+        let persistData: string = this.addOnPersist(keyEntity);
+        this.gridSettings['columnRender'] = columnRender;
         /* eslint-enable */
-        return this.addOnPersist(keyEntity);
+        return persistData;
     }
 
     /**
@@ -3643,13 +3647,18 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
                 let mCnt: HTMLElement = this.element.querySelector('.' + cls.MOVABLECONTENT_DIV) as HTMLElement;
                 let fCnt: HTMLElement = this.element.querySelector('.' + cls.FROZENCONTENT_DIV) as HTMLElement;
                 let mHdr: HTMLElement = this.element.querySelector('.' + cls.MOVABLEHEADER_DIV) as HTMLElement;
+                if (this.isAdaptive) {
+                    (mCnt.parentElement.parentElement.querySelector('.' + cls.MOVABLESCROLL_DIV).children[0] as HTMLElement).style.minHeight = "1px";
+                    (mCnt.parentElement.parentElement.querySelector('.' + cls.MOVABLESCROLL_DIV) as HTMLElement).style.minHeight = "1px";
+                }
+                let ele: HTMLElement = this.isAdaptive ? mCnt : mCnt.parentElement.parentElement.querySelector('.' + cls.MOVABLESCROLL_DIV);
                 let verOffset: string = (mCnt.parentElement.scrollTop > this.scrollerBrowserLimit) ?
                     (mCnt.querySelector('.' + cls.TABLE) as HTMLElement).style.transform.split(',')[1].trim() :
                     -(((mCnt.parentElement.scrollTop * this.verticalScrollScale) - this.scrollPosObject.verticalSection - mCnt.parentElement.scrollTop)) + 'px)';
-                let horiOffset: string = (mCnt.parentElement.parentElement.querySelector('.' + cls.MOVABLESCROLL_DIV).scrollLeft > this.scrollerBrowserLimit) ?
+                let horiOffset: string = (ele.scrollLeft > this.scrollerBrowserLimit) ?
                     ((mCnt.querySelector('.' + cls.TABLE) as HTMLElement).style.transform.split(',')[0].trim() + ',') :
-                    'translate(' + -(((mCnt.parentElement.parentElement.querySelector('.' + cls.MOVABLESCROLL_DIV).scrollLeft * this.horizontalScrollScale) -
-                        this.scrollPosObject.horizontalSection - mCnt.parentElement.parentElement.querySelector('.' + cls.MOVABLESCROLL_DIV).scrollLeft)) + 'px,';
+                    'translate(' + -(((ele.scrollLeft * this.horizontalScrollScale) -
+                        this.scrollPosObject.horizontalSection - ele.scrollLeft)) + 'px,';
                 setStyleAttribute(fCnt.querySelector('.e-table') as HTMLElement, {
                     transform: 'translate(' + 0 + 'px,' + verOffset
                 });
@@ -5213,6 +5222,18 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
      */
     public destroy(): void {
         this.removeInternalEvents();
+        if (this.engineModule) {
+            this.engineModule.fieldList = {};
+            this.engineModule.rMembers = null;
+            this.engineModule.cMembers = null;
+            (this.engineModule as any).valueMatrix = null;
+            (this.engineModule as any).indexMatrix = null;
+            this.engineModule = {} as PivotEngine;
+        }
+        if (this.olapEngineModule) {
+            this.olapEngineModule.fieldList = {};
+            this.olapEngineModule = {} as OlapEngine;
+        }
         if (this.showGroupingBar && this.groupingBarModule) {
             this.groupingBarModule.destroy();
         }
@@ -5231,29 +5252,104 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
         if (this.allowNumberFormatting && this.numberFormattingModule) {
             this.numberFormattingModule.destroy();
         }
-        if (this.isAdaptive && this.contextMenuModule) {
+        if (this.contextMenuModule) {
             this.contextMenuModule.destroy();
         }
         if (this.keyboardModule) {
             this.keyboardModule.destroy();
         }
-        if (this.tooltip) {
+        if (this.tooltip && !this.tooltip.isDestroyed) {
             this.tooltip.destroy();
         }
-        if (this.chart) {
+        if (this.calculatedFieldModule) {
+            this.calculatedFieldModule.destroy();
+        }
+        if (this.chart && !this.chart.isDestroyed) {
             this.chart.destroy();
             if (this.chart.isDestroyed && select('#' + this.element.id + '_chart', this.element)) {
                 remove(select('#' + this.element.id + '_chart', this.element));
             }
         }
-        if (this.grid) {
+        if (this.grid && !this.grid.isDestroyed) {
             this.grid.destroy();
             if (this.grid.isDestroyed && select('#' + this.element.id + '_grid', this.element)) {
                 remove(select('#' + this.element.id + '_grid', this.element));
             }
         }
+        if (this.commonModule) {
+            this.commonModule.destroy();
+        }
+        if (this.chartModule) {
+            this.chartModule.destroy();
+        }
+        if (this.pivotButtonModule && !this.pivotButtonModule.isDestroyed) {
+            this.pivotButtonModule.destroy();
+        }
+        if (this.pivotFieldListModule && !this.pivotFieldListModule.isDestroyed) {
+            this.pivotFieldListModule.destroy();
+        }
         this.unwireEvents();
         super.destroy();
+        if (this.groupingBarModule) {
+            this.groupingBarModule = null;
+        }
+        if (this.groupingModule) {
+            this.groupingModule = null;
+        }
+        if (this.pivotFieldListModule) {
+            this.pivotFieldListModule = null;
+        }
+        if (this.calculatedFieldModule) {
+            this.calculatedFieldModule = null;
+        }
+        if (this.conditionalFormattingModule) {
+            this.conditionalFormattingModule = null;
+        }
+        if (this.numberFormattingModule) {
+            this.numberFormattingModule = null;
+        }
+        if (this.toolbarModule) {
+            this.toolbarModule = null;
+        }
+        if (this.virtualscrollModule) {
+            this.virtualscrollModule = null;
+        }
+        if (this.contextMenuModule) {
+            this.contextMenuModule = null;
+        }
+        if (this.keyboardModule) {
+            this.keyboardModule = null;
+        }
+        if (this.tooltip) {
+            this.tooltip = null;
+        }
+        if (this.chart) {
+            this.chart = null;
+        }
+        if (this.grid) {
+            this.grid = null;
+        }
+        if (this.commonModule) {
+            this.commonModule = null;
+        }
+        if (this.chartModule) {
+            this.chartModule = null;
+        }
+        if (this.pivotButtonModule) {
+            this.pivotButtonModule = null;
+        }
+        if (this.renderModule) {
+            this.renderModule = null;
+        }
+        if (this.axisFieldModule) {
+            this.axisFieldModule = null;
+        }
+        if (this.pdfExportModule) {
+            this.pdfExportModule = null;
+        }
+        if (this.excelExportModule) {
+            this.excelExportModule = null;
+        }
         if (!(isBlazor() && this.isServerRendered)) {
             this.element.innerHTML = '';
         } else {

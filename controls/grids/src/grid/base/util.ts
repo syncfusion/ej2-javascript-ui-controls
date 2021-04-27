@@ -877,6 +877,7 @@ export function getPrintGridModel(gObj: IGrid, hierarchyPrintMode: HierarchyGrid
             printGridModel[key] = getActualProperties(gObj[key]);
         }
     }
+    printGridModel['enableHover'] = false;
     if (gObj.childGrid && hierarchyPrintMode !== 'None') {
         (<IGrid>printGridModel).expandedRows = getExpandedState(gObj, hierarchyPrintMode);
     }
@@ -1318,4 +1319,25 @@ export function performComplexDataOperation(value: string, mapObject: Object): O
         duplicateMap = returnObj;
     }
     return returnObj;
+}
+
+/** @hidden */
+export function setDisplayValue(tr: Object, idx: number, displayVal: string, rows: Row<Column>[], parent?: IGrid,
+    isContent?: boolean): void {
+    const trs: string[] = Object.keys(tr);
+    for (let i: number = 0; i < trs.length; i++) {
+        const td: HTMLElement = tr[trs[i]].querySelectorAll('td.e-rowcell')[idx];
+        if (tr[trs[i]].querySelectorAll('td.e-rowcell').length && td) {
+            setStyleAttribute(<HTMLElement>tr[trs[i]].querySelectorAll('td.e-rowcell')[idx], { 'display': displayVal });
+            if (tr[trs[i]].querySelectorAll('td.e-rowcell')[idx].classList.contains('e-hide')) {
+                removeClass([tr[trs[i]].querySelectorAll('td.e-rowcell')[idx]], ['e-hide']);
+            }
+            if (isContent && parent.isRowDragable()) {
+                const index: number = parent.getFrozenColumns() ? idx : idx + 1;
+                rows[trs[i]].cells[index].visible = displayVal === '' ? true : false;
+            } else {
+                rows[trs[i]].cells[idx].visible = displayVal === '' ? true : false;
+            }
+        }
+    }
 }

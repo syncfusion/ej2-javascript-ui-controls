@@ -112,18 +112,19 @@ export function isHiddenRow(sheet: SheetModel, index: number): boolean {
  * @hidden
  * @param {SheetModel} sheet - Specifies the sheet.
  * @param {number} rowIndex - Specifies the rowIndex.
+ * @param {boolean} checkDPR - Specifies the bool value.
  * @returns {number} - To get the row height.
  */
 export function getRowHeight(sheet: SheetModel, rowIndex: number, checkDPR?: boolean): number {
     let hgt: number;
     if (sheet && sheet.rows && sheet.rows[rowIndex]) {
         if (sheet.rows[rowIndex].hidden) { return 0; }
-        hgt = sheet.rows[rowIndex].height === undefined ? 20 : sheet.rows[rowIndex].height
+        hgt = sheet.rows[rowIndex].height === undefined ? 20 : sheet.rows[rowIndex].height;
     } else {
         hgt = 20;
     }
     if (checkDPR && window.devicePixelRatio % 1 > 0) {
-        const pointValue = (hgt * window.devicePixelRatio) % 1;
+        const pointValue: number = (hgt * window.devicePixelRatio) % 1;
         return hgt + (pointValue ? ((pointValue > 0.5 ? (1 - pointValue) : -1 * pointValue) / window.devicePixelRatio) : 0);
     } else {
         return hgt;
@@ -149,6 +150,7 @@ export function setRowHeight(sheet: SheetModel, rowIndex: number, height: number
  * @param {SheetModel} sheet - Specifies the sheet.
  * @param {number} startRow - Specifies the startRow.
  * @param {number} endRow - Specifies the endRow.
+ * @param {boolean} checkDPR - Specifies the boolean value.
  * @returns {number} - To get the rows height.
  */
 export function getRowsHeight(sheet: SheetModel, startRow: number, endRow: number = startRow, checkDPR?: boolean): number {

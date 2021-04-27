@@ -306,7 +306,7 @@ export class ProtectSheet {
                     okBtn.removeAttribute('disabled');
                 }
                 else {
-                    okBtn.setAttribute('disabled', 'true')
+                    okBtn.setAttribute('disabled', 'true');
                 }
             }
         }
@@ -320,7 +320,7 @@ export class ProtectSheet {
                     okButton.removeAttribute('disabled');
                 }
                 else {
-                    okButton.setAttribute('disabled', 'true')
+                    okButton.setAttribute('disabled', 'true');
                 }
             }
         }
@@ -334,7 +334,7 @@ export class ProtectSheet {
                     btn.removeAttribute('disabled');
                 }
                 else {
-                    btn.setAttribute('disabled', 'true')
+                    btn.setAttribute('disabled', 'true');
                 }
             }
         }
@@ -368,7 +368,7 @@ export class ProtectSheet {
             this.parent.password = (pwd as CellModel).value;
             this.parent.isProtected = true;
             dialogInst.hide();
-            if (this.parent.showSheetTabs) { 
+            if (this.parent.showSheetTabs) {
                 this.parent.element.querySelector('.e-add-sheet-tab').setAttribute('disabled', 'true');
                 this.parent.element.querySelector('.e-add-sheet-tab').classList.add('e-disabled');
             }

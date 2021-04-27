@@ -3,7 +3,7 @@ import { Spreadsheet } from '../base/index';
 import { ribbon, MenuSelectEventArgs, selectionComplete, beforeRibbonCreate, removeDataValidation, clearViewer } from '../common/index';
 import { initiateDataValidation, invalidData, setUndoRedo, initiateConditionalFormat, setCF, focus, freeze } from '../common/index';
 import { dialog, reapplyFilter, enableFileMenuItems, applyProtect, protectCellFormat, protectWorkbook } from '../common/index';
-import { findHandler, DialogBeforeOpenEventArgs, insertChart, chartDesignTab, unProtectWorkbook, getPassWord } from '../common/index';
+import { findHandler, DialogBeforeOpenEventArgs, insertChart, chartDesignTab, unProtectWorkbook } from '../common/index';
 import { IRenderer, destroyComponent, performUndoRedo, beginAction, completeAction, applySort, hideRibbonTabs } from '../common/index';
 import { enableToolbarItems, ribbonClick, paste, locale, refreshSheetTabs, initiateCustomSort, getFilteredColumn } from '../common/index';
 import { tabSwitch, getUpdateUsingRaf, updateToggleItem, initiateHyperlink, editHyperlink } from '../common/index';
@@ -274,7 +274,7 @@ export class Ribbon {
             this.parent.notify(unProtectWorkbook, null);
         }
         else{
-            if(document.getElementById(this.parent.element.id + '_protectworkbook').classList.contains('e-active')) {
+            if (document.getElementById(this.parent.element.id + '_protectworkbook').classList.contains('e-active')) {
                 document.getElementById(this.parent.element.id + '_protectworkbook').classList.remove('e-active');
                 if (this.parent.showSheetTabs) { this.parent.element.querySelector('.e-add-sheet-tab').removeAttribute('disabled'); }
             } else {
@@ -308,10 +308,9 @@ export class Ribbon {
         }
         return text;
     }
-    
+
     private getLocaleProtectWorkbook(str: string, setClass?: boolean): string {
         let text: string; const l10n: L10n = this.parent.serviceLocator.getService(locale);
-        const sheet: SheetModel = this.parent.getActiveSheet();
         if (this.parent.isProtected) {
             if (setClass) { this.parent.getMainContent().classList.remove('e-hide-' + str.toLowerCase()); }
             text = l10n.getConstant(str);
@@ -359,7 +358,7 @@ export class Ribbon {
 
     private removeDesignChart(): void {
         const l10n: L10n = this.parent.serviceLocator.getService(locale);
-        let tabIdx: number = this.ribbon.items.length - 1;
+        const tabIdx: number = this.ribbon.items.length - 1;
         if (this.parent.allowChart && this.ribbon.items[tabIdx] && this.ribbon.items[tabIdx].header.text ===
             l10n.getConstant('ChartDesign')) {
             this.ribbon.tabObj.select(this.preTabIdx + 1);
@@ -373,8 +372,8 @@ export class Ribbon {
             if (document.getElementsByClassName('e-charttheme-ddb').length > 0) {
                 document.getElementsByClassName('e-charttheme-ddb')[0].remove();
             }
-            delete this.ribbon.items[tabIdx].content[0]
-            this.ribbon.items.length = this.ribbon.items.length -1;
+            delete this.ribbon.items[tabIdx].content[0];
+            this.ribbon.items.length = this.ribbon.items.length - 1;
         }
     }
 
@@ -685,7 +684,7 @@ export class Ribbon {
             beforeClose: (args: BeforeOpenCloseMenuEventArgs): void => {
                 if (args.event && closest(args.event.target as Element, '.' + ddbCssClass)) {
                     if (closest(args.event.target as Element, '.' + ddbCssClass).id !== chartBtnId) {
-                    args.cancel = true;
+                        args.cancel = true;
                     }
                 }
             },
@@ -789,7 +788,7 @@ export class Ribbon {
             beforeClose: (args: BeforeOpenCloseMenuEventArgs): void => {
                 if (args.event && closest(args.event.target as Element, '.e-addchart-ddb')) {
                     if (closest(args.event.target as Element, '.e-addchart-ddb').id !== id + '_addchart') {
-                    args.cancel = true;
+                        args.cancel = true;
                     }
                 }
             },
@@ -1290,6 +1289,7 @@ export class Ribbon {
     }
     private datavalidationDDB(id: string): Element {
         const l10n: L10n = this.parent.serviceLocator.getService(locale);
+        let direction: SortOrder;
         this.datavalidationDdb = new DropDownButton({
             cssClass: 'e-datavalidation-ddb',
             iconCss: 'e-datavalidation-icon e-icons',
@@ -1316,7 +1316,7 @@ export class Ribbon {
                     this.parent.notify(removeDataValidation, null);
                     break;
                 default:
-                    const direction: SortOrder = args.item.text === l10n.getConstant('SortAscending') ? 'Ascending' : 'Descending';
+                    direction = args.item.text === l10n.getConstant('SortAscending') ? 'Ascending' : 'Descending';
                     this.parent.notify(applySort, { sortOptions: { sortDescriptors: { order: direction } } });
                     break;
                 }
@@ -1407,7 +1407,11 @@ export class Ribbon {
     }
 
     private mergeSelectHandler(args: MenuEventArgs): void {
-        args.item.id === `${this.parent.element.id}_unmerge` ? this.unMerge() : this.merge(args.item.id);
+        if (args.item.id === `${this.parent.element.id}_unmerge`) {
+            this.unMerge();
+        } else {
+            this.merge(args.item.id);
+        }
     }
 
     private unMerge(): void {
@@ -1475,6 +1479,7 @@ export class Ribbon {
 
     private getSortFilterDDB(id: string): Element {
         const l10n: L10n = this.parent.serviceLocator.getService(locale);
+        let direction: SortOrder;
         this.sortingDdb = new DropDownButton({
             cssClass: 'e-sort-filter-ddb',
             iconCss: 'e-icons e-sort-filter-icon',
@@ -1518,7 +1523,7 @@ export class Ribbon {
                     this.parent.notify(initiateCustomSort, null);
                     break;
                 default:
-                    const direction: SortOrder = args.item.text === l10n.getConstant('SortAscending') ? 'Ascending' : 'Descending';
+                    direction = args.item.text === l10n.getConstant('SortAscending') ? 'Ascending' : 'Descending';
                     this.parent.notify(applySort, { sortOptions: { sortDescriptors: { order: direction } } });
                     break;
                 }
@@ -1546,6 +1551,7 @@ export class Ribbon {
     private findToolDlg(): void {
         let countArgs: { [key: string]: string };
         if (isNullOrUndefined(this.parent.element.querySelector('.e-findtool-dlg'))) {
+            // eslint-disable-next-line prefer-const
             let toolbarObj: Toolbar; const findTextElement: HTMLElement = this.parent.createElement('div', { className: 'e-input-group'});
             const findTextInput: HTMLElement = this.parent.createElement('input', {
                 className: 'e-input e-text-findNext-short', attrs: { 'type': 'Text' , value: this.findValue }
@@ -1788,17 +1794,17 @@ export class Ribbon {
     private getNumFormatDdbItems(id: string): ItemModel[] {
         const l10n: L10n = this.parent.serviceLocator.getService(locale);
         return [
-            { id: id + 'item1', text: l10n.getConstant('General') },
-            { id: id + 'item2', text: l10n.getConstant('Number') },
-            { id: id + 'item3', text: l10n.getConstant('Currency') },
-            { id: id + 'item4', text: l10n.getConstant('Accounting') },
-            { id: id + 'item5', text: l10n.getConstant('ShortDate') },
-            { id: id + 'item6', text: l10n.getConstant('LongDate') },
-            { id: id + 'item7', text: l10n.getConstant('Time') },
-            { id: id + 'item8', text: l10n.getConstant('Percentage') },
-            { id: id + 'item9', text: l10n.getConstant('Fraction') },
-            { id: id + 'item10', text: l10n.getConstant('Scientific') },
-            { id: id + 'item11', text: l10n.getConstant('Text') }
+            { id: id + '_General', text: l10n.getConstant('General') },
+            { id: id + '_Number', text: l10n.getConstant('Number') },
+            { id: id + '_Currency', text: l10n.getConstant('Currency') },
+            { id: id + '_Accounting', text: l10n.getConstant('Accounting') },
+            { id: id + '_ShortDate', text: l10n.getConstant('ShortDate') },
+            { id: id + '_LongDate', text: l10n.getConstant('LongDate') },
+            { id: id + '_Time', text: l10n.getConstant('Time') },
+            { id: id + '_Percentage', text: l10n.getConstant('Percentage') },
+            { id: id + '_Fraction', text: l10n.getConstant('Fraction') },
+            { id: id + '_Scientific', text: l10n.getConstant('Scientific') },
+            { id: id + '_Text', text: l10n.getConstant('Text') }
         ];
     }
     private getFontFamilyItems(): ItemModel[] {
@@ -1810,7 +1816,7 @@ export class Ribbon {
 
     private numDDBSelect(args: MenuEventArgs): void {
         const eventArgs: { format: string, range: string, cancel: boolean, requestType: string } = {
-            format: getFormatFromType(args.item.text as NumberFormatType),
+            format: getFormatFromType(args.item.id.split(this.parent.element.id + '_')[1] as NumberFormatType),
             range: this.parent.getActiveSheet().selectedRange, cancel: false, requestType: 'NumberFormat'
         };
         const actionArgs: BeforeCellFormatArgs = {
@@ -1869,7 +1875,7 @@ export class Ribbon {
             type: args.item.text,
             formattedText: '',
             value: cell && cell.value ? cell.value : '',
-            format: getFormatFromType(args.item.text as NumberFormatType),
+            format: getFormatFromType(args.item.id.split(this.parent.element.id + '_')[1] as NumberFormatType),
             sheetIndex: this.parent.activeSheetIndex,
             onLoad: true
         };
@@ -2042,7 +2048,7 @@ export class Ribbon {
         if (['Arial', 'Arial Black', 'Axettac Demo', 'Batang', 'Book Antiqua', 'Calibri', 'Courier',
             'Courier New', 'Din Condensed', 'Georgia', 'Helvetica', 'Helvetica New', 'Roboto',
             'Tahoma', 'Times New Roman', 'Verdana'].indexOf(fontFamily) < 0) {
-                this.fontNameDdb.items[this.fontNameIndex].iconCss = '';
+            this.fontNameDdb.items[this.fontNameIndex].iconCss = '';
         }
     }
 
@@ -2112,6 +2118,7 @@ export class Ribbon {
     private fileMenuItemSelect(args: MenuEventArgs): void {
         const selectArgs: MenuSelectEventArgs = <MenuSelectEventArgs>extend({ cancel: false }, args);
         this.parent.trigger('fileMenuItemSelect', selectArgs); const id: string = this.parent.element.id;
+        let dialogInst: Dialog;
         if (!selectArgs.cancel) {
             switch (args.item.id) {
             case `${id}_Open`:
@@ -2124,7 +2131,7 @@ export class Ribbon {
                 this.parent.save({ saveType: <SaveType>args.item.id.split(`${id}_`)[1] });
                 break;
             case `${id}_New`:
-                const dialogInst: Dialog = (this.parent.serviceLocator.getService(dialog) as Dialog);
+                dialogInst = (this.parent.serviceLocator.getService(dialog) as Dialog);
                 dialogInst.show({
                     height: 200, width: 400, isModal: true, showCloseIcon: true,
                     content: (this.parent.serviceLocator.getService(locale) as L10n).getConstant('DestroyAlert'),
@@ -2160,86 +2167,90 @@ export class Ribbon {
         if (!(args.item.id === 'spreadsheet_find')) {
             const parentId: string = this.parent.element.id;
             const sheet: SheetModel = this.parent.getActiveSheet();
+            let evtHArgs: { isShow: boolean, sheetIdx: number, cancel: boolean };
+            let evtglArgs: { isShow: boolean, sheetIdx: number, cancel: boolean };
+            let isActive: boolean;
+            let indexes: number[];
+            let selectCell: number[];
             switch (args.item.id) {
-                case parentId + '_headers':
-                    const evtHArgs: { isShow: boolean, sheetIdx: number, cancel: boolean } = {
-                        isShow: !sheet.showHeaders,
-                        sheetIdx: this.parent.activeSheetIndex,
-                        cancel: false
-                    };
-                    this.parent.notify(completeAction, { eventArgs: evtHArgs, action: 'headers' });
-                    if (evtHArgs.cancel) { return; }
-                    this.parent.setSheetPropertyOnMute(sheet, 'showHeaders', !sheet.showHeaders);
-                    (this.parent.serviceLocator.getService('sheet') as IRenderer).showHideHeaders();
-                    this.toggleRibbonItems({ props: 'Headers', activeTab: this.ribbon.selectedTab });
-                    focus(this.parent.element);
-                    break;
-                case parentId + '_gridlines':
-                    const evtglArgs: { isShow: boolean, sheetIdx: number, cancel: boolean } = {
-                        isShow: !sheet.showGridLines,
-                        sheetIdx: this.parent.activeSheetIndex,
-                        cancel: false
-                    };
-                    this.parent.notify(completeAction, { eventArgs: evtglArgs, action: 'gridLines' });
-                    if (evtglArgs.cancel) { return; }
-                    this.parent.setSheetPropertyOnMute(sheet, 'showGridLines', !sheet.showGridLines);
-                    this.toggleRibbonItems({ props: 'GridLines', activeTab: this.ribbon.selectedTab });
-                    focus(this.parent.element);
-                    break;
-                case parentId + '_protect':
-                    this.parent.setSheetPropertyOnMute(sheet, 'isProtected', !sheet.isProtected);
-                    let isActive: boolean = false;
-                    sheet.isProtected ? isActive = false : isActive = true;
-                    this.parent.notify(applyProtect, { isActive: isActive, id: parentId + '_protect' });
-                    break;
-                case parentId + '_undo':
-                    this.parent.notify(performUndoRedo, { isUndo: true });
-                    break;
-                case parentId + '_redo':
-                    this.parent.notify(performUndoRedo, { isUndo: false });
-                    break;
-                case parentId + '_freezepanes':
-                    const indexes: number[] = getCellIndexes(sheet.topLeftCell);
-                    const selectCell: number[] = sheet.frozenRows || sheet.frozenColumns ? indexes : getCellIndexes(sheet.activeCell);
-                    this.parent.notify(freeze, { row: selectCell[0] - indexes[0], column: selectCell[1] - indexes[1], isAction: true });
-                    break;
-                case parentId + '_freezerows':
-                    this.parent.notify(freeze, { row: sheet.frozenRows ? 0 : getCellIndexes(
-                        sheet.activeCell)[0] - getCellIndexes(sheet.topLeftCell)[0], column: sheet.frozenColumns, isAction: true });
-                    break;
-                case parentId + '_freezecolumns':
-                    this.parent.notify(freeze, {  row: sheet.frozenRows, column: sheet.frozenColumns ? 0 : getCellIndexes(
-                        sheet.activeCell)[1] - getCellIndexes(sheet.topLeftCell)[1], isAction: true });
-                    break;
-                case parentId + '_protectworkbook':
-                    if (this.parent.password.length > 0) {
-                        this.parent.notify(unProtectWorkbook, null);
+            case parentId + '_headers':
+                evtHArgs = {
+                    isShow: !sheet.showHeaders,
+                    sheetIdx: this.parent.activeSheetIndex,
+                    cancel: false
+                };
+                this.parent.notify(completeAction, { eventArgs: evtHArgs, action: 'headers' });
+                if (evtHArgs.cancel) { return; }
+                this.parent.setSheetPropertyOnMute(sheet, 'showHeaders', !sheet.showHeaders);
+                (this.parent.serviceLocator.getService('sheet') as IRenderer).showHideHeaders();
+                this.toggleRibbonItems({ props: 'Headers', activeTab: this.ribbon.selectedTab });
+                focus(this.parent.element);
+                break;
+            case parentId + '_gridlines':
+                evtglArgs = {
+                    isShow: !sheet.showGridLines,
+                    sheetIdx: this.parent.activeSheetIndex,
+                    cancel: false
+                };
+                this.parent.notify(completeAction, { eventArgs: evtglArgs, action: 'gridLines' });
+                if (evtglArgs.cancel) { return; }
+                this.parent.setSheetPropertyOnMute(sheet, 'showGridLines', !sheet.showGridLines);
+                this.toggleRibbonItems({ props: 'GridLines', activeTab: this.ribbon.selectedTab });
+                focus(this.parent.element);
+                break;
+            case parentId + '_protect':
+                this.parent.setSheetPropertyOnMute(sheet, 'isProtected', !sheet.isProtected);
+                isActive = sheet.isProtected ? false : true;
+                this.parent.notify(applyProtect, { isActive: isActive, id: parentId + '_protect' });
+                break;
+            case parentId + '_undo':
+                this.parent.notify(performUndoRedo, { isUndo: true });
+                break;
+            case parentId + '_redo':
+                this.parent.notify(performUndoRedo, { isUndo: false });
+                break;
+            case parentId + '_freezepanes':
+                indexes = getCellIndexes(sheet.topLeftCell);
+                selectCell = sheet.frozenRows || sheet.frozenColumns ? indexes : getCellIndexes(sheet.activeCell);
+                this.parent.notify(freeze, { row: selectCell[0] - indexes[0], column: selectCell[1] - indexes[1], isAction: true });
+                break;
+            case parentId + '_freezerows':
+                this.parent.notify(freeze, { row: sheet.frozenRows ? 0 : getCellIndexes(
+                    sheet.activeCell)[0] - getCellIndexes(sheet.topLeftCell)[0], column: sheet.frozenColumns, isAction: true });
+                break;
+            case parentId + '_freezecolumns':
+                this.parent.notify(freeze, {  row: sheet.frozenRows, column: sheet.frozenColumns ? 0 : getCellIndexes(
+                    sheet.activeCell)[1] - getCellIndexes(sheet.topLeftCell)[1], isAction: true });
+                break;
+            case parentId + '_protectworkbook':
+                if (this.parent.password.length > 0) {
+                    this.parent.notify(unProtectWorkbook, null);
+                }
+                else{
+                    if (this.parent.isProtected) {
+                        this.parent.isProtected = false;
+                        if (this.parent.showSheetTabs) {
+                            this.parent.element.querySelector('.e-add-sheet-tab').removeAttribute('disabled');
+                            this.parent.element.querySelector('.e-add-sheet-tab').classList.remove('e-disabled');
+                        }
+                        this.toggleRibbonItems({ props: 'Protectworkbook', activeTab: this.ribbon.selectedTab });
+
                     }
-                    else{
-                        if(this.parent.isProtected) {
-                            this.parent.isProtected = false;
-                            if (this.parent.showSheetTabs) { 
-                                this.parent.element.querySelector('.e-add-sheet-tab').removeAttribute('disabled');
-                                this.parent.element.querySelector('.e-add-sheet-tab').classList.remove('e-disabled');
-                            }
-                            this.toggleRibbonItems({ props: 'Protectworkbook', activeTab: this.ribbon.selectedTab });
-                           
-                        }
-                        else if(this.parent.element.querySelector('.e-add-sheet-tab').classList.contains("e-disabled")) {
-                            this.toggleRibbonItems({ props: 'Protectworkbook', activeTab: this.ribbon.selectedTab });
-                        }
-                        else {
-                            this.parent.notify(protectWorkbook, null);
-                        }
+                    else if (this.parent.element.querySelector('.e-add-sheet-tab').classList.contains('e-disabled')) {
+                        this.toggleRibbonItems({ props: 'Protectworkbook', activeTab: this.ribbon.selectedTab });
                     }
-                    break;
+                    else {
+                        this.parent.notify(protectWorkbook, null);
+                    }
+                }
+                break;
             }
             this.parent.notify(ribbonClick, args);
         }
     }
 
     private toggleRibbonItems(args: { props: 'Headers' | 'GridLines' | 'Protect' | 'Protectworkbook', activeTab?: number }): void {
-        let text: string = ''; const sheet: SheetModel = this.parent.getActiveSheet();
+        let text: string = '';
         const viewtabHeader: string = (this.parent.serviceLocator.getService(locale) as L10n).getConstant('View');
         const datatabHeader: string = (this.parent.serviceLocator.getService(locale) as L10n).getConstant('Data');
         if (this.ribbon.items[this.ribbon.selectedTab].header.text === viewtabHeader) {
@@ -2278,11 +2289,10 @@ export class Ribbon {
                         break;
                     }
                 }
-                 text = this.getLocaleProtectText('Sheet', true);
+                text = this.getLocaleProtectText('Sheet', true);
             }
-            else if(id === this.parent.element.id + '_protectworkbook') {
+            else if (id === this.parent.element.id + '_protectworkbook') {
                 const len: number = this.ribbon.items[this.ribbon.selectedTab].content.length; let j: number;
-                const l10n: L10n = this.parent.serviceLocator.getService(locale);
                 for (j = 0; j < len; j++) {
                     if (this.ribbon.items[this.ribbon.selectedTab].content[j].id === this.parent.element.id + '_protectworkbook') {
                         break;
@@ -2421,25 +2431,25 @@ export class Ribbon {
     private updateDataTabContent(activeTab: number, item: string, idx: number): void {
         const sheet: SheetModel = this.parent.getActiveSheet();
         const l10n: L10n = this.parent.serviceLocator.getService(locale);
-        if (item === "Sheet") {
-        if (sheet.isProtected) {
-            if (this.ribbon.items[activeTab].content[idx].text === l10n.getConstant('Protect' + item)) {
-                this.ribbon.items[activeTab].content[idx].cssClass = 'e-active';
-                this.updateProtectBtn('Unprotect', item, idx, activeTab);
+        if (item === 'Sheet') {
+            if (sheet.isProtected) {
+                if (this.ribbon.items[activeTab].content[idx].text === l10n.getConstant('Protect' + item)) {
+                    this.ribbon.items[activeTab].content[idx].cssClass = 'e-active';
+                    this.updateProtectBtn('Unprotect', item, idx, activeTab);
+                }
+            } else {
+                this.updateProtectBtn('Protect', item, idx, activeTab);
             }
-        } else {
-            this.updateProtectBtn('Protect', item, idx, activeTab);
         }
-    }
-        else if(item === "Workbook") {
-            const sheet: SheetModel = this.parent.getActiveSheet(); const l10n: L10n = this.parent.serviceLocator.getService(locale);
+        else if (item === 'Workbook') {
+            const l10n: L10n = this.parent.serviceLocator.getService(locale);
             if (this.parent.isProtected) {
                 if (this.ribbon.items[activeTab].content[idx].text === l10n.getConstant('Protect' + item)) {
-                    this.updateToggleText("protectworkbook", this.updateRibbonItemText('UnProtect', item, idx, activeTab));
+                    this.updateToggleText('protectworkbook', this.updateRibbonItemText('UnProtect', item, idx, activeTab));
                 }
             } else {
                 if (this.ribbon.items[activeTab].content[idx].text === l10n.getConstant('UnProtect' + item)) {
-                    this.updateToggleText("protectworkbook", this.updateRibbonItemText('Protect', item, idx, activeTab));
+                    this.updateToggleText('protectworkbook', this.updateRibbonItemText('Protect', item, idx, activeTab));
                 }
             }
         }
@@ -2451,10 +2461,10 @@ export class Ribbon {
         this.ribbon.setProperties({ 'items': this.ribbon.items }, true);
         this.updateToggleText('protect', text);
     }
-    
+
     private updateProtectWorkbookBtn(protectText: string, item: string, idx: number, activeTab: number): void {
         const l10n: L10n = this.parent.serviceLocator.getService(locale);
-        let text: string = l10n.getConstant(protectText);
+        const text: string = l10n.getConstant(protectText);
         this.ribbon.items[activeTab].content[idx].text = text;
         this.ribbon.setProperties({ 'items': this.ribbon.items }, true);
         this.updateToggleText('protectworkbook', text);
@@ -2466,7 +2476,6 @@ export class Ribbon {
 
     private enableToolbarItems(args: { tab?: string, items?: number[] | string[], enable?: boolean }[]): void {
         args.forEach((arg: { tab?: string, items?: number[] | string[], enable: boolean }): void => {
-            const l10n: L10n = this.parent.serviceLocator.getService(locale);
             this.ribbon.enableItems(arg.tab || this.ribbon.items[this.ribbon.selectedTab].header.text, arg.items, arg.enable);
         });
     }

@@ -638,6 +638,28 @@ export class PivotChart {
             this.parent.chart.isStringTemplate = true;
         } else {
             this.parent.chart.series = this.chartSeries;
+            this.parent.chart.title = this.parent.chartSettings.title;
+            this.parent.chart.subTitle = this.parent.chartSettings.subTitle;
+            this.parent.chart.background = this.parent.chartSettings.background;
+            this.parent.chart.theme = this.parent.chartSettings.theme;
+            this.parent.chart.legendSettings = currentLegendSettings;
+            this.parent.chart.selectionMode = this.parent.chartSettings.selectionMode;
+            this.parent.chart.enableExport = this.parent.chartSettings.enableExport;
+            this.parent.chart.isMultiSelect = this.parent.chartSettings.isMultiSelect;
+            this.parent.chart.enableAnimation = this.parent.chartSettings.enableAnimation;
+            this.parent.chart.useGroupingSeparator = this.parent.chartSettings.useGroupingSeparator;
+            this.parent.chart.highlightPattern = this.parent.chartSettings.highlightPattern;
+            if (this.accumulationType.indexOf(type) > -1) {
+                (this.parent.chart as AccumulationChart).enableBorderOnMouseMove = this.parent.chartSettings.enableBorderOnMouseMove;
+                (this.parent.chart as AccumulationChart).highLightMode = this.parent.chartSettings.highlightMode;
+                (this.parent.chart as AccumulationChart).enableSmartLabels = this.parent.chartSettings.enableSmartLabels;
+            } else {
+                (this.parent.chart as Chart).palettes = this.parent.chartSettings.palettes;
+                (this.parent.chart as Chart).isTransposed = this.parent.chartSettings.isTransposed;
+                (this.parent.chart as Chart).enableSideBySidePlacement = this.parent.chartSettings.enableSideBySidePlacement;
+                (this.parent.chart as Chart).tabIndex = this.parent.chartSettings.tabIndex;
+                (this.parent.chart as Chart).description = this.parent.chartSettings.description;
+            }
             if (type === 'Polar' || type === 'Radar') {
                 (this.parent.chart as Chart).primaryXAxis = currentXAxis;
                 (this.parent.chart as Chart).primaryYAxis.visible = true;
@@ -1050,8 +1072,8 @@ export class PivotChart {
         let formatField: IField = this.engineModule.formatFields[measureField.id];
         let formattedValue: string = ((formatField && formatField.format && formatField.format.toLowerCase().match(/n|p|c/) !== null &&
             this.chartSettings.useGroupingSeparator) ? this.parent.dataType === 'olap' ?
-                (this.engineModule as OlapEngine).getFormattedValue(args.point.y as number, measureField.id, formattedText) :
-                this.parent.engineModule.getFormattedValue(args.point.y as number, measureField.id).formattedText :
+            (this.engineModule as OlapEngine).getFormattedValue(args.point.y as number, measureField.id, formattedText) :
+            this.parent.engineModule.getFormattedValue(args.point.y as number, measureField.id).formattedText :
             formattedText);
         let columnText: string = (args.series.name ? args.series.name.split(' | ')[0] : args.data.seriesName.split(' | ')[0]);
         let rowText: any = args.point.x;
@@ -1116,10 +1138,10 @@ export class PivotChart {
         this.parent.chart.height = ['Pie', 'Funnel', 'Pyramid', 'Doughnut', 'Radar', 'Polar'].indexOf(this.parent.chartSettings.chartSeries.type) < 0 &&
             this.parent.chartSettings.enableScrollOnMultiAxis && this.parent.chartSettings.enableMultipleAxis &&
             this.parent.dataSourceSettings.values.length > 0 ? Number(this.parent.chart.height) > (this.parent.dataSourceSettings.values.length * 235) + 100 ?  /* eslint-disable-line */
-                isNaN(Number(this.getChartHeight())) ? this.getChartHeight().toString() : (Number(this.getChartHeight()) - 5).toString() :
-                (!isNaN(Number(this.getChartHeight())) || this.parent.dataSourceSettings.values.length > 1) ?
-                    ((this.parent.dataSourceSettings.values.length * 235) + 100).toString() :
-                    this.getChartHeight().toString() : this.getChartHeight().toString();
+            isNaN(Number(this.getChartHeight())) ? this.getChartHeight().toString() : (Number(this.getChartHeight()) - 5).toString() :
+            (!isNaN(Number(this.getChartHeight())) || this.parent.dataSourceSettings.values.length > 1) ?
+                ((this.parent.dataSourceSettings.values.length * 235) + 100).toString() :
+                this.getChartHeight().toString() : this.getChartHeight().toString();
         this.updateView();
         this.parent.notify(events.contentReady, {});
         this.parent.trigger(events.chartLoaded, args);
@@ -1512,14 +1534,32 @@ export class PivotChart {
      * @hidden
      */
     public destroy(): void {
-        if (this.parent.isDestroyed) {
+        if (this.parent && this.parent.isDestroyed) {
             return;
         }
-        if (this.parent.chart && !this.parent.chart.isDestroyed) {
-            if (this.accumulationMenu && this.accumulationMenu.isDestroyed) {
-                this.accumulationMenu.destroy();
-            }
+        if (this.engineModule) {
+            this.engineModule.fieldList = {};
+            this.engineModule = {} as PivotEngine | OlapEngine;
+        }
+        if (this.chartSeries) {
+            this.chartSeries = null;
+        }
+        if (this.columnGroupObject) {
+            this.columnGroupObject = null;
+        }
+        if (this.chartSettings) {
+            this.chartSettings = null;
+        }
+        if (this.dataSourceSettings) {
+            this.dataSourceSettings = null;
+        }
+        if (this.accumulationMenu && !this.accumulationMenu.isDestroyed) {
+            this.accumulationMenu.destroy();
+            this.accumulationMenu = null;
+        }
+        if (this.parent && this.parent.chart && !this.parent.chart.isDestroyed) {
             this.parent.chart.destroy();
+            this.parent.chart = null;
         } else {
             return;
         }

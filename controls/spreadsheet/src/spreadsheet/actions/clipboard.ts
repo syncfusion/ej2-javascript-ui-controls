@@ -1,7 +1,7 @@
-import { detach, EventHandler, Browser, extend, L10n, isNullOrUndefined } from '@syncfusion/ej2-base';
+import { detach, EventHandler, Browser, L10n, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { ClickEventArgs } from '@syncfusion/ej2-navigations';
 import { Spreadsheet } from '../base/index';
-import { SheetModel, getRangeIndexes, getCell, setCell, getSheet, CellModel, getSwapRange, inRange, isHiddenRow } from '../../workbook/index';
+import { SheetModel, getRangeIndexes, getCell, setCell, getSheet, CellModel, getSwapRange, inRange, isHiddenRow, Workbook } from '../../workbook/index';
 import { CellStyleModel, getRangeAddress, workbookEditOperation, getSheetIndexFromId, getSheetName } from '../../workbook/index';
 import { RowModel, getFormattedCellObject, workbookFormulaOperation, checkIsFormula, Sheet, mergedRange } from '../../workbook/index';
 import { ExtendedSheet, Cell, pasteMerge, setMerge, MergeArgs, getCellIndexes, getCellAddress, ChartModel } from '../../workbook/index';
@@ -165,7 +165,7 @@ export class Clipboard {
         const copyInfo: { range: number[], sId: number, isCut: boolean } = Object.assign({}, this.copiedInfo);
         if (isExternal || this.copiedShapeInfo || (args.isInternal && this.copiedInfo)) {
             const cSIdx: number = (args && args.sIdx > -1) ? args.sIdx : this.parent.activeSheetIndex;
-            const curSheet: SheetModel = getSheet(this.parent, cSIdx);
+            const curSheet: SheetModel = getSheet(this.parent as Workbook, cSIdx);
             let selIdx: number[] = getSwapRange(args && args.range || getRangeIndexes(curSheet.selectedRange));
             const rows: RowModel[] | { internal: boolean } = isExternal && this.getExternalCells(args);
             if (!args.isInternal && (rows as { internal: boolean }) && (rows as { internal: boolean }).internal) {
@@ -204,7 +204,7 @@ export class Clipboard {
             }
             let cell: CellModel;
             let isExtend: boolean; let prevCell: CellModel; const mergeCollection: MergeArgs[] = [];
-            const prevSheet: SheetModel = getSheet(this.parent, isExternal ? cSIdx : copiedIdx);
+            const prevSheet: SheetModel = getSheet(this.parent as Workbook, isExternal ? cSIdx : copiedIdx);
             const notRemoveMerge: boolean = isSingleCell(cIdx) && this.isRangeMerged(selIdx, curSheet);
             selIdx = getRangeIndexes(beginEventArgs.pastedRange);
             rowIdx = selIdx[0]; cIdx = isExternal
@@ -244,7 +244,7 @@ export class Clipboard {
                         requestType: 'imagePaste',
                         copiedShapeInfo: this.copiedShapeInfo,
                         pasteSheetIndex: this.parent.activeSheetIndex,
-                        pastedRange: getSheetName(this.parent) + '!' + getRangeAddress([rowIdx, selIdx[1], rowIdx, selIdx[1]]),
+                        pastedRange: getSheetName(this.parent as Workbook) + '!' + getRangeAddress([rowIdx, selIdx[1], rowIdx, selIdx[1]]),
                         pastedPictureElement: document.getElementById(pastedCell.image[imgLen].id)
                     };
                     this.parent.notify(completeAction, { eventArgs: eventArgs, action: 'clipboard' });
@@ -314,8 +314,10 @@ export class Clipboard {
                                             }
                                         }
                                         let toSkip: boolean = false;
-                                        if (this.parent.filteredRows && this.parent.filteredRows.rowIdxColl && this.parent.filteredRows.sheetIdxColl) {
-                                            for (let i: number = 0, len : number = this.parent.filteredRows.sheetIdxColl.length; i < len; i++) {
+                                        if (this.parent.filteredRows && this.parent.filteredRows.rowIdxColl &&
+                                            this.parent.filteredRows.sheetIdxColl) {
+                                            for (let i: number = 0, len: number =
+                                                this.parent.filteredRows.sheetIdxColl.length; i < len; i++) {
                                                 if (this.parent.filteredRows.sheetIdxColl[i] === this.parent.activeSheetIndex &&
                                                     this.parent.filteredRows.rowIdxColl[i] === x + l) {
                                                     toSkip = true;
@@ -324,7 +326,8 @@ export class Clipboard {
                                             }
                                         }
                                         if (!toSkip) {
-                                            this.setCell(x + l, colInd, curSheet, cell, isExtend, false, y === selIdx[3], isExternal as boolean);
+                                            this.setCell(x + l, colInd, curSheet, cell, isExtend, false, y === selIdx[3],
+                                                         isExternal as boolean);
                                         }
                                         const sId: number = this.parent.activeSheetIndex;
                                         const cellElem: HTMLTableCellElement = this.parent.getCell(x + l, colInd) as HTMLTableCellElement;
@@ -341,7 +344,7 @@ export class Clipboard {
                                     }
                                 }
                             } else {
-                                if (isExternal || !hasTemplate(this.parent, i, j, copiedIdx)) {
+                                if (isExternal || !hasTemplate(this.parent as Workbook, i, j, copiedIdx)) {
                                     if (notRemoveMerge) {
                                         this.setCell(rowIdx, selIdx[1] + k, curSheet, { value: cell.value }, true, false, j === cIdx[3]);
                                     } else {
@@ -349,15 +352,16 @@ export class Clipboard {
                                     }
                                 }
                             }
-                            if (!isExternal && this.copiedInfo.isCut && !(inRange(selIdx, i, j) && copiedIdx === this.parent.activeSheetIndex)) {
+                            if (!isExternal && this.copiedInfo.isCut && !(inRange(selIdx, i, j) && copiedIdx ===
+                                this.parent.activeSheetIndex)) {
                                 this.setCell(i, j, prevSheet, null, false, true, j === cIdx[3]);
                             }
                         }
                         rowIdx++;
-                    } 
+                    }
                     else {
                         selIdx[2] = selIdx[2] - 1;
-                        l = l -1;
+                        l = l - 1;
                     }
                 }
                 this.parent.notify(refreshRibbonIcons, null);
@@ -381,7 +385,7 @@ export class Clipboard {
                     focus(this.parent.element);
                 }
                 if (args.isAction) {
-                    const sheetIndex: number = copyInfo && copyInfo.sId ? getSheetIndexFromId(this.parent, copyInfo.sId) :
+                    const sheetIndex: number = copyInfo && copyInfo.sId ? getSheetIndexFromId(this.parent as Workbook, copyInfo.sId) :
                         this.parent.activeSheetIndex;
                     const eventArgs: Object = {
                         requestType: 'paste',
@@ -390,7 +394,7 @@ export class Clipboard {
                         pasteSheetIndex: this.parent.activeSheetIndex,
                         copiedRange: this.parent.sheets[sheetIndex].name + '!' + getRangeAddress(copyInfo && copyInfo.range ?
                             copyInfo.range : getRangeIndexes(this.parent.sheets[sheetIndex].selectedRange)),
-                        pastedRange: getSheetName(this.parent) + '!' + getRangeAddress(rfshRange),
+                        pastedRange: getSheetName(this.parent as Workbook) + '!' + getRangeAddress(rfshRange),
                         type: pasteType || 'All'
                     };
                     if (!isExternal) {
@@ -403,9 +407,9 @@ export class Clipboard {
                     const hgt: number = getMaxHgt(prevSheet, cIdx[0]);
                     setRowEleHeight(this.parent, prevSheet, hgt, cIdx[0]);
                 }
-                const copySheet: SheetModel = getSheet(this.parent, copiedIdx);
+                const copySheet: SheetModel = getSheet(this.parent as Workbook, copiedIdx);
                 if (!isExternal && cIdx[0] === cIdx[2] && (cIdx[3] - cIdx[1]) === copySheet.colCount - 1) {
-                    let hgt: number = copySheet.rows[cIdx[0]].height;
+                    const hgt: number = copySheet.rows[cIdx[0]].height;
                     for (let i: number = selIdx[0]; i <= selIdx[2]; i++) {
                         setRowEleHeight(this.parent, this.parent.getActiveSheet(), hgt, i);
                     }
@@ -434,11 +438,11 @@ export class Clipboard {
         this.parent.notify(getFilteredCollection, null);
         for (let i: number = 0; i < this.parent.sheets.length; i++) {
             if (this.parent.filterCollection && this.parent.filterCollection[i] &&
-                this.parent.filterCollection[i].sheetIndex === getSheetIndexFromId(this.parent, copyInfo.sId)) {
+                this.parent.filterCollection[i].sheetIndex === getSheetIndexFromId(this.parent as Workbook, copyInfo.sId)) {
                 let range: number[] = copyInfo.range;
                 const fRange: number[] = getRangeIndexes(this.parent.filterCollection[i].filterRange);
                 range = getSwapRange(range);
-                if (fRange[0] === range[0] && fRange[2] === range[2] && fRange[1] === range[1]&& fRange[3] === range[3]) {
+                if (fRange[0] === range[0] && fRange[2] === range[2] && fRange[1] === range[1] && fRange[3] === range[3]) {
                     isFilterCut = true;
                     diff = [Math.abs(range[0] - fRange[0]), Math.abs(range[1] - fRange[1]),
                         Math.abs(range[2] - fRange[2]), Math.abs(range[3] - fRange[3])];
@@ -452,7 +456,7 @@ export class Clipboard {
         if (isFilterCut) {
             for (let n: number = 0; n < this.parent.filterCollection.length; n++) {
                 const filterCol: FilterCollectionModel = this.parent.filterCollection[n];
-                const sheetIndex: number = copyInfo && copyInfo.sId ? getSheetIndexFromId(this.parent, copyInfo.sId) :
+                const sheetIndex: number = copyInfo && copyInfo.sId ? getSheetIndexFromId(this.parent as Workbook, copyInfo.sId) :
                     this.parent.activeSheetIndex;
                 if (filterCol.sheetIndex === sheetIndex) {
                     this.parent.notify(initiateFilterUI, { predicates: null, range: filterCol.filterRange, sIdx: sheetIndex, isCut: true });
@@ -476,7 +480,7 @@ export class Clipboard {
     }
 
     private isInRange(cRng: number[], pRng: number[], sIdx: number): boolean {
-        let activeSheetIndex: number = this.parent.activeSheetIndex;
+        const activeSheetIndex: number = this.parent.activeSheetIndex;
         return (inRange(cRng, pRng[0], pRng[1]) && sIdx === activeSheetIndex) ||
             (inRange(cRng, pRng[2], pRng[3]) && sIdx === activeSheetIndex);
     }
@@ -544,7 +548,9 @@ export class Clipboard {
         }
     }
     private setCell(
-        rIdx: number, cIdx: number, sheet: SheetModel, cell: CellModel, isExtend?: boolean, isCut?: boolean, lastCell?: boolean, isExternal?: boolean): void {
+        rIdx: number, cIdx: number, sheet: SheetModel, cell: CellModel, isExtend?: boolean, isCut?: boolean,
+        lastCell?: boolean, isExternal?: boolean): void {
+        let sheetIndex: number = sheet ? getSheetIndexFromId(this.parent, sheet.id) : null;
         setCell(rIdx, cIdx, sheet, isCut ? null : cell, isExtend);
         if (cell && cell.formula) {
             this.parent.notify(workbookFormulaOperation, {
@@ -557,23 +563,24 @@ export class Clipboard {
                 workbookEditOperation,
                 {
                     action: 'updateCellValue', address: [rIdx, cIdx, rIdx,
-                        cIdx], value: cell.value
+                        cIdx], value: cell.value, sheetIndex: sheetIndex
                 });
         }
         if (sheet.name === this.parent.getActiveSheet().name) {
             this.parent.serviceLocator.getService<ICellRenderer>('cell').refresh(rIdx, cIdx, lastCell);
         }
         if (cell && cell.style && isExternal) {
-            let hgt = getTextHeightWithBorder(this.parent, rIdx, cIdx, sheet, cell.style || this.parent.cellStyle, cell.wrap ?
-                getLines(this.parent.getDisplayText(cell),
-                    getExcludedColumnWidth(sheet, rIdx, cIdx), cell.style, this.parent.cellStyle) : 1);
+            let hgt: number =
+                getTextHeightWithBorder(this.parent as Workbook, rIdx, cIdx, sheet, cell.style || this.parent.cellStyle, cell.wrap ?
+                    getLines(this.parent.getDisplayText(cell),
+                             getExcludedColumnWidth(sheet, rIdx, cIdx), cell.style, this.parent.cellStyle) : 1);
             hgt = Math.round(hgt);
             if (hgt < 20) {
                 hgt = 20; // default height
             }
             setMaxHgt(sheet, rIdx, cIdx, hgt);
             const prevHeight: number = getRowsHeight(sheet, rIdx);
-            let maxHgt: number = getMaxHgt(sheet, rIdx);
+            const maxHgt: number = getMaxHgt(sheet, rIdx);
             const heightChanged: boolean = maxHgt > prevHeight;
             if (heightChanged) {
                 setRowEleHeight(this.parent, sheet, maxHgt, rIdx);
@@ -610,6 +617,7 @@ export class Clipboard {
         }
         const option: { sheet: SheetModel, indexes: number[], promise?: Promise<Cell> } = {
             sheet: sheet, indexes: [0, 0, sheet.rowCount - 1, sheet.colCount - 1], promise:
+                // eslint-disable-next-line @typescript-eslint/no-unused-vars
                 new Promise((resolve: Function, reject: Function) => { resolve((() => { /** */ })()); })
         };
         const pictureElements: HTMLCollection = document.getElementsByClassName('e-ss-overlay-active');
@@ -620,12 +628,12 @@ export class Clipboard {
         }
         option.promise.then(() => {
             if (pictureLen > 0) {
-                const imgRowIdx: { clientY: number, isImage: Boolean } = {
+                const imgRowIdx: { clientY: number, isImage: boolean } = {
                     clientY: (pictureElements[0] as HTMLElement).offsetTop,
                     isImage: true
                 };
                 this.parent.notify(getRowIdxFromClientY, imgRowIdx);
-                const imgColIdx: { clientX: number, isImage: Boolean } = {
+                const imgColIdx: { clientX: number, isImage: boolean } = {
                     clientX: (pictureElements[0] as HTMLElement).offsetLeft,
                     isImage: true
                 };
@@ -635,7 +643,7 @@ export class Clipboard {
                         pictureElements[0] as HTMLElement, copiedRange: getRangeAddress([imgRowIdx.clientY, imgColIdx.clientX,
                         imgRowIdx.clientY, imgColIdx.clientX]), height: (pictureElements[0] as HTMLElement).offsetHeight,
                     width: (pictureElements[0] as HTMLElement).offsetWidth,
-                    chartInfo: this.getChartElemInfo(pictureElements[0] as HTMLElement, isCut)
+                    chartInfo: this.getChartElemInfo(pictureElements[0] as HTMLElement)
                 };
                 this.hidePaste(true);
                 if (isCut) {
@@ -644,7 +652,7 @@ export class Clipboard {
                     } else {
                         this.parent.notify(deleteImage, {
                             id: this.copiedShapeInfo.pictureElem.id, sheetIdx: this.copiedShapeInfo.sId,
-                                range: this.copiedShapeInfo.copiedRange
+                            range: this.copiedShapeInfo.copiedRange
                         });
                     }
                 }
@@ -677,7 +685,7 @@ export class Clipboard {
         }
     }
 
-    private getChartElemInfo(overlayEle: HTMLElement, isCut: boolean): ChartModel {
+    private getChartElemInfo(overlayEle: HTMLElement): ChartModel {
         const chartColl: ChartModel[] = this.parent.chartColl;
         if (overlayEle.classList.contains('e-datavisualization-chart')) {
             const chartId: string = overlayEle.getElementsByClassName('e-control')[0].id;
@@ -941,7 +949,7 @@ export class Clipboard {
         let fontSize: string = style.fontSize ? style.fontSize.trim() : null;
         if (style.textDecoration && textDecoration.indexOf(style.textDecoration.trim()) < 0) {
             style.textDecoration = 'none';
-        };
+        }
         if (style.textAlign && textAlign.indexOf(style.textAlign.trim()) < 0) {
             style.textAlign = 'left';
         }

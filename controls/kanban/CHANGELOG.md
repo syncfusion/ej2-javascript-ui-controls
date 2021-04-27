@@ -6,6 +6,14 @@
 
 ### Kanban
 
+#### Bug Fixes
+
+- `#321297` - The issue with "Kanban custom dialog drop down list does not properly return integer type value" has been fixed.
+
+## 19.1.54 (2021-03-30)
+
+### Kanban
+
 #### New Features
 
 - `F160742` - Support to drag and drop the card from kanban to an external source and vice versa has been provided.

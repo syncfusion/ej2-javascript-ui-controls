@@ -71,10 +71,8 @@ export class SheetRender implements IRenderer {
     }
 
     public setPanelWidth(sheet: SheetModel, rowHdr: HTMLElement): void {
-        let width: number;
-        const prop: string = this.parent.enableRtl ? 'margin-left' : 'margin-right';
-        const scrollSize: number = !!parseInt(this.headerPanel.style[prop], 10) ? parseInt(this.headerPanel.style[prop], 10) : 0;
-        width = this.getRowHeaderWidth(sheet); const offset: string = this.parent.enableRtl ? 'right' : 'left';
+        const scrollSize: number = this.getScrollSize();
+        const width: number = this.getRowHeaderWidth(sheet); const offset: string = this.parent.enableRtl ? 'right' : 'left';
         if (sheet.frozenColumns) {
             const frozenCol: HTMLElement = document.getElementById(this.parent.element.id + '_sheet').getElementsByClassName(
                 'e-frozen-column')[0] as HTMLElement;
@@ -97,8 +95,13 @@ export class SheetRender implements IRenderer {
         }
     }
 
+    private getScrollSize(): number {
+        const prop: string = this.parent.enableRtl ? 'margin-left' : 'margin-right';
+        return parseInt(this.headerPanel.style[prop], 10) ? parseInt(this.headerPanel.style[prop], 10) : 0;
+    }
+
     private setHeaderPanelWidth(content: HTMLElement, width: number): void {
-        let emptyCol: HTMLElement[] = [].slice.call(content.querySelectorAll('col.e-empty'));
+        const emptyCol: HTMLElement[] = [].slice.call(content.querySelectorAll('col.e-empty'));
         emptyCol.forEach((col: HTMLElement): void => {
             width += parseInt(col.style.width, 10);
         });
@@ -106,11 +109,11 @@ export class SheetRender implements IRenderer {
     }
 
     private setPanelHeight(sheet: SheetModel): void {
-        const prop: string = this.parent.enableRtl ? 'margin-left' : 'margin-right';
-        let scrollSize: number = !!parseInt(this.headerPanel.style[prop], 10) ? parseInt(this.headerPanel.style[prop], 10) : 0;
+        const scrollSize: number = this.getScrollSize();
         if (sheet.frozenRows) {
             const topIndex: number = getCellIndexes(sheet.topLeftCell)[0];
-            const frozenHeight: number = (sheet.showHeaders ? getDPRValue(31) : 0) + getRowsHeight(sheet, topIndex, topIndex + sheet.frozenRows - 1, true);
+            const frozenHeight: number = (sheet.showHeaders ? getDPRValue(31) : 0) +
+             getRowsHeight(sheet, topIndex, topIndex + sheet.frozenRows - 1, true);
             if (!sheet.showHeaders && !sheet.frozenColumns) {
                 this.headerPanel.style.height = frozenHeight + 'px';
             } else {
@@ -188,7 +191,7 @@ export class SheetRender implements IRenderer {
         frag.appendChild(this.headerPanel); frag.appendChild(this.contentPanel);
         if (this.parent.allowScrolling) {
             const scrollPanel: HTMLElement = this.parent.createElement('div', { className: 'e-scrollbar' });
-            scrollPanel.appendChild(this.parent.createElement('div', { className: 'e-scroller' }))
+            scrollPanel.appendChild(this.parent.createElement('div', { className: 'e-scroller' }));
             frag.appendChild(scrollPanel);
         }
         this.createHeaderTable();
@@ -218,14 +221,23 @@ export class SheetRender implements IRenderer {
                 hRow = this.rowRenderer.render(indexes[0], true);
                 if (frozenCol && frozenRow && indexes[1] < frozenCol && indexes[0] < frozenRow) {
                     emptyRow = selectAllTBody.querySelector('.e-empty');
-                    emptyRow ? selectAllTBody.insertBefore(hRow, emptyRow) : selectAllTBody.appendChild(hRow); row = hRow;
+                    if (emptyRow) {
+                        selectAllTBody.insertBefore(hRow, emptyRow);
+                    } else {
+                        selectAllTBody.appendChild(hRow);
+                    }
+                    row = hRow;
                 } else if (frozenCol && indexes[1] < frozenCol) {
                     rHdrTBody.appendChild(hRow); row = hRow;
                 } else {
                     row = this.rowRenderer.render(indexes[0]);
                     if (frozenRow && indexes[0] < frozenRow) {
                         emptyRow = cHdrTBody.querySelector('.e-empty');
-                        emptyRow ? cHdrTBody.insertBefore(row, emptyRow) : cHdrTBody.appendChild(row);
+                        if (emptyRow) {
+                            cHdrTBody.insertBefore(row, emptyRow);
+                        } else {
+                            cHdrTBody.appendChild(row);
+                        }
                     } else {
                         cTBody.appendChild(row);
                     }
@@ -243,7 +255,7 @@ export class SheetRender implements IRenderer {
             }
             row.appendChild(this.cellRenderer.render(<CellRenderArgs>{colIdx: indexes[1], rowIdx: indexes[0], cell: value,
                 address: key, lastCell: indexes[1] === args.indexes[3], isHeightCheckNeeded: true, row: row, hRow: hRow,
-                pRow: row.previousSibling, pHRow: hRow.previousSibling,
+                pRow: row.previousSibling, pHRow: hRow.previousSibling, isRefreshing: args.isRefreshing,
                 first: layout ? (layout.includes('Row') ? (indexes[0] === args.indexes[0] ? 'Row' : (layout.includes('Column') ? (
                     indexes[1] === args.indexes[1] ? 'Column' : '') : '')) : (indexes[1] === args.indexes[1] ? 'Column' : '')) : '' }));
             if (frozenCol && indexes[1] === frozenCol - 1) { row = null; }
@@ -272,13 +284,8 @@ export class SheetRender implements IRenderer {
                 content.scrollLeft = args.left; this.parent.getColumnHeaderContent().scrollLeft = args.left;
                 if (this.parent.allowScrolling) { this.parent.getScrollElement().scrollLeft = args.left; }
             }
-            this.parent.notify(contentLoaded, null);
-            if (this.parent.scrollSettings.isFinite && sheet.colCount - 1 === this.parent.viewport.rightIndex) {
-                const cellsWidth: number = getColumnsWidth(sheet, this.parent.viewport.leftIndex, this.parent.viewport.rightIndex);
-                if (cellsWidth < this.contentPanel.getBoundingClientRect().width - this.getRowHeaderWidth(sheet)) {
-                    this.getColHeaderTable().style.width = 'auto'; this.getContentTable().style.width = 'auto';
-                }
-            }
+            this.parent.notify(contentLoaded, args);
+            this.checkTableWidth(sheet);
             this.parent.notify(editOperation, { action: 'renderEditor' });
             if (!args.initLoad && !this.parent.isOpen) { this.parent.hideSpinner(); }
             setAriaOptions(content, { busy: false });
@@ -312,6 +319,21 @@ export class SheetRender implements IRenderer {
             this.parent.notify(clearUndoRedoCollection, null);
         }
     }
+    private checkTableWidth(sheet: SheetModel): void {
+        if (this.parent.scrollSettings.isFinite && !this.parent.scrollSettings.enableVirtualization && sheet.colCount - 1 ===
+            this.parent.viewport.rightIndex) {
+            const cellsWidth: number = getColumnsWidth(
+                sheet, this.parent.viewport.leftIndex + this.parent.frozenColCount(sheet), this.parent.viewport.rightIndex);
+            const rowHdrWidth: number = this.getRowHeaderWidth(sheet);
+            const scrollSize: number = this.getScrollSize();
+            if (cellsWidth < this.contentPanel.getBoundingClientRect().width - rowHdrWidth - scrollSize) {
+                this.getContentPanel().style.width = cellsWidth + 'px'; this.getColHeaderPanel().style.width = cellsWidth + 'px';
+            } else if (!this.getContentPanel().style.width.includes('calc')) {
+                this.getContentPanel().style.width = `calc(100% - ${rowHdrWidth}px)`;
+                this.getColHeaderPanel().style.width = `calc(100% - ${rowHdrWidth}px)`;
+            }
+        }
+    }
 
     public refreshColumnContent(args: SheetRenderArgs): void {
         let indexes: number[]; let row: Element; let table: Element; let count: number = 0; let cell: Element; let col: Element;
@@ -322,11 +344,11 @@ export class SheetRender implements IRenderer {
         let colGrp: Element = this.parent.element.querySelector('.e-sheet-content colgroup');
         colGrp = colGrp.cloneNode() as Element; frag.appendChild(colGrp);
         tBody = frag.appendChild(tBody.cloneNode(true) as Element);
-        let hColGrp: Element = colGrp.cloneNode() as Element; hFrag.appendChild(hColGrp);
-        let hRow: Element; let tHead: Element;
+        const hColGrp: Element = colGrp.cloneNode() as Element; hFrag.appendChild(hColGrp);
+        let tHead: Element;
         tHead = this.parent.element.querySelector('.e-column-header thead');
         tHead = hFrag.appendChild(tHead.cloneNode(true) as Element);
-        hRow = tHead.querySelector('tr'); hRow.innerHTML = '';
+        const hRow: Element = tHead.querySelector('tr'); hRow.innerHTML = '';
         const frozenRow: number = this.parent.frozenRowCount(sheet); const frozenCol: number = this.parent.frozenColCount(sheet);
         if (frozenRow) { hTBody = hFrag.appendChild(hTBody.cloneNode(true) as Element); }
         (args.cells as Map<string, CellModel>).forEach((value: CellModel, key: string): void => {
@@ -398,11 +420,13 @@ export class SheetRender implements IRenderer {
                     colGroupWidth = getColGroupWidth(indexes[0] + 1);
                 }
             }
-            cell = row.appendChild(this.cellRenderer.render(<CellRenderArgs>{ rowIdx: indexes[0], colIdx: indexes[1], cell: value, address:
-                key, lastCell: indexes[1] === args.indexes[3], row: row, hRow: hdrRow, pRow: row.previousSibling, pHRow: hdrRow.previousSibling,
+            cell = row.appendChild(this.cellRenderer.render(<CellRenderArgs>{
+                rowIdx: indexes[0], colIdx: indexes[1], cell: value, address:
+                    key, lastCell: indexes[1] === args.indexes[3], row: row, hRow: hdrRow, pRow: row.previousSibling,
+                pHRow: hdrRow.previousSibling,
                 isHeightCheckNeeded: true, first: !args.skipUpdateOnFirst && indexes[0] === args.indexes[0] ?
-                'Row' : (this.parent.scrollSettings.enableVirtualization && indexes[1] === args.indexes[1] && this.parent.viewport.leftIndex
-                !== skipHiddenIdx(sheet, 0, true, 'columns') ? 'Column' : '') }));
+                    'Row' : (this.parent.scrollSettings.enableVirtualization && indexes[1] === args.indexes[1] && this.parent.viewport.leftIndex
+                        !== skipHiddenIdx(sheet, 0, true, 'columns') ? 'Column' : '') }));
             this.checkRowMerge(indexes, args.indexes, cell, value);
             if (frozenCol && indexes[1] === frozenCol - 1) { row = null; }
         });
@@ -443,10 +467,10 @@ export class SheetRender implements IRenderer {
 
     public updateColContent(args: SheetRenderArgs): void {
         getUpdateUsingRaf((): void => {
-            let indexes: number[]; let row: Element; let table: Element; let refChild: Element; let cell: Element; let hRow: Element;
-            let rowCount: number = 0; let col: HTMLElement; let hRefChild: Element; const sheet: SheetModel = this.parent.getActiveSheet();
-            hRow = this.parent.element.querySelector('.e-column-header .e-header-row');
-            hRefChild = hRow.firstElementChild;
+            let indexes: number[]; let row: Element; let refChild: Element; let cell: Element;
+            let rowCount: number = 0; let col: HTMLElement; const sheet: SheetModel = this.parent.getActiveSheet();
+            const hRow: Element = this.parent.element.querySelector('.e-column-header .e-header-row');
+            const hRefChild: Element = hRow.firstElementChild;
             const colGrp: Element = this.parent.element.querySelector('.e-sheet-content colgroup');
             const hColGrp: Element = this.parent.element.querySelector('.e-column-header colgroup');
             const colRefChild: Element = colGrp.firstElementChild; let skipRender: boolean;
@@ -457,10 +481,11 @@ export class SheetRender implements IRenderer {
             (args.cells as Map<string, CellModel>).forEach((value: CellModel, key: string): void => {
                 if (skipRender) { return; }
                 indexes = getRangeIndexes(key);
-                if (args.direction ===  'first' && indexes[1] === args.indexes[1]) {
+                if (args.direction === 'first' && indexes[1] === args.indexes[1]) {
                     this.checkColMerge(
                         [indexes[0], this.parent.viewport.leftIndex + frozenCol], args.indexes,
-                        ((indexes[0] < frozenRow ? hTBody : tBody).rows[rowCount] || { cells: [] }).cells[(args.indexes[3] - args.indexes[1]) + 1],
+                        ((indexes[0] < frozenRow ? hTBody : tBody).rows[rowCount] ||
+                            { cells: [] }).cells[(args.indexes[3] - args.indexes[1]) + 1],
                         getCell(indexes[0], this.parent.viewport.leftIndex + frozenCol, sheet) || {});
                 }
                 if (indexes[0] === args.indexes[0]) {
@@ -573,7 +598,7 @@ export class SheetRender implements IRenderer {
             if (args.direction ===  'last' && tBody.rows.length) {
                 this.checkRowMerge(
                     indexes, args.indexes, cell, value, (indexes[1] < frozenCol ? rTBody : tBody).rows[0].cells[indexes[1] < frozenCol ?
-                    count + 1 : count]);
+                        count + 1 : count]);
             }
             count++;
             if (frozenCol && indexes[1] === frozenCol - 1) { row = null; firstRow = undefined; count = 0; }
@@ -631,7 +656,8 @@ export class SheetRender implements IRenderer {
 
     private refreshPrevMerge(prevTopIdx: number, colIndex: number, currTopIdx?: number): void {
         const td: HTMLTableCellElement
-            = this.parent.getCell(prevTopIdx, colIndex, this.parent.getRow(currTopIdx ? currTopIdx : 0, null, colIndex)) as HTMLTableCellElement;
+            = this.parent.getCell(prevTopIdx, colIndex, this.parent.getRow(currTopIdx ?
+                currTopIdx : 0, null, colIndex)) as HTMLTableCellElement;
         if (td && td.rowSpan > 1) {
             this.cellRenderer.refresh(prevTopIdx, colIndex, null, td);
         }
@@ -644,7 +670,7 @@ export class SheetRender implements IRenderer {
             if (model.colSpan < 0) {
                 const e: CellRenderArgs = { td: cell as HTMLTableCellElement, colIdx: indexes[1], rowIdx: indexes[0], isFreezePane: true };
                 this.parent.notify(checkMerge, e);
-                if (e.insideFreezePane) { return; } 
+                if (e.insideFreezePane) { return; }
             }
             if (firstcell && ((firstcell as HTMLTableCellElement).colSpan > 1 || (firstcell as HTMLTableCellElement).rowSpan > 1)) {
                 this.cellRenderer.refresh(indexes[0], indexes[1] + (range[3] - range[1]) + 1, null, firstcell);
@@ -687,15 +713,16 @@ export class SheetRender implements IRenderer {
 
     private rowHeightChange(args: { rowIdx: number, threshold: number }): void {
         if (args.threshold) {
-            let sheet: SheetModel = this.parent.getActiveSheet();
+            const sheet: SheetModel = this.parent.getActiveSheet();
             if (args.rowIdx < this.parent.frozenRowCount(sheet)) { this.setPanelHeight(sheet); }
         }
     }
 
     private colWidthChange(args: { colIdx: number, threshold: number }): void {
         if (args.threshold) {
-            let sheet: SheetModel = this.parent.getActiveSheet();
+            const sheet: SheetModel = this.parent.getActiveSheet();
             if (args.colIdx < this.parent.frozenColCount(sheet)) { this.setPanelWidth(sheet, this.getRowHeaderPanel()); }
+            this.checkTableWidth(sheet);
         }
     }
 
@@ -703,7 +730,7 @@ export class SheetRender implements IRenderer {
         let width: number = 0;
         if (!skipFreezeCheck && sheet.frozenColumns) {
             const leftIdx: number = getCellIndexes(sheet.topLeftCell)[1];
-            width = getColumnsWidth(sheet, leftIdx, leftIdx + sheet.frozenColumns - 1, true)
+            width = getColumnsWidth(sheet, leftIdx, leftIdx + sheet.frozenColumns - 1, true);
         }
         width += sheet.showHeaders ? getDPRValue(this.colGroupWidth) : 0;
         return width;

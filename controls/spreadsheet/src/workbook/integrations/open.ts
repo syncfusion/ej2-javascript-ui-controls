@@ -3,8 +3,8 @@
  */
 import { isUndefined } from '@syncfusion/ej2-base';
 import { OpenOptions, OpenFailureArgs, BeforeOpenEventArgs } from '../../spreadsheet/common/interface';
-import { workbookOpen, openSuccess, openFailure, sheetsDestroyed, workbookFormulaOperation, getRangeIndexes, FilterCollectionModel, getCellAddress, sortImport, WorkbookAllModule } from '../common/index';
-import { sheetCreated, protectSheetWorkBook, getRangeAddress } from '../common/index';
+import { workbookOpen, openSuccess, openFailure, sheetsDestroyed, workbookFormulaOperation, getRangeIndexes, FilterCollectionModel, getCellAddress, sortImport } from '../common/index';
+import { sheetCreated, protectSheetWorkBook, getRangeAddress, updateFilter } from '../common/index';
 import { WorkbookModel, Workbook, initSheet, SheetModel } from '../base/index';
 import { beginAction, initiateFilterUI } from '../../spreadsheet/common/event';
 import { PredicateModel } from '@syncfusion/ej2-grids';
@@ -20,7 +20,7 @@ export class WorkbookOpen {
      * To open the excel file stream or excel url into the spreadsheet.
      *
      * @param {OpenOptions} options - Options to open a excel file.
-     * @returns {OpenOptions} - To open the excel file stream or excel url into the spreadsheet.
+     * @returns {void} - To open the excel file stream or excel url into the spreadsheet.
      */
     public open(options: OpenOptions): void {
         if (!this.parent.allowOpen) {
@@ -109,7 +109,7 @@ export class WorkbookOpen {
                 this.parent.element.querySelector('.e-add-sheet-tab').removeAttribute('disabled');
                 this.parent.element.querySelector('.e-add-sheet-tab').classList.remove('e-disabled');
             }
-            this.parent.password = "";
+            this.parent.password = '';
         }
     }
 
@@ -135,76 +135,8 @@ export class WorkbookOpen {
         this.parent.notify(workbookFormulaOperation, { action: 'registerSheet', isImport: true });
         this.parent.notify(workbookFormulaOperation, { action: 'initiateDefinedNames' });
         this.parent.notify(protectSheetWorkBook, null);
-        if (this.parent.filterCollection) {
-            this.updateFilter();
-        }
+        this.parent.notify(updateFilter, { isOpen: true });
     }
-    private updateFilter(): void {
-        for (let i: number = 0; i < this.parent.filterCollection.length; i++) {
-            let filterCol: FilterCollectionModel = this.parent.filterCollection[i];
-            let sIdx: number = filterCol.sheetIndex;
-            if (i === 0) {
-                sIdx = 0;
-            }
-            let predicates: PredicateModel[] = [];
-            if (filterCol.column) {
-                for (let j: number = 0; j < filterCol.column.length; j++) {
-                    let predicateCol: PredicateModel = {
-                        field: getCellAddress(0, filterCol.column[j]).charAt(0),
-                        operator: this.getFilterOperator(filterCol.criteria[j]), value: filterCol.value[j].toString().split('*').join('')
-                    };
-                    predicates.push(predicateCol);
-                }
-            }
-            for (let i: number = 0; i < predicates.length - 1; i++) {
-                if (predicates[i].field === predicates[i + 1].field) {
-                    if (!predicates[i].predicate) {
-                        predicates[i].predicate = 'or';
-                    }
-                    predicates[i + 1].predicate = 'or';
-                }
-            }
-            this.parent.notify(initiateFilterUI, { predicates: predicates !== [] ? predicates : null, range: filterCol.filterRange, sIdx: sIdx });
-        }
-        if (this.parent.sortCollection) {
-            this.parent.notify(sortImport, null);
-        }
-    }
-
-    private getFilterOperator(value: string)
-        {
-            switch (value)
-            {
-                case "BeginsWith":
-                    value = "startswith";
-                    break;
-                case "Less":
-                    value = "lessthan";
-                    break;
-                case "EndsWith":
-                    value = "endswith";
-                    break;
-                case "Equal":
-                    value = "equal";
-                    break;
-                case "Notequal":
-                    value = "notEqual";
-                    break;
-                case "Greater":
-                    value = "greaterthan";
-                    break;
-                case "Contains":
-                    value = "contains";
-                    break;
-                case "LessOrEqual":
-                    value = "lessthanorequal";
-                    break;
-                case "GreaterOrEqual":
-                    value = "greaterthanorequal";
-                    break;
-            }
-            return value;
-        }
 
     private setSelectAllRange(sheets: SheetModel[]): void {
         sheets.forEach((sheet: SheetModel) => {

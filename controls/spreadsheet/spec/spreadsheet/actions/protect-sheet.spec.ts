@@ -171,11 +171,11 @@ describe('Protect sheet ->', () => {
                 });
             });
         });
-        describe('I321143, F161227 ->', () => {
-            beforeEach((done: Function) => {
+        describe('I321143, F161227, FB23867 ->', () => {
+            beforeAll((done: Function) => {
                 helper.initializeSpreadsheet({ sheets: [{ rows: [{ cells: [{ value: 'spreadsheet' }] }], isProtected: true }] }, done);
             });
-            afterEach(() => {
+            afterAll(() => {
                 helper.invoke('destroy');
             });
             it('Deleting values from locked cells and warning dialog', (done: Function) => {
@@ -184,7 +184,29 @@ describe('Protect sheet ->', () => {
                 const spreadsheet: Spreadsheet = helper.getInstance();
                 expect(spreadsheet.sheets[0].rows[0].cells[0].value).toBe('spreadsheet');
                 setTimeout((): void => {
+                    helper.setAnimationToNone('.e-editAlert-dlg');
+                    expect(helper.getElement('.e-editAlert-dlg')).not.toBeNull();
+                    helper.click('.e-editAlert-dlg .e-footer-content button:nth-child(1)');
                     done();
+                });
+            });
+            it('Cancel button in hyperlink popup is not working in protected sheet', (done: Function) => {
+                helper.invoke('protectSheet', ['Sheet1', { selectCells: true, insertLink: true }]);
+                let td: HTMLTableCellElement = helper.invoke('getCell', [0, 0]);
+                const coords: DOMRect = <DOMRect>td.getBoundingClientRect();
+                helper.triggerMouseAction('contextmenu', { x: coords.x, y: coords.y }, null, td);
+                setTimeout(() => {
+                    helper.click('#' + helper.id + '_contextmenu li:nth-child(9)');
+                    setTimeout(() => {
+                        helper.triggerKeyEvent('keydown', 65, null, null, null, helper.getElements('.e-hyperlink-dlg .e-webpage input')[1]);
+                        setTimeout(() => {
+                            expect(helper.getElement('.e-editAlert-dlg')).toBeNull();
+                            helper.setAnimationToNone('.e-hyperlink-dlg');
+                            helper.click('.e-hyperlink-dlg .e-footer-content button:nth-child(2)');
+                            expect(helper.getElement('.e-hyperlink-dlg')).toBeNull();
+                            done();
+                        });
+                    });
                 });
             });
         });

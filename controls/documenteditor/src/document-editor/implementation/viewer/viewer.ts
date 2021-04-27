@@ -3888,6 +3888,7 @@ export class PageLayoutViewer extends LayoutViewer {
         page.bodyWidgets[page.bodyWidgets.length - 1].page = page;
         this.documentHelper.layout.layoutHeaderFooter(section, viewer, page);
         this.updateClientArea(section.sectionFormat, page);
+        this.documentHelper.layout.footnoteHeight = 0;
         return page;
     }
     public updatePageBoundingRectangle(section: BodyWidget, page: Page, yPosition: number): void {

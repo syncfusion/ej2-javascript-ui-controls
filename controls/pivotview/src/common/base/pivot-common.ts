@@ -105,6 +105,7 @@ export class PivotCommon {
     public destroy(): void {
         if (this.keyboardModule) {
             this.keyboardModule.destroy();
+            this.keyboardModule = null;
         }
     }
 }

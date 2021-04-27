@@ -33,7 +33,7 @@ export class VirtualScroll {
         this.content.appendChild(container.querySelector('.e-table'));
         container.appendChild(this.content);
         const vTrack: HTMLElement = container.appendChild(this.parent.createElement('div', { className: 'e-virtualtrack' }));
-        let colVTrack: HTMLElement; let rowVTrack: HTMLElement; let height: number = 0; let width: number;
+        let height: number = 0; let width: number;
         if (this.parent.sheets.length > this.scroll.length) { this.initScroll(); }
         let endIndex: number = this.parent.viewport.bottomIndex;
         if (sheet.rowCount > endIndex + 1 || sheet.usedRange.rowIndex > endIndex) {
@@ -84,13 +84,13 @@ export class VirtualScroll {
         this.rowHeader = this.content.cloneNode() as HTMLElement;
         this.rowHeader.appendChild(container.querySelector('.e-table'));
         container.appendChild(this.rowHeader);
-        rowVTrack = container.appendChild(vTrack.cloneNode() as HTMLElement);
+        const rowVTrack: HTMLElement = container.appendChild(vTrack.cloneNode() as HTMLElement);
         this.rowHeader.style.transform = `translate(0px, ${this.translateY}px)`;
         container = this.parent.getColumnHeaderContent();
         this.colHeader = this.content.cloneNode() as HTMLElement;
         this.colHeader.appendChild(container.querySelector('.e-table'));
         container.appendChild(this.colHeader);
-        colVTrack = container.appendChild(vTrack.cloneNode() as HTMLElement);
+        const colVTrack: HTMLElement = container.appendChild(vTrack.cloneNode() as HTMLElement);
         this.colHeader.style.width = `${size}px`;
         rowVTrack.style.height = `${height}px`;
         colVTrack.style.width = `${width}px`;
@@ -178,7 +178,7 @@ export class VirtualScroll {
                                 const prevColIndex: number = this.parent.viewport.leftIndex;
                                 this.parent.renderModule.refreshUI(
                                     { rowIndex: 0, colIndex: colIndex, refresh: 'Row', skipUpdateOnFirst: true,
-                                    frozenIndexes: fIndexes });
+                                        frozenIndexes: fIndexes });
                                 if (frozenCol) { this.parent.viewport.leftIndex = prevColIndex; }
                             }
                             focus(this.parent.element);
@@ -249,7 +249,7 @@ export class VirtualScroll {
     private skipHiddenIdx(
         index: number, increase: boolean, layout: string = 'rows', sheet: SheetModel = this.parent.getActiveSheet()): number {
         if ((sheet[layout])[index] && (sheet[layout])[index].hidden) {
-            increase ? index++ : index--;
+            index = increase ? index++ : index--;
             index = this.skipHiddenIdx(index, increase, layout, sheet);
         }
         return index;
@@ -271,7 +271,7 @@ export class VirtualScroll {
         return idx;
     }
 
-    private onHorizontalScroll(args: IScrollArgs): void {   
+    private onHorizontalScroll(args: IScrollArgs): void {
         const idx: number = args.cur.idx; const width: number = args.cur.size;
         const prevIdx: number = args.prev.idx;
         let idxDiff: number = Math.abs(idx - prevIdx);
@@ -280,7 +280,7 @@ export class VirtualScroll {
             let startIdx: number; let endIdx: number; let prevLeftIdx: number;
             const sheet: SheetModel = this.parent.getActiveSheet();
             if (idx <= threshold) {
-                if (!args.increase) {   
+                if (!args.increase) {
                     if (this.translateX && prevIdx > threshold) {
                         const frozenCol: number = this.parent.frozenColCount(sheet);
                         const frozenRow: number = this.parent.frozenRowCount(sheet);
@@ -305,7 +305,7 @@ export class VirtualScroll {
                                 const prevRowIndex: number = this.parent.viewport.topIndex;
                                 this.parent.renderModule.refreshUI(
                                     { rowIndex: rowIndex, colIndex: 0, refresh: 'Column', skipUpdateOnFirst: true,
-                                    frozenIndexes: fIndexes });
+                                        frozenIndexes: fIndexes });
                                 if (frozenRow) { this.parent.viewport.topIndex = prevRowIndex; }
                             }
                             focus(this.parent.element);
@@ -429,7 +429,8 @@ export class VirtualScroll {
             }
         } else {
             const vTrack: HTMLElement = this.parent.getMainContent().getElementsByClassName('e-virtualtrack')[0] as HTMLElement;
-            const vTrackHeight: number = parseInt(vTrack.style.height, 10); const height: number = this.content.getBoundingClientRect().height;
+            const vTrackHeight: number =
+                parseInt(vTrack.style.height, 10); const height: number = this.content.getBoundingClientRect().height;
             const newHeight: number = height + this.translateY + this.parent.viewport.beforeFreezeHeight;
             if (newHeight > vTrackHeight) {
                 const diff: number = newHeight - vTrackHeight; vTrack.style.height = vTrackHeight + diff + 'px';
@@ -494,12 +495,12 @@ export class VirtualScroll {
         if (args.colIdx >= this.parent.viewport.leftIndex && args.colIdx <= this.parent.viewport.rightIndex) {
             const hdrVTrack: HTMLElement =
                     this.parent.getColumnHeaderContent().getElementsByClassName('e-virtualtrack')[0] as HTMLElement;
-                hdrVTrack.style.width = parseFloat(hdrVTrack.style.width) + args.threshold + 'px';
+            hdrVTrack.style.width = parseFloat(hdrVTrack.style.width) + args.threshold + 'px';
             const cntVTrack: HTMLElement = this.parent.getMainContent().getElementsByClassName('e-virtualtrack')[0] as HTMLElement;
             cntVTrack.style.width = parseFloat(cntVTrack.style.width) + args.threshold + 'px';
             const hdrColumn: HTMLElement =
                     this.parent.getColumnHeaderContent().getElementsByClassName('e-virtualable')[0] as HTMLElement;
-                hdrColumn.style.width = parseFloat(hdrColumn.style.width) + args.threshold + 'px';
+            hdrColumn.style.width = parseFloat(hdrColumn.style.width) + args.threshold + 'px';
             const cntColumn: HTMLElement = this.parent.getMainContent().getElementsByClassName('e-virtualable')[0] as HTMLElement;
             cntColumn.style.width = parseFloat(cntColumn.style.width) + args.threshold + 'px';
         }

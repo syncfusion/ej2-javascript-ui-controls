@@ -28,7 +28,9 @@ export class Resize extends ActionBase {
                 }
             }
         } else {
-            this.actionObj.clone = this.createCloneElement(this.actionObj.element);
+            if (this.actionObj.element) {
+                this.actionObj.clone = this.createCloneElement(this.actionObj.element);
+            }
             this.actionObj.cloneElement = [this.actionObj.clone];
             this.actionObj.originalElement = [this.actionObj.element];
         }

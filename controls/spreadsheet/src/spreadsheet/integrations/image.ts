@@ -7,7 +7,7 @@ import { insertImage, refreshImgElem, refreshImgCellObj, getRowIdxFromClientY } 
 import { Overlay, Dialog } from '../services/index';
 import { OpenOptions, overlay, dialog, BeforeImageData, BeforeImageRefreshData } from '../common/index';
 import { removeClass, L10n } from '@syncfusion/ej2-base';
-import { ImageModel, CellModel, getCell, setCell, getSheetIndex, getRowsHeight, getColumnsWidth } from '../../workbook/index';
+import { ImageModel, CellModel, getCell, setCell, getSheetIndex, getRowsHeight, getColumnsWidth, Workbook } from '../../workbook/index';
 import { getRangeIndexes, SheetModel, setImage } from '../../workbook/index';
 
 export class SpreadsheetImage {
@@ -116,7 +116,7 @@ export class SpreadsheetImage {
         const range: string = args.range ? (args.range.indexOf('!') > 0) ? args.range.split('!')[1] : args.range.split('!')[0]
             : this.parent.getActiveSheet().selectedRange;
         const sheetIndex: number = (args.range && args.range.indexOf('!') > 0) ?
-            getSheetIndex(this.parent, args.range.split('!')[0]) : this.parent.activeSheetIndex;
+            getSheetIndex(this.parent as Workbook, args.range.split('!')[0]) : this.parent.activeSheetIndex;
         const overlayObj: Overlay = this.parent.serviceLocator.getService(overlay) as Overlay;
         const id: string = args.options.imageId ? args.options.imageId : this.parent.element.id + '_overlay_picture_' + this.pictureCount;
         const indexes: number[] = getRangeIndexes(range);
@@ -146,9 +146,9 @@ export class SpreadsheetImage {
         const imgData: ImageModel = {
             src: args.options.src, id: id, height: parseFloat(element.style.height.replace('px', '')),
             width: parseFloat(element.style.width.replace('px', '')), top: sheet.frozenRows || sheet.frozenColumns ?
-            (indexes[0] ? getRowsHeight(sheet, 0, indexes[0] - 1) : 0) : parseFloat(element.style.top.replace('px', '')),
+                (indexes[0] ? getRowsHeight(sheet, 0, indexes[0] - 1) : 0) : parseFloat(element.style.top.replace('px', '')),
             left: sheet.frozenRows || sheet.frozenColumns ? (indexes[1] ? getColumnsWidth(sheet, 0, indexes[1] - 1) : 0) :
-            parseFloat(element.style.left.replace('px', ''))
+                parseFloat(element.style.left.replace('px', ''))
         };
         this.parent.setUsedRange(indexes[0], indexes[1]);
         if (args.isPublic || args.isUndoRedo) {
@@ -225,11 +225,14 @@ export class SpreadsheetImage {
                     currImgObj.push(prevImgObj);
                 }
             }
-            currImgObj ? setCell(args.currentRowIdx, args.currentColIdx, sheet, { image: currImgObj }, true) :
+            if (currImgObj) {
+                setCell(args.currentRowIdx, args.currentColIdx, sheet, { image: currImgObj }, true);
+            } else {
                 setCell(args.currentRowIdx, args.currentColIdx, sheet, { image: [prevImgObj] }, true);
+            }
             if (args.requestType === 'imageRefresh' && !args.isUndoRedo) {
                 const eventArgs: BeforeImageRefreshData = {
-                    requestType: 'imageRefresh', currentRowIdx: args.currentRowIdx, currentColIdx:args.currentColIdx,
+                    requestType: 'imageRefresh', currentRowIdx: args.currentRowIdx, currentColIdx: args.currentColIdx,
                     prevRowIdx: args.prevRowIdx, prevColIdx: args.prevColIdx, prevTop: args.prevTop, prevLeft: args.prevLeft,
                     currentTop: args.currentTop, currentLeft: args.currentLeft, currentHeight: args.currentHeight,
                     currentWidth: args.currentWidth, prevHeight: args.prevHeight, prevWidth: args.prevWidth,
@@ -245,8 +248,8 @@ export class SpreadsheetImage {
         const pictureElements: HTMLElement = document.getElementById(args.id);
         let rowIdx: number; let colIdx: number;
         if (pictureElements) {
-            let imgTop: { clientY: number, isImage?: boolean, target?: Element }
-            let imgleft: { clientX: number, isImage?: boolean, target?: Element }
+            let imgTop: { clientY: number, isImage?: boolean, target?: Element };
+            let imgleft: { clientX: number, isImage?: boolean, target?: Element };
             if (sheet.frozenRows || sheet.frozenColumns) {
                 const clientRect: ClientRect = pictureElements.getBoundingClientRect();
                 imgTop = { clientY: clientRect.top }; imgleft = { clientX: clientRect.left };
@@ -267,7 +270,7 @@ export class SpreadsheetImage {
         } else {
             const rangeVal: string = args.range ? args.range.indexOf('!') > 0 ? args.range.split('!')[1] : args.range.split('!')[0] :
                 this.parent.getActiveSheet().selectedRange;
-            const sheetIndex: number = args.range && args.range.indexOf('!') > 0 ? getSheetIndex(this.parent, args.range.split('!')[0]) :
+            const sheetIndex: number = args.range && args.range.indexOf('!') > 0 ? getSheetIndex(this.parent as Workbook, args.range.split('!')[0]) :
                 this.parent.activeSheetIndex;
             const index: number[] = getRangeIndexes(rangeVal);
             rowIdx = index[0]; colIdx = index[1];

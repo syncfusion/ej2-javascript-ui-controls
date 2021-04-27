@@ -1,7 +1,7 @@
 import { ChildProperty, Property, Complex } from '@syncfusion/ej2-base';
 import { FontFamily, TextAlign, VerticalAlign, FontWeight, FontStyle, TextDecoration, HighlightCell, ChartType, ChartTheme } from './enum';
 import { ValidationType, ValidationOperator, TopBottom, DataBar, ColorScale, IconSet, CFColor } from './enum';
-import { CellStyleModel, FormatModel, LegendSettingsModel, AxisModel, DataLabelSettingsModel, ValidationModel, ChartModel } from './class-model';
+import { CellStyleModel, FormatModel, LegendSettingsModel, AxisModel, DataLabelSettingsModel, ChartModel } from './class-model';
 import { CellModel } from '../base';
 import { LabelPosition, LegendPosition } from './enum';
 import { MajorGridLinesModel, MinorGridLinesModel } from './class-model';
@@ -242,7 +242,7 @@ export class SortCollection extends ChildProperty<SortCollection> {
 
 }
 
-/**    
+/**
  * Represents the DefineName.
  */
 export class DefineName extends ChildProperty<DefineName> {
@@ -326,7 +326,7 @@ export class ProtectSettings extends ChildProperty<ProtectSettings> {
 }
 
 
-/**    
+/**
  * Represents the Hyperlink.
  *
  */
@@ -341,7 +341,7 @@ export class Hyperlink extends ChildProperty<Hyperlink> {
 
 }
 
-/**    
+/**
  * Represents the DataValidation.
  */
 export class Validation extends ChildProperty<Validation> {
@@ -432,7 +432,7 @@ export class Format extends ChildProperty<FormatModel> {
     public isLocked: boolean;
 }
 
-/**    
+/**
  * Represents the Conditional Formatting.
  *
  */
@@ -558,6 +558,7 @@ export class MinorGridLines extends ChildProperty<AxisModel> {
 
     /**
      * The width of the line in pixels.
+     *
      * @default 0
      */
     @Property(0)
@@ -782,3 +783,4 @@ export class Image extends ChildProperty<CellModel> {
     @Property(0)
     public left: number;
 }
+

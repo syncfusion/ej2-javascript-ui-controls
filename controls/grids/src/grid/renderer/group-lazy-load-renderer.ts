@@ -8,7 +8,7 @@ import { PredicateModel } from '../base/grid-model';
 import { Row } from '../models/row';
 import { Column } from '../models/column';
 import * as events from '../base/constant';
-import { isRowEnteredInGrid, parentsUntil } from '../base/util';
+import { isRowEnteredInGrid, parentsUntil, setDisplayValue } from '../base/util';
 import { Grid } from '../base/grid';
 import { RowRenderer } from '../renderer/row-renderer';
 import { CheckBoxFilterBase } from '../common/checkbox-filter-base';
@@ -1128,18 +1128,8 @@ export class GroupLazyLoadRenderer extends ContentRender implements IRenderer {
 
     /** @hidden */
     public setDisplayNone(tr: Object, idx: number, displayVal: string, rows: Row<Column>[], oriIdx?: number): void {
-        let trs: string[] = Object.keys(tr);
         if (!this.parent.groupSettings.columns.length) {
-            for (let i: number = 0; i < trs.length; i++) {
-                let td: HTMLElement = tr[trs[i]].querySelectorAll('td.e-rowcell')[idx];
-                if (tr[trs[i]].querySelectorAll('td.e-rowcell').length && td) {
-                    setStyleAttribute(<HTMLElement>tr[trs[i]].querySelectorAll('td.e-rowcell')[idx], { 'display': displayVal });
-                    if (tr[trs[i]].querySelectorAll('td.e-rowcell')[idx].classList.contains('e-hide')) {
-                        removeClass([tr[trs[i]].querySelectorAll('td.e-rowcell')[idx]], ['e-hide']);
-                    }
-                    rows[trs[i]].cells[idx].visible = displayVal === '' ? true : false;
-                }
-            }
+            setDisplayValue(tr, idx, displayVal, rows);
         } else {
             let keys: string[] = Object.keys(this.groupCache);
             for (let j: number = 0; j < keys.length; j++) {
