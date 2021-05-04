@@ -57,6 +57,7 @@ describe('double tap and trible tap testing', () => {
         editor.destroy();
         editor = undefined;
         document.body.removeChild(document.getElementById('container'));
+        document.body.innerHTML = '';
         setTimeout(() => {
             done();
         }, 1000);
@@ -92,6 +93,7 @@ describe('Double tap touch testing', () => {
         editor.destroy();
         editor = undefined;
         document.body.removeChild(document.getElementById('container'));
+        document.body.innerHTML = '';
         setTimeout(() => {
             done();
         }, 1000);
@@ -169,7 +171,7 @@ describe('update cursor position validation', () => {
     afterAll((done) => {
         editor.destroy();
         editor = undefined;
-        document.body.removeChild(document.getElementById('container'));
+        document.body.removeChild(document.getElementById('container'));        
         document.body.innerHTML = '';
         setTimeout(() => {
             done();
@@ -218,6 +220,7 @@ describe('Branch validation', () => {
         editor.destroy();
         editor = undefined;
         document.body.removeChild(document.getElementById('container'));
+        document.body.innerHTML = '';
         setTimeout(() => {
             done();
         }, 1000);
@@ -313,6 +316,7 @@ describe('Handle Key down', () => {
         editor.destroy();
         editor = undefined;
         document.body.removeChild(document.getElementById('container'));
+        document.body.innerHTML = '';
         setTimeout(() => {
             done();
         }, 1000);
@@ -353,6 +357,7 @@ describe('Key down validation', () => {
         editor.destroy();
         editor = undefined;
         document.body.removeChild(document.getElementById('container'));
+        document.body.innerHTML = '';
         setTimeout(() => {
             done();
         }, 1000);
@@ -422,6 +427,7 @@ describe('Tab key validation list level', () => {
         editor.destroy();
         document.body.removeChild(document.getElementById('container'));
         editor = undefined;
+        document.body.innerHTML = '';
         setTimeout(function () {
             done();
         }, 1000);
@@ -491,6 +497,7 @@ describe('Viewer API validation', () => {
         editor.destroy();
         editor = undefined;
         document.body.removeChild(document.getElementById('container'));
+        document.body.innerHTML = '';
         setTimeout(() => {
             done();
         }, 1000);
@@ -559,6 +566,7 @@ describe('Tab key validation with accept tab false', () => {
         editor.destroy();
         document.body.removeChild(document.getElementById('container'));
         editor = undefined;
+        document.body.innerHTML = '';
         setTimeout(function () {
             done();
         }, 1000);
@@ -611,6 +619,7 @@ describe('Header footer maximum height validation', () => {
         editor.destroy();
         editor = undefined;
         document.body.removeChild(document.getElementById('container'));
+        document.body.innerHTML = '';
         setTimeout(() => {
             done();
         }, 1000);
@@ -655,6 +664,7 @@ describe('Long Touch Testing', () => {
         editor.destroy();
         editor = undefined;
         document.body.removeChild(document.getElementById('container'));
+        document.body.innerHTML = '';
         setTimeout(() => {
             done();
         }, 1000);
@@ -708,6 +718,7 @@ describe('Update top border validation', () => {
         editor.destroy();
         editor = undefined;
         document.body.removeChild(document.getElementById('container'));
+        document.body.innerHTML = '';
         setTimeout(() => {
             done();
         }, 1000);

@@ -1804,6 +1804,30 @@ describe('Slider Control', () => {
             EventHandler.trigger(<any>(document), 'mouseup', mouseUp);
             expect((document.getElementsByClassName('e-handle')[0] as HTMLElement).getAttribute('aria-valuenow')).toBe('30');
         });
+        it('Slide the range slider using rangebar', () => {
+            dragEle = createElement('div', { id: 'slider' });
+            targetEle = createElement('div', {
+                id: 'target', styles: 'top: 150px;left: 300px;height: 300px;width: 500px;position: absolute;'
+            });
+            document.body.appendChild(targetEle);
+            targetEle.appendChild(dragEle);
+            slider = new Slider({ type: 'Range', value: [25, 65] });
+            slider.appendTo('#slider');
+            expect(slider.value[0]).toBe(25);
+            expect(slider.value[1]).toBe(65);
+            let mousedown: any = getEventObject('MouseEvents', 'mousedown');
+            mousedown.target = mousedown.currentTarget = document.getElementsByClassName("e-range")[0];
+            EventHandler.trigger(document.getElementsByClassName("e-range")[0] as HTMLElement, 'mousedown', mousedown);
+            let mousemove: any = getEventObject('MouseEvents', 'mousemove');
+            mousemove.srcElement = mousemove.target = mousemove.toElement = document.getElementsByClassName("e-range");
+            mousemove = setMouseCoordinates(mousemove, 519, 148);
+            EventHandler.trigger(<any>(document), 'mousemove', mousemove);
+            mouseUp = getEventObject('MouseEvents', 'mouseup');
+            mouseUp.srcElement = mouseUp.target = mouseUp.toElement = document.getElementsByClassName("e-range")[0];
+            EventHandler.trigger(<any>(document), 'mouseup', mouseUp);
+            expect(slider.value[0]).toBe(60);
+            expect(slider.value[1]).toBe(100);
+        });
         it('Slide the default slider using sliderbarmove', () => {
             dragEle = createElement('div', { id: 'slider' });
             targetEle = createElement('div', {

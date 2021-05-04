@@ -31,6 +31,7 @@ describe('Automatic text color', () => {
         editor.destroy();
         document.body.removeChild(document.getElementById('container'));
         editor = undefined;
+        document.body.innerHTML = '';
     });
 
     it('text color', () => {

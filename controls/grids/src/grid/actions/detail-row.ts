@@ -1,5 +1,5 @@
-import { KeyboardEventArgs, isBlazor, removeClass, addClass } from '@syncfusion/ej2-base';
-import { closest, classList, updateBlazorTemplate } from '@syncfusion/ej2-base';
+import { KeyboardEventArgs, removeClass, addClass } from '@syncfusion/ej2-base';
+import { closest, classList } from '@syncfusion/ej2-base';
 import { IGrid } from '../base/interface';
 import { Grid } from '../base/grid';
 import { parents, getUid, appendChildren } from '../base/util';
@@ -11,6 +11,7 @@ import { Row } from '../models/row';
 import { Cell } from '../models/cell';
 import { Column } from '../models/column';
 import { CellType } from '../base/enum';
+import * as literals from '../base/string-literals';
 
 /**
  * The `DetailRow` module is used to handle detail template and hierarchy Grid operations.
@@ -55,15 +56,11 @@ export class DetailRow {
         if (!(target && (target.classList.contains('e-detailrowcollapse') || target.classList.contains('e-detailrowexpand')))) {
             return;
         }
-        if (isBlazor() && this.parent[isServerRendered]) {
-            this.parent.notify('detailclick', target);
-            return;
-        }
         let tr: HTMLTableRowElement = target.parentElement as HTMLTableRowElement;
         let uid: string = tr.getAttribute('data-uid');
         let rowObj: Row<Column> = gObj.getRowObjectFromUID(uid);
         let nextRow: HTMLElement =
-            this.parent.getContentTable().querySelector('tbody').children[tr.rowIndex + 1] as HTMLElement;
+            this.parent.getContentTable().querySelector( literals.tbody).children[tr.rowIndex + 1] as HTMLElement;
         if (target.classList.contains('e-detailrowcollapse')) {
             let data: Object = rowObj.data;
             if (this.isDetailRow(nextRow)) {
@@ -101,9 +98,6 @@ export class DetailRow {
                         this.parent.renderTemplates();
                     } else {
                         appendChildren(detailCell, gObj.getDetailTemplate()(data, gObj, 'detailTemplate', detailTemplateID));
-                    }
-                    if (isBlazor()) {
-                        updateBlazorTemplate(detailTemplateID, 'DetailTemplate', gObj, false);
                     }
                 } else {
                     childGrid = new Grid(this.getGridModel(gObj, rowObj, gObj.printMode));
@@ -153,8 +147,8 @@ export class DetailRow {
             rowObj.isExpand = true;
             if (target.classList.contains('e-lastrowcell') && this.parent.getContent().clientHeight > table.scrollHeight) {
                 removeClass(target.parentElement.querySelectorAll('td'), 'e-lastrowcell');
-                let detailrowIdx: number = table.querySelector('tbody').querySelectorAll('.e-detailrow').length - 1;
-                addClass(table.querySelector('tbody').querySelectorAll('.e-detailrow')[detailrowIdx].childNodes, ['e-lastrowcell']);
+                let detailrowIdx: number = table.querySelector(literals.tbody).getElementsByClassName('e-detailrow').length - 1;
+                addClass(table.querySelector(literals.tbody).getElementsByClassName('e-detailrow')[detailrowIdx].childNodes, ['e-lastrowcell']);
                 this.lastrowcell = true;
             }
             this.aria.setExpand(target as HTMLElement, true);
@@ -166,7 +160,7 @@ export class DetailRow {
             }
             classList(target, ['e-detailrowcollapse'], ['e-detailrowexpand']);
             classList(target.firstElementChild, ['e-dtdiagonalright', 'e-icon-grightarrow'], ['e-dtdiagonaldown', 'e-icon-gdownarrow']);
-            if (parseInt(tr.getAttribute('aria-rowindex'), 10) === lastrowIdx && this.lastrowcell) {
+            if (parseInt(tr.getAttribute(literals.ariaRowIndex), 10) === lastrowIdx && this.lastrowcell) {
                 addClass(target.parentElement.querySelectorAll('td'), 'e-lastrowcell');
                 this.lastrowcell = false;
             }
@@ -210,8 +204,8 @@ export class DetailRow {
 
     private destroy(): void {
         let gridElement: Element = this.parent.element;
-        if (this.parent.isDestroyed || !gridElement || (!gridElement.querySelector('.e-gridheader') &&
-            !gridElement.querySelector('.e-gridcontent'))) { return; }
+        if (this.parent.isDestroyed || !gridElement || (!gridElement.querySelector('.' + literals.gridHeader) &&
+            !gridElement.querySelector( '.' + literals.gridContent))) { return; }
         this.parent.off(events.click, this.clickHandler);
         this.parent.off(events.destroy, this.destroy);
         this.parent.off(events.keyPressed, this.keyPressHandler);

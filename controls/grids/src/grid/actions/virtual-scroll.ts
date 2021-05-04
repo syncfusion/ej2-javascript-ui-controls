@@ -5,7 +5,6 @@ import { ServiceLocator } from '../services/service-locator';
 import { RendererFactory } from '../services/renderer-factory';
 import { VirtualContentRenderer, VirtualHeaderRenderer }  from '../renderer/virtual-content-renderer';
 import * as events from '../base/constant';
-import { isBlazor } from '@syncfusion/ej2-base';
 /**
  * Virtual Scrolling class
  */
@@ -43,9 +42,6 @@ export class VirtualScroll implements IAction {
         let height: number =  this.blockSize * 2;
         let size: number = this.parent.pageSettings.pageSize;
         this.parent.setProperties({ pageSettings: { pageSize: size < height ? height : size }}, true);
-        if (isBlazor() && this.parent.isServerRendered) {
-            this.parent.notify('refresh-virtual-indices', {});
-        }
     }
 
     public addEventListener(): void {

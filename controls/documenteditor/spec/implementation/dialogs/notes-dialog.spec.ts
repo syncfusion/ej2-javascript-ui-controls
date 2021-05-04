@@ -30,6 +30,7 @@ describe('Insert Notes Dialog Test Case Validation', () => {
         editor = undefined;
         dialog = undefined;
         document.body.removeChild(document.getElementById('container'));
+        document.body.innerHTML = '';
         setTimeout(() => {
             done();
         }, 2000);
@@ -72,6 +73,7 @@ describe('Changing Formats', () => {
         editor = undefined;
         dialog = undefined;
         document.body.removeChild(document.getElementById('container'));
+        document.body.innerHTML = '';
         setTimeout(() => {
             done();
         }, 2000);
@@ -151,6 +153,7 @@ describe('History preservation of endnote and foot note numberformats', () => {
         editor = undefined;
         dialog = undefined;
         document.body.removeChild(document.getElementById('container'));
+        document.body.innerHTML = '';
         setTimeout(() => {
             done();
         }, 2000);

@@ -207,22 +207,26 @@ export class ChartData {
     /**
      * @private
      */
-    public getClosest(series: Series, value: number): number {
-        const xData: number[] = series.xData;
-        let closest: number;
-        if (value >= <number>series.xMin - 0.5 && value <= <number>series.xMax + 0.5) {
-            for (const data of xData) {
+    public getClosest(series: Series, value: number, xvalues?: number[]): number {
+        let closest: number; let data: number;
+        const xData: number[] = xvalues ? xvalues : series.xData;
+        if (value >= <number>series.xAxis.visibleRange.min && value <= <number>series.xAxis.visibleRange.max) {
+            for (let i: number = 0; i < xData.length; i++) {
+                data = xData[i];
                 if (closest == null || Math.abs(data - value) < Math.abs(closest - value)) {
                     closest = data;
                 }
             }
-        } else if (xData.length === 1) {
-            closest = xData[0];
         }
-        return closest;
+        const isDataExist: boolean = series.xData.indexOf(closest) !== -1;
+        if (isDataExist) {
+            return closest;
+        } else {
+            return null;
+        }
     }
 
-    public getClosestX(chart: Chart, series: Series): PointData {
+    public getClosestX(chart: Chart, series: Series, xvalues?: number[]): PointData {
         let value: number;
         const rect: Rect = series.clipRect;
         if (!chart.requireInvertedAxis) {
@@ -231,12 +235,28 @@ export class ChartData {
             value = getValueYByPoint(chart.mouseY - rect.y, rect.height, series.xAxis);
         }
 
-        const closest: number = this.getClosest(series, value);
+        const closest: number = this.getClosest(series, value, xvalues);
         for (const point of series.points) {
             if (closest === point.xValue && point.visible) {
                 return new PointData(point, series);
             }
         }
         return null;
+    }
+
+    /**
+     * Merge all visible series X values for shared tooltip (EJ2-47072)
+     *
+     * @param visibleSeries 
+     * @private
+     */
+    public mergeXvalues(visibleSeries: Series[]): number[] {
+        let collection: number[] = [];
+        for (let index: number = 0; index < visibleSeries.length; index++) {
+            collection = collection.concat(visibleSeries[index].xData);
+        }
+        return collection.filter((item, index) => {
+            return index === collection.indexOf(item);
+        })
     }
 }

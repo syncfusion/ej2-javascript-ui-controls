@@ -824,6 +824,53 @@ describe('ListBox', () => {
             clearEle.click();
             expect(listObj.list.getElementsByClassName('e-ul')[0].childElementCount).toEqual(1);
         });
+
+        it('EJ2-45800 - Items not updated in filtering while using delete button', () => {
+            listObj = new ListBox({ dataSource: vegetableData , allowFiltering: true}, elem);
+            var ele = listObj.list.getElementsByClassName('e-input-filter')[0];
+            expect(listObj.list.getElementsByClassName('e-ul')[0].childElementCount).toEqual(11);
+            ele.click();
+            ele.value = "ca";
+            listObj.dataBind();
+            listObj.keyDownStatus = true;
+            listObj.onInput();
+            listObj.KeyUp({
+                preventDefault: function () { },
+                altKey: false,
+                ctrlKey: false,
+                shiftKey: false,
+                char: '',
+                key: 'c',
+                charCode: 22,
+                keyCode: 67,
+                which: 22,
+                code: 22
+            });
+            listObj.KeyUp({
+                preventDefault: function () { },
+                altKey: false,
+                ctrlKey: false,
+                shiftKey: false,
+                char: '',
+                key: 'a',
+                charCode: 0,
+                keyCode: 65,
+                which: 65,
+                code: 65
+            });
+            expect(listObj.list.getElementsByClassName('e-ul')[0].childElementCount).toEqual(1);
+            let keyEventArgs: any = {
+                preventDefault: (): void => { /** NO Code */ },
+                stopPropagation: (): void => { /** NO Code */ },
+                keyCode: 46,
+                metaKey: false
+            };
+            listObj.filterInput.value = "c";
+            listObj.onKeyDown(keyEventArgs);
+            listObj.onInput()
+            listObj.KeyUp(keyEventArgs);
+            expect(listObj.list.getElementsByClassName('e-ul')[0].childElementCount).toEqual(2);
+        });
     });
 
 });

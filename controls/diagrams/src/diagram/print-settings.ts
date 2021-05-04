@@ -138,7 +138,7 @@ export class PrintAndExport {
             } as IExportOptions,
             customBounds);
         let image: string;
-        if (options.format === 'JPG') {
+        if (options.format === 'JPG' && mode === "Data") {
             image = content = canvas.toDataURL('image/jpeg');
         } else {
             image = content = canvas.toDataURL();

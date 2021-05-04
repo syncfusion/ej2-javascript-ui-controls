@@ -1,6 +1,6 @@
 import { IModelGenerator, IRow, IGrid } from '../base/interface';
 import { Row } from '../models/row';
-import { isNullOrUndefined, extend, setValue, isBlazor } from '@syncfusion/ej2-base';
+import { isNullOrUndefined, extend, setValue } from '@syncfusion/ej2-base';
 import { Group } from '@syncfusion/ej2-data';
 import { Column } from '../models/column';
 import { CellType, Action } from '../base/enum';
@@ -152,7 +152,7 @@ export class GroupModelGenerator extends RowModelGenerator implements IModelGene
         options.isCaptionRow = true;
         options.parentUid = parentUid;
         options.gSummary = !isNullOrUndefined(data.items[records]) ? data.items[records].length : (<Object[]>data.items).length;
-        options.uid = isBlazor() && this.parent.isServerRendered ? this.parent.getRowUid('grid-row') : getUid('grid-row');
+        options.uid = getUid('grid-row');
         let row: Row<Column> = new Row<Column>(<{ [x: string]: Object }>options);
         row.indent = indent;
         this.getForeignKeyData(row);

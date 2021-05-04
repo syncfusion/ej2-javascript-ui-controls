@@ -240,6 +240,9 @@ export class KeyboardNavigation {
     }
 
     private scrollNavigation(actIdxes: number[], isScroll: boolean): void {
+        if (!this.parent.allowScrolling) {
+            return;
+        }
         const x: number = this.parent.enableRtl ? -1 : 1;
         const cont: Element = this.parent.getMainContent().parentElement;
         const hCont: Element = this.parent.getScrollElement();

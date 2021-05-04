@@ -121,7 +121,7 @@ export interface GridSettingsModel {
     allowResizing?: boolean;
 
     /**
-     * Allows the columns to be fit to the component's width.
+     * Allows the component to be fit based on the width of its columns.
      * @default true
      */
     allowAutoResizing?: boolean;

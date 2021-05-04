@@ -39,6 +39,7 @@ export class Pager extends Component<HTMLElement> implements INotifyPropertyChan
     /*** @hidden */
     public previousPageNo: number;
     private defaultConstants: Object;
+    private pageRefresh: string = 'pager-refresh';
 
     //Module declarations
     /*** @hidden */
@@ -242,8 +243,8 @@ export class Pager extends Component<HTMLElement> implements INotifyPropertyChan
     protected render(): void {
         if (this.template) {
             if (this.isReactTemplate()) {
-                this.on('pager-refresh', this.pagerTemplate, this);
-                this.notify('pager-refresh', {});
+                this.on(this.pageRefresh, this.pagerTemplate, this);
+                this.notify(this.pageRefresh, {});
             } else {
                 this.pagerTemplate();
             }
@@ -285,7 +286,7 @@ export class Pager extends Component<HTMLElement> implements INotifyPropertyChan
      */
     public destroy(): void {
         if (this.isReactTemplate()) {
-            this.off('pager-refresh', this.pagerTemplate);
+            this.off(this.pageRefresh, this.pagerTemplate);
             if (!this.hasParent) {
                 this.destroyTemplate(['template']);
             }
@@ -506,7 +507,7 @@ export class Pager extends Component<HTMLElement> implements INotifyPropertyChan
         if (this.template) {
             if (this.isReactTemplate()) {
                 this.updateTotalPages();
-                this.notify('pager-refresh', {});
+                this.notify(this.pageRefresh, {});
             } else {
                 this.element.innerHTML = '';
                 this.updateTotalPages();

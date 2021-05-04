@@ -421,6 +421,10 @@ export class CellEdit {
             'taskData.' + this.parent.taskFields.progress,
             (ganttRecord[this.parent.taskFields.progress] > 100 ? 100 : ganttRecord[this.parent.taskFields.progress]),
             args.data);
+        if (!ganttRecord.ganttProperties.isAutoSchedule) {
+            this.parent.setRecordValue('autoWidth',
+            this.parent.dataOperation.calculateWidth(ganttRecord, false), ganttRecord.ganttProperties, true);
+        }    
         if (!isNullOrUndefined(args.data.ganttProperties.segments) && args.data.ganttProperties.segments.length > 0) {
             this.parent.editModule.taskbarEditModule.updateSegmentProgress(args.data.ganttProperties);
         }

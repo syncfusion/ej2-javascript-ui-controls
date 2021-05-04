@@ -805,6 +805,7 @@ describe('Content Control Validation', () => {
         editor.destroy();
         document.body.removeChild(document.getElementById('container'));
         editor = undefined;
+        document.body.innerHTML = '';
         setTimeout(function () {
             done();
         }, 500);
@@ -866,6 +867,7 @@ describe('Shape Validation', () => {
         editor.destroy();
         document.body.removeChild(document.getElementById('container'));
         editor = undefined;
+        document.body.innerHTML = '';
         setTimeout(function () {
             done();
         }, 500);

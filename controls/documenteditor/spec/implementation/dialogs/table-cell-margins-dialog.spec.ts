@@ -40,6 +40,7 @@ describe('Table options dialog validation', () => {
         editor.destroy();
         document.body.removeChild(document.getElementById('container'));
         editor = undefined;
+        document.body.innerHTML = '';
         setTimeout(function () {
             done();
         }, 2000);
@@ -90,6 +91,7 @@ describe('Table Options Dialog Apply cell margins validation', () => {
         editor.destroy();
         document.body.removeChild(document.getElementById('container'));
         editor = undefined;
+        document.body.innerHTML = '';
         setTimeout(function () {
             done();
         }, 2000);
@@ -149,6 +151,7 @@ describe('Cell Options Dialog validation', () => {
         editor.destroy();
         document.body.removeChild(document.getElementById('container'));
         editor = undefined;
+        document.body.innerHTML = '';
         setTimeout(function () {
             done();
         }, 2000);
@@ -199,6 +202,7 @@ describe('Cell Options Dialog Initial loading validation', () => {
         editor.destroy();
         document.body.removeChild(document.getElementById('container'));
         editor = undefined;
+        document.body.innerHTML = '';
         setTimeout(function () {
             done();
         }, 2000);
@@ -251,6 +255,7 @@ describe('Cell Options Dialog apply properties loading validation', () => {
         editor.destroy();
         document.body.removeChild(document.getElementById('container'));
         editor = undefined;
+        document.body.innerHTML = '';
         setTimeout(function () {
             done();
         }, 2000);
@@ -303,6 +308,7 @@ describe('Cell Options Dialog apply properties loading validation', () => {
         editor.destroy();
         document.body.removeChild(document.getElementById('container'));
         editor = undefined;
+        document.body.innerHTML = '';
         setTimeout(function () {
             done();
         }, 2000);
@@ -349,6 +355,7 @@ describe('Cell Options Dialog Without Selection Testing', () => {
         editor.destroy();
         document.body.removeChild(document.getElementById('container'));
         editor = undefined;
+        document.body.innerHTML = '';
         setTimeout(function () {
             done();
         }, 2000);
@@ -429,6 +436,7 @@ describe('Table Options Dialog Without Selection Testing', () => {
         editor.destroy();
         document.body.removeChild(document.getElementById('container'));
         editor = undefined;
+        document.body.innerHTML = '';
         setTimeout(function () {
             done();
         }, 2000);
@@ -514,6 +522,7 @@ describe('Table Options Dialog Without Selection Testing', () => {
         editor.destroy();
         document.body.removeChild(document.getElementById('container'));
         editor = undefined;
+        document.body.innerHTML = '';
         setTimeout(function () {
             done();
         }, 2000);
@@ -570,6 +579,7 @@ describe('Cell Options Dialog With undefined values', () => {
         editor.destroy();
         document.body.removeChild(document.getElementById('container'));
         editor = undefined;
+        document.body.innerHTML = '';
         setTimeout(function () {
             done();
         }, 2000);

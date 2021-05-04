@@ -1,12 +1,12 @@
 import { KeyboardEventArgs } from '@syncfusion/ej2-base';
 import { extend } from '@syncfusion/ej2-base';
-import { remove, isNullOrUndefined, isBlazor } from '@syncfusion/ej2-base';
+import { remove, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { Pager } from '../../pager/pager';
 import { PagerDropDown } from '../../pager/pager-dropdown';
 import { ExternalMessage } from '../../pager/external-message';
 import { PageSettingsModel } from '../models/page-settings-model';
 import { IGrid, IAction, NotifyArgs } from '../base/interface';
-import { extend as gridExtend, getActualProperties, isActionPrevent } from '../base/util';
+import { extend as gridExtend, getActualProperties, isActionPrevent, addRemoveEventListener } from '../base/util';
 import * as events from '../base/constant';
 import { PagerModel } from '../../pager';
 
@@ -20,6 +20,7 @@ export class Page implements IAction {
     private isForceCancel: boolean;
     private isInitialLoad: boolean;
     private isInitialRender: boolean = true;
+    private evtHandlers: { event: string, handler: Function }[];
 
     //Module declarations
     private parent: IGrid;
@@ -81,7 +82,7 @@ export class Page implements IAction {
             ['parentObj', 'propName']);
         this.pagerObj = new Pager(pagerObj);
         this.pagerObj.hasParent = true;
-        this.pagerObj.on('pager-refresh', this.renderReactPagerTemplate, this);
+        this.pagerObj.on(events.pagerRefresh, this.renderReactPagerTemplate, this);
         this.pagerObj.allowServerDataBinding = false;
     }
 
@@ -165,9 +166,6 @@ export class Page implements IAction {
      * @hidden
      */
     public onActionComplete(e: NotifyArgs): void {
-        if (isBlazor() && !this.parent.isJsComponent) {
-            e.rows = null;
-        }
         this.parent.trigger(events.actionComplete, extend(e, {
             currentPage: this.parent.pageSettings.currentPage, requestType: 'paging',
             type: events.actionComplete
@@ -283,15 +281,17 @@ export class Page implements IAction {
         };
         if (this.parent.isDestroyed) { return; }
         if (this.parent.isReact) {
-            this.parent.addEventListener('created', this.handlers.created.bind(this));
+            this.parent.addEventListener(events.created, this.handlers.created.bind(this));
         }
-        this.parent.on(events.initialLoad, this.handlers.load, this);
-        this.parent.on(events.initialEnd, this.handlers.end, this); //For initial rendering
-        this.parent.on(events.dataReady, this.handlers.ready, this);
-        this.parent.on(events.pageComplete, this.handlers.complete, this);
-        this.parent.on(events.uiUpdate, this.handlers.updateLayout, this);
-        this.parent.on(events.inBoundModelChanged, this.handlers.inboundChange, this);
-        this.parent.on(events.keyPressed, this.handlers.keyPress, this);
+        this.evtHandlers = [{ event: events.initialLoad, handler: this.handlers.load },
+        { event: events.initialEnd, handler: this.handlers.end },
+        { event: events.dataReady, handler: this.handlers.ready },
+        { event: events.pageComplete, handler: this.handlers.complete },
+        { event: events.uiUpdate, handler: this.handlers.updateLayout },
+        { event: events.inBoundModelChanged, handler: this.handlers.inboundChange },
+        { event: events.keyPressed, handler: this.handlers.keyPress },
+        ];
+        addRemoveEventListener(this.parent, this.evtHandlers, true, this);
     }
 
     private created(): void {
@@ -327,16 +327,10 @@ export class Page implements IAction {
     public removeEventListener(): void {
         if (this.parent.isDestroyed) { return; }
         if (this.parent.isReact) {
-            this.parent.removeEventListener('created', this.handlers.created);
+            this.parent.removeEventListener(events.created, this.handlers.created);
         }
-        this.parent.off('pager-refresh', this.renderReactPagerTemplate);
-        this.parent.off(events.initialLoad, this.handlers.load);
-        this.parent.off(events.initialEnd, this.handlers.end); //For initial rendering
-        this.parent.off(events.dataReady, this.handlers.ready);
-        this.parent.off(events.pageComplete, this.handlers.complete);
-        this.parent.off(events.uiUpdate, this.handlers.updateLayout);
-        this.parent.off(events.inBoundModelChanged, this.handlers.inboundChange);
-        this.parent.off(events.keyPressed, this.handlers.keyPress);
+        this.parent.off(events.pagerRefresh, this.renderReactPagerTemplate);
+        addRemoveEventListener(this.parent, this.evtHandlers, false);
     }
 
     /**

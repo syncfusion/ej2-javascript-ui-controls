@@ -6,7 +6,7 @@ import { ColumnModel } from './column-model';
 import { processIdx } from './data';
 import { SheetState, ProtectSettingsModel, ConditionalFormat, ConditionalFormatModel, ExtendedRange, getCellIndexes } from '../common/index';
 import { ProtectSettings, getCellAddress } from '../common/index';
-import { isUndefined, ChildProperty, Property, Complex, Collection } from '@syncfusion/ej2-base';
+import { isUndefined, ChildProperty, Property, Complex, Collection, extend } from '@syncfusion/ej2-base';
 import { WorkbookModel } from './workbook-model';
 
 /**
@@ -517,7 +517,7 @@ export function initSheet(context: Workbook, sheet?: SheetModel[]): void {
         sheet.selectedRange = sheet.selectedRange || 'A1:A1';
         sheet.usedRange = sheet.usedRange || { rowIndex: 0, colIndex: 0 };
         context.setSheetPropertyOnMute(sheet, 'ranges', sheet.ranges ? sheet.ranges : []);
-        context.setSheetPropertyOnMute(sheet, 'rows', sheet.rows || []);
+        context.setSheetPropertyOnMute(sheet, 'rows', (sheet.rows && extend([], sheet.rows, null, true)) || []);
         context.setSheetPropertyOnMute(sheet, 'columns', sheet.columns || []);
         sheet.showHeaders = isUndefined(sheet.showHeaders) ? true : sheet.showHeaders;
         sheet.showGridLines = isUndefined(sheet.showGridLines) ? true : sheet.showGridLines;

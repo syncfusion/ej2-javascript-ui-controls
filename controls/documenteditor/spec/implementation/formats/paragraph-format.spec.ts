@@ -94,6 +94,7 @@ describe('Tab stop with delete position', () => {
         editor.destroy();
         document.body.removeChild(document.getElementById('container'));
         editor = undefined;
+        document.body.innerHTML = '';
         setTimeout(function () {
             done();
         }, 500);
@@ -125,6 +126,7 @@ describe("Pargarph format in baseOn style", function () {
         editor.destroy();
         document.body.removeChild(document.getElementById('container'));
         editor = undefined;
+        document.body.innerHTML = '';
         setTimeout(function () {
             done();
         }, 500);
@@ -182,6 +184,7 @@ describe('Default Paragraph Format API Validation', () => {
         editor.destroy();
         document.body.removeChild(document.getElementById('container'));
         editor = undefined;
+        document.body.innerHTML = '';
     });
 
     it('Check Text Alignment is center', () => {

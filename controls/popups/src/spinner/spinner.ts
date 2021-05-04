@@ -120,7 +120,7 @@ export function createSpinner ( args: SpinnerArgs, internalCreateElement ?: crea
 function createLabel(container: HTMLElement, label: string, makeElement: createElementParams) : HTMLElement {
     const labelEle: HTMLElement = makeElement('div', {});
     labelEle.classList.add(CLS_SPINLABEL);
-    labelEle.textContent = label;
+    labelEle.innerHTML = label;
     container.appendChild(labelEle);
     return labelEle;
 }

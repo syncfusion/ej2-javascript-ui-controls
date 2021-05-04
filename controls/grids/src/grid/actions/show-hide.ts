@@ -1,4 +1,4 @@
-import { isNullOrUndefined , isBlazor} from '@syncfusion/ej2-base';
+import { isNullOrUndefined } from '@syncfusion/ej2-base';
 import { Column } from '../models/column';
 import { iterateArrayOrObject, isGroupAdaptive } from '../base/util';
 import * as events from '../base/constant';
@@ -94,8 +94,7 @@ export class ShowHide {
      * @return {void}
      */
     public setVisible(columns?: Column[], changedStateColumns: Column[] = []): void {
-        changedStateColumns = (changedStateColumns.length > 0) ? changedStateColumns :
-            isBlazor() ? (JSON.parse(JSON.stringify(columns))) : columns;
+        changedStateColumns = (changedStateColumns.length > 0) ? changedStateColumns : columns;
         let args: Object = {
             requestType: 'columnstate',
             cancel: false,

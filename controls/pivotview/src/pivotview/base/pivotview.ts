@@ -26,7 +26,7 @@ import { Render } from '../renderer/render';
 import { PivotCommon } from '../../common/base/pivot-common';
 import { Common } from '../../common/actions/common';
 import { GroupingBar } from '../../common/grouping-bar/grouping-bar';
-import { DataSourceSettingsModel, DrillOptionsModel } from '../model/datasourcesettings-model';
+import { DataSourceSettingsModel, DrillOptionsModel, FormatSettingsModel } from '../model/datasourcesettings-model';
 import { DataSourceSettings } from '../model/datasourcesettings';
 import { GridSettings } from '../model/gridsettings';
 import { GridSettingsModel } from '../model/gridsettings-model';
@@ -2266,6 +2266,15 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
     }
 
     private loadData(): void {
+        if (this.dataSourceSettings.formatSettings.length > 0) {
+            let formatfield: FormatSettingsModel[] = this.dataSourceSettings.formatSettings;
+            for (let i: number = 0; i < formatfield.length; i++) {
+                if ((!isNullOrUndefined(formatfield[i].maximumFractionDigits) || !isNullOrUndefined(formatfield[i].minimumFractionDigits)) && formatfield[i].format.match(/^(P|N|C|P[0-9]|C[0-9]|N[0-9])$/g) === null) {
+                    formatfield[i].maximumFractionDigits = undefined;
+                    formatfield[i].minimumIntegerDigits = undefined;
+                }
+            }
+        }
         if (this.dataType === 'pivot' && this.dataSourceSettings.url && this.dataSourceSettings.url !== '') {
             if (this.dataSourceSettings.mode === 'Server') {
                 this.guid = PivotUtil.generateUUID();
@@ -2371,17 +2380,6 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
             } catch (error) {
                 this.engineModule.pivotValues = [];
             }
-            if (this.currentAction !== 'fetchFieldMembers' && this.currentAction !== 'fetchRawData') {
-                this.initEngine();
-                if (this.calculatedFieldModule && this.calculatedFieldModule.isRequireUpdate) {
-                    this.calculatedFieldModule.endDialog();
-                    this.calculatedFieldModule.isRequireUpdate = false;
-                }
-                if (this.pivotFieldListModule && this.pivotFieldListModule.calculatedFieldModule && this.pivotFieldListModule.calculatedFieldModule.isRequireUpdate) {  /* eslint-disable-line */
-                    this.pivotFieldListModule.calculatedFieldModule.endDialog();
-                    this.pivotFieldListModule.calculatedFieldModule.isRequireUpdate = false;
-                }
-            }
             if (this.currentAction === 'onScroll') {
                 if (this.scrollDirection === 'vertical') {
                     let rowValues: number = this.dataSourceSettings.valueAxis === 'row' ? this.dataSourceSettings.values.length : 1;
@@ -2395,6 +2393,17 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
                     let exactPage: number = Math.ceil(this.engineModule.colStartPos / (this.pageSettings.columnSize * colValues));
                     let pos: number = exactSize * exactPage - (this.engineModule.colFirstLvl * colValues * this.gridSettings.columnWidth);
                     this.scrollPosObject.horizontalSection = pos;
+                }
+            }
+            if (this.currentAction !== 'fetchFieldMembers' && this.currentAction !== 'fetchRawData') {
+                this.initEngine();
+                if (this.calculatedFieldModule && this.calculatedFieldModule.isRequireUpdate) {
+                    this.calculatedFieldModule.endDialog();
+                    this.calculatedFieldModule.isRequireUpdate = false;
+                }
+                if (this.pivotFieldListModule && this.pivotFieldListModule.calculatedFieldModule && this.pivotFieldListModule.calculatedFieldModule.isRequireUpdate) {  /* eslint-disable-line */
+                    this.pivotFieldListModule.calculatedFieldModule.endDialog();
+                    this.pivotFieldListModule.calculatedFieldModule.isRequireUpdate = false;
                 }
             }
         }
@@ -3230,7 +3239,7 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
      * @returns {void}
      */
     public excelExport(excelExportProperties?: ExcelExportProperties, isMultipleExport?: boolean, workbook?: any, isBlob?: boolean): void { /* eslint-disable-line */
-        if (this.enableVirtualization) {
+        if (this.enableVirtualization && this.dataSourceSettings.mode !== 'Server') {
             this.excelExportModule.exportToExcel('Excel');
         } else {
             this.grid.excelExport(excelExportProperties, isMultipleExport, workbook, isBlob);
@@ -3246,7 +3255,7 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
      * @returns {void}
      */
     public csvExport(excelExportProperties?: ExcelExportProperties, isMultipleExport?: boolean, workbook?: any, isBlob?: boolean): void {   /* eslint-disable-line */
-        if (this.enableVirtualization) {
+        if (this.enableVirtualization && this.dataSourceSettings.mode !== 'Server') {
             this.excelExportModule.exportToExcel('CSV');
         } else {
             this.grid.csvExport(excelExportProperties, isMultipleExport, workbook, isBlob);
@@ -3262,7 +3271,7 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
      * @returns {void}
      */
     public pdfExport(pdfExportProperties?: PdfExportProperties, isMultipleExport?: boolean, pdfDoc?: Object, isBlob?: boolean): void {  /* eslint-disable-line */
-        if (this.enableVirtualization) {
+        if (this.enableVirtualization && this.dataSourceSettings.mode !== 'Server') {
             this.pdfExportModule.exportToPDF();
         } else {
             this.grid.pdfExport(pdfExportProperties, isMultipleExport, pdfDoc, isBlob);

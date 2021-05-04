@@ -28,6 +28,7 @@ describe('Selection Paragraph format line  spacing apply validation', () => {
         document.body.removeChild(document.getElementById('container'));
         editor = undefined;
         documentHelper = undefined;
+        document.body.innerHTML = '';
         setTimeout(() => {
             done();
         }, 1000);
@@ -78,6 +79,7 @@ describe('Selection Paragraph format line  spacing type apply validation', () =>
         document.body.removeChild(document.getElementById('container'));
         editor = undefined;
         documentHelper = undefined;
+        document.body.innerHTML = '';
         setTimeout(() => {
             done();
         }, 1000);
@@ -126,6 +128,7 @@ describe('Selection character format with empty paragraph inside', () => {
         document.body.removeChild(document.getElementById('container'));
         editor = undefined;
         documentHelper = undefined;
+        document.body.innerHTML = '';
         setTimeout(() => {
             done();
         }, 1000);

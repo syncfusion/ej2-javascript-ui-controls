@@ -3277,6 +3277,7 @@ describe('Page Break Layout Validation', () => {
         editor.destroy();
         document.body.removeChild(document.getElementById('container'));
         editor = undefined;
+        document.body.innerHTML = '';
         setTimeout(() => {
             done();
         }, 750);
@@ -3335,6 +3336,7 @@ describe('Insert Page break API validation', () => {
         editor.destroy();
         document.body.removeChild(document.getElementById('container'));
         editor = undefined;
+        document.body.innerHTML = '';
         setTimeout(() => {
             done();
         }, 750);
@@ -3795,6 +3797,7 @@ describe('F9 key press Validation', () => {
         editor.destroy();
         document.body.removeChild(document.getElementById('container'));
         editor = undefined;
+        document.body.innerHTML = '';
         setTimeout(() => {
             done();
         }, 750);

@@ -347,15 +347,15 @@ export class Table {
         event.preventDefault();
         ele.classList.remove(classes.CLS_TABLE_SEL);
         if (event.keyCode === 40) {
-            ele = (!isNullOrUndefined(closest(ele, 'tr').nextSibling)) ?
-                (closest(ele, 'tr').nextSibling as Element).children[(ele as HTMLTableDataCellElement).cellIndex] as HTMLElement :
+            ele = (!isNullOrUndefined(closest(ele, 'tr').nextElementSibling)) ?
+                (closest(ele, 'tr').nextElementSibling as Element).children[(ele as HTMLTableDataCellElement).cellIndex] as HTMLElement :
                 ((closest(ele, 'table') as HTMLTableElement).tHead && ele.nodeName === 'TH') ?
                     (closest(ele, 'table') as HTMLTableElement).rows[1].cells[(ele as HTMLTableDataCellElement).cellIndex] :
                     (!isNullOrUndefined(closest(ele, 'table').nextSibling)) ? closest(ele, 'table').nextSibling as HTMLElement :
                         ele as HTMLElement;
         } else {
-            ele = (!isNullOrUndefined(closest(ele, 'tr').previousSibling)) ?
-                (closest(ele, 'tr').previousSibling as Element).children[(ele as HTMLTableDataCellElement).cellIndex] as HTMLElement :
+            ele = (!isNullOrUndefined(closest(ele, 'tr').previousElementSibling)) ?
+                (closest(ele, 'tr').previousElementSibling as Element).children[(ele as HTMLTableDataCellElement).cellIndex] as HTMLElement :
                 ((closest(ele, 'table') as HTMLTableElement).tHead && ele.nodeName !== 'TH') ?
                     (closest(ele, 'table') as HTMLTableElement).tHead.rows[0].cells[(ele as HTMLTableDataCellElement).cellIndex] :
                     (!isNullOrUndefined(closest(ele, 'table').previousSibling)) ? closest(ele, 'table').previousSibling as HTMLElement :

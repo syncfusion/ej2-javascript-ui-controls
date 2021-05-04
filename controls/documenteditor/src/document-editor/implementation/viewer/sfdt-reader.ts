@@ -15,7 +15,8 @@ import {
     ChartDataTable, ChartArea, ChartCategory, ChartData, ChartSeries, ChartDataLabels, ChartTrendLines,
     ChartSeriesFormat, ElementBox, CommentCharacterElementBox, CommentElementBox, FormField,
     TextFormField, CheckBoxFormField, DropDownFormField, ShapeElementBox, LineFormat, TextFrame, ContentControlProperties,
-    ContentControlListItems, ContentControl, IWidget, CheckBoxState, XmlMapping, CustomXmlPart, Footnote, FootnoteElementBox, FillFormat
+    ContentControlListItems, ContentControl, IWidget, CheckBoxState, XmlMapping, CustomXmlPart, Footnote, FootnoteElementBox, FillFormat,
+    TablePosition
 } from './page';
 import { HelperMethods } from '../editor/editor-helper';
 import { Dictionary } from '../../base/dictionary';
@@ -595,6 +596,7 @@ export class SfdtReader {
         }
         table.title = block.title;
         table.description = block.description;
+        this.parseTablePositioning(block, table);
         for (let i: number = 0; i < block.rows.length; i++) {
             const row: TableRowWidget = new TableRowWidget();
             row.rowFormat = new WRowFormat(row);
@@ -674,6 +676,31 @@ export class SfdtReader {
         table.containerWidget = section;
         blocks.push(table);
         table.isGridUpdated = false;
+    }
+    private parseTablePositioning(block: any, table: TableWidget): void {
+        table.wrapTextAround = !isNullOrUndefined(block.wrapTextAround) ? block.wrapTextAround : false;
+        if (table.wrapTextAround) {
+            table.positioning = new TablePosition();
+            table.positioning.allowOverlap = block.positioning.allowOverlap;
+            table.positioning.distanceBottom = HelperMethods.convertPointToPixel(block.positioning.distanceBottom);
+            table.positioning.distanceLeft = HelperMethods.convertPointToPixel(block.positioning.distanceLeft);
+            table.positioning.distanceRight = HelperMethods.convertPointToPixel(block.positioning.distanceRight);
+            table.positioning.distanceTop = HelperMethods.convertPointToPixel(block.positioning.distanceTop);
+            if (!isNullOrUndefined(block.positioning.verticalAlignment)) {
+                table.positioning.verticalAlignment = block.positioning.verticalAlignment;
+            }
+            if (!isNullOrUndefined(block.positioning.verticalOrigin)) {
+                table.positioning.verticalOrigin = block.positioning.verticalOrigin;
+            }
+            table.positioning.verticalPosition = block.positioning.verticalPosition;
+            if (!isNullOrUndefined(block.positioning.horizontalAlignment)) {
+                table.positioning.horizontalAlignment = block.positioning.horizontalAlignment;
+            }
+            if (!isNullOrUndefined(block.positioning.horizontalOrigin)) {
+                table.positioning.horizontalOrigin = block.positioning.horizontalOrigin;
+            }
+            table.positioning.horizontalPosition = block.positioning.horizontalPosition;
+        }
     }
     private parseRowGridValues(data: any, rowFormat: WRowFormat): void {
         if (!isNullOrUndefined(data.gridBefore)) {
@@ -1070,6 +1097,7 @@ export class SfdtReader {
             } else if (inline.hasOwnProperty('commentId')) {
                 let commentID: string = inline.commentId;
                 let commentStart: CommentCharacterElementBox = undefined;
+                let comment: CommentElementBox;
                 if (this.commentStarts.containsKey(commentID)) {
                     commentStart = this.commentStarts.get(commentID);
                 }
@@ -1086,7 +1114,7 @@ export class SfdtReader {
                         }
                         commentStartElement.line = lineWidget;
                         lineWidget.children.push(commentStartElement);
-                        let comment: CommentElementBox = this.commentsCollection.get(commentID);
+                        comment = this.commentsCollection.get(commentID);
                         if (!isNullOrUndefined(comment)) {
                             comment.commentStart = commentStartElement;
                             commentStartElement.comment = comment;
@@ -1099,10 +1127,18 @@ export class SfdtReader {
                         }
                         commentEndElement.line = lineWidget;
                         lineWidget.children.push(commentEndElement);
-                        let comment: CommentElementBox = this.commentsCollection.get(commentID);
+                        comment = this.commentsCollection.get(commentID);
                         if (!isNullOrUndefined(comment)) {
                             comment.commentEnd = commentEndElement;
                             commentEndElement.comment = comment;
+                        }
+                    }
+                    if (!isNullOrUndefined(comment) && comment.isReply) {
+                        if (isNullOrUndefined(comment.ownerComment.commentStart)) {
+                            comment.ownerComment.commentStart = comment.commentStart;
+                        }
+                        if (isNullOrUndefined(comment.ownerComment.commentEnd)) {
+                            comment.ownerComment.commentEnd = comment.commentEnd;
                         }
                     }
                 }
@@ -1134,6 +1170,9 @@ export class SfdtReader {
                 shape.layoutInCell = inline.layoutInCell;
                 shape.lockAnchor = inline.lockAnchor;
                 shape.autoShapeType = inline.autoShapeType;
+                if (inline.isTextBox) {
+                    shape.isTextBox = inline.isTextBox;
+                }
                 if (inline.hasOwnProperty('lineFormat')) {
                     let lineFormat: LineFormat = new LineFormat();
                     lineFormat.line = inline.lineFormat.line;

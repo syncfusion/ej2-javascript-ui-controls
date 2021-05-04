@@ -658,5 +658,94 @@ describe('Self reference data', () => {
         let deleteRecord: HTMLElement = ganttObj.element.querySelector('#' + ganttObj.element.id + '_delete') as HTMLElement;
         triggerMouseEvent(deleteRecord, 'click');
     });
-});
+  });
+  describe("CR issues", () => {
+    let ganttObj: Gantt;
+    beforeAll((done: Function) => {
+      ganttObj = createGantt(
+        {
+          dataSource: [
+            {
+              TaskID: 1,
+              TaskName: "Project Initiation",
+              StartDate: new Date("04/02/2019"),
+              EndDate: new Date("04/21/2019"),
+              subtasks: [
+                {
+                  TaskID: 2,
+                  TaskName: "Identify Site location",
+                  StartDate: new Date("04/02/2019"),
+                  Duration: 6,
+                  resources: [{ resourceId: 1, resourceUnit: 50 }],
+                },
+              ],
+            },
+          ],
+          resources: [
+            { resourceId: 1, resourceName: "Martin Tamer" },
+            { resourceId: 2, resourceName: "Rose Fuller" },
+            { resourceId: 3, resourceName: "Margaret Buchanan" },
+          ],
+          viewType: "ResourceView",
+          enableMultiTaskbar: true,
+          taskFields: {
+            id: "TaskID",
+            name: "TaskName",
+            startDate: "StartDate",
+            endDate: "EndDate",
+            child: "subtasks",
+            duration: "Duration",
+            progress: "Progress",
+            resourceInfo: "resources",
+           },
+           resourceFields: {
+            id: "resourceId",
+            name: "resourceName",
+            unit: "resourceUnit",
+          },
+          editSettings: {
+            allowAdding: true,
+            allowEditing: true,
+            allowDeleting: true,
+            allowTaskbarEditing: true,
+          },
+          toolbar: [ "Add", "Edit", "Update", "Delete", "Cancel", "ExpandAll", "CollapseAll"],
+          height: "450px",
+        },
+        done
+      );
+    });
+    afterAll(() => {
+      if (ganttObj) {
+        destroyGantt(ganttObj);
+      }
+    });
+    beforeEach((done) => {
+        setTimeout(done, 1000);
+        ganttObj.openAddDialog();
+        let resourceTab: any = (<EJ2Instance>(document.getElementById(ganttObj.element.id + "_Tab"))).ej2_instances[0];
+        resourceTab.selectedItem = 1;
+    });
+  
+    it("Add resources using add dialog", () => {
+      ganttObj.actionComplete = (args: any): void => {
+        if (args.requestType === 'refresh') {
+            ganttObj.viewType = 'ProjectView';
+            ganttObj.dataBind();
+          }
+      };
+      ganttObj.dataBound = (args: any): void => {
+        if (ganttObj.viewType == 'ProjectView') {
+            expect(ganttObj.currentViewData.length).toEqual(3);
+        }
+      };
+      ganttObj.dataBind();
+      let resourceCheckbox1: HTMLElement = ganttObj.element.querySelector("#" +
+          ganttObj.element.id + "ResourcesTabContainer_gridcontrol_content_table > tbody > tr:nth-child(3) > td.e-rowcell.e-gridchkbox > div > span.e-frame.e-icons.e-uncheck") as HTMLElement;
+      triggerMouseEvent(resourceCheckbox1, "click");
+      let saveButton: HTMLElement = ganttObj.element.querySelector("#" + ganttObj.element.id +
+          "_dialog > div.e-footer-content > button.e-control.e-btn.e-lib.e-primary.e-flat") as HTMLElement;
+      triggerMouseEvent(saveButton, "click");
+    });
+  });
 });

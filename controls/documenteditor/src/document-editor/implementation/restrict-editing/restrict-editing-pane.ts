@@ -60,12 +60,12 @@ export class RestrictEditing {
         return this.documentHelper.owner.viewer;
     }
     public showHideRestrictPane(isShow: boolean): void {
-        if (isShow) {
+        if (!this.restrictPane) {
             this.localObj = new L10n('documenteditor', this.viewer.owner.defaultLocale);
             this.localObj.setLocale(this.viewer.owner.locale);
-            if (!this.restrictPane) {
-                this.initPane(this.localObj);
-            }
+            this.initPane(this.localObj);
+        }
+        if (isShow) {
             this.restrictPane.style.display = 'block';
             this.isShowRestrictPane = true;
             this.documentHelper.selection.isHighlightEditRegion = true;

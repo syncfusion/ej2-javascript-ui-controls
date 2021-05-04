@@ -17,6 +17,7 @@ import { PredicateModel } from './grid-model';
 import { Print } from '../actions/print';
 import { IXLFilter, FilterStateObj } from '../common/filter-interface';
 import { Cell } from '../models/cell';
+import * as literals from '../base/string-literals';
 
 //https://typescript.codeplex.com/discussions/401501
 /**
@@ -480,7 +481,7 @@ export function getRowHeight(element?: HTMLElement): number {
     if (rowHeight !== undefined) {
         return rowHeight;
     }
-    let table: HTMLTableElement = <HTMLTableElement>createElement('table', { className: 'e-table', styles: 'visibility: hidden' });
+    let table: HTMLTableElement = <HTMLTableElement>createElement('table', { className: literals.table, styles: 'visibility: hidden' });
     table.innerHTML = '<tr><td class="e-rowcell">A<td></tr>';
     element.appendChild(table);
     let rect: ClientRect = table.querySelector('td').getBoundingClientRect();
@@ -496,7 +497,7 @@ export function getActualRowHeight(element?: HTMLElement): number {
     if (actualRowHeight !== undefined) {
         return rowHeight;
     }
-    let table: HTMLTableElement = <HTMLTableElement>createElement('table', { className: 'e-table', styles: 'visibility: hidden' });
+    let table: HTMLTableElement = <HTMLTableElement>createElement('table', { className: literals.table, styles: 'visibility: hidden' });
     table.innerHTML = '<tr><td class="e-rowcell">A<td></tr>';
     element.appendChild(table);
     let rect: ClientRect = table.querySelector('tr').getBoundingClientRect();
@@ -519,7 +520,7 @@ export function setComplexFieldID(field: string = ''): string {
 
 /** @hidden */
 export function isEditable(col: Column, type: string, elem: Element): boolean {
-    let row: Element = parentsUntil(elem, 'e-row');
+    let row: Element = parentsUntil(elem, literals.row);
     let isOldRow: boolean = !row ? true : row && !row.classList.contains('e-insertedrow');
     if (type === 'beginEdit' && isOldRow) {
         if (col.isIdentity || col.isPrimaryKey || !col.allowEditing) {
@@ -999,8 +1000,8 @@ export function applyBiggerTheme(rootElement: Element, element: Element): void {
 /** @hidden */
 export function alignFrozenEditForm(mTD: HTMLElement, fTD: HTMLElement): void {
     if (mTD && fTD) {
-        let mHeight: number = closest(mTD, '.e-row').getBoundingClientRect().height;
-        let fHeight: number = closest(fTD, '.e-row').getBoundingClientRect().height;
+        let mHeight: number = closest(mTD, '.' + literals.row).getBoundingClientRect().height;
+        let fHeight: number = closest(fTD, '.' + literals.row).getBoundingClientRect().height;
         if (mHeight > fHeight) {
             fTD.style.height = mHeight + 'px';
         } else {
@@ -1083,7 +1084,7 @@ export function resetRowIndex(gObj: IGrid, rows: Row<Column>[], rowElms: HTMLTab
         if (rows[i].isDataRow) {
             rows[i].index = startIndex;
             rows[i].isAltRow = gObj.enableAltRow ? startIndex % 2 !== 0 : false;
-            rowElms[i].setAttribute('aria-rowindex', startIndex.toString());
+            rowElms[i].setAttribute(literals.ariaRowIndex, startIndex.toString());
             rows[i].isAltRow ? rowElms[i].classList.add('e-altrow') : rowElms[i].classList.remove('e-altrow');
             for (let j: number = 0; j < rowElms[i].cells.length; j++) {
                 rowElms[i].cells[j].setAttribute('index', startIndex.toString());
@@ -1121,11 +1122,11 @@ export function setRowElements(gObj: IGrid): void {
     if (gObj.isFrozenGrid()) {
         (<{ rowElements?: Element[] }>(gObj).contentModule).rowElements =
             [].slice.call(gObj.element.querySelectorAll('.e-movableheader .e-row, .e-movablecontent .e-row'));
-        let cls: string = gObj.getFrozenMode() === 'Left-Right' ? '.e-frozen-left-header .e-row, .e-frozen-left-content .e-row'
+        let cls: string = gObj.getFrozenMode() === literals.leftRight ? '.e-frozen-left-header .e-row, .e-frozen-left-content .e-row'
             : '.e-frozenheader .e-row, .e-frozencontent .e-row';
         (<{ freezeRowElements?: Element[] }>(gObj).contentModule).freezeRowElements =
             [].slice.call(gObj.element.querySelectorAll(cls));
-        if (gObj.getFrozenMode() === 'Left-Right') {
+        if (gObj.getFrozenMode() === literals.leftRight) {
             (<{ frozenRightRowElements?: Element[] }>gObj.contentModule).frozenRightRowElements =
                 [].slice.call(gObj.element.querySelectorAll('.e-frozen-right-header .e-row, .e-frozen-right-content .e-row'));
         }
@@ -1146,9 +1147,9 @@ export function splitFrozenRowObjectCells(gObj: IGrid, cells: Cell<Column>[], ta
     let mvblIndex: number = frozenMode === 'Right' ? left : left + drag;
     let mvblEndIdx: number = frozenMode === 'Right' ? cells.length - right - drag
         : right ? cells.length - right : cells.length;
-    if (tableName === 'frozen-left') {
+    if (tableName === literals.frozenLeft) {
         cells = cells.slice(0, left ? left + drag : cells.length);
-    } else if (tableName === 'frozen-right') {
+    } else if (tableName === literals.frozenRight) {
         cells = cells.slice(rightIndex, cells.length);
     } else if (tableName === 'movable') {
         cells = cells.slice(mvblIndex, mvblEndIdx);
@@ -1160,13 +1161,13 @@ export function splitFrozenRowObjectCells(gObj: IGrid, cells: Cell<Column>[], ta
 export function gridActionHandler(
     gObj: IGrid, callBack: Function, rows: Row<Column>[][] | Element[][], force?: boolean, rowObj?: Row<Column>[][]): void {
     if (rows[0].length || force) {
-        rowObj ? callBack('frozen-left', rows[0], rowObj[0]) : callBack('frozen-left', rows[0]);
+        rowObj ? callBack(literals.frozenLeft, rows[0], rowObj[0]) : callBack(literals.frozenLeft, rows[0]);
     }
     if (gObj.isFrozenGrid() && (rows[1].length || force)) {
         rowObj ? callBack('movable', rows[1], rowObj[1]) : callBack('movable', rows[1]);
     }
-    if ((gObj.getFrozenMode() === 'Left-Right' || gObj.getFrozenMode() === 'Right') && (rows[2].length || force)) {
-        rowObj ? callBack('frozen-right', rows[2], rowObj[2]) : callBack('frozen-right', rows[2]);
+    if ((gObj.getFrozenMode() === literals.leftRight || gObj.getFrozenMode() === 'Right') && (rows[2].length || force)) {
+        rowObj ? callBack(literals.frozenRight, rows[2], rowObj[2]) : callBack(literals.frozenRight, rows[2]);
     }
 }
 
@@ -1200,11 +1201,11 @@ export function sliceElements(row: Element, start: number, end: number): void {
 /** @hidden */
 export function getCellsByTableName(gObj: IGrid, col: Column, rowIndex: number): Element[] {
     if (col.getFreezeTableName() === 'movable') {
-        return [].slice.call(gObj.getMovableDataRows()[rowIndex].querySelectorAll('.e-rowcell'));
-    } else if (col.getFreezeTableName() === 'frozen-right') {
-        return [].slice.call(gObj.getFrozenRightDataRows()[rowIndex].querySelectorAll('.e-rowcell'));
+        return [].slice.call(gObj.getMovableDataRows()[rowIndex].getElementsByClassName(literals.rowCell));
+    } else if (col.getFreezeTableName() === literals.frozenRight) {
+        return [].slice.call(gObj.getFrozenRightDataRows()[rowIndex].getElementsByClassName(literals.rowCell));
     } else {
-        return [].slice.call(gObj.getDataRows()[rowIndex].querySelectorAll('.e-rowcell'));
+        return [].slice.call(gObj.getDataRows()[rowIndex].getElementsByClassName(literals.rowCell));
     }
 }
 
@@ -1212,18 +1213,18 @@ export function getCellsByTableName(gObj: IGrid, col: Column, rowIndex: number):
 export function getCellByColAndRowIndex(gObj: IGrid, col: Column, rowIndex: number, index: number): Element {
     let left: number = gObj.getFrozenLeftCount();
     let movable: number = gObj.getMovableColumnsCount();
-    index = col.getFreezeTableName() === 'movable' ? index - left : col.getFreezeTableName() === 'frozen-right'
+    index = col.getFreezeTableName() === 'movable' ? index - left : col.getFreezeTableName() === literals.frozenRight
         ? index - (left + movable) : index;
     return getCellsByTableName(gObj, col, rowIndex)[index];
 }
 
 /** @hidden */
 export function setValidationRuels(col: Column, index: number, rules: Object, mRules: Object, frRules: Object, len: number): void {
-    if (col.getFreezeTableName() === 'frozen-left' || (!index && col.getFreezeTableName() === 'frozen-right') || len === 1) {
+    if (col.getFreezeTableName() === literals.frozenLeft || (!index && col.getFreezeTableName() === literals.frozenRight) || len === 1) {
         rules[getComplexFieldID(col.field)] = col.validationRules;
     } else if (col.getFreezeTableName() === 'movable' || !col.getFreezeTableName()) {
         mRules[getComplexFieldID(col.field)] = col.validationRules;
-    } else if (col.getFreezeTableName() === 'frozen-right') {
+    } else if (col.getFreezeTableName() === literals.frozenRight) {
         frRules[getComplexFieldID(col.field)] = col.validationRules;
     }
 }
@@ -1241,7 +1242,7 @@ export function getMovableTbody(gObj: IGrid): Element {
 /** @hidden */
 export function getFrozenRightTbody(gObj: IGrid): Element {
     let tbody: Element;
-    if (gObj.getFrozenMode() === 'Left-Right') {
+    if (gObj.getFrozenMode() === literals.leftRight) {
         tbody = gObj.frozenRows && gObj.editSettings.newRowPosition === 'Top' ? gObj.getFrozenRightHeaderTbody()
             : gObj.getFrozenRightContentTbody();
     }
@@ -1340,4 +1341,25 @@ export function setDisplayValue(tr: Object, idx: number, displayVal: string, row
             }
         }
     }
+}
+
+/** @hidden */
+export function addRemoveEventListener(parent: IGrid, evt: { event: string, handler: Function }[], isOn: boolean, module?: Object): void {
+    for (let inst of evt) {
+        isOn ? parent.on(inst.event, inst.handler, module) :
+            parent.off(inst.event, inst.handler);
+    }
+}
+
+/** @hidden */
+export function createEditElement(parent: IGrid, column: Column, classNames: string, attr: { [key: string]: string }): Element {
+    /* tslint:disable-next-line:no-any */
+    let complexFieldName: string = getComplexFieldID(column.field);
+    attr = Object.assign(attr, {
+        id: parent.element.id + complexFieldName,
+        name: complexFieldName, 'e-mappinguid': column.uid
+    });
+    return parent.createElement('input', {
+        className: classNames, attrs: attr
+    });
 }

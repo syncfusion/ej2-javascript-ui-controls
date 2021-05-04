@@ -558,6 +558,7 @@ describe('Width validation', () => {
     editor.destroy();
     document.body.removeChild(document.getElementById('container'));
     editor = undefined;
+    document.body.innerHTML = '';
     setTimeout(function () {
       done();
     }, 1000);
@@ -1122,6 +1123,7 @@ describe('Width validation', () => {
     editor.destroy();
     document.body.removeChild(document.getElementById('container'));
     editor = undefined;
+    document.body.innerHTML = '';
     setTimeout(function () {
       done();
     }, 1000);
@@ -4463,6 +4465,7 @@ describe('SectionBreak validation', () => {
     editor.destroy();
     document.body.removeChild(document.getElementById('container'));
     editor = undefined;
+    document.body.innerHTML = '';
     setTimeout(function () {
       done();
     }, 1000);
@@ -7038,6 +7041,7 @@ describe('Document Layout behaviour validation', () => {
     editor.destroy();
     document.body.removeChild(document.getElementById('container'));
     editor = undefined;
+    document.body.innerHTML = '';
     setTimeout(function () {
       done();
     }, 1000);
@@ -7073,6 +7077,7 @@ describe('Para and table height validation weblayout', () => {
     editor.destroy();
     document.body.removeChild(document.getElementById('container'));
     editor = undefined;
+    document.body.innerHTML = '';
     documentHelper = undefined;
     setTimeout(() => {
       done();
@@ -7119,6 +7124,7 @@ describe('comment mark position validation', () => {
     editor.destroy();
     document.body.removeChild(document.getElementById('container'));
     editor = undefined;
+    document.body.innerHTML = '';
     setTimeout(function () {
       done();
     }, 1000);

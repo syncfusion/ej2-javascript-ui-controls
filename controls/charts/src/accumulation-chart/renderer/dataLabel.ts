@@ -691,7 +691,7 @@ export class AccumulationDataLabel extends AccumulationBase {
                         element = getElement(id + 'shape_' + point.index);
                         const startLocation: ChartLocation = element ? new ChartLocation(
                             +element.getAttribute('x'), +element.getAttribute('y')
-                        ) : null;
+                        ) : null;                        
                         dataLabelElement = this.accumulation.renderer.drawRectangle(new RectOption(
                             id + 'shape_' + point.index, point.argsData.color, point.argsData.border, 1,
                             point.labelRegion, dataLabel.rx, dataLabel.ry));
@@ -1134,7 +1134,7 @@ export class AccumulationDataLabel extends AccumulationBase {
     private changeLabelAngle(currentPoint: AccPoints, newAngle: number): void {
         const dataLabel: AccumulationDataLabelSettingsModel = this.accumulation.series[0].dataLabel;
         let variableR: number;
-        if (!this.isVariousRadius()) {
+        if (this.isVariousRadius()) {
             variableR = this.accumulation.pieSeriesModule.getLabelRadius(this.accumulation.visibleSeries[0], currentPoint);
         }
 

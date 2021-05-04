@@ -1,5 +1,5 @@
 import { L10n, closest, isNullOrUndefined, KeyboardEventArgs, EventHandler } from '@syncfusion/ej2-base';
-import { remove, isBlazor } from '@syncfusion/ej2-base';
+import { remove } from '@syncfusion/ej2-base';
 import { ContextMenu as Menu, MenuItemModel } from '@syncfusion/ej2-navigations';
 import { OpenCloseMenuEventArgs } from '@syncfusion/ej2-navigations';
 import { IGrid, ContextMenuItemModel, IAction, NotifyArgs, ContextMenuOpenEventArgs, ContextMenuClickEventArgs } from '../base/interface';
@@ -15,10 +15,11 @@ import { Sort } from '../actions/sort';
 import { PdfExport } from '../actions/pdf-export';
 import { ExcelExport } from '../actions/excel-export';
 import { RowInfo } from '../base/interface';
+import * as literals from '../base/string-literals';
 
 export const menuClass: CMenuClassList = {
-    header: '.e-gridheader',
-    content: '.e-gridcontent',
+    header: '.' + literals.gridHeader,
+    content:  '.' + literals.gridContent,
     edit: '.e-inline-edit',
     batchEdit: '.e-editedbatchcell',
     editIcon: 'e-edit',
@@ -215,9 +216,9 @@ export class ContextMenu implements IAction {
             case 'Edit':
                 if (this.parent.editModule) {
                     if (this.parent.editSettings.mode === 'Batch') {
-                        if (this.row && this.cell && !isNaN(parseInt(this.cell.getAttribute('aria-colindex'), 10))) {
-                            this.parent.editModule.editCell(parseInt(this.row.getAttribute('aria-rowindex'), 10), (this.parent.getColumns()
-                            [parseInt(this.cell.getAttribute('aria-colindex'), 10)] as Column).field);
+                        if (this.row && this.cell && !isNaN(parseInt(this.cell.getAttribute(literals.ariaColIndex), 10))) {
+                            this.parent.editModule.editCell(parseInt(this.row.getAttribute(literals.ariaRowIndex), 10), (this.parent.getColumns()
+                            [parseInt(this.cell.getAttribute(literals.ariaColIndex), 10)] as Column).field);
                         }
                     } else {
                         this.parent.editModule.endEdit();
@@ -282,20 +283,7 @@ export class ContextMenu implements IAction {
         }
         args.column = this.targetColumn;
         args.rowInfo = this.targetRowdata;
-        if (isBlazor()) {
-            let contextMenuClickArgs: ContextMenuClickEventArgs = args.rowInfo.row ?
-                {
-                    element: args.element, item: args.item, event: args.event, column: this.targetColumn, rowInfo: {
-                        rowData:
-                            this.targetRowdata.rowData, rowIndex: this.targetRowdata.rowIndex, cellIndex: this.targetRowdata.cellIndex
-                    }
-                }
-                : this.targetColumn ? { element: args.element, item: args.item, event: args.event, column: this.targetColumn }
-                    : { element: args.element, item: args.item, event: args.event };
-            this.parent.trigger(events.contextMenuClick, contextMenuClickArgs);
-        } else {
-            this.parent.trigger(events.contextMenuClick, args);
-        }
+        this.parent.trigger(events.contextMenuClick, args);
     }
 
     private contextMenuOnClose(args: OpenCloseMenuEventArgs): void {
@@ -318,9 +306,6 @@ export class ContextMenu implements IAction {
     }
 
     private contextMenuBeforeOpen(args: ContextMenuOpenEventArgs): void {
-        let changedRecords: string = 'changedRecords';
-        let addedRecords: string = 'addedRecords';
-        let deletedRecords: string = 'deletedRecords';
         let closestGrid: Element = closest(args.event.target as Element, '.e-grid');
         if (args.event && closestGrid && closestGrid !== this.parent.element) {
             args.cancel = true;
@@ -356,9 +341,9 @@ export class ContextMenu implements IAction {
                         }
                     } else if (this.parent.editModule && this.parent.editSettings.mode === 'Batch' &&
                         ((closest(args.event.target as Element, '.e-gridform')) ||
-                            this.parent.editModule.getBatchChanges()[changedRecords].length ||
-                            this.parent.editModule.getBatchChanges()[addedRecords].length ||
-                            this.parent.editModule.getBatchChanges()[deletedRecords].length) && (key === 'Save' || key === 'Cancel')) {
+                            this.parent.editModule.getBatchChanges()[literals.changedRecords].length ||
+                            this.parent.editModule.getBatchChanges()[literals.addedRecords].length ||
+                            this.parent.editModule.getBatchChanges()[literals.deletedRecords].length) && (key === 'Save' || key === 'Cancel')) {
                         continue;
                     } else if (isNullOrUndefined(args.parentItem) && args.event
                         && !this.ensureTarget(args.event.target as HTMLElement, dItem.target)) {
@@ -394,9 +379,9 @@ export class ContextMenu implements IAction {
     private ensureTarget(targetElement: HTMLElement, selector: string): boolean {
         let target: Element = targetElement;
         if (this.ensureFrozenHeader(targetElement) && (selector === menuClass.header || selector === menuClass.content)) {
-            target = closest(targetElement as Element, selector === menuClass.header ? 'thead' : 'tbody');
+            target = closest(targetElement as Element, selector === menuClass.header ? 'thead' :  literals.tbody);
         } else if (selector === menuClass.content || selector === menuClass.header) {
-            target = parentsUntil(closest(targetElement as Element, '.e-table'), selector.substr(1, selector.length));
+            target = parentsUntil(closest(targetElement as Element, '.' + literals.table), selector.substr(1, selector.length));
         } else {
             target = closest(targetElement as Element, selector);
         }
@@ -512,7 +497,7 @@ export class ContextMenu implements IAction {
      */
     public destroy(): void {
         let gridElement: Element = this.parent.element;
-        if (!gridElement || (!gridElement.querySelector('.e-gridheader') && !gridElement.querySelector('.e-gridcontent'))) { return; }
+        if (!gridElement || (!gridElement.querySelector('.' + literals.gridHeader) && !gridElement.querySelector( '.' + literals.gridContent))) { return; }
         this.contextMenu.destroy();
         remove(this.element);
         this.removeEventListener();
@@ -626,12 +611,6 @@ export class ContextMenu implements IAction {
             'PrevPage': 'PreviousPage',
             'NextPage': 'NextPage'
         };
-        if (isBlazor()) {
-            let autoFitAll: string = 'AutoFitAll';
-            localeKeys[autoFitAll] = 'AutoFitAll';
-            let autoFit: string = 'AutoFit';
-            localeKeys[autoFit] = 'AutoFit';
-        }
         return localeKeys;
     }
 
@@ -650,7 +629,7 @@ export class ContextMenu implements IAction {
         this.cell = (<HTMLElement>e.target) as HTMLTableCellElement;
         this.row = <HTMLElement>closest(<HTMLElement>e.target, 'tr.e-row') as HTMLTableRowElement || this.row;
         if (this.row && isSelectable && !parentsUntil(<HTMLElement>e.target, 'e-gridpager')) {
-            this.parent.selectRow(parseInt(this.row.getAttribute('aria-rowindex'), 10));
+            this.parent.selectRow(parseInt(this.row.getAttribute(literals.ariaRowIndex), 10));
         }
     }
 }

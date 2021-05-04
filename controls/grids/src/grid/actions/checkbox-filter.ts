@@ -44,8 +44,7 @@ export class CheckBoxFilter {
     }
 
     public closeDialog(): void {
-        this.removeEventListener();
-        this.checkBoxBase.closeDialog();
+        this.destroy();
         if (this.isresetFocus) {
             this.parent.notify(events.restoreFocus, {});
         }

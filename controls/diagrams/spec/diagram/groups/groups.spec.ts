@@ -8,7 +8,7 @@ import { Snapping } from '../../../src/diagram/objects/snapping';
 import { MouseEvents } from '../../../spec/diagram/interaction/mouseevents.spec';
 import { DiagramContextMenu } from '../../../src/diagram/objects/context-menu';
 import { Node, SnapSettingsModel, DiagramElement, ShapeAnnotationModel, PointPortModel, Connector } from '../../../src/diagram/index';
-import { SnapConstraints, PortVisibility, PortConstraints, AnnotationConstraints } from '../../../src/diagram/enum/enum';
+import { SnapConstraints, PortVisibility, PortConstraints, AnnotationConstraints, ConnectorConstraints } from '../../../src/diagram/enum/enum';
 import { MenuItemModel } from '@syncfusion/ej2-navigations';
 import { profile, inMB, getMemoryProfile } from '../../../spec/common.spec';
 import { GradientModel, LinearGradientModel, RadialGradientModel, NodeConstraints, ShadowModel, GradientType } from "../../../src/diagram/index"
@@ -1400,6 +1400,74 @@ describe('change styles of group', () => {
         applyStyle(diagram.selectedObject.actualObject, 2, '5,5', undefined, undefined, undefined);        
         expect((diagram.selectedItems.nodes[0].style.fill === '#37909A')).toBe(true);
         expect((diagram.selectedItems.nodes[0].wrapper.children[1].style.fill === 'transparent')).toBe(true);
+        done();
+    });
+});
+describe('Check connector when in grouping ', () => {
+    let diagram: Diagram;
+    let ele: HTMLElement;
+    let diagramCanvas: HTMLElement;
+    let mouseEvents: MouseEvents = new MouseEvents();
+
+    beforeAll((): void => {
+        const isDef = (o: any) => o !== undefined && o !== null;
+        if (!isDef(window.performance)) {
+            console.log("Unsupported environment, window.performance.memory is unavailable");
+            this.skip(); //Skips test (in Chai)
+            return;
+        }
+        ele = createElement('div', { id: 'groupDragging' });
+        document.body.appendChild(ele);
+
+        let nodes: NodeModel[] = [
+            {
+                id: 'node1', width: 100, height: 100, offsetX: 100, offsetY: 100,
+            }, {
+                id: 'node2', width: 100, height: 100, offsetX: 240, offsetY: 240,
+            },
+        ];
+        let connector: ConnectorModel = {};
+        connector.id = 'connector_1';
+        connector.type = 'Straight';
+        connector.sourceID = 'node1';
+        connector.targetID = 'node2';
+        connector.segments = [{ type: 'Straight', direction: "Right", length: 70 }, { type: 'Straight', direction: "Bottom", length: 20 }]
+
+        diagram = new Diagram({
+            width: 1000, height: 1000, connectors: [connector], nodes: nodes,
+            getConnectorDefaults: (obj: ConnectorModel, diagram: Diagram) => {
+                let connector: ConnectorModel = {};
+                connector.constraints = ConnectorConstraints.Default | ConnectorConstraints.DragSegmentThumb;
+                return connector;
+            },
+        });
+
+        diagram.appendTo('#groupDragging');
+        diagram.selectAll();
+        diagram.group();
+        diagramCanvas = document.getElementById(diagram.element.id + 'content');
+    });
+
+    afterAll((): void => {
+        diagram.destroy();
+        ele.remove();
+    });
+    it('Checking when drag and drop the node in group', (done: Function) => {
+        expect(diagram.nodes[0].offsetX).toEqual(100);
+        expect(diagram.nodes[0].offsetY).toEqual(100);
+        expect(diagram.nodes[1].offsetX).toEqual(240);
+        expect(diagram.nodes[1].offsetY).toEqual(240);
+        expect(diagram.nodes[2].offsetX).toEqual(145);
+        expect(diagram.nodes[2].offsetY).toEqual(145);
+        mouseEvents.mouseDownEvent(diagramCanvas, 100, 100, true);
+        mouseEvents.mouseMoveEvent(diagramCanvas, 250, 150, true);
+        mouseEvents.mouseUpEvent(diagramCanvas, 250, 150);
+        expect(diagram.nodes[0].offsetX).toEqual(250);
+        expect(diagram.nodes[0].offsetY).toEqual(150);
+        expect(diagram.nodes[1].offsetX).toEqual(390);
+        expect(diagram.nodes[1].offsetY).toEqual(290);
+        expect(diagram.nodes[2].offsetX).toEqual(320);
+        expect(diagram.nodes[2].offsetY).toEqual(220);
         done();
     });
 });

@@ -22,6 +22,7 @@ describe('Justify alignment validation with field paragraph', () => {
         editor.destroy();
         document.body.removeChild(document.getElementById('container'));
         editor = undefined;
+        document.body.innerHTML = '';
         setTimeout(function () {
             done();
         }, 1000);

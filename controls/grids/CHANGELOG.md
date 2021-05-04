@@ -2,6 +2,20 @@
 
 ## [Unreleased]
 
+## 19.1.59 (2021-05-04)
+
+### Grid
+
+#### Bug Fixes
+
+- `#I324695` - Misalignment occurred while doing show or hide in stacked header with frozen is fixed.
+- `#I321693` - `RowDeselected` event data as empty when unchecking the select All checkbox, issue has been resolved.
+- `#I295052` - Switch component editing issue in dialog template has been fixed.
+- `#I322601` - Header checkbox state is not proper on dynamic data update, issue has been fixed.
+- `#I317611` - Warning error thrown when using local data issue has been fixed.
+- `#I324294` - Grid checkbox selection performance issue has been fixed in material theme.
+- `#F164532` - Column remote data issue with dropdown edit has been fixed.
+
 ## 19.1.58 (2021-04-27)
 
 ### Grid
@@ -14,6 +28,9 @@
 - `#I322859, #I323462` - Ignore accent property issue with excel filter has been fixed.
 - `#I318995` - Child Grid expand not working properly has been fixed.
 - `#I321908` - Throws script error while dragging page number index in Grid is fixed.
+- `#I323304` - Displayed the `headerText` instead of `Filter` in adaptive UI filter dialog.
+- `#I323304` - Column's visible, `allowFiltering`, and `allowSorting` properties not working in adaptive UI issue has been fixed.
+- `#I322769` - Adaptive UI default toolbar items issue has been fixed.
 
 ## 19.1.57 (2021-04-20)
 

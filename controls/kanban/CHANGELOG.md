@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 19.1.59 (2021-05-04)
+
+### Kanban
+
+#### Bug Fixes
+
+- `#278650` - The issue with "Unable to drag and drop the cards on iPad device" has been fixed.
+
 ## 19.1.57 (2021-04-20)
 
 ### Kanban

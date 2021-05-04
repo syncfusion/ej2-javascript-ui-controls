@@ -78,15 +78,6 @@ export class FilterMenuRenderer {
 
     private closeDialog(target?: Element): void {
         if (!this.dlgObj) { return; }
-        if (isBlazor()) {
-            let columns: Column[] = this.parent.getColumns();
-            for (let i: number = 0; i < columns.length; i++) {
-                if (columns[i].filterTemplate) {
-                    let tempID: string = this.parent.element.id + columns[i].uid + 'filterTemplate';
-                    updateBlazorTemplate(tempID, 'FilterTemplate', columns[i]);
-                }
-            }
-        }
         if (this.parent.isReact) {
             this.parent.destroyTemplate(['filterTemplate']);
             this.parent.renderTemplates();
@@ -113,10 +104,8 @@ export class FilterMenuRenderer {
             requestType: events.filterBeforeOpen,
             columnName: column.field, columnType: column.type
         };
-        if (!isBlazor() || this.parent.isJsComponent) {
-            let filterModel: string = 'filterModel';
-            args[filterModel] = this;
-        }
+        let filterModel: string = 'filterModel';
+        args[filterModel] = this;
         this.parent.trigger(events.actionBegin, args);
 
         let mainDiv: HTMLElement = this.parent.createElement('div', { className: 'e-flmenu-maindiv', id: column.uid + '-flmenu' });
@@ -189,10 +178,8 @@ export class FilterMenuRenderer {
             requestType: events.filterAfterOpen,
             columnName: column.field, columnType: column.type
         };
-        if (!isBlazor() || this.parent.isJsComponent) {
-            let filterModel: string = 'filterModel';
-            args[filterModel] = this;
-        }
+        let filterModel: string = 'filterModel';
+        args[filterModel] = this;
         this.isDialogOpen = true;
         if (!this.isMenuCheck) {
             this.parent.trigger(events.actionComplete, args);
@@ -335,9 +322,6 @@ export class FilterMenuRenderer {
 
     private clearBtnClick(column: Column): void {
         this.filterObj.removeFilteredColsByField(column.field);
-        if (isBlazor() && !this.parent.isJsComponent) {
-            this.parent.setProperties({ filterSettings: { columns: this.filterSettings.columns } }, true);
-        }
         this.closeDialog();
         let iconClass: string = this.parent.showColumnMenu ? '.e-columnmenu' : '.e-icon-filter';
         let col: Element = this.parent.element.querySelector('[e-mappinguid="' + column.uid + '"]').parentElement;

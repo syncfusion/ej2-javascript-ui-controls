@@ -2,6 +2,34 @@
 
 ## [Unreleased]
 
+## 19.1.59 (2021-05-04)
+
+### Chart
+
+#### Bug Fixes
+
+- `#308029` - Console error thrown while using special character in the chart container ID issue has fixed.
+
+#### New Features
+
+- `#289399` - Provided support to reverse the legend shape and text.
+
+## 19.1.58 (2021-04-27)
+
+### Accumulation chart
+
+#### Bug Fixes
+
+- `#323707` - Console error thrown while using various radius pie chart inside dashboard layout issue is fixed.
+
+## 19.1.57 (2021-04-20)
+
+### Chart
+
+#### Bug Fixes
+
+- `#F163318` - Need to skip data not available in shared tooltip issue fixed.
+
 ## 19.1.56 (2021-04-13)
 
 ### Chart

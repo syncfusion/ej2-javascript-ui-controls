@@ -23,6 +23,7 @@ describe('Text with bdo is RTL validation', () => {
         editor.destroy();
         document.body.removeChild(document.getElementById('container'));
         editor = undefined;
+        document.body.innerHTML = '';
         setTimeout(() => {
             done();
         }, 1000);
@@ -58,6 +59,7 @@ describe('Normal text and RTL Text layout combination validation', () => {
         editor.destroy();
         document.body.removeChild(document.getElementById('container'));
         editor = undefined;
+        document.body.innerHTML = '';
         setTimeout(() => {
             done();
         }, 1000);
@@ -98,6 +100,7 @@ describe('RTL Paragraph layout validation', () => {
         editor.destroy();
         document.body.removeChild(document.getElementById('container'));
         editor = undefined;
+        document.body.innerHTML = '';
         setTimeout(() => {
             done();
         }, 1000);

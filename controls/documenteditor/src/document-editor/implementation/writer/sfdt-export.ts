@@ -28,6 +28,7 @@ import { Revision } from '../track-changes/track-changes';
  */
 export class SfdtExport {
     /* eslint-disable @typescript-eslint/no-explicit-any */
+    private startLine: LineWidget = undefined;
     private endLine: LineWidget = undefined;
     private endOffset: number = undefined;
     private endCell: TableCellWidget = undefined;
@@ -81,6 +82,7 @@ export class SfdtExport {
     }
     private clear(): void {
         this.writeInlineStyles = undefined;
+        this.startLine = undefined;
         this.endLine = undefined;
         this.lists = undefined;
         this.document = undefined;
@@ -161,6 +163,7 @@ export class SfdtExport {
             this.document.sections.push(section);
 
             if (startCell === endCell || isNullOrUndefined(endCell)) {
+                this.startLine  = line;
                 this.endLine = endLine;
                 this.endOffset = endOffset;
             } else {
@@ -1091,7 +1094,7 @@ export class SfdtExport {
         for (let i: number = startIndex; i <= endIndex; i++) {
             let child: LineWidget = paragraph.childWidgets[i] as LineWidget;
             if (this.endLine === child || (lineIndex === i && offset !== 0)) {
-                this.writeLine(child, offset, inlines);
+                this.writeLine(child, (this.startLine !== this.endLine && child !== this.startLine) ? 0 : offset, inlines);
             } else {
                 this.writeInlines(paragraph, child, inlines);
             }
@@ -1411,7 +1414,33 @@ export class SfdtExport {
         table.description = tableWidget.description;
         table.title = tableWidget.title;
         table.columnCount = tableWidget.tableHolder.columns.length;
+        this.writeTablePositioning(table, tableWidget);
         return table;
+    }
+    private writeTablePositioning(table: any, tableWidget: TableWidget): void {
+        if (tableWidget.wrapTextAround) {
+            table.wrapTextAround = tableWidget.wrapTextAround;
+            table.positioning = {};
+            table.positioning.allowOverlap = tableWidget.positioning.allowOverlap;
+            table.positioning.distanceBottom = HelperMethods.convertPixelToPoint(tableWidget.positioning.distanceBottom);
+            table.positioning.distanceLeft = HelperMethods.convertPixelToPoint(tableWidget.positioning.distanceLeft);
+            table.positioning.distanceRight = HelperMethods.convertPixelToPoint(tableWidget.positioning.distanceRight);
+            table.positioning.distanceTop = HelperMethods.convertPixelToPoint(tableWidget.positioning.distanceTop);
+            if (!isNullOrUndefined(tableWidget.positioning.verticalAlignment)) {
+                table.positioning.verticalAlignment = tableWidget.positioning.verticalAlignment;
+            }
+            if (!isNullOrUndefined(tableWidget.positioning.verticalOrigin)) {
+                table.positioning.verticalOrigin = tableWidget.positioning.verticalOrigin;
+            }
+            table.positioning.verticalPosition = tableWidget.positioning.verticalPosition;
+            if (!isNullOrUndefined(tableWidget.positioning.horizontalAlignment)) {
+                table.positioning.horizontalAlignment = tableWidget.positioning.horizontalAlignment;
+            }
+            if (!isNullOrUndefined(tableWidget.positioning.horizontalOrigin)) {
+                table.positioning.horizontalOrigin = tableWidget.positioning.horizontalOrigin;
+            }
+            table.positioning.horizontalPosition = tableWidget.positioning.horizontalPosition;
+        }
     }
     private createRow(rowWidget: TableRowWidget): any {
         let row: any = {};
@@ -1740,6 +1769,7 @@ export class SfdtExport {
     public destroy(): void {
         this.lists = undefined;
         this.endLine = undefined;
+        this.startLine = undefined;
         this.endOffset = undefined;
         this.documentHelper = undefined;
     }

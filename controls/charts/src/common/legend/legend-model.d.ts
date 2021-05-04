@@ -239,6 +239,14 @@ export interface LegendSettingsModel {
 
     enablePages?: boolean;
 
+    /**
+     * If set to true, legend will be Reversed.
+     *
+     * @default false
+     */
+
+    isInversed?: boolean;
+
 }
 
 /**

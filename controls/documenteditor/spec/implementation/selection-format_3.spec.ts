@@ -28,6 +28,7 @@ describe('Selection table format validation-1', () => {
         document.body.removeChild(document.getElementById('container'));
         editor = undefined;
         documentHelper = undefined;
+        document.body.innerHTML = '';
         setTimeout(() => {
             done();
         }, 1000);
@@ -163,6 +164,7 @@ describe('Selection table format validation-2', () => {
         document.body.removeChild(document.getElementById('container'));
         editor = undefined;
         documentHelper = undefined;
+        document.body.innerHTML = '';
         setTimeout(() => {
             done();
         }, 1000);
@@ -298,6 +300,7 @@ describe('Selection table format validation-3', () => {
         document.body.removeChild(document.getElementById('container'));
         editor = undefined;
         documentHelper = undefined;
+        document.body.innerHTML = '';
         setTimeout(() => {
             done();
         }, 1000);
@@ -441,6 +444,7 @@ describe('Selection row format validation', () => {
         document.body.removeChild(document.getElementById('container'));
         editor = undefined;
         documentHelper = undefined;
+        document.body.innerHTML = '';
         setTimeout(() => {
             done();
         }, 1000);
@@ -613,6 +617,7 @@ describe('Selection cell format validation-1', () => {
         document.body.removeChild(document.getElementById('container'));
         editor = undefined;
         documentHelper = undefined;
+        document.body.innerHTML = '';
         setTimeout(() => {
             done();
         }, 1000);
@@ -748,6 +753,7 @@ describe('Selection cell format validation-2', () => {
         document.body.removeChild(document.getElementById('container'));
         editor = undefined;
         documentHelper = undefined;
+        document.body.innerHTML = '';
         setTimeout(() => {
             done();
         }, 1000);
@@ -852,6 +858,7 @@ describe('Selection cell format validation-3', () => {
         document.body.removeChild(document.getElementById('container'));
         editor = undefined;
         documentHelper = undefined;
+        document.body.innerHTML = '';
         setTimeout(() => {
             done();
         }, 1000);

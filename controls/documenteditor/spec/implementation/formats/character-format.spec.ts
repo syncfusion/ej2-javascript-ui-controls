@@ -125,6 +125,7 @@ describe('TOC Hyperlink Character Style Validation', () => {
         document.body.removeChild(document.getElementById('container'));
         editor = undefined;
         documentHelper = undefined;
+        document.body.innerHTML = '';
         setTimeout(function () {
             done();
         }, 1000);
@@ -164,6 +165,7 @@ describe('Default Character Format API Validation', () => {
         editor.destroy();
         document.body.removeChild(document.getElementById('container'));
         editor = undefined;
+        document.body.innerHTML = '';
     });
 
     it('Check bold is true', () => {

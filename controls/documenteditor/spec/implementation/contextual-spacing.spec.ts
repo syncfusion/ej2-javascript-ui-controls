@@ -33,6 +33,7 @@ describe('Contextual spacing preservation validation', () => {
         document.body.removeChild(document.getElementById('container'));
         editor = undefined;
         setTimeout(function () {
+            document.body.innerHTML = '';
             done();
         }, 1000);
     });
@@ -69,6 +70,7 @@ describe('Contextual spacing preservation format retrieval validation in direct 
         document.body.removeChild(document.getElementById('container'));
         editor = undefined;
         setTimeout(function () {
+            document.body.innerHTML = '';
             done();
         }, 1000);
     });
@@ -111,6 +113,7 @@ describe('Contextual spacing preservation apply via selection format API validat
         document.body.removeChild(document.getElementById('container'));
         editor = undefined;
         setTimeout(function () {
+            document.body.innerHTML = '';
             done();
         }, 1000);
     });
@@ -164,6 +167,7 @@ describe('Contextual spacing preservation apply via selection format API validat
         document.body.removeChild(document.getElementById('container'));
         editor = undefined;
         setTimeout(function () {
+            document.body.innerHTML = '';
             done();
         }, 1000);
     });
@@ -216,6 +220,7 @@ describe('Contextual spacing sfdt export validation in direct formatting', () =>
         document.body.removeChild(document.getElementById('container'));
         editor = undefined;
         setTimeout(function () {
+            document.body.innerHTML = '';
             done();
         }, 1000);
     });
@@ -258,6 +263,7 @@ describe('Contextual spacing sfdt export validation in inline styles', () => {
         document.body.removeChild(document.getElementById('container'));
         editor = undefined;
         setTimeout(function () {
+            document.body.innerHTML = '';
             done();
         }, 1000);
     });
@@ -295,6 +301,7 @@ describe('Contextual spacing word export validation', () => {
         document.body.removeChild(document.getElementById('container'));
         editor = undefined;
         setTimeout(function () {
+            document.body.innerHTML = '';
             done();
         }, 1000);
     });
@@ -354,6 +361,7 @@ describe('Contextual spacing apply validation using paragraph dialog', () => {
         document.body.removeChild(document.getElementById('container'));
         editor = undefined;
         setTimeout(function () {
+            document.body.innerHTML = '';
             done();
         }, 1000);
     });

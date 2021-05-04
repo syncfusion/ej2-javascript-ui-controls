@@ -31,6 +31,7 @@ describe('Select list text and delete validation', () => {
         document.body.removeChild(document.getElementById('container'));
         editor = undefined;
         setTimeout(function () {
+            document.body.innerHTML = '';
             done();
         }, 1000);
     });
@@ -88,6 +89,7 @@ describe('Select list text and backspace validation', () => {
         document.body.removeChild(document.getElementById('container'));
         editor = undefined;
         setTimeout(function () {
+            document.body.innerHTML = '';
             done();
         }, 1000);
     });
@@ -146,6 +148,7 @@ describe('Enter in between the list paragraph', () => {
         document.body.removeChild(document.getElementById('container'));
         editor = undefined;
         setTimeout(function () {
+            document.body.innerHTML = '';
             done();
         }, 1000);
     });
@@ -205,6 +208,7 @@ describe('Enter at last row of table with allowrowacross pages is false', () => 
         document.body.removeChild(document.getElementById('container'));
         editor = undefined;
         setTimeout(function () {
+            document.body.innerHTML = '';
             done();
         }, 1000);
     });

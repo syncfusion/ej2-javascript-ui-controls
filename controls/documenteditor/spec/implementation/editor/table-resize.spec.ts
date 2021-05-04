@@ -41,6 +41,7 @@ describe('Table Resize at simple case in table middle validation', () => {
         editor.destroy();
         editor = undefined;
         document.body.removeChild(document.getElementById('container'));
+        document.body.innerHTML = '';
         setTimeout(function () {
             done();
         }, 1000);

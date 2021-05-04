@@ -3215,7 +3215,7 @@
       border: 0;
     }
 
-    & .e-rowcell:last-child {
+    & .e-row {
       border-bottom: 1px solid $grid-cell-border-color;
     }
 
@@ -3257,7 +3257,7 @@
 
     tbody,
     tr,
-    td,
+    td:not(.e-hide),
     tfoot {
       display: block;
     }

@@ -27,6 +27,7 @@ describe('Find and Replace all in Header footer validation', () => {
         document.body.removeChild(document.getElementById('container'));
         editor.destroy();
         editor = undefined;
+        document.body.innerHTML = '';
         setTimeout(function () {
             done();
         }, 750);
@@ -127,6 +128,7 @@ describe('search rtl text', () => {
         document.body.removeChild(document.getElementById('container'));
         editor.destroy();
         editor = undefined;
+        document.body.innerHTML = '';
         setTimeout(function () {
             done();
         }, 750);
@@ -166,6 +168,7 @@ describe('Find and find all with $ validation', () => {
         document.body.removeChild(document.getElementById('container'));
         editor.destroy();
         editor = undefined;
+        document.body.innerHTML = '';
         setTimeout(function () {
             done();
         }, 750);

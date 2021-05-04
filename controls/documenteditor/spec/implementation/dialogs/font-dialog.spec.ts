@@ -39,6 +39,7 @@ describe('Font dialog validation bold,italic,underLine', () => {
         document.body.removeChild(document.getElementById('container'));
         editor = undefined;
         dialog = undefined;
+        document.body.innerHTML = '';
         setTimeout(function () {
             done();
         }, 2000);
@@ -104,6 +105,7 @@ describe('Font dialog validation bold,italic,underLine', () => {
         document.body.removeChild(document.getElementById('container'));
         editor = undefined;
         dialog = undefined;
+        document.body.innerHTML = '';
         setTimeout(function () {
             done();
         }, 2000);
@@ -190,6 +192,7 @@ describe('Font dialog validation bold,italic,underLine', () => {
         document.body.removeChild(document.getElementById('container'));
         editor = undefined;
         dialog = undefined;
+        document.body.innerHTML = '';
         setTimeout(function () {
             done();
         }, 2000);
@@ -234,6 +237,7 @@ describe('Font Dialog Font family,color,stikethrough validation -1 ', () => {
         document.body.removeChild(document.getElementById('container'));
         editor = undefined;
         dialog = undefined;
+        document.body.innerHTML = '';
         setTimeout(function () {
             done();
         }, 2000);
@@ -291,6 +295,7 @@ describe('Font Dialog Font family,color,stikethrough validation-2', () => {
         document.body.removeChild(document.getElementById('container'));
         editor = undefined;
         dialog = undefined;
+        document.body.innerHTML = '';
         setTimeout(function () {
             done();
         }, 2000);
@@ -354,6 +359,7 @@ describe('Font Dialog Font family,color,stikethrough validation-3', () => {
         document.body.removeChild(document.getElementById('container'));
         editor = undefined;
         dialog = undefined;
+        document.body.innerHTML = '';
         setTimeout(function () {
             done();
         }, 2000);
@@ -489,6 +495,7 @@ describe('Strikethrough and basline alignment validation', () => {
         document.body.removeChild(document.getElementById('container'));
         editor = undefined;
         dialog = undefined;
+        document.body.innerHTML = '';
         setTimeout(function () {
             done();
         }, 2000);
@@ -584,6 +591,7 @@ describe('Font dialog validation for allCaps', () => {
         document.body.removeChild(document.getElementById('container'));
         editor = undefined;
         dialog = undefined;
+        document.body.innerHTML = '';
         setTimeout(function () {
             done();
         }, 2000);

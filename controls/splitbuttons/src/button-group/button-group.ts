@@ -20,11 +20,21 @@ import { ButtonModel, Button } from '@syncfusion/ej2-buttons';
  *   ]
  * });
  * ```
+ *
  * @param {string} selector
  * @param {CreateButtonGroupModel} options
  * @returns HTMLElement
  */
 
+/**
+ * Creates button group.
+ *
+ * @param {string} selector - Specifies the selector.
+ * @param {CreateButtonGroupModel} options - Specifies the button group model.
+ * @param {Function} createElement - Specifies the element.
+ * @returns {HTMLElement} - Button group element.
+ */
+// eslint-disable-next-line @typescript-eslint/ban-types
 export function createButtonGroup(selector: string, options: CreateButtonGroupModel = {}, createElement?: Function): HTMLElement {
     let child: Element;
     let btnElem: Element;
@@ -33,12 +43,12 @@ export function createButtonGroup(selector: string, options: CreateButtonGroupMo
     if (isNullOrUndefined(createElement)) {
         createElement = internalCreateElement;
     }
-    let wrapper: HTMLElement = document.querySelector(selector) as HTMLElement;
+    const wrapper: HTMLElement = document.querySelector(selector) as HTMLElement;
     addClass([wrapper],  ['e-btn-group', 'e-css']);
     wrapper.setAttribute('role', 'group');
-    let childs: HTMLCollection = wrapper.children;
+    const childs: HTMLCollection = wrapper.children;
     options.buttons = options.buttons || [] as ButtonModel[];
-    for (let i : number = 0, j : number = 0; j < childs.length; i++, j++) {
+    for (let i: number = 0, j: number = 0; j < childs.length; i++, j++) {
         child = childs[j];
         btnModel = options.buttons[i];
         if (btnModel !== null) {

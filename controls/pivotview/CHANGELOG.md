@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 19.1.59 (2021-05-04)
+
+### Pivot Table
+ 
+#### Bug Fixes
+ 
+- `#325971`,`#325981` - The toolbar options are now working in the server-side engine.
+
 ## 19.1.58 (2021-04-27)
 
 ### Pivot Table

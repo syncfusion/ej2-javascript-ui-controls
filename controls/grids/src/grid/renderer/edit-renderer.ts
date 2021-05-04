@@ -1,10 +1,10 @@
 import { IGrid } from '../base/interface';
-import { isNullOrUndefined, closest, extend, updateBlazorTemplate } from '@syncfusion/ej2-base';
+import { isNullOrUndefined, closest, extend } from '@syncfusion/ej2-base';
 import { Column } from '../models/column';
 import { InlineEditRender } from './inline-edit-renderer';
 import { BatchEditRender } from './batch-edit-renderer';
 import { DialogEditRender } from './dialog-edit-renderer';
-import { attributes, classList, isBlazor, select } from '@syncfusion/ej2-base';
+import { attributes, classList, select } from '@syncfusion/ej2-base';
 import { ServiceLocator } from '../services/service-locator';
 import { CellType } from '../base/enum';
 import { CellRendererFactory } from '../services/cell-render-factory';
@@ -14,6 +14,8 @@ import { Cell } from '../models/cell';
 import { FocusStrategy } from '../services/focus-strategy';
 import { getComplexFieldID, getObject, appendChildren, parentsUntil, extendObjWithFn } from '../base/util';
 import * as events from '../base/constant';
+import * as literals from '../base/string-literals';
+
 /**
  * Edit render module is used to render grid edit row.
  * @hidden
@@ -65,18 +67,18 @@ export class EditRender {
         let index: number = gObj.getFrozenMode() === 'Right' && gObj.editSettings.mode === 'Normal' ? 1 : 0;
         let form: Element = gObj.editSettings.mode === 'Dialog' ?
             select('#' + gObj.element.id + '_dialogEdit_wrapper .e-gridform', document) :
-            gObj.element.querySelectorAll('.e-gridform')[index];
+            gObj.element.getElementsByClassName('e-gridform')[index];
         if (frzCols && gObj.editSettings.mode === 'Normal') {
-            let rowIndex: number = parseInt(args.row.getAttribute('aria-rowindex'), 10);
+            let rowIndex: number = parseInt(args.row.getAttribute(literals.ariaRowIndex), 10);
             if (gObj.frozenRows && ((args.requestType === 'add' && gObj.editSettings.newRowPosition === 'Top')
                 || rowIndex < gObj.frozenRows)) {
-                fForm = gObj.element.querySelector('.e-movableheader').querySelector('.e-gridform');
-                if (this.parent.getFrozenMode() === 'Left-Right') {
+                fForm = gObj.element.querySelector('.' + literals.movableHeader).querySelector('.e-gridform');
+                if (this.parent.getFrozenMode() === literals.leftRight) {
                     frForm = args.frozenRightForm;
                 }
             } else {
-                fForm = gObj.element.querySelector('.e-movablecontent').querySelector('.e-gridform');
-                if (this.parent.getFrozenMode() === 'Left-Right') {
+                fForm = gObj.element.querySelector('.' + literals.movableContent).querySelector('.e-gridform');
+                if (this.parent.getFrozenMode() === literals.leftRight) {
                     frForm = args.frozenRightForm;
                 }
             }
@@ -102,7 +104,7 @@ export class EditRender {
             value = ((col.valueAccessor as Function)(col.field, args.rowData, col)) as string;
             if (col.getFreezeTableName() === 'movable' && gObj.editSettings.mode === 'Normal') {
                 cell = fForm.querySelector('[e-mappinguid=' + col.uid + ']') as HTMLElement;
-            } else if (frForm && col.getFreezeTableName() === 'frozen-right' && gObj.editSettings.mode === 'Normal') {
+            } else if (frForm && col.getFreezeTableName() === literals.frozenRight && gObj.editSettings.mode === 'Normal') {
                 cell = frForm.querySelector('[e-mappinguid=' + col.uid + ']') as HTMLElement;
             } else {
                 cell = form.querySelector('[e-mappinguid=' + col.uid + ']') as HTMLElement;
@@ -157,7 +159,7 @@ export class EditRender {
         } else {
             let isFocus: boolean = this.parent.enableVirtualization && this.parent.editSettings.mode === 'Normal' ? false : true;
             if (isFocus || (this.parent.enableVirtualization && this.parent.editSettings.newRowPosition === 'Bottom'
-                && parentsUntil(elem, 'e-addedrow'))) {
+                && parentsUntil(elem, literals.addedRow))) {
                 elem.focus();
             } else {
                 // tslint:disable-next-line:no-any
@@ -190,7 +192,7 @@ export class EditRender {
                 cells = model.generateRows(args.rowData)[0].cells;
                 let cell: Cell<Column>[] = cells.filter((cell: Cell<Column>) => cell.rowID);
                 let td: Element = cellRenderer.render(
-                    cell[i], args.rowData, <{ [x: string]: string }>{ 'index': args.row ? args.row.getAttribute('aria-rowindex') : 0 });
+                    cell[i], args.rowData, <{ [x: string]: string }>{ 'index': args.row ? args.row.getAttribute(literals.ariaRowIndex) : 0 });
                 let div: Element = td.firstElementChild;
                 div.setAttribute('textAlign', td.getAttribute('textAlign'));
                 elements[col.uid] = div;
@@ -213,16 +215,6 @@ export class EditRender {
                     let template: Element[] | NodeList = col.getEditTemplate()(
                         extend({ 'index': args.rowIndex }, tempData), this.parent, 'editTemplate', tempID);
                     appendChildren(input, template);
-                }
-                if (isBlazor()) {
-                    let setRules: Function = (ruleColumn: Column) => {
-                        let column: Column = ruleColumn;
-                        let func: Function = () => {
-                            this.parent.editModule.formObj.rules[column.field] = column.validationRules as {[rule: string]: Object};
-                        };
-                        return func;
-                    };
-                    updateBlazorTemplate(tempID, 'EditTemplate', col, true, setRules(col));
                 }
             } else {
                 if (typeof temp === 'string') {

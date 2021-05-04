@@ -2,8 +2,9 @@
  * Gantt base spec
  */
 import { createElement, remove } from '@syncfusion/ej2-base';
+import { DataManager, RemoteSaveAdaptor } from '@syncfusion/ej2-data';
 import { Gantt, Selection, Toolbar, DayMarkers, Edit, Filter,  ContextMenu, Sort, ColumnMenu, ITaskbarClickEventArgs, RecordDoubleClickEventArgs } from '../../src/index';
-import { unscheduledData, projectResources, resourceGanttData } from '../base/data-source.spec';
+import { unscheduledData, projectResources, resourceGanttData, dragSelfReferenceData } from '../base/data-source.spec';
 import { createGantt, destroyGantt, triggerMouseEvent } from './gantt-util.spec';
 Gantt.Inject(Edit, Selection, ContextMenu, Sort, Toolbar, Filter, DayMarkers, ColumnMenu);
 describe('Gantt - Base', () => {
@@ -239,6 +240,38 @@ describe('Gantt - Base', () => {
         });
         afterAll(() => {
             destroyGantt(ganttObj_tree);
+        });
+        beforeEach((done: Function) => {
+            setTimeout(done, 2000);
+        });
+    });
+    describe('Remote save adaptor', () => {
+        let ganttObj: Gantt;
+        beforeAll((done: Function) => {
+            ganttObj = createGantt(
+                {
+                    dataSource: new DataManager({
+                        json: dragSelfReferenceData,
+                        adaptor: new RemoteSaveAdaptor(),
+                    }),
+                    height: '450px',
+                    taskFields: {
+                        id: 'taskID',
+                        name: 'taskName',
+                        startDate: 'startDate',
+                        endDate: 'endDate',
+                        duration: 'duration',
+                        progress: 'progress',
+                        dependency: 'predecessor',
+                        parentID: 'parentID'
+                    },  
+                }, done);
+        });
+        it('On loading', () => {
+            expect(ganttObj.currentViewData.length).toBe(11);
+        });
+        afterAll(() => {
+            destroyGantt(ganttObj);
         });
         beforeEach((done: Function) => {
             setTimeout(done, 2000);

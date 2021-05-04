@@ -6,6 +6,7 @@ import { Grid } from '../base/grid';
 import * as events from '../base/constant';
 import { Deferred } from '@syncfusion/ej2-data';
 import { Column } from '../models/column';
+import * as literals from '../base/string-literals';
 
 /**
  * @hidden
@@ -164,8 +165,8 @@ export class Print {
                 padding?: string,
                 border?: string
             } = this.scrollModule.getCssProperties();
-            let contentDiv: HTMLElement = (gObj.element.querySelector('.e-content') as HTMLElement);
-            let headerDiv: HTMLElement = (<HTMLElement>gObj.element.querySelector('.e-gridheader'));
+            let contentDiv: HTMLElement = (gObj.element.querySelector('.' + literals.content) as HTMLElement);
+            let headerDiv: HTMLElement = (<HTMLElement>gObj.element.querySelector('.' + literals.gridHeader));
             contentDiv.style.height = 'auto';
             contentDiv.style.overflowY = 'auto';
             headerDiv.style[cssProps.padding] = '';
@@ -180,11 +181,11 @@ export class Print {
             }
         }
         // hide horizontal scroll
-        for (let element of [].slice.call(gObj.element.querySelectorAll('.e-content'))) {
+        for (let element of [].slice.call(gObj.element.getElementsByClassName(literals.content))) {
             element.style.overflowX = 'hidden';
         }
         // Hide the waiting popup
-        let waitingPop: NodeListOf<Element> = gObj.element.querySelectorAll('.e-spin-show');
+        let waitingPop: NodeListOf<Element> = [].slice.call(gObj.element.getElementsByClassName('e-spin-show'));
         for (let element of [].slice.call(waitingPop)) {
             classList(element, ['e-spin-hide'], ['e-spin-show']);
         }

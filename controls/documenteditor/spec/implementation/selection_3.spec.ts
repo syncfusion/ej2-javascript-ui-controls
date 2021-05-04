@@ -35,6 +35,7 @@ describe('Select Table API validation', () => {
         editor.destroy();
         editor = undefined;
         documentHelper = undefined;
+        document.body.innerHTML = '';
         setTimeout(function () {
             done();
         }, 1000);
@@ -131,6 +132,7 @@ describe('Select Row API validation', () => {
         editor.destroy();
         editor = undefined;
         documentHelper = undefined;
+        document.body.innerHTML = '';
         setTimeout(function () {
             done();
         }, 1000);
@@ -202,6 +204,7 @@ describe('Select Cell API validation', () => {
         editor.destroy();
         editor = undefined;
         documentHelper = undefined;
+        document.body.innerHTML = '';
         setTimeout(function () {
             done();
         }, 1000);
@@ -271,6 +274,7 @@ describe('Select Column API validation', () => {
         editor.destroy();
         editor = undefined;
         documentHelper = undefined;
+        document.body.innerHTML = '';
         setTimeout(function () {
             done();
         }, 1000);
@@ -340,6 +344,7 @@ describe('BookMark validation in double tap', () => {
         editor.destroy();
         editor = undefined;
         documentHelper = undefined;
+        document.body.innerHTML = '';
         setTimeout(function () {
             done();
         }, 1000);
@@ -390,6 +395,7 @@ describe('BookMark validation in double tap', () => {
         editor.destroy();
         editor = undefined;
         documentHelper = undefined;
+        document.body.innerHTML = '';
         setTimeout(function () {
             done();
         }, 1000);
@@ -439,6 +445,7 @@ describe('Nested Table copy validation', () => {
         editor.destroy();
         editor = undefined;
         documentHelper = undefined;
+        document.body.innerHTML = '';
         setTimeout(function () {
             done();
         }, 1000);
@@ -493,6 +500,7 @@ describe('Selection HighLight Validation', () => {
         editor.destroy();
         editor = undefined;
         documentHelper = undefined;
+        document.body.innerHTML = '';
         setTimeout(function () {
             done();
         }, 1000);

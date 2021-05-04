@@ -158,9 +158,10 @@ export class Tooltip extends BaseTooltip {
                 this.removeTooltip(this.chart.tooltip.fadeOutDuration);
                 this.isRemove = false;
             } else {
+                const commonXvalues: number[] = this.mergeXvalues(this.chart.visibleSeries);
                 for (const series of chart.visibleSeries) {
                     if (series.visible && !(series.category === 'TrendLine')) {
-                        data = this.getClosestX(chart, series) || data;
+                        data = this.getClosestX(chart, series, commonXvalues) || data;
                     }
                 }
             }
@@ -328,12 +329,13 @@ export class Tooltip extends BaseTooltip {
         const argument: ISharedTooltipRenderEventArgs = {
             text: [], cancel: false, name: sharedTooltipRender, data: [], headerText: '', textStyle: this.textStyle
         };
+        const commonXvalues: number[] = this.mergeXvalues(this.chart.visibleSeries);
         for (const series of chart.visibleSeries) {
             if (!series.enableTooltip || !series.visible) {
                 continue;
             }
             if (chart.chartAreaType === 'Cartesian' && series.visible) {
-                data = this.getClosestX(chart, series);
+                data = this.getClosestX(chart, series, commonXvalues);
             } else if (chart.chartAreaType === 'PolarRadar' && series.visible && pointData.point !== null) {
                 data = new PointData(series.points[pointData.point.index], series);
             }

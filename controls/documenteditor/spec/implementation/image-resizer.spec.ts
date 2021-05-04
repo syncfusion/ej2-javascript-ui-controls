@@ -103,6 +103,7 @@ describe('Image Resizer testing', () => {
         editor = undefined;
         viewer = undefined;
         document.body.removeChild(document.getElementById('container'));
+        document.body.innerHTML = '';
         setTimeout(function () {
             done();
         }, 2000);
@@ -278,6 +279,7 @@ describe('Image Resizer validation', () => {
         editor = undefined;
         imageResizer.destroy();
         imageResizer = undefined;
+        document.body.innerHTML = '';
         setTimeout(function () {
             done();
         }, 1000);
@@ -341,6 +343,7 @@ describe('Image Point', () => {
         viewer = undefined;
         imageResizer.destroy();
         imageResizer = undefined;
+        document.body.innerHTML = '';
         setTimeout(function () {
             done();
         }, 1000);
@@ -510,6 +513,7 @@ describe('Image resizing undo and redo operation', () => {
         viewer = undefined;
         imageResizer.destroy();
         imageResizer = undefined;
+        document.body.innerHTML = '';
         setTimeout(function () {
             done();
         }, 1000);
@@ -561,6 +565,7 @@ describe('Image resizer destroy method validation', () => {
         editor = undefined;
         imageResizer.destroy();
         imageResizer = undefined;
+        document.body.innerHTML = '';
         setTimeout(function () {
             done();
         }, 1000);

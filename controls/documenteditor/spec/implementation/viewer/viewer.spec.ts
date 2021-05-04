@@ -27,6 +27,7 @@ describe('Position editable div on', () => {
         editor.destroy();
         document.body.removeChild(document.getElementById('container'));
         editor = undefined;
+        document.body.innerHTML = '';
         setTimeout(() => {
             document.body.innerHTML = '';
             done();
@@ -664,6 +665,7 @@ describe('Author color Validation for different authors', () => {
         editor.destroy();
         document.body.removeChild(document.getElementById('container'));
         editor = undefined;
+        document.body.innerHTML = '';
         setTimeout(function () {
             done();
         }, 1000);

@@ -2494,3 +2494,150 @@ describe(' EJ2-47195 ', () => {
         comboBoxObj.hidePopup();
     });
 });
+describe('EJ2-48321 - Need to trigger filtering event when clear the typed text using clear icon', () => {
+    let element: HTMLInputElement;
+    let comboBoxObj: any;
+    let e: any = { preventDefault: function () { }, target: null, type: null, action: 'down' };
+    let isFiltered: boolean = false;
+    let isPopupOpened: boolean = false;
+    let isPopupClosed: boolean = false;
+    beforeAll(() => {
+        element = <HTMLInputElement>createElement('input', { id: 'combobox' });
+        document.body.appendChild(element);
+    });
+    afterAll(() => {
+        document.body.innerHTML = '';
+    });
+    it('Testing filter event triggering while click the clear icon while popup is in open state', (done) => {
+        comboBoxObj = new ComboBox({
+            dataSource: languageData,
+            fields: { value: 'text',text : 'text' },
+            showClearButton : true,
+            allowFiltering : true,
+            filtering : function(e: any) {
+                isFiltered = true;
+                expect(!isNullOrUndefined(e.text)).toBe(true);
+            },
+            open : function(e: any) {
+                isPopupOpened = true;
+            },
+            close : function(e: any) {
+                isPopupClosed = true;
+            }
+        });
+        comboBoxObj.appendTo(element);
+        e.keyCode = 74;
+        comboBoxObj.inputElement.value = 'J';
+        comboBoxObj.onInput(e);
+        comboBoxObj.onFilterUp(e);
+        expect(isFiltered).toBe(true);
+        isFiltered = false;
+        setTimeout(() => {
+            expect(isPopupOpened).toBe(true);
+            isPopupOpened = false;
+            let clickEvent: MouseEvent = document.createEvent('MouseEvents');
+            clickEvent.initEvent('mousedown', true, true);
+            comboBoxObj.inputWrapper.clearButton.dispatchEvent(clickEvent);
+            expect(isFiltered).toBe(true);
+            isFiltered = false;
+            expect(isPopupClosed).toBe(false);
+            comboBoxObj.hidePopup();
+            expect(isPopupClosed).toBe(true);
+            isPopupClosed = false;
+            comboBoxObj.destroy();
+            done();
+        }, 450)
+    });
+    it('Testing filter event triggering while click the clear icon while popup is in closed state', (done) => {
+        comboBoxObj = new ComboBox({
+            dataSource: languageData,
+            fields: { value: 'text',text : 'text' },
+            showClearButton : true,
+            allowFiltering : true,
+            filtering : function(e: any) {
+                isFiltered = true;
+                expect(!isNullOrUndefined(e.text)).toBe(true);
+            },
+            open : function(e: any) {
+                isPopupOpened = true;
+            },
+            close : function(e: any) {
+                isPopupClosed = true;
+            }
+        });
+        comboBoxObj.appendTo(element);
+        e.keyCode = 74;
+        comboBoxObj.inputElement.value = 'J';
+        comboBoxObj.onInput(e);
+        comboBoxObj.onFilterUp(e);
+        expect(isFiltered).toBe(true);
+        isFiltered = false;
+        expect(isPopupOpened).toBe(true);
+        isPopupOpened = false;
+        comboBoxObj.hidePopup();
+        setTimeout(() => {
+            expect(isPopupClosed).toBe(true);
+            let clickEvent: MouseEvent = document.createEvent('MouseEvents');
+            clickEvent.initEvent('mousedown', true, true);
+            comboBoxObj.inputWrapper.clearButton.dispatchEvent(clickEvent);
+            expect(isFiltered).toBe(true);
+            expect(isPopupOpened).toBe(false);
+            comboBoxObj.destroy();
+            done();
+        }, 450)
+    });
+});
+describe('EJ2-48529 - Filtering is not firing while remove the last letter in popup closed state', () => {
+    let element: HTMLInputElement;
+    let comboBoxObj: any;
+    let e: any = { preventDefault: function () { }, target: null, type: null, action: 'down' };
+    let isFiltered: boolean = false;
+    let isPopupOpened: boolean = false;
+    let isPopupClosed: boolean = false;
+    beforeAll(() => {
+        element = <HTMLInputElement>createElement('input', { id: 'combobox' });
+        document.body.appendChild(element);
+    });
+    afterAll(() => {
+        document.body.innerHTML = '';
+    });
+    it('Testing filter event triggering while remove the last letter using keyboard in popup closed state', (done) => {
+        comboBoxObj = new ComboBox({
+            dataSource: languageData,
+            fields: { value: 'text',text : 'text' },
+            showClearButton : true,
+            allowFiltering : true,
+            filtering : function(e: any) {
+                isFiltered = true;
+                expect(!isNullOrUndefined(e.text)).toBe(true);
+            },
+            open : function(e: any) {
+                isPopupOpened = true;
+            },
+            close : function(e: any) {
+                isPopupClosed = true;
+            }
+        });
+        comboBoxObj.appendTo(element);
+        e.keyCode = 74;
+        comboBoxObj.inputElement.value = 'J';
+        comboBoxObj.onInput(e);
+        comboBoxObj.onFilterUp(e);
+        expect(isFiltered).toBe(true);
+        isFiltered = false;
+        expect(isPopupOpened).toBe(true);
+        isPopupOpened = false;
+        comboBoxObj.hidePopup();
+        setTimeout(() => {
+            expect(isPopupClosed).toBe(true);
+            e.keyCode = 8;
+            comboBoxObj.inputElement.value = '';
+            comboBoxObj.onInput(e);
+            comboBoxObj.onFilterUp(e);
+            expect(isFiltered).toBe(true);
+            expect(isPopupOpened).toBe(false);
+            comboBoxObj.destroy();
+            done();
+        }, 450)
+    });
+});

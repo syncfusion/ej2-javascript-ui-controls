@@ -1,5 +1,5 @@
 /* tslint:disable-next-line:max-line-length */
-import { EventHandler, L10n, isNullOrUndefined, extend, classList, addClass, removeClass, Browser, getValue, setValue, isBlazor } from '@syncfusion/ej2-base';
+import { EventHandler, L10n, isNullOrUndefined, extend, classList, addClass, removeClass, Browser, getValue, setValue } from '@syncfusion/ej2-base';
 import { parentsUntil, getUid, appendChildren, getDatePredicate, getObject, extendObjWithFn, eventPromise, setChecked } from '../base/util';
 import { remove, debounce } from '@syncfusion/ej2-base';
 import { Button } from '@syncfusion/ej2-buttons';
@@ -265,10 +265,8 @@ export class CheckBoxFilterBase {
             requestType: events.filterBeforeOpen,
             columnName: this.options.field, columnType: this.options.type, cancel: false
         };
-        if (!isBlazor() || this.parent.isJsComponent) {
-            let filterModel: string = 'filterModel';
-            args[filterModel] = this;
-        }
+        let filterModel: string = 'filterModel';
+        args[filterModel] = this;
         this.parent.notify(events.cBoxFltrBegin, args);
         if (args.cancel) {
             return;
@@ -595,13 +593,8 @@ export class CheckBoxFilterBase {
             operator: operator, matchCase: matchCase, ignoreAccent: ignoreAccent, filterChoiceCount: null,
             query: query, value: parsed
         };
-        if (isBlazor() && !this.parent.isJsComponent) {
-            let filterModel: string = 'filterModel';
-            args[filterModel] = {};
-        }
         this.parent.trigger(events.actionBegin, args, (filterargs: FilterSearchBeginEventArgs) => {
-            filterargs.operator = (isBlazor() && (<{excelSearchOperator?: string}>filterargs).excelSearchOperator !== 'none') ?
-            (<{excelSearchOperator?: string}>filterargs).excelSearchOperator : filterargs.operator;
+            filterargs.operator = filterargs.operator;
             predicte = new Predicate(field, filterargs.operator, parsed, filterargs.matchCase, filterargs.ignoreAccent);
             if (this.options.type === 'date' || this.options.type === 'datetime') {
                 operator = 'equal';
@@ -690,10 +683,8 @@ export class CheckBoxFilterBase {
         let args: FilterSearchBeginEventArgs = {
             requestType: events.filterChoiceRequest, query: query, filterChoiceCount: null
         };
-        if (!isBlazor() || this.parent.isJsComponent) {
-            let filterModel: string = 'filterModel';
-            args[filterModel] = this;
-        }
+        let filterModel: string = 'filterModel';
+        args[filterModel] = this;
         this.parent.trigger(events.actionBegin, args, (args: FilterSearchBeginEventArgs) => {
             args.filterChoiceCount = !isNullOrUndefined(args.filterChoiceCount) ? args.filterChoiceCount : 1000;
             query.take(args.filterChoiceCount);
@@ -795,10 +786,8 @@ export class CheckBoxFilterBase {
             requestType: events.filterAfterOpen,
             columnName: this.options.field, columnType: this.options.type
         };
-        if (!isBlazor() || this.parent.isJsComponent) {
-            let filterModel: string = 'filterModel';
-            args[filterModel] = this;
-        }
+        let filterModel: string = 'filterModel';
+        args[filterModel] = this;
         this.parent.notify(events.cBoxFltrComplete, args);
     }
 
@@ -863,7 +852,7 @@ export class CheckBoxFilterBase {
     }
 
     private updateAllCBoxes(checked: boolean): void {
-        let cBoxes: Element[] = [].slice.call(this.cBox.querySelectorAll('.e-frame'));
+        let cBoxes: Element[] = [].slice.call(this.cBox.getElementsByClassName('e-frame'));
         for (let cBox of cBoxes) {
             removeAddCboxClasses(cBox, checked);
             setChecked(cBox.previousSibling as HTMLInputElement, checked);
@@ -1009,12 +998,9 @@ export class CheckBoxFilterBase {
         let args: {
             dataSource?: Object[], requestType?: string,
             filterModel?: CheckBoxFilterBase
-        } = { requestType: events.filterChoiceRequest, dataSource: this.renderEmpty ||
-            (isBlazor() && this.parent.isServerRendered) ? [] : data };
-        if (!isBlazor() || this.parent.isJsComponent) {
-            let filterModel: string = 'filterModel';
-            args[filterModel] = this;
-        }
+        } = { requestType: events.filterChoiceRequest, dataSource: this.renderEmpty ? [] : data };
+        let filterModel: string = 'filterModel';
+        args[filterModel] = this;
         this.parent.notify(events.cBoxFltrComplete, args);
         this.parent.notify(events.refreshCustomFilterOkBtn, { disabled: disabled });
         hideSpinner(this.spinner);

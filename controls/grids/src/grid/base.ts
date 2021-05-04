@@ -8,4 +8,5 @@ export * from './base/interface';
 export * from './base/util';
 export * from './base/type';
 export * from './base/constant';
+export * from './base/string-literals';
 

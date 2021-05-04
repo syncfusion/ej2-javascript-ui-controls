@@ -36,6 +36,7 @@ describe('paragraph format validation with selection including table', () => {
         document.body.removeChild(document.getElementById('container'));
         editor = undefined;
         setTimeout(function () {
+            document.body.innerHTML = '';
             done();
         }, 1000);
     });
@@ -119,6 +120,7 @@ describe('paragraph format validation with selection including table', () => {
         document.body.removeChild(document.getElementById('container'));
         editor = undefined;
         setTimeout(function () {
+            document.body.innerHTML = '';
             done();
         }, 1000);
     });
@@ -187,6 +189,7 @@ describe('paragraph format validation with selection in nested table', () => {
         document.body.removeChild(document.getElementById('container'));
         editor = undefined;
         setTimeout(function () {
+            document.body.innerHTML = '';
             done();
         }, 1000);
     });
@@ -244,6 +247,7 @@ describe('character format validation font size increment and decrement', () => 
         document.body.removeChild(document.getElementById('container'));
         editor = undefined;
         setTimeout(function () {
+            document.body.innerHTML = '';
             done();
         }, 1000);
     });
@@ -334,6 +338,7 @@ describe('selection character format property applying validation', () => {
         editor = undefined;
         documentHelper = undefined;
         setTimeout(function () {
+            document.body.innerHTML = '';
             done();
         }, 1000);
     });
@@ -478,6 +483,7 @@ describe('Delete and paste with history preservation', () => {
         document.body.removeChild(document.getElementById('container'));
         editor = undefined;
         setTimeout(function () {
+            document.body.innerHTML = '';
             done();
         }, 1000);
     });
@@ -524,6 +530,7 @@ describe('Paste undo and redo validation ', () => {
         editorModule.destroy();
         editorModule = undefined;
         setTimeout(function () {
+            document.body.innerHTML = '';
             done();
         }, 1000);
     });
@@ -587,6 +594,7 @@ describe('Delete table at specfic row valdiation', () => {
         editorModule.destroy();
         editorModule = undefined;
         setTimeout(function () {
+            document.body.innerHTML = '';
             done();
         }, 1000);
     });
@@ -865,6 +873,7 @@ describe('combine widgets validation ', () => {
         editorModule.destroy();
         editorModule = undefined;
         setTimeout(function () {
+            document.body.innerHTML = '';
             done();
         }, 1000);
     });
@@ -946,6 +955,7 @@ describe('Paste and replace else part validation ', () => {
         editorModule.destroy();
         editorModule = undefined;
         setTimeout(function () {
+            document.body.innerHTML = '';
             done();
         }, 1000);
     });
@@ -1020,6 +1030,7 @@ describe('section combine validation ', () => {
         editorModule.destroy();
         editorModule = undefined;
         setTimeout(function () {
+            document.body.innerHTML = '';
             done();
         }, 1000);
     });
@@ -1087,6 +1098,7 @@ describe('Single backspace and delete at empty line widget validation', () => {
         editorModule.destroy();
         editorModule = undefined;
         setTimeout(function () {
+            document.body.innerHTML = '';
             done();
         }, 1000);
     });
@@ -1159,6 +1171,7 @@ describe('paragraph format Increase indent and decrease indent validation', () =
         document.body.removeChild(document.getElementById('container'));
         editor = undefined;
         setTimeout(function () {
+            document.body.innerHTML = '';
             done();
         }, 1000);
     });
@@ -1233,6 +1246,7 @@ describe('Delete table width undo and redo', () => {
         document.body.removeChild(document.getElementById('container'));
         editor = undefined;
         setTimeout(function () {
+            document.body.innerHTML = '';
             done();
         }, 1000);
     });

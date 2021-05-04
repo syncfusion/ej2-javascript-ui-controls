@@ -128,7 +128,7 @@ export class WorkbookFormula {
             }
             break;
         case 'unRegisterSheet':
-            this.unRegisterSheet(<number>args.sheetIndex, <number>args.sheetCount); break;
+            this.unRegisterSheet(<number>args.sheetIndex, <number>args.sheetCount, <boolean>args.propertyChange); break;
         case 'refreshCalculate':
             if (<boolean>args.isFormula) {
                 args.value = this.autoCorrectFormula(<string>args.value, <number>args.rowIndex, <number>args.colIndex);
@@ -366,13 +366,17 @@ export class WorkbookFormula {
     }
 
     private unRegisterSheet(
-        sheetIndex: number = 0, sheetCount: number = this.parent.sheets.length): void {
+        sheetIndex: number = 0, sheetCount: number = this.parent.sheets.length, propertyChange?: boolean): void {
         let id: string;
         this.calculateInstance.tokenCount = 0;
-        while (sheetIndex < sheetCount) {
-            id = getSheet(this.parent, sheetIndex).id + '';
-            this.calculateInstance.unregisterGridAsSheet(id, id);
-            sheetIndex++;
+        if (propertyChange) {
+            this.calculateInstance.unregisterGridAsSheet(id, id, propertyChange);
+        } else {
+            while (sheetIndex < sheetCount) {
+                id = getSheet(this.parent, sheetIndex).id + '';
+                this.calculateInstance.unregisterGridAsSheet(id, id);
+                sheetIndex++;
+            }
         }
     }
 

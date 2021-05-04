@@ -510,7 +510,10 @@ export class Clipboard {
                 splitArray = value.split(formulaOperators[i]);
                 value = splitArray.join(',');
             }
-            splitArray = value.split(',');
+            splitArray = value.split(','); let isRange: boolean;
+            if (splitArray.length === 1 && splitArray.indexOf(':')) {
+                splitArray = value.split(':'); isRange = true;
+            }
             for (let j: number = 0; j < splitArray.length; j++) {
                 if (isCellReference(splitArray[j])) {
                     const range: number[] = getCellIndexes(splitArray[j]);
@@ -519,20 +522,26 @@ export class Clipboard {
                     difIndex.push(diff[1]);
                 }
             }
-            const newAddress: string[] = [];
+            let newAddress: string[] = [];
             for (let j: number = 0; j < difIndex.length; j++) {
                 const address: string = getCellAddress(selIdx[0] - difIndex[0 + j], selIdx[1] - difIndex[1 + j]);
                 newAddress.push(address);
                 j++;
             }
+            let inValidRef: boolean;
             for (let a: number = 0; a < newAddress.length; a++) {
                 if (isCellReference(newAddress[a])) {
                     const range: number[] = getRangeIndexes(newAddress[a]);
-                    if (range[0] < 0 || range[1] < 0) {
+                    if (range[0] < 0 || range[1] < 0) { inValidRef = true; }
+                } else {
+                    inValidRef = true;
+                }
+                if (inValidRef) {
+                    if (isRange) {
+                        newAddress = ['#REF!']; splitArray = [splitArray.join(':')]; break;
+                    } else {
                         newAddress[a] = '#REF!';
                     }
-                } else {
-                    newAddress[a] = '#REF!';
                 }
             }
             cIdxValue = cell.formula.toUpperCase();

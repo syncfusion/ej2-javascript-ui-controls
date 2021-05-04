@@ -6,12 +6,14 @@ import { Column } from '../models/column';
 import { IGrid, IAction, NotifyArgs, EJ2Intance } from '../base/interface';
 import { SortDirection, ResponsiveDialogAction } from '../base/enum';
 import { setCssInGridPopUp, getActualPropFromColl, isActionPrevent, iterateExtend, parentsUntil } from '../base/util';
+import { addRemoveEventListener } from '../base/util';
 import * as events from '../base/constant';
 import { SortDescriptorModel } from '../base/grid-model';
 import { AriaService } from '../services/aria-service';
 import { ServiceLocator } from '../services/service-locator';
 import { FocusStrategy } from '../services/focus-strategy';
 import { ResponsiveDialogRenderer } from '../renderer/responsive-dialog-renderer';
+import * as literals from '../base/string-literals';
 
 /**
  * 
@@ -33,6 +35,8 @@ export class Sort implements IAction {
     private focus: FocusStrategy;
     private lastSortedCols: SortDescriptorModel[];
     private lastCols: string[];
+    private evtHandlers: { event: string, handler: Function }[];
+
     //Module declarations
     /** @hidden */
     public parent: IGrid;
@@ -104,9 +108,6 @@ export class Sort implements IAction {
      * @hidden
      */
     public onActionComplete(e: NotifyArgs): void {
-        if (isBlazor() && !this.parent.isJsComponent) {
-            e.rows = null;
-        }
         let args: Object = !this.isRemove ? {
             columnName: this.columnName, direction: this.direction, requestType: 'sorting', type: events.actionComplete
         } : { requestType: 'sorting', type: events.actionComplete };
@@ -233,9 +234,6 @@ export class Sort implements IAction {
         for (let i: number = 0, len: number = cols.length; i < len; i++) {
             this.removeSortColumn(cols[i].field);
         }
-        if (isBlazor() && !this.parent.isJsComponent) {
-            this.sortSettings.columns = this.sortSettings.columns;
-        }
     }
 
     private isActionPrevent(): boolean {
@@ -299,9 +297,6 @@ export class Sort implements IAction {
     private initialEnd(): void {
         this.parent.off(events.contentReady, this.initialEnd);
         let isServerRendered: string = 'isServerRendered';
-        if (isBlazor() && this.parent[isServerRendered]) {
-            return;
-        }
         if (this.parent.getColumns().length && this.sortSettings.columns.length) {
             let gObj: IGrid = this.parent;
             this.contentRefresh = false;
@@ -320,27 +315,22 @@ export class Sort implements IAction {
      */
     public addEventListener(): void {
         if (this.parent.isDestroyed) { return; }
-        this.parent.on(events.setFullScreenDialog, this.setFullScreenDialog, this);
-        this.parent.on(events.contentReady, this.initialEnd, this);
-        this.parent.on(events.sortComplete, this.onActionComplete, this);
-        this.parent.on(events.inBoundModelChanged, this.onPropertyChanged, this);
-        this.parent.on(events.click, this.clickHandler, this);
-        this.parent.on(events.headerRefreshed, this.refreshSortIcons, this);
-        this.parent.on(events.keyPressed, this.keyPressed, this);
-        this.parent.on(events.cancelBegin, this.cancelBeginEvent, this);
+        this.evtHandlers = [{ event: events.setFullScreenDialog, handler: this.setFullScreenDialog },
+        { event: events.contentReady, handler: this.initialEnd },
+        { event: events.sortComplete, handler: this.onActionComplete },
+        { event: events.inBoundModelChanged, handler: this.onPropertyChanged },
+        { event: events.click, handler: this.clickHandler },
+        { event: events.headerRefreshed, handler: this.refreshSortIcons },
+        { event: events.keyPressed, handler: this.keyPressed },
+        { event: events.cancelBegin, handler: this.cancelBeginEvent }];
+        addRemoveEventListener(this.parent, this.evtHandlers, true, this);
     }
     /**
      * @hidden
      */
     public removeEventListener(): void {
         if (this.parent.isDestroyed) { return; }
-        this.parent.off(events.setFullScreenDialog, this.setFullScreenDialog);
-        this.parent.off(events.sortComplete, this.onActionComplete);
-        this.parent.off(events.inBoundModelChanged, this.onPropertyChanged);
-        this.parent.off(events.click, this.clickHandler);
-        this.parent.off(events.headerRefreshed, this.refreshSortIcons);
-        this.parent.off(events.keyPressed, this.keyPressed);
-        this.parent.off(events.cancelBegin, this.cancelBeginEvent);
+        addRemoveEventListener(this.parent, this.evtHandlers, false);
     }
 
     /**
@@ -351,8 +341,8 @@ export class Sort implements IAction {
     public destroy(): void {
         this.isModelChanged = false;
         let gridElement: Element = this.parent.element;
-        if (!gridElement || (!gridElement.querySelector('.e-gridheader') && !gridElement.querySelector('.e-gridcontent'))) { return; }
-        if (this.parent.element.querySelector('.e-gridpopup').querySelectorAll('.e-sortdirect').length) {
+        if (!gridElement || (!gridElement.querySelector('.' + literals.gridHeader) && !gridElement.querySelector( '.' + literals.gridContent))) { return; }
+        if (this.parent.element.querySelector('.e-gridpopup').getElementsByClassName('e-sortdirect').length) {
             (this.parent.element.querySelector('.e-gridpopup') as HTMLElement).style.display = 'none';
         }
         // tslint:disable-next-line:no-any
@@ -386,7 +376,7 @@ export class Sort implements IAction {
                 (e.target as Element).classList.contains('e-headercell'))) {
             let gObj: IGrid = this.parent;
             let colObj: Column = gObj.getColumnByUid(target.querySelector('.e-headercelldiv').getAttribute('e-mappinguid')) as Column;
-            let direction: SortDirection = !target.querySelectorAll('.e-ascending').length ? 'Ascending' :
+            let direction: SortDirection = !target.getElementsByClassName('e-ascending').length ? 'Ascending' :
                 'Descending';
             if (colObj.type !== 'checkbox') {
                 this.initiateSort(target, e, colObj);
@@ -424,14 +414,11 @@ export class Sort implements IAction {
         let gObj: IGrid = this.parent;
         let field: string = column.field;
         this.currentTarget = e.target as Element;
-        let direction: SortDirection = !target.querySelectorAll('.e-ascending').length ? 'Ascending' :
+        let direction: SortDirection = !target.getElementsByClassName('e-ascending').length ? 'Ascending' :
             'Descending';
-        if (e.shiftKey || (this.sortSettings.allowUnsort && target.querySelectorAll('.e-descending').length)
+        if (e.shiftKey || (this.sortSettings.allowUnsort && target.getElementsByClassName('e-descending').length)
             && !(gObj.groupSettings.columns.indexOf(field) > -1)) {
             this.removeSortColumn(field);
-            if (isBlazor() && !this.parent.isJsComponent) {
-                this.sortSettings.columns = this.sortSettings.columns;
-            }
         } else {
             this.sortColumn(field, direction, e.ctrlKey || this.enableSortMultiTouch ||
                  (navigator.userAgent.indexOf('Mac OS') !== -1 && e.metaKey));
@@ -449,7 +436,7 @@ export class Sort implements IAction {
 
     private popUpClickHandler(e: MouseEvent): void {
         let target: Element = e.target as Element;
-        if (closest(target, '.e-headercell') || (e.target as HTMLElement).classList.contains('e-rowcell') ||
+        if (closest(target, '.e-headercell') || (e.target as HTMLElement).classList.contains(literals.rowCell) ||
             closest(target, '.e-gridpopup')) {
             if (target.classList.contains('e-sortdirect')) {
                 if (!target.classList.contains('e-spanclicked')) {

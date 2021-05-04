@@ -86,7 +86,7 @@ export class NumberFormatting implements IAction {
         this.dialog.appendTo(valueDialog);
         this.dialog.element.querySelector('.' + cls.DIALOG_HEADER).innerHTML = this.parent.localeObj.getConstant('numberFormat');
         let formatObject: FormatSettingsModel;
-        this.newFormat = [{ name: this.parent.localeObj.getConstant('AllValues'), format: 'N0', useGrouping: true, type: 'undefined' }];
+        this.newFormat = [{ name: this.parent.localeObj.getConstant('AllValues'), format: 'N0', useGrouping: true, type: undefined }];
         let format: string[] = [];
         for (let i: number = 0; i < this.parent.dataSourceSettings.formatSettings.length; i++) {
             formatObject = {
@@ -393,10 +393,8 @@ export class NumberFormatting implements IAction {
             this.insertFormat(formatSettings[i].name, formatSettings[i].format, formatSettings[i].type);
         }
         if (this.valuesDropDown.value === this.parent.localeObj.getConstant('AllValues')) {
-            let fieldList: IFieldOptions[] = this.parent.dataType === 'olap' ?
-                this.parent.olapEngineModule.values : this.parent.engineModule.values;
-            for (let i: number = 0; i < fieldList.length; i++) {
-                this.insertFormat(fieldList[i].name, text);
+            for (let i: number = 0; i < this.parent.dataSourceSettings.values.length; i++) {
+                this.insertFormat(this.parent.dataSourceSettings.values[i].name, text);
             }
         } else {
             this.insertFormat(this.valuesDropDown.value.toString(), text);

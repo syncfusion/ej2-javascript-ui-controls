@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { createButtonGroup } from '../src/button-group/button-group';
 import { createElement, enableRipple } from '@syncfusion/ej2-base';
 import { profile , inMB, getMemoryProfile } from './common.spec';
@@ -15,8 +16,7 @@ describe('ButtonGroup', () => {
         }
     });
 
-    let checkbox: any;
-    let element: HTMLElement = createElement('div', { id: 'buttongroup' }) as HTMLElement;
+    const element: HTMLElement = createElement('div', { id: 'buttongroup' }) as HTMLElement;
     let buttonElement1: HTMLButtonElement;
     let buttonElement2: HTMLButtonElement;
     let buttonElement3: HTMLButtonElement;
@@ -187,8 +187,8 @@ describe('ButtonGroup', () => {
             createButtonGroup('#buttongroup');
         });
         it('Without Button and Input element', () => {
-            let divElement1: HTMLElement = createElement('div') as HTMLElement;
-            let divElement2: HTMLElement = createElement('div') as HTMLElement;
+            const divElement1: HTMLElement = createElement('div') as HTMLElement;
+            const divElement2: HTMLElement = createElement('div') as HTMLElement;
             element.appendChild(divElement1);
             element.appendChild(divElement2);
             document.body.appendChild(element);
@@ -200,10 +200,10 @@ describe('ButtonGroup', () => {
 
     it('memory leak', () => {
         profile.sample();
-        let average: any = inMB(profile.averageChange);
+        const average: any = inMB(profile.averageChange);
         // check average change in memory samples to not be over 10MB
         expect(average).toBeLessThan(10);
-        let memory: any = inMB(getMemoryProfile());
+        const memory: any = inMB(getMemoryProfile());
         // check the final memory usage against the first usage, there should be little change if everything was properly deallocated
         expect(memory).toBeLessThan(profile.samples[0] + 0.25);
     });

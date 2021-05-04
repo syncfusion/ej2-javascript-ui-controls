@@ -46,6 +46,7 @@ describe('Insert Hyperlink Dialog validation', (): void => {
         editor = undefined;
         dialog.destroy();
         dialog = undefined;
+        document.body.innerHTML = '';
         setTimeout(() => {
             done();
         }, 2000);
@@ -122,6 +123,7 @@ describe('Hyperlink Dialog API Validation', () => {
         editor = undefined;
         dialog.destroy();
         dialog = undefined;
+        document.body.innerHTML = '';
         setTimeout(() => {
             done();
         }, 2000);
@@ -209,6 +211,7 @@ describe('Edit Hyperlink validation', () => {
         editor = undefined;
         dialog.destroy();
         dialog = undefined;
+        document.body.innerHTML = '';
         setTimeout(() => {
             done();
         }, 2000);
@@ -290,6 +293,7 @@ describe('Edit Hyperlink validation without history', () => {
         editor = undefined;
         dialog.destroy();
         dialog = undefined;
+        document.body.innerHTML = '';
         setTimeout(() => {
             done();
         }, 2000);
@@ -1787,6 +1791,7 @@ describe('insert Hyperlink validation in multiple cases in forward', () => {
         editor = undefined;
         dialog.destroy();
         dialog = undefined;
+        document.body.innerHTML = '';
         setTimeout(() => {
             done();
         }, 2000);
@@ -1863,6 +1868,7 @@ describe('insert Hyperlink validation in multiple cases in backward direction', 
         editor = undefined;
         dialog.destroy();
         dialog = undefined;
+        document.body.innerHTML = '';
         setTimeout(() => {
             done();
         }, 2000);

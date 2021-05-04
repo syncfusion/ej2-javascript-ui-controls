@@ -2189,7 +2189,10 @@ export function findLane(laneNode: Node, diagram: Diagram): LaneModel {
 export function canLaneInterchange(laneNode: Node, diagram: Diagram): boolean {
     if (laneNode.isLane) {
         const lane: LaneModel = findLane(laneNode, diagram);
-        if (lane.canMove) {
+        const eventHandler: string = 'eventHandler';
+        let resize: string = diagram[eventHandler].action;
+        let canResize: boolean = resize.includes('Resize');
+        if (canResize || lane.canMove) {
             return true;
         }
     }

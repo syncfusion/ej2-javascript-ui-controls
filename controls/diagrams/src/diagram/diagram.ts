@@ -1579,6 +1579,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
     public realActions: RealAction;
     /** @private */
     public previousSelectedObject: (NodeModel | ConnectorModel)[];
+    public canLayout: boolean = true;
     private changedConnectorCollection: ConnectorModel[] = [];
     private changedNodesCollection: NodeModel[] = [];
     private previousNodeCollection: NodeModel[] = [];
@@ -2163,7 +2164,9 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                 this.commandHandler.expandNode((collapsedNode[i] as Node), this);
             }
         }
-        this.doLayout();
+        if (this.canLayout) {
+            this.doLayout();
+        }
         if (isLayout) { this.commandHandler.getBlazorOldValues(); }
         if (this.lineRoutingModule) {
             const previousConnectorObject: Object[] = [];

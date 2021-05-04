@@ -3,6 +3,7 @@ import { Column } from '../models/column';
 import { isNullOrUndefined, addClass, extend, closest, updateBlazorTemplate, isBlazor } from '@syncfusion/ej2-base';
 import * as events from '../base/constant';
 import { appendChildren, alignFrozenEditForm, getMovableTbody, getFrozenRightTbody, setStyleAndAttributes } from '../base/util';
+import * as literals from '../base/string-literals';
 
 /**
  * Edit render module is used to render grid edit row.
@@ -28,19 +29,19 @@ export class InlineEditRender {
         let mTbody: Element = getMovableTbody(this.parent);
         let frTbody: Element = getFrozenRightTbody(this.parent);
         if (this.parent.frozenRows && this.parent.editSettings.newRowPosition === 'Top') {
-            tbody = this.parent.getHeaderTable().querySelector('tbody');
+            tbody = this.parent.getHeaderTable().querySelector( literals.tbody);
         } else {
-            tbody = this.parent.getContentTable().querySelector('tbody');
+            tbody = this.parent.getContentTable().querySelector( literals.tbody);
         }
         args.row = this.parent.createElement('tr', { className: 'e-row e-addedrow' });
         if (tbody.querySelector('.e-emptyrow')) {
             let emptyRow: Element = tbody.querySelector('.e-emptyrow');
             emptyRow.parentNode.removeChild(emptyRow);
             if (this.parent.isFrozenGrid()) {
-                let moveTbody: Element = this.parent.getContent().querySelector('.e-movablecontent').querySelector('tbody');
+                let moveTbody: Element = this.parent.getContent().querySelector('.' + literals.movableContent).querySelector( literals.tbody);
                 (moveTbody.firstElementChild).parentNode.removeChild(moveTbody.firstElementChild);
-                if (this.parent.getFrozenMode() === 'Left-Right') {
-                    let frTbody: Element = this.parent.getContent().querySelector('.e-frozen-right-content').querySelector('tbody');
+                if (this.parent.getFrozenMode() === literals.leftRight) {
+                    let frTbody: Element = this.parent.getContent().querySelector('.e-frozen-right-content').querySelector( literals.tbody);
                     (frTbody.firstElementChild).parentNode.removeChild(frTbody.firstElementChild);
                 }
             }
@@ -76,8 +77,8 @@ export class InlineEditRender {
             return frEle;
         }
         this.renderRightFrozen(ele, frEle);
-        frEle.querySelector('colgroup').innerHTML = this.parent.getHeaderContent()
-            .querySelector('.e-frozen-right-header').querySelector('colgroup').innerHTML;
+        frEle.querySelector(literals.colGroup).innerHTML = this.parent.getHeaderContent()
+            .querySelector('.e-frozen-right-header').querySelector(literals.colGroup).innerHTML;
         return frEle;
     }
 
@@ -90,21 +91,21 @@ export class InlineEditRender {
             return mEle;
         }
         this.renderMovable(ele, mEle);
-        mEle.querySelector('colgroup').innerHTML = this.parent.getHeaderContent()
-            .querySelector('.e-movableheader').querySelector('colgroup').innerHTML;
+        mEle.querySelector(literals.colGroup).innerHTML = this.parent.getHeaderContent()
+            .querySelector('.' + literals.movableHeader).querySelector(literals.colGroup).innerHTML;
         return mEle;
     }
 
     private updateFreezeEdit(row: Element, td: HTMLElement[]): HTMLElement[] {
         td = td.concat([].slice.call(this.getFreezeRow(row).querySelectorAll('td.e-rowcell')));
-        if (this.parent.getFrozenMode() === 'Left-Right') {
+        if (this.parent.getFrozenMode() === literals.leftRight) {
             td = td.concat([].slice.call(this.getFreezeRightRow(row).querySelectorAll('td.e-rowcell')));
         }
         return td;
     }
 
     private getFreezeRightRow(row: Element): Element {
-        let idx: number = parseInt(row.getAttribute('aria-rowindex'), 10);
+        let idx: number = parseInt(row.getAttribute(literals.ariaRowIndex), 10);
         let fCont: Element = this.parent.getFrozenLeftContentTbody();
         let fHdr: Element = this.parent.getFrozenHeaderTbody();
         let frHdr: Element = this.parent.getFrozenRightHeaderTbody();
@@ -119,7 +120,7 @@ export class InlineEditRender {
 
     private getFreezeRow(row: Element): Element {
         if (this.parent.isFrozenGrid()) {
-            let idx: number = parseInt(row.getAttribute('aria-rowindex'), 10);
+            let idx: number = parseInt(row.getAttribute(literals.ariaRowIndex), 10);
             let fCont: Element = this.parent.getFrozenLeftContentTbody();
             let mCont: Element = this.parent.getMovableContentTbody();
             let fHdr: Element = this.parent.getFrozenHeaderTbody();
@@ -136,33 +137,19 @@ export class InlineEditRender {
     public update(elements: Object, args: { row?: Element, rowData?: Object }): void {
         this.isEdit = true;
         let cloneRow: string = 'cloneRow';
-        if (closest(args.row, '.e-movablecontent') || closest(args.row, '.e-movableheader')) {
+        if (closest(args.row, '.' + literals.movableContent) || closest(args.row, '.' + literals.movableHeader)) {
             args.row = this.getFreezeRow(args.row);
-            if (isBlazor() && this.parent.isServerRendered) {
-                args[cloneRow] = args.row.cloneNode(true);
-            }
         }
         if (closest(args.row, '.e-frozen-right-content') || closest(args.row, '.e-frozen-right-header')) {
             args.row = this.getFreezeRightRow(args.row);
         }
-        if (isBlazor() && this.parent.isServerRendered) {
-            args.row.parentNode.insertBefore(args[cloneRow], args.row);
-            args.row.classList.add('e-hiddenrow');
-            let tdElement: HTMLElement[] = [].slice.call(args[cloneRow].querySelectorAll('td.e-rowcell'));
-            args[cloneRow].innerHTML = '';
-            tdElement = this.updateFreezeEdit(args[cloneRow], tdElement);
-            args[cloneRow].appendChild(this.getEditElement(elements, true, tdElement, args, true));
-            args[cloneRow].classList.add('e-editedrow');
-            this.refreshFreezeEdit(args[cloneRow], args);
-        } else {
-            let tdElement: HTMLElement[] = [].slice.call(args.row.querySelectorAll('td.e-rowcell'));
-            args.row.innerHTML = '';
-            tdElement = this.updateFreezeEdit(args.row, tdElement);
-            args.row.appendChild(this.getEditElement(elements, true, tdElement, args, true));
-            args.row.classList.add('e-editedrow');
-            this.parent.editModule.checkLastRow(args.row, args);
-            this.refreshFreezeEdit(args.row, args);
-        }
+        let tdElement: HTMLElement[] = [].slice.call(args.row.querySelectorAll('td.e-rowcell'));
+        args.row.innerHTML = '';
+        tdElement = this.updateFreezeEdit(args.row, tdElement);
+        args.row.appendChild(this.getEditElement(elements, true, tdElement, args, true));
+        args.row.classList.add(literals.editedRow);
+        this.parent.editModule.checkLastRow(args.row, args);
+        this.refreshFreezeEdit(args.row, args);
     }
 
     private refreshFreezeEdit(
@@ -172,21 +159,21 @@ export class InlineEditRender {
         }): void {
         let td: Element = row.firstChild as Element;
         if (this.parent.getVisibleFrozenColumns() && this.parent.editSettings.template) {
-                td.querySelector('colgroup').innerHTML = this.parent.getHeaderContent().querySelector('.e-frozenheader').
-                 querySelector('colgroup').innerHTML;
+                td.querySelector(literals.colGroup).innerHTML = this.parent.getHeaderContent().querySelector('.' + literals.frozenHeader).
+                 querySelector(literals.colGroup).innerHTML;
         }
         let fCls: string;
         let cont: Element;
         let frozen: string = 'frozen';
         let cloneFrozen: string = 'cloneFrozen';
-        let idx: number = parseInt(row.getAttribute('aria-rowindex'), 10);
+        let idx: number = parseInt(row.getAttribute(literals.ariaRowIndex), 10);
         if (this.parent.isFrozenGrid()) {
             if (idx < this.parent.frozenRows) {
                 cont = this.parent.getHeaderContent();
-                fCls = '.e-frozenheader';
+                fCls = '.' + literals.frozenHeader;
             } else {
                 cont = this.parent.getContent();
-                fCls = '.e-frozencontent';
+                fCls = '.' + literals.frozenContent;
             }
             let mTd: Element = td.cloneNode(true) as Element;
             let frTd: Element = td.cloneNode(true) as Element;
@@ -198,48 +185,32 @@ export class InlineEditRender {
             let frRows: Element;
             if (cont.querySelector(fCls).contains(row)) {
                 fRows = this.parent.getMovableRowByIndex(idx);
-                if (isBlazor() && this.parent.isServerRendered) {
-                    args[frozen] = fRows;
-                    args[cloneFrozen] = fRows.cloneNode(true);
-                    fRows.classList.add('e-hiddenrow');
-                    fRows.parentNode.insertBefore(args[cloneFrozen], fRows);
-                    this.updateFrozenCont(args[cloneFrozen], td, mTd);
-                } else {
-                    this.updateFrozenCont(fRows, td, mTd);
-                    if (this.parent.getFrozenMode() === 'Left-Right') {
-                        args.frozenRightForm = frTd.querySelector('form');
-                        this.refreshEditForm(args.frozenRightForm, args.rowData);
-                        frRows = this.parent.getFrozenRightRowByIndex(idx);
-                        this.updateFrozenRightCont(frRows, td, frTd);
-                    }
+                this.updateFrozenCont(fRows, td, mTd);
+                if (this.parent.getFrozenMode() === literals.leftRight) {
+                    args.frozenRightForm = frTd.querySelector('form');
+                    this.refreshEditForm(args.frozenRightForm, args.rowData);
+                    frRows = this.parent.getFrozenRightRowByIndex(idx);
+                    this.updateFrozenRightCont(frRows, td, frTd);
                 }
             } else {
                 fRows = this.parent.getRowByIndex(idx);
-                if (isBlazor() && this.parent.isServerRendered) {
-                    args[frozen] = fRows;
-                    args[cloneFrozen] = fRows.cloneNode(true);
-                    fRows.parentNode.insertBefore(args[cloneFrozen], fRows);
-                    fRows.classList.add('e-hiddenrow');
-                    this.updateFrozenCont(args[cloneFrozen], mTd, td);
-                } else {
-                    this.updateFrozenCont(fRows, mTd, td);
-                    if (this.parent.getFrozenMode() === 'Left-Right') {
-                        args.frozenRightForm = frTd.querySelector('form');
-                        this.refreshEditForm(args.frozenRightForm, args.rowData);
-                        frRows = this.parent.getFrozenRightRowByIndex(idx);
-                        this.updateFrozenRightCont(frRows, frTd, td);
-                    }
+                this.updateFrozenCont(fRows, mTd, td);
+                if (this.parent.getFrozenMode() === literals.leftRight) {
+                    args.frozenRightForm = frTd.querySelector('form');
+                    this.refreshEditForm(args.frozenRightForm, args.rowData);
+                    frRows = this.parent.getFrozenRightRowByIndex(idx);
+                    this.updateFrozenRightCont(frRows, frTd, td);
                 }
             }
             if (isBlazor() && this.parent.isServerRendered) {
                 args[cloneFrozen].appendChild(mTd);
-                args[cloneFrozen].classList.add('e-editedrow');
+                args[cloneFrozen].classList.add(literals.editedRow);
             } else {
                 fRows.appendChild(mTd);
-                fRows.classList.add('e-editedrow');
-                if (this.parent.getFrozenMode() === 'Left-Right') {
+                fRows.classList.add(literals.editedRow);
+                if (this.parent.getFrozenMode() === literals.leftRight) {
                     frRows.appendChild(frTd);
-                    frRows.classList.add('e-editedrow');
+                    frRows.classList.add(literals.editedRow);
                     alignFrozenEditForm(args.frozenRightForm.querySelector('td:not(.e-hide)'), args.form.querySelector('td:not(.e-hide)'));
                 }
             }
@@ -257,8 +228,8 @@ export class InlineEditRender {
     private updateFrozenRightCont(row: Element, ele: Element, frEle: Element): void {
         row.innerHTML = '';
         this.renderRightFrozen(ele, frEle);
-        frEle.querySelector('colgroup').innerHTML = this.parent.getHeaderContent()
-            .querySelector('.e-frozen-right-header').querySelector('colgroup').innerHTML;
+        frEle.querySelector(literals.colGroup).innerHTML = this.parent.getHeaderContent()
+            .querySelector('.e-frozen-right-header').querySelector(literals.colGroup).innerHTML;
         ele.setAttribute('colspan', this.parent.getVisibleFrozenColumns() - this.parent.getFrozenRightColumnsCount() + '');
         frEle.setAttribute('colspan', this.parent.getFrozenRightColumnsCount() + '');
     }
@@ -266,8 +237,8 @@ export class InlineEditRender {
     private updateFrozenCont(row: Element, ele: Element, mEle: Element): void {
         row.innerHTML = '';
         this.renderMovable(ele, mEle);
-        mEle.querySelector('colgroup').innerHTML = this.parent.getHeaderContent()
-            .querySelector('.e-movableheader').querySelector('colgroup').innerHTML;
+        mEle.querySelector(literals.colGroup).innerHTML = this.parent.getHeaderContent()
+            .querySelector('.' + literals.movableHeader).querySelector(literals.colGroup).innerHTML;
         ele.setAttribute('colspan', this.parent.getVisibleFrozenColumns() + '');
         mEle.setAttribute('colspan', this.parent.getVisibleColumns().length - this.parent.getVisibleFrozenColumns() + '');
     }
@@ -277,7 +248,7 @@ export class InlineEditRender {
         let cols: Column[] = this.parent.getColumns();
         let k: number = 0;
         for (let i: number = 0; i < cols.length; i++ , k++) {
-            if (cols[i].getFreezeTableName() === 'frozen-right') {
+            if (cols[i].getFreezeTableName() === literals.frozenRight) {
                 let index: number = k - this.parent.getMovableColumnsCount();
                 frEle.querySelector('tr').appendChild(ele.querySelector('tr').removeChild(ele.querySelector('tr').children[index]));
                 k--;
@@ -317,8 +288,8 @@ export class InlineEditRender {
             return td;
         }
         let table: Element = this.parent.createElement('table', { className: 'e-table e-inline-edit', attrs: { cellspacing: '0.25' } });
-        table.appendChild(gObj.getContentTable().querySelector('colgroup').cloneNode(true));
-        let tbody: Element = this.parent.createElement('tbody');
+        table.appendChild(gObj.getContentTable().querySelector(literals.colGroup).cloneNode(true));
+        let tbody: Element = this.parent.createElement( literals.tbody);
         let tr: Element = this.parent.createElement('tr');
         let i: number = 0;
         if (isDetail) {
@@ -339,7 +310,7 @@ export class InlineEditRender {
             let td: HTMLElement = this.parent.createElement(
                 'td',
                 {
-                    className: 'e-rowcell', attrs:
+                    className: literals.rowCell, attrs:
                         { style: 'text-align:' + (col.textAlign ? col.textAlign : ''), 'colspan': span ? span : '' }
                 });
             if (col.visible) {

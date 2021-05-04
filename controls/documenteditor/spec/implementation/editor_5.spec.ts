@@ -745,6 +745,7 @@ describe('Insert Field API Validation', () => {
         document.body.removeChild(document.getElementById('container'));
         editor = undefined;
         setTimeout(function () {
+            document.body.innerHTML = '';
             done();
         }, 1000);
     });
@@ -816,6 +817,7 @@ describe('Insert Table Validation with selectedd content replace', () => {
         document.body.removeChild(document.getElementById('container'));
         editor = undefined;
         setTimeout(function () {
+            document.body.innerHTML = '';
             done();
         }, 1000);
     });
@@ -879,6 +881,7 @@ describe('Insert table Multiple time', () => {
         document.body.removeChild(document.getElementById('container'));
         editor = undefined;
         setTimeout(() => {
+            document.body.innerHTML = '';
             done();
         }, 1000);
     });
@@ -911,6 +914,7 @@ describe('Insert table Multiple time', () => {
         document.body.removeChild(document.getElementById('container'));
         editor = undefined;
         setTimeout(() => {
+            document.body.innerHTML = '';
             done();
         }, 1000);
     });
@@ -957,6 +961,7 @@ describe('Insert Field Format Validation', () => {
         document.body.removeChild(document.getElementById('container'));
         editor = undefined;
         setTimeout(function () {
+            document.body.innerHTML = '';
             done();
         }, 1000);
     });

@@ -967,42 +967,54 @@ describe('Multi Level List apply validation', () => {
         document.body.appendChild(ele);
         DocumentEditor.Inject(Editor, Selection, EditorHistory);
         editor = new DocumentEditor({ enableEditor: true, isReadOnly: false, enableSelection: true, enableEditorHistory: true });
+        editor.acceptTab = true;
         (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
         (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
         (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
         (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
-        editor.open(JSON.stringify(json));
-        editor.selection.selectAll();
         documentHelper = editor.documentHelper;
     });
     afterAll((done): void => {
+        documentHelper.destroy();
+        documentHelper = undefined;
         editor.destroy();
         document.body.removeChild(document.getElementById('container'));
         editor = undefined;
-        documentHelper.destroy();
-        documentHelper = undefined;
         setTimeout(function () {
+            document.body.innerHTML = '';
             done();
         }, 1000);
     });
     it('Multilevel number brace validation', () => {
 console.log('Multilevel number brace validation');
+        editor.openBlank();
         editor.editor.applyNumbering('numbering');
         expect(editor.selection.paragraphFormat.listLevelNumber).toBe(0);
     });
     it('MultiLevel Number dot validation', () => {
 console.log('MultiLevel Number dot validation');
+        editor.openBlank();
         editor.editor.applyNumbering('multiLevel');
+        expect(editor.selection.paragraphFormat.listId).not.toBe(-1);
+        editor.editorHistory.undo();
+        expect(editor.selection.paragraphFormat.listId).toBe(-1);
+        editor.editorHistory.redo();
         expect(editor.selection.paragraphFormat.listId).not.toBe(-1);
     });
     it('MultiLevel Bullet List validation', () => {
 console.log('MultiLevel Bullet List validation');
+        editor.openBlank();
         editor.editor.applyNumbering('bullet');
+        expect(editor.selection.paragraphFormat.listId).not.toBe(-1);
+        editor.editorHistory.undo();
         expect(editor.selection.paragraphFormat.listId).toBe(-1);
+        editor.editorHistory.redo();
+        expect(editor.selection.paragraphFormat.listId).not.toBe(-1);
     });
     it('MultiLevel None validation', () => {
 console.log('MultiLevel None validation');
+        editor.openBlank();
         editor.selection.paragraphFormat.setList(undefined);
         expect(editor.selection.paragraphFormat.listId).toBe(-1);
     });
@@ -1029,6 +1041,7 @@ describe('Numbering apply validation in different scenario', () => {
         editor = undefined;
         documentHelper.destroy();
         documentHelper = undefined;
+        document.body.innerHTML = '';
         setTimeout(function () {
             done();
         }, 1000);
@@ -1093,6 +1106,7 @@ describe('Bullet list Apply validation', () => {
         editor = undefined;
         documentHelper.destroy();
         documentHelper = undefined;
+        document.body.innerHTML = '';
         setTimeout(function () {
             done();
         }, 1000);
@@ -1138,6 +1152,7 @@ describe('List Text validation', () => {
         editor.destroy();
         document.body.removeChild(document.getElementById('container'));
         editor = undefined;
+        document.body.innerHTML = '';
         setTimeout(function () {
             done();
         }, 1000);
@@ -1254,6 +1269,7 @@ describe('List Edit operation validation', () => {
         editor.destroy();
         document.body.removeChild(document.getElementById('container'));
         editor = undefined;
+        document.body.innerHTML = '';
         setTimeout(function () {
             done();
         }, 1000);

@@ -1,5 +1,5 @@
 import { L10n, NumberFormatOptions } from '@syncfusion/ej2-base';
-import { remove, resetBlazorTemplate, updateBlazorTemplate, blazorTemplates, isBlazor } from '@syncfusion/ej2-base';
+import { remove, resetBlazorTemplate, blazorTemplates } from '@syncfusion/ej2-base';
 import { isNullOrUndefined, extend, DateFormatOptions } from '@syncfusion/ej2-base';
 import { DataManager, Group, Query, Deferred, Predicate, DataUtil } from '@syncfusion/ej2-data';
 import { IGrid, NotifyArgs, IValueFormatter } from '../base/interface';
@@ -32,6 +32,7 @@ import { AriaService } from '../services/aria-service';
 import { PredicateModel } from '../base/grid-model';
 import { RowDragDropRenderer } from './row-drag-drop-renderer';
 import { RowDragDropHeaderRenderer } from '../renderer/row-drag-header-indent-render';
+import * as literals from '../base/string-literals';
 
 /**
  * Content module is used to render grid content
@@ -87,9 +88,7 @@ export class Render {
         if (this.parent.height !== 'auto') {
             this.parent.scrollModule.setPadding();
         }
-        if (!(isBlazor() && this.parent[isServerRendered])) {
-            this.refreshDataManager();
-        }
+        this.refreshDataManager();
     }
 
     /** 
@@ -100,45 +99,11 @@ export class Render {
         let gObj: IGrid = this.parent;
         let preventUpdate: string = 'preventUpdate';
         gObj.notify(`${e.requestType}-begin`, e);
-        if (isBlazor()) {
-            this.resetTemplates();
-        }
-        if (isBlazor() && gObj.isServerRendered) {
-            let bulkChanges: string = 'bulkChanges';
-            if (gObj[bulkChanges].dataSource) {
-                delete gObj[bulkChanges].dataSource;
-            }
-            gObj.notify('blazor-action-begin', e);
-            if (e.requestType === 'filtering') {
-                let columns: string = 'columns';
-                e[columns] = null;
-            }
-            if (e.requestType === 'sorting') {
-                let target: string = 'target';
-                e[target] = null;
-            }
-            if (gObj.editSettings.mode === 'Batch' && !gObj.isEdit) {
-                gObj.notify('closebatch', {});
-            }
-        }
         let tempPreventUpdate: boolean = this.parent[preventUpdate];
         gObj.trigger(events.actionBegin, e, (args: NotifyArgs = { requestType: 'refresh' }) => {
-            if (args.requestType === 'delete' && isBlazor() && !gObj.isJsComponent) {
-                let data: string = 'data';
-                if (isNullOrUndefined(gObj.commandDelIndex)) {
-                    args[data] = gObj.getSelectedRecords();
-                } else {
-                    let tempSelectedRecord: Object = args[data];
-                    args[data] = {};
-                    args[data][0] = tempSelectedRecord;
-                }
-            }
             if (args.cancel) {
                 gObj.notify(events.cancelBegin, args);
                 return;
-            }
-            if (isBlazor() && gObj.editSettings.mode === 'Normal' && gObj.isEdit && e.requestType !== 'infiniteScroll') {
-                gObj.notify('closeinline', {});
             }
             if (args.requestType === 'delete' as Action && gObj.allowPaging) {
                 let dataLength: number = (<{ data?: NotifyArgs[] }>args).data.length;
@@ -154,27 +119,7 @@ export class Render {
                     gObj.pagerModule.pagerObj.totalRecordsCount = count;
                 }
             }
-            if (isBlazor() && this.parent.isServerRendered) {
-                if (tempPreventUpdate) {
-                    let bulkChanges: string = 'bulkChanges';
-                    gObj[bulkChanges] = {};
-                    return;
-                }
-                if (e.requestType === 'refresh') {
-                    this.parent.notify('updateaction', args);
-                }
-                if (args.requestType !== 'virtualscroll') {
-                    this.parent.showSpinner();
-                }
-                if (args.requestType === 'delete' || args.requestType === 'save') {
-                    this.parent.notify(events.addDeleteAction, args);
-                    this.parent.notify('add-delete-success', args);
-                } else {
-                    this.parent.allowServerDataBinding = true;
-                    this.parent.serverDataBind();
-                    this.parent.allowServerDataBinding = false;
-                }
-            } else if (args.requestType === 'reorder' && this.parent.dataSource && 'result' in this.parent.dataSource ) {
+            if (args.requestType === 'reorder' && this.parent.dataSource && 'result' in this.parent.dataSource ) {
                 this.contentRenderer.refreshContentRows(args);
             } else if ((args.requestType === 'paging' || args.requestType === 'columnstate' || args.requestType === 'reorder')
                 && this.parent.groupSettings.enableLazyLoading && this.parent.groupSettings.columns.length
@@ -241,9 +186,6 @@ export class Render {
         }
     }
     private refreshComplete(e?: NotifyArgs): void {
-        if (isBlazor() && !this.parent.isJsComponent) {
-            e.rows = null;
-        }
         this.parent.trigger(events.actionComplete, e);
     }
 
@@ -259,7 +201,7 @@ export class Render {
         this.emptyGrid = false;
         let dataManager: Promise<Object>;
         let isFActon: boolean = this.isNeedForeignAction();
-        this.ariaService.setBusy(<HTMLElement>this.parent.getContent().querySelector('.e-content'), true);
+        this.ariaService.setBusy(<HTMLElement>this.parent.getContent().querySelector('.' + literals.content), true);
         if (isFActon) {
             let deffered: Deferred = new Deferred();
             dataManager = this.getFData(deffered, args);
@@ -317,30 +259,17 @@ export class Render {
         let promise: Promise<Object> = this.data.saveChanges(
             (<{ changes?: Object }>args).changes, this.parent.getPrimaryKeyFieldNames()[0],
             (<{ original?: Object }>args).original);
-        if (isBlazor() && !this.parent.isJsComponent) {
-            promise.then((e: ReturnType) => {
-                this.parent.notify('editsuccess', args);
-            }).catch((e: Error) => {
-                let error: string = 'error';
-                let message: string = 'message';
-                if (!isNullOrUndefined(e[error]) && !isNullOrUndefined(e[error][message])) {
-                    e[error] = e[error][message];
-                }
-                this.parent.trigger(events.actionFailure, e);
-            });
+        let query: Query = this.data.generateQuery().requiresCount();
+        if (this.data.dataManager.dataSource.offline) {
+            this.refreshDataManager({ requestType: 'batchsave' });
+            return;
         } else {
-            let query: Query = this.data.generateQuery().requiresCount();
-            if (this.data.dataManager.dataSource.offline) {
-                this.refreshDataManager({ requestType: 'batchsave' });
-                return;
-            } else {
-                promise.then((e: ReturnType) => {
-                    this.data.getData(args, query)
-                        .then((e: { result: Object[], count: number }) => this.dmSuccess(e, args))
-                        .catch((e: { result: Object[] }) => this.dmFailure(e as { result: Object[] }, args));
-                })
+            promise.then((e: ReturnType) => {
+                this.data.getData(args, query)
+                    .then((e: { result: Object[], count: number }) => this.dmSuccess(e, args))
                     .catch((e: { result: Object[] }) => this.dmFailure(e as { result: Object[] }, args));
-            }
+            })
+                .catch((e: { result: Object[] }) => this.dmFailure(e as { result: Object[] }, args));
         }
     }
 
@@ -363,12 +292,12 @@ export class Render {
 
     public emptyRow(isTrigger?: boolean): void {
         let gObj: IGrid = this.parent;
-        let tbody: Element = this.contentRenderer.getTable().querySelector('tbody');
+        let tbody: Element = this.contentRenderer.getTable().querySelector( literals.tbody);
         let tr: Element;
         if (!isNullOrUndefined(tbody)) {
             remove(tbody);
         }
-        tbody = this.parent.createElement('tbody');
+        tbody = this.parent.createElement( literals.tbody);
         let spanCount: number = 0;
         if (gObj.detailTemplate || gObj.childGrid) {
             ++spanCount;
@@ -415,12 +344,12 @@ export class Render {
             }
             if (!isNullOrUndefined(value)) {
                 this.isColTypeDef = true;
-                if (!columns[i].type || (isBlazor() && this.parent.isServerRendered && columns[i].type === 'none')) {
+                if (!columns[i].type) {
                     columns[i].type = value.getDay ? (value.getHours() > 0 || value.getMinutes() > 0 ||
                         value.getSeconds() > 0 || value.getMilliseconds() > 0 ? 'datetime' : 'date') : typeof (value);
                 }
             } else {
-                columns[i].type = columns[i].type || (isBlazor() && this.parent.isServerRendered ? 'none' : null);
+                columns[i].type = columns[i].type || null;
             }
             let valueFormatter: ValueFormatter = new ValueFormatter();
             if (columns[i].format && ((<DateFormatOptions>columns[i].format).skeleton || (<DateFormatOptions>columns[i].format).format)) {
@@ -469,25 +398,6 @@ export class Render {
             this.contentRenderer.prevCurrentView = this.parent.currentViewData.slice();
             gObj.currentViewData = <Object[]>dataArgs.result;
             gObj.notify(events.refreshInfiniteCurrentViewData, { args: args, data: dataArgs.result });
-            if (isBlazor() && gObj.filterSettings.type === 'FilterBar'
-                && (isNullOrUndefined(gObj.currentViewData) ||
-                    (!isNullOrUndefined(gObj.currentViewData) && !gObj.currentViewData.length))) {
-                let gridColumns: Column[] = gObj.getColumns();
-                for (let i: number = 0; i < gridColumns.length; i++) {
-                    if (gridColumns[i].filterTemplate) {
-                        let tempID: string = gObj.element.id + gridColumns[i].uid + 'filterTemplate';
-                        resetBlazorTemplate(tempID, 'FilterTemplate');
-                        let fieldName: string = gridColumns[i].field;
-                        let filteredColumns: PredicateModel[] = gObj.filterSettings.columns;
-                        for (let k: number = 0; k < filteredColumns.length; k++) {
-                            if (fieldName === filteredColumns[k].field) {
-                                blazorTemplates[tempID][0][fieldName] = filteredColumns[k].value;
-                            }
-                        }
-                        updateBlazorTemplate(tempID, 'FilterTemplate', gridColumns[i], false);
-                    }
-                }
-            }
             if (!len && dataArgs.count && gObj.allowPaging && args && args.requestType !== 'delete' as Action) {
                 if (this.parent.groupSettings.enableLazyLoading
                     && (args.requestType === 'grouping' || args.requestType === 'ungrouping')) {
@@ -542,7 +452,7 @@ export class Render {
                 }
                 this.contentRenderer.setRowElements([]);
                 this.contentRenderer.setRowObjects([]);
-                this.ariaService.setBusy(<HTMLElement>this.parent.getContent().querySelector('.e-content'), false);
+                this.ariaService.setBusy(<HTMLElement>this.parent.getContent().querySelector('.' + literals.content), false);
                 this.renderEmptyRow();
                 if (args) {
                     let action: string = (args.requestType || '').toLowerCase() + '-complete';
@@ -564,7 +474,7 @@ export class Render {
 
     /** @hidden */
     public dataManagerFailure(e: { result: Object[] }, args: NotifyArgs): void {
-        this.ariaService.setOptions(<HTMLElement>this.parent.getContent().querySelector('.e-content'), { busy: false, invalid: true });
+        this.ariaService.setOptions(<HTMLElement>this.parent.getContent().querySelector('.' + literals.content), { busy: false, invalid: true });
         this.setRowCount(1);
         this.parent.trigger(events.actionFailure, { error: e });
         this.parent.hideSpinner();
@@ -679,7 +589,7 @@ export class Render {
         let curDm: DataManager = new DataManager(e.result as JSON[]);
         let curFilter: Object[] = <Object[]>curDm.executeLocal(query);
         let newQuery: Query = this.data.generateQuery(true); let rPredicate: Predicate[] = [];
-        if (this.data.isRemote() || isBlazor()) {
+        if (this.data.isRemote()) {
             let groups: Group[] = [group0, groupN];
             for (let i: number = 0; i < groups.length; i++) {
                 rPredicate.push(this.getPredicate((groups[i] as Group).field, 'equal', (groups[i] as Group).key));

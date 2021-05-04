@@ -29,6 +29,7 @@ describe('Cell content alignment validation in empty selection- Align Center Lef
         document.body.removeChild(document.getElementById('container'));
         editor = undefined;
         setTimeout(function () {
+            document.body.innerHTML = '';
             done();
         }, 1000);
     });
@@ -87,6 +88,7 @@ describe('Cell content alignment validation in empty selection- Align Center Cen
         document.body.removeChild(document.getElementById('container'));
         editor = undefined;
         setTimeout(function () {
+            document.body.innerHTML = '';
             done();
         }, 1000);
     });
@@ -144,6 +146,7 @@ describe('Cell content alignment validation in empty selection- Align Center Rig
         document.body.removeChild(document.getElementById('container'));
         editor = undefined;
         setTimeout(function () {
+            document.body.innerHTML = '';
             done();
         }, 1000);
     });
@@ -203,6 +206,7 @@ describe('Cell content alignment validation in empty selection- Align Bottom Rig
         document.body.removeChild(document.getElementById('container'));
         editor = undefined;
         setTimeout(function () {
+            document.body.innerHTML = '';
             done();
         }, 1000);
     });
@@ -261,6 +265,7 @@ describe('Cell content alignment validation in empty selection- Align Bottom Cen
         document.body.removeChild(document.getElementById('container'));
         editor = undefined;
         setTimeout(function () {
+            document.body.innerHTML = '';
             done();
         }, 1000);
     });
@@ -319,6 +324,7 @@ describe('Cell content alignment validation in empty selection- Align Bottom Lef
         document.body.removeChild(document.getElementById('container'));
         editor = undefined;
         setTimeout(function () {
+            document.body.innerHTML = '';
             done();
         }, 1000);
     });
@@ -378,6 +384,7 @@ describe('Cell content alignment validation in empty selection- Align Top Left',
         document.body.removeChild(document.getElementById('container'));
         editor = undefined;
         setTimeout(function () {
+            document.body.innerHTML = '';
             done();
         }, 1000);
     });
@@ -436,6 +443,7 @@ describe('Cell content alignment validation in empty selection- Align Top Center
         document.body.removeChild(document.getElementById('container'));
         editor = undefined;
         setTimeout(function () {
+            document.body.innerHTML = '';
             done();
         }, 1000);
     });
@@ -496,6 +504,7 @@ describe('Cell content alignment validation in empty selection- Align Top Right'
         document.body.removeChild(document.getElementById('container'));
         editor = undefined;
         setTimeout(function () {
+            document.body.innerHTML = '';
             done();
         }, 1000);
     });
@@ -556,6 +565,7 @@ describe('Cell content alignment validation in Non-empty selection-Top Right and
         document.body.removeChild(document.getElementById('container'));
         editor = undefined;
         setTimeout(function () {
+            document.body.innerHTML = '';
             done();
         }, 1000);
     });
@@ -623,6 +633,7 @@ describe('Cell content alignment validation in Non-empty selection-Top Center an
         document.body.removeChild(document.getElementById('container'));
         editor = undefined;
         setTimeout(function () {
+            document.body.innerHTML = '';
             done();
         }, 1000);
     });
@@ -690,6 +701,7 @@ describe('Cell content alignment validation in Non-empty selection-Bottom Center
         document.body.removeChild(document.getElementById('container'));
         editor = undefined;
         setTimeout(function () {
+            document.body.innerHTML = '';
             done();
         }, 1000);
     });
@@ -758,6 +770,7 @@ describe('Cell content alignment validation in Non-empty selection-Center Right 
         document.body.removeChild(document.getElementById('container'));
         editor = undefined;
         setTimeout(function () {
+            document.body.innerHTML = '';
             done();
         }, 1000);
     });
@@ -826,6 +839,7 @@ describe('Cell content alignment validation in Non-empty selection-Align Bottom 
         document.body.removeChild(document.getElementById('container'));
         editor = undefined;
         setTimeout(function () {
+            document.body.innerHTML = '';
             done();
         }, 1000);
     });
@@ -892,6 +906,7 @@ describe('Cell content alignment validation Without History', () => {
         document.body.removeChild(document.getElementById('container'));
         editor = undefined;
         setTimeout(function () {
+            document.body.innerHTML = '';
             done();
         }, 1000);
     });
@@ -940,6 +955,7 @@ describe('Cell content alignment validation invalid cases', () => {
         document.body.removeChild(document.getElementById('container'));
         editor = undefined;
         setTimeout(function () {
+            document.body.innerHTML = '';
             done();
         }, 1000);
     });
@@ -984,6 +1000,7 @@ describe('Table center alignment validation', () => {
         document.body.removeChild(document.getElementById('container'));
         editor = undefined;
         setTimeout(() => {
+            document.body.innerHTML = '';
             done();
         }, 1000);
     });
@@ -1048,6 +1065,7 @@ describe('Table relayouting with row span', () => {
         document.body.removeChild(document.getElementById('container'));
         editor = undefined;
         setTimeout(() => {
+            document.body.innerHTML = '';
             done();
         }, 1000);
     });
@@ -1099,6 +1117,7 @@ describe('form field validation', () => {
         document.body.removeChild(document.getElementById('container'));
         editor = undefined;
         setTimeout(() => {
+            document.body.innerHTML = '';
             done();
         }, 1000);
     });
@@ -1269,6 +1288,7 @@ describe("Form field inline editing validation", () => {
         document.body.removeChild(document.getElementById('container'));
         container = undefined;
         setTimeout(() => {
+            document.body.innerHTML = '';
             done();
         }, 700);
     });
@@ -1307,6 +1327,7 @@ describe('Track changes Validation For FormField', () => {
         container = undefined;
         document.body.innerHTML = '';
         setTimeout(function () {
+            document.body.innerHTML = '';
             done();
         }, 1000);
     });

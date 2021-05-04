@@ -518,3 +518,11 @@ export const enterKeyHandler: string = 'enter-key-handler';
 export const refreshVirtualMaxPage: string = 'refresh-virtual-max-page';
 /** @hidden */
 export const selectRowOnContextOpen: string = 'select-row-on-context-open';
+/** @hidden */
+export const pagerRefresh: string = 'pager-refresh';
+/** @hidden */
+export const closeInline: string = 'closeinline';
+/** @hidden */
+export const closeBatch: string = 'closebatch';
+/** @hidden */
+export const closeEdit: string = 'close-edit';

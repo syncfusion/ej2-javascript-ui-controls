@@ -36,6 +36,7 @@ describe('Paragraph Dialog Test Case Validation', function () {
         editor = undefined;
         dialog = undefined;
         document.body.removeChild(document.getElementById('container'));
+        document.body.innerHTML = '';
         setTimeout(function () {
             done();
         }, 2000);
@@ -78,6 +79,7 @@ describe('Load Paragraph Format Dialog Test Case Validation', function () {
         dialog = undefined;
         selectionParaFormat = undefined;
         document.body.removeChild(document.getElementById('container'));
+        document.body.innerHTML = '';
         setTimeout(function () {
             done();
         }, 2000);
@@ -142,6 +144,7 @@ describe('Paragraph Format Dialog Load Test Case Validation', function () {
         dialog = undefined;
         selectionParaFormat = undefined;
         document.body.removeChild(document.getElementById('container'));
+        document.body.innerHTML = '';
         setTimeout(function () {
             done();
         }, 2000);
@@ -185,6 +188,7 @@ describe('Apply Paragraph Format Dialog Test Case Validation', function () {
         editor = undefined;
         dialog = undefined;
         document.body.removeChild(document.getElementById('container'));
+        document.body.innerHTML = '';
         setTimeout(function () {
             done();
         }, 2000);
@@ -227,6 +231,7 @@ describe('Paragraph Format Apply Dialog Test Case Validation', function () {
         editor = undefined;
         dialog = undefined;
         document.body.removeChild(document.getElementById('container'));
+        document.body.innerHTML = '';
         setTimeout(function () {
             done();
         }, 2000);
@@ -282,6 +287,7 @@ describe('Paragraph Format Dialog Test Case Validation', function () {
         dialog = undefined;
         selectionParaFormat = undefined;
         document.body.removeChild(document.getElementById('container'));
+        document.body.innerHTML = '';
         setTimeout(function () {
             done();
         }, 2000);
@@ -321,6 +327,7 @@ describe('Dialog Test Case using event Validation', function () {
         dialog = undefined;
         selectionParaFormat = undefined;
         document.body.removeChild(document.getElementById('container'));
+        document.body.innerHTML = '';
         setTimeout(function () {
             done();
         }, 2000);
@@ -368,6 +375,7 @@ describe('Dialog Test Case using event second Validation', function () {
         dialog = undefined;
         selectionParaFormat = undefined;
         document.body.removeChild(document.getElementById('container'));
+        document.body.innerHTML = '';
         setTimeout(function () {
             done();
         }, 2000);
@@ -422,6 +430,7 @@ describe('Dialog Test Case using event third Validation', function () {
         dialog = undefined;
         selectionParaFormat = undefined;
         document.body.removeChild(document.getElementById('container'));
+        document.body.innerHTML = '';
         setTimeout(function () {
             done();
         }, 2000);
@@ -479,6 +488,7 @@ describe('Dialog Test Case using event third Validation', function () {
         dialog = undefined;
         selectionParaFormat = undefined;
         document.body.removeChild(document.getElementById('container'));
+        document.body.innerHTML = '';
         setTimeout(function () {
             done();
         }, 2000);
@@ -523,6 +533,7 @@ describe('Paragraph Format show and destroy Test Case Validation', function () {
         editor = undefined;
         dialog = undefined;
         document.body.removeChild(document.getElementById('container'));
+        document.body.innerHTML = '';
         setTimeout(function () {
             done();
         }, 2000);
@@ -561,6 +572,7 @@ describe('Paragraph format change by space Test Case Validation', function () {
         editor = undefined;
         dialog = undefined;
         document.body.removeChild(document.getElementById('container'));
+        document.body.innerHTML = '';
         setTimeout(function () {
             done();
         }, 2000);
@@ -607,6 +619,7 @@ describe('Paragraph format-before spacing Applying validation via dialog in empt
         editor = undefined;
         dialog = undefined;
         document.body.removeChild(document.getElementById('container'));
+        document.body.innerHTML = '';
         setTimeout(function () {
             done();
         }, 2000);
@@ -669,6 +682,7 @@ describe('Paragraph format-before spacing and left Indent Applying validation vi
         editor = undefined;
         dialog = undefined;
         document.body.removeChild(document.getElementById('container'));
+        document.body.innerHTML = '';
         setTimeout(function () {
             done();
         }, 2000);
@@ -731,6 +745,7 @@ describe('Paragraph format-after spacing and left Indent Applying validation via
         editor = undefined;
         dialog = undefined;
         document.body.removeChild(document.getElementById('container'));
+        document.body.innerHTML = '';
         setTimeout(function () {
             done();
         }, 2000);
@@ -796,6 +811,7 @@ describe('Paragraph format using paragraph dialog- right to left changes in empt
         editor = undefined;
         dialog = undefined;
         document.body.removeChild(document.getElementById('container'));
+        document.body.innerHTML = '';
         setTimeout(function () {
             done();
         }, 2000);
@@ -868,6 +884,7 @@ describe('Paragraph format using paragraph dialog- right to left changes in empt
         editor = undefined;
         dialog = undefined;
         document.body.removeChild(document.getElementById('container'));
+        document.body.innerHTML = '';
         setTimeout(function () {
             done();
         }, 2000);
@@ -934,6 +951,7 @@ describe('Paragraph format using paragraph dialog- right to left changes in non-
         editor = undefined;
         dialog = undefined;
         document.body.removeChild(document.getElementById('container'));
+        document.body.innerHTML = '';
         setTimeout(function () {
             done();
         }, 2000);
@@ -1007,6 +1025,7 @@ describe('Paragraph format using paragraph dialog- right to left changes in non-
         editor = undefined;
         dialog = undefined;
         document.body.removeChild(document.getElementById('container'));
+        document.body.innerHTML = '';
         setTimeout(function () {
             done();
         }, 2000);

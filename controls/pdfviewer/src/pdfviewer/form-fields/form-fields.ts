@@ -565,7 +565,7 @@ export class FormFields {
         } else if (currentTarget) {
             // eslint-disable-next-line
             if (currentTarget.className === 'e-pdfviewer-signatureformfields' || currentTarget.className === 'e-pdfviewer-signatureformfields-signature' || currentTarget.className === 'e-pdfviewer-signatureformfields e-pv-signature-focus' || currentTarget.className === 'e-pdfviewer-signatureformfields-signature  e-pv-signature-focus' ) {
-                this.setFocus(this.currentTarget.id);
+                this.setFocus(currentTarget.id);
             }
         }
     }
@@ -612,7 +612,7 @@ export class FormFields {
                 this.pdfViewer.fireFormFieldClickEvent('formFieldClicked', this.pdfViewer.formFieldCollections[m]);
                 // eslint-disable-next-line
                 if (currentTarget.className === 'e-pdfviewer-signatureformfields' || currentTarget.className === 'e-pdfviewer-signatureformfields-signature' || currentTarget.className === 'e-pdfviewer-signatureformfields e-pv-signature-focus' || currentTarget.className === 'e-pdfviewer-signatureformfields-signature  e-pv-signature-focus') {
-                    this.setFocus(this.currentTarget.id);
+                    this.setFocus(currentTarget.id);
                 }
             }
         }

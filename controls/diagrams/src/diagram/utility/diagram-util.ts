@@ -58,7 +58,7 @@ import { PointPort } from '../objects/port';
 import { Command } from '../diagram/keyboard-commands';
 import { pasteSwimLane } from './swim-lane-util';
 import { GridPanel } from '../core/containers/grid';
-import { isBlazor, Browser } from '@syncfusion/ej2-base';
+import { isBlazor, Browser, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { TreeInfo, INode } from '../layout/layout-base';
 import { MouseEventArgs } from '../interaction/event-handlers';
 import { IBlazorDropEventArgs, IBlazorCollectionChangeEventArgs } from '../objects/interface/IElement';
@@ -1033,7 +1033,7 @@ export function alignLabelOnSegments(obj: PathAnnotation | ConnectorFixedUserHan
         break;
     case 'Center':
         hAlign = 'center';
-        vAlign = 'center';
+        vAlign = !isNullOrUndefined((obj as PathAnnotation).verticalAlignment) ? ((obj as PathAnnotation).verticalAlignment as string).toLowerCase() : "center";
         break;
     }
     if (obj.offset === 0 || obj.offset === 1) {
@@ -1467,6 +1467,9 @@ export function deserialize(model: string, diagram: Diagram): Object {
     diagram.snapSettings = dataObj.snapSettings || {};
     diagram.width = dataObj.width || '100%';
     diagram.layout = dataObj.layout || {};
+    if(dataObj.layout.type !== "None") {
+        diagram.canLayout = false;
+    }
     diagram.layout.getLayoutInfo = getFunction(getLayoutInfo);
     diagram.layout.getBranch = getFunction(getBranch);
     diagram.diagramActions = 0;
@@ -1488,6 +1491,7 @@ export function deserialize(model: string, diagram: Diagram): Object {
     }
     diagram.selectedItems = dataObj.selectedItems;
     diagram.enableServerDataBinding(true);
+    diagram.canLayout = true;
     return dataObj;
 }
 /* eslint-enable */

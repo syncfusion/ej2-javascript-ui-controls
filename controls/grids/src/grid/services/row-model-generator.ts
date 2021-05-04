@@ -1,4 +1,4 @@
-import { isNullOrUndefined, getValue, setValue, isBlazor } from '@syncfusion/ej2-base';
+import { isNullOrUndefined, getValue, setValue } from '@syncfusion/ej2-base';
 import { IModelGenerator, ICell, IRow, IGrid, InfiniteScrollArgs, SaveEventArgs } from '../base/interface';
 import { Row } from '../models/row';
 import { CellType, Action } from '../base/enum';
@@ -56,8 +56,7 @@ export class RowModelGenerator implements IModelGenerator<Column> {
         data: Object, index: number, cssClass?: string, indent?: number, pid?: number, tIndex?: number, parentUid?: string): Row<Column> {
         let options: IRow<Column> = {};
         options.foreignKeyData = {};
-        let isServerRendered: string = 'isServerRendered';
-        options.uid = isBlazor() && this.parent[isServerRendered] ? this.parent.getRowUid('grid-row') : getUid('grid-row');
+        options.uid = getUid('grid-row');
         options.data = data;
         options.index = index;
         options.indent = indent;
@@ -75,18 +74,10 @@ export class RowModelGenerator implements IModelGenerator<Column> {
         options.cssClass = cssClass;
         options.isAltRow = this.parent.enableAltRow ? index % 2 !== 0 : false;
         options.isAltRow = this.parent.enableAltRow ? index % 2 !== 0 : false;
-        if (isBlazor() && this.parent.isServerRendered && this.parent.enableVirtualization && this.parent.selectionModule.checkBoxState) {
-            options.isSelected = this.parent.selectionModule.checkBoxState;
-            if (options.isSelected && this.parent.selectionModule.selectedRowIndexes.indexOf(index) === -1 ) {
-                this.parent.selectionModule.selectedRowIndexes.push(index);
-            }
-        } else {
-            options.isSelected = this.parent.getSelectedRowIndexes().indexOf(index) > -1;
-        }
+        options.isSelected = this.parent.getSelectedRowIndexes().indexOf(index) > -1;
         this.refreshForeignKeyRow(options);
         let cells: Cell<Column>[] = this.ensureColumns();
-        let row: Row<Column> = isBlazor() ? new Row<Column>(<{ [x: string]: Object }>options) :
-            new Row<Column>(<{ [x: string]: Object }>options, this.parent);
+        let row: Row<Column> = new Row<Column>(<{ [x: string]: Object }>options, this.parent);
         row.cells = this.parent.getFrozenMode() === 'Right' ? this.generateCells(options).concat(cells)
             : cells.concat(this.generateCells(options));
         return row;

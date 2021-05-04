@@ -377,7 +377,8 @@ export const detailLists: {[key: string]: ItemDetails} = {
         type: 'datasource_syntax_mismatch',
         logType: 'warn',
         check(args: {dataState: IGrid}, parent: IGrid): CheckOptions {
-            return { success: (args.dataState.dataSource instanceof DataManager || args.dataState.dataSource instanceof Array ) &&
+            return { success: args.dataState.dataSource && !(args.dataState.dataSource instanceof DataManager ||
+            'result' in args.dataState.dataSource || args.dataState.dataSource instanceof Array) &&
             !(isNullOrUndefined(args.dataState.dataStateChange))};
         },
         generateMessage(args: Object, parent: IGrid,  options: {fn: string}): string {

@@ -431,6 +431,7 @@ export class Slider extends Component<HTMLElement> implements INotifyPropertyCha
     private formElement: HTMLFormElement;
     private formResetValue: number | number[];
     private rangeBarDragged : boolean;
+    private isDragComplete: boolean = false;
     public initialTooltip: boolean = true;
     /**
      * It is used to denote the current value of the Slider.
@@ -2781,6 +2782,8 @@ export class Slider extends Component<HTMLElement> implements INotifyPropertyCha
         if (!this.rangeBarDragged) {
             this.focusSliderElement();
             this.sliderBarClick(event);
+        } else {
+            this.isDragComplete = true;
         }
         this.changeEvent('changed', event);
         this.closeTooltip();
@@ -2899,6 +2902,10 @@ export class Slider extends Component<HTMLElement> implements INotifyPropertyCha
     }
 
     private elementClick(event: MouseEvent & TouchEvent): void {
+        if (this.isDragComplete) {
+            this.isDragComplete = false; 
+            return;
+        }
         event.preventDefault();
         this.focusSliderElement();
         this.sliderBarClick(event);

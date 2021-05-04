@@ -9,6 +9,7 @@ export interface SplitButtonModel extends DropDownButtonModel{
 
     /**
      * Defines the content of the SplitButton primary action button can either be a text or HTML elements.
+     *
      * @default ""
      */
     content?: string;
@@ -16,19 +17,22 @@ export interface SplitButtonModel extends DropDownButtonModel{
     /**
      * Defines class/multiple classes separated by a space in the SplitButton element. The SplitButton
      * size and styles can be customized by using this.
+     *
      * @default ""
      */
     cssClass?: string;
 
     /**
      * Specifies a value that indicates whether the SplitButton is disabled or not.
+     *
      * @default false.
      */
     disabled?: boolean;
 
     /**
-     * Defines class/multiple classes separated by a space for the SplitButton that is used to include an 
+     * Defines class/multiple classes separated by a space for the SplitButton that is used to include an
      * icon. SplitButton can also include font icon and sprite image.
+     *
      * @default ""
      */
     iconCss?: string;
@@ -37,67 +41,85 @@ export interface SplitButtonModel extends DropDownButtonModel{
      * Positions the icon before/top of the text content in the SplitButton. The possible values are
      * * Left: The icon will be positioned to the left of the text content.
      * * Top: The icon will be positioned to the top of the text content.
+     *
      * @default "Left"
      */
     iconPosition?: SplitButtonIconPosition;
 
     /**
+     * Specifies the popup element creation on open.
+     *
+     * @default false
+     */
+    createPopupOnClick?: boolean;
+
+    /**
      * Specifies action items with its properties which will be rendered as SplitButton secondary button popup.
+     *
      * @default []
      */
     items?: ItemModel[];
 
     /**
      * Allows to specify the SplitButton popup item element.
+     *
      * @default ""
      */
     target?: string | Element;
 
     /**
-     * Triggers while rendering each Popup item of SplitButton.
-     * @event
-     */
+     * Triggers while rendering each Popup item of SplitButton.
+     *
+     * @event beforeItemRender
+     */
     beforeItemRender?: EmitType<MenuEventArgs>;
 
     /**
-     * Triggers before opening the SplitButton popup.
-     * @event
-     */
+     * Triggers before opening the SplitButton popup.
+     *
+     * @event beforeOpen
+     */
     beforeOpen?: EmitType<BeforeOpenCloseMenuEventArgs>;
 
     /**
-     * Triggers before closing the SplitButton popup.
-     * @event
-     */
+     * Triggers before closing the SplitButton popup.
+     *
+     * @event beforeClose
+     */
     beforeClose?: EmitType<BeforeOpenCloseMenuEventArgs>;
 
     /**
      * Triggers when the primary button of SplitButton has been clicked.
-     * @event
+     *
+     * @event click
      */
     click?: EmitType<ClickEventArgs>;
 
     /**
      * Triggers while closing the SplitButton popup.
-     * @event
+     *
+     * @event close
      */
     close?: EmitType<OpenCloseMenuEventArgs>;
 
     /**
      * Triggers while opening the SplitButton popup.
-     * @event
+     *
+     * @event open
      */
     open?: EmitType<OpenCloseMenuEventArgs>;
 
     /**
      * Triggers while selecting action item of SplitButton popup.
-     * @event
+     *
+     * @event select
      */
     select?: EmitType<MenuEventArgs>;
 
     /**
      * Triggers once the component rendering is completed.
-     * @event
+     *
+     * @event created
      */
     created?: EmitType<Event>;
 

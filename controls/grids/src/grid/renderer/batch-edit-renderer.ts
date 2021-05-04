@@ -1,6 +1,7 @@
 import { IGrid } from '../base/interface';
-import { classList, isBlazor } from '@syncfusion/ej2-base';
+import { classList } from '@syncfusion/ej2-base';
 import { Column } from '../models/column';
+import * as literals from '../base/string-literals';
 
 /**
  * Edit render module is used to render grid edit row.
@@ -20,28 +21,19 @@ export class BatchEditRender {
     }
 
     public update(elements: Element[], args: { columnObject?: Column, cell?: Element, row?: Element }): void {
-        if (isBlazor() && this.parent.isServerRendered) {
-            let cloneCell: string = 'cloneCell';
-            args[cloneCell].innerHTML = '';
-            args[cloneCell].appendChild(this.getEditElement(elements, args));
-            args[cloneCell].classList.remove('e-ellipsistooltip');
-            args[cloneCell].classList.add('e-editedbatchcell');
-            classList(args.row, ['e-editedrow', 'e-batchrow'], []);
-        } else {
-            if (this.parent.isReact && args.columnObject && args.columnObject.template) {
-                let parentRow: HTMLTableRowElement = args.cell.parentElement as HTMLTableRowElement;
-                let newTd: HTMLTableCellElement = args.cell.cloneNode(true) as HTMLTableCellElement;
-                parentRow.insertBefore(newTd, parentRow.children[parseInt(args.cell.getAttribute('aria-colindex'), 10)]);
-                newTd.focus();
-                args.cell.remove();
-                args.cell = newTd;
-            }
-            args.cell.innerHTML = '';
-            args.cell.appendChild(this.getEditElement(elements, args));
-            args.cell.classList.remove('e-ellipsistooltip');
-            args.cell.classList.add('e-editedbatchcell');
-            classList(args.row, ['e-editedrow', 'e-batchrow'], []);
+        if (this.parent.isReact && args.columnObject && args.columnObject.template) {
+            let parentRow: HTMLTableRowElement = args.cell.parentElement as HTMLTableRowElement;
+            let newTd: HTMLTableCellElement = args.cell.cloneNode(true) as HTMLTableCellElement;
+            parentRow.insertBefore(newTd, parentRow.children[parseInt(args.cell.getAttribute(literals.ariaColIndex), 10)]);
+            newTd.focus();
+            args.cell.remove();
+            args.cell = newTd;
         }
+        args.cell.innerHTML = '';
+        args.cell.appendChild(this.getEditElement(elements, args));
+        args.cell.classList.remove('e-ellipsistooltip');
+        args.cell.classList.add('e-editedbatchcell');
+        classList(args.row, [literals.editedRow, 'e-batchrow'], []);
     }
 
     private getEditElement(elements: Object, args: { columnObject?: Column, cell?: Element, row?: Element }): Element {

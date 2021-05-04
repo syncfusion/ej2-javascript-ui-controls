@@ -1,5 +1,5 @@
 import { isNullOrUndefined, extend } from '@syncfusion/ej2-base';
-import { setStyleAttribute, closest as getClosest, remove, BlazorDragEventArgs, isBlazor } from '@syncfusion/ej2-base';
+import { setStyleAttribute, closest as getClosest, remove, BlazorDragEventArgs } from '@syncfusion/ej2-base';
 import { classList } from '@syncfusion/ej2-base';
 import { CellType, freezeTable, freezeMode } from '../base/enum';
 import { IRenderer, IGrid, ICell } from '../base/interface';
@@ -14,6 +14,7 @@ import { Button } from '@syncfusion/ej2-buttons';
 import { ColumnWidthService } from '../services/width-controller';
 import { parentsUntil, wrap, measureColumnDepth, appendChildren } from '../base/util';
 import { AriaService } from '../services/aria-service';
+import * as literals from '../base/string-literals';
 
 /**
  * Content module is used to render grid content
@@ -40,7 +41,7 @@ export class HeaderRender implements IRenderer {
         let target: Element = this.draggable.currentStateTarget;
         let parentEle: HTMLElement = parentsUntil(target, 'e-headercell') as HTMLElement;
         if (!(gObj.allowReordering || gObj.allowGrouping) || (!isNullOrUndefined(parentEle)
-            && parentEle.querySelectorAll('.e-checkselectall').length > 0)) {
+            && parentEle.getElementsByClassName('e-checkselectall').length > 0)) {
             return false;
         }
         let visualElement: HTMLElement = this.parent.createElement('div', { className: 'e-cloneproperties e-dragclone e-headerclone' });
@@ -86,9 +87,6 @@ export class HeaderRender implements IRenderer {
         let gObj: IGrid = this.parent;
         (gObj.element.querySelector('.e-gridpopup') as HTMLElement).style.display = 'none';
         gObj.notify(events.columnDragStart, { target: this.draggable.currentStateTarget, column: this.column, event: e.event });
-        if (isBlazor()) {
-            e.bindEvents(e.dragElement);
-        }
     }
     private drag: Function = (e: { target: HTMLElement, event: MouseEventArgs }): void => {
         let gObj: IGrid = this.parent;
@@ -163,11 +161,11 @@ export class HeaderRender implements IRenderer {
      * The function is used to render grid header div    
      */
     public renderPanel(): void {
-        let div: Element = this.parent.element.querySelector('.e-gridheader');
+        let div: Element = this.parent.element.querySelector('.' + literals.gridHeader);
         let isRendered: boolean = (div != null);
         div = isRendered ? div : this.parent.createElement('div', { className: 'e-gridheader' });
-        let innerDiv: Element = isRendered ? div.querySelector('.e-headercontent') :
-        this.parent.createElement('div', { className: 'e-headercontent' });
+        let innerDiv: Element = isRendered ? div.querySelector('.' + literals.headerContent) :
+        this.parent.createElement('div', { className: literals.headerContent });
         this.toggleStackClass(div);
         div.appendChild(innerDiv);
         this.setPanel(div);
@@ -182,7 +180,7 @@ export class HeaderRender implements IRenderer {
     public renderTable(): void {
         let headerDiv: Element = this.getPanel();
         headerDiv.appendChild(this.createHeaderTable());
-        this.setTable(headerDiv.querySelector('.e-table'));
+        this.setTable(headerDiv.querySelector('.' + literals.table));
         if (!this.parent.getFrozenColumns() && !this.parent.getFrozenRightColumnsCount() && !this.parent.getFrozenLeftColumnsCount()) {
             this.initializeHeaderDrag();
             this.initializeHeaderDrop();
@@ -253,12 +251,9 @@ export class HeaderRender implements IRenderer {
      * @hidden
      */
     private createHeaderTable(): Element {
-        let skipDom: boolean = isBlazor() && this.parent.frozenRows !== 0;
         let table: Element = this.createTable();
-        let innerDiv: Element = <Element>this.getPanel().querySelector('.e-headercontent');
-        if (!skipDom) {
-            innerDiv.appendChild(table);
-        }
+        let innerDiv: Element = <Element>this.getPanel().querySelector('.' + literals.headerContent);
+        innerDiv.appendChild(table);
         return innerDiv;
     }
 
@@ -266,22 +261,18 @@ export class HeaderRender implements IRenderer {
      * @hidden
      */
     public createHeader(tableEle: Element = null, tableName?: freezeTable): Element {
-        let skipDom: boolean = isBlazor() && this.parent.frozenRows !== 0;
         let gObj: IGrid = this.parent;
         let isFrozen: boolean = gObj.isFrozenGrid();
-        if (!(isBlazor() && !gObj.isJsComponent) && this.getTable() && !isFrozen) {
+        if (this.getTable() && !isFrozen) {
             remove(this.getTable());
         }
-        let columns: Column[] = <Column[]>gObj.getColumns();
-        let innerDiv: Element = <Element>this.getPanel().querySelector('.e-headercontent');
-        let table: Element = skipDom ? tableEle || innerDiv.querySelector('.e-table') :
-            this.parent.createElement('table', { className: 'e-table', attrs: { cellspacing: '0.25px', role: 'grid' } });
+        let table: Element = this.parent.createElement('table', { className: literals.table, attrs: { cellspacing: '0.25px', role: 'grid' } });
         let tblName: freezeTable = tableName ? tableName : gObj.getFrozenLeftCount() ? 'frozen-left' : 'frozen-right';
         let findHeaderRow: { thead: Element, rows: Row<Column>[] } = this.createHeaderContent(tblName);
         let thead: Element = findHeaderRow.thead;
-        let tbody: Element = this.parent.createElement('tbody', { className: this.parent.frozenRows ? '' : 'e-hide' });
+        let tbody: Element = this.parent.createElement( literals.tbody, { className: this.parent.frozenRows ? '' : 'e-hide' });
         this.caption = this.parent.createElement('caption', { innerHTML: this.parent.element.id + '_header_table', className: 'e-hide' });
-        let colGroup: Element = this.parent.createElement('colgroup');
+        let colGroup: Element = this.parent.createElement(literals.colGroup);
         let rowBody: Element = this.parent.createElement('tr');
         let bodyCell: Element;
         let rows: Row<Column>[] = this.rows = findHeaderRow.rows;
@@ -297,14 +288,10 @@ export class HeaderRender implements IRenderer {
             table.classList.add('e-sortfilter');
         }
         this.updateColGroup(colGroup);
-        if (!skipDom) {
-            tbody.appendChild(rowBody);
-        }
+        tbody.appendChild(rowBody);
         table.appendChild(this.setColGroup(colGroup));
         table.appendChild(thead);
-        if (!skipDom) {
-            table.appendChild(tbody);
-        }
+        table.appendChild(tbody);
         table.appendChild(this.caption);
         this.ariaService.setOptions(table as HTMLElement, { colcount: gObj.getColumns().length.toString() });
         return table;
@@ -344,15 +331,15 @@ export class HeaderRender implements IRenderer {
         let frzCols: number = this.parent.getFrozenColumns();
         if (this.parent.isRowDragable() && this.parent.isFrozenGrid() && rows[0].cells[index]) {
             let colFreezeMode: freezeTable = rows[0].cells[index].column.getFreezeTableName();
-            if (colFreezeMode === 'movable' || (frozenMode === 'Left-Right' && colFreezeMode === 'frozen-right')) {
+            if (colFreezeMode === 'movable' || (frozenMode === literals.leftRight && colFreezeMode === literals.frozenRight)) {
                 if (frozenMode === 'Right') {
                     rows[0].cells.pop();
                 } else {
                     rows[0].cells.shift();
                 }
-            } else if (!frzCols && colFreezeMode === 'frozen-left') {
-                rows[0].cells[0].column.freeze = colFreezeMode === 'frozen-left' ? 'Left' : 'Right';
-            } else if (frozenMode === 'Right' && colFreezeMode === 'frozen-right') {
+            } else if (!frzCols && colFreezeMode === literals.frozenLeft) {
+                rows[0].cells[0].column.freeze = colFreezeMode === literals.frozenLeft ? 'Left' : 'Right';
+            } else if (frozenMode === 'Right' && colFreezeMode === literals.frozenRight) {
                 rows[0].cells[rows[0].cells.length - 1].column.freeze = 'Right';
             }
         }
@@ -378,7 +365,7 @@ export class HeaderRender implements IRenderer {
             cols = extend([], this.parent.getColumns()) as Column[];
             cols.splice(0, this.parent.getFrozenColumns());
         }
-        colGroup.id = this.parent.element.id + 'colGroup';
+        colGroup.id = this.parent.element.id + literals.colGroup;
         if (this.parent.allowGrouping) {
             for (let i: number = 0, len: number = this.parent.groupSettings.columns.length; i < len; i++) {
                 if (this.parent.enableColumnVirtualization && indexes.indexOf(i) === -1) { continue; }
@@ -565,7 +552,7 @@ export class HeaderRender implements IRenderer {
         for (let i: number = 0; i < length; i++) {
             if (columns[i].columns) {
                 count = this.getFrozenColSpan(columns[i].columns as Column[], tableName, count);
-            } else if (columns[i].getFreezeTableName() === tableName) {
+            } else if (columns[i].getFreezeTableName() === tableName && columns[i].visible) {
                 count++;
             }
         }
@@ -621,19 +608,11 @@ export class HeaderRender implements IRenderer {
             if (frzCols) {
                 let normalizedfrzCols: number = this.parent.isRowDragable() ? frzCols + 1 : frzCols;
                 if (idx < normalizedfrzCols) {
-                    if (isBlazor() && gObj.isServerRendered) {
-                        setStyleAttribute(<HTMLElement>this.getTable().querySelector('colgroup').children[idx], { 'display': displayVal });
-                        setStyleAttribute(this.getTable().querySelectorAll('th')[idx], { 'display': displayVal });
-                    } else {
-                        setStyleAttribute(<HTMLElement>this.getColGroup().children[idx], { 'display': displayVal });
-                    }
+                    setStyleAttribute(<HTMLElement>this.getColGroup().children[idx], { 'display': displayVal });
                 } else {
-                    let mTblColGrp: Element = gObj.getHeaderContent().querySelector('.e-movableheader').querySelector('colgroup');
-                    let mTbl: Element = gObj.getHeaderContent().querySelector('.e-movableheader').querySelector('table');
+                    let mTblColGrp: Element = gObj.getHeaderContent().querySelector('.' + literals.movableHeader).querySelector(literals.colGroup);
+                    let mTbl: Element = gObj.getHeaderContent().querySelector('.' + literals.movableHeader).querySelector('table');
                     setStyleAttribute(<HTMLElement>mTblColGrp.children[idx - normalizedfrzCols], { 'display': displayVal });
-                    if (isBlazor() && gObj.isServerRendered) {
-                        setStyleAttribute(mTbl.querySelectorAll('th')[idx - frzCols], { 'display': displayVal });
-                    }
                 }
             } else {
                 setStyleAttribute(<HTMLElement>this.getColGroup().children[idx], { 'display': displayVal });
@@ -644,9 +623,6 @@ export class HeaderRender implements IRenderer {
 
 
     private colPosRefresh(): void {
-        if (isBlazor() && this.parent.isServerRendered && this.parent.frozenRows && this.parent.getFrozenColumns()) {
-            this.freezeReorder = true;
-        }
         this.refreshUI();
     }
 
@@ -657,10 +633,9 @@ export class HeaderRender implements IRenderer {
     public refreshUI(): void {
         let frzCols: boolean = this.parent.isFrozenGrid();
         let isVFTable: boolean = this.parent.enableColumnVirtualization && frzCols;
-        let setFrozenTable: boolean = isBlazor() && this.parent.isServerRendered && this.parent.frozenRows !== 0 && frzCols;
         let headerDiv: Element = this.getPanel();
         this.toggleStackClass(headerDiv);
-        let table: Element = this.freezeReorder ? this.headerPanel.querySelector('.e-movableheader').querySelector('.e-table')
+        let table: Element = this.freezeReorder ? this.headerPanel.querySelector('.' + literals.movableHeader).querySelector('.' + literals.table)
             : this.getTable();
         let tableName: freezeTable = this.parent.isFrozenGrid() ? this.parent.getFrozenLeftCount() ? 'frozen-left'
             : 'frozen-right' : undefined;
@@ -668,31 +643,20 @@ export class HeaderRender implements IRenderer {
             table = (<{ getVirtualFreezeHeader?: Function }>this.parent.contentModule).getVirtualFreezeHeader();
             tableName = (<{ isXaxis?: Function }>this.parent.contentModule).isXaxis() ? 'movable' : tableName;
         }
-        if (setFrozenTable && !isVFTable) {
-            table = this.freezeReorder ? this.headerPanel.querySelector('.e-movableheader').querySelector('.e-table') :
-                this.headerPanel.querySelector('.e-frozenheader').querySelector('.e-table');
-        }
         if (table) {
-            if (isBlazor() && this.parent.isServerRendered) {
-                table.removeChild(table.querySelector('colgroup'));
-                table.removeChild(table.querySelector('thead'));
-            } else {
-                remove(table);
-                table.removeChild(table.firstChild);
-                table.removeChild(table.childNodes[0]);
-            }
-            let colGroup: Element = this.parent.createElement('colgroup');
+            remove(table);
+            table.removeChild(table.firstChild);
+            table.removeChild(table.childNodes[0]);
+            let colGroup: Element = this.parent.createElement(literals.colGroup);
             let findHeaderRow: { thead: Element, rows: Row<Column>[] } = this.createHeaderContent(tableName);
             this.rows = findHeaderRow.rows;
             table.insertBefore(findHeaderRow.thead, table.firstChild);
             this.updateColGroup(colGroup);
             table.insertBefore(this.setColGroup(colGroup), table.firstChild);
-            if (!isVFTable && !setFrozenTable) {
+            if (!isVFTable) {
                 this.setTable(table);
             }
-            if (!(isBlazor() && this.parent.isServerRendered)) {
-                this.appendContent(table);
-            }
+            this.appendContent(table);
             this.parent.notify(events.colGroupRefresh, {});
             this.widthService.setWidthToColumns();
             this.parent.updateDefaultCursor();
@@ -701,7 +665,7 @@ export class HeaderRender implements IRenderer {
             }
             let rows: Element[] = [].slice.call(headerDiv.querySelectorAll('tr.e-columnheader'));
             for (let row of rows) {
-                let gCells: Element[] = [].slice.call(row.querySelectorAll('.e-grouptopleftcell'));
+                let gCells: Element[] = [].slice.call(row.getElementsByClassName('e-grouptopleftcell'));
                 if (gCells.length) {
                     gCells[gCells.length - 1].classList.add('e-lastgrouptopleftcell');
                 }
@@ -709,7 +673,7 @@ export class HeaderRender implements IRenderer {
             if (!frzCols) {
                 this.parent.notify(events.headerRefreshed, { rows: this.rows, args: { isFrozen: frzCols } });
             }
-            if (this.parent.enableColumnVirtualization && parentsUntil(table, 'e-movableheader')) {
+            if (this.parent.enableColumnVirtualization && parentsUntil(table, literals.movableHeader)) {
                 this.parent.notify(events.headerRefreshed, { rows: this.rows, args: { isFrozen: false, isXaxis: true } });
             }
             if (this.parent.allowTextWrap && this.parent.textWrapSettings.wrapMode === 'Header') {
@@ -730,7 +694,7 @@ export class HeaderRender implements IRenderer {
 
 
     public appendContent(table?: Element): void {
-        this.getPanel().querySelector('.e-headercontent').appendChild(table);
+        this.getPanel().querySelector('.' + literals.headerContent).appendChild(table);
     }
 
     private getCellCnt(col: Column, cnt: number): number {
@@ -804,7 +768,7 @@ export class HeaderRender implements IRenderer {
             }
             toolbarItems.appendChild(toolbarLeft);
             div.appendChild(toolbarItems);
-            gObj.element.insertBefore(div, this.parent.element.querySelector('.e-gridheader'));
+            gObj.element.insertBefore(div, this.parent.element.querySelector('.' + literals.gridHeader));
         } else {
             if (!gObj.toolbar) {
                 gObj.getContent().classList.add('e-responsive-header');

@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/ban-types */
+// eslint-disable-next-line @typescript-eslint/triple-slash-reference
 /// <reference path='../drop-down-button/drop-down-button-model.d.ts'/>
 import { Event, EmitType, remove, addClass, removeClass, detach, getValue, setValue } from '@syncfusion/ej2-base';
 import { EventHandler, Collection, BaseEventArgs, NotifyPropertyChanges, INotifyPropertyChanged, Property } from '@syncfusion/ej2-base';
@@ -14,8 +16,8 @@ const RTL: string = 'e-rtl';
 const TAGNAME: string = 'EJS-SPLITBUTTON';
 
 /**
- * SplitButton component has primary and secondary button. Primary button is used to select 
- * default action and secondary button is used to toggle contextual overlays for displaying list of 
+ * SplitButton component has primary and secondary button. Primary button is used to select
+ * default action and secondary button is used to toggle contextual overlays for displaying list of
  * action items. It can contain both text and images.
  * ```html
  * <button id="element"></button>
@@ -35,6 +37,7 @@ export class SplitButton extends DropDownButton implements INotifyPropertyChange
 
     /**
      * Defines the content of the SplitButton primary action button can either be a text or HTML elements.
+     *
      * @default ""
      */
     @Property('')
@@ -43,6 +46,7 @@ export class SplitButton extends DropDownButton implements INotifyPropertyChange
     /**
      * Defines class/multiple classes separated by a space in the SplitButton element. The SplitButton
      * size and styles can be customized by using this.
+     *
      * @default ""
      */
     @Property('')
@@ -50,14 +54,16 @@ export class SplitButton extends DropDownButton implements INotifyPropertyChange
 
     /**
      * Specifies a value that indicates whether the SplitButton is disabled or not.
+     *
      * @default false.
      */
     @Property(false)
     public disabled: boolean;
 
     /**
-     * Defines class/multiple classes separated by a space for the SplitButton that is used to include an 
+     * Defines class/multiple classes separated by a space for the SplitButton that is used to include an
      * icon. SplitButton can also include font icon and sprite image.
+     *
      * @default ""
      */
     @Property('')
@@ -67,13 +73,23 @@ export class SplitButton extends DropDownButton implements INotifyPropertyChange
      * Positions the icon before/top of the text content in the SplitButton. The possible values are
      * * Left: The icon will be positioned to the left of the text content.
      * * Top: The icon will be positioned to the top of the text content.
+     *
      * @default "Left"
      */
     @Property('Left')
     public iconPosition: SplitButtonIconPosition;
 
     /**
+     * Specifies the popup element creation on open.
+     *
+     * @default false
+     */
+    @Property(false)
+    public createPopupOnClick: boolean;
+
+    /**
      * Specifies action items with its properties which will be rendered as SplitButton secondary button popup.
+     *
      * @default []
      */
     @Collection<ItemModel>([], Item)
@@ -81,86 +97,99 @@ export class SplitButton extends DropDownButton implements INotifyPropertyChange
 
     /**
      * Allows to specify the SplitButton popup item element.
+     *
      * @default ""
      */
     @Property('')
     public target: string | Element;
 
     /**
-     * Triggers while rendering each Popup item of SplitButton.
-     * @event
-     */
+     * Triggers while rendering each Popup item of SplitButton.
+     *
+     * @event beforeItemRender
+     */
     @Event()
     public beforeItemRender: EmitType<MenuEventArgs>;
 
     /**
-     * Triggers before opening the SplitButton popup.
-     * @event
-     */
+     * Triggers before opening the SplitButton popup.
+     *
+     * @event beforeOpen
+     */
     @Event()
     public beforeOpen: EmitType<BeforeOpenCloseMenuEventArgs>;
 
     /**
-     * Triggers before closing the SplitButton popup.
-     * @event
-     */
+     * Triggers before closing the SplitButton popup.
+     *
+     * @event beforeClose
+     */
     @Event()
     public beforeClose: EmitType<BeforeOpenCloseMenuEventArgs>;
 
     /**
      * Triggers when the primary button of SplitButton has been clicked.
-     * @event
+     *
+     * @event click
      */
     @Event()
     public click: EmitType<ClickEventArgs>;
 
     /**
      * Triggers while closing the SplitButton popup.
-     * @event
+     *
+     * @event close
      */
     @Event()
     public close: EmitType<OpenCloseMenuEventArgs>;
 
     /**
      * Triggers while opening the SplitButton popup.
-     * @event
+     *
+     * @event open
      */
     @Event()
     public open: EmitType<OpenCloseMenuEventArgs>;
 
     /**
      * Triggers while selecting action item of SplitButton popup.
-     * @event
+     *
+     * @event select
      */
     @Event()
     public select: EmitType<MenuEventArgs>;
 
     /**
      * Triggers once the component rendering is completed.
-     * @event
+     *
+     * @event created
      */
     @Event()
     public created: EmitType<Event>;
 
     /**
      * Constructor for creating the widget
-     * @param  {SplitButtonModel} options?
-     * @param  {string|HTMLButtonElement} element?
+     *
+     * @param  {SplitButtonModel} options - Specifies the splitbutton model
+     * @param  {string|HTMLButtonElement} element - Specifies the element
+     * @hidden
      */
-    constructor(options?: SplitButtonModel, element?: string | HTMLButtonElement) {
+    public constructor(options?: SplitButtonModel, element?: string | HTMLButtonElement) {
         super(options, <string | HTMLButtonElement>element);
     }
 
     /**
      * Initialize Angular support.
+     *
      * @private
+     * @returns {void}
      */
     protected preRender(): void {
         let ele: Element = this.element;
         if (ele.tagName === TAGNAME) {
-            let ejInstance: Object = getValue('ej2_instances', ele);
-            let btn: Element = this.createElement('button', { attrs: { 'type': 'button' } });
-            let wrapper: HTMLElement = this.createElement(TAGNAME, { className: 'e-' + this.getModuleName() + '-wrapper' });
+            const ejInstance: Object = getValue('ej2_instances', ele);
+            const btn: Element = this.createElement('button', { attrs: { 'type': 'button' } });
+            const wrapper: HTMLElement = this.createElement(TAGNAME, { className: 'e-' + this.getModuleName() + '-wrapper' });
             for (let idx: number = 0, len: number = ele.attributes.length; idx < len; idx++) {
                 btn.setAttribute(ele.attributes[idx].nodeName, ele.attributes[idx].nodeValue);
             }
@@ -178,7 +207,8 @@ export class SplitButton extends DropDownButton implements INotifyPropertyChange
     }
     /**
      * Initialize the Component rendering
-     * @returns void
+     *
+     * @returns {void}
      * @private
      */
     public render(): void {
@@ -197,6 +227,7 @@ export class SplitButton extends DropDownButton implements INotifyPropertyChange
     /**
      * Adds a new item to the menu. By default, new item appends to the list as the last item,
      * but you can insert based on the text parameter.
+     *
      * @param  { ItemModel[] } items - Specifies an array of JSON data.
      * @param { string } text - Specifies the text to insert the newly added item in the menu.
      * @returns {void}.
@@ -207,6 +238,7 @@ export class SplitButton extends DropDownButton implements INotifyPropertyChange
     }
     /**
      * Removes the items from the menu.
+     *
      * @param  { string[] } items - Specifies an array of string to remove the items.
      * @param { string } isUniqueId - Set `true` if specified items is a collection of unique id.
      * @returns {void}.
@@ -231,7 +263,7 @@ export class SplitButton extends DropDownButton implements INotifyPropertyChange
     }
 
     private createPrimaryButton(): void {
-        let btnModel: ButtonModel = {
+        const btnModel: ButtonModel = {
             cssClass: this.cssClass,
             enableRtl: this.enableRtl,
             iconCss: this.iconCss,
@@ -248,22 +280,25 @@ export class SplitButton extends DropDownButton implements INotifyPropertyChange
     }
 
     private createSecondaryButton(): void {
-        let dropDownBtnModel: SplitButtonModel;
-        let btnElem: HTMLButtonElement;
-        btnElem = this.createElement('button', {
+        const btnElem : HTMLButtonElement = this.createElement('button', {
             className: 'e-icon-btn',
             attrs: { 'tabindex': '-1' },
             id: this.element.id + '_dropdownbtn'
         }) as HTMLButtonElement;
         this.wrapper.appendChild(btnElem);
-        dropDownBtnModel = {
+        const dropDownBtnModel: SplitButtonModel = {
             cssClass: this.cssClass,
             disabled: this.disabled,
             enableRtl: this.enableRtl,
             items: this.items,
             target: this.target,
+            createPopupOnClick: this.createPopupOnClick
         };
         dropDownBtnModel.beforeItemRender = (args: MenuEventArgs): void => {
+            if (this.createPopupOnClick) {
+                this.secondaryBtnObj.dropDown.relateTo = this.wrapper;
+                this.dropDown = this.secondaryBtnObj.dropDown;
+            }
             this.trigger('beforeItemRender', args);
         };
         dropDownBtnModel.open = (args: OpenCloseMenuEventArgs): void => {
@@ -276,14 +311,14 @@ export class SplitButton extends DropDownButton implements INotifyPropertyChange
             this.trigger('select', args);
         };
         dropDownBtnModel.beforeOpen = (args: BeforeOpenCloseMenuEventArgs): Deferred | void => {
-            let callBackPromise: Deferred = new Deferred();
+            const callBackPromise: Deferred = new Deferred();
             this.trigger('beforeOpen', args, (observedArgs: BeforeOpenCloseMenuEventArgs) => {
                 callBackPromise.resolve(observedArgs);
             });
             return callBackPromise;
         };
         dropDownBtnModel.beforeClose = (args: BeforeOpenCloseMenuEventArgs): Deferred | void => {
-            let callBackPromise: Deferred = new Deferred();
+            const callBackPromise: Deferred = new Deferred();
             this.trigger('beforeClose', args, (observedArgs: BeforeOpenCloseMenuEventArgs) => {
                 callBackPromise.resolve(observedArgs);
             });
@@ -292,23 +327,25 @@ export class SplitButton extends DropDownButton implements INotifyPropertyChange
         this.secondaryBtnObj = new DropDownButton(dropDownBtnModel);
         this.secondaryBtnObj.createElement = this.createElement;
         this.secondaryBtnObj.appendTo(btnElem);
-        this.secondaryBtnObj.dropDown.relateTo = this.wrapper;
-        this.dropDown = this.secondaryBtnObj.dropDown;
+        if (!this.createPopupOnClick) {
+            this.secondaryBtnObj.dropDown.relateTo = this.wrapper;
+            this.dropDown = this.secondaryBtnObj.dropDown;
+        }
         this.secondaryBtnObj.activeElem = [this.element, this.secondaryBtnObj.element];
-        EventHandler.remove(this.getPopUpElement(), 'keydown', this.secondaryBtnObj.keyBoardHandler);
         this.secondaryBtnObj.element.querySelector('.e-btn-icon').classList.remove('e-icon-right');
     }
 
     private setAria(): void {
         attributes(this.element, {
             'aria-expanded': 'false', 'aria-haspopup': 'true',
-            'aria-label': this.element.textContent + ' splitbutton', 'aria-owns': this.secondaryBtnObj.dropDown.element.id
+            'aria-label': this.element.textContent + ' splitbutton', 'aria-owns': this.element.id + '_dropdownbtn-popup'
         });
     }
 
     /**
      * Get component name.
-     * @returns string
+     *
+     * @returns {string} - Module Name
      * @private
      */
     public getModuleName(): string {
@@ -317,7 +354,8 @@ export class SplitButton extends DropDownButton implements INotifyPropertyChange
 
     /**
      * To open/close SplitButton popup based on current state of the SplitButton.
-     * @returns void
+     *
+     * @returns {void}
      */
     public toggle(): void {
         this.secondaryBtnObj.toggle();
@@ -326,10 +364,10 @@ export class SplitButton extends DropDownButton implements INotifyPropertyChange
     public destroy(): void {
         let classList: string[] = [RTL];
         if (this.cssClass) {
-           classList = classList.concat(this.cssClass.split(' '));
+            classList = classList.concat(this.cssClass.split(' '));
         }
         if (this.element) {
-            let element: Element = document.getElementById(this.element.id);
+            const element: Element = document.getElementById(this.element.id);
             if (element && element.parentElement === this.wrapper) {
                 if (this.wrapper.tagName === TAGNAME) {
                     this.wrapper.innerHTML = '';
@@ -356,7 +394,6 @@ export class SplitButton extends DropDownButton implements INotifyPropertyChange
 
     protected wireEvents(): void {
         EventHandler.add(this.element, 'click', this.primaryBtnClickHandler, this);
-        EventHandler.add(this.getPopUpElement(), 'keydown', this.keyBoardHandler, this);
         new KeyboardEvents(this.element, {
             keyAction: this.btnKeyBoardHandler.bind(this),
             keyConfigs: {
@@ -376,43 +413,44 @@ export class SplitButton extends DropDownButton implements INotifyPropertyChange
 
     private btnKeyBoardHandler(e: KeyboardEventArgs): void {
         switch (e.action) {
-            case 'altdownarrow':
-                this.clickHandler(e);
-                break;
+        case 'altdownarrow':
+            this.clickHandler(e);
+            break;
         }
     }
 
     /**
      * Called internally if any of the property value changed.
-     * @param  {SplitButtonModel} newProp
-     * @param  {SplitButtonModel} oldProp
-     * @returns void
+     *
+     * @param  {SplitButtonModel} newProp - Specifies new properties
+     * @param  {SplitButtonModel} oldProp - Specifies old properties
+     * @returns {void}
      */
     public onPropertyChanged(newProp: SplitButtonModel, oldProp: SplitButtonModel): void {
         let model: string[] = ['content', 'iconCss', 'iconPosition', 'cssClass', 'disabled', 'enableRtl'];
         this.primaryBtnObj.setProperties(getModel(newProp, model));
         model = ['beforeOpen', 'beforeItemRender', 'select', 'open',
-            'close', 'cssClass', 'disabled', 'enableRtl'];
+            'close', 'cssClass', 'disabled', 'enableRtl', 'createPopupOnClick'];
         if (Object.keys(newProp).indexOf('items') > -1) {
             this.secondaryBtnObj.items = newProp.items;
             this.secondaryBtnObj.dataBind();
         }
         this.secondaryBtnObj.setProperties(getModel(newProp, model));
-        for (let prop of Object.keys(newProp)) {
+        for (const prop of Object.keys(newProp)) {
             switch (prop) {
-                case 'cssClass':
-                    if (oldProp.cssClass) {
-                        removeClass([this.wrapper], oldProp.cssClass.split(' '));
-                    }
-                    addClass([this.wrapper], newProp.cssClass.split(' '));
-                    break;
-                case 'enableRtl':
-                    if (newProp.enableRtl) {
-                        addClass([this.wrapper], RTL);
-                    } else {
-                        removeClass([this.wrapper], RTL);
-                    }
-                    break;
+            case 'cssClass':
+                if (oldProp.cssClass) {
+                    removeClass([this.wrapper], oldProp.cssClass.split(' '));
+                }
+                addClass([this.wrapper], newProp.cssClass.split(' '));
+                break;
+            case 'enableRtl':
+                if (newProp.enableRtl) {
+                    addClass([this.wrapper], RTL);
+                } else {
+                    removeClass([this.wrapper], RTL);
+                }
+                break;
             }
         }
     }
@@ -420,7 +458,9 @@ export class SplitButton extends DropDownButton implements INotifyPropertyChange
     /**
      * Sets the focus to SplitButton
      * its native method
+     *
      * @public
+     * @returns {void}
      */
     public focusIn(): void {
         this.element.focus();
@@ -445,7 +485,7 @@ export class Deferred {
      */
     public resolve: Function;
     /**
-     * Promise is an object that represents a value that may not be available yet, but will be resolved at some point in the future. 
+     * Promise is an object that represents a value that may not be available yet, but will be resolved at some point in the future.
      */
     public promise: Promise<Object> = new Promise((resolve: Function, reject: Function) => {
         this.resolve = resolve;

@@ -444,14 +444,13 @@ export class RowDD {
         }
         if (this.parent.taskFields.parentID) {
             if (draggedRecord.parentItem) {
-                if (this.dropPosition === 'topSegment' || this.dropPosition === 'bottomSegment') {
-                    draggedRecord[this.parent.taskFields.parentID] = droppedRecord[this.parent.taskFields.parentID];
-                    draggedRecord.taskData[this.parent.taskFields.parentID] = droppedRecord[this.parent.taskFields.parentID];
-                    draggedRecord.ganttProperties.parentId = droppedRecord[this.parent.taskFields.parentID];
-                } else {
-                    draggedRecord[this.parent.taskFields.parentID] = droppedRecord[this.parent.taskFields.id];
-                    draggedRecord.taskData[this.parent.taskFields.parentID] = droppedRecord[this.parent.taskFields.id];
-                    draggedRecord.ganttProperties.parentId = droppedRecord[this.parent.taskFields.id];
+                const droppedId: string = this.dropPosition === 'middleSegment' ? this.parent.taskFields.id :
+                    this.parent.taskFields.parentID;
+                draggedRecord[this.parent.taskFields.parentID] = droppedRecord[droppedId];
+                draggedRecord.ganttProperties.parentId = droppedRecord[droppedId];
+                if ((this.parent.viewType === 'ResourceView' && !(this.dropPosition === 'middleSegment')) ||
+                this.parent.viewType === 'ProjectView'){
+                draggedRecord.taskData[this.parent.taskFields.parentID] = droppedRecord.taskData[droppedId];
                 }
             } else {
                 draggedRecord[this.parent.taskFields.parentID] = null;
@@ -670,8 +669,10 @@ export class RowDD {
             //method to delete the record from datasource collection
             if (!this.parent.taskFields.parentID) {
                 const deleteRecordIDs: string[] = [];
-                deleteRecordIDs.push(deletedRow.ganttProperties.rowUniqueID.toString());
-                this.parent.editModule.removeFromDataSource(deleteRecordIDs);
+                deleteRecordIDs.push(deletedRow.ganttProperties.taskId.toString());
+                if(this.parent.viewType === 'ProjectView' || (this.parent.viewType === 'ResourceView' && this.dropPosition !== 'middleSegment')) {
+                   this.parent.editModule.removeFromDataSource(deleteRecordIDs);
+                }
             }
             if (gObj.taskFields.parentID) {
                 if (deletedRow.hasChildRecords && deletedRow.childRecords.length > 0) {

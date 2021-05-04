@@ -1,4 +1,4 @@
-import { closest, KeyboardEventArgs, isNullOrUndefined, isBlazor } from '@syncfusion/ej2-base';
+import { closest, KeyboardEventArgs, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { click, keyPressed, commandClick, initialEnd } from '../base/constant';
 import { CellType } from '../base/enum';
 import { ServiceLocator } from '../services/service-locator';
@@ -9,6 +9,7 @@ import { ButtonModel } from '@syncfusion/ej2-buttons';
 import { Column } from '../models/column';
 import { Row } from '../models/row';
 import { getUid } from '../base/util';
+import * as literals from '../base/string-literals';
 
 /**
  * `CommandColumn` used to handle the command column actions.
@@ -35,7 +36,6 @@ export class CommandColumn {
 
     private commandClickHandler(e: Event): void {
         let gObj: IGrid = this.parent;
-        let gID: string = gObj.element.id;
         let target: HTMLElement = (<HTMLElement>closest(<Node>e.target, 'button'));
         if (!target || !(<HTMLElement>closest(<Node>e.target, '.e-unboundcell'))) {
             return;
@@ -44,7 +44,7 @@ export class CommandColumn {
         let type: string = (<{ commandType?: string }>buttonObj).commandType;
         let uid: string = target.getAttribute('data-uid');
         let commandColumn: Object;
-        let row: Row<Column> = gObj.getRowObjectFromUID(closest(target, '.e-row').getAttribute('data-uid'));
+        let row: Row<Column> = gObj.getRowObjectFromUID(closest(target, '.' + literals.row).getAttribute('data-uid'));
         let cols: Column[] = (<{ columnModel?: Column[] }>this.parent).columnModel;
         for (let i: number = 0; i < cols.length; i++) {
             if (cols[i].commands) {
@@ -52,10 +52,7 @@ export class CommandColumn {
                 for (let j: number = 0; j < commandCols.length; j++) {
                     let idInString: string = 'uid';
                     let typeInString: string = 'type';
-                    if (isBlazor() && !gObj.isJsComponent && commandCols[j][idInString] === uid) {
-                        commandColumn = commandCols[j];
-                        type = commandCols[j][typeInString];
-                    } else if (commandCols[j][idInString] === uid && commandCols[j][typeInString] === type) {
+                    if (commandCols[j][idInString] === uid && commandCols[j][typeInString] === type) {
                         commandColumn = commandCols[j];
                     }
                 }
@@ -86,7 +83,7 @@ export class CommandColumn {
                     if (gObj.editSettings.mode !== 'Batch') {
                         gObj.editModule.endEdit();
                     }
-                    gObj.commandDelIndex = parseInt(closest(target, 'tr').getAttribute('aria-rowindex'), 10);
+                    gObj.commandDelIndex = parseInt(closest(target, 'tr').getAttribute(literals.ariaRowIndex), 10);
                     gObj.clearSelection();
                     //for toogle issue when dbl click
                     gObj.selectRow(gObj.commandDelIndex, false);
@@ -135,7 +132,6 @@ export class CommandColumn {
     }
 
     private load(): void {
-        if (isBlazor() && !this.parent.isJsComponent) { return; }
         let uid: string = 'uid';
         let col: Column[] = (<{ columnModel?: Column[] }>this.parent).columnModel;
         for (let i: number = 0; i < col.length; i++) {

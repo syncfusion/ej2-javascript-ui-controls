@@ -561,6 +561,18 @@ export class AnnotationToolbar {
                     for (let m: number = 0; m < elements.length; m++) {
                         if (currentElements != null) {
                             currentElements.items.push({ text: elements[m].customStampName });
+                            for (let i: number = 0; i < args.items.length; i++) {
+                                if (args.items[i].text === this.pdfViewer.localeObj.getConstant('Custom Stamp')) {
+                                    let liElem: HTMLElement = args.element.children[i] as HTMLElement;
+                                    if (liElem && !liElem.childElementCount) {
+                                        const span: Element = document.createElement('span');
+                                        span.className = 'e-icons e-caret e-menu-caret-icon';
+                                        liElem.appendChild(span);
+                                        liElem.setAttribute('aria-haspopup', 'true');
+                                        liElem.setAttribute('aria-expanded', 'false');  
+                                    }
+                                }
+                            }
                         }
                     }
                 }
@@ -580,16 +592,10 @@ export class AnnotationToolbar {
                     this.checkStampAnnotations();
                     this.pdfViewer.annotation.stampAnnotationModule.isStampAddMode = true;
                     // eslint-disable-next-line
-                    let stampImage: any = createElement('input', { id: this.pdfViewer.element.id + '_stampElement', attrs: { 'type': 'file' } });
-                    stampImage.setAttribute('accept', '.jpg,.jpeg');
-                    stampImage.style.position = 'absolute';
-                    stampImage.style.left = '0px';
-                    stampImage.style.top = '0px';
-                    stampImage.style.visibility = 'hidden';
-                    document.body.appendChild(stampImage);
-                    stampImage.click();
-                    stampImage.addEventListener('change', this.addStampImage);
-                    document.body.removeChild(stampImage);
+                    let stampImage: any = document.getElementById(this.pdfViewer.element.id + '_stampElement'); 
+                    if (stampImage) {
+                        stampImage.click();
+                    }
                     // eslint-disable-next-line max-len
                 } else if (this.stampParentID === this.pdfViewer.localeObj.getConstant('Custom Stamp') && args.item.text !== '') {
                     // eslint-disable-next-line
@@ -626,6 +632,20 @@ export class AnnotationToolbar {
         this.menuItems = new Menu(menuOptions, '#contextMenuElement');
         contextMenuElement.parentElement.classList.add('e-pv-stamp');
         return contextMenuElement;
+    }
+    /**
+     * @private
+     */
+    public createCustomStampElement(): void {
+        // eslint-disable-next-line
+        let stampImage: any = createElement('input', { id: this.pdfViewer.element.id + '_stampElement', attrs: { 'type': 'file' } });
+        stampImage.setAttribute('accept', '.jpg,.jpeg');
+        stampImage.style.position = 'absolute';
+        stampImage.style.left = '0px';
+        stampImage.style.top = '0px';
+        stampImage.style.visibility = 'hidden';
+        document.body.appendChild(stampImage);
+        stampImage.addEventListener('change', this.addStampImage); 
     }
     // eslint-disable-next-line
     public addStampImage = (args: any): void => {
@@ -3092,6 +3112,11 @@ export class AnnotationToolbar {
         this.fontColorDropDown.destroy();
         this.textAlignDropDown.destroy();
         this.textPropertiesDropDown.destroy();
+        // eslint-disable-next-line
+        let stampImage: any = document.getElementById(this.pdfViewer.element.id + '_stampElement'); 
+        if (stampImage) {
+            stampImage.parentElement.removeChild(stampImage);
+        }
     }
 
     private getElementHeight(element: HTMLElement): number {

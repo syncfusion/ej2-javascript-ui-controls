@@ -36,6 +36,7 @@ describe('Table Dialog testing', () => {
         tablePropertiesDialog.destroy();
         borderAndShadingDialog.destroy();
         editor = undefined;
+        document.body.innerHTML = '';
         setTimeout(function () {
             done();
         }, 1000);
@@ -68,6 +69,7 @@ describe('List Dialog testing', () => {
         document.body.removeChild(document.getElementById('container'));
         editor.destroy();
         editor = undefined;
+        document.body.innerHTML = '';
         setTimeout(function () {
             done();
         }, 1000);
@@ -112,6 +114,7 @@ describe('Style dialog validation', () => {
         styleDialog = undefined;
         stylesDialog = undefined;
         fontDialog = undefined;
+        document.body.innerHTML = '';
         setTimeout(function () {
             done();
         }, 2000);
@@ -147,6 +150,7 @@ describe('TableOfContents dialog validation', () => {
         document.body.removeChild(document.getElementById('container'));
         editor = undefined;
         tableOfContents = undefined;
+        document.body.innerHTML = '';
         setTimeout(function () {
             done();
         }, 2000);
@@ -187,6 +191,7 @@ describe('PageSetup Dialog Test Case Validation', () => {
         editor = undefined;
         dialog = undefined;
         document.body.removeChild(document.getElementById('container'));
+        document.body.innerHTML = '';
         setTimeout(function () {
             done();
         }, 2000);
@@ -220,6 +225,7 @@ describe('BookMark add validation', () => {
         editor.destroy();
         document.body.removeChild(document.getElementById('container'));
         editor = undefined;
+        document.body.innerHTML = '';
         setTimeout(function () {
             done();
         }, 2000);

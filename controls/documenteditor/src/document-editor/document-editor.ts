@@ -36,7 +36,7 @@ import { FormFillingMode, TrackChangeEventArgs, ServiceFailureArgs } from './bas
 import { TrackChangesPane } from './implementation/track-changes/track-changes-pane';
 import { RevisionCollection } from './implementation/track-changes/track-changes';
 import { NotesDialog } from './implementation/dialogs/notes-dialog';
-
+import { FootNoteWidget } from './implementation/viewer/page';
 /**
  * The `DocumentEditorSettings` module is used to provide the customize property of Document Editor.
  */
@@ -1059,95 +1059,100 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
     public onPropertyChanged(model: DocumentEditorModel, oldProp: DocumentEditorModel): void {
         for (const prop of Object.keys(model)) {
             switch (prop) {
-            case 'zoomFactor':
-                if (this.viewer && oldProp.zoomFactor !== model.zoomFactor) {
-                    this.documentHelper.zoomFactor = model.zoomFactor;
-                }
-                break;
-            case 'layoutType':
-                if (this.selection && this.selection.isWebLayout) {
-                    break;
-                }
-                this.viewer.destroy();
-                if (this.layoutType === 'Pages') {
-                    this.viewer = new PageLayoutViewer(this);
-                } else {
-                    if (this.enableHeaderAndFooter === true) {
-                        this.selection.closeHeaderFooter();
+                case 'zoomFactor':
+                    if (this.viewer && oldProp.zoomFactor !== model.zoomFactor) {
+                        this.documentHelper.zoomFactor = model.zoomFactor;
                     }
-                    this.viewer = new WebLayoutViewer(this);
-                }
-                this.editor.layoutWholeDocument();
-                setTimeout((): void => {
-                    this.fireViewChange();
-                }, 200);
-                break;
-            case 'locale':
-                this.localizeDialogs();
-                break;
-            case 'isReadOnly':
-                if (!isNullOrUndefined(this.optionsPaneModule) && this.optionsPaneModule.isOptionsPaneShow) {
-                    this.optionsPaneModule.showHideOptionsPane(false);
-                }
-                if (this.showComments) {
-                    this.commentReviewPane.showHidePane(true, 'Comments');
-                }
-                break;
-            case 'currentUser':
-            case 'userColor':
-                if (this.selection && this.documentHelper.isDocumentProtected) {
-                    this.selection.highlightEditRegion();
-                }
-                this.viewer.updateScrollBars();
-                break;
-            case 'pageGap':
-            case 'pageOutline':
-                this.viewer.updateScrollBars();
-                break;
-            case 'zIndex':
-                if (this.documentHelper.dialog) {
-                    this.documentHelper.dialog.zIndex = model.zIndex + 10;
-                }
-                if (this.documentHelper.dialog2) {
-                    this.documentHelper.dialog2.zIndex = model.zIndex;
-                }
-                break;
-            case 'showComments':
-                if (this.viewer) {
-                    this.documentHelper.showComments(model.showComments);
-                }
-                this.viewer.updateScrollBars();
-                break;
-            case 'enableRtl':
-                this.localizeDialogs(model.enableRtl);
-                break;
-            case 'enableComment':
-                if (this.viewer && this.showComments) {
-                    this.showComments = this.showComments ? this.enableComment : false;
-                    this.documentHelper.showComments(model.enableComment);
-                }
-                this.viewer.updateScrollBars();
-                break;
-            case 'showRevisions':
-                if (this.isReadOnly || this.documentHelper.isDocumentProtected) {
-                    this.showRevisions = false;
-                    this.documentHelper.showRevisions(false);
-                } else if (this.viewer) {
-                    this.documentHelper.showRevisions(model.showRevisions);
-                }
-                this.viewer.updateScrollBars();
-                break;
-            case 'documentEditorSettings':
-                this.viewer.updateScrollBars();
-                break;
-            case 'height':
-                this.element.style.height = formatUnit(this.height);
-                this.resize();
-                break;
-            case 'width':
-                this.element.style.width = formatUnit(this.width);
-                this.resize();
-                break;
+                    break;
+                case 'layoutType':
+                    if (this.selection && this.selection.isWebLayout) {
+                        break;
+                    }
+                    this.viewer.destroy();
+                    if (this.layoutType === 'Pages') {
+                        this.viewer = new PageLayoutViewer(this);
+                    } else {
+                        if (this.enableHeaderAndFooter === true) {
+                            this.selection.closeHeaderFooter();
+                        }
+                        this.viewer = new WebLayoutViewer(this);
+                    }
+                    let paragraph: ParagraphWidget = this.selection.start.paragraph;
+                    if (paragraph.containerWidget instanceof FootNoteWidget) {
+                        this.selection.clearSelectionHighlightInSelectedWidgets();
+                        this.selection.selectContent(this.documentStart, true);
+                    }
+                    this.editor.layoutWholeDocument();
+                    setTimeout((): void => {
+                        this.fireViewChange();
+                    }, 200);
+                    break;
+                case 'locale':
+                    this.localizeDialogs();
+                    break;
+                case 'isReadOnly':
+                    if (!isNullOrUndefined(this.optionsPaneModule) && this.optionsPaneModule.isOptionsPaneShow) {
+                        this.optionsPaneModule.showHideOptionsPane(false);
+                    }
+                    if (this.showComments) {
+                        this.commentReviewPane.showHidePane(true, 'Comments');
+                    }
+                    break;
+                case 'currentUser':
+                case 'userColor':
+                    if (this.selection && this.documentHelper.isDocumentProtected) {
+                        this.selection.highlightEditRegion();
+                    }
+                    this.viewer.updateScrollBars();
+                    break;
+                case 'pageGap':
+                case 'pageOutline':
+                    this.viewer.updateScrollBars();
+                    break;
+                case 'zIndex':
+                    if (this.documentHelper.dialog) {
+                        this.documentHelper.dialog.zIndex = model.zIndex + 10;
+                    }
+                    if (this.documentHelper.dialog2) {
+                        this.documentHelper.dialog2.zIndex = model.zIndex;
+                    }
+                    break;
+                case 'showComments':
+                    if (this.viewer) {
+                        this.documentHelper.showComments(model.showComments);
+                    }
+                    this.viewer.updateScrollBars();
+                    break;
+                case 'enableRtl':
+                    this.localizeDialogs(model.enableRtl);
+                    break;
+                case 'enableComment':
+                    if (this.viewer && this.showComments) {
+                        this.showComments = this.showComments ? this.enableComment : false;
+                        this.documentHelper.showComments(model.enableComment);
+                    }
+                    this.viewer.updateScrollBars();
+                    break;
+                case 'showRevisions':
+                    if (this.isReadOnly || this.documentHelper.isDocumentProtected) {
+                        this.showRevisions = false;
+                        this.documentHelper.showRevisions(false);
+                    } else if (this.viewer) {
+                        this.documentHelper.showRevisions(model.showRevisions);
+                    }
+                    this.viewer.updateScrollBars();
+                    break;
+                case 'documentEditorSettings':
+                    this.viewer.updateScrollBars();
+                    break;
+                case 'height':
+                    this.element.style.height = formatUnit(this.height);
+                    this.resize();
+                    break;
+                case 'width':
+                    this.element.style.width = formatUnit(this.width);
+                    this.resize();
+                    break;
             }
         }
     }

@@ -283,7 +283,7 @@ export class AutoComplete extends ComboBox {
         }
         return filterQuery;
     }
-    protected searchLists(e: KeyboardEventArgs): void {
+    protected searchLists(e: KeyboardEventArgs | MouseEvent): void {
         this.isTyped = true;
         this.isDataFetched = this.isSelectCustom = false;
         if (this.isServerBlazor) {
@@ -300,7 +300,7 @@ export class AutoComplete extends ComboBox {
                 super.renderList(true);
             }
             this.queryString = this.filterInput.value;
-            if (e.keyCode === 40 || e.keyCode === 38) {
+            if (e.type !== 'mousedown' && ((<KeyboardEventArgs>e).keyCode === 40 || (<KeyboardEventArgs>e).keyCode === 38)) {
                 this.queryString = this.queryString === '' ? null : this.queryString;
                 this.beforePopupOpen = true;
                 this.resetList(this.dataSource, this.fields);
@@ -355,6 +355,7 @@ export class AutoComplete extends ComboBox {
             this.resetList(dataSource, fields, query);
         } else {
             this.hidePopup();
+            this.beforePopupOpen = false;
         }
         this.renderReactTemplates();
     }

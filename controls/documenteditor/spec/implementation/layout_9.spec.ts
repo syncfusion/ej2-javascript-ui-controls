@@ -3312,6 +3312,7 @@ describe('Left indent on heading style validation', () => {
         editor.destroy();
         document.body.removeChild(document.getElementById('container'));
         editor = undefined;
+        document.body.innerHTML = '';
         setTimeout(() => {
             done();
         }, 1000);
@@ -3340,6 +3341,7 @@ describe('Left indent on list para validation', () => {
         editor.destroy();
         document.body.removeChild(document.getElementById('container'));
         editor = undefined;
+        document.body.innerHTML = '';
         setTimeout(() => {
             done();
         }, 1000);
@@ -3368,6 +3370,7 @@ describe('Section break para style validation', () => {
         editor.destroy();
         document.body.removeChild(document.getElementById('container'));
         editor = undefined;
+        document.body.innerHTML = '';
         setTimeout(() => {
             done();
         }, 1000);

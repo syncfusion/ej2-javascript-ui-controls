@@ -51,6 +51,7 @@ describe('DocumentEditor', () => {
             editor.destroy();
             editor = undefined;
             document.body.removeChild(document.getElementById('container'));
+            document.body.innerHTML = '';
             setTimeout(function () {
                 done();
             }, 1000);
@@ -97,6 +98,7 @@ console.log('page background color');
             editor.destroy();
             document.body.removeChild(document.getElementById('container'));
             editor = undefined;
+            document.body.innerHTML = '';
             setTimeout(function () {
                 done();
             }, 1000);
@@ -236,6 +238,7 @@ console.log('Table widget validation');
             editor.destroy();
             document.body.removeChild(document.getElementById('container'));
             editor = undefined;
+            document.body.innerHTML = '';
             setTimeout(function () {
                 done();
             }, 1000);
@@ -281,6 +284,7 @@ console.log('page gap API validation');
             editor.destroy();
             editor = undefined;
             documentHelper = undefined;
+            document.body.innerHTML = '';
             setTimeout(function () {
                 done();
             }, 1000);
@@ -319,6 +323,7 @@ console.log('Show ListDialog dialog testing');
             borderAndShadingDialog.destroy();
             editor = undefined;
             documentHelper = undefined;
+            document.body.innerHTML = '';
             setTimeout(function () {
                 done();
             }, 1000);
@@ -388,6 +393,7 @@ console.log('table dialog- indent from left testing');
             borderAndShadingDialog.destroy();
             editor = undefined;
             documentHelper = undefined;
+            document.body.innerHTML = '';
             setTimeout(function () {
                 done();
             }, 1000);
@@ -445,6 +451,7 @@ console.log('table dialog-table right alignment testing');
             borderAndShadingDialog.destroy();
             editor = undefined;
             documentHelper = undefined;
+            document.body.innerHTML = '';
             setTimeout(function () {
                 done();
             }, 1000);
@@ -514,6 +521,7 @@ console.log('setting border style as all testing');
             borderAndShadingDialog.destroy();
             editor = undefined;
             documentHelper = undefined;
+            document.body.innerHTML = '';
             setTimeout(function () {
                 done();
             }, 1000);
@@ -558,6 +566,7 @@ console.log('Show table options dialog testing');
             editor.destroy();
             document.body.removeChild(document.getElementById('container'));
             editor = undefined;
+            document.body.innerHTML = '';
             setTimeout(function () {
                 done();
             }, 1000);
@@ -1500,6 +1509,7 @@ describe("Initilize document editor", function () {
         editor = undefined;
         document.body.removeChild(document.getElementById('container'));
         Browser.userAgent = currentAgent;
+        document.body.innerHTML = '';
         setTimeout(function () {
             done();
         }, 500);
@@ -1527,6 +1537,7 @@ describe('Header Ajax value checking', () => {
         editor.destroy();
         document.body.removeChild(document.getElementById('container'));
         editor = undefined;
+        document.body.innerHTML = '';
         setTimeout(function () {
             done();
         }, 1000);
@@ -1560,6 +1571,7 @@ describe('Enable comment checking in docmenteitor', () => {
         editor.destroy();
         document.body.removeChild(document.getElementById('container'));
         editor = undefined;
+        document.body.innerHTML = '';
         setTimeout(function () {
             done();
         }, 1000);
@@ -1601,6 +1613,7 @@ describe('Form field API validation', () => {
         documentEditor.destroy();
         document.body.removeChild(document.getElementById('container'));
         documentEditor = undefined;
+        document.body.innerHTML = '';
         setTimeout(function () {
             done();
         }, 1000);

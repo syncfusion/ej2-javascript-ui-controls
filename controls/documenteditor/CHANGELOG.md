@@ -2,6 +2,49 @@
 
 ## [Unreleased]
 
+## 19.1.59 (2021-05-04)
+
+### Document Editor
+
+#### New Features
+
+- `#I307321` - Added support table positioning properties.
+
+#### Bug Fixes
+
+- `#I324028` - Resolved the font dialog properties applied in font dialog.
+- `#I323597` - Resolved the text box rendering in RTF documents.
+- `#I323603` - Resolved the footnote issue when switching to web layout.
+- `#I321745` - Resolved the comment selection issue.
+- `#I322561` - Resolved the bookmark undo and redo script error.
+- `#I323670` - Resolved the font size and font family issue in copy paste.
+- `#I325291` - Document with alternate chunks is now loaded properly.
+- `#I323401`, `#I323423` - Resolved the page wise footnote content layout issue.
+- `#I326150` - Resolved issue in updating cross reference field.
+- `#F160804` - Styles not considered properly while deleting the content.
+- `#I324169` - Resolved opacity issue in toolbar item.
+- `#I312306` - Hyperlink context is now retrieved properly.
+- Resolved the `showRestrictEditingPane` API script error.
+- Resolved the document zooming issue.
+
+## 19.1.58 (2021-04-27)
+
+### Document Editor
+
+#### Bug Fixes
+
+- `#I324223`, `#I324023` - Resolved the underline issue in word document export.
+- `#I322560`, `#I323516` - Script error in the top and bottom layout is resolved.
+- `#I322402` - Before pane switch event triggering twice issue is resolved.
+- `#F163664` - Unresponsive issue in opening large size text file is resolved.
+- `#I323401`, `#I323423` - Resolved the page wise footnote content layout issue.
+- `#I322548` - Resolved the track changes issue in track changes.
+- `#I322561` - Bookmark delete and history operation is working fine.
+
+#### New Features
+
+- `#I307321` - Added support table positioning properties.
+
 ## 19.1.57 (2021-04-20)
 
 ### Document Editor

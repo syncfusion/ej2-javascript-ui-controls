@@ -32,6 +32,7 @@ describe('Restrict editing dialog validation', () => {
     afterAll((done) => {
         editor.destroy();
         document.body.removeChild(document.getElementById('container'));
+        document.body.innerHTML = '';
         editor = undefined;
         setTimeout(function () {
             done();
@@ -88,6 +89,7 @@ describe('Unprotect loaded document with password empty', () => {
         editor.destroy();
         document.body.removeChild(document.getElementById('container'));
         editor = undefined;
+        document.body.innerHTML = '';
         setTimeout(function () {
             done();
         }, 2000);

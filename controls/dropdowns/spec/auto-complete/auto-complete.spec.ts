@@ -2141,3 +2141,154 @@ describe('EJ2-44363- When setting value dynamically in remote data, text is auto
         }, 800);
     });
 });
+describe('EJ2-48321 - Need to trigger filtering event when clear the typed text using clear icon', () => {
+    let element: HTMLInputElement;
+    let atcObj: any;
+    let e: any = { preventDefault: function () { }, target: null, type: null, action: 'down' };
+    let isFiltered: boolean = false;
+    let isPopupOpened: boolean = false;
+    let isPopupClosed: boolean = false;
+    beforeAll(() => {
+        element = <HTMLInputElement>createElement('input', { id: 'autocomplete' });
+        document.body.appendChild(element);
+    });
+    afterAll(() => {
+        document.body.innerHTML = '';
+        if (element) {
+            element.remove();
+        };
+    });
+    it('Testing filter event triggering while click the clear icon for popup open case', (done) => {
+        atcObj = new AutoComplete({
+            dataSource: languageData,
+            fields: { value: 'text' },
+            showClearButton : true,
+            allowFiltering : true,
+            filtering : function(e: any) {
+                isFiltered = true;
+                expect(!isNullOrUndefined(e.text)).toBe(true);
+            },
+            open : function(e: any) {
+                isPopupOpened = true;
+            },
+            close : function(e: any) {
+                isPopupClosed = true;
+            }
+        });
+        atcObj.appendTo(element);
+        e.keyCode = 74;
+        atcObj.inputElement.value = 'J';
+        atcObj.onInput(e);
+        atcObj.onFilterUp(e);
+        expect(isFiltered).toBe(true);
+        isFiltered = false;
+        setTimeout(() => {
+            expect(isPopupOpened).toBe(true);
+            isPopupOpened = false;
+            let clickEvent: MouseEvent = document.createEvent('MouseEvents');
+            clickEvent.initEvent('mousedown', true, true);
+            atcObj.inputWrapper.clearButton.dispatchEvent(clickEvent);
+            expect(isFiltered).toBe(true);
+            isFiltered = false;
+            expect(isPopupClosed).toBe(true);
+            isPopupClosed = false;
+            atcObj.destroy();
+            done();
+        }, 450)
+    });
+    it('Testing filter event triggering while click the clear icon for popup close case', (done) => {
+        atcObj = new AutoComplete({
+            dataSource: languageData,
+            fields: { value: 'text' },
+            showClearButton : true,
+            allowFiltering : true,
+            filtering : function(e: any) {
+                isFiltered = true;
+                expect(!isNullOrUndefined(e.text)).toBe(true);
+            },
+            open : function(e: any) {
+                isPopupOpened = true;
+            },
+            close : function(e: any) {
+                isPopupClosed = true;
+            }
+        });
+        atcObj.appendTo(element);
+        e.keyCode = 74;
+        atcObj.inputElement.value = 'J';
+        atcObj.onInput(e);
+        atcObj.onFilterUp(e);
+        expect(isFiltered).toBe(true);
+        isFiltered = false;
+        expect(isPopupOpened).toBe(true);
+        isPopupOpened = false;
+        atcObj.hidePopup();
+        setTimeout(() => {
+            expect(isPopupClosed).toBe(true);
+            let clickEvent: MouseEvent = document.createEvent('MouseEvents');
+            clickEvent.initEvent('mousedown', true, true);
+            atcObj.inputWrapper.clearButton.dispatchEvent(clickEvent);
+            expect(isFiltered).toBe(true);
+            expect(isPopupOpened).toBe(false);
+            atcObj.destroy();
+            done();
+        }, 450)
+    });
+});
+describe('EJ2-48529 - Filtering is not firing while remove the last letter while popup is closed', () => {
+    let element: HTMLInputElement;
+    let atcObj: any;
+    let e: any = { preventDefault: function () { }, target: null, type: null, action: 'down' };
+    let isFiltered: boolean = false;
+    let isPopupOpened: boolean = false;
+    let isPopupClosed: boolean = false;
+    beforeAll(() => {
+        element = <HTMLInputElement>createElement('input', { id: 'autocomplete' });
+        document.body.appendChild(element);
+    });
+    afterAll(() => {
+        document.body.innerHTML = '';
+        if (element) {
+            element.remove();
+        };
+    });
+    it('Testing filter event triggering while remove the last letter using keyboard while popup is in closed state', (done) => {
+        atcObj = new AutoComplete({
+            dataSource: languageData,
+            fields: { value: 'text' },
+            showClearButton : true,
+            allowFiltering : true,
+            filtering : function(e: any) {
+                isFiltered = true;
+                expect(!isNullOrUndefined(e.text)).toBe(true);
+            },
+            open : function(e: any) {
+                isPopupOpened = true;
+            },
+            close : function(e: any) {
+                isPopupClosed = true;
+            }
+        });
+        atcObj.appendTo(element);
+        e.keyCode = 74;
+        atcObj.inputElement.value = 'J';
+        atcObj.onInput(e);
+        atcObj.onFilterUp(e);
+        expect(isFiltered).toBe(true);
+        isFiltered = false;
+        expect(isPopupOpened).toBe(true);
+        isPopupOpened = false;
+        atcObj.hidePopup();
+        setTimeout(() => {
+            expect(isPopupClosed).toBe(true);
+            e.keyCode = 8;
+            atcObj.inputElement.value = '';
+            atcObj.onInput(e);
+            atcObj.onFilterUp(e);
+            expect(isFiltered).toBe(true);
+            expect(isPopupOpened).toBe(false);
+            atcObj.destroy();
+            done();
+        }, 450)
+    });
+});

@@ -1174,16 +1174,16 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
         this.scrollStop(e);
     }
 
-    private scrollStop(e: Event): void {
-        const target: Element = <Element>e.target;
-        const liHeight: number = parseInt(getComputedStyle(this.liCollections[0], null).getPropertyValue('height'), 10);
+    protected scrollStop(e?: Event): void {
+        let target: Element = !isNullOrUndefined(e) ? <Element>e.target : this.list;
+        let liHeight: number = parseInt(getComputedStyle(this.getValidLi(), null).getPropertyValue('height'), 10);
         const topIndex: number = Math.round(target.scrollTop / liHeight);
-        const liCollections: NodeListOf<Element> = <NodeListOf<Element>>this.list.querySelectorAll('li');
+        const liCollections: NodeListOf<Element> = <NodeListOf<Element>>this.list.querySelectorAll('li' + ':not(.e-hide-listitem)');
         for (let i: number = topIndex; i > -1; i--) {
             if (!isNullOrUndefined(liCollections[i]) && liCollections[i].classList.contains(dropDownBaseClasses.group)) {
                 const currentLi: HTMLElement = liCollections[i] as HTMLElement;
                 this.fixedHeaderElement.innerHTML = currentLi.innerHTML;
-                this.fixedHeaderElement.style.top = (e.target as Element).scrollTop + 'px';
+                this.fixedHeaderElement.style.top = target.scrollTop + 'px';
                 this.fixedHeaderElement.style.display = 'block';
                 break;
             } else {
@@ -1192,6 +1192,11 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
             }
         }
     }
+
+    protected getValidLi() : HTMLElement {
+        return this.liCollections[0];
+    }
+
     /**
      * To render the list items
      *
@@ -1268,10 +1273,10 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
                 document.defaultView.getComputedStyle(this.list.parentElement, null).getPropertyValue('border-width'), 10
             );
         }
-        const liWidth: number = this.liCollections[0].offsetWidth - borderWidth;
+        const liWidth: number = this.getValidLi().offsetWidth - borderWidth;
         this.fixedHeaderElement.style.width = liWidth.toString() + 'px';
         setStyleAttribute(this.fixedHeaderElement, { zIndex: 10 });
-        const firstLi: HTMLElement = this.ulElement.querySelector('.' + dropDownBaseClasses.group) as HTMLElement;
+        const firstLi: HTMLElement = this.ulElement.querySelector('.' + dropDownBaseClasses.group + ':not(.e-hide-listitem)') as HTMLElement;
         this.fixedHeaderElement.innerHTML = firstLi.innerHTML;
     }
     private getSortedDataSource(dataSource: { [key: string]: Object }[]): { [key: string]: Object }[] {

@@ -21,6 +21,7 @@ describe('Show hide header footer pane', () => {
         expect(element.childNodes.length).toBe(0);
         document.body.removeChild(element);
         expect(() => { container.destroy(); }).not.toThrowError();
+        document.body.innerHTML = '';
         element = undefined;
         container = undefined;
     });
@@ -58,6 +59,7 @@ describe('Show hide FormFiedld Validation In Header and Footer', () => {
         expect(element.childNodes.length).toBe(0);
         document.body.removeChild(element);
         expect(() => { container.destroy(); }).not.toThrowError();
+        document.body.innerHTML = '';
         element = undefined;
         container = undefined;
     });

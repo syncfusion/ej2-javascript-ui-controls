@@ -829,6 +829,7 @@ describe('Table Cell resizing testing at cell resizer position at 0', () => {
         editor.destroy();
         editor = undefined;
         document.body.removeChild(document.getElementById('container'));
+        document.body.innerHTML = '';
         setTimeout(function () {
             done();
         }, 1000);
@@ -898,6 +899,7 @@ describe('Table Cell resizing testing at cell resizer position at 0', () => {
         editor.destroy();
         editor = undefined;
         document.body.removeChild(document.getElementById('container'));
+        document.body.innerHTML = '';
         setTimeout(function () {
             done();
         }, 1000);

@@ -86,6 +86,14 @@ describe('Diagram Control', () => {
             expect(bounds.left === 603 && bounds.right === 1574 && bounds.top === 633 && bounds.bottom === 1368).toBe(true);
             done();
         });
+        it('Checking node offset after save and load', (done: Function) => {
+            let offsetX: number = diagram.nodes[0].offsetX;
+            let offsetY: number = diagram.nodes[0].offsetY;
+            let data: string = diagram.saveDiagram();
+            diagram.loadDiagram(data);
+            expect(diagram.nodes[0].offsetX == offsetX && diagram.nodes[0].offsetY == offsetY).toBe(true);
+            done();
+         });
         
     });
 });

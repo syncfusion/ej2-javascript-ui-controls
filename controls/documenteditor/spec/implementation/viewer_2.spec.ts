@@ -41,6 +41,7 @@ describe('Show Tool tip validation', () => {
         editor.destroy();
         editor = undefined;
         document.body.removeChild(document.getElementById('container'));
+        document.body.innerHTML = '';
         setTimeout(() => {
             done();
         }, 1000);
@@ -170,6 +171,7 @@ describe('Viewer branches validation', () => {
         editor.destroy();
         editor = undefined;
         document.body.removeChild(document.getElementById('container'));
+        document.body.innerHTML = '';
         setTimeout(() => {
             done();
         }, 1000);
@@ -265,6 +267,7 @@ describe('Read only mode validation on viewer with selection', () => {
         editor.destroy();
         editor = undefined;
         document.body.removeChild(document.getElementById('container'));
+        document.body.innerHTML = '';
         setTimeout(() => {
             done();
         }, 1000);
@@ -333,6 +336,7 @@ describe('Viewer API validation for branches', () => {
         editor.destroy();
         editor = undefined;
         document.body.removeChild(document.getElementById('container'));
+        document.body.innerHTML = '';
         setTimeout(() => {
             done();
         }, 1000);
@@ -388,6 +392,7 @@ describe('Touch event validation', () => {
         editor.destroy();
         editor = undefined;
         document.body.removeChild(document.getElementById('container'));
+        document.body.innerHTML = '';
         setTimeout(() => {
             done();
         }, 1000);
@@ -707,6 +712,7 @@ describe('Touch event Zoom validation', () => {
         editor.destroy();
         editor = undefined;
         document.body.removeChild(document.getElementById('container'));
+        document.body.innerHTML = '';
         setTimeout(() => {
             done();
         }, 1000);
@@ -779,6 +785,7 @@ describe('Key down internal validation -1 tab key', () => {
         editor.destroy();
         editor = undefined;
         document.body.removeChild(document.getElementById('container'));
+        document.body.innerHTML = '';
         setTimeout(() => {
             done();
         }, 1000);
@@ -846,6 +853,7 @@ describe('Key down internal validation -2 paragraph alignent', () => {
         editor.destroy();
         editor = undefined;
         document.body.removeChild(document.getElementById('container'));
+        document.body.innerHTML = '';
         setTimeout(() => {
             done();
         }, 1000);
@@ -925,6 +933,7 @@ describe('Key down internal validation -2 paragraph alignment', () => {
         editor.destroy();
         editor = undefined;
         document.body.removeChild(document.getElementById('container'));
+        document.body.innerHTML = '';
         setTimeout(() => {
             done();
         }, 1000);
@@ -1009,6 +1018,7 @@ describe('Key Board shortcut Validation', () => {
         editor.destroy();
         editor = undefined;
         document.body.removeChild(document.getElementById('container'));
+        document.body.innerHTML = '';
         setTimeout(() => {
             done();
         }, 1000);
@@ -1064,6 +1074,7 @@ describe('Key Board validation on Read only mode', () => {
         editor.destroy();
         editor = undefined;
         document.body.removeChild(document.getElementById('container'));
+        document.body.innerHTML = '';
         setTimeout(() => {
             done();
         }, 1000);
@@ -1136,6 +1147,7 @@ describe('Key Board shortcut Validation', () => {
         editor.destroy();
         editor = undefined;
         document.body.removeChild(document.getElementById('container'));
+        document.body.innerHTML = '';
         setTimeout(() => {
             done();
         }, 1000);
@@ -1191,6 +1203,7 @@ describe('Key Board validation on Read only mode', () => {
         editor.destroy();
         editor = undefined;
         document.body.removeChild(document.getElementById('container'));
+        document.body.innerHTML = '';
         setTimeout(() => {
             done();
         }, 1000);
@@ -1277,6 +1290,7 @@ describe('Insert text in Header footer region', () => {
         editor.destroy();
         editor = undefined;
         document.body.removeChild(document.getElementById('container'));
+        document.body.innerHTML = '';
         setTimeout(() => {
             done();
         }, 1000);
@@ -1392,6 +1406,7 @@ describe('First Page header odd and even page header validation', () => {
         editor.destroy();
         editor = undefined;
         document.body.removeChild(document.getElementById('container'));
+        document.body.innerHTML = '';
         setTimeout(() => {
             done();
         }, 1000);
@@ -1441,6 +1456,7 @@ describe('Header footer enable validation', () => {
         editor.destroy();
         editor = undefined;
         document.body.removeChild(document.getElementById('container'));
+        document.body.innerHTML = '';
         setTimeout(() => {
             done();
         }, 1000);
@@ -1553,6 +1569,7 @@ describe('Read only mode validation on viewer with selection', () => {
         editor.destroy();
         editor = undefined;
         document.body.removeChild(document.getElementById('container'));
+        document.body.innerHTML = '';
         setTimeout(() => {
             done();
         }, 1000);
@@ -1607,6 +1624,7 @@ describe('Safari Paste Event Validation', () => {
         editor.destroy();
         editor = undefined;
         document.body.removeChild(document.getElementById('container'));
+        document.body.innerHTML = '';
         setTimeout(() => {
             done();
         }, 1000);
@@ -1651,6 +1669,7 @@ describe('Mouse enter and leave validation', () => {
         editor.destroy();
         editor = undefined;
         document.body.removeChild(document.getElementById('container'));
+        document.body.innerHTML = '';
         setTimeout(() => {
             done();
         }, 1000);
@@ -1692,6 +1711,7 @@ describe('Bounding rectangle height validation', () => {
         editor.destroy();
         editor = undefined;
         document.body.removeChild(document.getElementById('container'));
+        document.body.innerHTML = '';
         setTimeout(() => {
             done();
         }, 1000);
@@ -1722,6 +1742,7 @@ describe('Layout on resize', () => {
     afterAll((done) => {
         editor.destroy();
         document.body.removeChild(document.getElementById('container'));
+        document.body.innerHTML = '';
         editor = undefined;
         setTimeout(function () {
             done();

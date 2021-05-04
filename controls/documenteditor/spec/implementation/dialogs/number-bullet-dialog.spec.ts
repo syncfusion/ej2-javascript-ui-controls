@@ -45,6 +45,7 @@ describe('NumberBullet dialog', () => {
         editor = undefined;
         numBulletDialog.destroy();
         numBulletDialog = undefined;
+        document.body.innerHTML = '';
         setTimeout(function () {
             done();
         }, 2000);

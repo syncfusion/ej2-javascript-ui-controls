@@ -1,4 +1,4 @@
-import { isNullOrUndefined, isBlazor } from '@syncfusion/ej2-base';
+import { isNullOrUndefined } from '@syncfusion/ej2-base';
 import { Column } from '../models/column';
 import { Cell } from '../models/cell';
 import { ICellRenderer } from '../base/interface';
@@ -36,19 +36,14 @@ export class GroupCaptionCellRenderer extends CellRenderer implements ICellRende
             this.format(cell.column, (cell.column.valueAccessor as Function)('key', data, cell.column));
         if (!isNullOrUndefined(gObj.groupSettings.captionTemplate)) {
             let isReactCompiler: boolean = this.parent.isReact && typeof (gObj.groupSettings.captionTemplate) !== 'string';
-            if (isBlazor()) {
+            if (isReactCompiler) {
                 let tempID: string = gObj.element.id + 'captionTemplate';
-                result = templateCompiler(gObj.groupSettings.captionTemplate)(data, null, null, tempID);
+                templateCompiler(gObj.groupSettings.captionTemplate)(data, this.parent, 'captionTemplate', tempID, null, null, node);
+                this.parent.renderTemplates();
+            } else if (this.parent.isVue) {
+                result = templateCompiler(gObj.groupSettings.captionTemplate)(data, this.parent);
             } else {
-                if (isReactCompiler) {
-                    let tempID: string = gObj.element.id + 'captionTemplate';
-                    templateCompiler(gObj.groupSettings.captionTemplate)(data, this.parent, 'captionTemplate', tempID, null, null, node);
-                    this.parent.renderTemplates();
-                } else if (this.parent.isVue) {
-                    result = templateCompiler(gObj.groupSettings.captionTemplate)(data, this.parent);
-                } else {
-                    result = templateCompiler(gObj.groupSettings.captionTemplate)(data);
-                }
+                result = templateCompiler(gObj.groupSettings.captionTemplate)(data);
             }
             if (!isReactCompiler) {
                 appendChildren(node, result);

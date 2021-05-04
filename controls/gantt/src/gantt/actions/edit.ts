@@ -1402,9 +1402,6 @@ export class Edit {
 
     private addRecordAsBottom(cAddedRecord: IGanttData): void {
         const recordIndex1: number = this.parent.flatData.length;
-        if (this.parent.taskFields.parentID && (this.parent.dataSource as IGanttData[]).length > 0) {
-            (this.parent.dataSource as IGanttData[]).splice(recordIndex1 + 1, 0, cAddedRecord.taskData);
-        }
         this.parent.currentViewData.splice(recordIndex1 + 1, 0, cAddedRecord);
         this.parent.flatData.splice(recordIndex1 + 1, 0, cAddedRecord);
         this.parent.ids.splice(recordIndex1 + 1, 0, cAddedRecord.ganttProperties.rowUniqueID.toString());
@@ -1524,9 +1521,6 @@ export class Edit {
             childRecordsLength = (isNullOrUndefined(childRecords) ||
                 childRecords === 0) ? recordIndex1 + 1 :
                 childRecords + recordIndex1 + 1;
-        }
-        if (gObj.taskFields.parentID && (this.parent.dataSource as IGanttData[]).length > 0) {
-            (this.parent.dataSource as IGanttData[]).splice(childRecordsLength, 0, draggedRecord.taskData);
         }
         //this.ganttData.splice(childRecordsLength, 0, this.draggedRecord);
         this.parent.currentViewData.splice(childRecordsLength, 0, draggedRecord);
@@ -2075,7 +2069,7 @@ export class Edit {
             if (flatIndex !== -1) { flatData.splice(flatIndex, 1); }
             if (dataIndex !== -1) { tempData.splice(dataIndex, 1); }
             if (!isNullOrUndefined(deleteRecord)) {
-                deleteRecordIDs.push(deleteRecord.ganttProperties.rowUniqueID.toString());
+                deleteRecordIDs.push(deleteRecord.ganttProperties.taskId.toString());
                 if (flatIndex !== -1) {
                     this.parent.ids.splice(flatIndex, 1);
                     if (this.parent.viewType === 'ResourceView') {
@@ -2210,7 +2204,9 @@ export class Edit {
             this.parent.setRecordValue('parentUniqueID', parentUniqId, cAddedRecord);
             if (!isNullOrUndefined(this.parent.taskFields.id) &&
                 !isNullOrUndefined(this.parent.taskFields.parentID) && cAddedRecord.parentItem) {
-                this.parent.setRecordValue(this.parent.taskFields.parentID, cAddedRecord.parentItem.taskId, cAddedRecord.taskData, true);
+                    if (this.parent.viewType === 'ProjectView') {
+                        this.parent.setRecordValue(this.parent.taskFields.parentID, cAddedRecord.parentItem.taskId, cAddedRecord.taskData, true);
+                    }
                 this.parent.setRecordValue('parentId', cAddedRecord.parentItem.taskId, cAddedRecord.ganttProperties, true);
                 this.parent.setRecordValue(this.parent.taskFields.parentID, cAddedRecord.parentItem.taskId, cAddedRecord, true);
             }
@@ -2557,7 +2553,7 @@ export class Edit {
             }
             if (getValue(
                 this.parent.taskFields.id, dataCollection[i]).toString() ===
-                this.addRowSelectedItem.ganttProperties.rowUniqueID.toString()) {
+                this.addRowSelectedItem.ganttProperties.taskId.toString()) {
                 if (rowPosition === 'Above') {
                     dataCollection.splice(i, 0, record);
                 } else if (rowPosition === 'Below') {
@@ -2734,7 +2730,13 @@ export class Edit {
                             });
                         }
                     } else {
-                        this.updateRealDataSource(args.data, rowPosition);
+                        if (this.parent.viewType === 'ProjectView') {
+                            this.updateRealDataSource(args.data, rowPosition);
+                        } else {
+                            const dataSource: Object[] = isCountRequired(this.parent) ? getValue('result', this.parent.dataSource) :
+                            this.parent.dataSource as Object[]; // eslint-disable-line
+                            dataSource.push(args.data.taskData);
+                        }
                         if (cAddedRecord.level === 0) {
                             this.parent.treeGrid.parentData.splice(0, 0, cAddedRecord);
                         }

@@ -51,6 +51,7 @@ describe('Style dialog validation', () => {
         document.body.removeChild(document.getElementById('container'));
         editor = undefined;
         styleDialog = undefined;
+        document.body.innerHTML = '';
         setTimeout(function () {
             done();
         }, 2000);
@@ -179,6 +180,7 @@ describe('getStyles API', () => {
         document.body.removeChild(document.getElementById('container'));
         editor = undefined;
         styleDialog = undefined;
+        document.body.innerHTML = '';
         setTimeout(function () {
             done();
         }, 2000);
@@ -378,6 +380,7 @@ describe('Style dialog validation create', () => {
         document.body.removeChild(document.getElementById('container'));
         editor = undefined;
         styleDialog = undefined;
+        document.body.innerHTML = '';
         setTimeout(function () {
             done();
         }, 2000);
@@ -463,6 +466,7 @@ describe('Style dialog validation create - Next Different', () => {
         document.body.removeChild(document.getElementById('container'));
         editor = undefined;
         styleDialog = undefined;
+        document.body.innerHTML = '';
         setTimeout(function () {
             done();
         }, 2000);
@@ -523,6 +527,7 @@ describe('Style dialog validation create', () => {
         document.body.removeChild(document.getElementById('container'));
         editor = undefined;
         styleDialog = undefined;
+        document.body.innerHTML = '';
         setTimeout(function () {
             done();
         }, 2000);
@@ -580,7 +585,9 @@ describe('Style dialog - Editing', () => {
         editor.destroy();
         document.body.removeChild(document.getElementById('container'));
         editor = undefined;
+        jsonString = undefined;
         styleDialog = undefined;
+        document.body.innerHTML = '';
         setTimeout(function () {
             done();
         }, 2000);
@@ -642,6 +649,7 @@ describe('Modify Styles for Heading 1 validation', () => {
         document.body.removeChild(document.getElementById('container'));
         editor = undefined;
         styleDialog = undefined;
+        document.body.innerHTML = '';
         setTimeout(function () {
             done();
         }, 2000);

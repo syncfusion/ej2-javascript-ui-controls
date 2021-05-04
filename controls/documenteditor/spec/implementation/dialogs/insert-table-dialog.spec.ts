@@ -30,6 +30,7 @@ describe('Insert Table Dialog Test Case Validation', () => {
         editor = undefined;
         dialog = undefined;
         document.body.removeChild(document.getElementById('container'));
+        document.body.innerHTML = '';
         setTimeout(() => {
             done();
         }, 2000);
@@ -81,6 +82,7 @@ describe('Insert Table Dialog Test Case Validation', () => {
         editor = undefined;
         dialog = undefined;
         document.body.removeChild(document.getElementById('container'));
+        document.body.innerHTML = '';
         setTimeout(() => {
             done();
         }, 2000);
@@ -133,6 +135,7 @@ describe('Insert Table Key and Destroy Test Case Validation', () => {
         editor = undefined;
         dialog = undefined;
         document.body.removeChild(document.getElementById('container'));
+        document.body.innerHTML = '';
         setTimeout(() => {
             done();
         }, 2000);

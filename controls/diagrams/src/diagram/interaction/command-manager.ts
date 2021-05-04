@@ -3306,10 +3306,8 @@ export class CommandHandler {
                     hasEnds = true;
                 }
                 let canDragPoints: boolean = false;
-                for (let i: number = 0; i < this.diagram.selectedItems.connectors.length; i++) {
-                    if (this.diagram.selectedItems.connectors[i].id === obj.id) {
-                        canDragPoints = true;
-                    }
+                if (obj instanceof Connector) {
+                    canDragPoints = true;
                 }
                 if (!hasEnds || canDragPoints) {
                     this.dragControlPoint(connector, tx, ty, true);

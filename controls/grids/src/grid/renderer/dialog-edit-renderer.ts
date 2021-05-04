@@ -1,13 +1,14 @@
 import { IGrid, ResponsiveDialogArgs } from '../base/interface';
 import { Column } from '../models/column';
 import { Dialog, DialogModel } from '@syncfusion/ej2-popups';
-import { remove, extend, updateBlazorTemplate, isBlazor } from '@syncfusion/ej2-base';
+import { remove, extend, updateBlazorTemplate } from '@syncfusion/ej2-base';
 import { L10n } from '@syncfusion/ej2-base';
 import { ServiceLocator } from '../services/service-locator';
 import * as events from '../base/constant';
 import { appendChildren, applyBiggerTheme, addBiggerDialog } from '../base/util';
 import { ResponsiveDialogRenderer } from './responsive-dialog-renderer';
 import { ResponsiveDialogAction } from '../base/enum';
+import * as literals from '../base/string-literals';
 
 
 /**
@@ -55,7 +56,7 @@ export class DialogEditRender {
         if (this.parent.enableAdaptiveUI) {
             let responsiveDlgRenderer: ResponsiveDialogRenderer = new ResponsiveDialogRenderer(this.parent, this.serviceLocator);
             responsiveDlgRenderer.action = this.isEdit ? ResponsiveDialogAction.isEdit : ResponsiveDialogAction.isAdd;
-            return responsiveDlgRenderer.renderResponsiveHeader(args);
+            return responsiveDlgRenderer.renderResponsiveHeader(undefined, args);
         } else {
             if (gObj.editSettings.headerTemplate) {
                 header = this.getDialogEditTemplateElement('HeaderTemplate', args);
@@ -102,11 +103,7 @@ export class DialogEditRender {
             },
             gObj.editSettings.dialog ? (gObj.editSettings.dialog.params || {}) : {}
         ));
-        if (!isBlazor()) {
-            args.dialog = this.dialogObj;
-        } else {
-            this.dialogObj.locale = this.parent.locale;
-        }
+        args.dialog = this.dialogObj;
         let isStringTemplate: string = 'isStringTemplate';
         this.dialogObj[isStringTemplate] = true;
         this.renderResponsiveDialog();
@@ -178,7 +175,7 @@ export class DialogEditRender {
 
     private getEditElement(elements: Object, args: { rowData?: Object, form?: Element }): Element {
         let gObj: IGrid = this.parent;
-        let div: Element = this.parent.createElement('div', { className: this.isEdit ? 'e-editedrow' : 'e-insertedrow' });
+        let div: Element = this.parent.createElement('div', { className: this.isEdit ? literals.editedRow : 'e-insertedrow' });
         let form: HTMLFormElement = args.form =
             this.parent.createElement('form', { id: gObj.element.id + 'EditForm', className: 'e-gridform' }) as HTMLFormElement;
         if (this.parent.editSettings.template) {
@@ -204,8 +201,8 @@ export class DialogEditRender {
             div.appendChild(form);
             return div;
         }
-        let table: Element = this.parent.createElement('table', { className: 'e-table', attrs: { cellspacing: '6px' } });
-        let tbody: Element = this.parent.createElement('tbody');
+        let table: Element = this.parent.createElement('table', { className: literals.table, attrs: { cellspacing: '6px' } });
+        let tbody: Element = this.parent.createElement( literals.tbody);
         let cols: Column[] = gObj.getColumns() as Column[];
         for (let i: number = 0; i < cols.length; i++) {
             if (this.parent.editModule.checkColumnIsGrouped(cols[i]) || cols[i].commands || cols[i].commandsTemplate ||
@@ -214,7 +211,7 @@ export class DialogEditRender {
             }
             let tr: Element = this.parent.createElement('tr');
             let dataCell: HTMLElement = this.parent.createElement('td', {
-                className: 'e-rowcell', attrs: {
+                className: literals.rowCell, attrs: {
                     style: 'text-align:' + (this.parent.enableRtl ? 'right' : 'left') + ';width:190px'
                 }
             });

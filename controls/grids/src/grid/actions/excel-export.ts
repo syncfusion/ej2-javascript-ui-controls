@@ -5,7 +5,7 @@ import {
 } from '../base/interface';
 import * as events from '../base/constant';
 import { Workbook, Worksheets, Worksheet, Column as ExcelColumn } from '@syncfusion/ej2-excel-export';
-import { isNullOrUndefined, getEnumValue, compile, getValue, DateFormatOptions, detach, extend, isBlazor } from '@syncfusion/ej2-base';
+import { isNullOrUndefined, getEnumValue, compile, getValue, DateFormatOptions, detach, extend } from '@syncfusion/ej2-base';
 import { Data } from '../actions/data';
 import { ReturnType } from '../base/type';
 import { ExportHelper, ExportValueFormatter } from './export-helper';
@@ -48,7 +48,6 @@ export class ExcelExport {
     private exportValueFormatter: ExportValueFormatter;
     private isElementIdChanged: boolean = false;
     private helper: ExportHelper;
-    private foreignKeyData: { [key: string]: Object[] } = {};
     private groupedColLength: number;
     private globalResolve: Function;
     private gridPool: Object = {};
@@ -292,9 +291,6 @@ export class ExcelExport {
 
             if (!isMultipleExport) {
                 if (this.isCsvExport) {
-                    if (isBlazor() && gObj.isServerRendered) {
-                        this.book.isServerRendered = gObj.isServerRendered;
-                    }
                     if (isExportPropertiesPresent && !isNullOrUndefined(exportProperties.separator)
                     && exportProperties.separator !== ',') {
                         separator = exportProperties.separator;

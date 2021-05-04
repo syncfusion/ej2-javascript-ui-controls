@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 19.1.59 (2021-05-04)
+
+### Tree Grid
+
+#### Bug Fixes
+
+- `#I315811` - Collapse All with Virtualization enabled works fine when using less number of records
+
 ## 19.1.58 (2021-04-27)
 
 ### Tree Grid

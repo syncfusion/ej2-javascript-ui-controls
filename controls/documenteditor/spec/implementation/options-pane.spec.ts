@@ -1054,6 +1054,7 @@ describe("Find and Replace tab switch testing", function () {
         optionsPane.destroy();
         editor = undefined;
         documentHelper = undefined;
+        document.body.innerHTML = '';
         setTimeout(function () {
             done();
         }, 500);

@@ -1930,7 +1930,7 @@ export class ListBox extends DropDownBase {
 
     private onKeyDown(e: KeyboardEvent): void {
         this.keyDownHandler(e);
-        event.stopPropagation();
+        e.stopPropagation();
     }
 
     private keyDownStatus: boolean = false;
@@ -2017,7 +2017,7 @@ export class ListBox extends DropDownBase {
         if (!isNullOrUndefined(isWordCharacter)) {
             this.isValidKey = true;
         }
-        this.isValidKey = (e.keyCode === 8) || this.isValidKey;
+        this.isValidKey = (e.keyCode === 8) || (e.keyCode === 46) || this.isValidKey;
         if (this.isValidKey) {
             this.isValidKey = false;
             switch (e.keyCode) {
@@ -2520,7 +2520,13 @@ export class ListBox extends DropDownBase {
  * Interface for before item render event.
  */
 export interface BeforeItemRenderEventArgs extends BaseEventArgs {
+    /**
+     * Returns the list element before rendering.
+     */
     element: Element;
+    /**
+     * Returns the list item before rendering.
+     */
     item: { [key: string]: Object };
 }
 
@@ -2528,7 +2534,13 @@ export interface BeforeItemRenderEventArgs extends BaseEventArgs {
  * Interface for drag and drop event args.
  */
 export interface SourceDestinationModel {
+    /**
+     * Specifies the list items before  drag or drop in the ListBox.
+     */
     previousData?: string[] | boolean[] | number[] | { [key: string]: Object; }[] | DataManager;
+    /**
+     * Specifies the list items after drag or drop in the ListBox.
+     */
     currentData?: string[] | boolean[] | number[] | { [key: string]: Object; }[] | DataManager;
 }
 
@@ -2536,12 +2548,33 @@ export interface SourceDestinationModel {
  * Interface for drag and drop event.
  */
 export interface DragEventArgs {
+    /**
+     * Returns the selected list element.
+     */
     elements: Element[];
+    /**
+     * Returns the selected list items.
+     */
     items: Object[];
+    /**
+     * Returns the target list element where the selected list element to be dropped.
+     */
     target?: Element;
+    /**
+     * Returns true if the list element is dragged from ListBox. Otherwise, it remains false.
+     */
     dragSelected?: boolean;
+    /**
+     * Returns the previous list item.
+     */
     previousItem?: object[];
+    /**
+     * Returns the previous  and current list items of the source list box.
+     */
     source?: SourceDestinationModel;
+    /**
+     * Returns the previous and current list items of the destination list box.
+     */
     destination?: SourceDestinationModel;
 }
 
@@ -2549,22 +2582,55 @@ export interface DragEventArgs {
  * Interface for change event args.
  */
 export interface ListBoxChangeEventArgs extends BaseEventArgs {
+    /**
+     * Returns the selected list elements.
+     */
     elements: Element[];
+    /**
+     * Returns the selected list items.
+     */
     items: Object[];
+    /**
+     * Returns the selected state or selected list item in the ListBox.
+     */
     value: number | string | boolean;
+    /**
+     * Specifies the event.
+     */
     event: Event;
 }
 
 /**
- * Interface for change event args.
+ * Interface for Drop event args.
  */
 export interface DropEventArgs {
+    /**
+     * Returns the previous index of the selected list item.
+     */
     previousIndex: number;
+    /**
+     * Returns the current index of the selected list item.
+     */
     currentIndex: number;
+    /**
+     * Returns the selected list element to be dropped.
+     */
     droppedElement: Element;
+    /**
+     * Returns the target list element where the selected list element to be dropped.
+     */
     target: Element;
+    /**
+     * Returns the dragged list element.
+     */
     helper: Element;
+    /**
+     * Illustrates whether the current action needs to be prevented or not.
+     */
     cancel?: boolean;
+    /**
+     * Returns the selected list items.
+     */
     items?: Object[];
 }
 interface ListBoxClassList {

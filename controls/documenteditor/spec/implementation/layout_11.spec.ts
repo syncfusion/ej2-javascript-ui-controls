@@ -23,6 +23,7 @@ describe('Single Tab Stop Validation 1', () => {
         editor.destroy();
         document.body.removeChild(document.getElementById('container'));
         editor = undefined;
+        document.body.innerHTML = '';
         setTimeout(() => {
             done();
         }, 500);
@@ -55,6 +56,7 @@ describe('Table Cell Validation', () => {
         editor.destroy();
         document.body.removeChild(document.getElementById('container'));
         editor = undefined;
+        document.body.innerHTML = '';
         setTimeout(() => {
             done();
         }, 1000);
@@ -93,6 +95,7 @@ describe('Single Tab Stop Validation 2', () => {
         editor.destroy();
         document.body.removeChild(document.getElementById('container'));
         editor = undefined;
+        document.body.innerHTML = '';
         setTimeout(() => {
             done();
         }, 500);
@@ -125,6 +128,7 @@ describe('Table Margin Validation', () => {
         editor.destroy();
         document.body.removeChild(document.getElementById('container'));
         editor = undefined;
+        document.body.innerHTML = '';
     });
     it('Check Cell Margin Value', () => {
 console.log('Check Cell Margin Value');

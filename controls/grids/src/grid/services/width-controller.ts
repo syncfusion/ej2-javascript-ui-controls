@@ -5,6 +5,7 @@ import { columnWidthChanged, preventFrozenScrollRefresh } from '../base/constant
 import { Column } from '../models/column';
 import { parentsUntil, ispercentageWidth, getScrollBarWidth } from '../base/util';
 import { freezeMode } from '../base/enum';
+import * as literals from '../base/string-literals';
 
 /**
  * ColumnWidthService
@@ -118,17 +119,17 @@ export class ColumnWidthService {
         let frzCols: number = this.parent.getFrozenColumns();
         let isDraggable: boolean = this.parent.isRowDragable();
         frzCols = frzCols && isDraggable ? frzCols + 1 : frzCols;
-        let mHdr: Element = this.parent.getHeaderContent().querySelector('.e-movableheader');
-        let mCont: HTMLElement = <HTMLTableColElement>this.parent.getContent().querySelector('.e-movablecontent');
+        let mHdr: Element = this.parent.getHeaderContent().querySelector('.' + literals.movableHeader);
+        let mCont: HTMLElement = <HTMLTableColElement>this.parent.getContent().querySelector('.' + literals.movableContent);
         let freezeLeft: number = this.parent.getFrozenLeftColumnsCount();
         let freezeRight: number = this.parent.getFrozenRightColumnsCount();
         let movableCount: number = this.parent.getMovableColumnsCount();
         let isColFrozen: boolean = freezeLeft !== 0 || freezeRight !== 0;
-        if (frzCols && index >= frzCols && mHdr && mHdr.querySelector('colgroup')) {
-            headerCol = (<HTMLTableColElement>mHdr.querySelector('colgroup').children[index - frzCols]);
+        if (frzCols && index >= frzCols && mHdr && mHdr.querySelector(literals.colGroup)) {
+            headerCol = (<HTMLTableColElement>mHdr.querySelector(literals.colGroup).children[index - frzCols]);
         } else if (this.parent.enableColumnVirtualization && frzCols && (<{ isXaxis?: Function }>this.parent.contentModule).isXaxis()
             && mHdr.scrollLeft > 0) {
-            let colGroup: HTMLElement = mHdr.querySelector('colgroup');
+            let colGroup: HTMLElement = mHdr.querySelector(literals.colGroup);
             headerCol = (<HTMLTableColElement>colGroup.children[(colGroup.children.length - 1) - index]);
         } else if (isColFrozen) {
             let target: Element;
@@ -145,7 +146,7 @@ export class ColumnWidthService {
             headerCol = this.getColumnLevelFrozenColgroup(index, freezeLeft, movableCount, target);
             if (!headerCol) { return; }
         } else {
-            headerCol = (<HTMLTableColElement>header.querySelector('colgroup').children[index]);
+            headerCol = (<HTMLTableColElement>header.querySelector(literals.colGroup).children[index]);
         }
         if (headerCol && !clear) {
             headerCol.style.width = fWidth;
@@ -154,12 +155,12 @@ export class ColumnWidthService {
         }
         let contentCol: HTMLTableColElement;
         if (frzCols && index >= frzCols) {
-            contentCol = (<HTMLTableColElement>this.parent.getContent().querySelector('.e-movablecontent')
-                .querySelector('colgroup').children[index - frzCols]);
+            contentCol = (<HTMLTableColElement>this.parent.getContent().querySelector('.' + literals.movableContent)
+                .querySelector(literals.colGroup).children[index - frzCols]);
         } else if (this.parent.enableColumnVirtualization && frzCols && (<{ isXaxis?: Function }>this.parent.contentModule).isXaxis()
             && mCont.scrollLeft > 0) {
-            let colGroup: HTMLElement = this.parent.getContent().querySelector('.e-movablecontent')
-                .querySelector('colgroup');
+            let colGroup: HTMLElement = this.parent.getContent().querySelector('.' + literals.movableContent)
+                .querySelector(literals.colGroup);
             contentCol = (<HTMLTableColElement>colGroup.children[(colGroup.children.length - 1) - index]);
         } else if (isColFrozen) {
             let target: Element;
@@ -175,7 +176,7 @@ export class ColumnWidthService {
             }
             contentCol = this.getColumnLevelFrozenColgroup(index, freezeLeft, movableCount, target);
         } else {
-            contentCol = (<HTMLTableColElement>content.querySelector('colgroup').children[index]);
+            contentCol = (<HTMLTableColElement>content.querySelector(literals.colGroup).children[index]);
         }
         if (contentCol && !clear) {
             contentCol.style.width = fWidth;
@@ -186,8 +187,8 @@ export class ColumnWidthService {
         let editTableCol: HTMLTableColElement[] = [];
         for (let i: number = 0; i < edit.length; i++) {
             if (parentsUntil(edit[i], 'e-grid').id === this.parent.element.id) {
-                for (let j: number = 0; j < edit[i].querySelector('colgroup').children.length; j++) {
-                    editTableCol.push((<HTMLTableColElement>edit[i].querySelector('colgroup').children[j]));
+                for (let j: number = 0; j < edit[i].querySelector(literals.colGroup).children.length; j++) {
+                    editTableCol.push((<HTMLTableColElement>edit[i].querySelector(literals.colGroup).children[j]));
                 }
             }
         }
@@ -200,14 +201,14 @@ export class ColumnWidthService {
     }
 
     private getColumnLevelFrozenColgroup(index: number, left: number, movable: number, ele: Element): HTMLTableColElement {
-        if (!ele || !ele.querySelector('colgroup')) {
+        if (!ele || !ele.querySelector(literals.colGroup)) {
             return null;
         }
         let columns: Column[] = this.parent.getColumns();
         let isDrag: boolean = this.parent.isRowDragable();
         let frzMode: freezeMode = this.parent.getFrozenMode();
         let headerCol: HTMLTableColElement;
-        let colGroup: Element[] = [].slice.call(ele.querySelector('colgroup').children);
+        let colGroup: Element[] = [].slice.call(ele.querySelector(literals.colGroup).children);
         if (frzMode === 'Right' && isDrag && index === (movable + this.parent.getFrozenRightColumnsCount())) {
             headerCol = colGroup[colGroup.length - 1] as HTMLTableColElement;
         } else if (isDrag && index === -1) {
@@ -232,15 +233,15 @@ export class ColumnWidthService {
         let scrollWidth: number = getScrollBarWidth();
         let frozenScrollbar: HTMLElement = this.parent.element.querySelector('.e-frozenscrollbar');
         let movableScrollbar: HTMLElement = this.parent.element.querySelector('.e-movablescrollbar');
-        let frozencontent: HTMLElement = this.parent.getContent().querySelector('.e-frozencontent');
-        let movableContent: HTMLElement = this.parent.getContent().querySelector('.e-movablecontent');
+        let frozencontent: HTMLElement = this.parent.getContent().querySelector('.' + literals.frozenContent);
+        let movableContent: HTMLElement = this.parent.getContent().querySelector('.' + literals.movableContent);
         let frozenWidth: number = frozencontent.firstElementChild.getBoundingClientRect().width;
         let movableWidth: number = movableContent.firstElementChild.getBoundingClientRect().width;
         if (this.parent.getFrozenMode() === 'Right') {
             frozenWidth = frozenWidth + scrollWidth;
         }
         frozenScrollbar.style.width = frozenWidth + 'px';
-        if (this.parent.getFrozenMode() === 'Left-Right') {
+        if (this.parent.getFrozenMode() === literals.leftRight) {
             let frozenRightScrollbar: HTMLElement = this.parent.element.querySelector('.e-frozen-right-scrollbar');
             let frozenRightWidth: number = this.parent.getContent().querySelector('.e-frozen-right-content')
                 .firstElementChild.getBoundingClientRect().width;
@@ -271,7 +272,7 @@ export class ColumnWidthService {
     private getHeightFromDirection(element: HTMLElement, direction: string): number {
         let sibling: HTMLElement = element[direction + 'ElementSibling'];
         let result: number = 0;
-        let classList: string[] = ['e-gridheader', 'e-gridfooter', 'e-groupdroparea', 'e-gridpager', 'e-toolbar'];
+        let classList: string[] = [literals.gridHeader, literals.gridFooter, 'e-groupdroparea', 'e-gridpager', 'e-toolbar'];
 
         while (sibling) {
             if (classList.some((value: string) => sibling.classList.contains(value))) {
@@ -295,7 +296,7 @@ export class ColumnWidthService {
             column.width = 200;
         }
         if (this.parent.isFrozenGrid() && isNullOrUndefined(column.width) &&
-            (column.getFreezeTableName() === 'frozen-left' || column.getFreezeTableName() === 'frozen-right')) {
+            (column.getFreezeTableName() === literals.frozenLeft || column.getFreezeTableName() === literals.frozenRight)) {
             column.width = 200;
         }
         if (!column.width) { return null; }
@@ -346,8 +347,8 @@ export class ColumnWidthService {
     private setWidthToFrozenRightTable(): void {
         let freezeWidth: string = this.calcMovableOrFreezeColWidth('freeze-right');
         freezeWidth = this.isAutoResize() ? '100%' : freezeWidth;
-        let headerTbl: HTMLElement = this.parent.getHeaderContent().querySelector('.e-frozen-right-header').querySelector('.e-table');
-        let cntTbl: HTMLElement = this.parent.getContent().querySelector('.e-frozen-right-content').querySelector('.e-table');
+        let headerTbl: HTMLElement = this.parent.getHeaderContent().querySelector('.e-frozen-right-header').querySelector('.' + literals.table);
+        let cntTbl: HTMLElement = this.parent.getContent().querySelector('.e-frozen-right-content').querySelector('.' + literals.table);
         headerTbl.style.width = freezeWidth;
         cntTbl.style.width = freezeWidth;
     }
@@ -369,11 +370,11 @@ export class ColumnWidthService {
             movableWidth = this.calcMovableOrFreezeColWidth('movable');
         }
         movableWidth = this.isAutoResize() ? '100%' : movableWidth;
-        if (this.parent.getHeaderContent().querySelector('.e-movableheader').firstElementChild) {
-            (this.parent.getHeaderContent().querySelector('.e-movableheader').firstElementChild as HTMLTableElement).style.width
+        if (this.parent.getHeaderContent().querySelector('.' + literals.movableHeader).firstElementChild) {
+            (this.parent.getHeaderContent().querySelector('.' + literals.movableHeader).firstElementChild as HTMLTableElement).style.width
                 = movableWidth;
         }
-        (this.parent.getContent().querySelector('.e-movablecontent').firstElementChild as HTMLTableElement).style.width =
+        (this.parent.getContent().querySelector('.' + literals.movableContent).firstElementChild as HTMLTableElement).style.width =
             movableWidth;
     }
     private setWidthToFrozenEditTable(): void {

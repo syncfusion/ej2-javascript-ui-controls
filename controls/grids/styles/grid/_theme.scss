@@ -149,8 +149,7 @@
     .e-gridheader .e-rowdragdrop,
     .e-emptyrow {
       &:not(.e-editedbatchcell) {
-        color: $grid-content-font-color;
-        opacity: $grid-conent-font-opacity;
+        color: $grid-rowcell-color;
       }
     }
 

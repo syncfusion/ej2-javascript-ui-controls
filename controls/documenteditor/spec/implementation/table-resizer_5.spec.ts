@@ -31,6 +31,7 @@ describe('Table column resizing validation after merge cell', () => {
         editor.destroy();
         editor = undefined;
         document.body.removeChild(document.getElementById('container'));
+        document.body.innerHTML = '';
         setTimeout(function () {
             done();
         }, 1000);
@@ -68,6 +69,7 @@ describe('Table column resizing validation after merge cell decrease width', () 
         editor.destroy();
         editor = undefined;
         document.body.removeChild(document.getElementById('container'));
+        document.body.innerHTML = '';
         setTimeout(function () {
             done();
         }, 1000);
@@ -106,6 +108,7 @@ describe('Table column resizing validation after merge cell with selection', () 
         editor.destroy();
         editor = undefined;
         document.body.removeChild(document.getElementById('container'));
+        document.body.innerHTML = '';
         setTimeout(function () {
             done();
         }, 1000);

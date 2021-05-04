@@ -2,6 +2,20 @@
 
 ## [Unreleased]
 
+## 19.1.59 (2021-05-04)
+
+### ListBox
+
+#### Bug Fixes
+
+- `#317293` - Listbox event properties descriptions added.
+
+### MultiSelect
+
+#### Bug Fixes
+
+- `#I323182` - Issue with "grouping headers are duplicated and overlapped with popup items while scrolling the popup after selecting the first popup item" has been resolved.
+
 ## 19.1.57 (2021-04-20)
 
 ### ListBox

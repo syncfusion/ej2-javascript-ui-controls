@@ -1,4 +1,4 @@
-import { isNullOrUndefined, isBlazor } from '@syncfusion/ej2-base';
+import { isNullOrUndefined } from '@syncfusion/ej2-base';
 import { AggregateColumnModel } from '../models/models';
 import { Cell } from '../models/cell';
 import { AggregateColumn } from '../models/aggregate';
@@ -18,8 +18,7 @@ export class SummaryCellRenderer extends CellRenderer implements ICellRenderer<A
     .createElement('TD', { className: 'e-summarycell', attrs: { role: 'gridcell', tabindex: '-1' } });
 
     public getValue(field: string, data: Object, column: AggregateColumnModel): Object {
-        let key: string;
-        key = !isNullOrUndefined(column.type) ?
+        let key: string = !isNullOrUndefined(column.type) ?
             column.field + ' - ' + (typeof column.type === 'string' ? column.type.toLowerCase() : '') : column.columnName;
         return data[column.columnName] ? data[column.columnName][key] : '';
     }
@@ -50,10 +49,6 @@ export class SummaryCellRenderer extends CellRenderer implements ICellRenderer<A
                     data[column.columnName].foreignKey = fData[gColumn.foreignKeyValue];
                 }
             }
-        }
-        if (isBlazor()) {
-            let guid: string = 'guid';
-            tempID = this.parent.element.id + column[guid] + tempObj.property;
         }
         let isReactCompiler: boolean = this.parent.isReact && (column.footerTemplate ?
             typeof (column.footerTemplate) !== 'string' : column.groupFooterTemplate ? typeof (column.groupFooterTemplate) !== 'string'

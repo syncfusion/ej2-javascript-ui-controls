@@ -1,32 +1,21 @@
 import { isNullOrUndefined, extend } from '@syncfusion/ej2-base';
 import { IGrid, IEditCell } from '../base/interface';
 import { Column } from '../models/column';
-import { isEditable, getComplexFieldID } from '../base/util';
+import { isEditable, createEditElement } from '../base/util';
 import { TextBox }  from '@syncfusion/ej2-inputs';
+import { EditCellBase } from './edit-cell-base';
 
 /**
  * `DefaultEditCell` is used to handle default cell type editing.
  * @hidden
  */
-export class DefaultEditCell implements IEditCell {
+export class DefaultEditCell extends EditCellBase implements IEditCell {
 
-    private parent: IGrid;
-    private obj: TextBox;
-
-    constructor(parent?: IGrid) {
-        this.parent = parent;
-    }
-
-    public create(args: { column: Column, value: string, requestType: string }): Element {
-        let col: Column = args.column;
-        let input: Element = this.parent.createElement('input', {
-            className: 'e-field e-input e-defaultcell', attrs: {
-                type: 'text', value: !isNullOrUndefined(args.value) ? args.value : '', 'e-mappinguid': col.uid,
-                id: this.parent.element.id + getComplexFieldID(col.field), name: getComplexFieldID(col.field),
-                style: 'text-align:' + col.textAlign,
-            }
-        });
-        return input;
+    public create(args: { column: Column, value: string, requestType: string }): Element {        
+        let attr: { [key: string]: string } = {
+            type: 'text', value: !isNullOrUndefined(args.value) ? args.value : '', style: 'text-align:' + args.column.textAlign,
+        };
+        return createEditElement(this.parent, args.column, 'e-field e-input e-defaultcell', attr);        
     }
 
     public read(element: Element): string {
@@ -44,11 +33,5 @@ export class DefaultEditCell implements IEditCell {
             },
             col.edit.params));
         this.obj.appendTo(args.element as HTMLElement);
-    }
-
-    public destroy(): void {
-        if (this.obj) {
-            this.obj.destroy();
-        }
     }
 }

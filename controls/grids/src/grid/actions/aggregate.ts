@@ -1,4 +1,4 @@
-import { remove, isBlazor, extend } from '@syncfusion/ej2-base';
+import { remove, extend, getValue } from '@syncfusion/ej2-base';
 import { isNullOrUndefined, addClass } from '@syncfusion/ej2-base';
 import { NumberFormatOptions, DateFormatOptions } from '@syncfusion/ej2-base';
 import { IAction, IGrid, NotifyArgs, ICellRenderer, IValueFormatter } from '../base/interface';
@@ -13,6 +13,7 @@ import { AggregateRowModel, ColumnModel } from '../models/models';
 import { AggregateColumn } from '../models/aggregate';
 import { GroupSummaryModelGenerator, CaptionSummaryModelGenerator } from '../services/summary-model-generator';
 import { Grid } from '../base/grid';
+import * as literals from '../base/string-literals';
 
 /**
  * Summary Action controller.
@@ -63,11 +64,9 @@ export class Aggregate implements IAction {
      */
     public prepareSummaryInfo(): void {
         summaryIterator(this.parent.aggregates, (column: AggregateColumn) => {
-            let dataColumn: ColumnModel = this.parent.getColumnByField(column.field) || {};
-            let type: string = dataColumn.type;
-            let cFormat: string = 'customFormat';
-            if (!isNullOrUndefined(column[cFormat])) {
-                column.setPropertiesSilent({format: column[cFormat]});
+            let cFormat: string = getValue('customFormat', column);
+            if (!isNullOrUndefined(cFormat)) {
+                column.setPropertiesSilent({format: cFormat});
             }
             if (typeof (column.format) === 'object') {
                 let valueFormatter: ValueFormatter = new ValueFormatter();
@@ -78,16 +77,6 @@ export class Aggregate implements IAction {
             }
             column.setPropertiesSilent({columnName: column.columnName || column.field });
         });
-        if (isBlazor() && this.parent.isServerRendered) {
-            let bulkChanges: string = 'bulkChanges';
-            let aggregates: string = 'aggregates';
-            let prop: string[] = Object.keys(this.parent[bulkChanges]);
-            for (let i: number = 0; i < prop.length; i++) {
-                if (prop[i].startsWith(aggregates)) {
-                    delete this.parent[bulkChanges][prop[i]];
-                }
-            }
-        }
     }
 
     public onPropertyChanged(e: NotifyArgs): void {
@@ -125,7 +114,7 @@ export class Aggregate implements IAction {
 
     public destroy(): void {
         this.removeEventListener();
-        remove(this.parent.element.querySelector('.e-gridfooter'));
+        remove(this.parent.element.querySelector('.' + literals.gridFooter));
     }
 
     public refresh(data: Object): void {

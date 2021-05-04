@@ -1,32 +1,16 @@
-import { extend, isBlazor } from '@syncfusion/ej2-base';
+import { extend } from '@syncfusion/ej2-base';
 import { Column } from '../models/column';
-import { IEditCell, IGrid, EJ2Intance } from '../base/interface';
+import { IEditCell } from '../base/interface';
 import { DatePicker, DateTimePicker } from '@syncfusion/ej2-calendars';
-import { isEditable, getComplexFieldID, getObject, getCustomDateFormat } from '../base/util';
+import { isEditable, getObject, getCustomDateFormat } from '../base/util';
+import { EditCellBase } from './edit-cell-base';
 
 /**
  * `DatePickerEditCell` is used to handle datepicker cell type editing.
  * @hidden
  */
-export class DatePickerEditCell implements IEditCell {
-    private parent: IGrid;
-    private obj: DatePicker;
-    constructor(parent?: IGrid) {
-        this.parent = parent;
-    }
-    public create(args: { column: Column, value: string, type: string }): Element {
-        /* tslint:disable-next-line:no-any */
-        let complexFieldName: string = getComplexFieldID(args.column.field);
-        return this.parent.createElement('input', {
-            className: 'e-field', attrs: {
-                id: this.parent.element.id + complexFieldName,
-                name: complexFieldName, type: 'text', 'e-mappinguid': args.column.uid
-            }
-        });
-    }
-    public read(element: Element): string | Date {
-        return (<EJ2Intance>element).ej2_instances[0].value;
-    }
+export class DatePickerEditCell extends EditCellBase implements IEditCell {
+   
     public write(args: { rowData: Object, element: Element, column: Column, type: string, row: HTMLElement, requestType: string }): void {
         if (args.column.editType === 'datepickeredit') {
             this.obj = new DatePicker(
@@ -38,16 +22,7 @@ export class DatePickerEditCell implements IEditCell {
                 extend(dateanddatetimerender(args, this.parent.editSettings.mode, this.parent.enableRtl),
                        args.column.edit.params));
         }
-        if (isBlazor()) {
-            this.obj.locale = this.parent.locale;
-        }
         this.obj.appendTo(args.element as HTMLElement);
-    }
-
-    public destroy(): void {
-        if (this.obj) {
-            this.obj.destroy();
-        }
     }
 }
 

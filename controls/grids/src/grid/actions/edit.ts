@@ -1,5 +1,5 @@
 import { KeyboardEventArgs, L10n, closest, addClass, select } from '@syncfusion/ej2-base';
-import { extend, getValue, resetBlazorTemplate, updateBlazorTemplate, isBlazor } from '@syncfusion/ej2-base';
+import { extend, getValue } from '@syncfusion/ej2-base';
 import { remove } from '@syncfusion/ej2-base';
 import { isNullOrUndefined } from '@syncfusion/ej2-base';
 import { IGrid, IAction, NotifyArgs, IEdit } from '../base/interface';
@@ -23,13 +23,14 @@ import { EJ2Intance } from '../base/interface';
 import { TemplateEditCell } from '../renderer/template-edit-cell';
 import { DataUtil } from '@syncfusion/ej2-data';
 import { Row } from '../models/row';
+import { addRemoveEventListener } from '../base/util';
+import * as literals from '../base/string-literals';
 
 /**
  * The `Edit` module is used to handle editing actions.
  */
 export class Edit implements IAction {
     //Internal variables                  
-    private edit: Edit;
     protected renderer: EditRender;
     private editModule: IEdit;
     /** @hidden */
@@ -56,6 +57,7 @@ export class Edit implements IAction {
         handler: Function, arg1?: Object, arg2?: Object, arg3?: Object, arg4?: Object, arg5?: Object, arg6?: Object, arg7?: Object,
         arg8?: Object
     };
+    private eventDetails: { event: string, handler: Function }[];
     /* @hidden */
     public isLastRow?: boolean;
     /* @hidden */
@@ -107,7 +109,6 @@ export class Edit implements IAction {
             return;
         }
         let gObj: IGrid = this.parent;
-        let newProp: Object = e.properties;
         for (let prop of Object.keys(e.properties)) {
             switch (prop) {
                 case 'allowAdding':
@@ -161,11 +162,9 @@ export class Edit implements IAction {
             return;
         }
         this.editModule.startEdit(tr);
-        if (!isBlazor()) {
-            this.refreshToolbar();
-            (gObj.element.querySelector('.e-gridpopup') as HTMLElement).style.display = 'none';
-            this.parent.notify('start-edit', {});
-        }
+        this.refreshToolbar();
+        (gObj.element.querySelector('.e-gridpopup') as HTMLElement).style.display = 'none';
+        this.parent.notify('start-edit', {});
     }
 
     /**
@@ -175,9 +174,9 @@ export class Edit implements IAction {
         let checkLastRow: boolean = this.isLastRow;
         if (this.parent.height !== 'auto' && this.parent.editSettings.newRowPosition === 'Bottom' && args &&
             args.requestType === 'add' && this.parent.height > this.parent.getContentTable().scrollHeight) {
-            addClass(tr.querySelectorAll('.e-rowcell'), 'e-lastrowadded');
+            addClass([].slice.call(tr.getElementsByClassName(literals.rowCell)), 'e-lastrowadded');
         } else if (checkLastRow && tr && tr.classList) {
-            addClass(tr.querySelectorAll('.e-rowcell'), 'e-lastrowcell');
+            addClass([].slice.call(tr.getElementsByClassName(literals.rowCell)), 'e-lastrowcell');
         }
     }
 
@@ -186,16 +185,14 @@ export class Edit implements IAction {
      */
     public closeEdit(): void {
         if (this.parent.editSettings.mode === 'Batch' && this.parent.editSettings.showConfirmDialog
-            && this.parent.element.querySelectorAll('.e-updatedtd').length) {
+            && this.parent.element.getElementsByClassName('e-updatedtd').length) {
             this.showDialog('CancelEdit', this.dialogObj);
             return;
         }
         this.parent.element.classList.remove('e-editing');
         this.editModule.closeEdit();
-        if (!isBlazor()) {
-            this.refreshToolbar();
-            this.parent.notify('close-edit', {});
-        }
+        this.refreshToolbar();
+        this.parent.notify(events.closeEdit, {});
     }
 
     protected refreshToolbar(): void {
@@ -219,10 +216,8 @@ export class Edit implements IAction {
         if (args.startEdit) {
             this.parent.element.classList.add('e-editing');
             this.editModule.addRecord(data, index);
-            if (!isBlazor()) {
-                this.refreshToolbar();
-                this.parent.notify('start-add', {});
-            }
+            this.refreshToolbar();
+            this.parent.notify('start-add', {});
         }
     }
 
@@ -392,7 +387,7 @@ export class Edit implements IAction {
     }
 
     private destroyToolTip(): void {
-        let elements: Element[] = [].slice.call(this.parent.element.querySelectorAll('.e-griderror'));
+        let elements: Element[] = [].slice.call(this.parent.element.getElementsByClassName('e-griderror'));
         for (let elem of elements) {
             remove(elem);
         }
@@ -469,9 +464,6 @@ export class Edit implements IAction {
             case this.l10n.getConstant('BatchSaveLostChanges'):
                 if (this.parent.editSettings.mode === 'Batch') {
                     this.editModule.addCancelWhilePaging();
-                    if (isBlazor() && this.parent.isServerRendered) {
-                        this.editModule.closeEdit();
-                    }
                 }
                 this.executeAction();
                 break;
@@ -484,13 +476,15 @@ export class Edit implements IAction {
      */
     public addEventListener(): void {
         if (this.parent.isDestroyed) { return; }
-        this.parent.on(events.inBoundModelChanged, this.onPropertyChanged, this);
-        this.parent.on(events.initialEnd, this.initialEnd, this);
-        this.parent.on(events.keyPressed, this.keyPressHandler, this);
-        this.parent.on(events.autoCol, this.updateColTypeObj, this);
-        this.parent.on(events.tooltipDestroy, this.destroyToolTip, this);
-        this.parent.on(events.preventBatch, this.preventBatch, this);
-        this.parent.on(events.destroyForm, this.destroyForm, this);
+        this.eventDetails = [{ event: events.inBoundModelChanged, handler: this.onPropertyChanged },
+        { event: events.initialEnd, handler: this.initialEnd },
+        { event: events.keyPressed, handler: this.keyPressHandler },
+        { event: events.autoCol, handler: this.updateColTypeObj },
+        { event: events.tooltipDestroy, handler: this.destroyToolTip },
+        { event: events.preventBatch, handler: this.preventBatch },
+        { event: events.destroyForm, handler: this.destroyForm },
+        ];
+        addRemoveEventListener(this.parent, this.eventDetails, true, this);
         this.actionBeginFunction = this.onActionBegin.bind(this);
         this.actionCompleteFunction = this.actionComplete.bind(this);
         this.parent.addEventListener(events.actionBegin, this.actionBeginFunction);
@@ -502,13 +496,7 @@ export class Edit implements IAction {
      */
     public removeEventListener(): void {
         if (this.parent.isDestroyed) { return; }
-        this.parent.off(events.inBoundModelChanged, this.onPropertyChanged);
-        this.parent.off(events.initialEnd, this.initialEnd);
-        this.parent.off(events.keyPressed, this.keyPressHandler);
-        this.parent.off(events.autoCol, this.updateColTypeObj);
-        this.parent.off(events.tooltipDestroy, this.destroyToolTip);
-        this.parent.off(events.preventBatch, this.preventBatch);
-        this.parent.off(events.destroyForm, this.destroyForm);
+        addRemoveEventListener(this.parent, this.eventDetails, false);
         this.parent.removeEventListener(events.actionComplete, this.actionCompleteFunction);
         this.parent.removeEventListener(events.actionBegin, this.actionBeginFunction);
     }
@@ -532,8 +520,9 @@ export class Edit implements IAction {
         if (gObj.editSettings.template) {
             let elements: HTMLInputElement[] = [].slice.call((<HTMLFormElement>form).elements);
             for (let k: number = 0; k < elements.length; k++) {
-                if ((elements[k].hasAttribute('name') && (elements[k].className !== 'e-multi-hidden')) ||
-                    elements[k].classList.contains('e-multiselect')) {
+                if (((elements[k].hasAttribute('name') && (elements[k].className !== 'e-multi-hidden')) ||
+                    elements[k].classList.contains('e-multiselect')) && !(elements[k].type === 'hidden' &&
+                    elements[k].parentElement.classList.contains('e-switch-wrapper'))) {
                     let field: string = (elements[k].hasAttribute('name')) ? setComplexFieldID(elements[k].getAttribute('name')) :
                         setComplexFieldID(elements[k].getAttribute('id'));
                     let column: Column = gObj.getColumnByField(field) || { field: field, type: elements[k].getAttribute('type') } as Column;
@@ -590,7 +579,7 @@ export class Edit implements IAction {
             }
         }
 
-        let inputs: HTMLInputElement[] = [].slice.call(form.querySelectorAll('.e-field'));
+        let inputs: HTMLInputElement[] = [].slice.call(form.getElementsByClassName('e-field'));
         for (let i: number = 0, len: number = inputs.length; i < len; i++) {
             let col: Column = gObj.getColumnByUid(inputs[i].getAttribute('e-mappinguid'));
             if (col && col.field) {
@@ -602,9 +591,7 @@ export class Edit implements IAction {
     }
 
     private getValue(col: Column, input: HTMLInputElement, editedData: Object): string | boolean | number | Date {
-        let value: string | boolean | number | Date = (<EJ2Intance>(input as Element)).ej2_instances &&
-            !(isBlazor() && (<EJ2Intance>(input as Element)).ej2_instances[0].isServerRendered
-            && (col.type === 'date' || col.type === 'datetime')) ?
+        let value: string | boolean | number | Date = (<EJ2Intance>(input as Element)).ej2_instances ?
             (<EJ2Intance>(input as Element)).ej2_instances[0].value : input.value;
         let gObj: IGrid = this.parent;
         let temp: Function = col.edit.read as Function;
@@ -631,9 +618,9 @@ export class Edit implements IAction {
         && this.parent.editSettings.mode !== 'Batch') {
             this.closeEdit();
         } else {
-            let editRow: Element = this.parent.element.querySelector('.e-editedrow');
+            let editRow: Element = this.parent.element.querySelector('.' + literals.editedRow);
             if (editRow && this.parent.frozenRows && e.requestType === 'virtualscroll'
-                && parseInt(parentsUntil(editRow, 'e-row').getAttribute('aria-rowindex'), 10) < this.parent.frozenRows) {
+                && parseInt(parentsUntil(editRow, literals.row).getAttribute(literals.ariaRowIndex), 10) < this.parent.frozenRows) {
                 return;
             }
             let restrictedRequestTypes: string[] = ['filterafteropen', 'filterbeforeopen', 'filterchoicerequest', 'save', 'infiniteScroll'];
@@ -666,10 +653,6 @@ export class Edit implements IAction {
         }
         for (let col of cols) {
             let temp: Function = col.edit.destroy as Function;
-            if (isBlazor() && col.editTemplate) {
-                resetBlazorTemplate(this.parent.element.id + col.uid + 'editTemplate', 'EditTemplate');
-                updateBlazorTemplate(this.parent.element.id + col.uid + 'editTemplate', 'EditTemplate', col, false);
-            }
             if (col.edit.destroy) {
                 if (typeof temp === 'string') {
                     temp = getValue(temp, window);
@@ -710,8 +693,8 @@ export class Edit implements IAction {
     public destroy(): void {
         let gridElement: Element = this.parent.element;
         if (!gridElement) { return; }
-        let hasGridChild: Boolean = gridElement.querySelector('.e-gridheader') &&
-            gridElement.querySelector('.e-gridcontent') ? true : false;
+        let hasGridChild: Boolean = gridElement.querySelector('.' + literals.gridHeader) &&
+            gridElement.querySelector( '.' + literals.gridContent) ? true : false;
         if (hasGridChild) { this.destroyForm(); }
         this.removeEventListener();
         let elem: Element = this.dialogObj.element;
@@ -746,9 +729,9 @@ export class Edit implements IAction {
                 break;
             case 'enter':
                 if (!parentsUntil(e.target as HTMLElement, 'e-unboundcelldiv') && this.parent.editSettings.mode !== 'Batch' &&
-                    (parentsUntil(e.target as HTMLElement, 'e-gridcontent') || (this.parent.frozenRows
-                        && parentsUntil(e.target as HTMLElement, 'e-headercontent')))
-                    && !document.querySelectorAll('.e-popup-open').length) {
+                    (parentsUntil(e.target as HTMLElement,  literals.gridContent) || (this.parent.frozenRows
+                        && parentsUntil(e.target as HTMLElement, literals.headerContent)))
+                    && !document.getElementsByClassName('e-popup-open').length) {
                     e.preventDefault();
                     this.endEdit();
                 }
@@ -788,10 +771,10 @@ export class Edit implements IAction {
         let isInline: boolean = this.parent.editSettings.mode === 'Normal';
         let idx: number = this.parent.getFrozenMode() === 'Right' && isInline ? 1 : 0;
         let form: HTMLFormElement = this.parent.editSettings.mode !== 'Dialog' ?
-            gObj.element.querySelectorAll('.e-gridform')[idx] as HTMLFormElement :
+            gObj.element.getElementsByClassName('e-gridform')[idx] as HTMLFormElement :
             select('#' + gObj.element.id + '_dialogEdit_wrapper .e-gridform', document) as HTMLFormElement;
         let index: number = this.parent.getFrozenMode() === 'Right' && isInline ? 0 : 1;
-        let mForm: HTMLFormElement = gObj.element.querySelectorAll('.e-gridform')[index] as HTMLFormElement;
+        let mForm: HTMLFormElement = gObj.element.getElementsByClassName('e-gridform')[index] as HTMLFormElement;
         let rules: Object = {};
         let mRules: Object = {};
         let frRules: Object = {};
@@ -800,27 +783,20 @@ export class Edit implements IAction {
             if (!cols[i].visible) {
                 continue;
             }
-            if (isBlazor() && cols[i].editTemplate) {
-                continue;
-            }
             if (cols[i].validationRules) {
                 setValidationRuels(cols[i], index, rules, mRules, frRules, cols.length);
             }
         }
         if (frzCols && this.parent.editSettings.mode !== 'Dialog') {
             this.parent.editModule.mFormObj = this.createFormObj(mForm, mRules);
-            if (this.parent.getFrozenMode() === 'Left-Right') {
-                let frForm: HTMLFormElement = gObj.element.querySelectorAll('.e-gridform')[2] as HTMLFormElement;
+            if (this.parent.getFrozenMode() === literals.leftRight) {
+                let frForm: HTMLFormElement = gObj.element.getElementsByClassName('e-gridform')[2] as HTMLFormElement;
                 this.parent.editModule.frFormObj = this.createFormObj(frForm, frRules);
             }
         } else {
             rules = extend(rules, mRules, frRules);
         }
-        if (isBlazor() && this.parent.editSettings.template) {
-            this.parent.editModule.formObj = this.createFormObj(form, {});
-        } else {
-            this.parent.editModule.formObj = this.createFormObj(form, rules);
-        }
+        this.parent.editModule.formObj = this.createFormObj(form, rules);
     }
 
     private createFormObj(form: HTMLFormElement, rules: Object): FormValidator {
@@ -860,7 +836,7 @@ export class Edit implements IAction {
         let isFHdr: boolean;
         if (this.parent.editSettings.mode !== 'Dialog') {
             isFHdr = (this.parent.frozenRows && this.parent.frozenRows
-                > (parseInt(closest(inputElement, '.e-row').getAttribute('aria-rowindex'), 10) || 0));
+                > (parseInt(closest(inputElement, '.' + literals.row).getAttribute(literals.ariaRowIndex), 10) || 0));
         }
         return this.parent.editSettings.mode !== 'Dialog' ? isFHdr ? this.parent.getHeaderTable() : this.parent.getContentTable() :
             select('#' + this.parent.element.id + '_dialogEdit_wrapper', document);
@@ -868,7 +844,7 @@ export class Edit implements IAction {
 
     public resetElemPosition(elem: HTMLElement, args: { status: string, inputName: string,
         element: HTMLElement, message: string }): void {
-        let td: Element = parentsUntil(args.element, 'e-rowcell');
+        let td: Element = parentsUntil(args.element, literals.rowCell);
         if (td) {
             let tdRight: number = td.getBoundingClientRect().right;
             let elemRight: number = elem.getBoundingClientRect().right;
@@ -896,8 +872,8 @@ export class Edit implements IAction {
      // tslint:disable-next-line:max-func-body-length
      private createTooltip(element: Element, error: HTMLElement, name: string, display: string): void {
         let column: Column = this.parent.getColumnByField(name);
-        let formObj: HTMLFormElement = this.parent.getFrozenMode() === 'Left-Right' && this.parent.editSettings.mode === 'Normal'
-            && column.getFreezeTableName() === 'frozen-right' ? this.frFormObj.element : this.formObj.element;
+        let formObj: HTMLFormElement = this.parent.getFrozenMode() === literals.leftRight && this.parent.editSettings.mode === 'Normal'
+            && column.getFreezeTableName() === literals.frozenRight ? this.frFormObj.element : this.formObj.element;
         let gcontent: HTMLElement = this.parent.getContent().firstElementChild as HTMLElement;
         let frzCols: number = this.parent.getFrozenColumns() || this.parent.getFrozenLeftColumnsCount()
          || this.parent.getFrozenRightColumnsCount();
@@ -906,33 +882,33 @@ export class Edit implements IAction {
         }
         let isScroll: boolean = gcontent.scrollHeight > gcontent.clientHeight || gcontent.scrollWidth > gcontent.clientWidth;
         let isInline: boolean = this.parent.editSettings.mode !== 'Dialog';
-        let td: Element = closest(element, '.e-rowcell');
-        let row: Element = closest(element, '.e-row');
-        let fCont: Element = this.parent.getContent().querySelector('.e-frozencontent');
+        let td: Element = closest(element, '.' + literals.rowCell);
+        let row: Element = closest(element, '.' + literals.row);
+        let fCont: Element = this.parent.getContent().querySelector('.' + literals.frozenContent);
         let isFHdr: boolean;
         let isFHdrLastRow: boolean = false;
         let validationForBottomRowPos: boolean;
         let isBatchModeLastRow: boolean = false;
         let viewPortRowCount: number = Math.round(this.parent.getContent().clientHeight / this.parent.getRowHeight()) - 1;
-        let rows: Element[] = !fCont ? [].slice.call(this.parent.getContent().querySelectorAll('.e-row'))
-            : [].slice.call(this.parent.getFrozenVirtualContent().querySelectorAll('.e-row'));
+        let rows: Element[] = !fCont ? [].slice.call(this.parent.getContent().getElementsByClassName(literals.row))
+            : [].slice.call(this.parent.getFrozenVirtualContent().getElementsByClassName(literals.row));
         if (this.parent.editSettings.mode === 'Batch') {
             if (viewPortRowCount > 1 && rows.length >= viewPortRowCount
-                && rows[rows.length - 1].getAttribute('aria-rowindex') === row.getAttribute('aria-rowindex')) {
+                && rows[rows.length - 1].getAttribute(literals.ariaRowIndex) === row.getAttribute(literals.ariaRowIndex)) {
                 isBatchModeLastRow = true;
             }
         }
         if (isInline) {
             if (this.parent.frozenRows) {
-                let fHeraderRows: HTMLCollection = frzCols ? this.parent.getFrozenVirtualHeader().querySelector('tbody').children
-                    : this.parent.getHeaderTable().querySelector('tbody').children;
-                isFHdr = fHeraderRows.length > (parseInt(row.getAttribute('aria-rowindex'), 10) || 0);
-                isFHdrLastRow = isFHdr && parseInt(row.getAttribute('aria-rowindex'), 10) === fHeraderRows.length - 1;
+                let fHeraderRows: HTMLCollection = frzCols ? this.parent.getFrozenVirtualHeader().querySelector( literals.tbody).children
+                    : this.parent.getHeaderTable().querySelector( literals.tbody).children;
+                isFHdr = fHeraderRows.length > (parseInt(row.getAttribute(literals.ariaRowIndex), 10) || 0);
+                isFHdrLastRow = isFHdr && parseInt(row.getAttribute(literals.ariaRowIndex), 10) === fHeraderRows.length - 1;
             }
             if (isFHdrLastRow || (viewPortRowCount > 1 && rows.length >= viewPortRowCount
                 && ((this.parent.editSettings.newRowPosition === 'Bottom' && (this.editModule.args
                     && this.editModule.args.requestType === 'add')) || (td.classList.contains('e-lastrowcell')
-                        && !row.classList.contains('e-addedrow')))) || isBatchModeLastRow) {
+                        && !row.classList.contains(literals.addedRow)))) || isBatchModeLastRow) {
                 validationForBottomRowPos = true;
             }
         }
@@ -973,11 +949,11 @@ export class Edit implements IAction {
         div.appendChild(arrow);
         if ((frzCols || this.parent.frozenRows) && this.parent.editSettings.mode !== 'Dialog') {
             let getEditCell: HTMLElement = this.parent.editSettings.mode === 'Normal' ?
-                closest(element, '.e-editcell') as HTMLElement : closest(element, '.e-table') as HTMLElement;
+                closest(element, '.e-editcell') as HTMLElement : closest(element, '.' + literals.table) as HTMLElement;
             getEditCell.style.position = 'relative';
             div.style.position = 'absolute';
             if (this.parent.editSettings.mode === 'Batch' ||
-                (closest(element, '.e-frozencontent') || closest(element, '.e-frozenheader'))
+                (closest(element, '.' + literals.frozenContent) || closest(element, '.' + literals.frozenHeader))
                 || (this.parent.frozenRows && !frzCols)) {
                 formObj.appendChild(div);
             } else {

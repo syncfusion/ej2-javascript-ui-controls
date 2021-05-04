@@ -375,6 +375,7 @@ export class FontDialog {
             this.allcaps.checked = true;
         } else {
             this.allcaps.checked = false;
+            this.allCaps = false;
         }
     };
     /**

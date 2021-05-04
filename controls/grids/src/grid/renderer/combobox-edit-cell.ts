@@ -3,7 +3,8 @@ import { IGrid, EJ2Intance, IEditCell } from '../base/interface';
 import { Column } from '../models/column';
 import { ComboBox } from '@syncfusion/ej2-dropdowns';
 import { Query, DataManager, DataUtil } from '@syncfusion/ej2-data';
-import { isEditable, getComplexFieldID, getObject } from '../base/util';
+import { isEditable, createEditElement, getObject } from '../base/util';
+import { EditCellBase } from './edit-cell-base';
 
 
 
@@ -11,28 +12,9 @@ import { isEditable, getComplexFieldID, getObject } from '../base/util';
  * `ComboBoxEditCell` is used to handle ComboBoxEdit cell type editing.
  * @hidden
  */
-export class ComboboxEditCell implements IEditCell {
+export class ComboboxEditCell extends EditCellBase implements IEditCell {
 
-
-    private parent: IGrid;
-    private obj: ComboBox;
     private column: Column;
-
-    constructor(parentObject?: IGrid) {
-        //constructor
-        this.parent = parentObject;
-    }
-
-    public create(args: { column: Column, value: string }): Element {
-        //create
-        let fieldName: string = getComplexFieldID(args.column.field);
-        return this.parent.createElement('input', {
-            className: 'e-field', attrs: {
-                id: this.parent.element.id + fieldName,
-                name: fieldName, type: 'text', 'e-mappinguid': args.column.uid,
-            }
-        });
-    }
 
     public write(args: { rowData: Object, element: Element, column: Column, row: HTMLElement, requestType: string }): void {
         this.column = args.column;
@@ -53,21 +35,10 @@ export class ComboboxEditCell implements IEditCell {
         this.obj.appendTo(args.element as HTMLElement);
     }
 
-    public read(inputEle: Element): string {
-        return (<EJ2Intance>inputEle).ej2_instances[0].value;
-    }
-
     private finalValue(val: { result: Object[] }): void {
-        val.result = DataUtil.distinct(val.result, this.obj.fields.value, true);
+        val.result = DataUtil.distinct(val.result, (this.obj as ComboBox).fields.value, true);
         if ((<DataManager>this.column.dataSource)) {
             (<DataManager>this.column.dataSource).dataSource.json = val.result;
         }
     }
-
-    public destroy(): void {
-        if (this.obj) {
-            this.obj.destroy();
-        }
-    }
-
 }

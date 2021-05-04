@@ -1,4 +1,4 @@
-import { Droppable, DropEventArgs, isBlazor, addClass } from '@syncfusion/ej2-base';
+import { Droppable, DropEventArgs } from '@syncfusion/ej2-base';
 import { isNullOrUndefined, extend } from '@syncfusion/ej2-base';
 import { setStyleAttribute, remove, updateBlazorTemplate, removeClass } from '@syncfusion/ej2-base';
 import { getUpdateUsingRaf, appendChildren, setDisplayValue } from '../base/util';
@@ -21,6 +21,7 @@ import { VirtualContentRenderer } from '../renderer/virtual-content-renderer';
 import { GroupLazyLoadRenderer } from './group-lazy-load-renderer';
 import { FreezeContentRender } from './freeze-renderer';
 import { freezeTable } from '../base/enum';
+import * as literals from '../base/string-literals';
 
 
 /**
@@ -70,16 +71,16 @@ export class ContentRender implements IRenderer {
         let arg: NotifyArgs = args;
         return () => {
             if (this.parent.isFrozenGrid() && this.parent.enableVirtualization) {
-                let mContentRows: Element[] = [].slice.call(this.parent.getMovableVirtualContent().querySelectorAll('.e-row'));
-                let fContentRows: Element[] = [].slice.call(this.parent.getFrozenVirtualContent().querySelectorAll('.e-row'));
+                let mContentRows: Element[] = [].slice.call(this.parent.getMovableVirtualContent().getElementsByClassName(literals.row));
+                let fContentRows: Element[] = [].slice.call(this.parent.getFrozenVirtualContent().getElementsByClassName(literals.row));
                 this.isLoaded = !mContentRows ? false : mContentRows.length === fContentRows.length;
                 if (this.parent.enableColumnVirtualization && args.requestType === 'virtualscroll' && this.isLoaded) {
-                    let mHdr: Element[] = [].slice.call(this.parent.getMovableVirtualHeader().querySelectorAll('.e-row'));
-                    let fHdr: Element[] = [].slice.call(this.parent.getFrozenVirtualHeader().querySelectorAll('.e-row'));
+                    let mHdr: Element[] = [].slice.call(this.parent.getMovableVirtualHeader().getElementsByClassName(literals.row));
+                    let fHdr: Element[] = [].slice.call(this.parent.getFrozenVirtualHeader().getElementsByClassName(literals.row));
                     this.isLoaded = mHdr.length === fHdr.length;
                 }
             }
-            this.ariaService.setBusy(<HTMLElement>this.getPanel().querySelector('.e-content'), false);
+            this.ariaService.setBusy(<HTMLElement>this.getPanel().querySelector('.' + literals.content), false);
             if (this.parent.isDestroyed) { return; }
             let rows: Row<Column>[] = this.rows.slice(0);
             if (this.parent.isFrozenGrid()) {
@@ -147,15 +148,15 @@ export class ContentRender implements IRenderer {
      */
     public renderPanel(): void {
         let gObj: IGrid = this.parent;
-        let div: Element =  this.parent.element.querySelector('.e-gridcontent');
+        let div: Element =  this.parent.element.querySelector( '.' + literals.gridContent);
         if (div) {
-            this.ariaService.setOptions(<HTMLElement>this.parent.element.querySelector('.e-content'), { busy: false });
+            this.ariaService.setOptions(<HTMLElement>this.parent.element.querySelector('.' + literals.content), { busy: false });
             this.setPanel(div);
             return;
         }
-        div = this.parent.createElement('div', { className: 'e-gridcontent' });
+        div = this.parent.createElement('div', { className:  literals.gridContent });
         let innerDiv: Element = this.parent.createElement('div', {
-            className: 'e-content'
+            className: literals.content
         });
         this.ariaService.setOptions(<HTMLElement>innerDiv, { busy: false });
         div.appendChild(innerDiv);
@@ -170,13 +171,12 @@ export class ContentRender implements IRenderer {
         let contentDiv: Element = this.getPanel();
         let virtualTable: Element = contentDiv.querySelector('.e-virtualtable');
         let virtualTrack: Element = contentDiv.querySelector('.e-virtualtrack');
-        if (this.parent.enableVirtualization && !isNullOrUndefined(virtualTable) && !isNullOrUndefined(virtualTrack)
-            && (!isBlazor() || (isBlazor() && !this.parent.isServerRendered))) {
+        if (this.parent.enableVirtualization && !isNullOrUndefined(virtualTable) && !isNullOrUndefined(virtualTrack)) {
             remove(virtualTable);
             remove(virtualTrack);
         }
         contentDiv.appendChild(this.createContentTable('_content_table'));
-        this.setTable(contentDiv.querySelector('.e-table'));
+        this.setTable(contentDiv.querySelector('.' + literals.table));
         this.ariaService.setOptions(<HTMLElement>this.getTable(), {
             multiselectable: this.parent.selectionSettings.type === 'Multiple'
         });
@@ -193,20 +193,18 @@ export class ContentRender implements IRenderer {
      */
     public createContentTable(id: String): Element {
         let innerDiv: Element = <Element>this.getPanel().firstElementChild;
-        if (!isBlazor()) {
-            if (this.getTable()) {
-                remove(this.getTable());
-            }
+        if (this.getTable()) {
+            remove(this.getTable());
         }
-        let table: Element = innerDiv.querySelector('.e-table') ? innerDiv.querySelector('.e-table') :
-                             this.parent.createElement('table', {className: 'e-table', attrs: {
+        let table: Element = innerDiv.querySelector('.' + literals.table) ? innerDiv.querySelector('.' + literals.table) :
+                             this.parent.createElement('table', {className: literals.table, attrs: {
                 cellspacing: '0.25px', role: 'grid',
                 id: this.parent.element.id + id
             }
         });
-        this.setColGroup(<Element>this.parent.getHeaderTable().querySelector('colgroup').cloneNode(true));
+        this.setColGroup(<Element>this.parent.getHeaderTable().querySelector(literals.colGroup).cloneNode(true));
         table.appendChild(this.getColGroup());
-        table.appendChild(this.parent.createElement('tbody'));
+        table.appendChild(this.parent.createElement( literals.tbody));
         innerDiv.appendChild(table);
         return innerDiv;
     }
@@ -222,11 +220,11 @@ export class ContentRender implements IRenderer {
         let dataSource: Object = this.currentMovableRows || gObj.currentViewData;
         let contentModule: FreezeContentRender = (this.parent.contentModule as FreezeContentRender);
         let isReact: boolean = gObj.isReact && !isNullOrUndefined(gObj.rowTemplate);
-        let frag: DocumentFragment | HTMLElement = isReact ? gObj.createElement('tbody') : document.createDocumentFragment();
+        let frag: DocumentFragment | HTMLElement = isReact ? gObj.createElement( literals.tbody) : document.createDocumentFragment();
         if (!this.initialPageRecords) {
             this.initialPageRecords = extend([], dataSource);
         }
-        let hdrfrag: DocumentFragment = isReact ? gObj.createElement('tbody') : document.createDocumentFragment();
+        let hdrfrag: DocumentFragment = isReact ? gObj.createElement( literals.tbody) : document.createDocumentFragment();
         let columns: Column[] = <Column[]>gObj.getColumns();
         let tr: Element; let hdrTbody: HTMLElement; let frzCols: number = gObj.getFrozenColumns();
         let isFrozenGrid: boolean = this.parent.isFrozenGrid();
@@ -236,9 +234,9 @@ export class ContentRender implements IRenderer {
             && (args as InfiniteScrollArgs).requestType === 'infiniteScroll';
         this.rowElements = [];
         this.rows = [];
-        let fCont: Element = this.getPanel().querySelector('.e-frozencontent');
-        let mCont: HTMLElement = this.getPanel().querySelector('.e-movablecontent') as HTMLElement;
-        let cont: HTMLElement = this.getPanel().querySelector('.e-content') as HTMLElement;
+        let fCont: Element = this.getPanel().querySelector('.' + literals.frozenContent);
+        let mCont: HTMLElement = this.getPanel().querySelector('.' + literals.movableContent) as HTMLElement;
+        let cont: HTMLElement = this.getPanel().querySelector('.' + literals.content) as HTMLElement;
         let tbdy: Element;
         let tableName: freezeTable;
         if (isGroupAdaptive(gObj)) {
@@ -248,86 +246,6 @@ export class ContentRender implements IRenderer {
             }
         }
         let modelData: Row<Column>[];
-        let isServerRendered: string = 'isServerRendered';
-        if (isBlazor() && this.parent[isServerRendered]) {
-            modelData = this.generator.generateRows(dataSource, args);
-            if (this.parent.enableVirtualization) {
-                this.prevInfo = this.prevInfo ? this.prevInfo : args.virtualInfo;
-                this.prevInfo = args.virtualInfo.sentinelInfo && args.virtualInfo.sentinelInfo.axis === 'Y' && this.currentInfo.page &&
-                                this.currentInfo.page !== args.virtualInfo.page ? this.currentInfo : args.virtualInfo;
-            }
-            this.rows = modelData;
-            this.freezeRows = modelData;
-            this.rowElements = <Element[]>[].slice.call(this.getTable().querySelectorAll('tr.e-row[data-uid]'));
-            if (frzCols) {
-                this.movableRows = <Row<Column>[]>modelData.map((mRow: Row<Column>) => {
-                    let sRow: Row<Column> = new Row<Column>(<{}>mRow);
-                    sRow.cells = mRow.cells.slice(frzCols, mRow.cells.length);
-                    mRow.cells = mRow.cells.slice(0, frzCols);
-                    return sRow;
-                });
-                this.freezeRowElements = this.rowElements;
-            }
-            this.isLoaded = true;
-            this.parent.hideSpinner();
-            args.isFrozen = this.parent.getFrozenColumns() !== 0 && !args.isFrozen;
-            let arg: object = extend({ rows: this.rows }, args);
-            if (this.getTable().querySelector('.e-emptyrow')) {
-                remove(this.getTable().querySelector('.e-emptyrow'));
-                if (!isNullOrUndefined(this.getTable().querySelectorAll('.e-table > tbody')[1])) {
-                    remove(this.getTable().querySelectorAll('.e-table > tbody')[1]);
-                }
-            }
-            this.parent.notify('contentcolgroup', {});
-            this.rafCallback(arg)();
-            if (frzCols) {
-                cont.style.overflowY = 'hidden';
-                (fCont as HTMLElement).style.height = ((mCont.offsetHeight) - getScrollBarWidth()) + 'px';
-                mCont.style.overflowY = this.parent.height !== 'auto' ? 'scroll' : 'auto';
-                (fCont as HTMLElement).style.borderRightWidth = '1px';
-                this.parent.notify(events.contentReady, { rows: this.movableRows, args: extend({}, arg, { isFrozen: false }) });
-            }
-            if (!(this.parent.isCheckBoxSelection || this.parent.selectionSettings.type === 'Multiple')
-            || (!this.parent.isPersistSelection && !this.parent.enableVirtualization)) {
-                let rowIndex: string = 'editRowIndex';
-                if (this.parent.editSettings.mode === 'Normal' && !isNullOrUndefined(args[rowIndex])) {
-                    this.parent.selectRow(args[rowIndex]);
-                }
-            }
-            if (this.parent.enableVirtualization && !this.parent.getHeaderContent().querySelectorAll('.e-check').length) {
-                let removeClassByUid: string[] = this.parent.getRows().filter((x: Element) => x.getAttribute('aria-selected'))
-                                                            .map((y: Element) => y.getAttribute('data-uid'));
-                let addClassByUid: string[] = this.parent.getRows().filter((x: Element) => x.getAttribute('aria-selected') === null)
-                                                            .map((y: Element) => y.getAttribute('data-uid'));
-                for (let i: number = 0; i < removeClassByUid.length; i++) {
-                    if (!isNullOrUndefined(this.parent.getRowObjectFromUID(removeClassByUid[i])) &&
-                        !this.parent.getRowObjectFromUID(removeClassByUid[i]).isSelected) {
-                        this.parent.getRowElementByUID(removeClassByUid[i]).removeAttribute('aria-selected');
-                        if (!isNullOrUndefined(this.parent.getRowElementByUID(removeClassByUid[i]).querySelector('.e-check'))) {
-                            removeClass([this.parent.getRowElementByUID(removeClassByUid[i]).querySelector('.e-check')], ['e-check']);
-                        }
-                        for (let j: number = 0; j < this.parent.getRowElementByUID(removeClassByUid[i]).children.length; j++) {
-                            this.parent.getRowElementByUID(removeClassByUid[i])
-                                                           .children[j].classList.remove('e-selectionbackground', 'e-active');
-                        }
-                    }
-                }
-                for (let i: number = 0; i < addClassByUid.length; i++) {
-                    if (!isNullOrUndefined(this.parent.getRowObjectFromUID(addClassByUid[i]))
-                        && this.parent.getRowObjectFromUID(addClassByUid[i]).isSelected) {
-                        this.parent.getRowElementByUID(addClassByUid[i]).setAttribute('aria-selected', 'true');
-                        if (!isNullOrUndefined(this.parent.getRowElementByUID(addClassByUid[i]).querySelector('.e-frame'))) {
-                            addClass([this.parent.getRowElementByUID(addClassByUid[i]).querySelector('.e-frame')], ['e-check']);
-                        }
-                        for (let j: number = 0; j < this.parent.getRowElementByUID(addClassByUid[i]).children.length; j++) {
-                            this.parent.getRowElementByUID(addClassByUid[i])
-                                                           .children[j].classList.add('e-selectionbackground', 'e-active');
-                        }
-                    }
-                }
-            }
-            return;
-        }
         if (this.parent.enableVirtualization && this.parent.isFrozenGrid()) {
             if (this.parent.enableColumnVirtualization && args.requestType === 'virtualscroll'
                 && args.virtualInfo.sentinelInfo.axis === 'X') {
@@ -348,7 +266,7 @@ export class ContentRender implements IRenderer {
             tableName = contentModule.setTbody(modelData, args);
             tbdy = contentModule.getTbody(tableName);
         }
-        let isFrozenLeft: boolean = this.parent.getFrozenMode() === 'Left-Right' && tableName === 'frozen-right';
+        let isFrozenLeft: boolean = this.parent.getFrozenMode() === literals.leftRight && tableName === literals.frozenRight;
         /* tslint:disable:no-any */
         if (args.requestType !== 'infiniteScroll' && (this.parent as any).registeredTemplate
             && (this.parent as any).registeredTemplate.template && !args.isFrozen && !isFrozenLeft) {
@@ -372,7 +290,7 @@ export class ContentRender implements IRenderer {
             cellMerge.updateVirtualCells(modelData);
         }
         if (!isFrozenGrid) {
-            this.tbody = this.getTable().querySelector('tbody');
+            this.tbody = this.getTable().querySelector( literals.tbody);
         }
         let startIndex: number = 0;
         let blockLoad: boolean = true;
@@ -463,7 +381,7 @@ export class ContentRender implements IRenderer {
                 } else {
                     elements = gObj.getRowTemplate()(extend({ index: i }, dataSource[i]), gObj, 'rowTemplate', rowTemplateID);
                 }
-                if (!gObj.isReact && (elements[0] as Element).tagName === 'TBODY') {
+                if (!gObj.isReact && (elements[0] as Element).tagName ===  literals.tbody) {
                     for (let j: number = 0; j < elements.length; j++) {
                         let isTR: boolean = elements[j].nodeName.toLowerCase() === 'tr';
                         if (isTR || ((elements[j] as Element).querySelectorAll && (elements[j] as Element).querySelectorAll('tr').length)) {
@@ -500,7 +418,7 @@ export class ContentRender implements IRenderer {
         }
         if ((gObj.frozenRows && args.requestType !== 'virtualscroll' && !isInfiniteScroll && this.ensureVirtualFrozenHeaderRender(args))
             || (args.requestType === 'virtualscroll' && args.virtualInfo.sentinelInfo && args.virtualInfo.sentinelInfo.axis === 'X')) {
-            hdrTbody = isFrozenGrid ? contentModule.getFrozenHeader(tableName) : gObj.getHeaderTable().querySelector('tbody');
+            hdrTbody = isFrozenGrid ? contentModule.getFrozenHeader(tableName) : gObj.getHeaderTable().querySelector( literals.tbody);
             if (isReact) {
                 let parentTable: HTMLElement = hdrTbody.parentElement;
                 remove(hdrTbody);
@@ -513,9 +431,7 @@ export class ContentRender implements IRenderer {
         if (!gObj.enableVirtualization && gObj.frozenRows && idx === 0 && cont.offsetHeight === Number(gObj.height)) {
             cont.style.height = (cont.offsetHeight - hdrTbody.offsetHeight) + 'px';
         }
-        if (!isBlazor() || this.parent.isJsComponent) {
-            args.rows = this.rows.slice(0);
-        }
+        args.rows = this.rows.slice(0);
         if (isFrozenGrid) {
             contentModule.setIsFrozen(args, tableName);
         }
@@ -527,10 +443,10 @@ export class ContentRender implements IRenderer {
                 if (!this.parent.enableVirtualization && !isInfiniteScroll) {
                     if (this.parent.isFrozenGrid()) {
                         remove(tbdy);
-                        tbdy = this.parent.createElement('tbody');
+                        tbdy = this.parent.createElement( literals.tbody);
                     } else {
                         remove(this.tbody);
-                        this.tbody = this.parent.createElement('tbody');
+                        this.tbody = this.parent.createElement( literals.tbody);
                     }
                 }
                 if (isFrozenGrid && !isVFTable && !this.parent.enableInfiniteScrolling) {
@@ -541,12 +457,12 @@ export class ContentRender implements IRenderer {
                     }
                     if (isVFTable) {
                         if (args.renderFrozenRightContent) {
-                            let frCont: Element = gObj.getContent().querySelector('.e-frozen-right-content').querySelector('tbody');
+                            let frCont: Element = gObj.getContent().querySelector('.e-frozen-right-content').querySelector( literals.tbody);
                             this.appendContent(frCont, frag as DocumentFragment, args);
                         } else if (!args.renderMovableContent) {
-                            this.appendContent(fCont.querySelector('tbody'), frag as DocumentFragment, args);
+                            this.appendContent(fCont.querySelector( literals.tbody), frag as DocumentFragment, args);
                         } else {
-                            this.appendContent(mCont.querySelector('tbody'), frag as DocumentFragment, args);
+                            this.appendContent(mCont.querySelector( literals.tbody), frag as DocumentFragment, args);
                             args.renderMovableContent = false;
                         }
                         if (!this.parent.getFrozenColumns()) {
@@ -562,10 +478,10 @@ export class ContentRender implements IRenderer {
                                 tableName: tableName
                             });
                             if (!frzCols && isFrozenGrid) {
-                                if ((gObj.getFrozenMode() !== 'Left-Right'
-                                    && (tableName === 'frozen-left' || tableName === 'frozen-right'))
-                                    || (gObj.getFrozenMode() === 'Left-Right'
-                                        && (tableName === 'frozen-left' || tableName === 'movable'))) {
+                                if ((gObj.getFrozenMode() !== literals.leftRight
+                                    && (tableName === literals.frozenLeft || tableName === literals.frozenRight))
+                                    || (gObj.getFrozenMode() === literals.leftRight
+                                        && (tableName === literals.frozenLeft || tableName === 'movable'))) {
                                     this.refreshContentRows(extend({}, args));
                                 }
                             }
@@ -649,7 +565,7 @@ export class ContentRender implements IRenderer {
         let frozenCols: boolean = this.parent.isFrozenGrid();
         if (this.parent.enableInfiniteScrolling && !this.parent.infiniteScrollSettings.enableCache) {
             if (frozenCols) {
-                if (tableName === 'frozen-left' || (this.parent.getFrozenMode() === 'Right' && tableName === 'frozen-right')) {
+                if (tableName === literals.frozenLeft || (this.parent.getFrozenMode() === 'Right' && tableName === literals.frozenRight)) {
                     this.visibleFrozenRows.push(data);
                 } else if (tableName === 'movable') {
                     this.visibleRows.push(data);
@@ -670,9 +586,9 @@ export class ContentRender implements IRenderer {
             }
             let frozenCols: boolean = this.parent.isFrozenGrid();
             let rows: Element[] = this.parent.getRows();
-            let index: number = parseInt(rows[this.parent.frozenRows].getAttribute('aria-rowindex'), 10);
+            let index: number = parseInt(rows[this.parent.frozenRows].getAttribute(literals.ariaRowIndex), 10);
             let first: number = Math.ceil((index + 1) / this.parent.pageSettings.pageSize);
-            index = parseInt(rows[rows.length - 1].getAttribute('aria-rowindex'), 10);
+            index = parseInt(rows[rows.length - 1].getAttribute(literals.ariaRowIndex), 10);
             let last: number = Math.ceil(index / this.parent.pageSettings.pageSize);
             if (frozenCols) {
                 let idx: number = isFreeze ? 0 : 1;
@@ -852,9 +768,6 @@ export class ContentRender implements IRenderer {
      */
     public setVisible(columns?: Column[]): void {
         let gObj: IGrid = this.parent;
-        if (isBlazor() && gObj.isServerRendered) {
-            this.parent.notify('setvisibility', columns);
-        }
         let isFrozenGrid: boolean = this.parent.isFrozenGrid();
         let frzCols: number = gObj.getFrozenColumns();
         let rows: Row<Column>[] = [];
@@ -864,7 +777,7 @@ export class ContentRender implements IRenderer {
             let rowLen: number = fRows.length;
             let cellLen: number;
             let rightRows: Row<Column>[] = [];
-            if (gObj.getFrozenMode() === 'Left-Right') {
+            if (gObj.getFrozenMode() === literals.leftRight) {
                 rightRows = gObj.getFrozenRightRowsObject();
             }
             for (let i: number = 0, row: Row<Column>; i < rowLen; i++) {
@@ -904,11 +817,11 @@ export class ContentRender implements IRenderer {
             if (idx !== -1 && testRow && idx < testRow.cells.length) {
                 if (isFrozenGrid) {
                     if (column.getFreezeTableName() !== 'movable') {
-                        if (column.getFreezeTableName() === 'frozen-right') {
+                        if (column.getFreezeTableName() === literals.frozenRight) {
                             let left: number = this.parent.getFrozenLeftColumnsCount();
                             let movable: number = this.parent.getMovableColumnsCount();
                             colIdx = idx = idx - (left + movable);
-                            let colG: Element = this.parent.getContent().querySelector('.e-frozen-right-content').querySelector('colgroup');
+                            let colG: Element = this.parent.getContent().querySelector('.e-frozen-right-content').querySelector(literals.colGroup);
                             setStyleAttribute(<HTMLElement>colG.childNodes[idx], { 'display': displayVal });
                             contentrows = gObj.getFrozenRightRowsObject();
                             tr = gObj.getFrozenRightDataRows();
@@ -919,7 +832,7 @@ export class ContentRender implements IRenderer {
                             tr = gObj.getDataRows();
                         }
                     } else {
-                        let mTable: Element = gObj.getContent().querySelector('.e-movablecontent').querySelector('colgroup');
+                        let mTable: Element = gObj.getContent().querySelector('.' + literals.movableContent).querySelector(literals.colGroup);
                         colIdx = idx = idx - frzCols - this.parent.getFrozenLeftColumnsCount();
                         setStyleAttribute(<HTMLElement>mTable.childNodes[idx], { 'display': displayVal });
                         tr = (<Grid>gObj).getMovableDataRows();
@@ -976,7 +889,7 @@ export class ContentRender implements IRenderer {
             let colGroup: Element;
             if (this.parent.enableColumnVirtualization && this.parent.getFrozenColumns()
                 && (<{ isXaxis?: Function }>this.parent.contentModule).isXaxis()) {
-                colGroup = <Element>this.parent.getMovableVirtualHeader().querySelector('colgroup').cloneNode(true);
+                colGroup = <Element>this.parent.getMovableVirtualHeader().querySelector(literals.colGroup).cloneNode(true);
             } else {
                 colGroup = this.getHeaderColGroup();
             }
@@ -986,8 +899,7 @@ export class ContentRender implements IRenderer {
     }
 
     protected getHeaderColGroup(): Element {
-        return isBlazor() ? <Element>this.parent.getHeaderTable().querySelector('colgroup').cloneNode(true) :
-            <Element>this.parent.element.querySelector('.e-gridheader').querySelector('colgroup').cloneNode(true);
+        return <Element>this.parent.element.querySelector('.' + literals.gridHeader).querySelector(literals.colGroup).cloneNode(true);
     }
 
     private initializeContentDrop(): void {
@@ -1022,10 +934,9 @@ export class ContentRender implements IRenderer {
     }
 
     public renderEmpty(tbody: HTMLElement): void {
-        if (isBlazor() && !this.parent.isJsComponent && this.parent.frozenRows) { return; }
         this.getTable().appendChild(tbody);
         if (this.parent.frozenRows) {
-            this.parent.getHeaderContent().querySelector('tbody').innerHTML = '';
+            this.parent.getHeaderContent().querySelector( literals.tbody).innerHTML = '';
         }
     }
 
@@ -1060,7 +971,7 @@ export class ContentRender implements IRenderer {
         if (this.parent.infiniteScrollSettings.enableCache) {
             let fRows: number = this.parent.frozenRows;
             let idx: number = fRows > index ? 0 : fRows;
-            let firstRowIndex: number = parseInt(this.parent.getRows()[idx].getAttribute('aria-rowindex'), 10);
+            let firstRowIndex: number = parseInt(this.parent.getRows()[idx].getAttribute(literals.ariaRowIndex), 10);
             index = fRows > index ? index : (index - firstRowIndex) + fRows;
         }
         return index;
@@ -1102,9 +1013,9 @@ export class ContentRender implements IRenderer {
         } else {
             if (gObj.currentViewData.length === 0) { return; }
             let oldRowElements: Object = {};
-            let tbody: Element = gObj.createElement('tbody');
+            let tbody: Element = gObj.createElement( literals.tbody);
             let dataSource: Object[] = gObj.currentViewData;
-            let trs: Element[] = [].slice.call(this.getTable().querySelector('tbody').children);
+            let trs: Element[] = [].slice.call(this.getTable().querySelector( literals.tbody).children);
             if (this.prevCurrentView.length) {
                 let prevLen: number = this.prevCurrentView.length;
                 let currentLen: number = dataSource.length;
@@ -1175,7 +1086,7 @@ export class ContentRender implements IRenderer {
             }
             this.rows = newRowObjs;
             this.rowElements = [].slice.call(tbody.children);
-            remove(this.getTable().querySelector('tbody'));
+            remove(this.getTable().querySelector( literals.tbody));
             this.getTable().appendChild(tbody);
             this.parent.trigger(events.dataBound, {}, () => {
                 if (this.parent.allowTextWrap) {
@@ -1233,7 +1144,7 @@ export class ContentRender implements IRenderer {
         row.index = index;
         row.edit = undefined;
         row.isDirty = false;
-        tr.setAttribute('aria-rowindex', index.toString());
+        tr.setAttribute(literals.ariaRowIndex, index.toString());
         this.updateCellIndex(tr, index);
     }
 

@@ -22,6 +22,7 @@ describe('Document Editor container initialization', () => {
         expect(element.childNodes.length).toBe(0);
         document.body.removeChild(element);
         expect(() => { container.destroy(); }).not.toThrowError();
+        document.body.innerHTML = '';
         element = undefined;
         container = undefined;
     });
@@ -63,6 +64,7 @@ describe('Property vaidation', () => {
         expect(element.childNodes.length).toBe(0);
         document.body.removeChild(element);
         expect(() => { container.destroy(); }).not.toThrowError();
+        document.body.innerHTML = '';
         element = undefined;
         container = undefined;
     });
@@ -98,6 +100,7 @@ describe('Restrict editing enable validation', () => {
         expect(element.childNodes.length).toBe(0);
         document.body.removeChild(element);
         expect(() => { container.destroy(); }).not.toThrowError();
+        document.body.innerHTML = '';
         element = undefined;
         container = undefined;
     });

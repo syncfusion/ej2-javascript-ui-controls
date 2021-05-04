@@ -417,7 +417,7 @@ export class ComboBox extends DropDownList {
         return ariaAttributes;
     }
 
-    protected searchLists(e: KeyboardEventArgs): void {
+    protected searchLists(e: KeyboardEventArgs | MouseEvent): void {
         this.isTyped = true;
         if (this.isFiltering()) {
             super.searchLists(e);
@@ -594,6 +594,9 @@ export class ComboBox extends DropDownList {
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 (this as any).interopAdaptor.invokeMethodAsync('OnServerRenderList', this.beforePopupOpen, true);
             }
+        }
+        if (this.isFiltering() && !isNullOrUndefined(e) && e.target === this.inputWrapper.clearButton) {
+            this.searchLists(e);
         }
     }
 

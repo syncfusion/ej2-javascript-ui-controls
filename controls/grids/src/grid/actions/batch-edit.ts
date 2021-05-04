@@ -5,7 +5,7 @@ import { isNullOrUndefined, KeyboardEventArgs, isUndefined } from '@syncfusion/e
 import { IGrid, BeforeBatchAddArgs, BeforeBatchDeleteArgs, BeforeBatchSaveArgs } from '../base/interface';
 import { BatchAddArgs, CellEditArgs, CellSaveArgs, CellFocusArgs, BatchCancelArgs } from '../base/interface';
 import { CellType, freezeTable } from '../base/enum';
-import { parentsUntil, inArray, refreshForeignData, getObject, alignFrozenEditForm, gridActionHandler } from '../base/util';
+import { parentsUntil, inArray, refreshForeignData, getObject, alignFrozenEditForm, gridActionHandler, addRemoveEventListener } from '../base/util';
 import { splitFrozenRowObjectCells, getGridRowElements } from '../base/util';
 import { sliceElements, getCellByColAndRowIndex, getMovableTbody, getFrozenRightTbody } from '../base/util';
 import { getGridRowObjects } from '../base/util';
@@ -21,6 +21,7 @@ import { RowModelGenerator } from '../services/row-model-generator';
 import { Column } from '../models/column';
 import { FocusStrategy } from '../services/focus-strategy';
 import { DataUtil } from '@syncfusion/ej2-data';
+import * as literals from '../base/string-literals';
 
 /**
  * `BatchEdit` module is used to handle batch editing actions.
@@ -51,6 +52,7 @@ export class BatchEdit {
     private field: string;
     private isAdd: boolean;
     private newReactTd: Element;
+    private evtHandlers: { event: string, handler: Function }[];
 
     constructor(parent?: IGrid, serviceLocator?: ServiceLocator, renderer?: EditRender) {
         this.parent = parent;
@@ -65,18 +67,20 @@ export class BatchEdit {
      */
     public addEventListener(): void {
         if (this.parent.isDestroyed) { return; }
-        this.parent.on(events.click, this.clickHandler, this);
-        this.parent.on(events.dblclick, this.dblClickHandler, this);
-        this.parent.on(events.beforeCellFocused, this.onBeforeCellFocused, this);
-        this.parent.on(events.cellFocused, this.onCellFocused, this);
+        this.evtHandlers = [{ event: events.click, handler: this.clickHandler },
+        { event: events.dblclick, handler: this.dblClickHandler },
+        { event: events.beforeCellFocused, handler: this.onBeforeCellFocused },
+        { event: events.cellFocused, handler: this.onCellFocused },
+        { event: events.doubleTap, handler: this.dblClickHandler },
+        { event: events.keyPressed, handler: this.keyDownHandler },
+        { event: events.editNextValCell, handler: this.editNextValCell },
+        { event: events.closeBatch, handler: this.closeForm },
+        ];
+        addRemoveEventListener(this.parent, this.evtHandlers, true, this);
         this.dataBoundFunction = this.dataBound.bind(this);
         this.batchCancelFunction = this.batchCancel.bind(this);
         this.parent.addEventListener(events.dataBound, this.dataBoundFunction);
         this.parent.addEventListener(events.batchCancel, this.batchCancelFunction);
-        this.parent.on(events.doubleTap, this.dblClickHandler, this);
-        this.parent.on(events.keyPressed, this.keyDownHandler, this);
-        this.parent.on(events.editNextValCell, this.editNextValCell, this);
-        this.parent.on('closebatch', this.closeForm, this);
     }
 
     /**
@@ -84,16 +88,9 @@ export class BatchEdit {
      */
     public removeEventListener(): void {
         if (this.parent.isDestroyed) { return; }
-        this.parent.off(events.click, this.clickHandler);
-        this.parent.off(events.dblclick, this.dblClickHandler);
-        this.parent.off(events.beforeCellFocused, this.onBeforeCellFocused);
-        this.parent.off(events.cellFocused, this.onCellFocused);
+        addRemoveEventListener(this.parent, this.evtHandlers, false);
         this.parent.removeEventListener(events.dataBound, this.dataBoundFunction);
         this.parent.removeEventListener(events.batchCancel, this.batchCancelFunction);
-        this.parent.off(events.doubleTap, this.dblClickHandler);
-        this.parent.off(events.keyPressed, this.keyDownHandler);
-        this.parent.off(events.editNextValCell, this.editNextValCell);
-        this.parent.off('closebatch', this.closeForm);
     }
 
     private batchCancel(args: BeforeBatchSaveArgs): void {
@@ -117,22 +114,21 @@ export class BatchEdit {
                 this.saveCell();
                 this.editNextValCell();
             }
-            if (parentsUntil(e.target as HTMLElement, 'e-rowcell') && !this.parent.isEdit) {
+            if (parentsUntil(e.target as HTMLElement, literals.rowCell) && !this.parent.isEdit) {
                 this.setCellIdx(e.target as HTMLTableCellElement);
             }
         }
     }
 
     protected dblClickHandler(e: MouseEvent): void {
-        let target: Element = parentsUntil(e.target as Element, 'e-rowcell');
-        let tr: Element = parentsUntil(e.target as Element, 'e-row');
-        if (target && tr && !isNaN(parseInt(target.getAttribute('aria-colindex'), 10))
-            && !target.parentElement.classList.contains('e-editedrow')) {
+        let target: Element = parentsUntil(e.target as Element, literals.rowCell);
+        let tr: Element = parentsUntil(e.target as Element, literals.row);
+        let rowIndex: number = tr && parseInt(tr.getAttribute(literals.ariaRowIndex), 10);
+        let colIndex: number = target && parseInt(target.getAttribute(literals.ariaColIndex), 10);
+        if (!isNullOrUndefined(target) && !isNullOrUndefined(rowIndex) && !isNaN(colIndex)
+            && !target.parentElement.classList.contains(literals.editedRow)) {
             this.editCell(
-                parseInt(tr.getAttribute('aria-rowindex'), 10),
-                (this.parent.getColumns()[parseInt(target.getAttribute('aria-colindex'), 10)] as Column).field,
-                this.isAddRow(parseInt(tr.getAttribute('aria-rowindex'), 10))
-            );
+                rowIndex, (this.parent.getColumns()[colIndex] as Column).field, this.isAddRow(rowIndex));
         }
     }
 
@@ -151,8 +147,8 @@ export class BatchEdit {
     private onCellFocused(e: CellFocusArgs): void {
         let frzCols: number = this.parent.getFrozenLeftCount();
         let frzRightCols: number = this.parent.getFrozenRightColumnsCount();
-        let mCont: Element = this.parent.getContent().querySelector('.e-movablecontent');
-        let mHdr: Element = this.parent.getHeaderContent().querySelector('.e-movableheader');
+        let mCont: Element = this.parent.getContent().querySelector('.' + literals.movableContent);
+        let mHdr: Element = this.parent.getHeaderContent().querySelector('.' + literals.movableHeader);
         let clear: boolean = (!e.container.isContent || !e.container.isDataCell) && !(this.parent.frozenRows && e.container.isHeader);
         if (!e.byKey || clear) {
             if (this.parent.isEdit && clear) {
@@ -175,7 +171,7 @@ export class BatchEdit {
             rowIndex += this.parent.frozenRows;
         }
         let isEdit: boolean = this.parent.isEdit;
-        if (!this.parent.element.querySelectorAll('.e-popup-open').length) {
+        if (!this.parent.element.getElementsByClassName('e-popup-open').length) {
             isEdit = isEdit && !this.validateFormObj();
             switch (e.keyArgs.action) {
                 case 'tab':
@@ -225,14 +221,6 @@ export class BatchEdit {
             return;
         }
         let cols: Column[] = this.parent.getColumns();
-        if (isBlazor()) {
-            for (let i: number = 0; i < cols.length; i++) {
-                let col: Column = cols[i];
-                if (col.template) {
-                    updateBlazorTemplate(this.parent.element.id + col.uid, 'Template', col, false);
-                }
-            }
-        }
 
         if (gObj.isEdit) {
             this.saveCell(true);
@@ -254,9 +242,6 @@ export class BatchEdit {
             if (isInsert) {
                 i--;
             }
-        }
-        if (isBlazor() && gObj.isServerRendered) {
-            gObj.selectRow(gObj.selectionModule.prevRowIndex);
         }
         if (!gObj.getContentTable().querySelector('tr.e-row')) {
             gObj.renderModule.renderEmptyRow();
@@ -292,13 +277,8 @@ export class BatchEdit {
                     delete row.changes;
                     delete row.edit;
                     row.isDirty = false;
-                    if (isBlazor() && gObj.isServerRendered) {
-                        this.removeHideAndSelection(tr);
-                        this.closeForm();
-                    } else {
-                        classList(tr, [], ['e-hiddenrow', 'e-updatedtd']);
-                        rowRenderer.refresh(row, gObj.getColumns() as Column[], false);
-                    }
+                    classList(tr, [], ['e-hiddenrow', 'e-updatedtd']);
+                    rowRenderer.refresh(row, gObj.getColumns() as Column[], false);
                 }
                 if (this.parent.aggregates.length > 0) {
                     let type: string = 'type';
@@ -317,7 +297,7 @@ export class BatchEdit {
     private removeHideAndSelection(tr: Element): void {
         if (tr.classList.contains('e-hiddenrow')) {
             tr.removeAttribute('aria-selected');
-            let tdElements: Element[] = [].slice.call(tr.querySelectorAll('.e-selectionbackground'));
+            let tdElements: Element[] = [].slice.call(tr.getElementsByClassName('e-selectionbackground'));
             for (let i: number = 0; i < tdElements.length; i++) {
                 removeClass([tdElements[i]], ['e-selectionbackground', 'e-active']);
             }
@@ -381,16 +361,6 @@ export class BatchEdit {
                 removeClass([checkAllBox], ['e-checkbox-disabled']);
             }
         }
-        let cols: Column[] = this.parent.getColumns();
-        if (isBlazor()) {
-            for (let i: number = 0; i < cols.length; i++) {
-                let col: Column = cols[i];
-                if (col.template) {
-                    blazorTemplates[this.parent.element.id + col.uid] = [];
-                    resetBlazorTemplate(this.parent.element.id + col.uid, 'Template');
-                }
-            }
-        }
         this.saveCell();
         if (gObj.isEdit || this.editNextValCell() || gObj.isEdit) {
             return;
@@ -410,19 +380,6 @@ export class BatchEdit {
         gObj.trigger(events.beforeBatchSave, args, (beforeBatchSaveArgs: BeforeBatchSaveArgs) => {
             if (beforeBatchSaveArgs.cancel) {
                 return;
-            }
-            if (isBlazor() && this.parent.isServerRendered) {
-                let content: Element = this.parent.getContent();
-                this.closeForm();
-                removeClass(content.querySelectorAll('.e-updatedtd'), ['e-updatedtd']);
-                if (content.querySelector('.e-insertedrow, .e-hiddenrow')) {
-                    removeClass(content.querySelectorAll('.e-hiddenrow'), ['e-hiddenrow']);
-                    let insertedRow: Element[] = [].slice.call(content.querySelectorAll('.e-insertedrow'));
-                    for (let i: number = 0; i < insertedRow.length; i++) {
-                        insertedRow[i].remove();
-                    }
-                }
-                this.refreshRowIdx();
             }
             gObj.showSpinner();
             gObj.notify(events.bulkSave, { changes: changes, original: original });
@@ -524,11 +481,11 @@ export class BatchEdit {
                 beforeBatchDeleteArgs.row : data ? gObj.getRows()[index] : selectedRows[0];
             if (this.parent.isFrozenGrid()) {
                 if (data) {
-                    index = parseInt(beforeBatchDeleteArgs.row.getAttribute('aria-rowindex'), 10);
+                    index = parseInt(beforeBatchDeleteArgs.row.getAttribute(literals.ariaRowIndex), 10);
                     selectedRows = [];
                     selectedRows.push(gObj.getRowByIndex(index));
                     selectedRows.push(gObj.getMovableRowByIndex(index));
-                    if (gObj.getFrozenMode() === 'Left-Right') {
+                    if (gObj.getFrozenMode() === literals.leftRight) {
                         selectedRows.push(gObj.getFrozenRightRowByIndex(index));
                     }
                 }
@@ -545,12 +502,12 @@ export class BatchEdit {
                         if (gObj.frozenRows && index < gObj.frozenRows && gObj.getMovableDataRows().length >= gObj.frozenRows) {
                             gObj.getMovableHeaderTbody().appendChild(gObj.getMovableRowByIndex(gObj.frozenRows - 1));
                             gObj.getFrozenHeaderTbody().appendChild(gObj.getRowByIndex(gObj.frozenRows - 1));
-                            if (gObj.getFrozenMode() === 'Left-Right') {
+                            if (gObj.getFrozenMode() === literals.leftRight) {
                                 gObj.getFrozenRightHeaderTbody().appendChild(gObj.getFrozenRightRowByIndex(gObj.frozenRows - 1));
                             }
                         }
                         if (gObj.frozenRows && index < gObj.frozenRows && gObj.getDataRows().length >= gObj.frozenRows) {
-                            gObj.getHeaderTable().querySelector('tbody').appendChild(gObj.getRowByIndex(gObj.frozenRows - 1));
+                            gObj.getHeaderTable().querySelector( literals.tbody).appendChild(gObj.getRowByIndex(gObj.frozenRows - 1));
                         }
                     }
                     delete selectedRows[i];
@@ -587,7 +544,7 @@ export class BatchEdit {
             if (data) {
                 gObj.editModule.deleteRowUid = undefined;
                 if (gObj.getSelectedRows().length) {
-                    index = parseInt(gObj.getSelectedRows()[0].getAttribute('aria-rowindex'), 10);
+                    index = parseInt(gObj.getSelectedRows()[0].getAttribute(literals.ariaRowIndex), 10);
                 }
             }
             if (!gObj.isCheckBoxSelection) {
@@ -605,11 +562,11 @@ export class BatchEdit {
         let dataRows: Element[][] = getGridRowElements(this.parent);
         let dataObjects: Row<Column>[][]  = getGridRowObjects(this.parent);
         for (let i: number = 0, j: number = 0, len: number = rows.length; i < len; i++) {
-            if (rows[i].classList.contains('e-row') && !rows[i].classList.contains('e-hiddenrow')) {
+            if (rows[i].classList.contains(literals.row) && !rows[i].classList.contains('e-hiddenrow')) {
                 gridActionHandler(
                     this.parent,
                     (tableName: freezeTable, rowElements: Element[], rowObjects: Row<Column>[]) => {
-                        rowElements[i].setAttribute('aria-rowindex', j.toString());
+                        rowElements[i].setAttribute(literals.ariaRowIndex, j.toString());
                         rowObjects[i].index = j;
                     },
                     dataRows, null, dataObjects
@@ -619,7 +576,7 @@ export class BatchEdit {
                 gridActionHandler(
                     this.parent,
                     (tableName: freezeTable, rowElements: Element[], rowObjects: Row<Column>[]) => {
-                        rowElements[i].removeAttribute('aria-rowindex');
+                        rowElements[i].removeAttribute(literals.ariaRowIndex);
                         rowObjects[i].index = -1;
                     },
                     dataRows, null, dataObjects
@@ -668,7 +625,7 @@ export class BatchEdit {
                 tr.insertBefore(this.parent.createElement('td', { className: 'e-indentcell' }), tr.firstChild);
                 modelData[0].cells.unshift(new Cell<Column>({ cellType: CellType.Indent }));
             }
-            let tbody: Element = gObj.getContentTable().querySelector('tbody');
+            let tbody: Element = gObj.getContentTable().querySelector( literals.tbody);
             tr.classList.add('e-insertedrow');
             if (tbody.querySelector('.e-emptyrow')) {
                 let emptyRow: Element = tbody.querySelector('.e-emptyrow');
@@ -682,12 +639,12 @@ export class BatchEdit {
                 this.renderFrozenAddRow(tr, mTr, frTr);
             }
             if (gObj.frozenRows && gObj.editSettings.newRowPosition === 'Top') {
-                tbody = gObj.getHeaderTable().querySelector('tbody');
+                tbody = gObj.getHeaderTable().querySelector( literals.tbody);
             } else {
-                tbody = gObj.getContentTable().querySelector('tbody');
+                tbody = gObj.getContentTable().querySelector( literals.tbody);
             }
             this.parent.editSettings.newRowPosition === 'Top' ? tbody.insertBefore(tr, tbody.firstChild) : tbody.appendChild(tr);
-            addClass(tr.querySelectorAll('.e-rowcell'), ['e-updatedtd']);
+            addClass([].slice.call(tr.getElementsByClassName(literals.rowCell)), ['e-updatedtd']);
             modelData[0].isDirty = true;
             modelData[0].changes = extend({}, {}, modelData[0].data, true);
             modelData[0].edit = 'add';
@@ -696,9 +653,7 @@ export class BatchEdit {
             this.focus.forgetPrevious();
             gObj.notify(events.batchAdd, { rows: this.parent.getRowsObject(), args: { isFrozen: this.parent.isFrozenGrid() } });
             let changes: Object = this.getBatchChanges();
-            let addedRecords: string = 'addedRecords';
-            let dRecords: string = 'deletedRecords';
-            let btmIdx: number = this.parent.getCurrentViewRecords().length + changes[addedRecords].length - changes[dRecords].length - 1;
+            let btmIdx: number = this.getBottomIndex();
             this.parent.editSettings.newRowPosition === 'Top' ? gObj.selectRow(0) : gObj.selectRow(btmIdx);
             if (!data) {
                 index = this.findNextEditableCell(0, true);
@@ -706,7 +661,7 @@ export class BatchEdit {
                 this.parent.editSettings.newRowPosition === 'Top' ? this.editCell(0, col.field, true) :
                     this.editCell(btmIdx, col.field, true);
             }
-            if (this.parent.aggregates.length > 0 && (data || changes[addedRecords].length)) {
+            if (this.parent.aggregates.length > 0 && (data || changes[literals.addedRecords].length)) {
                 this.parent.notify(events.refreshFooterRenderer, {});
             }
             let args1: BatchAddArgs = {
@@ -717,10 +672,6 @@ export class BatchEdit {
             if (gObj.isFrozenGrid()) {
                 alignFrozenEditForm(mTr.querySelector('td:not(.e-hide)'), tr.querySelector('td:not(.e-hide)'));
             }
-            if (isBlazor()) {
-                this.parent.notify(events.toolbarRefresh, {});
-                this.parent.notify('start-add', {});
-            }
         });
     }
 
@@ -729,11 +680,11 @@ export class BatchEdit {
         let mTbody: Element = getMovableTbody(this.parent);
         let frTbody: Element = getFrozenRightTbody(this.parent);
         gObj.editSettings.newRowPosition === 'Top' ? mTbody.insertBefore(mTr, mTbody.firstChild) : mTbody.appendChild(mTr);
-        addClass(mTr.querySelectorAll('.e-rowcell'), ['e-updatedtd']);
+        addClass([].slice.call(mTr.getElementsByClassName(literals.rowCell)), ['e-updatedtd']);
         if (frTbody && frTr) {
             gObj.editSettings.newRowPosition === 'Top' ? frTbody.insertBefore(frTr, frTbody.firstChild)
                 : frTbody.appendChild(frTr);
-            addClass(frTr.querySelectorAll('.e-rowcell'), ['e-updatedtd']);
+            addClass([].slice.call(frTr.getElementsByClassName(literals.rowCell)), ['e-updatedtd']);
             alignFrozenEditForm(frTr.querySelector('td:not(.e-hide)'), tr.querySelector('td:not(.e-hide)'));
         }
         if (gObj.height === 'auto') {
@@ -744,10 +695,10 @@ export class BatchEdit {
     private removeFrozenTbody(): void {
         let gObj: IGrid = this.parent;
         if (gObj.isFrozenGrid()) {
-            let moveTbody: Element = gObj.getContent().querySelector('.e-movablecontent').querySelector('tbody');
+            let moveTbody: Element = gObj.getContent().querySelector('.' + literals.movableContent).querySelector( literals.tbody);
             (moveTbody.firstElementChild).parentNode.removeChild(moveTbody.firstElementChild);
-            if (gObj.getFrozenMode() === 'Left-Right') {
-                let frTbody: Element = gObj.getContent().querySelector('.e-frozen-right-content').querySelector('tbody');
+            if (gObj.getFrozenMode() === literals.leftRight) {
+                let frTbody: Element = gObj.getContent().querySelector('.e-frozen-right-content').querySelector( literals.tbody);
                 (frTbody.firstElementChild).parentNode.removeChild(frTbody.firstElementChild);
             }
         }
@@ -813,9 +764,6 @@ export class BatchEdit {
         this.isAdd = isAdd;
         let checkEdit: boolean = gObj.isEdit && !(this.cellDetails.column.field === field
             && (this.cellDetails.rowIndex === index && this.parent.getDataRows().length - 1 !== index));
-        if (isBlazor() && col.template && !isAdd) {
-            resetBlazorTemplate(this.parent.element.id + col.uid, 'Template', index);
-        }
         if (gObj.editSettings.allowEditing) {
             if (!checkEdit && col.allowEditing) {
                 this.editCellExtend(index, field, isAdd);
@@ -836,7 +784,7 @@ export class BatchEdit {
         let row: Element;
         let mRowData: Row<Column>;
         let rowData: Object = extend({}, {}, this.getDataByIndex(index), true);
-        if (col.getFreezeTableName() === 'movable' || col.getFreezeTableName() === 'frozen-right') {
+        if (col.getFreezeTableName() === 'movable' || col.getFreezeTableName() === literals.frozenRight) {
             row = col.getFreezeTableName() === 'movable' ? gObj.getMovableDataRows()[index] : gObj.getFrozenRightDataRows()[index];
             mRowData = this.parent.getRowObjectFromUID(row.getAttribute('data-uid'));
             rowData = mRowData.changes ? extend({}, {}, mRowData.changes, true) : rowData;
@@ -875,39 +823,12 @@ export class BatchEdit {
             cellEditArgs.columnObject.index = isNullOrUndefined(cellEditArgs.columnObject.index) ? 0 : cellEditArgs.columnObject.index;
             this.cellDetails = {
                 rowData: rowData, column: col, value: cellEditArgs.value, isForeignKey: cellEditArgs.isForeignKey, rowIndex: index,
-                cellIndex: parseInt((cellEditArgs.cell as HTMLTableCellElement).getAttribute('aria-colindex'), 10),
+                cellIndex: parseInt((cellEditArgs.cell as HTMLTableCellElement).getAttribute(literals.ariaColIndex), 10),
                 foreignKeyData: cellEditArgs.foreignKeyData
             };
             if (cellEditArgs.cell.classList.contains('e-updatedtd')) {
                 this.isColored = true;
                 cellEditArgs.cell.classList.remove('e-updatedtd');
-            }
-            if (isBlazor() && gObj.isServerRendered) {
-                let cell: string = 'cells';
-                let cloneCell: string = 'cloneCell';
-                let indent: number = cellEditArgs.row.querySelectorAll
-                    ('.e-indentcell, .e-detailrowcollapse, .e-detailrowexpand, .e-rowdragdrop').length;
-                this.cloneCell[`${this.cellDetails.rowIndex}${cellEditArgs.columnObject.index}`] =
-                    cellEditArgs[cloneCell] = cellEditArgs.cell.cloneNode(true);
-                if ((parentsUntil(cellEditArgs.cell, 'e-movableheader') || parentsUntil(cellEditArgs.cell, 'e-movablecontent'))) {
-                    (<HTMLTableRowElement>cellEditArgs.row).insertCell(cellEditArgs.columnObject.index - gObj.getFrozenColumns());
-                    cellEditArgs.row.replaceChild(
-                        cellEditArgs[cloneCell],
-                        cellEditArgs.row[cell][cellEditArgs.columnObject.index - gObj.getFrozenColumns()]
-                    );
-                } else {
-                    (<HTMLTableRowElement>cellEditArgs.row).insertCell(cellEditArgs.columnObject.index + indent);
-                    cellEditArgs.row.replaceChild(
-                        cellEditArgs[cloneCell],
-                        cellEditArgs.row[cell][cellEditArgs.columnObject.index + indent]
-                    );
-                }
-                this.originalCell[`${this.cellDetails.rowIndex}${cellEditArgs.columnObject.index}`] =
-                    cellEditArgs.cell.parentElement.removeChild(cellEditArgs.cell);
-                removeClass(
-                    [this.cloneCell[`${this.cellDetails.rowIndex}${cellEditArgs.columnObject.index}`]],
-                    ['e-focus', 'e-focused']
-                );
             }
             gObj.isEdit = true;
             gObj.clearSelection();
@@ -929,7 +850,7 @@ export class BatchEdit {
         if (col && !col.isPrimaryKey) {
             let td: Element = getCellByColAndRowIndex(this.parent, col, rowIndex, index);
             let rowObj: Row<Column> = col.getFreezeTableName() === 'movable' ? this.parent.getMovableRowsObject()[rowIndex] :
-                col.getFreezeTableName() === 'frozen-right' ? gObj.getFrozenRightRowsObject()[rowIndex]
+                col.getFreezeTableName() === literals.frozenRight ? gObj.getFrozenRightRowsObject()[rowIndex]
                     : gObj.getRowObjectFromUID(td.parentElement.getAttribute('data-uid'));
             this.refreshTD(td, col, rowObj, value);
             this.parent.trigger(events.queryCellInfo, {
@@ -952,7 +873,7 @@ export class BatchEdit {
             }
         } else {
             let rowEle: Element = this.parent.getRowElementByUID(rowObj.uid);
-            let rowIndex: number = parseInt(rowEle.getAttribute('aria-rowindex'), 10);
+            let rowIndex: number = parseInt(rowEle.getAttribute(literals.ariaRowIndex), 10);
             currentRowObj = this.parent.getRowsObject()[rowIndex];
             if (!currentRowObj.changes) {
                 currentRowObj.changes = extend({}, {}, rowObj.data, true);
@@ -960,21 +881,13 @@ export class BatchEdit {
             if (!isNullOrUndefined(field)) {
                 setValue(field, value, currentRowObj.changes);
             }
-            let movableRowObject: Row<Column>;
-            if (isBlazor() && this.parent.isServerRendered && (parentsUntil(td, 'e-movableheader') ||
-                parentsUntil(td, 'e-movablecontent'))) {
-                let movRowEle: Element = this.parent.getMovableRowByIndex(this.cellDetails.rowIndex);
-                let movRowIndex: number = parseInt(movRowEle.getAttribute('aria-rowindex'), 10);
-                movableRowObject = this.parent.getMovableRowsObject()[movRowIndex];
-            } else {
-                movableRowObject = this.parent.getMovableRowsObject()[rowIndex];
-            }
+            let movableRowObject: Row<Column> = this.parent.getMovableRowsObject()[rowIndex];
             movableRowObject.changes = extend({}, {}, currentRowObj.changes, true);
             if (rowObj.data[field] !== value) {
                 movableRowObject.isDirty = true;
                 currentRowObj.isDirty = true;
             }
-            if (this.parent.getFrozenMode() === 'Left-Right') {
+            if (this.parent.getFrozenMode() === literals.leftRight) {
                 let frRowObject: Row<Column> = this.parent.getFrozenRightRowsObject()[rowIndex];
                 frRowObject.changes = extend({}, {}, currentRowObj.changes, true);
                 if (rowObj.data[field] !== value) {
@@ -1023,7 +936,7 @@ export class BatchEdit {
         let index: number = 0;
         if (frzCols) {
             index = column.getFreezeTableName() === 'movable' && this.parent.getFrozenMode() !== 'Right'
-                ? frzCols : column.getFreezeTableName() === 'frozen-right'
+                ? frzCols : column.getFreezeTableName() === literals.frozenRight
                     ? this.parent.getFrozenLeftColumnsCount() + this.parent.getMovableColumnsCount() : index;
         }
         cell.refreshTD(
@@ -1048,7 +961,7 @@ export class BatchEdit {
         }
         if (this.parent.isRowDragable()) { cIdx++; }
         for (let m: number = 0; m < cells.length; m++) {
-            let colIndex: number = parseInt(cells[m].getAttribute('aria-colindex'), 10);
+            let colIndex: number = parseInt(cells[m].getAttribute(literals.ariaColIndex), 10);
             if (colIndex === index - cIdx) {
                 return m;
             }
@@ -1058,10 +971,7 @@ export class BatchEdit {
 
     private editNextValCell(): void {
         let gObj: IGrid = this.parent;
-        let changes: Object = this.getBatchChanges();
-        let addedRecords: string = 'addedRecords';
-        let dRecords: string = 'deletedRecords';
-        let btmIdx: number = (this.parent.getCurrentViewRecords().length + changes[addedRecords].length - changes[dRecords].length) - 1;
+        let btmIdx: number = this.getBottomIndex();
         if (this.isAdded && !gObj.isEdit) {
             for (let i: number = this.cellDetails.cellIndex; i < gObj.getColumns().length; i++) {
                 if (gObj.isEdit) {
@@ -1130,11 +1040,8 @@ export class BatchEdit {
         }
         this.preventSaveCell = true;
         let args: CellSaveArgs = this.generateCellArgs();
-        let tr: Element = isBlazor() ? parentsUntil(this.form, 'e-row') : args.cell.parentElement;
-        let col: Column = isBlazor() ? this.cellDetails.column : args.column;
-        if (isBlazor()) {
-            delete args.column;
-        }
+        let tr: Element = args.cell.parentElement;
+        let col: Column = args.column;
         if (!isForceSave) {
             gObj.trigger(events.cellSave, args, this.successCallBack(args, tr, col));
             gObj.notify(events.batchForm, { formObj: this.form });
@@ -1164,47 +1071,25 @@ export class BatchEdit {
             gObj.editModule.destroyWidgets([column]);
             gObj.isEdit = false;
             gObj.editModule.destroyForm();
-            if (isBlazor() && column.template && !cellSaveArgs.cell.parentElement.classList.contains('e-insertedrow')) {
-                updateBlazorTemplate(gObj.element.id + column.uid, 'Template', column, false);
-            }
             this.parent.notify(events.tooltipDestroy, {});
-            if (isBlazor() && gObj.isServerRendered && (parentsUntil(cellSaveArgs.cell, 'e-movableheader') ||
-                parentsUntil(cellSaveArgs.cell, 'e-movablecontent'))) {
-                this.refreshTD(cellSaveArgs.cell, column, gObj.getMovableRowsObject()[this.cellDetails.rowIndex], cellSaveArgs.value);
-            } else {
-                let rowObj: Row<Column> = parentsUntil(cellSaveArgs.cell, 'e-movablecontent')
-                    || parentsUntil(cellSaveArgs.cell, 'e-movableheader') ? gObj.getRowObjectFromUID(tr.getAttribute('data-uid'), true)
-                    : gObj.getRowObjectFromUID(tr.getAttribute('data-uid'));
-                if (gObj.getFrozenMode() === 'Left-Right' && (parentsUntil(cellSaveArgs.cell, 'e-frozen-right-header')
-                    || parentsUntil(cellSaveArgs.cell, 'e-frozen-right-content'))) {
-                    rowObj = gObj.getRowObjectFromUID(tr.getAttribute('data-uid'), false, true);
-                }
-                this.refreshTD(cellSaveArgs.cell, column, rowObj, cellSaveArgs.value);
-                if (this.parent.isReact) {
-                    cellSaveArgs.cell = this.newReactTd;
-                }
+            let rowObj: Row<Column> = parentsUntil(cellSaveArgs.cell, literals.movableContent)
+                || parentsUntil(cellSaveArgs.cell, literals.movableHeader) ? gObj.getRowObjectFromUID(tr.getAttribute('data-uid'), true)
+                : gObj.getRowObjectFromUID(tr.getAttribute('data-uid'));
+            if (gObj.getFrozenMode() === literals.leftRight && (parentsUntil(cellSaveArgs.cell, 'e-frozen-right-header')
+                || parentsUntil(cellSaveArgs.cell, 'e-frozen-right-content'))) {
+                rowObj = gObj.getRowObjectFromUID(tr.getAttribute('data-uid'), false, true);
             }
-            removeClass([tr], ['e-editedrow', 'e-batchrow']);
+            this.refreshTD(cellSaveArgs.cell, column, rowObj, cellSaveArgs.value);
+            if (this.parent.isReact) {
+                cellSaveArgs.cell = this.newReactTd;
+            }
+            removeClass([tr], [literals.editedRow, 'e-batchrow']);
             removeClass([cellSaveArgs.cell], ['e-editedbatchcell', 'e-boolcell']);
             if (!isNullOrUndefined(cellSaveArgs.value) && cellSaveArgs.value.toString() ===
                 (!isNullOrUndefined(this.cellDetails.value) ? this.cellDetails.value : '').toString() && !this.isColored
                 || (isNullOrUndefined(cellSaveArgs.value) && isNullOrUndefined(this.cellDetails.value) &&
                     !cellSaveArgs.cell.parentElement.classList.contains('e-insertedrow'))) {
                 cellSaveArgs.cell.classList.remove('e-updatedtd');
-                if (isBlazor() && gObj.isServerRendered && (!isNullOrUndefined(cellSaveArgs.value) ? cellSaveArgs.value : '').toString() ===
-                    (!isNullOrUndefined(this.cellDetails.value) ? this.cellDetails.value : '').toString()) {
-                    if (this.cloneCell[`${parseInt(tr.getAttribute('aria-rowindex'), 10)}${cellSaveArgs.columnObject.index}`].
-                        classList.contains('e-selectionbackground')) {
-                        this.originalCell[`${parseInt(tr.getAttribute('aria-rowindex'), 10)}${cellSaveArgs.columnObject.index}`].
-                            classList.add('e-selectionbackground', 'e-active');
-                    } else {
-                        this.originalCell[`${parseInt(tr.getAttribute('aria-rowindex'), 10)}${cellSaveArgs.columnObject.index}`].
-                            classList.remove('e-selectionbackground', 'e-active');
-                    }
-                    this.cloneCell[`${parseInt(tr.getAttribute('aria-rowindex'), 10)}${cellSaveArgs.columnObject.index}`]
-                        .replaceWith(this.originalCell[`${parseInt(tr.getAttribute('aria-rowindex'), 10)}${cellSaveArgs
-                            .columnObject.index}`]);
-                }
             }
             if (isNullOrUndefined(isEscapeCellEdit)) {
                 gObj.trigger(events.cellSaved, cellSaveArgs);
@@ -1242,11 +1127,8 @@ export class BatchEdit {
     private keyDownHandler(e: KeyboardEventArgs): void {
         if ((e.action === 'tab' || e.action === 'shiftTab') && this.parent.isEdit) {
             let gObj: IGrid = this.parent;
-            let changes: Object = this.getBatchChanges();
-            let addedRecords: string = 'addedRecords';
-            let dRecords: string = 'deletedRecords';
-            let btmIdx: number = (this.parent.getCurrentViewRecords().length + changes[addedRecords].length - changes[dRecords].length) - 1;
-            let rowcell: Element = parentsUntil(e.target as Element, 'e-rowcell');
+            let btmIdx: number = this.getBottomIndex();
+            let rowcell: Element = parentsUntil(e.target as Element, literals.rowCell);
             if (rowcell) {
                 let cell: Element = rowcell.querySelector('.e-field');
                 if (cell) {
@@ -1279,5 +1161,11 @@ export class BatchEdit {
             this.parent.isEdit = false;
             this.isColored = false;
         }
+    }
+
+    private getBottomIndex(): number {
+        let changes: Object = this.getBatchChanges();
+        return this.parent.getCurrentViewRecords().length + changes[literals.addedRecords].length -
+            changes[literals.deletedRecords].length - 1;
     }
 }

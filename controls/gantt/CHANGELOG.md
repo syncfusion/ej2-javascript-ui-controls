@@ -2,6 +2,15 @@
 
 ## [Unreleased]
 
+## 19.1.59 (2021-05-04)
+
+### Gantt
+
+#### Bug Fixes
+
+- `#325250` - Progress updated properly in manual scheduling.
+- `#324644` - Issue on adding records, when Gantt view is changed has been fixed.
+
 ## 19.1.58 (2021-04-27)
 
 ### Gantt

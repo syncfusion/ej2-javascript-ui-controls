@@ -1179,6 +1179,12 @@ export class MultiSelect extends DropDownBase implements IInput {
             removeClass([element.previousElementSibling], className);
         }
     }
+
+    protected getValidLi() : HTMLElement {
+        let liElement: HTMLElement = this.ulElement.querySelector('li.' + dropDownBaseClasses.li + ':not(.' + HIDE_LIST + ')');
+        return (!isNullOrUndefined(liElement) ? liElement : this.liCollections[0]);
+    }
+
     private checkSelectAll(): void {
         const groupItemLength: number = this.list.querySelectorAll('li.e-list-group-item.e-active').length;
         const listItem: NodeListOf<Element> = this.list.querySelectorAll('li.e-list-item');
@@ -2188,6 +2194,10 @@ export class MultiSelect extends DropDownBase implements IInput {
                     if (this.hideSelectedItem && this.fields.groupBy) {
                         this.hideGroupItem(value);
                     }
+                    if (this.hideSelectedItem && this.fixedHeaderElement && this.fields.groupBy && this.mode !== 'CheckBox' &&
+                        this.isPopupOpen()) {
+                        super.scrollStop();
+                    }        
                     this.updateMainList(true, <string>value);
                     this.removeChip(value);
                     this.updateChipStatus();
@@ -2362,6 +2372,9 @@ export class MultiSelect extends DropDownBase implements IInput {
                         this.listData = list;
                     }
                     this.updateListSelectEventCallback(value, element, eve);
+                    if (this.hideSelectedItem && this.fixedHeaderElement && this.fields.groupBy && this.mode !== 'CheckBox') {
+                        super.scrollStop();
+                    }
                 }
             });
         }
@@ -4078,6 +4091,10 @@ export class MultiSelect extends DropDownBase implements IInput {
             const eventArgs: PopupEventArgs = { popup: this.popupObj, cancel: false, animation: animModel };
             this.trigger('close', eventArgs, (eventArgs: PopupEventArgs) => {
                 if (!eventArgs.cancel) {
+                    if (this.fields.groupBy && this.mode !== 'CheckBox' && this.fixedHeaderElement) {
+                        remove(this.fixedHeaderElement);
+                        this.fixedHeaderElement = null;
+                    }
                     this.beforePopupOpen = false;
                     this.overAllWrapper.classList.remove(iconAnimation);
                     this.popupObj.hide(new Animation(eventArgs.animation));

@@ -1,4 +1,4 @@
-import { Browser, isBlazor, isNullOrUndefined } from '@syncfusion/ej2-base';
+import { Browser } from '@syncfusion/ej2-base';
 import { Group } from '@syncfusion/ej2-data';
 import { IModelGenerator, IGrid, VirtualInfo, NotifyArgs } from '../base/interface';
 import { Row } from '../models/row';
@@ -7,8 +7,8 @@ import { Column } from '../models/column';
 import { PageSettingsModel } from '../models/page-settings-model';
 import { RowModelGenerator } from '../services/row-model-generator';
 import { GroupModelGenerator } from '../services/group-model-generator';
-import { VirtualContentRenderer } from '../renderer/virtual-content-renderer';
 import * as events from '../base/constant';
+import * as literals from '../base/string-literals';
 
 /**
  * Content module is used to render grid content
@@ -40,8 +40,8 @@ export class VirtualRowModelGenerator implements IModelGenerator<Column> {
         let page: number = !xAxis && info.loadNext && !info.loadSelf ? info.nextInfo.page : info.page;
         let result: Row<Column>[] = []; let center: number = ~~(this.model.pageSize / 2);
         let indexes: number[] = this.getBlockIndexes(page); let loadedBlocks: number[] = [];
-        if ((isFrozen && (this.parent.getFrozenMode() !== 'Left-Right' && !e.renderMovableContent)
-            || this.parent.getFrozenMode() === 'Left-Right' && !e.renderMovableContent && !e.renderFrozenRightContent) || !isFrozen) {
+        if ((isFrozen && (this.parent.getFrozenMode() !== literals.leftRight && !e.renderMovableContent)
+            || this.parent.getFrozenMode() === literals.leftRight && !e.renderMovableContent && !e.renderFrozenRightContent) || !isFrozen) {
             this.checkAndResetCache(e.requestType);
         }
         if (isGroupAdaptive(this.parent) && this.parent.vcRows.length) {
@@ -60,118 +60,80 @@ export class VirtualRowModelGenerator implements IModelGenerator<Column> {
                 }
             }
         }
-        if (isBlazor() && this.parent.isServerRendered) {
-            let virtualStartIdx: string = 'virtualStartIndex'; let startIndex: string = 'startIndex'; let endIndex: string = 'endIndex';
-            if (!e[virtualStartIdx] && Object.keys(this.rowCache).length === 0) {
-                for (let i: number = 0 ; i < data.length; i++) {
-                    let args: Object[] = [];
-                    args.push(data[i]);
-                    this.rowCache[i] = this.rowModelGenerator.generateRows(args, {startIndex: i})[0];
+        let values: number[] = info.blockIndexes;
+        for (let i: number = 0; i < values.length; i++) {
+            if (!this.isBlockAvailable(values[i])) {
+                let rows: Row<Column>[] = this.rowModelGenerator.generateRows(data, {
+                    virtualInfo: info, startIndex: this.getStartIndex(values[i], data)
+                });
+                if (isGroupAdaptive(this.parent) && !this.parent.vcRows.length) {
+                    this.parent.vRows = rows;
+                    this.parent.vcRows = rows;
+                    this.parent.notify(events.refreshVirtualMaxPage, {});
                 }
-                let j: number = 0;
-                for (let i: number = 0; i < this.parent.pageSettings.pageSize ; i++) {
-                    result[j] = this.rowCache[i];
-                    j++;
-                }
-            } else if (e[virtualStartIdx]) {
-                let virtualStartIndex: number = e[startIndex]; let cacheindex: number[] = [];
-                for (let i: number = 0; i < Object.keys(this.rowCache).length ; i++) {
-                     cacheindex.push(Number(Object.keys(this.rowCache)[i]));
-                }
-                for (let i: number = 0 ; i < data.length; i++) {
-                    let args: Object[] = []; let check: number = cacheindex.indexOf(virtualStartIndex);
-                    args.push(data[i]);
-                    if (check === -1) {
-                        this.rowCache[virtualStartIndex] = this.rowModelGenerator.generateRows(args, {startIndex: virtualStartIndex})[0];
+                let median: number;
+                if (isGroupAdaptive(this.parent)) {
+                    median = this.model.pageSize / 2;
+                    if (!this.isBlockAvailable(indexes[0])) {
+                        this.cache[indexes[0]] = rows.slice(0, median);
                     }
-                    virtualStartIndex++;
-                }
-            }
-            if (!isNullOrUndefined(e[virtualStartIdx])) {
-                let j: number = 0;
-                for (let i: number = e[startIndex]; i < e[endIndex]; i++) {
-                    result[j] = this.rowCache[i];
-                    j++;
-                }
-            }
-        } else {
-            let values: number[] = info.blockIndexes;
-            for (let i: number = 0; i < values.length; i++) {
-                if (!this.isBlockAvailable(values[i])) {
-                    let rows: Row<Column>[] = this.rowModelGenerator.generateRows(data, {
-                        virtualInfo: info, startIndex: this.getStartIndex(values[i], data)
-                    });
-                    if (isGroupAdaptive(this.parent) && !this.parent.vcRows.length) {
-                        this.parent.vRows = rows;
-                        this.parent.vcRows = rows;
-                        this.parent.notify(events.refreshVirtualMaxPage, {});
+                    if (!this.isBlockAvailable(indexes[1])) {
+                        this.cache[indexes[1]] = rows.slice(median, this.model.pageSize);
                     }
-                    let median: number;
-                    if (isGroupAdaptive(this.parent)) {
-                        median = this.model.pageSize / 2;
-                        if (!this.isBlockAvailable(indexes[0])) {
-                            this.cache[indexes[0]] = rows.slice(0, median);
-                        }
-                        if (!this.isBlockAvailable(indexes[1])) {
-                            this.cache[indexes[1]] = rows.slice(median, this.model.pageSize);
-                        }
-                    } else {
-                        median = ~~Math.max(rows.length, this.model.pageSize) / 2;
-                        if (!this.isBlockAvailable(indexes[0])) {
-                            this.cache[indexes[0]] = rows.slice(0, median);
-                        }
-                        if (!this.isBlockAvailable(indexes[1])) {
-                            this.cache[indexes[1]] = rows.slice(median);
-                        }
-                    }
-                }
-                if (this.parent.groupSettings.columns.length && !xAxis && this.cache[values[i]]) {
-                    this.cache[values[i]] = this.updateGroupRow(this.cache[values[i]], values[i]);
-                }
-                if ((e.renderMovableContent && !this.isMovableBlockAvailable(values[i]))
-                    || (e.renderFrozenRightContent && !this.isFrozenRightBlockAvailable(values[i]))) {
-                    let cache: { [x: number]: Row<Column>[] } = e.renderMovableContent
-                        ? this.movableCache : this.frozenRightCache;
-                    let rows: Row<Column>[] = this.rowModelGenerator.generateRows(data, {
-                        virtualInfo: info, startIndex: this.getStartIndex(values[i], data)
-                    });
-                    let median: number = ~~Math.max(rows.length, this.model.pageSize) / 2;
-                    if ((e.renderFrozenRightContent && !this.isFrozenRightBlockAvailable(indexes[0]))
-                        || (e.renderMovableContent && !this.isMovableBlockAvailable(indexes[0]))) {
-                        cache[indexes[0]] = rows.slice(0, median);
-                    }
-                    if ((e.renderFrozenRightContent && !this.isFrozenRightBlockAvailable(indexes[1]))
-                        || (e.renderMovableContent && !this.isMovableBlockAvailable(indexes[1]))) {
-                        cache[indexes[1]] = rows.slice(median);
-                    }
-                }
-                if (!e.renderMovableContent && !e.renderFrozenRightContent && this.cache[values[i]]) {
-                    result.push(...this.cache[values[i]]);
                 } else {
-                    let cache: { [x: number]: Row<Column>[] } = e.renderMovableContent
-                        ? this.movableCache : this.frozenRightCache;
-                    if (cache[values[i]]) {
-                        result.push(...cache[values[i]]);
+                    median = ~~Math.max(rows.length, this.model.pageSize) / 2;
+                    if (!this.isBlockAvailable(indexes[0])) {
+                        this.cache[indexes[0]] = rows.slice(0, median);
+                    }
+                    if (!this.isBlockAvailable(indexes[1])) {
+                        this.cache[indexes[1]] = rows.slice(median);
                     }
                 }
-                if (this.isBlockAvailable(values[i])) {
-                    loadedBlocks.push(values[i]);
+            }
+            if (this.parent.groupSettings.columns.length && !xAxis && this.cache[values[i]]) {
+                this.cache[values[i]] = this.updateGroupRow(this.cache[values[i]], values[i]);
+            }
+            if ((e.renderMovableContent && !this.isMovableBlockAvailable(values[i]))
+                || (e.renderFrozenRightContent && !this.isFrozenRightBlockAvailable(values[i]))) {
+                let cache: { [x: number]: Row<Column>[] } = e.renderMovableContent
+                    ? this.movableCache : this.frozenRightCache;
+                let rows: Row<Column>[] = this.rowModelGenerator.generateRows(data, {
+                    virtualInfo: info, startIndex: this.getStartIndex(values[i], data)
+                });
+                let median: number = ~~Math.max(rows.length, this.model.pageSize) / 2;
+                if ((e.renderFrozenRightContent && !this.isFrozenRightBlockAvailable(indexes[0]))
+                    || (e.renderMovableContent && !this.isMovableBlockAvailable(indexes[0]))) {
+                    cache[indexes[0]] = rows.slice(0, median);
+                }
+                if ((e.renderFrozenRightContent && !this.isFrozenRightBlockAvailable(indexes[1]))
+                    || (e.renderMovableContent && !this.isMovableBlockAvailable(indexes[1]))) {
+                    cache[indexes[1]] = rows.slice(median);
                 }
             }
-            info.blockIndexes = loadedBlocks;
-        }
-        if (!isBlazor() || (isBlazor() && !this.parent.isServerRendered)) {
-            let grouping: string = 'records';
-            if (this.parent.allowGrouping) {
-                this.parent.currentViewData[grouping] = result.map((m: Row<Column>) => m.data);
-            } else if (isFrozen) {
-                if ((e.renderMovableContent && (this.parent.getFrozenMode() === 'Left'
-                    || this.parent.getFrozenMode() === 'Right' || this.parent.getFrozenColumns())) || e.renderFrozenRightContent) {
-                    this.parent.currentViewData = result.map((m: Row<Column>) => m.data);
-                }
+            if (!e.renderMovableContent && !e.renderFrozenRightContent && this.cache[values[i]]) {
+                result.push(...this.cache[values[i]]);
             } else {
+                let cache: { [x: number]: Row<Column>[] } = e.renderMovableContent
+                    ? this.movableCache : this.frozenRightCache;
+                if (cache[values[i]]) {
+                    result.push(...cache[values[i]]);
+                }
+            }
+            if (this.isBlockAvailable(values[i])) {
+                loadedBlocks.push(values[i]);
+            }
+        }
+        info.blockIndexes = loadedBlocks;
+        let grouping: string = 'records';
+        if (this.parent.allowGrouping) {
+            this.parent.currentViewData[grouping] = result.map((m: Row<Column>) => m.data);
+        } else if (isFrozen) {
+            if ((e.renderMovableContent && (this.parent.getFrozenMode() === 'Left'
+                || this.parent.getFrozenMode() === 'Right' || this.parent.getFrozenColumns())) || e.renderFrozenRightContent) {
                 this.parent.currentViewData = result.map((m: Row<Column>) => m.data);
             }
+        } else {
+            this.parent.currentViewData = result.map((m: Row<Column>) => m.data);
         }
         return result;
     }
@@ -212,9 +174,9 @@ export class VirtualRowModelGenerator implements IModelGenerator<Column> {
     }
 
     public getColumnIndexes(content: HTMLElement =
-        (<HTMLElement>this.parent.getHeaderContent().querySelector('.e-headercontent'))): number[] {
+        (<HTMLElement>this.parent.getHeaderContent().querySelector('.' + literals.headerContent))): number[] {
         if (this.parent.isFrozenGrid()) {
-            content = content.querySelector('.e-movableheader');
+            content = content.querySelector('.' + literals.movableHeader);
         }
         let indexes: number[] = []; let sLeft: number = content.scrollLeft | 0;
         let keys: string[] = Object.keys(this.cOffsets); let cWidth: number = content.getBoundingClientRect().width;
@@ -228,10 +190,6 @@ export class VirtualRowModelGenerator implements IModelGenerator<Column> {
             }
             return left + calWidth < offsetVal;
         });
-        if (isBlazor() && this.parent.isServerRendered) {
-            (<VirtualContentRenderer>this.parent.contentModule).startColIndex = indexes[0];
-            (<VirtualContentRenderer>this.parent.contentModule).endColIndex = indexes[indexes.length - 1];
-        }
         this.addFrozenIndex(indexes);
         return indexes;
     }
@@ -311,10 +269,9 @@ export class VirtualRowModelGenerator implements IModelGenerator<Column> {
 
     public getRows(): Row<Column>[] {
         let rows: Row<Column>[] = [];
-        let isBlazorServerRendered: boolean = isBlazor() && this.parent.isServerRendered ? true : false;
-        let keys: string[] = isBlazorServerRendered ? Object.keys(this.rowCache) : Object.keys(this.cache);
+        let keys: string[] = Object.keys(this.cache);
         for (let i: number = 0; i < keys.length; i++) {
-            rows = isBlazorServerRendered ? [...rows, ...this.rowCache[keys[i]]] : [...rows, ...this.cache[keys[i]]];
+            rows = [...rows, ...this.cache[keys[i]]];
         }
         return rows;
     }

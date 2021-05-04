@@ -32,6 +32,7 @@ describe('Form field CheckBox dialog', () => {
         editor.destroy();
         document.body.removeChild(document.getElementById('container'));
         editor = undefined;
+        document.body.innerHTML = '';
         setTimeout(function () {
             done();
         }, 2000);

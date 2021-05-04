@@ -3,7 +3,6 @@ import { Column } from '../models/column';
 import { Row } from '../models/row';
 import { freezeTable } from '../base/enum';
 import { RowModelGenerator } from '../services/row-model-generator';
-import { isBlazor } from '@syncfusion/ej2-base';
 import { splitFrozenRowObjectCells } from '../base/util';
 
 /**
@@ -38,7 +37,6 @@ export class FreezeRowModelGenerator implements IModelGenerator<Column> {
         }
         let row: Row<Column>[] = this.parent.enableVirtualization && !notifyArgs.isFrozenRowsRender ? virtualRows
             : this.rowModelGenerator.generateRows(data, notifyArgs);
-        if (isBlazor() && !this.parent.isJsComponent) { return row; }
         for (let i: number = 0, len: number = row.length; i < len; i++) {
             row[i].cells = splitFrozenRowObjectCells(this.parent, row[i].cells, tableName);
         }

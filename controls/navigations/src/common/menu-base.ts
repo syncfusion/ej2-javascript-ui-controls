@@ -2295,6 +2295,7 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
                 }
                 this.removeAttributes();
                 wrapper.parentNode.insertBefore(this.element, wrapper);
+                this.clonedElement = null;
             }
             if (this.isMenu && this.clonedElement) {
                 detach(this.element);

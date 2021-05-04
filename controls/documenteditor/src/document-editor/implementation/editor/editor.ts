@@ -47,7 +47,7 @@ import {
 import { DocumentEditor } from '../../document-editor';
 import { showSpinner, hideSpinner, Dialog } from '@syncfusion/ej2-popups';
 import { DialogUtility } from '@syncfusion/ej2-popups';
-import { DocumentHelper } from '../viewer';
+import { DocumentHelper, Layout } from '../viewer';
 import { Revision } from '../track-changes/track-changes';
 import { XmlHttpRequestHandler } from '../../base/ajax-helper';
 import { CommentActionEventArgs } from '../../base/index';
@@ -192,7 +192,10 @@ export class Editor {
         this.base64 = new Base64();
     }
     private get viewer(): LayoutViewer {
-        return this.owner.viewer;
+        if (!isNullOrUndefined(this.owner)) {
+            return this.owner.viewer;
+        }
+        return undefined;
     }
     private get editorHistory(): EditorHistory {
         return this.documentHelper.owner.editorHistory;
@@ -3996,7 +3999,11 @@ export class Editor {
             this.applyPasteOptions(this.currentPasteOptions);
         }
         hideSpinner(this.owner.element);
-        setTimeout((): void => { this.viewer.updateScrollBars(); }, 0);
+        setTimeout((): void => {
+            if (!isNullOrUndefined(this.viewer)) {
+                this.viewer.updateScrollBars();
+            }
+        }, 0);
     }
     private onPasteFailure(result: any): void {
         this.owner.fireServiceFailure(result);
@@ -4024,7 +4031,11 @@ export class Editor {
             this.pasteContents(document);
             this.applyPasteOptions(this.currentPasteOptions);
             if (this.chartType) {
-                setTimeout((): void => { this.viewer.updateScrollBars(); }, 30);
+                setTimeout((): void => {
+                    if (!isNullOrUndefined(this.viewer)) {
+                        this.viewer.updateScrollBars();
+                    }
+                }, 30);
                 this.chartType = false;
             }
         }
@@ -4188,18 +4199,19 @@ export class Editor {
             let lstDup: WList[] = this.documentHelper.lists.filter((obj: any) => {
                 return obj.listId === list.listId;
             });
-
-            let isUpdate: boolean = this.updateListIdForBlocks(pasteContent.sections[sectionId].blocks, abstractList, lstDup[0], list.listId, uniqueListId);
-            if (isUpdate) {
-                abstractList.abstractListId = uniqueAbsLstId;
-                list.listId = uniqueListId;
-                list.abstractListId = uniqueAbsLstId;
-                uniqueListId++;
-                uniqueAbsLstId++;
-            } else {
-                pasteContent.lists.splice(k, 1);
-                pasteContent.abstractLists.splice(pasteContent.abstractLists.indexOf(abstractList), 1);
-                k--;
+            if (!isNullOrUndefined(abstractList)) {
+                let isUpdate: boolean = this.updateListIdForBlocks(pasteContent.sections[sectionId].blocks, abstractList, lstDup[0], list.listId, uniqueListId);
+                if (isUpdate) {
+                    abstractList.abstractListId = uniqueAbsLstId;
+                    list.listId = uniqueListId;
+                    list.abstractListId = uniqueAbsLstId;
+                    uniqueListId++;
+                    uniqueAbsLstId++;
+                } else {
+                    pasteContent.lists.splice(k, 1);
+                    pasteContent.abstractLists.splice(pasteContent.abstractLists.indexOf(abstractList), 1);
+                    k--;
+                }
             }
         }
         let blocks: any[] = this.getBlocksToUpdate(pasteContent.sections[sectionId].blocks);
@@ -5273,8 +5285,10 @@ export class Editor {
         }
         this.insertPicture(imageString, width, height);
         setTimeout((): void => {
-            this.viewer.updateScrollBars();
-        }, 10);
+            if (!isNullOrUndefined(this.viewer)) {
+                this.viewer.updateScrollBars();
+            }
+        }, 30);
     }
     /**
      * Inserts a table of specified size at cursor position
@@ -8288,9 +8302,28 @@ export class Editor {
             if (update && property === 'leftIndent') {
                 value = this.getIndentIncrementValue(selection.start.paragraph, value as number);
             }
-            let para: ParagraphWidget = selection.start.paragraph.combineWidget(this.owner.viewer) as ParagraphWidget;
+            let para: ParagraphWidget = selection.start.paragraph;
+            let layout: Layout = this.documentHelper.layout;
+            let splittedWidgets: Widget[] = para.getSplitWidgets();
+            let footNoteWidgets: BlockWidget[] = [];
+            let toBodyWidget: BodyWidget = para.containerWidget as BodyWidget;
+            let fromBodyWidget: BodyWidget;
+            for (let i: number = 0; i < splittedWidgets.length; i++) {
+                let footWidgets: BlockWidget[] = layout.getFootNoteWidgetsOf(splittedWidgets[i] as BlockWidget);
+                for (let j: number = 0; j < footWidgets.length; j++) {
+                    fromBodyWidget = footWidgets[j].containerWidget as BodyWidget;
+                    if (toBodyWidget != fromBodyWidget) {
+                        footNoteWidgets.push(footWidgets[j]);
+                    }
+                }
+            }
+            para = para.combineWidget(this.owner.viewer) as ParagraphWidget;
             this.applyParaFormatProperty(para, property, value, update);
             this.layoutItemBlock(para, false);
+            if (footNoteWidgets.length > 0) {
+                layout.moveFootNotesToPage(footNoteWidgets, fromBodyWidget, toBodyWidget);
+                layout.layoutfootNote(toBodyWidget.page.footnoteWidget);
+            }
             if (!isBidiList) {
                 this.documentHelper.layout.isBidiReLayout = false;
             }
@@ -10273,7 +10306,7 @@ export class Editor {
             let newParagraph: ParagraphWidget; //Adds an empty paragraph, to ensure minimal content.
             if (isNullOrUndefined(block.nextWidget) && (isNullOrUndefined(previousParagraph) || previousParagraph.nextRenderedWidget instanceof TableWidget)) {
                 newParagraph = new ParagraphWidget();
-                if (editAction === 1 && block instanceof ParagraphWidget) {
+                if (editAction === 1 && block instanceof ParagraphWidget && !isNullOrUndefined(block.paragraphFormat.baseStyle) && block.paragraphFormat.baseStyle.name === 'Normal') {
                     newParagraph.characterFormat.copyFormat(block.characterFormat);
                     newParagraph.paragraphFormat.copyFormat(block.paragraphFormat);
                 }
@@ -10282,6 +10315,11 @@ export class Editor {
                 if (block instanceof ParagraphWidget) {
                     newParagraph.paragraphFormat.lineSpacing = block.paragraphFormat.lineSpacing;
                     newParagraph.paragraphFormat.lineSpacingType = block.paragraphFormat.lineSpacingType;
+                    let style: Object = this.documentHelper.styles.findByName('Normal');
+                    if (!isNullOrUndefined(style)) {
+                        (newParagraph.paragraphFormat.baseStyle as WParagraphStyle) = new WParagraphStyle();
+                        (newParagraph.paragraphFormat.baseStyle as WParagraphStyle).copyStyle(style as WParagraphStyle);
+                    }
                 }
                 this.documentHelper.layout.layoutBodyWidgetCollection(newParagraph.index, newParagraph.bodyWidget, newParagraph, false);
                 if (block.containerWidget instanceof Widget) {
@@ -10929,7 +10967,7 @@ export class Editor {
             ((cell.childWidgets[0] as ParagraphWidget).childWidgets[0] as LineWidget).children.push((bookmarkCollection[j] as BookmarkElementBox).reference);
             bookmarkCollection[j].line = (cell.childWidgets[0] as ParagraphWidget).childWidgets[0] as LineWidget;
             (bookmarkCollection[j] as BookmarkElementBox).reference.line = (cell.childWidgets[0] as ParagraphWidget).childWidgets[0] as LineWidget;
-            this.documentHelper.bookmarks.add((bookmarkCollection[j] as BookmarkElementBox).name,bookmarkCollection[j] as BookmarkElementBox);
+            this.documentHelper.bookmarks.add((bookmarkCollection[j] as BookmarkElementBox).name, bookmarkCollection[j] as BookmarkElementBox);
         }
         return true;
     }
@@ -12366,6 +12404,12 @@ export class Editor {
                     this.addRemovedNodes(paragraph);
                 }
                 this.setPositionForHistory();
+                const footNoteWidgets: BlockWidget[] = this.documentHelper.layout.getFootNoteWidgetsOf(paragraph);
+                if (footNoteWidgets.length > 0) {
+                    let layout: Layout = this.documentHelper.layout;
+                    let bodyWidget: BodyWidget = paragraph.containerWidget as BodyWidget;
+                    layout.layoutfootNote(bodyWidget.page.footnoteWidget);
+                }
                 // if (!isRedoing) {
                 this.reLayout(selection);
                 // }
@@ -12896,7 +12940,7 @@ export class Editor {
         selection.selectContent(textPosition, true);
         this.reLayout(selection);
     }
-    private removeContentControlMark(start: ContentControl, end : ContentControl): boolean {
+    private removeContentControlMark(start: ContentControl, end: ContentControl): boolean {
         if (!start.contentControlProperties.lockContentControl) {
             this.selection.start.setPositionParagraph(start.line, start.line.getOffset(start, 0));
             this.selection.end.setPositionParagraph(end.line, end.line.getOffset(end, 0) + 1);

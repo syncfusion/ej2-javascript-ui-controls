@@ -29,6 +29,7 @@ describe('Selection Character format Bidi validation', () => {
         document.body.removeChild(document.getElementById('container'));
         editor = undefined;
         documentHelper = undefined;
+        document.body.innerHTML = '';
         setTimeout(() => {
             done();
         }, 1000);
@@ -75,6 +76,7 @@ describe('Selection Paragraph format Bidi validation', () => {
         document.body.removeChild(document.getElementById('container'));
         editor = undefined;
         documentHelper = undefined;
+        document.body.innerHTML = '';
         setTimeout(() => {
             done();
         }, 1000);
@@ -125,6 +127,7 @@ describe('Selection Table format Bidi validation', () => {
         document.body.removeChild(document.getElementById('container'));
         editor = undefined;
         documentHelper = undefined;
+        document.body.innerHTML = '';
         setTimeout(() => {
             done();
         }, 1000);
@@ -175,6 +178,7 @@ describe('Selection Table format Bidi validation in table empty selection', () =
         document.body.removeChild(document.getElementById('container'));
         editor = undefined;
         documentHelper = undefined;
+        document.body.innerHTML = '';
         setTimeout(() => {
             done();
         }, 1000);
@@ -235,6 +239,7 @@ describe('Selection Table format Bidi validation in table with non empty selecti
         document.body.removeChild(document.getElementById('container'));
         editor = undefined;
         documentHelper = undefined;
+        document.body.innerHTML = '';
         setTimeout(() => {
             done();
         }, 1000);

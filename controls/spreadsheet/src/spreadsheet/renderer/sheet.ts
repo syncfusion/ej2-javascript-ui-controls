@@ -262,6 +262,8 @@ export class SheetRender implements IRenderer {
             if (indexes[0] === args.indexes[0]) {
                 if (frozenCol && indexes[1] < frozenCol) {
                     col = this.updateCol(sheet, indexes[1], selectAllColGrp);
+                    const empty: Element = rowHdrColGrp.querySelector('.e-empty');
+                    empty ? rowHdrColGrp.insertBefore(col, empty) : rowHdrColGrp.appendChild(col);
                     rowHdrColGrp.appendChild(col.cloneNode(true));
                     selectAllHdrRow.appendChild(this.cellRenderer.renderColHeader(indexes[1]));
                 } else {

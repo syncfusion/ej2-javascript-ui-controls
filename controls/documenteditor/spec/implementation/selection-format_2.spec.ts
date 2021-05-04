@@ -226,6 +226,7 @@ describe('Selection character and paragraph Format validation', () => {
         editor.destroy();
         document.body.removeChild(document.getElementById('container'));
         editor = undefined;
+        document.body.innerHTML = '';
         setTimeout(() => {
             done();
         }, 1000);
@@ -286,6 +287,7 @@ describe('Selection header and footer  validation weblayout', () => {
         document.body.removeChild(document.getElementById('container'));
         editor = undefined;
         documentHelper = undefined;
+        document.body.innerHTML = '';
         setTimeout(() => {
             done();
         }, 1000);

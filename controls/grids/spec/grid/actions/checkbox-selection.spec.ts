@@ -917,6 +917,7 @@ describe('Grid checkbox selection functionality', () => {
     describe('EJ2-47543 Column header checkbox icon turned to intermediate state when we remove pager', () => {
         let gridObj: Grid;
         let chkAll: HTMLElement;
+        let rowDeselected: (args: any) => void;
         beforeAll((done: Function) => {
             gridObj = createGrid(
                 {
@@ -937,6 +938,14 @@ describe('Grid checkbox selection functionality', () => {
         });
         it('Check the Header CheckBox state', () => {
             expect(chkAll.classList.contains('e-check')).toBeTruthy();
+        });
+        it('EJ2-48578 - row Deselected event parameter returns data as undefined in selectAll checkbox', (done: Function) => {
+            rowDeselected = (args: any) => {
+                expect(args.data).not.toEqual(undefined);
+                done();
+            };
+            gridObj.rowDeselected = rowDeselected;
+            chkAll.click();
         });
 
         afterAll(() => {

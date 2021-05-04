@@ -103,6 +103,7 @@ describe('Search module testing', () => {
         editor.destroy();
         editor = undefined;
         document.body.removeChild(document.getElementById('container'));
+        document.body.innerHTML = '';
         setTimeout(() => {
             done();
         }, 1000);
@@ -145,6 +146,7 @@ describe('Search module testing-replace', () => {
         document.body.removeChild(document.getElementById('container'));
         editor.destroy();
         editor = undefined;
+        document.body.innerHTML = '';
         setTimeout(function () {
             done();
         }, 1000);

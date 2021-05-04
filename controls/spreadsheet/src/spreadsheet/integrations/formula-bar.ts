@@ -544,8 +544,8 @@ export class FormulaBar {
         case 'refreshFormulabar':
             this.getFormulaBar().value = isUndefined(args.value) ? '' : <string>args.value;
             break;
-        case 'getPosition':
-            args.position = this.getFormulaBar().getBoundingClientRect();
+        case 'getElement':
+            args.element = this.getFormulaBar();
             break;
         }
     }

@@ -12,6 +12,7 @@ import { Grid } from '../base/grid';
 import { getScrollBarWidth, ensureLastRow, ensureFirstRow, getEditedDataIndex, resetRowIndex, setRowElements } from '../base/util';
 import { Action, freezeTable } from '../base/enum';
 import { ColumnWidthService } from '../services/width-controller';
+import * as literals from '../base/string-literals';
 
 /**
  * Infinite Scrolling class
@@ -197,9 +198,9 @@ export class InfiniteScroll implements IAction {
     private modelChanged(args: InfiniteScrollArgs): void {
         if (args.requestType !== 'infiniteScroll' && (args.requestType === 'delete' || this.requestType === 'add')) {
             let rows: Element[] = this.parent.getRows();
-            this.firstIndex = parseInt(rows[0].getAttribute('aria-rowindex'), 10);
+            this.firstIndex = parseInt(rows[0].getAttribute(literals.ariaRowIndex), 10);
             this.firstBlock = Math.ceil((this.firstIndex + 1) / this.parent.pageSettings.pageSize);
-            this.lastIndex = parseInt(rows[rows.length - 1].getAttribute('aria-rowindex'), 10);
+            this.lastIndex = parseInt(rows[rows.length - 1].getAttribute(literals.ariaRowIndex), 10);
             if (args.requestType === 'delete') {
                 let rowObj: Row<Column>[] = this.parent.getRowsObject();
                 args.startIndex = this.parent.infiniteScrollSettings.enableCache
@@ -242,7 +243,7 @@ export class InfiniteScroll implements IAction {
                 if (frozenCols) {
                     let rows: Row<Column>[] = this.parent.getMovableRowsObject();
                     this.resetRowIndex(rows, args.e, this.parent.getMovableDataRows(), this.requestType === 'add');
-                    if (this.parent.getFrozenMode() === 'Left-Right') {
+                    if (this.parent.getFrozenMode() === literals.leftRight) {
                         let frRows: Row<Column>[] = this.parent.getFrozenRightRowsObject();
                         this.resetRowIndex(frRows, args.e, this.parent.getFrozenRightRows(), this.requestType === 'add');
                     }
@@ -259,7 +260,7 @@ export class InfiniteScroll implements IAction {
                             let movableRows: Element[] = this.parent.getMovableDataRows();
                             remove(movableRows[this.parent.frozenRows]);
                             this.createRow([this.parent.getMovableRowsObject()[this.parent.frozenRows - 1]], args, true, true);
-                            if (this.parent.getFrozenMode() === 'Left-Right') {
+                            if (this.parent.getFrozenMode() === literals.leftRight) {
                                 let rightRows: Element[] = this.parent.getFrozenRightDataRows();
                                 remove(rightRows[this.parent.frozenRows]);
                                 this.createRow(
@@ -285,18 +286,18 @@ export class InfiniteScroll implements IAction {
         let rowRenderer: RowRenderer<Column> = new RowRenderer<Column>(this.serviceLocator, null, this.parent);
         let tbody: HTMLElement;
         if (isFrozenRight) {
-            tbody = this.parent.element.querySelector('.e-frozen-right-content').querySelector('tbody');
+            tbody = this.parent.element.querySelector('.e-frozen-right-content').querySelector( literals.tbody);
         } else {
-            tbody = !this.parent.isFrozenGrid() ? this.parent.getContent().querySelector('tbody') : isMovable
-                ? this.parent.getMovableVirtualContent().querySelector('tbody')
-                : this.parent.getFrozenVirtualContent().querySelector('tbody');
+            tbody = !this.parent.isFrozenGrid() ? this.parent.getContent().querySelector( literals.tbody) : isMovable
+                ? this.parent.getMovableVirtualContent().querySelector( literals.tbody)
+                : this.parent.getFrozenVirtualContent().querySelector( literals.tbody);
         }
         if (this.parent.frozenRows) {
             tbody = isFrozenRows && this.requestType !== 'add' || !isFrozenRows && this.requestType === 'add'
-                ? !this.parent.isFrozenGrid() ? this.parent.getHeaderContent().querySelector('tbody')
-                    : isMovable ? this.parent.getMovableVirtualHeader().querySelector('tbody')
-                        : isFrozenRight ? this.parent.element.querySelector('.e-frozen-right-header').querySelector('tbody')
-                            : this.parent.getFrozenVirtualHeader().querySelector('tbody') : tbody;
+                ? !this.parent.isFrozenGrid() ? this.parent.getHeaderContent().querySelector( literals.tbody)
+                    : isMovable ? this.parent.getMovableVirtualHeader().querySelector( literals.tbody)
+                        : isFrozenRight ? this.parent.element.querySelector('.e-frozen-right-header').querySelector( literals.tbody)
+                            : this.parent.getFrozenVirtualHeader().querySelector( literals.tbody) : tbody;
         }
         let notifyArgs: {
             rows: Row<Column>[], cancel: boolean, args: { e: InfiniteScrollArgs, result: Object[] },
@@ -333,7 +334,7 @@ export class InfiniteScroll implements IAction {
                 setRowElements(this.parent);
                 (<{ visibleRows?: Row<Column>[] }>this.parent.contentModule).visibleRows = this.requestType === 'add'
                     ? row.concat(rows) : rows.concat(row);
-                if (this.parent.getFrozenMode() === 'Left-Right') {
+                if (this.parent.getFrozenMode() === literals.leftRight) {
                     this.createRow(this.parent.getFrozenRightRowsObject(), args, false, false, true);
                 }
             } else {
@@ -527,12 +528,12 @@ export class InfiniteScroll implements IAction {
         this.restoreInfiniteEdit();
         this.restoreInfiniteAdd();
         let targetEle: HTMLElement = e.target as HTMLElement;
-        let isInfinite: boolean = targetEle.classList.contains('e-content');
+        let isInfinite: boolean = targetEle.classList.contains(literals.content);
         if (isInfinite && this.parent.enableInfiniteScrolling && !e.isLeft) {
             let scrollEle: Element = this.parent.getContent().firstElementChild;
             this.prevScrollTop = scrollEle.scrollTop;
             let rows: Element[] = this.parent.getRows();
-            let index: number = parseInt(rows[rows.length - 1].getAttribute('aria-rowindex'), 10) + 1;
+            let index: number = parseInt(rows[rows.length - 1].getAttribute(literals.ariaRowIndex), 10) + 1;
             let prevPage: number = this.parent.pageSettings.currentPage;
             let args: InfiniteScrollArgs;
             let offset: number = targetEle.scrollHeight - targetEle.scrollTop;
@@ -546,7 +547,7 @@ export class InfiniteScroll implements IAction {
                 }
                 let rows: Element[] = [].slice.call(scrollEle.querySelectorAll('.e-row:not(.e-addedrow)'));
                 let row: Element = rows[rows.length - 1];
-                let rowIndex: number = parseInt(row.getAttribute('aria-rowindex'), 10);
+                let rowIndex: number = parseInt(row.getAttribute(literals.ariaRowIndex), 10);
                 this.parent.pageSettings.currentPage = Math.ceil(rowIndex / this.parent.pageSettings.pageSize) + 1;
                 args = {
                     requestType: 'infiniteScroll',
@@ -564,9 +565,9 @@ export class InfiniteScroll implements IAction {
                     this.isDownScroll = false;
                     this.isUpScroll = true;
                 }
-                let row: Element = [].slice.call(scrollEle.querySelectorAll('.e-row'));
-                let rowIndex: number = parseInt(row[this.parent.pageSettings.pageSize - 1].getAttribute('aria-rowindex'), 10);
-                let startIndex: number = parseInt(row[0].getAttribute('aria-rowindex'), 10) - this.parent.pageSettings.pageSize;
+                let row: Element = [].slice.call(scrollEle.getElementsByClassName(literals.row));
+                let rowIndex: number = parseInt(row[this.parent.pageSettings.pageSize - 1].getAttribute(literals.ariaRowIndex), 10);
+                let startIndex: number = parseInt(row[0].getAttribute(literals.ariaRowIndex), 10) - this.parent.pageSettings.pageSize;
                 this.parent.pageSettings.currentPage = Math.ceil(rowIndex / this.parent.pageSettings.pageSize) - 1;
                 if (this.parent.pageSettings.currentPage) {
                     args = {
@@ -657,10 +658,10 @@ export class InfiniteScroll implements IAction {
         if (e.byKey && (e.keyArgs.action === 'upArrow' || e.keyArgs.action === 'downArrow')) {
             this.pressedKey = e.keyArgs.action;
             let ele: Element = document.activeElement;
-            let rowIndex: number = parseInt(ele.parentElement.getAttribute('aria-rowindex'), 10);
+            let rowIndex: number = parseInt(ele.parentElement.getAttribute(literals.ariaRowIndex), 10);
             let scrollEle: Element = this.parent.getContent().firstElementChild;
             this.rowIndex = e.keyArgs.action === 'downArrow' ? rowIndex + 1 : rowIndex - 1;
-            this.cellIndex = parseInt(ele.getAttribute('aria-colindex'), 10);
+            this.cellIndex = parseInt(ele.getAttribute(literals.ariaColIndex), 10);
             let row: Element = this.parent.getRowByIndex(rowIndex);
             let visibleRowCount: number = Math.floor((scrollEle as HTMLElement).offsetHeight / this.parent.getRowHeight());
             if (!row || ensureLastRow(row, this.parent) || ensureFirstRow(row, this.rowTop)) {
@@ -690,8 +691,8 @@ export class InfiniteScroll implements IAction {
     }
 
     private getVirtualInfiniteEditedData(): void {
-        let editForm: Element = this.parent.element.querySelector('.e-editedrow');
-        let addForm: Element = this.parent.element.querySelector('.e-addedrow');
+        let editForm: Element = this.parent.element.querySelector('.' + literals.editedRow);
+        let addForm: Element = this.parent.element.querySelector('.' + literals.addedRow);
         let gridForm: Element = this.parent.element.querySelector('.e-gridform');
         if (this.parent.infiniteScrollSettings.enableCache && (editForm || addForm)) {
             let rowData: Object = editForm ? extend({}, this.getEditedRowObject().data)
@@ -710,7 +711,7 @@ export class InfiniteScroll implements IAction {
         if (this.isNormaledit && this.parent.infiniteScrollSettings.enableCache && frozenEdit) {
             if (this.parent.editSettings.allowEditing && !isNullOrUndefined(this.editRowIndex)) {
                 let row: HTMLTableRowElement = this.parent.getRowByIndex(this.editRowIndex) as HTMLTableRowElement;
-                if (Object.keys(this.virtualInfiniteData).length && row && !this.parent.getContent().querySelector('.e-editedrow')) {
+                if (Object.keys(this.virtualInfiniteData).length && row && !this.parent.getContent().querySelector('.' + literals.editedRow)) {
                     let top: number = row.getBoundingClientRect().top;
                     if (top < content.offsetHeight && top > this.parent.getRowHeight()) {
                         this.parent.isEdit = false;
@@ -724,7 +725,7 @@ export class InfiniteScroll implements IAction {
     private restoreInfiniteAdd(): void {
         let content: Element = this.parent.getContent().firstElementChild;
         if (this.parent.getCurrentViewRecords().length && this.parent.getRowByIndex(0) && this.isNormaledit &&
-            this.parent.infiniteScrollSettings.enableCache && this.isAdd && !content.querySelector('.e-addedrow')) {
+            this.parent.infiniteScrollSettings.enableCache && this.isAdd && !content.querySelector('.' + literals.addedRow)) {
             let isTop: boolean = content.scrollTop < this.parent.getRowHeight();
             if (isTop) {
                 this.parent.isEdit = false;
@@ -742,7 +743,7 @@ export class InfiniteScroll implements IAction {
         let frozenCols: boolean = this.parent.isFrozenGrid();
         let scrollEle: Element = this.parent.getContent().firstElementChild;
         let isInfiniteScroll: boolean = this.parent.enableInfiniteScrolling && e.args.requestType === 'infiniteScroll';
-        let isMovable: boolean = this.parent.getFrozenMode() === 'Left-Right' &&  e.tableName === 'movable';
+        let isMovable: boolean = this.parent.getFrozenMode() === literals.leftRight &&  e.tableName === 'movable';
         if ((isInfiniteScroll && !e.args.isFrozen && !isMovable) || !isInfiniteScroll) {
             if (isInfiniteScroll && e.args.direction === 'up') {
                 e.tbody.insertBefore(e.frag, e.tbody.firstElementChild);
@@ -755,36 +756,36 @@ export class InfiniteScroll implements IAction {
             this.updateCurrentViewData();
         } else {
             if (isInfiniteScroll) {
-                if (e.tableName === 'frozen-left' || (this.parent.getFrozenMode() === 'Right' && e.tableName === 'frozen-right')) {
+                if (e.tableName === literals.frozenLeft || (this.parent.getFrozenMode() === 'Right' && e.tableName === literals.frozenRight)) {
                     this.frozenFrag = e.frag;
-                } else if (this.parent.getFrozenMode() === 'Left-Right' && e.tableName === 'movable') {
+                } else if (this.parent.getFrozenMode() === literals.leftRight && e.tableName === 'movable') {
                     this.movableFrag = e.frag;
                 } else {
-                    let tbody: Element = this.parent.getFrozenVirtualContent().querySelector('tbody');
+                    let tbody: Element = this.parent.getFrozenVirtualContent().querySelector( literals.tbody);
                     e.args.direction === 'up' ? tbody.insertBefore(this.frozenFrag, tbody.firstElementChild)
                         : tbody.appendChild(this.frozenFrag);
-                    if (e.tableName === 'frozen-right') {
-                        this.parent.getMovableVirtualContent().querySelector('tbody').appendChild(this.movableFrag);
-                        this.parent.element.querySelector('.e-frozen-right-content').querySelector('tbody').appendChild(e.frag);
+                    if (e.tableName === literals.frozenRight) {
+                        this.parent.getMovableVirtualContent().querySelector( literals.tbody).appendChild(this.movableFrag);
+                        this.parent.element.querySelector('.e-frozen-right-content').querySelector( literals.tbody).appendChild(e.frag);
                     } else {
-                        this.parent.getMovableVirtualContent().querySelector('.e-table').appendChild(e.tbody);
+                        this.parent.getMovableVirtualContent().querySelector('.' + literals.table).appendChild(e.tbody);
                     }
                     (<{ refreshScrollOffset?: Function }>this.parent.contentModule).refreshScrollOffset();
                     this.updateCurrentViewData();
                 }
             } else {
                 let table: Element;
-                if (e.tableName === 'frozen-left') {
-                    table = this.parent.getFrozenVirtualContent().querySelector('.e-table');
+                if (e.tableName === literals.frozenLeft) {
+                    table = this.parent.getFrozenVirtualContent().querySelector('.' + literals.table);
                 } else if (e.tableName === 'movable') {
-                    table = this.parent.getMovableVirtualContent().querySelector('.e-table');
-                    if (this.parent.getFrozenMode() !== 'Left-Right') {
+                    table = this.parent.getMovableVirtualContent().querySelector('.' + literals.table);
+                    if (this.parent.getFrozenMode() !== literals.leftRight) {
                         (<{ refreshScrollOffset?: Function }>this.parent.contentModule).refreshScrollOffset();
                         this.updateCurrentViewData();
                     }
                 } else {
-                    table = this.parent.element.querySelector('.e-frozen-right-content').querySelector('.e-table');
-                    if (this.parent.getFrozenMode() === 'Left-Right') {
+                    table = this.parent.element.querySelector('.e-frozen-right-content').querySelector('.' + literals.table);
+                    if (this.parent.getFrozenMode() === literals.leftRight) {
                         (<{ refreshScrollOffset?: Function }>this.parent.contentModule).refreshScrollOffset();
                         this.updateCurrentViewData();
                     }
@@ -834,7 +835,7 @@ export class InfiniteScroll implements IAction {
                 }
             }
             if (this.pressedKey === 'PageUp') {
-                (<{ cells?: HTMLElement[] }>tbody.querySelector('.e-row')).cells[0].focus();
+                (<{ cells?: HTMLElement[] }>tbody.querySelector('.' + literals.row)).cells[0].focus();
             }
         }
     }
@@ -842,13 +843,13 @@ export class InfiniteScroll implements IAction {
     private removeInfiniteCacheRows(e: { args: InfiniteScrollArgs }): void {
         let isInfiniteScroll: boolean = this.parent.enableInfiniteScrolling && e.args.requestType === 'infiniteScroll';
         if (!e.args.isFrozen && isInfiniteScroll && this.parent.infiniteScrollSettings.enableCache && this.isRemove) {
-            let rows: Element[] = [].slice.call(this.parent.getContentTable().querySelectorAll('.e-row'));
+            let rows: Element[] = [].slice.call(this.parent.getContentTable().getElementsByClassName(literals.row));
             if (e.args.direction === 'down') {
                 if (this.parent.allowGrouping && this.parent.groupSettings.columns.length) {
                     let captionRows: Element[] = [].slice.call(this.parent.getContentTable().querySelectorAll('tr'));
                     this.removeCaptionRows(captionRows, e.args);
                 }
-                let addRowCount: number = this.parent.element.querySelector('.e-addedrow') ? 0 : 1;
+                let addRowCount: number = this.parent.element.querySelector('.' + literals.addedRow) ? 0 : 1;
                 this.removeTopRows(rows, this.parent.pageSettings.pageSize - addRowCount);
             }
             if (e.args.direction === 'up') {
@@ -914,10 +915,10 @@ export class InfiniteScroll implements IAction {
 
     private removeTopRows(rows: Element[], maxIndx: number): void {
         let frozeCols: boolean = this.parent.isFrozenGrid();
-        let frRows: Element[] = this.parent.getFrozenMode() === 'Left-Right'
-            ? [].slice.call(this.parent.element.querySelector('.e-frozen-right-content').querySelectorAll('.e-row')) : null;
+        let frRows: Element[] = this.parent.getFrozenMode() === literals.leftRight
+            ? [].slice.call(this.parent.element.querySelector('.e-frozen-right-content').getElementsByClassName(literals.row)) : null;
         let movableRows: Element[] = frozeCols ?
-            [].slice.call(this.parent.getMovableVirtualContent().querySelectorAll('.e-row')) : null;
+            [].slice.call(this.parent.getMovableVirtualContent().getElementsByClassName(literals.row)) : null;
         for (let i: number = 0; i <= maxIndx; i++) {
             if (this.parent.frozenRows && this.parent.pageSettings.currentPage === this.parent.infiniteScrollSettings.maxBlocks + 1
                 && i > (maxIndx - this.parent.frozenRows)) {
@@ -937,9 +938,9 @@ export class InfiniteScroll implements IAction {
         let cnt: number = 0;
         let frozeCols: boolean = this.parent.isFrozenGrid();
         let movableRows: Element[] = frozeCols ?
-            [].slice.call(this.parent.getMovableVirtualContent().querySelectorAll('.e-row')) : null;
-        let frRows: Element[] = this.parent.getFrozenMode() === 'Left-Right' ?
-            [].slice.call(this.parent.element.querySelector('.e-frozen-right-content').querySelectorAll('.e-row')) : null;
+            [].slice.call(this.parent.getMovableVirtualContent().getElementsByClassName(literals.row)) : null;
+        let frRows: Element[] = this.parent.getFrozenMode() === literals.leftRight ?
+            [].slice.call(this.parent.element.querySelector('.e-frozen-right-content').getElementsByClassName(literals.row)) : null;
         let pageSize: number = this.parent.pageSettings.pageSize;
         if (!frozeCols && this.infiniteCache[args.prevPage].length < pageSize) {
             cnt = this.parent.pageSettings.pageSize - this.infiniteCache[args.prevPage].length;
@@ -962,19 +963,19 @@ export class InfiniteScroll implements IAction {
     private removeCaptionRows(rows: Element[], args: InfiniteScrollArgs): void {
         if (args.direction === 'down') {
             let lastRow: Element = this.parent.getRows()[this.parent.pageSettings.pageSize];
-            let lastRowIndex: number = parseInt(lastRow.getAttribute('aria-rowindex'), 10) - 1;
+            let lastRowIndex: number = parseInt(lastRow.getAttribute(literals.ariaRowIndex), 10) - 1;
             let k: number = 0;
             for (let i: number = 0; k < lastRowIndex; i++) {
-                if (!rows[i].classList.contains('e-row')) {
+                if (!rows[i].classList.contains(literals.row)) {
                     remove(rows[i]);
                 } else {
-                    k = parseInt(rows[i].getAttribute('aria-rowindex'), 10);
+                    k = parseInt(rows[i].getAttribute(literals.ariaRowIndex), 10);
                 }
             }
         }
         if (args.direction === 'up') {
-            let rowElements: Element[] = [].slice.call(this.parent.getContent().querySelectorAll('.e-row'));
-            let lastIndex: number = parseInt(rowElements[rowElements.length - 1].getAttribute('aria-rowindex'), 10);
+            let rowElements: Element[] = [].slice.call(this.parent.getContent().getElementsByClassName(literals.row));
+            let lastIndex: number = parseInt(rowElements[rowElements.length - 1].getAttribute(literals.ariaRowIndex), 10);
             let page: number = Math.ceil(lastIndex / this.parent.pageSettings.pageSize);
             let startIndex: number = 0;
             for (let i: number = this.parent.pageSettings.currentPage + 1; i < page; i++) {

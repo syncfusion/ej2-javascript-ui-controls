@@ -1935,37 +1935,39 @@ export class DocumentHelper {
             const endPosition: TextPosition = this.selection.end.clone();
             const inlineObj: ElementInfo = startPosition.currentWidget.getInline(startPosition.offset, 0);
             const inline: ElementBox = inlineObj.element;
-            if (inline instanceof FootnoteElementBox) {
-                if (inline.footnoteType === 'Footnote') {
-                    const footnotes: FootNoteWidget = this.currentPage.footnoteWidget;
-                    let i: number;
-                    for (i = 1; i <= footnotes.childWidgets.length; i++) {
-                        const footnoteText: FootnoteElementBox = (footnotes.childWidgets[i] as BlockWidget).footNoteReference;
-                        if (inline.text === footnoteText.text) {
-                            break;
-                        }
-                    }
-                    startPosition.setPositionParagraph((footnotes.childWidgets[i] as BlockWidget).childWidgets[0] as LineWidget, 0);
-                    endPosition.setPositionParagraph((footnotes.childWidgets[i] as BlockWidget).childWidgets[0] as LineWidget, 0);
-                    this.selection.selectRange(startPosition, endPosition);
-                } else {
-                    const endnotes: FootNoteWidget = this.pages[this.pages.length - 1].endnoteWidget;
-                    let i: number;
-                    if (!isNullOrUndefined(endnotes)) {
-                        for (i = 1; i <= endnotes.childWidgets.length; i++) {
-                            const endnoteText: FootnoteElementBox = (endnotes.childWidgets[i] as BlockWidget).footNoteReference;
-                            if (inline.text === endnoteText.text) {
+            if (this.owner.layoutType == "Pages") {
+                if (inline instanceof FootnoteElementBox) {
+                    if (inline.footnoteType === 'Footnote') {
+                        const footnotes: FootNoteWidget = this.currentPage.footnoteWidget;
+                        let i: number;
+                        for (i = 1; i <= footnotes.childWidgets.length; i++) {
+                            const footnoteText: FootnoteElementBox = (footnotes.childWidgets[i] as BlockWidget).footNoteReference;
+                            if (inline.text === footnoteText.text) {
                                 break;
                             }
                         }
+                        startPosition.setPositionParagraph((footnotes.childWidgets[i] as BlockWidget).childWidgets[0] as LineWidget, 0);
+                        endPosition.setPositionParagraph((footnotes.childWidgets[i] as BlockWidget).childWidgets[0] as LineWidget, 0);
+                        this.selection.selectRange(startPosition, endPosition);
+                    } else {
+                        const endnotes: FootNoteWidget = this.pages[this.pages.length - 1].endnoteWidget;
+                        let i: number;
+                        if (!isNullOrUndefined(endnotes)) {
+                            for (i = 1; i <= endnotes.childWidgets.length; i++) {
+                                const endnoteText: FootnoteElementBox = (endnotes.childWidgets[i] as BlockWidget).footNoteReference;
+                                if (inline.text === endnoteText.text) {
+                                    break;
+                                }
+                            }
+                        }
+                        startPosition.setPositionParagraph((endnotes.childWidgets[i] as BlockWidget).childWidgets[0] as LineWidget, 0);
+                        endPosition.setPositionParagraph((endnotes.childWidgets[i] as BlockWidget).childWidgets[0] as LineWidget, 0);
+                        this.selection.selectRange(startPosition, endPosition);
                     }
-                    startPosition.setPositionParagraph((endnotes.childWidgets[i] as BlockWidget).childWidgets[0] as LineWidget, 0);
-                    endPosition.setPositionParagraph((endnotes.childWidgets[i] as BlockWidget).childWidgets[0] as LineWidget, 0);
-                    this.selection.selectRange(startPosition, endPosition);
-                }
-            } else {
-                if (inline instanceof TextElementBox && (this.selection.isinEndnote || this.selection.isinFootnote)) {
-                    this.selection.footnoteReferenceElement(startPosition, endPosition, inline);
+                } else {
+                    if (inline instanceof TextElementBox && (this.selection.isinEndnote || this.selection.isinFootnote)) {
+                        this.selection.footnoteReferenceElement(startPosition, endPosition, inline);
+                    }
                 }
             }
             if (this.selection.isEmpty && !isNullOrUndefined(this.currentPage) && !isNullOrUndefined(this.owner.selection.start)) {
@@ -2825,7 +2827,13 @@ export class DocumentHelper {
         if (blockContainer.floatingElements.length > 0) {
             let page: Page = this.currentPage;
             /* eslint-disable */
-            blockContainer.floatingElements.sort(function (a, b) { return b.zOrderPosition - a.zOrderPosition; });
+            blockContainer.floatingElements.sort(function (a, b) {
+                if (a instanceof TableWidget || b instanceof TableWidget) {
+                    return 0;
+                } else {
+                    return a.zOrderPosition - b.zOrderPosition;
+                }
+            });
             if (isMouseDraggedInShape) {
                 let textFrame: TextFrame = this.owner.selection.getCurrentTextFrame();
                 if (textFrame) {
@@ -2834,7 +2842,10 @@ export class DocumentHelper {
                 }
             } else {
                 for (let i: number = 0; i < blockContainer.floatingElements.length; i++) {
-                    floatElement = blockContainer.floatingElements[i];
+                    if (blockContainer.floatingElements[i] instanceof TableWidget) {
+                        continue;
+                    }
+                    floatElement = blockContainer.floatingElements[i] as ShapeBase;
                     if (cursorPoint.x < floatElement.x + floatElement.margin.left + floatElement.width &&
                         cursorPoint.x > floatElement.x && cursorPoint.y < floatElement.y + floatElement.margin.top +
                         floatElement.height && cursorPoint.y > floatElement.y) {
@@ -3232,7 +3243,7 @@ export class DocumentHelper {
             }
         }
         if (!isNullOrUndefined(widget)) {
-            if (isNullOrUndefined(footnoteElement)) {
+            if (isNullOrUndefined(footnoteElement) && this.owner.layoutType == 'Pages') {
                 footnoteElement = this.selection.getFootNoteElementInCurrentSelection(widget, touchPoint)
                 if (footnoteElement instanceof FootnoteElementBox) {
                     this.selection.setFootnoteContentToToolTip(footnoteElement, widget, touchPoint.x);

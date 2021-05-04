@@ -4,7 +4,7 @@ import { Row } from '../models/row';
 import { AggregateColumnModel, AggregateRowModel } from '../models/aggregate-model';
 import { AggregateColumn } from '../models/aggregate';
 import { Column } from '../models/column';
-import { isNullOrUndefined, isBlazor } from '@syncfusion/ej2-base';
+import { isNullOrUndefined } from '@syncfusion/ej2-base';
 import { calculateAggregate, getUid } from '../base/util';
 import { Group } from '@syncfusion/ej2-data';
 import { CellType } from '../base/enum';
@@ -105,11 +105,7 @@ export class SummaryModelGenerator implements IModelGenerator<AggregateColumnMod
 
         let row: Row<AggregateColumnModel> = new Row<AggregateColumnModel>({ data: data, attributes: { class: 'e-summaryrow' } });
         row.cells = tmp;
-        if (isBlazor() && this.parent.isServerRendered && !isNullOrUndefined(parentUid)) {
-            row.uid = this.parent.getRowUid('grid-row');
-        } else {
-            row.uid = getUid('grid-row');
-        }
+        row.uid = getUid('grid-row');
         row.parentUid = parentUid;
         row.visible = tmp.some((cell: Cell<AggregateColumnModel>) => cell.isDataCell && cell.visible);
         return row;

@@ -159,8 +159,8 @@ export class Edit {
             this.refreshDependentCellValue(
                 <number>args.rowIdx, <number>args.colIdx, <number>args.sheetIdx);
             break;
-        case 'getPosition':
-            args.position = this.getEditElement(this.parent.getActiveSheet()).getBoundingClientRect();
+        case 'getElement':
+            args.element = this.getEditElement(this.parent.getActiveSheet());
             break;
         case 'focusEditorElem':
             this.editorElem.focus();

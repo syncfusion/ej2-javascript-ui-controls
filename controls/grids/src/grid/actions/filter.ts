@@ -1,6 +1,6 @@
 import { EventHandler, L10n, isNullOrUndefined, extend, closest, getValue, KeyboardEventArgs } from '@syncfusion/ej2-base';
 import { getActualPropFromColl, isActionPrevent, getColumnByForeignKeyValue } from '../base/util';
-import { remove, matches, isBlazor } from '@syncfusion/ej2-base';
+import { remove, matches } from '@syncfusion/ej2-base';
 import { DataUtil, Predicate, Query, DataManager } from '@syncfusion/ej2-data';
 import { FilterSettings, Grid } from '../base/grid';
 import { IGrid, IAction, NotifyArgs, IFilterOperator, IValueFormatter, FilterUI, EJ2Intance } from '../base/interface';
@@ -19,6 +19,7 @@ import { FilterMenuRenderer } from '../renderer/filter-menu-renderer';
 import { CheckBoxFilter } from '../actions/checkbox-filter';
 import { ExcelFilter } from '../actions/excel-filter';
 import { ResponsiveDialogRenderer } from '../renderer/responsive-dialog-renderer';
+import * as literals from '../base/string-literals';
 
 /**
  *
@@ -98,7 +99,7 @@ export class Filter implements IAction {
      * @hidden
      */
     public render(e?: NotifyArgs): void {
-        if (DataUtil.getObject('args.isFrozen', e) || (this.parent.getFrozenMode() === 'Left-Right' &&
+        if (DataUtil.getObject('args.isFrozen', e) || (this.parent.getFrozenMode() === literals.leftRight &&
             DataUtil.getObject('args.renderFrozenRightContent', e))) {
             return;
         }
@@ -134,7 +135,7 @@ export class Filter implements IAction {
                 if (rowdrag) {
                     rowdrag.className = 'e-dragheadercell e-mastercell';
                 }
-                let gCells: Element[] = [].slice.call(this.element.querySelectorAll('.e-grouptopleftcell'));
+                let gCells: Element[] = [].slice.call(this.element.getElementsByClassName('e-grouptopleftcell'));
                 if (gCells.length) {
                     gCells[gCells.length - 1].classList.add('e-lastgrouptopleftcell');
                 }
@@ -167,7 +168,7 @@ export class Filter implements IAction {
      */
     public destroy(): void {
         let gridElement: Element = this.parent.element;
-        if (!gridElement || (!gridElement.querySelector('.e-gridheader') && !gridElement.querySelector('.e-gridcontent'))) { return; }
+        if (!gridElement || (!gridElement.querySelector('.' + literals.gridHeader) && !gridElement.querySelector( '.' + literals.gridContent))) { return; }
         if (this.filterModule) {
             this.filterModule.destroy();
         }
@@ -179,7 +180,7 @@ export class Filter implements IAction {
         this.removeEventListener();
         this.unWireEvents();
         if (this.filterSettings.type === 'FilterBar' && this.filterSettings.showFilterBarOperator) {
-            let dropdownlist: NodeListOf<Element> = this.element.querySelectorAll('.e-filterbaroperator');
+            let dropdownlist: NodeListOf<Element> = [].slice.call(this.element.getElementsByClassName('e-filterbaroperator'));
             for (let i: number = 0; i < dropdownlist.length; i++) {
                 (<EJ2Intance>dropdownlist[i]).ej2_instances[0].destroy();
             }
@@ -286,9 +287,6 @@ export class Filter implements IAction {
      * @hidden
      */
     public onActionComplete(e: NotifyArgs): void {
-        if (isBlazor() && !this.parent.isJsComponent) {
-            e.rows = null;
-        }
         let args: Object = !this.isRemove ? {
             currentFilterObject: this.currentFilterObject,
             /* tslint:disable:no-string-literal */
@@ -582,7 +580,7 @@ export class Filter implements IAction {
 
     private updateFilterIcon(): void {
         if (this.filterSettings.columns.length === 0 && this.parent.element.querySelector('.e-filtered')) {
-            let fltrIconElement: Element[] = [].slice.call(this.parent.element.querySelectorAll('.e-filtered'));
+            let fltrIconElement: Element[] = [].slice.call(this.parent.element.getElementsByClassName('e-filtered'));
             for (let i: number = 0, len: number = fltrIconElement.length; i < len; i++) {
                 fltrIconElement[i].removeAttribute('aria-filtered');
                 fltrIconElement[i].classList.remove('e-filtered');
@@ -634,15 +632,12 @@ export class Filter implements IAction {
         for (let i: number = 0, len: number = filteredcols.length; i < len; i++) {
             this.removeFilteredColsByField(this.parent.getColumnByUid(filteredcols[i]).field, false);
         }
-        if (isBlazor() && !this.parent.isJsComponent) {
-            this.parent.setProperties({ filterSettings: { columns: this.filterSettings.columns } }, true);
-        }
         this.refresh = true;
         if (filteredcols.length) {
             this.parent.renderModule.refresh();
         }
         if (this.parent.filterSettings.columns.length === 0 && this.parent.element.querySelector('.e-filtered')) {
-            let fltrElement: Element[] = [].slice.call(this.parent.element.querySelectorAll('.e-filtered'));
+            let fltrElement: Element[] = [].slice.call(this.parent.element.getElementsByClassName('e-filtered'));
             for (let i: number = 0, len: number = fltrElement.length; i < len; i++) {
                 fltrElement[0].removeAttribute('aria-filtered');
                 fltrElement[0].classList.remove('e-filtered');
@@ -757,20 +752,10 @@ export class Filter implements IAction {
                     delete this.values[field];
                 }
                 if (this.refresh) {
-                    if (isBlazor() && !this.parent.isJsComponent) {
-                        this.parent.setProperties({ filterSettings: { columns: this.filterSettings.columns } }, true);
-                        this.parent.notify(events.modelChanged, {
-                            requestType: 'filtering', type: events.actionBegin, currentFilterObject: {
-                                field: column.field, operator: this.operator, value: this.value, predicate: this.predicate,
-                                matchCase: this.matchCase, ignoreAccent: this.ignoreAccent, actualFilterValue: {}, actualOperator: {}
-                            }, currentFilterColumn: column
-                        });
-                    } else {
-                        this.parent.notify(events.modelChanged, {
-                            requestType: 'filtering', type: events.actionBegin, currentFilterObject: currentPred,
-                            currentFilterColumn: column, action: 'clearFilter'
-                        });
-                    }
+                    this.parent.notify(events.modelChanged, {
+                        requestType: 'filtering', type: events.actionBegin, currentFilterObject: currentPred,
+                        currentFilterColumn: column, action: 'clearFilter'
+                    });
                 }
                 break;
             }
@@ -1196,9 +1181,6 @@ export class Filter implements IAction {
             if (index !== -1) {
                 this.filterSettings.columns.splice(index, 1);
             }
-        }
-        if (args.action === 'clear-filter' && isBlazor() && !this.parent.isJsComponent) {
-            this.parent.setProperties({ filterSettings: { columns: this.filterSettings.columns } }, true);
         }
         if (this.values[args.field]) {
             delete this.values[args.field];

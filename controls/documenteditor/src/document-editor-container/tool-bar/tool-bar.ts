@@ -159,8 +159,7 @@ export class Toolbar {
             const locale: L10n = this.container.localObj;
             const id: string = this.container.element.id + TOOLBAR_ID;
             if (this.toolbarItems.indexOf('Image') >= 0) {
-                const imageButton: HTMLElement = toolbarTarget.getElementsByClassName('e-de-image-splitbutton')[0].firstChild as HTMLElement;
-                const items: DropDownButtonModel = {
+                const splitButton: DropDownButton = new DropDownButton({
                     items: [
                         {
                             text: locale.getConstant('Upload from computer'), iconCss: 'e-icons e-de-ctnr-upload',
@@ -170,27 +169,20 @@ export class Toolbar {
                     cssClass: 'e-de-toolbar-btn-first e-caret-hide',
                     iconCss: 'e-icons e-de-ctnr-image',
                     select: this.onDropDownButtonSelect.bind(this)
-                };
-                if (!isNullOrUndefined(this.imgDropDwn)) {
-                    this.imgDropDwn = undefined;
-                }
-                this.imgDropDwn = new DropDownButton(items, imageButton as HTMLButtonElement);
+                });
+                splitButton.appendTo("#" + id + "_image");
             }
 
             if (this.toolbarItems.indexOf('Break') >= 0) {
-                const breakButton: HTMLElement = toolbarTarget.getElementsByClassName('e-de-break-splitbutton')[0].firstChild as HTMLElement;
-                const items: DropDownButtonModel = {
+                const splitButton: DropDownButton = new DropDownButton({
                     items: [
                         { text: locale.getConstant('Page Break'), iconCss: 'e-icons e-de-ctnr-page-break', id: id + PAGE_BREAK },
                         { text: locale.getConstant('Section Break'), iconCss: 'e-icons e-de-ctnr-section-break', id: id + SECTION_BREAK }],
                     cssClass: 'e-caret-hide',
                     iconCss: 'e-icons e-de-ctnr-break',
                     select: this.onDropDownButtonSelect.bind(this)
-                };
-                if (!isNullOrUndefined(this.breakDropDwn)) {
-                    this.breakDropDwn = undefined;
-                }
-                this.breakDropDwn = new DropDownButton(items, breakButton as HTMLButtonElement);
+                });
+                splitButton.appendTo("#_break");
             }
 
 
@@ -214,12 +206,11 @@ export class Toolbar {
             }
             if (this.toolbarItems.indexOf('RestrictEditing') >= 0) {
                 this.toggleButton(id + RESTRICT_EDITING_ID, this.container.restrictEditing);
-                const restrictEditing: HTMLElement = toolbarTarget.getElementsByClassName('e-de-lock-dropdownbutton')[0].firstChild as HTMLElement;
                 let restrictIconCss: string = '';
                 if (this.container.restrictEditing) {
                     restrictIconCss = ' e-de-selected-item';
                 }
-                const items: DropDownButtonModel = {
+                const splitbutton: DropDownButton = new DropDownButton({
                     items: [
                         { text: locale.getConstant('Read only'), id: id + READ_ONLY, iconCss: 'e-icons' + restrictIconCss },
                         { text: locale.getConstant('Protections'), id: id + PROTECTIONS, iconCss: 'e-icons' }],
@@ -228,26 +219,19 @@ export class Toolbar {
                     beforeItemRender: (args: MenuEventArgs) => {
                         this.onBeforeRenderRestrictDropdown(args, id);
                     }
-                };
-                if (!isNullOrUndefined(this.restrictDropDwn)) {
-                    this.restrictDropDwn = undefined;
-                }
-                this.restrictDropDwn = new DropDownButton(items, restrictEditing as HTMLButtonElement);
+                });
+                splitbutton.appendTo("#" + id + "_restrict_edit");
             }
             if (this.toolbarItems.indexOf('FormFields') >= 0) {
-                const breakButton: HTMLElement = toolbarTarget.getElementsByClassName('e-de-formfields')[0].firstChild as HTMLElement;
-                const items: DropDownButtonModel = {
+                const splitbutton: DropDownButton = new DropDownButton({
                     items: [
                         { text: locale.getConstant('Text Form'), iconCss: 'e-icons e-de-textform', id: id + TEXT_FORM },
                         { text: locale.getConstant('Check Box'), iconCss: 'e-icons e-de-checkbox-form', id: id + CHECKBOX },
                         { text: locale.getConstant('DropDown'), iconCss: 'e-icons e-de-dropdownform', id: id + DROPDOWN }],
                     cssClass: 'e-de-toolbar-btn-first e-caret-hide',
                     select: this.onDropDownButtonSelect.bind(this)
-                };
-                if (!isNullOrUndefined(this.formFieldDropDown)) {
-                    this.formFieldDropDown = undefined;
-                }
-                this.formFieldDropDown = new DropDownButton(items, breakButton as HTMLButtonElement);
+                });
+                splitbutton.appendTo("#" + id + "_form_fields");
             }
         }
     }

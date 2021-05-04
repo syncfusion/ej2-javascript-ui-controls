@@ -4,7 +4,7 @@ import { Property, NotifyPropertyChanges, INotifyPropertyChanged, ModuleDeclarat
 import { addClass, removeClass, EmitType, Complex, formatUnit, L10n, isNullOrUndefined, Browser } from '@syncfusion/ej2-base';
 import { detach, select, closest, setStyleAttribute, EventHandler } from '@syncfusion/ej2-base';
 import { MenuItemModel, BeforeOpenCloseMenuEventArgs, ItemModel } from '@syncfusion/ej2-navigations';
-import { initialLoad, mouseDown, spreadsheetDestroyed, keyUp, BeforeOpenEventArgs, clearViewer, blankWorkbook } from '../common/index';
+import { initialLoad, mouseDown, spreadsheetDestroyed, keyUp, BeforeOpenEventArgs, clearViewer, blankWorkbook, refreshSheetTabs } from '../common/index';
 import { hideShow, performUndoRedo, overlay, DialogBeforeOpenEventArgs, createImageElement, deleteImage } from '../common/index';
 import { HideShowEventArgs, sheetNameUpdate, updateUndoRedoCollection, getUpdateUsingRaf, setAutoFit, created } from '../common/index';
 import { actionEvents, CollaborativeEditArgs, keyDown, enableFileMenuItems, hideToolbarItems, updateAction } from '../common/index';
@@ -82,8 +82,7 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
 
     /**
      * It specifies whether the Spreadsheet should be rendered with scrolling or not.
-     * To customize the Spreadsheet scrolling behavior, use the [`scrollSettings`]
-     * (https://ej2.syncfusion.com/documentation/api/spreadsheet/#scrollSettings) property.
+     * To customize the Spreadsheet scrolling behavior, use the [`scrollSettings`](https://ej2.syncfusion.com/documentation/api/spreadsheet/#scrollSettings) property.
      *
      * @default true
      */
@@ -116,7 +115,7 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
     public enableContextMenu: boolean;
 
     /**
-     * It allows you to interact with cell, pager, formula bar, and ribbon through the keyboard device.
+     * It allows you to interact with cell, sheet tabs, formula bar, and ribbon through the keyboard device.
      *
      * @default true
      */
@@ -952,7 +951,7 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
      *
      * {% codeBlock src='spreadsheet/unprotectSheet/index.md' %}{% endcodeBlock %}
      *
-     * @param {number | string} sheet - Specifies the sheet to Unprotect.
+     * @param {number | string} sheet - Specifies the sheet name or index to Unprotect.
      * @returns {void} - To unprotect the particular sheet.
      */
     public unprotectSheet(sheet?: number | string): void {
@@ -1392,7 +1391,7 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
      *
      * {% codeBlock src='spreadsheet/autoFit/index.md' %}{% endcodeBlock %}
      *
-     * @param {string} range - range that needs to be autofit.
+     * @param {string} range - range of rows or columns that needs to be autofit.
      *
      * @returns {void} - used to autofit the range of rows or columns
      * ```html
@@ -1624,7 +1623,7 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
      *
      * {% codeBlock src='spreadsheet/addDataValidation/index.md' %}{% endcodeBlock %}
      *
-     * @param {ValidationModel} rules - specifies the validation rules.
+     * @param {ValidationModel} rules - specifies the validation rules like type, operator, value1, value2, ignoreBlank, inCellDropDown, isHighlighted arguments.
      * @param {string} range - range that needs to be add validation.
      * @returns {void} - used to add data validation.
      */
@@ -1764,7 +1763,7 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
         this.notify(clearViewer, { options: options, isPublic: true });
     }
     /**
-     * Used to refresh the spreadsheet.
+     * Used to refresh the spreadsheet in UI level.
      *
      * {% codeBlock src='spreadsheet/refresh/index.md' %}{% endcodeBlock %}
      *
@@ -2157,7 +2156,7 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
      *
      * {% codeBlock src='spreadsheet/addDefinedName/index.md' %}{% endcodeBlock %}
      *
-     * @param {DefineNameModel} definedName - Specifies the name.
+     * @param {DefineNameModel} definedName - Specifies the name, scope, comment, refersTo.
      * @returns {boolean} - Return the added status of the defined name.
      */
     public addDefinedName(definedName: DefineNameModel): boolean {
@@ -2576,6 +2575,11 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
                 }
                 break;
             case 'sheets':
+                if (newProp.sheets === this.sheets) {
+                    this.renderModule.refreshSheet();
+                    this.notify(refreshSheetTabs, null);
+                    break;
+                }
                 Object.keys(newProp.sheets).forEach((sheetIdx: string, index: number) => {
                     const sheet: SheetModel = newProp.sheets[sheetIdx];
                     if (sheet.ranges && Object.keys(sheet.ranges).length) {

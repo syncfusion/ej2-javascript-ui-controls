@@ -1291,6 +1291,20 @@ describe('Chart Legend', () => {
             chartObj.legendSettings.titlePosition = 'Right';
             chartObj.refresh();
         });
+        it('legend with RTL', (done: Function) => {
+            chartObj.loaded = (args: Object): void => {
+                let legendText: Element = document.getElementById('container_chart_legend_text_0');
+                xValue = legendText.getAttribute('x');
+                yValue = legendText.getAttribute('y');
+                expect(xValue === '331.5' || xValue === '335.5').toBe(true);
+                expect(yValue === '419.75' || yValue === '420').toBe(true);
+                done();
+            };
+            chartObj.legendSettings.position = 'Bottom';
+            chartObj.legendSettings.titlePosition = 'Top';
+            chartObj.legendSettings.isInversed = true;
+            chartObj.refresh();
+        });
     });
     describe('Legend new paging support checking', () => {
         let chartObj: Chart;

@@ -1,25 +1,21 @@
-import { isNullOrUndefined, isBlazor } from '@syncfusion/ej2-base';
+import { isNullOrUndefined } from '@syncfusion/ej2-base';
 import { IEditCell, IGrid } from '../base/interface';
 import { Row } from '../models/row';
 import { Column } from '../models/column';
 import { CheckBox, ChangeEventArgs } from '@syncfusion/ej2-buttons';
 import { extend } from '@syncfusion/ej2-base';
-import { isEditable, addRemoveActiveClasses, getComplexFieldID, getObject } from '../base/util';
+import { isEditable, addRemoveActiveClasses, createEditElement, getObject } from '../base/util';
+import * as literals from '../base/string-literals';
+import { EditCellBase } from './edit-cell-base';
 
 /**
  * `BooleanEditCell` is used to handle boolean cell type editing.
  * @hidden
  */
-export class BooleanEditCell implements IEditCell {
-    private parent: IGrid;
-    private obj: CheckBox;
+export class BooleanEditCell extends EditCellBase implements IEditCell {
     private editRow: HTMLElement;
     private editType: string;
     private activeClasses: string[] = ['e-selectionbackground', 'e-active'];
-
-    constructor(parent?: IGrid) {
-        this.parent = parent;
-    }
 
     public create(args: { column: Column, value: string, type: string }): Element {
         let col: Column = args.column;
@@ -27,14 +23,7 @@ export class BooleanEditCell implements IEditCell {
         if (col.type === 'checkbox') {
             classNames = 'e-field e-boolcell e-edit-checkselect';
         }
-        let complexFieldName: string = getComplexFieldID(args.column.field);
-        return this.parent.createElement('input', {
-            className: classNames, attrs: {
-                type: 'checkbox', value: args.value, 'e-mappinguid': col.uid,
-                id: this.parent.element.id + complexFieldName,
-                name: complexFieldName
-            }
-        });
+        return createEditElement(this.parent, args.column, classNames, { type: 'checkbox', value: args.value });
     }
 
     public read(element: Element): boolean {
@@ -44,7 +33,6 @@ export class BooleanEditCell implements IEditCell {
     public write(args: { rowData: Object, element: Element, column: Column, requestType: string, row: Element }): void {
         let selectChkBox: Element;
         let chkState: boolean;
-        let isAddRow : boolean =  args.requestType === 'add' || args.row.classList.contains('e-addedrow');
         if (!isNullOrUndefined(args.row)) {
             selectChkBox = args.row.querySelector('.e-edit-checkselect') as Element;
         }
@@ -58,7 +46,7 @@ export class BooleanEditCell implements IEditCell {
                 let row: Row<Column> = this.parent.getRowObjectFromUID(args.row.getAttribute('data-uid'));
                 chkState = row ? row.isSelected : false;
             }
-            addRemoveActiveClasses([].slice.call(args.row.querySelectorAll('.e-rowcell')), chkState, ...this.activeClasses);
+            addRemoveActiveClasses([].slice.call(args.row.getElementsByClassName(literals.rowCell)), chkState, ...this.activeClasses);
         }
         this.obj = new CheckBox(
             extend(
@@ -69,9 +57,6 @@ export class BooleanEditCell implements IEditCell {
                     change: this.checkBoxChange.bind(this)
                 },
                 args.column.edit.params));
-        if (isBlazor()) {
-            this.obj.locale = this.parent.locale;
-        }
         this.obj.appendTo(args.element as HTMLElement);
     }
 
@@ -84,13 +69,7 @@ export class BooleanEditCell implements IEditCell {
                 add = true;
                 this.editRow.setAttribute('aria-selected', add.toString());
             }
-            addRemoveActiveClasses([].slice.call(this.editRow.querySelectorAll('.e-rowcell')), add, ...this.activeClasses);
-        }
-    }
-
-    public destroy(): void {
-        if (this.obj) {
-            this.obj.destroy();
+            addRemoveActiveClasses([].slice.call(this.editRow.getElementsByClassName(literals.rowCell)), add, ...this.activeClasses);
         }
     }
 }

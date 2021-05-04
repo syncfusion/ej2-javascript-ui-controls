@@ -1,4 +1,4 @@
-import { extend, isNullOrUndefined, isBlazor } from '@syncfusion/ej2-base';
+import { extend, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { IGrid, IAction, NotifyArgs } from '../base/interface';
 import * as events from '../base/constant';
 import { isActionPrevent } from '../base/util';
@@ -102,9 +102,6 @@ export class Search implements IAction {
      * @hidden
      */
     public onSearchComplete(e: NotifyArgs): void {
-        if (isBlazor() && !this.parent.isJsComponent) {
-            e.rows = null;
-        }
         this.parent.trigger(events.actionComplete, extend(e, {
             searchString: this.parent.searchSettings.key, requestType: 'searching', type: events.actionComplete
         }));

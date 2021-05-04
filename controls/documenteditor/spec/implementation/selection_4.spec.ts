@@ -26,6 +26,7 @@ describe('Selection bookmark property validation', () => {
         editor.destroy();
         editor = undefined;
         documentHelper = undefined;
+        document.body.innerHTML = '';
         setTimeout(function () {
             done();
         }, 1000);
@@ -169,6 +170,7 @@ describe('enable repeat row header test', () => {
         editor.destroy();
         editor = undefined;
         documentHelper = undefined;
+        document.body.innerHTML = '';
         setTimeout(function () {
             done();
         }, 1000);
@@ -222,6 +224,7 @@ describe('Selection public API validation', () => {
         editor.destroy();
         editor = undefined;
         documentHelper = undefined;
+        document.body.innerHTML = '';
         setTimeout(function () {
             done();
         }, 1000);
@@ -411,6 +414,7 @@ describe('Selection extension in backward selection', () => {
         editor.destroy();
         editor = undefined;
         documentHelper = undefined;
+        document.body.innerHTML = '';
         setTimeout(function () {
             done();
         }, 1000);
@@ -469,6 +473,7 @@ describe('Update Reference field', () => {
         editor.destroy();
         editor = undefined;
         documentHelper = undefined;
+        document.body.innerHTML = '';
         setTimeout(function () {
             done();
         }, 1000);
@@ -600,6 +605,7 @@ describe('shift down key validation', () => {
         editor.destroy();
         editor = undefined;
         documentHelper = undefined;
+        document.body.innerHTML = '';
         setTimeout(function () {
             done();
         }, 1000);
@@ -637,6 +643,7 @@ describe('Hidden Bookmark API', () => {
         editor.destroy();
         editor = undefined;
         documentHelper = undefined;
+        document.body.innerHTML = '';
         setTimeout(function () {
             done();
         }, 1000);
@@ -725,6 +732,7 @@ describe('Bookmark navigate API', () => {
         editor.destroy();
         editor = undefined;
         documentHelper = undefined;
+        document.body.innerHTML = '';
         setTimeout(function () {
             done();
         }, 1000);

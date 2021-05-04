@@ -1735,78 +1735,7 @@ describe('Inline Editing module', () => {
             gridObj.detailDataBound = detailDataBound;
             gridObj.detailRowModule.expand(gridObj.getDataRows()[0].querySelector('.e-detailrowcollapse'));
         });
-
-        it('Add start', (done: Function) => {
-            actionComplete = (args?: any): void => {
-                if (args.requestType === 'add') {
-                    expect(childGridObj.element.querySelectorAll('.e-addedrow').length).toBe(1);
-                    expect(childGridObj.element.querySelectorAll('.e-gridform').length).toBe(1);
-                    done();
-                }
-            };
-            childGridObj.actionComplete = actionComplete;
-            childGridObj.clearSelection();
-            childGridObj.selectRow(0, true);
-            childGridObj.keyboardModule.keyAction({ action: 'insert', preventDefault: preventDefault, target: childGridObj.getContent().querySelector('.e-row') } as any);
-        });
-
-        it('Add complete', (done: Function) => {
-            actionComplete = (args?: any): void => {
-                if (args.requestType === 'save') {
-                    expect((childGridObj.currentViewData[0] as any).OrderID).toBe(10247);
-                    expect((childGridObj.currentViewData[0] as any).CustomerID).toBe('updated');
-                    done();
-                }
-            };
-            childGridObj.actionComplete = actionComplete;
-            (childGridObj.element.querySelector('#' + childGridObj.element.id + 'OrderID') as any).value = 10247;
-            (childGridObj.element.querySelector('#' + childGridObj.element.id + 'EmployeeID') as any).value = 1;
-            (childGridObj.element.querySelector('#' + childGridObj.element.id + 'CustomerID') as any).value = 'updated';
-            childGridObj.keyboardModule.keyAction({ action: 'enter', preventDefault: preventDefault, target: childGridObj.getContent().querySelector('.e-row') } as any);
-        });
-
-
-        it('Delete action', (done: Function) => {
-            actionComplete = (args?: any): void => {
-                if (args.requestType === 'delete') {
-                    //row count check
-                    expect(childGridObj.getContent().querySelectorAll('.e-row').length).toBe(1);
-                    //record count check
-                    expect(childGridObj.currentViewData.length).toBe(1);
-                    done();
-                }
-            };
-            childGridObj.actionComplete = actionComplete;
-            childGridObj.clearSelection();
-            childGridObj.selectRow(0, true);
-            childGridObj.keyboardModule.keyAction({ action: 'delete', preventDefault: preventDefault, target: childGridObj.getContent().querySelector('.e-row') } as any);
-        });
-
-        it('Edit-cancel start', (done: Function) => {
-            actionComplete = (args?: any): void => {
-                if (args.requestType === 'beginEdit') {
-                    expect(childGridObj.element.querySelectorAll('.e-editedrow').length).toBe(1);
-                    done();
-                }
-            };
-            childGridObj.actionComplete = actionComplete;
-            childGridObj.clearSelection();
-            childGridObj.selectRow(0, true);
-            childGridObj.keyboardModule.keyAction({ action: 'f2', preventDefault: preventDefault, target: childGridObj.getContent().querySelector('.e-row') } as any);
-        });
-
-        it('Edit-cancel complete', (done: Function) => {
-            actionComplete = (args?: any): void => {
-                if (args.requestType === 'cancel') {
-                    expect((childGridObj.currentViewData[0] as any).CustomerID).not.toBe('updatednew');
-                    done();
-                }
-            };
-            childGridObj.actionComplete = actionComplete;
-            (childGridObj.element.querySelector('#' + childGridObj.element.id + 'CustomerID') as any).value = 'updatednew';
-            childGridObj.keyboardModule.keyAction({ action: 'escape', preventDefault: preventDefault, target: childGridObj.getContent().querySelector('.e-row') } as any);
-        });
-
+        
         afterAll(() => {
             gridObj.notify('tooltip-destroy', {});
             destroy(gridObj);

@@ -612,10 +612,9 @@ export class Dialog extends Component<HTMLElement> implements INotifyPropertyCha
      * The position can be represented with pre-configured positions or specific X and Y values.
      * * `X value`: left, center, right, or offset value.
      * * `Y value`: top, center, bottom, or offset value.
-     *
      * {% codeBlock src='dialog/position/index.md' %}{% endcodeBlock %}
      *
-     * @default {X:'center', Y:'center'}
+     * @default { X: 'center', Y: 'center' }
      */
     @Complex<PositionDataModel>({ X: 'center', Y: 'center' }, PositionData)
     public position: PositionDataModel;

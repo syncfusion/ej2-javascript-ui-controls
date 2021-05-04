@@ -39,6 +39,7 @@ describe('Table Cell Resizing With Final Cell Selection testing', () => {
         editor.destroy();
         editor = undefined;
         document.body.removeChild(document.getElementById('container'));
+        document.body.innerHTML = '';
         setTimeout(function () {
             done();
         }, 1000);
@@ -105,6 +106,7 @@ describe('Cell Width Restricting on cell Resizing testing', () => {
         editor.destroy();
         editor = undefined;
         document.body.removeChild(document.getElementById('container'));
+        document.body.innerHTML = '';
         setTimeout(function () {
             done();
         }, 1000);
@@ -165,6 +167,7 @@ describe('Cell Width Restricting on cell Resizing With Selection testing', () =>
         editor.destroy();
         editor = undefined;
         document.body.removeChild(document.getElementById('container'));
+        document.body.innerHTML = '';
         setTimeout(function () {
             done();
         }, 1000);
@@ -864,6 +867,7 @@ describe('Table Cell resizing testing at cell resizer position at 0 with selecti
         editor.destroy();
         editor = undefined;
         document.body.removeChild(document.getElementById('container'));
+        document.body.innerHTML = '';
         setTimeout(function () {
             done();
         }, 1000);

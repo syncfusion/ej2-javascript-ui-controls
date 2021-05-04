@@ -38,3 +38,4 @@ export * from './renderer/virtual-content-renderer';
 export * from './renderer/group-lazy-load-renderer';
 export * from './renderer/column-freeze-renderer';
 export * from './renderer/responsive-dialog-renderer';
+export * from './renderer/edit-cell-base';

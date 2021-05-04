@@ -1,4 +1,4 @@
-import { EventHandler, remove, Browser, isBlazor, updateBlazorTemplate } from '@syncfusion/ej2-base';
+import { EventHandler, remove, Browser } from '@syncfusion/ej2-base';
 import { isNullOrUndefined } from '@syncfusion/ej2-base';
 import { Query, DataManager, Predicate, Deferred } from '@syncfusion/ej2-data';
 import { Dialog, Popup } from '@syncfusion/ej2-popups';
@@ -17,6 +17,7 @@ import { ContextMenu, MenuItemModel, ContextMenuModel, MenuEventArgs, BeforeOpen
 import { PredicateModel } from '../base/grid-model';
 import { CheckBoxFilterBase } from '../common/checkbox-filter-base';
 import { IXLFilter, FilterStateObj } from '../common/filter-interface';
+import * as literals from '../base/string-literals';
 
 /**
  * @hidden
@@ -172,7 +173,7 @@ export class ExcelFilterBase extends CheckBoxFilterBase {
         if (this.menuObj && !this.menuObj.isDestroyed) {
             this.menuObj.destroy();
             remove(this.cmenu);
-            this.parent.notify(events.renderResponsiveCmenu, { target: null, header: '', isOpen: false });
+            this.parent.notify(events.renderResponsiveCmenu, { target: null, header: '', isOpen: false, col: this.options.column });
         }
     }
     private hoverHandler(e: MouseEvent): void {
@@ -353,11 +354,7 @@ export class ExcelFilterBase extends CheckBoxFilterBase {
             open: () => {
                 let row: HTMLTableRowElement = this.dlgObj.element.querySelector('table.e-xlfl-table>tr') as HTMLTableRowElement;
                 if (this.options.column.filterTemplate) {
-                    if (isBlazor()) {
-                        (row.querySelector('.e-xlfl-valuediv').children[0] as HTMLElement).focus();
-                    } else {
-                        (row.querySelector('#' + this.options.column.field + '-xlfl-frstvalue') as HTMLElement).focus();
-                    }
+                    (row.querySelector('#' + this.options.column.field + '-xlfl-frstvalue') as HTMLElement).focus();
                 } else {
                     //(row.cells[1].querySelector('input:not([type=hidden])') as HTMLElement).focus();
                 }
@@ -403,15 +400,6 @@ export class ExcelFilterBase extends CheckBoxFilterBase {
 
     /** @hidden */
     public removeDialog(): void {
-        if (isBlazor()) {
-            let columns: Column[] = this.options.columns as Column[] || [];
-            for (let i: number = 0; i < columns.length; i++) {
-                if (columns[i].filterTemplate) {
-                    let tempID: string = this.parent.element.id + columns[i].uid + 'filterTemplate';
-                    updateBlazorTemplate(tempID, 'FilterTemplate', columns[i]);
-                }
-            }
-        }
         this.parent.notify(events.customFilterClose, {});
         if (this.parent.isReact) {
             this.parent.destroyTemplate(['filterTemplate']);
@@ -460,13 +448,9 @@ export class ExcelFilterBase extends CheckBoxFilterBase {
         let isComplex: boolean = !isNullOrUndefined(col) && isComplexField(col);
         let complexFieldName: string = !isNullOrUndefined(col) && getComplexFieldID(col);
         let colValue: string = isComplex ? complexFieldName : col;
-        let fValue: NumericTextBox = this.options.column.filterTemplate && isBlazor() ?
-            (<EJ2Intance>this.dlgDiv.querySelector('.-xlfl-frstvalue').children[0].querySelector('.e-control')).ej2_instances[0]
-            : (<EJ2Intance>this.dlgDiv.querySelector('#' + colValue + '-xlfl-frstvalue')).ej2_instances[0];
+        let fValue: NumericTextBox = (<EJ2Intance>this.dlgDiv.querySelector('#' + colValue + '-xlfl-frstvalue')).ej2_instances[0];
         let fOperator: DropDownList = (<EJ2Intance>this.dlgDiv.querySelector('#' + colValue + '-xlfl-frstoptr')).ej2_instances[0];
-        let sValue: NumericTextBox = this.options.column.filterTemplate && isBlazor() ?
-            (<EJ2Intance>this.dlgDiv.querySelector('.-xlfl-secndvalue').children[0].querySelector('.e-control')).ej2_instances[0]
-            : (<EJ2Intance>this.dlgDiv.querySelector('#' + colValue + '-xlfl-secndvalue')).ej2_instances[0];
+        let sValue: NumericTextBox = (<EJ2Intance>this.dlgDiv.querySelector('#' + colValue + '-xlfl-secndvalue')).ej2_instances[0];
         let sOperator: DropDownList = (<EJ2Intance>this.dlgDiv.querySelector('#' + colValue + '-xlfl-secndoptr')).ej2_instances[0];
         let checkBoxValue: boolean;
         if (this.options.type === 'string') {
@@ -646,7 +630,7 @@ export class ExcelFilterBase extends CheckBoxFilterBase {
         let table: HTMLElement = this.parent.createElement('table', { className: 'e-xlfl-table' });
         dlgConetntEle.appendChild(table);
 
-        let colGroup: HTMLElement = this.parent.createElement('colGroup');
+        let colGroup: HTMLElement = this.parent.createElement(literals.colGroup);
         colGroup.innerHTML = '<col style="width: 50%"></col><col style="width: 50%"></col>';
         table.appendChild(colGroup);
 
@@ -753,14 +737,7 @@ export class ExcelFilterBase extends CheckBoxFilterBase {
                 let element: Element[] = (this.options.column as Column).getFilterTemplate()(data, this.parent, 'filterTemplate', tempID);
                 appendChildren(valueDiv, element);
             }
-            if (isBlazor()) {
-                valueDiv.children[0].classList.add(elementId);
-                if ((this.dlgDiv.querySelectorAll('.e-xlfl-value') as NodeList).length > 1) {
-                    updateBlazorTemplate(tempID, 'FilterTemplate', columnObj);
-                }
-            } else {
-                valueDiv.querySelector('input').id = isComplex ? complexFieldName + elementId : column + elementId;
-            }
+            valueDiv.querySelector('input').id = isComplex ? complexFieldName + elementId : column + elementId;
             value.appendChild(valueDiv);
         } else {
             let valueInput: Element = this.parent

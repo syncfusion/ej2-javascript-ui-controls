@@ -1170,8 +1170,9 @@ export class Toolbar extends Component<HTMLElement> implements INotifyPropertyCh
             (element.style.height === 'auto' || element.style.height === '') ? null : (eleItem && (eleItem as HTEle).offsetHeight);
         let ele: HTEle;
         const popupPri: Element[] = [];
-        if (element.querySelector('#' + element.id + '_popup.' + CLS_POPUPCLASS)) {
-            ele = <HTEle>element.querySelector('#' + element.id + '_popup.' + CLS_POPUPCLASS);
+        const popupEle: HTMLElement = document.getElementById(element.id + '_popup');
+        if (popupEle && popupEle.classList.contains(CLS_POPUPCLASS)) {
+            ele = popupEle;
         } else {
             const extendEle: HTEle = this.createElement('div', {
                 id: element.id + '_popup', className: CLS_POPUPCLASS + ' ' + CLS_EXTENDABLECLASS

@@ -1,4 +1,4 @@
-import { isNullOrUndefined, NumberFormatOptions, DateFormatOptions, extend, isBlazor } from '@syncfusion/ej2-base';
+import { isNullOrUndefined, NumberFormatOptions, DateFormatOptions, extend } from '@syncfusion/ej2-base';
 import { Query, DataManager, Predicate, Deferred, UrlAdaptor, AdaptorOptions } from '@syncfusion/ej2-data';
 import { IDataProcessor, IGrid, DataStateChangeEventArgs, DataSourceChangedEventArgs, PendingState } from '../base/interface';
 import { ReturnType } from '../base/type';
@@ -11,6 +11,7 @@ import { ServiceLocator } from '../services/service-locator';
 import { Column, ColumnModel } from '../models/column';
 import { CheckBoxFilterBase } from '../common/checkbox-filter-base';
 import { SortDirection } from '../base/enum';
+import * as literals from '../base/string-literals';
 
 /**
  * Grid data module is used to generate query and data source.
@@ -378,9 +379,6 @@ export class Data implements IDataProcessor {
                     }
                     break;
                 case 'save':
-                    if (isBlazor() && this.parent.isServerRendered) {
-                        this.parent.notify('offset', args);
-                    }
                     query = query ? query : this.generateQuery();
                     args.index = isNullOrUndefined(args.index) ? 0 : args.index;
                     crud = this.dataManager.insert(args.data, query.fromTable, query, args.index) as Promise<Object>;
@@ -389,17 +387,9 @@ export class Data implements IDataProcessor {
             let promise: string = 'promise';
             args[promise] = crud;
             if (crud && !Array.isArray(crud) && !crud.hasOwnProperty('deletedRecords')) {
-                if (isBlazor()) {
-                    return crud.then((result: ReturnType) => {
-                        return this.insert(query, args);
-                    }).catch((e: ReturnType) => {
-                        return null;
-                    });
-                } else {
-                    return crud.then((result: ReturnType) => {
-                        return this.insert(query, args);
-                    });
-                }
+                return crud.then((result: ReturnType) => {
+                    return this.insert(query, args);
+                });
             } else {
                 return this.insert(query, args);
             }
@@ -458,9 +448,6 @@ export class Data implements IDataProcessor {
         }
         switch (args.requestType) {
             case 'save':
-                if (isBlazor() && this.parent.isServerRendered) {
-                    this.parent.notify('offset', args);
-                }
                 promise = this.dataManager.update(key, args.data, query.fromTable, query, args.previousData) as Promise<Object>;
                 break;
         }
@@ -484,21 +471,6 @@ export class Data implements IDataProcessor {
             this.parent.trigger(events.dataSourceChanged, args);
             return deff.promise;
         } else {
-            let changedRecords: string = 'changedRecords';
-            let addedRecords: string = 'addedRecords';
-            let data: string = 'data';
-            if (isBlazor() && this.parent.isServerRendered) {
-                for (let i: number = 0; i < changes[changedRecords].length; i++) {
-                    let args: Object = { data: changes[changedRecords][i]};
-                    this.parent.notify('offset', args);
-                    changes[changedRecords][i] = args[data];
-                }
-                for (let i: number = 0; i < changes[addedRecords].length; i++) {
-                    let args: Object = { data: changes[addedRecords][i]};
-                    this.parent.notify('offset', args);
-                    changes[addedRecords][i] = args[data];
-                }
-            }
             let promise: Promise<Object> =
                 this.dataManager.saveChanges(changes, key, query.fromTable, query, original) as Promise<Object>;
             return promise;

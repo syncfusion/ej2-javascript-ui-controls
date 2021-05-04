@@ -32,6 +32,7 @@ describe('Rtl Keyboard selection for Shift left key', () => {
         editor = undefined;
         documentHelper = undefined;
         document.body.removeChild(document.getElementById('container'));
+        document.body.innerHTML = '';
         setTimeout(() => {
             done();
         }, 2000);
@@ -101,6 +102,7 @@ describe('Rtl Keyboard selection for Shift Right key', () => {
         editor = undefined;
         documentHelper = undefined;
         document.body.removeChild(document.getElementById('container'));
+        document.body.innerHTML = '';
         setTimeout(() => {
             done();
         }, 2000);
@@ -166,6 +168,7 @@ describe('Rtl Keyboard selection for Shift Home and End key', () => {
         editor = undefined;
         documentHelper = undefined;
         document.body.removeChild(document.getElementById('container'));
+        document.body.innerHTML = '';
         setTimeout(() => {
             done();
         }, 2000);
@@ -247,6 +250,7 @@ describe('Rtl Keyboard selection for Home and End key', () => {
         editor = undefined;
         documentHelper = undefined;
         document.body.removeChild(document.getElementById('container'));
+        document.body.innerHTML = '';
         setTimeout(() => {
             done();
         }, 2000);
@@ -315,6 +319,7 @@ describe('Rtl Keyboard selection for Left and Right key', () => {
         editor = undefined;
         documentHelper = undefined;
         document.body.removeChild(document.getElementById('container'));
+        document.body.innerHTML = '';
         setTimeout(() => {
             done();
         }, 2000);
@@ -387,6 +392,7 @@ describe('Rtl Keyboard selection for control shift left and right key', () => {
         editor = undefined;
         documentHelper = undefined;
         document.body.removeChild(document.getElementById('container'));
+        document.body.innerHTML = '';
         setTimeout(() => {
             done();
         }, 2000);
@@ -437,6 +443,7 @@ describe('Rtl Keyboard selection for Shift up and down key', () => {
         editor = undefined;
         documentHelper = undefined;
         document.body.removeChild(document.getElementById('container'));
+        document.body.innerHTML = '';
         setTimeout(() => {
             done();
         }, 2000);
@@ -501,6 +508,7 @@ describe('Rtl and ltr text combinations validation', () => {
         editor = undefined;
         documentHelper = undefined;
         document.body.removeChild(document.getElementById('container'));
+        document.body.innerHTML = '';
         setTimeout(() => {
             done();
         }, 2000);

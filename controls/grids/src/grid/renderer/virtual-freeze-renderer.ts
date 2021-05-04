@@ -18,6 +18,7 @@ import { Column } from '../models/column';
 import * as events from '../base/constant';
 import { splitFrozenRowObjectCells } from '../base/util';
 import { ColumnWidthService } from '../services/width-controller';
+import * as literals from '../base/string-literals';
 
 /**
  * VirtualFreezeRenderer is used to render the virtual table within the frozen and movable content table
@@ -65,12 +66,11 @@ export class VirtualFreezeRenderer extends FreezeContentRender implements IRende
         let gObj: IGrid = this.parent;
         if (args.requestType === 'delete' && gObj.frozenRows) {
             args.isFrozenRowsRender = true;
-            let selectedIdx: number[] = gObj.getSelectedRowIndexes();
             let query: Query = gObj.renderModule.data.generateQuery(true).clone();
             query.page(1, gObj.pageSettings.pageSize);
             gObj.renderModule.data.getData({}, query).then((e: ReturnType) => {
                 renderFrozenRows(
-                    args, e.result, selectedIdx, gObj, this.rowModelGenerator,
+                    args, e.result, gObj.getSelectedRowIndexes(), gObj, this.rowModelGenerator,
                     this.serviceLoc, this.virtualRenderer, this
                 );
             });
@@ -97,16 +97,15 @@ export class VirtualFreezeRenderer extends FreezeContentRender implements IRende
         super.renderTable();
         this.virtualRenderer.setPanel(this.parent.getContent());
         this.scrollbar = this.parent.getContent().querySelector('.e-movablescrollbar');
-        let frzCont: Element = this.getFrozenContent();
         let movableCont: Element = this.getMovableContent();
         let minHeight: number = <number>this.parent.height;
-        this.virtualRenderer.virtualEle.content = this.virtualRenderer.content = <HTMLElement>this.getPanel().querySelector('.e-content');
+        this.virtualRenderer.virtualEle.content = this.virtualRenderer.content = <HTMLElement>this.getPanel().querySelector('.' + literals.content);
         (this.virtualRenderer.virtualEle.content as HTMLElement).style.overflowX = 'hidden';
         this.virtualRenderer.virtualEle.renderFrozenWrapper(minHeight);
         this.virtualRenderer.virtualEle.renderFrozenPlaceHolder();
         if (this.parent.enableColumnVirtualization) {
             this.virtualRenderer.virtualEle.movableContent = this.virtualRenderer.movableContent
-                = <HTMLElement>this.getPanel().querySelector('.e-movablecontent');
+                = <HTMLElement>this.getPanel().querySelector('.' + literals.movableContent);
             this.virtualRenderer.virtualEle.renderMovableWrapper(minHeight);
             this.virtualRenderer.virtualEle.renderMovablePlaceHolder();
             let tbl: HTMLElement = movableCont.querySelector('table');
@@ -115,7 +114,7 @@ export class VirtualFreezeRenderer extends FreezeContentRender implements IRende
             movableCont.appendChild(this.virtualRenderer.virtualEle.movableWrapper);
             movableCont.appendChild(this.virtualRenderer.virtualEle.movablePlaceholder);
         }
-        this.virtualRenderer.virtualEle.wrapper.appendChild(frzCont);
+        this.virtualRenderer.virtualEle.wrapper.appendChild(this.getFrozenContent());
         this.virtualRenderer.virtualEle.wrapper.appendChild(movableCont);
         this.virtualRenderer.virtualEle.table = <HTMLElement>this.getTable();
         setDebounce(this.parent, this.virtualRenderer, this.scrollbar, this.getMovableContent());
@@ -175,7 +174,7 @@ export class VirtualFreezeRenderer extends FreezeContentRender implements IRende
      */
     public getColGroup(): Element {
         let mCol: Element = this.parent.getMovableVirtualContent();
-        return this.isXaxis() ? mCol.querySelector('colgroup') : this.colgroup;
+        return this.isXaxis() ? mCol.querySelector(literals.colGroup) : this.colgroup;
     }
 
     /**
@@ -239,12 +238,12 @@ export class VirtualFreezeHdrRenderer extends FreezeRender implements IRenderer 
 
         this.virtualHdrRenderer.gen.refreshColOffsets();
         this.parent.setColumnIndexesInView(this.virtualHdrRenderer.gen.getColumnIndexes(<HTMLElement>this.getPanel()
-            .querySelector('.e-headercontent')));
-        this.virtualHdrRenderer.virtualEle.content = <HTMLElement>this.getPanel().querySelector('.e-headercontent');
+            .querySelector('.' + literals.headerContent)));
+        this.virtualHdrRenderer.virtualEle.content = <HTMLElement>this.getPanel().querySelector('.' + literals.headerContent);
         this.virtualHdrRenderer.virtualEle.renderFrozenWrapper();
         this.virtualHdrRenderer.virtualEle.renderFrozenPlaceHolder();
         if (this.parent.enableColumnVirtualization) {
-            this.virtualHdrRenderer.virtualEle.movableContent = <HTMLElement>this.getPanel().querySelector('.e-movableheader');
+            this.virtualHdrRenderer.virtualEle.movableContent = <HTMLElement>this.getPanel().querySelector('.' + literals.movableHeader);
             this.virtualHdrRenderer.virtualEle.renderMovableWrapper();
             this.virtualHdrRenderer.virtualEle.renderMovablePlaceHolder();
         }
@@ -284,9 +283,9 @@ export function renderFrozenRows(
         rows = parent.getFrozenRightRowsObject();
     }
     let hdr: Element = !args.renderMovableContent && !args.renderFrozenRightContent
-        ? parent.getHeaderContent().querySelector('.e-frozenheader').querySelector('tbody') : args.renderMovableContent
-            ? parent.getHeaderContent().querySelector('.e-movableheader').querySelector('tbody')
-            : parent.getHeaderContent().querySelector('.e-frozen-right-header').querySelector('tbody');
+        ? parent.getHeaderContent().querySelector('.' + literals.frozenHeader).querySelector( literals.tbody) : args.renderMovableContent
+            ? parent.getHeaderContent().querySelector('.' + literals.movableHeader).querySelector( literals.tbody)
+            : parent.getHeaderContent().querySelector('.e-frozen-right-header').querySelector( literals.tbody);
     hdr.innerHTML = '';
     for (let i: number = 0; i < parent.frozenRows; i++) {
         hdr.appendChild(rowRenderer.render(rows[i], parent.getColumns()));
@@ -305,7 +304,7 @@ export function renderFrozenRows(
         instance.frRows = virtualRenderer.vgenerator.frozenRightCache[1];
     }
     args.renderMovableContent = !args.renderMovableContent && !args.renderFrozenRightContent;
-    args.renderFrozenRightContent = parent.getFrozenMode() === 'Left-Right'
+    args.renderFrozenRightContent = parent.getFrozenMode() === literals.leftRight
         && !args.renderMovableContent && !args.renderFrozenRightContent;
     if (args.renderMovableContent || args.renderFrozenRightContent) {
         renderFrozenRows(args, data, selectedIdx, parent, rowModelGenerator, locator, virtualRenderer, instance);
@@ -329,11 +328,11 @@ export function splitCells(data: Row<Column>[], tableName: freezeTable, parent: 
 export function collectRows(tableName: freezeTable, virtualRenderer: VirtualContentRenderer, parent: IGrid): Row<Column>[] {
     let rows: Row<Column>[] = [];
     let cache: { [x: number]: Row<Column>[] };
-    if (tableName === 'frozen-left') {
+    if (tableName === literals.frozenLeft) {
         cache = virtualRenderer.vgenerator.cache;
     } else if (tableName === 'movable') {
         cache = virtualRenderer.vgenerator.movableCache;
-    } else if (tableName === 'frozen-right') {
+    } else if (tableName === literals.frozenRight) {
         cache = parent.getFrozenMode() === 'Right' ? virtualRenderer.vgenerator.cache : virtualRenderer.vgenerator.frozenRightCache;
     }
     let keys: string[] = Object.keys(cache);
@@ -457,9 +456,9 @@ export function getHeaderCells(virtualRenderer: VirtualContentRenderer, parent: 
 export function getVirtualFreezeHeader(virtualRenderer: VirtualContentRenderer, parent: IGrid): Element {
     let headerTable: Element;
     if (isXaxis(virtualRenderer)) {
-        headerTable = parent.getMovableVirtualHeader().querySelector('.e-table');
+        headerTable = parent.getMovableVirtualHeader().querySelector('.' + literals.table);
     } else {
-        headerTable = parent.getFrozenVirtualHeader().querySelector('.e-table');
+        headerTable = parent.getFrozenVirtualHeader().querySelector('.' + literals.table);
     }
     return headerTable;
 }
@@ -583,8 +582,8 @@ export class ColumnVirtualFreezeRenderer extends ColumnFreezeContentRenderer imp
     }
 
     public renderNextFrozentPart(e: NotifyArgs, tableName: freezeTable): void {
-        e.renderMovableContent = this.parent.getFrozenLeftCount() ? tableName === 'frozen-left' : tableName === 'frozen-right';
-        e.renderFrozenRightContent = this.parent.getFrozenMode() === 'Left-Right' && tableName === 'movable';
+        e.renderMovableContent = this.parent.getFrozenLeftCount() ? tableName === literals.frozenLeft : tableName === literals.frozenRight;
+        e.renderFrozenRightContent = this.parent.getFrozenMode() === literals.leftRight && tableName === 'movable';
         if (e.renderMovableContent || e.renderFrozenRightContent) {
             this.refreshContentRows(extend({}, e));
         }
@@ -608,7 +607,7 @@ export class ColumnVirtualFreezeRenderer extends ColumnFreezeContentRenderer imp
         if (this.parent.getFrozenMode() === 'Right') {
             frzCont = frozenRightCont;
         }
-        this.virtualRenderer.virtualEle.content = this.virtualRenderer.content = <HTMLElement>this.getPanel().querySelector('.e-content');
+        this.virtualRenderer.virtualEle.content = this.virtualRenderer.content = <HTMLElement>this.getPanel().querySelector('.' + literals.content);
         (this.virtualRenderer.virtualEle.content as HTMLElement).style.overflowX = 'hidden';
         let minHeight: number = <number>this.parent.height;
         this.virtualRenderer.virtualEle.renderFrozenWrapper(minHeight);
@@ -635,7 +634,7 @@ export class ColumnVirtualFreezeRenderer extends ColumnFreezeContentRenderer imp
     }
 
     private renderVirtualFrozenLeftRight(frzCont: Element, movableCont: Element, frozenRightCont: Element): void {
-        if (this.parent.getFrozenMode() === 'Left-Right') {
+        if (this.parent.getFrozenMode() === literals.leftRight) {
             this.virtualRenderer.virtualEle.wrapper.appendChild(frzCont);
             this.virtualRenderer.virtualEle.wrapper.appendChild(movableCont);
             this.virtualRenderer.virtualEle.wrapper.appendChild(frozenRightCont);
@@ -704,7 +703,7 @@ export class ColumnVirtualFreezeRenderer extends ColumnFreezeContentRenderer imp
      */
     public getColGroup(): Element {
         let mCol: Element = this.parent.getMovableVirtualContent();
-        return isXaxis(this.virtualRenderer) ? mCol.querySelector('colgroup') : this.colgroup;
+        return isXaxis(this.virtualRenderer) ? mCol.querySelector(literals.colGroup) : this.colgroup;
     }
 
     /**

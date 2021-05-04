@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { createElement } from "@syncfusion/ej2-base";
 import { ProgressButton } from "../src/progress-button/progress-button";
 import { profile , inMB, getMemoryProfile } from './common.spec';
@@ -21,7 +22,7 @@ describe('Progress Button', () => {
     });
 
     it('Progress and Spinner', () => {
-        let ele: any = createElement('button', { id: 'progressbtn1' });
+        const ele: any = createElement('button', { id: 'progressbtn1' });
         document.body.appendChild(ele);
         new ProgressButton({ content: 'Progress', iconCss: 'e-icons e-add-icon', enableProgress: true }, '#progressbtn1');
         expect(ele.childNodes[1].classList).toContain('e-btn-content');
@@ -32,21 +33,21 @@ describe('Progress Button', () => {
     });
 
     it('Hide Progress', () => {
-        let ele: any = createElement('button', { id: 'progressbtn2' });
+        const ele: any = createElement('button', { id: 'progressbtn2' });
         document.body.appendChild(ele);
         new ProgressButton({ content: 'Progress' }, '#progressbtn2');
         expect(ele.getElementsByClassName('e-progress').length).toBe(0);
     });
 
     it('Hide Spinner', () => {
-        let ele: any = createElement('button', { id: 'progressbtn3' });
+        const ele: any = createElement('button', { id: 'progressbtn3' });
         document.body.appendChild(ele);
         new ProgressButton({ content: 'Progress', cssClass: 'e-hide-spinner' }, '#progressbtn3');
         expect(ele.classList).toContain('e-hide-spinner');
     });
 
     it('Spinner Only', () => {
-        let ele: any = createElement('button', { id: 'progressbtn4' });
+        const ele: any = createElement('button', { id: 'progressbtn4' });
         document.body.appendChild(ele);
         new ProgressButton({ content: 'Spinner', duration: 1000 }, '#progressbtn4');
         ele.click();
@@ -60,7 +61,7 @@ describe('Progress Button', () => {
     });
 
     it('Progress Only', () => {
-        let ele: any = createElement('button', { id: 'progressbtn5' });
+        const ele: any = createElement('button', { id: 'progressbtn5' });
         document.body.appendChild(ele);
         new ProgressButton({ content: 'Progress', duration: 1000, enableProgress: true, cssClass: 'e-hide-spinner', begin: begin, progress: progress, end: end }, '#progressbtn5');
 
@@ -87,9 +88,9 @@ describe('Progress Button', () => {
     });
 
     it('Progress methods', () => {
-        let ele: any = createElement('button', { id: 'progressbtn6' });
+        const ele: any = createElement('button', { id: 'progressbtn6' });
         document.body.appendChild(ele);
-        let button: ProgressButton = new ProgressButton({ content: 'Progress', enableProgress: true, duration: 1000, cssClass: 'e-hide-spinner', progress: progress, end: end }, '#progressbtn6');
+        const button: ProgressButton = new ProgressButton({ content: 'Progress', enableProgress: true, duration: 1000, cssClass: 'e-hide-spinner', progress: progress, end: end }, '#progressbtn6');
         ele.click();
         jasmine.clock().tick(20000);
         button.start();
@@ -105,7 +106,7 @@ describe('Progress Button', () => {
     });
 
     it('Progress Step', () => {
-        let ele: any = createElement('button', { id: 'progressbtn7' });
+        const ele: any = createElement('button', { id: 'progressbtn7' });
         document.body.appendChild(ele);
         new ProgressButton({ content: 'Progress', duration: 1000, enableProgress: true, cssClass: 'e-hide-spinner', begin: begin, progress: progress, end: end }, '#progressbtn7');
         ele.click();
@@ -130,10 +131,10 @@ describe('Progress Button', () => {
     });
 
     it('Progress percent', () => {
-        let ele: any = createElement('button', { id: 'progressbtn8' });
+        const ele: any = createElement('button', { id: 'progressbtn8' });
         document.body.appendChild(ele);
         ele.textContent = 'Progress';
-        new ProgressButton({ duration: 1000, enableProgress: true, begin: begin }, '#progressbtn8');
+        new ProgressButton({ duration: 1000, enableProgress: true, begin: begin, end: end }, '#progressbtn8');
         ele.click();
         jasmine.clock().tick(10000);
         function begin(args: any) {
@@ -146,9 +147,9 @@ describe('Progress Button', () => {
     });
 
     it('Progress stop', () => {
-        let ele: any = createElement('button', { id: 'progressbtn9' });
+        const ele: any = createElement('button', { id: 'progressbtn9' });
         document.body.appendChild(ele);
-        let button: any = new ProgressButton({ content: 'Progress', enableProgress: true, duration: 1000 }, '#progressbtn9');
+        const button: any = new ProgressButton({ content: 'Progress', enableProgress: true, duration: 1000 }, '#progressbtn9');
         button.start(10);
         jasmine.clock().tick(2000);
         button.stop();
@@ -162,9 +163,9 @@ describe('Progress Button', () => {
 
 
     it('content property change', () => {
-        let ele: any = createElement('button', { id: 'progressbtn10' });
+        const ele: any = createElement('button', { id: 'progressbtn10' });
         document.body.appendChild(ele);
-        let button: ProgressButton = new ProgressButton({ content: 'Progress', enableProgress: true }, '#progressbtn10');
+        const button: ProgressButton = new ProgressButton({ content: 'Progress', enableProgress: true }, '#progressbtn10');
         button.content = 'Progress2';
         button.iconCss = 'e-icons e-add-icon';
         button.dataBind();
@@ -192,7 +193,7 @@ describe('Progress Button', () => {
     });
 
     it('destroy method', () => {
-        let ele: any = createElement('button', { id: 'progressbtn11' });
+        const ele: any = createElement('button', { id: 'progressbtn11' });
         document.body.appendChild(ele);
         let button: any = new ProgressButton({ content: 'Progress', enableProgress: true }, '#progressbtn11');
         button.destroy();
@@ -206,7 +207,7 @@ describe('Progress Button', () => {
     });
 
     it('Spin Position', () => {
-        let ele: any = createElement('button', { id: 'progressbtn13' });
+        const ele: any = createElement('button', { id: 'progressbtn13' });
         document.body.appendChild(ele);
         let button: any = new ProgressButton({ content: 'Spin Right', spinSettings: { position: 'Right' } }, '#progressbtn13');
         expect(ele.childNodes[1].classList).toContain('e-spinner');
@@ -219,7 +220,7 @@ describe('Progress Button', () => {
     });
 
     it('Animation settings - SlideLeft', () => {
-        let ele: any = createElement('button', { id: 'progressbtn14' });
+        const ele: any = createElement('button', { id: 'progressbtn14' });
         document.body.appendChild(ele);
         new ProgressButton({ content: 'Slide Left', duration: 1000, spinSettings: { position: 'Center' }, animationSettings: { effect: 'SlideLeft', duration: 400 } }, '#progressbtn14');
         ele.click();
@@ -230,7 +231,7 @@ describe('Progress Button', () => {
     });
 
     it('Animation settings - Center', () => {
-        let ele: any = createElement('button', { id: 'progressbtn15' });
+        const ele: any = createElement('button', { id: 'progressbtn15' });
         document.body.appendChild(ele);
         new ProgressButton({ content: 'Spin Center', duration: 1000, spinSettings: { position: 'Center' } }, '#progressbtn15');
         ele.click();
@@ -243,9 +244,9 @@ describe('Progress Button', () => {
     });
 
     it('Spin Settings property change', () => {
-        let ele: any = createElement('button', { id: 'progressbtn12' });
+        const ele: any = createElement('button', { id: 'progressbtn12' });
         document.body.appendChild(ele);
-        let button: ProgressButton = new ProgressButton({ content: 'Spin Left' }, '#progressbtn12');
+        const button: ProgressButton = new ProgressButton({ content: 'Spin Left' }, '#progressbtn12');
         button.spinSettings.position = 'Right';
         button.dataBind();
         expect(ele.childNodes[1].classList).toContain('e-spinner');
@@ -257,7 +258,7 @@ describe('Progress Button', () => {
     });
 
     it('Spinner Events', () => {
-        let ele: any = createElement('button', { id: 'progressbtn16' });
+        const ele: any = createElement('button', { id: 'progressbtn16' });
         document.body.appendChild(ele);
         new ProgressButton({ content: 'Spinner', duration: 1000, begin: begin, progress: progress, end: end }, '#progressbtn16');
         ele.click();
@@ -281,23 +282,23 @@ describe('Progress Button', () => {
 
     it('Enable Html Sanitizer', () => {
         new ProgressButton({ content: 'Progress<style>body{background:rgb(0, 0, 255)}</style>', enableHtmlSanitizer: true }, '#progressbtn17');
-        let htmlele: Element = document.body;
+        const htmlele: Element = document.body;
         expect(window.getComputedStyle(htmlele).backgroundColor).not.toBe('rgb(0, 0, 255)');
     });
 
     it('Enable Html Sanitizer disabled', () => {
-        let ele: any = createElement('button', { id: 'progressbtn17' });
+        const ele: any = createElement('button', { id: 'progressbtn17' });
         document.body.appendChild(ele);
-        let button: ProgressButton = new ProgressButton({ content: 'Progress<style>body{background:rgb(0, 0, 255)}</style>' }, '#progressbtn17');
-        let htmlele: Element = document.body;
+        const button: ProgressButton = new ProgressButton({ content: 'Progress<style>body{background:rgb(0, 0, 255)}</style>' }, '#progressbtn17');
+        const htmlele: Element = document.body;
         expect(window.getComputedStyle(htmlele).backgroundColor).toBe('rgb(0, 0, 255)');
         button.destroy();
     });
 
     it('Progress Complete', () => {
-        let ele: any = createElement('button', { id: 'progressbtn18' });
+        const ele: any = createElement('button', { id: 'progressbtn18' });
         document.body.appendChild(ele);
-        let button: any = new ProgressButton({ content: 'ProgressComplete', enableProgress: true, duration: 1000 }, '#progressbtn9');
+        const button: any = new ProgressButton({ content: 'ProgressComplete', enableProgress: true, duration: 1000 }, '#progressbtn9');
         button.start(50);
         button.stop();
         expect(button.percent).toBeGreaterThan(40);
@@ -307,10 +308,10 @@ describe('Progress Button', () => {
 
     it('memory leak', () => {
         profile.sample();
-        let average: any = inMB(profile.averageChange);
+        const average: any = inMB(profile.averageChange);
         // check average change in memory samples to not be over 10MB
         expect(average).toBeLessThan(10);
-        let memory: any = inMB(getMemoryProfile());
+        const memory: any = inMB(getMemoryProfile());
         // check the final memory usage against the first usage, there should be little change if everything was properly deallocated
         expect(memory).toBeLessThan(profile.samples[0] + 0.25);
     });

@@ -18,7 +18,7 @@ import { Data } from '../actions/data';
 import { ReturnType } from '../base/type';
 import { SummaryModelGenerator, GroupSummaryModelGenerator, CaptionSummaryModelGenerator } from '../services/summary-model-generator';
 import { AggregateColumnModel } from '../models/aggregate-model';
-import { compile, getEnumValue, isNullOrUndefined, detach, isBlazor } from '@syncfusion/ej2-base';
+import { compile, getEnumValue, isNullOrUndefined, detach } from '@syncfusion/ej2-base';
 import { CellType, PdfPageSize, PdfDashStyle, PdfPageNumberType, ExportType } from '../base/enum';
 import { DataManager, Query, Group } from '@syncfusion/ej2-data';
 import { getValue } from '@syncfusion/ej2-base';
@@ -118,10 +118,8 @@ export class PdfExport {
             requestType: 'beforePdfExport', cancel: false,
             headerPageNumbers: [], gridDrawPosition: { xPosition: 0, yPosition: 0 }, generateQuery : false
         };
-        if (!isBlazor()) {
-            let gridObject: string = 'gridObject';
-            args[gridObject] = parent;
-        }
+        let gridObject: string = 'gridObject';
+        args[gridObject] = parent;
         let can: string = 'cancel';
         let generateQuery : string = 'generateQuery';
         let header: string = 'headerPageNumbers';
@@ -230,9 +228,6 @@ export class PdfExport {
         let isFrozen: boolean = this.parent.isFrozenGrid() && !this.parent.getFrozenColumns();
         if (!isNullOrUndefined(pdfExportProperties)) {
             this.gridTheme = pdfExportProperties.theme;
-            if (isBlazor() && !isNullOrUndefined(this.gridTheme)) {
-                this.getGridPdfFont(this.gridTheme);
-            }
             allowHorizontalOverflow = isNullOrUndefined(pdfExportProperties.allowHorizontalOverflow) ?
             true : pdfExportProperties.allowHorizontalOverflow;
         }
@@ -701,23 +696,25 @@ export class PdfExport {
         let compositeField: PdfCompositeField;
         let format: string;
         if (!isNullOrUndefined(content.format)) {
-            if ((content.format as string).indexOf('$total') !== -1 && (content.format as string).indexOf('$current') !== -1) {
+            let total: string = '$total';
+            let current: string = '$current';
+            if ((content.format as string).indexOf(total) !== -1 && (content.format as string).indexOf(current) !== -1) {
                 let pageCount: PdfPageCountField = new PdfPageCountField(font);
                 pageCount.numberStyle = this.getPageNumberStyle(content.pageNumberType);
-                if ((content.format as string).indexOf('$total') > (content.format as string).indexOf('$current')) {
-                    format = (content.format as string).replace('$current', '0');
-                    format = format.replace('$total', '1');
+                if ((content.format as string).indexOf(total) > (content.format as string).indexOf(current)) {
+                    format = (content.format as string).replace(current, '0');
+                    format = format.replace(total, '1');
                 } else {
-                    format = (content.format as string).replace('$current', '1');
-                    format = format.replace('$total', '0');
+                    format = (content.format as string).replace(current, '1');
+                    format = format.replace(total, '0');
                 }
                 compositeField = new PdfCompositeField(font, brush, format, pageNumber, pageCount);
-            } else if ((content.format as string).indexOf('$current') !== -1 && (content.format as string).indexOf('$total') === -1) {
-                format = (content.format as string).replace('$current', '0');
+            } else if ((content.format as string).indexOf(current) !== -1 && (content.format as string).indexOf(total) === -1) {
+                format = (content.format as string).replace(current, '0');
                 compositeField = new PdfCompositeField(font, brush, format, pageNumber);
             } else {
                 let pageCount: PdfPageCountField = new PdfPageCountField(font);
-                format = (content.format as string).replace('$total', '0');
+                format = (content.format as string).replace(total, '0');
                 compositeField = new PdfCompositeField(font, brush, format, pageCount);
             }
         } else {

@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 19.1.59 (2021-05-04)
+
+### Spinner
+
+#### Bug Fixes
+
+- `#I325477` - The issue with "Spinner label string is not rendered properly when HTML entity given as label" has been resolved.
+
 ## 19.1.56 (2021-04-13)
 
 ### Dialog

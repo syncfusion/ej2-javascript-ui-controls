@@ -176,10 +176,7 @@ export class Formula {
 
     private onSuggestionOpen(e: PopupEventArgs): void {
         this.isPopupOpened = true;
-        const position: ClientRect = this.getPopupPosition();
-        e.popup.offsetX = position.left;
-        e.popup.offsetY = (position.top + position.height);
-        e.popup.refreshPosition();
+        e.popup.relateTo = this.getRelateToElem();
         (<HTMLElement>e.popup.element.firstChild).style.maxHeight = '180px';
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
         new Promise((resolve: Function, reject: Function) => {
@@ -352,16 +349,14 @@ export class Formula {
         return suggestValue;
     }
 
-    private getPopupPosition(): ClientRect {
-        const eventArgs: { action?: string, position: ClientRect } = { position: null };
+    private getRelateToElem(): HTMLElement {
+        const eventArgs: { action: string, element?: HTMLElement } = { action: 'getElement' };
         if (this.isFormulaBar) {
-            eventArgs.action = 'getPosition';
             this.parent.notify(formulaBarOperation, eventArgs);
         } else {
-            eventArgs.action = 'getPosition';
             this.parent.notify(editOperation, eventArgs);
         }
-        return eventArgs.position;
+        return eventArgs.element;
     }
 
     private getEditingValue(): string {

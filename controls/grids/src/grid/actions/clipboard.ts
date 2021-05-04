@@ -4,6 +4,7 @@ import { Column } from '../models/column';
 import { parentsUntil } from '../base/util';
 import * as events from '../base/constant';
 import { ISelectedCell } from '../../index';
+import * as literals from '../base/string-literals';
 
 /**
  * The `Clipboard` module is used to handle clipboard copy action.
@@ -49,15 +50,14 @@ export class Clipboard implements IAction {
     }
 
     private clickHandler(e: MouseEvent): void {
-        let target: HTMLElement = e.target as HTMLElement;
-        target = parentsUntil(target, 'e-rowcell') as HTMLElement;
+        let target: HTMLElement = parentsUntil(e.target as HTMLElement, literals.rowCell) as HTMLElement;
     }
 
     private pasteHandler(e: KeyboardEvent): void {
         let grid: IGrid = this.parent;
         let isMacLike: boolean = /(Mac)/i.test(navigator.platform);
         if (e.keyCode === 86 && (e.ctrlKey || (isMacLike && e.metaKey)) && !grid.isEdit) {
-            let target: HTMLElement = closest(document.activeElement, '.e-rowcell') as HTMLElement;
+            let target: HTMLElement = closest(document.activeElement, '.' + literals.rowCell) as HTMLElement;
             if (!target || !grid.editSettings.allowEditing || grid.editSettings.mode !== 'Batch' ||
                 grid.selectionSettings.mode !== 'Cell' || grid.selectionSettings.cellSelectionMode === 'Flow') {
                 return;
@@ -193,7 +193,7 @@ export class Clipboard implements IAction {
             let rows: Element[] = this.parent.getRows();
             if (isFrozen) {
                 mRows = this.parent.getMovableDataRows();
-                if (this.parent.getFrozenMode() === 'Left-Right') {
+                if (this.parent.getFrozenMode() === literals.leftRight) {
                     frRows = this.parent.getFrozenRightRows();
                 }
             }
@@ -237,20 +237,20 @@ export class Clipboard implements IAction {
                             this.copyContent += '\n';
                         }
                         let cells: HTMLElement[] = [].slice.call(rows[obj.rowIndexes[i] as number].
-                            querySelectorAll('.e-cellselectionbackground'));
+                            getElementsByClassName('e-cellselectionbackground'));
                         if (isFrozen) {
                             cells.push(...[].slice.call(mRows[obj.rowIndexes[i] as number]
-                                .querySelectorAll('.e-cellselectionbackground')));
+                                .getElementsByClassName('e-cellselectionbackground')));
                             if (frRows) {
                                 cells.push(...[].slice.call(frRows[obj.rowIndexes[i] as number]
-                                    .querySelectorAll('.e-cellselectionbackground')));
+                                    .getElementsByClassName('e-cellselectionbackground')));
                             }
                         }
                         this.getCopyData(cells, false, '\t', withHeader);
                     }
                 } else {
                     this.getCopyData(
-                        [].slice.call(this.parent.element.querySelectorAll('.e-cellselectionbackground')),
+                        [].slice.call(this.parent.element.getElementsByClassName('e-cellselectionbackground')),
                         true, '\n', withHeader);
                 }
             }
@@ -277,23 +277,11 @@ export class Clipboard implements IAction {
         for (let j: number = 0; j < cells.length; j++) {
             if (withHeader && isCell) {
                 this.copyContent += (this.parent.getColumns() as Column[])
-                [parseInt((cells[j] as HTMLElement).getAttribute('aria-colindex'), 10)].headerText + '\n';
+                [parseInt((cells[j] as HTMLElement).getAttribute(literals.ariaColIndex), 10)].headerText + '\n';
             }
             if (isElement) {
                 if (!(cells[j] as HTMLElement).classList.contains('e-hide')) {
-                    if (isBlazor()) {
-                        if ((!(cells[j] as HTMLElement).classList.contains('e-gridchkbox')) &&
-                            Object.keys((cells[j] as HTMLElement).querySelectorAll('.e-check')).length) {
-                            this.copyContent += true;
-                        } else if ((!(cells[j] as HTMLElement).classList.contains('e-gridchkbox')) &&
-                            Object.keys((cells[j] as HTMLElement).querySelectorAll('.e-uncheck')).length) {
-                            this.copyContent += false;
-                        } else {
-                            this.copyContent += (cells[j] as HTMLElement).innerText;
-                        }
-                    } else {
-                        this.copyContent += (cells[j] as HTMLElement).innerText;
-                    }
+                    this.copyContent += (cells[j] as HTMLElement).innerText;
                 }
             } else {
                 this.copyContent += cells[j];
@@ -344,7 +332,6 @@ export class Clipboard implements IAction {
         if (gridObj.selectionSettings.mode === 'Cell') {
             let rowCellIndxes: ISelectedCell[] = gridObj.getSelectedRowCellIndexes();
             let str: string;
-            let isBox: boolean;
             let rowIndexes: number[] = [];
             let i: number;
             for (i = 0; i < rowCellIndxes.length; i++) {

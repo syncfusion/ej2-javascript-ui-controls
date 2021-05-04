@@ -58,6 +58,12 @@ export class Rect {
         }
         return true;
     }
+    /** 
+     * @private
+     */
+    public clone(): Rect {
+        return new Rect(this.x, this.y, this.width, this.height);
+    }
 }
 /**
  * @private
@@ -436,7 +442,7 @@ export abstract class BlockContainer extends Widget {
     /**
      * @private
      */
-    public floatingElements: ShapeBase[] = [];
+    public floatingElements: (ShapeBase | TableWidget)[] = [];
     /**
      * @private
      */
@@ -1137,6 +1143,73 @@ export class ParagraphWidget extends BlockWidget {
 /** 
  * @private
  */
+export class TablePosition {
+    /**
+     * @private
+     */
+    public allowOverlap: boolean;
+    /**
+     * @private
+     */
+    public distanceTop: number;
+    /**
+     * @private
+     */
+    public distanceRight: number;
+    /**
+     * @private
+     */
+    public distanceLeft: number;
+    /**
+     * @private
+     */
+    public distanceBottom: number;
+    /**
+    * @private
+    */
+    public verticalOrigin: string;
+    /**
+     * @private
+     */
+    public verticalAlignment: VerticalAlignment;
+    /**
+     * @private
+     */
+    public verticalPosition: number;
+    /**
+     * @private
+     */
+    public horizontalOrigin: string;
+    /**
+     * @private
+     */
+    public horizontalAlignment: HorizontalAlignment;
+    /**
+     * @private
+     */
+    public horizontalPosition: number;
+    /**
+     * @private
+     */
+    public clone(): TablePosition {
+        let positioning: TablePosition = new TablePosition();
+        positioning.allowOverlap = this.allowOverlap;
+        positioning.distanceTop = this.distanceTop;
+        positioning.distanceRight = this.distanceRight;
+        positioning.distanceLeft = this.distanceLeft;
+        positioning.distanceBottom = this.distanceBottom;
+        positioning.verticalAlignment = this.verticalAlignment;
+        positioning.verticalOrigin = this.verticalOrigin;
+        positioning.verticalPosition = this.verticalPosition;
+        positioning.horizontalAlignment = this.horizontalAlignment;
+        positioning.horizontalOrigin = this.horizontalOrigin;
+        positioning.horizontalPosition = this.horizontalPosition;
+        return positioning;
+    }
+}
+/** 
+ * @private
+ */
 export class TableWidget extends BlockWidget {
     private flags: number = 0;
     /**
@@ -1187,6 +1260,14 @@ export class TableWidget extends BlockWidget {
      * @private
      */
     public isDefaultFormatUpdated: boolean = false;
+    /**
+     * @private
+     */
+    public wrapTextAround: boolean;
+    /**
+     * @private
+     */
+    public positioning: TablePosition;
     /**
      * @private
      */
@@ -1297,6 +1378,33 @@ export class TableWidget extends BlockWidget {
             let row: TableRowWidget = this.childWidgets[i] as TableRowWidget;
             for (let j: number = 0; j < row.childWidgets.length; j++) {
                 rowWidth += (row.childWidgets[j] as TableCellWidget).cellFormat.cellWidth;
+            }
+            if (width < rowWidth) {
+                width = rowWidth;
+            }
+        }
+        return width;
+    }
+    /**
+     * @private
+     */
+    public getTableCellWidth(): number {
+        let width: number = 0;
+        for (let k: number = 0; k < this.childWidgets.length; k++) {
+            let rowWidth: number = 0;
+            let rowWidget: TableRowWidget = this.childWidgets[k] as TableRowWidget;
+            for (let m: number = 0; m < rowWidget.childWidgets.length; m++) {
+                let cellWidget: TableCellWidget = (rowWidget.childWidgets[m] as TableCellWidget);
+                let cellWidth: number = cellWidget.width;
+                if (cellWidth === 0) {
+                    cellWidth = cellWidget.cellFormat.cellWidth;
+                    if (cellWidth > cellWidget.cellFormat.preferredWidth &&
+                        cellWidget.cellFormat.preferredWidth !== 0 && cellWidget.cellFormat.preferredWidthType !== 'Percent') {
+                        cellWidth = cellWidget.cellFormat.preferredWidth;
+                    }
+                    cellWidth = HelperMethods.convertPointToPixel(cellWidth - (cellWidget.margin.left + cellWidget.margin.right));
+                }
+                rowWidth += (cellWidth + cellWidget.margin.left + cellWidget.margin.right);
             }
             if (width < rowWidth) {
                 width = rowWidth;
@@ -1825,6 +1933,10 @@ export class TableWidget extends BlockWidget {
         let table: TableWidget = new TableWidget();
         table.tableHolder = this.tableHolder.clone();
         table.tableFormat.copyFormat(this.tableFormat);
+        if (this.wrapTextAround) {
+            table.wrapTextAround = this.wrapTextAround;
+            table.positioning = this.positioning.clone();
+        }
         for (let i: number = 0; i < this.childWidgets.length; i++) {
             let row: TableRowWidget = (this.childWidgets[i] as TableRowWidget).clone();
             table.childWidgets.push(row);
@@ -2763,10 +2875,6 @@ export class TableCellWidget extends BlockWidget {
         if ((this.cellFormat.preferredWidth > 0 && !this.ownerTable.tableFormat.allowAutoFit) || (this.cellFormat.preferredWidth > 0 &&
             this.cellFormat.preferredWidthType !== 'Auto')) {
             return this.cellFormat.preferredWidth;
-            //if table has preferred width value and cell preferred width is auto, considered cell width.
-        } else if (this.cellFormat.preferredWidth === 0 && this.cellFormat.preferredWidthType === 'Auto'
-            && this.cellFormat.cellWidth !== 0) {
-            return this.cellFormat.cellWidth;
         } else if (this.cellFormat.preferredWidth === 0 && this.cellFormat.preferredWidthType === 'Auto'
             && this.cellFormat.cellWidth === 0 && this.previousWidget &&
             (this.previousWidget as TableCellWidget).cellFormat.preferredWidth > 0) {
@@ -5364,6 +5472,10 @@ export class ShapeBase extends ShapeCommon {
      * @private
      */
     public lockAnchor: boolean;
+    /**
+     * @private
+     */
+     public isTextBox: boolean;
 }
 /** 
  * @private

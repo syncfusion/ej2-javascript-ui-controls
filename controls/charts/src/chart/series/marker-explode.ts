@@ -102,12 +102,13 @@ export class MarkerExplode extends ChartData {
             }
             if (chart.tooltip.enable) {
                 const pointData: PointData = chart.chartAreaType === 'PolarRadar' ? this.getData() : null;
+                const commonXvalues: number[] = this.mergeXvalues(this.chart.visibleSeries);
                 for (const chartSeries of chart.visibleSeries) {
                     if (!chartSeries.enableTooltip || chartSeries.category === 'Indicator') {
                         continue;
                     }
                     if (chart.chartAreaType === 'Cartesian' && chartSeries.visible) {
-                        data = this.getClosestX(chart, chartSeries);
+                        data = this.getClosestX(chart, chartSeries, commonXvalues);
                     } else if (chart.chartAreaType === 'PolarRadar' && chartSeries.visible && pointData.point !== null) {
                         data = new PointData(chartSeries.points[pointData.point.index], chartSeries);
                     }

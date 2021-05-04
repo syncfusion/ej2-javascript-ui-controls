@@ -1605,6 +1605,7 @@ describe('Keyboard shortcut internal API Testing', () => {
         editor = undefined;
         documentHelper = undefined;
         document.body.removeChild(document.getElementById('container'));
+        document.body.innerHTML = '';
         setTimeout(() => {
             done();
         }, 2000);
@@ -1681,6 +1682,7 @@ describe('control shift combination testing', () => {
         editor = undefined;
         documentHelper = undefined;
         document.body.removeChild(document.getElementById('container'));
+        document.body.innerHTML = '';
         setTimeout(() => {
             done();
         }, 2000);
@@ -1753,6 +1755,7 @@ describe('control key combination testing', () => {
         editor = undefined;
         documentHelper = undefined;
         document.body.removeChild(document.getElementById('container'));
+        document.body.innerHTML = '';
         setTimeout(() => {
             done();
         }, 2000);
@@ -1821,6 +1824,7 @@ describe('shift key combination testing', () => {
         editor = undefined;
         documentHelper = undefined;
         document.body.removeChild(document.getElementById('container'));
+        document.body.innerHTML = '';
         setTimeout(() => {
             done();
         }, 2000);
@@ -1900,6 +1904,7 @@ describe('whole document selection testing', () => {
         editor = undefined;
         documentHelper = undefined;
         document.body.removeChild(document.getElementById('container'));
+        document.body.innerHTML = '';
         setTimeout(() => {
             done();
         }, 2000);
@@ -1938,6 +1943,7 @@ describe('Keyboard shortcut validation in Field', () => {
         editor = undefined;
         documentHelper = undefined;
         document.body.removeChild(document.getElementById('container'));
+        document.body.innerHTML = '';
         setTimeout(() => {
             done();
         }, 2000);
@@ -1997,6 +2003,7 @@ describe('Keyboard shortcut validation in Field home and end key', () => {
         editor = undefined;
         documentHelper = undefined;
         document.body.removeChild(document.getElementById('container'));
+        document.body.innerHTML = '';
         setTimeout(() => {
             done();
         }, 2000);

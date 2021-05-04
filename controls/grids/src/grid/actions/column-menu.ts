@@ -1,5 +1,5 @@
 import { L10n, EventHandler, closest, Browser, isNullOrUndefined, KeyboardEventArgs } from '@syncfusion/ej2-base';
-import { remove, isBlazor } from '@syncfusion/ej2-base';
+import { remove } from '@syncfusion/ej2-base';
 import { ContextMenu as Menu, MenuEventArgs, OpenCloseMenuEventArgs } from '@syncfusion/ej2-navigations';
 import { IGrid, IAction, ColumnMenuItemModel, NotifyArgs, ColumnMenuOpenEventArgs, ColumnMenuClickEventArgs } from '../base/interface';
 import { parentsUntil, applyBiggerTheme } from '../base/util';
@@ -13,6 +13,7 @@ import { Sort } from '../actions/sort';
 import { SortDescriptorModel } from '../base/grid-model';
 import { Filter } from '../actions/filter';
 import { Resize } from '../actions/resize';
+import * as literals from '../base/string-literals';
 
 /**
  * 'column menu module used to handle column menu actions'
@@ -73,7 +74,7 @@ export class ColumnMenu implements IAction {
      */
     public destroy(): void {
         let gridElement: Element = this.parent.element;
-        if (!gridElement || (!gridElement.querySelector('.e-gridheader') && !gridElement.querySelector('.e-gridcontent'))) { return; }
+        if (!gridElement || (!gridElement.querySelector('.' + literals.gridHeader) && !gridElement.querySelector( '.' + literals.gridContent))) { return; }
         this.columnMenu.destroy();
         this.removeEventListener();
         this.unwireFilterEvents();
@@ -131,7 +132,7 @@ export class ColumnMenu implements IAction {
     }
 
     private getColumnMenuHandlers(): HTMLElement[] {
-        return [].slice.call(this.parent.getHeaderTable().querySelectorAll('.' + this.ROOT));
+        return [].slice.call(this.parent.getHeaderTable().getElementsByClassName(this.ROOT));
     }
 
     /**
@@ -278,10 +279,7 @@ export class ColumnMenu implements IAction {
 
     private columnMenuOnOpen(args: OpenCloseMenuEventArgs): void {
         if (args.element.className === 'e-menu-parent e-ul ') {
-            if (args.element.offsetHeight > window.innerHeight) {
-                args.element.style.maxHeight = (window.innerHeight) * 0.8 + 'px';
-                args.element.style.overflowY = 'auto';
-            } else if (this.parent.element.offsetHeight > window.innerHeight) {
+            if (args.element.offsetHeight > window.innerHeight || this.parent.element.offsetHeight > window.innerHeight) {
                 args.element.style.maxHeight = (window.innerHeight) * 0.8 + 'px';
                 args.element.style.overflowY = 'auto';
             }
@@ -475,12 +473,6 @@ export class ColumnMenu implements IAction {
             'ColumnChooser': 'Columnchooser',
             'Filter': 'FilterMenu'
         };
-        if (isBlazor()) {
-            let autoFitAll: string = 'AutoFitAll';
-            localeKeys[autoFitAll] = 'AutoFitAll';
-            let autoFit: string = 'AutoFit';
-            localeKeys[autoFit] = 'AutoFit';
-        }
         return localeKeys;
     }
 

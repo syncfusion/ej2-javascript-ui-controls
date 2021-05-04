@@ -1,7 +1,7 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { DropDownButton } from '../src/drop-down-button/drop-down-button';
 import { MenuEventArgs, OpenCloseMenuEventArgs, BeforeOpenCloseMenuEventArgs } from '../src/common/common';
 import { ItemModel } from '../src/common/common-model';
-import { DropDownButtonModel } from '../src/drop-down-button/drop-down-button-model';
 import { createElement, Browser } from '@syncfusion/ej2-base';
 import { profile , inMB, getMemoryProfile } from './common.spec';
 
@@ -20,9 +20,9 @@ describe('DropDownButton', () => {
     });
 
     let drpButton: any;
-    let element: HTMLElement = createElement('button', { id: 'drp-button' });
+    const element: HTMLElement = createElement('button', { id: 'drp-button' });
     document.body.appendChild(element);
-    let ul: Element = createElement('ul', { className: 'targetElement' });
+    const ul: Element = createElement('ul', { className: 'targetElement' });
     let items: ItemModel[] = [
         {
             text: 'Cut',
@@ -33,7 +33,6 @@ describe('DropDownButton', () => {
         {
             text: 'Paste',
         }];
-    let menuOptions: DropDownButtonModel;
 
     describe('DOM', () => {
         afterEach(() => {
@@ -86,7 +85,7 @@ describe('DropDownButton', () => {
         });
 
         it('Dropdown Button without id', () => {
-            let btn: HTMLElement = createElement('button');
+            const btn: HTMLElement = createElement('button');
             document.body.appendChild(btn);
             drpButton = new DropDownButton();
             drpButton.appendTo(btn);
@@ -116,7 +115,7 @@ describe('DropDownButton', () => {
             drpButton = new DropDownButton({ items: [{ text: 'cut<style>body{background:rgb(0, 0, 255)}</style>' }, { text: 'copy' }, { text: 'paste' }], enableHtmlSanitizer: true });
             drpButton.appendTo('#drp-button');
             drpButton.toggle();
-            let htmlele: Element = document.body;
+            const htmlele: Element = document.body;
             expect(window.getComputedStyle(htmlele).backgroundColor).not.toBe('rgb(0, 0, 255)');
             drpButton.destroy();
         });
@@ -125,7 +124,7 @@ describe('DropDownButton', () => {
             drpButton = new DropDownButton({ items: [{ text: 'cut<style>body{background:rgb(0, 0, 255)}</style>' }, { text: 'copy' }, { text: 'paste' }] });
             drpButton.appendTo('#drp-button');
             drpButton.toggle();
-            let htmlele: Element = document.body;
+            const htmlele: Element = document.body;
             expect(window.getComputedStyle(htmlele).backgroundColor).toBe('rgb(0, 0, 255)');
         });
     });
@@ -185,6 +184,24 @@ describe('DropDownButton', () => {
             element.click();
             drpButton.getULElement().querySelector('LI').click();
             expect(drpButton.dropDown.element.classList.contains('e-popup-close')).toBeTruthy();
+        });
+
+        it('create popup on open testing', () => {
+            drpButton = new DropDownButton({ content: 'default', createPopupOnClick: true });
+            drpButton.appendTo('#drp-button');
+            expect(drpButton.dropDown).toEqual(undefined);
+            element.click();
+            expect(drpButton.dropDown.element.classList.contains('e-popup-open')).toEqual(true);
+            element.click();
+            expect(drpButton.dropDown).toEqual(undefined);
+        });
+
+        it('Destroy popup after destroy method', () => {
+            drpButton = new DropDownButton({ content: 'destroy' });
+            drpButton.appendTo('#drp-button');
+            element.click();
+            drpButton.destroy();
+            expect(drpButton.dropDown).toEqual(undefined);
         });
     });
 
@@ -273,13 +290,23 @@ describe('DropDownButton', () => {
 
         it('target', () => {
             document.body.appendChild(ul);
-            let testUL: Element = createElement('ul');
+            const testUL: Element = createElement('ul');
             document.body.appendChild(testUL);
             drpButton = new DropDownButton({ target: testUL as HTMLElement });
             drpButton.appendTo('#drp-button');
             drpButton.target = '.targetElement';
             drpButton.dataBind();
             expect(drpButton.dropDown.element.children[0].classList.contains('targetElement')).toBeTruthy();
+        });
+
+        it('popup destroy after destroy method with target', () => {
+            const testUL: Element = createElement('ul');
+            document.body.appendChild(testUL);
+            drpButton = new DropDownButton({ target: testUL as HTMLElement });
+            drpButton.appendTo('#drp-button');
+            element.click();
+            drpButton.destroy();
+            expect(drpButton.dropDown).toEqual(undefined);
         });
 
         it('Item text changes', () => {
@@ -291,6 +318,15 @@ describe('DropDownButton', () => {
             drpButton.dataBind();
             expect(drpButton.dropDown.element.querySelectorAll('.e-item')[0].textContent).toEqual('Cut & Copy');
             expect(drpButton.dropDown.element.querySelectorAll('.e-item')[1].textContent).toEqual('Paste Text');
+        });
+
+        it('Create popup on open changes', () => {
+            drpButton = new DropDownButton({ content: 'default', createPopupOnClick: true });
+            drpButton.appendTo('#drp-button');
+            expect(drpButton.dropDown).toEqual(undefined);
+            drpButton.createPopupOnClick = false;
+            drpButton.dataBind();
+            expect(drpButton.dropDown.element.classList.contains('e-popup-open')).toEqual(false);                     
         });
     });
 
@@ -366,7 +402,7 @@ describe('DropDownButton', () => {
             drpButton.mousedownHandler({ target: document.body });
             expect(drpButton.dropDown.element.classList.contains('e-popup-open')).toBeFalsy();
             drpButton.element.click();
-            let ele: HTMLElement = drpButton.dropDown.element.querySelector('.e-item');
+            const ele: HTMLElement = drpButton.dropDown.element.querySelector('.e-item');
             ele.classList.add('e-focused');
             ele.click();
             expect(drpButton.dropDown.element.classList.contains('e-popup-open')).toBeFalsy();
@@ -379,7 +415,7 @@ describe('DropDownButton', () => {
             drpButton.destroy();
         });
 
-        let downEventArgs: any = {
+        const downEventArgs: any = {
             preventDefault: (): void => { /** NO Code */ },
             keyCode: 40,
             target: null
@@ -389,13 +425,13 @@ describe('DropDownButton', () => {
             drpButton = new DropDownButton({ items: items });
             drpButton.appendTo('#drp-button');
             drpButton.element.click();
-            let li: Element[] = <Element[] & NodeListOf<HTMLLIElement>>drpButton.dropDown.element.querySelectorAll('li');
+            const li: Element[] = <Element[] & NodeListOf<HTMLLIElement>>drpButton.dropDown.element.querySelectorAll('li');
             downEventArgs.target = drpButton.dropDown.element;
             drpButton.keyBoardHandler(downEventArgs);
             expect((li[0] as Element).classList.contains('e-focused')).toBe(true);
         });
 
-        let upEventArgs: any = {
+        const upEventArgs: any = {
             preventDefault: (): void => { /** NO Code */ },
             keyCode: 38,
             target: null
@@ -405,7 +441,7 @@ describe('DropDownButton', () => {
             drpButton = new DropDownButton({ items: items });
             drpButton.appendTo('#drp-button');
             drpButton.element.click();
-            let li: Element[] = <Element[] & NodeListOf<HTMLLIElement>>drpButton.dropDown.element.querySelectorAll('li');
+            const li: Element[] = <Element[] & NodeListOf<HTMLLIElement>>drpButton.dropDown.element.querySelectorAll('li');
             li[0].classList.add('e-focused');
             upEventArgs.target = li[1];
             drpButton.keyBoardHandler(upEventArgs);
@@ -419,7 +455,7 @@ describe('DropDownButton', () => {
             drpButton = new DropDownButton({ items: items });
             drpButton.appendTo('#drp-button');
             drpButton.element.click();
-            let li: Element[] = <Element[] & NodeListOf<HTMLLIElement>>drpButton.dropDown.element.querySelectorAll('li');
+            const li: Element[] = <Element[] & NodeListOf<HTMLLIElement>>drpButton.dropDown.element.querySelectorAll('li');
             li[2].classList.add('e-focused');
             drpButton.keyBoardHandler(downEventArgs);
             expect((li[4] as Element).classList.contains('e-focused')).toBe(true);
@@ -433,7 +469,7 @@ describe('DropDownButton', () => {
             drpButton = new DropDownButton({ items: items });
             drpButton.appendTo('#drp-button');
             drpButton.element.click();
-            let li: Element[] = <Element[] & NodeListOf<HTMLLIElement>>drpButton.dropDown.element.querySelectorAll('li');
+            const li: Element[] = <Element[] & NodeListOf<HTMLLIElement>>drpButton.dropDown.element.querySelectorAll('li');
             li[4].classList.add('e-focused');
             drpButton.keyBoardHandler(upEventArgs);
             expect((li[2] as Element).classList.contains('e-focused')).toBe(true);
@@ -450,7 +486,7 @@ describe('DropDownButton', () => {
             });
             drpButton.appendTo('#drp-button');
             drpButton.element.click();
-            let li: Element[] = <Element[] & NodeListOf<HTMLLIElement>>drpButton.dropDown.element.querySelectorAll('li');
+            const li: Element[] = <Element[] & NodeListOf<HTMLLIElement>>drpButton.dropDown.element.querySelectorAll('li');
             li[5].classList.add('e-focused');
             drpButton.keyBoardHandler(upEventArgs);
             expect((li[1] as Element).classList.contains('e-focused')).toBe(true);
@@ -467,12 +503,12 @@ describe('DropDownButton', () => {
             });
             drpButton.appendTo('#drp-button');
             drpButton.element.click();
-            let li: Element[] = <Element[] & NodeListOf<HTMLLIElement>>drpButton.dropDown.element.querySelectorAll('li');
+            const li: Element[] = <Element[] & NodeListOf<HTMLLIElement>>drpButton.dropDown.element.querySelectorAll('li');
             drpButton.keyBoardHandler(downEventArgs);
             expect((li[0] as Element).classList.contains('e-focused')).toBe(false);
         });
 
-        let escEventArgs: any = {
+        const escEventArgs: any = {
             preventDefault: (): void => { /** NO Code */ },
             keyCode: 27,
             target: null
@@ -487,7 +523,7 @@ describe('DropDownButton', () => {
             drpButton.keyBoardHandler(escEventArgs);
         });
 
-        let tabEventArgs: any = {
+        const tabEventArgs: any = {
             preventDefault: (): void => { /** NO Code */ },
             keyCode: 9,
             target: null
@@ -506,7 +542,7 @@ describe('DropDownButton', () => {
             expect(drpButton.dropDown.element.classList.contains('e-popup-open')).toBeFalsy();
         });
 
-        let enterEventArgs: any = {
+        const enterEventArgs: any = {
             preventDefault: (): void => { /** NO Code */ },
             keyCode: 13,
             target: null
@@ -516,7 +552,7 @@ describe('DropDownButton', () => {
             drpButton = new DropDownButton({ items: items });
             drpButton.appendTo('#drp-button');
             drpButton.element.click();
-            let li: Element[] = <Element[] & NodeListOf<HTMLLIElement>>drpButton.dropDown.element.querySelectorAll('li');
+            const li: Element[] = <Element[] & NodeListOf<HTMLLIElement>>drpButton.dropDown.element.querySelectorAll('li');
             li[0].classList.add('e-focused');
             drpButton.keyBoardHandler(downEventArgs);
             enterEventArgs.target = li[1];
@@ -530,7 +566,7 @@ describe('DropDownButton', () => {
             drpButton.keyBoardHandler(enterEventArgs);
         });
 
-        let spaceEventArgs: any = {
+        const spaceEventArgs: any = {
             preventDefault: (): void => { /** NO Code */ },
             keyCode: 32,
             target: null
@@ -542,7 +578,7 @@ describe('DropDownButton', () => {
             spaceEventArgs.target = element;
             drpButton.keyBoardHandler(spaceEventArgs);
             expect(drpButton.dropDown.element.classList.contains('e-popup-open')).toBeTruthy();
-            let li: Element[] = <Element[] & NodeListOf<HTMLLIElement>>drpButton.dropDown.element.querySelectorAll('li');
+            const li: Element[] = <Element[] & NodeListOf<HTMLLIElement>>drpButton.dropDown.element.querySelectorAll('li');
             li[0].classList.add('e-focused');
             drpButton.keyBoardHandler(downEventArgs);
             spaceEventArgs.target = li[1];
@@ -550,7 +586,7 @@ describe('DropDownButton', () => {
             expect(drpButton.dropDown.element.classList.contains('e-popup-open')).toBeFalsy();
         });
 
-        let altDownEventArgs: any = {
+        const altDownEventArgs: any = {
             preventDefault: (): void => { /** NO Code */ },
             altKey: true,
             keyCode: 40,
@@ -565,7 +601,7 @@ describe('DropDownButton', () => {
             expect(drpButton.dropDown.element.classList.contains('e-popup-open')).toBeTruthy();
         });
 
-        let altUpEventArgs: any = {
+        const altUpEventArgs: any = {
             preventDefault: (): void => { /** NO Code */ },
             altKey: true,
             keyCode: 38,
@@ -585,14 +621,13 @@ describe('DropDownButton', () => {
             drpButton.destroy();
         });
 
-        let enterEventArgs: any = {
+        const enterEventArgs: any = {
             preventDefault: (): void => { /** NO Code */ },
             keyCode: 13,
             target: null
         };
 
         it('Select Event Args Testing', () => {
-            let li: Element[];
             drpButton = new DropDownButton({
                 items: items,
                 select: (args: MenuEventArgs) => {
@@ -604,13 +639,12 @@ describe('DropDownButton', () => {
             drpButton.appendTo('#drp-button');
             enterEventArgs.target = element;
             drpButton.keyBoardHandler(enterEventArgs);
-            li = <Element[] & NodeListOf<HTMLLIElement>>drpButton.dropDown.element.querySelectorAll('li');
+            const li: Element[] = <Element[] & NodeListOf<HTMLLIElement>>drpButton.dropDown.element.querySelectorAll('li');
             enterEventArgs.target = li[2];
             drpButton.keyBoardHandler(enterEventArgs);
         });
 
         it('beforeOpen Event Args Testing', () => {
-            let li: Element[];
             drpButton = new DropDownButton({
                 items: items,
                 beforeOpen: (args: BeforeOpenCloseMenuEventArgs) => {
@@ -630,7 +664,6 @@ describe('DropDownButton', () => {
         });
 
         it('beforeClose Event Args Testing', () => {
-            let li: Element[];
             drpButton = new DropDownButton({
                 items: items,
                 beforeClose: (args: BeforeOpenCloseMenuEventArgs) => {
@@ -652,7 +685,6 @@ describe('DropDownButton', () => {
         });
 
         it('open and close Event Args Testing', () => {
-            let li: Element[];
             drpButton = new DropDownButton({
                 items: items,
                 open: (args: OpenCloseMenuEventArgs) => {
@@ -682,46 +714,60 @@ describe('DropDownButton', () => {
         afterEach(() => {
             drpButton.destroy();
         });
-        let mouseEventArgs: any = {
+        const mouseEventArgs: any = {
             preventDefault: (): void => { /** NO Code */ },
             target: null,
             type: 'click'
         };
         it('Click event Checking', () => {
-            let androidUserAgent: string = 'Mozilla/5.0 (Linux; Android 4.3; Nexus 7 Build/JWR66Y) ' +
+            const androidUserAgent: string = 'Mozilla/5.0 (Linux; Android 4.3; Nexus 7 Build/JWR66Y) ' +
                 'AppleWebKit/537.36 (KHTML, like Gecko) Chrome/30.0.1599.92 Safari/537.36';
             Browser.userAgent = androidUserAgent;
             drpButton = new DropDownButton({ items: items });
             drpButton.appendTo('#drp-button');
             element.click();
             expect(drpButton.dropDown.element.classList.contains('e-popup-open')).toBeTruthy();
-            let li: Element[] = <Element[] & NodeListOf<HTMLLIElement>>drpButton.dropDown.element.querySelectorAll('li');
+            const li: Element[] = <Element[] & NodeListOf<HTMLLIElement>>drpButton.dropDown.element.querySelectorAll('li');
             mouseEventArgs.target = li[1].firstChild;
             drpButton.clickHandler(mouseEventArgs);
             expect(drpButton.dropDown.element.classList.contains('e-popup-close')).toBeTruthy();
         });
         it('Click event Checking for ios', () => {
-            let iosUserAgent: string = 'Mozilla/5.0 (iPhone; CPU iPhone OS 5_0 like Mac OS X) ' +
+            const iosUserAgent: string = 'Mozilla/5.0 (iPhone; CPU iPhone OS 5_0 like Mac OS X) ' +
                 'AppleWebKit/534.46 (KHTML, like Gecko) Version/5.1 Mobile/9A334 Safari/7534.48.3';
             Browser.userAgent = iosUserAgent;
-            let ul: Element = drpButton.dropDown.element.children[0];
             drpButton = new DropDownButton({ items: items });
             drpButton.appendTo('#drp-button');
             element.click();
             expect(drpButton.dropDown.element.classList.contains('e-popup-open')).toBeTruthy();
-            let li: Element[] = <Element[] & NodeListOf<HTMLLIElement>>drpButton.dropDown.element.querySelectorAll('li');
+            const li: Element[] = <Element[] & NodeListOf<HTMLLIElement>>drpButton.dropDown.element.querySelectorAll('li');
             mouseEventArgs.target = li[1].firstChild;
             drpButton.clickHandler(mouseEventArgs);
             expect(drpButton.dropDown.element.classList.contains('e-popup-close')).toBeTruthy();
         });
     });
 
+    describe('CR issues', () => {
+        afterEach(() => {
+            drpButton.destroy();
+        });
+        it('EJ2-48782 - Dropdown issue on dynamic update of Disabled property', () => {
+            drpButton = new DropDownButton({ items: items });
+            drpButton.appendTo('#drp-button');
+            drpButton.disabled = true;
+            drpButton.dataBind();
+            drpButton.disabled = false;
+            drpButton.dataBind();
+            expect(element.getAttribute('disabled')).toBeNull();
+        });
+    });
+
     it('memory leak', () => {
         profile.sample();
-        let average: any = inMB(profile.averageChange);
+        const average: any = inMB(profile.averageChange);
         // check average change in memory samples to not be over 10MB
         expect(average).toBeLessThan(10);
-        let memory: any = inMB(getMemoryProfile());
+        const memory: any = inMB(getMemoryProfile());
         // check the final memory usage against the first usage, there should be little change if everything was properly deallocated
         expect(memory).toBeLessThan(profile.samples[0] + 0.25);
     });

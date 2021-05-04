@@ -1634,8 +1634,12 @@ export class DropDownList extends DropDownBase implements IInput {
                         this.resetFocusElement();
                     }
                     this.activeIndex = null;
-                    if (this.getModuleName() === 'autocomplete') {
-                        this.hidePopup();
+                    if (this.getModuleName() !== 'dropdownlist') {
+                        this.preventAutoFill = true;
+                        this.searchLists(e);
+                        if (this.getModuleName() === 'autocomplete') {
+                            this.hidePopup();
+                        }
                     }
                 }
                 e.preventDefault();
@@ -1701,7 +1705,7 @@ export class DropDownList extends DropDownBase implements IInput {
         return { start: Math.abs(input.selectionStart), end: Math.abs(input.selectionEnd) };
     }
 
-    protected searchLists(e: KeyboardEventArgs): void {
+    protected searchLists(e: KeyboardEventArgs | MouseEvent): void {
         this.isTyped = true;
         this.activeIndex = null;
         this.isListSearched = true;
@@ -1765,7 +1769,8 @@ export class DropDownList extends DropDownBase implements IInput {
         dataSource: { [key: string]: Object }[] | DataManager | string[] | number[] | boolean[],
         query?: Query, fields?: FieldSettingsModel): void {
         if (!isNullOrUndefined(this.filterInput)) {
-            this.beforePopupOpen = true;
+            this.beforePopupOpen = (!this.isPopupOpen && this.getModuleName() === 'combobox' && this.filterInput.value === '') ?
+            false : true;
             if (this.filterInput.value.trim() === '' && !this.itemTemplate) {
                 this.actionCompleteData.isUpdated = false;
                 this.isTyped = false;
@@ -1785,7 +1790,6 @@ export class DropDownList extends DropDownBase implements IInput {
             }
             this.renderReactTemplates();
         }
-
     }
     protected setSearchBox(popupElement: HTMLElement): InputObject {
         if (this.isFiltering()) {

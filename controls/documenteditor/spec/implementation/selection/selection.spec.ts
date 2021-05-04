@@ -25,6 +25,7 @@ describe('Selection API', () => {
         document.body.removeChild(document.getElementById('container'));
         editor.destroy();
         editor = undefined;
+        document.body.innerHTML = '';
         setTimeout(() => {
             done();
         }, 750);
@@ -74,6 +75,7 @@ describe('Para mark selection validation', () => {
         document.body.removeChild(document.getElementById('container'));
         editor.destroy();
         editor = undefined;
+        document.body.innerHTML = '';
         setTimeout(() => {
             done();
         }, 750);
@@ -104,6 +106,7 @@ describe('Bookmarks API validation', () => {
         document.body.removeChild(document.getElementById('container'));
         editor.destroy();
         editor = undefined;
+        document.body.innerHTML = '';
         setTimeout(() => {
             done();
         }, 750);

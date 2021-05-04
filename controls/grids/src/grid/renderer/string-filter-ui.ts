@@ -90,7 +90,6 @@ export class StringFilterUI implements IFilterMUI {
 
 
     public write(args: { column: Column, target: Element, parent: IGrid, filteredValue: number | string | Date | boolean }): void {
-        let columns: PredicateModel[] = this.filterSettings.columns;
         if (args.filteredValue !== '' && !isNullOrUndefined(args.filteredValue)) {
             let struiObj: AutoComplete = (<EJ2Intance>document.querySelector('#strui-' + args.column.uid)).ej2_instances[0];
             struiObj.value = args.filteredValue as string;

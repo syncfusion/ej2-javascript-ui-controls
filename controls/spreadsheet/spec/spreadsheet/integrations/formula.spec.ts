@@ -207,11 +207,11 @@ describe('Spreadsheet formula module ->', () => {
     });
 
     describe('CR-Issues ->', () => {
-        describe('I311951, I309076, FB24295 ->', () => {
-            beforeEach((done: Function) => {
+        describe('I311951, I309076, FB24295, FB23944 ->', () => {
+            beforeAll((done: Function) => {
                 helper.initializeSpreadsheet({ sheets: [{ rows: [{ cells: [{ value: '25' }] }] }] }, done);
             });
-            afterEach(() => {
+            afterAll(() => {
                 helper.invoke('destroy');
             });
             it('Formula with percentage not working and formula parsing issue', (done: Function) => {
@@ -244,6 +244,22 @@ describe('Spreadsheet formula module ->', () => {
                 expect(helper.getElement('#' + helper.id + '_aggregate-popup ul li').textContent).toBe('Count: 2');
                 done();
             });
+
+            it('Formula popup not displayed on cell in the bottom of the sheet', (done: Function) => {
+                const spreadsheet: Spreadsheet = helper.getInstance();
+                spreadsheet.selectRange('C21');
+                spreadsheet.startEdit();
+                const editElem: HTMLElement = helper.getCellEditorElement();
+                editElem.textContent = '=s';
+                helper.triggerKeyEvent('keyup', 83, null, null, null, editElem);
+                setTimeout(()=>{
+                    const popup: Element = helper.getElement('#' + helper.id + '_ac_popup');
+                    expect(Math.abs(popup.getBoundingClientRect().bottom - editElem.getBoundingClientRect().top)).toBeLessThan(3);
+                    setTimeout(()=>{
+                        done();
+                    }, 100);
+                });
+            });
         });
         describe('I261427 ->', () => {
             beforeEach((done: Function) => {
@@ -274,13 +290,13 @@ describe('Spreadsheet formula module ->', () => {
                 });
             });
         });
-        describe('I288646, I296410, I305593 ->', () => {
-            beforeEach((done: Function) => {
-                helper.initializeSpreadsheet(
-                    { sheets: [{ rows: [{ cells: [{  value: '10' }, { value: '20' }] }, { cells: [{ formula: '=ROUNDUP(10.6)' },
-                    { index: 4, formula: '=INT(10.2)' }, { formula: '=SUMPRODUCT(A1:B1)' }] }] }] }, done);
+        describe('I288646, I296410, I305593, I314883 ->', () => {
+            const model: SpreadsheetModel = { sheets: [{ rows: [{ cells: [{  value: '10' }, { value: '20' }] }, { cells: [{ formula: '=ROUNDUP(10.6)' },
+            { index: 4, formula: '=INT(10.2)' }, { formula: '=SUMPRODUCT(A1:B1)' }] }] }] };
+            beforeAll((done: Function) => {
+                helper.initializeSpreadsheet(model, done);
             });
-            afterEach(() => {
+            afterAll(() => {
                 helper.invoke('destroy');
             });
             it('Include the unsupported formula (ROUNDUP, INT, SUMPRODUCT)', (done: Function) => {
@@ -296,6 +312,24 @@ describe('Spreadsheet formula module ->', () => {
                 expect(helper.invoke('getCell', [1, 5]).textContent).toBe('30');
                 done();
             });
+
+            // it('Formula dependent cell not updated after destroy', (done: Function) => {
+            //     helper.edit('C1', 'Test');
+            //     setTimeout(() => {
+            //         helper.invoke('destroy');
+            //         new Spreadsheet(model, '#' + helper.id);
+            //         setTimeout(() => {
+            //             setTimeout(() => {
+            //                 expect(helper.getInstance().sheets[0].rows[0].cells[2]).toBeUndefined();
+            //                 expect(helper.invoke('getCell', [0, 2]).textContent).toBe('');
+            //                 helper.edit('B1', '30');
+            //                 expect(helper.invoke('getCell', [1, 5]).textContent).toBe('40');
+            //                 expect(helper.getInstance().sheets[0].rows[1].cells[5].value).toBe(40);
+            //                 done();
+            //             });
+            //         });
+            //     });
+            // });
         });
         describe('I312700 ->', () => {
             beforeEach((done: Function) => {
@@ -425,13 +459,13 @@ describe('Spreadsheet formula module ->', () => {
                 done();
             });
         });
-        describe('fb23644 ->', () => {
-            beforeEach((done: Function) => {
+        describe('fb23644, fb23650 ->', () => {
+            beforeAll((done: Function) => {
                 helper.initializeSpreadsheet(
                     { sheets: [{ rows: [{ cells: [{ value: '1' }] }, { cells: [{ value: '2' }] }, { cells: [{ value: '3' }] }, { cells:
                         [{ value: '5' }] }, { cells: [{ formula: '=SUM(A1:A4)' }] }], selectedRange: 'A4' }] }, done);
             });
-            afterEach(() => {
+            afterAll(() => {
                 helper.invoke('destroy');
             });
             it('Dependent cells not updated for loaded JSON using openFromJson method', (done: Function) => {
@@ -442,8 +476,54 @@ describe('Spreadsheet formula module ->', () => {
                     helper.edit('A4', '10');
                     expect(spreadsheet.sheets[0].rows[4].cells[0].value.toString()).toEqual('16');
                     setTimeout((): void => {
+                        helper.invoke('selectRange', ['A5:A5']);
                         done();
                     });
+                });
+            });
+            it('Cell with inserted function is not properly copied and pasted (Formula range reference not proper on pasted cell)', (done: Function) => {
+                const spreadsheet: Spreadsheet = helper.getInstance();
+                expect(spreadsheet.sheets[0].rows[4].cells[1]).toBeUndefined();
+                helper.invoke('copy').then((): void => {
+                    helper.invoke('paste', ['B5']);
+                    setTimeout((): void => {
+                        expect(spreadsheet.sheets[0].rows[4].cells[1].value.toString()).toEqual('0');
+                        expect(spreadsheet.sheets[0].rows[4].cells[1].formula).toEqual('=SUM(B1:B4)');
+                        expect(helper.invoke('getCell', [4, 1]).textContent).toEqual('0');
+                        helper.invoke('paste', ['C4']);
+                        setTimeout((): void => {
+                            expect(spreadsheet.sheets[0].rows[3].cells[2].value).toEqual('#REF!');
+                            expect(spreadsheet.sheets[0].rows[3].cells[2].formula).toEqual('=SUM(#REF!)');
+                            expect(helper.invoke('getCell', [3, 2]).textContent).toEqual('#REF!');
+                            done();
+                        });
+                    });
+                });
+            });
+        });
+        describe('fb24848 ->', () => {
+            beforeAll((done: Function) => {
+                helper.initializeSpreadsheet(
+                    { sheets: [{ rows: [{ cells: [{ value: '1' }, { index: 4, value: 'Tom' }] }, { cells: [{ value: '2' }, { index: 4,
+                        value: 'John' }] }, { cells: [{ value: '5' }, { index: 4, value: 'Jane' }] }, { index: 4, cells: [{ formula:
+                        '=INDEX(A1:A3,MATCH("Tom",E1:E3,0),1)' }, { index: 4, formula: '=INDEX(A1:A3,SUM(A1:A1),1)' }] }] }] }, done);
+            });
+            afterAll(() => {
+                helper.invoke('destroy');
+            });
+            it('"#REF!" error when combining functions with each over', (done: Function) => {
+                const spreadsheet: Spreadsheet = helper.getInstance();
+                expect(spreadsheet.sheets[0].rows[4].cells[0].value).toEqual('1');
+                expect(helper.invoke('getCell', [4, 0]).textContent).toEqual('1');
+                expect(spreadsheet.sheets[0].rows[4].cells[4].value).toEqual('1');
+                expect(helper.invoke('getCell', [4, 4]).textContent).toEqual('1');
+                helper.edit('A1', '3');
+                setTimeout((): void => {
+                    expect(spreadsheet.sheets[0].rows[4].cells[0].value.toString()).toEqual('3');
+                    expect(helper.invoke('getCell', [4, 0]).textContent).toEqual('3');
+                    expect(spreadsheet.sheets[0].rows[4].cells[4].value.toString()).toEqual('5');
+                    expect(helper.invoke('getCell', [4, 4]).textContent).toEqual('5');
+                    done();
                 });
             });
         });

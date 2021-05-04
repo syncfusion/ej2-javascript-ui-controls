@@ -30,6 +30,7 @@ describe('Nested Table Row Resizing validation and After merge cell resize cell 
         editor.destroy();
         editor = undefined;
         document.body.removeChild(document.getElementById('container'));
+        document.body.innerHTML = '';
         setTimeout(function () {
             done();
         }, 1000);
@@ -89,6 +90,7 @@ describe('After resize cell validation without selection', () => {
         editor.destroy();
         editor = undefined;
         document.body.removeChild(document.getElementById('container'));
+        document.body.innerHTML = '';
         setTimeout(function () {
             done();
         }, 1000);
@@ -149,6 +151,7 @@ describe('After resize cell validation with selection', () => {
         editor.destroy();
         editor = undefined;
         document.body.removeChild(document.getElementById('container'));
+        document.body.innerHTML = '';
         setTimeout(function () {
             done();
         }, 1000);

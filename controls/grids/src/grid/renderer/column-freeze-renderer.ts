@@ -4,12 +4,13 @@ import { Column } from '../models/column';
 import { FreezeContentRender, FreezeRender } from './freeze-renderer';
 import { ServiceLocator } from '../services/service-locator';
 import * as events from '../base/constant';
-import { wrap, parentsUntil } from '../base/util';
+import { wrap, parentsUntil, addRemoveEventListener } from '../base/util';
 import {InputArgs, Input} from '@syncfusion/ej2-inputs';
 import { Row } from '../models/row';
 import { ColumnWidthService } from '../services/width-controller';
 import { freezeTable } from '../base/enum';
 import { Grid } from '../base/grid';
+import * as literals from '../base/string-literals';
 
 /**
  * ColumnFreezeHeaderRenderer is used to freeze the columns header at right and left
@@ -18,6 +19,7 @@ import { Grid } from '../base/grid';
 export class ColumnFreezeHeaderRenderer extends FreezeRender implements IRenderer {
     private frozenRightHeader: Element;
     private destEle: Element;
+    private evtHandlers: { event: string, handler: Function }[];
 
     constructor(parent?: IGrid, locator?: ServiceLocator) {
         super(parent, locator);
@@ -25,18 +27,16 @@ export class ColumnFreezeHeaderRenderer extends FreezeRender implements IRendere
     }
 
     public addEventListener(): void {
-        this.parent.on(events.freezeRender, this.refreshFreeze, this);
-        this.parent.on(events.refreshFrozenColumns, this.refreshFrozenColumns, this);
-        this.parent.on(events.setReorderDestinationElement, this.setReorderElement, this);
-        this.parent.on(events.columnVisibilityChanged, this.setVisible, this);
+        this.evtHandlers = [{ event: events.freezeRender, handler: this.refreshFreeze },
+        { event: events.refreshFrozenColumns, handler: this.refreshFrozenColumns },
+        { event: events.setReorderDestinationElement, handler: this.setReorderElement },
+        { event: events.columnVisibilityChanged, handler: this.setVisible }];
+        addRemoveEventListener(this.parent, this.evtHandlers, true, this);
     }
 
     public removeEventListener(): void {
         if (this.parent.isDestroyed) { return; }
-        this.parent.off(events.freezeRender, this.refreshFreeze);
-        this.parent.off(events.refreshFrozenColumns, this.refreshFrozenColumns);
-        this.parent.off(events.setReorderDestinationElement, this.setReorderElement);
-        this.parent.off(events.columnVisibilityChanged, this.setVisible);
+        addRemoveEventListener(this.parent, this.evtHandlers, false);
     }
 
     private setReorderElement(args: { ele: Element }): void {
@@ -69,7 +69,7 @@ export class ColumnFreezeHeaderRenderer extends FreezeRender implements IRendere
         let mRowHgt: number;
         let frRowHgt: number;
         let isWrap: boolean = this.parent.allowTextWrap;
-        let tBody: Element = this.parent.getHeaderContent().querySelector('tbody');
+        let tBody: Element = this.parent.getHeaderContent().querySelector( literals.tbody);
         let wrapMode: string = this.parent.textWrapSettings.wrapMode;
         let tHead: Element = this.parent.getHeaderContent().querySelector('thead');
         let height: number[] = [];
@@ -117,23 +117,23 @@ export class ColumnFreezeHeaderRenderer extends FreezeRender implements IRendere
     }
 
     protected refreshHeight(obj: { case: string, isModeChg?: boolean }): void {
-        let isLeftRight: boolean = this.parent.getFrozenMode() === 'Left-Right';
+        let isLeftRight: boolean = this.parent.getFrozenMode() === literals.leftRight;
         let fRows: NodeListOf<HTMLElement>;
         let frRows: NodeListOf<HTMLElement>;
         let mRows: NodeListOf<HTMLElement>;
         let frHdr: Element = this.getFrozenRightHeader();
-        let fHdr: Element = this.parent.getHeaderContent().querySelector('.e-frozenheader');
+        let fHdr: Element = this.parent.getHeaderContent().querySelector('.' + literals.frozenHeader);
         let cont: Element = this.parent.getContent();
         let mHdr: Element = this.getMovableHeader();
-        let hdrClassList: DOMTokenList = (this.parent.getHeaderContent().querySelector('.e-headercontent') as Element).classList;
+        let hdrClassList: DOMTokenList = (this.parent.getHeaderContent().querySelector('.' + literals.headerContent) as Element).classList;
         let wrapMode: string = this.parent.textWrapSettings.wrapMode;
         if (obj.case === 'textwrap') {
             if (wrapMode !== 'Header' || obj.isModeChg) {
                 if (isLeftRight) {
                     frRows = cont.querySelector('.e-frozen-right-content').querySelectorAll('tr') as NodeListOf<HTMLElement>;
                 }
-                mRows = cont.querySelector('.e-movablecontent').querySelectorAll('tr') as NodeListOf<HTMLElement>;
-                fRows = cont.querySelector('.e-frozencontent').querySelectorAll('tr') as NodeListOf<HTMLElement>;
+                mRows = cont.querySelector('.' + literals.movableContent).querySelectorAll('tr') as NodeListOf<HTMLElement>;
+                fRows = cont.querySelector('.' + literals.frozenContent).querySelectorAll('tr') as NodeListOf<HTMLElement>;
                 this.setWrapHeight(fRows, mRows, obj.isModeChg, true, false, frRows);
             }
             if (wrapMode === 'Content' && this.parent.allowTextWrap) {
@@ -150,25 +150,25 @@ export class ColumnFreezeHeaderRenderer extends FreezeRender implements IRendere
             } else {
                 if (isLeftRight) {
                     frRows = frHdr.querySelector(wrapMode === 'Content' ?
-                        'tbody' : 'thead').querySelectorAll('tr') as NodeListOf<HTMLElement>;
+                         literals.tbody : 'thead').querySelectorAll('tr') as NodeListOf<HTMLElement>;
                 }
                 fRows = fHdr.querySelector(wrapMode === 'Content' ?
-                    'tbody' : 'thead').querySelectorAll('tr') as NodeListOf<HTMLElement>;
+                     literals.tbody : 'thead').querySelectorAll('tr') as NodeListOf<HTMLElement>;
                 mRows = mHdr.querySelector(wrapMode === 'Content' ?
-                    'tbody' : 'thead').querySelectorAll('tr') as NodeListOf<HTMLElement>;
+                     literals.tbody : 'thead').querySelectorAll('tr') as NodeListOf<HTMLElement>;
             }
-            if (!this.parent.getHeaderContent().querySelectorAll('.e-stackedheadercell').length) {
+            if (!this.parent.getHeaderContent().getElementsByClassName('e-stackedheadercell').length) {
                 this.setWrapHeight(fRows, mRows, obj.isModeChg, false, this.colDepth > 1, frRows);
             }
             this.refreshStackedHdrHgt();
         } else if (obj.case === 'refreshHeight') {
-            mRows = cont.querySelector('.e-movablecontent').querySelectorAll('tr') as NodeListOf<HTMLElement>;
-            fRows = cont.querySelector('.e-frozencontent').querySelectorAll('tr') as NodeListOf<HTMLElement>;
+            mRows = cont.querySelector('.' + literals.movableContent).querySelectorAll('tr') as NodeListOf<HTMLElement>;
+            fRows = cont.querySelector('.' + literals.frozenContent).querySelectorAll('tr') as NodeListOf<HTMLElement>;
             if (isLeftRight) {
                 frRows = cont.querySelector('.e-frozen-right-content').querySelectorAll('tr') as NodeListOf<HTMLElement>;
             }
             this.setWrapHeight(fRows, mRows, obj.isModeChg, false, false, frRows);
-            if (!this.parent.getHeaderContent().querySelectorAll('.e-stackedheadercell').length) {
+            if (!this.parent.getHeaderContent().getElementsByClassName('e-stackedheadercell').length) {
                 if (isLeftRight) {
                     frRows = frHdr.querySelectorAll('tr') as NodeListOf<HTMLElement>;
                 }
@@ -196,14 +196,14 @@ export class ColumnFreezeHeaderRenderer extends FreezeRender implements IRendere
             displayVal = column.visible ? '' : 'none';
             if (column.freeze === 'Left' || column.freeze === 'Right') {
                 if (left && !right) {
-                    let leftColGrp: Element = gObj.getHeaderContent().querySelector('.e-frozen-left-header').querySelector('colgroup');
+                    let leftColGrp: Element = gObj.getHeaderContent().querySelector('.e-frozen-left-header').querySelector(literals.colGroup);
                     setStyleAttribute(<HTMLElement>leftColGrp.children[idx], { 'display': displayVal });
                 } else if (!left && right) {
-                    let rightColGrp: Element = gObj.getHeaderContent().querySelector('.e-frozen-right-header').querySelector('colgroup');
+                    let rightColGrp: Element = gObj.getHeaderContent().querySelector('.e-frozen-right-header').querySelector(literals.colGroup);
                     setStyleAttribute(<HTMLElement>rightColGrp.children[idx - movable], { 'display': displayVal });
                 }
             } else {
-                let mTblColGrp: Element = gObj.getHeaderContent().querySelector('.e-movableheader').querySelector('colgroup');
+                let mTblColGrp: Element = gObj.getHeaderContent().querySelector('.' + literals.movableHeader).querySelector(literals.colGroup);
                 setStyleAttribute(<HTMLElement>mTblColGrp.children[idx - left], { 'display': displayVal });
             }
         }
@@ -216,16 +216,16 @@ export class ColumnFreezeHeaderRenderer extends FreezeRender implements IRendere
 
     public refreshUI(): void {
         let frTbody: Element;
-        let tbody: Element = this.getMovableHeader().querySelector('tbody');
+        let tbody: Element = this.getMovableHeader().querySelector( literals.tbody);
         remove(this.getMovableHeader().querySelector('table'));
-        if (this.parent.getFrozenMode() === 'Left-Right') {
-            frTbody = this.getFrozenRightHeader().querySelector('tbody');
+        if (this.parent.getFrozenMode() === literals.leftRight) {
+            frTbody = this.getFrozenRightHeader().querySelector( literals.tbody);
             remove(this.getFrozenRightHeader().querySelector('table'));
         }
         super.refreshFrozenLeftUI();
         this.rfshMovable();
-        this.getMovableHeader().querySelector('tbody').innerHTML = tbody.innerHTML;
-        if (frTbody) { this.getFrozenRightHeader().querySelector('tbody').innerHTML = frTbody.innerHTML; }
+        this.getMovableHeader().querySelector( literals.tbody).innerHTML = tbody.innerHTML;
+        if (frTbody) { this.getFrozenRightHeader().querySelector( literals.tbody).innerHTML = frTbody.innerHTML; }
         this.updateColgroup();
         this.widthService.setWidthToColumns();
         this.parent.notify(events.colGroupRefresh, {});
@@ -233,17 +233,17 @@ export class ColumnFreezeHeaderRenderer extends FreezeRender implements IRendere
             wrap([].slice.call(this.getMovableHeader().querySelectorAll('tr.e-columnheader')), true);
         }
         this.parent.updateDefaultCursor();
-        let mTbl: Element = this.parent.getContent().querySelector('.e-movablecontent').querySelector('.e-table');
-        remove(mTbl.querySelector('colgroup'));
+        let mTbl: Element = this.parent.getContent().querySelector('.' + literals.movableContent).querySelector('.' + literals.table);
+        remove(mTbl.querySelector(literals.colGroup));
         let mColGroup: Element
-            = (this.getMovableHeader().querySelector('colgroup').cloneNode(true)) as Element;
-        mTbl.insertBefore(mColGroup, mTbl.querySelector('tbody'));
+            = (this.getMovableHeader().querySelector(literals.colGroup).cloneNode(true)) as Element;
+        mTbl.insertBefore(mColGroup, mTbl.querySelector( literals.tbody));
         if (frTbody) {
-            let frtbl: Element = this.parent.getContent().querySelector('.e-frozen-right-content').querySelector('.e-table');
-            remove(frtbl.querySelector('colgroup'));
+            let frtbl: Element = this.parent.getContent().querySelector('.e-frozen-right-content').querySelector('.' + literals.table);
+            remove(frtbl.querySelector(literals.colGroup));
             let frtblColGroup: Element
-                = (this.getFrozenRightHeader().querySelector('colgroup').cloneNode(true)) as Element;
-            frtbl.insertBefore(frtblColGroup, frtbl.querySelector('tbody'));
+                = (this.getFrozenRightHeader().querySelector(literals.colGroup).cloneNode(true)) as Element;
+            frtbl.insertBefore(frtblColGroup, frtbl.querySelector( literals.tbody));
         }
         this.widthService.refreshFrozenScrollbar();
         this.initializeHeaderDrag();
@@ -262,7 +262,7 @@ export class ColumnFreezeHeaderRenderer extends FreezeRender implements IRendere
                 let total: number = left + movable + (left && isDraggable ? 1 : 0);
                 this.getMovableHeader().querySelector('thead')
                     .appendChild(this.filterRenderer(filterRow, index, total));
-                if (this.parent.getFrozenMode() === 'Left-Right') {
+                if (this.parent.getFrozenMode() === literals.leftRight) {
                     let ele: HTMLInputElement[] = [].slice.call(this.getMovableHeader().
                         querySelectorAll('thead .e-filterbarcell .e-input'));
                     this.getFrozenRightHeader().querySelector('thead').appendChild(this.filterRenderer(filterRow, index, index + right));
@@ -349,8 +349,8 @@ export class ColumnFreezeHeaderRenderer extends FreezeRender implements IRendere
     private refreshFrozenRightStackedHdrHgt(): void {
         let fRowSpan: { min: number, max: number };
         let mRowSpan: { min: number, max: number };
-        let frTr: NodeListOf<Element> = this.getFrozenRightHeader().querySelectorAll('.e-columnheader');
-        let mTr: NodeListOf<Element> = this.getMovableHeader().querySelectorAll('.e-columnheader');
+        let frTr: NodeListOf<Element> = [].slice.call(this.getFrozenRightHeader().getElementsByClassName('e-columnheader'));
+        let mTr: NodeListOf<Element> = [].slice.call(this.getMovableHeader().getElementsByClassName('e-columnheader'));
         for (let i: number = 0, len: number = frTr.length; i < len; i++) {
             fRowSpan = this.getRowSpan(frTr[i]);
             mRowSpan = this.getRowSpan(mTr[i]);
@@ -374,14 +374,14 @@ export class ColumnFreezeHeaderRenderer extends FreezeRender implements IRendere
     }
 
     private renderRightFrozenPanelAlone(): void {
-        let mDiv: Element = this.parent.element.querySelector('.e-movableheader');
+        let mDiv: Element = this.parent.element.querySelector('.' + literals.movableHeader);
         let fRightDiv: Element = this.parent.element.querySelector('.e-frozen-right-header');
         super.renderFrozenRightPanel();
         if (isNullOrUndefined(fRightDiv)) {
-            mDiv = this.parent.createElement('div', { className: 'e-movableheader' });
+            mDiv = this.parent.createElement('div', { className: literals.movableHeader });
             fRightDiv = this.parent.createElement('div', { className: 'e-frozenheader e-frozen-right-header' });
-            this.getPanel().querySelector('.e-headercontent').appendChild(mDiv);
-            this.getPanel().querySelector('.e-headercontent').appendChild(fRightDiv);
+            this.getPanel().querySelector('.' + literals.headerContent).appendChild(mDiv);
+            this.getPanel().querySelector('.' + literals.headerContent).appendChild(fRightDiv);
         }
         super.setMovableHeader(mDiv);
         this.setFrozenRightHeader(fRightDiv);
@@ -392,7 +392,7 @@ export class ColumnFreezeHeaderRenderer extends FreezeRender implements IRendere
         super.renderFrozenRightPanel();
         if (isNullOrUndefined(fRightDiv)) {
             fRightDiv = this.parent.createElement('div', { className: 'e-frozenheader e-frozen-right-header' });
-            this.getPanel().querySelector('.e-headercontent').appendChild(fRightDiv);
+            this.getPanel().querySelector('.' + literals.headerContent).appendChild(fRightDiv);
         }
         this.setFrozenRightHeader(fRightDiv);
     }
@@ -407,7 +407,7 @@ export class ColumnFreezeHeaderRenderer extends FreezeRender implements IRendere
     }
 
     private updateFrozenLeftColGroup(): void {
-        let leftColGroup: HTMLCollection = this.getFrozenHeader().querySelector('colgroup').children;
+        let leftColGroup: HTMLCollection = this.getFrozenHeader().querySelector(literals.colGroup).children;
         let start: number = this.parent.isRowDragable() ? 1 : 0;
         let count: number = this.parent.isRowDragable() ? this.parent.getFrozenLeftColumnsCount() + 1
             : this.parent.getFrozenLeftColumnsCount();
@@ -420,7 +420,7 @@ export class ColumnFreezeHeaderRenderer extends FreezeRender implements IRendere
     }
 
     private updateMovableColGroup(): void {
-        let movableColGroup: HTMLCollection = this.getMovableHeader().querySelector('colgroup').children;
+        let movableColGroup: HTMLCollection = this.getMovableHeader().querySelector(literals.colGroup).children;
         if (this.parent.isRowDragable()) {
             remove(movableColGroup[0]);
         }
@@ -439,8 +439,8 @@ export class ColumnFreezeHeaderRenderer extends FreezeRender implements IRendere
     private updateFrozenRightColGroup(): void {
         let isDraggable: boolean = this.parent.isRowDragable();
         let rightColumns: Column[] = this.parent.getFrozenRightColumns();
-        let rightColGroup: HTMLCollection = this.getFrozenRightHeader().querySelector('colgroup').children;
-        if (this.parent.getFrozenMode() === 'Left-Right' && isDraggable) {
+        let rightColGroup: HTMLCollection = this.getFrozenRightHeader().querySelector(literals.colGroup).children;
+        if (this.parent.getFrozenMode() === literals.leftRight && isDraggable) {
             remove(rightColGroup[0]);
         }
         let length: number = rightColGroup.length;
@@ -532,13 +532,13 @@ export class ColumnFreezeContentRenderer extends FreezeContentRender implements 
 
     private renderFrozenRightPanelAlone(): void {
         this.renderFrozenRigthPanel();
-        let mDiv: Element = this.parent.element.querySelector('.e-movablecontent');
+        let mDiv: Element = this.parent.element.querySelector('.' + literals.movableContent);
         let fRightContent: Element = this.parent.element.querySelector('.e-frozen-right-content');
         if (isNullOrUndefined(fRightContent)) {
-            mDiv = this.parent.createElement('div', { className: 'e-movablecontent' });
+            mDiv = this.parent.createElement('div', { className: literals.movableContent });
             fRightContent = this.parent.createElement('div', { className: 'e-frozencontent e-frozen-right-content' });
-            this.getPanel().querySelector('.e-content').appendChild(mDiv);
-            this.getPanel().querySelector('.e-content').appendChild(fRightContent);
+            this.getPanel().querySelector('.' + literals.content).appendChild(mDiv);
+            this.getPanel().querySelector('.' + literals.content).appendChild(fRightContent);
         }
         super.setMovableContent(mDiv);
         this.setFrozenRightContent(fRightContent);
@@ -549,14 +549,14 @@ export class ColumnFreezeContentRenderer extends FreezeContentRender implements 
         let fRightContent: Element = this.parent.element.querySelector('.e-frozen-right-content');
         if (isNullOrUndefined(fRightContent)) {
             fRightContent = this.parent.createElement('div', { className: 'e-frozencontent e-frozen-right-content' });
-            this.getPanel().querySelector('.e-content').appendChild(fRightContent);
+            this.getPanel().querySelector('.' + literals.content).appendChild(fRightContent);
         }
         this.setFrozenRightContent(fRightContent);
     }
 
     private renderFrozenRightTableAlone(): void {
         let mTbl: Element;
-        if (this.getFrozenRightContent().querySelector('.e-table') == null) {
+        if (this.getFrozenRightContent().querySelector('.' + literals.table) == null) {
             super.renderFrozenRightTable();
             this.getFrozenRightContent().appendChild(this.getTable());
             mTbl = this.getTable().cloneNode(true) as Element;
@@ -565,33 +565,33 @@ export class ColumnFreezeContentRenderer extends FreezeContentRender implements 
             if (this.parent.frozenRows) {
                 this.parent.getHeaderContent().classList.add('e-frozenhdrcont');
             }
-            this.setTable(this.getFrozenRightContent().querySelector('.e-table'));
+            this.setTable(this.getFrozenRightContent().querySelector('.' + literals.table));
             this.setColGroup(this.getFrozenRightHeaderColGroup());
-            mTbl = this.getMovableContent().querySelector('.e-table');
-            this.getFrozenRightContent().querySelector('.e-table').appendChild(this.getColGroup());
+            mTbl = this.getMovableContent().querySelector('.' + literals.table);
+            this.getFrozenRightContent().querySelector('.' + literals.table).appendChild(this.getColGroup());
         }
-        if (this.getMovableContent().querySelector('colgroup')) {
-            remove(this.getMovableContent().querySelector('colgroup'));
+        if (this.getMovableContent().querySelector(literals.colGroup)) {
+            remove(this.getMovableContent().querySelector(literals.colGroup));
         }
-        let colgroup: Element = ((this.parent.getHeaderContent().querySelector('.e-movableheader')
-            .querySelector('colgroup')).cloneNode(true)) as Element;
-        mTbl.insertBefore(colgroup, mTbl.querySelector('tbody'));
+        let colgroup: Element = ((this.parent.getHeaderContent().querySelector('.' + literals.movableHeader)
+            .querySelector(literals.colGroup)).cloneNode(true)) as Element;
+        mTbl.insertBefore(colgroup, mTbl.querySelector( literals.tbody));
     }
 
     private renderFrozenLeftWithRightTable(): void {
         let frozenRight: Element = this.getTable().cloneNode(true) as Element;
         this.getFrozenRightContent().appendChild(frozenRight);
-        let oldColGroup: Element = this.getFrozenRightContent().querySelector('colgroup');
+        let oldColGroup: Element = this.getFrozenRightContent().querySelector(literals.colGroup);
         if (oldColGroup) {
             remove(oldColGroup);
         }
-        let rightTable: Element = this.getFrozenRightContent().querySelector('.e-table');
-        rightTable.insertBefore(this.getFrozenRightHeaderColGroup(), rightTable.querySelector('tbody'));
+        let rightTable: Element = this.getFrozenRightContent().querySelector('.' + literals.table);
+        rightTable.insertBefore(this.getFrozenRightHeaderColGroup(), rightTable.querySelector( literals.tbody));
     }
 
     private renderFrozenRightEmptyRowAlone(tbody: HTMLElement): void {
         super.renderFrozenRightEmpty(tbody);
-        this.getMovableContent().querySelector('tbody').innerHTML = '<tr><td></td></tr>';
+        this.getMovableContent().querySelector( literals.tbody).innerHTML = '<tr><td></td></tr>';
         addClass([this.parent.getMovableContentTbody().querySelector('tr')], ['e-emptyrow']);
         this.getFrozenRightContent().querySelector('.e-emptyrow').querySelector('td').colSpan = this.parent.getVisibleFrozenRightCount();
         if (this.parent.frozenRows) {
@@ -604,20 +604,20 @@ export class ColumnFreezeContentRenderer extends FreezeContentRender implements 
      * @hidden
      */
     public getFrozenHeader(tableName: string): HTMLElement {
-        if (tableName === 'frozen-left') {
-            return this.parent.getHeaderContent().querySelector('.e-frozen-left-header').querySelector('tbody');
+        if (tableName === literals.frozenLeft) {
+            return this.parent.getHeaderContent().querySelector('.e-frozen-left-header').querySelector( literals.tbody);
         } else if (tableName === 'movable') {
-            return this.parent.getHeaderContent().querySelector('.e-movableheader').querySelector('tbody');
+            return this.parent.getHeaderContent().querySelector('.' + literals.movableHeader).querySelector( literals.tbody);
         } else {
-            return this.parent.getHeaderContent().querySelector('.e-frozen-right-header').querySelector('tbody');
+            return this.parent.getHeaderContent().querySelector('.e-frozen-right-header').querySelector( literals.tbody);
         }
     }
 
     private renderFrozenLeftWithRightEmptyRow(): void {
-        this.getFrozenRightContent().querySelector('tbody').innerHTML = '<tr><td></td></tr>';
-        addClass([this.getFrozenRightContent().querySelector('tbody').querySelector('tr')], ['e-emptyrow']);
+        this.getFrozenRightContent().querySelector( literals.tbody).innerHTML = '<tr><td></td></tr>';
+        addClass([this.getFrozenRightContent().querySelector( literals.tbody).querySelector('tr')], ['e-emptyrow']);
         if (this.parent.frozenRows) {
-            this.parent.getHeaderContent().querySelector('.e-frozen-right-header').querySelector('tbody').innerHTML = '';
+            this.parent.getHeaderContent().querySelector('.e-frozen-right-header').querySelector( literals.tbody).innerHTML = '';
         }
     }
 
@@ -630,7 +630,7 @@ export class ColumnFreezeContentRenderer extends FreezeContentRender implements 
     }
 
     protected getHeaderColGroup(): Element {
-        let colGroup: Element = <Element>this.parent.element.querySelector('.e-gridheader').querySelector('colgroup').cloneNode(true);
+        let colGroup: Element = <Element>this.parent.element.querySelector('.' + literals.gridHeader).querySelector(literals.colGroup).cloneNode(true);
         if (!this.parent.getFrozenLeftColumnsCount()) {
             let right: Element = this.getFrozenRightHeaderColGroup();
             colGroup = right && this.frzCount ? right.cloneNode(true) as Element : colGroup;
@@ -641,9 +641,9 @@ export class ColumnFreezeContentRenderer extends FreezeContentRender implements 
     }
 
     private getFrozenRightHeaderColGroup(): Element {
-        let col: Element = this.parent.getHeaderContent().querySelector('.e-frozen-right-header').querySelector('colgroup');
+        let col: Element = this.parent.getHeaderContent().querySelector('.e-frozen-right-header').querySelector(literals.colGroup);
         if (!col) {
-            col = this.parent.getHeaderContent().querySelector('colgroup');
+            col = this.parent.getHeaderContent().querySelector(literals.colGroup);
         }
         return col.cloneNode(true) as Element;
     }
@@ -698,11 +698,11 @@ export class ColumnFreezeContentRenderer extends FreezeContentRender implements 
      */
     public getTbody(tableName: freezeTable): Element {
         let tbody: Element;
-        if (tableName === 'frozen-left') {
+        if (tableName === literals.frozenLeft) {
             tbody = this.parent.getFrozenLeftContentTbody() as HTMLElement;
         } else if (tableName === 'movable') {
             tbody = this.parent.getMovableContentTbody() as HTMLElement;
-        } else if (tableName === 'frozen-right') {
+        } else if (tableName === literals.frozenRight) {
             tbody = this.parent.getFrozenRightContentTbody() as HTMLElement;
         }
         return tbody;
@@ -712,9 +712,9 @@ export class ColumnFreezeContentRenderer extends FreezeContentRender implements 
      * @hidden
      */
     public setIsFrozen(args: NotifyArgs, tableName: freezeTable): void {
-        args.isFrozen = (tableName === 'frozen-left' || (this.parent.getFrozenMode() === 'Right'
-            && tableName === 'frozen-right'));
-        args.renderFrozenRightContent = this.parent.getFrozenMode() === 'Left-Right' && tableName === 'frozen-right';
+        args.isFrozen = (tableName === literals.frozenLeft || (this.parent.getFrozenMode() === 'Right'
+            && tableName === literals.frozenRight));
+        args.renderFrozenRightContent = this.parent.getFrozenMode() === literals.leftRight && tableName === literals.frozenRight;
         args.renderMovableContent = tableName === 'movable';
     }
 
@@ -728,7 +728,7 @@ export class ColumnFreezeContentRenderer extends FreezeContentRender implements 
             tbody.appendChild(frag);
         }
         if (this.parent.getFrozenMode() === 'Left') {
-            if (tableName === 'frozen-left') {
+            if (tableName === literals.frozenLeft) {
                 this.isLoaded = false;
                 this.getFrozenContent().querySelector('table').appendChild(tbody);
                 this.refreshContentRows(extend({}, args));
@@ -751,8 +751,8 @@ export class ColumnFreezeContentRenderer extends FreezeContentRender implements 
                 this.getFrozenRightContent().querySelector('table').appendChild(tbody);
                 this.refreshContentRows(extend({}, args));
             }
-        } else if (this.parent.getFrozenMode() === 'Left-Right') {
-            if (tableName === 'frozen-left') {
+        } else if (this.parent.getFrozenMode() === literals.leftRight) {
+            if (tableName === literals.frozenLeft) {
                 this.isLoaded = false;
                 this.getFrozenContent().querySelector('table').appendChild(tbody);
                 this.refreshContentRows(extend({}, args));
@@ -788,7 +788,7 @@ export class ColumnFreezeContentRenderer extends FreezeContentRender implements 
         let left: number = this.parent.getFrozenLeftColumnsCount();
         let right: number = this.parent.getFrozenRightColumnsCount();
         if (left && !right) {
-            if (tableName === 'frozen-left') {
+            if (tableName === literals.frozenLeft) {
                 this.freezeRows = this.rows;
                 this.freezeRowElements = this.rowElements;
             } else {
@@ -802,7 +802,7 @@ export class ColumnFreezeContentRenderer extends FreezeContentRender implements 
                 this.freezeRowElements = this.rowElements;
             }
         } else if (left && right) {
-            if (tableName === 'frozen-left') {
+            if (tableName === literals.frozenLeft) {
                 this.freezeRows = this.rows;
                 this.freezeRowElements = this.rowElements;
             } else if (tableName === 'movable') {
@@ -820,7 +820,7 @@ export class ColumnFreezeContentRenderer extends FreezeContentRender implements 
      * @return {Element} 
      */
     public getMovableRowElements(): Element[] {
-        if (this.parent.getFrozenMode() !== 'Left-Right') {
+        if (this.parent.getFrozenMode() !== literals.leftRight) {
             return this.rowElements;
         } else {
             return this.movableRowElements;
@@ -832,7 +832,7 @@ export class ColumnFreezeContentRenderer extends FreezeContentRender implements 
      * @return {Element} 
      */
     public getFrozenRightRowElements(): Element[] {
-        if (this.parent.getFrozenMode() !== 'Left-Right') {
+        if (this.parent.getFrozenMode() !== literals.leftRight) {
             return this.freezeRowElements;
         } else {
             return this.frozenRightRowElements;
@@ -844,7 +844,7 @@ export class ColumnFreezeContentRenderer extends FreezeContentRender implements 
      * @returns {Row[] | HTMLCollectionOf<HTMLTableRowElement>}
      */
     public getFrozenRightRows(): Row<Column>[] | HTMLCollectionOf<HTMLTableRowElement> {
-        if (this.parent.getFrozenMode() === 'Left-Right') {
+        if (this.parent.getFrozenMode() === literals.leftRight) {
             if (this.parent.enableInfiniteScrolling) {
                 return this.rightFreezeRows;
             }

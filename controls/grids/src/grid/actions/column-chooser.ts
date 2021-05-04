@@ -2,8 +2,7 @@ import { classList, addClass, removeClass, isNullOrUndefined, Browser, KeyboardE
 import { Query, DataManager } from '@syncfusion/ej2-data';
 import { Column } from '../models/column';
 import { Button } from '@syncfusion/ej2-buttons';
-import { EventHandler, L10n, closest, isBlazor } from '@syncfusion/ej2-base';
-import { CheckBox } from '@syncfusion/ej2-buttons';
+import { EventHandler, L10n, closest } from '@syncfusion/ej2-base';
 import { ServiceLocator } from '../services/service-locator';
 import { IGrid, IAction, NotifyArgs, EJ2Intance } from '../base/interface';
 import * as events from '../base/constant';
@@ -12,7 +11,7 @@ import { Dialog, calculateRelativeBasedPosition, DialogModel } from '@syncfusion
 import { createCboxWithWrap, toogleCheckbox, parentsUntil, removeAddCboxClasses } from '../base/util';
 import { createCheckBox } from '@syncfusion/ej2-buttons';
 import { SearchBox } from '../services/focus-strategy';
-import { Grid } from '../base/grid';
+import * as literals from '../base/string-literals';
 
 /**
  * The `ColumnChooser` module is used to show or hide columns dynamically.
@@ -78,7 +77,7 @@ export class ColumnChooser implements IAction {
 
     private destroy(): void {
         let gridElement: Element = this.parent.element;
-        if (!gridElement || (!gridElement.querySelector('.e-gridheader') && !gridElement.querySelector('.e-gridcontent'))) { return; }
+        if (!gridElement || (!gridElement.querySelector('.' + literals.gridHeader) && !gridElement.querySelector( '.' + literals.gridContent))) { return; }
         this.removeEventListener();
         this.unWireEvents();
         if (!isNullOrUndefined(this.dlgObj) && this.dlgObj.element && !this.dlgObj.isDestroyed) {
@@ -88,9 +87,9 @@ export class ColumnChooser implements IAction {
 
     private rtlUpdate(): void {
         if (this.parent.enableRtl) {
-            addClass(this.innerDiv.querySelectorAll('.e-checkbox-wrapper'), ['e-rtl']);
+            addClass([].slice.call(this.innerDiv.getElementsByClassName('e-checkbox-wrapper')), ['e-rtl']);
         } else {
-            removeClass(this.innerDiv.querySelectorAll('.e-checkbox-wrapper'), ['e-rtl']);
+            removeClass([].slice.call(this.innerDiv.getElementsByClassName('e-checkbox-wrapper')), ['e-rtl']);
         }
     }
 
@@ -304,13 +303,10 @@ export class ColumnChooser implements IAction {
         this.dlgDiv = this.parent.createElement('div', { className: 'e-ccdlg e-cc', id: this.parent.element.id + '_ccdlg' });
         this.dlgDiv.setAttribute('aria-label', this.l10n.getConstant('ColumnChooserDialogARIA'));
         this.parent.element.appendChild(this.dlgDiv);
-        let xpos: number = this.parent.element.getBoundingClientRect().width - 250;
-        let dialoPos: string = this.parent.enableRtl ? 'left' : 'right';
         let tarElement: Element = this.parent.element.querySelector('.e-ccdiv');
         if (!isNullOrUndefined(tarElement)) {
             y = tarElement.getBoundingClientRect().top;
         }
-        let pos: { X: number, Y: number } = { X: null, Y: null };
         this.dlgObj = new Dialog({
             header: this.l10n.getConstant('ChooseColumns'),
             showCloseIcon: false,
@@ -393,9 +389,7 @@ export class ColumnChooser implements IAction {
 
     private onResetColumns(e: NotifyArgs): void {
         if (e.requestType === 'columnstate') {
-            this.showColumn = [];
-            this.hideColumn = [];
-            this.hideDialog();
+            this.resetColumnState();
             return;
         }
     }
@@ -410,7 +404,7 @@ export class ColumnChooser implements IAction {
         for (let index: number = 0; index < changedColumns.length; index++) {
             let colUid: string = changedColumns[index];
             let currentCol: Column = this.parent.getColumnByUid(colUid);
-            isBlazor() ? this.changedStateColumns.push(JSON.parse(JSON.stringify(currentCol))) : this.changedStateColumns.push(currentCol);
+             this.changedStateColumns.push(currentCol);
         }
     }
 
@@ -421,15 +415,12 @@ export class ColumnChooser implements IAction {
             if (currentCol.type !== 'checkbox') {
                 currentCol.visible = state;
             }
-            isBlazor() ? this.stateChangeColumns.push(JSON.parse(JSON.stringify(currentCol))) : this.stateChangeColumns.push(currentCol);
+            this.stateChangeColumns.push(currentCol);
         }
     }
 
     private clearActions(): void {
-        this.hideColumn = [];
-        this.showColumn = [];
-        // this.unWireEvents();
-        this.hideDialog();
+        this.resetColumnState();
         this.addcancelIcon();
     }
 
@@ -582,14 +573,13 @@ export class ColumnChooser implements IAction {
     }
 
     private updateSelectAll(checked: boolean): void {
-        let cBoxes: Element[] = [].slice.call(this.ulElement.querySelectorAll('.e-frame'));
+        let cBoxes: Element[] = [].slice.call(this.ulElement.getElementsByClassName('e-frame'));
         for (let cBox of cBoxes) {
             removeAddCboxClasses(cBox, checked);
         }
     }
 
     private refreshCheckboxButton(): void {
-        let searchValue: string = (<HTMLInputElement>this.dlgObj.element.querySelector('.e-cc.e-input')).value;
         let visibleCols: Column[] = this.parent.getVisibleColumns();
         for (let i: number = 0; i < visibleCols.length; i++) {
             let columnUID: string = visibleCols[i].uid;
@@ -608,7 +598,7 @@ export class ColumnChooser implements IAction {
         let btn: Button = (this.dlgDiv.querySelector('.e-footer-content').querySelector('.e-btn') as EJ2Intance).ej2_instances[0] as Button;
         btn.disabled = false;
         let srchShowCols: string[] = [];
-        let searchData: NodeListOf<HTMLInputElement> = this.parent.element.querySelectorAll('.e-cc-chbox');
+        let searchData: NodeListOf<HTMLInputElement> = [].slice.call(this.parent.element.getElementsByClassName('e-cc-chbox'));
         for (let i: number = 0, itemsLen: number = searchData.length; i < itemsLen; i++) {
             let element: HTMLInputElement = searchData[i] as HTMLInputElement;
             let columnUID: string = parentsUntil(element, 'e-ccheck').getAttribute('uid');
@@ -653,7 +643,7 @@ export class ColumnChooser implements IAction {
                                          'e-ccheck').getAttribute('uid');
             } else { columnUID = parentsUntil(element, 'e-ccheck').getAttribute('uid'); }
             let column: Column = gridObject.getColumnByUid(columnUID);
-            let uncheck: NodeListOf<Element> = element.parentElement.querySelectorAll('.e-uncheck');
+            let uncheck: NodeListOf<Element> = [].slice.call(element.parentElement.getElementsByClassName('e-uncheck'));
             if (column.visible && !uncheck.length) {
                 element.checked = true;
                 this.checkState(element.parentElement.querySelector('.e-icons'), true);
@@ -678,7 +668,6 @@ export class ColumnChooser implements IAction {
         let cclist: HTMLElement;
         let hideColState: boolean;
         let showColState: boolean;
-        let checkBoxObj: CheckBox;
         if (column.showInColumnChooser) {
             cclist = this.parent.createElement('li', { className: 'e-cclist e-cc', styles: 'list-style:None', id: 'e-ccli_' + column.uid });
             hideColState = this.hideColumn.indexOf(column.uid) === -1 ? false : true;
@@ -696,7 +685,6 @@ export class ColumnChooser implements IAction {
     private columnChooserManualSearch(e: MouseEvent & TouchEvent & KeyboardEvent): void {
         this.addcancelIcon();
         this.searchValue = (<HTMLInputElement>e.target).value;
-        let proxy: ColumnChooser = this;
         this.stopTimer();
         this.startTimer(e);
     }
@@ -742,20 +730,11 @@ export class ColumnChooser implements IAction {
     }
 
     private beforeOpenColumnChooserEvent(): object {
-        if (isBlazor() && this.parent.isServerRendered && this.parent.columnChooserSettings.operator === 'none') {
-            this.parent.columnChooserSettings.operator = 'startsWith';
-        }
         let args1: { requestType: string, element?: Element, columns?: Column[], cancel: boolean, searchOperator: string } = {
             requestType: 'beforeOpenColumnChooser', element: this.parent.element,
             columns: this.getColumns() as Column[], cancel: false,
             searchOperator: this.parent.columnChooserSettings.operator
         };
-        if (isBlazor() && !this.parent.isJsComponent) {
-            args1 = {
-                requestType: 'beforeOpenColumnChooser', cancel: false,
-                searchOperator: this.parent.columnChooserSettings.operator
-            };
-        }
         this.parent.trigger(events.beforeOpenColumnChooser, args1);
         this.searchOperator = args1.searchOperator;
         return args1;

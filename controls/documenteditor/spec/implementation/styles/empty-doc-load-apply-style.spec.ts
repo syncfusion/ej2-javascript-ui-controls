@@ -36,6 +36,8 @@ describe('Load Empty Document - Edit and Apply Style', () => {
         editor.destroy();
         document.body.removeChild(document.getElementById('container'));
         editor = undefined;
+        json = undefined;
+        document.body.innerHTML = '';
         setTimeout(function () {
             done();
         }, 1000);

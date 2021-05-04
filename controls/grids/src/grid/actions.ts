@@ -36,6 +36,5 @@ export * from './actions/column-menu';
 export * from './actions/excel-filter';
 export * from './actions/foreign-key';
 export * from './actions/logger';
-export * from './actions/blazor-action';
 export * from './actions/infinite-scroll';
 export * from './actions/lazy-load-group';

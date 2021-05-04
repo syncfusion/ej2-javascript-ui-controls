@@ -1,4 +1,4 @@
-import { isNullOrUndefined, extend, isBlazor } from '@syncfusion/ej2-base';
+import { isNullOrUndefined, extend } from '@syncfusion/ej2-base';
 import { attributes } from '@syncfusion/ej2-base';
 import { Column } from '../models/column';
 import { Cell } from '../models/cell';
@@ -132,7 +132,7 @@ export class HeaderCellRenderer extends CellRenderer implements ICellRenderer<Co
             //need to pass the template id for blazor headertemplate
             let headerTempID: string = gridObj.element.id + column.uid + 'headerTemplate';
             let str: string = 'isStringTemplate';
-            let col: Column = isBlazor() ? column.toJSON() : column;
+            let col: Column = column;
             let isReactCompiler: boolean = this.parent.isReact && typeof (column.headerTemplate) !== 'string';
             if (isReactCompiler) {
                 let copied: Object = { 'index': colIndex };

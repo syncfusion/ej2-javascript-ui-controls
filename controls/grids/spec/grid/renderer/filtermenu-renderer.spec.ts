@@ -737,10 +737,6 @@ describe('filter menu module =>', () => {
                 getClickObj(gridObj.getColumnHeaderByField('CustomerID').querySelector('.e-filtermenudiv')));
         });
 
-        it('currentView check with notequal =>', () => {
-            expect(gridObj.currentViewData.length).not.toBe(1);
-        });
-
         afterAll(() => {
             destroy(gridObj);
         });

@@ -38,6 +38,7 @@ describe('Save validation', () => {
         document.body.removeChild(document.getElementById('container'));
         editor.destroy();
         editor = undefined;
+        document.body.innerHTML = '';
         setTimeout(function () {
             done();
         }, 1000);
@@ -46,7 +47,6 @@ describe('Save validation', () => {
 console.log('save validation in json format');
         let preservedString: string = 'characterFormat":{"bold":true';
         json = editor.serialize();
-        editor.save('Sample', 'Sfdt');
         expect(json.substring(313, 342)).toBe(preservedString);
     });
     it('Open the saved Json', () => {
@@ -82,6 +82,7 @@ describe('Word export validation of RTL content with section and paragraph forma
         document.body.removeChild(document.getElementById('container'));
         editor.destroy();
         editor = undefined;
+        document.body.innerHTML = '';
         setTimeout(function () {
             done();
         }, 1000);
@@ -133,6 +134,7 @@ describe('Word export validation of RTL content with character format Bidi vaida
         document.body.removeChild(document.getElementById('container'));
         editor.destroy();
         editor = undefined;
+        document.body.innerHTML = '';
         setTimeout(function () {
             done();
         }, 1000);
@@ -177,6 +179,7 @@ describe('Word export validation of RTL content with character format bdo vaidat
         document.body.removeChild(document.getElementById('container'));
         editor.destroy();
         editor = undefined;
+        document.body.innerHTML = '';
         setTimeout(function () {
             done();
         }, 1000);
@@ -224,6 +227,7 @@ describe('Word export validation of RTL content', () => {
         document.body.removeChild(document.getElementById('container'));
         editor.destroy();
         editor = undefined;
+        document.body.innerHTML = '';
         setTimeout(function () {
             done();
         }, 1000);

@@ -33,6 +33,7 @@ describe('Auto convert list using space key possible cases and level pattern ara
         document.body.removeChild(document.getElementById('container'));
         editor = undefined;
         setTimeout(function () {
+            document.body.innerHTML = '';
             done();
         }, 1000);
     });
@@ -144,6 +145,7 @@ describe('Auto convert list using tab key possible cases with  level pattern low
         document.body.removeChild(document.getElementById('container'));
         editor = undefined;
         setTimeout(function () {
+            document.body.innerHTML = '';
             done();
         }, 1000);
     });
@@ -237,6 +239,7 @@ describe('Auto convert list using space and tab key possible cases with  level p
         document.body.removeChild(document.getElementById('container'));
         editor = undefined;
         setTimeout(function () {
+            document.body.innerHTML = '';
             done();
         }, 1000);
     });
@@ -340,6 +343,7 @@ describe('Auto convert list using space and tab key with not possible cases and 
         document.body.removeChild(document.getElementById('container'));
         editor = undefined;
         setTimeout(function () {
+            document.body.innerHTML = '';
             done();
         }, 1000);
     });
@@ -468,6 +472,7 @@ describe('Auto convert list using space key possible cases with level pattern as
         document.body.removeChild(document.getElementById('container'));
         editor = undefined;
         setTimeout(function () {
+            document.body.innerHTML = '';
             done();
         }, 1000);
     });
@@ -577,6 +582,7 @@ describe('Different left indent with paragraph contains only space , tab and com
         document.body.removeChild(document.getElementById('container'));
         editor = undefined;
         setTimeout(function () {
+            document.body.innerHTML = '';
             done();
         }, 1000);
     });
@@ -644,6 +650,7 @@ describe('Different left indent with paragraph contains only space , tab and com
         document.body.removeChild(document.getElementById('container'));
         editor = undefined;
         setTimeout(function () {
+            document.body.innerHTML = '';
             done();
         }, 1000);
     });
@@ -705,155 +712,97 @@ console.log('span is image validation and previous span is image');
 });
 
 
-//Apply Bullet or Numbering public API Validation
-describe('Multi Level List apply validation', () => {
-    let editor: DocumentEditor;
-    let documentHelper: DocumentHelper;
-    beforeAll((): void => {
-        let ele: HTMLElement = createElement('div', { id: 'container' });
-        document.body.appendChild(ele);
-        DocumentEditor.Inject(Editor, Selection, EditorHistory);
-        editor = new DocumentEditor({ enableEditor: true, isReadOnly: false, enableSelection: true, enableEditorHistory: true });
-        editor.acceptTab = true;
-        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
-        editor.appendTo('#container');
-        documentHelper = editor.documentHelper;
-    });
-    afterAll((done): void => {
-        documentHelper.destroy();
-        documentHelper = undefined;
-        editor.destroy();
-        document.body.removeChild(document.getElementById('container'));
-        editor = undefined;
-        setTimeout(function () {
-            done();
-        }, 1000);
-    });
-    it('Multilevel number brace validation', () => {
-console.log('Multilevel number brace validation');
-        editor.openBlank();
-        editor.editor.applyNumbering('numbering');
-        expect(editor.selection.paragraphFormat.listLevelNumber).toBe(0);
-    });
-    it('MultiLevel Number dot validation', () => {
-console.log('MultiLevel Number dot validation');
-        editor.openBlank();
-        editor.editor.applyNumbering('multiLevel');
-        expect(editor.selection.paragraphFormat.listId).not.toBe(-1);
-        editor.editorHistory.undo();
-        expect(editor.selection.paragraphFormat.listId).toBe(-1);
-        editor.editorHistory.redo();
-        expect(editor.selection.paragraphFormat.listId).not.toBe(-1);
-    });
-    it('MultiLevel Bullet List validation', () => {
-console.log('MultiLevel Bullet List validation');
-        editor.openBlank();
-        editor.editor.applyNumbering('bullet');
-        expect(editor.selection.paragraphFormat.listId).not.toBe(-1);
-        editor.editorHistory.undo();
-        expect(editor.selection.paragraphFormat.listId).toBe(-1);
-        editor.editorHistory.redo();
-        expect(editor.selection.paragraphFormat.listId).not.toBe(-1);
-    });
-    it('MultiLevel None validation', () => {
-console.log('MultiLevel None validation');
-        editor.openBlank();
-        editor.selection.paragraphFormat.setList(undefined);
-        expect(editor.selection.paragraphFormat.listId).toBe(-1);
-    });
-});
-describe('Numbering apply validation in different scenario', () => {
-    let editor: DocumentEditor;
-    let documentHelper: DocumentHelper;
-    beforeAll((): void => {
-        let ele: HTMLElement = createElement('div', { id: 'container' });
-        document.body.appendChild(ele);
-        DocumentEditor.Inject(Editor, Selection, EditorHistory);
-        editor = new DocumentEditor({ enableEditor: true, isReadOnly: false, enableSelection: true, enableEditorHistory: true });
-        editor.acceptTab = true;
-        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
-        editor.appendTo('#container');
-        documentHelper = editor.documentHelper;
-    });
-    afterAll((done): void => {
-        documentHelper.destroy();
-        documentHelper = undefined;
-        editor.destroy();
-        document.body.removeChild(document.getElementById('container'));
-        editor = undefined;
-        setTimeout(function () {
-            done();
-        }, 1000);
-    });
-    it('Numbering list with previous Paragrph contains list and next paragraph is table and next paragraph is empty', () => {
-console.log('Numbering list with previous Paragrph contains list and next paragraph is table and next paragraph is empty');
-        editor.openBlank();
-        editor.editorModule.insertText('1');
-        editor.editorModule.insertText('.');
-        editor.editorModule.insertText(' ');
-        editor.editorModule.insertText('Adventure');
-        let listId = editor.selection.paragraphFormat.listId;
-        editor.editorModule.onEnter();
-        editor.editorModule.onEnter();
-        editor.editor.insertTable(2, 2);
-        editor.selection.moveDown();
-        editor.selection.moveDown();
-        editor.editor.applyNumbering('%1.', 'Arabic');
-        expect(editor.selection.paragraphFormat.listId).not.toBe(listId);
-    });
-    it('Numbering list with previous Paragrph contains list and next paragraph is table and next paragraph is not empty', () => {
-console.log('Numbering list with previous Paragrph contains list and next paragraph is table and next paragraph is not empty');
-        editor.openBlank();
-        editor.editorModule.insertText('1');
-        editor.editorModule.insertText('.');
-        editor.editorModule.insertText(' ');
-        editor.editorModule.insertText('Adventure');
-        let listId = editor.selection.paragraphFormat.listId;
-        editor.editorModule.onEnter();
-        editor.editorModule.onEnter();
-        editor.editorModule.insertText('Adventure');
-        editor.editorModule.onEnter();
-        editor.editor.applyNumbering('%1.', 'Arabic');
-        expect(editor.selection.paragraphFormat.listId).not.toBe(listId);
-    });
-    it('Numbering list with previous Paragrph contains list and next paragraph is table and next paragraph is not empty', () => {
-console.log('Numbering list with previous Paragrph contains list and next paragraph is table and next paragraph is not empty');
-        editor.openBlank();
-        editor.editorModule.insertText('1');
-        editor.editorModule.insertText('.');
-        editor.editorModule.insertText(' ');
-        editor.editorModule.insertText('Adventure');
-        let listId = editor.selection.paragraphFormat.listId;
-        editor.editorModule.onEnter();
-        editor.editorModule.onEnter();
-        editor.editor.applyNumbering('%1.', 'UpLetter');
-        expect(editor.selection.paragraphFormat.listId).not.toBe(listId);
-    });
-    it('Numbering list with previous Paragrph contains list and next paragraph is table and next paragraph is not empty', () => {
-console.log('Numbering list with previous Paragrph contains list and next paragraph is table and next paragraph is not empty');
-        editor.openBlank();
-        editor.editorModule.insertText('1');
-        editor.editorModule.insertText('.');
-        editor.editorModule.insertText(' ');
-        editor.editorModule.insertText('Adventure');
-        let listId = editor.selection.paragraphFormat.listId;
-        editor.editorModule.onEnter();
-        editor.editorModule.onEnter();
-        editor.editorModule.onEnter();
-        editor.editorModule.onEnter();
-        editor.editorModule.onEnter();
-        editor.editor.applyNumbering('%1.', 'UpLetter');
-        expect(editor.selection.paragraphFormat.listId).not.toBe(listId);
-    });
+
+// describe('Numbering apply validation in different scenario', () => {
+//     let editor: DocumentEditor;
+//     let documentHelper: DocumentHelper;
+//     beforeAll((): void => {
+//         let ele: HTMLElement = createElement('div', { id: 'container' });
+//         document.body.appendChild(ele);
+//         DocumentEditor.Inject(Editor, Selection, EditorHistory);
+//         editor = new DocumentEditor({ enableEditor: true, isReadOnly: false, enableSelection: true, enableEditorHistory: true });
+//         editor.acceptTab = true;
+//         (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+//         (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+//         (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+//         (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+//         editor.appendTo('#container');
+//         documentHelper = editor.documentHelper;
+//     });
+//     afterAll((done): void => {
+//         documentHelper.destroy();
+//         documentHelper = undefined;
+//         editor.destroy();
+//         document.body.removeChild(document.getElementById('container'));
+//         editor = undefined;
+//         setTimeout(function () {
+//             document.body.innerHTML = '';
+//             done();
+//         }, 1000);
+//     });
+//     it('Numbering list with previous Paragrph contains list and next paragraph is table and next paragraph is empty', () => {
+// console.log('Numbering list with previous Paragrph contains list and next paragraph is table and next paragraph is empty');
+//         editor.openBlank();
+//         editor.editorModule.insertText('1');
+//         editor.editorModule.insertText('.');
+//         editor.editorModule.insertText(' ');
+//         editor.editorModule.insertText('Adventure');
+//         let listId = editor.selection.paragraphFormat.listId;
+//         editor.editorModule.onEnter();
+//         editor.editorModule.onEnter();
+//         editor.editor.insertTable(2, 2);
+//         editor.selection.moveDown();
+//         editor.selection.moveDown();
+//         editor.editor.applyNumbering('%1.', 'Arabic');
+//         expect(editor.selection.paragraphFormat.listId).not.toBe(listId);
+//     });
+//     it('Numbering list with previous Paragrph contains list and next paragraph is table and next paragraph is not empty', () => {
+// console.log('Numbering list with previous Paragrph contains list and next paragraph is table and next paragraph is not empty');
+//         editor.openBlank();
+//         editor.editorModule.insertText('1');
+//         editor.editorModule.insertText('.');
+//         editor.editorModule.insertText(' ');
+//         editor.editorModule.insertText('Adventure');
+//         let listId = editor.selection.paragraphFormat.listId;
+//         editor.editorModule.onEnter();
+//         editor.editorModule.onEnter();
+//         editor.editorModule.insertText('Adventure');
+//         editor.editorModule.onEnter();
+//         editor.editor.applyNumbering('%1.', 'Arabic');
+//         expect(editor.selection.paragraphFormat.listId).not.toBe(listId);
+//     });
+//     it('Numbering list with previous Paragrph contains list and next paragraph is table and next paragraph is not empty', () => {
+// console.log('Numbering list with previous Paragrph contains list and next paragraph is table and next paragraph is not empty');
+//         editor.openBlank();
+//         editor.editorModule.insertText('1');
+//         editor.editorModule.insertText('.');
+//         editor.editorModule.insertText(' ');
+//         editor.editorModule.insertText('Adventure');
+//         let listId = editor.selection.paragraphFormat.listId;
+//         editor.editorModule.onEnter();
+//         editor.editorModule.onEnter();
+//         editor.editor.applyNumbering('%1.', 'UpLetter');
+//         expect(editor.selection.paragraphFormat.listId).not.toBe(listId);
+//     });
+//     it('Numbering list with previous Paragrph contains list and next paragraph is table and next paragraph is not empty', () => {
+// console.log('Numbering list with previous Paragrph contains list and next paragraph is table and next paragraph is not empty');
+//         editor.openBlank();
+//         editor.editorModule.insertText('1');
+//         editor.editorModule.insertText('.');
+//         editor.editorModule.insertText(' ');
+//         editor.editorModule.insertText('Adventure');
+//         let listId = editor.selection.paragraphFormat.listId;
+//         editor.editorModule.onEnter();
+//         editor.editorModule.onEnter();
+//         editor.editorModule.onEnter();
+//         editor.editorModule.onEnter();
+//         editor.editorModule.onEnter();
+//         editor.editor.applyNumbering('%1.', 'UpLetter');
+//         expect(editor.selection.paragraphFormat.listId).not.toBe(listId);
+//     });
 
 
-});
+// });
 
 describe('Bullet list Apply validation', () => {
     let editor: DocumentEditor;
@@ -878,6 +827,7 @@ describe('Bullet list Apply validation', () => {
         document.body.removeChild(document.getElementById('container'));
         editor = undefined;
         setTimeout(function () {
+            document.body.innerHTML = '';
             done();
         }, 1000);
     });
@@ -939,6 +889,7 @@ console.log('Applying same list validation');
             document.body.removeChild(document.getElementById('container'));
             editor = undefined;
             setTimeout(function () {
+                document.body.innerHTML = '';
                 done();
             }, 1000);
         });
@@ -982,6 +933,7 @@ describe('Table relayouting validation', () => {
         document.body.removeChild(document.getElementById('container'));
         editor = undefined;
         setTimeout(function () {
+            document.body.innerHTML = '';
             done();
         }, 1000);
     });
@@ -1032,6 +984,7 @@ describe("Press enter key", () => {
         document.body.removeChild(document.getElementById('container'));
         editor = undefined;
         setTimeout(function () {
+            document.body.innerHTML = '';
             done();
         }, 500);
     });

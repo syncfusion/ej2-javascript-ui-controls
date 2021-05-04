@@ -1438,7 +1438,8 @@ export class TaskProcessor extends DateProcessor {
                 this.parent.setRecordValue(dataMapping.indicators, ganttProperties.indicators, ganttData);
             }
             if (dataMapping.parentID) {
-                this.parent.setRecordValue('taskData.' + dataMapping.parentID, ganttProperties.parentId, ganttData);
+                const parentID: string = this.parent.viewType === 'ProjectView' ? ganttProperties.parentId : data[dataMapping.parentID];
+                this.parent.setRecordValue('taskData.' + dataMapping.parentID, parentID, ganttData);
                 this.parent.setRecordValue(dataMapping.parentID, ganttProperties.parentId, ganttData);
             }
             if (dataMapping.work) {

@@ -85,7 +85,8 @@ export class Lists {
                     range.startOffset, range.startContainer.textContent.length);
                 this.applyListsHandler({ subCommand: 'OL', callBack: e.callBack });
                 e.event.preventDefault();
-            } else if (range.startContainer.textContent.slice(0, range.startOffset) === '*') {
+            } else if (range.startContainer.textContent.slice(0, range.startOffset) === '*' ||
+            range.startContainer.textContent.slice(0, range.startOffset) === '-') {
                 range.startContainer.textContent = range.startContainer.textContent.slice(
                     range.startOffset, range.startContainer.textContent.length);
                 this.applyListsHandler({ subCommand: 'UL', callBack: e.callBack });

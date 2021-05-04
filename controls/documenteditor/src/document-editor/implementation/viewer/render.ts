@@ -293,12 +293,21 @@ export class Renderer {
         this.renderFloatingItems(page, page.bodyWidgets[0].floatingElements, 'InFrontOfText');
     }
 
-    private renderFloatingItems(page: Page, floatingElements: ShapeBase[], wrappingType: TextWrappingStyle): void {
+    private renderFloatingItems(page: Page, floatingElements: (ShapeBase | TableWidget)[], wrappingType: TextWrappingStyle): void {
         if (!isNullOrUndefined(floatingElements) && floatingElements.length > 0) {
             /* eslint-disable */
-            floatingElements.sort(function (a, b) { return a.zOrderPosition - b.zOrderPosition });
+            floatingElements.sort(function (a, b) {
+                if (a instanceof TableWidget || b instanceof TableWidget) {
+                    return 0;
+                } else {
+                    return a.zOrderPosition - b.zOrderPosition;
+                }
+            });
             for (let i: number = 0; i < floatingElements.length; i++) {
-                let shape: ShapeBase = floatingElements[i];
+                if (floatingElements[i] instanceof TableWidget) {
+                    continue;
+                }
+                let shape: ShapeBase = floatingElements[i] as ShapeBase;
                 if ((wrappingType === "Behind" && shape.textWrappingStyle !== "Behind") ||
                     (wrappingType !== "Behind" && shape.textWrappingStyle === "Behind")) {
                     continue;
@@ -321,6 +330,10 @@ export class Renderer {
                         this.pageContext.strokeRect(shapeLeft, shapeTop, this.getScaledValue(shape.width), this.getScaledValue(shape.height));
                     }
                     this.pageContext.closePath();
+                    if (shape.isTextBox) {
+                        this.renderSingleBorder(shape.lineFormat.color, shape.x, shape.y, shape.x + shape.width, shape.y, shape.lineFormat.weight);
+                        this.renderSingleBorder(shape.lineFormat.color, shape.x, shape.y + shape.height, shape.x + shape.width, shape.y + shape.height, shape.lineFormat.weight);
+                    }
                     let isClipped: boolean = false;
                     if (shape.width != 0 && shape.height != 0) {
                         isClipped = true;
@@ -1131,7 +1144,7 @@ export class Renderer {
 
                     this.pageContext.drawImage(elementBox.element, this.getScaledValue(elementBox.x), this.getScaledValue(elementBox.y),
                         elementBox.cropWidth, elementBox.cropHeight, this.getScaledValue(left + leftMargin, 1),
-                        this.getScaledValue(top + topMargin, 2), elementBox.width, elementBox.height);
+                        this.getScaledValue(top + topMargin, 2), this.getScaledValue(elementBox.width), this.getScaledValue(elementBox.height));
                 }
             } catch (e) {
 

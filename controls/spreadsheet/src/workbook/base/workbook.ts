@@ -677,7 +677,16 @@ export class Workbook extends Component<HTMLElement> implements INotifyPropertyC
                 merge(this.commonCellStyle, newProp.cellStyle);
                 break;
             case 'sheets':
-                initSheet(this);
+                if (newProp.sheets === this.sheets) {
+                    this.notify(events.workbookFormulaOperation, { action: 'unRegisterSheet', propertyChange: true });
+                    this.sheetNameCount = 1;
+                    this.notify(events.sheetsDestroyed, {});
+                    initSheet(this);
+                    this.notify(sheetCreated, null);
+                    this.notify(events.workbookFormulaOperation, { action: 'registerSheet' });
+                } else {
+                    initSheet(this);
+                }
                 break;
             }
         }
@@ -801,7 +810,6 @@ export class Workbook extends Component<HTMLElement> implements INotifyPropertyC
      * @param {number | string} sheet - Specifies the sheet name or index in which the delete operation will perform. By default,
      * active sheet will be considered. It is applicable only for model type Row and Column.
      * @returns {void} - To delete rows, columns and sheets from the spreadsheet.
-     * {% codeBlock src='spreadsheet/delete/index.md' %}{% endcodeBlock %}
      */
     public delete(startIndex?: number, endIndex?: number, model?: ModelType, sheet?: number | string): void {
         startIndex = startIndex || 0; let sheetModel: SheetModel | WorkbookModel;
@@ -996,15 +1004,15 @@ export class Workbook extends Component<HTMLElement> implements INotifyPropertyC
 
     /**
      * Opens the specified JSON object.
+     *
      * {% codeBlock src='spreadsheet/openFromJson/index.md' %}{% endcodeBlock %}
-     * <br><br>
+     *
      * The available arguments in options are:
      * * file: Specifies the spreadsheet model as object or string. And the object contains the jsonObject,
      * which is saved from spreadsheet using saveAsJson method.
      *
      * @param {Object} options - Options for opening the JSON object.
      * @param {string | object} options.file - Options for opening the JSON object.
-     * {% codeBlock src='spreadsheet/openFromJson/index.md' %}{% endcodeBlock %}
      * @returns {void} - Opens the specified JSON object.
      */
     public openFromJson(options: { file: string | object }): void {
@@ -1024,7 +1032,6 @@ export class Workbook extends Component<HTMLElement> implements INotifyPropertyC
      * {% codeBlock src='spreadsheet/save/index.md' %}{% endcodeBlock %}
      *
      * @param {SaveOptions} saveOptions - Options for saving the excel file.
-     * {% codeBlock src='spreadsheet/save/index.md' %}{% endcodeBlock %}
      * @returns {void} - To Saves the Spreadsheet data to Excel file.
      */
     public save(saveOptions: SaveOptions = {}): void {
@@ -1379,8 +1386,9 @@ export class Workbook extends Component<HTMLElement> implements INotifyPropertyC
     /**
      * Gets the formatted text of the cell.
      *
-     * @param {CellModel} cell - Specifies the cell.
      * {% codeBlock src='spreadsheet/getDisplayText/index.md' %}{% endcodeBlock %}
+     *
+     * @param {CellModel} cell - Specifies the cell.
      * @returns {string} - To get Display Text.
      */
     public getDisplayText(cell: CellModel): string {

@@ -1,5 +1,5 @@
 import { L10n, remove } from '@syncfusion/ej2-base';
-import { isNullOrUndefined, extend, isBlazor, updateBlazorTemplate } from '@syncfusion/ej2-base';
+import { isNullOrUndefined, extend } from '@syncfusion/ej2-base';
 import { Column } from '../models/column';
 import { Cell } from '../models/cell';
 import { ICellRenderer, IValueFormatter, ICellFormatter, IGrid, ICell } from '../base/interface';
@@ -8,6 +8,7 @@ import { ServiceLocator } from '../services/service-locator';
 import { createCheckBox } from '@syncfusion/ej2-buttons';
 import { foreignKeyData } from '../base/constant';
 import { CellType } from '../base/enum';
+import * as literals from '../base/string-literals';
 
 /**
  * CellRenderer class which responsible for building cell content. 
@@ -25,7 +26,7 @@ export class CellRenderer implements ICellRenderer<Column> {
         this.localizer = locator.getService<L10n>('localization');
         this.formatter = locator.getService<IValueFormatter>('valueFormatter');
         this.parent = parent;
-        this.element = this.parent.createElement('TD', { className: 'e-rowcell', attrs: { role: 'gridcell', tabindex: '-1' } });
+        this.element = this.parent.createElement('TD', { className: literals.rowCell, attrs: { role: 'gridcell', tabindex: '-1' } });
         this.rowChkBox = this.parent.createElement('input', { className: 'e-checkselect', attrs: { 'type': 'checkbox' } });
     }
     /**
@@ -62,26 +63,14 @@ export class CellRenderer implements ICellRenderer<Column> {
             let dummyData: Object = extendObjWithFn({}, data, { [foreignKeyData]: fData, column: cell.column });
             let templateID: string = this.parent.element.id + cell.column.uid;
             let str: string = 'isStringTemplate';
-            let index: string = 'index';
-            if (isBlazor() && isEdit) {
-                let rNumber: number = this.parent.editSettings.mode !== 'Batch' ? parseInt(attributes[index], 10) : null;
-                result = cell.column.getColumnTemplate()(
-                    extend({ 'index': attributes[literals[0]] }, dummyData), this.parent, 'template', templateID, this.parent[str],
-                    rNumber);
-                window[templateID] = null;
-                if (this.parent.editSettings.mode !== 'Batch') {
-                    updateBlazorTemplate(templateID, 'Template', cell.column, false);
-                }
+            if (isReactCompiler) {
+                let copied: Object = { 'index': attributes[literals[0]] };
+                cell.column.getColumnTemplate()(
+                    extend(copied, dummyData), this.parent, 'columnTemplate', templateID, this.parent[str], null, node);
+                this.parent.renderTemplates();
             } else {
-                if (isReactCompiler) {
-                    let copied: Object = { 'index': attributes[literals[0]] };
-                    cell.column.getColumnTemplate()(
-                        extend(copied, dummyData), this.parent, 'columnTemplate', templateID, this.parent[str], null, node);
-                    this.parent.renderTemplates();
-                } else {
-                    result = cell.column.getColumnTemplate()(
-                        extend({ 'index': attributes[literals[0]] }, dummyData), this.parent, 'template', templateID, this.parent[str]);
-                }
+                result = cell.column.getColumnTemplate()(
+                    extend({ 'index': attributes[literals[0]] }, dummyData), this.parent, 'template', templateID, this.parent[str]);
             }
             if (!isReactCompiler) {
                 appendChildren(node, result);
@@ -202,7 +191,7 @@ export class CellRenderer implements ICellRenderer<Column> {
         if (this.evaluate(node, cell, data, attributes, fData, isEdit) && column.type !== 'checkbox') {
             this.appendHtml(node, innerHtml, column.getDomSetter ? column.getDomSetter() : 'innerHTML');
         } else if (column.type === 'checkbox') {
-            node.classList.add('e-gridchkbox');
+            node.classList.add(literals.gridChkBox);
             node.setAttribute('aria-label', 'checkbox');
             if (this.parent.selectionSettings.persistSelection) {
                 value = value === 'true';
@@ -275,7 +264,7 @@ export class CellRenderer implements ICellRenderer<Column> {
 
     public buildAttributeFromCell<Column>(node: HTMLElement, cell: Cell<Column>, isCheckBoxType?: boolean): void {
         let attr: ICell<Column> & { 'class'?: string[] } = {};
-        let prop: { 'colindex'?: string } = { 'colindex': 'aria-colindex' };
+        let prop: { 'colindex'?: string } = { 'colindex': literals.ariaColIndex };
         let classes: string[] = [];
 
         if (cell.colSpan) {

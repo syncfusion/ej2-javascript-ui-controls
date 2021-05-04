@@ -220,15 +220,6 @@ describe('LazyLoadGroup module', () => {
             gridObj.pageSettings.currentPage = 1;
             gridObj.dataBind();
         });
-        it('clear cache method testing', () => {
-            expect(gridObj.getContent().querySelectorAll('tr').length).toBeGreaterThan(gridObj.pageSettings.pageSize);
-            expect(gridObj.contentModule.groupCache[gridObj.pageSettings.currentPage].length).toBeGreaterThan(gridObj.pageSettings.pageSize);
-            expect(gridObj.getContent().querySelectorAll('tr')[2].getAttribute('data-uid')).toBe(uid);
-            expect(gridObj.contentModule.groupCache[gridObj.pageSettings.currentPage].length).not.toBe(0);
-            expect(gridObj.contentModule.groupCache[gridObj.pageSettings.currentPage].length).toBeGreaterThan(gridObj.pageSettings.pageSize);
-            gridObj.contentModule.clearLazyGroupCache();
-            expect(gridObj.contentModule.groupCache[gridObj.pageSettings.currentPage].length).toBe(gridObj.pageSettings.pageSize);
-        });
         it('clear groping', (done: Function) => {
             let actionComplete = function (args: any) {
                 gridObj.actionComplete = null;
@@ -287,7 +278,6 @@ describe('LazyLoadGroup module', () => {
             gridObj.keyDownHandler(keyDownArgs);
         });
         it('clear groping ProductName', (done: Function) => {
-            expect(gridObj.getContent().querySelector('.e-row')).not.toBeNull();
             let actionComplete = function (args: any) {
                 gridObj.actionComplete = null;
                 done();

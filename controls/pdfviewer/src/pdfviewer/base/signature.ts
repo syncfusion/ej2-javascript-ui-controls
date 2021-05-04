@@ -577,7 +577,10 @@ export class Signature {
             signbutton.addEventListener('click', this.uploadSignatureImage.bind(this));
         }
     }
-    private uploadSignatureImage(): void {
+    /**
+     * @private
+     */
+    public createSignatureFileElement(): void {
         // eslint-disable-next-line
         let signImage: any = createElement('input', { id: this.pdfViewer.element.id + '_signElement', attrs: { 'type': 'file' } });
         signImage.setAttribute('accept', '.jpg,.jpeg');
@@ -586,9 +589,14 @@ export class Signature {
         signImage.style.top = '0px';
         signImage.style.visibility = 'hidden';
         document.body.appendChild(signImage);
-        signImage.click();
         signImage.addEventListener('change', this.addStampImage);
-        document.body.removeChild(signImage);
+    }
+    private uploadSignatureImage(): void {
+        // eslint-disable-next-line
+        let signImage: any = document.getElementById(this.pdfViewer.element.id + '_signElement'); 
+        if (signImage) {
+            signImage.click();
+        }
     }
     // eslint-disable-next-line
     private addStampImage = (args: any): void => {
@@ -1401,5 +1409,10 @@ export class Signature {
      */
     public destroy(): void {
         window.sessionStorage.removeItem('_annotations_sign');
+        // eslint-disable-next-line
+        let signImage: any = document.getElementById(this.pdfViewer.element.id + '_signElement'); 
+        if (signImage) {
+            signImage.parentElement.removeChild(signImage);
+        }
     }
 }

@@ -911,15 +911,19 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
                     }
                     const sFormula: string = parsedText.substring(lastIndexOfq, i + 1);
                     const libFormula: string = sFormula.split(this.leftBracket)[0].split('q').join(this.emptyString);
-                    let args: string[] = sFormula.substring(sFormula.indexOf(this.leftBracket) + 1, sFormula.indexOf(this.rightBracket))
-                        .split(this.getParseArgumentSeparator());
+                    let args: string[];
                     if (this.getLibraryFormulas().get(libFormula.toUpperCase()).isCustom) {
+                        args = sFormula.substring(sFormula.indexOf(this.leftBracket) + 1, sFormula.indexOf(this.rightBracket))
+                        .split(this.getParseArgumentSeparator());
                         let j: number = 0;
                         const customArgs: string[] = [];
                         for (j = 0; j < args.length; j++) {
                             customArgs.push(this.getValueFromArg(args[j]));
                         }
                         args = customArgs;
+                    } else {
+                        args = sFormula.substring(sFormula.indexOf(this.leftBracket) + 1, sFormula.indexOf(this.rightBracket))
+                            .replace(',n', ',').split(this.getParseArgumentSeparator());
                     }
                     formulatResult = isNullOrUndefined(this.getFunction(libFormula)) ? this.getErrorStrings()[CommonErrors.name] :
                         this.getFunction(libFormula)(...args);
@@ -2697,18 +2701,31 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
      * @hidden
      * @param {string} refName - Specify the reference name
      * @param {string | Object} model - Specify the model
+     * @param {boolean} unRegisterAll - Un registed all the availbe model.
      * @returns {void} - To un register grid sheet.
      */
-    public unregisterGridAsSheet(refName: string, model: string | Object): void {
-        const family: CalcSheetFamilyItem = this.getSheetFamilyItem(model);
-        const refName1: string = refName.toUpperCase();
-        if (family.sheetNameToParentObject != null && family.sheetNameToParentObject.has(refName1)) {
-            family.sheetNameToParentObject.delete(refName1);
-            const token: string = family.sheetNameToToken.get(refName1);
-            family.sheetNameToToken.delete(refName1);
-            family.tokenToParentObject.delete(token);
-            family.parentObjectToToken.delete(model);
+    public unregisterGridAsSheet(refName: string, model: string | Object, unRegisterAll?: boolean): void {
+        let modelArr: string[] | Object[] = [model];
+        if (unRegisterAll) {
+            modelArr = [];
+            if (!isNullOrUndefined(this.modelToSheetID)) {
+                (this.modelToSheetID as Map<Object, number>).forEach((value: Object, key: string): void => {
+                    modelArr.push(key);
+                });
+            }
         }
+        modelArr.forEach((value: string | Object): void => {
+            const family: CalcSheetFamilyItem = this.getSheetFamilyItem(value);
+            const refName1: string = (unRegisterAll ? <string>value : refName).toUpperCase();
+            if (family.sheetNameToParentObject != null && family.sheetNameToParentObject.has(refName1)) {
+                family.sheetNameToParentObject.delete(refName1);
+                const token: string = family.sheetNameToToken.get(refName1);
+                family.sheetNameToToken.delete(refName1);
+                family.tokenToParentObject.delete(token);
+                family.parentObjectToToken.delete(value);
+                if (unRegisterAll) { family.sheetDependentCells = new Map<string, string[]>(); }
+            }
+        });
     }
 
     /**

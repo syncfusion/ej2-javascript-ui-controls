@@ -1042,3 +1042,118 @@ describe('Swimlane send to back', () => {
         done();
     });
 })
+describe('Swimlane Resize functionality', () => {
+    let diagram: Diagram;
+    let ele: HTMLElement;
+    let scroller: DiagramScroller;
+    let mouseEvents: MouseEvents = new MouseEvents();
+    beforeAll((): void => {
+        const isDef = (o: any) => o !== undefined && o !== null;
+        if (!isDef(window.performance)) {
+            console.log("Unsupported environment, window.performance.memory is unavailable");
+            this.skip(); //Skips test (in Chai)
+            return;
+        }
+
+        ele = createElement('div', { id: 'diagramlane' });
+        document.body.appendChild(ele);
+        let nodes: NodeModel[] = [
+            {
+                id: 'swimlane',
+                shape: {
+                    type: 'SwimLane',
+                    orientation: 'Horizontal',
+                    header: {
+                        annotation: { content: 'ONLINE PURCHASE STATUS', style: { fill: '#111111' } },
+                        height: 50, style: { fontSize: 11 },
+                    },
+                    lanes: [
+                        {
+                            id: 'stackCanvas1',
+                            header: {
+                                annotation: { content: 'CUSTOMER' }, width: 50,
+                                style: { fontSize: 11 }
+                            },
+                            height: 100,
+                            canMove: false,
+                            children: [
+                                {
+                                    id: 'Order',
+                                    annotations: [
+                                        {
+                                            content: 'ORDER',
+                                            style: { fontSize: 11 }
+                                        }
+                                    ],
+                                    margin: { left: 60, top: 20 },
+                                    height: 40, width: 100
+                                },
+                                {
+                                    id: 'selectItemaddcart',
+                                    annotations: [{ content: 'Select item\nAdd cart' }],
+                                    margin: { left: 190, top: 20 },
+                                    height: 40, width: 100
+                                },
+                            ],
+                        },
+                        {
+                            id: 'stackCanvas2',
+                            header: {
+                                annotation: { content: 'CUSTOMER-2' }, width: 50,
+                                style: { fontSize: 11 }
+                            },
+                            height: 100,
+                            children: [
+                                {
+                                    id: 'node1',
+                                    annotations: [
+                                        {
+                                            content: 'Node',
+                                            style: { fontSize: 11 }
+                                        }
+                                    ],
+                                    margin: { left: 60, top: 20 },
+                                    height: 40, width: 100
+                                },
+                               
+                            ],
+                        },
+
+                    ],
+
+                },
+                offsetX: 420, offsetY: 270,
+                height: 100,
+                width: 650
+            },
+        ];
+        let connectors: ConnectorModel[] = [
+            {
+                id: 'connector1', sourceID: 'Order',
+                targetID: 'selectItemaddcart'
+            },
+
+        ];
+        diagram = new Diagram({
+            width: 800, height: 800, nodes: nodes,
+            connectors: connectors
+        });
+        diagram.appendTo('#diagramlane');
+
+    });
+    afterAll((): void => {
+        diagram.destroy();
+        ele.remove();
+    });
+    it('Check whether swimlane is resized properly or not ', (done: Function) => {
+        let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
+        mouseEvents.clickEvent(diagramCanvas, 200, 300);
+        mouseEvents.mouseMoveEvent(diagramCanvas, 200, 300);
+        mouseEvents.mouseDownEvent(diagramCanvas, 200, 300);
+        mouseEvents.mouseMoveEvent(diagramCanvas, 200, 350);
+        mouseEvents.mouseUpEvent(diagramCanvas, 200, 350);
+        console.log(diagram.selectedItems.nodes[0].wrapper.height);
+        expect(diagram.selectedItems.nodes[0].wrapper.height != 100).toBe(true);
+        done();
+    });
+})

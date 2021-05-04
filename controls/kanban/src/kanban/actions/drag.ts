@@ -51,9 +51,6 @@ export class DragAndDrop {
             enableAutoScroll: false,
             helper: this.dragHelper.bind(this)
         });
-        if (!(this.dragObj.instance.enableTapHold && Browser.isDevice && Browser.isTouch)) {
-            EventHandler.remove(element, 'touchstart', (this.dragObj.instance as any).initialize);
-        }
     }
 
     private dragHelper(e: { [key: string]: MouseEventArgs }): HTMLElement {

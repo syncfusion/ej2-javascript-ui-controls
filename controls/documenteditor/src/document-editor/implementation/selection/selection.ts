@@ -3786,8 +3786,12 @@ export class Selection {
      */
     public isExistAfterInline(currentInline: ElementBox, inline: ElementBox, isRetrieve?: boolean): boolean {
         if (currentInline.line === inline.line) {
+            let selection: Selection = this.documentHelper.selection;
             if (isRetrieve) {
                 return currentInline.line.children.indexOf(currentInline) >=
+                    inline.line.children.indexOf(inline);
+            } else if (currentInline === inline && selection.start.offset !== selection.end.offset) {
+                return currentInline.line.children.indexOf(currentInline) ===
                     inline.line.children.indexOf(inline);
             } else {
                 return currentInline.line.children.indexOf(currentInline) >
@@ -6356,7 +6360,10 @@ export class Selection {
             isShapeSelected = false;
             isInShapeBorder = false;
             for (let i: number = 0; i < bodyWidget.floatingElements.length; i++) {
-                floatElement = bodyWidget.floatingElements[i];
+                if (bodyWidget.floatingElements[i] instanceof TableWidget) {
+                    continue;
+                }
+                floatElement = bodyWidget.floatingElements[i] as ShapeBase;
                 if (caretPosition.x < floatElement.x + floatElement.margin.left + floatElement.width && caretPosition.x > floatElement.x
                     && caretPosition.y < floatElement.y + floatElement.margin.top + floatElement.height && caretPosition.y > floatElement.y) {
                     isShapeSelected = true;
@@ -8353,7 +8360,14 @@ export class Selection {
             return undefined;
         }
         let index: number = 0;
-        let currentInline: ElementInfo = this.end.currentWidget.getInline(this.end.offset, index) as ElementInfo;
+        let selection: Selection = this.documentHelper.selection;
+        let start: TextPosition = selection.start;
+        let end: TextPosition = selection.end;
+        if (!selection.isForward) {
+            start = selection.end;
+            end = selection.start;;
+        }
+        let currentInline: ElementInfo = this.end.currentWidget.getInline(end.offset, index) as ElementInfo;
         index = currentInline.index;
         let inline: ElementBox = currentInline.element;
         let checkedFields: FieldElementBox[] = [];
@@ -10154,7 +10168,7 @@ export class Selection {
             if (!this.isReferenceField(field)) {
                 return;
             }
-            let fieldCode: string = this.getFieldCode(field);
+            let fieldCode: string = this.getFieldCode(field).replace(/\s+/g,' ');
             fieldCode = fieldCode.trim();
             if (fieldCode.toLowerCase().indexOf('ref') === 0) {
                 let code: string[] = fieldCode.split(' ');

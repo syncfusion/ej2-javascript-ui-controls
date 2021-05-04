@@ -638,6 +638,7 @@ export class PdfViewerBase {
                 this.contextMenuModule = new ContextMenu(this.pdfViewer, this);
             }
             this.contextMenuModule.createContextMenu();
+            this.createFileInputElement();
             this.wireEvents();
             if (this.pdfViewer.textSearchModule && (!Browser.isDevice || this.pdfViewer.enableDesktopMode)) {
                 this.pdfViewer.textSearchModule.createTextSearchBox();
@@ -2045,6 +2046,18 @@ export class PdfViewerBase {
             }
         }
         this.focusViewerContainer();
+    }
+
+    private createFileInputElement(): void {
+        if (!Browser.isDevice || this.pdfViewer.enableDesktopMode) {
+            // eslint-disable-next-line max-len
+            if (this.pdfViewer.enableAnnotationToolbar && this.pdfViewer.toolbarModule && this.pdfViewer.toolbarModule.annotationToolbarModule) {
+                this.pdfViewer.toolbarModule.annotationToolbarModule.createCustomStampElement();
+            }
+            if (this.signatureModule) {
+                this.signatureModule.createSignatureFileElement();
+            }
+        }
     }
 
     private wireEvents(): void {

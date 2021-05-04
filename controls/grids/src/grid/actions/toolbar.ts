@@ -1,11 +1,11 @@
 import { L10n, EventHandler, extend, isNullOrUndefined, MouseEventArgs } from '@syncfusion/ej2-base';
-import { remove, isBlazor, updateBlazorTemplate, select } from '@syncfusion/ej2-base';
+import { remove, isBlazor, select } from '@syncfusion/ej2-base';
 import { Toolbar as tool, ItemModel, ClickEventArgs } from '@syncfusion/ej2-navigations';
 import { IGrid, NotifyArgs } from '../base/interface';
 import * as events from '../base/constant';
 import { ServiceLocator } from '../services/service-locator';
 import { EditSettingsModel } from '../base/grid-model';
-import { templateCompiler, appendChildren, parentsUntil } from '../base/util';
+import { templateCompiler, appendChildren, parentsUntil, addRemoveEventListener } from '../base/util';
 import { ToolbarItems, ToolbarItem, ResponsiveToolbarAction } from '../base/enum';
 import { SearchBox } from '../services/focus-strategy';
 
@@ -29,6 +29,7 @@ export class Toolbar {
     private items: string[] = ['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'Print', 'Search',
         'ColumnChooser', 'PdfExport', 'ExcelExport', 'CsvExport', 'WordExport'];
     private searchBoxObj: SearchBox;
+    private evtHandlers: { event: string, handler: Function }[];
 
     constructor(parent?: IGrid, serviceLocator?: ServiceLocator) {
         this.parent = parent;
@@ -41,14 +42,20 @@ export class Toolbar {
         this.l10n = this.serviceLocator.getService<L10n>('localization');
         let preItems: ToolbarItems[] = ['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'Print',
             'PdfExport', 'ExcelExport', 'WordExport', 'CsvExport'];
+        let isAdaptive: boolean = this.parent.enableAdaptiveUI;
+        let excludingItems: string[] = ['Edit', 'Delete', 'Update', 'Cancel'];
         for (let item of preItems) {
             let itemStr: string = item.toLowerCase();
             let localeName: string = itemStr[0].toUpperCase() + itemStr.slice(1);
             this.predefinedItems[item] = {
                 id: this.gridID + '_' + itemStr, prefixIcon: 'e-' + itemStr,
-                text: this.parent.enableAdaptiveUI ? '' : this.l10n.getConstant(localeName), tooltipText
+                text: this.l10n.getConstant(localeName), tooltipText
                     : this.l10n.getConstant(localeName)
             };
+            if (isAdaptive) {
+                this.predefinedItems[item].text = '';
+                this.predefinedItems[item].visible = excludingItems.indexOf(item) === -1;
+            }
         }
         (this.predefinedItems as { Search: ItemModel }).Search = {
             id: this.gridID + '_search',
@@ -57,7 +64,8 @@ export class Toolbar {
         };
         (this.predefinedItems as { ColumnChooser: ItemModel }).ColumnChooser = {
             id: this.gridID + '_' + 'columnchooser', cssClass: 'e-cc e-ccdiv e-cc-toolbar', suffixIcon: 'e-' + 'columnchooser-btn',
-            text: this.l10n.getConstant('Columnchooser'), tooltipText: this.l10n.getConstant('Columnchooser'), align: 'Right',
+            text: isAdaptive ? '' : this.l10n.getConstant('Columnchooser'),
+            tooltipText: this.l10n.getConstant('Columnchooser'), align: 'Right',
         };
         if (this.parent.rowRenderingMode === 'Vertical') {
             if (this.parent.allowFiltering && this.parent.filterSettings.type !== 'FilterBar') {
@@ -76,7 +84,7 @@ export class Toolbar {
         if (this.parent.enableAdaptiveUI && this.parent.toolbar.indexOf('Search') > -1) {
             (this.predefinedItems as { responsiveBack: ItemModel }).responsiveBack = {
                 id: this.gridID + '_' + 'responsiveback', cssClass: 'e-gridresponsiveicons e-icons',
-                suffixIcon: 'e-' + 'resback-icon'
+                suffixIcon: 'e-' + 'resback-icon', visible: false
             };
         }
         this.createToolbar();
@@ -142,7 +150,7 @@ export class Toolbar {
     }
 
     private createToolbar(): void {
-        let items: ItemModel[] = this.getResponsiveToolbarItems(this.getItems());
+        let items: ItemModel[] = this.getItems();
         this.toolbar = new tool({
             items: items,
             clicked: this.toolbarClickHandler.bind(this),
@@ -162,7 +170,6 @@ export class Toolbar {
         }
         this.element = this.parent.createElement('div', { id: this.gridID + '_toolbarItems' });
         if (this.parent.enableAdaptiveUI) {
-            this.toolbar.overflowMode = 'Popup';
             this.element.classList.add('e-res-toolbar');
         }
         if (this.parent.toolbarTemplate) {
@@ -170,24 +177,13 @@ export class Toolbar {
                 this.toolbar.appendTo(this.parent.toolbarTemplate);
                 this.element = this.toolbar.element;
             } else {
-                if (isBlazor()) {
-                    let tempID: string = this.parent.element.id + 'toolbarTemplate';
-                    let item: ItemModel = appendChildren(
-                        this.element,
-                        templateCompiler(this.parent.toolbarTemplate)({}, this.parent, 'toolbarTemplate', tempID));
-                    let items: ItemModel = this.getItem(item);
-                    this.toolbar.items.push(items);
-                    this.toolbar.appendTo(this.element);
-                    updateBlazorTemplate(this.parent.element.id + 'toolbarTemplate', 'ToolbarTemplate', this.parent);
+                let isReactCompiler: boolean = this.parent.isReact && typeof (this.parent.toolbarTemplate) !== 'string';
+                let ID: string = this.parent.element.id + 'toolbarTemplate';
+                if (isReactCompiler) {
+                    templateCompiler(this.parent.toolbarTemplate)({}, this.parent, 'toolbarTemplate', ID, null, null, this.element);
+                    this.parent.renderTemplates();
                 } else {
-                    let isReactCompiler: boolean = this.parent.isReact && typeof (this.parent.toolbarTemplate) !== 'string';
-                    let ID: string = this.parent.element.id + 'toolbarTemplate';
-                    if (isReactCompiler) {
-                        templateCompiler(this.parent.toolbarTemplate)({}, this.parent, 'toolbarTemplate', ID, null, null, this.element);
-                        this.parent.renderTemplates();
-                    } else {
-                        appendChildren(this.element, templateCompiler(this.parent.toolbarTemplate)({}, this.parent, 'toolbarTemplate'));
-                    }
+                    appendChildren(this.element, templateCompiler(this.parent.toolbarTemplate)({}, this.parent, 'toolbarTemplate'));
                 }
             }
         } else {
@@ -216,50 +212,55 @@ export class Toolbar {
             this.searchBoxObj.searchFocus({ target: this.searchElement });
             this.searchElement.focus();
         } else {
-            let right: HTMLElement = parentsUntil(this.searchElement, 'e-toolbar-right') as HTMLElement;
-            right.classList.remove('e-responsive-right');
             this.refreshResponsiveToolbarItems(ResponsiveToolbarAction.isInitial);
-            this.toolbarCreated(false);
-            this.unWireEvent();
-            this.searchElement = undefined;
         }
     }
 
-    private getResponsiveToolbarItems(items: ItemModel[]): ItemModel[] {
-        if (this.parent.enableAdaptiveUI) {
-            for (let i: number = 0; i < items.length; i++) {
-                items[i].visible = (items[i].id === this.parent.element.id + '_add'
-                    || items[i].id === this.parent.element.id + '_search' || items[i].id === this.parent.element.id + '_responsivesort'
-                    || items[i].id === this.parent.element.id + '_responsivefilter');
+    private refreshResponsiveToolbarItems(action: ResponsiveToolbarAction): void {
+        if (action === ResponsiveToolbarAction.isInitial) {
+            let id: string = this.parent.element.id;
+            let items: string[] = [id + '_edit', id + '_delete'];
+            let selectedRecords: number[] = this.parent.getSelectedRowIndexes();
+            let excludingItems: string[] = [id + '_responsiveback', id + '_update', id + '_cancel'];
+            for (let item of this.toolbar.items) {
+                let toolbarEle: Element = this.toolbar.element.querySelector('#' + item.id);
+                if (toolbarEle) {
+                    if (items.indexOf(item.id) > -1) {
+                        if (selectedRecords.length) {
+                            toolbarEle.parentElement.classList.remove('e-hidden');
+                        } else {
+                            toolbarEle.parentElement.classList.add('e-hidden');
+                        }
+                    } else {
+                        if (excludingItems.indexOf(item.id) === -1) {
+                            toolbarEle.parentElement.classList.remove('e-hidden');
+                        } else {
+                            toolbarEle.parentElement.classList.add('e-hidden');
+                        }
+                    }
+                }
+            }
+            if (this.searchElement) {
+                let right: HTMLElement = parentsUntil(this.searchElement, 'e-toolbar-right') as HTMLElement;
+                right.classList.remove('e-responsive-right');
+                this.toolbarCreated(false);
+                this.unWireEvent();
+                this.searchElement = undefined;
             }
         }
-        return items;
-    }
-
-    private refreshResponsiveToolbarItems(action: ResponsiveToolbarAction): ItemModel[] {
-        let items: ItemModel[] = this.toolbar.items;
-        let initial: string[] = ['add', 'search', 'responsivesort', 'responsivefilter'];
-        if (this.parent.getSelectedRowIndexes().length) {
-            initial.push('edit', 'delete');
-            if (this.parent.rowRenderingMode !== 'Vertical') {
-                initial.push('update', 'cancel');
-            }
-        }
-        let search: string[] = ['responsiveback', 'search'];
-        let buttons: string[] = action === ResponsiveToolbarAction.isInitial ? initial : search;
-        for (let i: number = 0; i < items.length; i++) {
-            let names: string[] = items[i].id.split('_');
-            let ele: HTMLElement = this.element.querySelector('#' + items[i].id);
-            if (ele) {
-                let parent: HTMLElement = parentsUntil(ele, 'e-toolbar-item') as HTMLElement;
-                if (buttons.indexOf(names[1]) > -1) {
-                    parent.classList.remove('e-hidden');
-                } else {
-                    parent.classList.add('e-hidden');
+        if (action === ResponsiveToolbarAction.isSearch) {
+            let items: string[] = [this.parent.element.id + '_responsiveback', this.parent.element.id + '_search'];
+            for (let item of this.toolbar.items) {
+                let toolbarEle: Element = this.toolbar.element.querySelector('#' + item.id);
+                if (toolbarEle) {
+                    if (items.indexOf(item.id) > -1) {
+                        toolbarEle.parentElement.classList.remove('e-hidden');
+                    } else {
+                        toolbarEle.parentElement.classList.add('e-hidden');
+                    }
                 }
             }
         }
-        return items;
     }
 
     private refreshToolbarItems(args?: { editSettings: EditSettingsModel, name: string }): void {
@@ -272,7 +273,7 @@ export class Toolbar {
         edit.allowEditing && hasData ? enableItems.push(this.gridID + '_edit') : disableItems.push(this.gridID + '_edit');
         edit.allowDeleting && hasData ? enableItems.push(this.gridID + '_delete') : disableItems.push(this.gridID + '_delete');
         if (gObj.editSettings.mode === 'Batch') {
-            if (gObj.element.querySelectorAll('.e-updatedtd').length && (edit.allowAdding || edit.allowEditing)) {
+            if (gObj.element.getElementsByClassName('e-updatedtd').length && (edit.allowAdding || edit.allowEditing)) {
                 enableItems.push(this.gridID + '_update');
                 enableItems.push(this.gridID + '_cancel');
             } else {
@@ -298,6 +299,14 @@ export class Toolbar {
         if (typeof (this.parent.toolbar) === 'string') {
             return [];
         }
+        if (this.parent.rowRenderingMode === 'Vertical') {
+            if (this.parent.allowFiltering && this.parent.filterSettings.type !== 'FilterBar') {
+                items.push(this.getItemObject('responsiveFilter'));
+            }
+            if (this.parent.allowSorting) {
+                items.push(this.getItemObject('responsiveSort'));
+            }
+        }
         for (let item of toolbarItems) {
             switch (typeof item) {
                 case 'number':
@@ -310,15 +319,7 @@ export class Toolbar {
                     items.push(this.getItem(item as ItemModel));
             }
         }
-        if (this.parent.rowRenderingMode === 'Vertical') {
-            if (this.parent.allowFiltering && this.parent.filterSettings.type !== 'FilterBar') {
-                items.push(this.getItemObject('responsiveFilter'));
-            }
-            if (this.parent.allowSorting) {
-                items.push(this.getItemObject('responsiveSort'));
-            }
-        }
-        if (this.parent.enableAdaptiveUI) {
+        if (this.parent.enableAdaptiveUI && this.parent.toolbar.indexOf('Search') > -1) {
             items.push(this.getItemObject('responsiveBack'));
         }
         return items;
@@ -353,7 +354,7 @@ export class Toolbar {
         let gObj: IGrid = this.parent;
         let gID: string = this.gridID;
         extend(args, { cancel: false });
-        let newArgs: Object = !isBlazor() || this.parent.isJsComponent ? args : { item: args.item, cancel: args.cancel, name: args.name };
+        let newArgs: Object = args;
         let originalEvent: Event = args.originalEvent;
         gObj.trigger(events.toolbarClick, newArgs, (toolbarargs: ClickEventArgs) => {
             toolbarargs.originalEvent = toolbarargs.originalEvent ? toolbarargs.originalEvent : originalEvent;
@@ -393,17 +394,6 @@ export class Toolbar {
                         let targetEle: Element = (<HTMLElement>toolbarargs.originalEvent.target);
                         y = tarElement.getBoundingClientRect().top + (<HTMLElement>tarElement).offsetTop;
                         gObj.createColumnchooser(x, y, targetEle);
-                        break;
-                    case 'copy':
-                        if (isBlazor()) {
-                            gObj.copy();
-                        }
-                        break;
-                    case 'copyheader':
-                    case 'copyHeader':
-                        if (isBlazor()) {
-                            gObj.copy(true);
-                        }
                         break;
                     case gID + '_responsivefilter':
                         gObj.showResponsiveCustomFilter();
@@ -475,16 +465,17 @@ export class Toolbar {
 
     protected addEventListener(): void {
         if (this.parent.isDestroyed) { return; }
-        this.parent.on(events.setFullScreenDialog, this.reRenderToolbar, this);
-        this.parent.on(events.initialEnd, this.render, this);
-        this.parent.on(events.uiUpdate, this.onPropertyChanged, this);
-        this.parent.on(events.inBoundModelChanged, this.updateSearchBox.bind(this));
-        this.parent.on(events.modelChanged, this.refreshToolbarItems, this);
-        this.parent.on(events.toolbarRefresh, this.refreshToolbarItems, this);
-        this.parent.on(events.inBoundModelChanged, this.modelChanged, this);
-        this.parent.on(events.dataBound, this.refreshToolbarItems, this);
-        this.parent.on(events.click, this.removeResponsiveSearch, this);
-        this.parent.on(events.rowModeChange, this.reRenderToolbar, this);
+        this.evtHandlers = [{ event: events.setFullScreenDialog, handler: this.reRenderToolbar },
+        { event: events.initialEnd, handler: this.render },
+        { event: events.uiUpdate, handler: this.onPropertyChanged },
+        { event: events.inBoundModelChanged, handler: this.updateSearchBox.bind(this) },
+        { event: events.modelChanged, handler: this.refreshToolbarItems },
+        { event: events.toolbarRefresh, handler: this.refreshToolbarItems },
+        { event: events.inBoundModelChanged, handler: this.modelChanged },
+        { event: events.dataBound, handler: this.refreshToolbarItems },
+        { event: events.click, handler: this.removeResponsiveSearch },
+        { event: events.rowModeChange, handler: this.reRenderToolbar }];
+        addRemoveEventListener(this.parent, this.evtHandlers, true, this);
         this.rowSelectedFunction = this.rowSelected.bind(this);
         this.rowDeSelectedFunction = this.rowSelected.bind(this);
         this.parent.addEventListener(events.rowSelected, this.rowSelectedFunction);
@@ -493,16 +484,7 @@ export class Toolbar {
 
     protected removeEventListener(): void {
         if (this.parent.isDestroyed) { return; }
-        this.parent.off(events.setFullScreenDialog, this.reRenderToolbar);
-        this.parent.off(events.initialEnd, this.render);
-        this.parent.off(events.uiUpdate, this.onPropertyChanged);
-        this.parent.off(events.inBoundModelChanged, this.updateSearchBox);
-        this.parent.off(events.modelChanged, this.refreshToolbarItems);
-        this.parent.off(events.toolbarRefresh, this.refreshToolbarItems);
-        this.parent.off(events.inBoundModelChanged, this.modelChanged);
-        this.parent.off(events.dataBound, this.refreshToolbarItems);
-        this.parent.off(events.click, this.removeResponsiveSearch);
-        this.parent.off(events.rowModeChange, this.reRenderToolbar);
+        addRemoveEventListener(this.parent, this.evtHandlers, false);
         this.parent.removeEventListener(events.rowSelected, this.rowSelectedFunction);
         this.parent.removeEventListener(events.rowDeselected, this.rowDeSelectedFunction);
     }

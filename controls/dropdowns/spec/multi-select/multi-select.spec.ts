@@ -8186,4 +8186,100 @@ describe('MultiSelect', () => {
             }, 0);
         });    
     });
+    describe('EJ2-48220 - While scrolling headers are duplicated and overlapped with items in Multiselect with Grouping case', () => {
+        let element: HTMLInputElement;
+        let datasource: { [key: string]: Object }[] = [
+            { vegetable: 'Cabbage', category: 'Leafy and Salad', id : 'theme1' }, { vegetable: 'Spinach', category: 'Leafy and Salad' , id : 'theme2'},
+            { vegetable: 'Chickpea', category: 'Beans' , id : 'theme3'}, { vegetable: 'Green bean', category: 'Beans' , id : 'theme4'},
+            { vegetable: 'Horse gram', category: 'Beans' , id : 'theme5'}, { vegetable: 'Garlic', category: 'Bulb and Stem' , id : 'theme6'},
+            { vegetable: 'Nopal', category: 'Bulb and Stem' , id : 'theme7'}, { vegetable: 'Onion', category: 'Bulb and Stem' , id : 'theme8'},
+          ];
+        let multiObj: any;
+        let multiSelectObj: any;
+        beforeAll(() => {
+            element = <HTMLInputElement>createElement('input', { id: 'multiSelect' });
+            document.body.appendChild(element);
+        });
+        afterAll(() => {
+            document.body.innerHTML = '';
+            if (element) {
+                element.remove();
+            }
+        });
+        it('Testing the fixed header value updation for value select and popup close cases and resolve the coverage issue', (done) => {
+            multiObj = new MultiSelect({
+                dataSource: datasource,
+                mode: 'Box',
+                fields: { groupBy: 'category', text: 'vegetable', value : 'id'},
+                popupHeight: '250px',
+                placeholder: 'Select a vegetable',
+            });
+            multiObj.appendTo(element);
+            multiObj.showPopup();
+            expect(multiObj.isPopupOpen()).toBe(true);
+            multiObj.list.style.overflow = 'auto';
+            multiObj.list.style.height = '48px';
+            multiObj.list.style.display = 'block';
+            keyboardEventArgs.keyCode = 40;
+            multiObj.list.scrollTop = 90;
+            multiObj.onKeyDown(keyboardEventArgs);
+            multiObj.onKeyDown(keyboardEventArgs);
+            multiObj.onKeyDown(keyboardEventArgs);
+            multiObj.onKeyDown(keyboardEventArgs);
+            multiObj.onKeyDown(keyboardEventArgs);
+            expect(multiObj.list.scrollTop !== 90).toBe(true);
+            expect(multiObj.list.scrollTop !== 0).toBe(true);
+            setTimeout(() => {
+                expect(!isNullOrUndefined(multiObj.fixedHeaderElement)).toBe(true);
+                let listItems: Array<HTMLElement> = (<any>multiObj).list.querySelectorAll('li' + ':not(.e-list-group-item)');
+                expect(multiObj.fixedHeaderElement.innerHTML).toBe("Bulb and Stem");
+                mouseEventArgs.target = listItems[0];
+                mouseEventArgs.type = 'click';
+                (<any>multiObj).onMouseClick(mouseEventArgs);
+                mouseEventArgs.target = listItems[1];
+                mouseEventArgs.type = 'click';
+                (<any>multiObj).onMouseClick(mouseEventArgs);
+                expect(!isNullOrUndefined(multiObj.fixedHeaderElement)).toBe(false);
+                multiObj.destroy();
+                done();
+            }, 450);
+        });
+
+        it('Testing the fixed header value updation for value remove cases and resolve the coverage issue', (done) => {
+            multiSelectObj = new MultiSelect({
+                dataSource: datasource,
+                mode: 'Box',
+                fields: { groupBy: 'category', text: 'vegetable', value : 'id'},
+                popupHeight: '250px',
+                placeholder: 'Select a vegetable',
+                value : ["theme1"]
+            });
+            multiSelectObj.appendTo(element);
+            multiSelectObj.showPopup();
+            expect(multiSelectObj.isPopupOpen()).toBe(true);
+            multiSelectObj.list.style.overflow = 'auto';
+            multiSelectObj.list.style.height = '48px';
+            multiSelectObj.list.style.display = 'block';
+            keyboardEventArgs.keyCode = 40;
+            multiSelectObj.list.scrollTop = 90;
+            multiSelectObj.onKeyDown(keyboardEventArgs);
+            multiSelectObj.onKeyDown(keyboardEventArgs);
+            multiSelectObj.onKeyDown(keyboardEventArgs);
+            multiSelectObj.onKeyDown(keyboardEventArgs);
+            multiSelectObj.onKeyDown(keyboardEventArgs);
+            expect(multiSelectObj.list.scrollTop !== 90).toBe(true);
+            expect(multiSelectObj.list.scrollTop !== 0).toBe(true);
+            setTimeout(() => {
+                expect(!isNullOrUndefined(multiSelectObj.fixedHeaderElement)).toBe(true);
+                expect(multiSelectObj.fixedHeaderElement.innerHTML).toBe("Bulb and Stem");
+                (<any>multiSelectObj).focusAtFirstListItem();
+                keyboardEventArgs.keyCode = 8;
+                (<any>multiSelectObj).removelastSelection(keyboardEventArgs);
+                multiSelectObj.hidePopup();
+                expect(!isNullOrUndefined(multiSelectObj.fixedHeaderElement)).toBe(false);
+                multiSelectObj.destroy();
+                done();
+            }, 450);
+        });
+    });
 });

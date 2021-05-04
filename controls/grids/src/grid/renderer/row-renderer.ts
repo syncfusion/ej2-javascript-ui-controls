@@ -10,6 +10,7 @@ import { CellType } from '../base/enum';
 import { CellRendererFactory } from '../services/cell-render-factory';
 import { ServiceLocator } from '../services/service-locator';
 import { CellMergeRender } from './cell-merge-renderer';
+import * as literals from '../base/string-literals';
 /**
  * RowRenderer class which responsible for building row content. 
  * @hidden
@@ -75,26 +76,26 @@ export class RowRenderer<T> implements IRowRenderer<T> {
         let tr: Element = !isNullOrUndefined(cloneNode) ? cloneNode : this.element.cloneNode() as Element;
         let rowArgs: RowDataBoundEventArgs = { data: row.data };
         let cellArgs: QueryCellInfoEventArgs = { data: row.data };
-        let attrCopy: Object = extend({}, attributes, {});
         let chekBoxEnable: Column = this.parent.getColumns().filter((col: Column) => col.type === 'checkbox' && col.field)[0];
         let value: boolean = false;
         if (chekBoxEnable) {
             value = getObject(chekBoxEnable.field, rowArgs.data);
         }
+        let selIndex: number[] = this.parent.getSelectedRowIndexes();
         if (row.isDataRow) {
-            row.isSelected = this.parent.getSelectedRowIndexes().indexOf(row.index) > -1 || value;
+            row.isSelected = selIndex.indexOf(row.index) > -1 || value;
         }
         if (row.isDataRow && this.parent.isCheckBoxSelection
             && this.parent.checkAllRows === 'Check' && this.parent.enableVirtualization) {
             row.isSelected = true;
-            if (this.parent.getSelectedRowIndexes().indexOf(row.index) === -1) {
-                this.parent.getSelectedRowIndexes().push(row.index);
+            if (selIndex.indexOf(row.index) === -1) {
+                selIndex.push(row.index);
             }
 
         }
         this.buildAttributeFromRow(tr, row);
 
-        addAttributes(tr, attrCopy as { [x: string]: string });
+        addAttributes(tr, extend({}, attributes, {}) as { [x: string]: string });
         setStyleAndAttributes(tr, row.attributes);
 
         let cellRendererFact: CellRendererFactory = this.serviceLocator.getService<CellRendererFactory>('cellRendererFactory');
@@ -166,7 +167,7 @@ export class RowRenderer<T> implements IRowRenderer<T> {
                 let property: string = 'properties';
                 let column: string = 'columns';
                 if (this.parent.aggregates[i][property][column][0].footerTemplate) {
-                    let summarycell: NodeList = tr.querySelectorAll('.e-summarycell');
+                    let summarycell: NodeList = [].slice.call(tr.getElementsByClassName('e-summarycell'));
                     if (summarycell.length) {
                         let lastSummaryCell: Element = (summarycell[summarycell.length - 1]) as Element;
                         addClass([lastSummaryCell], ['e-lastsummarycell']);
@@ -192,11 +193,11 @@ export class RowRenderer<T> implements IRowRenderer<T> {
     public buildAttributeFromRow(tr: Element, row: Row<T>): void {
         let attr: IRow<T> & { 'class'?: string[] } = {};
         let prop: { 'rowindex'?: string; 'dataUID'?: string, 'ariaSelected'?: string }
-            = { 'rowindex': 'aria-rowindex', 'dataUID': 'data-uid', 'ariaSelected': 'aria-selected' };
+            = { 'rowindex': literals.ariaRowIndex, 'dataUID': 'data-uid', 'ariaSelected': 'aria-selected' };
         let classes: string[] = [];
 
         if (row.isDataRow) {
-            classes.push('e-row');
+            classes.push(literals.row);
         }
 
         if (row.isAltRow) {

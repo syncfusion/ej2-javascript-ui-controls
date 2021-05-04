@@ -1119,5 +1119,26 @@ describe('Spreadsheet base module ->', () => {
                 }, 20);
             });
         });
+        describe('I312024 ->', () => {
+            beforeEach((done: Function) => {
+                helper.initializeSpreadsheet(
+                    { sheets: [{ rows: [{ cells: [{ value: '1' }] }, { cells: [{ value: '2' }] }, { cells: [{ value: '3' }] }, { cells:
+                    [{ formula: '=SUM(A1:A3)' }] }] }] }, done);
+            });
+            afterEach(() => {
+                helper.invoke('destroy');
+            });
+            it('sheets property issue in onPropertychange action', (done: Function) => {
+                const spreadsheet: Spreadsheet = helper.getInstance();
+                expect(spreadsheet.sheets.length).toBe(1);
+                spreadsheet.sheets = [{}, {}, {}];
+                setTimeout((): void => {
+                    expect(spreadsheet.sheets.length).toBe(3);
+                    expect(spreadsheet.sheets[0].rows.length).toBe(0);
+                    expect(helper.getElements('#' + helper.id + ' .e-sheet-tabs-items .e-toolbar-item').length).toBe(3);
+                    done();
+                }, 20);
+            });
+        });
     });
 });

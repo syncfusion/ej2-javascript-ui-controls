@@ -2,7 +2,7 @@ import { extend, Internationalization, KeyboardEventArgs } from '@syncfusion/ej2
 import { IGrid, IEditCell } from '../base/interface';
 import { Column } from '../models/column';
 import { NumericTextBox } from '@syncfusion/ej2-inputs';
-import { isEditable, getComplexFieldID, getObject } from '../base/util';
+import { isEditable, getComplexFieldID, getObject, createEditElement } from '../base/util';
 
 /**
  * `NumericEditCell` is used to handle numeric cell type editing.
@@ -28,14 +28,8 @@ export class NumericEditCell implements IEditCell {
     }
 
     public create(args: { column: Column, value: string }): Element {
-        let complexFieldName: string = getComplexFieldID(args.column.field);
         this.instances = new Internationalization(this.parent.locale);
-        return this.parent.createElement('input', {
-            className: 'e-field', attrs: {
-                id: this.parent.element.id + complexFieldName,
-                name: complexFieldName, 'e-mappinguid': args.column.uid
-            }
-        });
+        return createEditElement(this.parent, args.column, 'e-field', {});
     }
 
     public read(element: Element): number {

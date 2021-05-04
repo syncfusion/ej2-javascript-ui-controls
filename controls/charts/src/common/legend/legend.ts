@@ -282,6 +282,15 @@ export class LegendSettings extends ChildProperty<LegendSettings> {
 
     @Property(true)
     public enablePages: boolean;
+
+    /**
+     * If set to true, legend will be Reversed.
+     *
+     * @default false
+     */
+
+     @Property(false)
+     public isInversed: boolean;
 }
 /**
  * Legend base class for Chart and Accumulation chart.
@@ -1036,14 +1045,18 @@ export class BaseLegend {
         const symbolOption: PathOption = new PathOption(
             this.legendID + this.generateId(legendOption, '_shape_', i), symbolColor, strokewidth,
             (isCustomBorder ? borderColor : symbolColor), 1, '', '');
+        let textSize: Size = measureText(legendOption.text, this.legend.textStyle); 
+        let x: number = this.legend.isInversed ? legendOption.location.x + textSize.width + this.legend.shapePadding
+                        : legendOption.location.x;
+        let y: number = legendOption.location.y;
         if (!isCanvas) {
-            group.appendChild(drawSymbol(legendOption.location, shape, new Size(this.legend.shapeWidth, this.legend.shapeHeight),
+            group.appendChild(drawSymbol({ x: x, y: y }, shape, new Size(this.legend.shapeWidth, this.legend.shapeHeight),
                 legendOption.url, symbolOption, this.accessbilityText, this.chart.renderer, null,
                 this.isBulletChartControl, control
             ));
         } else {
             regionPadding = -this.translatePage(null, this.currentPageNumber - 1, this.currentPageNumber);
-            drawSymbol(legendOption.location, shape, new Size(this.legend.shapeWidth, this.legend.shapeHeight), '',
+            drawSymbol({ x: x, y: y }, shape, new Size(this.legend.shapeWidth, this.legend.shapeHeight), '',
                        symbolOption, this.accessbilityText, this.chart.renderer,
                        this.currentPageNumber ? new Rect(0, regionPadding, 0, 0) : null, this.isBulletChartControl, control);
             this.legendRegions.push({
@@ -1058,11 +1071,11 @@ export class BaseLegend {
             symbolOption.fill = legendOption.type === <AccumulationType>'Doughnut' ? '#FFFFFF' : symbolOption.fill;
             if (!isCanvas) {
                 // eslint-disable-next-line max-len
-                group.appendChild(drawSymbol(legendOption.location, shape, new Size(this.legend.shapeWidth / 2, this.legend.shapeHeight / 2),
+                group.appendChild(drawSymbol({ x: x, y: y }, shape, new Size(this.legend.shapeWidth / 2, this.legend.shapeHeight / 2),
                                              '', symbolOption, this.accessbilityText, null, null,
                                              this.isBulletChartControl, control));
             } else {
-                drawSymbol(legendOption.location, shape, new Size(this.legend.shapeWidth / 2, this.legend.shapeHeight / 2),
+                drawSymbol({ x: x, y: y }, shape, new Size(this.legend.shapeWidth / 2, this.legend.shapeHeight / 2),
                            '', symbolOption, this.accessbilityText, this.chart.renderer,
                            this.currentPageNumber ?
                                new Rect(0, -this.translatePage(null, this.currentPageNumber - 1, this.currentPageNumber), 0, 0) : null,
@@ -1110,7 +1123,8 @@ export class BaseLegend {
         const isCanvas: boolean = (this.chart as Chart).enableCanvas;
         textOptions.id = this.legendID + this.generateId(legendOption, '_text_', i);
         textOptions.text = legendOption.text;
-        textOptions.x = legendOption.location.x + (legend.shapeWidth / 2) + legend.shapePadding;
+        textOptions.x = legend.isInversed ? legendOption.location.x - (legend.shapeWidth / 2) : 
+                        legendOption.location.x + (legend.shapeWidth / 2) + legend.shapePadding;
         textOptions.y = legendOption.location.y + this.maxItemHeight / 4;
         const element : Element =
         textElement(chart.renderer, textOptions, legend.textStyle, fontcolor, group, false, false, false, false,

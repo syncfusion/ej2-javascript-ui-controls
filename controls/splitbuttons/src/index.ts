@@ -1,5 +1,5 @@
 /**
- * SplitButton all module 
+ * SplitButton all module
  */
 export * from './common/index';
 export * from './drop-down-button/index';

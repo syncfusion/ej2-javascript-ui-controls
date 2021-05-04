@@ -26,6 +26,7 @@ describe('Spell Checker dialog API', () => {
         editor.destroy();
         editor = undefined;
         document.body.removeChild(document.getElementById('container'));
+        document.body.innerHTML = '';
         setTimeout(function () {
             done();
         }, 2000);

@@ -1,6 +1,6 @@
 ﻿import { Component, ModuleDeclaration, ChildProperty, Browser, closest, extend, TouchEventArgs } from '@syncfusion/ej2-base';
-import { isNullOrUndefined, setValue, getValue, isBlazor, blazorTemplates } from '@syncfusion/ej2-base';
-import { addClass, removeClass, append, remove, updateBlazorTemplate, classList, setStyleAttribute } from '@syncfusion/ej2-base';
+import { isNullOrUndefined, setValue, getValue, isBlazor } from '@syncfusion/ej2-base';
+import { addClass, removeClass, append, remove, classList, setStyleAttribute } from '@syncfusion/ej2-base';
 import { Property, Collection, Complex, Event, NotifyPropertyChanges, INotifyPropertyChanged, L10n } from '@syncfusion/ej2-base';
 import { EventHandler, KeyboardEvents, KeyboardEventArgs as KeyArg, EmitType } from '@syncfusion/ej2-base';
 import { Query, DataManager, DataUtil, DataOptions, UrlAdaptor } from '@syncfusion/ej2-data';
@@ -80,11 +80,11 @@ import { ColumnMenu } from '../actions/column-menu';
 import { CheckState } from './enum';
 import { Aggregate } from '../actions/aggregate';
 import { ILogger } from '../actions/logger';
-import { gridObserver, BlazorAction } from '../actions/blazor-action';
 import { IModelGenerator } from '../base/interface';
 import { RowModelGenerator } from '../services/row-model-generator';
 import { ColumnDeselectEventArgs, ColumnSelectEventArgs, ColumnSelectingEventArgs } from './interface';
 import { DateFormatOptions, NumberFormatOptions } from '@syncfusion/ej2-base';
+import * as literals from '../base/string-literals';
 
 
 /** 
@@ -1019,11 +1019,6 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
      * `clipboardModule` is used to handle Grid copy action.
      */
     public clipboardModule: Clipboard;
-
-    /**
-     * The `blazorAction` is used to handle Blazor related action.
-     */
-    public blazorModule: BlazorAction;
 
 
     /**
@@ -2481,9 +2476,6 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
         if (this.enableLogger) {
             modules.push({ member: 'logger', args: [this] });
         }
-        if (isBlazor()) {
-            modules.push({ member: 'blazor', args: [this] });
-    }
     }
 
     /**
@@ -2505,10 +2497,6 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
         this.isInitialLoad = false;
         this.allowServerDataBinding = false;
         this.ignoreCollectionWatch = true;
-        if (isBlazor() && this.enableVirtualization && this.allowGrouping) {
-            let isExpanded: string = 'isExpanded';
-			this[isExpanded] = false;
-		}
         this.mergeCells = {};
         this.isEdit = false;
         this.checkAllRows = 'None';
@@ -2675,9 +2663,6 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     protected render(): void {
         this.log(['module_missing', 'promise_enabled', 'locale_missing', 'check_datasource_columns']);
         this.ariaService.setOptions(this.element, { role: 'grid' });
-        if (isBlazor()) {
-            this.renderComplete();
-        }
         createSpinner({ target: this.element }, this.createElement);
         this.renderModule = new Render(this, this.serviceLocator);
         this.searchModule = new Search(this);
@@ -2691,10 +2676,8 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
         if (this.enablePersistence) {
             this.notify(events.columnsPrepared, {});
         }
-        if (!(isBlazor() && this.isServerRendered)) {
-            this.getMediaColumns();
-            setColumnIndex(this.columns as Column[]);
-        }
+        this.getMediaColumns();
+        setColumnIndex(this.columns as Column[]);
         this.checkLockColumns(this.columns as Column[]);
         this.getColumns();
         this.processModel();
@@ -2705,9 +2688,6 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
         this.updateStackedFilter();
         this.showSpinner();
         this.notify(events.initialEnd, {});
-        if (isBlazor() && this.isServerRendered) {
-            gridObserver.notify(events.componentRendered, {id: this.element.id, grid: this});
-    }
     }
 
     /**
@@ -2725,7 +2705,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
 
     private updateStackedFilter(): void {
         if (this.allowFiltering && this.filterSettings.type === 'FilterBar' &&
-            this.getHeaderContent().querySelectorAll('.e-stackedheadercell').length) {
+            this.getHeaderContent().getElementsByClassName('e-stackedheadercell').length) {
             this.getHeaderContent().classList.add('e-stackedfilter');
         } else {
             this.getHeaderContent().classList.remove('e-stackedfilter');
@@ -2789,7 +2769,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     }
     private refreshMediaCol(): void {
         this.isInitialLoad = true;
-        let footerContent: Element = this.element.querySelector('.e-gridfooter');
+        let footerContent: Element = this.element.querySelector('.' + literals.gridFooter);
         if (this.aggregates.length && this.element.scrollHeight > this.height && footerContent) {
             addClass([footerContent], ['e-footerpadding']);
         }
@@ -2827,8 +2807,8 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     public destroy(): void {
         let gridElement: Element = this.element;
         if (!gridElement) { return; }
-        let hasGridChild: Boolean = gridElement.querySelector('.e-gridheader') &&
-            gridElement.querySelector('.e-gridcontent') ? true : false;
+        let hasGridChild: Boolean = gridElement.querySelector('.' + literals.gridHeader) &&
+            gridElement.querySelector( '.' + literals.gridContent) ? true : false;
         if (hasGridChild) { this.unwireEvents(); }
         this.removeListener();
         this.removeMediaListener();
@@ -2844,11 +2824,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
                 this[modules[i]] = null;
             }
         }
-        if (!(isBlazor() && this.isServerRendered)) {
-            this.element.innerHTML = '';
-        } else {
-            this.element.style.display = 'none';
-        }
+        this.element.innerHTML = '';
         classList(this.element, [], ['e-rtl', 'e-gridhover', 'e-responsive', 'e-default', 'e-device', 'e-grid-min-height']);
         if ((<{ isAngular?: boolean }>this).isAngular && !this.isFreezeRefresh) {
             this.element = null;
@@ -2858,7 +2834,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
 
     private destroyDependentModules(): void {
         let gridElement: Element = this.element;
-        if (!gridElement || (!gridElement.querySelector('.e-gridheader') && !gridElement.querySelector('.e-gridcontent'))) { return; }
+        if (!gridElement || (!gridElement.querySelector('.' + literals.gridHeader) && !gridElement.querySelector( '.' + literals.gridContent))) { return; }
         this.scrollModule.destroy();
         this.keyboardModule.destroy();
         this.focusModule.destroy();
@@ -3193,7 +3169,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
      */
     public updateDefaultCursor(): void {
         let headerCells: Element[] = [].slice.call(this.getHeaderContent().querySelectorAll('.e-headercell:not(.e-stackedheadercell)'));
-        let stdHdrCell: Element[] = [].slice.call(this.getHeaderContent().querySelectorAll('.e-stackedheadercell'));
+        let stdHdrCell: Element[] = [].slice.call(this.getHeaderContent().getElementsByClassName('e-stackedheadercell'));
         let cols: Column[] = this.getColumns();
         if (this.enableColumnVirtualization && this.getFrozenColumns()) {
             let cells: Element[] = (<{ getHeaderCells?: Function }>this.contentModule).getHeaderCells();
@@ -3237,10 +3213,10 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
                 /* tslint:disable-next-line:no-any */
                 let col: any = cols[i];
                 if (col.freeze === 'Left') {
-                    col.freezeTable = 'frozen-left';
+                    col.freezeTable = literals.frozenLeft;
                     leftCols.push(col);
                 } else if (col.freeze === 'Right') {
-                    col.freezeTable = 'frozen-right';
+                    col.freezeTable = literals.frozenRight;
                     rightCols.push(col);
                 } else {
                     col.freezeTable = 'movable';
@@ -3264,13 +3240,13 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
             let col: any = cols[i];
             if (directFrozenCount) {
                 if (i < directFrozenCount) {
-                    col.freezeTable = 'frozen-left';
+                    col.freezeTable = literals.frozenLeft;
                 } else {
                     col.freezeTable = 'movable';
                 }
             }
             if (col.isFrozen && i >= directFrozenCount) {
-                col.freezeTable = 'frozen-left';
+                col.freezeTable = literals.frozenLeft;
                 cols.splice(this.frozenColumns + count, 0, cols.splice(i, 1)[0]);
                 count++;
             } else if (totalFrozenCount && !directFrozenCount) {
@@ -3475,7 +3451,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
      * @return {Element} 
      */
     public getFooterContent(): Element {
-            this.footerElement = this.element.getElementsByClassName('e-gridfooter')[0];
+            this.footerElement = this.element.getElementsByClassName(literals.gridFooter)[0];
 
         return this.footerElement;
     }
@@ -3485,7 +3461,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
      * @return {Element} 
      */
     public getFooterContentTable(): Element {
-            this.footerElement = this.element.getElementsByClassName('e-gridfooter')[0];
+            this.footerElement = this.element.getElementsByClassName(literals.gridFooter)[0];
 
         return <Element>this.footerElement.firstChild.firstChild;
     }
@@ -3562,31 +3538,31 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
         let args: Object = { target: target };
         if (!isNullOrUndefined(target) && isNullOrUndefined(parentsUntil(ele, 'e-detailrowcollapse')
             && isNullOrUndefined(parentsUntil(ele, 'e-recordplusexpand')))) {
-            let cell: Element = closest(ele, '.e-rowcell');
+            let cell: Element = closest(ele, '.' + literals.rowCell);
             if (!cell) {
-                let row: Element = closest(ele, '.e-row');
+                let row: Element = closest(ele, '.' + literals.row);
                 if (!isNullOrUndefined(row)) {
                     let rowObj: Row<Column> = this.getRowObjectFromUID(row.getAttribute('data-uid'));
-                    let rowIndex: number = parseInt(row.getAttribute('aria-rowindex'), 10);
+                    let rowIndex: number = parseInt(row.getAttribute(literals.ariaRowIndex), 10);
                     args = { row: row, rowData: rowObj.data, rowIndex: rowIndex };
                 }
                 return args;
             }
-            let cellIndex: number = parseInt(cell.getAttribute('aria-colindex'), 10);
+            let cellIndex: number = parseInt(cell.getAttribute(literals.ariaColIndex), 10);
             if (!isNullOrUndefined(cell) && !isNaN(cellIndex)) {
-                let row: Element = closest(cell, '.e-row');
-                let rowIndex: number = parseInt(row.getAttribute('aria-rowindex'), 10);
+                let row: Element = closest(cell, '.' + literals.row);
+                let rowIndex: number = parseInt(row.getAttribute(literals.ariaRowIndex), 10);
                 let frzCols: number = this.getFrozenColumns();
                 let tableName: freezeTable = this.columnModel[cellIndex].getFreezeTableName();
                 let rows: Row<{}>[] = <Row<{}>[]>this.contentModule.getRows();
                 let index: number = cellIndex + this.getIndentCount();
                 if (this.isFrozenGrid()) {
-                    if (tableName === 'frozen-left') {
+                    if (tableName === literals.frozenLeft) {
                         rows = <Row<{}>[]>this.contentModule.getRows()
                     } else if (tableName === 'movable') {
                         index = cellIndex - frzCols - this.frozenLeftCount;
                         rows = <Row<{}>[]>this.contentModule.getMovableRows();
-                    } else if (tableName === 'frozen-right') {
+                    } else if (tableName === literals.frozenRight) {
                         index = cellIndex - (this.frozenLeftCount + this.movableCount);
                         rows = <Row<{}>[]>this.contentModule.getFrozenRightRows();
                     }
@@ -3632,12 +3608,12 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
      * @hidden   
      */
     public getAllDataRows(includeAdd?: boolean): Element[] {
-        if (isNullOrUndefined(this.getContentTable().querySelector('tbody'))) { return []; }
-        let tbody: Element = this.isFrozenGrid() ? this.getFrozenLeftContentTbody() : this.getContentTable().querySelector('tbody');
+        if (isNullOrUndefined(this.getContentTable().querySelector( literals.tbody))) { return []; }
+        let tbody: Element = this.isFrozenGrid() ? this.getFrozenLeftContentTbody() : this.getContentTable().querySelector( literals.tbody);
         let rows: HTMLElement[] = [].slice.call(tbody.children);
         if (this.frozenRows) {
-            let hdrTbody: Element = this.isFrozenGrid() ? this.getHeaderContent().querySelector('.e-frozenheader').querySelector('tbody')
-                : this.getHeaderTable().querySelector('tbody');
+            let hdrTbody: Element = this.isFrozenGrid() ? this.getHeaderContent().querySelector('.' + literals.frozenHeader).querySelector( literals.tbody)
+                : this.getHeaderTable().querySelector( literals.tbody);
             let freezeRows: HTMLElement[] = [].slice.call(hdrTbody.children);
             rows = this.addMovableRows(freezeRows, rows);
         }
@@ -3658,7 +3634,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     private generateDataRows(rows: HTMLElement[], includAdd?: boolean): Element[] {
         let dRows: Element[] = [];
         for (let i: number = 0, len: number = rows.length; i < len; i++) {
-            if (rows[i].classList.contains('e-row') && (!rows[i].classList.contains('e-hiddenrow') || includAdd)) {
+            if (rows[i].classList.contains(literals.row) && (!rows[i].classList.contains('e-hiddenrow') || includAdd)) {
                 if (this.isCollapseStateEnabled()) {
                     dRows[parseInt(rows[i].getAttribute("aria-rowindex"))] = rows[i];
                 } else {
@@ -3685,10 +3661,10 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
             return [];
         }
         let rows: HTMLElement[] =
-            [].slice.call(this.getContent().querySelector('.e-movablecontent').querySelector('tbody').children);
+            [].slice.call(this.getContent().querySelector('.' + literals.movableContent).querySelector( literals.tbody).children);
         if (this.frozenRows) {
             let freezeRows: HTMLElement[] =
-                [].slice.call(this.getHeaderContent().querySelector('.e-movableheader').querySelector('tbody').children);
+                [].slice.call(this.getHeaderContent().querySelector('.' + literals.movableHeader).querySelector( literals.tbody).children);
             rows = this.addMovableRows(freezeRows, rows);
         }
         let dataRows: Element[] = this.generateDataRows(rows, includeAdd);
@@ -3708,10 +3684,10 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
      */
     public getAllFrozenDataRows(includeAdd?: boolean): Element[] {
         let rows: HTMLElement[] =
-            [].slice.call(this.getContent().querySelector('.e-frozencontent').querySelector('tbody').children);
+            [].slice.call(this.getContent().querySelector('.' + literals.frozenContent).querySelector( literals.tbody).children);
         if (this.frozenRows) {
             let freezeRows: HTMLElement[] =
-                [].slice.call(this.getHeaderContent().querySelector('.e-frozenheader').querySelector('tbody').children);
+                [].slice.call(this.getHeaderContent().querySelector('.' + literals.frozenHeader).querySelector( literals.tbody).children);
             rows = this.addMovableRows(freezeRows, rows);
         }
         let dataRows: Element[] = this.generateDataRows(rows, includeAdd);
@@ -3734,10 +3710,10 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
             return [];
         }
         let rows: HTMLElement[] =
-            [].slice.call(this.getContent().querySelector('.e-frozen-right-content').querySelector('tbody').children);
+            [].slice.call(this.getContent().querySelector('.e-frozen-right-content').querySelector( literals.tbody).children);
         if (this.frozenRows) {
             let freezeRows: HTMLElement[] =
-                [].slice.call(this.getHeaderContent().querySelector('.e-frozen-right-header').querySelector('tbody').children);
+                [].slice.call(this.getHeaderContent().querySelector('.e-frozen-right-header').querySelector( literals.tbody).children);
             rows = this.addMovableRows(freezeRows, rows);
         }
         let dataRows: Element[] = this.generateDataRows(rows, includeAdd);
@@ -3895,7 +3871,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
         }
         let index: number = this.getFrozenColumns() || this.getFrozenLeftColumnsCount();
         return this.getMovableDataRows()[rowIndex] &&
-            this.getMovableDataRows()[rowIndex].querySelectorAll('.e-rowcell')[columnIndex - index];
+            this.getMovableDataRows()[rowIndex].getElementsByClassName(literals.rowCell)[columnIndex - index];
     }
 
     /**
@@ -3907,7 +3883,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     public getFrozenRightCellFromIndex(rowIndex: number, columnIndex: number): Element {
         let index: number = this.getFrozenLeftColumnsCount() + this.getMovableColumnsCount();
         let rows: Element[] = this.getFrozenRightDataRows();
-        return rows[rowIndex] && rows[rowIndex].querySelectorAll('.e-rowcell')[columnIndex - index];
+        return rows[rowIndex] && rows[rowIndex].getElementsByClassName(literals.rowCell)[columnIndex - index];
     }
 
     /**
@@ -3916,7 +3892,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
      * @return {Element} 
      */
     public getColumnHeaderByIndex(index: number): Element {
-        return this.getHeaderTable().querySelectorAll('.e-headercell')[index];
+        return this.getHeaderTable().getElementsByClassName('e-headercell')[index];
     }
 
     /**
@@ -3926,7 +3902,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
      */
     public getMovableColumnHeaderByIndex(index: number): Element {
         let left: number = this.getFrozenColumns() || this.getFrozenLeftColumnsCount();
-        return this.getMovableVirtualHeader().querySelectorAll('.e-headercell')[index - left];
+        return this.getMovableVirtualHeader().getElementsByClassName('e-headercell')[index - left];
     }
 
     /**
@@ -3936,7 +3912,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
      */
     public getFrozenRightColumnHeaderByIndex(index: number): Element {
         let left: number = this.getFrozenLeftColumnsCount() + this.getMovableColumnsCount();
-        return this.getFrozenRightHeader().querySelectorAll('.e-headercell')[index - left];
+        return this.getFrozenRightHeader().getElementsByClassName('e-headercell')[index - left];
     }
 
     /**
@@ -3945,7 +3921,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
      * @return {Element} 
      */
     public getFrozenLeftColumnHeaderByIndex(index: number): Element {
-        return this.getFrozenVirtualHeader().querySelectorAll('.e-headercell')[index];
+        return this.getFrozenVirtualHeader().getElementsByClassName('e-headercell')[index];
     }
 
     /**
@@ -4852,8 +4828,8 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
             return;
         }
         let indentWidth: number = (this.getHeaderTable().querySelector('.e-emptycell').parentElement as HTMLElement).offsetWidth;
-        let headerCol: HTMLElement[] = [].slice.call(this.getHeaderTable().querySelector('colgroup').childNodes);
-        let contentCol: HTMLElement[] = [].slice.call(this.getContentTable().querySelector('colgroup').childNodes);
+        let headerCol: HTMLElement[] = [].slice.call(this.getHeaderTable().querySelector(literals.colGroup).childNodes);
+        let contentCol: HTMLElement[] = [].slice.call(this.getContentTable().querySelector(literals.colGroup).childNodes);
         let perPixel: number = indentWidth / 30;
         let i: number = this.getFrozenMode() === 'Right' ? this.frozenRightCount : 0;
         let parentOffset: number =  this.element.offsetWidth;
@@ -4986,8 +4962,8 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
         let headerRows: NodeListOf<Element> = headerTable.querySelectorAll('th.e-rowdragheader, th.e-mastercell');
         let rows: Element[] = this.getRows();
         let disValue: string = enable ? 'none' : '';
-        setStyleAttribute(<HTMLElement>headerTable.querySelector('colgroup').childNodes[0], { 'display': disValue });
-        setStyleAttribute(<HTMLElement>contentTable.querySelector('colgroup').childNodes[0], { 'display': disValue });
+        setStyleAttribute(<HTMLElement>headerTable.querySelector(literals.colGroup).childNodes[0], { 'display': disValue });
+        setStyleAttribute(<HTMLElement>contentTable.querySelector(literals.colGroup).childNodes[0], { 'display': disValue });
         for (let i: number = 0; i < this.getRows().length; i++) {
             let ele: Element = rows[i].firstElementChild;
             enable ? addClass([ele], 'e-hide') : removeClass([ele], ['e-hide']);
@@ -5161,7 +5137,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
 
     private createGridPopUpElement(): void {
         let popup: Element = this.createElement('div', { className: 'e-gridpopup', styles: 'display:none;' });
-        let content: Element = this.createElement('div', { className: 'e-content', attrs: { tabIndex: '-1' } });
+        let content: Element = this.createElement('div', { className: literals.content, attrs: { tabIndex: '-1' } });
         append([content, this.createElement('div', { className: 'e-uptail e-tail' })], popup);
         content.appendChild(this.createElement('span'));
         append([content, this.createElement('div', { className: 'e-downtail e-tail' })], popup);
@@ -5203,7 +5179,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
      */
     public applyTextWrap(): void {
         if (this.allowTextWrap) {
-            let headerRows: Element[] = [].slice.call(this.element.querySelectorAll('.e-columnheader'));
+            let headerRows: Element[] = [].slice.call(this.element.getElementsByClassName('e-columnheader'));
             switch (this.textWrapSettings.wrapMode) {
                 case 'Header':
                     wrap(this.element, false);
@@ -5233,7 +5209,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
      */
     public removeTextWrap(): void {
         wrap(this.element, false);
-        let headerRows: Element[] = [].slice.call(this.element.querySelectorAll('.e-columnheader'));
+        let headerRows: Element[] = [].slice.call(this.element.getElementsByClassName('e-columnheader'));
         wrap(headerRows, false);
         wrap(this.getContent(), false);
         if (this.textWrapSettings.wrapMode !== 'Content') {
@@ -5264,7 +5240,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
         let headerTable: Element = this.getHeaderTable();
         let contentTable: Element = this.getContentTable();
         let headerDivTag: string = 'e-gridheader';
-        let contentDivTag: string = 'e-gridcontent';
+        let contentDivTag: string =  literals.gridContent;
         let htable: HTMLDivElement = this.createTable(headerTable, headerDivTag, 'header');
         let ctable: HTMLDivElement = this.createTable(headerTable, headerDivTag, 'content');
         let td: HTMLElement = element;
@@ -5310,14 +5286,14 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     /** @hidden */
     public hoverFrozenRows(e: MouseEvent): void {
         if (this.isFrozenGrid()) {
-            let row: Element = parentsUntil(e.target as Element, 'e-row');
-            if ([].slice.call(this.element.querySelectorAll('.e-frozenhover')).length && e.type === 'mouseout') {
-                let rows: Element[] = [].slice.call(this.element.querySelectorAll('.e-frozenhover'));
+            let row: Element = parentsUntil(e.target as Element, literals.row);
+            if ([].slice.call(this.element.getElementsByClassName('e-frozenhover')).length && e.type === 'mouseout') {
+                let rows: Element[] = [].slice.call(this.element.getElementsByClassName('e-frozenhover'));
                 for (let i: number = 0; i < rows.length; i++) {
                     rows[i].classList.remove('e-frozenhover');
                 }
             } else if (row) {
-                let rows: Element[] = [].slice.call(this.element.querySelectorAll('tr[aria-rowindex="' + row.getAttribute('aria-rowindex') + '"]'));
+                let rows: Element[] = [].slice.call(this.element.querySelectorAll('tr[aria-rowindex="' + row.getAttribute(literals.ariaRowIndex) + '"]'));
                 rows.splice(rows.indexOf(row), 1);
                 for (let i: number = 0; i < rows.length; i++) {
                     if (row.getAttribute('aria-selected') != 'true' && rows[i]) {
@@ -5436,7 +5412,6 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
         this.dataBoundFunction = this.refreshMediaCol.bind(this);
         this.addEventListener(events.dataBound, this.dataBoundFunction);
         this.on(events.keyPressed, this.onKeyPressed, this);
-        this.on(events.contentReady, this.blazorTemplate, this);
     }
     /**
      * @hidden
@@ -5450,56 +5425,6 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
         this.off(events.keyPressed, this.onKeyPressed);
     }
 
-
-    private blazorTemplate(): void {
-        if (isBlazor()) {
-            if (this.pageSettings.template) {
-                updateBlazorTemplate(this.element.id + "_template", 'Template', this.pageSettings);
-            }
-            for (let i: number = 0; i < this.columnModel.length; i++) {
-
-                if (this.columnModel[i].template) {
-                    updateBlazorTemplate(this.element.id + this.columnModel[i].uid, 'Template', this.columnModel[i], false);
-                }
-                if (this.columnModel[i].headerTemplate) {
-                    updateBlazorTemplate(this.element.id + this.columnModel[i].uid + 'headerTemplate', 'HeaderTemplate', this.columnModel[i], false);
-                }
-                if (this.filterSettings.type == 'FilterBar' && this.columnModel[i].filterTemplate) {
-                    let fieldName: string = this.columnModel[i].field;
-                    let tempID: string = this.element.id + this.columnModel[i].uid + 'filterTemplate';
-                    let filteredColumns: PredicateModel[] = this.filterSettings.columns;
-                    for (let k: number = 0; k < filteredColumns.length; k++) {
-                        if (fieldName == filteredColumns[k].field) {
-                            blazorTemplates[tempID][0][fieldName] = filteredColumns[k].value;
-                        }
-                    }
-                    updateBlazorTemplate(this.element.id + this.columnModel[i].uid + 'filterTemplate', 'FilterTemplate', this.columnModel[i], false);
-                }
-                if (this.filterSettings.type != 'FilterBar' && this.columnModel[i].filterTemplate) {
-                    updateBlazorTemplate(this.element.id + this.columnModel[i].uid + 'filterTemplate', 'FilterTemplate', this.columnModel[i]);
-                }
-
-            }
-            if (this.groupSettings.captionTemplate) {
-                updateBlazorTemplate(this.element.id + 'captionTemplate', 'CaptionTemplate', this.groupSettings);
-            }
-            let guid: string = 'guid';
-            for (let k: number = 0; k < this.aggregates.length; k++) {
-
-                for (let j: number = 0; j < this.aggregates[k].columns.length; j++) {
-                    if (this.aggregates[k].columns[j].footerTemplate) {
-                        updateBlazorTemplate(this.element.id + this.aggregates[k].columns[j][guid] + 'footerTemplate', 'FooterTemplate', this.aggregates[k].columns[j]);
-                    }
-                    if (this.aggregates[k].columns[j].groupFooterTemplate) {
-                        updateBlazorTemplate(this.element.id + this.aggregates[k].columns[j][guid] + 'groupFooterTemplate', 'GroupFooterTemplate', this.aggregates[k].columns[j]);
-                    }
-                    if (this.aggregates[k].columns[j].groupCaptionTemplate) {
-                        updateBlazorTemplate(this.element.id + this.aggregates[k].columns[j][guid] + 'groupCaptionTemplate', 'GroupCaptionTemplate', this.aggregates[k].columns[j]);
-                    }
-                }
-            }
-        }
-    }
     /** 
      * Get current visible data of grid.
      * @return {Object[]} 
@@ -5517,10 +5442,10 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
 
     private mouseClickHandler(e: MouseEvent & TouchEvent): void {
         if (this.isChildGrid(e) || (parentsUntil(e.target as Element, 'e-gridpopup') && e.touches) ||
-            this.element.querySelectorAll('.e-cloneproperties').length || this.checkEdit(e)) {
+            this.element.getElementsByClassName('e-cloneproperties').length || this.checkEdit(e)) {
             return;
         }
-        if (((!this.allowRowDragAndDrop && (parentsUntil(e.target as Element, 'e-gridcontent') ||
+        if (((!this.allowRowDragAndDrop && (parentsUntil(e.target as Element,  literals.gridContent) ||
             (e.target as Element).tagName === 'TD')) || (!(this.allowGrouping || this.allowReordering) &&
                 parentsUntil(e.target as Element, 'e-gridheader'))) && e.touches) {
             return;
@@ -5538,11 +5463,6 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
             let rowObj: Row<Column> = this.getRowObjectFromUID(tr.getAttribute('data-uid'))
             isDataRow = rowObj ? rowObj.isDataRow : false;
         }
-        if (isBlazor()) {
-            let clonedColumn: Column = extend({}, args.column) as Column;
-            args = { rowData: args.rowData, rowIndex: args.rowIndex,
-                 cellIndex: args.cellIndex, column: clonedColumn };
-        }
         if (isDataRow) {
             this.trigger(events.recordClick, args);
         }
@@ -5550,11 +5470,11 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     }
 
     private checkEdit(e: MouseEvent): boolean {
-        let tr: Element = parentsUntil(e.target as Element, 'e-row');
+        let tr: Element = parentsUntil(e.target as Element, literals.row);
         let isEdit: boolean = this.editSettings.mode !== 'Batch' &&
-            this.isEdit && tr && (tr.classList.contains('e-editedrow') || tr.classList.contains('e-addedrow'));
-        return !parentsUntil(e.target as Element, 'e-unboundcelldiv') && (isEdit || (parentsUntil(e.target as Element, 'e-rowcell') &&
-            parentsUntil(e.target as Element, 'e-rowcell').classList.contains('e-editedbatchcell')));
+            this.isEdit && tr && (tr.classList.contains(literals.editedRow) || tr.classList.contains(literals.addedRow));
+        return !parentsUntil(e.target as Element, 'e-unboundcelldiv') && (isEdit || (parentsUntil(e.target as Element, literals.rowCell) &&
+            parentsUntil(e.target as Element, literals.rowCell).classList.contains('e-editedbatchcell')));
     }
 
     private dblClickHandler(e: MouseEvent | TouchEventArgs): void {
@@ -5627,9 +5547,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
             for (let key of keys) {
                 if ((typeof this[key] === 'object') && !isNullOrUndefined(this[key])) {
                     if (Array.isArray(this[key]) && key === 'columns') {
-                        if (!(isBlazor() && this.isServerRendered)) {
-                            setColumnIndex(<Column[]>this[key]);
-                        }
+                        setColumnIndex(<Column[]>this[key]);
                         this.mergeColumns(<Column[]>dataObj[key], <Column[]>this[key]);
                         this[key] = dataObj[key];
                     } else {
@@ -5652,11 +5570,6 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
                     this.mergeColumns(<Column[]>storedColumns[i].columns, <Column[]>localCol.columns);
                     storedColumns[i] = <Column>extend(localCol, storedColumns[i], {}, true);
                 } else {
-                    if (isBlazor()) {
-                        let guid: string = 'guid';
-                        storedColumns[i][guid] = localCol[guid];
-                        storedColumns[i].uid = localCol.uid;
-                    }
                     storedColumns[i] = <Column>extend(localCol, storedColumns[i], {}, true);
                 }
             }
@@ -5749,9 +5662,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
 
     private updateColumnObject(): void {
         prepareColumns(this.columns, this.enableColumnVirtualization, this);
-        if (!(isBlazor() && this.isServerRendered)) {
-            setColumnIndex(this.columns as Column[]);
-        }
+        setColumnIndex(this.columns as Column[]);
         this.initForeignColumn();
         this.notify(events.autoCol, {});
     }
@@ -5803,17 +5714,17 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
             this.checkLockColumns(this.getColumns());
             this.refresh();
             if (this.isFrozenGrid()) {
-                let mTbl: Element = this.contentModule.getMovableContent().querySelector('.e-table');
-                remove(mTbl.querySelector('colgroup'));
+                let mTbl: Element = this.contentModule.getMovableContent().querySelector('.' + literals.table);
+                remove(mTbl.querySelector(literals.colGroup));
                 let colGroup: Element = ((this.getHeaderContent()
-                    .querySelector('.e-movableheader').querySelector('colgroup')).cloneNode(true)) as Element;
-                mTbl.insertBefore(colGroup, mTbl.querySelector('tbody'));
+                    .querySelector('.' + literals.movableHeader).querySelector(literals.colGroup)).cloneNode(true)) as Element;
+                mTbl.insertBefore(colGroup, mTbl.querySelector( literals.tbody));
                 if (this.getFrozenMode() === 'Left-Right') {
-                    let frTbl: Element = this.contentModule.getFrozenRightContent().querySelector('.e-table');
-                    remove(frTbl.querySelector('colgroup'));
+                    let frTbl: Element = this.contentModule.getFrozenRightContent().querySelector('.' + literals.table);
+                    remove(frTbl.querySelector(literals.colGroup));
                     let colGrp: Element = ((this.getHeaderContent()
-                        .querySelector('.e-frozen-right-header').querySelector('colgroup')).cloneNode(true)) as Element;
-                    frTbl.insertBefore(colGrp, frTbl.querySelector('tbody'));
+                        .querySelector('.e-frozen-right-header').querySelector(literals.colGroup)).cloneNode(true)) as Element;
+                    frTbl.insertBefore(colGrp, frTbl.querySelector( literals.tbody));
                 }
             }
         }
@@ -5836,10 +5747,6 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
         excelExportProperties?: ExcelExportProperties, isMultipleExport?: boolean,
         /* tslint:disable-next-line:no-any */
         workbook?: any, isBlob?: boolean): Promise<any> {
-        if (isBlazor()) {
-            this.excelExportModule.Map(this, excelExportProperties, isMultipleExport, workbook, false, isBlob);
-            return null;
-        }
         return this.excelExportModule ?
             this.excelExportModule.Map(this, excelExportProperties, isMultipleExport, workbook, false, isBlob) : null;
     }
@@ -5857,10 +5764,6 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
         excelExportProperties?: ExcelExportProperties,
         /* tslint:disable-next-line:no-any */
         isMultipleExport?: boolean, workbook?: any, isBlob?: boolean): Promise<any> {
-        if (isBlazor()) {
-            this.excelExportModule.Map(this, excelExportProperties, isMultipleExport, workbook, true, isBlob);
-            return null;  
-        }
         return this.excelExportModule ?
             this.excelExportModule.Map(this, excelExportProperties, isMultipleExport, workbook, true, isBlob) : null;
     }
@@ -5877,10 +5780,6 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
         pdfExportProperties?: PdfExportProperties,
         /* tslint:disable-next-line:no-any */
         isMultipleExport?: boolean, pdfDoc?: Object, isBlob?: boolean): Promise<Object> {
-        if (isBlazor()) {
-            this.pdfExportModule.Map(this, pdfExportProperties, isMultipleExport, pdfDoc, isBlob);
-            return null;
-        }
         return this.pdfExportModule ? this.pdfExportModule.Map(this, pdfExportProperties, isMultipleExport, pdfDoc, isBlob) : null;
     }
 
@@ -6105,7 +6004,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
      * @return {void} 
      */
     public hideScroll(): void {
-        let content: HTMLElement = this.getContent().querySelector('.e-content');
+        let content: HTMLElement = this.getContent().querySelector('.' + literals.content);
         let scrollBar: HTMLElement = this.getContent().querySelector('.e-scrollbar');
         if (content.scrollHeight <= content.clientHeight) {
             this.scrollModule.removePadding();
@@ -6237,28 +6136,28 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
      * @hidden
      */
     public getMovableVirtualContent(): Element {
-        return this.getContent().querySelector('.e-movablecontent');
+        return this.getContent().querySelector('.' + literals.movableContent);
     }
 
     /** 
      * @hidden
      */
     public getFrozenVirtualContent(): Element {
-        return this.getContent().querySelector('.e-frozencontent');
+        return this.getContent().querySelector('.' + literals.frozenContent);
     }
 
     /** 
      * @hidden
      */
     public getMovableVirtualHeader(): Element {
-        return this.getHeaderContent().querySelector('.e-movableheader');
+        return this.getHeaderContent().querySelector('.' + literals.movableHeader);
     }
 
     /** 
      * @hidden
      */
     public getFrozenVirtualHeader(): Element {
-        return this.getHeaderContent().querySelector('.e-frozenheader');
+        return this.getHeaderContent().querySelector('.' + literals.frozenHeader);
     }
 
     /**
@@ -6268,27 +6167,27 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
         let rowEle: Element;
         let rows: Element[] = [];
         if (this.isFrozenGrid()) {
-            let fRows: Element[] = [].slice.call(this.getFrozenVirtualContent().querySelector('tbody').children);
-            let mRows: Element[] = [].slice.call(this.getMovableVirtualContent().querySelector('tbody').children);
+            let fRows: Element[] = [].slice.call(this.getFrozenVirtualContent().querySelector( literals.tbody).children);
+            let mRows: Element[] = [].slice.call(this.getMovableVirtualContent().querySelector( literals.tbody).children);
             let frozenRigtRows: Element[] = [];
             if (this.tablesCount === 3) {
-                frozenRigtRows = [].slice.call(this.getContent().querySelector('.e-frozen-right-content').querySelector('tbody').children);
+                frozenRigtRows = [].slice.call(this.getContent().querySelector('.e-frozen-right-content').querySelector( literals.tbody).children);
             }
             if (this.frozenRows) {
-                rows = [].slice.call(this.getFrozenVirtualHeader().querySelector('tbody').children);
-                rows = rows.concat([].slice.call(this.getMovableVirtualHeader().querySelector('tbody').children));
+                rows = [].slice.call(this.getFrozenVirtualHeader().querySelector( literals.tbody).children);
+                rows = rows.concat([].slice.call(this.getMovableVirtualHeader().querySelector( literals.tbody).children));
                 if (this.tablesCount === 3) {
                     let frHdr: Element = this.getHeaderContent().querySelector('.e-frozen-right-header');
-                    rows = rows.concat([].slice.call(frHdr.querySelector('tbody').children)).concat(frozenRigtRows);
+                    rows = rows.concat([].slice.call(frHdr.querySelector( literals.tbody).children)).concat(frozenRigtRows);
                 };
                 rows = rows.concat(fRows).concat(mRows);
             } else {
                 rows = fRows.concat(mRows).concat(frozenRigtRows);
             }
         } else {
-            let cntRows: Element[] = [].slice.call(this.getContent().querySelector('tbody').children);
+            let cntRows: Element[] = [].slice.call(this.getContent().querySelector( literals.tbody).children);
             if (this.frozenRows) {
-                rows = [].slice.call(this.getHeaderContent().querySelector('tbody').children);
+                rows = [].slice.call(this.getHeaderContent().querySelector( literals.tbody).children);
                 rows = rows.concat(cntRows);
             } else {
                 rows = cntRows;
@@ -6356,8 +6255,8 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
         if (this.allowGrouping && this.groupSettings.showDropArea && !isNullOrUndefined(this.element.querySelector('.e-groupdroparea').clientHeight))
         { height += this.element.querySelector('.e-groupdroparea').clientHeight; }
         if (this.aggregates.length > 0 && !isNullOrUndefined(this.element.querySelector('.e-summaryrow').clientHeight)) 
-        {  for (let i = 0; i < this.element.querySelectorAll('.e-summaryrow').length; i++) {
-                height += this.element.querySelectorAll('.e-summaryrow')[i].clientHeight;
+        {  for (let i = 0; i < this.element.getElementsByClassName('e-summaryrow').length; i++) {
+                height += this.element.getElementsByClassName('e-summaryrow')[i].clientHeight;
             }
         }
         return height;
@@ -6550,7 +6449,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
                 },
                 this.asyncTimeOut);
         } else {
-            let loopstring: string[] = ['addedRecords', 'changedRecords', 'deletedRecords'];
+            let loopstring: string[] = [literals.addedRecords, literals.changedRecords, literals.deletedRecords];
             let keyField: string = this.getPrimaryKeyFieldNames()[0];
             for (let i: number = 0; i < loopstring.length; i++) {
                 if (changes[loopstring[i]]) {
@@ -6585,7 +6484,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
 
     private deleteRowElement(row: Row<Column>): void {
         let tr: Element = this.getRowElementByUID(row.uid);
-        let index: number = parseInt(tr.getAttribute('aria-rowindex'), 10)
+        let index: number = parseInt(tr.getAttribute(literals.ariaRowIndex), 10)
         remove(tr);
         if (this.getFrozenColumns()) {
             let mtr: Element = this.getMovableRows()[index];
@@ -6618,7 +6517,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
             }
         }
         this.currentViewData = result;
-        let rows: HTMLTableRowElement[] = [].slice.call(this.getContentTable().querySelectorAll('.e-row'));
+        let rows: HTMLTableRowElement[] = [].slice.call(this.getContentTable().getElementsByClassName(literals.row));
         resetRowIndex(this, this.getRowsObject(), rows);
         setRowElements(this);
         if (this.allowPaging) {
@@ -6635,21 +6534,21 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
         let mTbody: Element;
         
         this.addRowObject(modelData[0], index);
-        let tbody: Element = this.getContentTable().querySelector('tbody');
+        let tbody: Element = this.getContentTable().querySelector( literals.tbody);
         if (tbody.querySelector('.e-emptyrow')) {
             let emptyRow: Element = tbody.querySelector('.e-emptyrow');
             emptyRow.parentNode.removeChild(emptyRow);
             if (this.getFrozenColumns()) {
-                let moveTbody: Element = this.getContent().querySelector('.e-movablecontent').querySelector('tbody');
+                let moveTbody: Element = this.getContent().querySelector('.' + literals.movableContent).querySelector( literals.tbody);
                 (moveTbody.firstElementChild).parentNode.removeChild(moveTbody.firstElementChild);
             }
         }
         if (this.getFrozenColumns()) {
             mTr = renderMovable(tr, this.getFrozenColumns(), this);
             if (this.frozenRows && index < this.frozenRows) {
-                mTbody = this.getHeaderContent().querySelector('.e-movableheader').querySelector('tbody');
+                mTbody = this.getHeaderContent().querySelector('.' + literals.movableHeader).querySelector( literals.tbody);
             } else {
-                mTbody = this.getContent().querySelector('.e-movablecontent').querySelector('tbody');
+                mTbody = this.getContent().querySelector('.' + literals.movableContent).querySelector( literals.tbody);
             }
             mTbody.appendChild(mTr);
             if (this.height === 'auto') {
@@ -6657,11 +6556,11 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
             }
         }
         if (this.frozenRows && index < this.frozenRows) {
-            tbody = this.getHeaderContent().querySelector('tbody');
+            tbody = this.getHeaderContent().querySelector( literals.tbody);
         } else {
-            tbody = this.getContent().querySelector('tbody');
+            tbody = this.getContent().querySelector( literals.tbody);
         }
-        tbody = this.getContent().querySelector('tbody');
+        tbody = this.getContent().querySelector( literals.tbody);
         tbody.appendChild(tr);
     }
 
@@ -6705,27 +6604,27 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
 
     /** @hidden */
     public getMovableHeaderTbody(): Element {
-        return this.getMovableVirtualHeader().querySelector('tbody');
+        return this.getMovableVirtualHeader().querySelector( literals.tbody);
     }
 
     /** @hidden */
     public getMovableContentTbody(): Element {
-        return this.getMovableVirtualContent().querySelector('tbody');
+        return this.getMovableVirtualContent().querySelector( literals.tbody);
     }
 
     /** @hidden */
     public getFrozenHeaderTbody(): Element {
-        return this.getFrozenVirtualHeader().querySelector('tbody');
+        return this.getFrozenVirtualHeader().querySelector( literals.tbody);
     }
 
     /** @hidden */
     public getFrozenLeftContentTbody(): Element {
-        return this.getFrozenVirtualContent().querySelector('tbody');
+        return this.getFrozenVirtualContent().querySelector( literals.tbody);
     }
 
     /** @hidden */
     public getFrozenRightHeaderTbody(): Element {
-        return this.getFrozenRightHeader().querySelector('tbody');
+        return this.getFrozenRightHeader().querySelector( literals.tbody);
     }
 
     /** @hidden */
@@ -6733,7 +6632,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
         let cnt: Element = this.getFrozenRightContent();
         let tbody: Element;
         if (cnt) {
-            tbody = this.getFrozenRightContent().querySelector('tbody')
+            tbody = this.getFrozenRightContent().querySelector( literals.tbody)
         }
         return tbody;
     }

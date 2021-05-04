@@ -16,6 +16,7 @@ import { GroupModelGenerator, GroupedData } from '../services/group-model-genera
 import { GroupSummaryModelGenerator, CaptionSummaryModelGenerator } from '../services/summary-model-generator';
 import { AggregateColumnModel } from '../models/aggregate-model';
 import { Cell } from '../models/cell';
+import * as literals from '../base/string-literals';
 
 /**
  * GroupLazyLoadRenderer is used to perform lazy load grouping
@@ -197,8 +198,8 @@ export class GroupLazyLoadRenderer extends ContentRender implements IRenderer {
 
     private collapseShortcut(args: { target: Element, collapse: boolean }): void {
         if (this.parent.groupSettings.columns.length &&
-            args.target && parentsUntil(args.target, 'e-content') && args.target.parentElement.tagName === 'TR') {
-            if (!args.collapse && parentsUntil(args.target, 'e-row')) {
+            args.target && parentsUntil(args.target, literals.content) && args.target.parentElement.tagName === 'TR') {
+            if (!args.collapse && parentsUntil(args.target, literals.row)) {
                 return;
             }
             let row: Element = args.target.parentElement;
@@ -671,9 +672,9 @@ export class GroupLazyLoadRenderer extends ContentRender implements IRenderer {
 
     private scrollHandler(e: { scrollDown: boolean }): void {
         if (this.parent.isDestroyed || this.childCount) { return; }
-        let downTrs: Element[] = [].slice.call(this.parent.getContent().querySelectorAll('.e-lazyload-middle-down'));
-        let upTrs: Element[] = [].slice.call(this.parent.getContent().querySelectorAll('.e-lazyload-middle-up'));
-        let endTrs: Element[] = [].slice.call(this.parent.getContent().querySelectorAll('.e-not-lazyload-end'));
+        let downTrs: Element[] = [].slice.call(this.parent.getContent().getElementsByClassName('e-lazyload-middle-down'));
+        let upTrs: Element[] = [].slice.call(this.parent.getContent().getElementsByClassName('e-lazyload-middle-up'));
+        let endTrs: Element[] = [].slice.call(this.parent.getContent().getElementsByClassName('e-not-lazyload-end'));
         let tr: Element;
         let lazyLoadDown: boolean = false; let lazyLoadUp: boolean = false; let lazyLoadEnd: boolean = false;
         if (e.scrollDown && downTrs.length) {
@@ -1087,15 +1088,15 @@ export class GroupLazyLoadRenderer extends ContentRender implements IRenderer {
 
     /** @hidden */
     public getRowElements(): Element[] {
-        return [].slice.call(this.parent.getContent().querySelectorAll('.e-row'));
+        return [].slice.call(this.parent.getContent().getElementsByClassName(literals.row));
     }
 
     /** @hidden */
     public getRowByIndex(index: number): Element {
-        let tr: Element[] = [].slice.call(this.parent.getContent().querySelectorAll('.e-row'));
+        let tr: Element[] = [].slice.call(this.parent.getContent().getElementsByClassName(literals.row));
         let row: Element;
         for (let i: number = 0; !isNullOrUndefined(index) && i < tr.length; i++) {
-            if (tr[i].getAttribute('aria-rowindex') === index.toString()) {
+            if (tr[i].getAttribute(literals.ariaRowIndex) === index.toString()) {
                 row = tr[i];
                 break;
             }
@@ -1175,7 +1176,7 @@ export class GroupLazyLoadRenderer extends ContentRender implements IRenderer {
         this.rowsByUid[index][row.uid] = data;
         this.groupCache[index][this.objIdxByUid[index][row.uid]] = data;
         if (tr) {
-            let tbody: Element = this.parent.getContentTable().querySelector('tbody');
+            let tbody: Element = this.parent.getContentTable().querySelector( literals.tbody);
             tbody.replaceChild(this.rowRenderer.render(data, this.parent.getColumns()), tr);
         }
     }

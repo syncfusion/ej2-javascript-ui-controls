@@ -4333,7 +4333,8 @@ export class WordExport {
         //         }
         //     }
         //     SerializeDocxProps(tempDocxProps, 'tblStyleRowBandSize');
-        //     SerializeDocxProps(tempDocxProps, 'tblStyleColBandSize');       
+        //     SerializeDocxProps(tempDocxProps, 'tblStyleColBandSize');  
+        this.serializeTablePositioning(writer, table);      
         this.serializeTableWidth(writer, table);
         this.serializeTableAlignment(writer, table.tableFormat);
         this.serializeCellSpacing(writer, table.tableFormat);
@@ -4383,6 +4384,60 @@ export class WordExport {
         // SerializeTblTrackChanges(format);
         if (!isNullOrUndefined(table)) {
             writer.writeEndElement(); //end of tblPr
+        }
+    }
+    // Serialize the table position
+    private serializeTablePositioning(writer: XmlWriter, table: any): void {
+        if (table.wrapTextAround) {
+            writer.writeStartElement('w', 'tblpPr', this.wNamespace);
+            if (table.positioning.distanceLeft > 0) {
+                let left: string = Math.round(table.positioning.distanceLeft * this.twipsInOnePoint).toString();
+                writer.writeAttributeString('w', 'leftFromText', this.wNamespace, left);
+            }
+            if (table.positioning.distanceRight > 0) {
+                let right: string = Math.round(table.positioning.distanceRight * this.twipsInOnePoint).toString();
+                writer.writeAttributeString('w', 'rightFromText', this.wNamespace, right);
+            }
+            if (table.positioning.distanceTop > 0) {
+                let top: string = Math.round(table.positioning.distanceTop * this.twipsInOnePoint).toString();
+                writer.writeAttributeString('w', 'topFromText', this.wNamespace, top);
+            }
+            if (table.positioning.distanceBottom > 0) {
+                let bottom: string = Math.round(table.positioning.distanceBottom * this.twipsInOnePoint).toString();
+                writer.writeAttributeString('w', 'bottomFromText', this.wNamespace, bottom);
+            }
+            if (table.positioning.verticalOrigin) {
+                let verticalOrigin: string = table.positioning.verticalOrigin === 'Paragraph' ? 'text' : table.positioning.verticalOrigin.toLowerCase();
+                writer.writeAttributeString('w', 'vertAnchor', this.wNamespace, verticalOrigin);
+            }
+            if (table.positioning.horizontalOrigin && table.positioning.horizontalOrigin !== 'Column') {
+                writer.writeAttributeString('w', 'horzAnchor', this.wNamespace, table.positioning.horizontalOrigin.toLowerCase());
+            }
+            if (table.positioning.horizontalAlignment && table.positioning.horizontalAlignment !== 'Left') {
+                let horizontalAlignment: string = table.positioning.horizontalAlignment.toLowerCase();
+                writer.writeAttributeString('w', 'tblpXSpec', this.wNamespace, horizontalAlignment);
+            }
+            if (table.positioning.verticalAlignment) {
+                let verticalAlignment: string = table.positioning.verticalAlignment.toLowerCase();
+                writer.writeAttributeString('w', 'tblpYSpec', this.wNamespace, verticalAlignment);
+            }
+            if (((!isNullOrUndefined(table.positioning.horizontalAlignment) && table.positioning.horizontalAlignment === 'Left')
+                || !table.positioning.horizontalAlignment)
+                && table.positioning.horizontalPosition > 0) {
+                let horizontalPosition: string = Math.round(table.positioning.horizontalPosition * this.twipsInOnePoint).toString();
+                writer.writeAttributeString('w', 'tblpX', this.wNamespace, horizontalPosition);
+            }
+            if (!table.positioning.verticalAlignment && table.positioning.verticalPosition > 0) {
+                let verticalPosition: string = Math.round(table.positioning.verticalPosition * this.twipsInOnePoint).toString();
+                writer.writeAttributeString('w', 'tblpY', this.wNamespace, verticalPosition);
+            }
+            writer.writeEndElement();
+
+            if (!table.positioning.allowOverlap) {
+                writer.writeStartElement('w', 'tblOverlap', this.wNamespace);
+                writer.writeAttributeString('w', 'val', this.wNamespace, 'never');
+                writer.writeEndElement();
+            }
         }
     }
     // serialize the table margin

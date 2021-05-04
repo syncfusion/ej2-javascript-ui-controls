@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { SplitButton } from '../src/split-button/split-button';
 import { ItemModel } from '../src/common/common-model';
 import { createElement } from '@syncfusion/ej2-base';
@@ -16,7 +17,7 @@ describe('Split Button', () => {
     });
 
     let button: any;
-    let items: ItemModel[] = [
+    const items: ItemModel[] = [
         {
             text: 'Cut',
         },
@@ -26,7 +27,7 @@ describe('Split Button', () => {
         {
             text: 'Paste',
         }];
-    let element: any = createElement('button', { id: 'splitbtn' });
+    const element: any = createElement('button', { id: 'splitbtn' });
     document.body.appendChild(element);
 
     afterEach(() => {
@@ -40,7 +41,7 @@ describe('Split Button', () => {
     });
 
     it('click event args', () => {
-        let click: any = (args: any) => {
+        const click: any = (args: any) => {
             expect(args.element).toEqual(button.element);
         };
         button = new SplitButton({ click: click }, '#splitbtn');
@@ -72,6 +73,13 @@ describe('Split Button', () => {
         expect(element.nextElementSibling.disabled).toBeTruthy();
     });
 
+    it('Create popup on open', () => {
+        button = new SplitButton({ items: items, createPopupOnClick: true }, '#splitbtn');
+        expect(button.secondaryBtnObj.dropDown).toEqual(undefined);
+        button.secondaryBtnObj.element.click();
+        expect(button.secondaryBtnObj.dropDown.element.classList.contains('e-popup-open')).toEqual(true);
+    });
+
     it('Text with Icon position top & left testing', () => {
         button = new SplitButton({ content: 'SplitButton', iconCss: 'iconcss'});
         button.appendTo('#splitbtn');
@@ -89,7 +97,7 @@ describe('Split Button', () => {
     });
 
     it('Alt + down key checking', () => {
-        let altDownEventArgs: any = {
+        const altDownEventArgs: any = {
             preventDefault: (): void => { /** NO Code */ },
             action: 'altdownarrow',
             type: 'keyup',
@@ -103,7 +111,7 @@ describe('Split Button', () => {
     });
 
     it('Alt + up key checking', () => {
-        let altUpEventArgs: any = {
+        const altUpEventArgs: any = {
             preventDefault: (): void => { /** NO Code */ },
             altKey: true,
             keyCode: 38,
@@ -116,12 +124,12 @@ describe('Split Button', () => {
     });
 
     it('Enter key checking', () => {
-        let enterEventArgs: any = {
+        const enterEventArgs: any = {
             preventDefault: (): void => { /** NO Code */ },
             keyCode: 13,
             target: null
         };
-        let downEventArgs: any = {
+        const downEventArgs: any = {
             preventDefault: (): void => { /** NO Code */ },
             key: 'altdownarrow',
             type: 'keyup',
@@ -130,7 +138,7 @@ describe('Split Button', () => {
         button = new SplitButton({ items: items });
         button.appendTo('#splitbtn');
         button.secondaryBtnObj.element.click();
-        let li: Element[] = <Element[] & NodeListOf<HTMLLIElement>>button.dropDown.element.querySelectorAll('li');
+        const li: Element[] = <Element[] & NodeListOf<HTMLLIElement>>button.dropDown.element.querySelectorAll('li');
         li[0].classList.add('e-focused');
         button.keyBoardHandler(downEventArgs);
         enterEventArgs.target = li[1];
@@ -153,7 +161,7 @@ describe('Split Button', () => {
         button.mousedownHandler({ target: document.body });
         expect(button.dropDown.element.classList.contains('e-popup-open')).toBeFalsy();
         button.secondaryBtnObj.element.click();
-        let ele: HTMLElement = button.dropDown.element.querySelector('.e-item');
+        const ele: HTMLElement = button.dropDown.element.querySelector('.e-item');
         ele.classList.add('e-focused');
         ele.click();
         expect(button.dropDown.element.classList.contains('e-popup-open')).toBeFalsy();
@@ -186,10 +194,10 @@ describe('Split Button', () => {
 
     it('memory leak', () => {
         profile.sample();
-        let average: any = inMB(profile.averageChange);
+        const average: any = inMB(profile.averageChange);
         // check average change in memory samples to not be over 10MB
         expect(average).toBeLessThan(10);
-        let memory: any = inMB(getMemoryProfile());
+        const memory: any = inMB(getMemoryProfile());
         // check the final memory usage against the first usage, there should be little change if everything was properly deallocated
         expect(memory).toBeLessThan(profile.samples[0] + 0.25);
     });

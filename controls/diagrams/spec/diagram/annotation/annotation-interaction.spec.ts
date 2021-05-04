@@ -1562,6 +1562,49 @@ describe('Diagram Control', () => {
         })
 
     });
+    describe('Check annotation verticalAlignment value ', () => {
+        let diagram: Diagram;
+        let ele: HTMLElement;
+
+        beforeAll((): void => {
+            const isDef = (o: any) => o !== undefined && o !== null;
+            if (!isDef(window.performance)) {
+                console.log("Unsupported environment, window.performance.memory is unavailable");
+                this.skip(); //Skips test (in Chai)
+                return;
+            }
+            ele = createElement('div', { id: 'CheckVerticalAlignment' });
+            document.body.appendChild(ele);
+
+            let connector: ConnectorModel = {};
+            connector.id = "connector1";
+            connector.sourcePoint = { x: 350, y: 300 };
+            connector.targetPoint = { x: 550, y: 300 };
+            connector.annotations = [{ id: "Rbshr", content: "sjdgfhfd", annotationType: "String", constraints: 4, visibility: true, rotateAngle: 0, horizontalAlignment: "Center", verticalAlignment: "Top", margin: { left: 0, right: 0, bottom: 0, top: 0 }, style: { strokeWidth: 0, strokeColor: "transparent", fill: "transparent", strokeDashArray: "", opacity: 1, gradient: { type: "None" }, fontSize: 12, fontFamily: "Arial", textOverflow: "Wrap", textDecoration: "None", whiteSpace: "CollapseSpace", textWrapping: "WrapWithOverflow", textAlign: "Center", color: "black", italic: false, bold: false }, offset: 0.5, alignment: "Center", segmentAngle: false }];
+
+            diagram = new Diagram({
+                width: 1000, height: 1000, connectors: [connector]
+            });
+            diagram.appendTo('#CheckVerticalAlignment');
+        });
+
+        afterAll((): void => {
+            diagram.destroy();
+            ele.remove();
+        });
+        it('Checking connector with annotation verticalAlignment initial checking', () => {
+            expect(diagram.connectors[0].annotations[0].verticalAlignment).toEqual('Top');
+            let diagramEle = (document.getElementById('CheckVerticalAlignment') as any).ej2_instances[0];
+            let txtElement: Element = document.getElementById('connector1_Rbshr');
+            expect((txtElement as any).x.animVal.value).toEqual(427.8125);
+            expect((txtElement as any).y.animVal.value).toEqual(300.5);
+            diagramEle.connectors[0].annotations[0].verticalAlignment = 'Bottom';
+            diagramEle.dataBind();
+            expect(diagram.connectors[0].annotations[0].verticalAlignment).toEqual('Bottom');
+            expect((txtElement as any).x.animVal.value).toEqual(427.8125);
+            expect((txtElement as any).y.animVal.value).toEqual(286.1000061035156);
+        });
+    });
     describe('Annotation undo redo not working properly if the line routing is enabled', () => {
         let diagram: Diagram;
         let ele: HTMLElement;

@@ -34,6 +34,7 @@ describe('Table dialog validation', () => {
         editor.destroy();
         document.body.removeChild(document.getElementById('container'));
         editor = undefined;
+        document.body.innerHTML = '';
         setTimeout(function () {
             done();
         }, 750);
@@ -70,6 +71,7 @@ describe('Show internal Dialogs validation', () => {
         editor.destroy();
         document.body.removeChild(document.getElementById('container'));
         editor = undefined;
+        document.body.innerHTML = '';
         setTimeout(function () {
             done();
         }, 750);
@@ -119,6 +121,7 @@ describe('Check Cell and Table Alignment Validation', () => {
         editor.destroy();
         document.body.removeChild(document.getElementById('container'));
         editor = undefined;
+        document.body.innerHTML = '';
         setTimeout(function () {
             done();
         }, 750);
@@ -167,6 +170,7 @@ describe('Check Cell and Table Alignment Else part Validation', () => {
         editor.destroy();
         document.body.removeChild(document.getElementById('container'));
         editor = undefined;
+        document.body.innerHTML = '';
         setTimeout(function () {
             done();
         }, 750);
@@ -216,6 +220,7 @@ describe('Set Table Properties Dialog Validation', () => {
         editor.destroy();
         document.body.removeChild(document.getElementById('container'));
         editor = undefined;
+        document.body.innerHTML = '';
         setTimeout(() => {
             done();
         }, 750);
@@ -262,6 +267,7 @@ describe('Get Table and Cell Alignment Validation', () => {
         editor.destroy();
         document.body.removeChild(document.getElementById('container'));
         editor = undefined;
+        document.body.innerHTML = '';
         setTimeout(function () {
             done();
         }, 750);
@@ -319,6 +325,7 @@ describe('Get Cell Alignment Validation', () => {
         editor.destroy();
         document.body.removeChild(document.getElementById('container'));
         editor = undefined;
+        document.body.innerHTML = '';
         setTimeout(function () {
             done();
         }, 750);
@@ -375,6 +382,7 @@ describe('Apply and Close Table Properties Dialog Validation', () => {
         editor.destroy();
         document.body.removeChild(document.getElementById('container'));
         editor = undefined;
+        document.body.innerHTML = '';
         setTimeout(function () {
             done();
         }, 750);
@@ -425,6 +433,7 @@ describe('Apply Row Properties Dialog Validation', () => {
         editor.destroy();
         document.body.removeChild(document.getElementById('container'));
         editor = undefined;
+        document.body.innerHTML = '';
         setTimeout(function () {
             done();
         }, 750);
@@ -486,6 +495,7 @@ describe('Apply Row Properties-4 Dialog Validation', () => {
         editor.destroy();
         document.body.removeChild(document.getElementById('container'));
         editor = undefined;
+        document.body.innerHTML = '';
         setTimeout(function () {
             done();
         }, 750);
@@ -523,6 +533,7 @@ describe('Apply Cell properties Dialog Validation', () => {
         editor.destroy();
         document.body.removeChild(document.getElementById('container'));
         editor = undefined;
+        document.body.innerHTML = '';
         setTimeout(function () {
             done();
         }, 750);
@@ -573,6 +584,7 @@ describe('Table Check box Validation Testing', () => {
         editor.destroy();
         document.body.removeChild(document.getElementById('container'));
         editor = undefined;
+        document.body.innerHTML = '';
         setTimeout(function () {
             done();
         }, 750);
@@ -619,6 +631,7 @@ describe('Row Check box Validation Testing', () => {
         editor.destroy();
         document.body.removeChild(document.getElementById('container'));
         editor = undefined;
+        document.body.innerHTML = '';
         setTimeout(function () {
             done();
         }, 750);
@@ -665,6 +678,7 @@ describe('Cell Check box Validation Testing', () => {
         editor.destroy();
         document.body.removeChild(document.getElementById('container'));
         editor = undefined;
+        document.body.innerHTML = '';
         setTimeout(function () {
             done();
         }, 750);
@@ -711,6 +725,7 @@ describe('Table,Row and cell Format history preservation validation', () => {
         editor.destroy();
         document.body.removeChild(document.getElementById('container'));
         editor = undefined;
+        document.body.innerHTML = '';
         setTimeout(function () {
             done();
         }, 750);
@@ -789,6 +804,7 @@ describe('Cursor show hide testing', () => {
         editor.destroy();
         document.body.removeChild(document.getElementById('container'));
         editor = undefined;
+        document.body.innerHTML = '';
         setTimeout(function () {
             done();
         }, 750);
@@ -813,6 +829,7 @@ describe('load table format', () => {
         editor.destroy();
         document.body.removeChild(document.getElementById('container'));
         editor = undefined;
+        document.body.innerHTML = '';
         setTimeout((): void => {
             done();
         }, 750);
@@ -1048,6 +1065,7 @@ describe('Load Row Format', () => {
         editor.destroy();
         document.body.removeChild(document.getElementById('container'));
         editor = undefined;
+        document.body.innerHTML = '';
         setTimeout((): void => {
             done();
         }, 750);
@@ -1110,6 +1128,7 @@ describe('Load Cell format', () => {
         editor.destroy();
         document.body.removeChild(document.getElementById('container'));
         editor = undefined;
+        document.body.innerHTML = '';
         setTimeout((): void => {
             done();
         }, 750);
@@ -1249,6 +1268,7 @@ describe('Table dialog Property change validation', () => {
         editor.destroy();
         document.body.removeChild(document.getElementById('container'));
         editor = undefined;
+        document.body.innerHTML = '';
         setTimeout((): void => {
             done();
         }, 750);
@@ -1489,6 +1509,7 @@ describe('Table vertical alignment - center validation', () => {
         editor.destroy();
         document.body.removeChild(document.getElementById('container'));
         editor = undefined;
+        document.body.innerHTML = '';
         setTimeout(function () {
             done();
         }, 750);
