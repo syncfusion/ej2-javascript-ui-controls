@@ -52,6 +52,10 @@ export class Selection {
      * @private
      */
     public isImageSelected: boolean = false;
+    /**
+     * @private
+     */
+    public isSelectAll: boolean = false;
     private documentHelper: DocumentHelper;
     private contextTypeInternal: ContextType = undefined;
     /**
@@ -2720,6 +2724,7 @@ export class Selection {
     public selectAll(): void {
         let documentStart: TextPosition;
         let documentEnd: TextPosition;
+        this.isSelectAll = true;
         const container: Widget = this.getContainerWidget(this.start.paragraph);
         if (this.owner.enableHeaderAndFooter) {
             const headerFooter: HeaderFooterWidget = this.getContainerWidget(this.start.paragraph) as HeaderFooterWidget;
@@ -4492,7 +4497,11 @@ export class Selection {
             if (offset > 0) {
                 left += size.width;
             }
-            return new Point(left, paragraphWidget.y + topMargin);
+            if (this.isSelectAll) {
+                return new Point(left, this.end.location.y);
+            } else {
+                return new Point(left, paragraphWidget.y + topMargin);
+            }
         } else {
             let indexInInline: number = 0;
             const inlineObj: ElementInfo = line.getInline(offset, indexInInline, line.paragraph.bidi);
@@ -9256,6 +9265,9 @@ export class Selection {
             }
         } else if (shift && ctrl && !alt) {
             switch (key) {
+                case 32:
+                    this.owner.editor.insertText(String.fromCharCode(160));
+                    break;
                 case 35:
                     this.handleControlShiftEndKey();
                     break;

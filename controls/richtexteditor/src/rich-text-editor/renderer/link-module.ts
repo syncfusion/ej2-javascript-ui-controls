@@ -341,7 +341,8 @@ export class Link {
         const proxy: Link = (this as NotifyArgs).selfLink;
         if (proxy.parent.editorMode === 'HTML' && isNullOrUndefined(
             closest(
-                (this as IImageNotifyArgs).selection.range.startContainer.parentNode, '#' + proxy.parent.contentModule.getPanel().id))) {
+                (this as IImageNotifyArgs).selection.range.startContainer.parentNode, '[id='
+                + "'" + proxy.parent.contentModule.getPanel().id + "'" +']'))) {
             (proxy.parent.contentModule.getEditPanel() as HTMLElement).focus();
             if (Browser.isIE && proxy.parent.iframeSettings.enable) {
                 (this as NotifyArgs).selection.restore();
@@ -465,7 +466,7 @@ export class Link {
     private onDocumentClick(e: MouseEvent): void {
         const target: HTMLElement = <HTMLElement>e.target;
         if (!isNullOrUndefined(this.dialogObj) && ((
-            !closest(target, '#' + this.dialogObj.element.id) && this.parent.toolbarSettings.enable &&
+            !closest(target, '[id=' + "'" + this.dialogObj.element.id + "'" +']') && this.parent.toolbarSettings.enable &&
             this.parent.getToolbarElement() && !this.parent.getToolbarElement().contains(e.target as Node)) ||
             (((this.parent.getToolbarElement() && this.parent.getToolbarElement().contains(e.target as Node)) ||
             this.parent.inlineMode.enable && !closest(target, '#' + this.dialogObj.element.id)) &&

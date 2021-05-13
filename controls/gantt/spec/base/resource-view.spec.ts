@@ -727,7 +727,7 @@ describe('Self reference data', () => {
         resourceTab.selectedItem = 1;
     });
   
-    it("Add resources using add dialog", () => {
+    it("EJ2-48512-Add resources using add dialog", () => {
       ganttObj.actionComplete = (args: any): void => {
         if (args.requestType === 'refresh') {
             ganttObj.viewType = 'ProjectView';
@@ -747,5 +747,14 @@ describe('Self reference data', () => {
           "_dialog > div.e-footer-content > button.e-control.e-btn.e-lib.e-primary.e-flat") as HTMLElement;
       triggerMouseEvent(saveButton, "click");
     });
+    it("EJ2-48512-Issue on editing when view type changed", () => {
+        let taskName: HTMLElement = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol_content_table > tbody > tr:nth-child(2) > td:nth-child(2)') as HTMLElement;
+        triggerMouseEvent(taskName, 'dblclick');
+        let input: any = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrolTaskName') as HTMLElement;
+        input.value = 'TaskName updated';
+        let element: HTMLElement = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol_content_table > tbody > tr:nth-child(3) > td:nth-child(2)') as HTMLElement;
+        triggerMouseEvent(element, 'click');
+        expect(ganttObj.currentViewData[1].ganttProperties.taskName).toBe('TaskName updated');
+      });
   });
 });

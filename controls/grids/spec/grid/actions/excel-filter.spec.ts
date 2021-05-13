@@ -977,6 +977,7 @@ describe('EJ2-47491- Grid destroy with document click event ', () => {
         gridObj2.destroy();
         document.onclick = () => {
             expect(document.querySelectorAll('.e-excelfilter').length).toBe(0);
+            document.onclick = null;
             done();
         };
         document.body.click();

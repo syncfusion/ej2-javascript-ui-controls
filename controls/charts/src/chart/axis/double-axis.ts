@@ -376,6 +376,6 @@ export class Double {
 
     public formatValue(axis: Axis, isCustom: boolean, format: string, tempInterval: number): string {
         return isCustom ? format.replace('{value}', axis.format(tempInterval))
-            :  axis.format(tempInterval);
+            : axis.format(tempInterval);
     }
 }

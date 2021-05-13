@@ -1265,7 +1265,7 @@ export class Image {
             this.imgEle = target as HTMLImageElement;
         }
         if (!isNullOrUndefined(this.dialogObj) && ((
-            !closest(target, '#' + this.dialogObj.element.id) && this.parent.toolbarSettings.enable && this.parent.getToolbarElement() &&
+            !closest(target, '[id=' + "'" + this.dialogObj.element.id + "'" +']') && this.parent.toolbarSettings.enable && this.parent.getToolbarElement() &&
             !this.parent.getToolbarElement().contains(e.target as Node)) ||
             (this.parent.getToolbarElement() && this.parent.getToolbarElement().contains(e.target as Node) &&
             !closest(target, '#' + this.parent.getID() + '_toolbar_Image') &&
@@ -1337,7 +1337,7 @@ export class Image {
         } else if (url !== '') {
             if (proxy.parent.editorMode === 'HTML' && isNullOrUndefined(
                 closest(
-                    (this as IImageNotifyArgs).selection.range.startContainer.parentNode, '#' + proxy.contentModule.getPanel().id))) {
+                    (this as IImageNotifyArgs).selection.range.startContainer.parentNode, '[id=' + "'" + proxy.contentModule.getPanel().id + "'" +']'))) {
                 (proxy.contentModule.getEditPanel() as HTMLElement).focus();
                 const range: Range = proxy.parent.formatter.editorManager.nodeSelection.getRange(proxy.contentModule.getDocument());
                 (this as IImageNotifyArgs).selection = proxy.parent.formatter.editorManager.nodeSelection.save(
@@ -1430,7 +1430,7 @@ export class Image {
             const dialogContent: HTMLElement = this.dialogObj.element.querySelector('.e-img-content');
             if (((!isNullOrUndefined(this.parent.insertImageSettings.path) && this.parent.editorMode === 'Markdown')
                 || this.parent.editorMode === 'HTML')) {
-                (dialogContent.querySelector('#' + this.rteID + '_insertImage') as HTMLElement).focus();
+                (document.getElementById(this.rteID + '_insertImage') as HTMLElement).focus();
             } else {
                 (dialogContent.querySelector('.e-img-url') as HTMLElement).focus();
             }
@@ -1443,8 +1443,8 @@ export class Image {
         // eslint-disable-next-line
         const proxy: this = this;
         const iframe: boolean = proxy.parent.iframeSettings.enable;
-        if (proxy.parent.editorMode === 'HTML' && (!iframe && isNullOrUndefined(closest(e.selection.range.startContainer.parentNode, '#' +
-            this.parent.contentModule.getPanel().id))
+        if (proxy.parent.editorMode === 'HTML' && (!iframe && isNullOrUndefined(closest(e.selection.range.startContainer.parentNode, '[id='
+        + "'" + this.parent.contentModule.getPanel().id + "'" +']'))
             || (iframe && !hasClass(e.selection.range.startContainer.parentNode.ownerDocument.querySelector('body'), 'e-lib')))) {
             (this.contentModule.getEditPanel() as HTMLElement).focus();
             const range: Range = this.parent.formatter.editorManager.nodeSelection.getRange(this.parent.contentModule.getDocument());

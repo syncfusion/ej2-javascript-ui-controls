@@ -150,7 +150,12 @@ export class Render {
             if (this.parent.dragAndDropModule && this.parent.dragAndDropModule.actionObj.action === 'drag') {
                 this.parent.dragAndDropModule.navigationWrapper();
             }
-            this.parent.trigger(events.dataBound, null, () => this.parent.hideSpinner());
+            this.parent.trigger(events.dataBound, null, () => {
+                this.parent.hideSpinner();
+                if (this.parent.isPrinting) {
+                    this.parent.notify(events.print, {});
+                }
+            });
         });
     }
 

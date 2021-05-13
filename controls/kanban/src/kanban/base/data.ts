@@ -96,14 +96,19 @@ export class Data {
      * @returns {void}
      * @private
      */
-    private dataManagerSuccess(e: ReturnType): void {
+    private dataManagerSuccess(e: ReturnType, type?: string): void {
         if (this.parent.isDestroyed) { return; }
-        this.parent.trigger(events.dataBinding, e, (args: ReturnType) => {
-            const resultData: Record<string, any>[] = extend([], args.result, null, true) as Record<string, any>[];
+        if (type) {
+            const resultData: Record<string, any>[] = extend([], e.result, null, true) as Record<string, any>[];
             this.parent.kanbanData = resultData;
-            this.parent.notify(events.dataReady, { processedData: resultData });
-            this.parent.trigger(events.dataBound, null, () => this.parent.hideSpinner());
-        });
+        } else {
+            this.parent.trigger(events.dataBinding, e, (args: ReturnType) => {
+                const resultData: Record<string, any>[] = extend([], args.result, null, true) as Record<string, any>[];
+                this.parent.kanbanData = resultData;
+                this.parent.notify(events.dataReady, { processedData: resultData });
+                this.parent.trigger(events.dataBound, null, () => this.parent.hideSpinner());
+            });
+        }
     }
 
     /**
@@ -158,9 +163,10 @@ export class Data {
                     this.parent.kanbanData = this.dataManager.dataSource.json as Record<string, any>[];
                     this.refreshUI(offlineArgs, index);
                 } else {
-                    promise.then((e: Record<string, any>[]) => {
-                        if (this.parent.isDestroyed) { return; }
-                        this.parent.kanbanData = e;
+                    promise.then((e: ReturnType) => {
+                    if (this.parent.isDestroyed) { return; }
+                       const dataManager: Promise<any> = this.getData(this.getQuery());
+                        dataManager.then((e: ReturnType) => this.dataManagerSuccess(e, 'DataSourceChange')).catch((e: ReturnType) => this.dataManagerFailure(e));
                         this.refreshUI(offlineArgs, index);
                     }).catch((e: ReturnType) => {
                         this.dataManagerFailure(e);
@@ -185,9 +191,15 @@ export class Data {
             this.parent.layoutModule.swimlaneData = this.parent.layoutModule.getSwimlaneCards();
         }
         args.addedRecords.forEach((data: Record<string, any>, index: number) => {
+            if (this.parent.swimlaneSettings.keyField && !data[this.parent.swimlaneSettings.keyField]) {
+                data[this.parent.swimlaneSettings.keyField] = '';
+            }
             this.parent.layoutModule.renderCardBasedOnIndex(data, position + index);
         });
         args.changedRecords.forEach((data: Record<string, any>) => {
+            if (this.parent.swimlaneSettings.keyField && !data[this.parent.swimlaneSettings.keyField]) {
+                data[this.parent.swimlaneSettings.keyField] = '';
+            }
             this.parent.layoutModule.removeCard(data);
             this.parent.layoutModule.renderCardBasedOnIndex(data, position);
             if (this.parent.sortSettings.field && this.parent.sortSettings.sortBy === 'Index'

@@ -29,12 +29,12 @@ export class StackingBarSeries extends ColumnBase {
         for (let pointStack of series.points) {
             pointStack.symbolLocations = [];
             pointStack.regions = [];
-            if (pointStack.visible && withInRange(series.points[pointStack.index - 1], pointStack,
-                                                  series.points[pointStack.index + 1], series)) {
+            if (pointStack.visible &&
+                withInRange(series.points[pointStack.index - 1], pointStack, series.points[pointStack.index + 1], series)) {
                 rect = this.getRectangle(pointStack.xValue + sideBySideInfo.start, stackedValue.endValues[pointStack.index],
-                                         pointStack.xValue + sideBySideInfo.end, stackedValue.startValues[pointStack.index], series);
+                    pointStack.xValue + sideBySideInfo.end, stackedValue.startValues[pointStack.index], series);
                 argsData = this.triggerEvent(series, pointStack, series.interior,
-                                             { width: series.border.width, color: series.border.color });
+                    { width: series.border.width, color: series.border.color });
                 if (!argsData.cancel) {
                     this.drawRectangle(series, pointStack, rect, argsData);
                     this.updateSymbolLocation(pointStack, rect, series);

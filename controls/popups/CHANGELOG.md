@@ -2,6 +2,22 @@
 
 ## [Unreleased]
 
+## 19.1.63 (2021-05-13)
+
+### Dialog
+
+#### Bug Fixes
+
+- `#F164882` - Resolved the issue "Setting the dialog `minHeight` property as number is not working properly".
+
+- `#I326833`, `#F165083`- The issue with "When the content is given as a template function, then the content is not rendered in the Dialog" has been resolved.
+
+### Popup
+
+#### Bug Fixes
+
+- `#I323687`- The issue with "`Dropdownlist(popup)` flickers on value select, when there is `scroller` in the page" has been resolved.
+
 ## 19.1.59 (2021-05-04)
 
 ### Spinner

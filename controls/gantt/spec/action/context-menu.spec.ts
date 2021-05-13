@@ -207,58 +207,58 @@ describe('Context-', () => {
             (ganttObj.contextMenuModule as any).contextMenuItemClick(e);
             expect(ganttObj.currentViewData.length).toBe(42);
         });
-        // it('Add record - Above', (done: Function) => {
-        //     let e: ContextMenuClickEventArgs = {
-        //         item: { id: ganttObj.element.id + '_contextMenu_Above' },
-        //         element: null,
-        //     };
-        //     (ganttObj.contextMenuModule as any).contextMenuItemClick(e);
-        //     expect(ganttObj.currentViewData.length).toBe(43);
-        //     done();
-        // });
-        // it('Convert to Milestone', (done: Function) => {
-        //     (ganttObj.contextMenuModule as any).rowData = ganttObj.currentViewData[1];
-        //     let e: ContextMenuClickEventArgs = {
-        //         item: { id: ganttObj.element.id + '_contextMenu_ToMilestone' },
-        //         element: null,
-        //     };
-        //     (ganttObj.contextMenuModule as any).contextMenuItemClick(e);
-        //     expect(ganttObj.currentViewData[1].ganttProperties.isMilestone).toBeTruthy;
-        //     expect(ganttObj.currentViewData[1].ganttProperties.duration).toBe(0);
-        //     done();
-        // });
-        // it('Add record - Milestone', () => {
-        //     let e: ContextMenuClickEventArgs = {
-        //         item: { id: ganttObj.element.id + '_contextMenu_Milestone' },
-        //         element: null,
-        //     };
-        //     (ganttObj.contextMenuModule as any).contextMenuItemClick(e);
-        //     expect(ganttObj.currentViewData.length).toBe(44);
-        // });
-        // it('Converting empty task to Milestone', (done: Function) => {
-        //     (ganttObj.contextMenuModule as any).rowData = ganttObj.currentViewData[43];
-        //     let e: ContextMenuClickEventArgs = {
-        //         item: { id: ganttObj.element.id + '_contextMenu_ToMilestone' },
-        //         element: null,
-        //     };
-        //     (ganttObj.contextMenuModule as any).contextMenuItemClick(e);
-        //     let taskbarElement: HTMLElement = ganttObj.element.querySelector('#' + ganttObj.element.id + 'GanttTaskTableBody > tr:nth-child(44) > td > div.e-taskbar-main-container > div.e-gantt-milestone') as HTMLElement;
-        //     triggerMouseEvent(taskbarElement, 'mouseover', 50);
-        //     expect(ganttObj.tooltipModule.toolTipObj.content).toBe('<table class = "e-gantt-tooltiptable"><tbody><tr class = "e-gantt-tooltip-rowcell"><td colspan="3">Final Delivery</td></tr><tr><td class = "e-gantt-tooltip-label"> Date</td><td>:</td><td class = "e-gantt-tooltip-value">2/1/2017</td></tr></tbody></table>');
-        //     done();
-        // });
-        // it('Task Information', () => {
-        //     ganttObj.contextMenuClick = function (args: ContextMenuClickEventArgs) {
-        //         expect(args.item.text).toEqual('Task Information');
-        //     }
-        //     ganttObj.dataBind();
-        //     let taskInfo: HTMLElement = document.getElementById(ganttObj.element.id + '_contextMenu_TaskInformation');
-        //     triggerMouseEvent(taskInfo, 'click');
-        //     let cancelRecord: HTMLElement = ganttObj.element.querySelectorAll('#' + ganttObj.element.id + '_dialog > div.e-footer-content > button.e-control')[1] as HTMLElement;
-        //     triggerMouseEvent(cancelRecord, 'click');
-        // });
+        it('Add record - Milestone', () => {
+            let e: ContextMenuClickEventArgs = {
+                item: { id: ganttObj.element.id + '_contextMenu_Milestone' },
+                element: null,
+            };
+            (ganttObj.contextMenuModule as any).contextMenuItemClick(e);
+            expect(ganttObj.currentViewData.length).toBe(43);
+        });
+        // it('Add record - Above', () => {
+        //      let e: ContextMenuClickEventArgs = {
+        //          item: { id: ganttObj.element.id + '_contextMenu_Above' },
+        //          element: null,
+        //      };
+        //      (ganttObj.contextMenuModule as any).contextMenuItemClick(e);
+        //      expect(ganttObj.currentViewData.length).toBe(44);
+        //  });
+        
+        //  it('Convert to Milestone', () => {
+        //      (ganttObj.contextMenuModule as any).rowData = ganttObj.currentViewData[6];
+        //      let e: ContextMenuClickEventArgs = {
+        //          item: { id: ganttObj.element.id + '_contextMenu_ToMilestone' },
+        //          element: null,
+        //      };
+        //      (ganttObj.contextMenuModule as any).contextMenuItemClick(e);
+        //      expect(ganttObj.currentViewData[6].ganttProperties.isMilestone).toBeTruthy;
+        //      expect(ganttObj.currentViewData[6].ganttProperties.duration).toBe(0);
+        //  });
+      
+        //  it('Converting empty task to Milestone', (done: Function) => {
+        //      (ganttObj.contextMenuModule as any).rowData = ganttObj.currentViewData[43];
+        //      let e: ContextMenuClickEventArgs = {
+        //          item: { id: ganttObj.element.id + '_contextMenu_ToMilestone' },
+        //          element: null,
+        //      };
+        //      (ganttObj.contextMenuModule as any).contextMenuItemClick(e);
+        //      let taskbarElement: HTMLElement = ganttObj.element.querySelector('#' + ganttObj.element.id + 'GanttTaskTableBody > tr:nth-child(44) > td > div.e-taskbar-main-container > div.e-gantt-milestone') as HTMLElement;
+        //      triggerMouseEvent(taskbarElement, 'mouseover', 50);
+        //      expect(ganttObj.tooltipModule.toolTipObj.content).toBe('<table class = "e-gantt-tooltiptable"><tbody><tr class = "e-gantt-tooltip-rowcell"><td colspan="3">Final Delivery</td></tr><tr><td class = "e-gantt-tooltip-label"> Date</td><td>:</td><td class = "e-gantt-tooltip-value">2/1/2017</td></tr></tbody></table>');
+        //      done();
+        //  });
+         it('Task Information', () => {       
+             ganttObj.contextMenuClick = function (args: ContextMenuClickEventArgs) {
+                 expect(args.item.text).toEqual('Task Information');
+             }
+             ganttObj.dataBind();
+             let taskInfo: HTMLElement = document.getElementById(ganttObj.element.id + '_contextMenu_TaskInformation');
+             triggerMouseEvent(taskInfo, 'click');
+             let cancelRecord: HTMLElement = ganttObj.element.querySelectorAll('#' + ganttObj.element.id + '_dialog > div.e-footer-content > button.e-control')[1] as HTMLElement;
+             triggerMouseEvent(cancelRecord, 'click');
+         });
     });
-    describe('Content menu -', () => {
+     describe('Content menu -', () => {
         beforeAll((done: Function) => {
             ganttObj = createGantt(ganttModel, done);
         });
@@ -272,25 +272,28 @@ describe('Context-', () => {
             triggerMouseEvent($tr, 'contextmenu', 0, 0, false, false, 2);
             setTimeout(done, 500);
         });
-        // it('To Task', () => {
-        //     let e: ContextMenuClickEventArgs = {
-        //         item: { id: ganttObj.element.id + '_contextMenu_ToTask' },
-        //         element: null,
-        //     };
-        //     (ganttObj.contextMenuModule as any).contextMenuItemClick(e);
-        //     expect(ganttObj.currentViewData[7].ganttProperties.isMilestone).toBeFalsy;
-        //     expect(ganttObj.currentViewData[7].ganttProperties.duration).toBe(1);
-        // });
-        // it('Delete Depedency', (done: Function) => {
-        //     let e = {
-        //         item: ganttObj.contextMenuModule.contextMenu.items[3].items[0],
-        //     };
-        //     (ganttObj.contextMenuModule as any).contextMenuItemClick(e);
-        //     expect(ganttObj.currentViewData[7].ganttProperties.predecessorsName).toEqual('4FS,5FS');
-        //     done();
-        // });
-        it('Save & Cancel', (done: Function) => {
-            let record: HTMLElement = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol_content_table > tbody > tr:nth-child(1) > td:nth-child(2)');
+          it('To Task', () => {
+              let e: ContextMenuClickEventArgs = {
+                  item: { id: ganttObj.element.id + '_contextMenu_ToTask' },
+                  element: null,
+              };
+              (ganttObj.contextMenuModule as any).contextMenuItemClick(e);
+              expect(ganttObj.currentViewData[7].ganttProperties.isMilestone).toBeFalsy;
+              expect(ganttObj.currentViewData[7].ganttProperties.duration).toBe(1);
+          });
+          it('Delete Depedency', (done: Function) => {
+              debugger;
+              let $tr: HTMLElement = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol_content_table > tbody > tr:nth-child(6) > td:nth-child(2)') as HTMLElement;
+              triggerMouseEvent($tr, 'contextmenu', 0, 0, false, false, 2);
+              let e = {
+                  item: ganttObj.contextMenuModule.contextMenu.items[3].items[0],
+              };
+              (ganttObj.contextMenuModule as any).contextMenuItemClick(e);
+              expect(ganttObj.currentViewData[5].ganttProperties.predecessorsName).toEqual('4FS,5FS');
+              done();
+          });
+         it('Save & Cancel', (done: Function) => {
+            let record: HTMLElement = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol_content_table > tbody > tr:nth-child(3) > td:nth-child(2)');
             triggerMouseEvent(record, 'dblclick');
             let e1: ContextMenuClickEventArgs = {
                 item: { id: ganttObj.element.id + '_contextMenu_Save' },
@@ -317,7 +320,7 @@ describe('Context-', () => {
             (ganttObj.contextMenuModule as any).contextMenuItemClick(e);
             let ok: HTMLElement = ganttObj.element.querySelector('#' + ganttObj.element.id + '_deleteConfirmDialog > div.e-footer-content > button');
             triggerMouseEvent(ok, 'click');
-            expect(ganttObj.currentViewData.length).toBe(41);
+            expect(ganttObj.currentViewData.length).toBe(40);
             done();
         });
         it('Destroy', () => {

@@ -260,7 +260,7 @@ export function setAttributeHtml(element: HTMLElement, attributes: Object): void
 export function getAdornerLayerSvg(diagramId: string, index?: number): SVGSVGElement {
     let adornerLayerSvg: SVGSVGElement = null;
     let diagramElement: HTMLElement = getDiagramElement(diagramId + index + '_diagramAdornerLayer');
-    let elementcoll: NodeList;
+    let elementcoll: HTMLCollection;
     if (diagramElement) {
         elementcoll = diagramElement.getElementsByClassName('e-adorner-layer' + index);
         adornerLayerSvg = elementcoll[0] as SVGSVGElement;

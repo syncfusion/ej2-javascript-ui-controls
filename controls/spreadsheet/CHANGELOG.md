@@ -2,6 +2,15 @@
 
 ## [Unreleased]
 
+## 19.1.63 (2021-05-13)
+
+### Spreadsheet
+
+#### Bug Fixes
+
+- `I319406` - Date is not updated properly in `Ukraine` time zone issue resolved.
+- `I324752` - Horizontal scroll bar not visible in `MAC` machine issue resolved.
+
 ## 19.1.59 (2021-05-04)
 
 ### Spreadsheet
@@ -10,7 +19,6 @@
 
 - `#24579` - `Gridlines` got disappear while performing horizontal scrolling with `showHeaders` property as `false` issue resolved.
 - `#23650` - Formula reference not properly updated on copy / paste action issue resolved.
-- `I319406` - Date is not updated properly in `Ukraine` time zone issue resolved.
 - `#I314883` - Formula dependent cells not updated after rendering destroyed spreadsheet issue has been fixed.
 - `#F164825` - Cell navigation throws script error when `allowScrolling` set to `false` issue has been fixed.
 - `#23944` - Formula suggestion drop down is not displayed in the cells located in the bottom of the sheet issue has been fixed.

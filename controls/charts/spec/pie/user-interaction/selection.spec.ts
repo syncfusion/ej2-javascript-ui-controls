@@ -365,7 +365,7 @@ describe('Accumulation Chart Control', () => {
             accumulation.loaded = (args: IAccLoadedEventArgs) => {
                 accumulation.loaded = null;
                 expect(document.getElementsByTagName('svg')[0].querySelectorAll('pattern').length).toBe(8);
-                expect(document.getElementsByTagName('svg')[0].querySelectorAll('pattern')[0].id === 'Dots_Selection_0').toBe(true);
+                expect(document.getElementsByTagName('svg')[0].querySelectorAll('pattern')[0].id === 'pie_Dots_Selection_0').toBe(true);
                 done();
             };
             accumulation.selectionPattern = 'Dots';
@@ -376,7 +376,7 @@ describe('Accumulation Chart Control', () => {
             accumulation.loaded = (args: IAccLoadedEventArgs) => {
                 accumulation.loaded = null;
                 expect(document.getElementsByTagName('svg')[0].querySelectorAll('pattern').length).toBe(8);
-                expect(document.getElementsByTagName('svg')[0].querySelectorAll('pattern')[0].id === 'DiagonalForward_Selection_0').toBe(true);
+                expect(document.getElementsByTagName('svg')[0].querySelectorAll('pattern')[0].id === 'pie_DiagonalForward_Selection_0').toBe(true);
                 done();
             };
 
@@ -387,7 +387,7 @@ describe('Accumulation Chart Control', () => {
             accumulation.loaded = (args: IAccLoadedEventArgs) => {
                 accumulation.loaded = null;
                 expect(document.getElementsByTagName('svg')[0].querySelectorAll('pattern').length).toBe(8);
-                expect(document.getElementsByTagName('svg')[0].querySelectorAll('pattern')[0].id === 'Crosshatch_Selection_0').toBe(true);
+                expect(document.getElementsByTagName('svg')[0].querySelectorAll('pattern')[0].id === 'pie_Crosshatch_Selection_0').toBe(true);
                 done();
             };
 
@@ -398,7 +398,7 @@ describe('Accumulation Chart Control', () => {
             accumulation.loaded = (args: IAccLoadedEventArgs) => {
                 accumulation.loaded = null;
                 expect(document.getElementsByTagName('svg')[0].querySelectorAll('pattern').length).toBe(8);
-                expect(document.getElementsByTagName('svg')[0].querySelectorAll('pattern')[0].id === 'Pacman_Selection_0').toBe(true);
+                expect(document.getElementsByTagName('svg')[0].querySelectorAll('pattern')[0].id === 'pie_Pacman_Selection_0').toBe(true);
                 done();
             };
 
@@ -409,7 +409,7 @@ describe('Accumulation Chart Control', () => {
             accumulation.loaded = (args: IAccLoadedEventArgs) => {
                 accumulation.loaded = null;
                 expect(document.getElementsByTagName('svg')[0].querySelectorAll('pattern').length).toBe(8);
-                expect(document.getElementsByTagName('svg')[0].querySelectorAll('pattern')[0].id === 'DiagonalBackward_Selection_0').toBe(true);
+                expect(document.getElementsByTagName('svg')[0].querySelectorAll('pattern')[0].id === 'pie_DiagonalBackward_Selection_0').toBe(true);
                 done();
             };
 
@@ -420,7 +420,7 @@ describe('Accumulation Chart Control', () => {
             accumulation.loaded = (args: IAccLoadedEventArgs) => {
                 accumulation.loaded = null;
                 expect(document.getElementsByTagName('svg')[0].querySelectorAll('pattern').length).toBe(8);
-                expect(document.getElementsByTagName('svg')[0].querySelectorAll('pattern')[0].id === 'Grid_Selection_0').toBe(true);
+                expect(document.getElementsByTagName('svg')[0].querySelectorAll('pattern')[0].id === 'pie_Grid_Selection_0').toBe(true);
                 done();
             };
 
@@ -431,7 +431,7 @@ describe('Accumulation Chart Control', () => {
             accumulation.loaded = (args: IAccLoadedEventArgs) => {
                 accumulation.loaded = null;
                 expect(document.getElementsByTagName('svg')[0].querySelectorAll('pattern').length).toBe(8);
-                expect(document.getElementsByTagName('svg')[0].querySelectorAll('pattern')[1].id === 'Turquoise_Selection_0').toBe(true);
+                expect(document.getElementsByTagName('svg')[0].querySelectorAll('pattern')[1].id === 'pie_Turquoise_Selection_0').toBe(true);
                 done();
             };
 
@@ -442,7 +442,7 @@ describe('Accumulation Chart Control', () => {
             accumulation.loaded = (args: IAccLoadedEventArgs) => {
                 accumulation.loaded = null;
                 expect(document.getElementsByTagName('svg')[0].querySelectorAll('pattern').length).toBe(8);
-                expect(document.getElementsByTagName('svg')[0].querySelectorAll('pattern')[0].id === 'Star_Selection_0').toBe(true);
+                expect(document.getElementsByTagName('svg')[0].querySelectorAll('pattern')[0].id === 'pie_Star_Selection_0').toBe(true);
                 done();
             };
 
@@ -453,7 +453,7 @@ describe('Accumulation Chart Control', () => {
             accumulation.loaded = (args: IAccLoadedEventArgs) => {
                 accumulation.loaded = null;
                 expect(document.getElementsByTagName('svg')[0].querySelectorAll('pattern').length).toBe(8);
-                expect(document.getElementsByTagName('svg')[0].querySelectorAll('pattern')[2].id === 'Triangle_Selection_0').toBe(true);
+                expect(document.getElementsByTagName('svg')[0].querySelectorAll('pattern')[2].id === 'pie_Triangle_Selection_0').toBe(true);
                 done();
             };
 
@@ -464,7 +464,7 @@ describe('Accumulation Chart Control', () => {
             accumulation.loaded = (args: IAccLoadedEventArgs) => {
                 accumulation.loaded = null;
                 expect(document.getElementsByTagName('svg')[0].querySelectorAll('pattern').length).toBe(8);
-                expect(document.getElementsByTagName('svg')[0].querySelectorAll('pattern')[2].id === 'Chessboard_Selection_0').toBe(true);
+                expect(document.getElementsByTagName('svg')[0].querySelectorAll('pattern')[2].id === 'pie_Chessboard_Selection_0').toBe(true);
                 done();
             };
 
@@ -475,7 +475,7 @@ describe('Accumulation Chart Control', () => {
             accumulation.loaded = (args: IAccLoadedEventArgs) => {
                 accumulation.loaded = null;
                 expect(document.getElementsByTagName('svg')[0].querySelectorAll('pattern').length).toBe(8);
-                expect(document.getElementsByTagName('svg')[0].querySelectorAll('pattern')[0].id === 'Circle_Selection_0').toBe(true);
+                expect(document.getElementsByTagName('svg')[0].querySelectorAll('pattern')[0].id === 'pie_Circle_Selection_0').toBe(true);
                 done();
             };
 
@@ -485,7 +485,7 @@ describe('Accumulation Chart Control', () => {
         it('Patterns with Tile', (done: Function) => {
             accumulation.loaded = (args: IAccLoadedEventArgs) => {
                 expect(document.getElementsByTagName('svg')[0].querySelectorAll('pattern').length).toBe(8);
-                expect(document.getElementsByTagName('svg')[0].querySelectorAll('pattern')[0].id === 'Tile_Selection_0').toBe(true);
+                expect(document.getElementsByTagName('svg')[0].querySelectorAll('pattern')[0].id === 'pie_Tile_Selection_0').toBe(true);
                 done();
             };
 
@@ -496,7 +496,7 @@ describe('Accumulation Chart Control', () => {
             accumulation.loaded = (args: IAccLoadedEventArgs) => {
                 accumulation.loaded = null;
                 expect(document.getElementsByTagName('svg')[0].querySelectorAll('pattern').length).toBe(8);
-                expect(document.getElementsByTagName('svg')[0].querySelectorAll('pattern')[0].id === 'HorizontalDash_Selection_0').toBe(true);
+                expect(document.getElementsByTagName('svg')[0].querySelectorAll('pattern')[0].id === 'pie_HorizontalDash_Selection_0').toBe(true);
                 done();
             };
 
@@ -507,7 +507,7 @@ describe('Accumulation Chart Control', () => {
             accumulation.loaded = (args: IAccLoadedEventArgs) => {
                 accumulation.loaded = null;
                 expect(document.getElementsByTagName('svg')[0].querySelectorAll('pattern').length).toBe(8);
-                expect(document.getElementsByTagName('svg')[0].querySelectorAll('pattern')[0].id === 'VerticalDash_Selection_0').toBe(true);
+                expect(document.getElementsByTagName('svg')[0].querySelectorAll('pattern')[0].id === 'pie_VerticalDash_Selection_0').toBe(true);
                 done();
             };
             accumulation.selectionPattern = 'VerticalDash';
@@ -519,7 +519,7 @@ describe('Accumulation Chart Control', () => {
             accumulation.loaded = (args: IAccLoadedEventArgs) => {
                 accumulation.loaded = null;
                 expect(document.getElementsByTagName('svg')[0].querySelectorAll('pattern').length).toBe(8);
-                expect(document.getElementsByTagName('svg')[0].querySelectorAll('pattern')[0].id === 'Rectangle_Selection_0').toBe(true);
+                expect(document.getElementsByTagName('svg')[0].querySelectorAll('pattern')[0].id === 'pie_Rectangle_Selection_0').toBe(true);
                 done();
             };
 
@@ -531,7 +531,7 @@ describe('Accumulation Chart Control', () => {
             accumulation.loaded = (args: IAccLoadedEventArgs) => {
                 accumulation.loaded = null;
                 expect(document.getElementsByTagName('svg')[0].querySelectorAll('pattern').length).toBe(8);
-                expect(document.getElementsByTagName('svg')[0].querySelectorAll('pattern')[0].id === 'Box_Selection_0').toBe(true);
+                expect(document.getElementsByTagName('svg')[0].querySelectorAll('pattern')[0].id === 'pie_Box_Selection_0').toBe(true);
                 done();
             };
 
@@ -542,7 +542,7 @@ describe('Accumulation Chart Control', () => {
             accumulation.loaded = (args: IAccLoadedEventArgs) => {
                 accumulation.loaded = null;
                 expect(document.getElementsByTagName('svg')[0].querySelectorAll('pattern').length).toBe(8);
-                expect(document.getElementsByTagName('svg')[0].querySelectorAll('pattern')[0].id === 'VerticalStripe_Selection_0').toBe(true);
+                expect(document.getElementsByTagName('svg')[0].querySelectorAll('pattern')[0].id === 'pie_VerticalStripe_Selection_0').toBe(true);
                 done();
             };
 
@@ -553,7 +553,7 @@ describe('Accumulation Chart Control', () => {
             accumulation.loaded = (args: IAccLoadedEventArgs) => {
                 accumulation.loaded = null;
                 expect(document.getElementsByTagName('svg')[0].querySelectorAll('pattern').length).toBe(8);
-                expect(document.getElementsByTagName('svg')[0].querySelectorAll('pattern')[0].id === 'Bubble_Selection_0').toBe(true);
+                expect(document.getElementsByTagName('svg')[0].querySelectorAll('pattern')[0].id === 'pie_Bubble_Selection_0').toBe(true);
                 done();
             };
 
@@ -564,7 +564,7 @@ describe('Accumulation Chart Control', () => {
             accumulation.loaded = (args: IAccLoadedEventArgs) => {
                 accumulation.loaded = null;
                 expect(document.getElementsByTagName('svg')[0].querySelectorAll('pattern').length).toBe(8);
-                expect(document.getElementsByTagName('svg')[0].querySelectorAll('pattern')[0].id === 'HorizontalStripe_Selection_0').toBe(true);
+                expect(document.getElementsByTagName('svg')[0].querySelectorAll('pattern')[0].id === 'pie_HorizontalStripe_Selection_0').toBe(true);
                 done();
             };
 

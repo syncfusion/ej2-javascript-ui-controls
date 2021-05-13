@@ -356,8 +356,15 @@ export function isDaylightSavingTime(date: Date): boolean {
  * @param {Date} date Accepts the date
  * @returns {number} Returns the UTC time value
  */
- export function getUniversalTime(date: Date): number {
-    return Date.UTC(date.getFullYear(), date.getMonth(), date.getDate(), date.getHours(), date.getMinutes(), date.getSeconds(), date.getMilliseconds());
+export function getUniversalTime(date: Date): number {
+    const year: number = date.getFullYear();
+    const month: number = date.getMonth();
+    const day: number = date.getDate();
+    const hours: number = date.getHours();
+    const minutes: number = date.getMinutes();
+    const seconds: number = date.getSeconds();
+    const milliseconds: number = date.getMilliseconds();
+    return Date.UTC(year, month, day, hours, minutes, seconds, milliseconds);
 }
 
 /**
@@ -366,7 +373,7 @@ export function isDaylightSavingTime(date: Date): boolean {
  * @returns {boolean} Returns the boolean value for either device is present or not.
  */
 export function isMobile(): boolean {
-    return window.navigator.userAgent.toLowerCase().indexOf('mobi') > -1; 
+    return window.navigator.userAgent.toLowerCase().indexOf('mobi') > -1;
 }
 
 /**

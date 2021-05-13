@@ -69,6 +69,7 @@ export interface IToolbarStatus {
     unorderedlist?: boolean
     inlinecode?: boolean
     uppercase?: boolean
+    lowercase?: boolean
     createlink?: boolean
     insertcode?: boolean
 }

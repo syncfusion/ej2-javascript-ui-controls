@@ -8,7 +8,7 @@ import { Toolbar } from '../../../src/file-manager/actions/toolbar';
 
 
 import { data1, doubleClickRead, fileCopySuccess, fileCopyRead, folderRead, folderCopy, folderCopySuccess, folderCopyRead, searchpng, data1pasteIN, data1pasteIN2, data1pasteIN3, data1pasteIN4, folderDragSuccess1, folderDragRead, folderDragSuccess2, data18 } from '../data';
-import { data23, multiItemCopyRead, multiCopySuccess1, multiCopySuccess, doubleClickRead2 } from '../data';
+import { data23, multiItemCopyRead, multiCopySuccess1, multiCopySuccess, doubleClickRead2, dragOnHover } from '../data';
 import { multiCopySuccess2, multiItemCopyRead2, multiCopySuccess3, multiItemCopyRead1, multiItemCopyRead3, fileCopymissing2, fileCopymissing1 } from '../data';
 import { createElement, closest, isNullOrUndefined, EventHandler } from '@syncfusion/ej2-base';
 import { FileDragEventArgs } from '../../../src';
@@ -1209,6 +1209,7 @@ describe('FileManager control Details view', () => {
         let feObj: FileManager;
         let ele: HTMLElement;
         let dblclickevent: MouseEvent;
+        let mouseEventArgs: any, tapEvent: any, keyboardEventArgs: any;
         let originalTimeout: any;
         let drag: number = 0;
         let start: number = 0;
@@ -1243,6 +1244,25 @@ describe('FileManager control Details view', () => {
                 }
             });
             feObj.appendTo('#file');
+            mouseEventArgs = {
+                preventDefault: (): void => { },
+                stopImmediatePropagation: (): void => { },
+                target: null,
+                type: null,
+                shiftKey: false,
+                ctrlKey: false,
+                originalEvent: { target: null }
+            };
+            tapEvent = {
+                originalEvent: mouseEventArgs,
+                tapCount: 1
+            };
+            keyboardEventArgs = {
+                preventDefault: (): void => { },
+                action: null,
+                target: null,
+                stopImmediatePropagation: (): void => { },
+            };
             dblclickevent = new MouseEvent('dblclick', {
                 'view': window,
                 'bubbles': true,
@@ -1301,6 +1321,53 @@ describe('FileManager control Details view', () => {
             expect(drop).toBe(0);
             expect(drag > 1).toBe(true);
             expect((<HTMLElement>document.querySelector('.e-fe-errorcontent')).innerText).toBe("The destination folder is the subfolder of the source folder.");
+        });
+        it('drag and drop sub folder tree', (done) => {
+            let treeObj = feObj.navigationpaneModule.treeObj;
+            let li: Element[] = <Element[] & NodeListOf<HTMLLIElement>>treeObj.element.querySelectorAll('li');
+            mouseEventArgs.target = li[3].querySelector('.e-icon-expandable');
+            (<any>feObj.navigationpaneModule.treeObj).touchClickObj.tap(tapEvent);
+            this.request = jasmine.Ajax.requests.mostRecent();
+            this.request.respondWith({
+                status: 200,
+                responseText: JSON.stringify(doubleClickRead2)
+            });
+            setTimeout(function () {
+                let nli: Element[] = <Element[] & NodeListOf<HTMLLIElement>>treeObj.element.querySelectorAll('li');
+                let rect: any = nli[3].querySelector('.e-fullrow').getClientRects();
+                expect(document.querySelector('.e-fe-clone')).toBe(null);
+                let mousedown: any = getEventObject('MouseEvents', 'mousedown', nli[3].querySelector('.e-fullrow'), nli[3].querySelector('.e-fullrow'), rect[0].x + 4, rect[0].y + 4);
+                EventHandler.trigger(treeObj.element, 'mousedown', mousedown);
+                let mousemove: any = getEventObject('MouseEvents', 'mousemove', nli[3].querySelector('.e-fullrow'), nli[3].querySelector('.e-fullrow'), rect[0].x + 10, rect[0].y + 5);
+                EventHandler.trigger(<any>(document), 'mousemove', mousemove);
+                expect(document.querySelector('.e-fullrow') === null).toBe(false);
+                rect = nli[3].querySelector('.e-fullrow').getClientRects();
+                mousemove.srcElement = mousemove.target = mousemove.toElement = nli[4].querySelector('.e-fullrow');
+                mousemove = setMouseCordinates(mousemove, rect[0].x + 5, rect[0].y + 5);
+                EventHandler.trigger(<any>(document), 'mousemove', mousemove);
+                rect = nli[3].querySelector('.e-fullrow').getClientRects();
+                mousemove.srcElement = mousemove.target = mousemove.toElement = nli[4].querySelector('.e-fullrow');
+                mousemove = setMouseCordinates(mousemove, rect[0].x + 5, rect[0].y + 5);
+                EventHandler.trigger(<any>(document), 'mousemove', mousemove);
+                rect = nli[2].querySelector('.e-fullrow').getClientRects();
+                mousemove.srcElement = mousemove.target = mousemove.toElement = nli[4].querySelector('.e-fullrow');
+                mousemove = setMouseCordinates(mousemove, rect[0].x + 5, rect[0].y + 5);
+                EventHandler.trigger(<any>(document), 'mousemove', mousemove);
+                rect = nli[4].querySelector('.e-fullrow').getClientRects();
+                mousemove.srcElement = mousemove.target = mousemove.toElement = nli[4].querySelector('.e-fullrow');
+                mousemove = setMouseCordinates(mousemove, rect[0].x + 5, rect[0].y + 5);
+                EventHandler.trigger(<any>(document), 'mousemove', mousemove);
+                let mouseup: any = getEventObject('MouseEvents', 'mouseup', nli[4].querySelector('.e-fullrow'), nli[4].querySelector('.e-fullrow'), rect[0].x + 5, rect[0].y + 5);
+                mouseup.type = 'mouseup'; mouseup.currentTarget = document;
+                EventHandler.trigger(<any>(document), 'mouseup', mouseup);
+                expect(document.querySelector('.e-fe-clone')).toBe(null);
+                expect(start).toBe(1);
+                expect(stop).toBe(1);
+                expect(drop).toBe(0);
+                expect(drag > 1).toBe(true);
+                expect((<HTMLElement>document.querySelector('.e-fe-errorcontent')).innerText).toBe("The destination folder is the subfolder of the source folder.");
+                done();
+            }, 500);
         });
 
         it('drag and drop same folder grid', () => {
@@ -1734,7 +1801,180 @@ describe('FileManager control Details view', () => {
                 }, 100);
             }, 100);
         });
-
+        it('drag and drop searched grid file to same tree location ', (done) => {
+            let treeObj = feObj.navigationpaneModule.treeObj;
+            let li: any = treeObj.element.querySelectorAll('li');
+            expect(li.length).toBe(5);
+            expect(feObj.detailsviewModule.gridObj.getRows().length).toBe(5);
+            feObj.selectedItems = [];
+            feObj.dataBind();
+            let searchEle: any = feObj.element.querySelector("#file_search");
+            let searchObj: any = searchEle.ej2_instances[0];
+            searchEle.value = 'doc';
+            searchObj.value = 'doc';
+            let eventArgs: any = { value: 'doc', container: searchEle };
+            searchObj.change(eventArgs);
+            this.request = jasmine.Ajax.requests.mostRecent();
+            this.request.respondWith({
+                status: 200,
+                responseText: JSON.stringify(data18)
+            });
+            setTimeout(function () {
+                expect(treeObj.element.querySelector('[title="Documents"]').classList.contains('e-level-2')).toBe(true);
+                let gridObj: any = feObj.detailsviewModule.gridObj;
+                let li: any = gridObj.getRows();
+                let rect: any = li[2].querySelector('.e-fe-grid-name').getClientRects();
+                expect(document.querySelector('.e-fe-clone')).toBe(null);
+                let mousedown: any = getEventObject('MouseEvents', 'mousedown', li[2].querySelector('.e-fe-grid-name'), li[2].querySelector('.e-fe-grid-name'), rect[0].x + 4, rect[0].y + 4);
+                EventHandler.trigger(gridObj.element, 'mousedown', mousedown);
+                let mousemove: any = getEventObject('MouseEvents', 'mousemove', li[2].querySelector('.e-fe-grid-name'), li[2].querySelector('.e-fe-grid-name'), rect[0].x + 10, rect[0].y + 5);
+                EventHandler.trigger(<any>(document), 'mousemove', mousemove);
+                expect(document.querySelector('.e-fe-clone') === null).toBe(false);
+                rect = li[2].querySelector('.e-fe-grid-name').getClientRects();
+                mousemove.srcElement = mousemove.target = mousemove.toElement = li[2].querySelector('.e-fe-grid-name');
+                mousemove = setMouseCordinates(mousemove, rect[0].x + 5, rect[0].y + 5);
+                EventHandler.trigger(<any>(document), 'mousemove', mousemove);
+                rect = li[2].querySelector('.e-fe-grid-name').getClientRects();
+                mousemove.srcElement = mousemove.target = mousemove.toElement = li[2].querySelector('.e-fe-grid-name');
+                mousemove = setMouseCordinates(mousemove, rect[0].x + 5, rect[0].y + 5);
+                EventHandler.trigger(<any>(document), 'mousemove', mousemove);
+                li = treeObj.element.querySelectorAll('li');
+                rect = li[1].querySelector('.e-fullrow').getClientRects();
+                mousemove.srcElement = mousemove.target = mousemove.toElement = li[1].querySelector('.e-fullrow');
+                mousemove = setMouseCordinates(mousemove, rect[0].x + 5, rect[0].y + 5);
+                EventHandler.trigger(<any>(document), 'mousemove', mousemove);
+                rect = li[1].querySelector('.e-fullrow').getClientRects();
+                mousemove.srcElement = mousemove.target = mousemove.toElement = li[1].querySelector('.e-fullrow');
+                mousemove = setMouseCordinates(mousemove, rect[0].x + 5, rect[0].y + 5);
+                EventHandler.trigger(<any>(document), 'mousemove', mousemove);
+                let mouseup: any = getEventObject('MouseEvents', 'mouseup', li[1].querySelector('.e-fullrow'), li[1].querySelector('.e-fullrow'), rect[0].x + 5, rect[0].y + 5);
+                mouseup.type = 'mouseup';
+                EventHandler.trigger(<any>(document), 'mouseup', mouseup);
+                expect(document.querySelector('.e-fe-clone')).toBe(null);
+                expect((<HTMLElement>document.querySelector('.e-fe-errorcontent')).innerText).toBe("The destination folder is the same as the source folder.");
+                done();
+            }, 100);
+        });
+        it('drag and drop searched grid folder to same tree location ', (done) => {
+            let treeObj = feObj.navigationpaneModule.treeObj;
+            let li: any = treeObj.element.querySelectorAll('li');
+            expect(li.length).toBe(5);
+            expect(feObj.detailsviewModule.gridObj.getRows().length).toBe(5);
+            feObj.selectedItems = [];
+            feObj.dataBind();
+            let searchEle: any = feObj.element.querySelector("#file_search");
+            let searchObj: any = searchEle.ej2_instances[0];
+            searchEle.value = 'doc';
+            searchObj.value = 'doc';
+            let eventArgs: any = { value: 'doc', container: searchEle };
+            searchObj.change(eventArgs);
+            this.request = jasmine.Ajax.requests.mostRecent();
+            this.request.respondWith({
+                status: 200,
+                responseText: JSON.stringify(data18)
+            });
+            setTimeout(function () {
+                expect(treeObj.element.querySelector('[title="Documents"]').classList.contains('e-level-2')).toBe(true);
+                let gridObj: any = feObj.detailsviewModule.gridObj;
+                let li: any = gridObj.getRows();
+                let rect: any = li[1].querySelector('.e-fe-grid-name').getClientRects();
+                expect(document.querySelector('.e-fe-clone')).toBe(null);
+                let mousedown: any = getEventObject('MouseEvents', 'mousedown', li[1].querySelector('.e-fe-grid-name'), li[1].querySelector('.e-fe-grid-name'), rect[0].x + 4, rect[0].y + 4);
+                EventHandler.trigger(gridObj.element, 'mousedown', mousedown);
+                let mousemove: any = getEventObject('MouseEvents', 'mousemove', li[1].querySelector('.e-fe-grid-name'), li[1].querySelector('.e-fe-grid-name'), rect[0].x + 10, rect[0].y + 5);
+                EventHandler.trigger(<any>(document), 'mousemove', mousemove);
+                expect(document.querySelector('.e-fe-clone') === null).toBe(false);
+                expect(li[1].classList.contains('e-blur')).toBe(true);
+                rect = li[2].querySelector('.e-fe-grid-name').getClientRects();
+                mousemove.srcElement = mousemove.target = mousemove.toElement = li[2].querySelector('.e-fe-grid-name');
+                mousemove = setMouseCordinates(mousemove, rect[0].x + 5, rect[0].y + 5);
+                EventHandler.trigger(<any>(document), 'mousemove', mousemove);
+                rect = li[1].querySelector('.e-fe-grid-name').getClientRects();
+                mousemove.srcElement = mousemove.target = mousemove.toElement = li[1].querySelector('.e-fe-grid-name');
+                mousemove = setMouseCordinates(mousemove, rect[0].x + 5, rect[0].y + 5);
+                EventHandler.trigger(<any>(document), 'mousemove', mousemove);
+                li = treeObj.element.querySelectorAll('li');
+                rect = li[1].querySelector('.e-fullrow').getClientRects();
+                mousemove.srcElement = mousemove.target = mousemove.toElement = li[1].querySelector('.e-fullrow');
+                mousemove = setMouseCordinates(mousemove, rect[0].x + 5, rect[0].y + 5);
+                EventHandler.trigger(<any>(document), 'mousemove', mousemove);
+                rect = li[1].querySelector('.e-fullrow').getClientRects();
+                mousemove.srcElement = mousemove.target = mousemove.toElement = li[1].querySelector('.e-fullrow');
+                mousemove = setMouseCordinates(mousemove, rect[0].x + 5, rect[0].y + 5);
+                EventHandler.trigger(<any>(document), 'mousemove', mousemove);
+                let mouseup: any = getEventObject('MouseEvents', 'mouseup', li[1].querySelector('.e-fullrow'), li[1].querySelector('.e-fullrow'), rect[0].x + 5, rect[0].y + 5);
+                mouseup.type = 'mouseup';
+                EventHandler.trigger(<any>(document), 'mouseup', mouseup);
+                expect(document.querySelector('.e-fe-clone')).toBe(null);
+                expect((<HTMLElement>document.querySelector('.e-fe-errorcontent')).innerText).toBe("The destination folder is the subfolder of the source folder.");
+                done();
+            }, 100);
+        });
+        it('drag and drop search grid folder to tree location by hovering grid rows', (done) => {
+            expect(feObj.detailsviewModule.gridObj.getRows().length).toBe(5);
+            let searchEle: any = feObj.element.querySelector("#file_search");
+            let searchObj: any = searchEle.ej2_instances[0];
+            searchEle.value = 'doc';
+            searchObj.value = 'doc';
+            let eventArgs: any = { value: 'doc', container: searchEle };
+            searchObj.change(eventArgs);
+            this.request = jasmine.Ajax.requests.mostRecent();
+            this.request.respondWith({
+                status: 200,
+                responseText: JSON.stringify(data18)
+            });
+            setTimeout(function () {
+                let gridObj: any = feObj.detailsviewModule.gridObj;
+                let li: any = gridObj.getRows();
+                let rect: any = li[2].querySelector('.e-fe-size').getClientRects();
+                expect(document.querySelector('.e-fe-clone')).toBe(null);
+                let mousedown: any = getEventObject('MouseEvents', 'mousedown', li[2].querySelector('.e-fe-size'), li[2].querySelector('.e-fe-size'), rect[0].x + 4, rect[0].y + 4);
+                EventHandler.trigger(gridObj.element, 'mousedown', mousedown);
+                let mousemove: any = getEventObject('MouseEvents', 'mousemove', li[2].querySelector('.e-fe-size'), li[2].querySelector('.e-fe-size'), rect[0].x + 10, rect[0].y + 5);
+                EventHandler.trigger(<any>(document), 'mousemove', mousemove);
+                rect = li[0].querySelector('.e-fe-size').getClientRects();
+                mousemove.srcElement = mousemove.target = mousemove.toElement = li[2].querySelector('.e-fe-grid-name');
+                mousemove = setMouseCordinates(mousemove, rect[0].x + 5, rect[0].y + 5);
+                EventHandler.trigger(<any>(document), 'mousemove', mousemove);
+                rect = li[1].querySelector('.e-fe-grid-name').getClientRects();
+                mousemove.srcElement = mousemove.target = mousemove.toElement = li[1].querySelector('.e-fe-grid-name');
+                mousemove = setMouseCordinates(mousemove, rect[0].x + 5, rect[0].y + 5);
+                EventHandler.trigger(<any>(document), 'mousemove', mousemove);
+                var treeObj = feObj.navigationpaneModule.treeObj;
+                li = treeObj.element.querySelectorAll('li');
+                rect = li[2].querySelector('.e-fullrow').getClientRects();
+                mousemove.srcElement = mousemove.target = mousemove.toElement = li[2].querySelector('.e-fullrow');
+                mousemove = setMouseCordinates(mousemove, rect[0].x + 5, rect[0].y + 5);
+                EventHandler.trigger(<any>(document), 'mousemove', mousemove);
+                rect = li[3].querySelector('.e-fullrow').getClientRects();
+                mousemove.srcElement = mousemove.target = mousemove.toElement = li[3].querySelector('.e-fullrow');
+                mousemove = setMouseCordinates(mousemove, rect[0].x + 5, rect[0].y + 5);
+                EventHandler.trigger(<any>(document), 'mousemove', mousemove);
+                let mouseup: any = getEventObject('MouseEvents', 'mouseup', li[3].querySelector('.e-fullrow'), li[3].querySelector('.e-fullrow'), rect[0].x + 5, rect[0].y + 5);
+                mouseup.type = 'mouseup';
+                EventHandler.trigger(<any>(document), 'mouseup', mouseup);
+                expect(document.querySelector('.e-fe-clone')).toBe(null);
+                expect(start).toBe(1);
+                expect(stop).toBe(1);
+                expect(drop).toBe(0);
+                expect(drag > 1).toBe(true);
+                this.request = jasmine.Ajax.requests.mostRecent();
+                this.request.respondWith({
+                    status: 200,
+                    responseText: JSON.stringify(folderCopySuccess)
+                });
+                this.request = jasmine.Ajax.requests.mostRecent();
+                this.request.respondWith({
+                    status: 200,
+                    responseText: JSON.stringify(dragOnHover)
+                });
+                setTimeout(function () {
+                    expect(drop).toBe(1);
+                    expect(feObj.detailsviewModule.gridObj.getRows().length).toBe(4);
+                    done();
+                }, 100);
+            }, 100);
+        });
         it('drag and drop different tree location to grid folder with duplicate', (done) => {
             let treeObj = feObj.navigationpaneModule.treeObj;
             let li: any = treeObj.element.querySelectorAll('li');

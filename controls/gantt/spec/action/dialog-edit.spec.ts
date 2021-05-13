@@ -906,6 +906,7 @@ describe('Gantt dialog module', () => {
                     resourceInfo: 'Resource',
                 },
                 editSettings: {
+                    allowAdding: true,
                     allowEditing: true,
                     allowDeleting: true,
                     allowTaskbarEditing: true,
@@ -921,9 +922,9 @@ describe('Gantt dialog module', () => {
         });
         beforeEach(function (done) {
             setTimeout(done, 1000);
-            ganttObj.openEditDialog(4);
         });
         it('EJ2-48224 - Schedule validation- endDate', () => {
+            ganttObj.openEditDialog(4);
             ganttObj.dataBind();
             let ED: any = (<EJ2Instance>document.getElementById(ganttObj.element.id + 'EndDate')).ej2_instances[0];
             ED.value = new Date('04/09/2019');
@@ -938,6 +939,103 @@ describe('Gantt dialog module', () => {
             let saveRecord1: HTMLElement = ganttObj.element.querySelector('#' + ganttObj.element.id + '_dialog > div.e-footer-content > button.e-control.e-btn.e-lib.e-primary.e-flat') as HTMLElement;
             triggerMouseEvent(saveRecord1 , 'click');
             expect(ganttObj.flatData[3].ganttProperties.duration).toBe(9);
+        });
+		it('EJ2-48816 - Adding new task with empty string', () => {
+            ganttObj.actionComplete = (args: any): void => {
+                if (args.requestType === 'save') {
+                    expect(ganttObj.flatData[0].ganttProperties.taskName).toBe('');
+                }
+            };
+            ganttObj.openAddDialog();
+            ganttObj.dataBind();
+            let name: any = (<EJ2Instance>document.getElementById(ganttObj.element.id + 'TaskName')).ej2_instances[0];
+            name.value = '';
+            name.dataBind();
+            let saveRecord: HTMLElement = ganttObj.element.querySelector('#' + ganttObj.element.id + '_dialog > div.e-footer-content > button.e-control.e-btn.e-lib.e-primary.e-flat') as HTMLElement;
+            triggerMouseEvent(saveRecord, 'click');
+        });
+    });
+    
+    describe('CR-issues', function () {
+        let ganttObj: Gantt;
+        beforeAll(function (done) {
+            ganttObj = createGantt({
+                dataSource: [
+                    {
+                        TaskID: 1,
+                        TaskName: "Project Initiation",
+                        StartDate: new Date("04/26/2021"),
+                        EndDate: new Date("04/30/2021")
+                    },
+                    {
+                        TaskID: 2,
+                        TaskName: "Project Initiation1",
+                        StartDate: new Date("04/26/2021"),
+                        EndDate: new Date("04/30/2021")
+                    }
+                ],
+                projectStartDate: new Date("04/25/2021"),
+                projectEndDate: new Date("07/28/2021"),
+                dateFormat: "MMM dd, y",
+
+                taskFields: {
+                    id: "TaskID",
+                    name: "TaskName",
+                    startDate: "StartDate",
+                    endDate: "EndDate",
+                    duration: "Duration",
+                    progress: "Progress",
+                    dependency: "Predecessor",
+                    child: "subtasks",
+                    notes: "info",
+                    resourceInfo: "resources"
+                },
+                editSettings: {
+                    allowAdding: true,
+                    allowEditing: true,
+                    allowDeleting: true,
+                    allowTaskbarEditing: true,
+                    showDeleteConfirmDialog: true
+                },
+                toolbar: [
+                    "Add",
+                    "Edit",
+                    "Update",
+                    "Delete",
+                    "Cancel",
+                    "ExpandAll",
+                    "CollapseAll",
+                    "Indent",
+                    "Outdent"
+                ],
+                allowSelection: true,
+                gridLines: "Both",
+                height: "450px",
+                treeColumnIndex: 1
+            }, done);
+        });
+        afterAll(function () {
+            if (ganttObj) {
+                destroyGantt(ganttObj);
+            }
+        });
+        beforeEach((done: Function) => {
+            setTimeout(done, 1000);
+        });
+        it('dynamically updating holidays', () => {
+            ganttObj.dataBind();
+            debugger;
+            ganttObj.holidays = [
+                {
+                    from: "04/26/2021",
+                    to: "04/27/2021",
+                    label: "Test"
+                }
+            ];
+             setTimeout(function () {
+                expect(ganttObj.currentViewData[0]['StartDate'].getDate()).toBe(28);
+                expect(ganttObj.currentViewData[0]['EndDate'].getDate()).toBe(4);
+            }, 100);
         });
     });
 });

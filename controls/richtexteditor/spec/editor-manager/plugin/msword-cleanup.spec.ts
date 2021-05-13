@@ -1526,6 +1526,103 @@ ul
     }, 100);
   });
 
+  it('Paste table with empty cells from word', (done) => {
+    let localElem: string = `<html xmlns:v="urn:schemas-microsoft-com:vml"
+    xmlns:o="urn:schemas-microsoft-com:office:office"
+    xmlns:x="urn:schemas-microsoft-com:office:excel"
+    xmlns="http://www.w3.org/TR/REC-html40">
+    
+    <head>
+    <meta http-equiv=Content-Type content="text/html; charset=utf-8">
+    <meta name=ProgId content=Excel.Sheet>
+    <meta name=Generator content="Microsoft Excel 15">
+    <link id=Main-File rel=Main-File
+    href="file:///C:/Users/REVANT~1/AppData/Local/Temp/msohtmlclip1/01/clip.htm">
+    <link rel=File-List
+    href="file:///C:/Users/REVANT~1/AppData/Local/Temp/msohtmlclip1/01/clip_filelist.xml">
+    <style>
+    <!--table
+      {mso-displayed-decimal-separator:"\.";
+      mso-displayed-thousand-separator:"\,";}
+    @page
+      {margin:.75in .7in .75in .7in;
+      mso-header-margin:.3in;
+      mso-footer-margin:.3in;}
+    tr
+      {mso-height-source:auto;}
+    col
+      {mso-width-source:auto;}
+    br
+      {mso-data-placement:same-cell;}
+    td
+      {padding-top:1px;
+      padding-right:1px;
+      padding-left:1px;
+      mso-ignore:padding;
+      color:black;
+      font-size:11.0pt;
+      font-weight:400;
+      font-style:normal;
+      text-decoration:none;
+      font-family:Calibri, sans-serif;
+      mso-font-charset:0;
+      mso-number-format:General;
+      text-align:general;
+      vertical-align:bottom;
+      border:none;
+      mso-background-source:auto;
+      mso-pattern:auto;
+      mso-protection:locked visible;
+      white-space:nowrap;
+      mso-rotate:0;}
+    -->
+    </style>
+    </head>
+    
+    <body link="#0563C1" vlink="#954F72">
+    
+    <table border=0 cellpadding=0 cellspacing=0 width=192 style='border-collapse:
+     collapse;width:144pt'>
+    <!--StartFragment-->
+     <col width=64 span=3 style='width:48pt'>
+     <tr height=19 style='height:14.5pt'>
+      <td height=19 width=64 style='height:14.5pt;width:48pt'>cell A1</td>
+      <td width=64 style='width:48pt'>cell B1</td>
+      <td width=64 style='width:48pt'>cell C1</td>
+     </tr>
+     <tr height=19 style='height:14.5pt'>
+      <td height=19 style='height:14.5pt'>cell A2</td>
+      <td><span>&nbsp;</span></td>
+      <td>cell C2</td>
+     </tr>
+    <!--EndFragment-->
+    </table>
+    
+    </body>
+    
+    </html>`;
+    rteObj.value = '<p>table</p>';
+    rteObj.dataBind();
+    keyBoardEvent.clipboardData = {
+      getData: () => {
+        return localElem;
+      },
+      items: []
+    };
+    setCursorPoint((rteObj as any).inputElement.firstElementChild, 0);
+    rteObj.onPaste(keyBoardEvent);
+    setTimeout(() => {
+      if (rteObj.pasteCleanupSettings.prompt) {
+        let cleanFormat: any = document.getElementById(rteObj.getID() + '_pasteCleanupDialog').getElementsByClassName(CLS_RTE_PASTE_REMOVE_FORMAT);
+        cleanFormat[0].click();
+        let pasteOK: any = document.getElementById(rteObj.getID() + '_pasteCleanupDialog').getElementsByClassName(CLS_RTE_PASTE_OK);
+        pasteOK[0].click();
+      }
+      expect((rteObj as any).inputElement.querySelector('table tbody').children[1].childElementCount).toBe(3);
+      done();
+    }, 100);
+  });
+
   it('EJ2-26590 - Pasting Content from word does prompt the paste dialog', (done) => {
     let localElem: string = `<p class='MsoListParagraph' style='text-indent:-.25in;mso-list:l0 level1 lfo1'><!--[if !supportLists]--><span style='mso-ascii-font-family:Calibri;mso-fareast-font-family:Calibri;
 mso-hansi-font-family:Calibri;mso-bidi-font-family:Calibri'><span style='mso-list:Ignore'>-<span style='font:7.0pt &quot;Times New Roman&quot;'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;

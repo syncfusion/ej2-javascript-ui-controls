@@ -85,7 +85,8 @@ export class Tooltip {
                     args.target.classList.contains('e-gantt-milestone') ||
                     args.target.classList.contains('e-gantt-unscheduled-taskbar') ||
                     args.target.classList.contains('e-taskbar-left-resizer') ||
-                    args.target.classList.contains('e-taskbar-right-resizer')) {
+                    args.target.classList.contains('e-taskbar-right-resizer') ||
+                    (args.target.classList.contains('e-gantt-manualparenttaskbar') && parent.tooltipSettings.taskbar)) {
                     let taskbarTemplateNode: NodeList;
                     if (parent.tooltipSettings.taskbar) {
                         taskbarTemplateNode = parent.tooltipModule.templateCompiler(
@@ -427,7 +428,6 @@ export class Tooltip {
      * @private
      */
     public templateCompiler(template: string, parent: Gantt, data: IGanttData | PredecessorTooltip, propName: string): NodeList {
-        // eslint-disable-next-line
         const tooltipFunction: Function = parent.chartRowsModule.templateCompiler(template);
         const templateID: string = parent.chartRowsModule.getTemplateID(propName);
         const templateNode: NodeList = tooltipFunction(extend({ index: 0 }, data), parent, propName, templateID, true);

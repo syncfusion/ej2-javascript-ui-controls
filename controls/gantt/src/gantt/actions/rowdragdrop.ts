@@ -6,6 +6,7 @@ import { DataManager } from '@syncfusion/ej2-data';
 import { IGanttData, RowPosition, isCountRequired } from '../base/common';
 import { RowDropEventArgs, IParent } from '../base/interface';
 import { ITreeData } from '@syncfusion/ej2-treegrid';
+import { updateDates } from '../base/utils';
 
 
 /**
@@ -285,12 +286,10 @@ export class RowDD {
                         parentUniqueID = this.droppedRecord.parentItem.uniqueID;
                     }
                     const droppedParentItem: IGanttData = this.parent.getTaskByUniqueID(parentUniqueID);
-                    // eslint-disable-next-line
                     const editedObj: Object = {};
                     editedObj[this.parent.taskFields.resourceInfo] = [];
                     editedObj[this.parent.taskFields.resourceInfo].push(droppedParentItem.ganttProperties.taskId);
                     this.removeExistingResources();
-                    // eslint-disable-next-line
                     const tempResourceInfo: Object[] = this.parent.dataOperation.setResourceInfo(editedObj);
                     const currentTask: IGanttData = this.draggedRecord;
                     if (isNullOrUndefined(currentTask.ganttProperties.resourceInfo)) {
@@ -320,6 +319,11 @@ export class RowDD {
             this.parent.treeGrid.refresh();
             args.requestType = 'rowDropped';
             args.modifiedRecords = this.parent.editedRecords;
+            if (this.parent.timezone) {
+                for (let j: number = 0; j < args.modifiedRecords.length; j++) {
+                    updateDates(args.modifiedRecords[j], this.parent);
+                }
+            }
             this.parent.trigger('actionComplete', args);
             this.parent.editedRecords = [];
         }
@@ -365,7 +369,7 @@ export class RowDD {
                 this.parent.editModule.updateGanttProperties(this.draggedRecord, this.parent.flatData[i]);
                 this.parent.dataOperation.updateTaskData(this.parent.flatData[i]);
                 /* eslint-disable-next-line */
-                if (!isNullOrUndefined(this.parent.flatData[i].parentItem && this.updateParentRecords.indexOf(this.parent.flatData[i].parentItem) !== -1)) {
+                if (!isNullOrUndefined(this.parent.flatData[i].parentItem && this.updateParentRecords.indexOf(this.parent.currentViewData[i].parentItem) !== -1)) {
                     this.updateParentRecords.push(this.parent.flatData[i].parentItem);
                 }
             }
@@ -392,7 +396,6 @@ export class RowDD {
             }
             for (let i: number = 0; i < sameIdTasks.length; i++) {
                 currentTask = sameIdTasks[i];
-                // eslint-disable-next-line
                 const resources: object[] = currentTask.ganttProperties.resourceInfo;
                 for (let count: number = 0; count < resources.length; count++) {
                     if (resources[count][this.parent.resourceFields.id] === droppedParentItem.ganttProperties.taskId) {
@@ -412,7 +415,6 @@ export class RowDD {
         const draggedRecord: IGanttData = this.draggedRecord;
         const droppedRecord: IGanttData = this.droppedRecord;
         const proxy: Gantt = this.parent;
-        // eslint-disable-next-line
         let tempDataSource: Object; let idx: number;
         if (this.parent.dataSource instanceof DataManager) {
             tempDataSource = getValue('dataOperation.dataArray', this.parent);
@@ -449,14 +451,15 @@ export class RowDD {
                 draggedRecord[this.parent.taskFields.parentID] = droppedRecord[droppedId];
                 draggedRecord.ganttProperties.parentId = droppedRecord[droppedId];
                 if ((this.parent.viewType === 'ResourceView' && !(this.dropPosition === 'middleSegment')) ||
-                this.parent.viewType === 'ProjectView'){
-                draggedRecord.taskData[this.parent.taskFields.parentID] = droppedRecord.taskData[droppedId];
+                    this.parent.viewType === 'ProjectView') {
+                    draggedRecord.taskData[this.parent.taskFields.parentID] = droppedRecord.taskData[droppedId];
                 }
             } else {
                 draggedRecord[this.parent.taskFields.parentID] = null;
                 draggedRecord.taskData[this.parent.taskFields.parentID] = null;
                 draggedRecord.ganttProperties.parentId = null;
             }
+
         }
     }
     private dropMiddle(recordIndex1: number): void {
@@ -532,7 +535,7 @@ export class RowDD {
             this.ganttData = getValue('dataOperation.dataArray', this.parent);
         } else {
             this.ganttData = isCountRequired(this.parent) ? getValue('result', this.parent.dataSource) :
-                this.parent.dataSource as Object[]; // eslint-disable-line
+                this.parent.dataSource as Object[];
         }
         const deletedRow: IGanttData = this.parent.getTaskByUniqueID(this.draggedRecord.uniqueID);
         this.removeRecords(deletedRow);
@@ -635,7 +638,6 @@ export class RowDD {
     }
     private removeRecords(record: IGanttData): void {
         const gObj: Gantt = this.parent;
-        // eslint-disable-next-line
         let dataSource: Object;
         if (this.parent.dataSource instanceof DataManager) {
             dataSource = getValue('dataOperation.dataArray', this.parent);
@@ -670,8 +672,8 @@ export class RowDD {
             if (!this.parent.taskFields.parentID) {
                 const deleteRecordIDs: string[] = [];
                 deleteRecordIDs.push(deletedRow.ganttProperties.taskId.toString());
-                if(this.parent.viewType === 'ProjectView' || (this.parent.viewType === 'ResourceView' && this.dropPosition !== 'middleSegment')) {
-                   this.parent.editModule.removeFromDataSource(deleteRecordIDs);
+                if (this.parent.viewType === 'ProjectView' || (this.parent.viewType === 'ResourceView' && this.dropPosition !== 'middleSegment')) {
+                    this.parent.editModule.removeFromDataSource(deleteRecordIDs);
                 }
             }
             if (gObj.taskFields.parentID) {
@@ -732,7 +734,6 @@ export class RowDD {
         let idx: number;
         for (let i: number = 0; i < record.childRecords.length; i++) {
             currentRecord = record.childRecords[i];
-            // eslint-disable-next-line
             let ganttData: Object;
             if (this.parent.dataSource instanceof DataManager) {
                 ganttData = getValue('dataOperation.dataArray', this.parent);

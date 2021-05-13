@@ -2,7 +2,8 @@
  * HTML Toolbar status spec
  */
 import { detach } from '@syncfusion/ej2-base';
-import { RichTextEditor, dispatchEvent } from "../../../src/rich-text-editor/index";
+import { IToolbarStatus } from '../../../src';
+import { RichTextEditor, dispatchEvent, ToolbarStatusEventArgs } from "../../../src/rich-text-editor/index";
 import { NodeSelection } from '../../../src/selection/selection';
 import { renderRTE, destroy } from "./../render.spec";
 
@@ -110,12 +111,18 @@ describe(' HTML editor update toolbar ', () => {
         '<b id="bold41">bold</b>';
 
     describe(' RTE tools update ', () => {
+        let status: IToolbarStatus;
         beforeAll(() => {
             rteObj = renderRTE({
                 toolbarSettings: {
                     items: ['|', 'formats', '|', 'orderedlist', 'unorderedlist']
                 },
-                value: innervalue
+                value: innervalue,
+                updatedToolbarStatus: (e: ToolbarStatusEventArgs) => {
+                    status = e.html;
+                    expect(e.undo).toEqual(false);
+                    expect(e.redo).toEqual(false);
+                }
             });
             editNode = rteObj.contentModule.getEditPanel() as HTMLDivElement;
             editNode.style.width = "200px;";
@@ -126,56 +133,72 @@ describe(' HTML editor update toolbar ', () => {
             domSelection.setSelectionText(document, node.childNodes[0], node.childNodes[0], 5, 5);
             (rteObj as any).mouseUp({ target: editNode });
             expect((rteObj.htmlEditorModule as any).toolbarUpdate.toolbarStatus.bold).toEqual(true);
+            expect(status.bold).toEqual(true);
             expect((rteObj.htmlEditorModule as any).toolbarUpdate.toolbarStatus.italic).toEqual(false);
+            expect(status.italic).toEqual(false);
         });
         it('Check single Bold tag for keyup', () => {
             let node: Node = document.getElementById('bold31');
             domSelection.setSelectionText(document, node.childNodes[0], node.childNodes[0], 5, 5);
             (rteObj as any).keyUp({ target: editNode, key: 'A' });
             expect((rteObj.htmlEditorModule as any).toolbarUpdate.toolbarStatus.bold).toEqual(true);
+            expect(status.bold).toEqual(true);
             expect((rteObj.htmlEditorModule as any).toolbarUpdate.toolbarStatus.italic).toEqual(false);
+            expect(status.italic).toEqual(false);
         });
         it('Check single Italic tag', () => {
             let node: Node = document.getElementById('italic31');
             domSelection.setSelectionText(document, node.childNodes[0], node.childNodes[0], 5, 5);
             (rteObj as any).mouseUp({ target: editNode });
             expect((rteObj.htmlEditorModule as any).toolbarUpdate.toolbarStatus.italic).toEqual(true);
+            expect(status.italic).toEqual(true);
             expect((rteObj.htmlEditorModule as any).toolbarUpdate.toolbarStatus.underline).toEqual(false);
+            expect(status.underline).toEqual(false);
         });
         it('Check single underline tag', () => {
             let node: Node = document.getElementById('underline31');
             domSelection.setSelectionText(document, node.childNodes[0], node.childNodes[0], 5, 5);
             (rteObj as any).mouseUp({ target: editNode });
             expect((rteObj.htmlEditorModule as any).toolbarUpdate.toolbarStatus.underline).toEqual(true);
+            expect(status.underline).toEqual(true);
             expect((rteObj.htmlEditorModule as any).toolbarUpdate.toolbarStatus.strikethrough).toEqual(false);
+            expect(status.strikethrough).toEqual(false);
         });
         it('Check single strikethrough tag', () => {
             let node: Node = document.getElementById('strike31');
             domSelection.setSelectionText(document, node.childNodes[0], node.childNodes[0], 5, 5);
             (rteObj as any).mouseUp({ target: editNode });
             expect((rteObj.htmlEditorModule as any).toolbarUpdate.toolbarStatus.strikethrough).toEqual(true);
+            expect(status.strikethrough).toEqual(true);
             expect((rteObj.htmlEditorModule as any).toolbarUpdate.toolbarStatus.superscript).toEqual(false);
+            expect(status.superscript).toEqual(false);
         });
         it('Check single Superscript tag', () => {
             let node: Node = document.getElementById('sup31');
             domSelection.setSelectionText(document, node.childNodes[0], node.childNodes[0], 5, 5);
             (rteObj as any).mouseUp({ target: editNode });
             expect((rteObj.htmlEditorModule as any).toolbarUpdate.toolbarStatus.superscript).toEqual(true);
+            expect(status.superscript).toEqual(true);
             expect((rteObj.htmlEditorModule as any).toolbarUpdate.toolbarStatus.subscript).toEqual(false);
+            expect(status.subscript).toEqual(false);
         });
         it('Check single subscript tag', () => {
             let node: Node = document.getElementById('sub31');
             domSelection.setSelectionText(document, node.childNodes[0], node.childNodes[0], 5, 5);
             (rteObj as any).mouseUp({ target: editNode });
             expect((rteObj.htmlEditorModule as any).toolbarUpdate.toolbarStatus.subscript).toEqual(true);
+            expect(status.subscript).toEqual(true);
             expect((rteObj.htmlEditorModule as any).toolbarUpdate.toolbarStatus.fontname).toEqual(null);
+            expect(status.fontname).toEqual(null);
         });
         it('Check single font name tag without specfic family', () => {
             let node: Node = document.getElementById('name31');
             domSelection.setSelectionText(document, node.childNodes[0], node.childNodes[0], 5, 5);
             (rteObj as any).mouseUp({ target: editNode });
             expect((rteObj.htmlEditorModule as any).toolbarUpdate.toolbarStatus.fontname).toEqual('Segoe UI');
+            expect(status.fontname).toEqual('Segoe UI');
             expect((rteObj.htmlEditorModule as any).toolbarUpdate.toolbarStatus.fontsize).toEqual(null);
+            expect(status.fontsize).toEqual(null);
         });
         it('Check single font name tag with specific incoorect family', () => {
             let node: Node = document.getElementById('name31');
@@ -187,7 +210,9 @@ describe(' HTML editor update toolbar ', () => {
             };
             (rteObj as any).mouseUp({ target: editNode });
             expect((rteObj.htmlEditorModule as any).toolbarUpdate.toolbarStatus.fontname).toEqual(null);
+            expect(status.fontname).toEqual(null);
             expect((rteObj.htmlEditorModule as any).toolbarUpdate.toolbarStatus.fontcolor).toEqual('rgb(0, 0, 0)');
+            expect(status.fontcolor).toEqual('rgb(0, 0, 0)');
         });
         it('Check single font name tag with specfic correct family', () => {
             let node: Node = document.getElementById('name31');
@@ -199,14 +224,19 @@ describe(' HTML editor update toolbar ', () => {
             };
             (rteObj as any).mouseUp({ target: editNode });
             expect((rteObj.htmlEditorModule as any).toolbarUpdate.toolbarStatus.fontname).toEqual('Segoe UI');
+            expect(status.fontname).toEqual('Segoe UI');
             expect((rteObj.htmlEditorModule as any).toolbarUpdate.toolbarStatus.fontsize).toEqual(null);
+            expect(status.fontsize).toEqual(null);
+            
         });
         it('Check single font size tag without specfic size', () => {
             let node: Node = document.getElementById('size31');
             domSelection.setSelectionText(document, node.childNodes[0], node.childNodes[0], 5, 5);
             (rteObj as any).mouseUp({ target: editNode });
             expect((rteObj.htmlEditorModule as any).toolbarUpdate.toolbarStatus.fontsize).toEqual('8pt');
+            expect(status.fontsize).toEqual('8pt');
             expect((rteObj.htmlEditorModule as any).toolbarUpdate.toolbarStatus.fontname).toEqual(null);
+            expect(status.fontname).toEqual(null);
         });
         it('Check single font size tag with specific incorrect size', () => {
             let node: Node = document.getElementById('size31');
@@ -218,7 +248,9 @@ describe(' HTML editor update toolbar ', () => {
             };
             (rteObj as any).mouseUp({ target: editNode });
             expect((rteObj.htmlEditorModule as any).toolbarUpdate.toolbarStatus.fontsize).toEqual(null);
+            expect(status.fontsize).toEqual(null);
             expect((rteObj.htmlEditorModule as any).toolbarUpdate.toolbarStatus.fontcolor).toEqual('rgb(0, 0, 0)');
+            expect(status.fontcolor).toEqual('rgb(0, 0, 0)');
         });
         it('Check single font size tag with specfic coorect size', () => {
             let node: Node = document.getElementById('size31');
@@ -230,98 +262,137 @@ describe(' HTML editor update toolbar ', () => {
             };
             (rteObj as any).mouseUp({ target: editNode });
             expect((rteObj.htmlEditorModule as any).toolbarUpdate.toolbarStatus.fontsize).toEqual('8pt');
+            expect(status.fontsize).toEqual('8pt');
             expect((rteObj.htmlEditorModule as any).toolbarUpdate.toolbarStatus.fontname).toEqual(null);
+            expect(status.fontname).toEqual(null);
         });
         it('Check single font color tag ', () => {
             let node: Node = document.getElementById('color31');
             domSelection.setSelectionText(document, node.childNodes[0], node.childNodes[0], 5, 5);
             (rteObj as any).mouseUp({ target: editNode });
             expect((rteObj.htmlEditorModule as any).toolbarUpdate.toolbarStatus.fontcolor).toEqual('rgb(231, 231, 231)');
+            expect(status.fontcolor).toEqual('rgb(231, 231, 231)');
             expect((rteObj.htmlEditorModule as any).toolbarUpdate.toolbarStatus.orderedlist).toEqual(false);
+            expect(status.orderedlist).toEqual(false);
         });
         it('Check single back ground color tag ', () => {
             let node: Node = document.getElementById('back31');
             domSelection.setSelectionText(document, node.childNodes[0], node.childNodes[0], 5, 5);
             (rteObj as any).mouseUp({ target: editNode });
             expect((rteObj.htmlEditorModule as any).toolbarUpdate.toolbarStatus.backgroundcolor).toEqual('rgb(231, 231, 231)');
+            expect(status.backgroundcolor).toEqual('rgb(231, 231, 231)');
             expect((rteObj.htmlEditorModule as any).toolbarUpdate.toolbarStatus.unorderedlist).toEqual(false);
+            expect(status.unorderedlist).toEqual(false);
         });
         it('Check single alignment left tag ', () => {
             let node: Node = document.getElementById('left31');
             domSelection.setSelectionText(document, node.childNodes[0], node.childNodes[0], 5, 5);
             (rteObj as any).mouseUp({ target: editNode });
             expect((rteObj.htmlEditorModule as any).toolbarUpdate.toolbarStatus.alignments).toEqual('justifyleft');
+            expect(status.alignments).toEqual('justifyleft');
             expect((rteObj.htmlEditorModule as any).toolbarUpdate.toolbarStatus.bold).toEqual(false);
+            expect(status.bold).toEqual(false);
         });
         it('Check single alignment right tag ', () => {
             let node: Node = document.getElementById('right31');
             domSelection.setSelectionText(document, node.childNodes[0], node.childNodes[0], 5, 5);
             (rteObj as any).mouseUp({ target: editNode });
             expect((rteObj.htmlEditorModule as any).toolbarUpdate.toolbarStatus.alignments).toEqual('justifyright');
+            expect(status.alignments).toEqual('justifyright');
             expect((rteObj.htmlEditorModule as any).toolbarUpdate.toolbarStatus.italic).toEqual(false);
+            expect(status.italic).toEqual(false);
         });
         it('Check single alignment center tag ', () => {
             let node: Node = document.getElementById('center31');
             domSelection.setSelectionText(document, node.childNodes[0], node.childNodes[0], 5, 5);
             (rteObj as any).mouseUp({ target: editNode });
             expect((rteObj.htmlEditorModule as any).toolbarUpdate.toolbarStatus.alignments).toEqual('justifycenter');
+            expect(status.alignments).toEqual('justifycenter');
             expect((rteObj.htmlEditorModule as any).toolbarUpdate.toolbarStatus.strikethrough).toEqual(false);
+            expect(status.strikethrough).toEqual(false);
         });
         it('Check single alignment full tag ', () => {
             let node: Node = document.getElementById('justify31');
             domSelection.setSelectionText(document, node.childNodes[0], node.childNodes[0], 5, 5);
             (rteObj as any).mouseUp({ target: editNode });
             expect((rteObj.htmlEditorModule as any).toolbarUpdate.toolbarStatus.alignments).toEqual('justifyfull');
+            expect(status.alignments).toEqual('justifyfull');
         });
         it('Check orderlist tag ', () => {
             let node: Node = document.getElementById('paragraph31');
             domSelection.setSelectionText(document, node.childNodes[0], node.childNodes[0], 5, 5);
             (rteObj as any).mouseUp({ target: editNode });
             expect((rteObj.htmlEditorModule as any).toolbarUpdate.toolbarStatus.orderedlist).toEqual(true);
+            expect(status.orderedlist).toEqual(true);
             expect((rteObj.htmlEditorModule as any).toolbarUpdate.toolbarStatus.formats).toEqual('p');
+            expect(status.formats).toEqual('p');
         });
         it('Check unorderlist tag ', () => {
             let node: Node = document.getElementById('paragraph32');
             domSelection.setSelectionText(document, node.childNodes[0], node.childNodes[0], 5, 5);
             (rteObj as any).mouseUp({ target: editNode });
             expect((rteObj.htmlEditorModule as any).toolbarUpdate.toolbarStatus.unorderedlist).toEqual(true);
+            expect(status.unorderedlist).toEqual(true);
         });
         it('Check multiple formatted values ', () => {
             let node: Node = document.getElementById('justify41');
             domSelection.setSelectionText(document, node.childNodes[0], node.childNodes[0], 5, 5);
             (rteObj as any).mouseUp({ target: editNode });
             expect((rteObj.htmlEditorModule as any).toolbarUpdate.toolbarStatus.bold).toEqual(true);
+            expect(status.bold).toEqual(true);
             expect((rteObj.htmlEditorModule as any).toolbarUpdate.toolbarStatus.italic).toEqual(true);
+            expect(status.italic).toEqual(true);
             expect((rteObj.htmlEditorModule as any).toolbarUpdate.toolbarStatus.underline).toEqual(true);
+            expect(status.underline).toEqual(true);
             expect((rteObj.htmlEditorModule as any).toolbarUpdate.toolbarStatus.strikethrough).toEqual(true);
+            expect(status.strikethrough).toEqual(true);
             expect((rteObj.htmlEditorModule as any).toolbarUpdate.toolbarStatus.superscript).toEqual(true);
-            expect((rteObj.htmlEditorModule as any).toolbarUpdate.toolbarStatus.superscript).toEqual(true);
+            expect(status.superscript).toEqual(true);
+            expect((rteObj.htmlEditorModule as any).toolbarUpdate.toolbarStatus.subscript).toEqual(true);
+            expect(status.subscript).toEqual(true);
             expect((rteObj.htmlEditorModule as any).toolbarUpdate.toolbarStatus.orderedlist).toEqual(true);
+            expect(status.orderedlist).toEqual(true);
+            expect((rteObj.htmlEditorModule as any).toolbarUpdate.toolbarStatus.unorderedlist).toEqual(false);
+            expect(status.unorderedlist).toEqual(false);
             expect((rteObj.htmlEditorModule as any).toolbarUpdate.toolbarStatus.fontcolor).toEqual('rgb(231, 231, 231)');
+            expect(status.fontcolor).toEqual('rgb(231, 231, 231)');
             expect((rteObj.htmlEditorModule as any).toolbarUpdate.toolbarStatus.backgroundcolor).toEqual('rgb(231, 231, 231)');
+            expect(status.backgroundcolor).toEqual('rgb(231, 231, 231)');
             expect((rteObj.htmlEditorModule as any).toolbarUpdate.toolbarStatus.fontname).toEqual('Segoe UI');
+            expect(status.fontname).toEqual('Segoe UI');
             expect((rteObj.htmlEditorModule as any).toolbarUpdate.toolbarStatus.fontsize).toEqual('8pt');
+            expect(status.fontsize).toEqual('8pt');
             expect((rteObj.htmlEditorModule as any).toolbarUpdate.toolbarStatus.alignments).toEqual('justifyfull');
+            expect(status.alignments).toEqual('justifyfull');
             expect((rteObj.htmlEditorModule as any).toolbarUpdate.toolbarStatus.formats).toEqual('p');
+            expect(status.formats).toEqual('p');
         });
         it('Check Bold tag with paragraph', () => {
             let node: Node = document.getElementById('paragraph3').childNodes[0];
             domSelection.setSelectionText(document, node.childNodes[0], node.childNodes[0], 5, 5);
             (rteObj as any).mouseUp({ target: editNode });
             expect((rteObj.htmlEditorModule as any).toolbarUpdate.toolbarStatus.bold).toEqual(true);
+            expect(status.bold).toEqual(true);
             expect((rteObj.htmlEditorModule as any).toolbarUpdate.toolbarStatus.formats).toEqual('p');
+            expect(status.formats).toEqual('p');
         });
         afterAll(() => {
             destroy(rteObj);
         });
     });
     describe(' RTE tools update ', () => {
+        let status: IToolbarStatus;
         beforeAll(() => {
             rteObj = renderRTE({
                 toolbarSettings: {
                     items: ['FontName', 'FontSize']
                 },
-                value: innervalue
+                value: innervalue,
+                updatedToolbarStatus: (e: ToolbarStatusEventArgs) => {
+                    status = e.html;
+                    expect(e.undo).toEqual(false);
+                    expect(e.redo).toEqual(false);
+                }
             });
             editNode = rteObj.contentModule.getEditPanel() as HTMLDivElement;
             editNode.style.width = "200px;";
@@ -332,6 +403,7 @@ describe(' HTML editor update toolbar ', () => {
             domSelection.setSelectionText(document, node.childNodes[0], node.childNodes[0], 2, 2);
             (rteObj as any).mouseUp({ target: editNode });
             expect((rteObj.htmlEditorModule as any).toolbarUpdate.toolbarStatus.bold).toEqual(true);
+            expect(status.bold).toEqual(true);
         });
         afterAll(() => {
             destroy(rteObj);
@@ -340,12 +412,16 @@ describe(' HTML editor update toolbar ', () => {
 
     describe(' EJ2-13502 - Toolbar active state on focusOut', () => {
         let controlId: string;
+        let status: IToolbarStatus;
         beforeAll(() => {
             rteObj = renderRTE({
                 toolbarSettings: {
                     items: ['Bold']
                 },
-                value: innervalue
+                value: innervalue,
+                updatedToolbarStatus: (e: ToolbarStatusEventArgs) => {
+                    status = e.html;
+                }
             });
             editNode = rteObj.contentModule.getEditPanel() as HTMLDivElement;
             editNode.style.width = "200px;";
@@ -363,6 +439,7 @@ describe(' HTML editor update toolbar ', () => {
             document.body.click();
             dispatchEvent(rteObj.contentModule.getEditPanel(), 'focusout');
             expect((rteObj.htmlEditorModule as any).toolbarUpdate.toolbarStatus.bold).toEqual(false);
+            expect(status.bold).toEqual(false);
         });
         afterAll(() => {
             destroy(rteObj);

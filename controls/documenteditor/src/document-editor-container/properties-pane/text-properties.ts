@@ -32,6 +32,7 @@ export class Text {
     public appliedHighlightColor: string = 'rgb(255, 255, 0)';
     public localObj: L10n;
     private isRtl: boolean;
+    private changeCaseDropdown: DropDownButton;
 
     private get documentEditor(): DocumentEditor {
         return this.container.documentEditor;
@@ -129,7 +130,14 @@ export class Text {
         this.createChangecase(rightDiv2);
     }
     private createChangecase = (container: HTMLElement): void => {
-        let changeCaseDropdown: DropDownButton = this.createDropdownForChangeCase();
+        const items: ItemModel[] = [{
+            text: 'UPPERCASE'
+        }];
+        this.changeCaseDropdown = new DropDownButton({
+            items: items,
+            iconCss: 'e-icons e-de-ctnr-change-case',
+            enableRtl: this.isRtl
+        });
         let changeCaseContainer: HTMLElement = createElement('div', {
             id: container.id + '_changeCase', className: 'e-de-ctnr-group-btn'
         });
@@ -139,22 +147,7 @@ export class Text {
         }) as HTMLButtonElement;
         changeCaseContainer.appendChild(buttonElement);
         container.appendChild(changeCaseContainer);
-        changeCaseDropdown.appendTo(buttonElement);
-    }
-    private createDropdownForChangeCase = (): DropDownButton => {
-        let items: ItemModel[] = [{
-            text: 'UPPERCASE'
-        }];
-        let dropdown: DropDownButton = new DropDownButton({
-            items: items,
-            iconCss: 'e-icons e-de-ctnr-change-case',
-            enableRtl: this.isRtl,
-            select: (args: MenuEventArgs) => {
-                this.isRetrieving = false;
-                this.changeCase(args);
-            }
-        });
-        return dropdown;
+        this.changeCaseDropdown.appendTo(buttonElement);
     }
     private changeCase = (args: MenuEventArgs): void => {
         if (this.isRetrieving) {
@@ -466,6 +459,9 @@ export class Text {
         this.clearFormat.addEventListener('click', (): void => {
             this.isRetrieving = false; this.clearFormatAction();
         });
+        this.changeCaseDropdown.addEventListener('select', (args: MenuEventArgs): void => {
+            this.isRetrieving = false; this.changeCase(args);
+        });
     }
     public unwireEvents(): void {
         this.fontFamily.change = undefined;
@@ -480,6 +476,7 @@ export class Text {
         this.highlightColorElement.click = undefined;
         this.highlightColor.click = undefined;
         this.clearFormat.click = undefined;
+        this.changeCaseDropdown.select = undefined;
     }
     private boldAction(): void {
         if (this.isRetrieving) {

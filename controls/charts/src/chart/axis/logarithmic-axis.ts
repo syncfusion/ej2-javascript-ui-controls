@@ -58,6 +58,12 @@ export class Logarithmic extends Double {
         let logEnd: number = this.max === 1 ? 1 : logBase(<number>this.max, axis.logBase);
         logEnd = isFinite(logStart) ? logEnd : <number>this.max;
         this.min = Math.floor(logStart / 1);
+        let isRectSeries: boolean = axis.series && axis.series.some((item) => {
+            return (item.type.indexOf("Column") !== -1 || item.type.indexOf("Bar") !== -1) && item.type.indexOf("Range") === -1;
+        });
+        if (isRectSeries) {
+            this.min = (this.min <= 0) ? (+this.min - 1) : this.min;
+        }
         this.max = Math.ceil(logEnd / 1);
         axis.actualRange.interval = axis.interval || this.calculateLogNiceInterval(<number>this.max - <number>this.min, size, axis);
         axis.actualRange.min = <number>this.min;
@@ -113,24 +119,26 @@ export class Logarithmic extends Double {
         let tempInterval: number = axis.visibleRange.min;
         axis.visibleLabels = [];
         let labelStyle: Font;
+        let value: number;
         if (axis.zoomFactor < 1 || axis.zoomPosition > 0) {
             tempInterval = axis.visibleRange.min - (axis.visibleRange.min % axis.visibleRange.interval);
         }
         const axisFormat: string = this.getFormat(axis);
         const isCustomFormat: boolean = axisFormat.match('{value}') !== null;
+        let startValue: number = Math.pow(axis.logBase, axis.visibleRange.min);
         axis.format = chart.intl.getNumberFormat({
             format: isCustomFormat ? '' : axisFormat,
-            useGrouping: chart.useGroupingSeparator
+            useGrouping: chart.useGroupingSeparator,
+            maximumFractionDigits: startValue < 1 ? 20 : 3,
         });
-
-        axis.startLabel = axis.format(Math.pow(axis.logBase, axis.visibleRange.min));
+        axis.startLabel = axis.format(startValue < 1 ? +startValue.toPrecision(1) : startValue);
         axis.endLabel = axis.format(Math.pow(axis.logBase, axis.visibleRange.max));
-
         for (; tempInterval <= axis.visibleRange.max; tempInterval += axis.visibleRange.interval) {
             labelStyle = <Font>(extend({}, getValue('properties', axis.labelStyle), null, true));
             if (withIn(tempInterval, axis.visibleRange)) {
+                value = Math.pow(axis.logBase, tempInterval);
                 triggerLabelRender(
-                    this.chart, tempInterval, this.formatValue(axis, isCustomFormat, axisFormat, Math.pow(axis.logBase, tempInterval)),
+                    this.chart, tempInterval, this.formatValue(axis, isCustomFormat, axisFormat, value < 1 ? +value.toPrecision(1) : value),
                     labelStyle, axis
                 );
             }

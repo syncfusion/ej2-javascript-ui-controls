@@ -381,7 +381,7 @@ export class ContentRender implements IRenderer {
                 } else {
                     elements = gObj.getRowTemplate()(extend({ index: i }, dataSource[i]), gObj, 'rowTemplate', rowTemplateID);
                 }
-                if (!gObj.isReact && (elements[0] as Element).tagName ===  literals.tbody) {
+                if (!gObj.isReact && (elements[0] as Element).tagName ===  'TBODY') {
                     for (let j: number = 0; j < elements.length; j++) {
                         let isTR: boolean = elements[j].nodeName.toLowerCase() === 'tr';
                         if (isTR || ((elements[j] as Element).querySelectorAll && (elements[j] as Element).querySelectorAll('tr').length)) {

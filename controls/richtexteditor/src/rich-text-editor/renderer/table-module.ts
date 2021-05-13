@@ -465,7 +465,7 @@ export class Table {
         const parentNode: Node = startContainer.parentNode;
         if (proxy.parent.editorMode === 'HTML' &&
             ((proxy.parent.iframeSettings.enable && !hasClass(parentNode.ownerDocument.querySelector('body'), 'e-lib')) ||
-                (!proxy.parent.iframeSettings.enable && isNOU(closest(parentNode, '#' + proxy.contentModule.getPanel().id))))) {
+                (!proxy.parent.iframeSettings.enable && isNOU(closest(parentNode, '[id=' + "'" + proxy.contentModule.getPanel().id + "'" +']'))))) {
             (proxy.contentModule.getEditPanel() as HTMLElement).focus();
             const range: Range = proxy.parent.formatter.editorManager.nodeSelection.getRange(proxy.contentModule.getDocument());
             selectionObj.selection = proxy.parent.formatter.editorManager.nodeSelection.save(
@@ -933,7 +933,7 @@ export class Table {
     // eslint-disable-next-line
     private docClick(e: { [key: string]: object }): void {
         const target: HTMLElement = <HTMLElement>(e.args as MouseEvent).target;
-        if (target && target.classList && ((this.popupObj && !closest(target, '#' + this.popupObj.element.id) ||
+        if (target && target.classList && ((this.popupObj && !closest(target, '[id=' + "'" + this.popupObj.element.id + "'" +']') ||
             (this.editdlgObj && !closest(target, '#' + this.editdlgObj.element.id)))) && !target.classList.contains('e-create-table') &&
             target.offsetParent && !target.offsetParent.classList.contains('e-rte-backgroundcolor-dropdown')) {
             if (this.popupObj) {

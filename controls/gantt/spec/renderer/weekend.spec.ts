@@ -47,13 +47,13 @@ describe('Gantt spec for weekend', () => {
             destroyGantt(ganttObj);
         });
         it('Weekend Testing ', () => {
-            expect(ganttObj.ganttChartModule.chartBodyContent.querySelector(`.${cls.weekend}`)['style'].width).toBe('30px');
-            expect(ganttObj.ganttChartModule.chartBodyContent.querySelector(`.${cls.weekend}`)['style'].height).toBe('100%');
+            expect(ganttObj.ganttChartModule.chartBodyContainer.querySelector(`.${cls.weekend}`)['style'].width).toBe('30px');
+            expect(ganttObj.ganttChartModule.chartBodyContainer.querySelector(`.${cls.weekend}`)['style'].height).toBe('100%');
             ganttObj.holidays = [];
             ganttObj.highlightWeekends = false;
             ganttObj.dataBind();
-            expect(ganttObj.ganttChartModule.chartBodyContent.querySelector(`.${cls.nonworkingContainer}`)).toBe(null);
-            expect(ganttObj.ganttChartModule.chartBodyContent.querySelector(`.${cls.weekendContainer}`)).toBe(null);
+            expect(ganttObj.ganttChartModule.chartBodyContainer.querySelector(`.${cls.nonworkingContainer}`)).toBe(null);
+            expect(ganttObj.ganttChartModule.chartBodyContainer.querySelector(`.${cls.weekendContainer}`)).toBe(null);
         });
         it('Weekend Testing hour Bottom tier weekend highlight', () => {  
             let timelineObject: TimelineSettingsModel =  {

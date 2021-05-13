@@ -15316,6 +15316,70 @@ describe('Remote data binding with loadOnDemand with tableName fieldName', () =>
         }, 450);
     });
 });
+describe('Hierarchical data binding testing', () => {
+    describe('Changing DS when template is enabled', () => {
+        let treeObj: any;
+        let mouseEventArgs: any;
+        let tapEvent: any;
+        beforeEach((): void => {
+            mouseEventArgs = {
+                preventDefault: (): void => { },
+                stopImmediatePropagation: (): void => { },
+                target: null,
+                type: null,
+                shiftKey: false,
+                ctrlKey: false
+            };
+            tapEvent = {
+                originalEvent: mouseEventArgs,
+                tapCount: 1
+            };
+            let IEBrowser: string = "Mozilla/5.0 (Windows NT 10.0; WOW64; Trident/7.0; Touch; .NET4.0C; .NET4.0E; .NET CLR 2.0.50727; .NET CLR 3.0.30729; .NET CLR 3.5.30729; Tablet PC 2.0; rv:11.0) like Gecko";
+            Browser.userAgent = IEBrowser;
+            let ele: HTMLElement = createElement('div', { id: 'tree1' });
+            document.body.appendChild(ele);
+            treeObj = new TreeView({
+                fields: {
+                    dataSource: hierarchicalData2, id: "nodeId", text: "nodeText", child: "nodeChild", selected: 'nodeSelected', navigateUrl: 'nodeUrl',
+                    iconCss: 'nodeIcon', imageUrl: 'nodeImage', tooltip: 'nodeTooltip', htmlAttributes: 'nodeHtmlAttr'
+                },
+                fullRowSelect: false,
+            });
+            treeObj.appendTo(ele);
+        });
+        afterEach(() => {
+            let Chromebrowser: string = "Mozilla/5.0 (Windows NT 6.3; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/60.0.3112.113 Safari/537.36";
+            Browser.userAgent = Chromebrowser;
+            if (treeObj)
+                treeObj.destroy();
+            document.body.innerHTML = '';
+        });
+        it('IE browser testing', () => {
+            let template: Element = createElement('div', { id: 'template' });
+            template.innerHTML = '${if(nodeChild == undefined)}<b>${nodeText}</b>${else}<i>${nodeText}</i>${/if}';
+            document.body.appendChild(template);
+            let li: Element[] = <Element[] & NodeListOf<Element>>treeObj.element.querySelectorAll('.e-text-content');
+            expect(li[0].querySelector('i')).toBe(null);
+            expect(li[0].querySelector('b')).toBe(null);
+            treeObj.nodeTemplate = '#template';
+            treeObj.dataBind();
+            let ali: Element[] = <Element[] & NodeListOf<Element>>treeObj.element.querySelectorAll('.e-text-content');
+            expect(ali[0].querySelector('i')).not.toBe(null);
+            expect(ali[0].querySelector('b')).toBe(null);
+            treeObj.fields.dataSource = hierarchicalData1;
+            treeObj.dataBind();
+            expect(treeObj.element.querySelectorAll('li').length).toBe(5);
+            expect(treeObj.element.querySelector('.e-list-text').innerHTML).toBe('<i>Music</i>');
+            expect(treeObj.element.querySelector('.e-list-item').getAttribute('data-uid')).toBe('01');
+            expect(treeObj.element.querySelector('.e-list-icon').classList.contains('folder')).toBe(true);
+            expect(treeObj.element.querySelector('.e-list-img').src.indexOf('images/Shooting.png')).not.toBe(-1);
+            expect(treeObj.element.querySelector('.e-list-item').title).toBe('This is Music node');
+            expect(treeObj.element.querySelectorAll('li')[1].classList.contains('firstnode')).toBe(true);
+            expect(treeObj.element.querySelectorAll('li')[1].style.backgroundColor).toBe('red');
+        });
+    });
+});
+
 describe('Blazor TreeView testing', () => {
     let gridLayOut: any;
     let ele: HTMLElement;

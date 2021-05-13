@@ -17,7 +17,7 @@ import { ChartSettingsModel } from '../../pivotview/model/chartsettings-model';
 import { PivotView } from '../../pivotview';
 import {
     RowHeaderPositionGrouping, ChartSeriesType, ChartSeriesCreatedEventArgs, RowHeaderLevelGrouping, ChartLabelInfo,
-    DrillArgs, MultiLevelLabelClickEventArgs
+    DrillArgs, MultiLevelLabelClickEventArgs, EnginePopulatedEventArgs, EnginePopulatingEventArgs
 } from '../../common';
 import { DrillOptionsModel } from '../../pivotview/model/datasourcesettings-model';
 import { PivotUtil } from '../../base/util';
@@ -1328,21 +1328,28 @@ export class PivotChart {
     }
 
     private getChartHeight(): string {
-        let height: string = isNullOrUndefined(this.parent.getHeightAsNumber()) ? 'auto' :
-            this.parent.getHeightAsNumber().toString();
+        let height: string;
+        let offSetHeight: number;
+        if (isNullOrUndefined(this.parent.getHeightAsNumber())) {
+            height = 'auto';
+        } else {
+            let offSetVal: number = this.parent.showToolbar ? 6 : 5;
+            height = (this.parent.getHeightAsNumber() - offSetVal).toString();
+            offSetHeight = this.parent.getHeightAsNumber() - offSetVal;
+        }
         if (!isNullOrUndefined(this.parent.getHeightAsNumber())) {
             if (this.parent.showToolbar && this.parent.showGroupingBar) {
-                height = (this.parent.getHeightAsNumber() - (this.parent.element.querySelector('.e-pivot-toolbar') ?
+                height = (offSetHeight - (this.parent.element.querySelector('.e-pivot-toolbar') ?
                     this.parent.element.querySelector('.e-pivot-toolbar').clientHeight : 42) -
                     (this.parent.element.querySelector('.e-chart-grouping-bar') ?
-                        this.parent.element.querySelector('.e-chart-grouping-bar').clientHeight : 76)).toString();
+                        this.parent.element.querySelector('.e-chart-grouping-bar').clientHeight : 62)).toString();
             } else if (this.parent.showToolbar) {
-                height = (this.parent.getHeightAsNumber() - (this.parent.element.querySelector('.e-pivot-toolbar') ?
+                height = (offSetHeight - (this.parent.element.querySelector('.e-pivot-toolbar') ?
                     this.parent.element.querySelector('.e-pivot-toolbar').clientHeight : 42)).toString();
             } else if (this.parent.showGroupingBar) {
-                height = (this.parent.getHeightAsNumber() - (this.parent.element.querySelector('.e-chart-grouping-bar') ?
-                    this.parent.element.querySelector('.e-chart-grouping-bar').clientHeight : 76)).toString();
-            } else if ((this.parent.chart && parseInt(this.parent.chart.height, 10) < 200) || this.parent.getHeightAsNumber() < 200) {
+                height = (offSetHeight - (this.parent.element.querySelector('.e-chart-grouping-bar') ?
+                    this.parent.element.querySelector('.e-chart-grouping-bar').clientHeight : 62)).toString();
+            } else if ((this.parent.chart && parseInt(this.parent.chart.height, 10) < 200) || offSetHeight < 200) {
                 height = '200';
             }
         } else {
@@ -1357,13 +1364,13 @@ export class PivotChart {
             height = this.parent.element.offsetHeight - (this.parent.element.querySelector('.e-pivot-toolbar') ?
                 this.parent.element.querySelector('.e-pivot-toolbar').clientHeight : 42) -
                 (this.parent.element.querySelector('.e-chart-grouping-bar') ?
-                    this.parent.element.querySelector('.e-chart-grouping-bar').clientHeight : 76);
+                    this.parent.element.querySelector('.e-chart-grouping-bar').clientHeight : 62);
         } else if (this.parent.showToolbar) {
             height = this.parent.element.offsetHeight - (this.parent.element.querySelector('.e-pivot-toolbar') ?
                 this.parent.element.querySelector('.e-pivot-toolbar').clientHeight : 42);
         } else if (this.parent.showGroupingBar) {
             height = this.parent.element.offsetHeight - (this.parent.element.querySelector('.e-chart-grouping-bar') ?
-                this.parent.element.querySelector('.e-chart-grouping-bar').clientHeight : 76);
+                this.parent.element.querySelector('.e-chart-grouping-bar').clientHeight : 62);
         }
         return height;
     }
@@ -1447,6 +1454,11 @@ export class PivotChart {
             pivotview: isBlazor() ? undefined : pivot.parent
         };
         pivot.parent.trigger(events.drill, drillArgs);
+        let enginePopulatingEventArgs: EnginePopulatingEventArgs = {
+            dataSourceSettings: PivotUtil.getClonedDataSourceSettings(this.parent.dataSourceSettings)
+        };
+        this.parent.trigger(events.enginePopulating, enginePopulatingEventArgs);
+        pivot.parent.dataSourceSettings = enginePopulatingEventArgs.dataSourceSettings;
         if (pivot.parent.enableVirtualization) {
             if (isBlazor()) {
                 /* eslint-disable */
@@ -1481,6 +1493,12 @@ export class PivotChart {
         /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
         delete (pivot.parent as any).bulkChanges.pivotValues;
         pivot.parent.allowServerDataBinding = true;
+        let eventArgs: EnginePopulatedEventArgs = {
+            dataSourceSettings: PivotUtil.getClonedDataSourceSettings(this.parent.dataSourceSettings),
+            pivotValues: this.parent.pivotValues
+        };
+        this.parent.trigger(events.enginePopulated, eventArgs);
+        pivot.engineModule.pivotValues = eventArgs.pivotValues;
         pivot.parent.renderPivotGrid();
         //});
     }

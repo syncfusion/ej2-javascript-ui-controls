@@ -97,7 +97,6 @@ export class ContextMenu {
     private contextMenuItemClick(args: CMenuClickEventArgs): void {
         this.item = this.getKeyFromId(args.item.id);
         let position: RowPosition;
-        // eslint-disable-next-line
         let data: Object; let taskfields: TaskFieldsModel;
         const parentItem: ContextMenuItemModel = getValue('parentObj', args.item);
         let index: number = -1;
@@ -229,9 +228,10 @@ export class ContextMenu {
             cancel: false,
             target: this.targetElement
         };
-        // eslint-disable-next-line
         this.parent.trigger('actionBegin', eventArgs, (eventArgs: ActionBeginArgs) => {
-            this.parent.chartRowsModule.mergeTask(this.rowData[taskSettings.id], segmentIndexes);
+            if (eventArgs.cancel === false) {
+                this.parent.chartRowsModule.mergeTask(this.rowData[taskSettings.id], segmentIndexes);
+            }
         });
     }
     // eslint-disable-next-line

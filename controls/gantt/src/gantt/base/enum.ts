@@ -351,7 +351,6 @@ export type PdfTheme =
  * @hidden
  */
 export type CObject =
-// eslint-disable-next-line
     { [key: string]: Object; };
 /**
  * To define schedule mode of Gantt

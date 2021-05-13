@@ -354,8 +354,8 @@ export class EventBase {
                         }
                     }
                 }
-                if (typeof (slot) === "number") {
-                    let temp: number = slot;
+                if (typeof (slot) === 'number') {
+                    const temp: number = slot;
                     slot = [];
                     slot.push(temp);
                 }
@@ -1140,6 +1140,24 @@ export class EventBase {
             (<Date>eventObj[this.parent.eventFields.startTime]).getTime() >= schedule.startHour.getTime() &&
             (<Date>eventObj[this.parent.eventFields.endTime]).getTime() < schedule.endHour.getTime() && start.getTime() === end.getTime();
         return isHourRange || isSameRange;
+    }
+
+    public allDayExpandScroll(dateHeader: HTMLElement, heightPropChanged?: boolean): void {
+        let indentHeight: number = 0;
+        const headerRows: HTMLElement[] = [].slice.call(this.parent.element.querySelectorAll('.' + cls.HEADER_ROW_CLASS));
+        headerRows.forEach((element: HTMLElement) => {
+            const tdEle: HTMLElement[] = [].slice.call(element.children);
+            tdEle.forEach((ele: HTMLElement) => { ele.style.top = indentHeight + 'px'; });
+            indentHeight += element.offsetHeight;
+        });
+        indentHeight = dateHeader.offsetHeight - indentHeight;
+        (this.parent.element.querySelector('.' + cls.ALLDAY_CELLS_CLASS) as HTMLElement).style.height = (indentHeight / 12) + 'em';
+        const content: HTMLElement = this.parent.element.querySelector('.' + cls.CONTENT_WRAP_CLASS) as HTMLElement;
+        if (this.parent.uiStateValues.expand && (content.offsetWidth - content.clientWidth > 0 || heightPropChanged)) {
+            addClass([dateHeader], cls.ALLDAY_APPOINTMENT_SCROLL);
+        } else {
+            removeClass([dateHeader], cls.ALLDAY_APPOINTMENT_SCROLL);
+        }
     }
 
 }

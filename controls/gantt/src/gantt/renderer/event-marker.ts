@@ -19,13 +19,10 @@ export class EventMarker {
         if (this.parent.eventMarkers && this.parent.eventMarkers.length > 0) {
             if (!this.parent.ganttChartModule.chartBodyContent.contains(this.eventMarkersContainer)) {
                 this.eventMarkersContainer = createElement('div', {
-                    className: cls.eventMarkersContainer
+                    className: cls.eventMarkersContainer, styles: 'top:' +
+                     this.parent.ganttChartModule.chartTimelineContainer.offsetHeight + 'px;'
                 });
-                if (this.parent.virtualScrollModule && this.parent.enableVirtualization) {
-                    this.parent.ganttChartModule.virtualRender.appendChildElements(this.eventMarkersContainer);
-                } else {
-                    this.parent.ganttChartModule.chartBodyContent.appendChild(this.eventMarkersContainer);
-                }
+                this.parent.ganttChartModule.chartBodyContainer.appendChild(this.eventMarkersContainer);
             }
             this.eventMarkersContainer.innerHTML = '';
             this.getEventMarkersElements(this.eventMarkersContainer);

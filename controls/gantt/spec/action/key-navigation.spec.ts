@@ -173,6 +173,22 @@ describe('Gantt Selection support', () => {
                 (ganttObj.toolbarModule as any).keyUpHandler(getKeyUpObj(13, searchbar));
                 done();
               }, 800);   
-        }, 1000);		
+        }, 1000);	
+        it('cancelRequest key testing', () => { 
+            let taskName: HTMLElement = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol_content_table > tbody > tr:nth-child(4) > td:nth-child(2)') as HTMLElement;
+            triggerMouseEvent(taskName, 'dblclick');           
+            let input: any = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrolTaskName') as HTMLElement;
+            input.value = 'TaskName updated';
+            let args1: any = { action: 'cancelRequest', preventDefault: preventDefault };
+            ganttObj.keyboardModule.keyAction(args1); 
+            expect(ganttObj.currentViewData[3].ganttProperties.taskName).toBe('Plan budget');
+        }); 
+        it('focusTask key testing', () => { 
+            ganttObj.selectionModule.selectRow(19);
+            let args1: any = { action: 'focusTask', preventDefault: preventDefault };
+            ganttObj.keyboardModule.keyAction(args1); 
+            expect(ganttObj.ganttChartModule.scrollElement.scrollLeft).toBe(808);
+        }); 
+		
     });
 });

@@ -298,8 +298,12 @@ export class SpellChecker {
      */
     public retrieveExactElementInfo(startInlineObj: ElementInfo): void {
         const nextElement: ElementBox = startInlineObj.element.nextElement;
-
-        startInlineObj.element = (!isNullOrUndefined(nextElement) && nextElement instanceof TextElementBox) ? startInlineObj.element.nextElement : startInlineObj.element;
+        if (!isNullOrUndefined(nextElement) && nextElement instanceof TextElementBox) {
+            let nextTextElBox: TextElementBox = nextElement as TextElementBox;
+            if (nextTextElBox.text.trim() != "") {
+                startInlineObj.element = nextElement
+            }
+        }
     }
 
     /**

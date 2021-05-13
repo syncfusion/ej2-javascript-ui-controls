@@ -2207,7 +2207,7 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
                 this.getFilesFromFolder(args);
             } else {
                 const files: FileList = this.sortFilesList = (<DragEvent>args).dataTransfer.files;
-                if (this.browserName !== 'msie' && this.browserName !== 'edge') {
+                if (this.browserName !== 'msie' && this.browserName !== 'edge' && this.browserName !== 'safari') {
                     this.element.files = files;
                 }
                 if (files.length > 0) {
@@ -3039,7 +3039,9 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
         const spinnerTarget: HTMLElement = liElement.querySelector('.' + REMOVE_ICON ) as HTMLElement;
         if (!isNullOrUndefined(liElement)) {
             hideSpinner(spinnerTarget);
-            detach(liElement.querySelector('.e-spinner-pane'));
+            if (!isNullOrUndefined(liElement.querySelector('.e-spinner-pane'))) {
+                detach(liElement.querySelector('.e-spinner-pane'));
+            }
         }
         const requestResponse: Object = e && e.currentTarget ? this.getResponse(e) : null;
         const args: Object = { event: e, response: requestResponse, operation: 'cancel', file: file };
@@ -3073,7 +3075,9 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
         file.statusCode = '1';
         file.status = this.localizedTexts('readyToUploadMessage');
         if (!custom) {
-            liElement.querySelector('.' + STATUS).classList.remove(UPLOAD_FAILED);
+            if (!isNullOrUndefined(liElement.querySelector('.' + STATUS))) {
+                liElement.querySelector('.' + STATUS).classList.remove(UPLOAD_FAILED);
+            }
             if (!isNullOrUndefined(liElement.querySelector('.' + RETRY_ICON))) {
                 detach(liElement.querySelector('.' + RETRY_ICON));
             }
@@ -3531,7 +3535,7 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
                         this.pausedData.splice(index, 1);
                     }
                     if (isNullOrUndefined(this.template) && (isNullOrUndefined(custom) || !custom) && liElement) {
-                        if (liElement) {
+                        if (liElement && !isNullOrUndefined(liElement.querySelector('.' + PAUSE_UPLOAD))) {
                             detach(liElement.querySelector('.' + PAUSE_UPLOAD));
                         }
                         this.removeChunkProgressBar(metaData);
@@ -3564,14 +3568,15 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
             this.updateStatus(metaData.file, this.localizedTexts('fileUploadCancel'), '5');
             this.updateProgressBarClasses(liElement, UPLOAD_FAILED);
             this.removeProgressbar(liElement, 'failure');
-            deleteIcon.classList.remove(ABORT_ICON);
-            deleteIcon.classList.add(REMOVE_ICON);
-            deleteIcon.setAttribute('title', this.localizedTexts('remove'));
+            deleteIcon && deleteIcon.classList.remove(ABORT_ICON);
+            deleteIcon && deleteIcon.classList.add(REMOVE_ICON);
+            deleteIcon && deleteIcon.setAttribute('title', this.localizedTexts('remove'));
             const pauseIcon: Element = liElement.querySelector('.' + PAUSE_UPLOAD);
-            pauseIcon.classList.add(RETRY_ICON);
-            pauseIcon.classList.remove(PAUSE_UPLOAD);
-            pauseIcon.setAttribute('title', this.localizedTexts('retry'));
-            if (!isNullOrUndefined(liElement) && !isNullOrUndefined(deleteIcon)) {
+            pauseIcon && pauseIcon.classList.add(RETRY_ICON);
+            pauseIcon && pauseIcon.classList.remove(PAUSE_UPLOAD);
+            pauseIcon && pauseIcon.setAttribute('title', this.localizedTexts('retry'));
+            if (!isNullOrUndefined(liElement) && !isNullOrUndefined(deleteIcon)
+            && !isNullOrUndefined(liElement.querySelector('.e-spinner-pane'))) {
                 hideSpinner(spinnerTarget);
                 detach(liElement.querySelector('.e-spinner-pane'));
             }
@@ -3826,19 +3831,19 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
                 }
             }
             if (!isNaN(Math.round((e.loaded / e.total) * 100)) && isNullOrUndefined(this.template) && metaData.file.statusCode !== '4' ) {
-                const loadedSize: number =  (metaData.chunkIndex * this.asyncSettings.chunkSize);
-                let currentLoaded: number = e.loaded;
-                if (currentLoaded > this.asyncSettings.chunkSize) {
-                    currentLoaded = this.asyncSettings.chunkSize;
+                let progressVal: number;
+                let totalChunks: number = Math.ceil(metaData.file.size / this.asyncSettings.chunkSize) - 1;
+                if (this.asyncSettings.chunkSize && totalChunks) {
+                    progressVal = Math.round(metaData.chunkIndex / totalChunks * 100)
+                    this.changeProgressValue(liElement, progressVal.toString() + '%');
                 }
-                const value: number = Math.min((((loadedSize + currentLoaded) / metaData.file.size) * 100), 100);
-                this.changeProgressValue(liElement, Math.round(value).toString() + '%');
             }
             if (metaData.chunkIndex === 0) {
                 this.checkActionButtonStatus();
             }
         }
-        if (isNullOrUndefined(liElement.querySelector('.' + PAUSE_UPLOAD)) && isNullOrUndefined(this.template) ) {
+        if (isNullOrUndefined(liElement.querySelector('.' + PAUSE_UPLOAD)) && isNullOrUndefined(this.template)
+        && isNullOrUndefined(liElement.querySelector('.' + DELETE_ICON)) ) {
             this.pauseButton = this.createElement('span', {className: 'e-icons e-file-pause-btn', attrs: { 'tabindex': this.btnTabIndex }});
             if (this.browserName === 'msie') {
                 this.pauseButton.classList.add('e-msie');

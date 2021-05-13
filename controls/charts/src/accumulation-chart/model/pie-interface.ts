@@ -52,6 +52,8 @@ export interface IAccTooltipRenderEventArgs extends IChartEventArgs {
     series : AccumulationSeries;
     /** Defines the current tooltip point */
     point : AccPoints;
+    /** Defines the current tooltip text */
+    text : string;
 }
 /**
  * Accumulation Chart AnimationComplete event arguments.

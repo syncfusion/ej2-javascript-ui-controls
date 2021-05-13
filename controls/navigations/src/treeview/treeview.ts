@@ -3581,7 +3581,7 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
     private reRenderNodes(): void {
         this.updateListProp(this.fields);
         resetBlazorTemplate(this.element.id + 'nodeTemplate', 'NodeTemplate');
-        if (this.isBlazorPlatform) {
+        if (Browser.isIE) {
             this.ulElement = this.element.querySelector('.e-list-parent.e-ul');
             this.ulElement.parentElement.removeChild(this.ulElement);
         } else {

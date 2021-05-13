@@ -58,7 +58,7 @@ describe('Schedule year view', () => {
             expect(schObj.element.querySelectorAll('.e-work-cells')[0].getAttribute('role')).toEqual('gridcell');
             expect(schObj.element.querySelectorAll('.e-work-cells')[0].getAttribute('aria-selected')).toEqual('false');
             expect(schObj.element.querySelectorAll('.e-work-cells')[0].getAttribute('data-date')).toEqual(new Date(2020, 11, 27).getTime().toString());
-            expect(schObj.element.querySelectorAll('.e-work-cells')[0].innerHTML).toEqual('<span class="e-day">27</span>');
+            expect(schObj.element.querySelectorAll('.e-work-cells')[0].innerHTML).toEqual('<span class="e-day" title="Sunday, December 27, 2020">27</span>');
         });
 
         it('check week number', () => {
@@ -88,6 +88,192 @@ describe('Schedule year view', () => {
             expect(moreDateHeader.lastElementChild.getAttribute('data-date')).toEqual(new Date(2020, 11, 27).getTime().toString());
         });
 
+    });
+
+    describe('Resource and normal Header Template in timeline year view', () => {
+        let schObj: Schedule;
+        const resTemplate: string = '<div class="tWrap"><div class="rText" style="background:pink">${getResourceName(data)}</div></div>';
+        beforeAll((done: DoneFn) => {
+            const model: ScheduleModel = {
+                width: '100%', height: '550px',
+                selectedDate: new Date(2018, 3, 1),
+                firstMonthOfYear: 4,
+                resourceHeaderTemplate: resTemplate,
+                dayHeaderTemplate: '<div class="date-text">${data.day}</div>',
+                monthHeaderTemplate: '<div class="date-text">${(data.date).getMonth()}</div>',
+                views: [
+                    { option: 'TimelineYear', displayName: 'Horizontal Year' },
+                    { option: 'TimelineYear', displayName: 'Vertical Year', orientation: 'Vertical' }
+                ],
+                group: { resources: ['Rooms'] },
+                resources: [{
+                    field: 'RoomId', title: 'Room', name: 'Rooms', allowMultiple: false,
+                    dataSource: [
+                        { text: 'ROOM 1', id: 1, color: '#cb6bb2' },
+                        { text: 'ROOM 2', id: 2, color: '#56ca85' }
+                    ],
+                    textField: 'text', idField: 'id', colorField: 'color'
+                }]
+            };
+            schObj = util.createSchedule(model, [], done);
+        });
+        afterAll(() => {
+            util.destroy(schObj);
+        });
+
+        it('HorizontalView template checking', () => {
+            expect(schObj.firstMonthOfYear).toEqual(4);
+            expect(schObj.element.querySelector('.e-date-header-wrap .e-resource-cells').innerHTML).toBe('<div class="tWrap"><div class="rText" style="background:pink">ROOM 1</div></div>');
+            expect(schObj.element.querySelector('.e-tbar-btn-text').innerHTML).toBe('May 2018 - Apr 2019');
+            expect(schObj.element.querySelectorAll('.e-month-header')[0].innerHTML).toBe('<div class="date-text">4</div>');
+            expect(schObj.element.querySelectorAll('.e-month-header')[11].innerHTML).toBe('<div class="date-text">3</div>');
+            const verticalViewBtn: HTMLElement = (schObj.element.querySelectorAll('.e-toolbar-item.e-views.e-timeline-year')[1] as HTMLElement);
+            verticalViewBtn.click();
+        });
+        it('VerticalView template checking', () => {
+            expect(schObj.firstMonthOfYear).toEqual(4);
+            expect(schObj.element.querySelector('.e-header-cells').innerHTML).toBe('<div class="date-text">4</div>');
+            expect(schObj.element.querySelectorAll('.e-header-cells')[11].innerHTML).toBe('<div class="date-text">3</div>');
+            expect(schObj.element.querySelectorAll('.e-resource-cells')[0].innerHTML).toBe('<div class="tWrap"><div class="rText" style="background:pink">ROOM 1</div></div>');
+            expect(schObj.element.querySelectorAll('.e-resource-cells')[1].innerHTML).toBe('<div class="tWrap"><div class="rText" style="background:pink">ROOM 2</div></div>');
+        });
+
+        describe('Resource and normal Header without Template in timeline year view', () => {
+            let schObj: Schedule;
+            beforeAll((done: DoneFn) => {
+                const model: ScheduleModel = {
+                    width: '100%', height: '550px',
+                    selectedDate: new Date(2018, 3, 1),
+                    firstMonthOfYear: 4,
+                    views: [
+                        { option: 'TimelineYear', displayName: 'Horizontal Year' },
+                        { option: 'TimelineYear', displayName: 'Vertical Year', orientation: 'Vertical' }
+                    ],
+                    group: { resources: ['Rooms'] },
+                    resources: [{
+                        field: 'RoomId', title: 'Room', name: 'Rooms', allowMultiple: false,
+                        dataSource: [
+                            { text: 'ROOM 1', id: 1, color: '#cb6bb2' },
+                            { text: 'ROOM 2', id: 2, color: '#56ca85' }
+                        ],
+                        textField: 'text', idField: 'id', colorField: 'color'
+                    }]
+                };
+                schObj = util.createSchedule(model, [], done);
+            });
+            afterAll(() => {
+                util.destroy(schObj);
+            });
+
+            it('Horizontal without template checking', () => {
+                expect(schObj.firstMonthOfYear).toEqual(4);
+                expect(schObj.element.querySelectorAll('.e-month-header')[0].innerHTML).toBe('<span>May</span>');
+                expect(schObj.element.querySelectorAll('.e-month-header')[11].innerHTML).toBe('<span>April</span>');
+                expect(schObj.element.querySelectorAll('.e-resource-cells')[1].innerHTML).toBe('<div class="e-text-ellipsis">ROOM 1</div>');
+                expect(schObj.element.querySelectorAll('.e-resource-cells')[2].innerHTML).toBe('<div class="e-text-ellipsis">ROOM 2</div>');
+                const verticalViewBtn: HTMLElement = (schObj.element.querySelectorAll('.e-toolbar-item.e-views.e-timeline-year')[1] as HTMLElement);
+                verticalViewBtn.click();
+            });
+            it('Vertical without template checking', () => {
+                expect(schObj.firstMonthOfYear).toEqual(4);
+                expect(schObj.element.querySelectorAll('.e-resource-cells')[1].innerHTML).toBe('<div class="e-resource-text" style="margin-left: 0px;">ROOM 2</div>');
+                expect(schObj.element.querySelectorAll('.e-resource-cells')[0].innerHTML).toBe('<div class="e-resource-text" style="margin-left: 0px;">ROOM 1</div>');
+                expect(schObj.element.querySelectorAll('.e-header-cells')[0].innerHTML).toBe('<span>May</span>');
+                expect(schObj.element.querySelectorAll('.e-header-cells')[11].innerHTML).toBe('<span>April</span>');
+            });
+        });
+
+        describe('with Template without Resource functionalities', () => {
+            let schObj: Schedule;
+            beforeAll(() => {
+                const model: ScheduleModel = {
+                    firstMonthOfYear: 4,
+                    dayHeaderTemplate: '<div class="date-text">${(data).day}</div>',
+                    monthHeaderTemplate: '<div class="date-text">${(data.date).getMonth()}</div>',
+                    views: [
+                        { option: 'TimelineYear', displayName: 'Horizontal Year' },
+                        { option: 'TimelineYear', displayName: 'Vertical Year', orientation: 'Vertical' }
+                    ],
+                    selectedDate: new Date(2021, 1, 24)
+                };
+                schObj = util.createSchedule(model, []);
+            });
+            afterAll(() => {
+                util.destroy(schObj);
+            });
+            it('Horizontal view functionalities checking', () => {
+                expect(schObj.element.querySelector('.e-active-view').classList).toContain('e-timeline-year');
+                expect(schObj.firstMonthOfYear).toEqual(4);
+                expect(schObj.element.querySelectorAll('.e-month-header')[0].innerHTML).toBe('<div class="date-text">4</div>');
+                expect(schObj.element.querySelectorAll('.e-month-header')[11].innerHTML).toBe('<div class="date-text">3</div>');
+                expect(schObj.element.querySelectorAll('.e-header-cells')[1].innerHTML).toBe('<div class="date-text">Sunday</div>');
+                expect(schObj.element.querySelectorAll('.e-header-cells')[2].innerHTML).toBe('<div class="date-text">Monday</div>');
+                const verticalViewBtn: HTMLElement = (schObj.element.querySelectorAll('.e-toolbar-item.e-views.e-timeline-year')[1] as HTMLElement);
+                verticalViewBtn.click();
+            });
+            it('Vertical view functionalities checking', () => {
+                expect(schObj.element.querySelector('.e-active-view').classList).toContain('e-timeline-year');
+                expect(schObj.firstMonthOfYear).toEqual(4);
+                expect(schObj.element.querySelectorAll('.e-header-cells')[12].innerHTML).toBe('<div class="date-text">3</div>');
+                expect(schObj.element.querySelectorAll('.e-header-cells')[1].innerHTML).toBe('<div class="date-text">4</div>');
+                expect(schObj.element.querySelectorAll('.e-month-header')[1].innerHTML).toBe('<div class="date-text">Monday</div>');
+                expect(schObj.element.querySelectorAll('.e-month-header')[2].innerHTML).toBe('<div class="date-text">Tuesday</div>');
+
+            });
+        });
+
+        describe('without Template without Resource functionalities', () => {
+            let schObj: Schedule;
+            beforeAll(() => {
+                const model: ScheduleModel = {
+                    firstMonthOfYear: 4,
+                    views: [
+                        { option: 'TimelineYear', displayName: 'Horizontal Year', isSelected: true },
+                        { option: 'TimelineYear', displayName: 'Vertical Year', orientation: 'Vertical' },
+                        { option: 'Year' }
+                    ],
+                    selectedDate: new Date(2021, 1, 24)
+                };
+                schObj = util.createSchedule(model, []);
+            });
+            afterAll(() => {
+                util.destroy(schObj);
+            });
+            it('Horizontal view functionalities checking', () => {
+                expect(schObj.element.querySelector('.e-active-view').classList).toContain('e-timeline-year');
+                expect(schObj.firstMonthOfYear).toEqual(4);
+                expect(schObj.element.querySelectorAll('.e-header-cells')[1].innerHTML).toBe('<span>Sun</span>');
+                expect(schObj.element.querySelectorAll('.e-header-cells')[2].innerHTML).toBe('<span>Mon</span>');
+                expect(schObj.element.querySelectorAll('.e-month-header')[0].innerHTML).toBe('<span>May</span>');
+                expect(schObj.element.querySelectorAll('.e-month-header')[11].innerHTML).toBe('<span>April</span>');
+                schObj.firstMonthOfYear = 5;
+            });
+            it('Horizontal setMode change checking', () => {
+                expect(schObj.element.querySelector('.e-active-view').classList).toContain('e-timeline-year');
+                expect(schObj.firstMonthOfYear).toEqual(5);
+                expect(schObj.element.querySelectorAll('.e-header-cells')[1].innerHTML).toBe('<span>Sun</span>');
+                expect(schObj.element.querySelectorAll('.e-header-cells')[2].innerHTML).toBe('<span>Mon</span>');
+                expect(schObj.element.querySelectorAll('.e-month-header')[0].innerHTML).toBe('<span>June</span>');
+                expect(schObj.element.querySelectorAll('.e-month-header')[11].innerHTML).toBe('<span>May</span>');
+                const verticalViewBtn: HTMLElement = (schObj.element.querySelectorAll('.e-toolbar-item.e-views.e-timeline-year')[1] as HTMLElement);
+                verticalViewBtn.click();
+            });
+            it('Vertical view functionalities checking', () => {
+                expect(schObj.element.querySelector('.e-active-view').classList).toContain('e-timeline-year');
+                expect(schObj.firstMonthOfYear).toEqual(5);
+                expect(schObj.element.querySelectorAll('.e-header-cells')[1].innerHTML).toBe('<span>June</span>');
+                expect(schObj.element.querySelectorAll('.e-header-cells')[12].innerHTML).toBe('<span>May</span>');
+                expect(schObj.element.querySelectorAll('.e-month-header')[0].innerHTML).toBe('<span>Sun</span>');
+                expect(schObj.element.querySelectorAll('.e-month-header')[1].innerHTML).toBe('<span>Mon</span>');
+                const yearViewBtn: HTMLElement = schObj.element.querySelector('.e-toolbar-item.e-views.e-year');
+                yearViewBtn.click();
+            });
+            it('Year layout rendering', () => {
+                expect(schObj.element.querySelectorAll('.e-day.e-title')[0].innerHTML).toBe('June');
+                expect(schObj.element.querySelectorAll('.e-day.e-title')[6].innerHTML).toBe('December');
+                expect(schObj.element.querySelectorAll('.e-day.e-title')[11].innerHTML).toBe('May');
+            });
+        });
     });
 
     it('memory leak', () => {

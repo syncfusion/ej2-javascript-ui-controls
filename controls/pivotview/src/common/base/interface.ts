@@ -895,6 +895,8 @@ export interface AggregateMenuOpenEventArgs {
     fieldName?: string;
     /** Defines an option to restrict the conext menu from open. */
     cancel?: boolean;
+    /** Defines the menu count to be displayed initially. */
+    displayMenuCount?: number;
 }
 
 /**

@@ -103,7 +103,8 @@ export class VerticalEvent extends EventBase {
     }
 
     public getHeight(start: Date, end: Date): number {
-        let appHeight: number = (util.getUniversalTime(end) - util.getUniversalTime(start)) / util.MS_PER_MINUTE * (this.cellHeight * this.slotCount) / this.interval;
+        let appHeight: number = (util.getUniversalTime(end) - util.getUniversalTime(start)) /
+            util.MS_PER_MINUTE * (this.cellHeight * this.slotCount) / this.interval;
         appHeight = (appHeight <= 0) ? this.cellHeight : appHeight;
         return appHeight;
     }
@@ -254,7 +255,7 @@ export class VerticalEvent extends EventBase {
     // eslint-disable-next-line max-len
     private createAppointmentElement(record: Record<string, any>, isAllDay: boolean, data: Record<string, any>, resource: number): HTMLElement {
         const fieldMapping: EventFieldsMapping = this.parent.eventFields;
-        const recordSubject: string = (record[fieldMapping.subject] || this.parent.eventSettings.fields.subject.default 
+        const recordSubject: string = (record[fieldMapping.subject] || this.parent.eventSettings.fields.subject.default
             || this.parent.localeObj.getConstant('addTitle')) as string;
         const appointmentWrapper: HTMLElement = createElement('div', {
             className: cls.APPOINTMENT_CLASS,
@@ -606,14 +607,14 @@ export class VerticalEvent extends EventBase {
                 if (this.parent.activeViewOptions.group.resources.length > 0) {
                     filterList = this.filterEventsByResource(this.resources[resource], filterList);
                 }
-                let collection: Record<string, any>[] = filterList.filter((val: Record<string, any>) =>
+                const collection: Record<string, any>[] = filterList.filter((val: Record<string, any>) =>
                     this.overlapList.indexOf(val) === -1);
                 if (collection.length > 0) {
                     appointment = appointment.concat(collection);
                 }
             });
-            for (let i = 0; i < appointment.length - 1; i++) {
-                for (let j = i + 1; j < appointment.length; j++) {
+            for (let i: number = 0; i < appointment.length - 1; i++) {
+                for (let j: number = i + 1; j < appointment.length; j++) {
                     if (appointment[i].Id === appointment[j].Id) {
                         appointment.splice(j, 1); j--;
                     }
@@ -632,11 +633,10 @@ export class VerticalEvent extends EventBase {
             }
         }
         if (!isAllDay) {
-            eventsList = eventsList.filter(function (obj) {
-                return obj[fieldMapping.startTime] === record[fieldMapping.startTime] && obj[fieldMapping.endTime] > record[fieldMapping.endTime] ||
-                    obj[fieldMapping.endTime] > record[fieldMapping.startTime] && obj[fieldMapping.startTime] < record[fieldMapping.endTime] ||
-                    obj[fieldMapping.endTime] === record[fieldMapping.startTime] && obj[fieldMapping.startTime] === record[fieldMapping.endTime];
-            });
+            eventsList = eventsList.filter((obj: Record<string, any>) => obj[fieldMapping.startTime] === record[fieldMapping.startTime] &&
+                obj[fieldMapping.endTime] > record[fieldMapping.endTime] || obj[fieldMapping.endTime] > record[fieldMapping.startTime] &&
+                obj[fieldMapping.startTime] < record[fieldMapping.endTime] || obj[fieldMapping.endTime] === record[fieldMapping.startTime]
+                && obj[fieldMapping.startTime] === record[fieldMapping.endTime]);
         }
         if (eventsList.length > 0) {
             const appLevel: number[] = eventsList.map((obj: Record<string, any>) => obj.Index) as number[];
@@ -684,8 +684,21 @@ export class VerticalEvent extends EventBase {
     }
 
     private setAllDayRowHeight(height: number): void {
-        for (const element of this.allDayElement) {
-            element.style.height = (height / 12) + 'em';
+        const dateHeader: HTMLElement = (this.parent.element.querySelector('.' + cls.DATE_HEADER_WRAP_CLASS) as HTMLElement);
+        if (this.parent.height === 'auto' || !this.parent.enableAllDayScroll) {
+            addClass([dateHeader], cls.ALLDAY_APPOINTMENT_AUTO);
+        }
+        const allDayRow: HTMLElement = (this.parent.element.querySelector('.' + cls.ALLDAY_ROW_CLASS) as HTMLElement);
+        allDayRow.style.height = '';
+        if (this.parent.uiStateValues.expand && this.parent.height !== 'auto' && this.parent.enableAllDayScroll) {
+            allDayRow.style.height = (height / 12) + 'em';
+            this.parent.eventBase.allDayExpandScroll(dateHeader);
+        } else {
+            dateHeader.scrollTop = 0;
+            for (const element of this.allDayElement) {
+                (<HTMLElement>element).style.height = (height / 12) + 'em';
+            }
+            removeClass([dateHeader], cls.ALLDAY_APPOINTMENT_SCROLL);
         }
         this.animation.animate(this.allDayElement[0] as HTMLElement);
     }

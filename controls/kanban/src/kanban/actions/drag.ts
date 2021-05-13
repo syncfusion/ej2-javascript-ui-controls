@@ -427,7 +427,7 @@ export class DragAndDrop {
         if (this.parent.swimlaneSettings.keyField && this.parent.swimlaneSettings.allowDragAndDrop) {
             const prev: Element = closest(contentCell, '.' + cls.CONTENT_ROW_CLASS).previousElementSibling;
             if (this.parent.isAdaptive) {
-                const keyField: string = this.parent.layoutModule.kanbanRows[this.parent.layoutModule.swimlaneIndex].keyField;
+                const keyField: string = this.parent.layoutModule.kanbanRows[this.parent.layoutModule.swimlaneIndex].keyField as string;
                 crudData[this.parent.swimlaneSettings.keyField] = keyField;
             } else {
                 crudData[this.parent.swimlaneSettings.keyField] = this.getColumnKey(prev);

@@ -399,7 +399,7 @@ export class Sidebar extends Component<HTMLElement> implements INotifyPropertyCh
     }
     private transitionEnd(e: Event): void {
         this.setDock();
-        if (!isNullOrUndefined(e) && e.target === this.element) {
+        if (!isNullOrUndefined(e)) {
             this.triggerChange();
         }
         EventHandler.remove(this.element, 'transitionend', this.transitionEnd);

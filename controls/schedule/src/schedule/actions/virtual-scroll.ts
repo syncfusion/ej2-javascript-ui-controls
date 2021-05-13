@@ -18,6 +18,7 @@ export class VirtualScroll {
     private timeValue: number;
     private isScrollHeightNull: boolean = true;
     private focusedEle: Element;
+    private isResourceCell: boolean;
 
     constructor(parent: Schedule) {
         this.parent = parent;
@@ -104,10 +105,10 @@ export class VirtualScroll {
             const lastRenderIndex: number = this.parent.resourceBase.renderedResources[resourceCount - 1].groupIndex;
             const lastCollIndex: number =
                 this.parent.resourceBase.expandedResources[this.parent.resourceBase.expandedResources.length - 1].groupIndex;
-            let renderedResConut: number = resourceCount + (lastCollIndex - lastRenderIndex);
-            renderedResConut = (renderedResConut > this.parent.resourceBase.expandedResources.length) ?
-                this.parent.resourceBase.expandedResources.length : renderedResConut;
-            wrap.style.height = (renderedResConut * this.itemSize) + 'px';
+            let renderedResCount: number = resourceCount + (lastCollIndex - lastRenderIndex);
+            renderedResCount = (renderedResCount > this.parent.resourceBase.expandedResources.length) ?
+                this.parent.resourceBase.expandedResources.length : renderedResCount;
+            wrap.style.height = (renderedResCount * this.itemSize) + 'px';
         }
     }
 
@@ -116,6 +117,7 @@ export class VirtualScroll {
     }
 
     private renderEvents(): void {
+        this.setTabIndex(),
         this.parent.notify(events.dataReady, {});
         this.parent.notify(events.contentReady, {});
         this.parent.hideSpinner();
@@ -144,7 +146,7 @@ export class VirtualScroll {
         }
         if (!isNullOrUndefined(resCollection) && resCollection.length > 0) {
             this.parent.showSpinner();
-            let selectedEle: Element[] = this.parent.getSelectedElements();
+            const selectedEle: Element[] = this.parent.getSelectedElements();
             this.focusedEle = selectedEle[selectedEle.length - 1] || this.focusedEle;
             this.updateContent(resWrap, conWrap, eventWrap, resCollection);
             this.setTranslate(resWrap, conWrap, eventWrap, timeIndicator);
@@ -200,13 +202,17 @@ export class VirtualScroll {
 
     public updateContent(resWrap: HTMLElement, conWrap: HTMLElement, eventWrap: HTMLElement, resCollection: TdData[]): void {
         const renderedLenth: number = resWrap.querySelector('tbody').children.length;
+        if (document.activeElement && document.activeElement.classList.contains(cls.RESOURCE_CELLS_CLASS)) {
+            this.isResourceCell = true;
+            this.parent.element.focus();
+        }
         for (let i: number = 0; i < renderedLenth; i++) {
             remove(resWrap.querySelector('tbody tr'));
             remove(conWrap.querySelector('tbody tr'));
             remove(eventWrap.querySelector('div'));
         }
         this.parent.resourceBase.renderedResources = resCollection;
-        const resourceRows: Element[] = this.parent.resourceBase.getContentRows(resCollection);
+        const resourceRows: Element[] = this.parent.resourceBase.getContentRows(resCollection, true);
         const contentRows: Element[] = this.parent.activeView.getContentRows();
         const eventRows: Element[] = this.parent.activeView.getEventRows(resCollection.length);
         append(resourceRows, resWrap.querySelector('tbody'));
@@ -226,17 +232,34 @@ export class VirtualScroll {
             setStyleAttribute(timeIndicator, { transform: `translateY(${this.translateY}px)` });
         }
     }
-    
+
     public updateFocusedWorkCell(): void {
         if (this.focusedEle) {
-            let date: number = parseInt(this.focusedEle.getAttribute('data-date'), 10);
-            let groupIndex: number = parseInt(this.focusedEle.getAttribute('data-group-index'), 10);
-            let ele: HTMLTableCellElement =
+            const date: number = parseInt(this.focusedEle.getAttribute('data-date'), 10);
+            const groupIndex: number = parseInt(this.focusedEle.getAttribute('data-group-index'), 10);
+            const ele: HTMLTableCellElement =
                 this.parent.element.querySelector(`.${cls.WORK_CELLS_CLASS}[data-date="${date}"][data-group-index="${groupIndex}"]`);
             if (ele) {
                 this.parent.addSelectedClass([ele], ele, true);
             }
             this.focusedEle = null;
+        }
+    }
+
+    private setTabIndex(): void {
+        let resColWrap: HTMLElement = this.parent.element.querySelector('.' + cls.RESOURCE_COLUMN_WRAP_CLASS);
+        let resCells: HTMLElement[] = [].slice.call(this.parent.element.querySelectorAll('.' + cls.RESOURCE_CELLS_CLASS));
+        if (resCells && resColWrap) {
+            resCells.forEach((element: HTMLElement) => {
+                if (element.getBoundingClientRect().top >= resColWrap.getBoundingClientRect().top) {
+                    element.setAttribute('tabindex', '0');
+                }
+            });
+        }
+        const focusResCell: HTMLElement = this.parent.element.querySelector(`.${cls.RESOURCE_CELLS_CLASS}[tabindex="${0}"]`)
+        if (this.isResourceCell && focusResCell) {
+            focusResCell.focus();
+            this.isResourceCell = false;
         }
     }
 

@@ -825,6 +825,29 @@ export function validateSubFolder(parent: IFileManager, data: { [key: string]: O
                 subFolder = true;
                 break;
             }
+        } else {
+            const srcData: string = parent.dragNodes[i];
+            let len: number = 0;
+            if (srcData) {
+                len = srcData.lastIndexOf('/');
+            }
+            let path: string = '';
+            if (len > 0) {
+                path = dragPath + srcData.substring(0, len + 1);
+            }
+            if (path === dropPath) {
+                const result: ReadArgs = {
+                    files: null,
+                    error: {
+                        code: '402',
+                        message: getLocaleText(parent, 'Same-Folder-Error'),
+                        fileExists: null
+                    }
+                };
+                createDialog(parent, 'Error', result);
+                subFolder = true;
+                break;
+            }
         }
     }
     return subFolder;
@@ -996,6 +1019,9 @@ export function createVirtualDragElement(parent: IFileManager): void {
         while (i < parent.selectedItems.length) {
             parent.dragNodes.push(parent.selectedItems[i]);
             i++;
+        }
+        if (parent.selectedItems.length == 0 && parent.dragData && parent.dragData.length == 1) {
+            parent.dragNodes.push(getItemName(parent, parent.dragData[0]));
         }
     }
     const cloneIcon: HTMLElement = parent.createElement('div', {

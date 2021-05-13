@@ -1759,3 +1759,24 @@ export function generateResourceDatasource(startId: number, endId: number, text:
     }
     return data;
 }
+/**
+ * Method to generate data for all day
+ *
+ * @param {number} count Accepts the number of events data count
+ * @param {Date} date Accepts the event start date
+ * @returns {Object[]} Returns the collection of event datas
+ * @private
+ */
+ export function generateAllDayData(count: number = 30, date: Date = new Date()): Record<string, any>[] {
+    const dateCollections: Record<string, any>[] = [];
+    for (let i: number = 0; i < count; i++) {
+        dateCollections.push({
+                Id: i + 1,
+                Subject: "Appointment " + i,
+                StartTime: new Date(date.getFullYear(), date.getMonth(), date.getDate(), 6),
+                EndTime: new Date(date.getFullYear(), date.getMonth(), date.getDate(), 12),
+                IsAllDay: true
+            });
+    }
+    return dateCollections;
+}

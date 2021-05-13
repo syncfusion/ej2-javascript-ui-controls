@@ -28,7 +28,7 @@ import { CommandHandler } from './command-manager';
 import { Actions, findToolToActivate, isSelected, getCursor, contains } from './actions';
 import { DiagramAction, KeyModifiers, Keys, DiagramEvent, DiagramTools, RendererAction, DiagramConstraints } from '../enum/enum';
 import { BlazorAction, ScrollActions } from '../enum/enum';
-import { isPointOverConnector, findObjectType, insertObject, getObjectFromCollection, getTooltipOffset, findParent } from '../utility/diagram-util';
+import { isPointOverConnector, findObjectType, insertObject, getObjectFromCollection, getTooltipOffset, findParentInSwimlane } from '../utility/diagram-util';
 import { getObjectType, getInOutConnectPorts, removeChildNodes, cloneBlazorObject, checkPort } from '../utility/diagram-util';
 import { canZoomPan, canDraw, canDrag, canZoomTextEdit, canVitualize, canPreventClearSelection } from './../utility/constraints-util';
 import { canMove, canEnablePointerEvents, canSelect, canEnableToolTip } from './../utility/constraints-util';
@@ -2182,8 +2182,8 @@ class ObjectFinder {
             let parent: string = '';
             for (let i: number = actualTarget.length - 1; i >= 0; i--) {
                 if ((actualTarget[i] as Node).parentId) {
-                    let parent1: string = findParent(actualTarget[i] as Node, diagram, parent);
-                    let parent2: string = findParent(actualTarget[i - 1] as Node, diagram, parent);
+                    let parent1: string = findParentInSwimlane(actualTarget[i] as Node, diagram, parent);
+                    let parent2: string = findParentInSwimlane(actualTarget[i - 1] as Node, diagram, parent);
                     let parentNode1: Node = diagram.nameTable[parent1];
                     let parentNode2: Node = diagram.nameTable[parent2];
                     if (parentNode2 && parent1 !== parent2 && parentNode1.zIndex < parentNode2.zIndex) {

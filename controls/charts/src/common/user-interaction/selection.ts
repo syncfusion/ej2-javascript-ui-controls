@@ -102,7 +102,8 @@ export class BaseSelection {
         const backgroundColor: string = '#ffffff';
         const svg: Element = chart.svgObject;
         const pathOptions: { [x: string]: unknown }[] = [];
-        const patternGroup: { id: string, patternUnits: string } = { 'id': patternName + '_Selection' + '_' + index, 'patternUnits': 'userSpaceOnUse' };
+        const patternGroup: { id: string, patternUnits: string } = {
+            'id': chart.element.id + '_' + patternName + '_Selection' + '_' + index, 'patternUnits': 'userSpaceOnUse' };
         const heightStr: string = 'height';
         const widthStr: string = 'width';
         const width: number = 10;
@@ -373,7 +374,7 @@ export class BaseSelection {
         const pattern: Element = svgRenderer.createPattern(patternGroup, 'pattern');
         this.loadPattern(chart as Chart, pathOptions, pattern, svgRenderer);
         svg.appendChild(pattern);
-        return 'url(#' + patternName + '_' + 'Selection' + '_' + index + ')';
+        return 'url(#' + chart.element.id + '_' + patternName + '_' + 'Selection' + '_' + index + ')';
     }
 
     /**

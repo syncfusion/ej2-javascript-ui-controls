@@ -2,7 +2,7 @@
  * Undo Redo spec
  */
 import { selectAll, removeClass } from '@syncfusion/ej2-base';
-import { RichTextEditor, NodeSelection } from './../../../src/index';
+import { RichTextEditor, NodeSelection, IToolbarStatus, ToolbarStatusEventArgs } from './../../../src/index';
 import { renderRTE, destroy } from "./../../rich-text-editor/render.spec";
 
 let keyboardEventArgs = {
@@ -245,8 +245,8 @@ describe('Undo and Redo module', () => {
                 },
                 undoRedoSteps: 5,
                 editorMode: 'Markdown',
-                toolbarStatusUpdate: function statusUpdate() {
-                    if (document.getElementById('preview-code').classList.contains('e-active')) {
+                updatedToolbarStatus: function statusUpdate() {
+                    if (mdsource.classList.contains('e-active')) {
                         rteObj.disableToolbarItem(['Undo', 'Redo'], true);
                     }
                 },
@@ -280,12 +280,116 @@ describe('Undo and Redo module', () => {
             rteObj.formatter.enableUndo(rteObj);
             expect(undoElement.classList.contains('e-overlay')).toBe(false);
             expect(redoElement.classList.contains('e-overlay')).toBe(true);
-           document.getElementById('preview-code').click();   
-           expect(undoElement.classList.contains('e-overlay')).toBe(true);
-           expect(redoElement.classList.contains('e-overlay')).toBe(true);
-           document.getElementById('preview-code').click();   
-           expect(undoElement.classList.contains('e-overlay')).toBe(false);
-           expect(redoElement.classList.contains('e-overlay')).toBe(true);
+            mdsource.click();
+            expect(undoElement.classList.contains('e-overlay')).toBe(false);
+            expect(redoElement.classList.contains('e-overlay')).toBe(true);
+            mdsource.click();
+            expect(undoElement.classList.contains('e-overlay')).toBe(false);
+            expect(redoElement.classList.contains('e-overlay')).toBe(true);
+        });
+        afterAll(() => {
+            destroy(rteObj);
+        });
+    });
+    describe(' BLAZ-11465 - Undo/Redo updatedToolbarStatus with toolbar action testing', () => {
+        let controlId: string;
+        let eventArgs: any;
+        let status: IToolbarStatus;
+        let rteObj: RichTextEditor;
+        let editNode: HTMLElement;
+        let domSelection: NodeSelection = new NodeSelection();
+        let innervalue: string = '<div id="div1"><p id="paragraph1"><b>Description:</b></p>' +
+        '<p id="paragraph2">The Rich Text Editor (RTE) control is an easy to render in' +
+        'client side. Customer easy to edit the contents and get the HTML content for' +
+        'the displayed content. A rich text editor control provides users with a toolbar' +
+        'that helps them to apply rich text formats to the text entered in the text' +
+        'area. </p></div>';
+        beforeAll(() => {
+            rteObj = renderRTE({
+                toolbarSettings: {
+                    items: ['Undo', 'Redo', '|', 'Bold']
+                },
+                value: innervalue,
+                updatedToolbarStatus: (e: ToolbarStatusEventArgs) => {
+                    status = e.html;
+                    eventArgs = e;
+                }
+            });
+            editNode = rteObj.contentModule.getEditPanel() as HTMLDivElement;
+            editNode.style.width = "200px;";
+            editNode.style.height = "200px";
+            controlId = rteObj.element.id;
+        });
+        it(' toolbar interaction ', () => {
+            let node: Node = document.getElementById('paragraph2');
+            domSelection.setSelectionText(document, node.childNodes[0], node.childNodes[0], 2, 6);
+            (rteObj as any).mouseUp({ target: editNode });
+            expect(eventArgs.undo).toEqual(false);
+            expect(eventArgs.redo).toEqual(false);
+            document.getElementById(controlId + "_toolbar_Bold").click();
+            expect(eventArgs.undo).toEqual(true);
+            expect(eventArgs.redo).toEqual(false);
+            expect(status.bold).toEqual(true);
+            document.getElementById(controlId + "_toolbar_Undo").click();
+            expect(status.bold).toEqual(false);
+            expect(eventArgs.undo).toEqual(false);
+            expect(eventArgs.redo).toEqual(true);
+            document.getElementById(controlId + "_toolbar_Redo").click();
+            expect(eventArgs.undo).toEqual(true);
+            expect(eventArgs.redo).toEqual(false);
+            expect(status.bold).toEqual(true);
+        });
+        afterAll(() => {
+            destroy(rteObj);
+        });
+    });
+    describe(' BLAZ-11465 - Undo/Redo updatedToolbarStatus with keyboard action testing', () => {
+        let controlId: string;
+        let eventArgs: ToolbarStatusEventArgs;
+        let status: IToolbarStatus;
+        let rteObj: RichTextEditor;
+        let editNode: HTMLElement;
+        let domSelection: NodeSelection = new NodeSelection();
+        let keyboardEventArgs = {
+            preventDefault: function () { },
+            stopPropagation: () => { },
+            type: 'keydown', ctrlKey: false, shiftKey: false, action: '', which: 8
+        };
+        let innervalue: string = '<div id="div1"><p id="paragraph1"><b>Description:</b></p>' +
+        '<p id="paragraph2">The Rich Text Editor (RTE) control is an easy to render in' +
+        'client side. Customer easy to edit the contents and get the HTML content for' +
+        'the displayed content. A rich text editor control provides users with a toolbar' +
+        'that helps them to apply rich text formats to the text entered in the text' +
+        'area. </p></div>';
+        beforeAll(() => {
+            rteObj = renderRTE({
+                toolbarSettings: {
+                    items: ['Undo', 'Redo', '|', 'Bold']
+                },
+                value: innervalue,
+                updatedToolbarStatus: (e: ToolbarStatusEventArgs) => {
+                    status = e.html;
+                    eventArgs = e;
+                }
+            });
+            editNode = rteObj.contentModule.getEditPanel() as HTMLDivElement;
+            editNode.style.width = "200px;";
+            editNode.style.height = "200px";
+            controlId = rteObj.element.id;
+        });
+        it(' keyboard interaction ', () => {
+            let node: Node = document.getElementById('paragraph2');
+            domSelection.setSelectionText(document, node.childNodes[0], node.childNodes[0], 2, 6);
+            (rteObj as any).mouseUp({ target: editNode });
+            expect(eventArgs.undo).toEqual(false);
+            expect(eventArgs.redo).toEqual(false);
+            keyboardEventArgs.action = 'bold';
+            keyboardEventArgs.ctrlKey = true;
+            keyboardEventArgs.shiftKey = false;
+            (rteObj as any).keyDown(keyboardEventArgs);
+            expect(eventArgs.undo).toEqual(true);
+            expect(eventArgs.redo).toEqual(false);
+            expect(status.bold).toEqual(true);
         });
         afterAll(() => {
             destroy(rteObj);

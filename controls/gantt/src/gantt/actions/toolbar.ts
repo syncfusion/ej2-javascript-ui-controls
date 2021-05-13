@@ -148,7 +148,6 @@ export class Toolbar {
             EventHandler.add(this.searchElement, 'blur', this.blurHandler, this);
         }
     }
-    // eslint-disable-next-line
     private propertyChanged(property: object): void {
         const module: string = getValue('module', property);
         if (module !== this.getModuleName() || !this.parent.toolbar) {

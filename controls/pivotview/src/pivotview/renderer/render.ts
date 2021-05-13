@@ -579,7 +579,8 @@ export class Render {
                         }
                         let eventArgs: AggregateMenuOpenEventArgs = {
                             cancel: false, fieldName: pivotValue1.actualText.toString(),
-                            aggregateTypes: [...this.getMenuItem(fieldType)]
+                            aggregateTypes: [...this.getMenuItem(fieldType)],
+                            displayMenuCount: 7
                         };
                         this.parent.trigger(events.aggregateMenuOpen, eventArgs, (observedArgs: AggregateMenuOpenEventArgs) => {
                             if (!observedArgs.cancel && !((elem as HTMLElement).innerText === '')) {
@@ -600,8 +601,8 @@ export class Render {
                                         }
                                     }
                                 }
-                                if (menuItem.length >= 7) {
-                                    menuItem.splice(7);
+                                if (menuItem.length > observedArgs.displayMenuCount) {
+                                    menuItem.splice(observedArgs.displayMenuCount);
                                     menuItem.push(
                                         {
                                             text: this.parent.localeObj.getConstant('MoreOption'),

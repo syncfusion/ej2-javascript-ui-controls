@@ -3,14 +3,18 @@ import * as events from '../base/constant';
 import { ToolbarStatus } from '../../editor-manager/plugin/toolbar-status';
 import { IToolbarStatus } from '../../common/interface';
 import { IDropDownItemModel } from '../base/interface';
+import { getDefaultHtmlTbStatus } from '../../common/util';
 /**
  * HtmlToolbarStatus module for refresh the toolbar status
  */
 export class HtmlToolbarStatus {
     public parent: IRichTextEditor;
     public toolbarStatus: IToolbarStatus;
+    private prevToolbarStatus: IToolbarStatus;
+
     public constructor(parent: IRichTextEditor) {
         this.parent = parent;
+        this.toolbarStatus = this.prevToolbarStatus = getDefaultHtmlTbStatus();
         this.addEventListener();
     }
     private addEventListener(): void {
@@ -46,6 +50,11 @@ export class HtmlToolbarStatus {
             fontName,
             args.documentNode as Node
         );
+        const tbStatusString: string = JSON.stringify(this.toolbarStatus);
         this.parent.notify(events.toolbarUpdated, this.toolbarStatus);
+        if (JSON.stringify(this.prevToolbarStatus) !== tbStatusString) {
+            this.parent.notify(events.updateTbItemsStatus, { html: JSON.parse(tbStatusString), markdown: null });
+            this.prevToolbarStatus = JSON.parse(tbStatusString);
+        }
     }
 }

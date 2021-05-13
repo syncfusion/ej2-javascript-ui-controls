@@ -432,7 +432,7 @@ export class WorkbookNumberFormat {
                 dateObj = toDate(value, intl, cell && cell.format);
                 if (!isNullOrUndefined(dateObj.dateObj) && dateObj.dateObj.toString() !== 'Invalid Date') {
                     cell = cell ? cell : {};
-                    value = dateToInt(dateObj.dateObj, value.indexOf(':') > -1).toString();
+                    value = dateToInt(dateObj.dateObj, value.indexOf(':') > -1, dateObj.type && dateObj.type === 'time').toString();
                     if (!cell.format || cell.format === '') {
                         if (dateObj.type === 'time') {
                             cell.format = getFormatFromType('Time');

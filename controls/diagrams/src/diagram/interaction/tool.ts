@@ -976,8 +976,17 @@ export class MoveTool extends ToolBase {
                 if (!arg.cancel && args.source && this.commandHandler.isParentAsContainer(this.currentTarget)) {
                     const nodes: NodeModel[] = (args.source instanceof Selector) ? args.source.nodes : [args.source as NodeModel];
                     let isEndGroup: boolean = false;
+                    let temp: boolean;
+                    for (let i = 0; i < nodes.length; i++) {
+                        if ((nodes[0] as Node).parentId === (nodes[i] as Node).parentId) {
+                            temp = true;
+                        } else {
+                            temp = false;
+                            break;
+                        }
+                    }
                     for (let i: number = 0; i < nodes.length; i++) {
-                        if (!nodes[i].container) {
+                        if (!nodes[i].container && temp) {
                             isEndGroup = true;
                             this.commandHandler.dropChildToContainer(this.currentTarget, nodes[i]);
                             this.commandHandler.renderContainerHelper(nodes[i]);

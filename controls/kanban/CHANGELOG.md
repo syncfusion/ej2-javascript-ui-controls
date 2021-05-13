@@ -2,6 +2,20 @@
 
 ## [Unreleased]
 
+## 19.1.63 (2021-05-13)
+
+### Kanban
+
+#### New Features
+
+- `#287435, #295725` - Support provided for map the `keyField` in the `column` as number type.
+
+#### Bug Fixes
+
+- `#I324923` - The issue with "Kanban content color not changed, when using the material-dark theme" has been resolved.
+- `#F160742` - The issue with "Script error thrown when drag and drop operation performed when swimlane `keyField` as non-existing field" has been resolved.
+- `#322742` - The issue with "Unable to drag and drop the card when `WebApiAdaptor` used on Kanban" has been resolved.
+
 ## 19.1.59 (2021-05-04)
 
 ### Kanban

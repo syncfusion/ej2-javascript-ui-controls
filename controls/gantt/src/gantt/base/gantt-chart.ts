@@ -216,7 +216,7 @@ export class GanttChart {
         this.chartBodyContainer = createElement('div', { className: cls.chartBodyContainer });
         this.chartElement.appendChild(this.chartBodyContainer);
         this.scrollElement = createElement('div', {
-            className: cls.chartScrollElement + ' ' + cls.scrollContent, styles: 'position:relative;'
+            className: cls.chartScrollElement + ' ' + cls.scrollContent, styles: 'position:relative;z-index:2'
         });
         this.chartBodyContainer.appendChild(this.scrollElement);
         this.chartBodyContent = createElement('div', { className: cls.chartBodyContent, styles: 'position:relative; ' });
@@ -254,7 +254,8 @@ export class GanttChart {
      */
     public updateLastRowBottomWidth(): void {
         if (this.parent.currentViewData.length > 0 && this.parent.height !== 'auto') {
-            const expandedRecords: IGanttData[] = this.parent.getExpandedRecords(this.parent.currentViewData);
+            const expandedRecords: IGanttData[] = this.parent.virtualScrollModule && this.parent.enableVirtualization ?
+                this.parent.currentViewData : this.parent.getExpandedRecords(this.parent.currentViewData);
             const lastExpandedRow: IGanttData = expandedRecords[expandedRecords.length - 1];
             const lastExpandedRowIndex: number = this.parent.currentViewData.indexOf(lastExpandedRow);
             const lastRow: HTMLElement = this.parent.getRowByIndex(lastExpandedRowIndex);
@@ -607,7 +608,6 @@ export class GanttChart {
         const chartRow: Node = closest(target as Element, 'tr');
         const rowIndex: number = getValue('rowIndex', chartRow);
         const gridRow: Node = this.parent.treeGrid.getRows()[rowIndex];
-        // eslint-disable-next-line
         const args: object = { data: record, gridRow: gridRow, chartRow: chartRow, cancel: false };
         this.isExpandCollapseFromChart = true;
         if (parentElement.classList.contains('e-row-expand')) {
@@ -636,12 +636,10 @@ export class GanttChart {
      * @returns {void} .
      * @private
      */
-    // eslint-disable-next-line
     public collapseGanttRow(args: object, isCancel?: boolean): void {
         if (isCancel) {
             this.collapsedGanttRow(args);
         } else {
-            // eslint-disable-next-line
             this.parent.trigger('collapsing', args, (arg: object) => {
                 if (this.isExpandCollapseFromChart && !getValue('cancel', arg)) {
                     if (isBlazor()) {
@@ -660,7 +658,6 @@ export class GanttChart {
      * @param {object} args .
      * @private
      */
-    // eslint-disable-next-line
     public collapsedGanttRow(args: object): void {
         const record: IGanttData = getValue('data', args);
         if (this.isExpandCollapseFromChart) {
@@ -691,12 +688,10 @@ export class GanttChart {
      * @param {boolean} isCancel .
      * @private
      */
-    // eslint-disable-next-line
     public expandGanttRow(args: object, isCancel?: boolean): void {
         if (isCancel) {
             this.expandedGanttRow(args);
         } else {
-            // eslint-disable-next-line
             this.parent.trigger('expanding', args, (arg: object) => {
                 if (isBlazor()) {
                     setValue('chartRow', getElement(getValue('chartRow', arg)), arg);
@@ -715,7 +710,6 @@ export class GanttChart {
      * @param {object} args .
      * @private
      */
-    // eslint-disable-next-line
     public expandedGanttRow(args: object): void {
         const record: IGanttData = getValue('data', args);
         if (this.isExpandCollapseFromChart) {
@@ -937,26 +931,23 @@ export class GanttChart {
                 e.preventDefault();
             }
             if ($target.classList.contains('e-rowcell') && (nextElement && nextElement.classList.contains('e-rowcell')) ||
-                $target.classList.contains('e-headercell')) {
-                    if (isTab) {
-                        if (this.parent.editSettings.allowNextRowEdit) {
-                            const rowData: IGanttData = this.parent.currentViewData[this.focusedRowIndex];
-                            const columnName: string = this.parent.ganttColumns[nextElement.getAttribute('aria-colindex')].field;
-                            if (rowData.hasChildRecords) {
-                                if (columnName === this.parent.taskFields.endDate || columnName ===
+                $target.classList.contains('e-headercell')){     // eslint-disable-line                                                                                                                                                                                                                                    
+                if (isTab) {
+                    if (this.parent.editSettings.allowNextRowEdit) {
+                        const rowData: IGanttData = this.parent.currentViewData[this.focusedRowIndex];
+                        const columnName: string = this.parent.ganttColumns[nextElement.getAttribute('aria-colindex')].field;
+                        if (rowData.hasChildRecords) {
+                            if (columnName === this.parent.taskFields.endDate || columnName ===
                                      this.parent.taskFields.duration || columnName === this.parent.taskFields.dependency ||
                                      columnName === this.parent.taskFields.progress || columnName === this.parent.taskFields.work ||
                                      columnName === 'taskType') {
-                                     this.parent.treeGrid.grid.endEdit();
-                                     this.parent.treeGrid.grid.notify('key-pressed', e);
-                                 } else if (columnName === this.parent.taskFields.name || columnName === this.parent.taskFields.startDate) {
-                                     this.parent.treeGrid.grid.notify('key-pressed', e);
-                                 } else {
-                                     this.parent.treeGrid.grid.notify('key-pressed', e);
-                                     this.parent.treeGrid.editCell(this.focusedRowIndex,columnName);
-                                 }
-                             } else {
+                                this.parent.treeGrid.grid.endEdit();
                                 this.parent.treeGrid.grid.notify('key-pressed', e);
+                            } else if (columnName === this.parent.taskFields.name || columnName === this.parent.taskFields.startDate) {
+                                this.parent.treeGrid.grid.notify('key-pressed', e);
+                            } else {
+                                this.parent.treeGrid.grid.notify('key-pressed', e);
+                                this.parent.treeGrid.editCell(this.focusedRowIndex,columnName);   // eslint-disable-line
                             }
                         } else {
                             this.parent.treeGrid.grid.notify('key-pressed', e);
@@ -964,6 +955,9 @@ export class GanttChart {
                     } else {
                         this.parent.treeGrid.grid.notify('key-pressed', e);
                     }
+                } else {
+                    this.parent.treeGrid.grid.notify('key-pressed', e);
+                }
             }
             if (!this.parent.editModule.cellEditModule.isCellEdit) {
                 if (nextElement) {
@@ -1028,7 +1022,7 @@ export class GanttChart {
                 childElement = this.getChildElement(rowElement, isTab);
                 return childElement;
             } else if ($target.classList.contains('e-rowcell')) {
-                /* tslint:disable-next-line:no-any */
+                /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
                 rowIndex = ($target.parentElement as any).rowIndex;
                 if (isTab) {
                     rowElement = this.parent.getRowByIndex(rowIndex);
@@ -1051,7 +1045,6 @@ export class GanttChart {
                 }
             } else if ($target.parentElement.classList.contains('e-chart-row-cell') ||
                 $target.parentElement.parentElement.classList.contains('e-chart-row-cell')) {
-                let childElement: Element | string;
                 /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
                 rowIndex = (closest($target, '.e-chart-row') as any).rowIndex;
                 if (isTab) {
@@ -1059,7 +1052,7 @@ export class GanttChart {
                 } else {
                     rowElement = this.parent.treeGrid.grid.getRowByIndex(rowIndex);
                 }
-                childElement = this.getChildElement(rowElement, isTab);
+                const childElement : Element | string = this.getChildElement(rowElement, isTab);
                 return childElement;
             }
         }
@@ -1106,6 +1099,7 @@ export class GanttChart {
     }
     /**
      * Getting child element based on row element.
+     *
      * @param {Element} rowElement .
      * @param {boolean} isTab .
      * @returns {Element | string} .

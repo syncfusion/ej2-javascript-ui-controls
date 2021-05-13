@@ -2,31 +2,14 @@ import { IsFormatted } from './isformatted';
 import * as CONSTANT from './../base/constant';
 import { NodeSelection } from './../../selection/index';
 import { IToolbarStatus } from './../../common/interface';
+import { getDefaultHtmlTbStatus } from './../../common/util';
 /**
  * Update Toolbar Status
- * 
  * @hidden
  * @deprecated
  */
 
-export const statusCollection: IToolbarStatus = {
-    bold: false,
-    italic: false,
-    subscript: false,
-    superscript: false,
-    strikethrough: false,
-    orderedlist: false,
-    unorderedlist: false,
-    underline: false,
-    alignments: null,
-    backgroundcolor: null,
-    fontcolor: null,
-    fontname: null,
-    fontsize: null,
-    formats: null,
-    createlink: false,
-    insertcode: false
-};
+export const statusCollection: IToolbarStatus = getDefaultHtmlTbStatus();
 
 export class ToolbarStatus {
     /**

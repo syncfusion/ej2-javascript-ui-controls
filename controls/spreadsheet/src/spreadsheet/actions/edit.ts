@@ -912,8 +912,8 @@ export class Edit {
             if (eventName !== 'cellSave') {
                 (<CellEditEventArgs>eventArgs).cancel = false;
             }
-            this.parent.trigger(eventName, eventArgs);
         }
+        this.parent.trigger(eventName, eventArgs);
         return (<CellEditEventArgs>eventArgs).cancel;
     }
 

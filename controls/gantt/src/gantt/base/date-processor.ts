@@ -602,7 +602,6 @@ export class DateProcessor {
         let duration: number = null;
 
         if (typeof value === 'string') {
-            // eslint-disable-next-line
             const values: Object[] = value.match(/(\d*\.*\d+|.+$)/g);
             if (values && values.length <= 2) {
                 duration = parseFloat(values[0].toString().trim());
@@ -619,7 +618,6 @@ export class DateProcessor {
             duration = value;
             durationUnit = null;
         }
-        // eslint-disable-next-line
         const output: Object = {
             duration: duration,
             durationUnit: durationUnit
@@ -963,13 +961,37 @@ export class DateProcessor {
      * @returns {number} .
      * @private
      */
-    public offset(date: Date, localOffset: number, timezone: string): number {
-        const convertedDate: Date = new Date(date.toLocaleString('en-US', { timeZone: timezone }));
-        if (!isNaN(convertedDate.getTime())) {
-            return ((date.getTime() - convertedDate.getTime()) / 60000) + localOffset;
+
+    public offset(date: Date, timezone: string): number {
+        const localOffset: number = date.getTimezoneOffset();
+        try {
+            const convertedDate: Date = new Date(date.toLocaleString('en-US', { timeZone: timezone }));
+            if (!isNaN(convertedDate.getTime())) {
+                return ((date.getTime() - convertedDate.getTime()) / 60000) + localOffset;
+            }
+            return 0;
+        } catch (error) {
+            return 0;
         }
-        return 0;
     }
+
+    public remove(date: Date, timezone: string): Date {
+        return this.reverse(date, timezone, date.getTimezoneOffset());
+    }
+
+    public reverse(date: Date, fromOffset: number | string, toOffset: number | string): Date {
+        if (typeof fromOffset === 'string') {
+            fromOffset = this.offset(date, fromOffset);
+        }
+        if (typeof toOffset === 'string') {
+            toOffset = this.offset(date, toOffset);
+        }
+        const fromLocalOffset: number = date.getTimezoneOffset();
+        date = new Date(date.getTime() + (fromOffset - toOffset) * 60000);
+        const toLocalOffset: number = date.getTimezoneOffset();
+        return new Date(date.getTime() + (toLocalOffset - fromLocalOffset) * 60000);
+    }
+
     /**
      * @param {Date} date .
      * @param {string} timezone .
@@ -978,7 +1000,7 @@ export class DateProcessor {
      */
     public convert(date: Date, timezone: string): Date {
         const fromOffset: number = date.getTimezoneOffset();
-        const toOffset : number = this.offset(date, fromOffset, timezone);
+        const toOffset : number = this.offset(date, timezone);
         date = new Date(date.getTime() + (fromOffset - toOffset) * 60000);
         const toLocalOffset: number = date.getTimezoneOffset();
         return new Date(date.getTime() + (toLocalOffset - fromOffset) * 60000);
@@ -1087,17 +1109,14 @@ export class DateProcessor {
         const projectEndDate: Date = typeof this.parent.projectEndDate === 'string' ?
             new Date(this.parent.projectEndDate) : this.parent.projectEndDate;
         let minStartDate: Date | string = null; let maxEndDate: Date| string = null;
-        // eslint-disable-next-line
         const flatData: object[] = (getValue('dataOperation.dataArray', this.parent));
         if ((!projectStartDate || !projectEndDate) && (flatData && flatData.length === 0)) {
             minStartDate = this.getDateFromFormat(new Date());
             maxEndDate = this.getDateFromFormat(new Date(minStartDate.getTime()));
         } else if (flatData.length > 0) {
-            // eslint-disable-next-line
             const sortedStartDate: object[] = flatData.slice().sort((a: ITaskData, b: ITaskData) =>
                 ((new Date(a[this.parent.taskFields.startDate])).getTime() -
                      (new Date(b[this.parent.taskFields.startDate])).getTime()));
-            // eslint-disable-next-line
             const sortedEndDate: object[] = flatData.slice().sort((a: ITaskData, b: ITaskData) =>
                 ((new Date(b[this.parent.taskFields.endDate])).getTime() - (new Date(a[this.parent.taskFields.endDate])).getTime()));
             minStartDate = sortedStartDate[0][this.parent.taskFields.startDate];
@@ -1114,7 +1133,6 @@ export class DateProcessor {
      * @returns {void} .
      * @private
      */
-    // eslint-disable-next-line
     public calculateProjectDates(editArgs?: Object): void {
         const sDate: Date = typeof this.parent.projectStartDate === 'string' ?
             new Date(this.parent.projectStartDate) : this.parent.projectStartDate;
@@ -1128,13 +1146,11 @@ export class DateProcessor {
         const flatData: IGanttData[] = this.parent.flatData;
         const currentViewData: IGanttData[] = this.parent.currentViewData;
         let taskRange: Date[] = [];
-        // eslint-disable-next-line
         const addDateToList: Function = (date: Date): void => {
             if (!isNullOrUndefined(date)) {
                 taskRange.push(date);
             }
         };
-        // eslint-disable-next-line
         const sortDates: Function = (dates: Date[]): void => {
             if (dates.length > 0) {
                 dates.sort((a: Date, b: Date) => {

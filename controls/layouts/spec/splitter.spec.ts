@@ -1245,12 +1245,12 @@ describe('Splitter Control', () => {
 
         it('Previous pane', () => {
             splitterObj.currentSeparator = document.getElementsByClassName('e-split-bar')[0];
-           expect(splitterObj.getPrevPane(splitterObj.currentSeparator, parseInt(splitterObj.currentSeparator.style.order, 10))).toBe(document.querySelectorAll('.e-pane-horizontal')[0]);
+           expect(splitterObj.getPrevPane(parseInt(splitterObj.currentSeparator.style.order, 10))).toBe(document.querySelectorAll('.e-pane-horizontal')[0]);
         });
 
         it('Next pane', () => {
             splitterObj.currentSeparator = document.getElementsByClassName('e-split-bar')[0];
-           expect(splitterObj.getNextPane(splitterObj.currentSeparator, parseInt(splitterObj.currentSeparator.style.order, 10))).toBe(document.querySelectorAll('.e-pane-horizontal')[1]);
+           expect(splitterObj.getNextPane(parseInt(splitterObj.currentSeparator.style.order, 10))).toBe(document.querySelectorAll('.e-pane-horizontal')[1]);
         });
     });
 
@@ -5482,6 +5482,32 @@ describe('Splitter Control', () => {
         expect(splitterObj.allPanes[0].style.order).toBe("0");
         expect(splitterObj.allPanes[1].style.order).toBe("2");
         expect(splitterObj.allBars[0].style.order).toBe("1");
+        });
+    });
+    describe('EnableReversePane API testing', () => {
+        let splitterObj: any;
+        beforeAll((): void => {
+        let element: HTMLElement = createElement('div', { id: 'default'});
+        let child1: HTMLElement = createElement('div');
+        let child2: HTMLElement = createElement('div');
+        let child3: HTMLElement = createElement('div');
+        element.appendChild(child1);
+        element.appendChild(child2);
+        element.appendChild(child3);
+        document.body.appendChild(element);
+        splitterObj = new Splitter({ height: '400px',enableReversePanes : true, width: '400px', paneSettings: [{ size: '50%', collapsed: false }, { size: '50%', collapsed: false }, { collapsed: false }] });
+        splitterObj.appendTo(document.getElementById('default'));
+        });
+        afterAll((): void => {
+        document.body.innerHTML = '';
+        });
+        it('inital order checking', function() {
+            expect(splitterObj.allPanes.length).toBe(3);
+            expect(splitterObj.allPanes[0].style.order).toBe('4');
+            expect(splitterObj.allPanes[1].style.order).toBe('2');
+            expect(splitterObj.allPanes[2].style.order).toBe('0');
+            expect(splitterObj.allBars[0].style.order).toBe('3');
+            expect(splitterObj.allBars[1].style.order).toBe('1');
         });
     });
  });

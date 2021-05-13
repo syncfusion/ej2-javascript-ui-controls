@@ -919,7 +919,29 @@
         z-index: 1;
       }
 
-      .e-date-header-wrap,
+      .e-date-header-wrap {
+        max-height: 300px;
+        overflow: hidden;
+
+        &.e-all-day-scroll {
+          border-bottom: 1px solid $schedule-appointment-border-color;
+          overflow-y: auto;
+
+          .e-header-row .e-resource-cells {
+            position: sticky;
+          }
+
+          .e-header-row .e-header-cells {
+            position: sticky;
+            top: 0;
+          }
+        }
+
+        &.e-all-day-auto {
+          max-height: unset;
+        }
+      }
+
       .e-time-cells-wrap {
         overflow: hidden;
       }

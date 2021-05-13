@@ -2,7 +2,7 @@ import { isNullOrUndefined, createElement, extend, addClass, remove, removeClass
 import { Gantt } from '../base/gantt';
 import { parentsUntil } from '../base/utils';
 import {
-    IGanttData, ITaskData, ITaskbarEditedEventArgs, IDependencyEventArgs, MousePoint, IPredecessor, ITaskSegment
+    IGanttData, ITaskData, ITaskbarEditedEventArgs, IActionBeginEventArgs, IDependencyEventArgs, MousePoint, IPredecessor, ITaskSegment
 } from '../base/interface';
 import { DateProcessor } from '../base/date-processor';
 import * as cls from '../base/css-constants';
@@ -94,7 +94,7 @@ export class TaskbarEdit extends DateProcessor {
         this.dragMouseLeave = false;
         this.isMouseDragged = false;
         this.previousItemProperty = ['left', 'progress', 'duration', 'isMilestone', 'startDate', 'endDate', 'width', 'progressWidth',
-            'autoLeft', 'autoDuration', 'autoStartDate', 'autoEndDate', 'autoWidth'];
+            'autoLeft', 'autoDuration', 'autoStartDate', 'autoEndDate', 'autoWidth', 'segments'];
         this.tapPointOnFocus = false;
         this.touchEdit = false;
     }
@@ -502,7 +502,15 @@ export class TaskbarEdit extends DateProcessor {
         this.dragMouseLeave = false;
         this.isMouseDragCheck();
         if (this.isMouseDragged && this.taskBarEditAction) {
-            this.taskBarEditingAction(event, false);
+            const args: IActionBeginEventArgs = {
+                cancel: false,
+                requestType: 'mergeSegment'
+            };
+            this.parent.trigger('actionBegin', args, (arg: IActionBeginEventArgs) => {
+                if (arg.cancel === false) {
+                    this.taskBarEditingAction(event, false);
+                }
+            });
         } else if (!this.parent.isAdaptive && !this.taskBarEditAction) {
             this.updateTaskBarEditElement(event);
         }
@@ -529,6 +537,7 @@ export class TaskbarEdit extends DateProcessor {
             args.roundOffDuration = this.roundOffDuration;
             args.cancel = false;
             args.previousData = this.previousItem;
+            args.segmentIndex = this.segmentIndex;
             this.roundOffDuration = args.roundOffDuration;
             this.targetElement = args.target = closest((e.target as Element), '.e-gantt-child-taskbar');
             this.updateMouseMoveProperties(e);
@@ -1364,7 +1373,7 @@ export class TaskbarEdit extends DateProcessor {
      * @returns {boolean} .
      * @private
      */
-    private isInDst(date: Date): boolean {
+    public isInDst(date: Date): boolean {
         return date.getTimezoneOffset() < this.getDefaultTZOffset();
     }
 

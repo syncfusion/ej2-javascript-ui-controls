@@ -39,7 +39,6 @@ export class PdfTreeGridCell {
      * @private
      */
     public columnSpan: number;
-    // eslint-disable-next-line
     public value: Object;
     /** @private */
     public remainingString: string;

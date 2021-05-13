@@ -322,7 +322,7 @@ describe('Virtual scroll', () => {
                 const eventWrapperList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment-wrapper'));
                 expect(eventWrapperList.length).toEqual(2);
                 const moreIndicatorList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-more-indicator'));
-                expect(moreIndicatorList.length).toEqual(2);
+                expect(moreIndicatorList.length).toEqual(4);
                 done();
             };
             schObj.rowAutoHeight = false;

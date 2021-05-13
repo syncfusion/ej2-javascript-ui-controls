@@ -453,3 +453,7 @@ export const INLINE_SUBJECT_CLASS: string = 'e-inline-subject';
 export const INLINE_APPOINTMENT_CLASS: string = 'e-inline-appointment';
 /** @hidden */
 export const SCROLL_HIDDEN: string = 'e-scroll-hidden';
+/** @private */
+export const ALLDAY_APPOINTMENT_SCROLL : string = 'e-all-day-scroll';
+/** @private */
+export const ALLDAY_APPOINTMENT_AUTO : string = 'e-all-day-auto';

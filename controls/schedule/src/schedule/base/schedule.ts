@@ -99,6 +99,8 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
     private cellHeaderTemplateFn: CallbackFunction;
     private cellTemplateFn: CallbackFunction;
     private dateHeaderTemplateFn: CallbackFunction;
+    private dayHeaderTemplateFn: CallbackFunction;
+    private monthHeaderTemplateFn: CallbackFunction;
     private majorSlotTemplateFn: CallbackFunction;
     private minorSlotTemplateFn: CallbackFunction;
     private appointmentTemplateFn: CallbackFunction;
@@ -144,6 +146,7 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
     public allowExcelExport: boolean;
     public scrollTop: number;
     public scrollLeft: number;
+    public isPrinting: boolean;
 
     // Schedule Options
     /**
@@ -358,6 +361,16 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
     public timeFormat: string;
 
     /**
+     * When set to `true`, If valid, the scroll on the all day row is activated when the all day row
+     * height reaches the max height when the all day row is expanded.
+     * {% codeBlock src='schedule/enableAllDayScroll/index.md' %}{% endcodeBlock %}
+     *
+     * @default false
+     */
+    @Property(false)
+    public enableAllDayScroll: boolean;
+
+    /**
      * When set to `true`, allows the resizing of appointments. It allows the rescheduling of appointments either by changing the
      * start or end time by dragging the event resize handlers.
      * {% codeBlock src='schedule/allowResizing/index.md' %}{% endcodeBlock %}
@@ -428,12 +441,33 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
     public cellHeaderTemplate: string;
 
     /**
+     * It accepts either the string or HTMLElement as template design content and parse it appropriately before displaying it onto
+     * the day header cells. This template is only applicable for year view header cells.
+     * {% codeBlock src='schedule/dayHeaderTemplate/index.md' %}{% endcodeBlock %}
+     *
+     * @default null
+     */
+    @Property()
+    public dayHeaderTemplate: string;
+
+    /**
+     * It accepts either the string or HTMLElement as template design content and parse it appropriately before displaying it onto
+     * the month header cells. This template is only applicable for year view header cells.
+     * {% codeBlock src='schedule/monthHeaderTemplate/index.md' %}{% endcodeBlock %}
+     *
+     * @default null
+     */
+    @Property()
+    public monthHeaderTemplate: string;
+
+    /**
      * The template option which is used to render the customized work cells on the Schedule. Here, the template accepts either
      *  the string or HTMLElement as template design and then the parsed design is displayed onto the work cells.
      *  The fields accessible via template are as follows.
      *  * date
      *  * groupIndex
      *  * type
+     *
      * {% codeBlock src='schedule/cellTemplate/index.md' %}{% endcodeBlock %}
      *
      * @default null
@@ -524,6 +558,15 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
      */
     @Property(false)
     public allowMultiDrag: boolean;
+
+    /**
+     * This property helps render the year view customized months.
+     * By default, it is set to `0`.
+     *
+     * @default 0
+     */
+    @Property(0)
+    public firstMonthOfYear: number;
 
     /**
      * The template option to render the customized editor window. The form elements defined within this template should be accompanied
@@ -985,7 +1028,9 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
         }
         this.initializeView(this.currentView);
         this.destroyPopups();
-        this.initializePopups();
+        if (!this.isPrinting) {
+            this.initializePopups();
+        }
     }
 
     private validateDate(selectedDate: Date = this.selectedDate): void {
@@ -1048,6 +1093,8 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
             obj.cellHeaderTemplateName = obj.cellHeaderTemplate ? obj.option : '';
             obj.dateHeaderTemplateName = obj.dateHeaderTemplate ? obj.option : '';
             obj.cellTemplateName = obj.cellTemplate ? obj.option : '';
+            obj.dayHeaderTemplateName = obj.dayHeaderTemplate ? obj.option : '';
+            obj.monthHeaderTemplateName = obj.monthHeaderTemplate ? obj.option : '';
             obj.resourceHeaderTemplateName = obj.resourceHeaderTemplate ? obj.option : '';
             obj.eventTemplateName = obj.eventTemplate ? obj.option : '';
             if (!isNullOrUndefined(obj.firstDayOfWeek) && obj.firstDayOfWeek === 0) {
@@ -1100,10 +1147,13 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
             startHour: this.startHour,
             allowVirtualScrolling: false,
             cellHeaderTemplate: this.cellHeaderTemplate,
+            dayHeaderTemplate: this.dayHeaderTemplate,
+            monthHeaderTemplate: this.monthHeaderTemplate,
             cellTemplate: this.cellTemplate,
             eventTemplate: this.eventSettings.template,
             dateHeaderTemplate: this.dateHeaderTemplate,
             resourceHeaderTemplate: this.resourceHeaderTemplate,
+            firstMonthOfYear: this.firstMonthOfYear,
             firstDayOfWeek: this.firstDayOfWeek,
             workDays: workDays,
             showWeekend: this.showWeekend,
@@ -1173,6 +1223,8 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
 
     private initializeTemplates(): void {
         this.cellHeaderTemplateFn = this.templateParser(this.activeViewOptions.cellHeaderTemplate);
+        this.dayHeaderTemplateFn = this.templateParser(this.activeViewOptions.dayHeaderTemplate);
+        this.monthHeaderTemplateFn = this.templateParser(this.activeViewOptions.monthHeaderTemplate);
         this.cellTemplateFn = this.templateParser(this.activeViewOptions.cellTemplate);
         this.dateHeaderTemplateFn = this.templateParser(this.activeViewOptions.dateHeaderTemplate);
         this.majorSlotTemplateFn = this.templateParser(this.activeViewOptions.timeScale.majorSlotTemplate);
@@ -1524,6 +1576,8 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
             createError: 'The duration of the event must be shorter than how frequently it occurs. ' +
                 'Shorten the duration, or change the recurrence pattern in the recurrence event editor.',
             sameDayAlert: 'Two occurrences of the same event cannot occur on the same day.',
+            occurenceAlert: 'Cannot reschedule an occurrence of the recurring appointment if it skips over '+ 
+            'a later occurrence of the same appointment.',
             editRecurrence: 'Edit Recurrence',
             repeats: 'Repeats',
             alert: 'Alert',
@@ -1578,6 +1632,7 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
      *
      * @param {HTMLTableCellElement[]} cells Accepts the collection of elements
      * @param {HTMLTableCellElement} focusCell Accepts the focus element
+     * @param {boolean} isPreventScroll Accepts the boolean value to prevent scroll
      * @returns {void}
      * @private
      */
@@ -1719,6 +1774,26 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
      */
     public getCellHeaderTemplate(): CallbackFunction {
         return this.cellHeaderTemplateFn;
+    }
+
+    /**
+     * Method to process cell header template in year view.
+     *
+     * @returns {CallbackFunction} Returns the callback function
+     * @private
+     */
+    public getDayHeaderTemplate(): CallbackFunction {
+        return this.dayHeaderTemplateFn;
+    }
+
+    /**
+     * Method to process cell header template in year view.
+     *
+     * @returns {CallbackFunction} Returns the callback function
+     * @private
+     */
+    public getMonthHeaderTemplate(): CallbackFunction {
+        return this.monthHeaderTemplateFn;
     }
 
     /**
@@ -2109,6 +2184,11 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
                 if (this.eventWindow) { this.eventWindow.refreshRecurrenceEditor(); }
                 state.isLayout = true;
                 break;
+            case 'firstMonthOfYear':
+                this.activeViewOptions.firstMonthOfYear = newProp.firstMonthOfYear;
+                this.viewIndex = this.activeView.viewIndex;
+                state.isLayout = true;
+                break;
             case 'showTimeIndicator':
                 if (this.activeViewOptions.timeScale.enable && this.activeView) {
                     this.activeView.highlightCurrentTime();
@@ -2127,6 +2207,16 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
             case 'dateHeaderTemplate':
                 this.activeViewOptions.dateHeaderTemplate = newProp.dateHeaderTemplate;
                 this.dateHeaderTemplateFn = this.templateParser(this.activeViewOptions.dateHeaderTemplate);
+                state.isLayout = true;
+                break;
+            case 'dayHeaderTemplate':
+                this.activeViewOptions.dayHeaderTemplate = newProp.dayHeaderTemplate;
+                this.dayHeaderTemplateFn = this.templateParser(this.activeViewOptions.dayHeaderTemplate);
+                state.isLayout = true;
+                break;
+            case 'monthHeaderTemplate':
+                this.activeViewOptions.monthHeaderTemplate = newProp.monthHeaderTemplate;
+                this.monthHeaderTemplateFn = this.templateParser(this.activeViewOptions.monthHeaderTemplate);
                 state.isLayout = true;
                 break;
             case 'resourceHeaderTemplate':
@@ -2170,10 +2260,37 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
         }
     }
 
+    private allDayRowScrollUpdate(): void {
+        const dateHeader: HTMLElement = (this.element.querySelector('.' + cls.DATE_HEADER_WRAP_CLASS) as HTMLElement);
+        const allDayRow: HTMLElement = (this.element.querySelector('.' + cls.ALLDAY_ROW_CLASS) as HTMLElement);
+        if (this.height === 'auto' || !this.enableAllDayScroll) {
+            addClass([dateHeader], cls.ALLDAY_APPOINTMENT_AUTO);
+            if (dateHeader.classList.contains(cls.ALLDAY_APPOINTMENT_SCROLL)) {
+                removeClass([dateHeader], cls.ALLDAY_APPOINTMENT_SCROLL);
+            }
+            if (this.uiStateValues.expand) {
+                const allDayCells: HTMLElement[] = [].slice.call(this.element.querySelectorAll('.' + cls.ALLDAY_CELLS_CLASS));
+                allDayCells[0].style.height = (allDayRow.style.height) ? allDayRow.style.height : allDayCells[1].style.height;
+            }
+        } else {
+            if (dateHeader.classList.contains(cls.ALLDAY_APPOINTMENT_AUTO)) {
+                removeClass([dateHeader], cls.ALLDAY_APPOINTMENT_AUTO);
+            }
+            this.eventBase.allDayExpandScroll(dateHeader, true);
+        }
+        if (!this.uiStateValues.expand) {
+            allDayRow.style.height = '';
+        }
+    }
+
     private extendedPropertyChange(prop: string, newProp: ScheduleModel, oldProp: ScheduleModel, state: StateArgs): void {
         switch (prop) {
         case 'width':
         case 'height':
+        case 'enableAllDayScroll':
+            if (['Day', 'Week', 'WorkWeek'].indexOf(this.currentView) > -1) {
+                this.allDayRowScrollUpdate();
+            }
             this.notify(events.uiUpdate, { module: 'scroll', properties: { width: newProp.width, height: newProp.height } });
             break;
         case 'cssClass':
@@ -2234,6 +2351,10 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
             this.notify(events.dataReady, {});
             break;
         case 'weekRule':
+            state.isLayout = true;
+            break;
+        case 'firstMonthOfYear':
+            this.activeViewOptions.firstMonthOfYear = newProp.firstMonthOfYear;
             state.isLayout = true;
             break;
         case 'timeFormat':
@@ -2685,7 +2806,7 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
      * `includeOccurrences` option, denoting either to include or exclude the occurrences as separate instances on an exported Excel file.
      *
      * @function exportToExcel
-     * @param  {ExportOptions} excelExportOptions The export options to be set before start with exporting the Scheduler events to an Excel file.
+     * @param {ExportOptions} excelExportOptions The export options to be set before start with exporting the Scheduler events to an Excel file.
      * @returns {void}
      */
     public exportToExcel(excelExportOptions?: ExportOptions): void {
@@ -2700,11 +2821,13 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
      * Method allows to print the scheduler.
      *
      * @function print
+     * @param {ScheduleModel} printOptions The export options to be set before start with exporting
+     * the Scheduler events to the print window.
      * @returns {void}
      */
-    public print(): void {
+    public print(printOptions?: ScheduleModel): void {
         if (this.printModule) {
-            this.printModule.printScheduler();
+            this.printModule.print(printOptions);
         } else {
             throw Error('Inject Print module');
         }
@@ -3039,6 +3162,9 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
         if (this.scrollModule) {
             this.scrollModule.destroy();
             this.scrollModule = null;
+        }
+        if (this.printModule) {
+            this.printModule.destroy();
         }
         if (this.activeView) {
             this.resetTemplates();

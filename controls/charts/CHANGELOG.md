@@ -2,6 +2,19 @@
 
 ## [Unreleased]
 
+## 19.1.63 (2021-05-13)
+
+### Chart
+
+#### Bug Fixes
+
+- `#325456` - Highlight and selection issue has been fixed for multiple charts.
+- `#F165060` - Accumulation chart with data label is now rendering properly inside the dashboard layout.
+
+#### New Features
+
+- `#288255` - Improved logarithmic axis to show value less than 1.
+
 ## 19.1.59 (2021-05-04)
 
 ### Chart
@@ -9,6 +22,9 @@
 #### Bug Fixes
 
 - `#308029` - Console error thrown while using special character in the chart container ID issue has fixed.
+- `#F164708` - The white space in the legend icon issue has been fixed.
+- Accumulation chart refresh method removes inner HTML elements issue has been fixed.
+- `#325193` - Rotating data label is now working properly
 
 #### New Features
 

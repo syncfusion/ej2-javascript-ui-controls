@@ -1689,6 +1689,7 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
      */
 
     public refreshBound(): void {
+        this.rotatedDataLabelCollections = [];
         if (this.legendModule && this.legendSettings.visible) {
             this.legendModule.getLegendOptions(this.visibleSeries, this);
         }
@@ -2775,7 +2776,6 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
                     }
                     this.createChartSvg();
                     arg.currentSize = this.availableSize;
-                    this.rotatedDataLabelCollections = [];
                     this.trigger(resized, arg);
                     this.refreshAxis();
                     this.refreshBound();

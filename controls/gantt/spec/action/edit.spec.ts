@@ -2,7 +2,7 @@
  * Gantt taskbaredit spec
  */
 import { Gantt, Edit, Selection, IGanttData, Filter, IActionBeginEventArgs } from '../../src/index';
-import { cellEditData, resourcesData } from '../base/data-source.spec';
+import { cellEditData, resourcesData, projectData } from '../base/data-source.spec';
 import { createGantt, destroyGantt } from '../base/gantt-util.spec';
 import { getValue } from '@syncfusion/ej2-base';
 
@@ -412,6 +412,234 @@ describe('Gantt Edit support', () => {
         });
         beforeEach((done: Function) => {
             setTimeout(done, 2000);
+        });
+    });
+
+    describe('Adding multiple tasks', () => {
+        let ganttObj: Gantt;
+        beforeAll((done: Function) => {
+            ganttObj = createGantt(
+                {
+                    dataSource: projectData,
+                    taskFields: {
+                        id: 'TaskID',
+                        name: 'TaskName',
+                        startDate: 'StartDate',
+                        duration: 'Duration',
+                        progress: 'Progress',
+                        dependency: 'Predecessor',
+                        child: 'subtasks',
+                        segments: "Segments"
+                    },
+                    editSettings: {
+                        allowAdding: true,
+                        allowEditing: true,
+                        allowDeleting: true,
+                        allowTaskbarEditing: true,
+                        showDeleteConfirmDialog: true
+                    },
+                    allowSelection: true,
+                    enableContextMenu: true,
+                    projectStartDate: new Date('03/25/2019'),
+                    projectEndDate: new Date('05/30/2019'),
+                }, done);
+        });
+        it('Adding multiple tasks with segments', () => {
+            let data: object[] = [ 
+                { TaskID: 40,
+                TaskName: 'Identify Site location',
+                StartDate: new Date('04/07/2019'),
+                Duration: 3,
+                Progress: 50
+            },
+            { TaskID: 41,
+                TaskName: 'Site location',
+                StartDate: new Date('04/02/2019'),
+                Duration: 3,
+                Progress: 60,
+                Segments: [
+                    { StartDate: new Date("04/02/2019"), Duration: 2 },
+                    { StartDate: new Date("04/04/2019"), Duration: 2 }
+                ]
+            },
+            { TaskID: 42,
+                TaskName: 'location',
+                StartDate: new Date('04/02/2019'),
+                Duration: 3,
+                Segments: [
+                    { StartDate: new Date("04/02/2019"), Duration: 2 },
+                    { StartDate: new Date("04/04/2019"), Duration: 2 }
+                ]
+            },
+            { TaskID: 43,
+                TaskName: 'New task',
+                StartDate: new Date('04/02/2019'),
+                Duration: 3,
+                Progress: 80
+            }];
+            ganttObj.editModule.addRecord(data,'Child',3);
+        });
+
+        it('Adding multiple tasks with Unscheduled Task and without Predecessor', () => {
+            ganttObj.enableContextMenu= false,
+            ganttObj.allowUnscheduledTasks= true;
+            ganttObj.dataBind();
+            let data: object[] = [ 
+                { TaskID: 44,
+                TaskName: 'Identify Site location',
+                Duration: 3,
+                Progress: 50,
+                },
+                { TaskID: 45,
+                TaskName: 'Site location',
+                Duration: 3,
+                Progress: 60,
+                },
+                { TaskID: 46,
+                TaskName: 'location',
+                Duration: 3,
+                Progress: 60
+                },
+                { TaskID: 47,
+                TaskName: 'New task',
+                Duration: 3,
+                Progress: 80,
+                }];
+            ganttObj.editModule.addRecord(data,'Child',3);
+        });
+
+        it('Adding multiple tasks with Unscheduled Tasks and with Predecessor', () => {
+            ganttObj.allowUnscheduledTasks= true;
+            ganttObj.dataBind();
+            let data: object[] = [ 
+                { TaskID: 48,
+                TaskName: 'Identify Site location',
+                Duration: 3,
+                Progress: 50,
+                },
+                { TaskID: 49,
+                TaskName: 'Site location',
+                Duration: 3,
+                Progress: 60,
+                Predecessor: "48ss"
+                },
+                { TaskID: 50,
+                TaskName: 'location',
+                Duration: 3,
+                Progress: 60
+                },
+                { TaskID: 51,
+                TaskName: 'New task',
+                Duration: 3,
+                Progress: 80,
+                Predecessor: "50ss"
+                }];
+            ganttObj.editModule.addRecord(data,'Child',3);
+        });
+
+        it('Adding multiple tasks during beforeAdd ', () => {
+            let data: object[] = [
+                {TaskID: 52,
+                TaskName: 'Identify Site location',
+                StartDate: new Date('04/02/2019'),
+                Duration: 3,
+                Progress: 50
+                },
+                {TaskID: 53,
+                TaskName: 'Site location',
+                StartDate: new Date('04/02/2019'),
+                Duration: 3,
+                Progress: 60
+                },
+                {TaskID: 54,
+                TaskName: 'location',
+                StartDate: new Date('04/02/2019'),
+                Duration: 3,
+                Progress: 70
+                },
+                {TaskID: 55,
+                TaskName: 'New Task',
+                StartDate: new Date('04/02/2019'),
+                Duration: 3,
+                Progress: 80
+                }];
+            ganttObj.editModule.addRecord(data,'Child',3);
+            ganttObj.actionBegin = function (args: any): void {
+                if (args.requestType === "beforeAdd") {
+                    expect(args.data.length).toBe(4);
+                }
+            };
+        });
+
+        it('Adding multiple tasks during actionBegin', () => {
+            let data: object[] = [
+                {TaskID: 56,
+                TaskName: 'Identify Site location',
+                StartDate: new Date('04/02/2019'),
+                Duration: 3,
+                Progress: 50
+                },
+                {TaskID: 57,
+                TaskName: 'Site location',
+                StartDate: new Date('04/02/2019'),
+                Duration: 3,
+                Progress: 60
+                },
+                {TaskID: 58,
+                TaskName: 'location',
+                StartDate: new Date('04/02/2019'),
+                Duration: 3,
+                Progress: 70
+                },
+                {TaskID: 59,
+                TaskName: 'New Task',
+                StartDate: new Date('04/02/2019'),
+                Duration: 3,
+                Progress: 80
+                }];
+            ganttObj.editModule.addRecord(data,'Child',3);
+            ganttObj.actionBegin = function (args: any): void {
+                if (args.requestType === "actionBegin") {
+                    expect(args.data.length).toBe(4);
+                }
+            };
+        });
+
+        it('Adding multiple tasks during actionComplete', () => {
+            let data: object[] = [
+                {TaskID: 60,
+                TaskName: 'Identify Site location',
+                StartDate: new Date('04/02/2019'),
+                Duration: 3,
+                Progress: 50
+                },
+                {TaskID: 61,
+                TaskName: 'Site location',
+                StartDate: new Date('04/02/2019'),
+                Duration: 3,
+                Progress: 60
+                },
+                {TaskID: 62,
+                TaskName: 'location',
+                StartDate: new Date('04/02/2019'),
+                Duration: 3,
+                Progress: 70
+                },
+                {TaskID: 63,
+                TaskName: 'New Task',
+                StartDate: new Date('04/02/2019'),
+                Duration: 3,
+                Progress: 80
+                }];
+            ganttObj.editModule.addRecord(data,'Child',3);
+            ganttObj.actionBegin = function (args: any): void {
+                if (args.requestType === "actionComplete") {
+                    expect(args.data.length).toBe(4);
+                }
+            };
+        });
+        afterAll(() => {
+            destroyGantt(ganttObj);
         });
     });
 });

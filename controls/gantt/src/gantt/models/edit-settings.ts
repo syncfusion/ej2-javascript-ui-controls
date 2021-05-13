@@ -69,10 +69,10 @@ export class EditSettings extends ChildProperty<EditSettings> {
      */
     @Property(false)
     public allowTaskbarEditing: boolean;
-
-    /**   
+    /**
      * If `allowNextRowEdit` is set as true, editing is continued to next row with keyboard navigation.
-     * @default false 
+     *
+     * @default false
      */
     @Property(false)
     public allowNextRowEdit : boolean;

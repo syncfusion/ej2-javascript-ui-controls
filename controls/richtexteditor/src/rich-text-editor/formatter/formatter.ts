@@ -228,11 +228,9 @@ export class Formatter {
         const status: { [key: string]: boolean } = this.getUndoStatus();
         if (self.inlineMode.enable && (!Browser.isDevice || isIDevice())) {
             updateUndoRedoStatus(self.quickToolbarModule.inlineQTBar.quickTBarObj, status);
-            self.trigger(CONSTANT.toolbarStatusUpdate, status);
         } else {
             if (self.toolbarModule) {
                 updateUndoRedoStatus(self.toolbarModule.baseToolbar, status);
-                self.trigger(CONSTANT.toolbarStatusUpdate, status);
             }
         }
     }

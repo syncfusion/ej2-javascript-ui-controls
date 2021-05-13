@@ -473,7 +473,6 @@ export class ConnectorLineEdit {
         this.parent.validationDialogElement.hide();
     }
 
-    // eslint-disable-next-line
     private validationDialogClose(e: object): void {
         if (getValue('isInteraction', e)) {
             this.parent.currentEditedArgs.validateMode.respectLink = true;
@@ -602,7 +601,6 @@ export class ConnectorLineEdit {
      * @returns {void} .
      * @private
      */
-    // eslint-disable-next-line
     public openValidationDialog(args: object): void {
         const contentTemplate: HTMLElement = this.validationDialogTemplate(args);
         this.parent.validationDialogElement.setProperties({ content: contentTemplate });
@@ -616,7 +614,6 @@ export class ConnectorLineEdit {
      * @returns {HTMLElement} .
      * @private
      */
-    // eslint-disable-next-line
     public validationDialogTemplate(args: object): HTMLElement {
         const ganttId: string = this.parent.element.id;
         const contentdiv: HTMLElement = createElement('div', {
@@ -669,7 +666,6 @@ export class ConnectorLineEdit {
      * @returns {boolean} .
      * @private
      */
-    // eslint-disable-next-line
     public validateTypes(ganttRecord: IGanttData): object {
         const predecessor: IPredecessor[] = this.parent.predecessorModule.getValidPredecessor(ganttRecord);
         let parentGanttRecord: IGanttData;
@@ -722,7 +718,6 @@ export class ConnectorLineEdit {
                 violateType = violationType;
             }
         }
-        // eslint-disable-next-line
         const validateArgs: object = {
             parentTask: violatedParent,
             task: ganttRecord,

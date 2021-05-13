@@ -6274,7 +6274,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     }
 
     /**
-     * Sends a Post request to export Grid to Excel data in server side.
+     * Sends a Post request to export Grid to Excel file in server side.
      * @param  {string} url - Pass Url for server side excel export action.
      * @return {void} 
      */
@@ -6283,12 +6283,22 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
         this.exportGrid(url);
     }
     /**
-     * Sends a Post request to export Grid to Pdf data in server side.
+     * Sends a Post request to export Grid to Pdf file in server side.
      * @param  {string} url - Pass Url for server side pdf export action.
      * @return {void} 
      */
     public serverPdfExport(url: string): void {
         this.isExcel = false;
+        this.exportGrid(url);
+    }
+
+    /**
+     * Sends a Post request to export Grid to CSV file in server side.
+     * @param  {string} url - Pass Url for server side pdf export action.
+     * @return {void} 
+     */
+     public serverCsvExport(url: string): void {
+        this.isExcel = true;
         this.exportGrid(url);
     }
 
@@ -6299,26 +6309,16 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
         let grid = this;
         let query: Query = grid.getDataModule().generateQuery(true);
         let state: { data?: string, pvtData?: Object[] } = new UrlAdaptor().processQuery(new DataManager({ url: '' }), query);
-        let queries: string = state.data;
+        let queries: {where: object, search: Object[], sorted: object} = JSON.parse(state.data);
 
         let gridModel = JSON.parse(this.addOnPersist(['allowGrouping', 'allowPaging', 'pageSettings', 'sortSettings', 'allowPdfExport', 'allowExcelExport', 'aggregates',
             'filterSettings', 'groupSettings', 'columns', 'locale', 'searchSettings']));
-        gridModel.filterSettings.columns = JSON.parse(queries).where;
-        gridModel.columns.forEach((e: Column) => {
-            let column: Column = grid.getColumnByUid(e.uid);
-            if (column) {
-                e.headerText = column.headerText;
-                if (!isNullOrUndefined(column.template)) {
-                    e.template = "true";
-                };
-                if (e.format) {
-                    e.format = getNumberFormat(this.getFormat(e.format), e.type, this.isExcel);
-                }
-            }
-            if (e.columns) {
-                this.setHeaderText(e.columns as Column[]);
-            }
-        });
+        let include: string[] = ['field', 'headerText', 'type', 'format', 'visible', 'foreignKeyValue', 'foreignKeyField',
+            'template', 'index', 'width', 'textAlign', 'headerTextAlign', 'columns'];
+        gridModel.filterSettings.columns = queries.where;
+        gridModel.searchSettings.fields = queries.search && queries.search[0]['fields'] || [];
+        gridModel.sortSettings.columns = queries.sorted;
+        gridModel.columns = this.setHeaderText(gridModel.columns, include);
         let form: HTMLFormElement = this.createElement('form', { id: 'ExportForm', styles: 'display:none;' });
         let gridInput: HTMLInputElement = this.createElement('input', { id: 'gridInput', attrs:{name:"gridModel"} });
         gridInput.value = JSON.stringify(gridModel);
@@ -6333,7 +6333,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     /**
      * @hidden
      */
-    public setHeaderText(columns: Column[]) {
+    public setHeaderText(columns: Column[], include: string[]) {
         for (var i = 0; i < columns.length; i++) {
             let column: Column = this.getColumnByUid(columns[i].uid);
             columns[i].headerText = column.headerText;
@@ -6345,9 +6345,16 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
 
             }
             if (columns[i].columns) {
-                this.setHeaderText(columns[i].columns as Column[]);
+                this.setHeaderText(columns[i].columns as Column[], include);
+            }
+            let keys: string[] = Object.keys(columns[i]);
+            for (let j: number = 0; j < keys.length; j++) {
+                if (include.indexOf(keys[j]) < 0) {
+                    delete columns[i][keys[j]];
+                }
             }
         }
+        return columns;
     }
 
     private getFormat(format: string | NumberFormatOptions | DateFormatOptions): string {

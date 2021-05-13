@@ -3982,6 +3982,10 @@ export class Layout {
                         if ((heightType === 'AtLeast' && HelperMethods.convertPointToPixel(row.rowFormat.height) < viewer.clientActiveArea.height && isAllowBreakAcrossPages) || (heightType !== 'Exactly' && tableRowWidget.y === viewer.clientArea.y) || (heightType === 'Auto' && isAllowBreakAcrossPages)) {
                             splittedWidget = this.splitWidgets(tableRowWidget, viewer, tableWidgets, rowWidgets, splittedWidget, isLastRow);
                         }
+                        if (heightType === 'AtLeast' && HelperMethods.convertPointToPixel(row.rowFormat.height) > viewer.clientActiveArea.height && isAllowBreakAcrossPages && tableRowWidget.ownerTable.tableHolder.columns.length > tableRowWidget.childWidgets.length) {
+                            tableRowWidget = this.splitWidgets(tableRowWidget, viewer, tableWidgets, rowWidgets, splittedWidget, isLastRow);
+                            splittedWidget = tableRowWidget;
+                        }
                         if (heightType === 'Exactly' && tableRowWidget.y === viewer.clientArea.y) {
                             this.addWidgetToTable(viewer, tableWidgets, rowWidgets, tableRowWidget);
                             count++;
@@ -4357,6 +4361,9 @@ export class Layout {
                 const length: number = rowWidget.childWidgets.length;
                 this.insertEmptySplittedCellWidget(rowWidget, tableCollection, left, i, previousRowIndex);
                 if (length < rowWidget.childWidgets.length) {
+                    if (i === 0) {
+                        break;
+                    }
                     i--;
                     continue;
                 }
@@ -4452,15 +4459,15 @@ export class Layout {
                     rowSpan = (isNullOrUndefined(cellWidget) || isNullOrUndefined(cellWidget.cellFormat)) ? rowSpan :
                         cellWidget.cellFormat.rowSpan;
                     if (rowSpan > 1) {
-                        if (!isNullOrUndefined(currentRow.childWidgets[index])) {
+                        //if (!isNullOrUndefined(currentRow.childWidgets[index])) {
                             const emptyCellWidget: TableCellWidget = this.createCellWidget(cellWidget);
-                            if (emptyCellWidget.x < (currentRow.childWidgets[index] as TableCellWidget).x) {
+                            //if (emptyCellWidget.x < (currentRow.childWidgets[index] as TableCellWidget).x) {
                                 currentRow.childWidgets.splice(index, 0, emptyCellWidget);
                                 emptyCellWidget.containerWidget = currentRow;
                                 this.updateChildLocationForRow(currentRow.y, currentRow);
                                 return;
-                            }
-                        }
+                            //}
+                        //}
                     }
                 }
                 previousLeft += cellWidget.margin.left + cellWidget.width + cellWidget.margin.right;
@@ -4782,6 +4789,7 @@ export class Layout {
         for (let i: number = 0; i < rowWidget.childWidgets.length; i++) {
             const cellWidget: TableCellWidget = rowWidget.childWidgets[i] as TableCellWidget;
             //cellWidget.x = cellWidget.x;
+            cellWidget.index = cellWidget.cellIndex;
             cellWidget.y = top + cellWidget.margin.top + spacing;
             this.updateChildLocationForCell(cellWidget.y, cellWidget);
         }
@@ -5719,7 +5727,15 @@ export class Layout {
     private updateTopBorders(cell: TableCellWidget): void {
         cell.updatedTopBorders = [];
         if (cell.ownerTable.tableFormat.cellSpacing === 0) {
-            const cellTopBorder: WBorder = cell.cellFormat.borders.top;
+            let cellTopBorder: WBorder = cell.cellFormat.borders.top;
+            if (!cellTopBorder.isBorderDefined || (cellTopBorder.isBorderDefined
+                && cellTopBorder.lineStyle === 'None' && cellTopBorder.lineWidth === 0 &&
+                cellTopBorder.hasValue('color'))) {
+                    cellTopBorder = cell.ownerRow.rowFormat.borders.horizontal;
+            }
+            if (!cellTopBorder.isBorderDefined) {
+                cellTopBorder = cell.ownerRow.ownerTable.tableFormat.borders.horizontal;
+            }
             const cellStartPos: number = cell.x - cell.margin.left;
             const cellEndPos: number = cell.x + cell.width + cell.margin.right;
             const adjCells: TableCellWidget[] = this.getAdjacentRowCell(cell, cellStartPos, cellEndPos, cell.ownerRow.indexInOwner - 1);

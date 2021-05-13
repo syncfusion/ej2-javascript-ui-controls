@@ -6,7 +6,7 @@ import { DateTimePicker } from '@syncfusion/ej2-calendars';
 import { MultiSelect } from '@syncfusion/ej2-dropdowns';
 import { Schedule, Day, Week, WorkWeek, Month, Agenda, EventRenderedArgs, EJ2Instance, ScheduleModel } from '../../../src/schedule/index';
 import * as events from '../../../src/schedule/base/constant';
-import { defaultData, resourceData, resourceGroupData, testBlockData } from '../base/datasource.spec';
+import { defaultData, resourceData, resourceGroupData, testBlockData, generateAllDayData } from '../base/datasource.spec';
 import * as cls from '../../../src/schedule/base/css-constant';
 import { RecurrenceEditor } from '../../../src/recurrence-editor/index';
 import * as util from '../util.spec';
@@ -407,6 +407,9 @@ describe('Vertical View Event Render Module', () => {
             const allDayCountWrapper: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-row-count-wrapper'));
             expect(allDayCountWrapper[0].childElementCount).toBeGreaterThan(0);
             expect(allDayCountWrapper[0].classList.contains('e-disable')).toEqual(true);
+            const dateHeader: HTMLElement = schObj.element.querySelector('.e-date-header-wrap') as HTMLElement;
+            expect(dateHeader.classList.contains('e-all-day-scroll')).toEqual(false);
+            expect(dateHeader.classList.contains('e-all-day-auto')).toEqual(true);
         });
         it('Checking appointment collapse', () => {
             const expandElement: HTMLElement = schObj.element.querySelector('.e-all-day-appointment-section') as HTMLElement;
@@ -417,6 +420,94 @@ describe('Vertical View Event Render Module', () => {
             const appointmentCount: Element = allDayCountWrapper[0].querySelector('.e-more-indicator');
             expect(allDayCountWrapper[0].classList.contains('e-disable')).toEqual(false);
             expect((<HTMLElement>appointmentCount).getAttribute('data-count')).toEqual('2');
+            const dateHeader: HTMLElement = schObj.element.querySelector('.e-date-header-wrap') as HTMLElement;
+            expect(dateHeader.classList.contains('e-all-day-scroll')).toEqual(false);
+            expect(dateHeader.classList.contains('e-all-day-auto')).toEqual(true);
+        });
+    });
+
+    describe('Vertical view enableAllDayScroll Property check', () => {
+        let schObj: Schedule;
+        const allDayData: Record<string, any>[] = generateAllDayData(11);
+        beforeAll((done: DoneFn) => {
+            const model: ScheduleModel = {
+                currentView: 'Week', height: '550px', width: '500px', enableAllDayScroll: true
+            };
+            schObj = util.createSchedule(model, allDayData, done);
+        });
+        afterAll(() => {
+            util.destroy(schObj);
+        });
+        it('Checking appointment row expand', () => {
+            const expandElement: HTMLElement = schObj.element.querySelector('.e-all-day-appointment-section') as HTMLElement;
+            expect(expandElement.classList.contains('e-appointment-expand')).toEqual(true);
+            util.triggerMouseEvent(expandElement, 'click');
+            const allDayCountWrapper: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-row-count-wrapper'));
+            expect(allDayCountWrapper[0].childElementCount).toBeGreaterThan(0);
+            expect(allDayCountWrapper[0].classList.contains('e-disable')).toEqual(true);
+            const dateHeader: HTMLElement = schObj.element.querySelector('.e-date-header-wrap') as HTMLElement;
+            expect(dateHeader.classList.contains('e-all-day-scroll')).toEqual(true);
+            expect(dateHeader.classList.contains('e-all-day-auto')).toEqual(false);
+        });
+        it('Checking appointment collapse', () => {
+            const expandElement: HTMLElement = schObj.element.querySelector('.e-all-day-appointment-section') as HTMLElement;
+            expect(expandElement.classList.contains('e-appointment-collapse')).toEqual(true);
+            util.triggerMouseEvent(expandElement, 'click');
+            const allDayCountWrapper: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-row-count-wrapper'));
+            expect(allDayCountWrapper[0].childElementCount).toBeGreaterThan(0);
+            const appointmentCount: Element = allDayCountWrapper[0].querySelector('.e-more-indicator');
+            expect(allDayCountWrapper[0].classList.contains('e-disable')).toEqual(false);
+            const dateHeader: HTMLElement = schObj.element.querySelector('.e-date-header-wrap') as HTMLElement;
+            expect(dateHeader.classList.contains('e-all-day-scroll')).toEqual(false);
+            expect(dateHeader.classList.contains('e-all-day-auto')).toEqual(false);
+            expect((<HTMLElement>appointmentCount).getAttribute('data-count')).toEqual('9');
+        });
+
+        it('Change property through set model', () => {
+            schObj.enableAllDayScroll = false;
+            schObj.dataBind();
+            const expandElement: HTMLElement = schObj.element.querySelector('.e-all-day-appointment-section') as HTMLElement;
+            util.triggerMouseEvent(expandElement, 'click');
+            const dateHeader: HTMLElement = schObj.element.querySelector('.e-date-header-wrap') as HTMLElement;
+            expect(dateHeader.classList.contains('e-all-day-scroll')).toEqual(false);
+            expect(dateHeader.classList.contains('e-all-day-auto')).toEqual(true);
+        });
+
+    });
+
+    describe('Vertical view all-day row appointment expand/collapse with scroll support with scheduler height auto', () => {
+        let schObj: Schedule;
+        const allDayData: Record<string, any>[] = generateAllDayData(11);
+        beforeAll((done: DoneFn) => {
+            const model: ScheduleModel = {
+                currentView: 'Week', height: 'auto', width: '500px', enableAllDayScroll: true
+            };
+            schObj = util.createSchedule(model, allDayData, done);
+        });
+        afterAll(() => {
+            util.destroy(schObj);
+        });
+        it('Checking appointment row expand with height auto', () => {
+            const expandElement: HTMLElement = schObj.element.querySelector('.e-all-day-appointment-section') as HTMLElement;
+            expect(expandElement.classList.contains('e-appointment-expand')).toEqual(true);
+            util.triggerMouseEvent(expandElement, 'click');
+            const allDayCountWrapper: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-row-count-wrapper'));
+            expect(allDayCountWrapper[0].childElementCount).toBeGreaterThan(0);
+            expect(allDayCountWrapper[0].classList.contains('e-disable')).toEqual(true);
+            const dateHeader: HTMLElement = schObj.element.querySelector('.e-date-header-wrap') as HTMLElement;
+            expect(dateHeader.classList.contains('e-all-day-scroll')).toEqual(false);
+            expect(dateHeader.classList.contains('e-all-day-auto')).toEqual(true);
+            expect(dateHeader.style.maxHeight).toEqual('');
+        });
+        it('Change property through set model', () => {
+            schObj.enableAllDayScroll = false;
+            schObj.dataBind();
+            const expandElement: HTMLElement = schObj.element.querySelector('.e-all-day-appointment-section') as HTMLElement;
+            util.triggerMouseEvent(expandElement, 'click');
+            const dateHeader: HTMLElement = schObj.element.querySelector('.e-date-header-wrap') as HTMLElement;
+            expect(dateHeader.classList.contains('e-all-day-scroll')).toEqual(false);
+            expect(dateHeader.classList.contains('e-all-day-auto')).toEqual(true);
+            expect(dateHeader.style.maxHeight).toEqual('');
         });
     });
 
@@ -939,7 +1030,7 @@ describe('Vertical View Event Render Module', () => {
             expect(schObj.element.querySelector('.e-inline-appointment').classList.contains('e-inline-appointment')).toBeTruthy();
             let inputElement: HTMLInputElement = schObj.element.querySelector('.e-inline-subject') as HTMLInputElement;
             expect(inputElement.classList.contains('e-inline-subject')).toBeTruthy();
-            inputElement.value = 'Testing';         
+            inputElement.value = 'Testing';
             keyModule.keyActionHandler({ action: 'enter', target: schObj.element.querySelector('.e-inline-subject') });
 
         });
@@ -958,7 +1049,7 @@ describe('Vertical View Event Render Module', () => {
             expect(schObj.element.querySelector('.e-inline-appointment').classList.contains('e-inline-appointment')).toBeTruthy();
             let inputElement: HTMLInputElement = schObj.element.querySelector('.e-inline-subject') as HTMLInputElement;
             expect(inputElement.classList.contains('e-inline-subject')).toBeTruthy();
-            inputElement.value = 'week';         
+            inputElement.value = 'week';
             keyModule.keyActionHandler({ action: 'enter', target: schObj.element.querySelector('.e-inline-subject') });
         });
 
@@ -976,7 +1067,7 @@ describe('Vertical View Event Render Module', () => {
             expect(schObj.element.querySelector('.e-inline-appointment').classList.contains('e-inline-appointment')).toBeTruthy();
             let inputElement: HTMLInputElement = schObj.element.querySelector('.e-inline-subject') as HTMLInputElement;
             expect(inputElement.classList.contains('e-inline-subject')).toBeTruthy();
-            inputElement.value = 'timeline';         
+            inputElement.value = 'timeline';
             keyModule.keyActionHandler({ action: 'enter', target: schObj.element.querySelector('.e-inline-subject') });
         });
     });

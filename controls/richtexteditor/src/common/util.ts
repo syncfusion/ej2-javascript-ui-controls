@@ -2,6 +2,7 @@
  * Defines common util methods used by Rich Text Editor.
  */
 import { isNullOrUndefined, Browser, createElement, detach } from '@syncfusion/ej2-base';
+import { IToolbarStatus } from './interface';
 import * as classes from '../rich-text-editor/base/classes';
 
 const inlineNode: string[] = ['a', 'abbr', 'acronym', 'audio', 'b', 'bdi', 'bdo', 'big', 'br', 'button',
@@ -23,7 +24,6 @@ export function isIDevice(): boolean {
 }
 
 /**
- 
  * @param {Element} editableElement - specifies the editable element.
  * @param {string} selector - specifies the string values.
  * @returns {void}
@@ -129,4 +129,49 @@ export function getLastTextNode(startChildNodes: Node): Node {
     }
     while (finalNode.childNodes.length > 0);
     return finalNode;
+}
+
+/**
+ * @returns {void}
+ * @hidden
+ */
+ export function getDefaultHtmlTbStatus(): IToolbarStatus {
+    return {
+        bold: false,
+        italic: false,
+        subscript: false,
+        superscript: false,
+        strikethrough: false,
+        orderedlist: false,
+        unorderedlist: false,
+        underline: false,
+        alignments: null,
+        backgroundcolor: null,
+        fontcolor: null,
+        fontname: null,
+        fontsize: null,
+        formats: null,
+        createlink: false,
+        insertcode: false
+    };
+}
+
+/**
+ * @returns {void}
+ * @hidden
+ */
+ export function getDefaultMDTbStatus(): IToolbarStatus {
+    return {
+        bold: false,
+        italic: false,
+        subscript: false,
+        superscript: false,
+        strikethrough: false,
+        orderedlist: false,
+        uppercase: false,
+        lowercase: false,
+        inlinecode: false,
+        unorderedlist: false,
+        formats: null
+    };
 }

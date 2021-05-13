@@ -22,17 +22,11 @@ export class ChartRows extends DateProcessor {
     private baselineTop: number = 0;
     public baselineHeight: number = 3;
     private baselineColor: string;
-    // eslint-disable-next-line
     private parentTaskbarTemplateFunction: Function;
-    // eslint-disable-next-line
     private leftTaskLabelTemplateFunction: Function;
-    // eslint-disable-next-line
     private rightTaskLabelTemplateFunction: Function;
-    // eslint-disable-next-line
     private taskLabelTemplateFunction: Function;
-    // eslint-disable-next-line
     private childTaskbarTemplateFunction: Function;
-    // eslint-disable-next-line
     private milestoneTemplateFunction: Function;
     private templateData: IGanttData;
     private touchLeftConnectorpoint: string = '';
@@ -221,7 +215,8 @@ export class ChartRows extends DateProcessor {
                                     'style="left:' + data.ganttProperties.left + 'px; width:' + data.ganttProperties.width + 'px;' +
                                     ' height:' + this.taskBarHeight + 'px;"></div>') : '';
             if (data.ganttProperties.startDate && data.ganttProperties.endDate && data.ganttProperties.duration &&
-                isNullOrUndefined(data.ganttProperties.segments)) {
+                (isNullOrUndefined(data.ganttProperties.segments) || (!isNullOrUndefined(data.ganttProperties.segments) &&
+                 data.ganttProperties.segments.length === 0))) {
                 if (template !== '' && !isNullOrUndefined(progressDiv) && progressDiv.length > 0) {
                     progressDiv[0].appendChild([].slice.call(this.createDivElement(template))[0]);
                 }
@@ -341,6 +336,9 @@ export class ChartRows extends DateProcessor {
                 this.parent.setRecordValue('segments', ganttProp.segments, ganttProp, true);
             }
         }
+        if (segmentIndex === -1) {
+            this.dropSplit = true;
+        }
         return segmentIndex;
     }
 
@@ -405,8 +403,21 @@ export class ChartRows extends DateProcessor {
         };
         this.triggerQueryTaskbarInfoByIndex(tr, data);
         this.parent.selectionModule.clearSelection();
+        const segments: ITaskSegment[] = (args.rowData as IGanttData).taskData[this.parent.taskFields.segments];
+        if (this.parent.timezone && segments != null) {
+            for (let i: number = 0; i < segments.length; i++) {
+                segments[i][this.parent.taskFields.startDate] = this.parent.dateValidationModule.remove(
+                    ((args.rowData as IGanttData).ganttProperties.segments as ITaskSegment)[i].startDate, this.parent.timezone);
+                if (this.parent.taskFields.endDate) {
+                    segments[i][this.parent.taskFields.endDate] = this.parent.dateValidationModule.remove(
+                        ((args.rowData as IGanttData).ganttProperties.segments as ITaskSegment)[i].endDate, this.parent.timezone);
+                }
+            }
+        }
+
         this.parent.trigger('actionComplete', args);
         setValue('isEdit', false, this.parent.contextMenuModule);
+        setValue('isEdit', false, this.parent);
     }
 
     /**
@@ -464,7 +475,9 @@ export class ChartRows extends DateProcessor {
                 }
             }
         } else {
-            (splitDates as Date[]).sort();
+            (splitDates as Date[]).sort((a: Date, b: Date) => {
+                return a.getTime() - b.getTime();
+            });
             this.parent.setRecordValue(
                 'segments', this.constructSegments(
                     splitDates as Date[], splitRecord.ganttProperties
@@ -1257,11 +1270,9 @@ export class ChartRows extends DateProcessor {
         const trs: Element[] = [].slice.call(this.ganttChartTableBody.querySelectorAll('tr'));
         this.ganttChartTableBody.innerHTML = '';
         const collapsedResourceRecord: IGanttData[] = [];
-        // eslint-disable-next-line
         const prevCurrentView: Object[] = this.parent.treeGridModule.prevCurrentView as object[];
         if (this.parent.enableImmutableMode && prevCurrentView && prevCurrentView.length > 0) {
             this.refreshedTr = []; this.refreshedData = [];
-            // eslint-disable-next-line
             const oldKeys: object = {};
             const oldRowElements: Element[] = [];
             const key: string = this.parent.treeGrid.getPrimaryKeyFieldNames()[0];
@@ -1353,7 +1364,7 @@ export class ChartRows extends DateProcessor {
                 taskBaselineTemplateNode = this.getMilestoneBaselineNode();
             }
         } else {
-            const scheduledTask: boolean = isScheduledTask(this.templateData.ganttProperties);
+            const scheduledTask: Boolean = isScheduledTask(this.templateData.ganttProperties);// eslint-disable-line
             let childTaskbarProgressResizeNode: NodeList = null; let childTaskbarRightResizeNode: NodeList = null;
             let childTaskbarLeftResizeNode: NodeList = null;
             if (!isNullOrUndefined(scheduledTask)) {
@@ -1404,7 +1415,6 @@ export class ChartRows extends DateProcessor {
         parentTrNode[0].childNodes[0].childNodes[0].appendChild([].slice.call(taskbarContainerNode)[0]);
         if (this.templateData.ganttProperties.indicators && this.templateData.ganttProperties.indicators.length > 0) {
             let taskIndicatorNode: NodeList;
-            // eslint-disable-next-line
             let taskIndicatorTextFunction: Function;
             let taskIndicatorTextNode: NodeList;
             const indicators: IIndicator[] = this.templateData.ganttProperties.indicators;
@@ -1634,7 +1644,6 @@ export class ChartRows extends DateProcessor {
      * @returns {Function} .
      * @private
      */
-    // eslint-disable-next-line
     public templateCompiler(template: string): Function {
         if (!isNullOrUndefined(template) && template !== '') {
             try {

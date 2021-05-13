@@ -75,7 +75,6 @@ export class Column {
      *
      * @default null
      */
-    // eslint-disable-next-line
     public customAttributes: { [x: string]: Object };
 
     /**
@@ -123,7 +122,6 @@ export class Column {
      *
      * @default null
      */
-    // eslint-disable-next-line
     public formatter: { new(): IGanttCellFormatter } | Function | IGanttCellFormatter;
 
     /**
@@ -301,7 +299,6 @@ export interface ColumnModel {
      *
      * @default null
      */
-    // eslint-disable-next-line
     customAttributes?: { [x: string]: Object };
 
     /**
@@ -352,7 +349,6 @@ export interface ColumnModel {
      *
      * @default null
      */
-    // eslint-disable-next-line
     formatter?: { new(): IGanttCellFormatter } | Function | IGanttCellFormatter;
 
     /**

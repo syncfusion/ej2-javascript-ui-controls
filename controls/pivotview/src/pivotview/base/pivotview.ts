@@ -3370,6 +3370,11 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
             };
             pivot.trigger(events.drill, drillArgs, (observedArgs: DrillArgs) => {
                 if (!observedArgs.cancel) {
+                    let args: EnginePopulatingEventArgs = {
+                        dataSourceSettings: PivotUtil.getClonedDataSourceSettings(this.dataSourceSettings)
+                    };
+                    this.trigger(events.enginePopulating, args);
+                    pivot.dataSourceSettings = args.dataSourceSettings;
                     if (pivot.enableVirtualization) {
                         if (isBlazor()) {
                             /* eslint-disable */
@@ -3405,6 +3410,12 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
                         /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
                         delete (pivot as any).bulkChanges.pivotValues;
                         pivot.allowServerDataBinding = true;
+                        let eventArgs: EnginePopulatedEventArgs = {
+                            dataSourceSettings: PivotUtil.getClonedDataSourceSettings(args.dataSourceSettings),
+                            pivotValues: this.pivotValues
+                        };
+                        this.trigger(events.enginePopulated, eventArgs);
+                        pivot.engineModule.pivotValues = eventArgs.pivotValues;
                         pivot.renderPivotGrid();
                     }
                 } else {
@@ -3508,11 +3519,22 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
             this.setProperties({ dataSourceSettings: { drilledMembers: clonedMembers } }, true);
             pivot.trigger(events.drill, drillArgs, (observedArgs: DrillArgs) => {
                 if (!observedArgs.cancel) {
+                    let args: EnginePopulatingEventArgs = {
+                        dataSourceSettings: PivotUtil.getClonedDataSourceSettings(this.dataSourceSettings)
+                    };
+                    this.trigger(events.enginePopulating, args);
+                    this.dataSourceSettings = args.dataSourceSettings;
                     this.olapEngineModule.updateDrilledInfo(this.dataSourceSettings as IDataOptions);
                     this.allowServerDataBinding = false;
                     this.setProperties({ pivotValues: this.olapEngineModule.pivotValues }, true);
                     delete (this as any).bulkChanges.pivotValues;
                     this.allowServerDataBinding = true;
+                    let eventArgs: EnginePopulatedEventArgs = {
+                        dataSourceSettings: PivotUtil.getClonedDataSourceSettings(args.dataSourceSettings),
+                        pivotValues: pivot.olapEngineModule.pivotValues
+                    };
+                    this.trigger(events.enginePopulated, eventArgs);
+                    this.olapEngineModule.pivotValues = eventArgs.pivotValues;
                     this.renderPivotGrid();
                 } else {
                     this.hideWaitingPopup();
@@ -3581,12 +3603,23 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
             this.setProperties({ dataSourceSettings: { drilledMembers: clonedMembers } }, true);
             pivot.trigger(events.drill, drillArgs, (observedArgs: DrillArgs) => {
                 if (!observedArgs.cancel) {
+                    let args: EnginePopulatingEventArgs = {
+                        dataSourceSettings: PivotUtil.getClonedDataSourceSettings(this.dataSourceSettings)
+                    };
+                    this.trigger(events.enginePopulating, args);
+                    this.dataSourceSettings = args.dataSourceSettings;
                     this.setProperties({ dataSourceSettings: { drilledMembers: drilledMembers } }, true);
                     this.olapEngineModule.updateDrilledInfo(this.dataSourceSettings as IDataOptions);
                     this.allowServerDataBinding = false;
                     this.setProperties({ pivotValues: this.olapEngineModule.pivotValues }, true);
                     delete (this as any).bulkChanges.pivotValues;
                     this.allowServerDataBinding = true;
+                    let eventArgs: EnginePopulatedEventArgs = {
+                        dataSourceSettings: PivotUtil.getClonedDataSourceSettings(args.dataSourceSettings),
+                        pivotValues: pivot.olapEngineModule.pivotValues
+                    };
+                    this.trigger(events.enginePopulated, eventArgs);
+                    this.olapEngineModule.pivotValues = eventArgs.pivotValues;
                     this.renderPivotGrid();
                 } else {
                     this.hideWaitingPopup();

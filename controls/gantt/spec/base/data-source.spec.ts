@@ -892,7 +892,60 @@ export let zoomData1: Object[] =[
         ]
     },
 ]
-
+export let timezoneData: Object[] = [
+    {
+        'TaskID': 1,
+        'TaskName': 'Parent Task 1',
+        'StartDate': new Date('02/02/2018'),
+        'EndDate': new Date('03/03/2018'),
+        'Progress': '40',
+        'isManual': true,
+        'Children': [
+            {
+                'TaskID': 2, 'TaskName': 'Child Task 1', 'StartDate': new Date('02/07/2018 14:00'), 'EndDate': new Date('02/12/2018'),
+                'Progress': '40', 'Duration': 8
+            },
+            {
+                'TaskID': 3, 'TaskName': 'Child Task 2', 'StartDate': new Date('02/05/2018'), 'EndDate': new Date('02/13/2018'),
+                'Progress': '40', 'Duration': 8
+            },
+            {
+                'TaskID': 4, 'TaskName': 'Child Task 3', 'StartDate': new Date('02/06/2018'), 'EndDate': new Date('02/14/2018'),
+                'Progress': '40', 'Duration': 8
+            }
+        ]
+    },
+    {
+        'TaskID': 5,
+        'TaskName': 'Parent Task 5',
+        'StartDate': new Date('02/02/2018'),
+        'EndDate': new Date('03/03/2018'),
+        'Progress': '40',
+        'isManual': true,
+        'Children': [
+            {
+                'TaskID': 6, 'TaskName': 'Child Task 6', 'StartDate': new Date('03/04/2018'), 'EndDate': new Date('03/12/2018'),
+                'Progress': '40', 'Duration': 8
+            },
+            {
+                'TaskID': 7, 'TaskName': 'Child Task 7', 'StartDate': new Date('03/05/2018'), 'EndDate': new Date('03/13/2018'),
+                'Progress': '40', 'Duration': 8
+            },
+            {
+                'TaskID': 8, 'TaskName': 'Child Task 8', 'StartDate': new Date('03/06/2018'), 'EndDate': new Date('03/14/2018'),
+                'Progress': '40', 'Duration': 8
+            },
+            {
+                'TaskID': 9, 'TaskName': 'Child Task 9', 'StartDate': new Date('03/05/2018'), 'EndDate': new Date('03/13/2018'),
+                'Progress': '40', 'Duration': 8
+            },
+            {
+                'TaskID': 10, 'TaskName': 'Child Task 10', 'StartDate': new Date('03/06/2018'), 'EndDate': new Date('03/14/2018'),
+                'Progress': '40', 'Duration': 8
+            }
+        ]
+    }
+];
 export let defaultGanttData: Object[] = [
     {
         'TaskID': 1,

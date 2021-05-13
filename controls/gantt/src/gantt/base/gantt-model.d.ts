@@ -1,4 +1,4 @@
-import { Component, createElement, Complex, addClass, removeClass, Event, EmitType, formatUnit, Browser } from '@syncfusion/ej2-base';import { Internationalization, extend, getValue, isObjectArray, isObject, setValue, isUndefined, isBlazor } from '@syncfusion/ej2-base';import { Property, NotifyPropertyChanges, INotifyPropertyChanged, L10n, ModuleDeclaration, EventHandler } from '@syncfusion/ej2-base';import { isNullOrUndefined, KeyboardEvents, KeyboardEventArgs, Collection, append, remove } from '@syncfusion/ej2-base';import { createSpinner, showSpinner, hideSpinner, Dialog } from '@syncfusion/ej2-popups';import { RowDragEventArgs } from '@syncfusion/ej2-grids';import { TaskProcessor } from './task-processor';import { GanttChart } from './gantt-chart';import { Timeline } from '../renderer/timeline';import { GanttTreeGrid } from './tree-grid';import { Toolbar } from '../actions/toolbar';import { IGanttData, IWorkingTimeRange, IQueryTaskbarInfoEventArgs, BeforeTooltipRenderEventArgs, IDependencyEventArgs } from './interface';import { DataStateChangeEventArgs } from '@syncfusion/ej2-treegrid';import { ITaskbarEditedEventArgs, IParent, ITaskData, PdfColumnHeaderQueryCellInfoEventArgs } from './interface';import { ICollapsingEventArgs, CellEditArgs, PdfQueryTimelineCellInfoEventArgs } from './interface';import { IConnectorLineObject, IValidateArgs, IValidateMode, ITaskAddedEventArgs, IKeyPressedEventArgs } from './interface';import { PdfExportProperties, ISplitterResizedEventArgs } from './interface';import { ZoomEventArgs, IActionBeginEventArgs, CellSelectingEventArgs, RowDeselectEventArgs, PdfQueryCellInfoEventArgs } from './interface';import { ITimeSpanEventArgs, ZoomTimelineSettings, QueryCellInfoEventArgs, RowDataBoundEventArgs, RowSelectEventArgs } from './interface';import { TaskFieldsModel, TimelineSettingsModel, SplitterSettingsModel, SortSettings, SortSettingsModel } from '../models/models';import { EventMarkerModel, AddDialogFieldSettingsModel, EditDialogFieldSettingsModel, EditSettingsModel } from '../models/models';import { HolidayModel, DayWorkingTimeModel, FilterSettingsModel, SelectionSettingsModel } from '../models/models';import { TaskFields, TimelineSettings, Holiday, EventMarker, DayWorkingTime, EditSettings, SelectionSettings } from '../models/models';import { FilterSettings, SplitterSettings, TooltipSettings, LabelSettings, LabelSettingsModel } from '../models/models';import { SearchSettingsModel, SearchSettings, ResourceFields, ResourceFieldsModel } from '../models/models';import { ItemModel, ClickEventArgs } from '@syncfusion/ej2-navigations';import { DateProcessor } from './date-processor';import { ChartRows } from '../renderer/chart-rows';import { Dependency } from '../actions/dependency';import * as cls from './css-constants';import { Query, DataManager } from '@syncfusion/ej2-data';import { Column, ColumnModel } from '../models/column';import { TreeGrid, FilterSettingsModel as TreeGridFilterSettingModel } from '@syncfusion/ej2-treegrid';import { Sort } from '../actions/sort';import { CellSelectEventArgs, ISelectedCell, ContextMenuItemModel } from '@syncfusion/ej2-grids';import { CellDeselectEventArgs, IIndex, FailureEventArgs } from '@syncfusion/ej2-grids';import { HeaderCellInfoEventArgs, ColumnMenuClickEventArgs, ColumnMenuOpenEventArgs } from '@syncfusion/ej2-grids';import { ColumnMenuItemModel, ExcelQueryCellInfoEventArgs } from '@syncfusion/ej2-grids';import { ExcelExportProperties, ExcelExportCompleteArgs, ExcelHeaderQueryCellInfoEventArgs } from '@syncfusion/ej2-grids';import { RowDD } from '../actions/rowdragdrop';import { Filter } from '../actions/filter';import { PageEventArgs, FilterEventArgs, SortEventArgs, ResizeArgs, ColumnDragEventArgs, getActualProperties } from '@syncfusion/ej2-grids';import { RenderDayCellEventArgs } from '@syncfusion/ej2-calendars';import { ConnectorLine } from '../renderer/connector-line';import { ConnectorLineEdit } from '../actions/connector-line-edit';import { Edit } from '../actions/edit';import { Splitter } from './splitter';import { ResizeEventArgs, ResizingEventArgs } from '@syncfusion/ej2-layouts';import { TooltipSettingsModel } from '../models/tooltip-settings-model';import { Tooltip } from '../renderer/tooltip';import { ToolbarItem, ColumnMenuItem, RowPosition, DurationUnit, SortDirection } from './enum';import { GridLine, ContextMenuItem, ScheduleMode, ViewType } from './enum';import { Selection } from '../actions/selection';import { ExcelExport } from '../actions/excel-export';import { DayMarkers } from '../actions/day-markers';import { ContextMenu } from './../actions/context-menu';import { RowSelectingEventArgs } from './interface';import { ContextMenuOpenEventArgs as CMenuOpenEventArgs, ContextMenuClickEventArgs as CMenuClickEventArgs } from './interface';import { ColumnMenu } from '../actions/column-menu';import { ITaskbarClickEventArgs, RecordDoubleClickEventArgs, IMouseMoveEventArgs } from './interface';import { PdfExport } from '../actions/pdf-export';import { WorkUnit, TaskType } from './enum';import { FocusModule } from '../actions/keyboard';import { VirtualScroll } from '../actions/virtual-scroll';import { isCountRequired } from './utils';
+import { Component, createElement, Complex, addClass, removeClass, Event, EmitType, formatUnit, Browser } from '@syncfusion/ej2-base';import { Internationalization, extend, getValue, isObjectArray, isObject, setValue, isUndefined, isBlazor } from '@syncfusion/ej2-base';import { Property, NotifyPropertyChanges, INotifyPropertyChanged, L10n, ModuleDeclaration, EventHandler } from '@syncfusion/ej2-base';import { isNullOrUndefined, KeyboardEvents, KeyboardEventArgs, Collection, append, remove } from '@syncfusion/ej2-base';import { createSpinner, showSpinner, hideSpinner, Dialog } from '@syncfusion/ej2-popups';import { RowDragEventArgs } from '@syncfusion/ej2-grids';import { TaskProcessor } from './task-processor';import { GanttChart } from './gantt-chart';import { Timeline } from '../renderer/timeline';import { GanttTreeGrid } from './tree-grid';import { Toolbar } from '../actions/toolbar';import { IGanttData, IWorkingTimeRange, IQueryTaskbarInfoEventArgs, BeforeTooltipRenderEventArgs, IDependencyEventArgs } from './interface';import { DataStateChangeEventArgs } from '@syncfusion/ej2-treegrid';import { ITaskbarEditedEventArgs, IParent, ITaskData, PdfColumnHeaderQueryCellInfoEventArgs } from './interface';import { ICollapsingEventArgs, CellEditArgs, PdfQueryTimelineCellInfoEventArgs } from './interface';import { IConnectorLineObject, IValidateArgs, IValidateMode, ITaskAddedEventArgs, IKeyPressedEventArgs } from './interface';import { PdfExportProperties, ISplitterResizedEventArgs } from './interface';import { ZoomEventArgs, IActionBeginEventArgs, CellSelectingEventArgs, RowDeselectEventArgs, PdfQueryCellInfoEventArgs } from './interface';import { ITimeSpanEventArgs, ZoomTimelineSettings, QueryCellInfoEventArgs, RowDataBoundEventArgs, RowSelectEventArgs } from './interface';import { TaskFieldsModel, TimelineSettingsModel, SplitterSettingsModel, SortSettings, SortSettingsModel } from '../models/models';import { EventMarkerModel, AddDialogFieldSettingsModel, EditDialogFieldSettingsModel, EditSettingsModel } from '../models/models';import { HolidayModel, DayWorkingTimeModel, FilterSettingsModel, SelectionSettingsModel } from '../models/models';import { TaskFields, TimelineSettings, Holiday, EventMarker, DayWorkingTime, EditSettings, SelectionSettings } from '../models/models';import { FilterSettings, SplitterSettings, TooltipSettings, LabelSettings, LabelSettingsModel } from '../models/models';import { SearchSettingsModel, SearchSettings, ResourceFields, ResourceFieldsModel } from '../models/models';import { ItemModel, ClickEventArgs } from '@syncfusion/ej2-navigations';import { DateProcessor } from './date-processor';import { ChartRows } from '../renderer/chart-rows';import { Dependency } from '../actions/dependency';import * as cls from './css-constants';import { Query, DataManager } from '@syncfusion/ej2-data';import { Column, ColumnModel } from '../models/column';import { TreeGrid, FilterSettingsModel as TreeGridFilterSettingModel } from '@syncfusion/ej2-treegrid';import { Sort } from '../actions/sort';import { CellSelectEventArgs, ISelectedCell, ContextMenuItemModel } from '@syncfusion/ej2-grids';import { CellDeselectEventArgs, IIndex, FailureEventArgs } from '@syncfusion/ej2-grids';import { HeaderCellInfoEventArgs, ColumnMenuClickEventArgs, ColumnMenuOpenEventArgs } from '@syncfusion/ej2-grids';import { ColumnMenuItemModel, ExcelQueryCellInfoEventArgs } from '@syncfusion/ej2-grids';import { ExcelExportProperties, ExcelExportCompleteArgs, ExcelHeaderQueryCellInfoEventArgs } from '@syncfusion/ej2-grids';import { RowDD } from '../actions/rowdragdrop';import { Filter } from '../actions/filter';import { PageEventArgs, FilterEventArgs, SortEventArgs, ResizeArgs, ColumnDragEventArgs, getActualProperties } from '@syncfusion/ej2-grids';import { RenderDayCellEventArgs } from '@syncfusion/ej2-calendars';import { ConnectorLine } from '../renderer/connector-line';import { ConnectorLineEdit } from '../actions/connector-line-edit';import { Edit } from '../actions/edit';import { Splitter } from './splitter';import { ResizeEventArgs, ResizingEventArgs } from '@syncfusion/ej2-layouts';import { TooltipSettingsModel } from '../models/tooltip-settings-model';import { Tooltip } from '../renderer/tooltip';import { ToolbarItem, ColumnMenuItem, RowPosition, DurationUnit, SortDirection } from './enum';import { GridLine, ContextMenuItem, ScheduleMode, ViewType } from './enum';import { Selection } from '../actions/selection';import { ExcelExport } from '../actions/excel-export';import { DayMarkers } from '../actions/day-markers';import { ContextMenu } from './../actions/context-menu';import { RowSelectingEventArgs } from './interface';import { ContextMenuOpenEventArgs as CMenuOpenEventArgs, ContextMenuClickEventArgs as CMenuClickEventArgs } from './interface';import { ColumnMenu } from '../actions/column-menu';import { ITaskbarClickEventArgs, RecordDoubleClickEventArgs, IMouseMoveEventArgs } from './interface';import { PdfExport } from '../actions/pdf-export';import { WorkUnit, TaskType } from './enum';import { FocusModule } from '../actions/keyboard';import { VirtualScroll } from '../actions/virtual-scroll';import { isCountRequired } from './utils';import { TaskbarEdit } from '../actions/taskbar-edit';
 import {ComponentModel} from '@syncfusion/ej2-base';
 
 /**
@@ -115,7 +115,7 @@ export interface GanttModel extends ComponentModel{
      * @isGenericType true
      * @default []
      */
-    dataSource?: Object[] | DataManager | Object;   // eslint-disable-line
+    dataSource?: Object[] | DataManager | Object;
 
     /**
      * `durationUnit` Specifies the duration unit for each tasks whether day or hour or minute.
@@ -317,14 +317,14 @@ export interface GanttModel extends ComponentModel{
      *
      * @default []
      */
-    resources?: object[];    // eslint-disable-line
+    resources?: object[];
 
     /**
      * Defines segment collection assigned for tasks.
      *
      * @default []
      */
-    segmentData?: object[];    // eslint-disable-line
+    segmentData?: object[];
 
     /**
      * Defines background color of dependency lines.
@@ -603,7 +603,7 @@ export interface GanttModel extends ComponentModel{
      * @deprecated
      * @event beforeExcelExport
      */
-    beforeExcelExport?: EmitType<Object>; // eslint-disable-line
+    beforeExcelExport?: EmitType<Object>;
 
     /**
      * Triggers after Gantt data is exported to Excel file.
@@ -752,21 +752,21 @@ export interface GanttModel extends ComponentModel{
      * @event load
      * @blazorproperty 'OnLoad'
      */
-    load?: EmitType<Object>;     // eslint-disable-line
+    load?: EmitType<Object>;
 
     /**
      * Triggers when the component is created.
      *
      * @event created
      */
-    created?: EmitType<Object>;    // eslint-disable-line
+    created?: EmitType<Object>;
 
     /**
      * Triggers when the component is destroyed.
      *
      * @event destroyed
      */
-    destroyed?: EmitType<Object>;    // eslint-disable-line
+    destroyed?: EmitType<Object>;
 
     /**
      * This event will be triggered when taskbar was in dragging state.
@@ -780,7 +780,7 @@ export interface GanttModel extends ComponentModel{
      *
      * @event dataBound
      */
-    dataBound?: EmitType<Object>;      // eslint-disable-line
+    dataBound?: EmitType<Object>;
 
     /**
      * Triggers when column resize starts.
@@ -1015,7 +1015,7 @@ export interface GanttModel extends ComponentModel{
      * @event beforePdfExport
      * @deprecated
      */
-    beforePdfExport?: EmitType<Object>;    // eslint-disable-line
+    beforePdfExport?: EmitType<Object>;
 
     /**
      * Triggers after TreeGrid data is exported to PDF document.
@@ -1023,7 +1023,7 @@ export interface GanttModel extends ComponentModel{
      * @event pdfExportComplete
      * @deprecated
      */
-    pdfExportComplete?: EmitType<Object>;    // eslint-disable-line
+    pdfExportComplete?: EmitType<Object>;
 
     /**
      * Triggers before exporting each cell to PDF document. You can also customize the PDF cells.
@@ -1039,7 +1039,7 @@ export interface GanttModel extends ComponentModel{
      * @event pdfQueryTaskbarInfo
      * @deprecated
      */
-    pdfQueryTaskbarInfo?: EmitType<Object>;     // eslint-disable-line
+    pdfQueryTaskbarInfo?: EmitType<Object>;
 
     /**
      * Triggers before exporting each cell to PDF document. You can also customize the PDF cells.

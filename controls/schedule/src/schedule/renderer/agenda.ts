@@ -400,7 +400,9 @@ export class Agenda extends ViewBase implements IRenderer {
             }
         }
         const contentArea: HTMLElement = this.element.querySelector('.' + cls.CONTENT_WRAP_CLASS) as HTMLElement;
-        contentArea.style.height = formatUnit(this.parent.element.offsetHeight - headerHeight);
+        if (this.parent.height !== 'auto') {
+            contentArea.style.height = formatUnit(this.parent.element.offsetHeight - headerHeight);
+        }
     }
 
     public destroy(): void {

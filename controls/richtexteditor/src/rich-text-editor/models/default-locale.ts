@@ -132,7 +132,22 @@ export let defaultLocale: { [key: string]: string } = {
     'pasteDialogOk': 'OK',
     'pasteDialogCancel': 'Cancel',
     'fileManager': 'File Manager',
-    'fileDialogHeader': 'File Browser'
+    'fileDialogHeader': 'File Browser',
+    "formatsDropDownParagraph": 'Paragraph',
+    'formatsDropDownCode': 'Code',
+    'formatsDropDownQuotation': 'Quotation',
+    'formatsDropDownHeading1': 'Heading 1',
+    'formatsDropDownHeading2': 'Heading 2',
+    'formatsDropDownHeading3': 'Heading 3',
+    'formatsDropDownHeading4': 'Heading 4',
+    'fontNameSegoeUI': 'Segoe UI',
+    'fontNameArial': 'Arial',
+    'fontNameGeorgia': 'Georgia',
+    'fontNameImpact': 'Impact',
+    'fontNameTahoma': 'Tahoma',
+    'fontNameTimesNewRoman': 'Times New Roman',
+    'fontNameVerdana': 'Verdana'
+
 };
 
 export let toolsLocale: { [key: string]: string } = {

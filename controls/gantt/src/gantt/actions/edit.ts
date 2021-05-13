@@ -6,7 +6,7 @@ import { IActionBeginEventArgs, ITaskAddedEventArgs, ITaskDeletedEventArgs, RowD
 import { ColumnModel, Column as GanttColumn } from '../models/column';
 import { DataManager, DataUtil, Query, AdaptorOptions, ODataAdaptor, WebApiAdaptor } from '@syncfusion/ej2-data';
 import { ReturnType, RecordDoubleClickEventArgs, Row, Column, IEditCell, EJ2Intance, getUid } from '@syncfusion/ej2-grids';
-import { getSwapKey, isScheduledTask, getTaskData, isRemoteData, getIndex, isCountRequired } from '../base/utils';
+import { getSwapKey, isScheduledTask, getTaskData, isRemoteData, getIndex, isCountRequired, updateDates } from '../base/utils';
 import { RowPosition } from '../base/enum';
 import { CellEdit } from './cell-edit';
 import { TaskbarEdit } from './taskbar-edit';
@@ -33,7 +33,6 @@ export class Edit {
      * @private
      */
     /** @hidden */
-    // eslint-disable-next-line
     private ganttData: Object[] | DataManager;
     /** @hidden */
     private treeGridData: ITreeData[];
@@ -163,7 +162,6 @@ export class Edit {
      * @param {object} editParam .
      * @returns {void} .
      */
-    // eslint-disable-next-line
     private updateEditParams(column: ColumnModel, editParam: object): void {
         if (isNullOrUndefined(column.edit)) {
             column.edit = {};
@@ -202,7 +200,6 @@ export class Edit {
         const editObject: IEditCell = {};
         let editor: MultiSelect;
         MultiSelect.Inject(CheckBoxSelection);
-        // eslint-disable-next-line
         editObject.write = (args: { rowData: Object, element: Element, column: GanttColumn, row: HTMLElement, requestType: string }) => {
             this.parent.treeGridModule.currentEditRow = {};
             editor = new MultiSelect({
@@ -217,7 +214,6 @@ export class Edit {
             editor.appendTo(args.element as HTMLElement);
         };
         editObject.read = (element: HTMLElement): string => {
-            // eslint-disable-next-line
             let value: Object[] = (<EJ2Intance>element).ej2_instances[0].value;
             const resourcesName: string[] = [];
             if (isNullOrUndefined(value)) {
@@ -264,9 +260,7 @@ export class Edit {
     private getTaskTypeEditor(): IEditCell {
         const editObject: IEditCell = {};
         let editor: DropDownList;
-        // eslint-disable-next-line
         const types: Object[] = [{ 'ID': 1, 'Value': 'FixedUnit' }, { 'ID': 2, 'Value': 'FixedWork' }, { 'ID': 3, 'Value': 'FixedDuration' }];
-        // eslint-disable-next-line
         editObject.write = (args: { rowData: Object, element: Element, column: GanttColumn, row: HTMLElement, requestType: string }) => {
             this.parent.treeGridModule.currentEditRow = {};
             editor = new DropDownList({
@@ -383,7 +377,6 @@ export class Edit {
      * @param {Object} data - Defines new data to update.
      * @returns {void} .
      */
-    // eslint-disable-next-line
     public updateRecordByID(data: Object): void {
         if (!this.parent.readOnly) {
             const tasks: TaskFieldsModel = this.parent.taskFields;
@@ -449,11 +442,9 @@ export class Edit {
      * @returns {void} .
      * @private
      */
-    // eslint-disable-next-line
     public validateUpdateValues(data: Object, ganttData: IGanttData, isFromDialog?: boolean): void {
         const ganttObj: Gantt = this.parent;
         const tasks: TaskFieldsModel = ganttObj.taskFields;
-        // eslint-disable-next-line
         const ganttPropByMapping: Object = getSwapKey(ganttObj.columnMapping);
         const scheduleFieldNames: string[] = [];
         let isScheduleValueUpdated: boolean = false;
@@ -479,7 +470,6 @@ export class Edit {
                     isScheduleValueUpdated = true;
                 }
             } else if (tasks.resourceInfo === key) {
-                // eslint-disable-next-line
                 const resourceData: Object[] = ganttObj.dataOperation.setResourceInfo(data);
                 if (this.parent.viewType === 'ResourceView') {
                     if (JSON.stringify(resourceData) !== JSON.stringify(ganttData.ganttProperties.resourceInfo)) {
@@ -528,7 +518,6 @@ export class Edit {
                 ganttObj.setRecordValue('taskData.' + key, value, ganttData);
                 ganttObj.setRecordValue(key, value, ganttData);
             } else if (tasks.indicators === key) {
-                // eslint-disable-next-line
                 const value: Object[] = data[key];
                 ganttObj.setRecordValue('indicators', value, ganttData.ganttProperties, true);
                 ganttObj.setRecordValue('taskData.' + key, value, ganttData);
@@ -626,7 +615,6 @@ export class Edit {
         }
     }
 
-    // eslint-disable-next-line
     private validateScheduleValues(fieldNames: string[], ganttData: IGanttData, data: Object): void {
         const ganttObj: Gantt = this.parent;
         if (fieldNames.length > 2) {
@@ -637,7 +625,6 @@ export class Edit {
             this.dialogModule.validateScheduleValuesByCurrentField(fieldNames[0], data[fieldNames[0]], ganttData);
         }
     }
-    // eslint-disable-next-line
     private validateScheduleByTwoValues(data: Object, fieldNames: string[], ganttData: IGanttData): void {
         const ganttObj: Gantt = this.parent; let startDate: Date; let endDate: Date; let duration: string;
         const tasks: TaskFieldsModel = ganttObj.taskFields; const ganttProp: ITaskData = ganttData.ganttProperties;
@@ -760,7 +747,6 @@ export class Edit {
             this.parent.isConnectorLineUpdate = true;
             this.parent.connectorLineEditModule.addRemovePredecessor(args.data);
         }
-        // eslint-disable-next-line
         let validateObject: object = {};
         if (isValidatePredecessor) {
             validateObject = this.parent.connectorLineEditModule.validateTypes(args.data);
@@ -950,7 +936,6 @@ export class Edit {
         let milesStoneCount: number = 0;
         let taskCount: number = 0;
         let totalDuration: number = 0;
-        // eslint-disable-next-line
         let progressValues: Object = {};
         if (childRecords) {
             for (let i: number = 0; i < childCount; i++) {
@@ -1005,7 +990,6 @@ export class Edit {
      * @private
      */
     public reUpdatePreviousRecords(isRefreshChart?: boolean, isRefreshGrid?: boolean): void {
-        // eslint-disable-next-line
         const collection: object = this.parent.previousRecords;
         const keys: string[] = Object.keys(collection);
         for (let i: number = 0; i < keys.length; i++) {
@@ -1037,7 +1021,6 @@ export class Edit {
      * @param {object} newValue .
      * @returns {void} .
      */
-    // eslint-disable-next-line
     private copyTaskData(existing: Object, newValue: object): void {
         if (!isNullOrUndefined(newValue)) {
             extend(existing, newValue);
@@ -1183,30 +1166,25 @@ export class Edit {
             if (eventArg.cancel) {
                 this.reUpdatePreviousRecords();
                 this.parent.chartRowsModule.refreshRecords([args.data]);
-                this.resetEditProperties();
+                this.resetEditProperties(eventArgs);
                 // Trigger action complete event with save canceled request type
             } else {
-                eventArg.modifiedTaskData = getTaskData(eventArg.modifiedRecords);
+                eventArg.modifiedTaskData = getTaskData(eventArg.modifiedRecords, null, null, this.parent);
                 if (isRemoteData(this.parent.dataSource)) {
                     const data: DataManager = this.parent.dataSource as DataManager;
-                    // eslint-disable-next-line
                     const updatedData: object = {
                         changedRecords: eventArg.modifiedTaskData
                     };
                     const query: Query = this.parent.query instanceof Query ? this.parent.query : new Query();
-                    // eslint-disable-next-line
                     let crud: Promise<Object> = null;
                     const dataAdaptor: AdaptorOptions = data.adaptor;
                     if (!(dataAdaptor instanceof WebApiAdaptor && dataAdaptor instanceof ODataAdaptor) || data.dataSource.batchUrl) {
-                        // eslint-disable-next-line
                         crud = data.saveChanges(updatedData, this.parent.taskFields.id, null, query) as Promise<Object>;
                     } else {
                         const changedRecords: string = 'changedRecords';
-                        // eslint-disable-next-line
                         crud = data.update(this.parent.taskFields.id, updatedData[changedRecords], null, query) as Promise<Object>;
                     }
                     crud.then((e: ReturnType) => this.dmSuccess(e, args))
-                    // eslint-disable-next-line
                         .catch((e: { result: Object[] }) => this.dmFailure(e as { result: Object[] }, args));
                 } else {
                     this.saveSuccess(args);
@@ -1218,8 +1196,8 @@ export class Edit {
     private dmSuccess(e: ReturnType, args: ITaskbarEditedEventArgs): void {
         this.saveSuccess(args);
     }
-    // eslint-disable-next-line
-    private dmFailure(e: { result: Object[] }, args: ITaskbarEditedEventArgs): void {
+
+    private dmFailure(e: { result: Object[] }, args: ITaskbarEditedEventArgs): void {// eslint-disable-line
         if (this.deletedTaskDetails.length) {
             const deleteRecords: IGanttData[] = this.deletedTaskDetails;
             for (let d: number = 0; d < deleteRecords.length; d++) {
@@ -1293,7 +1271,7 @@ export class Edit {
             eventArgs.requestType = 'save';
             eventArgs.data = args.data;
             eventArgs.modifiedRecords = this.parent.editedRecords;
-            eventArgs.modifiedTaskData = getTaskData(this.parent.editedRecords);
+            eventArgs.modifiedTaskData = getTaskData(this.parent.editedRecords, null, null, this.parent);
             if (!isNullOrUndefined(args.action)) {
                 setValue('action', args.action, eventArgs);
             }
@@ -1319,7 +1297,6 @@ export class Edit {
         }
     }
 
-    // eslint-disable-next-line
     private updateResoures(prevResource: Object[], currentResource: Object[], updateRecord: IGanttData): void {
         const flatRecords: IGanttData[] = this.parent.flatData;
         const currentLength: number = currentResource ? currentResource.length : 0;
@@ -1386,7 +1363,6 @@ export class Edit {
             this.addNewRecord(updateRecord, unassignedTasks);
         } else {
             // Block for create the unassigned task.
-            // eslint-disable-next-line
             const unassignTaskObj: Object = {};
             unassignTaskObj[this.parent.taskFields.id] = 0;
             unassignTaskObj[this.parent.taskFields.name] = this.parent.localeObj.getConstant('unassignedTask');
@@ -1437,7 +1413,6 @@ export class Edit {
         } else {
             data = this.parent.currentViewData;
         }
-        // eslint-disable-next-line
         const dataSource: Object = this.parent.dataSource;
         const deletedRow: IGanttData = record;
         const flatParentData: IGanttData = this.parent.getParentTask(deletedRow.parentItem);
@@ -1461,8 +1436,8 @@ export class Edit {
                 }
             }
             if (deletedRow.ganttProperties.sharedTaskUniqueIds.length) {
-                // eslint-disable-next-line
-                const uniqueIDIndex: number = deletedRow.ganttProperties.sharedTaskUniqueIds.indexOf(deletedRow.ganttProperties.rowUniqueID);
+                const uniqueIDIndex: number =
+                    deletedRow.ganttProperties.sharedTaskUniqueIds.indexOf(deletedRow.ganttProperties.rowUniqueID);
                 deletedRow.ganttProperties.sharedTaskUniqueIds.splice(uniqueIDIndex, 1);
             }
             this.updateTreeGridUniqueID(deletedRow, 'delete');
@@ -1551,7 +1526,7 @@ export class Edit {
         }
     }
 
-    private resetEditProperties(): void {
+    private resetEditProperties(args?: object): void {
         this.parent.currentEditedArgs = {};
         this.resetValidateArgs();
         this.parent.editedTaskBarItem = null;
@@ -1561,7 +1536,8 @@ export class Edit {
         this.parent.editedTaskBarItem = null;
         this.taskbarMoved = false;
         this.predecessorUpdated = false;
-        if (!isNullOrUndefined(this.dialogModule)) {
+        if (!isNullOrUndefined(this.dialogModule) && (isNullOrUndefined(args) ||
+        (!isNullOrUndefined(args) && args['requestType'] === "beforeSave" && !args['cancel']))) {
             if (this.dialogModule.dialog && !this.dialogModule.dialogObj.isDestroyed) {
                 this.dialogModule.dialogObj.hide();
             }
@@ -1721,7 +1697,6 @@ export class Edit {
             if (!Array.isArray(taskDetail)) {
                 this.targetedRecords.push(taskDetail.valueOf());
             } else {
-                // eslint-disable-next-line
                 this.updateTargetedRecords(taskDetail as object[]);
             }
             break;
@@ -1735,7 +1710,6 @@ export class Edit {
      * @param {object[]} taskDetailArray .
      * @returns {void} .
      */
-    // eslint-disable-next-line
     private updateTargetedRecords(taskDetailArray: object[]): void {
         if (taskDetailArray.length) {
             const variableType: string = typeof (taskDetailArray[0]);
@@ -1947,17 +1921,15 @@ export class Edit {
     }
 
     public removeFromDataSource(deleteRecordIDs: string[]): void {
-        // eslint-disable-next-line
         let dataSource: Object[];
         if (this.parent.dataSource instanceof DataManager) {
             dataSource = this.parent.dataSource.dataSource.json;
         } else {
-            dataSource = this.parent.dataSource as Object[]; // eslint-disable-line
+            dataSource = this.parent.dataSource as Object[];
         }
         this.removeData(dataSource, deleteRecordIDs);
         this.isBreakLoop = false;
     }
-    // eslint-disable-next-line
     private removeData(dataCollection: Object[], record: string[]): boolean | void {
         for (let i: number = 0; i < dataCollection.length; i++) {
             if (this.isBreakLoop) {
@@ -1986,7 +1958,7 @@ export class Edit {
         eventArgs.requestType = 'beforeDelete';
         eventArgs.data = args.deletedRecordCollection;
         eventArgs.modifiedRecords = args.updatedRecordCollection;
-        eventArgs.modifiedTaskData = getTaskData(args.updatedRecordCollection);
+        eventArgs.modifiedTaskData = getTaskData(args.updatedRecordCollection, null, null, this.parent);
         const blazorArgs: IActionBeginEventArgs = {};
         if (isBlazor()) {
             eventArgs = this.parent.updateDataArgs(eventArgs);
@@ -2006,10 +1978,16 @@ export class Edit {
             } else {
                 if (isRemoteData(this.parent.dataSource)) {
                     const data: DataManager = this.parent.dataSource as DataManager;
-                    // eslint-disable-next-line
+                    if (this.parent.timezone) {
+                        if (isBlazor()) {
+                            updateDates(blazorArgs.modifiedTaskData as IGanttData, this.parent);
+                        } else {
+                            updateDates(eventArg.modifiedTaskData as IGanttData, this.parent);
+                        }
+                    }
                     const updatedData: object = {
-                        /* eslint-disable-next-line */
-                        deletedRecords: isBlazor() ? getTaskData(blazorArgs.data as IGanttData[]) : getTaskData(eventArg.data as IGanttData[]), // to check
+                        deletedRecords: isBlazor() ? getTaskData(blazorArgs.data as IGanttData[], null, null, this.parent)
+                            : getTaskData(eventArg.data as IGanttData[], null, null, this.parent), // to check
                         changedRecords: isBlazor() ? blazorArgs.modifiedTaskData : eventArg.modifiedTaskData
                     };
                     if (isBlazor()) {
@@ -2018,31 +1996,23 @@ export class Edit {
                     }
                     const adaptor: AdaptorOptions = data.adaptor;
                     if (!(adaptor instanceof WebApiAdaptor && adaptor instanceof ODataAdaptor) || data.dataSource.batchUrl) {
-                        // eslint-disable-next-line
                         const crud: Promise<Object> = data.saveChanges(updatedData, this.parent.taskFields.id) as Promise<Object>;
-                        /* eslint-disable-next-line */
-                        crud.then((e: ReturnType) => this.deleteSuccess(args))
-                        // eslint-disable-next-line
+                        crud.then(() => this.deleteSuccess(args))
                             .catch((e: { result: Object[] }) => this.dmFailure(e as { result: Object[] }, args));
                     } else {
                         const query: Query = this.parent.query instanceof Query ? this.parent.query : new Query();
                         const deletedRecords: string = 'deletedRecords';
-                        // eslint-disable-next-line
                         let deleteCrud: Promise<Object> = null;
                         for (let i: number = 0; i < updatedData[deletedRecords].length; i++) {
-                            /* eslint-disable-next-line */
-                            deleteCrud = data.remove(this.parent.taskFields.id, updatedData[deletedRecords][i], null, query) as Promise<Object>;
+                            deleteCrud = data.remove(this.parent.taskFields.id, updatedData[deletedRecords][i],
+                                                     null, query) as Promise<Object>;
                         }
-                        /* eslint-disable-next-line */
-                        deleteCrud.then((e: ReturnType) => {
+                        deleteCrud.then(() => {
                             const changedRecords: string = 'changedRecords';
-                            /* eslint-disable-next-line */
-                            const updateCrud: Promise<Object> = data.update(this.parent.taskFields.id, updatedData[changedRecords], null, query) as Promise<Object>;
-                            /* eslint-disable-next-line */
-                            updateCrud.then((e: ReturnType) => this.deleteSuccess(args))
-                            // eslint-disable-next-line
+                            const updateCrud: Promise<Object> =
+                                data.update(this.parent.taskFields.id, updatedData[changedRecords], null, query) as Promise<Object>;
+                            updateCrud.then(() => this.deleteSuccess(args))
                                 .catch((e: { result: Object[] }) => this.dmFailure(e as { result: Object[] }, args));
-                            // eslint-disable-next-line
                         }).catch((e: { result: Object[] }) => this.dmFailure(e as { result: Object[] }, args));
                     }
                 } else {
@@ -2112,7 +2082,7 @@ export class Edit {
         eventArgs.requestType = 'delete';
         eventArgs.data = args.deletedRecordCollection;
         eventArgs.modifiedRecords = args.updatedRecordCollection;
-        eventArgs.modifiedTaskData = getTaskData(args.updatedRecordCollection);
+        eventArgs.modifiedTaskData = getTaskData(args.updatedRecordCollection, null, null, this.parent);
         setValue('action', args.action, eventArgs);
         if (isBlazor()) {
             this.parent.updateDataArgs(eventArgs);
@@ -2160,9 +2130,6 @@ export class Edit {
             id = this.getNewTaskId();
             obj[taskModel.id] = id;
         }
-        if (taskModel.name && !obj[taskModel.name]) {
-            obj[taskModel.name] = 'New Task' + ' ' + obj[taskModel.id];
-        }
         if (!this.parent.allowUnscheduledTasks && !obj[taskModel.startDate]) {
             obj[taskModel.startDate] = this.parent.projectStartDate;
         }
@@ -2192,7 +2159,6 @@ export class Edit {
      * @private
      */
     private updateNewlyAddedDataBeforeAjax(
-        // eslint-disable-next-line
         obj: Object, level: number, rowPosition: RowPosition, parentItem?: IGanttData): IGanttData {
         const cAddedRecord: IGanttData = this.parent.dataOperation.createRecord(obj, level);
         cAddedRecord.index = parseInt(cAddedRecord.ganttProperties.rowUniqueID.toString(), 10) - 1;
@@ -2204,9 +2170,10 @@ export class Edit {
             this.parent.setRecordValue('parentUniqueID', parentUniqId, cAddedRecord);
             if (!isNullOrUndefined(this.parent.taskFields.id) &&
                 !isNullOrUndefined(this.parent.taskFields.parentID) && cAddedRecord.parentItem) {
-                    if (this.parent.viewType === 'ProjectView') {
-                        this.parent.setRecordValue(this.parent.taskFields.parentID, cAddedRecord.parentItem.taskId, cAddedRecord.taskData, true);
-                    }
+                if (this.parent.viewType === 'ProjectView') {
+                    this.parent.setRecordValue(
+                        this.parent.taskFields.parentID, cAddedRecord.parentItem.taskId, cAddedRecord.taskData, true);
+                }
                 this.parent.setRecordValue('parentId', cAddedRecord.parentItem.taskId, cAddedRecord.ganttProperties, true);
                 this.parent.setRecordValue(this.parent.taskFields.parentID, cAddedRecord.parentItem.taskId, cAddedRecord, true);
             }
@@ -2223,6 +2190,7 @@ export class Edit {
                 this.parent.dataOperation.updateParentItems(cAddedRecord.parentItem);
             }
         }
+        this.parent.isOnEdit = false;
         return cAddedRecord;
     }
 
@@ -2473,14 +2441,29 @@ export class Edit {
      * @private
      */
     private constructTaskAddedEventArgs(
-        cAddedRecord: IGanttData, modifiedRecords: IGanttData[], event: string): ITaskAddedEventArgs {
+        cAddedRecord: IGanttData[], modifiedRecords: IGanttData[], event: string): ITaskAddedEventArgs {
         const eventArgs: ITaskAddedEventArgs = {};
         eventArgs.action = eventArgs.requestType = event;
-        eventArgs.data = cAddedRecord;
-        eventArgs.newTaskData = getTaskData([cAddedRecord])[0];
-        eventArgs.recordIndex = cAddedRecord.index;
+        if (cAddedRecord.length > 1) {
+            eventArgs.data = [];
+            eventArgs.newTaskData = [];
+            eventArgs.recordIndex = [];
+            for (let i: number = 0; i < cAddedRecord.length; i++) {
+                (eventArgs.data[i] as IGanttData[]) = (cAddedRecord[i] as IGanttData[]);
+                (eventArgs.newTaskData[i]) = (getTaskData([cAddedRecord[i]], eventArgs.data[i] as boolean, eventArgs, this.parent));
+                eventArgs.recordIndex[i] = cAddedRecord[i].index;
+            }
+        }
+        else if (cAddedRecord.length === 1) {
+            for (let i: number = 0; i < cAddedRecord.length; i++) {
+                (eventArgs.data) = (cAddedRecord[i]);
+                (eventArgs.newTaskData) = (getTaskData([cAddedRecord[i]], eventArgs.data as boolean, eventArgs, this.parent));
+                eventArgs.recordIndex = cAddedRecord[i].index;
+            }
+        }
+
         eventArgs.modifiedRecords = modifiedRecords;
-        eventArgs.modifiedTaskData = getTaskData(modifiedRecords);
+        eventArgs.modifiedTaskData = getTaskData(modifiedRecords, null, null, this.parent);
         return eventArgs;
     }
 
@@ -2519,21 +2502,25 @@ export class Edit {
      */
     public updateRealDataSource(addedRecord: IGanttData, rowPosition: RowPosition): void {
         const taskFields: TaskFieldsModel = this.parent.taskFields;
-		// eslint-disable-next-line
         const dataSource: Object[] = isCountRequired(this.parent) ? getValue('result', this.parent.dataSource) :
-            this.parent.dataSource as Object[]; // eslint-disable-line
-        if (rowPosition === 'Top') {
-            dataSource.splice(0, 0, addedRecord.taskData);
-        } else if (rowPosition === 'Bottom') {
-            dataSource.push(addedRecord);
-        } else {
-            if (!isNullOrUndefined(taskFields.id) && !isNullOrUndefined(taskFields.parentID)) {
-                dataSource.push(addedRecord.taskData);
-            } else {
-                this.addDataInRealDataSource(dataSource, addedRecord.taskData, rowPosition);
+            this.parent.dataSource as Object[];
+        for (let i: number = 0; i < (addedRecord as IGanttData[]).length; i++) {
+            if (isNullOrUndefined(rowPosition) || isNullOrUndefined(this.addRowSelectedItem)) {
+                rowPosition = 'Top';
             }
+            if (rowPosition === 'Top') {
+                dataSource.splice(0, 0, addedRecord[i].taskData);
+            } else if (rowPosition === 'Bottom') {
+                dataSource.push(addedRecord[i]);
+            } else {
+                if (!isNullOrUndefined(taskFields.id) && !isNullOrUndefined(taskFields.parentID)) {
+                    dataSource.push(addedRecord[i].taskData);
+                } else {
+                    this.addDataInRealDataSource(dataSource, addedRecord[i].taskData, rowPosition);
+                }
+            }
+            this.isBreakLoop = false;
         }
-        this.isBreakLoop = false;
     }
 
     /**
@@ -2544,7 +2531,6 @@ export class Edit {
      * @private
      */
     private addDataInRealDataSource(
-        // eslint-disable-next-line
         dataCollection: Object[], record: IGanttData, rowPosition?: RowPosition): boolean | void {
         for (let i: number = 0; i < dataCollection.length; i++) {
             const child: string = this.parent.taskFields.child;
@@ -2553,7 +2539,7 @@ export class Edit {
             }
             if (getValue(
                 this.parent.taskFields.id, dataCollection[i]).toString() ===
-                this.addRowSelectedItem.ganttProperties.taskId.toString()) {
+                this.addRowSelectedItem.ganttProperties.rowUniqueID.toString()) {
                 if (rowPosition === 'Above') {
                     dataCollection.splice(i, 0, record);
                 } else if (rowPosition === 'Below') {
@@ -2578,56 +2564,30 @@ export class Edit {
     /**
      * Method to add new record.
      *
-     * @param {Object | IGanttData} data - Defines the new data to add.
+     * @param {Object[] | Object} data - Defines the new data to add.
      * @param {RowPosition} rowPosition - Defines the position of row.
      * @param {number} rowIndex - Defines the row index.
      * @returns {void} .
      * @private
      */
-    // eslint-disable-next-line
-    public addRecord(data?: Object | IGanttData, rowPosition?: RowPosition, rowIndex?: number): void {
+    public addRecord(data?: Object[] | Object, rowPosition?: RowPosition, rowIndex?: number): void {
         if (this.parent.editModule && this.parent.editSettings.allowAdding) {
-            const selectedRowIndex: number = isNullOrUndefined(rowIndex) || isNaN(parseInt(rowIndex.toString(), 10)) ?
-                this.parent.selectionModule ?
-                    (this.parent.selectionSettings.mode === 'Row' || this.parent.selectionSettings.mode === 'Both') &&
-                        this.parent.selectionModule.selectedRowIndexes.length === 1 ?
-                        this.parent.updatedRecords.indexOf(this.parent.selectionModule.getSelectedRecords()[0]) :
-                        this.parent.selectionSettings.mode === 'Cell' &&
-                        this.parent.selectionModule.getSelectedRowCellIndexes().length === 1 ?
-                            this.parent.selectionModule.getSelectedRowCellIndexes()[0].rowIndex : null : null : rowIndex;
-            this.addRowSelectedItem = isNullOrUndefined(selectedRowIndex) ? null : this.parent.updatedRecords[selectedRowIndex];
-            rowPosition = isNullOrUndefined(rowPosition) ? this.parent.editSettings.newRowPosition : rowPosition;
-            data = isNullOrUndefined(data) ? this.parent.editModule.dialogModule.composeAddRecord() : data;
-            if (((isNullOrUndefined(selectedRowIndex) || selectedRowIndex < 0 ||
-                isNullOrUndefined(this.addRowSelectedItem)) && (rowPosition === 'Above'
-                    || rowPosition === 'Below'
-                    || rowPosition === 'Child')) || !rowPosition || (rowPosition !== 'Above'
-                        && rowPosition !== 'Below'
-                        && rowPosition !== 'Child' && rowPosition !== 'Top' &&
-                        rowPosition !== 'Bottom')) {
-                rowPosition = 'Top';
+            const cAddedRecord: IGanttData[] = [];
+            if (isNullOrUndefined(data)) {
+                this.validateTaskPosition(data, rowPosition, rowIndex, cAddedRecord);
             }
-            let level: number = 0;
+            else if (data instanceof Array) {
+                for (let i: number = 0; i < data.length; i++) {
+                    this.validateTaskPosition(data[i], rowPosition, rowIndex, cAddedRecord);
+                }
+            }
+            else if (typeof (data) == 'object') {
+                this.validateTaskPosition(data, rowPosition, rowIndex, cAddedRecord);
+            }
+            else {
+                return;
+            }
             let args: ITaskAddedEventArgs = {};
-            let parentItem: IGanttData;
-            switch (rowPosition) {
-            case 'Top':
-            case 'Bottom':
-                level = 0;
-                break;
-            case 'Above':
-            case 'Below':
-                level = this.addRowSelectedItem.level;
-                parentItem = this.parent.getParentTask(this.addRowSelectedItem.parentItem);
-                break;
-            case 'Child':
-                level = this.addRowSelectedItem.level + 1;
-                parentItem = this.addRowSelectedItem;
-                break;
-            }
-            //Add Action Init.
-            this.prepareNewlyAddedData(data, rowPosition);
-            const cAddedRecord: IGanttData = this.updateNewlyAddedDataBeforeAjax(data, level, rowPosition, parentItem);
             args = this.constructTaskAddedEventArgs(cAddedRecord, this.parent.editedRecords, 'beforeAdd');
             this.parent.showSpinner();
             let blazorArgs: ITaskAddedEventArgs = {};
@@ -2642,105 +2602,98 @@ export class Edit {
             this.parent.trigger('actionBegin', args, (args: ITaskAddedEventArgs) => {
                 if (!args.cancel) {
                     if (isBlazor()) {
-                        blazorArgs.data = blazorArgs.data[0];
+                        (blazorArgs.data as IGanttData) = blazorArgs.data[0];
                         args = blazorArgs;
                         this._resetProperties();
                     }
                     if (isRemoteData(this.parent.dataSource)) {
                         const data: DataManager = this.parent.dataSource as DataManager;
-                        // eslint-disable-next-line
                         const updatedData: object = {
                             addedRecords: [args.newTaskData], // to check
                             changedRecords: args.modifiedTaskData
                         };
-                        const prevID: string = args.data.ganttProperties.taskId.toString();
+                        const prevID: string = (args.data as IGanttData).ganttProperties.taskId.toString();
+                        /* tslint:disable-next-line */
                         const query: Query = this.parent.query instanceof Query ? this.parent.query : new Query();
                         const adaptor: AdaptorOptions = data.adaptor;
                         if (!(adaptor instanceof WebApiAdaptor && adaptor instanceof ODataAdaptor) || data.dataSource.batchUrl) {
-                            /* eslint-disable-next-line */
-                            const crud: Promise<Object> = data.saveChanges(updatedData, this.parent.taskFields.id, null, query) as Promise<Object>;
-                            // eslint-disable-next-line
+                            /* tslint:disable-next-line */
+                            const crud: Promise<Object> =
+                                data.saveChanges(updatedData, this.parent.taskFields.id, null, query) as Promise<Object>;
                             crud.then((e: { addedRecords: Object[], changedRecords: Object[] }) => {
                                 if (this.parent.taskFields.id && !isNullOrUndefined(e.addedRecords[0][this.parent.taskFields.id]) &&
                                     e.addedRecords[0][this.parent.taskFields.id].toString() !== prevID) {
                                     this.parent.setRecordValue(
-                                        'taskId', e.addedRecords[0][this.parent.taskFields.id], args.data.ganttProperties, true);
+                                        'taskId', e.addedRecords[0][this.parent.taskFields.id], (args.data as IGanttData).ganttProperties, true);
                                     this.parent.setRecordValue(
-                                        'taskData.' + this.parent.taskFields.id, e.addedRecords[0][this.parent.taskFields.id], args.data);
+                                        'taskData.' + this.parent.taskFields.id, e.addedRecords[0][this.parent.taskFields.id], args.data as IGanttData);
                                     this.parent.setRecordValue(
-                                        this.parent.taskFields.id, e.addedRecords[0][this.parent.taskFields.id], args.data);
+                                        this.parent.taskFields.id, e.addedRecords[0][this.parent.taskFields.id], args.data as IGanttData);
                                     this.parent.setRecordValue(
                                         'rowUniqueID', e.addedRecords[0][this.parent.taskFields.id].toString(),
-                                        args.data.ganttProperties, true);
+                                        (args.data as IGanttData).ganttProperties, true);
                                     const idsIndex: number = this.parent.ids.indexOf(prevID);
                                     if (idsIndex !== -1) {
                                         this.parent.ids[idsIndex] = e.addedRecords[0][this.parent.taskFields.id].toString();
                                     }
                                 }
                                 this.updateNewRecord(cAddedRecord, args);
-                                // eslint-disable-next-line
                             }).catch((e: { result: Object[] }) => {
                                 this.removeAddedRecord();
-                                // eslint-disable-next-line
-                                this.dmFailure(e as { result: Object[] }, args);
+                                this.dmFailure(e as { result: Object[] }, args as ITaskbarEditedEventArgs);
                                 this._resetProperties();
                             });
                         } else {
                             const addedRecords: string = 'addedRecords';
-                            // eslint-disable-next-line
                             const insertCrud: Promise<Object> = data.insert(updatedData[addedRecords], null, query) as Promise<Object>;
                             insertCrud.then((e: ReturnType) => {
                                 const changedRecords: string = 'changedRecords';
-                                // eslint-disable-next-line
                                 const addedRecords: Object = e[0];
-                                /* eslint-disable-next-line */
-                                const updateCrud: Promise<Object> = data.update(this.parent.taskFields.id, updatedData[changedRecords], null, query) as Promise<Object>;
-                                /* eslint-disable-next-line */
-                                updateCrud.then((e: ReturnType) => {
+                                /* tslint:disable-next-line */
+                                const updateCrud: Promise<Object> =
+                                    data.update(this.parent.taskFields.id, updatedData[changedRecords], null, query) as Promise<Object>;
+                                updateCrud.then(() => {
                                     if (this.parent.taskFields.id && !isNullOrUndefined(addedRecords[this.parent.taskFields.id]) &&
                                         addedRecords[this.parent.taskFields.id].toString() !== prevID) {
                                         this.parent.setRecordValue(
-                                            'taskId', addedRecords[this.parent.taskFields.id], args.data.ganttProperties, true);
+                                            'taskId', addedRecords[this.parent.taskFields.id], (args.data as IGanttData).ganttProperties, true);
                                         this.parent.setRecordValue(
-                                            'taskData.' + this.parent.taskFields.id, addedRecords[this.parent.taskFields.id], args.data);
+                                            'taskData.' + this.parent.taskFields.id, addedRecords[this.parent.taskFields.id],
+                                            (args.data as IGanttData));
                                         this.parent.setRecordValue(
-                                            this.parent.taskFields.id, addedRecords[this.parent.taskFields.id], args.data);
+                                            this.parent.taskFields.id, addedRecords[this.parent.taskFields.id], (args.data as IGanttData));
                                         this.parent.setRecordValue(
                                             'rowUniqueID', addedRecords[this.parent.taskFields.id].toString(),
-                                            args.data.ganttProperties, true);
+                                            (args.data as IGanttData).ganttProperties, true);
                                         const idIndex: number = this.parent.ids.indexOf(prevID);
                                         if (idIndex !== -1) {
                                             this.parent.ids[idIndex] = addedRecords[this.parent.taskFields.id].toString();
                                         }
                                     }
                                     this.updateNewRecord(cAddedRecord, args);
-                                    // eslint-disable-next-line
                                 }).catch((e: { result: Object[] }) => {
                                     this.removeAddedRecord();
-                                    // eslint-disable-next-line
-                                    this.dmFailure(e as { result: Object[] }, args);
+                                    this.dmFailure(e as { result: Object[] }, args as ITaskbarEditedEventArgs);
                                     this._resetProperties();
                                 });
-                                // eslint-disable-next-line
                             }).catch((e: { result: Object[] }) => {
                                 this.removeAddedRecord();
-                                // eslint-disable-next-line
-                                this.dmFailure(e as { result: Object[] }, args);
+                                this.dmFailure(e as { result: Object[] }, args as ITaskbarEditedEventArgs);
                                 this._resetProperties();
                             });
                         }
                     } else {
                         if (this.parent.viewType === 'ProjectView') {
-                            this.updateRealDataSource(args.data, rowPosition);
+                            this.updateRealDataSource(args.data as IGanttData, rowPosition);
                         } else {
                             const dataSource: Object[] = isCountRequired(this.parent) ? getValue('result', this.parent.dataSource) :
                             this.parent.dataSource as Object[]; // eslint-disable-line
-                            dataSource.push(args.data.taskData);
+                            dataSource.push((args.data as IGanttData).taskData);
                         }
-                        if (cAddedRecord.level === 0) {
+                        if ((cAddedRecord as IGanttData).level === 0) {
                             this.parent.treeGrid.parentData.splice(0, 0, cAddedRecord);
                         }
-                        this.updateTreeGridUniqueID(cAddedRecord, 'add');
+                        this.updateTreeGridUniqueID(cAddedRecord as IGanttData, 'add');
                         this.refreshNewlyAddedRecord(args, cAddedRecord);
                         this._resetProperties();
                     }
@@ -2748,22 +2701,72 @@ export class Edit {
                     args = isBlazor() ? blazorArgs : args;
                     this.removeAddedRecord();
                     this.reUpdatePreviousRecords();
-                    if (this.dialogModule.dialog && !this.dialogModule.dialogObj.isDestroyed) {
-                        this.dialogModule.dialogObj.hide();
-                    }
-                    this.dialogModule.dialogClose();
                     this._resetProperties();
                 }
             });
         }
     }
-    private updateNewRecord(cAddedRecord: IGanttData, args: ITaskAddedEventArgs): void {
-        if (cAddedRecord.level === 0) {
+
+    /**
+     * Method to validateTaskPosition.
+     *
+     * @param {Object | object[] } data - Defines the new data to add.
+     * @param {RowPosition} rowPosition - Defines the position of row.
+     * @param {number} rowIndex - Defines the row index.
+     * @param {IGanttData} cAddedRecord - Defines the single data to validate.
+     * @returns {void} .
+     * @private
+     */
+    public validateTaskPosition(data?: Object | object[], rowPosition?: RowPosition, rowIndex?: number, cAddedRecord?: IGanttData[]): void {
+        const selectedRowIndex: number = isNullOrUndefined(rowIndex) || isNaN(parseInt(rowIndex.toString(), 10)) ?
+            this.parent.selectionModule ?
+                (this.parent.selectionSettings.mode === 'Row' || this.parent.selectionSettings.mode === 'Both') &&
+                    this.parent.selectionModule.selectedRowIndexes.length === 1 ?
+                    this.parent.updatedRecords.indexOf(this.parent.selectionModule.getSelectedRecords()[0]) :
+                    this.parent.selectionSettings.mode === 'Cell' &&
+                        this.parent.selectionModule.getSelectedRowCellIndexes().length === 1 ?
+                        this.parent.selectionModule.getSelectedRowCellIndexes()[0].rowIndex : null : null : rowIndex;
+        this.addRowSelectedItem = isNullOrUndefined(selectedRowIndex) ? null : this.parent.updatedRecords[selectedRowIndex];
+        rowPosition = isNullOrUndefined(rowPosition) ? this.parent.editSettings.newRowPosition : rowPosition;
+        data = isNullOrUndefined(data) ? this.parent.editModule.dialogModule.composeAddRecord() : data;
+        if (((isNullOrUndefined(selectedRowIndex) || selectedRowIndex < 0 ||
+            isNullOrUndefined(this.addRowSelectedItem)) && (rowPosition === 'Above'
+                || rowPosition === 'Below'
+                || rowPosition === 'Child')) || !rowPosition || (rowPosition !== 'Above'
+                    && rowPosition !== 'Below'
+                    && rowPosition !== 'Child' && rowPosition !== 'Top' &&
+                    rowPosition !== 'Bottom')) {
+            rowPosition = 'Top';
+        }
+        let level: number = 0;
+        let parentItem: IGanttData;
+        switch (rowPosition) {
+        case 'Top':
+        case 'Bottom':
+            level = 0;
+            break;
+        case 'Above':
+        case 'Below':
+            level = this.addRowSelectedItem.level;
+            parentItem = this.parent.getParentTask(this.addRowSelectedItem.parentItem);
+            break;
+        case 'Child':
+            level = this.addRowSelectedItem.level + 1;
+            parentItem = this.addRowSelectedItem;
+            break;
+        }
+        this.prepareNewlyAddedData(data, rowPosition);
+        const AddRecord: IGanttData = (this.updateNewlyAddedDataBeforeAjax(data, level, rowPosition, parentItem));
+        cAddedRecord.push(AddRecord);
+    }
+
+    private updateNewRecord(cAddedRecord: IGanttData[], args: ITaskAddedEventArgs): void {
+        if ((cAddedRecord as IGanttData).level === 0) {
             this.parent.treeGrid.parentData.splice(0, 0, cAddedRecord);
             const tempData: ITaskData[] = getValue('dataOperation.dataArray', this.parent);
-            tempData.splice(0, 0, cAddedRecord.taskData);
+            tempData.splice(0, 0, (cAddedRecord as IGanttData).taskData);
         }
-        this.updateTreeGridUniqueID(cAddedRecord, 'add');
+        this.updateTreeGridUniqueID(cAddedRecord as IGanttData, 'add');
         this.refreshNewlyAddedRecord(args, cAddedRecord);
         this._resetProperties();
     }
@@ -2798,19 +2801,19 @@ export class Edit {
     }
 
 
-    private refreshNewlyAddedRecord(args: ITaskAddedEventArgs, cAddedRecord: IGanttData): void {
+    private refreshNewlyAddedRecord(args: ITaskAddedEventArgs, cAddedRecord: IGanttData[]): void {
         if (this.parent.selectionModule && this.parent.allowSelection &&
             (this.parent.selectionSettings.mode === 'Row' || this.parent.selectionSettings.mode === 'Both')) {
-            this.parent.staticSelectedRowIndex = this.parent.currentViewData.indexOf(args.data);
+            this.parent.staticSelectedRowIndex = this.parent.currentViewData.indexOf(args.data as IGanttData);
         }
         if (this.parent.timelineSettings.updateTimescaleView) {
             let tempArray: IGanttData[] = [];
             if (args.modifiedRecords.length > 0) {
-                tempArray.push(args.data);
+                tempArray.push(args.data as IGanttData);
                 // eslint-disable-next-line
                 tempArray.push.apply(tempArray, args.modifiedRecords);
             } else {
-                tempArray = [args.data];
+                tempArray = [args.data as IGanttData];
             }
             this.parent.timelineModule.updateTimeLineOnEditing(tempArray, args.action);
         }
@@ -2825,22 +2828,47 @@ export class Edit {
         }
         this.dialogModule.dialogClose();
         if (this.parent.viewType === 'ResourceView') {
-            args.data.ganttProperties.sharedTaskUniqueIds.push(args.data.ganttProperties.rowUniqueID);
-            if (args.data.ganttProperties.resourceInfo.length) {
-                if (args.data.ganttProperties.resourceInfo.length > 1) {
-                    // eslint-disable-next-line
-                    const resources: Object[] = extend([], [], args.data.ganttProperties.resourceInfo, true) as Object[];
-                    resources.splice(0, 1);
-                    this.updateResoures([], resources, args.data);
+            if (cAddedRecord.length > 1) {
+                for (let i: number = 0; i < cAddedRecord.length; i++) {
+                    (args.data[i] as IGanttData).ganttProperties.sharedTaskUniqueIds.push((args.data[i] as IGanttData)
+                        .ganttProperties.rowUniqueID);
+                    if ((args.data[i] as IGanttData).ganttProperties.resourceInfo) {
+                        // if ((args.data[i] as IGanttData).ganttProperties.resourceInfo.length > 1) {
+                        const resources: Object[] =
+                            extend([], [], (args.data[i] as IGanttData).ganttProperties.resourceInfo, true) as Object[];
+                        resources.splice(0, 1);
+                        this.updateResoures([], resources, args.data[i] as IGanttData);
+                        // }
+                    }
+                    else {
+                        this.removeChildRecord(args.data[i] as IGanttData);
+                        this.parent.editModule.checkWithUnassignedTask(args.data[i] as IGanttData);
+                    }
+                    for (let k: number = 0; k < this.updateParentRecords.length; k++) {
+                        this.parent.dataOperation.updateParentItems(this.updateParentRecords[k]);
+                    }
+                    this.updateParentRecords = [];
                 }
-            } else {
-                this.removeChildRecord(args.data);
-                this.parent.editModule.checkWithUnassignedTask(args.data);
             }
-            for (let k: number = 0; k < this.updateParentRecords.length; k++) {
-                this.parent.dataOperation.updateParentItems(this.updateParentRecords[k]);
+            else {
+                (args.data as IGanttData).ganttProperties.sharedTaskUniqueIds.push((args.data as IGanttData).ganttProperties.rowUniqueID);
+                if ((args.data as IGanttData).ganttProperties.resourceInfo.length) {
+                    if ((args.data as IGanttData).ganttProperties.resourceInfo.length > 1) {
+                        // eslint-disable-next-line
+                        const resources: Object[] = extend([], [], (args.data as IGanttData).ganttProperties.resourceInfo, true) as Object[];
+                        resources.splice(0, 1);
+                        this.updateResoures([], resources, args.data as IGanttData);
+                    }
+                }
+                else {
+                    this.removeChildRecord(args.data as IGanttData);
+                    this.parent.editModule.checkWithUnassignedTask(args.data as IGanttData);
+                }
+                for (let k: number = 0; k < this.updateParentRecords.length; k++) {
+                    this.parent.dataOperation.updateParentItems(this.updateParentRecords[k]);
+                }
+                this.updateParentRecords = [];
             }
-            this.updateParentRecords = [];
         }
     }
 
@@ -3061,24 +3089,19 @@ export class Edit {
         }
         if (isRemoteData(this.parent.dataSource)) {
             const data: DataManager = this.parent.dataSource as DataManager;
-            // eslint-disable-next-line
             const updatedData: object = {
-                changedRecords: getTaskData(this.parent.editedRecords)
+                changedRecords: getTaskData(this.parent.editedRecords, null, null, this.parent)
             };
             const queryValue: Query = this.parent.query instanceof Query ? this.parent.query : new Query();
-            // eslint-disable-next-line
             let crud: Promise<Object> = null;
             const adaptor: AdaptorOptions = data.adaptor;
             if (!(adaptor instanceof WebApiAdaptor && adaptor instanceof ODataAdaptor) || data.dataSource.batchUrl) {
-                // eslint-disable-next-line
                 crud = data.saveChanges(updatedData, this.parent.taskFields.id, null, queryValue) as Promise<Object>;
             } else {
                 const changedRecords: string = 'changedRecords';
-                // eslint-disable-next-line
                 crud = data.update(this.parent.taskFields.id, updatedData[changedRecords], null, queryValue) as Promise<Object>;
             }
             crud.then((e: ReturnType) => this.indentSuccess(e, args))
-            // eslint-disable-next-line
                 .catch((e: { result: Object[] }) => this.indentFailure(e as { result: Object[] }));
         } else {
             this.indentOutdentSuccess(args);
@@ -3087,7 +3110,6 @@ export class Edit {
     private indentSuccess(e: ReturnType, args: RowDropEventArgs): void {
         this.indentOutdentSuccess(args);
     }
-    // eslint-disable-next-line
     private indentFailure(e: { result: Object[] }): void {
         this.parent.trigger('actionFailure', { error: e });
     }
@@ -3103,6 +3125,11 @@ export class Edit {
             args.requestType = 'outdented';
         }
         args.modifiedRecords = this.parent.editedRecords;
+        if (this.parent.timezone) {
+            for (let i: number = 0; i < args.modifiedRecords.length; i++) {
+                updateDates(args.modifiedRecords[i], this.parent);
+            }
+        }
         this.parent.trigger('actionComplete', args);
         this.parent.editedRecords = [];
     }
@@ -3110,7 +3137,6 @@ export class Edit {
         const draggedRec: IGanttData = this.draggedRecord;
         const droppedRec: IGanttData = this.droppedRecord;
         const proxy: Gantt = this.parent;
-        // eslint-disable-next-line
         let tempData: Object;
         let indx: number;
         if (this.parent.dataSource instanceof DataManager) {
@@ -3214,7 +3240,7 @@ export class Edit {
         }
         return levl;
     }
-    // eslint-disable-next-line
+    /* eslint-disable-next-line */
     private updateChildRecord(record: IGanttData, count: number, expanded?: boolean): number {
         let currentRec: IGanttData;
         const obj: Gantt = this.parent;
@@ -3239,7 +3265,6 @@ export class Edit {
     }
     private removeRecords(record: IGanttData): void {
         const obj: Gantt = this.parent;
-        // eslint-disable-next-line
         let dataSource: Object;
         if (this.parent.dataSource instanceof DataManager) {
             dataSource = getValue('dataOperation.dataArray', this.parent);
@@ -3313,7 +3338,6 @@ export class Edit {
         let indx: number;
         for (let i: number = 0; i < record.childRecords.length; i++) {
             currentRec = record.childRecords[i];
-            // eslint-disable-next-line
             let data: Object;
             if (this.parent.dataSource instanceof DataManager) {
                 data = getValue('dataOperation.dataArray', this.parent);

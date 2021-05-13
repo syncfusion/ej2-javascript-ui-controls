@@ -536,6 +536,23 @@
           width: 100%;
         }
       }
+
+      &.e-mac-safari {
+        & .e-main-panel::-webkit-scrollbar { // sass-lint:disable-line no-vendor-prefixes
+          width: 7px;
+        }
+
+        & .e-scroller::-webkit-scrollbar { // sass-lint:disable-line no-vendor-prefixes
+          height: 7px;
+        }
+
+        // Safari with Mac OS
+        & .e-main-panel::-webkit-scrollbar-thumb, // sass-lint:disable-line no-vendor-prefixes
+        & .e-scroller::-webkit-scrollbar-thumb { // sass-lint:disable-line no-vendor-prefixes
+          background-color: $mac-scrollbar-background;
+          border-radius: 4px;
+        }
+      }
     }
 
     & .e-header-panel {

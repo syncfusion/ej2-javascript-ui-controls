@@ -770,7 +770,7 @@ export class ListBox extends DropDownBase {
         const listObj: ListBox = this.getComponent(args.droppedElement);
         const getArgs: Object = this.getDragArgs({ target: args.droppedElement } as DragEventArgs & BlazorDragEventArgs, true);
         const sourceArgs: Object = { previousData: this.dataSource }; const destArgs: Object = { previousData: listObj.dataSource };
-        let dragArgs: Object = extend({}, getArgs, { target: args.target, source: { previousData: this.dataSource } });
+        let dragArgs: Object = extend({}, getArgs, { target: args.target, source: { previousData: this.dataSource }, previousIndex: args.previousIndex, currentIndex: args.currentIndex });
         if (listObj !== this) {
             const sourceArgs1: Object = extend( sourceArgs, {currentData: this.listData});
             dragArgs = extend(dragArgs, { source: sourceArgs1, destination: destArgs} );
@@ -2548,6 +2548,14 @@ export interface SourceDestinationModel {
  * Interface for drag and drop event.
  */
 export interface DragEventArgs {
+    /**
+     * Returns the previous index of the selected list item.
+     */
+    previousIndex?: number;
+    /**
+     * Returns the current index of the selected list item.
+     */
+    currentIndex?: number;
     /**
      * Returns the selected list element.
      */

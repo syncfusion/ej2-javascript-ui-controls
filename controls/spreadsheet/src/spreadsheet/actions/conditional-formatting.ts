@@ -336,8 +336,8 @@ export class ConditionalFormatting {
             if (action !== l10n.getConstant('AboveAverage') + '...' && action !== l10n.getConstant('BelowAverage') + '...') {
                 mainDiv.appendChild(value1Inp); setValidation = true;
                 const percent: boolean = action === l10n.getConstant('Top10') + ' %...' || action === l10n.getConstant('Bottom10') + ' %...';
-                value1Inp.maxLength = percent ? 3 : 4;
                 if (action === l10n.getConstant('Top10Items') + '...' || action === l10n.getConstant('Bottom10Items') + '...' || percent) {
+                    value1Inp.maxLength = percent ? 3 : 4;
                     const numeric: NumericTextBox = new NumericTextBox({ value: 10, min: 1, max: percent ? 100 : 1000, format: '###' });
                     numeric.appendTo(value1Inp);
                 }

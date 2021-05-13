@@ -464,7 +464,7 @@ export class ToolbarRenderer implements IRenderer {
             this.parent.fontColor.colorCode;
         colorPicker.cssClass = (item === 'backgroundcolor') ? CLS_BACKGROUND_COLOR_PICKER : CLS_FONT_COLOR_PICKER;
         colorPicker.createElement = this.parent.createElement;
-        colorPicker.appendTo(document.body.querySelector(args.target) as HTMLElement);
+        colorPicker.appendTo(document.getElementById(args.target) as HTMLElement);
         return colorPicker;
     }
 

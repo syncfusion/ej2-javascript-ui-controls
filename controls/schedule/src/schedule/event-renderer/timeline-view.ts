@@ -163,11 +163,17 @@ export class TimelineEvent extends MonthEvent {
                     const moreIndicator: HTMLElement = cellTd.querySelector('.' + cls.MORE_INDICATOR_CLASS) as HTMLElement;
                     let appPos: number = (this.parent.enableRtl) ? appRight : appLeft;
                     appPos = (Math.floor(appPos / this.cellWidth) * this.cellWidth);
+                    const interval: number = this.interval / this.slotCount;
+                    const startDate: Date = new Date(this.dateRender[this.day + i].getTime());
+                    const endDate: Date = util.addDays(this.dateRender[this.day + i], 1);
+                    if (this.parent.activeViewOptions.option === 'TimelineMonth') {
+                        const position: number = this.getPosition(startDate, endDate, event[this.fields.isAllDay], (this.day + i));
+                        appLeft = (this.parent.enableRtl) ? 0 : position;
+                        appPos = (this.parent.enableRtl) ? appRight : appLeft;
+                        appPos = (Math.floor(appPos / this.cellWidth) * this.cellWidth);
+                    }
                     if ((cellTd && isNullOrUndefined(moreIndicator)) ||
                         (!this.isAlreadyAvail(appPos, cellTd))) {
-                        const interval: number = this.interval / this.slotCount;
-                        const startDate: Date = new Date(this.dateRender[this.day + i].getTime());
-                        const endDate: Date = util.addDays(this.dateRender[this.day + i], 1);
                         const startDateTime: Date = new Date(+startTime);
                         const slotStartTime: Date =
                             (new Date(startDateTime.setMinutes(Math.floor(startDateTime.getMinutes() / interval) * interval)));
@@ -301,7 +307,8 @@ export class TimelineEvent extends MonthEvent {
     }
 
     private getSameDayEventsWidth(startDate: Date, endDate: Date): number {
-        return ((util.getUniversalTime(endDate) - util.getUniversalTime(startDate)) / util.MS_PER_MINUTE * (this.cellWidth * this.slotCount) / this.interval);
+        return ((util.getUniversalTime(endDate) - util.getUniversalTime(startDate)) /
+            util.MS_PER_MINUTE * (this.cellWidth * this.slotCount) / this.interval);
     }
 
     private getSpannedEventsWidth(startDate: Date, endDate: Date, diffInDays: number): number {
@@ -330,12 +337,13 @@ export class TimelineEvent extends MonthEvent {
 
     private getAppointmentLeft(schedule: { [key: string]: Date }, startTime: Date, day: number): number {
         const slotTd: number = (this.isSameDay(startTime, schedule.startHour as Date)) ?
-            ((util.getUniversalTime(startTime) - util.getUniversalTime(schedule.startHour)) / (util.MS_PER_MINUTE * this.interval)) * this.slotCount : 0;
+            ((util.getUniversalTime(startTime) - util.getUniversalTime(schedule.startHour)) /
+                (util.MS_PER_MINUTE * this.interval)) * this.slotCount : 0;
         if (day === 0) {
             return slotTd;
         } else {
-            const daySlot: number =
-                Math.round((((util.getUniversalTime(schedule.endHour) - util.getUniversalTime(schedule.startHour)) / util.MS_PER_MINUTE) / this.interval) * this.slotCount);
+            const daySlot: number = Math.round((((util.getUniversalTime(schedule.endHour) - util.getUniversalTime(schedule.startHour)) /
+                util.MS_PER_MINUTE) / this.interval) * this.slotCount);
             return (daySlot * day) + slotTd;
         }
     }
@@ -421,8 +429,7 @@ export class TimelineEvent extends MonthEvent {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     public setMaxEventHeight(event: HTMLElement, cell: HTMLElement): void {
         setStyleAttribute(event, {
-            'height': (this.cellHeight - (this.maxHeight ? 0 : EVENT_GAP) -
-                (this.maxHeight ? 0 : this.moreIndicatorHeight)) + 'px'
+            'height': (this.cellHeight - (this.maxHeight ? 0 : EVENT_GAP) - (this.maxHeight ? 0 : this.moreIndicatorHeight)) + 'px'
         });
     }
 

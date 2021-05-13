@@ -314,6 +314,20 @@ export interface ResourceDetails {
     resourceName?: string;
 }
 
+/** An interface that holds options of events once it bound to scheduler. */
+export interface DataBoundEventArgs extends BaseEventArgs {
+    result: Record<string, any>[];
+    count?: number;
+    aggregates?: Record<string, any>;
+}
+
+/** An interface that holds options of events before it binds to scheduler. */
+export interface DataBindingEventArgs extends BaseEventArgs {
+    result: Record<string, any>[];
+    count?: number;
+    aggregates?: Record<string, any>;
+}
+
 /** @private */
 export interface InlineClickArgs extends BaseEventArgs {
     data?: Record<string, any>;
@@ -361,6 +375,7 @@ export interface KeyEventArgs {
 export interface CellTemplateArgs {
     date: Date;
     type: string;
+    day?: string;
     groupIndex?: number;
 }
 
@@ -555,28 +570,8 @@ export interface ViewsData extends ViewsModel {
     cellTemplateName?: string;
     resourceHeaderTemplateName?: string;
     eventTemplateName?: string;
-}
-
-/** An interface that holds options of events once it bound to scheduler. */
-export interface DataBoundEventArgs extends BaseEventArgs {
-    /**
-     * Returns the result data.
-     * @isGenericType true
-     */
-    result: Record<string, any>[];
-    count?: number;
-    aggregates?: Record<string, any>;
-}
-
-/** An interface that holds options of events before it binds to scheduler. */
-export interface DataBindingEventArgs extends BaseEventArgs {
-    /**
-     * Returns the result data.
-     * @isGenericType true
-     */
-    result: Record<string, any>[];
-    count?: number;
-    aggregates?: Record<string, any>;
+    dayHeaderTemplateName?: string;
+    monthHeaderTemplateName?: string;
 }
 
 /** @private */

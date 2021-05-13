@@ -215,7 +215,7 @@ export const actionComplete: string = 'actionComplete';
  * @hidden
  * @deprecated
  */
-export const toolbarStatusUpdate: string = 'toolbarStatusUpdate';
+export const updatedToolbarStatus: string = 'updatedToolbarStatus';
 /**
  * @hidden
  * @deprecated
@@ -545,4 +545,19 @@ export const beforeImageDrop: string = 'beforeImageDrop';
  * @hidden
  * @deprecated
  */
- export const dynamicModule: string = 'dynamicModule';
+export const dynamicModule: string = 'dynamicModule';
+/**
+ * @hidden
+ * @deprecated
+ */  
+export const beforePasteCleanup: string = 'beforePasteCleanup';
+/**
+ * @hidden
+ * @deprecated
+ */
+export const afterPasteCleanup: string = 'afterPasteCleanup';
+ /**
+ * @hidden
+ * @deprecated
+ */
+export const updateTbItemsStatus: string = 'updateTbItemsStatus';

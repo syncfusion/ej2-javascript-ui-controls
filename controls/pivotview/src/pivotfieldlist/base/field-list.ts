@@ -784,7 +784,7 @@ export class PivotFieldList extends Component<HTMLElement> implements INotifyPro
                     }
                     this.engineModule.headerContent = PivotUtil.frameContent(pivotValues, 'header', rowPos, this);
                     this.engineModule.pageSettings = this.pivotGridModule ? this.pivotGridModule.pageSettings : undefined;
-                    let valueSort: any = JSON.parse(engine.valueSortSettings);
+                    let valueSort: any = JSON.parse(engine.dataSourceSettings).ValueSortSettings;
                     this.engineModule.valueSortSettings = {
                         headerText: valueSort.HeaderText,
                         headerDelimiter: valueSort.HeaderDelimiter,

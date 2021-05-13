@@ -180,7 +180,7 @@ export class HtmlEditor {
                 for (let j: number = 0 ; j < splitTextContent.length; j++) {
                     if (splitTextContent[j].match(httpRegex) || splitTextContent[j].match(wwwRegex)) {
                         resultSplitContent += '<a className="e-rte-anchor" href="' + splitTextContent[j] +
-                        '" title="' + splitTextContent[j] + '">' + splitTextContent[j] + ' </a>';
+                        '" title="' + splitTextContent[j] + '"target="_blank">' + splitTextContent[j] + ' </a>';
                     } else {
                         resultSplitContent += splitTextContent[j] + ' ';
                     }
@@ -259,8 +259,8 @@ export class HtmlEditor {
                 });
             }
         } else {
-            const linkDialog: Element = this.parent.element.querySelector('#' + this.parent.getID() + '_rtelink');
-            const imageDialog: Element = this.parent.element.querySelector('#' + this.parent.getID() + '_image');
+            const linkDialog: Element = document.getElementById(this.parent.getID() + '_rtelink');
+            const imageDialog: Element = document.getElementById(this.parent.getID() + '_image');
             if (!(item.subCommand === 'SourceCode' || item.subCommand === 'Preview' ||
                 item.subCommand === 'FontColor' || item.subCommand === 'BackgroundColor')) {
                 const range: Range = this.nodeSelectionObj.getRange(this.parent.contentModule.getDocument());

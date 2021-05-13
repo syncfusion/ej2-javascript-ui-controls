@@ -187,7 +187,8 @@ export class Render {
         }
     }
     private updateTreeCell(args: QueryCellInfoEventArgs, cellElement: HTMLElement): void {
-        const treeColumn: Column = this.parent.columns[this.parent.treeColumnIndex] as Column;
+        const columnModel: Column[] = getValue('columnModel', this.parent);
+        const treeColumn: Column = columnModel[this.parent.treeColumnIndex];
         const templateFn: string = 'templateFn';
         const colindex: number = args.column.index;
         if (isNullOrUndefined(treeColumn.field)) {
@@ -210,7 +211,7 @@ export class Render {
             if (treeColumn.field === args.column.field && !isNullOrUndefined(treeColumn.template)) {
                 const portals: string = 'portals';
                 const renderReactTemplates: string = 'renderReactTemplates';
-                if ((<{ isReact?: boolean }>this.parent).isReact) {
+                if ((<{ isReact?: boolean }>this.parent).isReact && typeof (args.column.template) !== 'string') {
                     args.column[templateFn](args.data, this.parent, 'template', tempID, null, null, cellElement);
                     if (isNullOrUndefined(this.parent.grid[portals])) {
                         this.parent.grid[portals] = this.parent[portals];

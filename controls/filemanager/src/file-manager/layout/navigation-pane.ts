@@ -565,6 +565,7 @@ export class NavigationPane {
     private checkDropPath(args: ReadArgs): void {
         if (this.parent.hasId) {
             this.parent.isDropEnd = !this.parent.isPasteError;
+            readDropPath(this.parent);
             return;
         }
         if ((this.parent.dropPath.indexOf(getDirectoryPath(this.parent, args)) === -1)) {

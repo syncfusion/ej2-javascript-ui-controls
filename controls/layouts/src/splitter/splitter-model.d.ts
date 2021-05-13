@@ -9,7 +9,7 @@ export interface PanePropertiesModel {
 
     /**
      * Configures the properties for each pane.
-     * 
+     *
      * @default ''
      */
     size?: string;
@@ -35,14 +35,14 @@ export interface PanePropertiesModel {
     /**
      * Specifies the value whether a pane is resizable. By default, the Splitter is resizable in all panes.
      * You can disable this for any specific panes using this property.
-     * 
+     *
      * @default true
      */
     resizable?: boolean;
 
     /**
      * Specifies the minimum size of a pane. The pane cannot be resized if it is less than the specified minimum size.
-     * 
+     *
      * @default null
      */
     min?: string;
@@ -56,7 +56,7 @@ export interface PanePropertiesModel {
 
     /**
      * Specifies the content of split pane as plain text, HTML markup, or any other JavaScript controls.
-     * 
+     *
      * @default ''
      * @blazorType string
      */
@@ -67,7 +67,7 @@ export interface PanePropertiesModel {
      * styles and themes to be appended on corresponding pane of the Splitter.
      * It is used to customize the Splitter control panes.
      * One or more custom CSS classes can be specified to the Splitter panes.
-     * 
+     *
      * @default ''
      */
     cssClass?: string;
@@ -81,18 +81,32 @@ export interface SplitterModel extends ComponentModel{
 
     /**
      * Specifies the height of the Splitter component that accepts both string and number values.
-     * 
+     *
      * @default '100%'
      */
     height?: string;
 
     /**
+     * Specifies the value whether splitter panes are reordered or not .
+     *
+     * @default true
+     */
+    enableReversePanes?: boolean;
+
+    /**
      * Specifies the width of the Splitter control, which accepts both string and number values as width.
      * The string value can be either in pixel or percentage format.
-     * 
+     *
      * @default '100%'
      */
     width?: string;
+
+    /**
+     * Enables or disables the persisting component's state between page reloads.
+     *
+     * @default false
+     */
+    enablePersistence?: boolean;
 
     /**
      * Configures the individual pane behaviors such as content, size, resizable, minimum, maximum validation, collapsible and collapsed.
@@ -119,7 +133,7 @@ export interface SplitterModel extends ComponentModel{
      * styles and themes to be appended on the root element of the Splitter.
      * It is used to customize the Splitter control.
      * One or more custom CSS classes can be specified to the Splitter.
-     * 
+     *
      * @default ''
      */
     cssClass?: string;
@@ -127,14 +141,14 @@ export interface SplitterModel extends ComponentModel{
     /**
      * Specifies boolean value that indicates whether the component is enabled or disabled.
      * The Splitter component does not allow to interact when this property is disabled.
-     * 
+     *
      * @default true
      */
     enabled?: boolean;
 
     /**
      * Defines whether to allow the cross-scripting site or not.
-     * 
+     *
      * @default true
      */
     enableHtmlSanitizer?: boolean;
@@ -142,7 +156,7 @@ export interface SplitterModel extends ComponentModel{
     /**
      * Specifies the size of the separator line for both horizontal or vertical orientation.
      * The separator is used to separate the panes by lines.
-     * 
+     *
      * @default null
      */
     separatorSize?: number;
@@ -161,7 +175,6 @@ export interface SplitterModel extends ComponentModel{
      * @event 'event'
      * @blazorProperty 'Created'
      */
-    /* eslint-disable */
     created?: EmitType<Object>;
 
     /**

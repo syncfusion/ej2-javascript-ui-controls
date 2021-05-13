@@ -1,5 +1,6 @@
 import * as events from '../base/constant';
 import { IRichTextEditor, NotifyArgs, IRenderer, ImageUploadingEventArgs, ImageSuccessEventArgs } from '../base/interface';
+import { PasteCleanupArgs } from '../base/interface';
 import { Dialog, DialogModel, Popup } from '@syncfusion/ej2-popups';
 import { RadioButton } from '@syncfusion/ej2-buttons';
 import { RendererFactory } from '../services/renderer-factory';
@@ -78,12 +79,13 @@ export class PasteCleanup {
           editorMode: this.parent.editorMode,
           event: e
       };
-      let value: string = null;
+        let value: string = null;
       // eslint-disable-next-line
       let imageproperties: string | object;
       if (e.args && !isNOU((e.args as ClipboardEvent).clipboardData)) {
           value = (e.args as ClipboardEvent).clipboardData.getData('text/html');
       }
+      this.parent.trigger(events.beforePasteCleanup, {value : value});
       if (e.args && value !== null && this.parent.editorMode === 'HTML') {
           if (value.length === 0) {
               const htmlRegex: RegExp = new RegExp(/<\/[a-z][\s\S]*>/i);
@@ -135,6 +137,9 @@ export class PasteCleanup {
           const currentDocument: Document = this.contentRenderer.getDocument();
           const range: Range = this.nodeSelectionObj.getRange(currentDocument);
           this.saveSelection = this.nodeSelectionObj.save(range, currentDocument);
+          this.parent.trigger(events.afterPasteCleanup, { value : value}, (updatedArgs: PasteCleanupArgs) => {
+            value = updatedArgs.value;
+          });
           if (this.parent.pasteCleanupSettings.prompt) {
               (e.args as ClipboardEvent).preventDefault();
               const tempDivElem: HTMLElement = this.parent.createElement('div') as HTMLElement;

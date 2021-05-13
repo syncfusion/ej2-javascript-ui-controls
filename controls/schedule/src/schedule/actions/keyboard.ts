@@ -419,7 +419,7 @@ export class KeyboardInteraction {
             const selectedSeriesEvents: Record<string, any>[] = this.parent.eventsProcessed.filter((eventObject: Record<string, any>) => {
                 return (!isReverse ? ((<Date>eventObject[this.parent.eventFields.startTime]).getTime() >= selectedDate) :
                     ((<Date>eventObject[this.parent.eventFields.startTime]).getTime() <= selectedDate));
-            }) as  Record<string, any>[];
+            }) as Record<string, any>[];
             selectedSeriesEvents.filter((event: Record<string, any>) => {
                 appointmentElements.filter((element: HTMLElement) => {
                     if (JSON.stringify(event.Guid) === JSON.stringify(element.getAttribute('data-guid'))) {
@@ -743,7 +743,6 @@ export class KeyboardInteraction {
                 const averageRowHeight: number = Math.round(virtual.offsetHeight / this.parent.resourceBase.expandedResources.length);
                 this.parent.element.querySelector('.e-content-wrap').scrollTop = ((isReverse ? index - 1 : index + 1) * averageRowHeight);
                 this.parent.virtualScrollModule.virtualScrolling();
-                this.processTabOnResourceCells(target, isReverse);
             } else {
                 this.setScrollPosition(index);
             }
@@ -759,7 +758,11 @@ export class KeyboardInteraction {
                 if (resourceCell && (isReverse && target.getAttribute('data-guid') === appElements[0].getAttribute('data-guid') ||
                     !isReverse && target.getAttribute('data-guid') === appElements.slice(-1)[0].getAttribute('data-guid'))) {
                     this.parent.eventBase.removeSelectedAppointmentClass();
+                    if (this.parent.virtualScrollModule) {
+                        resourceCell.focus({ preventScroll: true });
+                    } else {
                     resourceCell.focus();
+                    }
                     if (this.parent.activeView.isTimelineView() && this.parent.activeViewOptions.group.resources.length > 0 && isNullOrUndefined(this.parent.virtualScrollModule)) {
                         this.setScrollPosition(index);
                     }
@@ -791,7 +794,7 @@ export class KeyboardInteraction {
         }
         if (target && !target.classList.contains(cls.RESOURCE_CELLS_CLASS) && this.parent.activeView.isTimelineView()
             && this.parent.activeViewOptions.group.resources.length > 0) {
-                this.processTabOnResourceCells(target, isReverse);
+            this.processTabOnResourceCells(target, isReverse);
         }
     }
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -859,22 +862,22 @@ export class KeyboardInteraction {
         return false;
     }
     private processTabOnResourceCells(target: Element, isReverse: boolean): void {
-        let tabElements: Element[] = [].slice.call(this.parent.element.querySelectorAll('[tabIndex="0"]'));
-        let currentTabIndex: number = tabElements.indexOf(target);
-        let nextTabElement: Element = !isReverse ? tabElements[currentTabIndex + 1] : tabElements[currentTabIndex - 1];
+        const tabElements: Element[] = [].slice.call(this.parent.element.querySelectorAll('[tabIndex="0"]'));
+        const currentTabIndex: number = tabElements.indexOf(target);
+        const nextTabElement: Element = !isReverse ? tabElements[currentTabIndex + 1] : tabElements[currentTabIndex - 1];
         if (nextTabElement && nextTabElement.classList.contains(cls.RESOURCE_CELLS_CLASS)) {
-                let groupIndex: number = parseInt(nextTabElement.getAttribute('data-group-index'), 10);
-                if (this.parent.virtualScrollModule) {
-                    let resColWrap: HTMLElement = this.parent.element.querySelector('.' + cls.RESOURCE_COLUMN_WRAP_CLASS);
-                    let resCells: HTMLElement[] = [].slice.call(this.parent.element.querySelectorAll('.' + cls.RESOURCE_CELLS_CLASS));
-                    resCells.forEach((element: HTMLElement) => {
-                        if (element.getBoundingClientRect().top < resColWrap.getBoundingClientRect().top) {
-                            element.setAttribute('tabindex','-1');
-                        }
-                    });
-                } else {
-                    this.setScrollPosition(groupIndex);
-                }
+            const groupIndex: number = parseInt(nextTabElement.getAttribute('data-group-index'), 10);
+            if (this.parent.virtualScrollModule) {
+                const resColWrap: HTMLElement = this.parent.element.querySelector('.' + cls.RESOURCE_COLUMN_WRAP_CLASS);
+                const resCells: HTMLElement[] = [].slice.call(this.parent.element.querySelectorAll('.' + cls.RESOURCE_CELLS_CLASS));
+                resCells.forEach((element: HTMLElement) => {
+                    if (element.getBoundingClientRect().top < resColWrap.getBoundingClientRect().top) {
+                        element.setAttribute('tabindex', '-1');
+                    }
+                });
+            } else {
+                this.setScrollPosition(groupIndex);
+            }
         }
     }
     private setScrollPosition(index: number): void {

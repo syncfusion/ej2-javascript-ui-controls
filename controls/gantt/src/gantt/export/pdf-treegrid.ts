@@ -21,9 +21,7 @@ export class PdfTreeGrid extends PdfLayoutElement {
     public layouter: PdfTreeGridLayouter;
     public headers: PdfTreeGridHeaderCollection;
     private layoutFormat: PdfLayoutFormat;
-    // eslint-disable-next-line
     public beginCellDraw: Function;
-    // eslint-disable-next-line
     public endCellDraw: Function;
     private treegridLocation: RectangleF;
     public treeColumnIndex: number = 0;

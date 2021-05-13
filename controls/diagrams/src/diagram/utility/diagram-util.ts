@@ -2858,11 +2858,11 @@ export function getSymbolSize(sourceElement: SymbolPaletteModel, clonedObject: N
  * @param { string } size - provide the parent id.
  * @private
  */
-export function findParent(node: Node, diagram: Diagram, parent: string): string {
+export function findParentInSwimlane(node: Node, diagram: Diagram, parent: string): string {
     if (node && node.parentId) {
         node = diagram.nameTable[node.parentId];
         if (node.parentId) {
-            parent = this.findParent(node, diagram, parent);
+            parent = findParentInSwimlane(node, diagram, parent);
         }
         else {
             parent = node.id;

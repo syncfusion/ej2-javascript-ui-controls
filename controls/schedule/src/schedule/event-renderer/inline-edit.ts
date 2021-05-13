@@ -27,7 +27,7 @@ export class InlineEdit {
         }
         const moreWrapper: Element = this.parent.element.querySelector('.e-more-popup-wrapper ');
         if (moreWrapper && moreWrapper.classList.contains(cls.POPUP_OPEN)) {
-           this.parent.quickPopup.morePopup.hide();
+            this.parent.quickPopup.morePopup.hide();
         }
         if (args.type === 'Cell') {
             this.removeInlineAppointmentElement();
@@ -135,8 +135,8 @@ export class InlineEdit {
         monthEvent.eventHeight = util.getElementHeightFromClass(this.parent.monthModule.element, cls.APPOINTMENT_CLASS);
         monthEvent.getSlotDates(workDays);
         const filteredDates: Date[] = monthEvent.getRenderedDates(renderDates);
-        const splittedEvents: Record<string, any>[] = monthEvent.splitEvent(saveObject, filteredDates || renderDates);
-        for (const eventData of splittedEvents) {
+        const spannedEvents: Record<string, any>[] = monthEvent.splitEvent(saveObject, filteredDates || renderDates);
+        for (const eventData of spannedEvents) {
             monthEvent.renderEvents(eventData, index);
         }
         const inlineSubject: HTMLInputElement = this.parent.element.querySelector('.' + cls.INLINE_SUBJECT_CLASS) as HTMLInputElement;

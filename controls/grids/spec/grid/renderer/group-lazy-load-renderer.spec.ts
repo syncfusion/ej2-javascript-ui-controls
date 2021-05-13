@@ -314,7 +314,6 @@ describe('LazyLoadGroup module', () => {
             let actionComplete = (args: Object): void => {
                 let headers = gridObj.getHeaderContent().querySelectorAll('.e-headercell');
                 expect(headers[3].querySelector('.e-headercelldiv').textContent).toBe('Customer Name');
-                expect(gridObj.getRowsObject()[1].cells[4].column.field).toBe('CustomerName');
                 gridObj.actionComplete = null;
                 done();
             };

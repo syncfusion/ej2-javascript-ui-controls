@@ -82,6 +82,7 @@ export class VerticalView extends ViewBase implements IRenderer {
     }
 
     private scrollUiUpdate(args: NotifyEventArgs): void {
+        const dateHeader: HTMLElement = (this.parent.element.querySelector('.' + cls.DATE_HEADER_WRAP_CLASS) as HTMLElement);
         const headerBarHeight: number = this.getHeaderBarHeight();
         const timecells: HTMLElement = this.getLeftPanelElement();
         const content: HTMLElement = this.getScrollableElement() as HTMLElement;
@@ -94,7 +95,7 @@ export class VerticalView extends ViewBase implements IRenderer {
         (header.firstElementChild as HTMLElement).style[<any>args.cssProperties.rtlBorder] = '';
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         header.style[<any>args.cssProperties.rtlPadding] = '';
-        if (content.offsetWidth - content.clientWidth > 0) {
+        if (content.offsetWidth - content.clientWidth > 0 && (dateHeader.offsetWidth - dateHeader.clientWidth <= 1)) {
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             (header.firstElementChild as HTMLElement).style[<any>args.cssProperties.border] = scrollBarWidth > 0 ? '1px' : '0px';
             // eslint-disable-next-line @typescript-eslint/no-explicit-any

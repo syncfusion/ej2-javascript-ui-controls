@@ -1158,20 +1158,18 @@ function insertDateCollection(state: boolean, startDate: Date, endDate: Date, da
 /**
  * Return the last week number of given month and year.
  *
- * @param {number} Year Accepts the Year in number format
+ * @param {number} year Accepts the Year in number format
  * @param {number} startDayOfWeek Accepts the start date
  * @param {number[]} monthCollection Accepts the collection of dates
  * @param {number} week Accepts the week in number format
  * @param {RecRule} ruleObject Accepts the recurrence rule object
- * @returns {void}
+ * @returns {number} returns week number
  * @private
  */
-function weekCount
-    (year: number, startDayOfWeek: number, monthCollection: number[][], week: number, ruleObject: RecRule)
-    : number {
+function weekCount(year: number, startDayOfWeek: number, monthCollection: number[][], week: number, ruleObject: RecRule): number {
     const firstDayOfWeek: number = startDayOfWeek || 0;
     const firstOfMonth: Date = new Date(year, ruleObject.month[0] - 1, 1);
-    let lastOfMonth: Date = new Date(year, ruleObject.month[0] - 1, 0);
+    const lastOfMonth: Date = new Date(year, ruleObject.month[0] - 1, 0);
     const numberOfDaysInMonth: number = lastOfMonth.getDate();
     const firstWeekDay: number = (firstOfMonth.getDay() - firstDayOfWeek + 7) % 7;
     const used: number = firstWeekDay + numberOfDaysInMonth;
@@ -1195,14 +1193,14 @@ function weekCount
  * @private
  */
 function insertDateCollectionBasedonBySetPos
-    (monthCollection: number[][], state: boolean, startDate: Date, endDate: Date, data: number[], ruleObject: RecRule)
+(monthCollection: number[][], state: boolean, startDate: Date, endDate: Date, data: number[], ruleObject: RecRule)
     : void {
     if (monthCollection.length > 0) {
         for (let week: number = 0; week < monthCollection.length; week++) {
             monthCollection[week].sort();
             const expectedDays: string[] = ruleObject.day;
             const isHavingNumber: boolean[] = expectedDays.map((item: string) => HASNUMBER.test(item));
-            const weekIndex: number = (ruleObject.freq === 'YEARLY' && (ruleObject.validRules.indexOf("BYMONTH") > -1) &&
+            const weekIndex: number = (ruleObject.freq === 'YEARLY' && (ruleObject.validRules.indexOf('BYMONTH') > -1) &&
                 !(isHavingNumber.indexOf(true) > -1)) ?
                 weekCount(new Date(monthCollection[0][0]).getFullYear(), 0, monthCollection, week, ruleObject)
                 : (monthCollection[week].length + ruleObject.setPosition);

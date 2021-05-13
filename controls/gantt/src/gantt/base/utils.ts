@@ -4,7 +4,7 @@
 import { isNullOrUndefined, extend, getValue } from '@syncfusion/ej2-base';
 import { AdaptorOptions, DataManager, UrlAdaptor, WebApiAdaptor, ODataAdaptor } from '@syncfusion/ej2-data';
 import { WebMethodAdaptor, CacheAdaptor, RemoteSaveAdaptor, ODataV4Adaptor, JsonAdaptor } from '@syncfusion/ej2-data';
-import { ITaskData, IGanttData } from './interface';
+import { ITaskData, IGanttData, ITaskAddedEventArgs } from './interface';
 import { Gantt } from './gantt';
 
 /**
@@ -58,9 +58,7 @@ export function isCountRequired(parent: Gantt): boolean {
  * @returns {object} .
  * @hidden
  */
-// eslint-disable-next-line
 export function getSwapKey(obj: Object): object {
-    // eslint-disable-next-line
     const temp: Object = {};
     for (const key of Object.keys(obj)) {
         temp[obj[key]] = key;
@@ -73,7 +71,6 @@ export function getSwapKey(obj: Object): object {
  * @returns {boolean} .
  * @hidden
  */
-// eslint-disable-next-line
 export function isRemoteData(dataSource: object): boolean {
     if (dataSource instanceof DataManager) {
         const adaptor: AdaptorOptions = dataSource.adaptor;
@@ -88,19 +85,61 @@ export function isRemoteData(dataSource: object): boolean {
 /**
  * @param {IGanttData[]} records .
  * @param {boolean} isNotExtend .
+ * @param {ITaskAddedEventArgs} eventArgs .
+ * @param {Gantt} parent .
  * @returns {object[]} .
  * @hidden
  */
-// eslint-disable-next-line
-export function getTaskData(records: IGanttData[], isNotExtend?: boolean): object[] {
-    // eslint-disable-next-line
-    const result: object[] = [];
-    for (let i: number = 0; i < records.length; i++) {
-        // eslint-disable-next-line
-        const data: object = isNotExtend ? (records[i].taskData) : extend({}, records[i].taskData, {}, true);
-        result.push(data);
+export function getTaskData(
+    records: IGanttData[], isNotExtend?: boolean, eventArgs?: ITaskAddedEventArgs, parent?: Gantt): object[] | object {
+    if (eventArgs)
+    {
+        let result: object;
+        for (let i: number = 0; i < records.length; i++) {
+            let data: object;
+            // eslint-disable-next-line
+            data = isNotExtend ? (records[i].taskData) : extend({}, records[i].taskData, {}, true);
+            result = (data);
+        }
+        return result;
     }
-    return result;
+    else {
+        const result: object[] = [];
+        for (let i: number = 0; i < records.length; i++) {
+            let data: object;
+            if (!isNullOrUndefined(parent) && parent.timezone) {
+                this.updateDates(records[i], parent);
+            }
+            // eslint-disable-next-line
+            data = isNotExtend ? (records[i].taskData) : extend({}, records[i].taskData, {}, true);
+            result.push(data);
+        }
+        return result;
+    }
+}
+
+/**
+ * @param {IGanttData} record .
+ * @param {Gantt} parent .
+ * @returns {null} .
+ * @hidden
+ */
+export function updateDates(record: IGanttData, parent: Gantt): void {
+    // let startDate: Date = (record as IGanttData).taskData[parent.taskFields.startDate];
+    (record as IGanttData).taskData[parent.taskFields.startDate] = parent.dateValidationModule.remove(
+        (record as IGanttData).ganttProperties.startDate, parent.timezone);
+    if (parent.taskFields.endDate != null) {
+        (record as IGanttData).taskData[parent.taskFields.endDate] = parent.dateValidationModule.remove(
+            (record as IGanttData).ganttProperties.endDate, parent.timezone);
+    }
+    if (parent.taskFields.baselineEndDate || parent.taskFields.baselineStartDate) {
+        (record as IGanttData).taskData[parent.taskFields.baselineStartDate] = parent.dateValidationModule.remove(
+            (record as IGanttData).ganttProperties.baselineStartDate, parent.timezone);
+
+        (record as IGanttData).taskData[parent.taskFields.baselineEndDate] = parent.dateValidationModule.remove(
+            (record as IGanttData).ganttProperties.baselineEndDate, parent.timezone);
+    }
+    return null;
 }
 
 /**

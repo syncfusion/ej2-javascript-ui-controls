@@ -89,7 +89,6 @@ export class ActionBase {
                 }
                 if (this.parent.enableRecurrenceValidation
                     && this.parent.eventWindow.editOccurrenceValidation(eveId, eventObj, this.actionObj.event)) {
-                    this.parent.quickPopup.openRecurrenceValidationAlert('sameDayAlert');
                     return;
                 }
             } else {
@@ -269,7 +268,12 @@ export class ActionBase {
         const yIsScrollable: boolean = parent.offsetHeight <= parent.scrollHeight;
         const xIsScrollable: boolean = parent.offsetWidth <= parent.scrollWidth;
         const yInBounds: boolean = yIsScrollable && parent.scrollTop >= 0 && parent.scrollTop + parent.offsetHeight <= parent.scrollHeight;
-        const xInBounds: boolean = xIsScrollable && parent.scrollLeft >= 0 && parent.scrollLeft + parent.offsetWidth <= parent.scrollWidth;
+        let xInBounds: boolean = xIsScrollable && parent.scrollLeft >= 0 && parent.scrollLeft + parent.offsetWidth <= parent.scrollWidth;
+        if(this.actionObj.action === 'resize' && this.scrollEdges.right && (parent.scrollLeft + parent.offsetWidth) > parent.scrollWidth) {
+            const tdCollections: number = ([].slice.call((this.parent.getContentTable().querySelector('tr') as HTMLTableRowElement).children)).length - 1;
+            const cellIndex: number  = Math.ceil((this.actionObj.clone.offsetLeft + (this.actionObj.clone.offsetWidth)) / this.actionObj.cellWidth);
+            xInBounds = cellIndex === tdCollections;
+        }
         if (yInBounds && (this.scrollEdges.top || this.scrollEdges.bottom)) {
             parent.scrollTop += this.scrollEdges.top ? -this.actionObj.scroll.scrollBy : this.actionObj.scroll.scrollBy;
             if (this.actionObj.action === 'resize') {
@@ -351,8 +355,7 @@ export class ActionBase {
         }
         if (!isResize && (
             this.parent.activeViewOptions.orientation === 'Horizontal' && this.parent.activeViewOptions.group.resources.length === 0)) {
-            const month: number = (event[this.parent.eventFields.startTime] as Date).getMonth();
-            const eventObj: Record<string, any> = this.yearEvent.isSpannedEvent(event, month);
+            const eventObj: Record<string, any> = this.yearEvent.isSpannedEvent(event, event[this.parent.eventFields.startTime]);
             if ((eventObj[this.parent.eventFields.startTime] as Date).getTime() ===
                 (eventObj[this.parent.eventFields.endTime] as Date).getTime()) {
                 (<{ [key: string]: number }>eventObj.isSpanned).count = 1;
@@ -436,8 +439,8 @@ export class ActionBase {
                 remove(wrapper);
             }
         }
-        const splittedEvents: Record<string, any>[] = this.monthEvent.splitEvent(event, dateRender);
-        for (const event of splittedEvents) {
+        const spannedEvents: Record<string, any>[] = this.monthEvent.splitEvent(event, dateRender);
+        for (const event of spannedEvents) {
             const day: number = this.parent.getIndexOfDate(dateRender, util.resetTime(event[this.monthEvent.fields.startTime] as Date));
             const diffInDays: number = (event.data as Record<string, any>).count as number;
             const appWidth: number = (diffInDays * this.actionObj.cellWidth) - 7;

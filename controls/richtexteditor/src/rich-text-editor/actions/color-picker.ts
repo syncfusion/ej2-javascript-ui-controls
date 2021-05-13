@@ -70,7 +70,7 @@ export class ColorPickerInput {
                         command: this.tools[item.toLocaleLowerCase() as ToolbarItems].command,
                         subCommand: this.tools[item.toLocaleLowerCase() as ToolbarItems].subCommand,
                         element: select('#' + this.parent.getID() + '_' + suffixID + '_FontColor', tbElement),
-                        target: ('#' + targetID)
+                        target: (targetID)
                     } as IColorPickerModel;
                     this.fontColorPicker = this.toolbarRenderer.renderColorPicker(options, 'fontcolor');
                     this.fontColorDropDown = this.toolbarRenderer.renderColorPickerDropDown(options, 'fontcolor', this.fontColorPicker);
@@ -88,7 +88,7 @@ export class ColorPickerInput {
                         command: this.tools[item.toLocaleLowerCase() as ToolbarItems].command,
                         subCommand: this.tools[item.toLocaleLowerCase() as ToolbarItems].subCommand,
                         element: select('#' + this.parent.getID() + '_' + suffixID + '_BackgroundColor', tbElement),
-                        target: ('#' + targetID)
+                        target: (targetID)
                     } as IColorPickerModel;
                     this.backgroundColorPicker = this.toolbarRenderer.renderColorPicker(options, 'backgroundcolor');
                     this.backgroundColorDropDown = this.toolbarRenderer.renderColorPickerDropDown(

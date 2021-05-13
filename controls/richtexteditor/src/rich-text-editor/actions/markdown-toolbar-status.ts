@@ -2,6 +2,7 @@ import { MarkdownSelection } from '../../markdown-parser/plugin/markdown-selecti
 import { IRichTextEditor } from '../base/interface';
 import * as events from '../base/constant';
 import { IToolbarStatus } from '../../common/interface';
+import { getDefaultMDTbStatus } from '../../common/util';
 /**
  * MarkdownToolbarStatus module for refresh the toolbar status
  */
@@ -10,25 +11,10 @@ export class MarkdownToolbarStatus {
     public parent: IRichTextEditor;
     public element: HTMLTextAreaElement;
     public toolbarStatus: IToolbarStatus;
+    private prevToolbarStatus: IToolbarStatus;
+
     public constructor(parent: IRichTextEditor) {
-        this.toolbarStatus = {
-            bold: false,
-            italic: false,
-            subscript: false,
-            superscript: false,
-            strikethrough: false,
-            orderedlist: false,
-            uppercase: false,
-            inlinecode: false,
-            unorderedlist: false,
-            underline: false,
-            alignments: null,
-            backgroundcolor: null,
-            fontcolor: null,
-            fontname: null,
-            fontsize: null,
-            formats: null
-        };
+        this.toolbarStatus = this.prevToolbarStatus = getDefaultMDTbStatus();
         this.selection = new MarkdownSelection();
         this.parent = parent;
         this.element = this.parent.contentModule.getEditPanel() as HTMLTextAreaElement;
@@ -61,7 +47,12 @@ export class MarkdownToolbarStatus {
         if (this.parent.formatter.editorManager.mdSelectionFormats.isAppliedCommand('InlineCode')) {
             this.toolbarStatus.formats = 'pre';
         }
+        const tbStatusString: string = JSON.stringify(this.toolbarStatus);
         this.parent.notify(events.toolbarUpdated, this.toolbarStatus);
+        if (JSON.stringify(this.prevToolbarStatus) !== tbStatusString) {
+            this.parent.notify(events.updateTbItemsStatus, { html: null, markdown: JSON.parse(tbStatusString) });
+            this.prevToolbarStatus = JSON.parse(tbStatusString);
+        }
     }
     private isListsApplied(lines: { [key: string]: string | number }[], type: string): boolean {
         let isApply: boolean = true;

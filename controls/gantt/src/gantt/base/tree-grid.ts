@@ -25,11 +25,9 @@ export class GanttTreeGrid {
     /**
      * @private
      */
-    // eslint-disable-next-line
     public currentEditRow: {};
     private previousScroll: { top: number, left: number } = { top: 0, left: 0 };
     /** @hidden */
-    // eslint-disable-next-line
     public prevCurrentView: Object;
 
     constructor(parent: Gantt) {
@@ -48,7 +46,6 @@ export class GanttTreeGrid {
         this.parent.on('destroy', this.destroy, this);
         this.parent.treeGrid.on('renderReactTemplate', this.renderReactTemplate, this);
     }
-    // eslint-disable-next-line
     private renderReactTemplate(args: Object[]): void {
         const portals: string = 'portals';
         this.parent[portals] = args;
@@ -165,7 +162,6 @@ export class GanttTreeGrid {
         this.parent.treeGrid.dataStateChange = this.dataStateChange.bind(this);
     }
 
-    // eslint-disable-next-line
     private beforeDataBound(args: object): void {
         this.parent.updatedRecords = this.parent.virtualScrollModule && this.parent.enableVirtualization ?
             getValue('virtualScrollModule.visualData', this.parent.treeGrid) : getValue('result', args);
@@ -174,7 +170,6 @@ export class GanttTreeGrid {
             this.parent.updateContentHeight(args);
         }
     }
-    // eslint-disable-next-line
     private dataBound(args: object): void {
         this.ensureScrollBar();
         this.parent.treeDataBound(args);
@@ -189,15 +184,12 @@ export class GanttTreeGrid {
         }
         this.parent.trigger('dataStateChange', args);
     }
-    // eslint-disable-next-line
     private collapsing(args: object): void | Deferred {
         // Collapsing event
         const callBackPromise: Deferred = new Deferred();
         if (!this.parent.ganttChartModule.isExpandCollapseFromChart) {
-            // eslint-disable-next-line
             const collapsingArgs: object = this.createExpandCollapseArgs(args);
             if (isBlazor()) {
-                // eslint-disable-next-line
                 this.parent.trigger('collapsing', collapsingArgs, (arg: object) => {
                     callBackPromise.resolve(arg);
                     setValue('chartRow', getElement(getValue('chartRow', arg)), arg);
@@ -213,15 +205,12 @@ export class GanttTreeGrid {
             setValue('cancel', getValue('cancel', collapsingArgs), args);
         }
     }
-    // eslint-disable-next-line
     private expanding(args: object): void | Deferred {
         // Expanding event
         const callBackPromise: Deferred = new Deferred();
         if (!this.parent.ganttChartModule.isExpandCollapseFromChart) {
-            // eslint-disable-next-line
             const expandingArgs: object = this.createExpandCollapseArgs(args);
             if (isBlazor()) {
-                // eslint-disable-next-line
                 this.parent.trigger('expanding', expandingArgs, (arg: object) => {
                     callBackPromise.resolve(arg);
                     setValue('chartRow', getElement(getValue('chartRow', arg)), arg);
@@ -237,25 +226,20 @@ export class GanttTreeGrid {
             setValue('cancel', getValue('cancel', expandingArgs), args);
         }
     }
-    // eslint-disable-next-line
     private collapsed(args: object): void {
         this.updateExpandStatus(args);
         if (!this.parent.ganttChartModule.isExpandCollapseFromChart) {
-            // eslint-disable-next-line
             const collapsedArgs: object = this.createExpandCollapseArgs(args);
             this.parent.ganttChartModule.collapsedGanttRow(collapsedArgs);
         }
     }
-    // eslint-disable-next-line
     private expanded(args: object): void {
         this.updateExpandStatus(args);
         if (!this.parent.ganttChartModule.isExpandCollapseFromChart) {
-            // eslint-disable-next-line
             const expandedArgs: object = this.createExpandCollapseArgs(args);
             this.parent.ganttChartModule.expandedGanttRow(expandedArgs);
         }
     }
-    // eslint-disable-next-line
     private updateExpandStatus(args: object): void {
         if (getValue('data', args) && isBlazor()) {
             const record: IGanttData = this.parent.getTaskByUniqueID(getValue('data', args).uniqueID);
@@ -265,8 +249,7 @@ export class GanttTreeGrid {
     private actionBegin(args: FilterEventArgs | SortEventArgs): void {
         this.parent.notify('actionBegin', args);
         this.parent.trigger('actionBegin', args);
-    }
-    // eslint-disable-next-line
+    }// eslint-disable-next-line
     private created(args: object): void {
         this.updateKeyConfigSettings();
     }
@@ -289,7 +272,6 @@ export class GanttTreeGrid {
     private columnMenuClick = (args: ColumnMenuClickEventArgs) => {
         this.parent.trigger('columnMenuClick', args);
     }
-    // eslint-disable-next-line
     private createExpandCollapseArgs(args: object): object {
         const record: IGanttData = getValue('data', args);
         const gridRow: Node = getValue('row', args);
@@ -300,14 +282,11 @@ export class GanttTreeGrid {
         } else {
             chartRow = this.parent.ganttChartModule.getChartRows()[this.parent.currentViewData.indexOf(record)];
         }
-        // eslint-disable-next-line
         const eventArgs: object = { data: record, gridRow: gridRow, chartRow: chartRow, cancel: false };
         return eventArgs;
     }
 
-    // eslint-disable-next-line
     private treeActionComplete(args: object): void {
-        // eslint-disable-next-line
         const updatedArgs: object = extend({}, args, true);
         if (getValue('requestType', args) === 'sorting') {
             this.parent.notify('updateModel', {});
@@ -590,9 +569,7 @@ export class GanttTreeGrid {
      * @returns {object} .
      * @private
      */
-    // eslint-disable-next-line
     public getResourceIds(data: IGanttData): object {
-        // eslint-disable-next-line
         const value: Object[] = getValue(this.parent.taskFields.resourceInfo, data.taskData);
         const id: number[] = [];
         if (!isNullOrUndefined(value)) {
@@ -611,15 +588,13 @@ export class GanttTreeGrid {
      * @returns {void} .
      */
     private composeIDColumn(column: GanttColumnModel): void {
-        column.isPrimaryKey = isNullOrUndefined(column.isPrimaryKey) ? true : column.isPrimaryKey;
+        const isProjectView: boolean = this.parent.viewType === 'ProjectView';
+        column.isPrimaryKey = isProjectView ? true : false;
         column.headerText = column.headerText ? column.headerText : this.parent.localeObj.getConstant('id');
         column.width = column.width ? column.width : 100;
         column.allowEditing = column.allowEditing ? column.allowEditing : false;
         column.editType = column.editType ? column.editType : 'numericedit';
-        if (this.parent.viewType !== 'ProjectView') {
-            column.valueAccessor = this.idValueAccessor.bind(this);
-            column.isPrimaryKey = false;
-        }
+        column.valueAccessor = isProjectView ? null : this.idValueAccessor.bind(this);
     }
     private composeUniqueIDColumn(column: GanttColumnModel): void {
         column.field = 'rowUniqueID';
@@ -656,17 +631,14 @@ export class GanttTreeGrid {
         if (isDefined) {
             this.treeGridColumns.push(treeGridColumn);
         }
-    }
-    // eslint-disable-next-line
-    private durationValueAccessor(field: string, data: IGanttData, column: GanttColumnModel): string {
+    }// eslint-disable-next-line
+    private durationValueAccessor(field: string, data: IGanttData, column: GanttColumnModel): string { 
         const ganttProp: ITaskData = data.ganttProperties;
         if (!isNullOrUndefined(ganttProp)) {
             return this.parent.dataOperation.getDurationString(ganttProp.duration, ganttProp.durationUnit);
         }
         return '';
-    }
-
-    // eslint-disable-next-line
+    }// eslint-disable-next-line
     private resourceValueAccessor(field: string, data: IGanttData, column: GanttColumnModel): string {
         const ganttProp: ITaskData = data.ganttProperties;
         if (!isNullOrUndefined(ganttProp)) {
@@ -675,24 +647,21 @@ export class GanttTreeGrid {
         return '';
     }
 
-    // eslint-disable-next-line
-    private workValueAccessor(field: string, data: IGanttData, column: GanttColumnModel): string {
+    private workValueAccessor(field: string, data: IGanttData, column: GanttColumnModel): string {   // eslint-disable-line
         const ganttProp: ITaskData = data.ganttProperties;
         if (!isNullOrUndefined(ganttProp)) {
             return this.parent.dataOperation.getWorkString(ganttProp.work, ganttProp.workUnit);
         }
         return '';
     }
-    // eslint-disable-next-line
-    private taskTypeValueAccessor(field: string, data: IGanttData, column: GanttColumnModel): string {
+    private taskTypeValueAccessor(field: string, data: IGanttData, column: GanttColumnModel): string {   // eslint-disable-line
         const ganttProp: ITaskData = data.ganttProperties;
         if (!isNullOrUndefined(ganttProp)) {
             return ganttProp.taskType;
         }
         return '';
     }
-    // eslint-disable-next-line
-    private modeValueAccessor(field: string, data: IGanttData, column: GanttColumnModel): string {
+    private modeValueAccessor(field: string, data: IGanttData, column: GanttColumnModel): string {   // eslint-disable-line
         if (data[field]) {
             return 'Manual';
         } else {
@@ -700,12 +669,10 @@ export class GanttTreeGrid {
         }
     }
 
-    // eslint-disable-next-line
-    private idValueAccessor(field: string, data: IGanttData, column: GanttColumnModel): string {
+    private idValueAccessor(field: string, data: IGanttData, column: GanttColumnModel): string {   // eslint-disable-line
         return data.level === 0 ? 'R-' + data.ganttProperties.taskId : 'T-' + data.ganttProperties.taskId;
     }
 
-    // eslint-disable-next-line
     private updateScrollTop(args: object): void {
         this.treeGridElement.querySelector('.e-content').scrollTop = getValue('top', args);
         this.previousScroll.top = this.treeGridElement.querySelector('.e-content').scrollTop;

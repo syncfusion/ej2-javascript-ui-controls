@@ -4,6 +4,7 @@
 import { isNullOrUndefined as isNOU, addClass, removeClass, L10n, selectAll, createElement, Browser, detach } from '@syncfusion/ej2-base';
 import * as classes from '../base/classes';
 import * as model from '../models/items';
+import * as tools from '../models/toolbar-settings';
 import { IToolsItemConfigs, IRichTextEditor, BeforeSanitizeHtmlArgs } from '../base/interface';
 import { toolsLocale } from '../models/default-locale';
 import { IToolbarItems, IDropDownItemModel, ISetToolbarStatusArgs, IToolbarItemModel } from './interface';
@@ -149,7 +150,8 @@ export function getTooltipText(item: string, serviceLocator: ServiceLocator): st
  * @returns {void}
  * @hidden
  */
-export function setToolbarStatus(e: ISetToolbarStatusArgs, isPopToolbar: boolean): void {
+export function setToolbarStatus(e: ISetToolbarStatusArgs, isPopToolbar: boolean, self: IRichTextEditor): void {
+    tools.updateDropDownFontFormatLocale(self);
     const dropDown: DropDownButtons = e.dropDownModule;
     const data: { [key: string]: string | boolean } = <{ [key: string]: string | boolean }>e.args;
     const keys: string[] = Object.keys(e.args);

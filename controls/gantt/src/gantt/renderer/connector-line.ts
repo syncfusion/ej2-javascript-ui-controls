@@ -76,7 +76,8 @@ export class ConnectorLine {
         const childIndex: number = updatedRecords.indexOf(childGanttData);
         const parentGanttRecord: ITaskData = parentGanttData.ganttProperties;
         const childGanttRecord: ITaskData = childGanttData.ganttProperties;
-        const currentData: IGanttData[] = this.parent.getExpandedRecords(this.parent.currentViewData);
+        const currentData: IGanttData[] = this.parent.virtualScrollModule && this.parent.enableVirtualization ?
+            this.parent.currentViewData : this.parent.getExpandedRecords(this.parent.currentViewData);
         connectorObj.parentIndexInCurrentView = currentData.indexOf(parentGanttData);
         connectorObj.childIndexInCurrentView = currentData.indexOf(childGanttData);
         const isVirtualScroll: boolean = this.parent.virtualScrollModule && this.parent.enableVirtualization;
@@ -982,7 +983,6 @@ export class ConnectorLine {
      * @returns {void} .
      * @private
      */
-    // eslint-disable-next-line
     public removePreviousConnectorLines(records: IGanttData[] | object): void {
         let isObjectType: boolean;
         if (isObject(records) === true) {

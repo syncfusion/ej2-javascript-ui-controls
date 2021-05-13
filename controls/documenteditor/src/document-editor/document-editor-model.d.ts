@@ -29,6 +29,12 @@ export interface DocumentEditorSettingsModel {
      */
     collaborativeEditingSettings?: CollaborativeEditingSettingsModel;
 
+    /**
+     * Specifies the device pixel ratio for the image generated for printing.
+     * Remarks: Increasing the device pixel ratio will increase the image file size, due to high resolution of image.
+     */
+    printDevicePixelRatio?: number;
+
 }
 
 /**

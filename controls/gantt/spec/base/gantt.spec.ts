@@ -277,4 +277,40 @@ describe('Gantt - Base', () => {
             setTimeout(done, 2000);
         });
     });
+    describe('CR issues', () => {
+        let ganttObj: Gantt;
+        beforeAll((done: Function) => {
+            ganttObj = createGantt(
+                {
+                    dataSource: resourceGanttData,
+                    taskFields: {
+                        id: 'TaskID',
+                        name: 'TaskName',
+                        startDate: 'StartDate',
+                        duration: 'Duration',
+                        progress: 'Progress',
+                        resourceInfo: 'resources',
+                        child: 'subtasks',
+                        segments:'segments'
+                    },
+                    editSettings: {
+                        allowEditing: true
+                    },
+                    projectStartDate: new Date('03/25/2019'),
+                    projectEndDate: new Date('05/30/2019')
+                }, done);
+        });
+        it('EJ2-48856-split task public method', () => {
+            ganttObj.splitTask(5, new Date("04/03/2019"));
+            ganttObj.splitTask(5, new Date("04/05/2019"));
+            expect(ganttObj.currentViewData[4].taskData[ganttObj.taskFields.segments].length).toBe(3);
+         });
+        
+        afterAll(() => {
+            destroyGantt(ganttObj);
+        });
+        beforeEach((done: Function) => {
+            setTimeout(done, 2000);
+        });
+    });
 });

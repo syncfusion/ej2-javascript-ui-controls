@@ -115,6 +115,26 @@ export class Views extends ChildProperty<Views> {
     public cellTemplate: string;
 
     /**
+     * It accepts either the string or HTMLElement as template design content and parse it appropriately before displaying it onto the
+     *  Year view day cell header.
+     *  This template is only applicable for year view header cells.
+     *
+     * @default null
+     */
+    @Property()
+    public dayHeaderTemplate: string;
+
+    /**
+     * It accepts either the string or HTMLElement as template design content and parse it appropriately before displaying it onto the
+     *  Year view day cell header.
+     *  This template is only applicable for year view header cells.
+     *
+     * @default null
+     */
+    @Property()
+    public monthHeaderTemplate: string;
+
+    /**
      * It accepts either the string or HTMLElement as template design content and parse it appropriately before displaying it onto
      *  the event background. All the event fields mapped to Schedule from dataSource can be accessed within this template code.
      *  It is similar to that of the `template` option available within the `eventSettings` property,
@@ -171,6 +191,15 @@ export class Views extends ChildProperty<Views> {
      */
     @Property(0)
     public firstDayOfWeek: number;
+
+    /**
+     * This property helps render the year view customized months.
+     * By default, it is set to `0`.
+     *
+     * @default 0
+     */
+    @Property(0)
+    public firstMonthOfYear: number;
 
     /**
      * It is used to set the working days on schedule. The only days that are defined in this collection will be rendered on the

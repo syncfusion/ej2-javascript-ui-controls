@@ -41,7 +41,11 @@ export function intToDate(val: number): Date {
     if (val > 60) {
         val -= 1; // Due to leap year issue of 1900 in MSExcel.
     }
-    return new Date(((val - 1) * (1000 * 3600 * 24)) + new Date('01/01/1900').getTime());
+    const startDate: Date = new Date('01/01/1900');
+    const startDateUTC: number = Date.UTC(
+        startDate.getFullYear(), startDate.getMonth(), startDate.getDate(), startDate.getHours(),
+        startDate.getMinutes(), startDate.getSeconds(), startDate.getMilliseconds());
+    return new Date(new Date(((val - 1) * (1000 * 3600 * 24)) + startDateUTC).toUTCString().replace(' GMT', ''));
 }
 
 /* eslint-disable  @typescript-eslint/no-explicit-any */
@@ -49,19 +53,20 @@ export function intToDate(val: number): Date {
  * @hidden
  * @param {number} val - Specifies the value.
  * @param {boolean} isTime - Specifies the boolean value.
+ * @param {boolean} isTimeOnly - Specifies the value is only a time without date.
  * @returns {number} - Returns number.
  */
-export function dateToInt(val: any, isTime?: boolean): number {
+export function dateToInt(val: any, isTime?: boolean, isTimeOnly?: boolean): number {
     const startDate: Date = new Date('01/01/1900');
     const date: Date = isDateTime(val) ? val : new Date(val);
     const startDateUTC: number = Date.UTC(
         startDate.getFullYear(), startDate.getMonth(), startDate.getDate(), startDate.getHours(),
         startDate.getMinutes(), startDate.getSeconds(), startDate.getMilliseconds());
-    const dateUTC: number = Date.UTC(
+        const dateUTC: number = Date.UTC(
         date.getFullYear(), date.getMonth(), date.getDate(), date.getHours(), date.getMinutes(),
         date.getSeconds(), date.getMilliseconds());
     const diffDays: number = ((dateUTC - startDateUTC) / (1000 * 3600 * 24));
-    return isTime ? diffDays : parseInt(diffDays.toString(), 10) + 2;
+    return (isTime ? diffDays : parseInt(diffDays.toString(), 10)) + (isTimeOnly ? 0 : (diffDays > 60 ? 2 : 1));
 }
 
 /**

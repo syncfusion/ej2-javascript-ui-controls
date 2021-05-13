@@ -326,6 +326,10 @@ export class Clipboard {
                                             }
                                         }
                                         if (!toSkip) {
+                                            if (this.parent.getActiveSheet().isProtected && cell &&
+                                                (isNullOrUndefined(cell.isLocked) || cell.isLocked === true)) {
+                                                cell.isLocked = prevCell.isLocked;
+                                            }
                                             this.setCell(x + l, colInd, curSheet, cell, isExtend, false, y === selIdx[3],
                                                          isExternal as boolean);
                                         }
@@ -352,9 +356,21 @@ export class Clipboard {
                                     }
                                 }
                             }
-                            if (!isExternal && this.copiedInfo.isCut && !(inRange(selIdx, i, j) && copiedIdx ===
-                                this.parent.activeSheetIndex)) {
-                                this.setCell(i, j, prevSheet, null, false, true, j === cIdx[3]);
+                            if (!isExternal && this.copiedInfo.isCut && !(inRange(selIdx, i, j) &&
+                             copiedIdx === this.parent.activeSheetIndex)) {
+                                let cell: CellModel = getCell(i, j, prevSheet);
+                                if (cell) {
+                                    if (cell.isLocked || isNullOrUndefined(cell.isLocked)) {
+                                        cell = null;
+                                    } else if (cell.isLocked === false) {
+                                        if (this.parent.getActiveSheet().isProtected ) {
+                                            cell =  { isLocked: false};
+                                        } else {
+                                            cell = null;
+                                        }
+                                    }
+                                }
+                                this.setCell(i, j, prevSheet, cell, false, true, j === cIdx[3]);
                             }
                         }
                         rowIdx++;
@@ -559,8 +575,8 @@ export class Clipboard {
     private setCell(
         rIdx: number, cIdx: number, sheet: SheetModel, cell: CellModel, isExtend?: boolean, isCut?: boolean,
         lastCell?: boolean, isExternal?: boolean): void {
-        let sheetIndex: number = sheet ? getSheetIndexFromId(this.parent, sheet.id) : null;
-        setCell(rIdx, cIdx, sheet, isCut ? null : cell, isExtend);
+        const sheetIndex: number = sheet ? getSheetIndexFromId(this.parent, sheet.id) : null;
+        setCell(rIdx, cIdx, sheet, cell, isExtend);
         if (cell && cell.formula) {
             this.parent.notify(workbookFormulaOperation, {
                 action: 'refreshCalculate', value: isCut ? '' : cell.formula, rowIndex: rIdx,

@@ -2,6 +2,26 @@
 
 ## [Unreleased]
 
+## 19.1.63 (2021-05-13)
+
+### Accordion
+
+#### Bug Fixes
+
+- `#I324822` - Provided the accessibility support for current state of accordion items `expanded/collapsed` when using screen reader.
+
+### TreeView
+
+#### Bug Fixes
+
+- `#I320504` - The issue with "In IE Browser, the template TreeView throws an error when changing the data source using `useState`" has been resolved.
+
+### Menu
+
+#### New Features
+
+- `#315809` - Delay support on hovering the menu.
+
 ## 19.1.59 (2021-05-04)
 
 ### Menu

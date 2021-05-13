@@ -3118,10 +3118,23 @@ describe('Keyboard interaction', () => {
                 shiftKey: false, preventDefault: (): void => { /** Null */ } });
             setTimeout(() => { done(); }, 500);
         });
-        it('Resource cells updated with work cells on tab key', () => {
+        it('Resource cells updated with work cells on tab key', (done: DoneFn) => {
             expect(schObj.element.querySelector('.e-resource-cells').getAttribute('tabindex')).toEqual('-1');
             expect(schObj.element.querySelector('.e-resource-cells').getAttribute('data-group-index')).toEqual('6');
             expect(schObj.element.querySelectorAll('.e-resource-cells')[2].classList.contains('e-parent-node')).toBe(false);
+            (schObj.element.querySelector('.e-resource-cells[data-group-index="'+ 9 +'"]') as HTMLElement).focus();
+            const contentArea: HTMLElement = schObj.element.querySelector('.e-content-wrap') as HTMLElement;
+            util.triggerScrollEvent(contentArea, 50);
+            expect(contentArea.scrollTop).toEqual(50);
+            setTimeout(() => { done(); }, 500);
+        });
+        it('Resource cells updated after virtual scroll', () => {
+            expect(schObj.element.querySelector('.e-resource-cells').getAttribute('tabindex')).toEqual('-1');
+            expect(schObj.element.querySelector('.e-resource-cells').getAttribute('data-group-index')).toEqual('0');
+            expect(schObj.element.querySelectorAll('.e-resource-cells')[2].classList.contains('e-parent-node')).toBe(true);
+            expect(document.activeElement.getAttribute("data-group-index")).toBe('1');
+            expect(document.activeElement.classList.contains("e-resource-cells")).toBe(true);
+            expect(document.activeElement.getAttribute("tabindex")).toEqual('0');
         });
     });
 

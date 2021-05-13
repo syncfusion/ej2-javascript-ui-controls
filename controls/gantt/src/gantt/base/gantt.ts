@@ -64,6 +64,7 @@ import { WorkUnit, TaskType } from './enum';
 import { FocusModule } from '../actions/keyboard';
 import { VirtualScroll } from '../actions/virtual-scroll';
 import { isCountRequired } from './utils';
+import { TaskbarEdit } from '../actions/taskbar-edit';
 /**
  *
  * Represents the Gantt chart component.
@@ -98,6 +99,7 @@ export class Gantt extends Component<HTMLElement>
     public chartRowsModule: ChartRows;
     /** @hidden */
     public connectorLineModule: ConnectorLine;
+    public taskbarEditModule: TaskbarEdit;
     /** @hidden */
     public connectorLineEditModule: ConnectorLineEdit;
     /** @hidden */
@@ -130,7 +132,6 @@ export class Gantt extends Component<HTMLElement>
     /** @hidden */
     public taskIds: string[];
     /** @hidden */
-    // eslint-disable-next-line
     public previousRecords: object = {};
     /** @hidden */
     public editedRecords: IGanttData[] = [];
@@ -155,11 +156,10 @@ export class Gantt extends Component<HTMLElement>
     /** @hidden */
     public nonWorkingDayIndex?: number[];
     /** @hidden */
-    public durationUnitTexts?: Object; // eslint-disable-line
+    public durationUnitTexts?: Object;
     /** @hidden */
-    public durationUnitEditText?: Object;  // eslint-disable-line
+    public durationUnitEditText?: Object;
     /** @hidden */
-    // eslint-disable-next-line
     public isMileStoneEdited?: Object;
     /** @hidden */
     public chartVerticalLineContainer?: HTMLElement;
@@ -217,7 +217,6 @@ export class Gantt extends Component<HTMLElement>
     /** @hidden */
     public isTimelineRoundOff: boolean;
     /** @hidden */
-    // eslint-disable-next-line
     public columnByField: Object;
     /** @hidden */
     public customColumns: string[];
@@ -395,7 +394,7 @@ export class Gantt extends Component<HTMLElement>
      * @default []
      */
     @Property([])
-    public dataSource: Object[] | DataManager | Object;   // eslint-disable-line
+    public dataSource: Object[] | DataManager | Object;
     /**
      * `durationUnit` Specifies the duration unit for each tasks whether day or hour or minute.
      * * `day`: Sets the duration unit as day.
@@ -610,14 +609,14 @@ export class Gantt extends Component<HTMLElement>
      * @default []
      */
     @Property([])
-    public resources: object[];    // eslint-disable-line
+    public resources: object[];
     /**
      * Defines segment collection assigned for tasks.
      *
      * @default []
      */
     @Property([])
-    public segmentData: object[];    // eslint-disable-line
+    public segmentData: object[];
     /**
      * Defines background color of dependency lines.
      *
@@ -920,12 +919,17 @@ export class Gantt extends Component<HTMLElement>
     /**
      * @private
      */
-     public isFromOnPropertyChange: boolean = false;
+    public isFromOnPropertyChange: boolean = false;
 
     /**
      * @private
      */
     public isGanttChartRendered: boolean = false;
+
+    /**
+     * @private
+     */
+    public isEdit: boolean = false;
 
     /**
      * This will be triggered after the taskbar element is appended to the Gantt element.
@@ -942,7 +946,7 @@ export class Gantt extends Component<HTMLElement>
      * @event beforeExcelExport
      */
     @Event()
-    public beforeExcelExport: EmitType<Object>; // eslint-disable-line
+    public beforeExcelExport: EmitType<Object>;
     /**
      * Triggers after Gantt data is exported to Excel file.
      *
@@ -1105,7 +1109,7 @@ export class Gantt extends Component<HTMLElement>
      * @blazorproperty 'OnLoad'
      */
     @Event()
-    public load: EmitType<Object>;     // eslint-disable-line
+    public load: EmitType<Object>;
 
     /**
      * Triggers when the component is created.
@@ -1113,7 +1117,7 @@ export class Gantt extends Component<HTMLElement>
      * @event created
      */
     @Event()
-    public created: EmitType<Object>;    // eslint-disable-line
+    public created: EmitType<Object>;
 
     /**
      * Triggers when the component is destroyed.
@@ -1121,7 +1125,7 @@ export class Gantt extends Component<HTMLElement>
      * @event destroyed
      */
     @Event()
-    public destroyed: EmitType<Object>;    // eslint-disable-line
+    public destroyed: EmitType<Object>;
 
     /**
      * This event will be triggered when taskbar was in dragging state.
@@ -1137,7 +1141,7 @@ export class Gantt extends Component<HTMLElement>
      * @event dataBound
      */
     @Event()
-    public dataBound: EmitType<Object>;      // eslint-disable-line
+    public dataBound: EmitType<Object>;
 
     /**
      * Triggers when column resize starts.
@@ -1405,7 +1409,7 @@ export class Gantt extends Component<HTMLElement>
      * @deprecated
      */
     @Event()
-    public beforePdfExport: EmitType<Object>;    // eslint-disable-line
+    public beforePdfExport: EmitType<Object>;
     /**
      * Triggers after TreeGrid data is exported to PDF document.
      *
@@ -1413,7 +1417,7 @@ export class Gantt extends Component<HTMLElement>
      * @deprecated
      */
     @Event()
-    public pdfExportComplete: EmitType<Object>;    // eslint-disable-line
+    public pdfExportComplete: EmitType<Object>;
     /**
      * Triggers before exporting each cell to PDF document. You can also customize the PDF cells.
      *
@@ -1429,7 +1433,7 @@ export class Gantt extends Component<HTMLElement>
      * @deprecated
      */
     @Event()
-    public pdfQueryTaskbarInfo: EmitType<Object>;     // eslint-disable-line
+    public pdfQueryTaskbarInfo: EmitType<Object>;
     /**
      * Triggers before exporting each cell to PDF document. You can also customize the PDF cells.
      *
@@ -1826,13 +1830,13 @@ export class Gantt extends Component<HTMLElement>
      * @returns {void} .
      * @private
      */
-    // eslint-disable-next-line
     public updateContentHeight(args?: object): void {
         if (this.virtualScrollModule && this.enableVirtualization && !isNullOrUndefined(args)) {
             const length: number = getValue('count', args);
             this.contentHeight = length * this.rowHeight;
         } else {
-            const expandedRecords: IGanttData[] = this.getExpandedRecords(this.currentViewData);
+            const expandedRecords: IGanttData[] = this.virtualScrollModule && this.enableVirtualization ?
+                this.currentViewData : this.getExpandedRecords(this.currentViewData);
             let height: number;
             const chartRow: Element = this.ganttChartModule.getChartRows()[0];
             if (!isNullOrUndefined(chartRow) && chartRow.getBoundingClientRect().height > 0) {
@@ -2094,7 +2098,6 @@ export class Gantt extends Component<HTMLElement>
      * @returns {void} .
      * @private
      */
-    // eslint-disable-next-line
     public treeDataBound(args: object): void {
         if (this.isLoad) {
             this.updateCurrentViewData();
@@ -2146,7 +2149,6 @@ export class Gantt extends Component<HTMLElement>
         // this.chartRowsModule.refreshGanttRows();
         if (this.virtualScrollModule && this.enableVirtualization) {
             this.ganttChartModule.virtualRender.adjustTable();
-            this.ganttChartModule.scrollObject.updateTopPosition();
         }
     }
 
@@ -2211,6 +2213,9 @@ export class Gantt extends Component<HTMLElement>
                 if (this.taskFields.dependency) {
                     this.ganttChartModule.reRenderConnectorLines();
                 }
+                break;
+            case 'timezone':
+                this.dataOperation.checkDataBinding(true);
                 break;
             case 'filterSettings':
                 this.treeGrid.filterSettings = getActualProperties(this.filterSettings) as TreeGridFilterSettingModel;
@@ -2661,13 +2666,10 @@ export class Gantt extends Component<HTMLElement>
         if (!this.element.contains(this.chartVerticalLineContainer)) {
             this.chartVerticalLineContainer = createElement('div', {
                 id: this.element.id + 'line-container',
-                styles: 'position:absolute;height:100%;z-index:1'
+                styles: 'position:absolute;height:100%;z-index:1;top:' +
+                this.ganttChartModule.chartTimelineContainer.offsetHeight + 'px;'
             });
-            if (this.virtualScrollModule && this.enableVirtualization) {
-                this.ganttChartModule.virtualRender.appendChildElements(this.chartVerticalLineContainer);
-            } else {
-                this.ganttChartModule.chartBodyContent.appendChild(this.chartVerticalLineContainer);
-            }
+            this.ganttChartModule.chartBodyContainer.appendChild(this.chartVerticalLineContainer);
         }
         this.chartVerticalLineContainer.innerHTML = '';
         let headerTable: Element = this.element.getElementsByClassName('e-timeline-header-table-container')[1];
@@ -2698,9 +2700,7 @@ export class Gantt extends Component<HTMLElement>
      * @returns {void} .
      * @hidden
      */
-    // eslint-disable-next-line
     public getDefaultLocale(): Object {
-        // eslint-disable-next-line
         const ganttLocale: Object = {
             emptyRecord: 'No records to display',
             id: 'ID',
@@ -2810,7 +2810,6 @@ export class Gantt extends Component<HTMLElement>
             right: 'Right'
         };
         if (isBlazor()) {
-            // eslint-disable-next-line
             const blazorLocale: Object = {
                 zoomIn: 'Zoom In',
                 zoomOut: 'Zoom Out',
@@ -2842,7 +2841,6 @@ export class Gantt extends Component<HTMLElement>
      * @returns {void} .
      * @private
      */
-    // eslint-disable-next-line
     public actionBeginTask(args: object): boolean | void {
         this.trigger('actionBegin', args);
     }
@@ -2989,7 +2987,6 @@ export class Gantt extends Component<HTMLElement>
      * @returns {Promise<any>} .
      * @blazorType void
      */
-    // eslint-disable-next-line
     public pdfExport(pdfExportProperties?: PdfExportProperties, isMultipleExport?: boolean, pdfDoc?: Object): Promise<Object> {
         return this.pdfExportModule ? this.pdfExportModule.export(pdfExportProperties, isMultipleExport, pdfDoc)
             : null;
@@ -3105,7 +3102,8 @@ export class Gantt extends Component<HTMLElement>
      * @public
      */
 
-    public splitTask(taskId: string, splitDate: Date | Date[]): void {
+    public splitTask(taskId: number | string, splitDate: Date | Date[]): void {
+        this.isEdit = true;
         this.chartRowsModule.splitTask(taskId, splitDate);
     }
 
@@ -3117,7 +3115,7 @@ export class Gantt extends Component<HTMLElement>
      * @returns {void} .
      * @public
      */
-    public mergeTask(taskId: string, segmentIndexes: { firstSegmentIndex: number, secondSegmentIndex: number }[]): void {
+    public mergeTask(taskId: number | string, segmentIndexes: { firstSegmentIndex: number, secondSegmentIndex: number }[]): void {
         this.chartRowsModule.mergeTask(taskId, segmentIndexes);
     }
 
@@ -3257,7 +3255,6 @@ export class Gantt extends Component<HTMLElement>
      * @returns {void} .
      */
     public setSplitterPosition(value: string | number, type: string): void {
-        // eslint-disable-next-line
         const tempSplitterSettings: Object = {};
         tempSplitterSettings[type] = value;
         const splitterPosition: string = this.splitterModule.calculateSplitterPosition(
@@ -3278,7 +3275,6 @@ export class Gantt extends Component<HTMLElement>
      */
     public expandByIndex(index: number[] | number): void {
         if (typeof index === 'number') {
-            // eslint-disable-next-line
             const args: object = this.contructExpandCollapseArgs(null, index);
             this.ganttChartModule.isExpandCollapseFromChart = true;
             this.ganttChartModule.expandGanttRow(args);
@@ -3286,7 +3282,6 @@ export class Gantt extends Component<HTMLElement>
             for (let i: number = 0; i < index.length; i++) {
                 if (typeof index[i] === 'number') {
                     const ind: number = index[i];
-                    // eslint-disable-next-line
                     const args: object = this.contructExpandCollapseArgs(null, ind);
                     this.ganttChartModule.isExpandCollapseFromChart = true;
                     this.ganttChartModule.expandGanttRow(args);
@@ -3302,7 +3297,6 @@ export class Gantt extends Component<HTMLElement>
      * @public
      */
     public expandByID(id: number): void {
-        // eslint-disable-next-line
         const args: object = this.contructExpandCollapseArgs(id);
         this.ganttChartModule.isExpandCollapseFromChart = true;
         this.ganttChartModule.expandGanttRow(args);
@@ -3315,7 +3309,6 @@ export class Gantt extends Component<HTMLElement>
      * @public
      */
     public collapseByIndex(index: number): void {
-        // eslint-disable-next-line
         const args: object = this.contructExpandCollapseArgs(null, index);
         this.ganttChartModule.isExpandCollapseFromChart = true;
         this.ganttChartModule.collapseGanttRow(args);
@@ -3328,7 +3321,6 @@ export class Gantt extends Component<HTMLElement>
      * @public
      */
     public collapseByID(id: number): void {
-        // eslint-disable-next-line
         const args: object = this.contructExpandCollapseArgs(id);
         this.ganttChartModule.isExpandCollapseFromChart = true;
         this.ganttChartModule.collapseGanttRow(args);
@@ -3337,19 +3329,17 @@ export class Gantt extends Component<HTMLElement>
     /**
      * Method to add record.
      *
-     * @param {Object | IGanttData} data - Defines record to add.
+     * @param {Object[] | IGanttData | Object} data - Defines record to add.
      * @param {RowPosition} rowPosition - Defines the position of row.
      * @param {number} rowIndex - Defines the row index.
      * @returns {void} .
      * @public
      */
-    // eslint-disable-next-line
-    public addRecord(data?: Object | IGanttData, rowPosition?: RowPosition, rowIndex?: number): void {
+    public addRecord(data?: Object[] | IGanttData | Object, rowPosition?: RowPosition, rowIndex?: number): void {
         if (this.editModule && this.editSettings.allowAdding) {
             if (this.viewType === 'ResourceView') {
                 this.editModule.addRowPosition = rowPosition;
                 this.editModule.addRowIndex = rowIndex;
-                // eslint-disable-next-line
                 const resources: Object[] = data[this.taskFields.resourceInfo];
                 let id: string;
                 let parentTask: IGanttData;
@@ -3396,7 +3386,6 @@ export class Gantt extends Component<HTMLElement>
      * @returns {void} .
      * @public
      */
-    // eslint-disable-next-line
     public updateRecordByID(data: Object): void {
         if (this.editModule && this.editSettings.allowEditing) {
             this.editModule.updateRecordByID(data);
@@ -3493,7 +3482,6 @@ export class Gantt extends Component<HTMLElement>
      * @returns {void} .
      * @public
      */
-    // eslint-disable-next-line
     public updateRecordByIndex(index: number, data: Object): void {
         if (this.editModule && this.editSettings.allowEditing) {
             const tasks: TaskFieldsModel = this.taskFields;
@@ -3581,7 +3569,6 @@ export class Gantt extends Component<HTMLElement>
      * @returns {void} .
      * @private
      */
-    // eslint-disable-next-line
     private contructExpandCollapseArgs(id: string | number, index?: number): object {
         let chartRow: Element;
         let record: IGanttData;
@@ -3748,11 +3735,9 @@ export class Gantt extends Component<HTMLElement>
      * @param {object} args - Defines the projectStartDate and projectEndDate values.
      * @public
      */
-    // eslint-disable-next-line
-    public updateDataSource(dataSource: Object[], args: object): void {       // eslint-disable-line
+    public updateDataSource(dataSource: Object[], args: object): void {
         if (!isNullOrUndefined(args)) {
-            // eslint-disable-next-line
-            for (let prop of Object.keys(args)) {
+            for (let prop of Object.keys(args)) { // eslint-disable-line
                 switch (prop) {
                 case 'projectStartDate':
                     this.setProperties({ projectStartDate: args[prop] }, true);
@@ -3962,7 +3947,6 @@ export class Gantt extends Component<HTMLElement>
     public convertToMilestone(id: string): void {
         const rowData: IGanttData = this.getRecordByID(id);
         if (!isNullOrUndefined(rowData)) {
-            // eslint-disable-next-line
             const data: Object = extend({}, {}, rowData.taskData, true);
             const taskfields: TaskFieldsModel = this.taskFields;
             if (!isNullOrUndefined(taskfields.duration)) {
@@ -4009,7 +3993,6 @@ export class Gantt extends Component<HTMLElement>
      * @param {object} data .
      * @returns {void} .
      */
-    // eslint-disable-next-line
     public changeTaskMode(data: Object): void {
         const tasks: TaskFieldsModel = this.taskFields;
         const ganttData: IGanttData = this.getRecordByID(data[tasks.id]);

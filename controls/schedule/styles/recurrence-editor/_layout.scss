@@ -162,6 +162,10 @@
 
     .e-month-expander-checkbox-wrapper.e-input-wrapper {
       margin-top: -3px;
+
+      .e-month-type .e-label {
+        display: none;
+      }
     }
 
     .e-input-wrapper-side {

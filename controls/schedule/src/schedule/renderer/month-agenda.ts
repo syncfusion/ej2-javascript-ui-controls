@@ -56,7 +56,9 @@ export class MonthAgenda extends Month {
         const availHeight: number = this.parent.element.offsetHeight - headerHeight - dateHeader.offsetHeight - contentArea.offsetHeight;
         const wrapperContainer: HTMLElement = this.element.querySelector('.' + cls.WRAPPER_CONTAINER_CLASS) as HTMLElement;
         const eventWrapper: HTMLElement = this.element.querySelector('.' + cls.APPOINTMENT_WRAP_CLASS) as HTMLElement;
-        wrapperContainer.style.height = eventWrapper.style.height = formatUnit(availHeight);
+        if (this.parent.height !== 'auto') {
+            wrapperContainer.style.height = eventWrapper.style.height = formatUnit(availHeight);
+        }
     }
 
     public onDataReady(args: NotifyEventArgs): void {

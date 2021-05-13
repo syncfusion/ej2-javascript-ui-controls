@@ -55,7 +55,7 @@ export class AggregateMenu {
         let isStringField: number = this.parent.engineModule.fieldList[fieldName].type !== 'number' ? 1 : 0;
         this.summaryTypes = [...this.getMenuItem(isStringField)];
         let eventArgs: AggregateMenuOpenEventArgs = {
-            cancel: false, fieldName: fieldName, aggregateTypes: this.summaryTypes
+            cancel: false, fieldName: fieldName, aggregateTypes: this.summaryTypes, displayMenuCount: 7
         };
         let control: PivotView | PivotFieldList =
             this.parent.getModuleName() === 'pivotfieldlist' && (this.parent as PivotFieldList).isPopupView ?
@@ -63,7 +63,7 @@ export class AggregateMenu {
         control.trigger(events.aggregateMenuOpen, eventArgs, (observedArgs: AggregateMenuOpenEventArgs) => {
             if (!observedArgs.cancel) {
                 this.summaryTypes = observedArgs.aggregateTypes;
-                this.createContextMenu(isStringField);
+                this.createContextMenu(isStringField, observedArgs.displayMenuCount);
                 this.currentMenu = args.target as Element;
                 let pos: OffsetPosition = this.currentMenu.getBoundingClientRect();
                 if (this.parent.enableRtl) {
@@ -75,7 +75,7 @@ export class AggregateMenu {
         });
     }
 
-    private createContextMenu(isStringField: number): void {
+    private createContextMenu(isStringField: number, displayMenuCount?: number): void {
         let menuItems: MenuItemModel[][] = [];
         menuItems[isStringField] = [];
         if (this.menuInfo[isStringField] && !this.menuInfo[isStringField].isDestroyed) {
@@ -97,8 +97,8 @@ export class AggregateMenu {
                 }
             }
         }
-        if (menuItems[isStringField].length >= 7) {
-            menuItems[isStringField].splice(7);
+        if (menuItems[isStringField].length > displayMenuCount) {
+            menuItems[isStringField].splice(displayMenuCount);
             menuItems[isStringField].push(
                 {
                     text: this.parent.localeObj.getConstant('MoreOption'),
@@ -202,7 +202,7 @@ export class AggregateMenu {
         let baseItem: string = buttonElement.getAttribute('data-baseitem');
         summaryType = (summaryType.toString() !== 'undefined' ? summaryType : 'Sum');
         let summaryDataSource: { [key: string]: Object }[] = [];
-        let summaryItems: AggregateTypes[] = this.parent.aggregateTypes;
+        let summaryItems: AggregateTypes[] = this.summaryTypes;
         let checkDuplicates: AggregateTypes[] = [];
         for (let i: number = 0; i < summaryItems.length; i++) {
             if (this.parent.getAllSummaryType().indexOf(summaryItems[i]) > -1 && checkDuplicates.indexOf(summaryItems[i]) < 0) {

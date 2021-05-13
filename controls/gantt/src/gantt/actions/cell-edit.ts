@@ -133,7 +133,6 @@ export class CellEdit {
      * @returns {void} .
      * @private
      */
-    // eslint-disable-next-line
     public initiateCellEdit(args: object, editedObj: object): void {
         const column: ColumnModel = getValue('column', args);
         const data: IGanttData = getValue('data', args);
@@ -141,7 +140,6 @@ export class CellEdit {
         editedArgs.action = 'CellEditing';
         editedArgs.data = this.parent.getTaskByUniqueID(data.uniqueID);
         const previousValue: Record<string, unknown> = getValue('previousData', args);
-        // eslint-disable-next-line
         const editedValue: object = this.parent.allowUnscheduledTasks ? data[column.field] : ((isNullOrUndefined(data[column.field])
             || data[column.field] === '') && (this.parent.taskFields.duration === column.field ||
                 this.parent.taskFields.startDate === column.field || this.parent.taskFields.endDate === column.field)) ? previousValue
@@ -206,7 +204,7 @@ export class CellEdit {
      * @returns {void} .
      */
     private notedEdited(args: ITaskbarEditedEventArgs): void {
-        this.parent.setRecordValue('taskData.' + this.parent.taskFields.notes, args.data[this.parent.taskFields.name], args.data);
+        this.parent.setRecordValue('taskData.' + this.parent.taskFields.notes, args.data[this.parent.taskFields.notes], args.data);
         this.parent.setRecordValue('notes', args.data[this.parent.taskFields.notes], args.data.ganttProperties, true);
         this.updateEditedRecord(args);
     }
@@ -423,8 +421,8 @@ export class CellEdit {
             args.data);
         if (!ganttRecord.ganttProperties.isAutoSchedule) {
             this.parent.setRecordValue('autoWidth',
-            this.parent.dataOperation.calculateWidth(ganttRecord, false), ganttRecord.ganttProperties, true);
-        }    
+                                       this.parent.dataOperation.calculateWidth(ganttRecord, false), ganttRecord.ganttProperties, true);
+        }
         if (!isNullOrUndefined(args.data.ganttProperties.segments) && args.data.ganttProperties.segments.length > 0) {
             this.parent.editModule.taskbarEditModule.updateSegmentProgress(args.data.ganttProperties);
         }
@@ -486,20 +484,15 @@ export class CellEdit {
      * @param {IGanttData} previousData .
      * @returns {void} .
      */
-    // eslint-disable-next-line
     private resourceEdited(args: ITaskbarEditedEventArgs, editedObj: Object, previousData: IGanttData): void {
         const resourceSettings: ResourceFieldsModel = this.parent.resourceFields;
         const editedResourceId: string[] = editedObj[this.parent.taskFields.resourceInfo];
         if (editedResourceId) {
-            // eslint-disable-next-line
             const tempResourceInfo: Object[] = this.parent.dataOperation.setResourceInfo(editedObj);
             const editedResouceLength: number = tempResourceInfo.length;
-            // eslint-disable-next-line
             const previousResource: Object[] = previousData.ganttProperties.resourceInfo;
             let index: number;
-            // eslint-disable-next-line
             const editedResources: Object[] = [];
-            // eslint-disable-next-line
             const resourceData: Object[] = this.parent.resources;
             let newIndex: number;
             for (let count: number = 0; count < editedResouceLength; count++) {
@@ -517,11 +510,9 @@ export class CellEdit {
                 if (!isNOU(index) && index !== -1) {
                     editedResources.push(previousResource[index]);
                 } else {
-                    // eslint-disable-next-line
                     const resource: Object[] = resourceData.filter((resourceInfo: Object) => {
                         return (editedResourceId[count] === resourceInfo[resourceSettings.id]);
                     });
-                    // eslint-disable-next-line
                     const ganttDataResource: Object = extend({}, resource[0]);
                     ganttDataResource[resourceSettings.unit] = 100;
                     editedResources.push(ganttDataResource);
@@ -544,7 +535,6 @@ export class CellEdit {
      * @param {object} cellEditArgs .
      * @returns {void} .
      */
-    // eslint-disable-next-line
     private dependencyEdited(editedArgs: ITaskbarEditedEventArgs, cellEditArgs: object): void {
         this.parent.predecessorModule.updateUnscheduledDependency(editedArgs.data);
         if (!this.parent.connectorLineEditModule.updatePredecessor(
@@ -574,7 +564,6 @@ export class CellEdit {
      * @param {object} editedObj .
      * @returns {void} .
      */
-    // eslint-disable-next-line
     private typeEdited(args: ITaskbarEditedEventArgs, editedObj: Object): void {
         const key: string = 'taskType';
         const ganttProb: ITaskData = args.data.ganttProperties;

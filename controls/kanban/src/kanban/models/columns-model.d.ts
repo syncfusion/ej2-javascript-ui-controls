@@ -6,11 +6,11 @@ import { Property, ChildProperty } from '@syncfusion/ej2-base';
 export interface ColumnsModel {
 
     /**
-     * Defines the column keyField
-     *
+     * Defines the column keyField. It supports both number and string type.
+     * String type supports the multiple column keys and number type does not support the multiple column keys. 
      * @default null
      */
-    keyField?: string;
+    keyField?: string | number;
 
     /**
      * Defines the column header title

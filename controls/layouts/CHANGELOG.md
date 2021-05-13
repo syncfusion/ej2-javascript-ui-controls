@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 19.1.58 (2021-04-27)
+
+### Splitter
+
+#### Bug Fixes
+
+- `#F163365` - The issue with "When the first pane is collapsed, the size of the second pane is not properly set" has been resolved.
+
 ## 19.1.55 (2021-04-06)
 
 ### Splitter

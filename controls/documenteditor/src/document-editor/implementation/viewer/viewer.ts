@@ -848,6 +848,8 @@ export class DocumentHelper {
         this.footnotes.clear();
         this.footnoteCollection = [];
         this.endnoteCollection = [];
+        this.abstractLists = [];
+        this.lists = [];
     }
     /**
      * @private

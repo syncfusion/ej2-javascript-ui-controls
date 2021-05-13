@@ -489,7 +489,7 @@ export class DataManipulation {
         }
         if ((this.parent.grid.allowFiltering && this.parent.grid.filterSettings.columns.length) ||
          (this.parent.grid.searchSettings.key.length > 0) || (!isNullOrUndefined(gridQuery) &&
-         (filterQuery.length || searchQuery.length))) {
+         (filterQuery.length || searchQuery.length) && this.parent.isLocalData)) {
             if (isNullOrUndefined(gridQuery)) {
                 gridQuery = new Query(); gridQuery = getValue('grid.renderModule.data', this.parent).filterQuery(gridQuery);
                 gridQuery = getValue('grid.renderModule.data', this.parent).searchQuery(gridQuery);

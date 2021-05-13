@@ -82,7 +82,7 @@ describe('Kanban base module', () => {
         it('Header table colgroup data-key testing', () => {
             const colElements: NodeListOf<Element> = kanbanObj.element.querySelectorAll('.e-header-table colgroup col');
             kanbanObj.columns.forEach((column: ColumnsModel, index: number) => {
-                expect(colElements.item(index).getAttribute('data-key')).toEqual(column.keyField);
+                expect(colElements.item(index).getAttribute('data-key')).toEqual(column.keyField as string);
             });
         });
 
@@ -98,7 +98,7 @@ describe('Kanban base module', () => {
         it('Header table content cell data-key testing and data-role testing', () => {
             const headerCells: NodeListOf<Element> = kanbanObj.element.querySelectorAll('.e-header-cells');
             kanbanObj.columns.forEach((column: ColumnsModel, index: number) => {
-                expect(headerCells.item(index).getAttribute('data-key')).toBe(column.keyField);
+                expect(headerCells.item(index).getAttribute('data-key')).toBe(column.keyField as string);
                 expect(headerCells.item(index).getAttribute('data-role')).toBe('kanban-column');
             });
         });
@@ -121,7 +121,7 @@ describe('Kanban base module', () => {
         it('Content table colgroup data-key testing', () => {
             const colElements: NodeListOf<Element> = kanbanObj.element.querySelectorAll('.e-content-table colgroup col');
             kanbanObj.columns.forEach((column: ColumnsModel, index: number) => {
-                expect(colElements.item(index).getAttribute('data-key')).toBe(column.keyField);
+                expect(colElements.item(index).getAttribute('data-key')).toBe(column.keyField as string);
             });
         });
 
@@ -167,7 +167,7 @@ describe('Kanban base module', () => {
         it('Header table colgroup data-key testing', () => {
             const colElements: NodeListOf<Element> = kanbanObj.element.querySelectorAll('.e-header-table colgroup col');
             kanbanObj.columns.forEach((column: ColumnsModel, index: number) => {
-                expect(colElements.item(index).getAttribute('data-key')).toBe(column.keyField);
+                expect(colElements.item(index).getAttribute('data-key')).toBe(column.keyField as string);
             });
         });
 
@@ -183,7 +183,7 @@ describe('Kanban base module', () => {
         it('Header table content cell data-key testing and data-role testing', () => {
             const headerCells: NodeListOf<Element> = kanbanObj.element.querySelectorAll('.e-header-cells');
             kanbanObj.columns.forEach((column: ColumnsModel, index: number) => {
-                expect(headerCells.item(index).getAttribute('data-key')).toBe(column.keyField);
+                expect(headerCells.item(index).getAttribute('data-key')).toBe(column.keyField as string);
                 expect(headerCells.item(index).getAttribute('data-role')).toBe('kanban-column');
             });
         });
@@ -206,7 +206,7 @@ describe('Kanban base module', () => {
         it('Content table colgroup data-key testing', () => {
             const colElements: NodeListOf<Element> = kanbanObj.element.querySelectorAll('.e-content-table colgroup col');
             kanbanObj.columns.forEach((column: ColumnsModel, index: number) => {
-                expect(colElements.item(index).getAttribute('data-key')).toBe(column.keyField);
+                expect(colElements.item(index).getAttribute('data-key')).toBe(column.keyField as string);
             });
         });
 
@@ -231,7 +231,7 @@ describe('Kanban base module', () => {
         it('Content table colgroup data-key testing', () => {
             const colElements: NodeListOf<Element> = kanbanObj.element.querySelectorAll('.e-content-table colgroup col');
             kanbanObj.columns.forEach((column: ColumnsModel, index: number) => {
-                expect(colElements.item(index).getAttribute('data-key')).toBe(column.keyField);
+                expect(colElements.item(index).getAttribute('data-key')).toBe(column.keyField as string);
             });
         });
 
@@ -247,7 +247,7 @@ describe('Kanban base module', () => {
         it('Content cell data-key testing and data-role testing', () => {
             const contentCells: NodeListOf<Element> = kanbanObj.element.querySelectorAll('.e-content-cells');
             kanbanObj.columns.forEach((column: ColumnsModel, index: number) => {
-                expect(contentCells.item(index).getAttribute('data-key')).toBe(column.keyField);
+                expect(contentCells.item(index).getAttribute('data-key')).toBe(column.keyField as string);
                 expect(contentCells.item(index).getAttribute('data-role')).toBe('kanban-column');
                 expect(contentCells.item(index).firstElementChild.classList.contains('e-card-wrapper')).toBe(true);
             });
@@ -409,7 +409,7 @@ describe('Kanban base module', () => {
         it('Header table colgroup data-key testing', () => {
             const colElements: NodeListOf<Element> = kanbanObj.element.querySelectorAll('.e-header-table colgroup col');
             kanbanObj.columns.forEach((column: ColumnsModel, index: number) => {
-                expect(colElements.item(index).getAttribute('data-key')).toBe(column.keyField);
+                expect(colElements.item(index).getAttribute('data-key')).toBe(column.keyField as string);
             });
         });
 
@@ -425,7 +425,7 @@ describe('Kanban base module', () => {
         it('Header table content cell data-key testing and data-role testing', () => {
             const headerCells: NodeListOf<Element> = kanbanObj.element.querySelectorAll('.e-header-cells');
             kanbanObj.columns.forEach((column: ColumnsModel, index: number) => {
-                expect(headerCells.item(index).getAttribute('data-key')).toBe(column.keyField);
+                expect(headerCells.item(index).getAttribute('data-key')).toBe(column.keyField as string);
                 expect(headerCells.item(index).getAttribute('data-role')).toBe('kanban-column');
             });
         });
@@ -452,7 +452,7 @@ describe('Kanban base module', () => {
         it('Content table colgroup data-key testing', () => {
             const colElements: NodeListOf<Element> = kanbanObj.element.querySelectorAll('.e-content-table colgroup col');
             kanbanObj.columns.forEach((column: ColumnsModel, index: number) => {
-                expect(colElements.item(index).getAttribute('data-key')).toBe(column.keyField);
+                expect(colElements.item(index).getAttribute('data-key')).toBe(column.keyField as string);
             });
         });
 
@@ -489,7 +489,7 @@ describe('Kanban base module', () => {
         it('Content table colgroup data-key testing', () => {
             const colElements: NodeListOf<Element> = kanbanObj.element.querySelectorAll('.e-content-table colgroup col');
             kanbanObj.columns.forEach((column: ColumnsModel, index: number) => {
-                expect(colElements.item(index).getAttribute('data-key')).toBe(column.keyField);
+                expect(colElements.item(index).getAttribute('data-key')).toBe(column.keyField as string);
             });
         });
 
@@ -515,7 +515,7 @@ describe('Kanban base module', () => {
         it('Content cell data-key testing and data-role testing', () => {
             const cells: NodeListOf<Element> = kanbanObj.element.querySelectorAll('.e-content-row:not(.e-swimlane-row) .e-content-cells');
             kanbanObj.columns.forEach((column: ColumnsModel, index: number) => {
-                expect(cells.item(index).getAttribute('data-key')).toBe(column.keyField);
+                expect(cells.item(index).getAttribute('data-key')).toBe(column.keyField as string);
                 expect(cells.item(index).getAttribute('data-role')).toBe('kanban-column');
                 expect(cells.item(index).firstElementChild.classList.contains('e-card-wrapper')).toBe(true);
             });
@@ -840,7 +840,7 @@ describe('Kanban base module', () => {
             const headerCells: NodeListOf<Element> = kanbanObj.element.querySelectorAll('.e-header-cells');
             for (let i: number = 0; i < headerCells.length; i++) {
                 const header: Element = headerCells[i];
-                const key: string = kanbanObj.columns[i].keyField;
+                const key: string = kanbanObj.columns[i].keyField as string;
                 expect(header.classList.contains('e-template')).toBe(true);
                 expect(header.getAttribute('data-role')).toBe('kanban-column');
                 expect(header.getAttribute('data-key')).toBe(key);

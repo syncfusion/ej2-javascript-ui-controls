@@ -2,6 +2,18 @@
 
 ## [Unreleased]
 
+## 19.1.63 (2021-05-13)
+
+### Tree Grid
+
+#### New Features
+
+- `#F160234`, `#I306539` - Provided support for adding parent and child records together using `addRecord` method.
+
+#### Bug Fixes
+
+- `#I317091` - Cell Editing works fine when Virtualization is enabled
+
 ## 19.1.59 (2021-05-04)
 
 ### Tree Grid
@@ -9,6 +21,7 @@
 #### Bug Fixes
 
 - `#I315811` - Collapse All with Virtualization enabled works fine when using less number of records
+- `#I321468` - Column template with stacked header works fine
 
 ## 19.1.58 (2021-04-27)
 

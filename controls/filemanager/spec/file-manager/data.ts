@@ -1148,3 +1148,14 @@ export let folderRead: any = {
     "error": null,
     "details": null
 }
+export let dragOnHover: any = {
+    "files": [
+        { "name": "1.png", "size": 49792, "dateModified": "1/3/2018 4:07:28 PM", "dateCreated": "10/17/2018 12:57:59 PM", "hasChild": false, "isFile": true, "type": ".png", "filterPath": "\\" },
+        { "name": "Employees", "size": 0, "dateModified": "10/15/2018 5:39:03 PM", "dateCreated": "10/15/2018 5:39:03 PM", "hasChild": false, "isFile": false, "type": "", "filterPath": "\\" },
+        { "name": "Food", "size": 0, "dateModified": "10/15/2018 5:39:03 PM", "dateCreated": "10/15/2018 5:39:03 PM", "hasChild": true, "isFile": false, "type": "", "filterPath": "\\" },
+        { "name": "Nature", "size": 0, "dateModified": "10/15/2018 5:39:03 PM", "dateCreated": "10/15/2018 5:39:03 PM", "hasChild": false, "isFile": false, "type": "", "filterPath": "\\" }
+    ],
+    "error": null,
+    "details": null,
+    "cwd": { "name": "FileContent", "size": 0, "dateModified": "11/15/2018 11:42:21 AM", "dateCreated": "11/8/2018 4:07:00 PM", "hasChild": true, "isFile": false, "type": "", "filterPath": "" },
+};

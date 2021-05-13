@@ -794,6 +794,9 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
         if (this.documentEditorSettings.collaborativeEditingSettings) {
             this.documentEditor.documentEditorSettings.collaborativeEditingSettings = this.documentEditorSettings.collaborativeEditingSettings;
         }
+        if(this.documentEditorSettings.printDevicePixelRatio) {
+            this.documentEditor.documentEditorSettings.printDevicePixelRatio = this.documentEditorSettings.printDevicePixelRatio;
+        }
     }
     /**
      * @private

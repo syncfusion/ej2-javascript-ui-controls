@@ -113,7 +113,6 @@ export class FocusModule {
                     const ganttProp: ITaskData = ganttObj.currentViewData[ganttObj.selectedRowIndex].ganttProperties;
                     let tempValue: string | Date | number;
                     if (col.field === ganttObj.columnMapping.duration) {
-                        // eslint-disable-next-line
                         tempValue = !isNullOrUndefined(col.edit) && !isNullOrUndefined(col.edit.read) ? (col.edit.read as Function)() :
                             // eslint-disable-next-line
                             !isNullOrUndefined(col.valueAccessor) ? (col.valueAccessor as Function)(ganttObj.columnMapping.duration, ganttObj.editedRecords, col) :

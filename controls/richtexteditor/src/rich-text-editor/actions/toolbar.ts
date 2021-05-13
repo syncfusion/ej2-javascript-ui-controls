@@ -7,6 +7,7 @@ import * as classes from '../base/classes';
 import { RenderType, ToolbarType, ToolbarItems } from '../base/enum';
 import { setToolbarStatus, updateUndoRedoStatus, getTBarItemsIndex, getCollection, toObjectLowerCase, isIDevice } from '../base/util';
 import * as model from '../models/items';
+import * as tools from '../models/toolbar-settings';
 import { IRichTextEditor, IRenderer, NotifyArgs, IToolbarRenderOptions, IColorPickerRenderArgs  } from '../base/interface';
 import { IToolbarItemModel, IToolsItems, IUpdateItemsModel, IDropDownRenderArgs, ISetToolbarStatusArgs } from '../base/interface';
 import { ServiceLocator } from '../services/service-locator';
@@ -47,6 +48,7 @@ export class Toolbar {
         this.isTransformChild = false;
         this.renderFactory = this.locator.getService<RendererFactory>('rendererFactory');
         model.updateDropDownLocale(this.parent);
+        tools.updateDropDownFontFormatLocale(this.parent);
         this.renderFactory.addRenderer(RenderType.Toolbar, new ToolbarRenderer(this.parent));
         this.toolbarRenderer = this.renderFactory.getRenderer(RenderType.Toolbar);
         this.baseToolbar = new BaseToolbar(this.parent, this.locator);
@@ -350,7 +352,7 @@ export class Toolbar {
             tbElements: selectAll('.' + classes.CLS_TB_ITEM, this.tbElement),
             tbItems: this.baseToolbar.toolbarObj.items
         };
-        setToolbarStatus(options, (this.parent.inlineMode.enable ? true : false));
+        setToolbarStatus(options, (this.parent.inlineMode.enable ? true : false), this.parent);
     }
 
     private fullScreen(e?: MouseEvent): void {

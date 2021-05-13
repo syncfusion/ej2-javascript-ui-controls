@@ -506,7 +506,6 @@ export class RecurrenceEditor extends Component<HTMLElement> implements INotifyP
                 text: TEXTFIELD,
                 value: VALUEFIELD
             },
-            floatLabelType: 'Always',
             enableRtl: this.enableRtl,
             index: 7,
             // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -631,7 +630,8 @@ export class RecurrenceEditor extends Component<HTMLElement> implements INotifyP
         this.onMonthDay.appendTo(<HTMLElement>this.element.querySelector('.' + MONTHEXPANDERELEMENT));
         this.monthButtons.push(this.onMonthDay);
         this.onWeekDay = new RadioButton({
-            label: '',
+            label: this.localeObj.getConstant('monthExpander'),
+            cssClass: 'e-month-type',
             name: 'monthType',
             enableRtl: this.enableRtl,
             value: 'daypos',
@@ -650,7 +650,6 @@ export class RecurrenceEditor extends Component<HTMLElement> implements INotifyP
             value: 10,
             format: '#',
             enableRtl: this.enableRtl,
-            floatLabelType: 'Always',
             min: 1,
             max: 999,
             change: () => {

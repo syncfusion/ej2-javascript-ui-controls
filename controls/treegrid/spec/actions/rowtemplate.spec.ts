@@ -128,19 +128,24 @@ describe('Render rowtemplate', () => {
       );
     });
     it('Render the row template', () => {
+       gridObj.dataBound = (args?: Object): void => {
         expect(gridObj.getRows()[0].querySelectorAll('td')[2].classList.contains("details")).toBe(true);
+       }
      });
      it('onpropertychange set null value', function () {
+        gridObj.dataBound = (args?: Object): void => {
+            expect((gridObj.getRows()[0].firstChild as HTMLElement).innerText == "EMP001").toBe(true);
+        }
         gridObj.rowTemplate = null;
-        expect((gridObj.getRows()[0].firstChild as HTMLElement).innerText == "EMP001").toBe(true);
+        gridObj.dataBind();
     });
     it('onpropertychange alt id', function (done: Function) {
-        dataBound = (args?: Object): void => {
+        gridObj.dataBound = (args?: Object): void => {
             expect((gridObj.getRows()[0].getElementsByClassName('photo')[0] as HTMLElement).innerText == "RobertKing").toBe(true);
             done();
         }
-        gridObj.dataBound = dataBound;
         gridObj.rowTemplate = altrowtemplate;
+        gridObj.dataBind();
     });
         afterAll(() => {
         destroy(gridObj);
@@ -176,11 +181,11 @@ describe('Sorting in row template', () => {
     });
     it('Sorting the column', (done: Function) => {
         actionComplete = (args?: Object): void => {
-           expect((gridObj.getRows()[0].getElementsByClassName('photo')[0].querySelector("div>.e-treecell") as HTMLElement).innerText == "EMP675").toBe(true);
-           expect((gridObj.getRows()[1].getElementsByClassName('photo')[0].querySelector("div>.e-treecell") as HTMLElement).innerText == "EMP712").toBe(true);
-           expect((gridObj.getRows()[2].getElementsByClassName('photo')[0].querySelector("div>.e-treecell") as HTMLElement).innerText == "EMP710").toBe(true);
-           expect((gridObj.getRows()[3].getElementsByClassName('photo')[0].querySelector("div>.e-treecell") as HTMLElement).innerText == "EMP676").toBe(true);
-           done();
+            expect((gridObj.getRows()[0].getElementsByClassName('photo')[0].querySelector("div>.e-treecell") as HTMLElement).innerText == "EMP675").toBe(true);
+            expect((gridObj.getRows()[1].getElementsByClassName('photo')[0].querySelector("div>.e-treecell") as HTMLElement).innerText == "EMP712").toBe(true);
+            expect((gridObj.getRows()[2].getElementsByClassName('photo')[0].querySelector("div>.e-treecell") as HTMLElement).innerText == "EMP710").toBe(true);
+            expect((gridObj.getRows()[3].getElementsByClassName('photo')[0].querySelector("div>.e-treecell") as HTMLElement).innerText == "EMP676").toBe(true);
+            done();
         }
       gridObj.sortByColumn("EmployeeID", "Descending", true);
       gridObj.grid.actionComplete = actionComplete;

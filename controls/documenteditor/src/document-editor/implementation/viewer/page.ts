@@ -2758,7 +2758,7 @@ export class TableCellWidget extends BlockWidget {
             if (!isNullOrUndefined(tableCell.previousWidget)) {
                 // if the border is shared then choose the border based on Conflict Resolution algorithm.
                 prevCell = tableCell.previousWidget as TableCellWidget;
-            } else if ((tableCell.cellFormat.columnSpan > 1 || tableCell.columnIndex > 1) && tableCell.ownerRow.rowIndex > 0) {
+            } else if ((tableCell.cellFormat.columnSpan > 1 || tableCell.columnIndex >= 1) && tableCell.ownerRow.rowIndex > 0) {
                 let previousRow: TableRowWidget = tableCell.ownerRow.previousWidget as TableRowWidget;
                 while (!isNullOrUndefined(previousRow) && previousRow.childWidgets.length > 0) {
                     for (let i: number = 0; i < previousRow.childWidgets.length; i++) {
@@ -2979,7 +2979,7 @@ export class TableCellWidget extends BlockWidget {
 
             return leftBorder;
             // tslint:disable-next-line:max-line-length
-        } else if (!isNullOrUndefined(leftBorder) && (leftBorder.ownerBase instanceof WBorders) && TableCellWidget.getCellOf(leftBorder.ownerBase as WBorders).cellIndex === 0) {
+        } else if (!isNullOrUndefined(leftBorder) && (leftBorder.ownerBase instanceof WBorders) && (TableCellWidget.getCellOf(leftBorder.ownerBase as WBorders).columnIndex === 0 || (TableCellWidget.getCellOf(leftBorder.ownerBase as WBorders).cellIndex === 0 && TableCellWidget.getCellOf(leftBorder.ownerBase as WBorders).ownerRow.rowFormat.gridBefore > 0))) {
             if (TableCellWidget.getCellOf(leftBorder.ownerBase as WBorders).columnIndex !== 0 && TableCellWidget.getCellOf(leftBorder.ownerBase as WBorders).ownerRow.rowFormat.gridBefore < 1
                 && !isNullOrUndefined(rowBorders)
                 && !isNullOrUndefined(rowBorders.vertical) && rowBorders.vertical.lineStyle !== 'None') {

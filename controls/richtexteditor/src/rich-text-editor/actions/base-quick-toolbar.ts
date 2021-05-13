@@ -336,7 +336,7 @@ export class BaseQuickToolbar {
             tbElements: selectAll('.' + classes.CLS_TB_ITEM, this.element),
             tbItems: this.quickTBarObj.toolbarObj.items
         };
-        setToolbarStatus(options, true);
+        setToolbarStatus(options, true, this.parent);
         if (!select('.e-rte-srctextarea', this.parent.element)) {
             updateUndoRedoStatus(this.parent.getBaseToolbarObject(), this.parent.formatter.editorManager.undoRedoManager.getUndoStatus());
         }

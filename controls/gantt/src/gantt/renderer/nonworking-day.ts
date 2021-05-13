@@ -24,13 +24,10 @@ export class NonWorkingDay {
     private createNonworkingContainer(): void {
         if (!this.parent.ganttChartModule.chartBodyContent.contains(this.nonworkingContainer)) {
             this.nonworkingContainer = createElement('div', {
-                className: cls.nonworkingContainer
+                className: cls.nonworkingContainer, styles: 'top:' +
+                this.parent.ganttChartModule.chartTimelineContainer.offsetHeight + 'px;'
             });
-            if (this.parent.virtualScrollModule && this.parent.enableVirtualization) {
-                this.parent.ganttChartModule.virtualRender.appendChildElements(this.nonworkingContainer);
-            } else {
-                this.parent.ganttChartModule.chartBodyContent.appendChild(this.nonworkingContainer);
-            }
+            this.parent.ganttChartModule.chartBodyContainer.appendChild(this.nonworkingContainer);
         }
     }
     /**

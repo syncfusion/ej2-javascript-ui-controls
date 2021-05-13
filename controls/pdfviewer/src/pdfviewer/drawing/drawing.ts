@@ -2272,6 +2272,9 @@ export class Drawing {
                     actualObject.wrapper.children[2].style.opacity = node.opacity;
                 }
             } else {
+                if (actualObject.shapeAnnotationType === 'StickyNotes') {
+                    (this.pdfViewer.nameTable as any)[actualObject.annotName].wrapper.children[0].style.opacity = node.opacity;
+                }
                 actualObject.opacity = node.opacity;
             }
             actualObject.wrapper.children[0].style.opacity = node.opacity;

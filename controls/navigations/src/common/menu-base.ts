@@ -256,6 +256,7 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
     private tempItem: objColl = [];
     private showSubMenuOn: MenuOpenType = 'Auto';
     private defaultOption: boolean;
+    private timer: number;
     /**
      * Triggers while rendering each menu item.
      *
@@ -326,6 +327,14 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
      */
     @Property('')
     public cssClass: string;
+
+    /**
+     * If hoverDelay is set by particular number, the menu will open after that period.
+     *
+     * @default 0
+     */
+     @Property(0)
+     public hoverDelay: number;
 
     /**
      * Specifies whether to show the sub menu or not on click.
@@ -996,10 +1005,22 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
                     if (this.cssClass) { addClass([this.popupWrapper], this.cssClass.split(' ')); }
                     this.popupObj.hide();
                 }
-                this.triggerBeforeOpen(li, this.uList, item, e, 0, 0, 'menu');
+                if (!this.hamburgerMode && !this.showItemOnClick && this.hoverDelay) {
+                    window.clearInterval(this.timer);
+                    this.timer = window.setTimeout(
+                        () => { this.triggerBeforeOpen(li, this.uList, item, e, 0, 0, 'menu'); }, this.hoverDelay );
+                } else {
+                    this.triggerBeforeOpen(li, this.uList, item, e, 0, 0, 'menu');
+                }
             } else {
                 this.uList.style.zIndex = this.element.style.zIndex; wrapper.appendChild(this.uList);
-                this.triggerBeforeOpen(li, this.uList, item, e, top, left, 'none');
+                if (!this.showItemOnClick && this.hoverDelay) {
+                    window.clearInterval(this.timer);
+                    this.timer = window.setTimeout(
+                        () => { this.triggerBeforeOpen(li, this.uList, item, e, top, left, 'none'); }, this.hoverDelay );
+                } else {
+                    this.triggerBeforeOpen(li, this.uList, item, e, top, left, 'none');
+                }
             }
         } else {
             this.uList = this.element;

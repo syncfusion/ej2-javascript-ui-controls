@@ -111,13 +111,13 @@ export class ResourceBase {
         this.expandedResources = resources;
     }
 
-    public getContentRows(resData: TdData[]): Element[] {
+    public getContentRows(resData: TdData[], isVirtualScroll?: boolean): Element[] {
         const resRows: Element[] = [];
         let left: string;
         let rIndex: number;
         const resColl: ResourcesModel[] = this.resourceCollection;
         const tr: Element = createElement('tr');
-        const td: Element = createElement('td', { attrs: { tabindex: '0' } });
+        const td: Element = createElement('td', { attrs: { tabindex: isVirtualScroll? '-1' : '0' } });
         for (let i: number = 0; i < resData.length; i++) {
             const ntd: Element = td.cloneNode() as Element;
             rIndex = util.findIndexInData(<Record<string, any>[]>resColl, 'name', resData[i].resource.name);

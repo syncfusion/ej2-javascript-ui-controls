@@ -46,42 +46,32 @@ export class ChartScroll {
      * @param {object} args .
      * @returns {void} .
      */
-    // eslint-disable-next-line
     private gridScrollHandler(args: object ): void {
         this.element.scrollTop = getValue('top', args);
         this.isFromTreeGrid = true;
     }
     /**
-     * Method to update vertical grid line, holiday, event markers and weekend container's top position on scroll action
+     * Method to update vertical grid line, holiday, event markers and weekend container's left position on scroll action
      *
      * @returns {void} .
      */
-    public updateTopPosition(): void {
-        const content: HTMLElement = this.parent.treeGrid.element.querySelector('.e-content');
-        const contentScrollTop: number = content.scrollTop;
-        let scrollTop: number;
-        if (this.parent.virtualScrollModule && this.parent.enableVirtualization) {
-            const top: number = this.parent.virtualScrollModule.getTopPosition();
-            scrollTop = contentScrollTop - top;
-        } else {
-            scrollTop = contentScrollTop;
-        }
+    private updateLeftPosition(): void {
         if (!isNullOrUndefined(this.parent.dayMarkersModule)) {
             const holidayContainer: HTMLElement = getValue('nonworkingDayRender.holidayContainer', this.parent.dayMarkersModule);
             const weekendContainer: HTMLElement = getValue('nonworkingDayRender.weekendContainer', this.parent.dayMarkersModule);
             const eventMarkersContainer: HTMLElement = getValue('eventMarkerRender.eventMarkersContainer', this.parent.dayMarkersModule);
             if (holidayContainer) {
-                holidayContainer.style.top = formatUnit(scrollTop);
+                holidayContainer.style.left = -this.element.scrollLeft + 'px';
             }
             if (weekendContainer) {
-                weekendContainer.style.top = formatUnit(scrollTop);
+                weekendContainer.style.left = -this.element.scrollLeft + 'px';
             }
             if (eventMarkersContainer) {
-                eventMarkersContainer.style.top = formatUnit(scrollTop);
+                eventMarkersContainer.style.left = -this.element.scrollLeft + 'px';
             }
         }
         if (this.parent.chartVerticalLineContainer) {
-            this.parent.chartVerticalLineContainer.style.top = formatUnit(scrollTop);
+            this.parent.chartVerticalLineContainer.style.left = -this.element.scrollLeft + 'px';
         }
     }
     /**
@@ -99,7 +89,6 @@ export class ChartScroll {
             scrollArgs.scrollTop = this.element.scrollTop;
             scrollArgs.scrollDirection = 'Vertical';
             scrollArgs.action = 'VerticalScroll';
-            this.updateTopPosition();
         }
         if (this.element.scrollLeft !== this.previousScroll.left) {
             this.parent.ganttChartModule.chartTimelineContainer.scrollLeft = this.element.scrollLeft;
@@ -108,6 +97,7 @@ export class ChartScroll {
             scrollArgs.scrollLeft = this.element.scrollLeft;
             scrollArgs.scrollDirection = 'Horizontal';
             scrollArgs.action = 'HorizontalScroll';
+            this.updateLeftPosition();
         }
         scrollArgs.requestType = 'scroll';
         this.parent.trigger('actionComplete', scrollArgs);

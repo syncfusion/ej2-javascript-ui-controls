@@ -140,50 +140,65 @@ export class StickyNotesAnnotation {
                 for (let i: number = 0; i < stickyAnnotations.length; i++) {
                     // eslint-disable-next-line
                     let annotation: any = stickyAnnotations[i];
-                    annotation.annotationAddMode = this.pdfViewer.annotationModule.findAnnotationMode(annotation, pageNumber, annotation.AnnotType);
-                    let annotationObject: IPopupAnnotation = null;
+                    let isAdded: boolean= false;
                     // eslint-disable-next-line
-                    let position: any = annotation.Bounds;
-                    const author: string = annotation.Author;
-                    // eslint-disable-next-line max-len
-                    annotation.AnnotationSettings = annotation.AnnotationSettings ? annotation.AnnotationSettings : this.pdfViewer.annotationModule.updateAnnotationSettings(annotation);
-                    annotation.allowedInteractions = annotation.AllowedInteraction ? annotation.AllowedInteraction : this.pdfViewer.annotationModule.updateAnnotationAllowedInteractions(annotation);
-                    let isPrint: boolean = true;
-                    if (annotation.annotationAddMode === 'Imported Annotation') {
-                        isPrint = annotation.IsPrint;
-                    } else {
-                        isPrint = annotation.AnnotationSettings.isPrint;
+                    let pageAnnotations: any = this.getAnnotations(pageNumber, null, 'sticky');
+                    if (pageAnnotations !== null) {
+                        for (let k: number = 0; k < pageAnnotations.length; k++) {
+                            let annotationName: string = annotation.annotName ? annotation.annotName : annotation.AnnotName;
+                            let pageAnnotationName: string = pageAnnotations[k].annotName ? pageAnnotations[k].annotName : pageAnnotations[k].AnnotName;
+                            if (pageAnnotationName && annotationName && pageAnnotationName === annotationName) {
+                                isAdded = true;
+                                break;
+                            }
+                        }
                     }
-                    annotationObject = {
+                    if (!isAdded) {
+                        annotation.annotationAddMode = this.pdfViewer.annotationModule.findAnnotationMode(annotation, pageNumber, annotation.AnnotType);
+                        let annotationObject: IPopupAnnotation = null;
+                        // eslint-disable-next-line
+                        let position: any = annotation.Bounds;
+                        const author: string = annotation.Author;
                         // eslint-disable-next-line max-len
-                        shapeAnnotationType: 'sticky', author: author, modifiedDate: annotation.ModifiedDate, subject: annotation.Subject, note: annotation.Note, opacity: annotation.Opacity, state: annotation.State, stateModel: annotation.StateModel,
-                        pathData: '', comments: this.pdfViewer.annotationModule.getAnnotationComments(annotation.Comments, annotation, author), review: { state: annotation.State, stateModel: annotation.StateModel, modifiedDate: annotation.ModifiedDate, author: author },
+                        annotation.AnnotationSettings = annotation.AnnotationSettings ? annotation.AnnotationSettings : this.pdfViewer.annotationModule.updateAnnotationSettings(annotation);
+                        annotation.allowedInteractions = annotation.AllowedInteraction ? annotation.AllowedInteraction : this.pdfViewer.annotationModule.updateAnnotationAllowedInteractions(annotation);
+                        let isPrint: boolean = true;
+                        if (annotation.annotationAddMode === 'Imported Annotation') {
+                            isPrint = annotation.IsPrint;
+                        } else {
+                            isPrint = annotation.AnnotationSettings.isPrint;
+                        }
+                        annotationObject = {
+                            // eslint-disable-next-line max-len
+                            shapeAnnotationType: 'sticky', author: author, modifiedDate: annotation.ModifiedDate, subject: annotation.Subject, note: annotation.Note, opacity: annotation.Opacity, state: annotation.State, stateModel: annotation.StateModel,
+                            pathData: '', comments: this.pdfViewer.annotationModule.getAnnotationComments(annotation.Comments, annotation, author), review: { state: annotation.State, stateModel: annotation.StateModel, modifiedDate: annotation.ModifiedDate, author: author },
+                            // eslint-disable-next-line max-len
+                            bounds: { left: annotation.Bounds.X, top: annotation.Bounds.Y, width: annotation.Bounds.Width, height: annotation.Bounds.Height, right: annotation.Bounds.Right, bottom: annotation.Bounds.Bottom },
+                            annotName: annotation.AnnotName, color: annotation.color,
+                            annotationSelectorSettings: this.getSettings(annotation),
+                            customData: this.pdfViewer.annotation.getCustomData(annotation),
+                            annotationSettings: annotation.AnnotationSettings, allowedInteractions: annotation.allowedInteractions,
+                            isPrint: isPrint, isCommentLock: annotation.IsCommentLock
+                        };
+                        let annot: PdfAnnotationBaseModel;
                         // eslint-disable-next-line max-len
-                        bounds: { left: annotation.Bounds.X, top: annotation.Bounds.Y, width: annotation.Bounds.Width, height: annotation.Bounds.Height, right: annotation.Bounds.Right, bottom: annotation.Bounds.Bottom },
-                        annotName: annotation.AnnotName, color: annotation.color,
-                        annotationSelectorSettings: this.getSettings(annotation),
-                        customData: this.pdfViewer.annotation.getCustomData(annotation),
-                        annotationSettings: annotation.AnnotationSettings, allowedInteractions: annotation.allowedInteractions,
-                        isPrint: isPrint, isCommentLock: annotation.IsCommentLock
-                    };
-                    let annot: PdfAnnotationBaseModel;
-                    // eslint-disable-next-line max-len
-                    annotation.AnnotationSelectorSettings = annotation.AnnotationSelectorSettings ? annotation.AnnotationSelectorSettings : this.pdfViewer.annotationSelectorSettings;
-                    annot = {
-                        // eslint-disable-next-line max-len
-                        author: author, modifiedDate: annotationObject.modifiedDate, annotName: annotationObject.annotName, pageIndex: pageNumber, bounds: { x: position.Left, y: position.Top, width: position.Width, height: position.Height }, strokeColor: 'transparent', stampStrokeColor: '', data: this.setImageSource(), shapeAnnotationType: 'StickyNotes',
-                        subject: annotationObject.subject, notes: annotationObject.note, opacity: annotationObject.opacity, id: annotationObject.annotName, fillColor: annotationObject.color,
-                        annotationSelectorSettings: annotation.AnnotationSelectorSettings,
-                        annotationSettings: annotationObject.annotationSettings,
-                        // eslint-disable-next-line max-len
-                        annotationAddMode: annotation.annotationAddMode, isPrint: isPrint, isCommentLock: annotationObject.isCommentLock
-                    };
-                    if (canvas) {
-                        this.drawStickyNotes(position.Left, position.Top, position.Width, position.Height, pageNumber, annot, canvas);
-                    } else {
-                        this.pdfViewer.add(annot as PdfAnnotationBase);
-                        this.drawStickyNotes(position.Left, position.Top, position.Width, position.Height, pageNumber, annot);
-                        this.pdfViewer.annotationModule.storeAnnotations(pageNumber, annotationObject, '_annotations_sticky');
+                        annotation.AnnotationSelectorSettings = annotation.AnnotationSelectorSettings ? annotation.AnnotationSelectorSettings : this.pdfViewer.annotationSelectorSettings;
+                        annot = {
+                            // eslint-disable-next-line max-len
+                            author: author, modifiedDate: annotationObject.modifiedDate, annotName: annotationObject.annotName, pageIndex: pageNumber, bounds: { x: position.Left, y: position.Top, width: position.Width, height: position.Height }, strokeColor: 'transparent', stampStrokeColor: '', data: this.setImageSource(), shapeAnnotationType: 'StickyNotes',
+                            subject: annotationObject.subject, notes: annotationObject.note, opacity: annotationObject.opacity, id: annotationObject.annotName, fillColor: annotationObject.color,
+                            annotationSelectorSettings: annotation.AnnotationSelectorSettings,
+                            annotationSettings: annotationObject.annotationSettings,
+                            // eslint-disable-next-line max-len
+                            annotationAddMode: annotation.annotationAddMode, isPrint: isPrint, isCommentLock: annotationObject.isCommentLock
+                        };
+                        if (canvas) {
+                            this.drawStickyNotes(position.Left, position.Top, position.Width, position.Height, pageNumber, annot, canvas);
+                        } else {
+                            this.pdfViewer.add(annot as PdfAnnotationBase);
+                            this.drawStickyNotes(position.Left, position.Top, position.Width, position.Height, pageNumber, annot);
+                            this.pdfViewer.annotationModule.storeAnnotations(pageNumber, annotationObject, '_annotations_sticky');
+                        }
                     }
                 }
             }

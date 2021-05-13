@@ -735,4 +735,15 @@ describe('Menu', () => {
         // check the final memory usage against the first usage, there should be little change if everything was properly deallocated
         expect(memory).toBeLessThan(profile.samples[0] + 0.25);
     });
+
+    describe('CR issues', () => {
+        afterEach(() => {
+            menu.destroy();
+        });
+        it('EJ2-46737 - Delay support on hovering the menu', () => {
+            document.body.appendChild(ul);
+            menu = new Menu({ items: items, hoverDelay: 300}, '#menu');
+            expect(menu.hoverDelay).toEqual(300);
+        });
+    });
 });

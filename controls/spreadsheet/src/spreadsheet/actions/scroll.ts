@@ -279,11 +279,11 @@ export class Scroll {
      */
     public setPadding(): void {
         this.parent.sheetModule.contentPanel.style.overflowY = 'scroll';
-        const colHeader: HTMLElement = this.parent.getColumnHeaderContent();
         const scrollWidth: number = getScrollBarWidth();
-        const cssProps: { margin: string, border: string } = this.parent.enableRtl ? { margin: 'marginLeft', border: 'borderLeftWidth' }
-            : { margin: 'marginRight', border: 'borderRightWidth' };
         if (scrollWidth > 0) {
+            const colHeader: HTMLElement = this.parent.getColumnHeaderContent();
+            const cssProps: { margin: string, border: string } = this.parent.enableRtl ? { margin: 'marginLeft', border: 'borderLeftWidth' }
+                : { margin: 'marginRight', border: 'borderRightWidth' };
             colHeader.parentElement.style[cssProps.margin] = scrollWidth + 'px';
             colHeader.style[cssProps.border] = '1px';
         }

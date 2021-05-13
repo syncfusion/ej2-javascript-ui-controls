@@ -275,7 +275,6 @@ export class Selection {
      *
      * @returns {Object[]} .
      */
-    // eslint-disable-next-line
     public getSelectedRecords(): Object[] {
         if (isBlazor()) {
             return this.parent.getRecordFromFlatdata(this.parent.treeGrid.getSelectedRecords());

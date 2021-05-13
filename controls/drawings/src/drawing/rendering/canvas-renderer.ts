@@ -384,7 +384,9 @@ export class CanvasRenderer {
             if (image.complete) {
                 ctx.drawImage(image, x, y, width, height);
             } else {
+                let transform: DOMMatrix = ctx.getTransform();
                 image.onload = () => {
+                    ctx.setTransform(transform.a, transform.b, transform.c, transform.d, transform.e, transform.f);
                     ctx.drawImage(image, x, y, width, height);
                 };
             }

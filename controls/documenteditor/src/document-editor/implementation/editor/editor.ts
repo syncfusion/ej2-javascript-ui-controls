@@ -1761,15 +1761,12 @@ export class Editor {
             }
             isRemoved = this.removeSelectedContents(selection);
             this.skipReplace = false;
-            if (!isNullOrUndefined(endPosition) && this.owner.search.isRepalceTracking) {
-                this.owner.search.isRepalceTracking = false;
+            if (!isNullOrUndefined(endPosition)) {
+                if (this.owner.search.isRepalceTracking) {
+                    this.owner.search.isRepalceTracking = false;
+                }
                 this.selection.start.setPositionInternal(this.selection.start);
                 this.selection.end.setPositionInternal(endPosition);
-            } else {
-                if (!isNullOrUndefined(endPosition)) {
-                    this.selection.start.setPositionInternal(endPosition);
-                    this.selection.end.setPositionInternal(endPosition);
-                }
             }
             selection.skipFormatRetrieval = false;
             selection.isSkipLayouting = false;
@@ -10394,6 +10391,69 @@ export class Editor {
             this.documentHelper.layout.layoutBodyWidgetCollection(block.index, containerWidget, block, false, isSkipShifting);
         }
     }
+    private removePrevParaMarkRevision(currentBlock: BlockWidget, moveNext?: boolean) {
+        moveNext = isNullOrUndefined(moveNext) ? false : moveNext;
+        if (this.owner.enableTrackChanges) {
+            let currentPara: ParagraphWidget = currentBlock as ParagraphWidget;
+            let rangeIndex: number = -1;
+            let revision: Revision;
+            let nonEmptyEndPara: ParagraphWidget = currentPara;
+            let i: number = 0;
+
+            if (!currentPara.isEmpty()) {
+                if (!moveNext && !isNullOrUndefined(nonEmptyEndPara.previousRenderedWidget)) {
+                    nonEmptyEndPara = nonEmptyEndPara.previousRenderedWidget as ParagraphWidget;
+                    i++;
+                }
+                if (moveNext && !isNullOrUndefined(nonEmptyEndPara.nextRenderedWidget)) {
+                    nonEmptyEndPara = nonEmptyEndPara.nextRenderedWidget as ParagraphWidget;
+                    i++;
+                }
+            }
+            if (!moveNext) {
+                while (nonEmptyEndPara.isEmpty() && !isNullOrUndefined(nonEmptyEndPara.previousRenderedWidget)) {
+                    nonEmptyEndPara = nonEmptyEndPara.previousRenderedWidget as ParagraphWidget;
+                    i++;
+                }
+            }
+            else {
+                while (nonEmptyEndPara.isEmpty() && !isNullOrUndefined(nonEmptyEndPara.nextRenderedWidget)) {
+                    nonEmptyEndPara = nonEmptyEndPara.nextRenderedWidget as ParagraphWidget;
+                    i++;
+                }
+            }
+            let lineW: LineWidget = nonEmptyEndPara.childWidgets[0] as LineWidget;
+            if (!isNullOrUndefined(lineW) && lineW.children.length > 0) {
+                let firstTextBox = lineW.children[0] as TextElementBox;
+                if (!isNullOrUndefined(firstTextBox) && firstTextBox.revisions.length > 0) {
+                    revision = firstTextBox.revisions[firstTextBox.revisions.length - 1];
+                    // if (!isNullOrUndefined(prevPara)) {
+                    // revision = prevPara.characterFormat.revisions[prevPara.characterFormat.revisions.length - 1];
+                    if (moveNext) {
+                        rangeIndex = revision.range.indexOf(firstTextBox) - i;
+                    }
+                    else {
+                        rangeIndex = revision.range.indexOf(firstTextBox) + i;
+                    }
+                    // }
+                }
+            }
+            else if (nonEmptyEndPara.isEmpty()) {
+                revision = nonEmptyEndPara.characterFormat.revisions[nonEmptyEndPara.characterFormat.revisions.length - 1];
+                rangeIndex = i - 1;
+            }
+            if (rangeIndex >= 0 && !isNullOrUndefined(revision)) {
+                let lastRange: Range = revision.range[rangeIndex] as Range;
+                let isParaMark: boolean = lastRange instanceof WCharacterFormat;
+                if (isParaMark) {
+                    revision.range.splice(rangeIndex, 1);
+                    if (revision.range.length == 0) {
+                        this.owner.revisionsInternal.remove(revision);
+                    }
+                }
+            }
+        }
+    }
     private isPasteRevertAction(): boolean {
         if (!isNullOrUndefined(this.editorHistory) && this.editorHistory.currentBaseHistoryInfo && this.editorHistory.currentBaseHistoryInfo.action === 'Paste') {
             return true;
@@ -11360,6 +11420,7 @@ export class Editor {
                 break;
             }
             count -= (endIndex - startIndex);
+            this.documentHelper.layout.clearListElementBox(lineWidget.paragraph);
         }
     }
 
@@ -12383,9 +12444,11 @@ export class Editor {
                 //     previousParagraph = this.documentHelper.selection.getPreviousBlock(paragraph) as ParagraphWidget;
                 // }
                 if (previousParagraph.isEmpty()) {
+                    this.removePrevParaMarkRevision(paragraph);
                     this.removeBlock(previousParagraph);
                     this.addRemovedNodes(previousParagraph);
                 } else {
+                    this.removePrevParaMarkRevision(paragraph);
                     this.removeBlock(paragraph);
                     let endOffset: number = this.documentHelper.selection.getLineLength(previousParagraph.lastChild as LineWidget);
                     let previousIndex: number = previousParagraph.childWidgets.length - 1;
@@ -12495,10 +12558,23 @@ export class Editor {
                 }
             }
         } else {
+            let sCmntCount: number = 0;
+            let endCmntCount: number = 0;
             for (let i: number = !isBidi ? 0 : childLength - 1; !isBidi ? i < childLength : i >= 0; isBidi ? i-- : i++) {
                 let inline: ElementBox = lineWidget.children[i] as ElementBox;
                 if (inline instanceof ListTextElementBox) {
                     continue;
+                }
+                if (inline instanceof CommentCharacterElementBox) {
+                    let commentElBox: CommentCharacterElementBox = inline as CommentCharacterElementBox;
+                    if (commentElBox.commentType == 0) {
+                        sCmntCount++;
+                    } else {
+                        endCmntCount++;
+                    }
+                    count++;
+                    if (i != childLength - 1)
+                        continue;
                 }
                 let isBreak: boolean = this.removeCharacter(inline, offset, count, lineWidget, lineIndex, i);
                 if (isBreak) {
@@ -13153,6 +13229,7 @@ export class Editor {
             }
             selection.owner.isShiftingEnabled = true;
             if (paragraph.isEmpty()) {
+                this.removePrevParaMarkRevision(paragraph, true);
                 this.removeBlock(paragraph);
                 this.addRemovedNodes(paragraph);
                 if (isNullOrUndefined(nextParagraph)) {
@@ -13175,6 +13252,7 @@ export class Editor {
                 paragraph = paragraph.combineWidget(this.owner.viewer) as ParagraphWidget;
 
                 let currentParagraph: ParagraphWidget = this.splitParagraph(paragraph, paragraph.firstChild as LineWidget, 0, selection.start.currentWidget, selection.start.offset, true);
+                this.removePrevParaMarkRevision(currentParagraph, true);
                 this.deleteParagraphMark(currentParagraph, selection, 0);
                 this.addRemovedNodes(paragraph);
                 this.setPositionForCurrentIndex(selection.start, selection.editPosition);

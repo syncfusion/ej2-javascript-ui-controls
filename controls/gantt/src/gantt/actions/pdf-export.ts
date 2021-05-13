@@ -57,9 +57,7 @@ export class PdfExport {
      * @param {object} pdfDoc .
      * @returns {Promise<Object>} .
      */
-    // eslint-disable-next-line
     public export(pdfExportProperties?: PdfExportProperties, isMultipleExport?: boolean, pdfDoc?: Object): Promise<Object> {
-        // eslint-disable-next-line
         const args: Object = {
             requestType: 'beforePdfExport',
             ganttObject: this.parent,
@@ -78,7 +76,6 @@ export class PdfExport {
         });
     }
 
-    // eslint-disable-next-line
     private exportWithData(pdfDoc: Object, resolve: Function, pdfExportProperties: PdfExportProperties, isMultipleExport: boolean): void {
         let data: IGanttData[] = [];
         if (isNullOrUndefined(pdfExportProperties)) {
@@ -100,7 +97,6 @@ export class PdfExport {
             resolve(this.pdfDocument);
         });
     }
-    // eslint-disable-next-line
     private processExport(data: IGanttData[], pdfExportProperties: PdfExportProperties, isMultipleExport: boolean): Promise<Object> {
         const section: PdfSection = this.pdfDocument.sections.add() as PdfSection;
         this.processSectionExportProperties(section, pdfExportProperties);

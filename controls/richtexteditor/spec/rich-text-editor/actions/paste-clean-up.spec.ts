@@ -3,7 +3,7 @@
  */
 import { createElement, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { EditorManager } from "../../../src/editor-manager/index";
-import { RichTextEditor, PasteCleanup,actionComplete } from "../../../src/rich-text-editor/index";
+import { RichTextEditor, PasteCleanup,actionComplete, beforePasteCleanup, PasteCleanupArgs } from "../../../src/rich-text-editor/index";
 import {
   CLS_RTE_PASTE_KEEP_FORMAT, CLS_RTE_PASTE_REMOVE_FORMAT, CLS_RTE_PASTE_PLAIN_FORMAT
 } from "../../../src/rich-text-editor/base/classes";
@@ -637,7 +637,7 @@ describe("paste cleanup testing", () => {
       expect(pastedElm.children[0].children[0].childNodes[1].tagName.toLowerCase() === 'a').toBe(true);
       expect(pastedElm.children[0].children[0].childNodes[1].getAttribute('href') === 'https://ej2.syncfusion.com').toBe(true);
       let expected: boolean = false;
-      let expectedElem: string = `<p><span>Hi syncfusion website <a classname="e-rte-anchor" href="https://ej2.syncfusion.com" title="https://ej2.syncfusion.com">https://ej2.syncfusion.com </a>is here</span>14</p>`;
+      let expectedElem: string = `<p><span>Hi syncfusion website <a classname="e-rte-anchor" href="https://ej2.syncfusion.com" title="https://ej2.syncfusion.com" target=\"_blank\">https://ej2.syncfusion.com </a>is here</span>14</p>`;
       if (pastedElm.innerHTML === expectedElem) {
         expected = true;
       }
@@ -669,7 +669,7 @@ describe("paste cleanup testing", () => {
       expect(pastedElm.children[0].children[0].childNodes[1].tagName.toLowerCase() === 'a').toBe(true);
       expect(pastedElm.children[0].children[0].childNodes[1].getAttribute('href') === 'https://ej2.syncfusion.com').toBe(true);
       let expected: boolean = false;
-      let expectedElem: string = `<p><span>Hi syncfusion website <a classname="e-rte-anchor" href="https://ej2.syncfusion.com" title="https://ej2.syncfusion.com">https://ej2.syncfusion.com </a>is here with another URL <a classname="e-rte-anchor" href="https://ej2.syncfusion.com" title="https://ej2.syncfusion.com">https://ej2.syncfusion.com </a>text after second URL</span>15</p>`;
+      let expectedElem: string = `<p><span>Hi syncfusion website <a classname="e-rte-anchor" href="https://ej2.syncfusion.com" title="https://ej2.syncfusion.com" target=\"_blank\">https://ej2.syncfusion.com </a>is here with another URL <a classname="e-rte-anchor" href="https://ej2.syncfusion.com" title="https://ej2.syncfusion.com" target=\"_blank\">https://ej2.syncfusion.com </a>text after second URL</span>15</p>`;
       if (pastedElm.innerHTML === expectedElem) {
         expected = true;
       }
@@ -703,7 +703,7 @@ third line`;
     setTimeout(() => {
       let pastedElm: any = (rteObj as any).inputElement.innerHTML;
       let expected: boolean = false;
-      let expectedElem: string = `<p><span>first line</span></p><p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Second line with space <a classname="e-rte-anchor" href="https://ej2.syncfusion.com" title="https://ej2.syncfusion.com">https://ej2.syncfusion.com </a></p><p><br></p><p><br></p><p>third line</p><p>16</p>`;
+      let expectedElem: string = `<p><span>first line</span></p><p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Second line with space <a classname="e-rte-anchor" href="https://ej2.syncfusion.com" title="https://ej2.syncfusion.com" target=\"_blank\">https://ej2.syncfusion.com </a></p><p><br></p><p><br></p><p>third line</p><p>16</p>`;
       if (pastedElm === expectedElem) {
         expected = true;
       }
@@ -1627,5 +1627,68 @@ describe("EJ2-46613 - Pasting content with bolded list doesn't paste the content
   });
   afterAll(() => {
     destroy(rteObj);
+  });
+
+  describe("Paste Cleanup events testing", () => {
+    let rteObj: RichTextEditor;
+    let keyBoardEvent: any = {
+      preventDefault: () => { 
+          
+      },
+      type: "keydown",
+      stopPropagation: () => { },
+      ctrlKey: false,
+      shiftKey: false,
+      action: null,
+      which: 64,
+      key: ""
+    };
+    let beforePasteCleanupEvent: boolean = false;
+    let afterPasteCleanupEvent: boolean = false;
+    beforeAll((done: Function) => {
+      rteObj = renderRTE({
+        pasteCleanupSettings: {
+          prompt: true
+        },
+        beforePasteCleanup : function() {
+            beforePasteCleanupEvent = true;
+        },
+        afterPasteCleanup : function(e : PasteCleanupArgs)  {
+            e.value = "<p>new value</p>";
+            afterPasteCleanupEvent = true;
+        }
+      });
+      done();
+    });
+    it("Paste base64 images testing", (done) => {
+      let localElem: string = `<p> copied value`;
+      keyBoardEvent.clipboardData = {
+        getData: () => {
+          return localElem;
+        },
+        items: []
+      };
+      rteObj.dataBind();
+      (rteObj as any).inputElement.focus();
+      setCursorPoint((rteObj as any).inputElement.firstElementChild, 0);
+      rteObj.onPaste(keyBoardEvent);
+      setTimeout(() => {
+        if (rteObj.pasteCleanupSettings.prompt) {
+          let keepFormat: any = document.getElementById(rteObj.getID() + "_pasteCleanupDialog").getElementsByClassName(CLS_RTE_PASTE_KEEP_FORMAT);
+          keepFormat[0].click();
+          let pasteOK: any = document.getElementById(rteObj.getID() + '_pasteCleanupDialog').getElementsByClassName(CLS_RTE_PASTE_OK);
+          pasteOK[0].click();
+        }
+        expect(beforePasteCleanupEvent).toBe(true);
+        expect(afterPasteCleanupEvent).toBe(true);
+        let pastedEle: any = (rteObj as any).inputElement.innerHTML;
+        let expectedElem: any = "<p>new value</p>";
+        expect(pastedEle === expectedElem).toBe(true);
+        done();
+      }, 100);
+    });
+    afterAll(() => {
+      destroy(rteObj);
+    });
   });
 });

@@ -38,6 +38,7 @@ export class DragAndDrop extends ActionBase {
     private startTime: number = 0;
     private isAllDayTarget: boolean = false;
     private targetTd: HTMLElement = null;
+    private isCursorAhead: boolean = false;
     public wireDragEvent(element: HTMLElement): void {
         const dragElement: HTMLElement = document.querySelector(this.parent.eventDragArea);
         const dragObj: Draggable = new Draggable(element, {
@@ -98,6 +99,18 @@ export class DragAndDrop extends ActionBase {
         let leftValue: string = formatUnit(0);
         if (this.parent.currentView === 'Month') {
             leftValue = e.left as string;
+        }
+        let cloneRight: number;
+        if (this.isStepDragging) {
+            cloneRight = Math.ceil(this.actionObj.clone.getBoundingClientRect().right) + this.actionObj.interval;
+        } else {
+            cloneRight = this.actionObj.clone.getBoundingClientRect().right;
+        }
+        const dragArea: HTMLElement = this.parent.element.querySelector('.' + cls.CONTENT_WRAP_CLASS) as HTMLElement;
+        const contentWrapRight: number = dragArea.getBoundingClientRect().right;
+        if (this.parent.activeView.isTimelineView() && this.parent.currentView !== 'TimelineYear' && !this.parent.enableRtl &&
+            this.actionObj.pageX > cloneRight && !this.isMorePopupOpened && !(this.actionObj.pageX > contentWrapRight)) {
+            this.isCursorAhead = true;
         }
         if (this.parent.activeView.isTimelineView()) {
             leftValue = formatUnit(this.actionObj.clone.offsetLeft);
@@ -201,6 +214,7 @@ export class DragAndDrop extends ActionBase {
                     this.actionObj.clone.offsetParent.classList.contains(cls.MORE_EVENT_POPUP_CLASS)) {
                     this.isMorePopupOpened = true;
                 }
+                this.actionObj.pageX = (e as DragEventArgs).event.pageX;
                 const rows: HeaderRowsModel[] = this.parent.activeViewOptions.headerRows;
                 this.isHeaderRows = rows.length > 0 && rows[rows.length - 1].option !== 'Hour' &&
                     rows[rows.length - 1].option !== 'Date';
@@ -319,6 +333,7 @@ export class DragAndDrop extends ActionBase {
     }
 
     private dragStop(e: MouseEvent): void {
+        this.isCursorAhead = false;
         this.removeCloneElementClasses();
         this.removeCloneElement();
         clearInterval(this.actionObj.navigationInterval);
@@ -872,7 +887,14 @@ export class DragAndDrop extends ActionBase {
         offsetLeft = this.getOffsetValue(offsetLeft, rightOffset);
         const colIndex: number = this.getColumnIndex(offsetLeft);
         const dragArea: HTMLElement = this.parent.element.querySelector('.' + cls.CONTENT_WRAP_CLASS) as HTMLElement;
+        const contentWrapRight: number = dragArea.getBoundingClientRect().right;
+        const cursorDrag: boolean = this.parent.activeView.isTimelineView() && !this.parent.enableRtl &&
+            this.actionObj.pageX > this.actionObj.clone.getBoundingClientRect().right &&
+            !this.isMorePopupOpened && !(this.actionObj.pageX > contentWrapRight);
         const leftVal: number = (this.parent.eventDragArea) ? dragArea.scrollLeft - dragArea.offsetLeft : 0;
+        if ((this.isCursorAhead || cursorDrag) && !this.isStepDragging) {
+            this.isCursorAhead = true;
+        }
         let cloneIndex: number =
             Math.floor((this.actionObj.pageX - this.actionObj.clone.getBoundingClientRect().left + leftVal) / this.actionObj.cellWidth);
         if (this.parent.enableRtl) {
@@ -892,13 +914,22 @@ export class DragAndDrop extends ActionBase {
             if (widthDiff !== 0) {
                 const timeDiff: number = Math.round(widthDiff / this.widthPerMinute);
                 eventStart.setMinutes(eventStart.getMinutes() + (timeDiff * this.actionObj.interval));
-                eventStart.setMinutes(eventStart.getMinutes() - this.minDiff);
+                if (this.isCursorAhead || cursorDrag) {
+                    eventStart.setMilliseconds(-(eventDuration));
+                } else {
+                    eventStart.setMinutes(eventStart.getMinutes() - this.minDiff);
+                }
             } else {
                 eventStart = this.actionObj.start;
             }
         } else {
+            if (this.isCursorAhead || cursorDrag) {
+                eventStart.setMinutes(eventStart.getMinutes() + (this.isTimelineDayProcess ? MINUTES_PER_DAY : this.actionObj.slotInterval));
+                eventStart.setMilliseconds(-(eventDuration));
+            } else {
             eventStart.setMinutes(eventStart.getMinutes() -
                 (this.cursorPointIndex * (this.isTimelineDayProcess ? MINUTES_PER_DAY : this.actionObj.slotInterval)));
+            }
         }
         eventStart = this.calculateIntervalTime(eventStart);
         if (this.isTimelineDayProcess) {
@@ -1057,7 +1088,7 @@ export class DragAndDrop extends ActionBase {
         const td: HTMLTableCellElement = closest((<HTMLTableCellElement>this.actionObj.target), 'td') as HTMLTableCellElement;
         this.actionObj.groupIndex = (td && !isNaN(parseInt(td.getAttribute('data-group-index'), 10)))
             ? parseInt(td.getAttribute('data-group-index'), 10) : this.actionObj.groupIndex;
-        let top: number = (<HTMLElement>trCollection[rowIndex]).offsetTop;
+        let top: number = (<HTMLElement>trCollection[rowIndex]).getBoundingClientRect().height * rowIndex;
         if (this.parent.rowAutoHeight) {
             const cursorElement: HTMLElement = this.getCursorElement(e);
             if (cursorElement) {

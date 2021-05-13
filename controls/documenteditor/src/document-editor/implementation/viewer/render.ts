@@ -128,7 +128,7 @@ export class Renderer {
         this.selectionContext.restore();
         const width: number = page.boundingRectangle.width;
         const height: number = page.boundingRectangle.height;
-        const dpr: number = Math.max(1, window.devicePixelRatio || 1);
+        const dpr: number = Math.max(window.devicePixelRatio, this.documentHelper.owner.documentEditorSettings.printDevicePixelRatio);
         if (this.pageCanvas.width !== width * dpr || this.pageCanvas.height !== height * dpr) {
             this.pageCanvas.height = height * dpr;
             this.pageCanvas.width = width * dpr;
@@ -1270,7 +1270,7 @@ export class Renderer {
                     } else if ((cell.y === tableCell.y) || (cell.y > tableCell.y && cell.y + cell.height < tableCell.y + tableCell.height)) {
                         this.renderSingleBorder(border.color, tableCell.x - cellLeftMargin - lineWidthInt, cell.y - cell.margin.top, tableCell.x - cellLeftMargin - lineWidthInt, cell.y + cell.height + cell.margin.bottom, lineWidthInt);
                     } else if (cell.y < tableCell.y + tableCell.height && cell.y + cell.height >= tableCell.y + tableCell.height) {
-                        this.renderSingleBorder(border.color, tableCell.x - cellLeftMargin - lineWidthInt, cell.y - cell.margin.top, tableCell.x - cellLeftMargin - lineWidthInt, cell.y + tableCell.height + cellBottomMargin, lineWidthInt);
+                        this.renderSingleBorder(border.color, tableCell.x - cellLeftMargin - lineWidthInt, cell.y - cell.margin.top, tableCell.x - cellLeftMargin - lineWidthInt, cell.y + cell.height + cellBottomMargin, lineWidthInt);
                     } else if (cell.y > tableCell.y + tableCell.height) {
                         break;
                     }
@@ -1307,7 +1307,7 @@ export class Renderer {
         } else {
             isLastCell = tableCell.cellIndex === 0;
         }
-        if ((tableCell.ownerTable.tableFormat.cellSpacing > 0 || isLastCell) && tableCell.columnIndex + tableCell.cellFormat.columnSpan === tableCell.ownerTable.tableHolder.columns.length) {
+        if ((tableCell.ownerTable.tableFormat.cellSpacing > 0 || isLastCell) && (isBidiTable || tableCell.columnIndex + tableCell.cellFormat.columnSpan === tableCell.ownerTable.tableHolder.columns.length)) {
             border = isBidiTable ? TableCellWidget.getCellLeftBorder(tableCell) : TableCellWidget.getCellRightBorder(tableCell);
             // if (!isNullOrUndefined(border )) { //Renders the cell right border.           
             lineWidth = HelperMethods.convertPointToPixel(border.getLineWidth());
@@ -1341,11 +1341,16 @@ export class Renderer {
                 && tableCell.ownerRow.rowIndex + tableCell.cellFormat.rowSpan >= tableCell.ownerTable.childWidgets.length) ||
             !nextRowIsInCurrentTableWidget || previousCellIndex && nextRow.childWidgets.length < tableCell.ownerRow.childWidgets.length
             && previousCellIndex < tableCell.columnIndex + tableCell.cellFormat.columnSpan) {
-            border = (tableCell.cellFormat.rowSpan > 1 && tableCell.ownerRow.rowIndex + tableCell.cellFormat.rowSpan === tableCell.ownerTable.childWidgets.length) ?
-                //true part for vertically merged cells specifically.
-                tableCell.getBorderBasedOnPriority(tableCell.getBorderBasedOnPriority(tableCell.cellFormat.borders.bottom, tableCell.ownerRow.rowFormat.borders.bottom), tableCell.ownerTable.tableFormat.borders.bottom)
-                //false part for remaining cases that has been handled inside method. 
-                : TableCellWidget.getCellBottomBorder(tableCell);
+            let bottomBorder: WBorder = tableCell.cellFormat.borders.bottom;
+            if (!isNullOrUndefined(bottomBorder) && bottomBorder.lineStyle === 'Cleared') {
+                border = TableCellWidget.getCellBottomBorder(tableCell);
+            } else {
+                border = (tableCell.cellFormat.rowSpan > 1 && tableCell.ownerRow.rowIndex + tableCell.cellFormat.rowSpan === tableCell.ownerTable.childWidgets.length) ?
+                    //true part for vertically merged cells specifically.
+                    tableCell.getBorderBasedOnPriority(tableCell.getBorderBasedOnPriority(tableCell.cellFormat.borders.bottom, tableCell.ownerRow.rowFormat.borders.bottom), tableCell.ownerTable.tableFormat.borders.bottom)
+                    //false part for remaining cases that has been handled inside method. 
+                    : TableCellWidget.getCellBottomBorder(tableCell);
+            }
             // if (!isNullOrUndefined(border )) {
             //Renders the cell bottom border.
             if (tableCell.cellFormat.borders.top.lineStyle === 'Cleared' && tableCell.cellFormat.borders.bottom.lineStyle === 'None' && !isNullOrUndefined(tableCell.nextWidget)) {

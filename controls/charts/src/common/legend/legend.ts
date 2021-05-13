@@ -1065,7 +1065,7 @@ export class BaseLegend {
             });
         }
         if (shape === 'Line' && legendOption.markerVisibility && legendOption.markerShape !== 'Image' ||
-            legendOption.type === <AccumulationType>'Doughnut') {
+            (legendOption.type === <AccumulationType>'Doughnut' && shape === 'Doughnut')) {
             symbolOption.id = this.legendID + this.generateId(legendOption, '_shape_marker_', i);
             shape = legendOption.type === <AccumulationType>'Doughnut' ? 'Circle' : legendOption.markerShape;
             symbolOption.fill = legendOption.type === <AccumulationType>'Doughnut' ? '#FFFFFF' : symbolOption.fill;

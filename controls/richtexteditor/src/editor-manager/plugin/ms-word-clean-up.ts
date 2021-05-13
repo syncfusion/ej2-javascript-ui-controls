@@ -282,6 +282,10 @@ export class MsWordPaste {
     private removeEmptyElements(element: HTMLElement): void {
         const emptyElements: NodeListOf<Element> = element.querySelectorAll(':empty');
         for (let i: number = 0; i < emptyElements.length; i++) {
+            if (!isNOU(emptyElements[i].closest('td')) &&
+            !isNOU(emptyElements[i].closest('td').querySelector('.MsoNormal'))) {
+                emptyElements[i].innerHTML = '-';
+            }
             if (emptyElements[i].tagName !== 'IMG' && emptyElements[i].tagName !== 'BR' &&
             emptyElements[i].tagName !== 'IFRAME' && emptyElements[i].tagName !== 'TD' &&
             emptyElements[i].tagName !== 'HR') {

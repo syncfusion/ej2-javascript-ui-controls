@@ -1,6 +1,6 @@
 import { TreeGrid } from '../../src/treegrid/base/treegrid';
 import { createGrid, destroy } from './treegridutil.spec';
-import { sampleData, projectData } from './datasource.spec';
+import { sampleData, projectData, stackedData } from './datasource.spec';
 import { PageEventArgs, QueryCellInfoEventArgs, doesImplementInterface, RowDataBoundEventArgs } from '@syncfusion/ej2-grids';
 import { Column, ColumnModel } from '../../src';
 import { ITreeData } from '../../src/treegrid/base/interface';
@@ -435,3 +435,56 @@ describe('Checkbox Column', () => {
     destroy(gridObj);
   });
 });
+
+describe('stacked header with template tree column- EJ2-48776', () => {
+  let gridObj: TreeGrid;
+  beforeAll((done: Function) => {
+    gridObj = createGrid(
+      {
+        dataSource: stackedData,
+        childMapping: 'subtasks',
+        allowPaging: true,
+        treeColumnIndex: 0,
+            height: 260,
+            columns: [
+                {
+                    headerText: 'Order Details', textAlign: 'Center', columns: [
+                        { field: 'orderID', headerText: 'Order ID', template: "<span>test</span>", textAlign: 'Right', width: 90 },
+                        { field: 'orderName', headerText: 'Order Name', textAlign: 'Left', width: 170 },
+                        { field: 'orderDate', headerText: 'Order Date',  template: "<span>test</span>", textAlign: 'Right', width: 120, format: 'yMd'},
+                    ]
+                },
+                {
+                    headerText: 'Shipment Details', textAlign: 'Center', columns: [
+                        { field: 'shipMentCategory', headerText: 'Shipment Category',  template: "<span>test</span>", textAlign: 'Left', width: 150 },
+                        { field: 'shippedDate', headerText: 'Shipped Date', template: "<span>test</span>", textAlign: 'Right', width: 120, format: 'yMd' },
+                        { field: 'units', headerText: 'Units', textAlign: 'Left', width: 85 },
+                    ]
+                },
+                {
+                    headerText: 'Price Details', textAlign: 'Center', columns: [
+                        { field: 'unitPrice', headerText: 'Price per unit',  template: "<span>test</span>",  width: 110, textAlign: 'Right' },
+                        { field: 'price', headerText: 'Total Price', width: 110, format: 'c', type: 'number', textAlign: 'Right' }
+                    ]
+                }
+            ]
+    
+       
+      },
+      done
+    );
+  });
+  it('check template rendering', () => {
+    expect(gridObj.getCellFromIndex(0,0).classList.contains("e-templatecell")).toBe(true);
+    expect(gridObj.getCellFromIndex(1,2).classList.contains("e-templatecell")).toBe(true); 
+    expect(gridObj.getCellFromIndex(2,3).classList.contains("e-templatecell")).toBe(true); 
+    expect(gridObj.getCellFromIndex(3,4).classList.contains("e-templatecell")).toBe(true); 
+    expect(gridObj.getCellFromIndex(4,6).classList.contains("e-templatecell")).toBe(true); 
+
+    });
+ 
+  afterAll(() => {
+    destroy(gridObj);
+  });
+}); 
+

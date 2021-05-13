@@ -41,14 +41,12 @@ export class Dependency {
      * @private
      */
     public ensurePredecessorCollectionHelper(ganttData: IGanttData, ganttProp: ITaskData): void {
-        // eslint-disable-next-line
         const predecessorVal: object[] | string | number = ganttProp.predecessorsName;
         if (predecessorVal && (typeof predecessorVal === 'string' || typeof predecessorVal === 'number')) {
             this.parent.setRecordValue('predecessor', this.calculatePredecessor(predecessorVal, ganttData), ganttProp, true);
         } else if (predecessorVal && typeof predecessorVal === 'object' && predecessorVal.length) {
             const preValues: IPredecessor[] = [];
             for (let c: number = 0; c < predecessorVal.length; c++) {
-                // eslint-disable-next-line
                 const predecessorItem: object = predecessorVal[c];
                 const preValue: IPredecessor = {};
                 preValue.from = getValue('from', predecessorItem);
@@ -195,7 +193,7 @@ export class Dependency {
      */
     public getPredecessorStringValue(data: IGanttData): string {
         const predecessors: IPredecessor[] = data.ganttProperties.predecessor;
-        const durationUnitTexts: Record<string, unknown> = this.parent.durationUnitTexts;
+        const durationUnitTexts: Object = this.parent.durationUnitTexts;
         let resultString: string = '';
         if (predecessors) {
             const length: number = predecessors.length;
@@ -232,7 +230,7 @@ export class Dependency {
     private getOffsetDurationUnit(val: string | number): { duration: number, durationUnit: string } {
         let duration: number = 0;
         let durationUnit: string = this.parent.durationUnit.toLocaleLowerCase();
-        const durationUnitLabels: Record<string, unknown> = this.parent.durationUnitEditText;
+        const durationUnitLabels: Object = this.parent.durationUnitEditText;
         if (typeof val === 'string') {
             const values: string[] = val.match(/[^0-9]+|[0-9]+/g);
             for (let x: number = 0; x < values.length; x++) {
@@ -535,7 +533,6 @@ export class Dependency {
         const ganttRecords: IGanttData [] = records ? records : this.parent.currentViewData;
         const recordLength: number = ganttRecords.length;
         let count: number; let ganttRecord: IGanttData;
-        // eslint-disable-next-line
         let predecessorsCollection: object[];
         this.parent.connectorLineModule.expandedRecords = this.parent.virtualScrollModule && this.parent.enableVirtualization ?
             this.parent.updatedRecords : this.parent.getExpandedRecords(this.parent.updatedRecords);
@@ -552,7 +549,6 @@ export class Dependency {
      * @param {object[]} predecessorsCollection .
      * @returns {void} .
      */
-    // eslint-disable-next-line
     private addPredecessorsCollection(predecessorsCollection: object[]): void {
         let predecessorsLength: number;
         let predecessorCount: number;

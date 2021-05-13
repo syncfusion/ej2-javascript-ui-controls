@@ -917,6 +917,14 @@ export class DetailsView {
         this.parent.dragData = [];
         // eslint-disable-next-line
         this.parent.dragData = <{ [key: string]: Object; }[]>this.gridObj.getSelectedRecords();
+        let dragRow: { [key: string]: Object; };
+        if (this.parent.dragData.length == 0 && dragLi) {
+            dragRow = this.gridObj.getRowInfo(dragLi) as { [key: string]: Object; };
+        }
+        if (dragRow)
+        {
+            this.parent.dragData.push(dragRow.rowData as { [key: string]: Object; });
+        }
         this.parent.dragPath = this.parent.path;
         this.parent.activeElements = this.gridObj.getSelectedRows();
         createVirtualDragElement(this.parent);

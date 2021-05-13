@@ -1544,7 +1544,8 @@ export class AccumulationChart extends Component<HTMLElement> implements INotify
             this.unWireEvents();
             super.destroy();
             this.element.classList.remove('e-accumulationchart');
-            this.element.innerHTML = '';
+            this.removeSvg();
+            this.svgObject = null;
         }
     }
     /**
@@ -1692,14 +1693,14 @@ export class AccumulationChart extends Component<HTMLElement> implements INotify
                             extend(this.changeVisibleSeries(this.visibleSeries, i), series, null, true);
                             seriesRefresh = true;
                         }
-                        if (newProp.series[i] && newProp.series[i].explodeIndex !== oldProp.series[i].explodeIndex) {
+                        if (newProp.series[i] && newProp.series[i].explodeIndex &&
+                            newProp.series[i].explodeIndex !== oldProp.series[i].explodeIndex) {
                             this.accBaseModule.explodePoints(newProp.series[i].explodeIndex, this);
                             this.accBaseModule.deExplodeAll(newProp.series[i].explodeIndex, this.enableAnimation ? 300 : 0);
                         }
                     }
                     if (seriesRefresh) {
-                        this.processData(false);
-                        update.refreshBounds = true;
+                        this.processData(false); update.refreshBounds = true;
                     }
                 }
                 this.animateselected = false;

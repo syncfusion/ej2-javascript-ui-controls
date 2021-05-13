@@ -214,6 +214,13 @@ export interface MenuBaseModel extends ComponentModel{
     cssClass?: string;
 
     /**
+     * If hoverDelay is set by particular number, the menu will open after that period.
+     *
+     * @default 0
+     */
+    hoverDelay?: number;
+
+    /**
      * Specifies whether to show the sub menu or not on click.
      * When set to true, the sub menu will open only on mouse click.
      *

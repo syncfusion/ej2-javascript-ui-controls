@@ -935,24 +935,6 @@ export interface DialogCloseEventArgs {
 }
 
 /**
- * Provides information about a ToolbarUpdate event.
- */
-export interface ToolbarUpdateEventArgs {
-    /**
-     * Specify the name of the event.
-     */
-    name?: string
-    /**
-     * Specify the name of the event.
-     */
-    redo: boolean
-    /**
-     * Specify the name of the event.
-     */
-    undo: boolean
-}
-
-/**
  * Provides information about a ImageSuccess event.
  */
 export interface ImageSuccessEventArgs {
@@ -1062,6 +1044,16 @@ export interface DestroyedEventArgs {
      * Defines whether the current action can be prevented.
      */
     cancel: boolean
+}
+
+/**
+ * Provides information about a pasteCleanup args.
+ */
+export interface PasteCleanupArgs {
+    /**
+     * Returns the content in the ClipboardEvent arguments.
+     */
+    value: string;
 }
 
 /**
@@ -1358,3 +1350,28 @@ export declare type CommandName = 'bold' | 'italic' | 'underline' | 'strikeThrou
 'formatBlock' | 'heading' | 'indent' | 'insertHTML' | 'insertOrderedList' | 'insertUnorderedList' |
 'insertParagraph' | 'outdent' | 'redo' | 'removeFormat' | 'insertText' | 'insertImage' |
 'insertHorizontalRule' | 'insertBrOnReturn' | 'insertCode' | 'insertTable' | 'editImage' | 'editLink';
+
+/**
+ * @hidden
+ * @deprecated
+ */
+ export interface StatusArgs {
+    html: Object
+    markdown: Object
+}
+
+/**
+ * Provides information about a updatedToolbarStatus event.
+ */
+export interface ToolbarStatusEventArgs {
+    /** Defines the event name. */
+    name?: string
+    /** Defines the redo argument. */
+    undo: boolean
+    /** Defines the redo argument. */
+    redo: boolean
+    /** Defines the HTML toolbar status arguments. */
+    html?: object
+    /** Defines the markdown toolbar status arguments. */
+    markdown?: object
+}

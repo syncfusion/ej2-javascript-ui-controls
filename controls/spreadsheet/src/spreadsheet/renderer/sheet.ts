@@ -88,10 +88,17 @@ export class SheetRender implements IRenderer {
         let scroll: HTMLElement =
             (this.contentPanel.nextElementSibling ? this.contentPanel.nextElementSibling : null) as HTMLElement;
         if (scroll) {
-            scroll.style.height = scrollSize + 1 + 'px';
-            if (!scrollSize) {  scroll.style.borderTopWidth = '0px'; }
+            if (scrollSize) {
+                scroll.style.height = scrollSize + 2 + 'px';
+            } else {
+                scroll.style.height = '1px';
+                scroll.style.borderTopWidth = '0px';
+            }
             scroll = scroll.firstElementChild as HTMLElement;
             scroll.style[offset] = width + 'px'; scroll.style.width = `calc(100% - ${width}px)`;
+            if (Browser.userAgent.indexOf('Mac OS') > -1 && Browser.info.name === 'safari') {
+                scroll.style.height = '7px'; scroll.style.top = '-7px';
+            }
         }
     }
 
@@ -151,6 +158,8 @@ export class SheetRender implements IRenderer {
         if (sheet.frozenColumns) {
             sheetEle.appendChild(this.parent.createElement('div', { className: 'e-frozen-column', styles: 'display: none' }));
         }
+        if (Browser.userAgent.indexOf('Mac OS') > -1 && Browser.info.name === 'safari') { sheetEle.classList.add('e-mac-safari'); }
+
     }
 
     private initHeaderPanel(): void {
@@ -263,8 +272,7 @@ export class SheetRender implements IRenderer {
                 if (frozenCol && indexes[1] < frozenCol) {
                     col = this.updateCol(sheet, indexes[1], selectAllColGrp);
                     const empty: Element = rowHdrColGrp.querySelector('.e-empty');
-                    empty ? rowHdrColGrp.insertBefore(col, empty) : rowHdrColGrp.appendChild(col);
-                    rowHdrColGrp.appendChild(col.cloneNode(true));
+                    empty ? rowHdrColGrp.insertBefore(col.cloneNode(true), empty) : rowHdrColGrp.appendChild(col.cloneNode(true));
                     selectAllHdrRow.appendChild(this.cellRenderer.renderColHeader(indexes[1]));
                 } else {
                     this.updateCol(sheet, indexes[1], colGrp);
@@ -705,6 +713,7 @@ export class SheetRender implements IRenderer {
                     const offset: string = this.parent.enableRtl ? 'right' : 'left';
                     this.getContentPanel().style[offset] = '';
                 }
+                this.getScrollElement().style.left = this.getRowHeaderWidth(sheet) + 'px';
             }
         });
     }

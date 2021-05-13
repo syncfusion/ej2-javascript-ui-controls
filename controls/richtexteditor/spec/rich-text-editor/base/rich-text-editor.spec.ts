@@ -1118,7 +1118,7 @@ describe('RTE base module', () => {
             expect(allElem.children[0].childNodes[1].tagName.toLowerCase() === 'a').toBe(true);
             expect(allElem.children[0].childNodes[1].getAttribute('href') === 'https://ej2.syncfusion.com').toBe(true);
             let expected: boolean = false;
-            let expectedElem: string = `<span>Hi syncfusion website <a classname="e-rte-anchor" href="https://ej2.syncfusion.com" title="https://ej2.syncfusion.com">https://ej2.syncfusion.com </a>is here with another URL <a classname="e-rte-anchor" href="https://ej2.syncfusion.com" title="https://ej2.syncfusion.com">https://ej2.syncfusion.com </a>text after second URL</span>`;
+            let expectedElem: string = `<span>Hi syncfusion website <a classname="e-rte-anchor" href="https://ej2.syncfusion.com" title="https://ej2.syncfusion.com" target=\"_blank\">https://ej2.syncfusion.com </a>is here with another URL <a classname="e-rte-anchor" href="https://ej2.syncfusion.com" title="https://ej2.syncfusion.com" target=\"_blank\">https://ej2.syncfusion.com </a>text after second URL</span>`;
             if (allElem.innerHTML === expectedElem) {
                 expected = true;
             }

@@ -69,9 +69,8 @@ export class Year extends ViewBase implements IRenderer {
         cTr.appendChild(cTd);
         const calendarWrapper: HTMLElement = createElement('div', { className: 'e-calendar-wrapper' });
         cTd.appendChild(calendarWrapper);
-        // eslint-disable-next-line prefer-spread
-        const monthCollection: number[] = Array.apply(null, { length: 12 }).map((value: number, index: number) => index);
-        for (const month of monthCollection) {
+        const months: number[] = this.getMonths();
+        for (const month of months) {
             const currentMonth: Date = new Date(this.parent.selectedDate.getFullYear(), month, 1);
             const calendarElement: HTMLElement = createElement('div', {
                 className: 'e-month-calendar e-calendar',
@@ -127,7 +126,11 @@ export class Year extends ViewBase implements IRenderer {
                     className: 'e-cell ' + cls.WORK_CELLS_CLASS,
                     attrs: { 'role': 'gridcell', 'aria-selected': 'false', 'data-date': date.getTime().toString() }
                 });
-                td.appendChild(createElement('span', { className: 'e-day', innerHTML: date.getDate().toString() }));
+                const span: HTMLElement = createElement('span', {
+                    className: 'e-day', innerHTML: date.getDate().toString(),
+                    attrs: { title: this.parent.globalize.formatDate(date, { type: 'date', skeleton: 'full' }) }
+                });
+                td.appendChild(span);
                 let classList: string[] = [];
                 if (currentDate.getMonth() !== date.getMonth()) {
                     classList.push(cls.OTHERMONTH_CLASS);
@@ -221,6 +224,11 @@ export class Year extends ViewBase implements IRenderer {
         return util.resetTime(new Date()).getTime() === util.resetTime(new Date(date.getTime())).getTime();
     }
 
+    public getMonths(): number[] {
+        // eslint-disable-next-line prefer-spread
+        return Array.apply(null, { length: 12 }).map((value: number, index: number) => this.parent.firstMonthOfYear + index);
+    }
+
     private onCellClick(e: Event): void {
         const target: Element = closest((e.target as Element), '.' + cls.WORK_CELLS_CLASS);
         const startDate: Date = this.parent.getDateFromElement(target);
@@ -273,14 +281,20 @@ export class Year extends ViewBase implements IRenderer {
         this.retainScrollPosition();
     }
 
+    private getStartDate(): Date {
+        return new Date(this.parent.selectedDate.getFullYear(), this.parent.firstMonthOfYear % 12, 1);
+    }
+
+    private getEndDate(): Date {
+        return util.addDays(util.addMonths(this.getStartDate(), 12), -1);
+    }
+
     public startDate(): Date {
-        const startDate: Date = new Date(this.parent.selectedDate.getFullYear(), 0, 1);
-        return util.getWeekFirstDate(startDate, this.parent.firstDayOfWeek);
+        return util.getWeekFirstDate(this.getStartDate(), this.parent.firstDayOfWeek);
     }
 
     public endDate(): Date {
-        const endDate: Date = new Date(this.parent.selectedDate.getFullYear(), 11, 31);
-        return util.addDays(util.getWeekLastDate(endDate, this.parent.firstDayOfWeek), 1);
+        return util.addDays(util.getWeekLastDate(this.getEndDate(), this.parent.firstDayOfWeek), 1);
     }
 
     public getEndDateFromStartDate(start: Date): Date {
@@ -296,7 +310,13 @@ export class Year extends ViewBase implements IRenderer {
     }
 
     public getDateRangeText(): string {
-        return this.parent.globalize.formatDate(this.parent.selectedDate, { skeleton: 'y' });
+        const startDate: Date = this.getStartDate();
+        const endDate: Date = this.getEndDate();
+        if (startDate.getFullYear() !== endDate.getFullYear()) {
+            return this.parent.globalize.formatDate(startDate, { skeleton: 'yMMM' }) + ' - ' + this.parent.globalize.formatDate(endDate, { skeleton: 'yMMM' });
+        } else {
+            return this.parent.globalize.formatDate(this.parent.selectedDate, { skeleton: 'y' });
+        }
     }
 
     public addEventListener(): void {

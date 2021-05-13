@@ -56,6 +56,8 @@ export const initialLoad: string = 'initial-load';
 /** @private */
 export const initialEnd: string = 'initial-end';
 /** @private */
+export const print: string = 'print';
+/** @private */
 export const dataReady: string = 'data-ready';
 /** @private */
 export const eventsLoaded: string = 'events-loaded';

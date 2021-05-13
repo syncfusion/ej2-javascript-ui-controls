@@ -289,7 +289,6 @@ export class Timeline {
      */
     public processTimelineUnit(): void {
         const directProperty: string[] = ['timelineViewMode', 'timelineUnitSize', 'weekStartDay', 'weekendBackground'];
-        // eslint-disable-next-line
         const innerProperty: Object = {
             'topTier': ['unit', 'format', 'count', 'formatter'],
             'bottomTier': ['unit', 'format', 'count', 'formatter']
@@ -748,9 +747,7 @@ export class Timeline {
      * @returns {object} .
      * @private
      */
-    // eslint-disable-next-line
     public extendFunction(cloneObj: Object, propertyCollection: string[], innerProperty?: Object): Object {
-        // eslint-disable-next-line
         const tempObj: Object = {};
         for (let index: number = 0; index < propertyCollection.length; index++) {
             tempObj[propertyCollection[index]] = cloneObj[propertyCollection[index]];
@@ -1213,38 +1210,47 @@ export class Timeline {
      * @private
      */
     public updateTimeLineOnEditing(tempArray: IGanttData[], action: string): void {
-        const filteredStartDateRecord: IGanttData[] = tempArray.filter(
-            (pdc: IGanttData) => { return !isNullOrUndefined(pdc.ganttProperties.startDate); });
-        const filteredEndDateRecord: IGanttData[] = tempArray.filter(
-            (pdc: IGanttData) => { return !isNullOrUndefined(pdc.ganttProperties.endDate); });
-        let minStartDate: Date = filteredStartDateRecord.length > 0 ?
-            new Date(DataUtil.aggregates.min(filteredStartDateRecord, 'ganttProperties.startDate')) : null;
-        let maxEndDate: Date = filteredEndDateRecord.length > 0 ?
-            new Date(DataUtil.aggregates.max(filteredEndDateRecord, 'ganttProperties.endDate')) : null;
-        const validStartDate: Date = new Date(this.parent.dataOperation.checkStartDate(this.timelineStartDate).getTime());
-        const validEndDate: Date = new Date(this.parent.dataOperation.checkEndDate(this.timelineEndDate).getTime());
-        const maxStartLeft: number = isNullOrUndefined(minStartDate) ?
-            null : this.parent.dataOperation.getTaskLeft(minStartDate, false);
-        const maxEndLeft: number = isNullOrUndefined(maxEndDate) ?
-            null : this.parent.dataOperation.getTaskLeft(maxEndDate, false);
-        const validStartLeft: number = this.parent.dataOperation.getTaskLeft(validStartDate, false);
-        const validEndLeft: number = this.parent.dataOperation.getTaskLeft(validEndDate, false);
-        let isChanged: string;
-        if (!isNullOrUndefined(maxStartLeft) && (maxStartLeft <= this.bottomTierCellWidth || maxStartLeft <= validStartLeft)) {
-            isChanged = 'prevTimeSpan';
-            minStartDate = minStartDate > this.timelineStartDate ? this.timelineStartDate : minStartDate;
-        } else {
-            minStartDate = this.timelineStartDate;
-        }
-        if (!isNullOrUndefined(maxEndLeft) && (maxEndLeft >= (this.totalTimelineWidth - this.bottomTierCellWidth) ||
-            maxEndLeft >= validEndLeft)) {
-            isChanged = isChanged === 'prevTimeSpan' ? 'both' : 'nextTimeSpan';
-            maxEndDate = maxEndDate < this.timelineEndDate ? this.timelineEndDate : maxEndDate;
-        } else {
-            maxEndDate = this.timelineEndDate;
-        }
-        if (isChanged) {
-            this.performTimeSpanAction(isChanged, action, minStartDate, maxEndDate);
+        if ((tempArray[0] as IGanttData[]).length > 1)
+        {
+            for (let i: number = 0; i < tempArray.length; i++)
+            {
+                /* eslint-disable-next-line */
+                const temp: any = tempArray[i];
+                const filteredStartDateRecord: IGanttData[] = temp.filter(
+                    (pdc: IGanttData) => { return !isNullOrUndefined(pdc.ganttProperties.startDate); });
+                const filteredEndDateRecord: IGanttData[] = temp.filter(
+                    (pdc: IGanttData) => { return !isNullOrUndefined(pdc.ganttProperties.endDate); });
+                let minStartDate: Date = filteredStartDateRecord.length > 0 ?
+                    new Date(DataUtil.aggregates.min(filteredStartDateRecord, 'ganttProperties.startDate')) : null;
+                let maxEndDate: Date = filteredEndDateRecord.length > 0 ?
+                    new Date(DataUtil.aggregates.max(filteredEndDateRecord, 'ganttProperties.endDate')) : null;
+                const validStartDate: Date = new Date(this.parent.dataOperation.checkStartDate(this.timelineStartDate).getTime());
+                const validEndDate: Date = new Date(this.parent.dataOperation.checkEndDate(this.timelineEndDate).getTime());
+                const maxStartLeft: number = isNullOrUndefined(minStartDate) ?
+                    null : this.parent.dataOperation.getTaskLeft(minStartDate, false);
+                const maxEndLeft: number = isNullOrUndefined(maxEndDate) ?
+                    null : this.parent.dataOperation.getTaskLeft(maxEndDate, false);
+                const validStartLeft: number = this.parent.dataOperation.getTaskLeft(validStartDate, false);
+                const validEndLeft: number = this.parent.dataOperation.getTaskLeft(validEndDate, false);
+                let isChanged: string;
+                if (!isNullOrUndefined(maxStartLeft) && (maxStartLeft <= this.bottomTierCellWidth || maxStartLeft <= validStartLeft)) {
+                    isChanged = 'prevTimeSpan';
+                    minStartDate = minStartDate > this.timelineStartDate ? this.timelineStartDate : minStartDate;
+                } else {
+                    minStartDate = this.timelineStartDate;
+                }
+                if (!isNullOrUndefined(maxEndLeft) && (maxEndLeft >= (this.totalTimelineWidth - this.bottomTierCellWidth) ||
+                    maxEndLeft >= validEndLeft)) {
+                    isChanged = isChanged === 'prevTimeSpan' ? 'both' : 'nextTimeSpan';
+                    maxEndDate = maxEndDate < this.timelineEndDate ? this.timelineEndDate : maxEndDate;
+                } else {
+                    maxEndDate = this.timelineEndDate;
+                }
+                if (isChanged) {
+                    this.performTimeSpanAction(isChanged, action, minStartDate, maxEndDate);
+                }
+                break;
+            }
         }
     }
     /**

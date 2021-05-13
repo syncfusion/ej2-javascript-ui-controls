@@ -85,10 +85,10 @@ export class LayoutRender extends MobileLayout {
         tableHead.appendChild(tr);
         for (const column of this.parent.columns) {
             if (this.isColumnVisible(column)) {
-                const index: number = this.parent.actionModule.columnToggleArray.indexOf(column.keyField);
+                const index: number = this.parent.actionModule.columnToggleArray.indexOf(column.keyField.toString());
                 const th: HTMLElement = createElement('th', {
                     className: index === -1 ? cls.HEADER_CELLS_CLASS : cls.HEADER_CELLS_CLASS + ' ' + cls.COLLAPSED_CLASS,
-                    attrs: { 'data-role': 'kanban-column', 'data-key': column.keyField }
+                    attrs: { 'data-role': 'kanban-column', 'data-key': column.keyField.toString() }
                 });
                 const classList: string[] = [];
                 if (column.allowToggle) {
@@ -165,7 +165,7 @@ export class LayoutRender extends MobileLayout {
         this.initializeSwimlaneTree();
         for (const row of this.swimlaneRow) {
             if (this.parent.swimlaneSettings.keyField && this.parent.swimlaneToggleArray.length !== 0) {
-                const index: number = this.parent.swimlaneToggleArray.indexOf(row.keyField);
+                const index: number = this.parent.swimlaneToggleArray.indexOf(row.keyField as string);
                 isCollaspsed = index !== -1;
             }
             if (this.parent.swimlaneSettings.keyField && !this.parent.isAdaptive) {
@@ -180,13 +180,13 @@ export class LayoutRender extends MobileLayout {
         const tr: HTMLElement = createElement('tr', { className: className, attrs: { 'aria-expanded': 'true' } });
         for (const column of this.parent.columns) {
             if (this.isColumnVisible(column)) {
-                const index: number = this.parent.actionModule.columnToggleArray.indexOf(column.keyField);
+                const index: number = this.parent.actionModule.columnToggleArray.indexOf(column.keyField.toString());
                 const className: string = index === -1 ? cls.CONTENT_CELLS_CLASS : cls.CONTENT_CELLS_CLASS + ' ' + cls.COLLAPSED_CLASS;
                 const dragClass: string = (column.allowDrag ? ' ' + cls.DRAG_CLASS : '') + (column.allowDrop ? ' ' + cls.DROP_CLASS
                     + ' ' + cls.DROPPABLE_CLASS : '');
                 const td: HTMLElement = createElement('td', {
                     className: className + dragClass,
-                    attrs: { 'data-role': 'kanban-column', 'data-key': column.keyField, 'aria-expanded': 'true', 'tabindex': '0' }
+                    attrs: { 'data-role': 'kanban-column', 'data-key': column.keyField.toString(), 'aria-expanded': 'true', 'tabindex': '0' }
                 });
                 if (column.allowToggle && !column.isExpanded || index !== -1) {
                     addClass([td], cls.COLLAPSED_CLASS);
@@ -228,7 +228,7 @@ export class LayoutRender extends MobileLayout {
         const name: string = cls.CONTENT_ROW_CLASS + ' ' + cls.SWIMLANE_ROW_CLASS;
         const className: string = isCollapsed ? ' ' + cls.COLLAPSED_CLASS : '';
         const tr: HTMLElement = createElement('tr', {
-            className: name + className, attrs: { 'data-key': row.keyField, 'aria-expanded': (!isCollapsed).toString() }
+            className: name + className, attrs: { 'data-key': row.keyField as string, 'aria-expanded': (!isCollapsed).toString() }
         });
         const col: number = this.parent.columns.length - this.parent.actionModule.hideColumnKeys.length;
         const td: HTMLElement = createElement('td', {
@@ -401,12 +401,12 @@ export class LayoutRender extends MobileLayout {
         const colGroup: HTMLElement = createElement('colgroup');
         this.parent.columns.forEach((column: ColumnsModel) => {
             if (this.isColumnVisible(column)) {
-                const index: number = this.parent.actionModule.columnToggleArray.indexOf(column.keyField);
+                const index: number = this.parent.actionModule.columnToggleArray.indexOf(column.keyField.toString());
                 const isToggle: boolean = column.allowToggle && !column.isExpanded;
                 const className: string = index === -1 ? (isToggle ? cls.COLLAPSED_CLASS : '') : cls.COLLAPSED_CLASS;
                 const col: HTMLElement = createElement('col', {
                     className: className,
-                    attrs: { 'data-key': column.keyField },
+                    attrs: { 'data-key': column.keyField.toString() },
                     styles: this.parent.isAdaptive ? 'width: ' +
                         (isToggle ? formatUnit(events.toggleWidth) : formatUnit(this.getWidth())) : ''
                 });
@@ -421,7 +421,7 @@ export class LayoutRender extends MobileLayout {
         if (this.parent.swimlaneSettings.keyField) {
             this.parent.kanbanData.map((obj: { [key: string]: string }): void => {
                 if (!this.parent.swimlaneSettings.showEmptyRow) {
-                    if (this.columnKeys.indexOf(obj[this.parent.keyField]) === -1) {
+                    if (this.columnKeys.indexOf(obj[this.parent.keyField].toString()) === -1) {
                         return;
                     }
                 }
@@ -472,7 +472,7 @@ export class LayoutRender extends MobileLayout {
         this.parent.columns.forEach((column: ColumnsModel) => {
             let headerText: string = '';
             for (const row of rows) {
-                if (row.keyFields.indexOf(column.keyField) !== -1) {
+                if (row.keyFields.indexOf(column.keyField.toString()) !== -1) {
                     headerText = row.text;
                 }
             }
@@ -560,7 +560,12 @@ export class LayoutRender extends MobileLayout {
 
     private isColumnVisible(column: ColumnsModel): boolean {
         let isVisible: boolean = false;
-        column.keyField.split(',').forEach((key: string) => { isVisible = this.parent.actionModule.hideColumnKeys.indexOf(key) === -1; });
+        const isNumeric: boolean = typeof column.keyField === 'number';
+        if (isNumeric) {
+            isVisible = this.parent.actionModule.hideColumnKeys.indexOf(column.keyField.toString()) === -1;
+        } else {
+            (column.keyField as string).split(',').forEach((key: string) => { isVisible = this.parent.actionModule.hideColumnKeys.indexOf(key) === -1; });
+        }
         return isVisible;
     }
 
@@ -636,13 +641,20 @@ export class LayoutRender extends MobileLayout {
         this.renderValidation();
     }
 
-    public getColumnData(columnValue: string, dataSource: Record<string, any>[] = this.parent.kanbanData): Record<string, any>[] {
+    public getColumnData(columnValue: string | number, dataSource: Record<string, any>[] = this.parent.kanbanData): Record<string, any>[] {
         let cardData: Record<string, any>[] = [];
-        const columnKeys: string[] = columnValue.split(',');
-        for (const key of columnKeys) {
+        const isNumeric: boolean = typeof columnValue === 'number';
+        if (isNumeric) {
             const keyData: Record<string, any>[] = dataSource.filter((cardObj: Record<string, any>) =>
-                cardObj[this.parent.keyField] === key.trim());
-            cardData = cardData.concat(keyData);
+                    cardObj[this.parent.keyField] === columnValue);
+                cardData = cardData.concat(keyData);
+        } else {
+            const columnKeys: string[] = (columnValue as string).split(',');
+            for (const key of columnKeys) {
+                const keyData: Record<string, any>[] = dataSource.filter((cardObj: Record<string, any>) =>
+                    cardObj[this.parent.keyField] === key.trim());
+                cardData = cardData.concat(keyData);
+            }
         }
         this.sortCategory(cardData);
         return cardData;
@@ -718,7 +730,12 @@ export class LayoutRender extends MobileLayout {
         const columnData: Record<string, any[]> = {};
         this.columnKeys = [];
         this.parent.columns.forEach((column: ColumnsModel) => {
-            this.columnKeys = this.columnKeys.concat(column.keyField.split(',').map((e: string) => e.trim()));
+            const isNumeric: boolean = typeof column.keyField === 'number';
+            if (isNumeric) {
+                this.columnKeys = this.columnKeys.concat(column.keyField.toString());
+            } else {
+                this.columnKeys = this.columnKeys.concat((column.keyField as string).split(',').map((e: string) => e.trim()));
+            }
             const cardData: Record<string, any>[] = this.getColumnData(column.keyField, data);
             columnData[column.keyField] = cardData;
         });
@@ -730,7 +747,7 @@ export class LayoutRender extends MobileLayout {
         if (this.parent.swimlaneSettings.keyField) {
             this.kanbanRows.forEach((row: HeaderArgs) =>
                 swimlaneData[row.keyField] = this.parent.kanbanData.filter((obj: Record<string, any>) =>
-                    this.columnKeys.indexOf(<string>obj[this.parent.keyField]) > -1 &&
+                    this.columnKeys.indexOf(<string>obj[this.parent.keyField].toString()) > -1 &&
                     ((!obj[this.parent.swimlaneSettings.keyField] && this.parent.swimlaneSettings.showUnassignedRow) ?
                         '' : obj[this.parent.swimlaneSettings.keyField]) === row.keyField));
         }
@@ -758,7 +775,18 @@ export class LayoutRender extends MobileLayout {
                 const countSelector: string = `.${cls.HEADER_CELLS_CLASS}[data-key="${column.keyField}"] .${cls.CARD_ITEM_COUNT_CLASS}`;
                 const itemCount: Element = this.parent.element.querySelector(countSelector);
                 if (itemCount) {
-                    itemCount.innerHTML = `- ${this.columnData[column.keyField].length} ${this.parent.localeObj.getConstant('items')}`;
+                    const isNumeric: boolean = typeof column.keyField === 'number';
+                    let cardLength: number = 0;
+                    if (isNumeric) {
+                        cardLength = ([].slice.call(this.parent.element.querySelectorAll('.' + cls.CARD_CLASS + '[data-key="' + column.keyField + '"]'))).length;
+                    } else {
+                        const keys: string[] = (column.keyField as string).split(',');
+                        for (const key of keys) {
+                            const cards: HTMLElement[] = [].slice.call(this.parent.element.querySelectorAll('.' + cls.CARD_CLASS + '[data-key=' + key.trim() + ']'));
+                            cardLength = cards.length + cardLength;
+                        }
+                    }
+                    itemCount.innerHTML = '- ' + cardLength + ' ' + this.parent.localeObj.getConstant('items');
                 }
             }
         });
@@ -768,7 +796,8 @@ export class LayoutRender extends MobileLayout {
                 const swimlaneKey: string = swimlane.getAttribute('data-key');
                 const itemCount: Element = swimlane.querySelector(`.${cls.CARD_ITEM_COUNT_CLASS}`);
                 if (itemCount && this.swimlaneData[swimlaneKey]) {
-                    itemCount.innerHTML = `- ${this.swimlaneData[swimlaneKey].length} ${this.parent.localeObj.getConstant('items')}`;
+                    const cards: HTMLElement[] = [].slice.call(swimlane.nextElementSibling.querySelectorAll('.' + cls.CARD_CLASS));
+                    itemCount.innerHTML = '- ' + cards.length + ' ' + this.parent.localeObj.getConstant('items');
                 }
             });
         }
@@ -804,8 +833,12 @@ export class LayoutRender extends MobileLayout {
                     let index: number = (this.kanbanRows as Record<string, any>[]).findIndex(
                         (rowData: Record<string, any>) => rowData['keyField'] === data[this.parent.swimlaneSettings.keyField]);
                     let swim: HTMLElement[] = [].slice.call(this.parent.element.querySelectorAll('.e-swimlane-row'));
-                    this.renderSwimlaneRow(swim[index], this.kanbanRows[index], false);
-                    this.renderSingleContent(swim[index], this.kanbanRows[index], false);
+                    let swimRow: HTMLElement = this.parent.element.querySelector('.' + cls.CONTENT_TABLE_CLASS + ' tbody');
+                    if (swim[index]) {
+                       swimRow = swim[index];
+                    }
+                    this.renderSwimlaneRow(swimRow, this.kanbanRows[index], false);
+                    this.renderSingleContent(swimRow, this.kanbanRows[index], false);
                 }
                 cardRow = this.parent.element.querySelector(rowSelector).nextElementSibling as HTMLElement;
                 [].slice.call(cardRow.children).forEach((cell: HTMLElement) => {

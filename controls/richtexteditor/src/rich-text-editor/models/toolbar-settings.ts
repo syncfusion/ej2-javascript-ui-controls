@@ -7,18 +7,27 @@ import { UploadSettings, UploadSettingsModel, ViewType } from '@syncfusion/ej2-f
 import { SaveFormat } from '../../common';
 import { TableStyleItems } from '../models/items';
 import { ToolbarType, ActionOnScroll, ToolbarItems } from '../base/enum';
-import { IToolbarItems, IDropDownItemModel, ColorModeType, IToolsItemConfigs } from '../base/interface';
+import { IToolbarItems, IDropDownItemModel, ColorModeType, IToolsItemConfigs, IRichTextEditor } from '../base/interface';
 
 export const predefinedItems: string[] = ['Bold', 'Italic', 'Underline', '|', 'Formats', 'Alignments',
     'OrderedList', 'UnorderedList', '|', 'CreateLink', 'Image', '|', 'SourceCode', 'Undo', 'Redo'];
 export const fontFamily: IDropDownItemModel[] = [
-    { text: 'Segoe UI', value: 'Segoe UI', cssClass: 'e-segoe-ui' },
-    { text: 'Arial', value: 'Arial,Helvetica,sans-serif', cssClass: 'e-arial' },
-    { text: 'Georgia', value: 'Georgia,serif', cssClass: 'e-georgia' },
-    { text: 'Impact', value: 'Impact,Charcoal,sans-serif', cssClass: 'e-impact' },
-    { text: 'Tahoma', value: 'Tahoma,Geneva,sans-serif', cssClass: 'e-tahoma' },
-    { text: 'Times New Roman', value: 'Times New Roman,Times,serif', cssClass: 'e-times-new-roman' },
-    { text: 'Verdana', value: 'Verdana,Geneva,sans-serif', cssClass: 'e-verdana' }
+    { cssClass: 'e-segoe-ui', text: 'Segoe UI', command: 'Font', subCommand: 'FontName', value: 'Segoe UI'},
+    { cssClass: 'e-arial', text: 'Arial', command: 'Font', subCommand: 'FontName', value: 'Arial,Helvetica,sans-serif'},
+    { cssClass: 'e-georgia', text: 'Georgia', command: 'Font', subCommand: 'FontName', value: 'Georgia,serif'},
+    { cssClass: 'e-impact', text: 'Impact', command: 'Font', subCommand: 'FontName', value: 'Impact,Charcoal,sans-serif'},
+    { cssClass: 'e-tahoma', text: 'Tahoma', command: 'Font', subCommand: 'FontName', value: 'Tahoma,Geneva,sans-serif'},
+    { cssClass: 'e-times-new-roman', text: 'Times New Roman', command: 'Font', subCommand: 'FontName', value: 'Times New Roman,Times,serif'},
+    { cssClass: 'e-verdana', text: 'Verdana', command: 'Font', subCommand: 'FontName', value: 'Verdana,Geneva,sans-serif'}
+];
+export let fontNameLocale : { [ket: string]: string }[] = [
+    { locale: 'fontNameSegoeUI', value: 'Segoe UI'},
+    { locale: 'fontNameArial', value: 'Arial,Helvetica,sans-serif'},
+    { locale: 'fontNameGeorgia', value: 'Georgia,serif'},
+    { locale: 'fontNameImpact', value: 'Impact,Charcoal,sans-serif'},
+    { locale: 'fontNameTahoma', value: 'Tahoma,Geneva,sans-serif'},
+    { locale: 'fontNameTimesNewRoman', value: 'Times New Roman,Times,serif'},
+    { locale: 'fontNameVerdana', value: 'Verdana,Geneva,sans-serif'}
 ];
 export const fontSize: IDropDownItemModel[] = [
     { text: '8 pt', value: '8pt' },
@@ -29,14 +38,23 @@ export const fontSize: IDropDownItemModel[] = [
     { text: '24 pt', value: '24pt' },
     { text: '36 pt', value: '36pt' }
 ];
+export let formatsLocale : { [ket: string]: string }[] = [
+    { locale: 'formatsDropDownParagraph', value: 'P' },
+    { locale: 'formatsDropDownCode', value: 'Pre' },
+    { locale: 'formatsDropDownQuotation', value: 'BlockQuote' },
+    { locale: 'formatsDropDownHeading1', value: 'H1' },
+    { locale: 'formatsDropDownHeading2', value: 'H2' },
+    { locale: 'formatsDropDownHeading3', value: 'H3' },
+    { locale: 'formatsDropDownHeading4', value: 'H4' }
+];
 export const formatItems: IDropDownItemModel[] = [
-    { text: 'Paragraph', value: 'P', cssClass: 'e-paragraph' },
-    { text: 'Code', value: 'Pre', cssClass: 'e-code' },
-    { text: 'Quotation', value: 'BlockQuote', cssClass: 'e-quote' },
-    { text: 'Heading 1', value: 'H1', cssClass: 'e-h1' },
-    { text: 'Heading 2', value: 'H2', cssClass: 'e-h2' },
-    { text: 'Heading 3', value: 'H3', cssClass: 'e-h3' },
-    { text: 'Heading 4', value: 'H4', cssClass: 'e-h4' }
+    { cssClass: 'e-paragraph', text: 'Paragraph', command: 'Formats', subCommand: 'P', value: 'P'},
+    { cssClass: 'e-code', text: 'Code', command: 'Formats', subCommand: 'Pre', value: 'Pre'},
+    { cssClass: 'e-quote', text: 'Quotation', command: 'Formats', subCommand: 'BlockQuote', value: 'BlockQuote'},
+    { cssClass: 'e-h1', text: 'Heading 1', command: 'Formats', subCommand: 'H1', value: 'H1'},
+    { cssClass: 'e-h2', text: 'Heading 2', command: 'Formats', subCommand: 'H2', value: 'H2'},
+    { cssClass: 'e-h3', text: 'Heading 3', command: 'Formats', subCommand: 'H3', value: 'H3'},
+    { cssClass: 'e-h4', text: 'Heading 4', command: 'Formats', subCommand: 'H4', value: 'H4'}
 ];
 export const fontColor: { [key: string]: string[] } = {
     // eslint-disable-next-line
@@ -59,6 +77,23 @@ export const backgroundColor: { [key: string]: string[] } = {
         '#7f7f7f', '#0d0d0d', '#999900', '#006600', '#006666', '#000066', '#660000', '#00004d', '#4d004d', '#734d26'
     ]
 };
+
+function getLocaleFontFormat(self: IRichTextEditor, localeItems: { [ket: string]: string }[], item: IDropDownItemModel): string {
+    for(let i: number = 0; localeItems.length > i; i++) {
+        if(localeItems[i].value === item.value || localeItems[i].value === item.subCommand) {
+            return self.localeObj.getConstant(localeItems[i].locale);
+        }
+    }
+    return item.text;
+}
+export function updateDropDownFontFormatLocale(self: IRichTextEditor): void {
+    fontFamily.forEach((item: IDropDownItemModel, i: number) => {
+        fontFamily[i].text = getLocaleFontFormat(self, fontNameLocale, fontFamily[i]);
+    });
+    formatItems.forEach((item: IDropDownItemModel, i: number) => {
+        formatItems[i].text = getLocaleFontFormat(self, formatsLocale, formatItems[i]);
+    });
+}
 
 /**
  * Configures the toolbar settings of the RichTextEditor.

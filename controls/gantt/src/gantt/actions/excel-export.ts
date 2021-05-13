@@ -45,7 +45,6 @@ export class ExcelExport {
      * @private
      */
     private bindEvents(): void {
-        // eslint-disable-next-line
         this.parent.treeGrid.beforeExcelExport = (args: Object) => {
             this.parent.trigger('beforeExcelExport', args);
         };

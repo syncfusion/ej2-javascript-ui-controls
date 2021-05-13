@@ -62,7 +62,6 @@ export class DialogEdit {
     private editedRecord: IGanttData;
     private rowData: IGanttData;
     private beforeOpenArgs: CObject;
-    // eslint-disable-next-line
     private inputs: Object;
     private idCollection: IDependencyEditData[];
     /**
@@ -74,12 +73,10 @@ export class DialogEdit {
     private dialogEditValidationFlag: boolean = false;
     private tabObj: Tab;
     private selectedSegment: ITaskSegment;
-    // eslint-disable-next-line
     public ganttResources: Object[] = [];
     /**
      * @private
      */
-    // eslint-disable-next-line
     public previousResource: Object[] = [];
     /**
      * @private
@@ -291,12 +288,18 @@ export class DialogEdit {
                 } else {
                     tempData[field] = new Date(tempData[taskSettings.endDate]);
                 }
+                if (this.parent.timezone) {
+                    tempData[field] = this.parent.dateValidationModule.remove(tempData[field], this.parent.timezone);
+                }
                 tempData.ganttProperties.startDate = new Date(tempData[field]);
             } else if (columns[i].field === taskSettings.endDate) {
                 if (isNullOrUndefined(tempData[taskSettings.startDate])) {
                     tempData[field] = this.getMinimumStartDate();
                 } else {
                     tempData[field] = new Date(tempData[taskSettings.startDate]);
+                }
+                if (this.parent.timezone) {
+                    tempData[field] = this.parent.dateValidationModule.remove(tempData[field], this.parent.timezone);
                 }
                 tempData.ganttProperties.endDate = new Date(tempData[field]);
             } else if (columns[i].field === taskSettings.duration) {
@@ -352,7 +355,6 @@ export class DialogEdit {
      * @returns {void} .
      * @private
      */
-    // eslint-disable-next-line
     public openEditDialog(taskId: number | string | object): void {
         const ganttObj: Gantt = this.parent;
         if (typeof taskId === 'object' && !isNullOrUndefined(taskId)) {
@@ -515,7 +517,6 @@ export class DialogEdit {
                 if (!isNullOrUndefined(controlObj)) {
                     const column: GanttColumnModel = ganttObj.columnByField[fieldName];
                     if (!isNullOrUndefined(column.edit) && isNullOrUndefined(column.edit.params)) {
-                        // eslint-disable-next-line
                         let destroy: Function = column.edit.destroy as Function;
                         if (typeof destroy === 'string') {
                             destroy = getObject(destroy, window);
@@ -620,8 +621,7 @@ export class DialogEdit {
                         continue;
                     }
                     if (isNullOrUndefined(dialogField.headerText)) {
-                        dialogField.headerText = this.localeObj.getConstant('customTab');
-                        // eslint-disable-next-line
+                        dialogField.headerText = this.localeObj.getConstant('customTab');   // eslint-disable-next-line
                         count++;
                     }
                     tabItem.content = 'Custom' + '' + index++;
@@ -680,9 +680,7 @@ export class DialogEdit {
         }
         if (id === ganttObj.element.id + 'ResourcesTabContainer') {
             const resourceTreeGrid: TreeGrid = <TreeGrid>(<EJ2Instance>ganttObj.element.querySelector('#' + id)).ej2_instances[0];
-            // eslint-disable-next-line
             const resources: Object[] = this.ganttResources;
-            // eslint-disable-next-line
             const currentViewData: Object[] = resourceTreeGrid.getCurrentViewRecords();
             if (resources && resources.length > 0) {
                 currentViewData.forEach((data: CObject, index: number): void => {
@@ -726,7 +724,6 @@ export class DialogEdit {
 
     private getFieldsModel(fields: string[]): Record<string, unknown> {
         const fieldsModel: Record<string, unknown> = {};
-        // eslint-disable-next-line
         const columnByField: Object = this.parent.columnByField;
         for (let i: number = 0; i < fields.length; i++) {
             if (fields[i] === this.parent.taskFields.dependency ||
@@ -741,11 +738,10 @@ export class DialogEdit {
         }
         return fieldsModel;
     }
-    private createInputModel(column: GanttColumnModel, fieldsModel: object): object {    // eslint-disable-line
+    private createInputModel(column: GanttColumnModel, fieldsModel: object): object {
         const ganttObj: Gantt = this.parent;
         const locale: string = this.parent.locale;
         const taskSettings: TaskFieldsModel = this.parent.taskFields;
-        // eslint-disable-next-line
         const common: Object = {
             placeholder: column.headerText,
             floatLabelType: 'Auto'
@@ -851,6 +847,8 @@ export class DialogEdit {
         const dialog: HTMLElement = ganttObj.editModule.dialogModule.dialog;
         let targetId: string = null; let inputElement: HTMLInputElement;
         const currentData: IGanttData = ganttObj.editModule.dialogModule.editedRecord;
+        let cellValue: string = null;
+        let colName: string = null;
         if (!isNullOrUndefined(args.element)) {
             inputElement = args.element as HTMLInputElement;
             targetId = inputElement.getAttribute('id');
@@ -858,13 +856,18 @@ export class DialogEdit {
             inputElement = args.container as HTMLInputElement;
             targetId = inputElement.querySelector('input').getAttribute('id');
             inputElement = inputElement.querySelector('#' + targetId);
-        } else if (!isNullOrUndefined((args.event as CObject).path[1])) {
+        } else if (!isNullOrUndefined(args.event) && !isNullOrUndefined((args.event as CObject).path[1])) {
             inputElement = (args.event as CObject).path[1] as HTMLInputElement;
             targetId = inputElement.querySelector('input').getAttribute('id');
             inputElement = inputElement.querySelector('#' + targetId);
         }
-        const cellValue: string = inputElement.value;
-        let colName: string = targetId.replace(ganttObj.element.id, '');
+        if (isNullOrUndefined(inputElement)) {
+            cellValue = args.value as string;
+            colName = column.field;
+        } else {
+            cellValue = inputElement.value;
+            colName = targetId.replace(ganttObj.element.id, '');
+        }
         if (colName.search('Segments') === 0) {
             colName = colName.replace('SegmentsTabContainer', '');
             this.validateSegmentFields(ganttObj, colName, cellValue, args);
@@ -873,16 +876,16 @@ export class DialogEdit {
             this.validateScheduleValuesByCurrentField(colName, cellValue, this.editedRecord);
             const ganttProp: ITaskData = currentData.ganttProperties;
             const tasks: TaskFieldsModel = ganttObj.taskFields;
-            if (!isNullOrUndefined(tasks.startDate)) {
+            if (!isNullOrUndefined(tasks.startDate) && tasks.startDate !== colName) {
                 this.updateScheduleFields(dialog, ganttProp, 'startDate');
             }
-            if (!isNullOrUndefined(tasks.endDate)) {
+            if (!isNullOrUndefined(tasks.endDate) && tasks.endDate !== colName) {
                 this.updateScheduleFields(dialog, ganttProp, 'endDate');
             }
-            if (!isNullOrUndefined(tasks.duration)) {
+            if (!isNullOrUndefined(tasks.duration) && tasks.duration !== colName) {
                 this.updateScheduleFields(dialog, ganttProp, 'duration');
             }
-            if (!isNullOrUndefined(tasks.work)) {
+            if (!isNullOrUndefined(tasks.work) && tasks.work !== colName) {
                 this.updateScheduleFields(dialog, ganttProp, 'work');
             }
             this.dialogEditValidationFlag = false;
@@ -900,8 +903,7 @@ export class DialogEdit {
         if (col.editType === 'stringedit') {
             const textBox: TextBox = <TextBox>(<EJ2Instance>dialog.querySelector('#' + ganttId + columnName)).ej2_instances[0];
             tempValue = !isNullOrUndefined(col.edit) && !isNullOrUndefined(col.edit.read) ? (col.edit.read as () => void)() :
-                // eslint-disable-next-line
-                !isNullOrUndefined(col.valueAccessor) ? (col.valueAccessor as Function) (columnName, ganttObj.editModule.dialogModule.editedRecord, col) :
+                !isNullOrUndefined(col.valueAccessor) ? (col.valueAccessor as Function) (columnName, ganttObj.editModule.dialogModule.editedRecord, col) :   // eslint-disable-line
                     this.parent.dataOperation.getDurationString(ganttProp.duration, ganttProp.durationUnit);
             if (textBox.value !== tempValue.toString() && taskField.duration === columnName) {
                 textBox.value = tempValue as string;
@@ -926,7 +928,7 @@ export class DialogEdit {
             const numericTextBox: NumericTextBox = <NumericTextBox>(
                 <EJ2Instance>dialog.querySelector('#' + ganttId + columnName)).ej2_instances[0];
             tempValue = ganttProp[ganttField];
-            if (!isNullOrUndefined(tempValue)) {
+            if (!isNullOrUndefined(tempValue) && numericTextBox.value !== tempValue) {
                 numericTextBox.value = tempValue as number;
                 numericTextBox.dataBind();
             }
@@ -1080,7 +1082,6 @@ export class DialogEdit {
         }
         return true;
     }
-    // eslint-disable-next-line
     private getSegmentsModel(fields: string[]): Object {
         const taskSettings: TaskFieldsModel = this.parent.taskFields;
         if (isNullOrUndefined(fields) || fields.length === 0) {
@@ -1125,7 +1126,6 @@ export class DialogEdit {
                     field: fields[i], headerText: this.localeObj.getConstant(fields[i]), editType: 'stringedit', width: '200px',
                     edit: {
                         write: (args: CObject): void => {
-                            // eslint-disable-next-line
                             const datePickerModel: object = this.beforeOpenArgs[generalTabString][this.parent.taskFields[fields[i]]];
                             const value: string = args.rowData[(args.column as GridColumnModel).field];
                             setValue('value', value, datePickerModel);
@@ -1151,7 +1151,6 @@ export class DialogEdit {
                     field: fields[i], headerText: this.localeObj.getConstant(fields[i]), editType: 'stringedit', width: '100px',
                     edit: {
                         write: (args: CObject): void => {
-                            // eslint-disable-next-line
                             const inputTextModel: object = this.beforeOpenArgs[generalTabString][this.parent.taskFields[fields[i]]];
                             (inputTextModel as TextBox).floatLabelType = 'Never';
                             const value: string = args.rowData[(args.column as GridColumnModel).field];
@@ -1259,7 +1258,6 @@ export class DialogEdit {
             this.updateSegmentField('duration', args, this.selectedSegment);
         }
     }
-    // eslint-disable-next-line
     private getPredecessorModel(fields: string[]): Object {
         if (isNullOrUndefined(fields) || fields.length === 0) {
             fields = ['ID', 'Name', 'Type', 'Offset', 'UniqueId'];
@@ -1321,7 +1319,6 @@ export class DialogEdit {
         inputModel.height = this.parent.isAdaptive ? '100%' : '153px';
         return inputModel;
     }
-    // eslint-disable-next-line
     private getResourcesModel(fields: string[]): Object {
         const ganttObj: Gantt = this.parent;
         const resourceSettings: ResourceFieldsModel = ganttObj.resourceFields;
@@ -1380,7 +1377,6 @@ export class DialogEdit {
         return inputModel;
     }
 
-    // eslint-disable-next-line
     private getNotesModel(fields: string[]): Object {
         if (isNullOrUndefined(fields) || fields.length === 0) {
             fields = ['Bold', 'Italic', 'Underline', 'StrikeThrough',
@@ -1514,7 +1510,6 @@ export class DialogEdit {
     }
     private renderGeneralTab(itemName: string): HTMLElement {
         const ganttObj: Gantt = this.parent;
-        // eslint-disable-next-line
         const itemModel: Object = this.beforeOpenArgs[itemName];
         const divElement: HTMLElement = this.createDivElement('e-edit-form-row', ganttObj.element.id
             + '' + itemName + 'TabContainer');
@@ -1629,7 +1624,6 @@ export class DialogEdit {
                 // eslint-disable-next-line
                 this.idCollection.forEach((data: IDependencyEditData, index: number): void => {
                     if (data.id === getValue('id', gridData[i])) {
-                        // eslint-disable-next-line
                         const selectedItem: object = getValue('rowData', args);
                         if (isEdit && getValue('id', selectedItem) === data.id) {
                             return;
@@ -1666,7 +1660,6 @@ export class DialogEdit {
         const ganttObj: Gantt = this.parent;
         const resourceSettings: ResourceFieldsModel = ganttObj.resourceFields;
         const ganttData: IGanttData = this.beforeOpenArgs.rowData;
-        // eslint-disable-next-line
         const rowResource: Object[] = ganttData.ganttProperties.resourceInfo;
         const inputModel: TreeGridModel = this.beforeOpenArgs[itemName];
         const resourceTreeGridId: string = ganttObj.element.id + '' + itemName + 'TabContainer';
@@ -1686,7 +1679,6 @@ export class DialogEdit {
             }
         }
         inputModel.dataSource = resourceData;
-        // eslint-disable-next-line
         const resourceInfo: Object[] = ganttData.ganttProperties.resourceInfo;
         if (this.isEdit && !isNullOrUndefined(resourceInfo)) {
             for (let i: number = 0; i < resourceInfo.length; i++) {
@@ -1739,13 +1731,11 @@ export class DialogEdit {
         let inputElement: HTMLElement;
         const editArgs: Record<string, unknown> = { column: column, data: ganttData };
         if (!isNullOrUndefined(column.edit) && isNullOrUndefined(column.edit.params)) {
-            // eslint-disable-next-line
             let create: Function = column.edit.create as Function;
             if (typeof create === 'string') {
                 create = getObject(create, window);
                 inputElement = create(editArgs);
             } else {
-                // eslint-disable-next-line
                 inputElement = (column.edit.create as Function)(editArgs);
             }
             inputElement.className = '';
@@ -1761,7 +1751,6 @@ export class DialogEdit {
         inputModel.enabled = !this.isCheckIsDisabled(column);
         if (column.field === this.parent.taskFields.duration) {
             if (!isNullOrUndefined(column.valueAccessor)) {
-                // eslint-disable-next-line
                 if (typeof column.valueAccessor === 'string') {
                     const valueAccessor: Function = getObject(column.valueAccessor, window);
                     inputModel.value = valueAccessor(column.field, ganttData, column);
@@ -1784,7 +1773,6 @@ export class DialogEdit {
             }
         }
         if (!isNullOrUndefined(column.edit) && isNullOrUndefined(column.edit.params)) {
-            // eslint-disable-next-line
             let write: Function = column.edit.write as Function;
             let inputObj: Inputs;
             if (typeof write === 'string') {
@@ -1793,7 +1781,6 @@ export class DialogEdit {
                     column: column, rowData: ganttData, element: inputElement
                 });
             } else {
-                // eslint-disable-next-line
                 inputObj = (column.edit.write as Function)({
                     column: column, rowData: ganttData, element: inputElement
                 });
@@ -1945,7 +1932,6 @@ export class DialogEdit {
             this.parent.editModule.initiateUpdateAction(editArgs);
         } else {
             if (this.parent.viewType === 'ResourceView') {
-                // eslint-disable-next-line
                 const newRecords: Object = extend({}, this.addedRecord, true);
                 if (newRecords[this.parent.taskFields.resourceInfo].length) {
                     for (let i: number = 0; i < newRecords[this.parent.taskFields.resourceInfo].length; i++) {
@@ -1970,7 +1956,6 @@ export class DialogEdit {
         const userData: ITaskSegment[] = [];
         const taskSettings: TaskFieldsModel = this.parent.taskFields;
         for (let i: number = 0; i < dataSource.length; i++) {
-            // eslint-disable-next-line
             const taskData: Object = {};
 
             if (!isNullOrUndefined(taskSettings.startDate)) {
@@ -2023,13 +2008,11 @@ export class DialogEdit {
                 const controlObj: CObject = <CObject>(<EJ2Instance>div.querySelector('#' + ganttObj.element.id + fieldName)).ej2_instances[0];
                 const column: GanttColumnModel = ganttObj.columnByField[fieldName];
                 if (!isNullOrUndefined(column.edit) && isNullOrUndefined(column.edit.params)) {
-                    // eslint-disable-next-line
                     let read: Function = column.edit.read as Function;
                     if (typeof read === 'string') {
                         read = getObject(read, window);
                         tasksData[fieldName] = read(inputElement, controlObj.value);
                     } else {
-                        // eslint-disable-next-line
                         tasksData[fieldName] = (column.edit.read as Function)(inputElement, controlObj.value);
                     }
                 } else if (isCustom && column.editType === 'booleanedit') {
@@ -2142,7 +2125,6 @@ export class DialogEdit {
                 this.isResourceUpdate = false;
             }
         }
-        // eslint-disable-next-line
         const idArray: object[] = [];
         if (this.isEdit) {
             this.parent.setRecordValue('resourceInfo', selectedItems, this.rowData.ganttProperties, true);

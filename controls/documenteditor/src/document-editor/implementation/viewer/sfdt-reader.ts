@@ -1599,6 +1599,16 @@ export class SfdtReader {
                 characterFormat.strikethrough = sourceFormat.strikethrough;
             }
             if (!isNullOrUndefined(sourceFormat.fontSize)) {
+                let number: number = sourceFormat.fontSize * 10;
+                if(number % 10 !== 0) {
+                    number = sourceFormat.fontSize.toFixed(1) * 10;
+                    //to check worst case scenerio like 8.2 or 8.7 like these to round off
+                    if (number % 5 === 0) {
+                    sourceFormat.fontSize = sourceFormat.fontSize.toFixed(1);
+                    } else {
+                        sourceFormat.fontSize = Math.round(sourceFormat.fontSize);
+                    }
+                }
                 characterFormat.fontSize = sourceFormat.fontSize;
             }
             if (!isNullOrUndefined(sourceFormat.fontFamily)) {

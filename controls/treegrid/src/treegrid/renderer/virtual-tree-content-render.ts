@@ -156,6 +156,7 @@ export class VirtualTreeContentRenderer extends VirtualContentRenderer {
     }
 
     private toSelectVirtualRow(args: { selectedIndex: number }): void {
+        if (this.parent.isEdit) { return; }
         const selectVirtualRow: string = 'selectVirtualRow';
         super[selectVirtualRow](args);
     }

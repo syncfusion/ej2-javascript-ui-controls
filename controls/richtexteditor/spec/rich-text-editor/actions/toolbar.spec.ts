@@ -1,11 +1,130 @@
 /**
  * Toolbar spec
  */
-import { selectAll, select, Browser, createElement, getUniqueID, detach, isNullOrUndefined, closest } from "@syncfusion/ej2-base";
+import { selectAll, select, Browser, L10n, createElement, getUniqueID, detach, isNullOrUndefined, closest } from "@syncfusion/ej2-base";
 import { RichTextEditor, ToolbarType } from "../../../src/rich-text-editor/index";
 import { IToolbarStatus } from '../../../src/common/interface';
-import { renderRTE, destroy } from "./../render.spec";
+import { renderRTE, destroy, dispatchEvent } from "./../render.spec";
 import { NodeSelection } from "../../../src/selection/index";
+
+L10n.load({
+    'de-DE': {
+        'richtexteditor': {
+            formatsDropDownParagraph: 'Absatz',
+            formatsDropDownCode: 'Kodex',
+            formatsDropDownQuotation: 'Zitat',
+            formatsDropDownHeading1: 'Überschrift 1',
+            formatsDropDownHeading2: 'Überschrift 2',
+            formatsDropDownHeading3: 'Überschrift 3',
+            formatsDropDownHeading4: 'Überschrift 4',
+            fontNameSegoeUI: 'Segoe UI',
+            fontNameArial: 'Arial',
+            fontNameGeorgia: 'Georgia',
+            fontNameImpact: 'Einschlag',
+            fontNameTahoma: 'Tahoma',
+            fontNameTimesNewRoman: 'Mal neu römisch',
+            fontNameVerdana: 'Verdana'
+        }
+    }
+});
+
+describe('Localization text for Formats and Font family', () => {
+    let rteObj: RichTextEditor;
+    let rteEle: HTMLElement;
+    let controlId: string;
+    beforeEach((done: Function) => {
+        rteObj = renderRTE({
+            locale: 'de-DE',
+            toolbarSettings: {
+                items: ['FontName', 'Formats']
+            },
+        });
+        rteEle = rteObj.element;
+        controlId = rteEle.id;
+        done();
+    });
+    it(' Check the formats dropdown items ', (done) => {
+        let format: HTMLElement = rteObj.element.querySelector('#' + controlId + '_toolbar_Formats');
+        dispatchEvent(format, 'mousedown');
+        dispatchEvent(format, 'mouseup');
+        format.click();
+        setTimeout(() => {
+            let items: any = document.querySelectorAll('#' + controlId + '_toolbar_Formats-popup .e-item');
+            expect(items[0].textContent === 'Absatz').toBe(true);
+            expect(items[1].textContent === 'Kodex').toBe(true);
+            expect(items[2].textContent === 'Zitat').toBe(true);
+            expect(items[3].textContent === 'Überschrift 1').toBe(true);
+            expect(items[4].textContent === 'Überschrift 2').toBe(true);
+            expect(items[5].textContent === 'Überschrift 3').toBe(true);
+            expect(items[6].textContent === 'Überschrift 4').toBe(true);
+            done();
+        }, 200)
+    });
+    it(' Check the fontFamily dropdown items ', (done) => {
+        let item: HTMLElement = rteObj.element.querySelector('#' + controlId + '_toolbar_FontName');
+        dispatchEvent(item, 'mousedown');
+        dispatchEvent(item, 'mouseup');
+        item.click();
+        setTimeout(() => {
+            let items: any = document.querySelectorAll('#' + controlId + '_toolbar_FontName-popup .e-item');
+            expect(items[0].textContent === 'Segoe UI').toBe(true);
+            expect(items[1].textContent === 'Arial').toBe(true);
+            expect(items[2].textContent === 'Georgia').toBe(true);
+            expect(items[3].textContent === 'Einschlag').toBe(true);
+            expect(items[4].textContent === 'Tahoma').toBe(true);
+            expect(items[5].textContent === 'Mal neu römisch').toBe(true);
+            expect(items[6].textContent === 'Verdana').toBe(true);
+            done();
+        }, 200)
+    });
+    afterEach(() => {
+        destroy(rteObj);
+    });
+});
+    describe('Check whether the selected text changed to the selected format and font name', () => {
+        let rteObj: RichTextEditor;
+        let rteEle: HTMLElement;
+        let controlId: string;
+        beforeEach((done: Function) => {
+            rteObj = renderRTE({
+                locale: 'de-DE',
+                toolbarSettings: {
+                    items: ['FontName', 'Formats']
+                },
+                value: `<p id="rte">RichTextEditor</p>`
+            });
+            rteEle = rteObj.element;
+            controlId = rteEle.id;
+            done();
+        });
+    it(' Check whether the selected text changed to the selected font name ', (done) => {
+        let pEle: HTMLElement = rteObj.element.querySelector('#rte');
+        rteObj.formatter.editorManager.nodeSelection.setSelectionText(document, rteObj.element.querySelector('#rte').childNodes[0], rteObj.element.querySelector('#rte').childNodes[0], 0, 14);
+        let fontname: HTMLElement = rteObj.element.querySelector('#' + controlId + '_toolbar_FontName');
+        dispatchEvent(fontname, 'mousedown');
+        dispatchEvent(fontname, 'mouseup');
+        fontname.click();
+        let items: any = document.querySelectorAll('#' + controlId + '_toolbar_FontName-popup .e-item');
+        items[1].click();
+        let span: HTMLSpanElement = pEle.querySelector('span');
+        expect(span.style.fontFamily === 'Arial, Helvetica, sans-serif').toBe(true);
+        done();
+    });
+    it(' Check whether the selected text changed to the selected format ', (done) => {
+        rteObj.formatter.editorManager.nodeSelection.setSelectionText(document, rteObj.element.querySelector('#rte').childNodes[0], rteObj.element.querySelector('#rte').childNodes[0], 0, 14);
+        let format: HTMLElement = rteObj.element.querySelector('#' + controlId + '_toolbar_Formats');
+        dispatchEvent(format, 'mousedown');
+        dispatchEvent(format, 'mouseup');
+        format.click();
+        let items: any = document.querySelectorAll('#' + controlId + '_toolbar_Formats-popup .e-item');
+        items[3].click();
+        expect(rteObj.element.querySelector('#rte').tagName === 'H1').toBe(true);
+        done();
+    });
+    afterEach(() => {
+        destroy(rteObj);
+    });
+});
 
 describe("Toolbar - Actions Module", () => {
     beforeAll(() => {

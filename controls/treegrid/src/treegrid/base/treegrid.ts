@@ -2496,30 +2496,37 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
 
     }
 
-    private getGridColumns(columns: Column[]): GridColumnModel[] {
+    private getGridColumns(columns: Column[], isEmptyColumnModel: boolean = true, index: number = 0): GridColumnModel[] {
         const column: Column[] | ColumnModel[] | string[] = columns;
-        this.columnModel = [];
+        const stackedColumn: string = 'columns';
+        if (isEmptyColumnModel) {
+            this.columnModel = [];
+        }
         let treeGridColumn: ColumnModel;
         let gridColumn: GridColumnModel;
+        index = index === 0 ? -1 : index;
         const gridColumnCollection: GridColumnModel[] = [];
         for (let i: number = 0; i < column.length; i++) {
+            index = index + 1;
             const treeColumn: GridColumnModel = this.grid.getColumnByUid(column[i].uid);
             gridColumn = treeColumn ? treeColumn : {}; treeGridColumn = {};
             if (typeof this.columns[i] === 'string') {
                 gridColumn.field =  treeGridColumn.field = <string>this.columns[i];
             } else {
                 for (const prop of Object.keys(column[i])) {
-                    if (i === this.treeColumnIndex && prop === 'template') {
+                    if (index === this.treeColumnIndex && prop === 'template') {
                         treeGridColumn[prop] = column[i][prop];
                     } else if (prop === 'columns') {
-                        gridColumn[prop] = this.getGridColumns(column[i][prop] as Column[]);
+                        gridColumn[prop] = this.getGridColumns(column[i][prop] as Column[], false, index);
                         treeGridColumn[prop] = column[i][prop];
                     } else {
                         gridColumn[prop] = treeGridColumn[prop] = column[i][prop];
                     }
                 }
             }
-            this.columnModel.push(new Column(treeGridColumn));
+            if (!treeGridColumn[stackedColumn]) {
+                this.columnModel.push(new Column(treeGridColumn));
+            }
             gridColumnCollection.push(gridColumn);
         }
         return gridColumnCollection;
@@ -3202,10 +3209,10 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
         let temp: string;
         let field: string;
         const gridColumns: GridColumn[] = isNullOrUndefined(column) ? this.grid.getColumns() : column;
-        if (this.treeColumnIndex !== -1 && this.columns[this.treeColumnIndex] &&
-                    !isNullOrUndefined((this.columns[this.treeColumnIndex] as Column).template)) {
-            temp = (this.columns[this.treeColumnIndex] as Column).template;
-            field = (this.columns[this.treeColumnIndex] as Column).field;
+        if (this.treeColumnIndex !== -1 && this.columnModel[this.treeColumnIndex] &&
+                    !isNullOrUndefined((this.columnModel[this.treeColumnIndex] as Column).template)) {
+            temp = (this.columnModel[this.treeColumnIndex] as Column).template;
+            field = (this.columnModel[this.treeColumnIndex] as Column).field;
         }
         this.columnModel = [];
         let stackedHeader: boolean = false;

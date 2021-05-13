@@ -2735,8 +2735,17 @@ export class CommandHandler {
                 this.diagram.nameTable[zIndexTable[currentObject]].zIndex = currentObject;
                 if (this.diagram.mode === 'SVG') {
                     if (!(node.children && node.children.length > 0)) {
-                        this.moveSvgNode(objectId, zIndexTable[intersectArray[intersectArray.length - 1].zIndex]);
-                        this.updateNativeNodeIndex(objectId, zIndexTable[intersectArray[intersectArray.length - 1].zIndex]);
+                        let tempChild: string = zIndexTable[intersectArray[intersectArray.length - 1].zIndex];
+                        if (intersectArray[intersectArray.length - 1].children && intersectArray[intersectArray.length - 1].children.length !== 0) {
+                            var tempParent = intersectArray[intersectArray.length - 1];
+                            tempChild = tempParent.children[0];
+                        }
+                        let checkChild = this.diagram.getObject(tempChild);
+                        if ((checkChild as Node).children && (checkChild as Node).children.length !== 0) {
+                            tempChild = (checkChild as Node).children[0];
+                        }
+                        this.moveSvgNode(objectId, tempChild);
+                        this.updateNativeNodeIndex(objectId, tempChild);
                         if (isBlazor()) {
                             const elements: (NodeModel | ConnectorModel)[] = [];
                             elements.push(node);
@@ -3186,7 +3195,7 @@ export class CommandHandler {
             if (target && !((target as Node).isLane || (target as Node).isPhase || (target as Node).isHeader)) {
                 for (let i: number = 0; i < objects.length; i++) {
                     const laneNode: Node = this.diagram.nameTable[(objects[i] as NodeModel).id];
-                    if (laneNode.isLane || laneNode.isPhase || laneNode.isHeader) {
+                    if (!laneNode.isLane || laneNode.isPhase || laneNode.isHeader) {
                         target = laneNode;
                         this.diagram.parentObject = target;
                     }

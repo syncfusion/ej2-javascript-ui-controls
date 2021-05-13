@@ -10,8 +10,8 @@ import * as classes from '../base/classes';
 import { Render } from '../renderer/render';
 import { ViewSource } from '../renderer/view-source';
 import { IRenderer, IFormatter, PrintEventArgs, ActionCompleteEventArgs, ActionBeginEventArgs, ImageDropEventArgs } from './interface';
-import { BeforeQuickToolbarOpenArgs, ChangeEventArgs, AfterImageDeleteEventArgs } from './interface';
-import { IExecutionGroup, executeGroup, CommandName, ResizeArgs } from './interface';
+import { IExecutionGroup, executeGroup, CommandName, ResizeArgs, StatusArgs, ToolbarStatusEventArgs } from './interface';
+import { BeforeQuickToolbarOpenArgs, ChangeEventArgs, AfterImageDeleteEventArgs, PasteCleanupArgs } from './interface';
 import { ILinkCommandsArgs, IImageCommandsArgs, BeforeSanitizeHtmlArgs, ITableCommandsArgs, ExecuteCommandOption } from './interface';
 import { ServiceLocator } from '../services/service-locator';
 import { RendererFactory } from '../services/renderer-factory';
@@ -808,14 +808,24 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
     public quickToolbarClose: EmitType<Object>;
     /* eslint-enable */
     /**
-     * Triggers when the undo and redo status is updated.
+     * This event is deprecated and no longer works. Use `updatedToolbarStatus` event to get the undo and redo status.
+     *
+     * @deprecated
+     * @event 'object'
+     */
+    /* eslint-disable */
+    @Event()
+    private toolbarStatusUpdate: EmitType<Object>;
+    /* eslint-enable */
+    /**
+     * Triggers when the toolbar items status is updated.
      *
      * @event 'object'
      * @blazorType ToolbarUpdateEventArgs
      */
     /* eslint-disable */
     @Event()
-    private toolbarStatusUpdate: EmitType<Object>;
+    private updatedToolbarStatus: EmitType<ToolbarStatusEventArgs>;
     /* eslint-enable */
     /**
      * Event triggers when the image is selected or dragged into the insert image dialog.
@@ -970,6 +980,23 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
      */
     @Event()
     public resizeStop: EmitType<ResizeArgs>;
+
+    /**
+     * Triggers before cleanup the copied content.
+     *
+     * @event 'object'
+     */
+    @Event()
+    public beforePasteCleanup: EmitType<PasteCleanupArgs>;
+
+    /**
+     * Triggers after cleanup the copied content.
+     *
+     * @event 'object'
+     */
+    @Event()
+    public afterPasteCleanup: EmitType<object>;
+
     /**
      * Triggers before drop the image.
      *
@@ -2703,6 +2730,19 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
         this.idleInterval = setTimeout(this.updateValueOnIdle.bind(this), 0);
     }
 
+    private updateStatus(e: StatusArgs): void {
+        if (!isNOU(e.html) || !isNOU(e.markdown)) {
+            const status: { [key: string]: boolean } = this.formatter.editorManager.undoRedoManager.getUndoStatus();
+            const eventArgs: ToolbarStatusEventArgs = {
+                undo: status.undo,
+                redo: status.redo,
+                html: e.html,
+                markdown: e.markdown
+            };
+            this.trigger(events.updatedToolbarStatus, eventArgs);
+        }
+    }
+
     private onDocumentClick(e: MouseEvent): void {
         const target: HTMLElement = <HTMLElement>e.target;
         const rteElement: Element = closest(target, '.' + classes.CLS_RTE);
@@ -2891,6 +2931,7 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
         this.element.addEventListener('focusout', this.onBlurHandler, true);
         this.on(events.contentChanged, this.contentChanged, this);
         this.on(events.resizeInitialized, this.updateResizeFlag, this);
+        this.on(events.updateTbItemsStatus, this.updateStatus, this);
         if (this.readonly && this.enabled) {
             return;
         }
@@ -2971,6 +3012,7 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
         this.element.removeEventListener('focusout', this.onBlurHandler, true);
         this.off(events.contentChanged, this.contentChanged);
         this.off(events.resizeInitialized, this.updateResizeFlag);
+        this.off(events.updateTbItemsStatus, this.updateStatus);
         if (this.readonly && this.enabled) {
             return;
         }

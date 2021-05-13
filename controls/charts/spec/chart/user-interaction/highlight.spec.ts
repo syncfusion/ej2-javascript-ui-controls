@@ -225,7 +225,7 @@ describe('Chart Control Highlight ', () => {
     it('Patterns with Dots', (done: Function) => {
         loaded = () => {
             expect(document.getElementsByTagName('svg')[0].querySelectorAll('pattern').length).toBe(3);
-            expect(document.getElementsByTagName('svg')[0].querySelectorAll('pattern')[0].id === 'Dots_Selection_0').toBe(true);
+            expect(document.getElementsByTagName('svg')[0].querySelectorAll('pattern')[0].id === 'ej2Container_Dots_Selection_0').toBe(true);
             element = document.getElementById(id + '_Series_1_Point_' + 4);
             trigger.mousemovetEvent(element, 0, 0);
             expect(document.getElementsByClassName(selection + 1).length).toBe(2);
@@ -240,7 +240,7 @@ describe('Chart Control Highlight ', () => {
     it('Patterns with DiagonalForward', (done: Function) => {
         loaded = () => {
             expect(document.getElementsByTagName('svg')[0].querySelectorAll('pattern').length).toBe(3);
-            expect(document.getElementsByTagName('svg')[0].querySelectorAll('pattern')[0].id === 'DiagonalForward_Selection_0').toBe(true);
+            expect(document.getElementsByTagName('svg')[0].querySelectorAll('pattern')[0].id === 'ej2Container_DiagonalForward_Selection_0').toBe(true);
             element = document.getElementById(id + '_Series_0_Point_' + 4);
             trigger.mousemovetEvent(element, 0, 0);
             expect(document.getElementsByClassName(selection + 0).length).toBe(2);
@@ -253,7 +253,7 @@ describe('Chart Control Highlight ', () => {
     it('Patterns with Crosshatch', (done: Function) => {
         loaded = () => {
             expect(document.getElementsByTagName('svg')[0].querySelectorAll('pattern').length).toBe(3);
-            expect(document.getElementsByTagName('svg')[0].querySelectorAll('pattern')[0].id === 'Crosshatch_Selection_0').toBe(true);
+            expect(document.getElementsByTagName('svg')[0].querySelectorAll('pattern')[0].id === 'ej2Container_Crosshatch_Selection_0').toBe(true);
             element = document.getElementById(id + '_Series_2_Point_' + 4);
             trigger.mousemovetEvent(element, 0, 0);
             expect(document.getElementsByClassName(selection + 2).length).toBe(2);
@@ -266,7 +266,7 @@ describe('Chart Control Highlight ', () => {
     it('Patterns with Pacman', (done: Function) => {
         loaded = () => {
             expect(document.getElementsByTagName('svg')[0].querySelectorAll('pattern').length).toBe(3);
-            expect(document.getElementsByTagName('svg')[0].querySelectorAll('pattern')[0].id === 'Pacman_Selection_0').toBe(true);
+            expect(document.getElementsByTagName('svg')[0].querySelectorAll('pattern')[0].id === 'ej2Container_Pacman_Selection_0').toBe(true);
             element = document.getElementById(id + '_Series_0_Point_' + 0);
             trigger.mousemovetEvent(element, 0, 0);
             expect(document.getElementsByClassName(selection + 0).length).toBe(2);
@@ -279,7 +279,7 @@ describe('Chart Control Highlight ', () => {
     it('Patterns with DiagonalBackward', (done: Function) => {
         loaded = () => {
             expect(document.getElementsByTagName('svg')[0].querySelectorAll('pattern').length).toBe(3);
-            expect(document.getElementsByTagName('svg')[0].querySelectorAll('pattern')[0].id === 'DiagonalBackward_Selection_0').toBe(true);
+            expect(document.getElementsByTagName('svg')[0].querySelectorAll('pattern')[0].id === 'ej2Container_DiagonalBackward_Selection_0').toBe(true);
             element = document.getElementById(id + '_Series_0_Point_' + 6);
             trigger.mousemovetEvent(element, 0, 0);
             expect(document.getElementsByClassName(selection + 0).length).toBe(2);
@@ -292,7 +292,7 @@ describe('Chart Control Highlight ', () => {
     it('Patterns with Grid', (done: Function) => {
         loaded = () => {
             expect(document.getElementsByTagName('svg')[0].querySelectorAll('pattern').length).toBe(3);
-            expect(document.getElementsByTagName('svg')[0].querySelectorAll('pattern')[0].id === 'Grid_Selection_0').toBe(true);
+            expect(document.getElementsByTagName('svg')[0].querySelectorAll('pattern')[0].id === 'ej2Container_Grid_Selection_0').toBe(true);
             element = document.getElementById(id + '_Series_0_Point_' + 5);
             trigger.mousemovetEvent(element, 0, 0);
             expect(document.getElementsByClassName(selection + 0).length).toBe(2);
@@ -305,7 +305,7 @@ describe('Chart Control Highlight ', () => {
     it('Patterns with Turquoise', (done: Function) => {
         loaded = () => {
             expect(document.getElementsByTagName('svg')[0].querySelectorAll('pattern').length).toBe(3);
-            expect(document.getElementsByTagName('svg')[0].querySelectorAll('pattern')[1].id === 'Turquoise_Selection_1').toBe(true);
+            expect(document.getElementsByTagName('svg')[0].querySelectorAll('pattern')[1].id === 'ej2Container_Turquoise_Selection_1').toBe(true);
             element = document.getElementById(id + '_Series_0_Point_' + 1);
             trigger.mousemovetEvent(element, 0, 0);
             expect(document.getElementsByClassName(selection + 0).length).toBe(2);
@@ -319,7 +319,7 @@ describe('Chart Control Highlight ', () => {
     it('Patterns with Star', (done: Function) => {
         loaded = () => {
             expect(document.getElementsByTagName('svg')[0].querySelectorAll('pattern').length).toBe(3);
-            expect(document.getElementsByTagName('svg')[0].querySelectorAll('pattern')[0].id === 'Star_Selection_0').toBe(true);
+            expect(document.getElementsByTagName('svg')[0].querySelectorAll('pattern')[0].id === 'ej2Container_Star_Selection_0').toBe(true);
             element = document.getElementById(id + '_Series_0_Point_' + 1);
             trigger.mousemovetEvent(element, 0, 0);
             for (i = 0; i < chartObj.series.length; i++) {
@@ -335,7 +335,7 @@ describe('Chart Control Highlight ', () => {
     it('Patterns with Triangle', (done: Function) => {
         loaded = () => {
             expect(document.getElementsByTagName('svg')[0].querySelectorAll('pattern').length).toBe(3);
-            expect(document.getElementsByTagName('svg')[0].querySelectorAll('pattern')[2].id === 'Triangle_Selection_2').toBe(true);
+            expect(document.getElementsByTagName('svg')[0].querySelectorAll('pattern')[2].id === 'ej2Container_Triangle_Selection_2').toBe(true);
             element = document.getElementById(id + '_Series_0_Point_' + 1);
             trigger.mousemovetEvent(element, 0, 0);
             expect(document.getElementsByClassName(selection + 0).length).toBe(2);
@@ -352,7 +352,7 @@ describe('Chart Control Highlight ', () => {
             trigger.mousemovetEvent(element, 0, 0);
             expect(document.getElementsByClassName(selection + 2).length).toBe(2);
             expect(document.getElementsByTagName('svg')[0].querySelectorAll('pattern').length).toBe(3);
-            expect(document.getElementsByTagName('svg')[0].querySelectorAll('pattern')[2].id === 'Chessboard_Selection_2').toBe(true);
+            expect(document.getElementsByTagName('svg')[0].querySelectorAll('pattern')[2].id === 'ej2Container_Chessboard_Selection_2').toBe(true);
             done();
         };
         chartObj.loaded = loaded;
@@ -367,7 +367,7 @@ describe('Chart Control Highlight ', () => {
         expect(document.getElementsByClassName(selection + '1').length).toBe(0);
         expect(document.getElementsByClassName(selection + '2').length).toBe(0);
         expect(document.getElementsByTagName('svg')[0].querySelectorAll('pattern').length).toBe(3);
-        expect(document.getElementsByTagName('svg')[0].querySelectorAll('pattern')[0].id === 'Circle_Selection_0').toBe(true);
+        expect(document.getElementsByTagName('svg')[0].querySelectorAll('pattern')[0].id === 'ej2Container_Circle_Selection_0').toBe(true);
         done();
         };
         chartObj.loaded = loaded;
@@ -382,7 +382,7 @@ describe('Chart Control Highlight ', () => {
             trigger.mousemovetEvent(element, 0, 0);
             expect(document.getElementsByClassName(selection + 2).length).toBe(2);
             expect(document.getElementsByTagName('svg')[0].querySelectorAll('pattern').length).toBe(3);
-            expect(document.getElementsByTagName('svg')[0].querySelectorAll('pattern')[0].id === 'Tile_Selection_0').toBe(true);
+            expect(document.getElementsByTagName('svg')[0].querySelectorAll('pattern')[0].id === 'ej2Container_Tile_Selection_0').toBe(true);
             done();
         };
         chartObj.loaded = loaded;
@@ -395,7 +395,7 @@ describe('Chart Control Highlight ', () => {
             trigger.mousemovetEvent(element, 0, 0);
             expect(document.getElementsByClassName(selection + 2).length).toBe(2);
             expect(document.getElementsByTagName('svg')[0].querySelectorAll('pattern').length).toBe(3);
-            expect(document.getElementsByTagName('svg')[0].querySelectorAll('pattern')[0].id === 'HorizontalDash_Selection_0').toBe(true);
+            expect(document.getElementsByTagName('svg')[0].querySelectorAll('pattern')[0].id === 'ej2Container_HorizontalDash_Selection_0').toBe(true);
             done();
         };
         chartObj.loaded = loaded;
@@ -408,7 +408,7 @@ describe('Chart Control Highlight ', () => {
             trigger.mousemovetEvent(element, 0, 0);
             expect(document.getElementsByClassName(selection + 2).length).toBe(2);
             expect(document.getElementsByTagName('svg')[0].querySelectorAll('pattern').length).toBe(3);
-            expect(document.getElementsByTagName('svg')[0].querySelectorAll('pattern')[0].id === 'VerticalDash_Selection_0').toBe(true);
+            expect(document.getElementsByTagName('svg')[0].querySelectorAll('pattern')[0].id === 'ej2Container_VerticalDash_Selection_0').toBe(true);
             done();
         };
         chartObj.loaded = loaded;
@@ -422,7 +422,7 @@ describe('Chart Control Highlight ', () => {
             trigger.mousemovetEvent(element, 0, 0);
             expect(document.getElementsByClassName(selection + 2).length).toBe(2);
             expect(document.getElementsByTagName('svg')[0].querySelectorAll('pattern').length).toBe(3);
-            expect(document.getElementsByTagName('svg')[0].querySelectorAll('pattern')[0].id === 'Rectangle_Selection_0').toBe(true);
+            expect(document.getElementsByTagName('svg')[0].querySelectorAll('pattern')[0].id === 'ej2Container_Rectangle_Selection_0').toBe(true);
             done();
         };
         chartObj.loaded = loaded;
@@ -436,7 +436,7 @@ describe('Chart Control Highlight ', () => {
             trigger.mousemovetEvent(element, 0, 0);
             expect(document.getElementsByClassName(selection + 2).length).toBe(2);
             expect(document.getElementsByTagName('svg')[0].querySelectorAll('pattern').length).toBe(3);
-            expect(document.getElementsByTagName('svg')[0].querySelectorAll('pattern')[0].id === 'Box_Selection_0').toBe(true);
+            expect(document.getElementsByTagName('svg')[0].querySelectorAll('pattern')[0].id === 'ej2Container_Box_Selection_0').toBe(true);
             done();
         };
         chartObj.loaded = loaded;
@@ -452,7 +452,7 @@ describe('Chart Control Highlight ', () => {
             trigger.mousemovetEvent(element, Math.ceil(x), Math.ceil(y));
             expect(document.getElementsByClassName(selection + 0).length).toBe(3);
             expect(document.getElementsByTagName('svg')[0].querySelectorAll('pattern').length).toBe(3);
-            expect(document.getElementsByTagName('svg')[0].querySelectorAll('pattern')[0].id === 'VerticalStripe_Selection_0').toBe(true);
+            expect(document.getElementsByTagName('svg')[0].querySelectorAll('pattern')[0].id === 'ej2Container_VerticalStripe_Selection_0').toBe(true);
             done();
         };
         chartObj.loaded = loaded;
@@ -472,7 +472,7 @@ describe('Chart Control Highlight ', () => {
             trigger.mousemovetEvent(element, 0, 0);
             expect(document.getElementsByClassName(selection + 1).length).toBe(3);
             expect(document.getElementsByTagName('svg')[0].querySelectorAll('pattern').length).toBe(3);
-            expect(document.getElementsByTagName('svg')[0].querySelectorAll('pattern')[0].id === 'HorizontalStripe_Selection_0').toBe(true);
+            expect(document.getElementsByTagName('svg')[0].querySelectorAll('pattern')[0].id === 'ej2Container_HorizontalStripe_Selection_0').toBe(true);
             done();
         };
         chartObj.loaded = loaded;
@@ -495,7 +495,7 @@ describe('Chart Control Highlight ', () => {
             trigger.mousemovetEvent(element, Math.ceil(x), Math.ceil(y));
             expect(document.getElementsByClassName(selection + 1).length).toBe(4);
             expect(document.getElementsByTagName('svg')[0].querySelectorAll('pattern').length).toBe(3);
-            expect(document.getElementsByTagName('svg')[0].querySelectorAll('pattern')[0].id === 'Bubble_Selection_0').toBe(true);
+            expect(document.getElementsByTagName('svg')[0].querySelectorAll('pattern')[0].id === 'ej2Container_Bubble_Selection_0').toBe(true);
             done();
         };
         chartObj.loaded = loaded;

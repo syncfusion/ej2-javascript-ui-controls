@@ -98,9 +98,11 @@ describe('Gantt taskbar editing', () => {
             };
             ganttObj.dataBind();
             ganttObj.actionBegin = (args: object) => {
-                expect(ganttObj.getFormatedDate(args['data'].ganttProperties.startDate, 'MM/dd/yyyy HH:mm')).toBe('10/16/2017 08:00');
-                if (args['requestType'] === 'beforeSave') {
-                    args['cancel'] = true;
+                if (args['requestType'] !== 'mergeSegment') {
+                    expect(ganttObj.getFormatedDate(args['data'].ganttProperties.startDate, 'MM/dd/yyyy HH:mm')).toBe('10/16/2017 08:00');
+                    if (args['requestType'] === 'beforeSave') {
+                        args['cancel'] = true;
+                    }
                 }
             };
             ganttObj.dataBind();
@@ -134,9 +136,11 @@ describe('Gantt taskbar editing', () => {
             };
             ganttObj.dataBind();
             ganttObj.actionBegin = (args: object) => {
-                expect(args['data'].ganttProperties.progress).toBe(0);
-                if (args['requestType'] === 'beforeSave') {
-                    args['cancel'] = true;
+                if (args['requestType'] !== 'mergeSegment') {
+                    expect(args['data'].ganttProperties.progress).toBe(0);
+                    if (args['requestType'] === 'beforeSave') {
+                        args['cancel'] = true;
+                    }
                 }
             };
             ganttObj.dataBind();

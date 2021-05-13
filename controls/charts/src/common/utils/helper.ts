@@ -1166,8 +1166,10 @@ export function findlElement(elements: NodeList, id: string): Element {
 }
 /** @private */
 export function getPoint(x: number, y: number, xAxis: Axis, yAxis: Axis, isInverted?: boolean): ChartLocation {
-    x = ((xAxis.valueType === 'Logarithmic') ? logBase(((x > 0) ? x : 1), xAxis.logBase) : x);
-    y = ((yAxis.valueType === 'Logarithmic') ? logBase(((y > 0) ? y : 1), yAxis.logBase) : y);
+    x = ((xAxis.valueType === 'Logarithmic') ?
+        logBase(((x > 0) ? x : Math.pow(xAxis.logBase, xAxis.visibleRange.min)), xAxis.logBase) : x);
+    y = ((yAxis.valueType === 'Logarithmic') ?
+        logBase(((y > 0) ? y : Math.pow(yAxis.logBase, yAxis.visibleRange.min)), yAxis.logBase) : y);
 
     x = valueToCoefficient(x, xAxis);
     y = valueToCoefficient(y, yAxis);

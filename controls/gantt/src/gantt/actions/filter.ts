@@ -143,7 +143,6 @@ export class Filter {
         let textBoxInstance: TextBox;
         let textValue: string = '';
         const filterDurationUI: IFilterMUI = {
-            // eslint-disable-next-line
             create: (args: { target: Element, column: Object }) => {
                 const flValInput: HTMLElement = createElement('input', { className: 'e-input' });
                 flValInput.setAttribute('placeholder', this.parent.localeObj.getConstant('enterValue'));
@@ -157,7 +156,6 @@ export class Filter {
                 textBoxInstance.value = args.filteredValue ? textValue : '';
             },
             read: (args: { element: HTMLInputElement, column: ColumnModel, operator: string, fltrObj: GridFilter }) => {
-                // eslint-disable-next-line
                 const durationObj: object = this.parent.dataOperation.getDurationValue(textBoxInstance.value);
                 const intVal: number = getValue('duration', durationObj);
                 let unit: string = getValue('durationUnit', durationObj);
@@ -189,8 +187,7 @@ export class Filter {
      * @param {ColumnMenuOpenEventArgs} args .
      * @returns {void} .
      */
-    // eslint-disable-next-line
-    private columnMenuOpen(args: ColumnMenuOpenEventArgs): void {
+    private columnMenuOpen(args: ColumnMenuOpenEventArgs): void {// eslint-disable-line
         if (this.filterMenuElement && document.body.contains(this.filterMenuElement)) {
             remove(this.filterMenuElement);
         }
@@ -220,9 +217,7 @@ export class Filter {
             const taskID: string = this.parent.taskFields.id;
             const predecessor: string = this.parent.taskFields.dependency;
             const resource: string = this.parent.taskFields.resourceInfo;
-            // eslint-disable-next-line
             const filterObj: object = this.parent.treeGrid.grid.filterModule;
-            // eslint-disable-next-line
             const filterValues: object = getValue('values', filterObj);
             if ((args.columnName === predecessor && isNullOrUndefined(getValue(predecessor, filterValues)))
                 || (args.columnName === resource && isNullOrUndefined(getValue(resource, filterValues)))) {

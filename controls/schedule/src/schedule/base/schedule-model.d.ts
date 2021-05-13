@@ -200,6 +200,15 @@ export interface ScheduleModel extends ComponentModel{
     timeFormat?: string;
 
     /**
+     * When set to `true`, If valid, the scroll on the all day row is activated when the all day row
+     * height reaches the max height when the all day row is expanded.
+     * {% codeBlock src='schedule/enableAllDayScroll/index.md' %}{% endcodeBlock %}
+     *
+     * @default false
+     */
+    enableAllDayScroll?: boolean;
+
+    /**
      * When set to `true`, allows the resizing of appointments. It allows the rescheduling of appointments either by changing the
      * start or end time by dragging the event resize handlers.
      * {% codeBlock src='schedule/allowResizing/index.md' %}{% endcodeBlock %}
@@ -263,12 +272,31 @@ export interface ScheduleModel extends ComponentModel{
     cellHeaderTemplate?: string;
 
     /**
+     * It accepts either the string or HTMLElement as template design content and parse it appropriately before displaying it onto
+     * the day header cells. This template is only applicable for year view header cells.
+     * {% codeBlock src='schedule/dayHeaderTemplate/index.md' %}{% endcodeBlock %}
+     *
+     * @default null
+     */
+    dayHeaderTemplate?: string;
+
+    /**
+     * It accepts either the string or HTMLElement as template design content and parse it appropriately before displaying it onto
+     * the month header cells. This template is only applicable for year view header cells.
+     * {% codeBlock src='schedule/monthHeaderTemplate/index.md' %}{% endcodeBlock %}
+     *
+     * @default null
+     */
+    monthHeaderTemplate?: string;
+
+    /**
      * The template option which is used to render the customized work cells on the Schedule. Here, the template accepts either
      *  the string or HTMLElement as template design and then the parsed design is displayed onto the work cells.
      *  The fields accessible via template are as follows.
      *  * date
      *  * groupIndex
      *  * type
+     *
      * {% codeBlock src='schedule/cellTemplate/index.md' %}{% endcodeBlock %}
      *
      * @default null
@@ -349,6 +377,14 @@ export interface ScheduleModel extends ComponentModel{
      * @default false
      */
     allowMultiDrag?: boolean;
+
+    /**
+     * This property helps render the year view customized months.
+     * By default, it is set to `0`.
+     *
+     * @default 0
+     */
+    firstMonthOfYear?: number;
 
     /**
      * The template option to render the customized editor window. The form elements defined within this template should be accompanied

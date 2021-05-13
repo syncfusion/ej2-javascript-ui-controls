@@ -1235,7 +1235,7 @@ export class SeriesBase extends ChildProperty<SeriesBase> {
         const isNegativeValue: boolean = yValue < 0;
         let seriesMinY: number;
         if (this.isRectTypeSeries && !setRange(this.yAxis)) {
-            seriesMinY = ((isLogAxis ? 1 : isNegativeValue ? yValue : 0));
+            seriesMinY = ((isLogAxis ? (yValue) : isNegativeValue ? yValue : 0));
         } else {
             seriesMinY = yValue;
         }
@@ -2000,10 +2000,13 @@ export class Series extends SeriesBase {
                     }
                 }
                 series.stackedValues = new StackValues(startValues, endValues);
-                series.yMin = Math.min.apply(0, startValues);
+                let isLogAxis: boolean = series.yAxis.valueType === 'Logarithmic';
+                let isColumnBarType: boolean = (series.type.indexOf("Column") !== -1 || series.type.indexOf("Bar") !== -1);
+                series.yMin = isLogAxis && isColumnBarType && series.yMin < 1 ? series.yMin : Math.min.apply(0, startValues);
                 series.yMax = Math.max.apply(0, endValues);
                 if (series.yMin > Math.min.apply(0, endValues)) {
-                    series.yMin = (isStacking100) ? -100 : Math.min.apply(0, endValues);
+                    series.yMin = (isStacking100) ? -100 :
+                        isLogAxis && isColumnBarType && series.yMin < 1 ? series.yMin : Math.min.apply(0, endValues);
                 }
                 if (series.yMax < Math.max.apply(0, startValues)) {
                     series.yMax = 0;

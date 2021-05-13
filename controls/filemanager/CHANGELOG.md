@@ -2,13 +2,22 @@
 
 ## [Unreleased]
 
-## 19.1.59 (2021-05-04)
+## 19.1.63 (2021-05-13)
+
+### File Manager
+
+#### Bug Fixes
+
+- `#I323484` - Now, the warning dialog will be displayed while dropping the searched file into the same source location in the File Manager component.
+
+## 19.1.58 (2021-04-27)
 
 ### File Manager
 
 #### Bug Fixes
 
 - `#I321258`, `#I320950` - The issue with "Error as occurred while sorting the path column at second time in File Manager component" has been fixed.
+- `#I318476`, `#I320950` - Resolved the script error that occurred while dragging and dropping an item without selecting it in details view of the File Manager component.
 
 ## 18.4.41 (2021-02-02)
 

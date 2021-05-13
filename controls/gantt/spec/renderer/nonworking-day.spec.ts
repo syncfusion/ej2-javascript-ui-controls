@@ -59,9 +59,16 @@ describe('Gantt spec for non -working-day', () => {
             destroyGantt(ganttObj);
         });
         it('Non-working-Day Testing', () => {
-            expect(ganttObj.ganttChartModule.chartBodyContent.querySelector(`.${cls.holidayElement}`)['style'].width).toBe('180px');
-            expect(ganttObj.ganttChartModule.chartBodyContent.querySelector(`.${cls.holidayElement}`).textContent).toBe('public holiday');
-            expect(ganttObj.ganttChartModule.chartBodyContent.querySelector(`.${cls.holidayElement}`).
+            ganttObj.actionComplete = function (args: any): void {
+                if (args.requestType === "refresh") {
+                    expect(ganttObj.ganttChartModule.chartBodyContainer.querySelector(`.${cls.nonworkingContainer}`)).toBe(null);
+                    expect(ganttObj.ganttChartModule.chartBodyContainer.querySelector(`.${cls.holidayContainer}`)).toBe(null); 
+                }
+            };
+            ganttObj.dataBind();
+            expect(ganttObj.ganttChartModule.chartBodyContainer.querySelector(`.${cls.holidayElement}`)['style'].width).toBe('180px');
+            expect(ganttObj.ganttChartModule.chartBodyContainer.querySelector(`.${cls.holidayElement}`).textContent).toBe('public holiday');
+            expect(ganttObj.ganttChartModule.chartBodyContainer.querySelector(`.${cls.holidayElement}`).
                 classList.contains('holiday')).toBe(true);
             let holidayObj: Array<Object> = [{
                 from: '10/20/2017',
@@ -71,9 +78,6 @@ describe('Gantt spec for non -working-day', () => {
             ganttObj.dataBind();
             ganttObj.holidays = [];
             ganttObj.dataBind();
-            expect(ganttObj.ganttChartModule.chartBodyContent.querySelector(`.${cls.nonworkingContainer}`)).toBe(null);
-            expect(ganttObj.ganttChartModule.chartBodyContent.querySelector(`.${cls.holidayContainer}`)).toBe(null);
-
-        });
+           });
     });
 });

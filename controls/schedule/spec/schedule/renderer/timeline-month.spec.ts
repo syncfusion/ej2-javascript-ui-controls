@@ -107,7 +107,7 @@ describe('Schedule Timeline Month view', () => {
 
         it('Checking more indicator', () => {
             const moreIndicatorList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-more-indicator'));
-            expect(moreIndicatorList.length).toEqual(1);
+            expect(moreIndicatorList.length).toEqual(3);
             const element: HTMLElement = moreIndicatorList[0] as HTMLElement;
             element.click();
             const eventElementList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-more-appointment-wrapper .e-appointment'));
@@ -285,7 +285,7 @@ describe('Schedule Timeline Month view', () => {
 
         it('Checking more indicator', () => {
             const moreIndicatorList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-more-indicator'));
-            expect(moreIndicatorList.length).toEqual(1);
+            expect(moreIndicatorList.length).toEqual(3);
         });
     });
 
@@ -347,7 +347,7 @@ describe('Schedule Timeline Month view', () => {
 
         it('Checking more indicator', () => {
             const moreIndicatorList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-more-indicator'));
-            expect(moreIndicatorList.length).toEqual(1);
+            expect(moreIndicatorList.length).toEqual(3);
         });
     });
 
@@ -434,7 +434,7 @@ describe('Schedule Timeline Month view', () => {
                 const eventWrapperList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment-wrapper'));
                 expect(eventWrapperList.length).toEqual(1);
                 const moreIndicatorList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-more-indicator'));
-                expect(moreIndicatorList.length).toEqual(1);
+                expect(moreIndicatorList.length).toEqual(3);
                 done();
             };
             schObj.rowAutoHeight = false;
@@ -589,7 +589,7 @@ describe('Schedule Timeline Month view', () => {
                     expect(eventElementList[2].querySelectorAll('.e-appointment-details .e-indicator')[0].classList.contains('e-left-icon'))
                         .toBeTruthy();
                     const moreIndicatorList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-more-indicator'));
-                    expect(moreIndicatorList.length).toEqual(1);
+                    expect(moreIndicatorList.length).toEqual(3);
                     expect(moreIndicatorList[0].innerHTML).toEqual('+4&nbsp;more');
                     done();
                 }
@@ -1158,7 +1158,7 @@ describe('Schedule Timeline Month view', () => {
 
         it('More event element checking', () => {
             const moreIndicatorList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-more-indicator'));
-            expect(moreIndicatorList.length).toEqual(3);
+            expect(moreIndicatorList.length).toEqual(9);
             const element: HTMLElement = moreIndicatorList[0] as HTMLElement;
             element.click();
             const morePopup: HTMLElement = schObj.element.querySelector('.e-more-popup-wrapper') as HTMLElement;
@@ -1279,7 +1279,7 @@ describe('Schedule Timeline Month view', () => {
 
         it('More event element checking', () => {
             const moreIndicatorList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-more-indicator'));
-            expect(moreIndicatorList.length).toEqual(3);
+            expect(moreIndicatorList.length).toEqual(5);
             const element: HTMLElement = moreIndicatorList[0] as HTMLElement;
             element.click();
             const morePopup: HTMLElement = schObj.element.querySelector('.e-more-popup-wrapper') as HTMLElement;
@@ -2365,10 +2365,10 @@ describe('Schedule Timeline Month view', () => {
 
         it('More event element checking', () => {
             const moreIndicatorList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-more-indicator'));
-            expect(moreIndicatorList.length).toEqual(19);
+            expect(moreIndicatorList.length).toEqual(48);
             expect(moreIndicatorList[0].innerHTML).toEqual('+3&nbsp;more');
             expect(moreIndicatorList[1].innerHTML).toEqual('+1&nbsp;more');
-            expect(moreIndicatorList[11].innerHTML).toEqual('+1&nbsp;more');
+            expect(moreIndicatorList[11].innerHTML).toEqual('+2&nbsp;more');
             const element: HTMLElement = moreIndicatorList[0] as HTMLElement;
             element.click();
             const morePopup: HTMLElement = schObj.element.querySelector('.e-more-popup-wrapper') as HTMLElement;
@@ -2715,7 +2715,7 @@ describe('Schedule Timeline Month view', () => {
 
         it('check more indicator', () => {
             const moreIndicators: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-more-indicator'));
-            expect(moreIndicators.length).toEqual(1);
+            expect(moreIndicators.length).toEqual(3);
             expect(moreIndicators[0].innerHTML).toEqual('+6&nbsp;more');
             expect(moreIndicators[0].getAttribute('data-start-date')).toEqual(new Date(2018, 4, 1).getTime().toString());
             expect(moreIndicators[0].getAttribute('data-end-date')).toEqual(new Date(2018, 4, 2).getTime().toString());
@@ -2896,7 +2896,7 @@ describe('Schedule Timeline Month view', () => {
             const eventWrapperList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment-wrapper'));
             expect(eventWrapperList.length).toEqual(1);
             const moreIndicators: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-more-indicator'));
-            expect(moreIndicators.length).toEqual(1);
+            expect(moreIndicators.length).toEqual(3);
             expect(moreIndicators[0].innerHTML).toEqual('+6&nbsp;more');
             expect(moreIndicators[0].getAttribute('data-start-date')).toEqual(new Date(2018, 4, 1).getTime().toString());
             expect(moreIndicators[0].getAttribute('data-end-date')).toEqual(new Date(2018, 4, 2).getTime().toString());
@@ -2978,7 +2978,7 @@ describe('Schedule Timeline Month view', () => {
             const eventWrapperList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment-wrapper'));
             expect(eventWrapperList.length).toEqual(1);
             const moreIndicators: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-more-indicator'));
-            expect(moreIndicators.length).toEqual(1);
+            expect(moreIndicators.length).toEqual(3);
             expect(moreIndicators[0].innerHTML).toEqual('+6&nbsp;more');
             expect(moreIndicators[0].getAttribute('data-start-date')).toEqual(new Date(2018, 4, 1).getTime().toString());
             expect(moreIndicators[0].getAttribute('data-end-date')).toEqual(new Date(2018, 4, 2).getTime().toString());
@@ -3050,7 +3050,7 @@ describe('Schedule Timeline Month view', () => {
             const eventWrapperList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment-wrapper'));
             expect(eventWrapperList.length).toEqual(1);
             const moreIndicators: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-more-indicator'));
-            expect(moreIndicators.length).toEqual(1);
+            expect(moreIndicators.length).toEqual(3);
             expect(moreIndicators[0].innerHTML).toEqual('+5&nbsp;more');
             expect(moreIndicators[0].getAttribute('data-start-date')).toEqual(new Date(2018, 4, 1).getTime().toString());
             expect(moreIndicators[0].getAttribute('data-end-date')).toEqual(new Date(2018, 4, 2).getTime().toString());
@@ -3115,7 +3115,7 @@ describe('Schedule Timeline Month view', () => {
             const eventWrapperList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment-wrapper'));
             expect(eventWrapperList.length).toEqual(1);
             const moreIndicators: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-more-indicator'));
-            expect(moreIndicators.length).toEqual(1);
+            expect(moreIndicators.length).toEqual(3);
             expect(moreIndicators[0].innerHTML).toEqual('+4&nbsp;more');
             expect(moreIndicators[0].getAttribute('data-start-date')).toEqual(new Date(2018, 4, 1).getTime().toString());
             expect(moreIndicators[0].getAttribute('data-end-date')).toEqual(new Date(2018, 4, 2).getTime().toString());
@@ -3172,7 +3172,7 @@ describe('Schedule Timeline Month view', () => {
             const eventWrapperList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment-wrapper'));
             expect(eventWrapperList.length).toEqual(1);
             const moreIndicators: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-more-indicator'));
-            expect(moreIndicators.length).toEqual(1);
+            expect(moreIndicators.length).toEqual(3);
             expect(moreIndicators[0].innerHTML).toEqual('+3&nbsp;more');
             expect(moreIndicators[0].getAttribute('data-start-date')).toEqual(new Date(2018, 4, 1).getTime().toString());
             expect(moreIndicators[0].getAttribute('data-end-date')).toEqual(new Date(2018, 4, 2).getTime().toString());
@@ -3247,7 +3247,7 @@ describe('Schedule Timeline Month view', () => {
             const eventWrapperList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment-wrapper'));
             expect(eventWrapperList.length).toEqual(1);
             const moreIndicators: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-more-indicator'));
-            expect(moreIndicators.length).toEqual(1);
+            expect(moreIndicators.length).toEqual(3);
             expect(moreIndicators[0].innerHTML).toEqual('+5&nbsp;more');
             expect(moreIndicators[0].getAttribute('data-start-date')).toEqual(new Date(2018, 4, 1).getTime().toString());
             expect(moreIndicators[0].getAttribute('data-end-date')).toEqual(new Date(2018, 4, 2).getTime().toString());
@@ -3353,7 +3353,7 @@ describe('Schedule Timeline Month view', () => {
 
         it('check more indicator', () => {
             const moreIndicators: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-more-indicator'));
-            expect(moreIndicators.length).toEqual(4);
+            expect(moreIndicators.length).toEqual(10);
             expect(moreIndicators[0].innerHTML).toEqual('+1&nbsp;more');
             expect(moreIndicators[0].getAttribute('data-group-index')).toEqual('4');
             expect(moreIndicators[0].getAttribute('data-start-date')).toEqual(new Date(2018, 4, 3).getTime().toString());
@@ -3998,6 +3998,68 @@ describe('Schedule Timeline Month view', () => {
         });
     });
 
+    describe('Testing the Appointment rendering for longer appointments renders after shorter one', () => {
+        let schObj: Schedule;
+        beforeAll((done: DoneFn) => {
+            const monthData: Record<string, any>[] = [{
+                Id: 1,
+                Subject: "Short Event",
+                StartTime: new Date(2019, 1, 1, 10, 0, 0),
+                EndTime: new Date(2019, 1, 5, 10, 0, 0),
+                IsAllDay: true,
+                OwnerId: 1
+            }];
+            const model: ScheduleModel = {
+                width: '500px', height: '550px', selectedDate: new Date(2019, 1, 1),
+                views: [{ option: 'TimelineMonth' }],
+                group: {
+                    byGroupID: false,
+                    resources: ['Owners']
+                },
+                resources: [{
+                    field: 'OwnerId', title: 'Owner', name: 'Owners', allowMultiple: true,
+                    dataSource: [
+                        { OwnerText: 'Nancy', Id: 1, OwnerGroupId: 1, OwnerColor: '#ffaa00' },
+                        { OwnerText: 'Steven', Id: 2, OwnerGroupId: 2, OwnerColor: '#f8a398' },
+                        { OwnerText: 'Michael', Id: 3, OwnerGroupId: 3, OwnerColor: '#7499e1' },
+                        { OwnerText: 'Oliver', Id: 4, OwnerGroupId: 1, OwnerColor: '#ffaa00' },
+                        { OwnerText: 'John', Id: 5, OwnerGroupId: 2, OwnerColor: '#f8a398' },
+                        { OwnerText: 'Barry', Id: 6, OwnerGroupId: 3, OwnerColor: '#7499e1' },
+                        { OwnerText: 'Felicity', Id: 7, OwnerGroupId: 1, OwnerColor: '#ffaa00' },
+                        { OwnerText: 'Cisco', Id: 8, OwnerGroupId: 2, OwnerColor: '#f8a398' },
+                        { OwnerText: 'Sara', Id: 9, OwnerGroupId: 3, OwnerColor: '#7499e1' },
+                        { OwnerText: 'Malcolm', Id: 10, OwnerGroupId: 1, OwnerColor: '#ffaa00' }
+                    ],
+                    textField: 'OwnerText', idField: 'Id', groupIDField: 'OwnerGroupId', colorField: 'OwnerColor'
+                }]
+            };
+            schObj = util.createSchedule(model, monthData, done);
+        });
+
+        afterAll(() => {
+            util.destroy(schObj);
+        });
+
+        it('Before rendering longer appointments', () => {
+            expect(schObj.element.querySelectorAll('.e-more-indicator').length).toEqual(0);
+        });
+
+        it('After rendering longer appointemnt checking', (done: DoneFn) => {
+            schObj.dataBound = () => {
+                expect(schObj.element.querySelectorAll('.e-more-indicator').length).toEqual(9);
+                done();
+            };
+            schObj.addEvent([{
+                Id: 2,
+                Subject: "Long Event",
+                StartTime: new Date(2019, 1, 2, 10, 0, 0),
+                EndTime: new Date(2019, 1, 10, 10, 0, 0),
+                IsAllDay: true,
+                OwnerId: 1
+            }]);
+        });
+    });
+
     describe('Performance checking for TimelineMonth', () => {
         let schObj: Schedule;
         afterAll(() => {
@@ -4041,8 +4103,9 @@ describe('Schedule Timeline Month view', () => {
                 },
                 dataBound: function () {
                     let eventEndTime: number = window.performance.now();
+                    const sec: number = Math.floor((eventEndTime - eventStartTime)/60000);
                     // ~ 250 - 300ms
-                    expect(eventEndTime - eventStartTime).toBeLessThan(6000);
+                    expect(sec).toBeLessThan(1);
                     done();
                 }
             };

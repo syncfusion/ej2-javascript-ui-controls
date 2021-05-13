@@ -5,11 +5,11 @@ import { Calendar, CalendarView, ChangedEventArgs, NavigatedEventArgs } from '@s
 import { Popup } from '@syncfusion/ej2-popups';
 import { Schedule } from '../base/schedule';
 import { EJ2Instance, ActionEventArgs, CellClickEventArgs } from '../base/interface';
+import { View } from '../base/type';
+import { ViewsModel } from '../models/models';
 import * as events from '../base/constant';
 import * as util from '../base/util';
 import * as cls from '../base/css-constant';
-import { View } from '../base/type';
-import { ViewsModel } from '../models/models';
 
 /**
  * Header module
@@ -39,8 +39,8 @@ export class HeaderRenderer {
 
     private closeHeaderPopup(e: { event: Event }): void {
         const closestEle: Element = closest(e.event.target as HTMLElement, '.e-date-range,.e-header-popup,.e-day,.e-selected');
-        let closestPop: Element = closest(e.event.target as HTMLElement, '.e-hor-nav,.e-toolbar-pop');
-        let contentWrap: HTMLElement = this.parent.element.querySelector('.' + cls.CONTENT_WRAP_CLASS);
+        const closestPop: Element = closest(e.event.target as HTMLElement, '.e-hor-nav,.e-toolbar-pop');
+        const contentWrap: HTMLElement = this.parent.element.querySelector('.' + cls.CONTENT_WRAP_CLASS);
         if (this.parent.isAdaptive) {
             if (!isNullOrUndefined(closestPop) && (closestPop.classList.contains('e-toolbar-pop') ||
                 closestPop.classList.contains('e-hor-nav')) && !(closestPop.classList.contains('e-hor-nav') &&
@@ -48,9 +48,9 @@ export class HeaderRenderer {
                 addClass([contentWrap], cls.SCROLL_HIDDEN);
             } else {
                 removeClass([contentWrap], cls.SCROLL_HIDDEN);
-                let popupEle: HTMLElement = this.element.querySelector('.e-toolbar-pop') as HTMLElement;
+                const popupEle: HTMLElement = this.element.querySelector('.e-toolbar-pop') as HTMLElement;
                 if (!isNullOrUndefined(popupEle)) {
-                    let popupObj: Popup = (popupEle as EJ2Instance).ej2_instances[0] as Popup;
+                    const popupObj: Popup = (popupEle as EJ2Instance).ej2_instances[0] as Popup;
                     if (popupObj && !(!isNullOrUndefined(closestPop) && closestPop.classList.contains('e-hor-nav') &&
                         popupEle.classList.contains(cls.POPUP_OPEN))) {
                         popupObj.hide();

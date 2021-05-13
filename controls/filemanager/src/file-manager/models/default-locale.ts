@@ -86,6 +86,7 @@ export const defaultLocale: Object = {
     'Filter-Empty': 'No results found',
     'Filter-Key': 'Try with different filter',
     'Sub-Folder-Error': 'The destination folder is the subfolder of the source folder.',
+    "Same-Folder-Error": "The destination folder is the same as the source folder.",
     'Access-Denied': 'Access Denied',
     'Access-Details': 'You don"t have permission to access this folder.',
     'Header-Retry': 'File Already Exists',

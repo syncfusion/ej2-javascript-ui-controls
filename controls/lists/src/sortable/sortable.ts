@@ -310,9 +310,9 @@ export class Sortable extends Base<HTMLElement> implements INotifyPropertyChange
         const isPlaceHolderPresent: boolean = this.isPlaceHolderPresent(dropInst);
         if (isPlaceHolderPresent) {
             const curIdx: number = this.getIndex(dropInst.placeHolderElement, dropInst);
-            let prevIndx: number = this === dropInst && (prevIdx - curIdx) > 1 ? prevIdx - 1 : prevIdx;
+            let prevIndx: number = this === dropInst && (prevIdx - curIdx) > 0 ? prevIdx - 1 : prevIdx;
             const args: DropEventArgs = {
-                previousIndex: prevIndx, currentIndex: curIdx, target: e.target, droppedElement: this.target,
+                previousIndex: prevIndx, currentIndex: this.curTarget === this.target ? prevIdx : curIdx, target: e.target, droppedElement: this.target,
                 helper: e.helper, cancel: false, handled: false
             };
             this.trigger('beforeDrop', args, (observedArgs: DropEventArgs) => {

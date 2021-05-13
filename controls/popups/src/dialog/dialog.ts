@@ -783,7 +783,7 @@ export class Dialog extends Component<HTMLElement> implements INotifyPropertyCha
             this.element.style.width = '';
         }
         if (this.minHeight !== '') {
-            this.element.style.minHeight = this.minHeight.toString();
+            this.element.style.minHeight = formatUnit(this.minHeight);
         }
         if (this.enableResize) {
             this.setResize();
@@ -1627,11 +1627,13 @@ export class Dialog extends Component<HTMLElement> implements INotifyPropertyCha
                             this.contentEle.innerHTML = '';
                         }
                         // eslint-disable-next-line
-                        typeof (this.content) === 'string' ? (this.isBlazorServerRender()
-                            && (this.contentEle.innerText === '')) ?
+                        if (typeof (this.content) === 'function') {
+                            this.clearTemplate(['content']); detach(this.contentEle); this.contentEle = null; this.setContent();
+                        } else {
+                            typeof (this.content) === 'string' ? (this.isBlazorServerRender() && (this.contentEle.innerText === '')) ?
                             this.contentEle.insertAdjacentHTML('beforeend', this.sanitizeHelper(this.content)) :
-                            this.updateSanitizeContent() :
-                            this.contentEle.appendChild(this.content);
+                            this.updateSanitizeContent() : this.contentEle.appendChild(this.content);
+                        }
                         this.setMaxHeight();
                     } else {
                         if (!this.isBlazorServerRender() ||

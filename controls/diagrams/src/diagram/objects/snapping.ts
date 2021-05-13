@@ -620,7 +620,12 @@ export class Snapping {
         this.sortByDistance(objectsAtLeft, 'distance', true);
         this.sortByDistance(objectsAtRight, 'distance', true);
         const equallySpaced: Objects[] = [];
-        const bounds: Rect = getBounds(shape.wrapper);
+        let bounds: Rect;
+        if (diagram.selectedObject.helperObject) {
+            bounds = getBounds(diagram.selectedObject.helperObject.wrapper);
+        } else {
+            bounds = getBounds(shape.wrapper);
+        }
         let nearestleft: Rect; let nearestright: Rect;
         let targetBounds: Rect;
         let equaldistance: number;

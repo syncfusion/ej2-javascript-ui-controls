@@ -3079,12 +3079,14 @@ describe("Accordion Testing", () => {
             expect(ele.children[0].firstElementChild.getAttribute('aria-disabled')).toBe('false');
             expect(ele.children[0].getAttribute('aria-expanded')).toBe('false');
             expect(ele.children[0].firstElementChild.getAttribute('aria-selected')).toBe('false');
+            expect(ele.children[0].firstElementChild.getAttribute('aria-label')).toBe('collapsed');
             expect(ele.children[0].children[0].getAttribute('role')).toBe('heading');
             expect(ele.children[1].children[0].getAttribute('role')).toBe('heading');
             expect(ele.children[1].children[0].getAttribute('aria-controls')).toBe(null);
             expect(ele.children[1].firstElementChild.getAttribute('aria-disabled')).toBe('false');
             expect(ele.children[1].getAttribute('aria-expanded')).toBe('false');
             expect(ele.children[1].firstElementChild.getAttribute('aria-selected')).toBe('false');
+            expect(ele.children[1].firstElementChild.getAttribute('aria-label')).toBe('collapsed');
             expect(ele.children[0].children[0].getAttribute('tabindex')).toBe('0');
             expect(ele.children[1].children[0].getAttribute('tabindex')).toBe('0');
             expect(ele.children[2].children[0].getAttribute('tabindex')).toBe('0');
@@ -3216,8 +3218,10 @@ describe("Accordion Testing", () => {
             let ele: HTMLElement = document.getElementById('accordion');
             expect(ele.children[0].getAttribute('aria-expanded')).toBe('true');
             expect(ele.children[0].firstElementChild.getAttribute('aria-selected')).toBe('true');
+            expect(ele.children[0].firstElementChild.getAttribute('aria-label')).toBe('expanded');
             expect(ele.children[1].getAttribute('aria-expanded')).toBe('true');
             expect(ele.children[1].firstElementChild.getAttribute('aria-selected')).toBe('true');
+            expect(ele.children[1].firstElementChild.getAttribute('aria-label')).toBe('expanded');
             expect(ele.children[1].children[1].getAttribute('aria-hidden')).toBe('false');
             expect(ele.children[0].children[1].getAttribute('aria-hidden')).toBe('false');
             (<HTMLElement>ele.children[1].children[0]).click();

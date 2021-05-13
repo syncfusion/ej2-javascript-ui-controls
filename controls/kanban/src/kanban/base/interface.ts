@@ -149,7 +149,7 @@ export interface DragArgs extends BaseEventArgs {
 
 /** @private */
 export interface HeaderArgs {
-    keyField: string;
+    keyField: string | number;
     textField: string;
     count?: number;
 }

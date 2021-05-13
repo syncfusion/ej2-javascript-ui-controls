@@ -262,6 +262,10 @@ export class QuickPopups {
             cancelButton.innerHTML = this.l10n.getConstant('no');
             dialogCancel.innerHTML = this.l10n.getConstant('cancel');
             break;
+        case 'occurrenceAlert':
+            addClass([cancelButton], cls.DISABLE_CLASS);
+            this.quickDialog.content = this.l10n.getConstant('occurenceAlert');
+            break;
         }
         if ((!this.parent.enableRecurrenceValidation && type === 'wrongPattern') || this.parent.enableRecurrenceValidation) {
             this.showQuickDialog('RecurrenceValidationAlert');

@@ -164,7 +164,7 @@ export class KanbanDialog {
         switch (field.type) {
         case 'DropDown':
             if (field.key === this.parent.keyField) {
-                dropDownOptions = { dataSource: this.parent.layoutModule.columnKeys, value: fieldValue as string };
+                dropDownOptions = { dataSource: this.parent.layoutModule.columnKeys, value: fieldValue ? fieldValue.toString() : fieldValue };
             } else if (field.key === this.parent.swimlaneSettings.keyField) {
                 dropDownOptions = {
                     dataSource: [].slice.call(this.parent.layoutModule.kanbanRows),

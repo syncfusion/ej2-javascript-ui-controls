@@ -141,6 +141,15 @@ describe('Month-agenda view rendering', () => {
                 expect(schObj.element.offsetHeight).toEqual(500);
             });
 
+            it('set up height as auto', () => {
+                const model: ScheduleModel = {
+                    height: 'auto', currentView: 'MonthAgenda', selectedDate: new Date(2017, 9, 4),
+                    views: ['MonthAgenda']
+                };
+                schObj = util.createSchedule(model, []);
+                expect(schObj.element.offsetHeight).toEqual(333);
+            });
+
             it('start and end hour', () => {
                 const model: ScheduleModel = {
                     currentView: 'MonthAgenda', selectedDate: new Date(2017, 9, 4),

@@ -70,6 +70,14 @@ export class DocumentEditorSettings extends ChildProperty<DocumentEditorSettings
      */
     @Property({ roomName: '', editableRegionColor: '#22b24b', lockedRegionColor: '#f44336' })
     public collaborativeEditingSettings: CollaborativeEditingSettingsModel;
+
+    /**
+     * Specifies the device pixel ratio for the image generated for printing.
+     * Remarks: Increasing the device pixel ratio will increase the image file size, due to high resolution of image.
+     */
+    @Property(1)
+    public printDevicePixelRatio: number;
+
 }
 
 /**

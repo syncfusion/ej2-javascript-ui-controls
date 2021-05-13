@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 19.1.63 (2021-05-13)
+
+### RichTextEditor
+
+#### Breaking Changes
+
+- The `toolbarStatusUpdate` event has been deprecated. Use `updatedToolbarStatus` new event to get the status of the updated toolbar.
+
 ## 19.1.59 (2021-05-04)
 
 ### RichTextEditor
