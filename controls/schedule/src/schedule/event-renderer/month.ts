@@ -115,6 +115,17 @@ export class MonthEvent extends EventBase {
             if (!this.parent.enablePersistence) {
                 this.parent.notify(events.contentReady, {});
             }
+            if (this.parent.currentView === 'Month' && this.parent.showWeekNumber) {
+                const totalCells: HTMLElement[] = 
+                    [].slice.call(this.parent.element.querySelectorAll('.e-content-wrap table tr td:first-child'));
+                const weekNumberCells: HTMLElement[] = [].slice.call(this.parent.element.querySelectorAll('.' + cls.WEEK_NUMBER_CLASS));
+                weekNumberCells.forEach((cell: HTMLElement, i: number) => {
+                    const height: number = totalCells[i].offsetHeight;
+                    setStyleAttribute(cell, { 'height': height + 'px' });
+                });
+                this.parent.element.querySelector('.' + cls.WEEK_NUMBER_WRAPPER_CLASS).scrollTop =
+                    this.parent.element.querySelector('.' + cls.CONTENT_WRAP_CLASS).scrollTop;
+            }
         }
         this.parent.renderTemplates();
     }

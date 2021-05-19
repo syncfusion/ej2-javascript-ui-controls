@@ -201,7 +201,7 @@ describe('Schedule Resources', () => {
                     workDaysField: 'workDays', startHourField: 'startHour', endHourField: 'endHour', cssClassField: 'css'
                 }]
             };
-            schObj = util.createSchedule(model, [], done);
+            schObj = util.createSchedule(model, resourceData, done);
         });
         afterAll(() => {
             util.destroy(schObj);
@@ -209,11 +209,13 @@ describe('Schedule Resources', () => {
 
         it('headerdate checking in workweek view', () => {
             expect(schObj.element.querySelectorAll('.e-date-header-wrap .e-header-cells').length).toEqual(11);
+            expect(schObj.element.querySelectorAll('.e-appointment').length).toEqual(5);
         });
 
         it('headerdate checking in week view', (done: DoneFn) => {
             schObj.dataBound = () => {
                 expect(schObj.element.querySelectorAll('.e-date-header-wrap .e-header-cells').length).toEqual(21);
+                expect(schObj.element.querySelectorAll('.e-appointment').length).toEqual(9);
                 done();
             };
             schObj.currentView = 'Week';

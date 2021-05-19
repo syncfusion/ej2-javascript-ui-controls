@@ -1,6 +1,6 @@
 import { extend, select } from '@syncfusion/ej2-base';
-import { remove, isNullOrUndefined, updateBlazorTemplate, resetBlazorTemplate } from '@syncfusion/ej2-base';
-import { IGrid, NotifyArgs, EditEventArgs, AddEventArgs, SaveEventArgs } from '../base/interface';
+import { remove, isNullOrUndefined, updateBlazorTemplate } from '@syncfusion/ej2-base';
+import { IGrid, NotifyArgs, EditEventArgs, AddEventArgs, SaveEventArgs, CustomEditEventArgs, CustomAddEventArgs } from '../base/interface';
 import { parentsUntil, isGroupAdaptive, refreshForeignData, getObject, gridActionHandler } from '../base/util';
 import * as events from '../base/constant';
 import { EditRender } from '../renderer/edit-renderer';
@@ -108,55 +108,62 @@ export class NormalEdit {
                 return;
             }
         }
+        let e: { data: Object, index: number, isScroll: boolean } = { data: undefined, index: this.rowIndex, isScroll: false };
+        this.parent.notify(events.virtualScrollEditActionBegin, e);
         if (isGroupAdaptive(gObj)) {
             let rObj: Row<Column> = gObj.getRowObjectFromUID(tr.getAttribute('data-uid'));
             this.previousData = rObj.data;
-        } else if (this.parent.enableVirtualization || this.parent.enableInfiniteScrolling) {
-            let e: { data: Object, index: number } = { data: this.previousData, index: this.rowIndex };
-            this.parent.notify(events.virtualScrollEditActionBegin, e);
+        } else if (!this.previousData && (this.parent.enableVirtualization || this.parent.enableInfiniteScrolling)) {
             this.previousData = e.data;
-        } else {
+        } else if (!this.parent.enableVirtualization) {
             this.previousData = extend({}, {}, gObj.getCurrentViewRecords()[this.rowIndex], true);
         }
+        let editedData: Object = extend({}, {}, e.data || this.previousData, true);
         for (let i: number = 0; i < primaryKeys.length; i++) {
-            primaryKeyValues.push(getObject(primaryKeys[i], this.previousData));
+            primaryKeyValues.push(getObject(primaryKeys[i], editedData));
         }
         this.uid = tr.getAttribute('data-uid');
         let rowObj: Row<Column> = gObj.getRowObjectFromUID(this.uid);
-        let args: EditEventArgs = {
+        let args: CustomEditEventArgs = {
             primaryKey: primaryKeys, primaryKeyValue: primaryKeyValues, requestType: 'beginEdit',
-            rowData: this.previousData, rowIndex: this.rowIndex, type: 'edit', cancel: false,
-            foreignKeyData: rowObj && rowObj.foreignKeyData, target: undefined
+            rowData: editedData, rowIndex: this.rowIndex, type: 'edit', cancel: false,
+            foreignKeyData: rowObj && rowObj.foreignKeyData, target: undefined, isScroll: e.isScroll
         };
         args.row = tr;
-        gObj.trigger(events.beginEdit, args, (begineditargs: EditEventArgs) => {
-            begineditargs.type = 'actionBegin';
-            gObj.trigger(events.actionBegin, begineditargs, (editargs: EditEventArgs) => {
-                if (!editargs.cancel) {
-                let cloneRow: string = 'cloneRow';
-                let frozen: string = 'frozen';
-                let cloneFrozen: string = 'cloneFrozen';
-                gObj.isEdit = true;
-                editargs.row = editargs.row ? editargs.row :  tr;
-                if (gObj.editSettings.mode !== 'Dialog') {
-                    gObj.clearSelection();
-                }
-                if (gObj.editSettings.mode === 'Dialog' && (<{ selectionModule?: { preventFocus: boolean } }>gObj).selectionModule) {
-                    (<{ selectionModule?: { preventFocus: boolean } }>gObj).selectionModule.preventFocus = true;
-                    editargs.row.classList.add('e-dlgeditrow');
-                }
-                this.renderer.update(editargs);
-                this.uid = tr.getAttribute('data-uid');
-                gObj.editModule.applyFormValidation();
-                editargs.type = 'actionComplete';
-                gObj.trigger(events.actionComplete, editargs);
-                this.args = editargs;
-                if (this.parent.allowTextWrap) {
-                    this.parent.notify(events.freezeRender, { case: 'textwrap' });
-                }
-            }
+        if (!args.isScroll) {
+            gObj.trigger(events.beginEdit, args, (begineditargs: EditEventArgs) => {
+                begineditargs.type = 'actionBegin';
+                gObj.trigger(events.actionBegin, begineditargs, (editargs: EditEventArgs) => {
+                    if (!editargs.cancel) {
+                        this.inlineEditHandler(editargs, tr);
+                    }
+                });
             });
-        });
+        } else {
+            this.inlineEditHandler(args, tr);
+        }
+    }
+
+    private inlineEditHandler(editargs: EditEventArgs, tr: Element): void {
+        let gObj: IGrid = this.parent;
+        gObj.isEdit = true;
+        editargs.row = editargs.row ? editargs.row : tr;
+        if (gObj.editSettings.mode !== 'Dialog') {
+            gObj.clearSelection();
+        }
+        if (gObj.editSettings.mode === 'Dialog' && (<{ selectionModule?: { preventFocus: boolean } }>gObj).selectionModule) {
+            (<{ selectionModule?: { preventFocus: boolean } }>gObj).selectionModule.preventFocus = true;
+            editargs.row.classList.add('e-dlgeditrow');
+        }
+        this.renderer.update(editargs);
+        this.uid = tr.getAttribute('data-uid');
+        gObj.editModule.applyFormValidation();
+        editargs.type = 'actionComplete';
+        gObj.trigger(events.actionComplete, editargs);
+        this.args = editargs;
+        if (this.parent.allowTextWrap) {
+            this.parent.notify(events.freezeRender, { case: 'textwrap' });
+        }
     }
 
     protected updateRow(index: number, data: Object): void {
@@ -198,10 +205,12 @@ export class NormalEdit {
         let isDlg: Boolean = gObj.editSettings.mode === 'Dialog';
         let dlgWrapper: Element = select('#' + gObj.element.id + '_dialogEdit_wrapper', document);
         let dlgForm: Element = isDlg ? dlgWrapper.querySelector('.e-gridform') : gObj.element.getElementsByClassName('e-gridform')[index];
-        let data: { virtualData: Object, isAdd: boolean } = { virtualData: {}, isAdd: false };
+        let data: { virtualData: Object, isAdd: boolean, isScroll: boolean, endEdit?: boolean } = {
+            virtualData: extend({}, {}, this.previousData, true), isAdd: false, isScroll: false, endEdit: true
+        };
         this.parent.notify(events.getVirtualData, data);
         if ((this.parent.enableVirtualization || this.parent.enableInfiniteScrolling)
-            && this.parent.editSettings.mode === 'Normal' && !dlgForm) {
+            && this.parent.editSettings.mode === 'Normal' && Object.keys(data.virtualData).length) {
             if (this.parent.isEdit) {
                 this.currentVirtualData = editedData = args.data = data.virtualData;
             }
@@ -446,39 +455,51 @@ export class NormalEdit {
         }
         this.previousData = {};
         this.uid = '';
-        let cols: Column[] = ((<{ columnModel?: Column[] }>gObj).columnModel);
+        let cols: Column[] = gObj.getColumns();
+        let rowData: { virtualData: Object, isScroll: boolean } = { virtualData: {}, isScroll: false };
+        this.parent.notify(events.getVirtualData, rowData);
         for (let i: number = 0; i < cols.length; i++) {
+            if (rowData.isScroll && cols[i].getFreezeTableName() !== 'movable') {
+                continue;
+            }
             if (cols[i].field) {
                 DataUtil.setValue(cols[i].field, cols[i].defaultValue, this.previousData);
             }
         }
-        let args: AddEventArgs = {
+        let args: CustomAddEventArgs = {
             cancel: false, foreignKeyData: {}, //foreign key support
             requestType: 'add', data: this.previousData, type: events.actionBegin, index: index,
-            rowData: this.previousData, target: undefined
+            rowData: this.previousData, target: undefined, isScroll: rowData.isScroll
+            
         };
-        let rowData: { virtualData: Object } = { virtualData: {} };
-        this.parent.notify(events.getVirtualData, rowData);
         if ((this.parent.enableVirtualization || this.parent.infiniteScrollSettings.enableCache)
             && Object.keys(rowData.virtualData).length) {
             args.data = args.rowData = rowData.virtualData;
         }
-        gObj.trigger(events.actionBegin, args, (addArgs: AddEventArgs) => {
-            if (addArgs.cancel) {
-                return;
-            }
-            gObj.isEdit = true;
-            if (gObj.editSettings.mode !== 'Dialog') {
-                gObj.clearSelection();
-            }
-            this.renderer.addNew(addArgs);
-            gObj.editModule.applyFormValidation();
-            addArgs.type = events.actionComplete;
-            addArgs.row = gObj.element.querySelector('.' + literals.addedRow);
-            gObj.trigger(events.actionComplete, addArgs);
-            this.args = addArgs as EditArgs;
-        });
+        if (!args.isScroll) {
+            gObj.trigger(events.actionBegin, args, (addArgs: AddEventArgs) => {
+                if (addArgs.cancel) {
+                    return;
+                }
+                this.inlineAddHandler(addArgs);
+            });
+        } else {
+            this.inlineAddHandler(args);
+        }
+    }
 
+    private inlineAddHandler(addArgs: AddEventArgs): void {
+        let gObj: IGrid = this.parent;
+        gObj.isEdit = true;
+        if (gObj.editSettings.mode !== 'Dialog') {
+            gObj.clearSelection();
+        }
+        this.renderer.addNew(addArgs);
+        gObj.editModule.applyFormValidation();
+        addArgs.type = events.actionComplete;
+        addArgs.row = gObj.element.querySelector('.' + literals.addedRow);
+        gObj.trigger(events.actionComplete, addArgs);
+        this.args = addArgs as EditArgs;
     }
 
     protected deleteRecord(fieldname?: string, data?: Object): void {

@@ -336,14 +336,24 @@ export class WorkbookFormula {
         const sheetCount: number = this.parent.sheets.length;
         const temp: number[] = [];
         temp.length = 0;
+        let regxTemp: RegExp; let searchIdx: number; let idx: number; let valSearchIdx: number;
         const sheetInfo: { visibleName: string, sheet: string }[] = this.getSheetInfo();
         const exp: string = '(?=[\'!])(?=[^"]*(?:"[^"]*"[^"]*)*$)';
         for (i = 0; i < sheetCount; i++) {
             if (sheetInfo[i].sheet !== sheetInfo[i].visibleName) {
                 regx = new RegExp(sheetInfo[i].visibleName.replace(escapeRegx, '\\$&') + exp, 'gi');
+                idx = i;
                 if (value.match(regx)) {
-                    value = value.replace(regx, i + '/');
-                    temp.push(i);
+                    for (let j: number = i + 1; j < sheetCount; j++) {
+                        regxTemp = new RegExp(sheetInfo[j].visibleName.replace(escapeRegx, '\\$&') + exp, 'gi');
+                        searchIdx = value.search(regxTemp); valSearchIdx = value.search(regx);
+                        if (searchIdx > -1 && (searchIdx < valSearchIdx || (searchIdx === valSearchIdx && sheetInfo[j].visibleName.length >
+                            sheetInfo[i].visibleName.length))) {
+                            regx = regxTemp; idx = j;
+                        }
+                    }
+                    value = value.replace(regx, idx + '/');
+                    temp.push(idx);
                 }
             }
         }

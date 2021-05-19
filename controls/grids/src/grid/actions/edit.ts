@@ -32,7 +32,8 @@ import * as literals from '../base/string-literals';
 export class Edit implements IAction {
     //Internal variables                  
     protected renderer: EditRender;
-    private editModule: IEdit;
+    /** @hidden */
+    public editModule: IEdit;
     /** @hidden */
     public formObj: FormValidator;
     public mFormObj: FormValidator;
@@ -522,7 +523,7 @@ export class Edit implements IAction {
             for (let k: number = 0; k < elements.length; k++) {
                 if (((elements[k].hasAttribute('name') && (elements[k].className !== 'e-multi-hidden')) ||
                     elements[k].classList.contains('e-multiselect')) && !(elements[k].type === 'hidden' &&
-                    elements[k].parentElement.classList.contains('e-switch-wrapper'))) {
+                    (parentsUntil(elements[k], 'e-switch-wrapper') || parentsUntil(elements[k], 'e-checkbox-wrapper')))) {
                     let field: string = (elements[k].hasAttribute('name')) ? setComplexFieldID(elements[k].getAttribute('name')) :
                         setComplexFieldID(elements[k].getAttribute('id'));
                     let column: Column = gObj.getColumnByField(field) || { field: field, type: elements[k].getAttribute('type') } as Column;
@@ -623,7 +624,7 @@ export class Edit implements IAction {
                 && parseInt(parentsUntil(editRow, literals.row).getAttribute(literals.ariaRowIndex), 10) < this.parent.frozenRows) {
                 return;
             }
-            let restrictedRequestTypes: string[] = ['filterafteropen', 'filterbeforeopen', 'filterchoicerequest', 'save', 'infiniteScroll'];
+            let restrictedRequestTypes: string[] = ['filterafteropen', 'filterbeforeopen', 'filterchoicerequest', 'save', 'infiniteScroll', 'virtualscroll'];
             if (this.parent.editSettings.mode !== 'Batch' && this.formObj && !this.formObj.isDestroyed
                 && restrictedRequestTypes.indexOf(e.requestType) === -1 && !e.cancel) {
                 this.destroyWidgets();
@@ -644,7 +645,7 @@ export class Edit implements IAction {
                 this.parent.renderTemplates();
             }
         }
-        cols = cols ? cols : this.parent.getVisibleColumns() as Column[];
+        cols = cols ? cols : this.parent.getCurrentVisibleColumns(this.parent.enableColumnVirtualization) as Column[];
         if (cols.some((column: Column) => !isNullOrUndefined(column.editTemplate))) {
             this.parent.destroyTemplate(['editTemplate']);
             if (this.parent.isReact) {

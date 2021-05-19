@@ -176,6 +176,7 @@ export class FocusStrategy {
             let isSelected: boolean = this.parent.contentModule ?
                 (<{ selectedRowIndex?: number }>this.parent.contentModule).selectedRowIndex > -1 : false;
             if (data.isAdd || Object.keys(data.virtualData).length || isKeyFocus || data.isCancel || isSelected) {
+                this.parent.notify(event.resetVirtualFocus, { isCancel: false });
                 data.isCancel = false;
                 (<{ selectedRowIndex?: number }>this.parent.contentModule).selectedRowIndex = -1;
                 if (isKeyFocus) {

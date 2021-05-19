@@ -12,7 +12,7 @@ import { WCharacterFormat } from '../format/character-format';
 import {
     ElementInfo, HelperMethods, CellInfo, HyperlinkTextInfo,
     ParagraphInfo, LineInfo, IndexInfo, BlockInfo, CellCountInfo, PositionInfo, Base64,
-    TextFormFieldInfo, CheckBoxFormFieldInfo, DropDownFormFieldInfo, RevisionMatchedInfo
+    TextFormFieldInfo, CheckBoxFormFieldInfo, DropDownFormFieldInfo, RevisionMatchedInfo, FootNoteWidgetsInfo
 } from './editor-helper';
 import { isNullOrUndefined, Browser, classList, L10n } from '@syncfusion/ej2-base';
 import {
@@ -8301,25 +8301,13 @@ export class Editor {
             }
             let para: ParagraphWidget = selection.start.paragraph;
             let layout: Layout = this.documentHelper.layout;
-            let splittedWidgets: Widget[] = para.getSplitWidgets();
-            let footNoteWidgets: BlockWidget[] = [];
-            let toBodyWidget: BodyWidget = para.containerWidget as BodyWidget;
-            let fromBodyWidget: BodyWidget;
-            for (let i: number = 0; i < splittedWidgets.length; i++) {
-                let footWidgets: BlockWidget[] = layout.getFootNoteWidgetsOf(splittedWidgets[i] as BlockWidget);
-                for (let j: number = 0; j < footWidgets.length; j++) {
-                    fromBodyWidget = footWidgets[j].containerWidget as BodyWidget;
-                    if (toBodyWidget != fromBodyWidget) {
-                        footNoteWidgets.push(footWidgets[j]);
-                    }
-                }
-            }
+            let footNoteWidgetsInfo: FootNoteWidgetsInfo = layout.getFootNodeWidgetsToShiftToPage(para);
             para = para.combineWidget(this.owner.viewer) as ParagraphWidget;
             this.applyParaFormatProperty(para, property, value, update);
             this.layoutItemBlock(para, false);
-            if (footNoteWidgets.length > 0) {
-                layout.moveFootNotesToPage(footNoteWidgets, fromBodyWidget, toBodyWidget);
-                layout.layoutfootNote(toBodyWidget.page.footnoteWidget);
+            if (footNoteWidgetsInfo.footNoteWidgets.length > 0) {
+                layout.moveFootNotesToPage(footNoteWidgetsInfo.footNoteWidgets, footNoteWidgetsInfo.fromBodyWidget, footNoteWidgetsInfo.toBodyWidget);
+                layout.layoutfootNote(footNoteWidgetsInfo.toBodyWidget.page.footnoteWidget);
             }
             if (!isBidiList) {
                 this.documentHelper.layout.isBidiReLayout = false;

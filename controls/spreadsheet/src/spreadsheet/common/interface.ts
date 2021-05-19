@@ -255,6 +255,7 @@ export interface CellRenderArgs {
     isFreezePane?: boolean;
     insideFreezePane?: boolean;
     isRefreshing?: boolean;
+    sheetIndex?: number;
 }
 /** @hidden */
 export interface IAriaOptions<T> {

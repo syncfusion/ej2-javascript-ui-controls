@@ -279,9 +279,13 @@ export class FooterRenderer extends ContentRender implements IRenderer {
         let isModified: boolean = false;
         let batchChanges: Object = {};
         let gridData: string = 'dataSource';
+        let isFiltered: boolean = false;
+        if (!this.parent.renderModule.data.isRemote() && this.parent.allowFiltering && this.parent.filterSettings.columns.length) {
+            isFiltered = true;
+        }
         let currentViewData: Object[] = this.parent.dataSource instanceof Array ?
-            this.parent.dataSource : this.parent.dataSource[gridData].json.length
-            ? this.parent.dataSource[gridData].json : this.parent.getCurrentViewRecords();
+            (isFiltered ? this.parent.getFilteredRecords() : this.parent.dataSource) : (this.parent.dataSource[gridData].json.length ?
+            this.parent.dataSource[gridData].json : this.parent.getCurrentViewRecords());
         if (this.parent.editModule) {
             batchChanges = this.parent.editModule.getBatchChanges();
         }

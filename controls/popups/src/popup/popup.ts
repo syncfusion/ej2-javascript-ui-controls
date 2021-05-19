@@ -395,7 +395,7 @@ export class Popup extends Component<HTMLElement> implements INotifyPropertyChan
 
     private scrollRefresh(e: MouseEvent): void {
         if (this.actionOnScroll === 'reposition') {
-            if (!(this.element.offsetParent === e.target ||
+            if (!isNullOrUndefined(this.element) && !(this.element.offsetParent === e.target ||
                     (this.element.offsetParent && this.element.offsetParent.tagName === 'BODY' &&
                     (e.target as HTMLElement).parentElement == null) )) {
                 this.refreshPosition();
@@ -796,14 +796,14 @@ export class Popup extends Component<HTMLElement> implements INotifyPropertyChan
         let parent: HTMLElement = element.parentElement;
         while (parent && parent.tagName !== 'HTML') {
             const parentStyle: CSSStyleDeclaration = getComputedStyle(parent);
-            if (parentStyle.position === 'fixed' && this.element.offsetParent && this.element.offsetParent.tagName === 'BODY') {
+            if (parentStyle.position === 'fixed' && !isNullOrUndefined(this.element) && this.element.offsetParent && this.element.offsetParent.tagName === 'BODY') {
                 this.element.style.top = window.scrollY > parseInt(this.element.style.top) ? formatUnit(window.scrollY - parseInt(this.element.style.top))
                 : formatUnit(parseInt(this.element.style.top) - window.scrollY);
                 this.element.style.position = 'fixed';
                 this.fixedParent = true;
             }
             parent = parent.parentElement;
-            if (isNullOrUndefined(this.element.offsetParent) && parentStyle.position === 'fixed'
+            if (!isNullOrUndefined(this.element) && isNullOrUndefined(this.element.offsetParent) && parentStyle.position === 'fixed'
             && this.element.style.position === 'fixed') {
                 this.fixedParent = true;
             }

@@ -924,6 +924,17 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
                     } else {
                         args = sFormula.substring(sFormula.indexOf(this.leftBracket) + 1, sFormula.indexOf(this.rightBracket))
                             .replace(',n', ',').split(this.getParseArgumentSeparator());
+                        if (sFormula.includes(this.getParseArgumentSeparator() + this.tic)) {
+                            let joinIdx: number = null;
+                            for (let k: number = 0; k < args.length; k++) {
+                                if (args[k] && args[k][0] === this.tic && args[k][args[k].length - 1] !== this.tic) { joinIdx = k; }
+                                if (joinIdx !== null && joinIdx === k - 1 && args[k][0] != this.tic && args[k][args[k].length - 1] ===
+                                    this.tic) {
+                                    args[joinIdx] = args[joinIdx] + this.getParseArgumentSeparator() + args[k];
+                                    args.splice(k, 1); joinIdx = null;
+                                }
+                            }
+                        }
                     }
                     formulatResult = isNullOrUndefined(this.getFunction(libFormula)) ? this.getErrorStrings()[CommonErrors.name] :
                         this.getFunction(libFormula)(...args);
@@ -982,7 +993,14 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
         if (criteria.length > 255) {
             return this.getErrorStrings()[CommonErrors.value];
         }
-        criteria = this.isCellReference(criteria) ? this.getValueFromArg(criteria) : criteria;
+        const isAsterisk: boolean = criteria.includes('*');
+        let criteriaValue: string = isAsterisk ? criteria.replace(/\*/g, '').trim() : criteria;
+        criteriaValue = this.isCellReference(criteriaValue) ? this.getValueFromArg(criteriaValue) : criteria;
+        if (isAsterisk) {
+            if (criteria[0] === '*') { criteriaValue = '*' + criteriaValue; }
+            if (criteria[criteria.length - 1] === '*') { criteriaValue += '*'; }
+        }
+        criteria = criteriaValue;
         let opt: string = this.parser.tokenEqual;
         if (criteria.startsWith('<=')) {
             opt = this.parser.tokenLessEq;
@@ -1007,7 +1025,7 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
         const criteriaRangeArray: string = argArr[0];
         const sumRange: string[] | string = this.getCellCollection(argCount > 2 ? argArr[2] : rangevalue);
         const criteriaRange: string[] | string = this.getCellCollection(criteriaRangeArray);
-        const result: number[] = this.getComputeSumIfValue(criteriaRange, sumRange, criteria, checkCriteria, opt);
+        const result: number[] = this.getComputeSumIfValue(criteriaRange, sumRange, criteria, checkCriteria, opt, isAsterisk);
         return [result[0], result[1]];
     }
 
@@ -1179,11 +1197,13 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
 
     /** @hidden */
     /* eslint-disable-next-line */
-    public getComputeSumIfValue(criteriaRange: string[] | string, sumRange: string[] | string, criteria: string, checkCriteria: number, op: string): number[] {
+    public getComputeSumIfValue(criteriaRange: string[] | string, sumRange: string[] | string, criteria: string, checkCriteria: number, op: string, isAsterisk: boolean): number[] {
         let sum: number = 0;
         let count: number = 0;
+        const isFirst: boolean = isAsterisk && criteria && criteria[0] === '*';
         switch (op) {
         case this.parser.tokenEqual: {
+            const criteriaValue: string = isAsterisk ? criteria.replace(/\*/g, '') : criteria;
             for (let i: number = 0; i < criteriaRange.length; i++) {
                 const value: string = this.getValueFromArg(criteriaRange[i].split(this.tic).join(''));
                 const val: number = this.parseFloat(value);
@@ -1193,11 +1213,19 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
                     sum = sum + val1;
                     count = count + 1;
                 } else if (value === criteria) {
-                    let sumRangeVal: string | number = sumRange[i];
-                    sumRangeVal = this.getValueFromArg(sumRangeVal);
-                    const val1: number = this.parseFloat(sumRangeVal.toString());
-                    sum = sum + val1;
+                    sum = sum + this.getValueFromRange(sumRange, i);
                     count = count + 1;
+                } else if (isAsterisk && criteriaValue && value) {
+                    if (criteria[0] === '*' && criteriaValue.length <= value.length && criteriaValue === value.slice(
+                        0, criteriaValue.length)) {
+                        sum = sum + this.getValueFromRange(sumRange, i);
+                        count = count + 1;
+                    }
+                    if (criteria[criteria.length - 1] === '*' && criteriaValue.length <= value.length && criteriaValue ===
+                        value.slice(value.length - criteriaValue.length, value.length)) {
+                        sum = sum + this.getValueFromRange(sumRange, i);
+                        count = count + 1;
+                    }
                 }
             }
         }
@@ -1269,6 +1297,12 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
             break;
         }
         return [sum, count];
+    }
+
+    private getValueFromRange(sumRange: string[] | string, index: number): number {
+        let sumRangeVal: string | number = sumRange[index];
+        sumRangeVal = this.getValueFromArg(sumRangeVal);
+        return this.parseFloat(sumRangeVal.toString());
     }
 
     /**
@@ -1891,7 +1925,7 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
             storedCell = this.computeStoreCells(sCell);
             storedCellLength = storedCell.length;
             if (storedCellLength === 0) {
-                return 0;
+                return isAvgIfs === this.trueValue ? this.getErrorStrings()[CommonErrors.divzero] : 0;
             }
         }
         // Compare criteria and convert the new cell ranges.
@@ -1910,6 +1944,7 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
                 return 0;
             }
         }
+        let avgValCount = 0;
         for (let j: number = 0; j < storedCell.length; j++) {
             // convert the new cell ranges  for find sum in range 0(first range)
             let cell: string = '';
@@ -1933,13 +1968,12 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
             if (isCountIfs === this.trueValue) {
                 sum = sum + 1;
             } else {
+                avgValCount++;
                 const argValue: string = this.getValueFromArg(cellvalue);
                 sum = sum + parseFloat(argValue === '' ? '0' : argValue);
             }
         }
-        if (isAvgIfs === this.trueValue) {
-            sum = sum / cellvalue.length;
-        }
+        if (isAvgIfs === this.trueValue) { sum = sum / avgValCount; }
         return sum;
     }
     private processNestedFormula(pText: string, sFormula: string, fResult: string | number): string {
@@ -2307,19 +2341,20 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
         if (saveCell === this.cell) {
             throw this.formulaErrorStrings[FormulasErrorsStrings.circular_reference];
         }
-        const cValue: string | number = this.getParentCellValue(row, col, this.grid);
+        const cValue: string | number = this.getParentCellValue(row, col, this.grid, saveCell, grid);
         this.grid = grid;
         this.cell = saveCell;
         return cValue;
     }
 
-    private getParentCellValue(row: number, col: number, grd: Object): number | string {
+    private getParentCellValue(row: number, col: number, grd: Object, fromCell: string, fromCellGrid: Object): number | string {
         // formulainfotable
         let cValue: number | string;
         if ((this.parentObject as any).getValueRowCol === undefined) {
             cValue = this.getValueRowCol(this.getSheetID(grd), row, col);
         } else {
-            cValue = (this.parentObject as any).getValueRowCol(this.getSheetID(grd), row, col);
+            if (fromCell) { fromCell = fromCellGrid === grd ? '' : fromCell + this.getSheetID(fromCellGrid); }
+            cValue = (this.parentObject as any).getValueRowCol(this.getSheetID(grd), row, col, fromCell);
             return isNullOrUndefined(cValue) ? this.emptyString : cValue.toString();
         }
         if (cValue === '' || cValue === undefined) {
@@ -2516,6 +2551,10 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
             });
             this.sortedSheetNames = arr;
             this.sortedSheetNames.sort();
+            if (this.sortedSheetNames.length > 9 && this.sortedSheetNames[0].includes('1') && this.sortedSheetNames[1].includes('10')) {
+                this.sortedSheetNames.splice(this.sortedSheetNames.indexOf('2'), 0, this.sortedSheetNames[0]);
+                this.sortedSheetNames.splice(0, 1);
+            }
         }
         return this.sortedSheetNames;
     }

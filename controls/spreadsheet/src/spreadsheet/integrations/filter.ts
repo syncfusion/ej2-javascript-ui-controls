@@ -1,5 +1,5 @@
 /* eslint-disable no-useless-escape */
-import { Spreadsheet, locale, dialog, mouseDown, renderFilterCell, initiateFilterUI, FilterInfoArgs } from '../index';
+import { Spreadsheet, locale, dialog, mouseDown, renderFilterCell, initiateFilterUI, FilterInfoArgs, getStartEvent } from '../index';
 import { reapplyFilter, filterCellKeyDown, DialogBeforeOpenEventArgs } from '../index';
 import { getFilteredColumn, cMenuBeforeOpen, filterByCellValue, clearFilter, getFilterRange, applySort, getCellPosition } from '../index';
 import { filterRangeAlert, filterComplete, beforeFilter, clearAllFilter, getFilteredCollection, sortImport } from '../../workbook/common/event';
@@ -7,7 +7,7 @@ import { FilterCollectionModel, getRangeIndexes, Workbook, getCellAddress, updat
 import { getIndexesFromAddress, getSwapRange, SheetModel, getColumnHeaderText, CellModel } from '../../workbook/index';
 import { getData, getTypeFromFormat, getCell, getCellIndexes, getRangeAddress, getSheet } from '../../workbook/index';
 import { FilterOptions, BeforeFilterEventArgs, FilterEventArgs } from '../../workbook/common/interface';
-import { L10n, getComponent } from '@syncfusion/ej2-base';
+import { L10n, getComponent, EventHandler } from '@syncfusion/ej2-base';
 import { Dialog } from '../services';
 import { IFilterArgs, PredicateModel, ExcelFilterBase, beforeFltrcMenuOpen, CheckBoxFilterBase } from '@syncfusion/ej2-grids';
 import { beforeCustomFilterOpen, parentsUntil, filterCboxValue } from '@syncfusion/ej2-grids';
@@ -466,9 +466,10 @@ export class Filter {
      * @returns {void} - Closes the filter popup.
      */
     private closeDialog(): void {
-        const filterPopup: HTMLElement = this.parent.element.querySelector('.e-filter-popup');
-        if (filterPopup) {
+        const filterPopup: HTMLElement = document.querySelector('.e-filter-popup');
+        if (filterPopup && filterPopup.id.includes(this.parent.element.id)) {
             const excelFilter: Dialog = getComponent(filterPopup, 'dialog');
+            EventHandler.remove(filterPopup, getStartEvent(), this.filterMouseDownHandler);
             if (excelFilter) { excelFilter.hide(); }
         }
     }
@@ -479,8 +480,8 @@ export class Filter {
      * @returns {boolean} - Returns true if the filter popup is opened.
      */
     private isPopupOpened(): boolean {
-        const filterPopup: HTMLElement = this.parent.element.querySelector('.e-filter-popup');
-        return filterPopup && filterPopup.style.display !== 'none';
+        const filterPopup: HTMLElement = document.querySelector('.e-filter-popup');
+        return filterPopup && filterPopup.id.includes(this.parent.element.id) && filterPopup.style.display !== 'none';
     }
 
     private filterCellKeyDownHandler(args: { e: KeyboardEvent, isFilterCell: boolean }): void {
@@ -561,6 +562,10 @@ export class Filter {
             };
             const excelFilter: ExcelFilterBase = new ExcelFilterBase(this.parent, this.getLocalizedCustomOperators());
             excelFilter.openDialog(options);
+            const filterPopup: HTMLElement = document.querySelector('.e-filter-popup');
+            if (filterPopup && filterPopup.id.includes(this.parent.element.id)) {
+                EventHandler.add(filterPopup, getStartEvent(), this.filterMouseDownHandler, this);
+            }
             this.parent.hideSpinner();
         });
     }

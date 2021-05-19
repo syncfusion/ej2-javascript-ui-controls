@@ -432,7 +432,7 @@ export class BatchEdit {
             if (addRecords.length > 1 && this.parent.editSettings.newRowPosition !== 'Bottom') {
                 addRecords.reverse();
             }
-            if (this.parent.editSettings.newRowPosition !== 'Bottom') {
+            if (this.parent.editSettings.newRowPosition !== 'Bottom' && !Object.hasOwnProperty.call(args, 'updatedRecords')) {
                 data.splice(data.length - addRecords.length, addRecords.length);
                 if (!this.parent.allowPaging ) {
                     if (currentViewRecords.length > addRecords.length) {

@@ -786,7 +786,7 @@ export class ResourceBase {
     }
 
     public getResourceRenderDates(): Date[] {
-        const resourceDates: Date[] = [].concat.apply([], ...this.lastResourceLevel.map((e: TdData) => e.renderDates));
+        const resourceDates: Date[] = [].concat.apply([], this.lastResourceLevel.map((e: TdData) => e.renderDates));
         const removeDuplicateDates: CallbackFunction = (dateColl: Date[]) => dateColl.filter((date: Date, index: number, dates: Date[]) =>
             dates.map((dateObj: Date) => dateObj.getTime()).indexOf(date.getTime()) === index);
         const renderDates: Date[] = removeDuplicateDates(resourceDates);

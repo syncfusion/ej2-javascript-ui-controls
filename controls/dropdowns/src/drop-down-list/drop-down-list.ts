@@ -125,6 +125,7 @@ export class DropDownList extends DropDownBase implements IInput {
     private isPreventBlur: boolean;
     protected isTabKey: boolean;
     private actionCompleteData: ActionCompleteData;
+    private actionData: ActionCompleteData;
     protected prevSelectPoints: { [key: string]: number };
     protected isSelectCustom: boolean;
     protected isDropDownClick: boolean;
@@ -439,6 +440,7 @@ export class DropDownList extends DropDownBase implements IInput {
         this.isPreventBlur = false;
         this.isTabKey = false;
         this.actionCompleteData = { isUpdated: false };
+        this.actionData = { isUpdated: false };
         this.prevSelectPoints = {};
         this.isSelectCustom = false;
         this.isDropDownClick = false;
@@ -1942,12 +1944,11 @@ export class DropDownList extends DropDownBase implements IInput {
                     if (this.itemTemplate && this.element.tagName === 'EJS-COMBOBOX' && this.allowFiltering) {
                         setTimeout(
                             () => {
-                                // eslint-disable-next-line max-len
-                                this.actionCompleteData = { ulElement: ulElement.cloneNode(true) as HTMLElement, list: list, isUpdated: true };
+                                this.updateActionCompleteDataValues(ulElement, list);
                             },
                             0);
                     } else {
-                        this.actionCompleteData = { ulElement: ulElement.cloneNode(true) as HTMLElement, list: list, isUpdated: true };
+                        this.updateActionCompleteDataValues(ulElement, list);
                     }
                 }
                 this.addNewItem(list, selectedItem);
@@ -1958,6 +1959,13 @@ export class DropDownList extends DropDownBase implements IInput {
             if (this.beforePopupOpen) {
                 this.renderPopup();
             }
+        }
+    }
+
+    private updateActionCompleteDataValues(ulElement: HTMLElement, list: { [key: string]: Object }[]) : void {
+        this.actionCompleteData = { ulElement: ulElement.cloneNode(true) as HTMLElement, list: list, isUpdated: true };
+        if (isNullOrUndefined(this.actionData.ulElement) && isNullOrUndefined(this.actionData.list)) {
+            this.actionData = this.actionCompleteData;
         }
     }
 
@@ -2700,6 +2708,9 @@ export class DropDownList extends DropDownBase implements IInput {
         }
         if (this.allowFiltering && newProp.dataSource && !isNullOrUndefined(Object.keys(newProp.dataSource))) {
             this.actionCompleteData = { ulElement: null, list: null, isUpdated: false };
+            this.actionData = this.actionCompleteData;
+        } else if (this.allowFiltering && newProp.query && !isNullOrUndefined(Object.keys(newProp.query))) {
+            this.actionData = this.actionCompleteData;
         }
     }
     protected updateDataSource(props?: DropDownListModel): void {
@@ -2844,6 +2855,7 @@ export class DropDownList extends DropDownBase implements IInput {
                 if (this.allowFiltering) {
                     this.actionCompleteData = { ulElement: this.ulElement,
                         list: this.listData as { [key: string]: Object }[], isUpdated: true };
+                        this.actionData = this.actionCompleteData;
                     this.updateSelectElementData(this.allowFiltering);
                 }
                 break;
@@ -2931,6 +2943,11 @@ export class DropDownList extends DropDownBase implements IInput {
         }
         if (isBlazor() && this.itemTemplate) {
             this.DropDownBaseupdateBlazorTemplates(true, false, false, false);
+        }
+        if (this.isFiltering() && this.dataSource instanceof DataManager && (this.actionData.list != this.actionCompleteData.list) &&
+            this.actionData.list && this.actionData.ulElement) {
+            this.actionCompleteData = this.actionData;
+            this.onActionComplete(this.actionCompleteData.ulElement, this.actionCompleteData.list, null, true);
         }
         if (this.beforePopupOpen) {
             this.refreshPopup();

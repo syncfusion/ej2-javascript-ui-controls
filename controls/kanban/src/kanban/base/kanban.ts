@@ -387,7 +387,8 @@ export class Kanban extends Component<HTMLElement> {
             yes: 'Yes',
             no: 'No',
             close: 'Close',
-            noCard: 'No cards to display'
+            noCard: 'No cards to display',
+            unassigned: 'Unassigned'
         };
         this.localeObj = new L10n(this.getModuleName(), defaultLocale, this.locale);
         this.scrollPosition = { content: { left: 0, top: 0 }, column: {} };

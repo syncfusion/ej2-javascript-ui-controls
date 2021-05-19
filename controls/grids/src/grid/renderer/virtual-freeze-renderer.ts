@@ -77,7 +77,7 @@ export class VirtualFreezeRenderer extends FreezeContentRender implements IRende
         }
     }
 
-    private getVirtualData(data: { virtualData: Object, isAdd: boolean, isCancel: boolean }): void {
+    private getVirtualData(data: { virtualData: Object, isAdd: boolean, isCancel: boolean, isScroll: boolean }): void {
         this.virtualRenderer.getVirtualData(data);
     }
 
@@ -577,7 +577,7 @@ export class ColumnVirtualFreezeRenderer extends ColumnFreezeContentRenderer imp
         setFreezeSelection(args, this.virtualRenderer);
     }
 
-    private getVirtualData(data: { virtualData: Object, isAdd: boolean, isCancel: boolean }): void {
+    private getVirtualData(data: { virtualData: Object, isAdd: boolean, isCancel: boolean, isScroll: boolean }): void {
         this.virtualRenderer.getVirtualData(data);
     }
 

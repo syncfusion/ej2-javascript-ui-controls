@@ -104,6 +104,7 @@ export class NumberParser {
         } else {
             value = parser.convertValueParts(value, options.symbolRegex, numOptions.symbolMatch);
             value = parser.convertValueParts(value, numOptions.numberParseRegex, numOptions.numericPair);
+            value = value.indexOf('-') !== -1 ? value.replace('-.','-0.') : value;
             if (value.indexOf('.') === 0) {
                 value = '0' + value;
             }

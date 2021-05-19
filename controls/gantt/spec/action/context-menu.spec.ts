@@ -1,8 +1,9 @@
 import { ContextMenuClickEventArgs, IGanttData, ITaskData } from './../../src/gantt/base/interface';
 import { GanttModel } from './../../src/gantt/base/gantt-model.d';
-import { Gantt, Edit, Selection, ContextMenu, Sort, Resize } from '../../src/index';
+import { Gantt, Edit, Selection, ContextMenu, Sort, Resize, ContextMenuItem} from '../../src/index';
 import { projectData1, scheduleModeData, selfReference } from '../base/data-source.spec';
 import { createGantt, destroyGantt, triggerMouseEvent } from '../base/gantt-util.spec';
+import { ItemModel } from '@syncfusion/ej2-navigations';
 describe('Context-', () => {
     Gantt.Inject(Edit, Selection, ContextMenu, Sort, Resize);
     let ganttObj: Gantt;
@@ -414,6 +415,116 @@ describe('Context-', () => {
             };
             (ganttObj.contextMenuModule as any).contextMenuItemClick(e);
             expect(ganttObj.getFormatedDate(ganttObj.currentViewData[2].ganttProperties.startDate, 'M/d/yyyy')).toBe('2/27/2017');
+        });
+    });
+    
+     describe('Modifying segments using custom context menu', () => {
+        let ganttObj: Gantt;
+        let contextMenuItems: (string | ItemModel)[] = [
+            { text: 'Delete Resource', target: '.e-content', id: 'deleterow' } as ItemModel];
+        let editingResources = [
+            { resourceId: 1, resourceName: 'Martin Tamer' },
+            { resourceId: 2, resourceName: 'Rose Fuller' },
+            { resourceId: 3, resourceName: 'Margaret Buchanan' },
+            { resourceId: 4, resourceName: 'Fuller King' },
+            { resourceId: 5, resourceName: 'Davolio Fuller' },
+            { resourceId: 6, resourceName: 'Van Jack' },
+            { resourceId: 7, resourceName: 'Fuller Buchanan' },
+            { resourceId: 8, resourceName: 'Jack Davolio' },
+            { resourceId: 9, resourceName: 'Tamer Vinet' },
+            { resourceId: 10, resourceName: 'Vinet Fuller' },
+            { resourceId: 11, resourceName: 'Bergs Anton' },
+            { resourceId: 12, resourceName: 'Construction Supervisor' }
+        ];
+        let editingData: Object[] = [
+            {
+                TaskID: 1,
+                TaskName: 'Project Initiation',
+                StartDate: new Date('04/02/2019'),
+                EndDate: new Date('04/21/2019'),
+                subtasks: [
+                    {
+                        TaskID: 2, TaskName: 'Identify Site location', StartDate: new Date('04/02/2019'), Duration: 4, Progress: 50,
+                        Segments: [
+                            { StartDate: new Date("04/02/2019"), Duration: 2 },
+                            { StartDate: new Date("04/04/2019"), Duration: 2 }
+                        ],
+                        resources: [{ resourceId: 1, resourceUnit: 50 }]
+                    },
+                    { TaskID: 3, TaskName: 'Perform Soil test', StartDate: new Date('04/02/2019'), Duration: 4, Progress: 50, resources: [{ resourceId: 2, resourceUnit: 70 }] },
+                    { TaskID: 4, TaskName: 'Soil test approval', StartDate: new Date('04/02/2019'), Duration: 4, Progress: 50, resources: [{ resourceId: 3, resourceUnit: 25 }, { resourceId: 1, resourceUnit: 75 }] },
+                ]
+            }
+        ];
+        beforeAll((done: Function) => {
+            ganttObj = createGantt(
+                {
+                    dataSource: editingData,
+                    resources: editingResources,
+                    contextMenuItems: contextMenuItems as ContextMenuItem[],
+                    enableContextMenu: true,
+                    viewType: 'ResourceView',
+                    resourceFields: {
+                        id: 'resourceId',
+                        name: 'resourceName'
+                    },
+                    editSettings: {
+                        allowAdding: true,
+                        allowEditing: true,
+                        allowDeleting: true,
+                        allowTaskbarEditing: true,
+                        showDeleteConfirmDialog: true
+                    },
+                    taskFields: {
+                        id: 'TaskID',
+                        name: 'TaskName',
+                        startDate: 'StartDate',
+                        endDate: 'EndDate',
+                        duration: 'Duration',
+                        progress: 'Progress',
+                        child: 'subtasks',
+                        segments: 'Segments',
+                        resourceInfo: 'resources',
+                    },
+                    labelSettings: {
+                        taskLabel: 'resources'
+                    },
+                    allowSelection: true,
+                    gridLines: "Both",
+                    height: "450px",
+                    treeColumnIndex: 1
+                }, done);
+        });
+        it('Custom context menu', () => {
+            ganttObj.contextMenuClick = function (args: ContextMenuClickEventArgs) {
+                debugger
+                var record = args.rowData;
+                let data: any = {
+                    Duration: record.taskData['Duration'],
+                    EndDate: record.taskData['EndDate'],
+                    Progress: record.taskData['Progress'],
+                    StartDate: record.taskData['StartDate'],
+                    TaskID: record.taskData['TaskID'],
+                    TaskName: record.taskData['TaskName'],
+                    resources: [],
+                    Segments: []
+                };
+                ganttObj.updateRecordByID(data);
+                expect(ganttObj.currentViewData[16]['Segments'].length).toBe(0);
+                expect(ganttObj.currentViewData[16].ganttProperties.segments).toBe(null);
+            }
+            ganttObj.dataBind();
+            debugger
+            ganttObj.contextMenuModule['rowData'] = ganttObj.currentViewData[1];
+            let taskInfo: HTMLElement = document.getElementById('deleterow');
+            triggerMouseEvent(taskInfo, 'click');
+        });
+
+        afterAll(() => {
+            destroyGantt(ganttObj);
+        });
+        beforeEach((done: Function) => {
+            setTimeout(done, 2000);
         });
     });
 });

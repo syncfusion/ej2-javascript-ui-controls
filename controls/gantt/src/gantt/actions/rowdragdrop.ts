@@ -253,6 +253,10 @@ export class RowDD {
                         }
                         if (this.dropPosition === 'middleSegment') {
                             this.dropMiddle(recordIndex1);
+                            if (droppedRecord.childRecords.length > 0) {
+                                delete droppedRecord.ganttProperties.segments;
+                                delete droppedRecord.taskData[this.parent.taskFields.segments];
+                            }
                         }
                         // eslint-disable-next-line
                         if (!isNullOrUndefined(draggedRecord.parentItem && this.updateParentRecords.indexOf(draggedRecord.parentItem) !== -1)) {

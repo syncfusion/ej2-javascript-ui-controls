@@ -527,5 +527,26 @@ describe('Spreadsheet formula module ->', () => {
                 });
             });
         });
+        describe('I325908 ->', () => {
+            beforeAll((done: Function) => {
+                helper.initializeSpreadsheet(
+                    { sheets: [{ rows: [{ cells: [{ value: '0' }, { index: 4, value: '10' }] }, { cells: [{ formula:
+                        '=IF($A1<>0,$A1*E$1,"0,00")' }] }] }] }, done);
+            });
+            afterAll(() => {
+                helper.invoke('destroy');
+            });
+            it('IF formula false value with "," inside scenario', (done: Function) => {
+                const spreadsheet: Spreadsheet = helper.getInstance();
+                expect(spreadsheet.sheets[0].rows[1].cells[0].value).toEqual('0,00');
+                expect(helper.invoke('getCell', [1, 0]).textContent).toEqual('0,00');
+                helper.edit('A1', '10');
+                setTimeout((): void => {
+                    expect(spreadsheet.sheets[0].rows[1].cells[0].value).toEqual('100');
+                    expect(helper.invoke('getCell', [1, 0]).textContent).toEqual('100');
+                    done();
+                });
+            });
+        });
     });
 });

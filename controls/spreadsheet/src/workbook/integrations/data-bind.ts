@@ -44,7 +44,9 @@ export class DataBind {
      * @returns {void} - Update given data source to sheet.
      */
     // eslint-disable-next-line
-    private updateSheetFromDataSourceHandler(args: { sheet: ExtendedSheet, indexes: number[], promise: Promise<CellModel>, rangeSettingCount?: number[] }): void {
+    private updateSheetFromDataSourceHandler(
+        args: { sheet: ExtendedSheet, indexes: number[], promise: Promise<CellModel>, rangeSettingCount?: number[], formulaCellRef?: string,
+        sheetIndex?: number }): void {
         let cell: CellModel; let flds: string[]; let sCellIdx: number[];
         let result: Object[]; let remoteUrl: string; let isLocal: boolean; let dataManager: DataManager;
         const requestedRange: boolean[] = []; const sRanges: number[] = []; let rowIdx: number;
@@ -181,8 +183,13 @@ export class DataBind {
                                     if (this.parent.getModuleName() === 'workbook') { return; }
                                     args.rangeSettingCount.pop();
                                     if (!args.rangeSettingCount.length) { this.parent.notify('created', null); }
+                                    if (args.formulaCellRef) {
+                                        this.notfyFormulaCellRefresh(args.formulaCellRef, args.sheetIndex);
+                                    }
                                 });
                                 //}
+                            } else if (args.formulaCellRef) {
+                                this.notfyFormulaCellRefresh(args.formulaCellRef, args.sheetIndex);
                             }
                             this.checkResolve(args.indexes);
                         }
@@ -192,6 +199,11 @@ export class DataBind {
                 }
             }
         } else { deferred.resolve(); }
+    }
+
+    private notfyFormulaCellRefresh(formulaCellRef: string, sheetIndex: number): void {
+        this.parent.formulaRefCell = null;
+        this.parent.notify('updateView', { indexes: getRangeIndexes(formulaCellRef), sheetIndex: sheetIndex, refreshing: true });
     }
 
     private checkResolve(indexes: number[]): void {

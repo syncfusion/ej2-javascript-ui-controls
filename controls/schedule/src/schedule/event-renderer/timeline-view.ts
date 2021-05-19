@@ -164,45 +164,27 @@ export class TimelineEvent extends MonthEvent {
                     let appPos: number = (this.parent.enableRtl) ? appRight : appLeft;
                     appPos = (Math.floor(appPos / this.cellWidth) * this.cellWidth);
                     const interval: number = this.interval / this.slotCount;
-                    const startDate: Date = new Date(this.dateRender[this.day + i].getTime());
-                    const endDate: Date = util.addDays(this.dateRender[this.day + i], 1);
-                    if (this.parent.activeViewOptions.option === 'TimelineMonth') {
-                        const position: number = this.getPosition(startDate, endDate, event[this.fields.isAllDay], (this.day + i));
-                        appLeft = (this.parent.enableRtl) ? 0 : position;
-                        appPos = (this.parent.enableRtl) ? appRight : appLeft;
-                        appPos = (Math.floor(appPos / this.cellWidth) * this.cellWidth);
-                    }
-                    if ((cellTd && isNullOrUndefined(moreIndicator)) ||
-                        (!this.isAlreadyAvail(appPos, cellTd))) {
-                        const startDateTime: Date = new Date(+startTime);
-                        const slotStartTime: Date =
-                            (new Date(startDateTime.setMinutes(Math.floor(startDateTime.getMinutes() / interval) * interval)));
-                        const slotEndTime: Date = new Date(slotStartTime.getTime() + (60000 * interval));
-                        let groupIndex: string;
-                        if (this.parent.activeViewOptions.group.resources.length > 0 && !isNullOrUndefined(resIndex)) {
-                            groupIndex = resIndex.toString();
+                    let startDate: Date = (this.parent.activeViewOptions.option === 'TimelineMonth' || this.renderType === 'day' || i !== 0) ?
+                        new Date(this.dateRender[this.day + i].getTime()) : new Date(startTime);
+                    let endDate: Date = util.addDays(this.dateRender[this.day + i], 1);
+                    if (this.parent.activeViewOptions.option === 'TimelineMonth' || this.renderType === 'day') {
+                        const position = this.getPosition(startDate, endDate, event[this.fields.isAllDay], (this.day + i));
+                        this.renderTimelineMoreIndicator(startTime, startDate, endDate, appHeight, interval, resIndex, appointmentsList, top, appLeft, appRight, cellTd, moreIndicator, appPos, position);
+                    } else {
+                        let slotCount: number = (util.getUniversalTime(endTime) - util.getUniversalTime(startTime)) / util.MS_PER_MINUTE * this.slotCount / this.interval;
+                        for (let k: number = 0; k < slotCount; k++) {
+                            startDate = (k === 0) ? new Date(startDate.getTime()) : new Date(startDate.getTime() + (60000 * interval));
+                            endDate = new Date(startDate.getTime() + (60000 * interval));
+                            if (endDate.getTime() > endTime.getTime()) {
+                                break;
+                            }
+                            let position: number = this.getPosition(startDate, endDate, false, (this.day + i));
+                            if (appPos > position) {
+                                break;
+                            }
+                            appPos = position;
+                            this.renderTimelineMoreIndicator(startTime, startDate, endDate, appHeight, interval, resIndex, appointmentsList, top, appLeft, appRight, cellTd, moreIndicator, appPos, position);
                         }
-                        const filterEvents: Record<string, any>[] =
-                            this.getFilterEvents(startDate, endDate, slotStartTime, slotEndTime, groupIndex, appointmentsList);
-                        const appArea: number = this.cellHeight - this.moreIndicatorHeight;
-                        appHeight = this.withIndicator ? appArea - EVENT_GAP : appHeight;
-                        const renderedAppCount: number = Math.floor(appArea / (appHeight + EVENT_GAP));
-                        const count: number = (filterEvents.length - renderedAppCount) <= 0 ? 1 : (filterEvents.length - renderedAppCount);
-                        let moreIndicatorElement: HTMLElement;
-                        if (this.renderType === 'day') {
-                            moreIndicatorElement = this.getMoreIndicatorElement(count, startDate, endDate);
-                        } else {
-                            moreIndicatorElement = this.getMoreIndicatorElement(count, slotStartTime, slotEndTime);
-                        }
-                        if (!isNullOrUndefined(groupIndex)) {
-                            moreIndicatorElement.setAttribute('data-group-index', groupIndex);
-                        }
-                        moreIndicatorElement.style.top = top + appArea + 'px';
-                        moreIndicatorElement.style.width = this.cellWidth + 'px';
-                        moreIndicatorElement.style.left = (Math.floor(appLeft / this.cellWidth) * this.cellWidth) + 'px';
-                        moreIndicatorElement.style.right = (Math.floor(appRight / this.cellWidth) * this.cellWidth) + 'px';
-                        this.renderElement(cellTd, moreIndicatorElement);
-                        EventHandler.add(moreIndicatorElement, 'click', this.moreIndicatorClick, this);
                     }
                 }
             }
@@ -210,6 +192,44 @@ export class TimelineEvent extends MonthEvent {
         this.parent.renderTemplates();
     }
 
+    private renderTimelineMoreIndicator(startTime: Date, startDate: Date, endDate: Date, appHeight: number, interval: number, resIndex: number,
+        appointmentsList: Record<string, any>[], top: number, appLeft: number, appRight: number, cellTd: HTMLElement, moreIndicator: HTMLElement, appPos: number, position: number) {
+            appLeft = (this.parent.enableRtl) ? appRight = position : position;
+            appPos = (this.parent.enableRtl) ? appRight : appLeft;
+            appPos = (Math.floor(appPos / this.cellWidth) * this.cellWidth);
+            if ((cellTd && isNullOrUndefined(moreIndicator)) ||
+            (!this.isAlreadyAvail(appPos, cellTd))) {
+            const startDateTime: Date = (this.parent.activeViewOptions.option === 'TimelineMonth' || this.renderType === 'day') ? new Date(+startTime) : startDate;
+            const slotStartTime: Date =
+                (new Date(startDateTime.setMinutes(Math.floor(startDateTime.getMinutes() / interval) * interval)));
+            const slotEndTime: Date = new Date(slotStartTime.getTime() + (60000 * interval));
+            let groupIndex: string;
+            if (this.parent.activeViewOptions.group.resources.length > 0 && !isNullOrUndefined(resIndex)) {
+                groupIndex = resIndex.toString();
+            }
+            const filterEvents: Record<string, any>[] =
+                this.getFilterEvents(startDate, endDate, slotStartTime, slotEndTime, groupIndex, appointmentsList);
+            const appArea: number = this.cellHeight - this.moreIndicatorHeight;
+            appHeight = this.withIndicator ? appArea - EVENT_GAP : appHeight;
+            const renderedAppCount: number = Math.floor(appArea / (appHeight + EVENT_GAP));
+            const count: number = (filterEvents.length - renderedAppCount) <= 0 ? 1 : (filterEvents.length - renderedAppCount);
+            let moreIndicatorElement: HTMLElement;
+            if (this.renderType === 'day') {
+                moreIndicatorElement = this.getMoreIndicatorElement(count, startDate, endDate);
+            } else {
+                moreIndicatorElement = this.getMoreIndicatorElement(count, slotStartTime, slotEndTime);
+            }
+            if (!isNullOrUndefined(groupIndex)) {
+                moreIndicatorElement.setAttribute('data-group-index', groupIndex);
+            }
+            moreIndicatorElement.style.top = top + appArea + 'px';
+            moreIndicatorElement.style.width = this.cellWidth + 'px';
+            moreIndicatorElement.style.left = (Math.floor(appLeft / this.cellWidth) * this.cellWidth) + 'px';
+            moreIndicatorElement.style.right = (Math.floor(appRight / this.cellWidth) * this.cellWidth) + 'px';
+            this.renderElement(cellTd, moreIndicatorElement);
+            EventHandler.add(moreIndicatorElement, 'click', this.moreIndicatorClick, this);
+        }
+    }
     public updateCellHeight(cell: HTMLElement, height: number): void {
         if ((height > cell.getBoundingClientRect().height)) {
             setStyleAttribute(cell, { 'height': height + 'px' });

@@ -230,6 +230,24 @@ describe('Month Event Render Module', () => {
         });
     });
 
+    describe('Month view layout checking when enable both showWeekNumber and rowAutoHeight properties on same time', () => {
+        let schObj: Schedule;
+        beforeAll((done: DoneFn) => {
+            const model: ScheduleModel = {
+                currentView: 'Month', height: '550px', width: '500px',
+                showWeekNumber: true, rowAutoHeight: true, selectedDate: new Date(2017, 10, 6)
+            };
+            schObj = util.createSchedule(model, testData, done);
+        });
+        afterAll(() => {
+            util.destroy(schObj);
+        });
+        it('checking week number cell and work cell height ', () => {
+            expect((schObj.element.querySelector('.e-week-number') as HTMLElement).style.height).toEqual('111px');
+            expect((schObj.element.querySelector('.e-content-wrap table tr td:first-child') as HTMLElement).style.height).toEqual('111px');
+        });
+    });
+
     it('memory leak', () => {
         profile.sample();
         const average: number = inMB(profile.averageChange);

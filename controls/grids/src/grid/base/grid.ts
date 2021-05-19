@@ -19,7 +19,7 @@ import { CellDeselectEventArgs, CellSelectEventArgs, CellSelectingEventArgs, Par
 import { PdfQueryCellInfoEventArgs, ExcelQueryCellInfoEventArgs, ExcelExportProperties, PdfExportProperties } from './interface';
 import { PdfHeaderQueryCellInfoEventArgs, ExcelHeaderQueryCellInfoEventArgs, ExportDetailDataBoundEventArgs } from './interface';
 import { ColumnMenuOpenEventArgs, BatchCancelArgs, RecordDoubleClickEventArgs, DataResult, PendingState } from './interface';
-import { HeaderCellInfoEventArgs, KeyboardEventArgs, RecordClickEventArgs } from './interface';
+import { HeaderCellInfoEventArgs, KeyboardEventArgs, RecordClickEventArgs, AdaptiveDialogEventArgs } from './interface';
 import { FailureEventArgs, FilterEventArgs, ColumnDragEventArgs, GroupEventArgs, PrintEventArgs, ICustomOptr } from './interface';
 import { RowDeselectEventArgs, RowSelectEventArgs, RowSelectingEventArgs, PageEventArgs, RowDragEventArgs } from './interface';
 import { BeforeBatchAddArgs, BeforeBatchDeleteArgs, BeforeBatchSaveArgs, ResizeArgs, ColumnMenuItemModel, NotifyArgs } from './interface';
@@ -2039,6 +2039,13 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     public beforeOpenColumnChooser: EmitType<ColumnChooserEventArgs>;
 
     /** 
+     * Triggers before adaptive filter and sort dialogs open.
+     * @event
+     */
+    @Event()
+    public beforeOpenAdaptiveDialog: EmitType<AdaptiveDialogEventArgs>;
+
+    /** 
      * Triggers when records are added in batch mode.   
      * @event
      * @deprecated
@@ -3369,13 +3376,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
      * @blazorType List<GridColumn>
      */
     public getVisibleColumns(): Column[] {
-        let cols: Column[] = [];
-        for (let col of this.columnModel) {
-            if (col.visible) {
-                cols.push(col);
-            }
-        }
-        return cols;
+        return this.getCurrentVisibleColumns();
     }
 
     /**
@@ -3732,44 +3733,38 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
         let rowData: string = 'data';
         let rowIdx: string = 'index';
         let rowuID: string = 'uid';
-        let fieldIdx: number;
-        let col: Column;
-        let tr: Element;
-        let mTr: Element;
+        let isRight: boolean = this.getFrozenMode() === 'Right';
         let pkName: string = this.getPrimaryKeyFieldNames()[0];
         let cell: CellRenderer = new CellRenderer(this, this.serviceLocator);
-        let selectedRow: Object = {};
-        let movableSelectedRow: Object = {};
-        let rowObjects: Object = this.contentModule.getRows();
-        let movableRowObjects: Object = this.contentModule.getMovableRows();
-        fieldIdx = this.getColumnIndexByField(field);
-        if (this.groupSettings.columns.length) {
-            fieldIdx = fieldIdx + this.groupSettings.columns.length;
-        }
-        if (this.childGrid || this.detailTemplate) {
-            fieldIdx++;
-        }
-        if (this.isRowDragable()) {
-            fieldIdx++;
-        }
-        col = this.getColumnByField(field);
-        selectedRow = (<Row<{}>[]>rowObjects).filter((r: Row<{}>) =>
+        let fieldIdx: number = this.getColumnIndexByField(field);
+        let col: Column = this.getColumnByField(field);
+        let rowObjects: Object = col.getFreezeTableName() === "movable" ? this.contentModule.getMovableRows() : 
+            col.getFreezeTableName() === "frozen-right" ? this.getFrozenRightRowsObject() : this.contentModule.getRows();
+        let selectedRow: Object = (<Row<{}>[]>rowObjects).filter((r: Row<{}>) =>
             getValue(pkName, r.data) === key)[0];
-        movableSelectedRow = (<Row<{}>[]>movableRowObjects).filter((r: Row<{}>) =>
-            getValue(pkName, r.data) === key)[0];
-        tr = !isNullOrUndefined(selectedRow) ? this.element.querySelector('[data-uid=' + selectedRow[rowuID] + ']') : null;
-        mTr = !isNullOrUndefined(movableSelectedRow) ? this.element.querySelector('[data-uid=' + movableSelectedRow[rowuID] + ']') : null;
+        let tr: Element = selectedRow ? this.element.querySelector('[data-uid=' + selectedRow[rowuID] + ']') : null;
         if (!isNullOrUndefined(tr)) {
             setValue(field, value, selectedRow[rowData]);
-            let td: Element = !isNullOrUndefined(tr[cells][fieldIdx] as Element) ?
-                tr[cells][fieldIdx] as Element : mTr[cells][fieldIdx - this.frozenColumns] as Element;
+            let left: number = this.getFrozenLeftColumnsCount() || this.getFrozenColumns();
+            let movable: number = this.getMovableColumnsCount();
+            if (this.isRowDragable() && !isRight) {
+                left++;
+            }
+            let frIdx: number = left + movable;
+            let td: Element = this.getCellFromIndex(selectedRow[rowIdx], fieldIdx);
             if (!isNullOrUndefined(td)) {
-                let sRow: Cell<Column> = selectedRow[cells][fieldIdx];
-                let mRow: Cell<Column>;
-                if (this.frozenColumns) {
-                    mRow = movableSelectedRow[cells][fieldIdx - this.frozenColumns];
+                let Idx: number = col.getFreezeTableName() === "movable" ? left : col.getFreezeTableName() === "frozen-right" ? frIdx : 0;
+                if (this.groupSettings.columns.length) {
+                    fieldIdx = fieldIdx + this.groupSettings.columns.length;
                 }
-                cell.refreshTD(td, !isNullOrUndefined(sRow) ? sRow : mRow, selectedRow[rowData], { index: selectedRow[rowIdx] });
+                if (this.childGrid || this.detailTemplate) {
+                    fieldIdx++;
+                }
+                if (this.isRowDragable() && !isRight) {
+                    fieldIdx++;
+                }
+                let sRow: Cell<Column> = selectedRow[cells][fieldIdx - Idx];
+                cell.refreshTD(td, sRow, selectedRow[rowData], { index: selectedRow[rowIdx] });
                 if (this.aggregates.length > 0) {
                     this.notify(events.refreshFooterRenderer, {});
                     if (this.groupSettings.columns.length > 0) {
@@ -3777,8 +3772,8 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
                     }
                 }
                 /* tslint:disable:no-string-literal */
-                if (!isNullOrUndefined(movableSelectedRow) && !isNullOrUndefined(movableSelectedRow['changes'])) {
-                    movableSelectedRow['changes'][field] = value;
+                if (!isNullOrUndefined(selectedRow) && !isNullOrUndefined(selectedRow['changes'])) {
+                    selectedRow['changes'][field] = value;
                 }
                 /* tslint:disable:no-string-literal */
                 this.trigger(events.queryCellInfo, {
@@ -6408,7 +6403,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
         let header: Element = this.getColumnHeaderByField(field);
         if (header) {
             let target: Element = header.querySelector('.e-filtermenudiv');
-            let filterDlg: HTMLElement = this.element.querySelector('.e-filter-popup');
+            let filterDlg: HTMLElement = document.querySelector('.e-filter-popup');
             if (target && filterDlg) {
                 let gClient: ClientRect = this.element.getBoundingClientRect();
                 let fClient: ClientRect = target.getBoundingClientRect();
@@ -6645,18 +6640,46 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     }
 
     /** @hidden */
-    public showResponsiveCustomFilter(): void {
+    public showResponsiveCustomFilter(isCustom?: boolean): void {
         if (this.filterModule) {
-            this.filterModule.showCustomFilter();
+            this.filterModule.showCustomFilter(isCustom || this.rowRenderingMode === 'Vertical');
         }
     }
 
     /** @hidden */
-    public showResponsiveCustomSort(): void {
+    public showResponsiveCustomSort(isCustom?: boolean): void {
         if (this.sortModule) {
-            this.sortModule.showCustomFilter();
+            this.sortModule.showCustomSort(isCustom || this.rowRenderingMode === 'Vertical');
         }
     }
 
+    /**
+     * To manually show the vertical row mode filter dialog
+     */
+    public showAdaptiveFilterDialog(): void {
+        if (this.enableAdaptiveUI) {
+            this.showResponsiveCustomFilter(true);
+        }
+    }
 
+    /**
+     * To manually show the vertical row sort filter dialog
+     */
+    public showAdaptiveSortDialog(): void {
+        if (this.enableAdaptiveUI) {
+            this.showResponsiveCustomSort(true);
+        }
+    }
+
+    /** @hidden */
+    public getCurrentVisibleColumns(isColVirtualization?: boolean): Column[] {
+        let cols: Column[] = [];
+        let gridCols: Column[] = isColVirtualization ? this.getColumns() : this.columnModel;
+        for (let col of gridCols) {
+            if (col.visible) {
+                cols.push(col);
+            }
+        }
+        return cols;
+    }
 }

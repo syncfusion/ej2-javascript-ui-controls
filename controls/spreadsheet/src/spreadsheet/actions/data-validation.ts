@@ -154,18 +154,14 @@ export class DataValidation {
                         ddlCont.style.display = 'none';
                     }
                     tdEle.insertBefore(ddlCont, tdEle.firstChild);
+                    const dataSource: { [key: string]: Object }[] = this.updateDataSource(cell, validation);
                     this.listObj = new DropDownList({
-                        index: 0,
-                        dataSource: this.data,
+                        index: this.setDropDownListIndex(dataSource, cell, validation),
+                        dataSource: dataSource,
                         fields: { text: 'text', value: 'id' },
                         width: '0px',
-                        popupWidth: '200px',
+                        popupWidth: tdEle.offsetWidth - 1,
                         popupHeight: '200px',
-                        beforeOpen: () => {
-                            this.listObj.popupWidth = tdEle.offsetWidth - 1;
-                            this.data = [];
-                            this.updateDataSource(this.listObj, cell, validation);
-                        },
                         change: () => { this.listValueChange(this.listObj.text); },
                         open: (args: PopupEventArgs) => {
                             args.popup.offsetX = - (tdEle.offsetWidth - 20) + 4;
@@ -181,7 +177,19 @@ export class DataValidation {
         }
     }
 
-    private updateDataSource(listObj: DropDownList, cell: CellModel, validation: ValidationModel): void {
+    private setDropDownListIndex(dataSource: { [key: string]: Object }[], cell: CellModel, validation: ValidationModel): number {
+        if (cell && cell.value) {
+            for (let dataIdx: number = 0, len: number = dataSource.length; dataIdx < len; dataIdx++) {
+                if (dataSource[dataIdx].text === cell.value.toString()) {
+                    return dataIdx;
+                }
+            }
+        }
+        return null;
+    }
+
+    private updateDataSource(cell: CellModel, validation: ValidationModel): { [key: string]: Object }[] {
+        this.data = [];
         let count: number = 0;
         const value: string = validation.value1;
         const isRange: boolean = value.indexOf('=') !== -1;
@@ -218,7 +226,7 @@ export class DataValidation {
                 this.data.push({ text: listValues[idx], id: 'list-' + count });
             }
         }
-        listObj.dataSource = this.data;
+        return this.data;
     }
 
     private listValueChange(value: string): void {
@@ -760,14 +768,14 @@ export class DataValidation {
                 if (type === 'List') {
                     if (value1.indexOf('=') !== -1) {
                         for (let idx: number = 0; idx < this.data.length; idx++) {
-                            if (args.value === this.data[idx].text) {
+                            if (args.value.toString() === this.data[idx].text) {
                                 isValidate = true;
                             }
                         }
                     } else {
                         const values: string[] = (value1 as string).split(',');
                         for (let idx: number = 0; idx < values.length; idx++) {
-                            if (args.value === values[idx]) {
+                            if (args.value.toString() === values[idx]) {
                                 isValidate = true;
                             }
                         }

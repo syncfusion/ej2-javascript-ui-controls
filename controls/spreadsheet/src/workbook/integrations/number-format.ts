@@ -56,6 +56,8 @@ export class WorkbookNumberFormat {
         const range: number[] = getRangeIndexes(sheet.activeCell);
         const sheetIdx: number = Number(args.sheetIndex) ? Number(args.sheetIndex) : this.parent.activeSheetIndex;
         let cell: CellModel = args.cell as CellModel ? args.cell as CellModel : getCell(range[0], range[1], sheet);
+        const rowIdx: number = args.cell as CellModel && !isNullOrUndefined(args.rowIdx) ? args.rowIdx as number : range[0];
+        const colIdx: number = args.cell as CellModel && !isNullOrUndefined(args.colIdx) ? args.colIdx as number : range[1];
         let rightAlign: boolean = false;
         const option: { currency?: string } = {};
         const intl: Internationalization = new Internationalization();
@@ -64,7 +66,7 @@ export class WorkbookNumberFormat {
         if (args.format === '' || args.format === 'General') {
             cell = cell ? cell : {};
             const dateEventArgs: { [key: string]: string | number | boolean } = {
-                value: <string>args.value, rowIndex: range[0], colIndex: range[1], sheetIndex: this.parent.activeSheetIndex,
+                value: <string>args.value, rowIndex: rowIdx, colIndex: colIdx, sheetIndex: this.parent.activeSheetIndex,
                 updatedVal: <string>args.value, isDate: false, isTime: false
             };
             this.checkDateFormat(dateEventArgs);

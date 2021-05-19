@@ -371,6 +371,8 @@ export class StampAnnotation {
         }
         let annot: PdfAnnotationBaseModel;
         let annotationObject: IStampAnnotation = null;
+        // eslint:disable-next-line
+        let annotationAddMode: any = existingAnnotation ? existingAnnotation.annotationAddMode : 'UI Drawn Annotation';
         // eslint-disable-next-line
         let annotation: any = this.currentStampAnnotation;
         if (annotation) {
@@ -460,7 +462,7 @@ export class StampAnnotation {
                 comments: annotation.Comments, review: { state: annotation.State, stateModel: annotation.StateModel, modifiedDate: annotation.ModifiedDate, author: annotation.Author }, subject: annotation.iconName,
                 // eslint-disable-next-line
                 annotationSelectorSettings: annotation.AnnotationSelectorSettings, annotationSettings: annotation.AnnotationSettings, allowedInteractions: annotation.allowedInteractions,
-                annotationAddMode: existingAnnotation.annotationAddMode, isPrint: annotation.isPrint, isCommentLock: annotation.IsCommentLock
+                annotationAddMode: annotationAddMode, isPrint: annotation.isPrint, isCommentLock: annotation.IsCommentLock
             };
             annotationObject = {
                 // eslint-disable-next-line max-len

@@ -226,7 +226,7 @@ describe('Chart - ', () => {
         });
 
         it('multi measure => Amount * Quantity', (done: Function) => {
-            pivotGridObj.chartSettings.enableMultiAxis = true;
+            pivotGridObj.chartSettings.enableMultipleAxis = true;
             setTimeout(function () {
                 //  expect(document.getElementById('PivotView_chart_Series_11_Point_0').getAttribute('aria-label')).toBe('United States - Alabama:4');
                 //  expect(document.getElementById('PivotView_chart_Series_10_Point_0').getAttribute('aria-label')).toBe('United States - Alabama:250');

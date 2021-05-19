@@ -55,7 +55,7 @@ export class EditRender {
 
     private convertWidget(args: {
         rowData?: Object, columnName?: string, requestType?: string, row?: Element, type?: string,
-        foreignKeyData?: Object, frozenRightForm?: Element
+        foreignKeyData?: Object, frozenRightForm?: Element, isScroll?: boolean
     }): void {
         let gObj: IGrid = this.parent;
         let isFocused: boolean;
@@ -68,6 +68,7 @@ export class EditRender {
         let form: Element = gObj.editSettings.mode === 'Dialog' ?
             select('#' + gObj.element.id + '_dialogEdit_wrapper .e-gridform', document) :
             gObj.element.getElementsByClassName('e-gridform')[index];
+        let isVirtualFrozen: boolean = frzCols && this.parent.enableColumnVirtualization && args.isScroll;
         if (frzCols && gObj.editSettings.mode === 'Normal') {
             let rowIndex: number = parseInt(args.row.getAttribute(literals.ariaRowIndex), 10);
             if (gObj.frozenRows && ((args.requestType === 'add' && gObj.editSettings.newRowPosition === 'Top')
@@ -85,6 +86,9 @@ export class EditRender {
         }
         let cols: Column[] = gObj.editSettings.mode !== 'Batch' ? gObj.getColumns() as Column[] : [gObj.getColumnByField(args.columnName)];
         for (let col of cols) {
+            if (isVirtualFrozen && col.getFreezeTableName() !== 'movable') {
+                continue;
+            }
             if (this.parent.editSettings.template && !isNullOrUndefined(col.field)) {
                 let cellArgs: Object = extend({}, args);
                 (<{element: Element}>cellArgs).element = form.querySelector('[name=' + getComplexFieldID(col.field) + ']');
@@ -171,15 +175,21 @@ export class EditRender {
         }
     }
 
-    private getEditElements(args: { rowData?: Object, columnName?: string, requestType?: string, row?: Element,
-                            rowIndex?: number }): Object {
+    private getEditElements(args: {
+        rowData?: Object, columnName?: string, requestType?: string, row?: Element,
+        rowIndex?: number, isScroll?: boolean
+    }): Object {
         let gObj: IGrid = this.parent;
         let elements: Object = {};
         let cols: Column[] = gObj.editSettings.mode !== 'Batch' ? gObj.getColumns() as Column[] : [gObj.getColumnByField(args.columnName)];
         if (this.parent.editSettings.template) {
             return {};
         }
+        let isVirtualFrozen: boolean = gObj.isFrozenGrid() && gObj.enableColumnVirtualization && args.isScroll;
         for (let i: number = 0, len: number = cols.length; i < len; i++) {
+            if (isVirtualFrozen && cols[i].getFreezeTableName() !== 'movable') {
+                continue;
+            }
             let col: Column = cols[i];
             if (this.parent.editModule.checkColumnIsGrouped(col)) {
                 continue;

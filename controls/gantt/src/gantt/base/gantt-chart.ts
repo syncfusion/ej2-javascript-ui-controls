@@ -289,21 +289,25 @@ export class GanttChart {
      * @returns {void} .
      */
     private ganttChartMouseDown(e: PointerEvent): void {
-        if (e.which !== 3) {
+        if (e.which !== 3 && this.parent.editSettings.allowTaskbarEditing) {
             this.parent.notify('chartMouseDown', e);
             this.parent.element.tabIndex = 0;
         }
     }
 
     private ganttChartMouseClick(e: PointerEvent): void {
-        if (this.parent.autoFocusTasks) {
-            this.scrollToTarget(e); /** Scroll to task */
+        if (this.parent.editSettings.allowTaskbarEditing) {
+            if (this.parent.autoFocusTasks) {
+                this.scrollToTarget(e); /** Scroll to task */
+            }
+            this.parent.notify('chartMouseClick', e);
         }
-        this.parent.notify('chartMouseClick', e);
     }
 
     private ganttChartMouseUp(e: PointerEvent): void {
-        this.parent.notify('chartMouseUp', e);
+        if (this.parent.editSettings.allowTaskbarEditing) {
+            this.parent.notify('chartMouseUp', e);
+        }
     }
 
     /**
@@ -440,7 +444,9 @@ export class GanttChart {
      * @private
      */
     private ganttChartLeave(e: PointerEvent): void {
-        this.parent.notify('chartMouseLeave', e);
+        if (this.parent.editSettings.allowTaskbarEditing) {
+            this.parent.notify('chartMouseLeave', e);
+        }
     }
 
     /**
@@ -451,9 +457,11 @@ export class GanttChart {
      * @private
      */
     private ganttChartMove(e: PointerEvent): void {
-        this.parent.notify('chartMouseMove', e);
-        if (!isNullOrUndefined(this.parent.taskFields.dependency) && this.parent.connectorLineEditModule) {
-            this.parent.connectorLineEditModule.updateConnectorLineEditElement(e);
+        if (this.parent.editSettings.allowTaskbarEditing) {
+            this.parent.notify('chartMouseMove', e);
+            if (!isNullOrUndefined(this.parent.taskFields.dependency) && this.parent.connectorLineEditModule) {
+                this.parent.connectorLineEditModule.updateConnectorLineEditElement(e);
+            }
         }
     }
 
@@ -842,14 +850,12 @@ export class GanttChart {
         const mouseUp: string = Browser.touchEndEvent;
         const mouseMove: string = Browser.touchMoveEvent;
         const cancel: string = isIE11Pointer ? 'pointerleave' : 'mouseleave';
-        if (this.parent.editSettings.allowTaskbarEditing) {
-            EventHandler.add(this.parent.chartPane, mouseDown, this.ganttChartMouseDown, this);
-            EventHandler.add(this.parent.chartPane, cancel, this.ganttChartLeave, this);
-            EventHandler.add(this.parent.chartPane, mouseMove, this.ganttChartMove, this);
-            if (this.parent.isAdaptive) {
-                EventHandler.add(this.parent.chartPane, click, this.ganttChartMouseClick, this);
-                EventHandler.add(this.parent.chartPane, mouseUp, this.ganttChartMouseUp, this);
-            }
+        EventHandler.add(this.parent.chartPane, mouseDown, this.ganttChartMouseDown, this);
+        EventHandler.add(this.parent.chartPane, cancel, this.ganttChartLeave, this);
+        EventHandler.add(this.parent.chartPane, mouseMove, this.ganttChartMove, this);
+        if (this.parent.isAdaptive) {
+            EventHandler.add(this.parent.chartPane, click, this.ganttChartMouseClick, this);
+            EventHandler.add(this.parent.chartPane, mouseUp, this.ganttChartMouseUp, this);
         }
         if (!this.parent.isAdaptive) {
             EventHandler.add(this.parent.element, mouseUp, this.documentMouseUp, this);
@@ -867,14 +873,12 @@ export class GanttChart {
         const mouseUp: string = Browser.touchEndEvent;
         const mouseMove: string = Browser.touchMoveEvent;
         const cancel: string = isIE11Pointer ? 'pointerleave' : 'mouseleave';
-        if (this.parent.editSettings.allowTaskbarEditing) {
-            EventHandler.remove(this.parent.chartRowsModule.ganttChartTableBody, mouseDown, this.ganttChartMouseDown);
-            EventHandler.remove(this.parent.chartPane, cancel, this.ganttChartLeave);
-            EventHandler.remove(this.parent.chartPane, mouseMove, this.ganttChartMove);
-            if (this.parent.isAdaptive) {
-                EventHandler.remove(this.parent.chartPane, click, this.ganttChartMouseClick);
-                EventHandler.remove(this.parent.chartPane, mouseUp, this.ganttChartMouseUp);
-            }
+        EventHandler.remove(this.parent.chartRowsModule.ganttChartTableBody, mouseDown, this.ganttChartMouseDown);
+        EventHandler.remove(this.parent.chartPane, cancel, this.ganttChartLeave);
+        EventHandler.remove(this.parent.chartPane, mouseMove, this.ganttChartMove);
+        if (this.parent.isAdaptive) {
+            EventHandler.remove(this.parent.chartPane, click, this.ganttChartMouseClick);
+            EventHandler.remove(this.parent.chartPane, mouseUp, this.ganttChartMouseUp);
         }
         if (!this.parent.isAdaptive) {
             EventHandler.remove(this.parent.element, mouseUp, this.documentMouseUp);

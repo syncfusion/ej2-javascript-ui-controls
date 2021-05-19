@@ -539,7 +539,7 @@ describe('Excel Filter =>', () => {
         it('Filter OrderID dialog open testing', (done: Function) => {
             actionComplete = (args?: any): void => {
                 if(args.requestType === 'filterafteropen'){
-                    excelFilter = gridObj.element.querySelector('.e-excelfilter');
+                    excelFilter = document.querySelector('.e-excelfilter');
                 gridObj.actionComplete =null;
                 done();
                 }
@@ -566,7 +566,7 @@ describe('Excel Filter =>', () => {
         it('Filter CustomerID dialog open testing', (done: Function) => {
             actionComplete = (args?: any): void => {
                 if(args.requestType === 'filterafteropen'){
-                    excelFilter = gridObj.element.querySelector('.e-excelfilter');
+                    excelFilter = document.querySelector('.e-excelfilter');
                 gridObj.actionComplete =null;
                 done();
                 }
@@ -594,7 +594,7 @@ describe('Excel Filter =>', () => {
         it('Filter Freight dialog open testing', (done: Function) => {
             actionComplete = (args?: any): void => {
                 if(args.requestType === 'filterafteropen'){
-                    excelFilter = gridObj.element.querySelector('.e-excelfilter');
+                    excelFilter = document.querySelector('.e-excelfilter');
                 gridObj.actionComplete =null;
                 done();
                 }
@@ -662,7 +662,7 @@ describe('Excel Filter =>', () => {
                     });
 
                 it('comparing operator with default value', (done: Function) => {
-                    expect((gridObj.element.querySelector('.e-xlfl-optrdiv').firstChild.firstChild as any).value).toBe((gridObj.columns[1] as any).filter.operator);
+                    expect((document.querySelector('.e-xlfl-optrdiv').firstChild.firstChild as any).value).toBe((gridObj.columns[1] as any).filter.operator);
                     done();
                 });
 
@@ -747,7 +747,7 @@ describe('Excel Filter =>', () => {
                     });
 
                 it('comparing operator with default value', (done: Function) => {
-                    expect((gridObj.element.querySelector('.e-xlfl-optrdiv').firstChild.firstChild as any).value).toBe('startswith');
+                    expect((document.querySelector('.e-xlfl-optrdiv').firstChild.firstChild as any).value).toBe('startswith');
                     done();
                 });
 
@@ -782,7 +782,7 @@ describe('Excel Filter =>', () => {
                 it('Filter OrderID dialog open testing', (done: Function) => {
                     actionComplete = (args?: any): void => {
                         if(args.requestType === 'filterafteropen'){
-                            excelFilter = gridObj.element.querySelector('.e-excelfilter');
+                            excelFilter = document.querySelector('.e-excelfilter');
                         gridObj.actionComplete =null;
                         done();
                         }
@@ -919,8 +919,8 @@ describe('Sorting feature testing in excel filter ', () => {
     it('testing the list of sort in excel popup', (done: Function) => {
         actionComplete = (args?: any): void => {
             if (args.requestType === 'filterafteropen') {
-                expect(gridObj.element.querySelectorAll('.e-excel-ascending').length).toBe(1);
-                expect(gridObj.element.querySelectorAll('.e-excel-descending').length).toBe(1);
+                expect(document.querySelectorAll('.e-excel-ascending').length).toBe(1);
+                expect(document.querySelectorAll('.e-excel-descending').length).toBe(1);
                 (gridObj.filterModule as any).filterModule.closeDialog();
                 gridObj.actionComplete = null;
                 done();

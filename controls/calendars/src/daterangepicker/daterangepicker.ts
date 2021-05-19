@@ -1340,8 +1340,8 @@ export class DateRangePicker extends CalendarBase {
             const startDate: Date = this.presetsItem[i].start as Date;
             const endDate: Date = this.presetsItem[i].end as Date;
             if (this.startValue && this.endValue) {
-                if ((+startDate.setMilliseconds(0) === +this.startValue.setMilliseconds(0)) &&
-                    (+endDate.setMilliseconds(0) === +this.endValue.setMilliseconds(0))) {
+                if ((+new Date(startDate.setHours(0, 0, 0, 0)) === +new Date(this.startValue.setHours(0, 0, 0, 0))) &&
+                    (+new Date(endDate.setHours(0, 0, 0, 0)) === +new Date(this.endValue.setHours(0, 0, 0, 0)))) {
                     this.activeIndex = i;
                     this.isCustomRange = false;
                 }

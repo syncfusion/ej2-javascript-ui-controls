@@ -171,7 +171,7 @@ export class Renderer {
             if (!isHeader) {
                 height += block.height;
             }
-            if (isHeader || !isHeader && this.getScaledValue(height) <= this.getScaledValue(pageHt)) {
+            if (isHeader || !isHeader && this.getScaledValue(Math.round(height)) <= this.getScaledValue(Math.round(pageHt))) {
                 this.renderWidget(page, block);
             }
         }
@@ -325,15 +325,17 @@ export class Renderer {
                         this.pageContext.fillStyle = shape.fillFormat.color;
                         this.pageContext.fillRect(shapeLeft, shapeTop, this.getScaledValue(shape.width), this.getScaledValue(shape.height));
                     }
-                    if ((shapeType === 'StraightConnector' && shape.lineFormat.line && shape.lineFormat.lineFormatType !== 'None') || (!isNullOrUndefined(shape.lineFormat.lineFormatType) && shape.lineFormat.lineFormatType !== 'None')) {
-                        this.pageContext.strokeStyle = HelperMethods.getColor(shape.lineFormat.color);
-                        this.pageContext.strokeRect(shapeLeft, shapeTop, this.getScaledValue(shape.width), this.getScaledValue(shape.height));
+                    if (!isNullOrUndefined(shapeType)) {
+                        if ((shapeType === 'StraightConnector' && shape.lineFormat.line && shape.lineFormat.lineFormatType !== 'None') || (!isNullOrUndefined(shape.lineFormat.lineFormatType) && shape.lineFormat.lineFormatType !== 'None')) {
+                            this.pageContext.strokeStyle = HelperMethods.getColor(shape.lineFormat.color);
+                            this.pageContext.strokeRect(shapeLeft, shapeTop, this.getScaledValue(shape.width), this.getScaledValue(shape.height));
+                        }
                     }
                     this.pageContext.closePath();
-                    if (shape.isTextBox) {
-                        this.renderSingleBorder(shape.lineFormat.color, shape.x, shape.y, shape.x + shape.width, shape.y, shape.lineFormat.weight);
-                        this.renderSingleBorder(shape.lineFormat.color, shape.x, shape.y + shape.height, shape.x + shape.width, shape.y + shape.height, shape.lineFormat.weight);
-                    }
+                    //if (shape.isTextBox) {
+                    //   this.renderSingleBorder(shape.lineFormat.color, shape.x, shape.y, shape.x + shape.width, shape.y, shape.lineFormat.weight);
+                    //    this.renderSingleBorder(shape.lineFormat.color, shape.x, shape.y + shape.height, shape.x + shape.width, shape.y + shape.height, shape.lineFormat.weight);
+                    //}
                     let isClipped: boolean = false;
                     if (shape.width != 0 && shape.height != 0) {
                         isClipped = true;

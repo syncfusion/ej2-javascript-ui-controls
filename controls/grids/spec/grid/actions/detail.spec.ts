@@ -774,4 +774,41 @@ describe('Detail template module', () => {
             gridObj = null;
         });
     });
+
+    describe('EJ2-49020 - minWidth is not working', () => {
+        let gridObj: Grid;
+        beforeAll((done: Function) => {
+            const isDef = (o: any) => o !== undefined && o !== null;
+            if (!isDef(window.performance)) {
+                console.log("Unsupported environment, window.performance.memory is unavailable");
+                this.skip(); //Skips test (in Chai)
+            }
+            gridObj = createGrid(
+                {
+                    dataSource: filterData,
+                    allowPaging: true,
+                    detailTemplate: `<div>Hello</div>`,
+                    width:600,
+                    columns: [
+                        { field: 'OrderID', headerText: 'Order ID', minWidth: 100, textAlign: 'Right' },
+                        { field: 'CustomerID', headerText: 'Customer ID', width: 150, showInColumnChooser: false },
+                        { field: 'OrderDate', headerText: 'Order Date', format: 'yMd', width: 150, textAlign: 'Right' },
+                        { field: 'Freight', format: 'C2', minWidth: 120, textAlign: 'Right' },
+                        { field: 'ShippedDate', headerText: 'Shipped Date', width: 150, format: 'yMd', textAlign: 'Right' },
+                        { field: 'ShipCountry', headerText: 'Ship Country', width: 150 }
+                    ]
+                }, done);
+        });
+        it('Test script error', (done: Function) => {
+            expect(gridObj.getHeaderTable().querySelectorAll('col')[1].style.width).toBe('100px');
+            expect(gridObj.getHeaderTable().querySelectorAll('col')[4].style.width).toBe('120px');
+            expect(gridObj.getContentTable().querySelectorAll('col')[1].style.width).toBe('100px');
+            expect(gridObj.getContentTable().querySelectorAll('col')[4].style.width).toBe('120px');
+            done();
+        });
+        afterAll(() => {
+            destroy(gridObj);
+            gridObj = null;
+        });
+    });
 });

@@ -28,6 +28,7 @@ export class DrillThroughDialog {
     private engine: PivotEngine | OlapEngine;
     private gridData: IDataSet[] = [];
     private numericTextBox: NumericTextBox;
+    private formatList: { [key: string]: string } = {};
     /* eslint-disable-next-line */
     /**
      * Constructor for the dialog action.
@@ -421,6 +422,11 @@ export class DrillThroughDialog {
         let keys: string[] = this.parent.dataType === 'olap' ? rawData[0] ? Object.keys(rawData[0]) : [] :
             Object.keys(this.engine.fieldList);
         let columns: ColumnModel[] = [];
+        if (this.parent.dataSourceSettings.formatSettings.length > 0) {
+            for (let i: number = 0; i < this.parent.dataSourceSettings.formatSettings.length; i++) {
+                this.formatList[this.parent.dataSourceSettings.formatSettings[i].name] = this.parent.dataSourceSettings.formatSettings[i].format;
+            }
+        }
         if (this.parent.dataType === 'olap') {
             for (let key of keys) {
                 columns.push({
@@ -430,18 +436,20 @@ export class DrillThroughDialog {
                     width: 120,
                     visible: true,
                     validationRules: { required: true },
-                    type: 'string'
+                    format: !isNullOrUndefined(this.formatList[key]) ? this.formatList[key] : null,
+                    type: !isNullOrUndefined(this.formatList[key]) ? null : 'string'
                 });
             }
         } else {
             for (let key of keys) {
                 if (this.engine.fieldList[key].aggregateType !== 'CalculatedField') {
                     let editType: string = '';
+                    let isDateField: boolean = ((this.engine.fieldList[key].type === 'date' || this.engine.fieldList[key].type === 'datetime') && (this.isDateFieldExist(key) || (rawData[0] && rawData[0][key] && rawData[0][key].toString().indexOf(' ') === -1))) ? true : false;
                     if (this.engine.fieldList[key].type === 'number') {
                         editType = 'numericedit';
-                    } else if (this.engine.fieldList[key].type === 'date') {
+                    } else if (this.engine.fieldList[key].type === 'date' && isDateField) {
                         editType = 'datepickeredit';
-                    } else if (this.engine.fieldList[key].type === 'datetime') {
+                    } else if (this.engine.fieldList[key].type === 'datetime' && isDateField) {
                         editType = 'datetimepickeredit';
                     } else {
                         editType = 'defaultedit';
@@ -453,12 +461,27 @@ export class DrillThroughDialog {
                         visible: this.engine.fieldList[key].isSelected,
                         validationRules: { required: true },
                         editType: editType,
-                        type: 'string'
+                        format: !isNullOrUndefined(this.formatList[key]) ? this.formatList[key] : null,
+                        type: !isNullOrUndefined(this.formatList[key]) ? null : 'string'
                     });
                 }
             }
         }
         return columns;
+    }
+
+    private isDateFieldExist(key: string): boolean {
+        for (let len: number = 0; len < this.parent.dataSourceSettings.formatSettings.length; len++) {
+            if (this.parent.dataSourceSettings.formatSettings[len].name === key && this.parent.dataSourceSettings.formatSettings[len].type.indexOf('date') > -1) {
+                return true;
+            }
+        }
+        for (let len: number = 0; len < this.parent.dataSourceSettings.fieldMapping.length; len++) {
+            if (this.parent.dataSourceSettings.fieldMapping[len].name === key && this.parent.dataSourceSettings.fieldMapping[len].dataType.indexOf('date') > -1) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private formatData(): void {

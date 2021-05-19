@@ -274,9 +274,10 @@ export class CheckBoxFilterBase {
         this.dialogObj = new Dialog({
             visible: false, content: this.sBox as HTMLElement,
             close: this.closeDialog.bind(this),
+            enableRtl: this.parent.enableRtl,
             width: (!isNullOrUndefined(parentsUntil(options.target, 'e-bigger')))
                 || this.parent.element.classList.contains('e-device') ? 260 : 255,
-            target: this.parent.element, animationSettings:
+            target: document.body, animationSettings:
                 { effect: 'None' },
             buttons: [{
                 click: this.btnClick.bind(this),

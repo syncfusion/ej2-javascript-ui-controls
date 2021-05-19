@@ -53,7 +53,10 @@ export class SummaryModelGenerator implements IModelGenerator<AggregateColumnMod
                 columns.push(new Column({}));
             }
         }
-        if (this.parent.detailTemplate || !isNullOrUndefined(this.parent.childGrid) || (this.parent.isRowDragable() && !start)) {
+        if (this.parent.detailTemplate || !isNullOrUndefined(this.parent.childGrid)) {
+            columns.push(new Column({}));
+        }
+        if (this.parent.isRowDragable() && !start) {
             columns.push(new Column({}));
         }
         columns.push(...<Column[]>this.parent.getColumns());

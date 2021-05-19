@@ -208,6 +208,42 @@ describe('TreeGrid Column Module', () => {
   });
 
 
+  describe('Stacked Header with columns property as null', () => {
+    let gridObj: TreeGrid;
+    beforeAll((done: Function) => {
+      gridObj = createGrid(
+        {
+          dataSource: stackedData,
+          childMapping: 'subtasks',
+          allowResizing: true,
+          treeColumnIndex: 1,
+          height: 260,
+          dataBound: function(args: Object) {
+            expect(this.getHeaderContent().getElementsByTagName('thead')[0].childNodes.length).toBe(2);
+            expect(this.getRows().length).toBeGreaterThan(0);
+          },
+          columns: [
+            {
+              headerText: 'Order Details', textAlign: 'Center', columns: null
+            },
+            {
+              headerText: 'Shipment Details', textAlign: 'Center', 
+              columns: [
+                  { field: 'shipMentCategory', headerText: 'Shipment Category', textAlign: 'Left', width: 90 },
+                  { field: 'shippedDate', headerText: 'Shipped Date', textAlign: 'Right', width: 90, format: 'yMd' }
+              ]
+            }
+          ]
+        },
+        done
+      );
+    });
+    afterAll(() => {
+      destroy(gridObj);
+    });
+  });
+
+
   it('memory leak', () => {
     profile.sample();
     let average: any = inMB(profile.averageChange)

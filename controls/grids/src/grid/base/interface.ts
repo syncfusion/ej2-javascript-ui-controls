@@ -694,6 +694,7 @@ export interface IGrid extends Component<HTMLElement> {
     getSelectedColumnsUid?(): string[];
     serverExcelExport?(url: string): void;
     serverPdfExport?(url: string): void;
+    getCurrentVisibleColumns?(isColVirtualization?: boolean): Column[];
     // public Events
     dataStateChange?: EmitType<DataStateChangeEventArgs>;
     exportGroupCaption?: EmitType<ExportGroupCaptionEventArgs>;
@@ -1121,6 +1122,15 @@ export interface ColumnChooserEventArgs {
     dialogInstance?: Object;
     /** Defines the operator for column chooser search request */
     searchOperator?: string;
+}
+
+export interface AdaptiveDialogEventArgs {
+    /** Defines the cancel option value. */
+    cancel?: boolean;
+     /** Defines the instance of adaptive dialog. */
+    dialogObj?: Dialog;
+    /** Defines the current action. */
+    requestType?: string;
 }
 
 export interface RowDeselectEventArgs {
@@ -1862,6 +1872,17 @@ export interface DialogEditEventArgs extends EditEventArgs {
     dialog?: DialogModel;
 }
 
+/** @hidden */
+export interface CustomEditEventArgs extends EditEventArgs {
+    /** Defines the virtual scroll action */
+    isScroll?: boolean;
+}
+
+/** @hidden */
+export interface CustomAddEventArgs extends AddEventArgs {
+    /** Defines the virtual scroll action */
+    isScroll?: boolean;
+}
 
 /**
  * @hidden
@@ -1960,6 +1981,7 @@ export interface IEdit {
     addCancelWhilePaging?(): void;
     args?: { requestType?: string };
     isAdded?: boolean;
+    previousData?: object
 }
 
 /**

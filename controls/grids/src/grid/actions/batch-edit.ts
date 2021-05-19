@@ -869,7 +869,14 @@ export class BatchEdit {
                 DataUtil.setValue(field, value, rowObj.changes);
             }
             if (rowObj.data[field] !== value) {
-                rowObj.isDirty = true;
+                let type: string = this.parent.getColumnByField(field).type;
+                if ((type === 'date' || type === 'datetime')) {
+                    if (new Date(rowObj.data[field]).toString() !== new Date(value as Date).toString()) {
+                        rowObj.isDirty = true;
+                    }
+                } else {
+                    rowObj.isDirty = true;
+                }
             }
         } else {
             let rowEle: Element = this.parent.getRowElementByUID(rowObj.uid);

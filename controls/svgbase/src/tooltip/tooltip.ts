@@ -855,9 +855,8 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
                         if (line.indexOf('</b>') > -1 || ((isBoldTag && j === len - 1 && k === 0) && (isHeader || this.isWrap))) {
                             fontWeight = 'Normal'; labelColor = this.themeStyle.tooltipLightLabel;
                         }
-                        const isRtlText: boolean = /[\u0590-\u07FF\u200F\u202B\u202E\uFB1D-\uFDFD\uFE70-\uFEFC]/.test(line);
                         // eslint-disable-next-line no-useless-escape
-                        (tspanElement).textContent = line = line.replace(/<[a-zA-Z\/](.|\n)*?>/g, isRtlText ? '\u200E' : '');
+                        (tspanElement).textContent = line = this.getTextContent(line);
                         subWidth += measureText(line, font).width;
                         if (tspanStyle !== '') {
                             tspanElement.style.fontWeight = tspanStyle.split('font-weight:')[1];
@@ -882,6 +881,24 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
             const width: number = (this.elementSize.width + (2 * this.padding)) / 2 - measureText(headerContent, font).width / 2;
             element.setAttribute('x', width.toString());
         }
+    }
+
+    private getTextContent(text: string): string {
+        let texts: string[] = text.match(/<[a-zA-Z\/](.|\n)*?>/g);
+        if(isNullOrUndefined(texts)){
+            return text;
+        }
+        const isRtlText: boolean = /[\u0590-\u07FF\u200F\u202B\u202E\uFB1D-\uFDFD\uFE70-\uFEFC]/.test(text);
+        for (let i: number = 0; i < texts.length; i++) {
+            if (this.isValidHTMLElement(texts[i].replace('<', '').replace('/', '').replace('>', '').trim())) {
+                text = text.replace(texts[i], isRtlText ? '\u200E' : '');
+            }
+        }
+        return text;
+    }
+
+    private isValidHTMLElement(element: string): boolean {
+        return document.createElement(element).toString() != "[object HTMLUnknownElement]";
     }
 
     private createTemplate(areaBounds: Rect, location: TooltipLocation): void {

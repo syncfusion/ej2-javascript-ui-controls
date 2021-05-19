@@ -5,8 +5,8 @@ import { SheetModel, getRangeIndexes, getCell, setCell, getSheet, CellModel, get
 import { CellStyleModel, getRangeAddress, workbookEditOperation, getSheetIndexFromId, getSheetName } from '../../workbook/index';
 import { RowModel, getFormattedCellObject, workbookFormulaOperation, checkIsFormula, Sheet, mergedRange } from '../../workbook/index';
 import { ExtendedSheet, Cell, pasteMerge, setMerge, MergeArgs, getCellIndexes, getCellAddress, ChartModel } from '../../workbook/index';
-import { ribbonClick, ICellRenderer, cut, copy, paste, PasteSpecialType, initiateFilterUI, focus, setPosition } from '../common/index';
-import { BeforePasteEventArgs, hasTemplate, getTextHeightWithBorder, getLines, getExcludedColumnWidth } from '../common/index';
+import { ribbonClick, ICellRenderer, cut, copy, paste, PasteSpecialType, initiateFilterUI, focus, setPosition, isLockedCells } from '../common/index';
+import { BeforePasteEventArgs, hasTemplate, getTextHeightWithBorder, getLines, getExcludedColumnWidth, editAlert } from '../common/index';
 import { enableToolbarItems, rowHeightChanged, completeAction, beginAction, DialogBeforeOpenEventArgs } from '../common/index';
 import { clearCopy, selectRange, dialog, contentLoaded, tabSwitch, cMenuBeforeOpen, locale, createImageElement } from '../common/index';
 import { getMaxHgt, setMaxHgt, setRowEleHeight, deleteImage, getRowIdxFromClientY, getColIdxFromClientX } from '../common/index';
@@ -217,6 +217,11 @@ export class Clipboard {
             };
             rfshRange = isRepeative ? selIdx : [selIdx[0], selIdx[1]]
                 .concat([selIdx[0] + cIdx[2] - cIdx[0], selIdx[1] + cIdx[3] - cIdx[1] || selIdx[1]]);
+            const isLockCell: boolean = this.parent.getActiveSheet().isProtected && isLockedCells(this.parent, rfshRange);
+            if (isLockCell) {
+                this.parent.notify(editAlert, null);
+                return;
+            }
             if (this.copiedShapeInfo && !this.copiedInfo) {
                 const pictureElem: HTMLElement = this.copiedShapeInfo.pictureElem as HTMLElement;
                 if (pictureElem.classList.contains('e-datavisualization-chart')) {

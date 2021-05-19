@@ -5413,7 +5413,7 @@ export class Selection {
      */
     public getElementBox(currentInline: ElementBox, index: number, moveToNextLine: boolean): ElementInfo {
         let elementBox: ElementBox = undefined;
-        if (!(currentInline instanceof FieldElementBox || currentInline instanceof BookmarkElementBox)) {
+        if (!(currentInline instanceof FieldElementBox || currentInline instanceof BookmarkElementBox || currentInline instanceof CommentCharacterElementBox)) {
             elementBox = currentInline;
         }
         return { 'element': elementBox, 'index': index };

@@ -102,6 +102,7 @@ export class Selection implements IAction {
     private chkAllCollec: Object[] = [];
     private isCheckedOnAdd: boolean = false;
     private persistSelectedData: Object[] = [];
+    private deSelectedData: Object[] = [];
     private onDataBoundFunction: Function;
     private actionBeginFunction: Function;
     private actionCompleteFunction: Function;
@@ -760,6 +761,9 @@ export class Selection implements IAction {
      * @return {void} 
      */
     public clearSelection(): void {
+        if (this.selectionSettings.persistSelection && this.persistSelectedData.length) {
+            this.deSelectedData = iterateExtend(this.persistSelectedData);
+        }
         if (!this.parent.isPersistSelection || (this.parent.isPersistSelection && !this.parent.isEdit) ||
             (!isNullOrUndefined(this.checkedTarget) && this.checkedTarget.classList.contains('e-checkselectall'))) {
             let span: Element = this.parent.element.querySelector('.e-gridpopup').querySelector('span');
@@ -912,18 +916,12 @@ export class Selection implements IAction {
         if ((this.selectionSettings.persistSelection && (this.isRowClicked || this.checkSelectAllClicked)) ||
             !this.selectionSettings.persistSelection) {
             let cancl: string = 'cancel';
-            let deSelectedData: object[] = [];
-            let currentRow: Element[] = this.parent.getDataRows();
-            for (let i: number = 0, len: number = rowIndex.length; i < len; i++) {
-                let rowObj: Row<Column> = this.getRowObj(currentRow[rowIndex[i]]);
-                if (rowObj) {
-                    deSelectedData.push(rowObj.data);
-                }
-            }
+            let isSingleDeSel: boolean = rowIndex.length === 1 && this.deSelectedData.length === 1;
             let rowDeselectObj: RowDeselectEventArgs = {
-                rowIndex: rowIndex[0], data: this.selectionSettings.persistSelection && this.parent.checkAllRows === 'Uncheck'
-                && this.selectionSettings.checkboxMode !== 'ResetOnRowClick' ? deSelectedData : data, foreignKeyData: foreignKeyData,
-                cancel: false, isInteracted: this.isInteracted, isHeaderCheckboxClicked: this.isHeaderCheckboxClicked
+                rowIndex: rowIndex[0], data: this.selectionSettings.persistSelection && (this.parent.checkAllRows === 'Uncheck' &&
+                !isSingleDeSel) && this.selectionSettings.checkboxMode !== 'ResetOnRowClick' ? this.deSelectedData : data,
+                foreignKeyData: foreignKeyData, cancel: false, isInteracted: this.isInteracted,
+                isHeaderCheckboxClicked: this.isHeaderCheckboxClicked
             };
             if (type === 'rowDeselected') {
                 delete rowDeselectObj.cancel;
@@ -2939,6 +2937,9 @@ export class Selection implements IAction {
     private clickHandler(e: MouseEvent): void {
         let target: HTMLElement = e.target as HTMLElement;
         this.actualTarget = target;
+        if (this.selectionSettings.persistSelection) {
+            this.deSelectedData = iterateExtend(this.persistSelectedData);
+        }
         if (parentsUntil(target, literals.row) || parentsUntil(target, 'e-headerchkcelldiv') ||
             (this.selectionSettings.allowColumnSelection && target.classList.contains('e-headercell'))) {
             this.isInteracted = true;

@@ -981,7 +981,7 @@ export class PivotChart {
     }
 
     private configTooltipSettings(): TooltipSettingsModel {
-        let tooltip: TooltipSettingsModel = this.chartSettings.tooltip;
+        let tooltip: TooltipSettingsModel = this.persistSettings.tooltip ? this.persistSettings.tooltip : this.chartSettings.tooltip;
         tooltip.enable = tooltip.enable === undefined ? true : tooltip.enable;
         if (tooltip.enable && tooltip.template) {
             this.templateFn = this.parent.templateParser(tooltip.template);

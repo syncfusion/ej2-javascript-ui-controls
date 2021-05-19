@@ -533,7 +533,8 @@ export class Sort implements IAction {
      * @return {void}
      * @hidden
      */
-    public showCustomFilter(): void {
+    public showCustomSort(enable: boolean): void {
+        this.responsiveDialogRenderer.isCustomDialog = enable;
         this.responsiveDialogRenderer.showResponsiveDialog();
     }
 

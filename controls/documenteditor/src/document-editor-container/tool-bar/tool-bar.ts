@@ -167,10 +167,9 @@ export class Toolbar {
                         }],
                     //,{ text: locale.getConstant('By URL'), iconCss: 'e-icons e-de-ctnr-link', id: id + INSERT_IMAGE_ONLINE_ID }],
                     cssClass: 'e-de-toolbar-btn-first e-caret-hide',
-                    iconCss: 'e-icons e-de-ctnr-image',
                     select: this.onDropDownButtonSelect.bind(this)
                 });
-                splitButton.appendTo("#" + id + "_image");
+                splitButton.appendTo('#' + id + INSERT_IMAGE_ID);
             }
 
             if (this.toolbarItems.indexOf('Break') >= 0) {
@@ -179,10 +178,9 @@ export class Toolbar {
                         { text: locale.getConstant('Page Break'), iconCss: 'e-icons e-de-ctnr-page-break', id: id + PAGE_BREAK },
                         { text: locale.getConstant('Section Break'), iconCss: 'e-icons e-de-ctnr-section-break', id: id + SECTION_BREAK }],
                     cssClass: 'e-caret-hide',
-                    iconCss: 'e-icons e-de-ctnr-break',
                     select: this.onDropDownButtonSelect.bind(this)
                 });
-                splitButton.appendTo("#_break");
+                splitButton.appendTo('#' + id + BREAK_ID);
             }
 
 
@@ -220,7 +218,7 @@ export class Toolbar {
                         this.onBeforeRenderRestrictDropdown(args, id);
                     }
                 });
-                splitbutton.appendTo("#" + id + "_restrict_edit");
+                splitbutton.appendTo("#" + id + RESTRICT_EDITING_ID);
             }
             if (this.toolbarItems.indexOf('FormFields') >= 0) {
                 const splitbutton: DropDownButton = new DropDownButton({
@@ -231,7 +229,7 @@ export class Toolbar {
                     cssClass: 'e-de-toolbar-btn-first e-caret-hide',
                     select: this.onDropDownButtonSelect.bind(this)
                 });
-                splitbutton.appendTo("#" + id + "_form_fields");
+                splitbutton.appendTo("#" + id + FORM_FIELDS_ID);
             }
         }
     }
@@ -390,8 +388,7 @@ export class Toolbar {
                     break;
                 case 'Image':
                     toolbarItems.push({
-                        tooltipText: locale.getConstant('Insert inline picture from a file.'), id: id + INSERT_IMAGE_ID,
-                        text: locale.getConstant('Image'), cssClass: className + ' e-de-image-splitbutton e-de-image-focus'
+                        template: '<button title="' + locale.getConstant('Insert inline picture from a file.') + '" class="e-tbar-btn e-tbtn-txt e-control e-btn e-lib e-dropdown-btn e-de-toolbar-btn-first e-caret-hide" type="button" id="' + id + INSERT_IMAGE_ID + '"><span class="e-btn-icon e-icons e-de-ctnr-image e-icon-left"></span><span class="e-tbar-btn-text">' + locale.getConstant('Image') + '</span><span class="e-btn-icon e-icons e-icon-right e-caret"></span></button>'
                     });
                     break;
                 case 'Table':
@@ -450,8 +447,7 @@ export class Toolbar {
                     break;
                 case 'Break':
                     toolbarItems.push({
-                        tooltipText: locale.getConstant('Break'), text: locale.getConstant('Break'), id: BREAK_ID,
-                        cssClass: className + ' e-de-break-splitbutton'
+                        template: '<button title="' + locale.getConstant('Break') + '" class="e-tbar-btn e-tbtn-txt e-control e-btn e-lib e-dropdown-btn e-caret-hide" type="button" id="' + id + BREAK_ID + '"><span class="e-btn-icon e-icons e-de-ctnr-break e-icon-left"></span><span class="e-tbar-btn-text">' + locale.getConstant('Break') + '</span><span class="e-btn-icon e-icons e-icon-right e-caret"></span></button>'
                     });
                     break;
                 case 'Find':
@@ -470,14 +466,12 @@ export class Toolbar {
                     break;
                 case 'RestrictEditing':
                     toolbarItems.push({
-                        prefixIcon: 'e-de-ctnr-lock', tooltipText: locale.getConstant('Restrict editing'), id: id + RESTRICT_EDITING_ID,
-                        text: this.onWrapText(locale.getConstant('Restrict Editing')), cssClass: className + ' e-de-lock-dropdownbutton'
+                        template: '<button title="' + locale.getConstant('Restrict editing') + '" class="e-tbar-btn e-tbtn-txt e-control e-btn e-lib e-dropdown-btn e-de-toolbar-btn-first e-caret-hide" type="button" id="' + id + RESTRICT_EDITING_ID + '"><span class="e-btn-icon e-de-ctnr-lock e-icons e-icon-left"></span><span class="e-tbar-btn-text">' + this.onWrapText(locale.getConstant('Restrict Editing')) + '</span><span class="e-btn-icon e-icons e-icon-right e-caret"></span></button>'
                     });
                     break;
                 case 'FormFields':
                     toolbarItems.push({
-                        prefixIcon: 'e-de-formfield', tooltipText: locale.getConstant('Form Fields'), id: id + FORM_FIELDS_ID,
-                        text: this.onWrapText(locale.getConstant('Form Fields')), cssClass: className + ' e-de-formfields'
+                        template: '<button title="' + locale.getConstant('Form Fields') + '" class="e-tbar-btn e-tbtn-txt e-control e-btn e-lib e-dropdown-btn e-de-toolbar-btn-first e-caret-hide" type="button" id="' + id + FORM_FIELDS_ID + '"><span class="e-btn-icon e-de-formfield e-icons e-icon-left"></span><span class="e-tbar-btn-text">' + this.onWrapText(locale.getConstant('Form Fields')) + '</span><span class="e-btn-icon e-icons e-icon-right e-caret"></span></button>'
                     });
                     break;
                 case 'UpdateFields':

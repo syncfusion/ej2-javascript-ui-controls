@@ -2964,3 +2964,97 @@ describe('EJ2-48145 - Adding parent and child together with addRecord method and
     gridObj.addRecord(arr[0], 0);
   });
 });
+
+describe('EJ2-48935 - Adding record with addRecord method at last row position with rowPosition as Below', () => {
+  let gridObj: TreeGrid;
+  let actionComplete: () => void;
+  let arr: Object[] = [{
+    taskID: 1000,
+    taskName: 'Parent',
+    startDate: new Date('02/17/2017'),
+    endDate: new Date('02/27/2017'),
+    priority: 'Normal',
+    approved: false,
+    duration: 11,
+    progress: 69,
+    subtasks: [{
+      taskID: 1001,
+      taskName: 'Child 1',
+      startDate: new Date('02/17/2017'),
+      endDate: new Date('02/27/2017'),
+      priority: 'High',
+      approved: false,
+      duration: 11,
+      progress: 69,
+    }]
+  }];
+  beforeAll((done: Function) => {
+    gridObj = createGrid(
+      {
+        dataSource: sampleData.slice(0, 1),
+        childMapping: 'subtasks',
+        editSettings: { allowEditing: true, allowDeleting: true, allowAdding: true },
+        treeColumnIndex: 1,
+        columns: [{ field: 'taskID', headerText: 'Task ID', isPrimaryKey: true },
+        { field: 'taskName', headerText: 'Task Name' },
+        { field: 'progress', headerText: 'Progress' }]
+      },
+      done
+    );
+  });
+  it('Adding a record to last row with rowPosition as Below', function (done) {
+    actionComplete = (): void => {
+        expect(gridObj.dataSource[0].subtasks[4].taskID).toBe(1000);
+        done();
+    };
+    gridObj.grid.actionComplete = actionComplete;
+    gridObj.addRecord(arr[0], 4, "Below");
+  });
+});
+
+describe('EJ2-48935 - Adding record with addRecord method at last to second row position with rowPosition as Below', () => {
+  let gridObj: TreeGrid;
+  let actionComplete: () => void;
+  let arr: Object[] = [{
+    taskID: 1000,
+    taskName: 'Parent',
+    startDate: new Date('02/17/2017'),
+    endDate: new Date('02/27/2017'),
+    priority: 'Normal',
+    approved: false,
+    duration: 11,
+    progress: 69,
+    subtasks: [{
+      taskID: 1001,
+      taskName: 'Child 1',
+      startDate: new Date('02/17/2017'),
+      endDate: new Date('02/27/2017'),
+      priority: 'High',
+      approved: false,
+      duration: 11,
+      progress: 69,
+    }]
+  }];
+  beforeAll((done: Function) => {
+    gridObj = createGrid(
+      {
+        dataSource: sampleData.slice(0, 1),
+        childMapping: 'subtasks',
+        editSettings: { allowEditing: true, allowDeleting: true, allowAdding: true },
+        treeColumnIndex: 1,
+        columns: [{ field: 'taskID', headerText: 'Task ID', isPrimaryKey: true },
+        { field: 'taskName', headerText: 'Task Name' },
+        { field: 'progress', headerText: 'Progress' }]
+      },
+      done
+    );
+  });
+  it('Adding a record to last to second row with rowPosition as Below', function (done) {
+    actionComplete = (): void => {
+        expect(gridObj.dataSource[0].subtasks[3].taskID).toBe(1000);
+        done();
+    };
+    gridObj.grid.actionComplete = actionComplete;
+    gridObj.addRecord(arr[0], 3, "Below");
+  });
+});

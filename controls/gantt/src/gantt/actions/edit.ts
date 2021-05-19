@@ -500,6 +500,15 @@ export class Edit {
                     ganttPropKey = 'taskName';
                 } else if (key === tasks.segments) {
                     ganttPropKey = 'segments';
+                    if (data && data[this.parent.taskFields.segments].length === 0) {
+                        let totDuration: number = 0;
+                        for(let i: number = 0; i < ganttData.ganttProperties.segments.length; i++) {
+                            totDuration = totDuration + ganttData.ganttProperties.segments[i].duration;
+                        }
+                        let sdate: Date = ganttData.ganttProperties.startDate;
+                        let edate: Date = this.parent.dataOperation.getEndDate(sdate, totDuration, ganttData.ganttProperties.durationUnit, ganttData.ganttProperties, false);
+                        ganttObj.setRecordValue('endDate', ganttObj.dataOperation.getDateFromFormat(edate), ganttData.ganttProperties, true);
+                    }
                 }
                 if (!isNullOrUndefined(ganttPropKey)) {
                     ganttObj.setRecordValue(ganttPropKey, value, ganttData.ganttProperties, true);
@@ -516,6 +525,9 @@ export class Edit {
                         ganttData.ganttProperties, true);
                 }
                 ganttObj.setRecordValue('taskData.' + key, value, ganttData);
+                if (key === tasks.segments && data && data[this.parent.taskFields.segments].length > 0) {
+                    ganttObj.dataOperation.setSegmentsInfo(ganttData, true);
+                }
                 ganttObj.setRecordValue(key, value, ganttData);
             } else if (tasks.indicators === key) {
                 const value: Object[] = data[key];
@@ -1234,7 +1246,7 @@ export class Edit {
         const eventArgs: IActionBeginEventArgs = {};
         if (this.parent.timelineSettings.updateTimescaleView) {
             const tempArray: IGanttData[] = this.parent.editedRecords;
-            this.parent.timelineModule.updateTimeLineOnEditing(tempArray, args.action);
+            this.parent.timelineModule.updateTimeLineOnEditing([tempArray], args.action);
         }
         if (this.parent.viewType === 'ResourceView') {
             if (args.action === 'TaskbarEditing') {
@@ -1537,7 +1549,7 @@ export class Edit {
         this.taskbarMoved = false;
         this.predecessorUpdated = false;
         if (!isNullOrUndefined(this.dialogModule) && (isNullOrUndefined(args) ||
-        (!isNullOrUndefined(args) && args['requestType'] === "beforeSave" && !args['cancel']))) {
+        (!isNullOrUndefined(args) && args['requestType'] === 'beforeSave' && !args['cancel']))) {
             if (this.dialogModule.dialog && !this.dialogModule.dialogObj.isDestroyed) {
                 this.dialogModule.dialogObj.hide();
             }
@@ -2809,13 +2821,13 @@ export class Edit {
         if (this.parent.timelineSettings.updateTimescaleView) {
             let tempArray: IGanttData[] = [];
             if (args.modifiedRecords.length > 0) {
-                tempArray.push(args.data as IGanttData);
+                tempArray = (args.data as IGanttData[]).length > 0 ? args.data as IGanttData[] : [args.data as IGanttData];
                 // eslint-disable-next-line
                 tempArray.push.apply(tempArray, args.modifiedRecords);
             } else {
-                tempArray = [args.data as IGanttData];
+                tempArray = (args.data as IGanttData[]).length > 0 ? args.data as IGanttData[] : [args.data as IGanttData];
             }
-            this.parent.timelineModule.updateTimeLineOnEditing(tempArray, args.action);
+            this.parent.timelineModule.updateTimeLineOnEditing([tempArray], args.action);
         }
         this.addSuccess(args);
         args = this.constructTaskAddedEventArgs(cAddedRecord, args.modifiedRecords, 'add');

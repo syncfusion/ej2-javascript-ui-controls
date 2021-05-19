@@ -297,7 +297,7 @@ export class BasicFormulas {
                 i = 0;
                 for (let row: number = startRow; row <= endRow; ++row) {
                     for (let col: number = col1; col <= col2; ++col) {
-                        const cellRef: string = '' + this.parent.convertAlpha(col) + (row);
+                        const cellRef: string = this.getSheetReference(range) + this.parent.convertAlpha(col) + (row);
                         const result: string = this.parent.getValueFromArg(cellRef);
                         if (!isNaN(parseFloat(result))) {
                             //To return #VALUE! error when array dimensions are mismatched.
@@ -1103,12 +1103,17 @@ export class BasicFormulas {
         }
         row = startRow + row - 1;
         col = startCol + col - 1;
-        const cellRef: string = '' + this.parent.convertAlpha(col) + row;
+        const cellRef: string = this.getSheetReference(rangeValue) + this.parent.convertAlpha(col) + row;
         const result: string = this.parent.getValueFromArg(cellRef);
         if (result === '') {
             return 0;
         }
         return result;
+    }
+
+    private getSheetReference(range: string): string {
+        return range.indexOf(this.parent.sheetToken) === 0 && range.lastIndexOf(this.parent.sheetToken) > range.indexOf(
+            this.parent.sheetToken) ? range.substring(0, range.lastIndexOf(this.parent.sheetToken) + 1) : '';
     }
 
     /**

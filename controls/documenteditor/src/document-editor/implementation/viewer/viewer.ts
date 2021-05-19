@@ -1083,10 +1083,12 @@ export class DocumentHelper {
             + '<div contenteditable="true" style=' + style + '></div>'
             + '</body>'
             + '</html>';
-        this.iframe.contentDocument.open();
-        this.iframe.contentDocument.write(innerHtml);
-        this.iframe.contentDocument.close();
-        this.editableDiv = this.iframe.contentDocument.body.children[0] as HTMLElement;
+        if (!isNullOrUndefined(this.iframe.contentDocument)) {
+            this.iframe.contentDocument.open();
+            this.iframe.contentDocument.write(innerHtml);
+            this.iframe.contentDocument.close();
+            this.editableDiv = this.iframe.contentDocument.body.children[0] as HTMLElement;
+        }
     }
     /**
      * Wires events and methods.
@@ -1490,10 +1492,13 @@ export class DocumentHelper {
      */
     public updateFocus = (): void => {
         if (this.selection && !(this.isMobileDevice && this.owner.isReadOnly)) {
-            if (!Browser.isDevice && !Browser.isIE && !navigator.userAgent.match('Edge')) {
+            if (!Browser.isDevice && !Browser.isIE && !navigator.userAgent.match('Edge')
+                && !isNullOrUndefined(this.iframe)) {
                 this.iframe.focus();
             }
-            this.editableDiv.focus();
+            if (!isNullOrUndefined(this.editableDiv)) {
+                this.editableDiv.focus();
+            }
             this.selection.showCaret();
         }
     };

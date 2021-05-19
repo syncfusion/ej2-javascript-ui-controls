@@ -668,4 +668,46 @@ describe('Freeze render module', () => {
             gridObj = null;
         });
     });
+
+    describe('EJ2-48927 - SetCellValue does not work when column.isFrozen Property is set to true', function () {
+        let gridObj: Grid;
+        let localData: Object[] = [{
+            OrderID: 10248, CustomerID: 'VINET', EmployeeID: 5, OrderDate: new Date(8364186e5),
+            ShipName: 'Vins et alcools Chevalier', ShipCity: 'Reims', ShipAddress: '59 rue de l Abbaye',
+            ShipRegion: 'CJ', ShipPostalCode: '51100', ShipCountry: 'France', Freight: 32.38, Verified: !0
+        },
+        {
+            OrderID: 10249, CustomerID: 'TOMSP', EmployeeID: 6, OrderDate: new Date(836505e6),
+            ShipName: 'Toms Spezialitäten', ShipCity: 'Münster', ShipAddress: 'Luisenstr. 48',
+            ShipRegion: 'CJ', ShipPostalCode: '44087', ShipCountry: 'Germany', Freight: 11.61, Verified: !1
+        },
+        {
+            OrderID: 10250, CustomerID: 'HANAR', EmployeeID: 4, OrderDate: new Date(8367642e5),
+            ShipName: 'Hanari Carnes', ShipCity: 'Rio de Janeiro', ShipAddress: 'Rua do Paço, 67',
+            ShipRegion: 'RJ', ShipPostalCode: '05454-876', ShipCountry: 'Brazil', Freight: 65.83, Verified: !0
+        }];
+        beforeAll(function (done) {
+            gridObj = createGrid({
+                dataSource: localData,
+                columns: [
+                    { headerText: 'OrderID', field: 'OrderID', type: 'number', isPrimaryKey: true, isFrozen : true },
+                    { headerText: 'CustomerID', field: 'CustomerID' },
+                    { headerText: 'Freight', field: 'Freight', format: "C2" },
+                    { headerText: 'ShipCountry', field: 'ShipCountry' },
+                ]
+            }, done);
+        });
+        it('update particular cell', () => {
+            gridObj.setCellValue(10249, 'CustomerID', 'new value');
+            let selRow: any = gridObj.contentModule.getRows()[1];
+            expect((<any>selRow).data.CustomerID).toEqual('new value');
+            gridObj.setCellValue(10249, 'Freight', 1);
+            expect((<any>selRow).data.Freight).toEqual(1);
+            gridObj.setCellValue(10249, 'ShipCountry', 'new country');
+            expect((<any>selRow).data.ShipCountry).toEqual('new country');
+        });
+        afterAll(function () {
+            destroy(gridObj);
+        });
+    });
 });

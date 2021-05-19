@@ -5,15 +5,15 @@ import { WorkbookModel } from './workbook-model';
 import { getWorkbookRequiredModules } from '../common/module';
 import { SheetModel, CellModel, ColumnModel, RowModel, getData, clearRange } from './index';
 import { OpenOptions, BeforeOpenEventArgs, OpenFailureArgs, CellValidationEventArgs } from '../../spreadsheet/common/interface';
-import { DefineName, CellStyle, updateUsedRange, getIndexesFromAddress, localeData, workbookLocale, BorderType, SortCollectionModel } from '../common/index';
+import { DefineName, CellStyle, updateUsedRange, getIndexesFromAddress, localeData, workbookLocale, BorderType } from '../common/index';
 import * as events from '../common/event';
 import { CellStyleModel, DefineNameModel, HyperlinkModel, insertModel, InsertDeleteModelArgs, getAddressInfo } from '../common/index';
 import { setCellFormat, sheetCreated, deleteModel, ModelType, ProtectSettingsModel, ValidationModel, setLockCells } from '../common/index';
-import { BeforeSaveEventArgs, SaveCompleteEventArgs, BeforeCellFormatArgs, UnprotectArgs } from '../common/interface';
+import { BeforeSaveEventArgs, SaveCompleteEventArgs, BeforeCellFormatArgs, UnprotectArgs, ExtendedRange } from '../common/interface';
 import { SaveOptions, SetCellFormatArgs, ClearOptions } from '../common/interface';
 import { SortOptions, BeforeSortEventArgs, SortEventArgs, FindOptions, CellInfoEventArgs, ConditionalFormatModel } from '../common/index';
 import { FilterEventArgs, FilterOptions, BeforeFilterEventArgs, ChartModel, getCellIndexes, getCellAddress } from '../common/index';
-import { setMerge, MergeType, MergeArgs, ImageModel, FilterCollectionModel } from '../common/index';
+import { setMerge, MergeType, MergeArgs, ImageModel, FilterCollectionModel, SortCollectionModel, getRangeIndexes } from '../common/index';
 import { getCell, skipDefaultValue, setCell, wrap as wrapText } from './cell';
 import { DataBind, setRow, setColumn } from '../index';
 import { WorkbookSave, WorkbookFormula, WorkbookOpen, WorkbookSort, WorkbookFilter, WorkbookImage } from '../integrations/index';
@@ -493,6 +493,10 @@ export class Workbook extends Component<HTMLElement> implements INotifyPropertyC
      * @hidden
      */
     public chartCount: number = 1;
+    
+    /** @hidden */
+    public formulaRefCell: string;
+
     /**
      * Constructor for initializing the library.
      *
@@ -958,7 +962,7 @@ export class Workbook extends Component<HTMLElement> implements INotifyPropertyC
      * @param {number} colIndex - Specifies the colIndex.
      * @returns {string | number} - To set the value for row and col.
      */
-    public getValueRowCol(sheetIndex: number, rowIndex: number, colIndex: number): string | number {
+    public getValueRowCol(sheetIndex: number, rowIndex: number, colIndex: number, formulaCellReference?: string): string | number {
         const args: { action: string, sheetInfo: { visibleName: string, sheet: string, index: number }[] } = {
             action: 'getSheetInfo', sheetInfo: []
         };
@@ -972,6 +976,25 @@ export class Workbook extends Component<HTMLElement> implements INotifyPropertyC
         sheetIndex = getSheetIndexFromId(this, sheetIndex + 1);
         const sheet: SheetModel = getSheet(this, sheetIndex);
         const cell: CellModel = getCell(rowIndex - 1, colIndex - 1, sheet);
+        if (formulaCellReference && formulaCellReference.includes('!') && !cell && sheet.ranges && sheet.ranges.length) {
+            let isNotLoaded: boolean;
+            if (this.formulaRefCell && this.formulaRefCell === formulaCellReference) { return cell && cell.value; }
+            sheet.ranges.forEach((range: ExtendedRange): void => {
+                if (!range.info || !range.info.loadedRange || !range.info.loadedRange.length) { isNotLoaded = true; return; }
+            });
+            if (isNotLoaded) {
+                this.formulaRefCell = formulaCellReference;
+                sheetIndex = getSheetIndexFromId(this, Number(formulaCellReference[formulaCellReference.length - 1]) + 1);
+                if (isNullOrUndefined(sheetIndex)) { return cell && cell.value; }
+                formulaCellReference = formulaCellReference.substring(
+                    formulaCellReference.lastIndexOf('!') + 1, formulaCellReference.length - 1);
+                getData(
+                    this, `${sheet.name}!A1:${getCellAddress(rowIndex - 1, colIndex - 1)}`, null, null, null, null, formulaCellReference,
+                    sheetIndex);
+            }
+        } else if (cell && cell.formula && isNullOrUndefined(cell.value)) {
+            this.notify('calculateFormula', { cell: cell, rowIdx: rowIndex - 1, colIdx: colIndex - 1, sheetIndex: sheetIndex });
+        }
         return cell && cell.value;
     }
 

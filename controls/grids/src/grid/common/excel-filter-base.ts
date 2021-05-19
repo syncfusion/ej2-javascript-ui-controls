@@ -426,7 +426,6 @@ export class ExcelFilterBase extends CheckBoxFilterBase {
         this.parent.notify(events.beforeCustomFilterOpen, { column: column, dialog: this.dialogObj });
         this.dlgObj.show();
         applyBiggerTheme(this.parent.element, this.dlgObj.element.parentElement);
-        this.parent.notify(events.setCustomFilterHeader, { title: this.getLocalizedLabel('CustomFilter') });
     }
 
     private renderCustomFilter(target: Element, column: string): void {

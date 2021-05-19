@@ -133,15 +133,15 @@ export class Toolbar {
             }
         } else {
             if (!Browser.isDevice || this.pdfViewer.enableDesktopMode) {
-                this.annotationToolbarModule = new AnnotationToolbar(this.pdfViewer, this.pdfViewerBase, this);
                 this.initialEnableItems();
                 this.pdfViewerBase.navigationPane.adjustPane();
                 if (this.pdfViewer.enableToolbar) {
                     this.bindOpenIconEvent();
                 }
-                if (this.pdfViewer.enableToolbar && this.pdfViewer.enableAnnotationToolbar && !Browser.isDevice) {
-                    this.annotationToolbarModule.afterAnnotationToolbarCreationInBlazor();
-                }
+            }
+            this.annotationToolbarModule = new AnnotationToolbar(this.pdfViewer, this.pdfViewerBase, this);
+            if (this.pdfViewer.enableToolbar && this.pdfViewer.enableAnnotationToolbar || (this.pdfViewer.enableDesktopMode && Browser.isDevice)) {
+                this.annotationToolbarModule.afterAnnotationToolbarCreationInBlazor();
             }
         }
         return toolbarDiv;

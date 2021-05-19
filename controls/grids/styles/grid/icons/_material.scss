@@ -213,6 +213,36 @@
   }
 }
 
+.e-checkboxfilter {
+  .e-icon-filter::before {
+    content: '\e7ee';
+  }
+
+  .e-excl-filter-icon::before {
+    content:  '\e251';
+  }
+
+  .e-excl-filter-icon.e-filtered::before {
+    content: '\e248';
+  }
+
+  .e-search-icon::before {
+    content: '\e993';
+  }
+
+  .e-chkcancel-icon::before {
+    content: '\e7a7';
+  }
+
+  .e-sortascending::before {
+    content: '\e734';
+  }
+
+  .e-sortdescending::before {
+    content: '\e733';
+  }
+}
+
 .e-row-responsive-filter {
   & .e-dlg-closeicon-btn {
     & .e-icon-dlg-close::before {

@@ -20,7 +20,7 @@ import { setCell } from './cell';
 export function getData(
     context: Workbook, address: string, columnWiseData?: boolean,
     valueOnly?: boolean, frozenIndexes?: number[],
-    filterDialog?: boolean): Promise<Map<string, CellModel> | { [key: string]: CellModel }[]> {
+    filterDialog?: boolean, formulaCellRef?: string, idx?: number): Promise<Map<string, CellModel> | { [key: string]: CellModel }[]> {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     return new Promise((resolve: Function, reject: Function) => {
         resolve((() => {
@@ -33,8 +33,8 @@ export function getData(
             const indexes: number[] = getIndexesFromAddress(address);
             let sRow: number = indexes[0];
             let index: number = 0;
-            const args: { sheet: SheetModel, indexes: number[], promise?: Promise<Cell> } = {
-                sheet: sheet, indexes: indexes, promise:
+            const args: { sheet: SheetModel, indexes: number[], promise?: Promise<Cell>, formulaCellRef?: string, sheetIndex?: number } = {
+                sheet: sheet, indexes: indexes, formulaCellRef: formulaCellRef, sheetIndex: idx, promise:
                     // eslint-disable-next-line @typescript-eslint/no-unused-vars
                     new Promise((resolve: Function, reject: Function) => { resolve((() => { /** */ })()); })
             };

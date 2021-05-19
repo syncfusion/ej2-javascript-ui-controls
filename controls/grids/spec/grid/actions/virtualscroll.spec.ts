@@ -1,7 +1,7 @@
 /**
  * virtual scrolling spec
  */
-import { EmitType, EventHandler } from '@syncfusion/ej2-base';
+import { EmitType, EventHandler, select } from '@syncfusion/ej2-base';
 import { extend } from '@syncfusion/ej2-base';
 import { DataManager } from '@syncfusion/ej2-data';
 import { createElement } from '@syncfusion/ej2-base';
@@ -9,8 +9,11 @@ import { Grid } from '../../../src/grid/base/grid';
 import { Sort } from '../../../src/grid/actions/sort';
 import { Group } from '../../../src/grid/actions/group';
 import { Selection } from '../../../src/grid/actions/selection';
+import { Edit } from '../../../src/grid/actions/edit';
+import { Toolbar } from '../../../src/grid/actions/toolbar';
 import { Filter } from '../../../src/grid/actions/filter';
 import { VirtualScroll } from '../../../src/grid/actions/virtual-scroll';
+import { Freeze } from '../../../src/grid/actions/freeze';
 import { Aggregate } from '../../../src/grid/actions/aggregate';
 import { GridModel } from '../../../src/grid/base/grid-model';
 import { Column } from '../../../src/grid/models/column';
@@ -20,8 +23,10 @@ import { VirtualRowModelGenerator } from '../../../src/grid/services/virtual-row
 import { RowModelGenerator } from '../../../src/grid/services/row-model-generator';
 import '../../../node_modules/es6-promise/dist/es6-promise';
 import  {profile , inMB, getMemoryProfile} from '../base/common.spec';
+import { largeDataset } from '../base/datasource.spec';
+import { EditEventArgs } from '../../../src';
 
-Grid.Inject(VirtualScroll, Sort, Filter, Selection, Group, Aggregate);
+Grid.Inject(VirtualScroll, Sort, Filter, Selection, Group, Aggregate, Edit, Toolbar, Freeze);
 
 let createGrid: Function = (options: GridModel, done: Function): Grid => {
     let grid: Grid;
@@ -75,6 +80,18 @@ let virtualData: Object[] = (() => {
     }
     return arr;
 })();
+
+
+
+
+let largeDatasetColumns: Function = (count: number): Object[] => {
+    let columns: any = [];
+    for (let i: number = 0; i < count; i++) {
+        columns.push({ field: 'FIELD' + i });
+        columns[i].isPrimaryKey = columns[i].field === 'FIELD1';
+    }
+    return columns;
+};
 
 describe('Virtualization testing', () => {
 
@@ -763,6 +780,89 @@ describe('Column virtualization', () => {
             expect(value).toBe(499500);
             setTimeout(done, 200);
         });
+        afterAll(() => {
+            destroy(gObj);
+            gObj = null;
+        });
+    });
+
+    describe('Column virtualization with inline editing testing', () => {
+        let gObj: Grid;
+        let columns: Column[] = largeDatasetColumns(30);
+        beforeAll((done: Function) => {
+            gObj = createGrid(
+                {
+                    dataSource: largeDataset,
+                    columns: columns,
+                    enableVirtualization: true,
+                    enableColumnVirtualization: true,
+                    editSettings: {
+                        allowEditing: true,
+                        allowAdding: true,
+                        allowDeleting: true
+                    },
+                    toolbar: ['Add', 'Edit', 'Delete', 'Update', 'Cancel'],
+                    height: 300,
+                    width: 400
+                }, done);
+        });
+
+        it('added record', (done: Function) => {
+            let actionComplete = (args: EditEventArgs) => {
+                expect(args.form.getElementsByTagName('td').length).toBe(gObj.getColumns().length);
+                (select('#' + gObj.element.id + 'FIELD1', gObj.element)  as any).value = 11013456;
+                gObj.actionComplete = null;
+                done();
+            };
+            gObj.actionComplete = actionComplete;
+            gObj.addRecord();
+        });
+
+        it('Check editforms count after horizontal scroll', (done: Function) => {
+            let dataBound = (args: EditEventArgs) => {
+                expect(gObj.element.querySelector('.e-gridform').getElementsByTagName('td').length).toBe(gObj.getColumns().length);
+                gObj.dataBound = null;
+                done();
+            };
+            gObj.dataBound = dataBound;
+            (gObj.getContent().firstChild as Element).scrollLeft = 3000;
+        });
+
+        it('Save added record', (done: Function) => {
+            let columns: Column[] = gObj.getColumns();
+            let actionComplete = (args: EditEventArgs) => {
+                expect(gObj.getCellFromIndex(0, 0).innerHTML).toBe('123');
+                expect(gObj.getRowsObject()[0].data[columns[0].field]).toBe(123);
+                expect(gObj.getRowsObject()[0].data['FIELD1']).toBe(11013456);
+                gObj.actionComplete = null;
+                done();
+            };
+            gObj.actionComplete = actionComplete;
+            (select('#' + gObj.element.id + columns[0].field, gObj.element)  as any).value = 123;
+            gObj.endEdit();
+        });
+
+        it('edit record', (done: Function) => {
+            let actionComplete = (args: EditEventArgs) => {
+                (select('#' + gObj.element.id + gObj.getColumns()[3].field, gObj.element)  as any).value = 456789;
+                gObj.actionComplete = null;
+                done();
+            };
+            gObj.actionComplete = actionComplete;
+            gObj.startEdit();
+        });
+
+        it('Save edited record', (done: Function) => {
+            let actionComplete = (args: EditEventArgs) => {
+                expect(gObj.getCellFromIndex(0, 3).innerHTML).toBe('456789');
+                expect(gObj.getRowsObject()[0].data[gObj.getColumns()[3].field]).toBe(456789);
+                gObj.actionComplete = null;
+                done();
+            };
+            gObj.actionComplete = actionComplete;
+            gObj.endEdit();
+        });
+
         afterAll(() => {
             destroy(gObj);
             gObj = null;

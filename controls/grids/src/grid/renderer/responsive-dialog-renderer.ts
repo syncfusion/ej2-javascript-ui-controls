@@ -33,8 +33,12 @@ export class ResponsiveDialogRenderer implements IAction {
     private isRowResponsive: boolean;
     private isDialogClose: boolean;
     private onActionCompleteFn: Function;
-    public action: ResponsiveDialogAction;
     private evtHandlers: { event: string, handler: Function }[];
+
+    /** @hidden */
+    public action: ResponsiveDialogAction;    
+    /** @hidden */
+    public isCustomDialog: boolean = false;
 
     /**
      * Constructor for Grid Responsive dialog renderer
@@ -48,7 +52,6 @@ export class ResponsiveDialogRenderer implements IAction {
 
     public addEventListener(): void {
         this.evtHandlers = [{ event: events.filterDialogClose, handler: this.closeCustomDialog },
-        { event: events.setCustomFilterHeader, handler: this.setCustomFilterHeader },
         { event: events.refreshCustomFilterOkBtn, handler: this.refreshCustomFilterOkBtn },
         { event: events.renderResponsiveCmenu, handler: this.renderResponsiveContextMenu },
         { event: events.filterCmenuSelect, handler: this.renderCustomFilterDiv },
@@ -273,16 +276,23 @@ export class ResponsiveDialogRenderer implements IAction {
      * @hidden
      */
     public showResponsiveDialog(col?: Column): void {
-        if (this.parent.rowRenderingMode === 'Vertical' && this.action === ResponsiveDialogAction.isFilter && !this.isRowResponsive) {
+        if (this.isCustomDialog && this.action === ResponsiveDialogAction.isFilter && !this.isRowResponsive) {
             this.renderCustomFilterDialog();
-            this.customFilterDlg.show(true);
-            this.customFilterDlg.element.style.maxHeight = '100%';
         } else {
             this.filteredCol = col;
             this.renderResponsiveDialog(col);
             if (this.parent.enableAdaptiveUI && col) {
                 this.parent.filterModule.setFilterModel(col);
                 this.parent.filterModule.filterModule.openDialog(this.parent.filterModule.createOptions(col, undefined));
+            }
+            if (this.action === ResponsiveDialogAction.isSort) {
+                let args: { cancel: boolean, dialogObj: Dialog, requestType: string } = {
+                    cancel: false, dialogObj: this.customResponsiveDlg, requestType: 'beforeOpenAptiveSortDialog'
+                }
+                this.parent.trigger(events.beforeOpenAdaptiveDialog, args);
+                if (args.cancel) {
+                    return;
+                }
             }
             this.customResponsiveDlg.show(true);
             this.customResponsiveDlg.element.style.maxHeight = '100%';
@@ -309,7 +319,16 @@ export class ResponsiveDialogRenderer implements IAction {
         );
         this.parent.element.appendChild(outerDiv);
         this.customFilterDlg = this.getDialogOptions(col, true);
+        let args: { cancel: boolean, dialogObj: Dialog, requestType: string } = {
+            cancel: false, dialogObj: this.customFilterDlg, requestType: 'beforeOpenAptiveFilterDialog'
+        }
+        this.parent.trigger(events.beforeOpenAdaptiveDialog, args);
+        if (args.cancel) {
+            return;
+        }
         this.customFilterDlg.appendTo(outerDiv);
+        this.customFilterDlg.show(true);
+        this.customFilterDlg.element.style.maxHeight = '100%';
     }
 
     private getDialogOptions(col: Column, isCustomFilter: boolean, id?: string): Dialog {
@@ -547,6 +566,7 @@ export class ResponsiveDialogRenderer implements IAction {
                 remove(customEle);
             }
         }
+        this.isCustomDialog = false;
         this.isDialogClose = false;
     }
 
@@ -566,16 +586,6 @@ export class ResponsiveDialogRenderer implements IAction {
                     i--;
                 }
             }
-        }
-    }
-
-    private setCustomFilterHeader(args: { title: string }): void {
-        if (this.parent.rowRenderingMode !== 'Vertical') {
-            return;
-        }
-        let header: HTMLElement = this.customResponsiveDlg.element.querySelector('.e-reslabel');
-        if (header && header.firstElementChild) {
-            header.firstElementChild.innerHTML = args.title;
         }
     }
 

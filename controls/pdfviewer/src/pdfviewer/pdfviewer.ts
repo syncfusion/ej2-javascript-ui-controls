@@ -4352,7 +4352,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
     public updateFormFieldsValue(fieldValue: any): void {
         // eslint-disable-next-line
         let target: any = document.getElementById(fieldValue.id);
-        if (fieldValue.type === 'Textbox' || fieldValue.type === 'Password') {
+        if (target && fieldValue.type === 'Textbox' || fieldValue.type === 'Password') {
             target.value = fieldValue.value;
         } else if (fieldValue.type === 'RadioButton' || fieldValue.type === 'CheckBox') {
             if (fieldValue.type === 'CheckBox') {

@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 19.1.64 (2021-05-19)
+
+### Diagram
+
+#### Bug Fixes
+
+- `#I324251` - The issue "Nodes with SVG shapes have inaccurate positions in the Overview Control" has been fixed.
+
 ## 19.1.63 (2021-05-13)
 
 ### Diagram

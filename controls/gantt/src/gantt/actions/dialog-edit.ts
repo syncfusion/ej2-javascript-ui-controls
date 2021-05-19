@@ -114,7 +114,7 @@ export class DialogEdit {
 
     private dblClickHandler(e: PointerEvent): void {
         const ganttData: IGanttData = this.parent.ganttChartModule.getRecordByTarget(e);
-        if (!isNullOrUndefined(ganttData)) {
+        if (!isNullOrUndefined(ganttData) && this.parent.editModule && this.parent.editSettings.allowEditing) {
             this.openEditDialog(ganttData);
         }
     }

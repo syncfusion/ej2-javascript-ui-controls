@@ -2,6 +2,17 @@
 
 ## [Unreleased]
 
+## 19.1.64 (2021-05-19)
+
+### PDF Viewer
+
+#### Bug Fixes
+
+- `#325096` - The Script error will no longer be thrown if we add form fields value by code behind.
+- `#326083` - Now, the signature is appeared inside of the Signature Field in the PDF Viewer.
+- `#326054` - The Script error will no longer be thrown while clicking the provided document hyperlink content.
+- `#324660` - Now, the distance annotation can be added after deleting the incompletely drawn distance annotation.
+
 ## 19.1.59 (2021-05-04)
 
 ### PDF Viewer

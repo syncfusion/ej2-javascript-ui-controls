@@ -806,3 +806,41 @@ console.log('EditRangeElement validation');
         expect(editor.documentHelper.selection.caret.style.display).toBe('block');  
     });
 });
+describe('caret height validation', () => {
+    let editor: DocumentEditor = undefined;
+    let documentHelper: DocumentHelper;
+    beforeAll(() => {
+        let ele: HTMLElement = createElement('div', { id: 'container' });
+        document.body.appendChild(ele);
+        DocumentEditor.Inject(Editor, Selection);
+        editor = new DocumentEditor({ enableEditor: true, enableSelection: true, isReadOnly: false });
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        editor.appendTo('#container');
+        documentHelper = editor.documentHelper;
+    });
+    afterAll((done) => {
+        document.body.removeChild(document.getElementById('container'));
+        editor.destroy();
+        editor = undefined;
+        documentHelper = undefined;
+        document.body.innerHTML = '';
+        setTimeout(function () {
+            done();
+        }, 1000);
+    });
+    it('caret height validation', () => {
+        editor.openBlank();
+        editor.editor.insertText('comment');
+        editor.selection.selectAll();
+        editor.editor.insertComment('check');        
+        let event: any = {
+            offsetX: 100, offsetY: 100, preventDefault: function () { return true; },
+            ctrlKey: true, shiftKey: false, which: 0
+        };
+        editor.documentHelper.onMouseDownInternal(event as any);
+        expect(editor.selection.caret.style.height).not.toBe('0px');
+    });
+});

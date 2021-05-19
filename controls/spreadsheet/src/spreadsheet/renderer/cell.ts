@@ -4,7 +4,7 @@ import { hasTemplate, createHyperlinkElement, checkPrevMerge, createImageElement
 import { getColumnHeaderText, CellStyleModel, CellFormatArgs, getRangeIndexes, getRangeAddress } from '../../workbook/common/index';
 import { CellStyleExtendedModel, setChart, refreshChart, getCellAddress, ValidationModel, MergeArgs } from '../../workbook/common/index';
 import { CellModel, SheetModel, skipDefaultValue, isHiddenRow, RangeModel, isHiddenCol, ColumnModel, Workbook } from '../../workbook/base/index';
-import { getRowHeight, setRowHeight, getCell, getColumn, getColumnWidth } from '../../workbook/base/index';
+import { getRowHeight, setRowHeight, getCell, getColumn, getColumnWidth, getSheet } from '../../workbook/base/index';
 import { addClass, attributes, getNumberDependable, extend, compile, isNullOrUndefined, detach } from '@syncfusion/ej2-base';
 import { getFormattedCellObject, applyCellFormat, workbookFormulaOperation, wrapEvent, cFRender } from '../../workbook/common/index';
 import { getTypeFromFormat, activeCellMergedRange, addHighlight, getCellIndexes } from '../../workbook/index';
@@ -26,6 +26,7 @@ export class CellRenderer implements ICellRenderer {
         this.th = this.parent.createElement('th', { className: 'e-header-cell' }) as HTMLTableHeaderCellElement;
         this.tableRow = parent.createElement('tr', { className: 'e-row' });
         this.parent.on('updateView', this.updateView, this);
+        this.parent.on('calculateFormula', this.calculateFormula, this);
     }
 
     public renderColHeader(index: number): Element {
@@ -71,7 +72,6 @@ export class CellRenderer implements ICellRenderer {
         if (args.cell && args.td) {
             if (validation && validation.isHighlighted) {
                 this.parent.notify(addHighlight, { range: getRangeAddress([args.rowIdx, args.colIdx]), td: args.td });
-                this.parent.addInvalidHighlight( );
             }
             this.parent.notify(
                 cFRender, { rowIdx: args.rowIdx, colIdx: args.colIdx, cell: args.cell, td: args.td, isChecked: false });
@@ -127,11 +127,8 @@ export class CellRenderer implements ICellRenderer {
             }
         }
         if (args.cell && args.cell.formula && (!args.cell.value || args.isRefreshing)) {
-            const isFormula: boolean = checkIsFormula(args.cell.formula);
-            const eventArgs: { [key: string]: string | number | boolean } = {
-                action: 'refreshCalculate', value: args.cell.formula, rowIndex: args.rowIdx, colIndex: args.colIdx, isFormula: isFormula };
-            this.parent.notify(workbookFormulaOperation, eventArgs);
-            args.cell.value = getCell(args.rowIdx, args.colIdx, this.parent.getActiveSheet()).value; }
+            this.calculateFormula(args);
+        }
         const formatArgs: { [key: string]: string | boolean | CellModel } = {
             type: args.cell && getTypeFromFormat(args.cell.format),
             value: args.cell && args.cell.value, format: args.cell && args.cell.format ? args.cell.format : 'General',
@@ -238,6 +235,15 @@ export class CellRenderer implements ICellRenderer {
                 sheet, initial: true, td: args.td, row: args.row, hRow: args.hRow, isCustomHgt: !args.isRefresh && prevHgt > 20
             });
         }
+    }
+    private calculateFormula(args: CellRenderArgs): void {
+        const isFormula: boolean = checkIsFormula(args.cell.formula);
+        const eventArgs: { [key: string]: string | number | boolean } = { action: 'refreshCalculate', value: args.cell.formula, rowIndex:
+            args.rowIdx, colIndex: args.colIdx, isFormula: isFormula, sheetIndex: args.sheetIndex };
+        this.parent.notify(workbookFormulaOperation, eventArgs);
+        args.cell.value = getCell(
+            args.rowIdx, args.colIdx, isNullOrUndefined(args.sheetIndex) ? this.parent.getActiveSheet() :
+            getSheet(this.parent, args.sheetIndex)).value;
     }
     private checkMerged(args: CellRenderArgs): boolean {
         if (args.cell && (args.cell.colSpan < 0 || args.cell.rowSpan < 0)) {
@@ -552,7 +558,7 @@ export class CellRenderer implements ICellRenderer {
      * @param {number[]} range - Specifies the range.
      * @returns {void}
      */
-    public refreshRange(range: number[]): void {
+    public refreshRange(range: number[], refreshing?: boolean): void {
         const sheet: SheetModel = this.parent.getActiveSheet();
         const cRange: number[] = range.slice();
         if (inView(this.parent, cRange, true)) {
@@ -562,7 +568,7 @@ export class CellRenderer implements ICellRenderer {
                     const cell: HTMLElement = this.parent.getCell(i, j);
                     if (cell) {
                         this.update(<CellRenderArgs>{
-                            rowIdx: i, colIdx: j, td: cell, cell: getCell(i, j, sheet), lastCell:
+                            rowIdx: i, colIdx: j, td: cell, cell: getCell(i, j, sheet), isRefreshing: refreshing, lastCell:
                                 j === cRange[3], isRefresh: true, isHeightCheckNeeded: true, manualUpdate: true, first: '' });
                         this.parent.notify(renderFilterCell, { td: cell, rowIndex: i, colIndex: j });
                     }
@@ -583,7 +589,13 @@ export class CellRenderer implements ICellRenderer {
         }
     }
 
-    private updateView(args: { indexes: number[] }): void {
-        this.refreshRange(args.indexes);
+    private updateView(args: { indexes: number[], sheetIndex?: number, refreshing?: boolean }): void {
+        if (isNullOrUndefined(args.sheetIndex) || (args.sheetIndex === this.parent.activeSheetIndex)) {
+            this.refreshRange(args.indexes, args.refreshing);
+        } else if (args.refreshing) {
+            this.calculateFormula(
+                { cell: getCell(args.indexes[0], args.indexes[1], getSheet(this.parent, args.sheetIndex), true), rowIdx: args.indexes[0],
+                    colIdx: args.indexes[1], sheetIndex: args.sheetIndex });
+        }
     }
 }

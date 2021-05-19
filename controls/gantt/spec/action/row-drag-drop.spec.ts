@@ -156,4 +156,160 @@ describe('Gantt Drag and Drop support', () => {
         //     expect(parseInt(ganttObj_resource.flatData[3].parentItem.taskId)).toBe(2689);
         // });
     });
+    
+     describe('Drag Drop for child position with segments', () => {
+        let splitTasksData: object[] = [
+            {
+                TaskID: 1,
+                TaskName: "Project Schedule",
+                StartDate: new Date("02/04/2019"),
+                EndDate: new Date("03/10/2019"),
+                subtasks: [
+                    {
+                        TaskID: 2,
+                        TaskName: "Planning",
+                        StartDate: new Date("02/04/2019"),
+                        subtasks: [
+                            {
+                                TaskID: 3,
+                                TaskName: "Plan timeline",
+                                StartDate: new Date("02/04/2019"),
+                                EndDate: new Date("02/10/2019"),
+                                Duration: 10,
+                                Progress: "60",
+                                Segments: [
+                                    { StartDate: new Date("02/04/2019"), Duration: 2 },
+                                    { StartDate: new Date("02/05/2019"), Duration: 5 },
+                                    { StartDate: new Date("02/08/2019"), Duration: 3 }
+                                ]
+                            },
+                            {
+                                TaskID: 4,
+                                TaskName: "Plan budget",
+                                StartDate: new Date("02/04/2019"),
+                                EndDate: new Date("02/10/2019"),
+                                Duration: 10,
+                                Progress: "90"
+                            },
+                            {
+                                TaskID: 5,
+                                TaskName: "Allocate resources",
+                                StartDate: new Date("02/04/2019"),
+                                EndDate: new Date("02/10/2019"),
+                                Duration: 10,
+                                Progress: "75",
+                                Segments: [
+                                    { StartDate: new Date("02/04/2019"), Duration: 4 },
+                                    { StartDate: new Date("02/08/2019"), Duration: 2 }
+                                ]
+                            },
+                            {
+                                TaskID: 6,
+                                TaskName: "Planning complete",
+                                StartDate: new Date("02/21/2019"),
+                                EndDate: new Date("02/21/2019"),
+                                Duration: 0,
+                                Predecessor: "3FS,5FS"
+                            }
+                        ]
+                    },
+                    {
+                        TaskID: 7,
+                        TaskName: "Design",
+                        StartDate: new Date("02/25/2019"),
+                        subtasks: [
+                            {
+                                TaskID: 8,
+                                TaskName: "Software Specification",
+                                StartDate: new Date("02/25/2019"),
+                                EndDate: new Date("03/02/2019"),
+                                Duration: 5,
+                                Progress: "60",
+                                Predecessor: "6FS"
+                            },
+                            {
+                                TaskID: 9,
+                                TaskName: "Develop prototype",
+                                StartDate: new Date("02/25/2019"),
+                                EndDate: new Date("03/02/2019"),
+                                Duration: 5,
+                                Progress: "100",
+                                Predecessor: "6FS",
+                                Segments: [
+                                    { StartDate: new Date("02/25/2019"), Duration: 2 },
+                                    { StartDate: new Date("02/28/2019"), Duration: 3 }
+                                ]
+                            },
+                            {
+                                TaskID: 10,
+                                TaskName: "Get approval from customer",
+                                StartDate: new Date("02/25/2019"),
+                                EndDate: new Date("03/01/2019"),
+                                Duration: 4,
+                                Progress: "100",
+                                Predecessor: "9FS"
+                            },
+                            {
+                                TaskID: 11,
+                                TaskName: "Design complete",
+                                StartDate: new Date("02/25/2019"),
+                                EndDate: new Date("02/25/2019"),
+                                Duration: 0,
+                                Predecessor: "10FS"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ];
+        let ganttObj_resource: Gantt;
+        beforeAll((done: Function) => {
+            ganttObj_resource = createGantt(
+                {
+                    dataSource: splitTasksData,
+                    allowSorting: true,
+                    enableContextMenu: true,
+                    allowUnscheduledTasks: false,
+                    allowRowDragAndDrop: true,
+                    height: "450px",
+                    taskFields: {
+                        id: "TaskID",
+                        name: "TaskName",
+                        startDate: "StartDate",
+                        endDate: "EndDate",
+                        duration: "Duration",
+                        progress: "Progress",
+                        dependency: "Predecessor",
+                        child: "subtasks",
+                        segments: "Segments"
+                    },
+                    labelSettings: {
+                        leftLabel: "TaskName"
+                    },
+                    editSettings: {
+                        allowAdding: true,
+                        allowEditing: true,
+                        allowDeleting: true,
+                        allowTaskbarEditing: true,
+                        showDeleteConfirmDialog: true
+                    },
+                    projectStartDate: new Date("01/30/2019"),
+                    projectEndDate: new Date("04/10/2019")
+                }, done);
+        });
+        afterAll(() => {
+            if (ganttObj_resource) {
+                destroyGantt(ganttObj_resource);
+            }
+        });
+        beforeEach((done: Function) => {
+            setTimeout(done, 1000);
+        });
+        it('Drag and drop', () => {
+            ganttObj_resource.reorderRows([2], 8, 'child');
+            setTimeout(() => {
+                expect(ganttObj_resource.currentViewData[8].ganttProperties.segments).toBe(null || undefined);
+            }, 100);
+        });
+    });
 });

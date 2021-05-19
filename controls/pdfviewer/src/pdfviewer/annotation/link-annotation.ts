@@ -55,7 +55,12 @@ export class LinkAnnotation {
             let rect: any = hyperlinksBounds[i];
             aTag = this.setHyperlinkProperties(aTag, rect, pageIndex);
             aTag.title = hyperlinks[i];
-            aTag.setAttribute('href', hyperlinks[i]);
+            if (hyperlinks[i] && hyperlinks[i].split('http').length === 1) {
+                let hyperlinkText = "http://" + hyperlinks[i];
+                aTag.setAttribute('href', hyperlinkText);
+            } else {
+                aTag.setAttribute('href', hyperlinks[i]);
+            }
             if (this.pdfViewer.hyperlinkOpenState === 'CurrentTab') {
                 aTag.target = '_self';
                 aTag.onclick = () => {

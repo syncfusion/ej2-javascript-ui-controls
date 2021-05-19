@@ -146,8 +146,8 @@ export class TextSearch {
             }
             const result: TextSearchResult = results.addResult();
             const spanKeys: TextElementBox[] = textInfo.keys;
-            for (let i: number = 0; i < spanKeys.length; i++) {
-                const span: TextElementBox = spanKeys[i];
+            for (let j: number = 0; j < spanKeys.length; j++) {
+                const span: TextElementBox = spanKeys[j];
                 const startIndex: number = textInfo.get(span);
                 let spanLength: number = span.length;
                 // IndexInInline Handled specifically for simple find operation to start from starting point

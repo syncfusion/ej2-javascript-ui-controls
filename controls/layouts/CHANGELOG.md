@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 19.1.63 (2021-05-13)
+
+### Splitter
+
+- Provided `enablePersistence` property to persists the component's state between page reloads.
+
+- Provided `enableReversePanes` property to reorder the splitter panes.
+
 ## 19.1.58 (2021-04-27)
 
 ### Splitter

@@ -1,5 +1,5 @@
 import { isNullOrUndefined, NumberFormatOptions, Internationalization, DateFormatOptions } from '@syncfusion/ej2-base';
-import { LineWidget, ElementBox, BodyWidget, ParagraphWidget, TextElementBox } from '../viewer/page';
+import { LineWidget, ElementBox, BodyWidget, ParagraphWidget, TextElementBox, BlockWidget } from '../viewer/page';
 import { WCharacterFormat, WCellFormat, TextPosition, TextSearchResults } from '../index';
 import { HighlightColor, TextFormFieldType, CheckBoxSizeType, RevisionType, CollaborativeEditingAction } from '../../base/types';
 import { Widget, FieldElementBox } from '../viewer/page';
@@ -242,7 +242,7 @@ export class HelperMethods {
     public static writeCharacterFormat(characterFormat: any, isInline: boolean, format: WCharacterFormat): void {
         characterFormat.bold = isInline ? format.bold : format.getValue('bold');
         characterFormat.italic = isInline ? format.italic : format.getValue('italic');
-        characterFormat.fontSize = isInline ? this.toWriteInline(format, 'fontSize') : format.getValue('fontSize');
+        characterFormat.fontSize = parseInt(isInline ? this.toWriteInline(format, 'fontSize') : format.getValue('fontSize'));
         characterFormat.fontFamily = isInline ? this.toWriteInline(format, 'fontFamily') : format.getValue('fontFamily');
         characterFormat.underline = isInline ? format.underline : format.getValue('underline');
         characterFormat.strikethrough = isInline ? format.strikethrough : format.getValue('strikethrough');
@@ -991,4 +991,13 @@ export interface DropDownFormFieldInfo {
 export interface BorderInfo {
     border: WBorder
     width: number
+}
+
+/**
+ * @private
+ */
+export interface FootNoteWidgetsInfo {
+    footNoteWidgets: BlockWidget[];
+    toBodyWidget: BodyWidget;
+    fromBodyWidget: BodyWidget;
 }

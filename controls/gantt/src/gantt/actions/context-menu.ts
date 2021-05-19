@@ -199,7 +199,9 @@ export class ContextMenu {
         this.isEdit = true;
         const taskSettings: TaskFieldsModel = this.parent.taskFields;
         const currentClickedDate: Date = this.getClickedDate(args.element as HTMLElement);
-        currentClickedDate.setHours(0, 0, 0, 0);
+        if (isNullOrUndefined(this.parent.timelineSettings.bottomTier) && this.parent.timelineSettings.bottomTier.unit !== 'Hour') {
+            currentClickedDate.setHours(0, 0, 0, 0);
+        }
         const eventArgs: ActionBeginArgs = {
             rowData: this.rowData as IGanttData,
             requestType: 'splitTaskbar',
@@ -246,8 +248,13 @@ export class ContextMenu {
         // difference from task start date to current click position.
         const currentTaskDifference: number = this.clickedPosition - pageLeft;
 
-        const splitTaskDuration: number = Math.ceil(currentTaskDifference / this.parent.perDayWidth);
+        let splitTaskDuration: number = Math.ceil(currentTaskDifference / this.parent.perDayWidth);
         const startDate: Date = this.rowData.ganttProperties.startDate;
+        if (!isNullOrUndefined(this.parent.timelineSettings.bottomTier) && this.parent.timelineSettings.bottomTier.unit === 'Hour') {
+            splitTaskDuration = Math.ceil(currentTaskDifference / this.parent.timelineSettings.timelineUnitSize);
+            splitTaskDuration -= 1;
+        }
+
         const contextMenuClickDate: Date =
             this.parent.dataOperation.getEndDate(
                 startDate, splitTaskDuration, this.rowData.ganttProperties.durationUnit, this.rowData, false

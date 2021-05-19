@@ -728,6 +728,19 @@ describe('Gantt dialog module', () => {
             let saveRecord: HTMLElement = ganttObj.element.querySelector('#' + ganttObj.element.id + '_dialog > div.e-footer-content > button.e-control.e-btn.e-lib.e-primary.e-flat') as HTMLElement;
             triggerMouseEvent(saveRecord, 'click');
         });
+        it('Add new record beyond project dates', () => {
+            ganttObj.actionComplete = (args: any): void => {
+                if (args.action === 'TimescaleUpdate') {
+                    expect(ganttObj.getFormatedDate(ganttObj.cloneProjectStartDate, 'M/d/yyyy')).toEqual('3/18/2019');
+                }
+            };
+            ganttObj.dataBind();
+            let SD: any = (<EJ2Instance>document.getElementById(ganttObj.element.id + 'StartDate')).ej2_instances[0];
+            SD.value = new Date('03/20/2019');
+            SD.dataBind();
+            let saveRecord: HTMLElement = ganttObj.element.querySelector('#' + ganttObj.element.id + '_dialog > div.e-footer-content > button.e-control.e-btn.e-lib.e-primary.e-flat') as HTMLElement;
+            triggerMouseEvent(saveRecord, 'click');
+        });
     });
     describe('Dialog tab', () => {
         let ganttObj: Gantt;
@@ -763,6 +776,13 @@ describe('Gantt dialog module', () => {
             let saveRecord: HTMLElement = ganttObj.element.querySelector('#' + ganttObj.element.id + '_dialog > div.e-footer-content > button.e-control.e-btn.e-lib.e-primary.e-flat') as HTMLElement;
             triggerMouseEvent(saveRecord, 'click');
             ganttObj.refresh();
+        });
+        it('Restrict dialog rendering when allowediting is set as false', () => {
+            ganttObj.editSettings.allowEditing = false;
+            ganttObj.dataBind();
+            let row: HTMLElement = ganttObj.element.querySelector('#' + ganttObj.element.id + 'GanttTaskTableBody > tr:nth-child(3) > td') as HTMLElement;
+            triggerMouseEvent(row, 'dblclick');
+            expect(document.getElementById('ganttContainer_dialog')).toEqual(null);
         });
     });
     describe('Schedule mode', () => {

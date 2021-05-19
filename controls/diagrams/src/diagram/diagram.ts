@@ -1743,170 +1743,170 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
         if (this.diagramActions & DiagramAction.Render) {
             for (const prop of Object.keys(newProp)) {
                 switch (prop) {
-                case 'width':
-                case 'height':
-                    this.element.style.width = this.getSizeValue(this.width);
-                    this.element.style.height = this.getSizeValue(this.height);
-                    this.eventHandler.updateViewPortSize(this.element);
-                    for (const view of this.views) {
-                        const temp: View = this.views[view];
-                        if (!(temp instanceof Diagram)) {
-                            temp.updateView(temp);
-                        }
-                    }
-                    break;
-                case 'nodes':
-                    if (newProp.nodes.length > 0 && oldProp.nodes.length === 0) {
-                        this.clearCollection();
-                        refereshColelction = true;
-                    } else {
-                        for (const key of Object.keys(newProp.nodes)) {
-                            const index: number = Number(key);
-                            const actualObject: Node = this.nodes[index] as Node; const changedProp: Node = newProp.nodes[index] as Node;
-                            refreshLayout = refreshLayout || changedProp.excludeFromLayout !== undefined;
-                            this.nodePropertyChange(actualObject, oldProp.nodes[index] as Node, changedProp, undefined, true, true);
-                            const args: IPropertyChangeEventArgs | IBlazorPropertyChangeEventArgs = {
-                                element: cloneBlazorObject(actualObject), cause: this.diagramActions,
-                                oldValue: cloneBlazorObject(oldProp.nodes[index]) as Node,
-                                newValue: cloneBlazorObject(newProp.nodes[index]) as Node
-                            };
-                            if (isBlazor()) {
-                                (args as IBlazorPropertyChangeEventArgs).element = { node: cloneBlazorObject(actualObject) };
-                                (args as IBlazorPropertyChangeEventArgs).oldValue = { node: cloneBlazorObject(oldValue) };
-                                (args as IBlazorPropertyChangeEventArgs).newValue = { node: cloneBlazorObject(newValue) };
-                            }
-                            this.triggerEvent(DiagramEvent.propertyChange, args);
-                            if (isPropertyChanged) {
-                                isPropertyChanged = false;
+                    case 'width':
+                    case 'height':
+                        this.element.style.width = this.getSizeValue(this.width);
+                        this.element.style.height = this.getSizeValue(this.height);
+                        this.eventHandler.updateViewPortSize(this.element);
+                        for (const view of this.views) {
+                            const temp: View = this.views[view];
+                            if (!(temp instanceof Diagram)) {
+                                temp.updateView(temp);
                             }
                         }
-                        if (this.mode === 'Canvas') {
-                            this.refreshDiagramLayer();
-                        }
-                    }
-                    break;
-                case 'connectors':
-                    // eslint-disable-next-line no-case-declarations
-                    let oldObject: Connector;
-                    if (newProp.connectors.length > 0 && oldProp.connectors.length === 0) {
-                        this.clearCollection(true);
-                        refereshColelction = true;
-                    } else {
-                        for (const key of Object.keys(newProp.connectors)) {
-                            const index: number = Number(key);
-                            const actualObject: Connector = this.connectors[index] as Connector;
-                            const changedProp: Connector = newProp.connectors[index] as Connector;
-                            if (changedProp && (changedProp.sourceDecorator || changedProp.targetDecorator)) {
-                                this.diagramActions |= DiagramAction.DecoratorPropertyChange;
+                        break;
+                    case 'nodes':
+                        if (newProp.nodes.length > 0 && oldProp.nodes.length === 0) {
+                            this.clearCollection();
+                            refereshColelction = true;
+                        } else {
+                            for (const key of Object.keys(newProp.nodes)) {
+                                const index: number = Number(key);
+                                const actualObject: Node = this.nodes[index] as Node; const changedProp: Node = newProp.nodes[index] as Node;
+                                refreshLayout = refreshLayout || changedProp.excludeFromLayout !== undefined;
+                                this.nodePropertyChange(actualObject, oldProp.nodes[index] as Node, changedProp, undefined, true, true);
+                                const args: IPropertyChangeEventArgs | IBlazorPropertyChangeEventArgs = {
+                                    element: cloneBlazorObject(actualObject), cause: this.diagramActions,
+                                    oldValue: cloneBlazorObject(oldProp.nodes[index]) as Node,
+                                    newValue: cloneBlazorObject(newProp.nodes[index]) as Node
+                                };
+                                if (isBlazor()) {
+                                    (args as IBlazorPropertyChangeEventArgs).element = { node: cloneBlazorObject(actualObject) };
+                                    (args as IBlazorPropertyChangeEventArgs).oldValue = { node: cloneBlazorObject(oldValue) };
+                                    (args as IBlazorPropertyChangeEventArgs).newValue = { node: cloneBlazorObject(newValue) };
+                                }
+                                this.triggerEvent(DiagramEvent.propertyChange, args);
+                                if (isPropertyChanged) {
+                                    isPropertyChanged = false;
+                                }
                             }
-                            this.connectorPropertyChange(actualObject, oldProp.connectors[index] as Connector, changedProp, true, true);
-                            if (changedProp && (changedProp.sourceDecorator || changedProp.targetDecorator)) {
-                                this.diagramActions = this.diagramActions & ~DiagramAction.DecoratorPropertyChange;
-                            }
-                            const args: IPropertyChangeEventArgs | IBlazorPropertyChangeEventArgs = {
-                                element: cloneBlazorObject(actualObject), cause: this.diagramActions,
-                                oldValue: cloneBlazorObject(oldProp.connectors[index]) as Connector,
-                                newValue: cloneBlazorObject(newProp.connectors[index]) as Connector
-                            };
-                            if (isBlazor()) {
-                                (args as IBlazorPropertyChangeEventArgs).element = { connector: cloneBlazorObject(actualObject) };
-                                (args as IBlazorPropertyChangeEventArgs).oldValue = { connector: cloneBlazorObject(oldValue) };
-                                (args as IBlazorPropertyChangeEventArgs).newValue = { connector: cloneBlazorObject(newValue) };
-                            }
-                            this.triggerEvent(DiagramEvent.propertyChange, args);
-                            if (actualObject && actualObject.parentId && this.nameTable[actualObject.parentId].shape.type === 'UmlClassifier') {
-                                this.updateConnectorEdges(this.nameTable[actualObject.parentId] || actualObject);
-                            }
-                            if (isPropertyChanged) {
-                                isPropertyChanged = false;
+                            if (this.mode === 'Canvas') {
+                                this.refreshDiagramLayer();
                             }
                         }
+                        break;
+                    case 'connectors':
+                        // eslint-disable-next-line no-case-declarations
+                        let oldObject: Connector;
+                        if (newProp.connectors.length > 0 && oldProp.connectors.length === 0) {
+                            this.clearCollection(true);
+                            refereshColelction = true;
+                        } else {
+                            for (const key of Object.keys(newProp.connectors)) {
+                                const index: number = Number(key);
+                                const actualObject: Connector = this.connectors[index] as Connector;
+                                const changedProp: Connector = newProp.connectors[index] as Connector;
+                                if (changedProp && (changedProp.sourceDecorator || changedProp.targetDecorator)) {
+                                    this.diagramActions |= DiagramAction.DecoratorPropertyChange;
+                                }
+                                this.connectorPropertyChange(actualObject, oldProp.connectors[index] as Connector, changedProp, true, true);
+                                if (changedProp && (changedProp.sourceDecorator || changedProp.targetDecorator)) {
+                                    this.diagramActions = this.diagramActions & ~DiagramAction.DecoratorPropertyChange;
+                                }
+                                const args: IPropertyChangeEventArgs | IBlazorPropertyChangeEventArgs = {
+                                    element: cloneBlazorObject(actualObject), cause: this.diagramActions,
+                                    oldValue: cloneBlazorObject(oldProp.connectors[index]) as Connector,
+                                    newValue: cloneBlazorObject(newProp.connectors[index]) as Connector
+                                };
+                                if (isBlazor()) {
+                                    (args as IBlazorPropertyChangeEventArgs).element = { connector: cloneBlazorObject(actualObject) };
+                                    (args as IBlazorPropertyChangeEventArgs).oldValue = { connector: cloneBlazorObject(oldValue) };
+                                    (args as IBlazorPropertyChangeEventArgs).newValue = { connector: cloneBlazorObject(newValue) };
+                                }
+                                this.triggerEvent(DiagramEvent.propertyChange, args);
+                                if (actualObject && actualObject.parentId && this.nameTable[actualObject.parentId].shape.type === 'UmlClassifier') {
+                                    this.updateConnectorEdges(this.nameTable[actualObject.parentId] || actualObject);
+                                }
+                                if (isPropertyChanged) {
+                                    isPropertyChanged = false;
+                                }
+                            }
+                            this.updateBridging();
+                            if (this.mode === 'Canvas') {
+                                this.refreshDiagramLayer();
+                            }
+                        }
+                        break;
+                    case 'bridgeDirection':
                         this.updateBridging();
                         if (this.mode === 'Canvas') {
                             this.refreshDiagramLayer();
                         }
-                    }
-                    break;
-                case 'bridgeDirection':
-                    this.updateBridging();
-                    if (this.mode === 'Canvas') {
-                        this.refreshDiagramLayer();
-                    }
-                    break;
-                case 'backgroundColor':
-                    this.intOffPageBackground();
-                    break;
-                case 'pageSettings':
-                    this.validatePageSize(); this.updatePage(); break;
-                case 'selectedItems':
-                    if (newProp.selectedItems.userHandles && this.selectedItems.wrapper && this.selectedItems.userHandles) {
-                        if (this.selectedItems.userHandles.length > 0) {
+                        break;
+                    case 'backgroundColor':
+                        this.intOffPageBackground();
+                        break;
+                    case 'pageSettings':
+                        this.validatePageSize(); this.updatePage(); break;
+                    case 'selectedItems':
+                        if (newProp.selectedItems.userHandles && this.selectedItems.wrapper && this.selectedItems.userHandles) {
+                            if (this.selectedItems.userHandles.length > 0) {
+                                this.renderSelector(true); break;
+                            }
+                        }
+                        if (newProp.selectedItems.constraints) {
                             this.renderSelector(true); break;
                         }
-                    }
-                    if (newProp.selectedItems.constraints) {
-                        this.renderSelector(true); break;
-                    }
-                    break;
-                case 'snapSettings':
-                    this.updateSnapSettings(newProp);
-                    break;
-                case 'commandManager':
-                    this.initCommands();
-                    break;
-                case 'layout':
-                    refreshLayout = true; break;
-                case 'dataSourceSettings':
-                    this.clear(); this.initObjects();
-                    if (this.layout.type === 'None') {
-                        refereshColelction = true;
-                    } else {
-                        refreshLayout = true;
-                    }
-                    break;
-                case 'tooltip':
-                    initTooltip(this);
-                    break;
-                case 'rulerSettings':
-                    this.updateRulerSettings(newProp);
-                    break;
-                case 'layers':
-                    this.updateLayer(newProp); break;
-                case 'scrollSettings':
-                    this.scrollActions |= ScrollActions.PropertyChange;
-                    this.updateScrollSettings(newProp);
-                    this.scrollActions &= ~ScrollActions.PropertyChange;
-                    break;
-                case 'locale':
-                    if (newProp.locale !== oldProp.locale) {
-                        this.realActions |= RealAction.PreventDataInit;
-                        super.refresh();
-                        this.realActions &= ~RealAction.PreventDataInit;
-                    }
-                    break;
-                case 'contextMenuSettings':
-                    if (newProp.contextMenuSettings.showCustomMenuOnly !== undefined) {
-                        this.contextMenuSettings.showCustomMenuOnly = newProp.contextMenuSettings.showCustomMenuOnly;
-                    }
-                    if (newProp.contextMenuSettings.show !== undefined) {
-                        this.contextMenuSettings.show = newProp.contextMenuSettings.show;
-                    }
-                    if (newProp.contextMenuSettings.items) {
-                        const items: ContextMenuItemModel[] = newProp.contextMenuSettings.items;
-                        for (const key of Object.keys(items)) {
-                            const index: number = Number(key);
-                            this.contextMenuSettings.items[index] = items[index];
+                        break;
+                    case 'snapSettings':
+                        this.updateSnapSettings(newProp);
+                        break;
+                    case 'commandManager':
+                        this.initCommands();
+                        break;
+                    case 'layout':
+                        refreshLayout = true; break;
+                    case 'dataSourceSettings':
+                        this.clear(); this.initObjects();
+                        if (this.layout.type === 'None') {
+                            refereshColelction = true;
+                        } else {
+                            refreshLayout = true;
                         }
-                        if (this.contextMenuModule) {
-                            this.contextMenuModule.refreshItems();
+                        break;
+                    case 'tooltip':
+                        initTooltip(this);
+                        break;
+                    case 'rulerSettings':
+                        this.updateRulerSettings(newProp);
+                        break;
+                    case 'layers':
+                        this.updateLayer(newProp); break;
+                    case 'scrollSettings':
+                        this.scrollActions |= ScrollActions.PropertyChange;
+                        this.updateScrollSettings(newProp);
+                        this.scrollActions &= ~ScrollActions.PropertyChange;
+                        break;
+                    case 'locale':
+                        if (newProp.locale !== oldProp.locale) {
+                            this.realActions |= RealAction.PreventDataInit;
+                            super.refresh();
+                            this.realActions &= ~RealAction.PreventDataInit;
                         }
-                    }
-                    break;
-                case 'serializationSettings':
-                    if (newProp.serializationSettings.preventDefaults !== undefined) {
-                        this.serializationSettings.preventDefaults = newProp.serializationSettings.preventDefaults;
-                    }
-                    break;
+                        break;
+                    case 'contextMenuSettings':
+                        if (newProp.contextMenuSettings.showCustomMenuOnly !== undefined) {
+                            this.contextMenuSettings.showCustomMenuOnly = newProp.contextMenuSettings.showCustomMenuOnly;
+                        }
+                        if (newProp.contextMenuSettings.show !== undefined) {
+                            this.contextMenuSettings.show = newProp.contextMenuSettings.show;
+                        }
+                        if (newProp.contextMenuSettings.items) {
+                            const items: ContextMenuItemModel[] = newProp.contextMenuSettings.items;
+                            for (const key of Object.keys(items)) {
+                                const index: number = Number(key);
+                                this.contextMenuSettings.items[index] = items[index];
+                            }
+                            if (this.contextMenuModule) {
+                                this.contextMenuModule.refreshItems();
+                            }
+                        }
+                        break;
+                    case 'serializationSettings':
+                        if (newProp.serializationSettings.preventDefaults !== undefined) {
+                            this.serializationSettings.preventDefaults = newProp.serializationSettings.preventDefaults;
+                        }
+                        break;
                 }
             }
             if (refreshLayout && !refereshColelction) {
@@ -1955,7 +1955,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
             }
             if (!refereshColelction && (this.canLogChange()) && (this.modelChanged(newProp, oldProp))) {
                 const entry: HistoryEntry = { type: 'PropertyChanged', undoObject: oldProp, redoObject: newProp, category: 'Internal' };
-                if(this.historyManager) {
+                if (this.historyManager) {
                     this.addHistoryEntry(entry);
                 }
             }
@@ -2111,8 +2111,8 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
      * Renders the diagram control with nodes and connectors
      */
     public render(): void {
-        if(this.refreshing && this.dataSourceSettings.dataSource && !this.isLoading){
-            this.nodes =[];this.connectors = [];
+        if (this.refreshing && this.dataSourceSettings.dataSource && !this.isLoading) {
+            this.nodes = []; this.connectors = [];
         }
         this.ignoreCollectionWatch = true;
         const domTable: string = 'domTable';
@@ -2227,7 +2227,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
         this.diagramActions = DiagramAction.Render;
         this.initCommands();
         const hiddenUserHandleTemplate: HTMLCollection = document.getElementsByClassName(this.element.id + '_hiddenUserHandleTemplate');
-        createUserHandleTemplates(this.userHandleTemplate, hiddenUserHandleTemplate, this.selectedItems,this.element.id );
+        createUserHandleTemplates(this.userHandleTemplate, hiddenUserHandleTemplate, this.selectedItems, this.element.id);
         this.updateTemplate();
         this.isLoading = false;
         this.renderComplete();
@@ -2475,7 +2475,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                 args: []
             });
         }
-        if ((this.layout && this.layout.connectionPointOrigin==='DifferentPoint')||(this.layout.arrangement==='Linear'||(this.layout.enableRouting))) {
+        if ((this.layout && this.layout.connectionPointOrigin === 'DifferentPoint') || (this.layout.arrangement === 'Linear' || (this.layout.enableRouting))) {
             modules.push({
                 member: 'LineDistribution',
                 args: []
@@ -2868,7 +2868,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
     private addDiagramLayer(layer: LayerModel, layerObject?: Object[]): void {
         this.commandHandler.addLayer(layer, layerObject, false);
     }
-    
+
 
 
     /**
@@ -3513,43 +3513,43 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                 (change as ChangedObject)[entryType] = entry.type;
             }
             switch (entry.type) {
-            case 'PositionChanged':
-                change[oldValue] = {
-                    offsetX: (entry.undoObject as NodeModel).offsetX,
-                    offsetY: (entry.undoObject as NodeModel).offsetY
-                };
-                change[newValue] = {
-                    offsetX: (entry.redoObject as NodeModel).offsetX,
-                    offsetY: (entry.redoObject as NodeModel).offsetY
-                };
-                break;
-            case 'RotationChanged':
-                change[oldValue] = { rotateAngle: (entry.undoObject as NodeModel).rotateAngle };
-                change[newValue] = { rotateAngle: (entry.redoObject as NodeModel).rotateAngle };
-                break;
-            case 'SizeChanged':
-                change[oldValue] = {
-                    offsetX: (entry.undoObject as NodeModel).offsetX, offsetY: (entry.undoObject as NodeModel).offsetY,
-                    width: (entry.undoObject as NodeModel).width, height: (entry.undoObject as NodeModel).height
-                };
-                change[newValue] = {
-                    offsetX: (entry.redoObject as NodeModel).offsetX, offsetY: (entry.redoObject as NodeModel).offsetY,
-                    width: (entry.redoObject as NodeModel).width, height: (entry.redoObject as NodeModel).height
-                };
-                break;
-            case 'CollectionChanged':
-                change[entry.changeType] = source;
-                break;
-            case 'ConnectionChanged':
-                change[oldValue] = {
-                    offsetX: (entry.undoObject as NodeModel).offsetX,
-                    offsetY: (entry.undoObject as NodeModel).offsetY
-                };
-                change[newValue] = {
-                    offsetX: (entry.redoObject as NodeModel).offsetX,
-                    offsetY: (entry.redoObject as NodeModel).offsetY
-                };
-                break;
+                case 'PositionChanged':
+                    change[oldValue] = {
+                        offsetX: (entry.undoObject as NodeModel).offsetX,
+                        offsetY: (entry.undoObject as NodeModel).offsetY
+                    };
+                    change[newValue] = {
+                        offsetX: (entry.redoObject as NodeModel).offsetX,
+                        offsetY: (entry.redoObject as NodeModel).offsetY
+                    };
+                    break;
+                case 'RotationChanged':
+                    change[oldValue] = { rotateAngle: (entry.undoObject as NodeModel).rotateAngle };
+                    change[newValue] = { rotateAngle: (entry.redoObject as NodeModel).rotateAngle };
+                    break;
+                case 'SizeChanged':
+                    change[oldValue] = {
+                        offsetX: (entry.undoObject as NodeModel).offsetX, offsetY: (entry.undoObject as NodeModel).offsetY,
+                        width: (entry.undoObject as NodeModel).width, height: (entry.undoObject as NodeModel).height
+                    };
+                    change[newValue] = {
+                        offsetX: (entry.redoObject as NodeModel).offsetX, offsetY: (entry.redoObject as NodeModel).offsetY,
+                        width: (entry.redoObject as NodeModel).width, height: (entry.redoObject as NodeModel).height
+                    };
+                    break;
+                case 'CollectionChanged':
+                    change[entry.changeType] = source;
+                    break;
+                case 'ConnectionChanged':
+                    change[oldValue] = {
+                        offsetX: (entry.undoObject as NodeModel).offsetX,
+                        offsetY: (entry.undoObject as NodeModel).offsetY
+                    };
+                    change[newValue] = {
+                        offsetX: (entry.redoObject as NodeModel).offsetX,
+                        offsetY: (entry.redoObject as NodeModel).offsetY
+                    };
+                    break;
             }
             let arg: IHistoryChangeArgs | IBlazorHistoryChangeArgs;
             arg = {
@@ -3570,7 +3570,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                     object = cloneBlazorObject(source[i]);
                     // eslint-disable-next-line @typescript-eslint/no-unused-expressions
                     (getObjectType(source[i]) === Connector) ?
-                    // eslint-disable-next-line @typescript-eslint/no-unused-expressions
+                        // eslint-disable-next-line @typescript-eslint/no-unused-expressions
                         (sourceValue.connectors.push(object as ConnectorModel)) : (sourceValue.nodes.push((object as NodeModel)));
                 }
                 arg.source = sourceValue;
@@ -4537,7 +4537,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
             }
             for (let j: number = 0; node.ports && j < node.ports.length; j++) {
                 const isInEdge: boolean = isSource ? false : true;
-                this.removePortEdges( node, node.ports[j].id, connector.id, isInEdge);
+                this.removePortEdges(node, node.ports[j].id, connector.id, isInEdge);
             }
         }
     }
@@ -4718,7 +4718,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                         }
                     }
                     if ((obj as Node).children && !(obj as Node).isLane && !(obj as Node).isPhase &&
-                    (!isBlazor() || !(this.diagramActions & DiagramAction.UndoRedo))) {
+                        (!isBlazor() || !(this.diagramActions & DiagramAction.UndoRedo))) {
                         this.deleteGroup(obj as Node);
                     }
                     if ((obj as Node | Connector).parentId) {
@@ -5240,7 +5240,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
         const canEnableRouting: boolean = this.layout.enableRouting && this.layout.type === 'ComplexHierarchicalTree';
         const viewPort: PointModel = { x: this.scroller.viewPortWidth, y: this.scroller.viewPortHeight };
         if (this.layout.type !== 'None') {
-            if (canEnableRouting||((this.layout as Layout).connectionPointOrigin==='DifferentPoint' && this.lineDistributionModule && canDoOverlap)||this.layout.arrangement === 'Linear') {
+            if (canEnableRouting || ((this.layout as Layout).connectionPointOrigin === 'DifferentPoint' && this.lineDistributionModule && canDoOverlap) || this.layout.arrangement === 'Linear') {
                 this.lineDistributionModule.initLineDistribution((this.layout as Layout), this);
             }
             if (this.organizationalChartModule) {
@@ -5317,7 +5317,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                     const connector: Connector = connectors[conn] as Connector;
                     const points: PointModel[] = this.getPoints(connector);
                     if (canEnableRouting) {
-                        this.lineDistributionModule.resetRoutingSegments(connector,this,points);
+                        this.lineDistributionModule.resetRoutingSegments(connector, this, points);
                     }
                     updateConnector(connector, points);
                     if (connector.shape.type === 'Bpmn' && (connector.shape as BpmnFlowModel).sequence === 'Default') {
@@ -5330,7 +5330,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                     this.updateQuad(connector);
                     this.updateDiagramObject(connector, true);
                 }
-                if (canEnableRouting||(this.layout as Layout).connectionPointOrigin === 'DifferentPoint' && this.lineDistributionModule && canDoOverlap) {
+                if (canEnableRouting || (this.layout as Layout).connectionPointOrigin === 'DifferentPoint' && this.lineDistributionModule && canDoOverlap) {
                     this.lineDistributionModule.distributeLines((this.layout as Layout), this);
                 }
                 this.preventDiagramUpdate = false;
@@ -6158,24 +6158,24 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
         for (let i: number = 0; i < this.nodes.length; i++) {
             const node: NodeModel = this.nodes[i];
             switch (node.shape.type) {
-            case 'Bpmn':
-                (node.shape as DiagramShape).bpmnShape =
+                case 'Bpmn':
+                    (node.shape as DiagramShape).bpmnShape =
                         (node.shape as BpmnShape).shape ? (node.shape as BpmnShape).shape
                             : (node.shape as DiagramShape).bpmnShape; break;
-            case 'UmlActivity':
-                (node.shape as DiagramShape).umlActivityShape =
+                case 'UmlActivity':
+                    (node.shape as DiagramShape).umlActivityShape =
                         (node.shape as UmlActivityShape).shape ? (node.shape as UmlActivityShape).shape
                             : (node.shape as DiagramShape).umlActivityShape; break;
-            case 'Flow':
-                (node.shape as DiagramShape).flowShape =
+                case 'Flow':
+                    (node.shape as DiagramShape).flowShape =
                         (node.shape as FlowShape).shape ? (node.shape as FlowShape).shape
                             : (node.shape as DiagramShape).flowShape; break;
-            case 'Basic':
-                (node.shape as DiagramShape).basicShape =
+                case 'Basic':
+                    (node.shape as DiagramShape).basicShape =
                         (node.shape as BasicShape).shape ? (node.shape as BasicShape).shape
                             : (node.shape as DiagramShape).basicShape; break;
-            case 'Text':
-                (node.shape as DiagramShape).textContent =
+                case 'Text':
+                    (node.shape as DiagramShape).textContent =
                         (node.shape as Annotation).content ? (node.shape as Annotation).content
                             : (node.shape as DiagramShape).textContent; break;
 
@@ -7373,12 +7373,12 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
         for (const temp of this.views) {
             view = this.views[temp];
             switch (view.mode) {
-            case 'SVG':
-                this.refreshSvgDiagramLayer(view);
-                break;
-            case 'Canvas':
-                this.refreshCanvasLayers(view);
-                break;
+                case 'SVG':
+                    this.refreshSvgDiagramLayer(view);
+                    break;
+                case 'Canvas':
+                    this.refreshCanvasLayers(view);
+                    break;
             }
         }
     }
@@ -7424,6 +7424,11 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                 (view.diagramLayer as HTMLCanvasElement).getContext('2d').setTransform(
                     view.scroller.currentZoom, 0, 0, view.scroller.currentZoom, 0, 0);
                 (view.diagramLayer as HTMLCanvasElement).getContext('2d').scale(1.5, 1.5);
+            } else {
+                let element: HTMLElement = document.getElementById(view.element.id + '_nativeLayer');
+                if (element.children.length > 0) {
+                    view.updateView(view);
+                }
             }
             const htmlLayer: HTMLElement = getHTMLLayer(view.element.id);
             //const bounds: Rect = this.spatialSearch.getPageBounds();
@@ -8834,21 +8839,21 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                     const oldNode: Node = oldObject as Node;
                     for (const key of Object.keys(changedProp)) {
                         switch (key) {
-                        case 'width':
-                            actualObject.width = oldNode.width;
-                            break;
-                        case 'height':
-                            actualObject.height = oldNode.height;
-                            break;
-                        case 'offsetX':
-                            actualObject.offsetX = oldNode.offsetX;
-                            break;
-                        case 'offsetY':
-                            actualObject.offsetY = oldNode.offsetY;
-                            break;
-                        case 'rotateAngle':
-                            actualObject.rotateAngle = oldNode.rotateAngle;
-                            break;
+                            case 'width':
+                                actualObject.width = oldNode.width;
+                                break;
+                            case 'height':
+                                actualObject.height = oldNode.height;
+                                break;
+                            case 'offsetX':
+                                actualObject.offsetX = oldNode.offsetX;
+                                break;
+                            case 'offsetY':
+                                actualObject.offsetY = oldNode.offsetY;
+                                break;
+                            case 'rotateAngle':
+                                actualObject.rotateAngle = oldNode.rotateAngle;
+                                break;
                         }
                     }
                     this.nodePropertyChange(actualObject, changedProp as Node, oldObject as Node);
@@ -8858,13 +8863,13 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                         const actualSourcePoint: PointModel = actualObject.sourcePoint;
                         const actualTargetPoint: PointModel = actualObject.targetPoint;
                         switch (key) {
-                        case 'sourcePoint':
-                            actualSourcePoint.x = oldConnector.sourcePoint.x || actualSourcePoint.x;
-                            actualSourcePoint.y = oldConnector.sourcePoint.y || actualSourcePoint.y;
-                            break;
-                        case 'targetPoint':
-                            actualTargetPoint.x = oldConnector.targetPoint.x || actualTargetPoint.x;
-                            actualTargetPoint.y = oldConnector.targetPoint.y || actualTargetPoint.y;
+                            case 'sourcePoint':
+                                actualSourcePoint.x = oldConnector.sourcePoint.x || actualSourcePoint.x;
+                                actualSourcePoint.y = oldConnector.sourcePoint.y || actualSourcePoint.y;
+                                break;
+                            case 'targetPoint':
+                                actualTargetPoint.x = oldConnector.targetPoint.x || actualTargetPoint.x;
+                                actualTargetPoint.y = oldConnector.targetPoint.y || actualTargetPoint.y;
                         }
 
                     }
@@ -9192,7 +9197,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
         }
         if ((((node.shape !== undefined && (node.shape.type === undefined)) || node.width !== undefined
             || node.height !== undefined || node.style !== undefined) && actualObject.shape.type === 'Bpmn' && this.bpmnModule)
-            ||(isBlazor() && node && node.shape && node.shape.type === 'Bpmn')) {
+            || (isBlazor() && node && node.shape && node.shape.type === 'Bpmn')) {
             update = true;
             updateConnector = true;
             this.bpmnModule.updateBPMN(node, oldObject, actualObject, this);
@@ -9279,7 +9284,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                 (actualObject.wrapper.children[0] as TextElement).refreshTextElement();
             }
             actualObject.wrapper.measure(new Size(actualObject.wrapper.bounds.width, actualObject.wrapper.bounds.height), actualObject.id,
-                                         this.onLoadImageSize.bind(this));
+                this.onLoadImageSize.bind(this));
             actualObject.wrapper.arrange(actualObject.wrapper.desiredSize); this.updateObject(actualObject, oldObject, node);
             if (actualObject.shape.type === 'SwimLane' && !this.currentSymbol && !(this.diagramActions & DiagramAction.ToolAction)) {
                 updateHeaderMaxWidth(this, actualObject);
@@ -9529,7 +9534,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                             sourceNode.wrapper, actualObject.sourcePortID) : undefined;
                     }
                     this.removePortEdges(this.nameTable[oldProp.sourceID] || sourceNode,
-                                         oldProp.sourcePortID || actualObject.sourcePortID, actualObject.id, false);
+                        oldProp.sourcePortID || actualObject.sourcePortID, actualObject.id, false);
                 }
                 if (newProp.sourceID !== undefined && oldProp.sourceID !== undefined && oldProp.sourceID !== '') {
                     const oldSource: Node = this.nameTable[oldProp.sourceID];
@@ -9548,7 +9553,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                             targetNode.wrapper, actualObject.targetPortID) : undefined;
                     }
                     this.removePortEdges(this.nameTable[oldProp.targetID] || targetNode,
-                                         oldProp.targetPortID || actualObject.targetPortID, actualObject.id, true);
+                        oldProp.targetPortID || actualObject.targetPortID, actualObject.id, true);
                 }
                 if (oldProp !== undefined && oldProp.targetID !== undefined && oldProp.targetID !== '') {
                     const oldTarget: Node = this.nameTable[oldProp.targetID];
@@ -9566,7 +9571,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                 if (!sourceNode || (canOutConnect(sourceNode) || (actualObject.sourcePortID !== '' && canPortOutConnect(outPort)))) {
                     actualObject.sourcePortWrapper = source ? this.getWrapper(source, newProp.sourcePortID) : undefined;
                 }
-                else if (actualObject.sourcePortID === '' && !canOutConnect(sourceNode)){
+                else if (actualObject.sourcePortID === '' && !canOutConnect(sourceNode)) {
                     actualObject.sourcePortWrapper = undefined;
                 }
             }
@@ -9577,7 +9582,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                 }
                 if (!targetNode || (canInConnect(targetNode) || (actualObject.targetPortID !== '' && canPortInConnect(inPort)))) {
                     actualObject.targetPortWrapper = target ? this.getWrapper(target, newProp.targetPortID) : undefined;
-                } else if (actualObject.targetPortID === '' && !canInConnect(targetNode)){
+                } else if (actualObject.targetPortID === '' && !canInConnect(targetNode)) {
                     actualObject.targetPortWrapper = undefined;
                 }
             }
@@ -10616,14 +10621,14 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                             if (sourceElement[selectedSymbols] instanceof Node) {
                                 if (((obj as Node).shape as BpmnShape).shape === 'TextAnnotation') {
                                     // eslint-disable-next-line max-len
-                                    (clonedObject as Node).offsetX = position.x + 11 + ((preview as Size).width)* (clonedObject as Node).pivot.x;
+                                    (clonedObject as Node).offsetX = position.x + 11 + ((preview as Size).width) * (clonedObject as Node).pivot.x;
                                     // eslint-disable-next-line max-len
-                                    (clonedObject as Node).offsetY = position.y + 11 + ((preview as Size).height)* (clonedObject as Node).pivot.y;
+                                    (clonedObject as Node).offsetY = position.y + 11 + ((preview as Size).height) * (clonedObject as Node).pivot.y;
                                 } else {
                                     // eslint-disable-next-line max-len
-                                    (clonedObject as Node).offsetX = position.x + 5 + ((preview as Size).width)* (clonedObject as Node).pivot.x;
+                                    (clonedObject as Node).offsetX = position.x + 5 + ((preview as Size).width) * (clonedObject as Node).pivot.x;
                                     // eslint-disable-next-line max-len
-                                    (clonedObject as Node).offsetY = position.y + ((preview as Size).height)* (clonedObject as Node).pivot.y;
+                                    (clonedObject as Node).offsetY = position.y + ((preview as Size).height) * (clonedObject as Node).pivot.y;
                                 }
                                 let newNode: Node = new Node(this, 'nodes', clonedObject as NodeModel, true);
                                 if (newNode.shape.type === 'Bpmn' && (newNode.shape as BpmnShape).activity.subProcess.processes
@@ -11175,7 +11180,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
             for (i = 0; i < newObjects.nodes.length; i++) {
                 data.push(this.parameterMap(newObjects.nodes[i] as Node, true));
             }
-            if (data && data.length > 0){
+            if (data && data.length > 0) {
                 this.raiseAjaxPost(JSON.stringify(data), nodeCrudAction);
             }
         }
@@ -11185,7 +11190,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
             for (i = 0; i < newObjects.connectors.length; i++) {
                 data.push(this.parameterMap(newObjects.connectors[i] as Connector, false));
             }
-            if (data && data.length > 0){
+            if (data && data.length > 0) {
                 this.raiseAjaxPost(JSON.stringify(data), connectorCrudAction);
             }
         }
@@ -11271,7 +11276,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
     }
 
     private getHiddenItems(args: BeforeOpenCloseMenuEventArgs): string[] {
-        const hiddenItems : string[] = [];
+        const hiddenItems: string[] = [];
         if (this.contextMenuModule) {
             this.contextMenuModule.hiddenItems = [];
             for (const item of args.items) {

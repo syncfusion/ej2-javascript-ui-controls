@@ -1920,8 +1920,8 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
      * @param {number} colIndex - specify the col index.
      * @returns {string | number} - to get Value Row Col.
      */
-    public getValueRowCol(sheetIndex: number, rowIndex: number, colIndex: number): string | number {
-        const val: string | number = super.getValueRowCol(sheetIndex, rowIndex, colIndex);
+    public getValueRowCol(sheetIndex: number, rowIndex: number, colIndex: number, formulaCellReference?: string): string | number {
+        const val: string | number = super.getValueRowCol(sheetIndex, rowIndex, colIndex, formulaCellReference);
         return val;
     }
 

@@ -187,7 +187,7 @@ describe('Gantt Selection support', () => {
             ganttObj.selectionModule.selectRow(19);
             let args1: any = { action: 'focusTask', preventDefault: preventDefault };
             ganttObj.keyboardModule.keyAction(args1); 
-            expect(ganttObj.ganttChartModule.scrollElement.scrollLeft).toBe(808);
+            expect(ganttObj.ganttChartModule.scrollElement.scrollLeft).toBe(907);
         }); 
 		
     });

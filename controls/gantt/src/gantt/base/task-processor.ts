@@ -524,8 +524,8 @@ export class TaskProcessor extends DateProcessor {
                             segment.endDate = this.getEndDate(
                                 segment.startDate, segment.duration, data.ganttProperties.durationUnit, data.ganttProperties, false
                             );
-                            segment.endDate = segment.endDate > data.ganttProperties.endDate ? data.ganttProperties.endDate
-                                : segment.endDate;
+                            segment.endDate = !taskSettings.duration && taskSettings.endDate
+                                && segment.endDate > data.ganttProperties.endDate ? data.ganttProperties.endDate : segment.endDate;
                             segment.offsetDuration = 1;
                         }
 
@@ -1224,7 +1224,7 @@ export class TaskProcessor extends DateProcessor {
         }
         const taskData: Object[] = <Object[]>extend([], [], data.taskData[taskSettings.segments], true);
         for (let i: number = 0; i < segments.length; i++) {
-            if (this.parent.isEdit || (this.parent.editModule && this.parent.editModule.dialogModule && 
+            if (this.parent.isEdit || (this.parent.editModule && this.parent.editModule.dialogModule &&
                 getValue('isEdit', this.parent.editModule.dialogModule)) || (this.parent.contextMenuModule && getValue('isEdit', this.parent.contextMenuModule))) {
                 taskData[i] = {};
             }

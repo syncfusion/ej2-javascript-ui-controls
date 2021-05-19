@@ -148,8 +148,6 @@ export class VirtualContentRenderer extends ContentRender implements IRenderer {
             this.isFocused = this.content === closest(document.activeElement, '.' + literals.content) || this.content === document.activeElement;
         }
         let info: SentinelType = scrollArgs.sentinel;
-        let pStartIndex: number = this.preStartIndex;
-        let previousColIndexes: number[] = this.parent.getColumnIndexesInView();
         let viewInfo: VirtualInfo = this.currentInfo = this.getInfoFromView(scrollArgs.direction, info, scrollArgs.offset);
         if (isGroupAdaptive(this.parent)) {
             if ((info.axis === 'Y' && viewInfo.blockIndexes && this.prevInfo.blockIndexes.toString() === viewInfo.blockIndexes.toString())
@@ -172,7 +170,9 @@ export class VirtualContentRenderer extends ContentRender implements IRenderer {
                 this.parent.hideSpinner();
             }
             this.requestType = this.requestType === 'virtualscroll' ? this.empty as string : this.requestType;
-            this.restoreEdit();
+            if (info.axis === 'Y') {
+                this.restoreEdit();
+            }
             return;
         }
 
@@ -449,14 +449,21 @@ export class VirtualContentRenderer extends ContentRender implements IRenderer {
             if ((!isFrozen || (isFrozen && trigger)) && this.parent.editSettings.allowEditing
                 && this.parent.editModule && !isNullOrUndefined(this.editedRowIndex)) {
                 let row: HTMLTableRowElement = this.getRowByIndex(this.editedRowIndex) as HTMLTableRowElement;
-                if (Object.keys(this.virtualData).length && row && !this.content.querySelector('.' + literals.editedRow)) {
+                let content: Element = this.content;
+                let keys: string[] = Object.keys(this.virtualData);
+                let isXaxis: boolean = e && e.virtualInfo && e.virtualInfo.sentinelInfo.axis === 'X';
+                if (isFrozen && isXaxis) {
+                    row = this.parent.getMovableRowByIndex(this.editedRowIndex) as HTMLTableRowElement;
+                    content = this.movableContent;
+                }
+                if (keys.length && row && !content.querySelector('.' + literals.editedRow)) {
                     let top: number = row.getBoundingClientRect().top;
-                    if (top < this.content.offsetHeight && top > this.parent.getRowHeight()) {
+                    if (isXaxis || (top < this.content.offsetHeight && top > this.parent.getRowHeight())) {
                         this.parent.isEdit = false;
                         this.parent.editModule.startEdit(row);
                     }
                 }
-                if (row && this.content.querySelector('.' + literals.editedRow) && !Object.keys(this.virtualData).length) {
+                if (row && this.content.querySelector('.' + literals.editedRow) && !keys.length) {
                     let rowData: Object = extend({}, this.getRowObjectByIndex(this.editedRowIndex));
                     this.virtualData = this.getVirtualEditedData(rowData);
                 }
@@ -466,26 +473,22 @@ export class VirtualContentRenderer extends ContentRender implements IRenderer {
     }
 
     private getVirtualEditedData(rowData: Object): Object {
-        let editForms: Element = [].slice.call(this.parent.element.getElementsByClassName('e-gridform'));
-        let isFrozen: boolean = this.parent.isFrozenGrid();
-        let data: Object = this.parent.editModule.getCurrentEditedData(editForms[0], rowData);
-        if (isFrozen) {
-            if (this.parent.getFrozenMode() !== literals.leftRight) {
-                data = this.parent.editModule.getCurrentEditedData(editForms[1], rowData);
-            } else {
-                data = this.parent.editModule.getCurrentEditedData(editForms[1], rowData);
-                data = this.parent.editModule.getCurrentEditedData(editForms[2], rowData);
-            }
+        let editForms: Element[] = [].slice.call(this.parent.element.getElementsByClassName('e-gridform'));
+        for (let i: number = 0; i < editForms.length; i++) {
+            rowData = this.parent.editModule.getCurrentEditedData(editForms[i], rowData);
         }
-        return data;
+        return rowData;
     }
 
     private restoreAdd(e?: NotifyArgs): void {
         let left: number = this.parent.getFrozenColumns();
         let isFrozen: boolean = e && this.parent.isFrozenGrid();
         let table: freezeMode = this.parent.getFrozenMode();
+        let isXaxis: boolean = e && e.virtualInfo && e.virtualInfo.sentinelInfo && e.virtualInfo.sentinelInfo.axis === 'X';
+        let startAdd: boolean = isXaxis && isFrozen ? !(this.parent.getMovableVirtualHeader().querySelector('.' + literals.addedRow) 
+        || this.parent.getMovableVirtualContent().querySelector('.' + literals.addedRow)) : !this.parent.element.querySelector('.' + literals.addedRow);
         let trigger: boolean = e && (left || table === 'Left' || table === 'Right' ? e.renderMovableContent : e.renderFrozenRightContent);
-        if ((!isFrozen || (isFrozen && trigger)) && this.isNormaledit && this.isAdd && !this.parent.element.querySelector('.' + literals.addedRow)) {
+        if ((!isFrozen || (isFrozen && trigger)) && this.isNormaledit && this.isAdd && startAdd) {
             let isTop: boolean = this.parent.editSettings.newRowPosition === 'Top' && this.content.scrollTop < this.parent.getRowHeight();
             let isBottom: boolean = this.parent.editSettings.newRowPosition === 'Bottom'
                 && this.parent.pageSettings.currentPage === this.maxPage;
@@ -698,6 +701,7 @@ export class VirtualContentRenderer extends ContentRender implements IRenderer {
         this.parent[action](events.refreshVirtualCacheOnRowDD, this.refreshVirtualCacheOnRowDD, this);
         this.parent[action](events.refreshVirtualMaxPage, this.refreshMaxPage, this);
         this.parent[action](events.selectRowOnContextOpen, this.selectRowOnContextOpen, this);
+        this.parent[action](events.resetVirtualFocus, this.resetVirtualFocus, this);
         let event: string[] = this.actions;
         for (let i: number = 0; i < event.length; i++) {
             this.parent[action](`${event[i]}-begin`, this.onActionBegin, this);
@@ -718,9 +722,17 @@ export class VirtualContentRenderer extends ContentRender implements IRenderer {
         };
         this.parent.on(contentReady, fn, this);
     }
+    
+    private resetVirtualFocus(e: { isCancel: boolean }): void {
+        this.isCancel = e.isCancel;
+    }
 
     /** @hidden */
-    public getVirtualData(data: { virtualData: Object, isAdd: boolean, isCancel: boolean }): void {
+    public getVirtualData(data: { virtualData: Object, isAdd: boolean, isCancel: boolean, isScroll: boolean }): void {
+        let keys: string[] = Object.keys(this.virtualData);
+        data.isScroll = keys.length !== 0 && this.currentInfo.sentinelInfo && this.currentInfo.sentinelInfo.axis === 'X';
+        this.virtualData = keys.length ? this.virtualData : data.virtualData;
+        this.getVirtualEditedData(this.virtualData);
         data.virtualData = this.virtualData;
         data.isAdd = this.isAdd;
         data.isCancel = this.isCancel;
@@ -796,10 +808,12 @@ export class VirtualContentRenderer extends ContentRender implements IRenderer {
         }
     }
 
-    private editActionBegin(e: { data: Object, index: number }): void {
+    private editActionBegin(e: { data: Object, index: number, isScroll: boolean }): void {
         this.editedRowIndex = e.index;
         let rowData: Object = extend({}, this.getRowObjectByIndex(e.index));
-        e.data = Object.keys(this.virtualData).length ? this.virtualData : rowData;
+        let keys: string[] = Object.keys(this.virtualData);
+        e.data = keys.length ? this.virtualData : rowData;
+        e.isScroll = keys.length !== 0 && this.currentInfo.sentinelInfo.axis === 'X';
     }
 
     private refreshCache(data: Object): void {
@@ -819,13 +833,11 @@ export class VirtualContentRenderer extends ContentRender implements IRenderer {
             this.refreshOffsets();
             this.refreshVirtualElement();
             if (this.isNormaledit) {
-                if (args.requestType === 'cancel') {
-                    this.isCancel = true;
-                }
+                this.isCancel = true;
                 this.isAdd = false;
                 this.editedRowIndex = this.empty as number;
                 this.virtualData = {};
-                (<{ previousVirtualData?: Object }>this.parent.editModule).previousVirtualData = {};
+                this.parent.editModule.editModule.previousData = undefined;
             }
         }
         if (this.parent.enableColumnVirtualization && args.requestType as string === 'filterafteropen'
@@ -851,14 +863,15 @@ export class VirtualContentRenderer extends ContentRender implements IRenderer {
                 if (editForm || addForm) {
                     let rowData: Object = editForm ? extend({}, this.getRowObjectByIndex(this.editedRowIndex))
                         : extend({}, this.emptyRowData);
-                    this.virtualData = this.getVirtualEditedData(rowData);
+                    let keys: string[] = Object.keys(this.virtualData);
+                    this.virtualData = keys.length ? this.getVirtualEditedData(this.virtualData) : this.getVirtualEditedData(rowData);
                 }
             }
         }
     }
 
     private createEmptyRowdata(): void {
-        this.parent.getColumns().filter((e: Column) => {
+        (<{ columnModel?: Column[] }>this.parent).columnModel.filter((e: Column) => {
             this.emptyRowData[e.field] = this.empty;
         });
     }
@@ -870,7 +883,7 @@ export class VirtualContentRenderer extends ContentRender implements IRenderer {
             }
             this.isAdd = true;
             let page: number = this.parent.pageSettings.currentPage;
-            if (page > 1 && this.parent.editSettings.newRowPosition === 'Top') {
+            if (!this.parent.frozenRows && this.content.scrollTop > 0 && this.parent.editSettings.newRowPosition === 'Top') {
                 this.isAdd = true;
                 this.onActionBegin();
                 args.startEdit = false;

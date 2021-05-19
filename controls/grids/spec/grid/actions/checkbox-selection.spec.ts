@@ -845,6 +845,7 @@ describe('Grid checkbox selection functionality', () => {
     describe('EJ2-37662 CheckBoxMode on ResetOnRowClick with persist selection', () => {
         let gridObj: Grid;
         let chkAll: HTMLElement;
+        let rowDeselected: (args: any) => void;
         beforeAll((done: Function) => {
             gridObj = createGrid(
                 {
@@ -870,6 +871,15 @@ describe('Grid checkbox selection functionality', () => {
             chkAll = gridObj.element.querySelector('.e-checkselectall').nextElementSibling as HTMLElement;
             chkAll.click();
             expect(gridObj.getSelectedRecords().length).toBe(71);
+        });
+
+        it('EJ2-49074 - row Deselected event parameter returns current page data only in selectAll checkbox', (done: Function) => {
+            rowDeselected = (args: any) => {
+                expect(args.data.length).toBe(71);
+                done();
+            };
+            gridObj.rowDeselected = rowDeselected;
+            chkAll.click();
         });
 
         afterAll(() => {

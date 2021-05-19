@@ -11,7 +11,7 @@ import { Sort } from '../../../src/grid/actions/sort';
 import { Toolbar } from '../../../src/grid/actions/toolbar';
 import { createGrid, destroy, getKeyUpObj } from '../base/specutil.spec';
 import { ResponsiveDialogAction } from '../../../src/grid/base/enum';
-import { NotifyArgs } from '../../../src/grid/base/interface';
+import { AdaptiveDialogEventArgs, NotifyArgs } from '../../../src/grid/base/interface';
 
 Grid.Inject(Aggregate, Edit, Toolbar, Page, Filter, Sort);
 
@@ -189,6 +189,7 @@ describe('Adaptive renderer', () => {
 
         it('Open custom filter dialog', () => {
             expect(gridObj.filterModule.responsiveDialogRenderer.action).toBe(ResponsiveDialogAction.isFilter);
+            gridObj.filterModule.responsiveDialogRenderer.isCustomDialog = true;
             gridObj.filterModule.responsiveDialogRenderer.showResponsiveDialog(gridObj.getColumns()[0]);
             expect(document.getElementsByClassName('e-customfilterdiv').length).toBe(1);
         });
@@ -239,6 +240,7 @@ describe('Adaptive renderer', () => {
         });
 
         it('Filter reset button check', (done: Function) => {
+            gridObj.filterModule.responsiveDialogRenderer.isCustomDialog = true;
             gridObj.filterModule.responsiveDialogRenderer.showResponsiveDialog(gridObj.getColumns()[0]);
             let filterReset: HTMLElement = document.querySelector('.e-customfilterdiv > .e-dlg-content').querySelector('.e-filterset');
             expect(filterReset).not.toBeNull();
@@ -255,6 +257,7 @@ describe('Adaptive renderer', () => {
 
         it('Filter type changed to checkbox', (done: Function) => {
             gridObj.filterSettings.type = 'Menu';
+            gridObj.filterModule.responsiveDialogRenderer.isCustomDialog = true;
             gridObj.filterModule.responsiveDialogRenderer.showResponsiveDialog(gridObj.getColumns()[1]);
             gridObj.filterModule.responsiveDialogRenderer.isRowResponsive = true;
             let actionComplete = (args?: any): void => {
@@ -390,6 +393,7 @@ describe('Adaptive renderer', () => {
         });
 
         it('Filter reset button check', (done: Function) => {
+            gridObj.filterModule.responsiveDialogRenderer.isCustomDialog = true;
             gridObj.filterModule.responsiveDialogRenderer.showResponsiveDialog(gridObj.getColumns()[0]);
             let filterClear: HTMLElement = document.querySelector('.e-customfilterdiv > .e-dlg-header-content').querySelector('.e-res-filter-clear-btn');
             let actionComplete = (args?: NotifyArgs): void => {
@@ -499,18 +503,71 @@ describe('Adaptive renderer', () => {
         });
 
         it('Ensure custom sort dialog columns', () => {
-            gridObj.sortModule.showCustomFilter();
+            gridObj.showAdaptiveSortDialog();
             expect(document.querySelector('.e-responsivecoldiv[data-e-mappingname="CustomerID"]')).toBeNull();
             expect(document.querySelector('.e-responsivecoldiv[data-e-mappingname="ShipCountry"]')).toBeNull();
             (document.querySelector('.e-dlg-closeicon-btn') as HTMLElement).click();
         });
 
         it('Ensure custom filter dialog columns', () => {
-            gridObj.filterModule.showCustomFilter();
+            gridObj.showAdaptiveFilterDialog();
             expect(document.querySelector('.e-responsivecoldiv[data-e-mappingname="CustomerID"]')).toBeNull();
             expect(document.querySelector('.e-responsivecoldiv[data-e-mappingname="EmployeeID"]')).toBeNull();
             (document.querySelector('.e-dlg-closeicon-btn') as HTMLElement).click();
         });
+
+        afterAll(() => {
+            destroy(gridObj);
+            gridObj = null;
+        });
+    });
+
+    describe('Ensure adaptive filter and sort dialog events', () => {
+        let gridObj: any;
+        beforeAll((done: Function) => {
+            const isDef = (o: any) => o !== undefined && o !== null;
+            if (!isDef(window.performance)) {
+                console.log("Unsupported environment, window.performance.memory is unavailable");
+                this.skip(); //Skips test (in Chai)
+            }
+            gridObj = createGrid(
+                {
+                    dataSource: data,
+                    enableAdaptiveUI: true,
+                    allowFiltering: true,
+                    allowSorting: true,
+                    allowPaging: true,
+                    filterSettings: { type: 'Excel' },
+                    height: 400,
+                    columns: [
+                        { headerText: 'OrderID', field: 'OrderID', isPrimaryKey: true, width: 120 },
+                        { headerText: 'CustomerID', field: 'CustomerID', width: 120, visible: false },
+                        { headerText: 'EmployeeID', field: 'EmployeeID', width: 120, allowFiltering: false },
+                        { headerText: 'ShipCountry', field: 'ShipCountry', width: 120, allowSorting: false },
+                        { headerText: 'ShipCity', field: 'ShipCity', width: 120 },
+                    ]
+                }, done);
+        });
+
+        it('Ensure filter dialog event', (done: Function) => {
+           let beforeOpenAdaptiveDialog = (args: AdaptiveDialogEventArgs) => {
+               expect(args.requestType).toBe("beforeOpenAptiveFilterDialog");
+                gridObj.beforeOpenAdaptiveDialog = null;
+                done();
+           }
+           gridObj.beforeOpenAdaptiveDialog = beforeOpenAdaptiveDialog;
+           gridObj.showAdaptiveFilterDialog();
+        });
+
+        it('Ensure sort dialog event', (done: Function) => {
+            let beforeOpenAdaptiveDialog = (args: AdaptiveDialogEventArgs) => {
+                expect(args.requestType).toBe("beforeOpenAptiveSortDialog");
+                 gridObj.beforeOpenAdaptiveDialog = null;
+                 done();
+            }
+            gridObj.beforeOpenAdaptiveDialog = beforeOpenAdaptiveDialog;
+            gridObj.showAdaptiveSortDialog();
+         });
 
         afterAll(() => {
             destroy(gridObj);

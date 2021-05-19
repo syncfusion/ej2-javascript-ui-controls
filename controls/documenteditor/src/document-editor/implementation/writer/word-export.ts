@@ -3507,20 +3507,22 @@ export class WordExport {
 
     }
     private serializeShapeWrapStyle(writer: XmlWriter, shape: any): void {
-        let textWrappingStyle: string = 'wrapNone';
-        if (shape.textWrappingStyle && shape.textWrappingStyle !== 'InFrontOfText' && shape.textWrappingStyle !== 'Behind') {
-            textWrappingStyle = 'wrap' + shape.textWrappingStyle;
-            if (shape.textWrappingStyle === 'Tight') {
-                textWrappingStyle = 'wrap' + 'Square';
+        if (shape.textWrappingStyle !== 'Inline') {
+            let textWrappingStyle: string = 'wrapNone';
+            if (shape.textWrappingStyle && shape.textWrappingStyle !== 'InFrontOfText' && shape.textWrappingStyle !== 'Behind') {
+                textWrappingStyle = 'wrap' + shape.textWrappingStyle;
+                if (shape.textWrappingStyle === 'Tight') {
+                    textWrappingStyle = 'wrap' + 'Square';
+                }
             }
+            writer.writeStartElement('wp', textWrappingStyle, this.wpNamespace);
+            if (shape.textWrappingStyle && shape.textWrappingStyle !== 'InFrontOfText' && shape.textWrappingStyle !== 'Behind' &&
+                shape.textWrappingType) {
+                let wrapType: string = shape.textWrappingType === 'Both' ? 'bothSides' : (shape.textWrappingType as string).toLowerCase();
+                writer.writeAttributeString(undefined, 'wrapText', undefined, wrapType);
+            }
+            writer.writeEndElement();
         }
-        writer.writeStartElement('wp', textWrappingStyle, this.wpNamespace);
-        if (shape.textWrappingStyle && shape.textWrappingStyle !== 'InFrontOfText' && shape.textWrappingStyle !== 'Behind' &&
-            shape.textWrappingType) {
-            let wrapType: string = shape.textWrappingType === 'Both' ? 'bothSides' : (shape.textWrappingType as string).toLowerCase();
-            writer.writeAttributeString(undefined, 'wrapText', undefined, wrapType);
-        }
-        writer.writeEndElement();
     }
     // Serialize the graphics element for pictures.
     private serializeDrawingGraphics(writer: XmlWriter, picture: any): void {
@@ -3537,10 +3539,10 @@ export class WordExport {
             writer.writeAttributeString(undefined, 'descr', undefined, picture.alternativeText);
         }
         writer.writeAttributeString(undefined, 'name', undefined, !isNullOrUndefined(picture.name) ? picture.name : '');
-        // if (!string.IsNullOrEmpty(picture.Title))
-        //     m_writer.WriteAttributeString('title', picture.Title);
+        if (!isNullOrUndefined(picture.title))
+            writer.writeAttributeString(undefined, 'title', undefined, picture.title);
         // else
-        writer.writeAttributeString(undefined, 'title', undefined, '');
+        // writer.writeAttributeString(undefined, 'title', undefined, '');
         // if (!picture.Visible)
         //     m_writer.WriteAttributeString('hidden', '1');
         // SerializePictureHyperlink(picture);
@@ -4334,7 +4336,7 @@ export class WordExport {
         //     }
         //     SerializeDocxProps(tempDocxProps, 'tblStyleRowBandSize');
         //     SerializeDocxProps(tempDocxProps, 'tblStyleColBandSize');  
-        this.serializeTablePositioning(writer, table);      
+        this.serializeTablePositioning(writer, table);
         this.serializeTableWidth(writer, table);
         this.serializeTableAlignment(writer, table.tableFormat);
         this.serializeCellSpacing(writer, table.tableFormat);

@@ -135,7 +135,7 @@ describe('Schedule Timeline Week view', () => {
 
         it('Checking more indicator', () => {
             const moreIndicatorList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-more-indicator'));
-            expect(moreIndicatorList.length).toEqual(1);
+            expect(moreIndicatorList.length).toEqual(2);
             const element: HTMLElement = moreIndicatorList[0] as HTMLElement;
             element.click();
             const eventElementList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-more-appointment-wrapper .e-appointment'));
@@ -282,7 +282,7 @@ describe('Schedule Timeline Week view', () => {
 
         it('Checking more indicator', () => {
             const moreIndicatorList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-more-indicator'));
-            expect(moreIndicatorList.length).toEqual(1);
+            expect(moreIndicatorList.length).toEqual(2);
         });
     });
 
@@ -370,7 +370,7 @@ describe('Schedule Timeline Week view', () => {
 
         it('Checking more indicator', () => {
             const moreIndicatorList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-more-indicator'));
-            expect(moreIndicatorList.length).toEqual(1);
+            expect(moreIndicatorList.length).toEqual(2);
         });
     });
 
@@ -447,7 +447,7 @@ describe('Schedule Timeline Week view', () => {
 
         it('Checking more indicator', () => {
             const moreIndicatorList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-more-indicator'));
-            expect(moreIndicatorList.length).toEqual(1);
+            expect(moreIndicatorList.length).toEqual(2);
         });
     });
 
@@ -513,7 +513,7 @@ describe('Schedule Timeline Week view', () => {
 
         it('Checking more indicator', () => {
             const moreIndicatorList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-more-indicator'));
-            expect(moreIndicatorList.length).toEqual(1);
+            expect(moreIndicatorList.length).toEqual(2);
         });
 
         it('Checking current time indicator with different firstDayOfWeek', (done: DoneFn) => {
@@ -600,7 +600,7 @@ describe('Schedule Timeline Week view', () => {
 
         it('Checking more indicator', () => {
             const moreIndicatorList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-more-indicator'));
-            expect(moreIndicatorList.length).toEqual(1);
+            expect(moreIndicatorList.length).toEqual(2);
         });
     });
 
@@ -796,7 +796,7 @@ describe('Schedule Timeline Week view', () => {
             expect(eventElementList[2].querySelectorAll('.e-appointment-details .e-indicator')[0].classList.contains('e-left-icon'))
                 .toBeTruthy();
             const moreIndicatorList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-more-indicator'));
-            expect(moreIndicatorList.length).toEqual(1);
+            expect(moreIndicatorList.length).toEqual(2);
             expect(moreIndicatorList[0].innerHTML).toEqual('+1&nbsp;more');
         });
     });
@@ -1339,7 +1339,7 @@ describe('Schedule Timeline Week view', () => {
 
         it('More event element checking', () => {
             const moreIndicatorList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-more-indicator'));
-            expect(moreIndicatorList.length).toEqual(2);
+            expect(moreIndicatorList.length).toEqual(101);
             const element: HTMLElement = moreIndicatorList[0] as HTMLElement;
             element.click();
             const morePopup: HTMLElement = schObj.element.querySelector('.e-more-popup-wrapper') as HTMLElement;
@@ -1454,7 +1454,7 @@ describe('Schedule Timeline Week view', () => {
 
         it('More event element checking', () => {
             const moreIndicatorList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-more-indicator'));
-            expect(moreIndicatorList.length).toEqual(1);
+            expect(moreIndicatorList.length).toEqual(9);
             const element: HTMLElement = moreIndicatorList[0] as HTMLElement;
             element.click();
             const morePopup: HTMLElement = schObj.element.querySelector('.e-more-popup-wrapper') as HTMLElement;
@@ -1587,7 +1587,7 @@ describe('Schedule Timeline Week view', () => {
 
         it('More event element checking', () => {
             const moreIndicatorList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-more-indicator'));
-            expect(moreIndicatorList.length).toEqual(13);
+            expect(moreIndicatorList.length).toEqual(621);
             const element: HTMLElement = moreIndicatorList[0] as HTMLElement;
             element.click();
             const morePopup: HTMLElement = schObj.element.querySelector('.e-more-popup-wrapper') as HTMLElement;
@@ -1797,7 +1797,7 @@ describe('Schedule Timeline Week view', () => {
 
         it('More event element checking', () => {
             const moreIndicatorList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-more-indicator'));
-            expect(moreIndicatorList.length).toEqual(2);
+            expect(moreIndicatorList.length).toEqual(101);
             const element: HTMLElement = moreIndicatorList[0] as HTMLElement;
             element.click();
             const morePopup: HTMLElement = schObj.element.querySelector('.e-more-popup-wrapper') as HTMLElement;
@@ -1912,7 +1912,7 @@ describe('Schedule Timeline Week view', () => {
 
         it('More event element checking', () => {
             const moreIndicatorList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-more-indicator'));
-            expect(moreIndicatorList.length).toEqual(1);
+            expect(moreIndicatorList.length).toEqual(9);
             const element: HTMLElement = moreIndicatorList[0] as HTMLElement;
             element.click();
             const morePopup: HTMLElement = schObj.element.querySelector('.e-more-popup-wrapper') as HTMLElement;
@@ -2040,7 +2040,7 @@ describe('Schedule Timeline Week view', () => {
 
         it('More event element checking', () => {
             const moreIndicatorList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-more-indicator'));
-            expect(moreIndicatorList.length).toEqual(13);
+            expect(moreIndicatorList.length).toEqual(621);
             const element: HTMLElement = moreIndicatorList[0] as HTMLElement;
             element.click();
             const morePopup: HTMLElement = schObj.element.querySelector('.e-more-popup-wrapper') as HTMLElement;
@@ -2504,7 +2504,7 @@ describe('Schedule Timeline Week view', () => {
 
         it('More event element checking', () => {
             const moreIndicatorList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-more-indicator'));
-            expect(moreIndicatorList.length).toEqual(19);
+            expect(moreIndicatorList.length).toEqual(1016);
             expect(moreIndicatorList[0].innerHTML).toEqual('+1&nbsp;more');
             expect(moreIndicatorList[1].innerHTML).toEqual('+1&nbsp;more');
             expect(moreIndicatorList[18].innerHTML).toEqual('+1&nbsp;more');
@@ -2589,7 +2589,7 @@ describe('Schedule Timeline Week view', () => {
 
         it('More event element checking', () => {
             const moreIndicatorList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-more-indicator'));
-            expect(moreIndicatorList.length).toEqual(19);
+            expect(moreIndicatorList.length).toEqual(1016);
             expect(moreIndicatorList[0].innerHTML).toEqual('+1&nbsp;more');
             expect(moreIndicatorList[1].innerHTML).toEqual('+1&nbsp;more');
             expect(moreIndicatorList[18].innerHTML).toEqual('+1&nbsp;more');
@@ -2883,7 +2883,7 @@ describe('Schedule Timeline Week view', () => {
 
         it('check more indicator', () => {
             const moreIndicators: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-more-indicator'));
-            expect(moreIndicators.length).toEqual(1);
+            expect(moreIndicators.length).toEqual(2);
             expect(moreIndicators[0].innerHTML).toEqual('+3&nbsp;more');
             expect(moreIndicators[0].getAttribute('data-start-date')).toEqual(new Date(2018, 4, 1, 13).getTime().toString());
             expect(moreIndicators[0].getAttribute('data-end-date')).toEqual(new Date(2018, 4, 1, 13, 30).getTime().toString());
@@ -3066,7 +3066,7 @@ describe('Schedule Timeline Week view', () => {
             const eventWrapperList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment-wrapper'));
             expect(eventWrapperList.length).toEqual(1);
             const moreIndicators: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-more-indicator'));
-            expect(moreIndicators.length).toEqual(1);
+            expect(moreIndicators.length).toEqual(2);
             expect(moreIndicators[0].innerHTML).toEqual('+3&nbsp;more');
             expect(moreIndicators[0].getAttribute('data-start-date')).toEqual(new Date(2018, 4, 1, 13).getTime().toString());
             expect(moreIndicators[0].getAttribute('data-end-date')).toEqual(new Date(2018, 4, 1, 13, 30).getTime().toString());
@@ -3147,7 +3147,7 @@ describe('Schedule Timeline Week view', () => {
             const eventWrapperList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment-wrapper'));
             expect(eventWrapperList.length).toEqual(1);
             const moreIndicators: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-more-indicator'));
-            expect(moreIndicators.length).toEqual(1);
+            expect(moreIndicators.length).toEqual(3);
             expect(moreIndicators[0].innerHTML).toEqual('+6&nbsp;more');
             expect(moreIndicators[0].getAttribute('data-start-date')).toEqual(new Date(2018, 4, 1).getTime().toString());
             expect(moreIndicators[0].getAttribute('data-end-date')).toEqual(new Date(2018, 4, 2).getTime().toString());
@@ -3220,7 +3220,7 @@ describe('Schedule Timeline Week view', () => {
             const eventWrapperList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment-wrapper'));
             expect(eventWrapperList.length).toEqual(1);
             const moreIndicators: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-more-indicator'));
-            expect(moreIndicators.length).toEqual(1);
+            expect(moreIndicators.length).toEqual(3);
             expect(moreIndicators[0].innerHTML).toEqual('+5&nbsp;more');
             expect(moreIndicators[0].getAttribute('data-start-date')).toEqual(new Date(2018, 4, 1).getTime().toString());
             expect(moreIndicators[0].getAttribute('data-end-date')).toEqual(new Date(2018, 4, 2).getTime().toString());
@@ -3286,7 +3286,7 @@ describe('Schedule Timeline Week view', () => {
             const eventWrapperList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment-wrapper'));
             expect(eventWrapperList.length).toEqual(1);
             const moreIndicators: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-more-indicator'));
-            expect(moreIndicators.length).toEqual(1);
+            expect(moreIndicators.length).toEqual(3);
             expect(moreIndicators[0].innerHTML).toEqual('+4&nbsp;more');
             expect(moreIndicators[0].getAttribute('data-start-date')).toEqual(new Date(2018, 4, 1).getTime().toString());
             expect(moreIndicators[0].getAttribute('data-end-date')).toEqual(new Date(2018, 4, 2).getTime().toString());
@@ -3345,7 +3345,7 @@ describe('Schedule Timeline Week view', () => {
             const eventWrapperList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment-wrapper'));
             expect(eventWrapperList.length).toEqual(1);
             const moreIndicators: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-more-indicator'));
-            expect(moreIndicators.length).toEqual(1);
+            expect(moreIndicators.length).toEqual(3);
             expect(moreIndicators[0].innerHTML).toEqual('+3&nbsp;more');
             expect(moreIndicators[0].getAttribute('data-start-date')).toEqual(new Date(2018, 4, 1).getTime().toString());
             expect(moreIndicators[0].getAttribute('data-end-date')).toEqual(new Date(2018, 4, 2).getTime().toString());
@@ -3419,7 +3419,7 @@ describe('Schedule Timeline Week view', () => {
             const eventWrapperList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment-wrapper'));
             expect(eventWrapperList.length).toEqual(1);
             const moreIndicators: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-more-indicator'));
-            expect(moreIndicators.length).toEqual(1);
+            expect(moreIndicators.length).toEqual(3);
             expect(moreIndicators[0].innerHTML).toEqual('+5&nbsp;more');
             expect(moreIndicators[0].getAttribute('data-start-date')).toEqual(new Date(2018, 4, 1).getTime().toString());
             expect(moreIndicators[0].getAttribute('data-end-date')).toEqual(new Date(2018, 4, 2).getTime().toString());
@@ -3532,7 +3532,7 @@ describe('Schedule Timeline Week view', () => {
 
         it('check more indicator', () => {
             const moreIndicators: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-more-indicator'));
-            expect(moreIndicators.length).toEqual(2);
+            expect(moreIndicators.length).toEqual(101);
             expect(moreIndicators[0].innerHTML).toEqual('+1&nbsp;more');
             expect(moreIndicators[0].getAttribute('data-group-index')).toEqual('5');
             expect(moreIndicators[0].getAttribute('data-start-date')).toEqual(new Date(2018, 4, 4, 2).getTime().toString());

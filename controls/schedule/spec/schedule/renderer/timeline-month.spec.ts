@@ -1066,7 +1066,7 @@ describe('Schedule Timeline Month view', () => {
 
         it('Checking more indicator', () => {
             const moreIndicatorList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-more-indicator'));
-            expect(moreIndicatorList.length).toEqual(1);
+            expect(moreIndicatorList.length).toEqual(3);
             expect(moreIndicatorList[0].innerHTML).toEqual('+4&nbsp;more');
         });
 
@@ -1651,7 +1651,7 @@ describe('Schedule Timeline Month view', () => {
 
         it('More event element checking', () => {
             const moreIndicatorList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-more-indicator'));
-            expect(moreIndicatorList.length).toEqual(4);
+            expect(moreIndicatorList.length).toEqual(10);
             const element: HTMLElement = moreIndicatorList[0] as HTMLElement;
             element.click();
             const morePopup: HTMLElement = schObj.element.querySelector('.e-more-popup-wrapper') as HTMLElement;
@@ -1771,7 +1771,7 @@ describe('Schedule Timeline Month view', () => {
 
         it('More event element checking', () => {
             const moreIndicatorList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-more-indicator'));
-            expect(moreIndicatorList.length).toEqual(3);
+            expect(moreIndicatorList.length).toEqual(5);
             const element: HTMLElement = moreIndicatorList[0] as HTMLElement;
             element.click();
             const morePopup: HTMLElement = schObj.element.querySelector('.e-more-popup-wrapper') as HTMLElement;
@@ -2443,10 +2443,10 @@ describe('Schedule Timeline Month view', () => {
 
         it('More event element checking', () => {
             const moreIndicatorList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-more-indicator'));
-            expect(moreIndicatorList.length).toEqual(19);
+            expect(moreIndicatorList.length).toEqual(48);
             expect(moreIndicatorList[0].innerHTML).toEqual('+3&nbsp;more');
             expect(moreIndicatorList[1].innerHTML).toEqual('+1&nbsp;more');
-            expect(moreIndicatorList[11].innerHTML).toEqual('+1&nbsp;more');
+            expect(moreIndicatorList[11].innerHTML).toEqual('+2&nbsp;more');
             const element: HTMLElement = moreIndicatorList[0] as HTMLElement;
             element.click();
             const morePopup: HTMLElement = schObj.element.querySelector('.e-more-popup-wrapper') as HTMLElement;

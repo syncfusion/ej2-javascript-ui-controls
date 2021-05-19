@@ -9384,6 +9384,81 @@ describe('DateRangePicker', () => {
             expect(document.body.contains(dateRangePicker.popupObj)).toBe(false);
         });
     });
+    describe('EJ2-48804- Preset ranges with time value', function() {
+        let dateRangePicker:any;
+        beforeEach(function(){
+            let element: HTMLElement = createElement('input',{id:'date'});
+            document.body.appendChild(element);
+            
+        });
+        afterEach(function(){
+            if(dateRangePicker){
+                dateRangePicker.destroy();
+            }
+            document.body.innerHTML = '';
+        });
+        it('Checking preset item is selected when popup is opened', function() {
+            dateRangePicker = new DateRangePicker({
+                presets: [
+                    {   label: 'Custom Date', start: new Date(2020,1,1,10,10,50), end: new Date(2020,3,1,9,30,40) },
+                    {   label: 'Last week', start: new Date(new Date().setDate(new Date().getDate() - 7)), end: new Date()}
+                ],
+            });
+            dateRangePicker.appendTo('#date');
+            dateRangePicker.show();
+            <HTMLElement>(dateRangePicker.popupObj.element.querySelector('.e-presets li:first-child')).click();
+            let startDate: string = dateRangePicker.globalize.formatDate(dateRangePicker.startDate, { format: dateRangePicker.format, type: 'date', skeleton: 'yMd' });
+            let endDate: string = dateRangePicker.globalize.formatDate(dateRangePicker.endDate, { format: dateRangePicker.format, type: 'date', skeleton: 'yMd' });
+            expect(dateRangePicker.element.value === startDate + ' - ' + endDate).toBe(true);
+            dateRangePicker.hide();
+            dateRangePicker.focusOut();
+            dateRangePicker.show();
+            expect((dateRangePicker.popupObj.element.querySelector('.e-presets li:first-child')).classList.contains('e-active')).toBe(true);
+        })
+        it('Checking preset item is selected when popup is opened with predefined value', function() {
+            dateRangePicker = new DateRangePicker({
+                value: [new Date(2020,1,1,10,10,50), new Date(2020,3,1,9,30,40)],
+                presets: [
+                    {   label: 'Custom Date', start: new Date(2020,1,1,10,10,50), end: new Date(2020,3,1,9,30,40) },
+                    {   label: 'My Date', start: new Date('1/1/2020'), end:  new Date('3/2/2020') },
+                    {   label: 'Today', start: new Date(), end: new Date() },
+                    {   label: 'Last week', start: new Date(new Date().setDate(new Date().getDate() - 7)), end: new Date()}
+                ],
+            });
+            dateRangePicker.appendTo('#date');
+            let startDate: string = dateRangePicker.globalize.formatDate(dateRangePicker.startDate, { format: dateRangePicker.format, type: 'date', skeleton: 'yMd' });
+            let endDate: string = dateRangePicker.globalize.formatDate(dateRangePicker.endDate, { format: dateRangePicker.format, type: 'date', skeleton: 'yMd' });
+            expect(dateRangePicker.element.value === startDate + ' - ' + endDate).toBe(true);
+            dateRangePicker.show();
+            expect((dateRangePicker.popupObj.element.querySelector('.e-presets li:first-child')).classList.contains('e-active')).toBe(true);
+            dateRangePicker.hide();
+            dateRangePicker.focusOut();
+            dateRangePicker.show();
+            expect((dateRangePicker.popupObj.element.querySelector('.e-presets li:first-child')).classList.contains('e-active')).toBe(true);
+        })
+        it('Checking preset item is selected when popup is opened with predefined startdate and enddate', function() {
+            dateRangePicker = new DateRangePicker({
+                startDate: new Date(2020,1,1,10,10,50),
+                endDate: new Date(2020,3,1,9,30,40),
+                presets: [
+                    {   label: 'Custom Date', start: new Date(2020,1,1,10,10,50), end: new Date(2020,3,1,9,30,40) },
+                    {   label: 'My Date', start: new Date('1/1/2020'), end:  new Date('3/2/2020') },
+                    {   label: 'Today', start: new Date(), end: new Date() },
+                    {   label: 'Last week', start: new Date(new Date().setDate(new Date().getDate() - 7)), end: new Date()}
+                ],
+            });
+            dateRangePicker.appendTo('#date');
+            let startDate: string = dateRangePicker.globalize.formatDate(dateRangePicker.startDate, { format: dateRangePicker.format, type: 'date', skeleton: 'yMd' });
+            let endDate: string = dateRangePicker.globalize.formatDate(dateRangePicker.endDate, { format: dateRangePicker.format, type: 'date', skeleton: 'yMd' });
+            expect(dateRangePicker.element.value === startDate + ' - ' + endDate).toBe(true);
+            dateRangePicker.show();
+            expect((dateRangePicker.popupObj.element.querySelector('.e-presets li:first-child')).classList.contains('e-active')).toBe(true);
+            dateRangePicker.hide();
+            dateRangePicker.focusOut();
+            dateRangePicker.show();
+            expect((dateRangePicker.popupObj.element.querySelector('.e-presets li:first-child')).classList.contains('e-active')).toBe(true);
+        })
+    })
 });
 interface CalendarElement {
     leftCalTitle: HTMLElement;

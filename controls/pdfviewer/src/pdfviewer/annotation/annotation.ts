@@ -393,6 +393,8 @@ export class Annotation {
                 this.pdfViewer.renderDrawing();
                 this.pdfViewer.clearSelection(pageNumber);
                 this.pdfViewer.isDocumentEdited = true;
+                this.pdfViewerBase.tool = null;
+                this.pdfViewer.tool = null;
                 if (selectedAnnot.shapeAnnotationType === 'HandWrittenSignature') {
                     // eslint-disable-next-line max-len
                     const bounds: object = { left: selectedAnnot.bounds.x, top: selectedAnnot.bounds.y, width: selectedAnnot.bounds.width, height: selectedAnnot.bounds.height };
@@ -1841,22 +1843,24 @@ export class Annotation {
         } else {
             opacityValue = args.value / 100;
         }
-        redoClonedObject.opacity = opacityValue;
-        this.pdfViewer.nodePropertyChange(currentAnnotation, { opacity: opacityValue });
-        if (currentAnnotation.shapeAnnotationType === 'StickyNotes') {
-            this.stickyNotesAnnotationModule.updateOpacityValue(currentAnnotation);
-        } else {
-            this.modifyInCollections(currentAnnotation, 'opacity');
-        }
-        if (currentAnnotation.shapeAnnotationType === 'HandWrittenSignature') {
+        if (currentAnnotation.opacity !== opacityValue) {
+            redoClonedObject.opacity = opacityValue;
+            this.pdfViewer.nodePropertyChange(currentAnnotation, { opacity: opacityValue });
+            if (currentAnnotation.shapeAnnotationType === 'StickyNotes') {
+                this.stickyNotesAnnotationModule.updateOpacityValue(currentAnnotation);
+            } else {
+                this.modifyInCollections(currentAnnotation, 'opacity');
+            }
+            if (currentAnnotation.shapeAnnotationType === 'HandWrittenSignature') {
+                // eslint-disable-next-line max-len
+                this.pdfViewer.fireSignaturePropertiesChange(currentAnnotation.pageIndex, currentAnnotation.signatureName, currentAnnotation.shapeAnnotationType as AnnotationType, false, true, false, clonedObject.opacity, redoClonedObject.opacity);
+            } else {
+                this.triggerAnnotationPropChange(currentAnnotation, false, false, false, true);
+            }
             // eslint-disable-next-line max-len
-            this.pdfViewer.fireSignaturePropertiesChange(currentAnnotation.pageIndex, currentAnnotation.signatureName, currentAnnotation.shapeAnnotationType as AnnotationType, false, true, false, clonedObject.opacity, redoClonedObject.opacity);
-        } else {
-            this.triggerAnnotationPropChange(currentAnnotation, false, false, false, true);
+            this.pdfViewer.annotation.addAction(currentAnnotation.pageIndex, null, currentAnnotation, 'Shape Opacity', '', clonedObject, redoClonedObject);
+            this.pdfViewer.renderDrawing();
         }
-        // eslint-disable-next-line max-len
-        this.pdfViewer.annotation.addAction(currentAnnotation.pageIndex, null, currentAnnotation, 'Shape Opacity', '', clonedObject, redoClonedObject);
-        this.pdfViewer.renderDrawing();
     }
 
     /**

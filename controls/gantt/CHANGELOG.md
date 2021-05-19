@@ -2,6 +2,17 @@
 
 ## [Unreleased]
 
+## 19.1.64 (2021-05-19)
+
+### Gantt
+
+#### Bug Fixes
+
+- `#325587` - Issue while deleting resource on split task has been fixed.
+- Issue on dynamically changing the `allowTaskbarEditing` property has been fixed.
+- `#165210` - Issue while filtering using Excel type has been fixed.
+- `#327043` - Issue in rendering taskbar template has been fixed.
+
 ## 19.1.63 (2021-05-13)
 
 ### Gantt

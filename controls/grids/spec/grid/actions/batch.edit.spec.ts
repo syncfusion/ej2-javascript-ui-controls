@@ -3600,3 +3600,33 @@ describe('EJ2-42197 - Delete action was not working properly in checkbox selecti
         destroy(gridObj);
     });
 });
+
+describe('EJ2-49067 - Batch changes with date column without changing the value', () => {
+    let gridObj: Grid;
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: data,
+                allowPaging: true,
+                editSettings: { allowEditing: true, allowAdding: true, allowDeleting: true, mode: "Batch", showConfirmDialog: false },
+                toolbar: ['Add', 'Edit', 'Delete', 'Update', 'Cancel'],
+                columns: [
+                    { field: 'OrderID', headerText: 'Order ID', isPrimaryKey: true, width: 120, textAlign: 'Right' },
+                    { field: 'OrderDate', headerText: 'Order Date', type: 'date', format: 'yMd', editType: 'datepickeredit' }
+                ]
+            }, done);
+    });
+    it('check selection', (done: Function) => {
+        let cellSaved = (args?: any): void => {
+            expect(gridObj.getBatchChanges()['changedRecords'].length).toBe(0);
+            gridObj.cellSave = null;
+            done();
+        };
+        gridObj.editCell(1, 'OrderDate');
+        gridObj.cellSaved = cellSaved;
+        gridObj.endEdit();
+    });
+    afterAll(() => {
+        destroy(gridObj);
+    });
+});

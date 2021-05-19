@@ -4,8 +4,8 @@ import { IOffset, clearViewer, deleteImage, createImageElement, refreshImgCellOb
 import { Spreadsheet } from '../base/index';
 import { SheetModel, getRowsHeight, getColumnsWidth, getSwapRange, CellModel, CellStyleModel, clearCells, RowModel } from '../../workbook/index';
 import { RangeModel, getRangeIndexes, Workbook, wrap, setRowHeight, insertModel, InsertDeleteModelArgs, getColumnWidth } from '../../workbook/index';
-import { BeforeSortEventArgs, SortEventArgs, initiateSort, getIndexesFromAddress, getRowHeight, setMerge } from '../../workbook/index';
-import { ValidationModel, setValidation, removeValidation, clearCFRule, setCFRule, ConditionalFormatModel } from '../../workbook/index';
+import { BeforeSortEventArgs, SortEventArgs, initiateSort, getIndexesFromAddress, getRowHeight, setMerge, isLocked } from '../../workbook/index';
+import { ValidationModel, setValidation, removeValidation, clearCFRule, setCFRule, ConditionalFormatModel, getColumn } from '../../workbook/index';
 import { removeSheetTab, rowHeightChanged } from './index';
 import { getCellIndexes, getCell, ChartModel, setChart, refreshChartSize } from '../../workbook/index';
 import { deleteChart } from '../../spreadsheet/index';
@@ -1537,4 +1537,26 @@ export function focus(ele: HTMLElement): void {
             (ele as any).focus({ preventScroll: true });
         }
     }
+}
+
+/**
+ * Checks whether a specific range of cells is locked or not.
+ *
+ * @param {number[]} range - Specify the range.
+ * @returns {boolean} - Returns true if any of the cells is locked and returns false if none of the cells is locked.
+ * @hidden
+ */
+ export function isLockedCells(parent: Spreadsheet, rangeIndexes?: number[]): boolean {
+    const sheet: SheetModel = parent.getActiveSheet(); let hasLockCell: boolean;
+        const address: number[] = !isNullOrUndefined(rangeIndexes) ? rangeIndexes : getSwapRange(getRangeIndexes(sheet.selectedRange));
+        for (let row: number = address[0]; row <= address[2]; row++) {
+            for (let col: number = address[1]; col <= address[3]; col++) {
+                const cell: CellModel = getCell(row, col, sheet);
+                if (isLocked(cell, getColumn(sheet, col))) {
+                    hasLockCell = true;
+                    break;
+                }
+            }
+        }
+        return hasLockCell;
 }

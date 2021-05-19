@@ -2,7 +2,7 @@ import { Spreadsheet } from '../index';
 import { EventHandler, KeyboardEventArgs, Browser, closest, isUndefined, isNullOrUndefined, select, detach } from '@syncfusion/ej2-base';
 import { getRangeIndexes, getRangeFromAddress, getIndexesFromAddress, getRangeAddress, isSingleCell } from '../../workbook/common/address';
 import { keyDown, editOperation, clearCopy, mouseDown, selectionComplete, enableToolbarItems, completeAction } from '../common/event';
-import { formulaBarOperation, formulaOperation, setActionData, keyUp, getCellPosition, deleteImage, focus } from '../common/index';
+import { formulaBarOperation, formulaOperation, setActionData, keyUp, getCellPosition, deleteImage, focus, isLockedCells } from '../common/index';
 import { workbookEditOperation, getFormattedBarText, getFormattedCellObject, wrapEvent, isValidation, activeCellMergedRange, activeCellChanged } from '../../workbook/common/event';
 import { CellModel, SheetModel, getSheetName, getSheetIndex, getCell, getColumn, ColumnModel, getRowsHeight, getColumnsWidth, Workbook } from '../../workbook/base/index';
 import { getSheetNameFromAddress, getSheet } from '../../workbook/base/index';
@@ -294,7 +294,7 @@ export class Edit {
                             } else { this.startEdit(null, null, true, true); }
                         }
                         if (keyCode === this.keyCodes.DELETE) {
-                            const islockcell: boolean = sheet.isProtected && this.isLockCellDelete();
+                            const islockcell: boolean = sheet.isProtected && isLockedCells(this.parent);
                             if (!islockcell) { this.editingHandler('delete');
                                 this.parent.notify(activeCellChanged, null);
                             } else {
@@ -323,20 +323,7 @@ export class Edit {
             }
         }
     }
-    private isLockCellDelete(): boolean {
-        const sheet: SheetModel = this.parent.getActiveSheet(); let hasLockCell: boolean;
-        const address: number[] = getSwapRange(getRangeIndexes(sheet.selectedRange));
-        for (let row: number = address[0]; row <= address[2]; row++) {
-            for (let col: number = address[1]; col <= address[3]; col++) {
-                const cell: CellModel = getCell(row, col, sheet);
-                if (isLocked(cell, getColumn(sheet, col))) {
-                    hasLockCell = true;
-                    break;
-                }
-            }
-        }
-        return hasLockCell;
-    }
+
     private renderEditor(): void {
         if (!this.editorElem || !select('#' + this.parent.element.id + '_edit', this.parent.element)) {
             const editor: HTMLElement = this.parent.createElement(

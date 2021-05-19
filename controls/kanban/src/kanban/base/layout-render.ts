@@ -429,7 +429,7 @@ export class LayoutRender extends MobileLayout {
                 let keyField: string = obj[this.parent.swimlaneSettings.keyField];
                 if (!obj[this.parent.swimlaneSettings.keyField]) {
                     if (this.parent.swimlaneSettings.showUnassignedRow) {
-                        textField = 'Unassigned';
+                        textField = this.parent.localeObj.getConstant('unassigned');
                         keyField = '';
                     } else {
                         return;

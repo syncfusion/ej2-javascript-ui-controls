@@ -2101,6 +2101,7 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
             this.documentHelper.styles = new WStyles();
             this.documentHelper.cachedPages = [];
             this.showRevisions = false;
+            this.clearSpellCheck();
             if (this.isSpellCheck && !this.spellChecker.enableOptimizedSpellCheck) {
                 this.documentHelper.triggerElementsOnLoading = true;
                 this.documentHelper.triggerSpellCheck = true;
@@ -2457,6 +2458,7 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
             this.clearPreservedCollectionsInViewer();
             this.documentHelper.userCollection.push('Everyone');
             this.documentHelper.cachedPages = [];
+            this.clearSpellCheck();
             this.documentHelper.setDefaultDocumentFormat();
             this.documentHelper.headersFooters.push(hfs);
             this.documentHelper.onDocumentChanged(sections);
@@ -2613,7 +2615,11 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
         this.findResultsList = [];
         this.findResultsList = undefined;
     }
-
+    private clearSpellCheck(): void {
+        if (!isNullOrUndefined(this.spellChecker) && !isNullOrUndefined(this.spellChecker.errorWordCollection)) {
+            this.spellChecker.errorWordCollection.clear();
+        }
+    }
     private destroyDependentModules(): void {
         if (this.printModule) {
             this.printModule.destroy();

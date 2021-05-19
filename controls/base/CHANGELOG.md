@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 19.1.64 (2021-05-19)
+
+### Common
+
+#### Bug Fixes
+
+- `I323536` - Resolved Negative decimal value without zero parses into non-decimal values.
+
 ## 19.1.57 (2021-04-20)
 
 ### Common

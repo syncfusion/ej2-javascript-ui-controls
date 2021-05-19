@@ -137,4 +137,64 @@ describe('Gantt filter support', () => {
         //     expect(ganttObj.currentViewData.length).toBe(0);
         // });
     });
+    
+    describe('Gantt Excel filter action', () => {
+        Gantt.Inject(Filter, Toolbar, ColumnMenu);
+        let ganttObj: Gantt;
+        beforeAll((done: Function) => {
+            ganttObj = createGantt(
+                {
+                    dataSource: projectData1,
+                    allowFiltering: true,
+                    taskFields: {
+                        id: 'TaskID',
+                        name: 'TaskName',
+                        startDate: 'StartDate',
+                        endDate: 'EndDate',
+                        duration: 'Duration',
+                        progress: 'Progress',
+                        child: 'subtasks',
+                        dependency: 'Predecessor',
+                        resourceInfo: 'ResourceId',
+                    },
+                    resourceNameMapping: 'ResourceName',
+                    resourceIDMapping: 'ResourceId',
+                    resources: projectResources,
+                    splitterSettings: {
+                        columnIndex: 7,
+                    },
+                    load: function (args) {
+                        let ganttObj: Gantt = (document.getElementsByClassName('e-gantt')[0] as any).ej2_instances[0];;
+                        ganttObj.treeGrid.filterSettings.type = "Excel";
+                    },
+                    columns: [
+                        { field: 'TaskID', headerText: 'Task ID' },
+                        { field: 'ResourceId', headerText: 'Resources' },
+                        { field: 'TaskName', headerText: 'Task Name' },
+                        { field: 'StartDate', headerText: 'Start Date' },
+                        { field: 'Duration', headerText: 'Duration' },
+                        { field: 'Predecessor', headerText: 'Predecessor' },
+                        { field: 'Progress', headerText: 'Progress' },
+                    ],
+                    projectStartDate: new Date('02/01/2017'),
+                    projectEndDate: new Date('12/30/2017'),
+                    rowHeight: 40,
+                    taskbarHeight: 30
+                }, done);
+        });
+        afterAll(() => {
+            if (ganttObj) {
+                destroyGantt(ganttObj);
+            }
+        });
+
+        it('Initial Filtering', (done: Function) => {
+            ganttObj.filterSettings.columns = [{ field: 'TaskName', matchCase: false, operator: 'startswith', value: 'plan' }];
+            ganttObj.dataBind();
+            expect(ganttObj.filterSettings.columns.length).toBe(1);
+            ganttObj.clearFiltering();
+            done();
+        });
+    });
+
 });

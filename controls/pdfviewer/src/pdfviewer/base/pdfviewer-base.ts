@@ -1873,8 +1873,10 @@ export class PdfViewerBase {
             this.goToPagePopup.enableRtl = true;
         }
         this.goToPagePopup.appendTo(popupElement);
-        const goToPageTextBox: NumericTextBox = new NumericTextBox({ format: '##', showSpinButton: false });
-        goToPageTextBox.appendTo(this.goToPageInput);
+        if (!isBlazor()) {
+            const goToPageTextBox: NumericTextBox = new NumericTextBox({ format: '##', showSpinButton: false });
+            goToPageTextBox.appendTo(this.goToPageInput);
+        }
         this.goToPageInput.addEventListener('keyup', () => {
             // eslint-disable-next-line
             let inputValue: any = (this.goToPageInput as HTMLInputElement).value;
@@ -4007,7 +4009,9 @@ export class PdfViewerBase {
                                 context.setTransform(matrix0, matrix1, matrix2, matrix3, matrix4, matrix5);
                                 context.drawImage(image, 0, 0);
                                 this.showPageLoadingIndicator(pageIndex, false);
-                                if ((data.tileX === 0) && (data.tileY === 0)) {
+                                let tileX: number = data.tileX ? data.tileX : 0;
+                                let tileY: number = data.tileY ? data.tileY : 0;
+                                if ((tileX === 0) && (tileY === 0)) {
                                     if (pageIndex === 0 && this.isDocumentLoaded) {
                                         this.renderPDFInformations();
                                         this.isInitialLoaded = true;
@@ -5290,7 +5294,11 @@ export class PdfViewerBase {
                     data = proxy.getStoredData(pageIndex);
                     isPageRequestSent = proxy.pageRequestSent(pageIndex, 0, 0);
                 } else {
-                    data = JSON.parse(proxy.getWindowSessionStorageTile(pageIndex, 0, 0, zoomFactor));
+                    // eslint-disable-next-line
+                    let tileData: any = JSON.parse(proxy.getWindowSessionStorageTile(pageIndex, 0, 0, zoomFactor));
+                    if (tileData) {
+                        data = tileData;
+                    }
                 }
                 if (data && data.uniqueId === proxy.documentId) {
                     canvas.style.backgroundColor = '#fff';

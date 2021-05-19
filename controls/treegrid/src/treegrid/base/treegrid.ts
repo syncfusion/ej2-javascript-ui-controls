@@ -2516,7 +2516,7 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
                 for (const prop of Object.keys(column[i])) {
                     if (index === this.treeColumnIndex && prop === 'template') {
                         treeGridColumn[prop] = column[i][prop];
-                    } else if (prop === 'columns') {
+                    } else if (prop === 'columns' && !isNullOrUndefined(column[i][prop])) {
                         gridColumn[prop] = this.getGridColumns(column[i][prop] as Column[], false, index);
                         treeGridColumn[prop] = column[i][prop];
                     } else {

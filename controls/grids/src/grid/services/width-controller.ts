@@ -70,10 +70,11 @@ export class ColumnWidthService {
                 if (tWidth === 0 && this.parent.allowResizing && this.isWidthUndefined() && (i !== collection.length - 1)) {
                     this.setUndefinedColumnWidth(collection);
                 }
+                let index: number = this.parent.getColumnIndexByField(collection[i].field) + this.parent.getIndentCount();
                 if (tWidth !== 0 && difference < tmWidth) {
-                    this.setWidth(collection[i].minWidth, this.parent.getColumnIndexByField(collection[i].field));
+                    this.setWidth(collection[i].minWidth, index);
                 } else if (tWidth !== 0 && difference > tmWidth) {
-                    this.setWidth('', this.parent.getColumnIndexByField(collection[i].field) + this.parent.getIndentCount(), true);
+                    this.setWidth('', index, true);
                 }
             }
         }
@@ -183,17 +184,19 @@ export class ColumnWidthService {
         } else if (contentCol && clear) {
             contentCol.style.width = '';
         }
-        let edit: NodeListOf<Element> = this.parent.element.querySelectorAll('.e-table.e-inline-edit');
-        let editTableCol: HTMLTableColElement[] = [];
-        for (let i: number = 0; i < edit.length; i++) {
-            if (parentsUntil(edit[i], 'e-grid').id === this.parent.element.id) {
-                for (let j: number = 0; j < edit[i].querySelector(literals.colGroup).children.length; j++) {
-                    editTableCol.push((<HTMLTableColElement>edit[i].querySelector(literals.colGroup).children[j]));
+        if (!this.parent.enableColumnVirtualization) {
+            let edit: NodeListOf<Element> = this.parent.element.querySelectorAll('.e-table.e-inline-edit');
+            let editTableCol: HTMLTableColElement[] = [];
+            for (let i: number = 0; i < edit.length; i++) {
+                if (parentsUntil(edit[i], 'e-grid').id === this.parent.element.id) {
+                    for (let j: number = 0; j < edit[i].querySelector('colgroup').children.length; j++) {
+                        editTableCol.push((<HTMLTableColElement>edit[i].querySelector('colgroup').children[j]));
+                    }
                 }
             }
-        }
-        if (edit.length && editTableCol.length) {
-            editTableCol[index].style.width = fWidth;
+            if (edit.length && editTableCol.length) {
+                editTableCol[index].style.width = fWidth;
+            }
         }
         if (this.parent.isFrozenGrid()) {
             this.refreshFrozenScrollbar();

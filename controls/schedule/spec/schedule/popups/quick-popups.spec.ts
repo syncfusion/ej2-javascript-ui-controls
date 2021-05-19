@@ -1070,7 +1070,7 @@ describe('Quick Popups', () => {
         });
 
         it('CR Issue EJ2-21532 - Appointment time was wrong when it move on to the more indicator popup', () => {
-            (schObj.element.querySelectorAll('.e-more-indicator')[1] as HTMLElement).click();
+            (schObj.element.querySelectorAll('.e-more-indicator')[5] as HTMLElement).click();
             expect(schObj.quickPopup.morePopup.element.classList.contains('e-popup-open')).toEqual(true);
             const morePopupEvents: NodeListOf<Element> = schObj.quickPopup.morePopup.element.querySelectorAll('.e-appointment');
             expect(morePopupEvents.length).toEqual(2);

@@ -544,11 +544,26 @@ export class ChartRows extends DateProcessor {
                 segmentIndex = -1;
             }
             segments.push(segment);
-            startDate = new Date(splitDate.getTime());
-            startDate.setDate(startDate.getDate() + 1 + increment);
-            startDate = this.parent.dataOperation.checkStartDate(startDate, ganttProp, false);
-            segmentEndDate = new Date(endDate.getTime());
-            segmentEndDate.setDate(segmentEndDate.getDate() + 1);
+            const mode: string = this.parent.timelineModule.customTimelineSettings.bottomTier.unit;
+            if (mode === 'Hour' || mode === 'Minutes') {
+                startDate = new Date(splitDate.getTime());
+                startDate = this.parent.dataOperation.checkStartDate(startDate, ganttProp, false);
+                const count: number = this.parent.timelineModule.customTimelineSettings.bottomTier.count;
+                const mode: string = this.parent.timelineModule.customTimelineSettings.bottomTier.unit;
+                let timeIncrement: number = this.parent.timelineModule.getIncrement(startDate, count, mode);
+                let newTime: number = startDate.getTime() + timeIncrement;
+                startDate.setTime(newTime + increment);
+                segmentEndDate = new Date(endDate.getTime());
+                timeIncrement = this.parent.timelineModule.getIncrement(segmentEndDate, count, mode);
+                newTime = segmentEndDate.getTime() + timeIncrement;
+                segmentEndDate.setTime(newTime + increment);
+            } else {
+                startDate = new Date(splitDate.getTime());
+                startDate.setDate(startDate.getDate() + 1 + increment);
+                startDate = this.parent.dataOperation.checkStartDate(startDate, ganttProp, false);
+                segmentEndDate = new Date(endDate.getTime());
+                segmentEndDate.setDate(segmentEndDate.getDate() + 1);
+            }
             if (endDateState !== -1) {
                 const diff: number = segmentDuration - segment.duration;
                 segmentEndDate =
@@ -1696,7 +1711,6 @@ export class ChartRows extends DateProcessor {
             } else {
                 this.triggerQueryTaskbarInfoByIndex(tr as Element, data);
             }
-            this.triggerQueryTaskbarInfoByIndex(tr as Element, data);
             const dataId: number | string = this.parent.viewType === 'ProjectView' ? data.ganttProperties.taskId : data.ganttProperties.rowUniqueID;
             this.parent.treeGrid.grid.setRowData(dataId, data);
             const row: Row<Column> = this.parent.treeGrid.grid.getRowObjectFromUID(
@@ -1743,6 +1757,7 @@ export class ChartRows extends DateProcessor {
     public refreshRecords(items: IGanttData[], isValidateRange?: boolean): void {
         if (this.parent.isGanttChartRendered) {
             this.updateTaskbarBlazorTemplate(false);
+            this.parent.renderTemplates();
             if (this.parent.viewType === 'ResourceView' && this.parent.enableMultiTaskbar) {
                 let sortedRecords: IGanttData[] = [];
                 sortedRecords = new DataManager(items).executeLocal(new Query()
@@ -1754,7 +1769,6 @@ export class ChartRows extends DateProcessor {
                 this.refreshRow(index, isValidateRange);
             }
             this.parent.ganttChartModule.updateLastRowBottomWidth();
-            this.parent.renderTemplates();
             this.updateTaskbarBlazorTemplate(true);
         }
     }

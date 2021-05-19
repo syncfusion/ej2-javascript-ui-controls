@@ -1,7 +1,17 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { print as basePrint, createElement, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { Schedule } from '../base/schedule';
-import { EventSettingsModel } from '../models/models';
+import { TimelineYear } from '../renderer/timeline-year';
+import { Year } from '../renderer/year';
+import { TimelineMonth } from '../renderer/timeline-month';
+import { TimelineViews } from '../renderer/timeline-view';
+import { MonthAgenda } from '../renderer/month-agenda';
+import { Agenda } from '../renderer/agenda';
+import { Month } from '../renderer/month';
+import { WorkWeek } from '../renderer/work-week';
+import { Week } from '../renderer/week';
+import { Day } from '../renderer/day';
+import { EventSettingsModel, ViewsModel, GroupModel } from '../models/models';
 import { ScheduleModel } from '../base/schedule-model';
 import * as events from '../base/constant';
 
@@ -69,6 +79,7 @@ export class Print {
     private printSchedulerWithModel(printOptions: ScheduleModel): void {
         const element: HTMLElement = createElement('div', { id: this.parent.element.id + '_print', className: 'e-print-schedule' });
         document.body.appendChild(element);
+        Schedule.Inject(Day, Week, WorkWeek, Month, Agenda, MonthAgenda, TimelineViews, TimelineMonth, Year, TimelineYear);
         this.printInstance = new Schedule(this.getPrintScheduleModel(printOptions));
         this.printInstance.isPrinting = true;
         this.printInstance.appendTo(element);
@@ -80,16 +91,25 @@ export class Print {
 
     private getPrintScheduleModel(printOptions: ScheduleModel): ScheduleModel {
         const printModel: ScheduleModel = {};
-        let scheduleProps: string[] = Object.keys((this.parent as any).properties);
-        const scheduleEvents: string[] = ['created', 'actionBegin', 'actionComplete', 'renderCell', 'eventRendered', 'dataBinding', 'dataBound'];
-        scheduleProps = scheduleProps.concat(scheduleEvents);
+        let scheduleProps: string[] = ['agendaDaysCount', 'calendarMode', 'cssClass', 'currentView',
+            'dateFormat', 'enableRtl', 'endHour', 'eventSettings', 'firstDayOfWeek',
+            'firstMonthOfYear', 'group', 'height', 'locale', 'maxDate', 'minDate', 'readonly',
+            'resources', 'rowAutoHeight', 'selectedDate', 'showHeaderBar', 'showTimeIndicator', 'showWeekNumber',
+            'showWeekend', 'startHour', 'timeFormat', 'timeScale', 'timezone', 'views', 'width', 'workDays', 'workHours'
+        ];
         let eventSettings: EventSettingsModel;
         for (const key of scheduleProps) {
             switch (key) {
             case 'eventSettings':
                 eventSettings = Object.assign({}, (this.parent.eventSettings as Record<string, any>).properties);
                 eventSettings.dataSource = this.parent.eventsData;
-                printModel[key] = eventSettings;
+                eventSettings.template = null;
+                printModel.eventSettings = eventSettings;
+                break;
+            case 'group':
+                let group: GroupModel = isNullOrUndefined(printOptions.group) ? this.parent.group : printOptions.group;
+                group.headerTooltipTemplate = null;
+                printModel.group = group;
                 break;
             default:
                 (printModel as Record<string, any>)[key] = isNullOrUndefined((printOptions as Record<string, any>)[key]) ?

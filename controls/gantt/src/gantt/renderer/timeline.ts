@@ -1209,8 +1209,8 @@ export class Timeline {
      * @returns {void} .
      * @private
      */
-    public updateTimeLineOnEditing(tempArray: IGanttData[], action: string): void {
-        if ((tempArray[0] as IGanttData[]).length > 1)
+    public updateTimeLineOnEditing(tempArray: IGanttData[][], action: string): void {
+        if (tempArray[0].length >= 1)
         {
             for (let i: number = 0; i < tempArray.length; i++)
             {

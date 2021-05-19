@@ -150,7 +150,8 @@ export class Filter implements IAction {
      * @return {void}
      * @hidden
      */
-    public showCustomFilter(): void {
+    public showCustomFilter(enable: boolean): void {
+        this.responsiveDialogRenderer.isCustomDialog = enable;
         this.responsiveDialogRenderer.showResponsiveDialog(this.column);
     }
 
@@ -1077,7 +1078,7 @@ export class Filter implements IAction {
     public openMenuByField(field: string): void {
         let gObj: IGrid = this.parent;
         if (gObj.enableAdaptiveUI) {
-            this.showCustomFilter();
+            this.showCustomFilter(false);
             return;
         }
         let column: Column = gObj.getColumnByField(field);
@@ -1131,10 +1132,10 @@ export class Filter implements IAction {
             let gObj: IGrid = this.parent;
             let target: Element = e.target as Element;
             let datepickerEle: boolean = target.classList.contains('e-day'); // due to datepicker popup cause
-            let dialog: Element = parentsUntil(this.parent.element, 'e-dialog');
+            let dialog: Element = document.querySelector('.e-dialog');
             let hasDialog: boolean = false;
             let popupEle: Element = parentsUntil(target, 'e-popup');
-            let hasDialogClosed: Element = this.parent.element.querySelector('.e-filter-popup');
+            let hasDialogClosed: Element = document.querySelector('.e-filter-popup');
             if (dialog && popupEle) {
                 hasDialog = dialog.id === popupEle.id;
             }

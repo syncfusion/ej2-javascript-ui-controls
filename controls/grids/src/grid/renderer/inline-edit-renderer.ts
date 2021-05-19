@@ -23,21 +23,23 @@ export class InlineEditRender {
         this.parent = parent;
     }
 
-    public addNew(elements: Object, args: { row?: Element, rowData?: Object }): void {
+    public addNew(elements: Object, args: { row?: Element, rowData?: Object, isScroll?: boolean }): void {
         this.isEdit = false;
         let tbody: Element;
         let mTbody: Element = getMovableTbody(this.parent);
         let frTbody: Element = getFrozenRightTbody(this.parent);
+        let isFrozenGrid: boolean = this.parent.isFrozenGrid();
+        let isVirtualFrozen: boolean = isFrozenGrid && this.parent.enableColumnVirtualization && args.isScroll;
         if (this.parent.frozenRows && this.parent.editSettings.newRowPosition === 'Top') {
-            tbody = this.parent.getHeaderTable().querySelector( literals.tbody);
+            tbody = isVirtualFrozen ? this.parent.getMovableHeaderTbody() : this.parent.getHeaderTable().querySelector( literals.tbody);
         } else {
-            tbody = this.parent.getContentTable().querySelector( literals.tbody);
+            tbody = isVirtualFrozen ? this.parent.getMovableContentTbody() : this.parent.getContentTable().querySelector( literals.tbody);
         }
         args.row = this.parent.createElement('tr', { className: 'e-row e-addedrow' });
         if (tbody.querySelector('.e-emptyrow')) {
             let emptyRow: Element = tbody.querySelector('.e-emptyrow');
             emptyRow.parentNode.removeChild(emptyRow);
-            if (this.parent.isFrozenGrid()) {
+            if (isFrozenGrid && !isVirtualFrozen) {
                 let moveTbody: Element = this.parent.getContent().querySelector('.' + literals.movableContent).querySelector( literals.tbody);
                 (moveTbody.firstElementChild).parentNode.removeChild(moveTbody.firstElementChild);
                 if (this.parent.getFrozenMode() === literals.leftRight) {
@@ -49,7 +51,7 @@ export class InlineEditRender {
         this.parent.editSettings.newRowPosition === 'Top' ? tbody.insertBefore(args.row, tbody.firstChild) : tbody.appendChild(args.row);
         args.row.appendChild(this.getEditElement(elements, false, undefined, args, true));
         this.parent.editModule.checkLastRow(args.row, args);
-        if (this.parent.isFrozenGrid()) {
+        if (isFrozenGrid && !isVirtualFrozen) {
             let mEle: Element = this.renderMovableform(args.row, args);
             this.parent.editSettings.newRowPosition === 'Top' ? mTbody.insertBefore(mEle, mTbody.firstChild) : mTbody.appendChild(mEle);
             args.row.querySelector('.e-normaledit').setAttribute('colspan', this.parent.getVisibleFrozenColumns() + '');
@@ -134,22 +136,26 @@ export class InlineEditRender {
         return row;
     }
 
-    public update(elements: Object, args: { row?: Element, rowData?: Object }): void {
+    public update(elements: Object, args: { row?: Element, rowData?: Object, isScroll?: boolean }): void {
         this.isEdit = true;
-        let cloneRow: string = 'cloneRow';
-        if (closest(args.row, '.' + literals.movableContent) || closest(args.row, '.' + literals.movableHeader)) {
+        if (!args.isScroll && (closest(args.row, '.' + literals.movableContent) || closest(args.row, '.' + literals.movableHeader))) {
             args.row = this.getFreezeRow(args.row);
         }
         if (closest(args.row, '.e-frozen-right-content') || closest(args.row, '.e-frozen-right-header')) {
             args.row = this.getFreezeRightRow(args.row);
         }
+        let isVirtualFrozen: boolean = this.parent.isFrozenGrid() && this.parent.enableColumnVirtualization && args.isScroll;
         let tdElement: HTMLElement[] = [].slice.call(args.row.querySelectorAll('td.e-rowcell'));
         args.row.innerHTML = '';
-        tdElement = this.updateFreezeEdit(args.row, tdElement);
+        if (!isVirtualFrozen) {
+            tdElement = this.updateFreezeEdit(args.row, tdElement);
+        }
         args.row.appendChild(this.getEditElement(elements, true, tdElement, args, true));
         args.row.classList.add(literals.editedRow);
         this.parent.editModule.checkLastRow(args.row, args);
-        this.refreshFreezeEdit(args.row, args);
+        if (!isVirtualFrozen) {
+            this.refreshFreezeEdit(args.row, args);
+        }
     }
 
     private refreshFreezeEdit(
@@ -268,7 +274,7 @@ export class InlineEditRender {
         }
     }
 
-    private getEditElement(elements?: Object, isEdit?: boolean, tdElement?: HTMLElement[], args?: {rowData?: Object}, isFrozen?: boolean):
+    private getEditElement(elements?: Object, isEdit?: boolean, tdElement?: HTMLElement[], args?: {rowData?: Object, isScroll?: boolean}, isFrozen?: boolean):
     Element {
         let gObj: IGrid = this.parent;
         let gLen: number = 0;
@@ -278,7 +284,10 @@ export class InlineEditRender {
         }
         let td: HTMLTableCellElement = this.parent.createElement('td', {
             className: 'e-editcell e-normaledit',
-            attrs: { colspan: (gObj.getVisibleColumns().length - gObj.getVisibleFrozenColumns() + this.parent.getIndentCount()).toString() }
+            attrs: {
+                colspan: (gObj.getCurrentVisibleColumns(this.parent.enableColumnVirtualization).length - gObj.getVisibleFrozenColumns()
+                    + this.parent.getIndentCount()).toString()
+            }
         }) as HTMLTableCellElement;
         let form: HTMLFormElement = (<{form: HTMLFormElement}>args).form =
         this.parent.createElement('form', { id: gObj.element.id + 'EditForm', className: 'e-gridform' }) as HTMLFormElement;
@@ -304,9 +313,14 @@ export class InlineEditRender {
         }
         let m: number = 0;
         i = 0;
+        let isVirtualFrozen: boolean = gObj.isFrozenGrid() && gObj.enableColumnVirtualization && args.isScroll;
         while ((isEdit && m < tdElement.length && i < gObj.getColumns().length) || i < gObj.getColumns().length) {
             let span: string = isEdit ? tdElement[m].getAttribute('colspan') : null;
             let col: Column = gObj.getColumns()[i] as Column;
+            if (isVirtualFrozen && col.getFreezeTableName() !== 'movable') {
+                i++;
+                continue;
+            }
             let td: HTMLElement = this.parent.createElement(
                 'td',
                 {

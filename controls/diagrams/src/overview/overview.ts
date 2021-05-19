@@ -11,6 +11,7 @@ import { Size } from '../diagram/primitives/size';
 import { PointModel } from '../diagram/primitives/point-model';
 import { OverviewModel } from './overview-model';
 import { SvgRenderer } from '../diagram/rendering/svg-renderer';
+import { TransformFactor } from '../diagram/interaction/scroller';
 
 /**
  * Overview control allows you to see a preview or an overall view of the entire content of a Diagram.
@@ -143,14 +144,14 @@ export class Overview extends Component<HTMLElement> implements INotifyPropertyC
         //let objectArray: Object[] = [];
         for (const prop of Object.keys(newProp)) {
             switch (prop) {
-            case 'sourceID':
-                this.setParent(newProp.sourceID);
-                break;
-            case 'width':
-            case 'height':
-                this.renderCanvas();
-                this.setParent(this.sourceID);
-                break;
+                case 'sourceID':
+                    this.setParent(newProp.sourceID);
+                    break;
+                case 'width':
+                case 'height':
+                    this.renderCanvas();
+                    this.setParent(this.sourceID);
+                    break;
 
             }
         }
@@ -381,9 +382,9 @@ export class Overview extends Component<HTMLElement> implements INotifyPropertyC
     private renderHtmlLayer(canvas: HTMLElement): HTMLElement {
         const htmlLayer: HTMLDivElement = createHtmlElement(
             'div', {
-                'id': this.element.id + '_htmlLayer', 'class': 'e-html-layer',
-                'style': 'pointer-events:none;position:absolute;top:0px;left:0px;'
-            }
+            'id': this.element.id + '_htmlLayer', 'class': 'e-html-layer',
+            'style': 'pointer-events:none;position:absolute;top:0px;left:0px;'
+        }
         ) as HTMLDivElement;
         const options: Object = {
             'id': this.element.id + '_htmlLayer_div',
@@ -469,72 +470,72 @@ export class Overview extends Component<HTMLElement> implements INotifyPropertyC
         let x: number = 0;
         let y: number = 0; let w: number; let h: number;
         switch (this.resizeDirection) {
-        case 'left':
-            size.width -= difx;
-            size.height -= difx / this.viewPortRatio;
-            x = difx;
-            y = difx / this.viewPortRatio;
-            y /= 2;
-            break;
-        case 'right':
-            size.width += difx;
-            size.height += difx / this.viewPortRatio;
-            y = difx / this.viewPortRatio;
-            y /= -2;
-            break;
-        case 'top':
-            size.height -= dify;
-            size.width -= dify * this.viewPortRatio;
-            y = dify;
-            x = dify * this.viewPortRatio;
-            x /= 2;
-            break;
-        case 'bottom':
-            size.height += dify;
-            size.width += dify * this.viewPortRatio;
-            x = dify * this.viewPortRatio;
-            x /= -2;
-            break;
-        case 'topleft':
-            if (Math.abs(dify) > Math.abs(difx)) {
-                difx = dify * this.viewPortRatio;
-            } else {
-                dify = difx / this.viewPortRatio;
-            }
-            size.width -= difx;
-            size.height -= dify;
-            x = difx;
-            y = dify;
-            break;
-        case 'topright':
-            if (Math.abs(dify) > Math.abs(difx)) {
-                difx = -dify * this.viewPortRatio;
-            } else {
-                dify = -(difx / this.viewPortRatio);
-            }
-            y = dify;
-            size.width += difx;
-            size.height -= dify;
-            break;
-        case 'bottomleft':
-            if (Math.abs(dify) > Math.abs(difx)) {
-                difx = -dify * this.viewPortRatio;
-            } else {
-                dify = -difx / this.viewPortRatio;
-            }
-            x = difx;
-            size.width -= difx;
-            size.height += dify;
-            break;
-        case 'bottomright':
-            if (Math.abs(dify) > Math.abs(difx)) {
-                difx = dify * this.viewPortRatio;
-            } else {
-                dify = difx / this.viewPortRatio;
-            }
-            size.width += difx;
-            size.height += dify;
-            break;
+            case 'left':
+                size.width -= difx;
+                size.height -= difx / this.viewPortRatio;
+                x = difx;
+                y = difx / this.viewPortRatio;
+                y /= 2;
+                break;
+            case 'right':
+                size.width += difx;
+                size.height += difx / this.viewPortRatio;
+                y = difx / this.viewPortRatio;
+                y /= -2;
+                break;
+            case 'top':
+                size.height -= dify;
+                size.width -= dify * this.viewPortRatio;
+                y = dify;
+                x = dify * this.viewPortRatio;
+                x /= 2;
+                break;
+            case 'bottom':
+                size.height += dify;
+                size.width += dify * this.viewPortRatio;
+                x = dify * this.viewPortRatio;
+                x /= -2;
+                break;
+            case 'topleft':
+                if (Math.abs(dify) > Math.abs(difx)) {
+                    difx = dify * this.viewPortRatio;
+                } else {
+                    dify = difx / this.viewPortRatio;
+                }
+                size.width -= difx;
+                size.height -= dify;
+                x = difx;
+                y = dify;
+                break;
+            case 'topright':
+                if (Math.abs(dify) > Math.abs(difx)) {
+                    difx = -dify * this.viewPortRatio;
+                } else {
+                    dify = -(difx / this.viewPortRatio);
+                }
+                y = dify;
+                size.width += difx;
+                size.height -= dify;
+                break;
+            case 'bottomleft':
+                if (Math.abs(dify) > Math.abs(difx)) {
+                    difx = -dify * this.viewPortRatio;
+                } else {
+                    dify = -difx / this.viewPortRatio;
+                }
+                x = difx;
+                size.width -= difx;
+                size.height += dify;
+                break;
+            case 'bottomright':
+                if (Math.abs(dify) > Math.abs(difx)) {
+                    difx = dify * this.viewPortRatio;
+                } else {
+                    dify = difx / this.viewPortRatio;
+                }
+                size.width += difx;
+                size.height += dify;
+                break;
         }
         this.updateHelper(x, y, size, w, h);
     }
@@ -693,7 +694,7 @@ export class Overview extends Component<HTMLElement> implements INotifyPropertyC
             dely = -voffset - this.parent.scroller.verticalOffset;
         }
         this.parent.setBlazorDiagramProps(true);
-        this.parent.realActions |=   RealAction.OverViewAction;
+        this.parent.realActions |= RealAction.OverViewAction;
         if (this.actionName === 'scale' || this.actionName === 'draw') {
             this.parent.scroller.zoom(zoom / this.parent.scroller.currentZoom, delx, dely, focusPoint);
         } else {
@@ -760,9 +761,11 @@ export class Overview extends Component<HTMLElement> implements INotifyPropertyC
         let widthratio: number = (Number(this.model.width) / this.contentWidth);
         const heightratio: number = (Number(this.model.height) / this.contentHeight);
         widthratio = Math.min(widthratio, heightratio);
-        nativeLayer.setAttribute(
-            'transform', 'translate('
-            + (0) + ',' + (0) + '),scale('
+        let transform: TransformFactor = this.parent.scroller.transform;
+        const tx: number = transform.tx * transform.scale;
+        const ty: number = transform.ty * transform.scale;
+        nativeLayer.setAttribute('transform', 'translate('
+            + (tx * widthratio) + ',' + (ty * heightratio) + '),scale('
             + widthratio + ')');
         context.setTransform(widthratio, 0, 0, widthratio, 0, 0);
         context.fillStyle = 'red';
@@ -786,23 +789,23 @@ export class Overview extends Component<HTMLElement> implements INotifyPropertyC
     private updateCursor(evt: PointerEvent | TouchEvent): void {
         if (hasClass(evt.target as HTMLElement, ('overviewresizer'))) {
             switch ((evt.target as HTMLElement).id) {
-            case this.canvas.id + 'left':
-                this.canvas.style.cursor = 'w-resize';
-                break;
-            case this.canvas.id + 'right':
-                this.canvas.style.cursor = 'e-resize'; break;
-            case this.canvas.id + 'top':
-                this.canvas.style.cursor = 'n-resize'; break;
-            case this.canvas.id + 'bottom':
-                this.canvas.style.cursor = 's-resize'; break;
-            case this.canvas.id + 'topleft':
-                this.canvas.style.cursor = 'nw-resize'; break;
-            case this.canvas.id + 'topright':
-                this.canvas.style.cursor = 'ne-resize'; break;
-            case this.canvas.id + 'bottomleft':
-                this.canvas.style.cursor = 'sw-resize'; break;
-            case this.canvas.id + 'bottomright':
-                this.canvas.style.cursor = 'se-resize'; break;
+                case this.canvas.id + 'left':
+                    this.canvas.style.cursor = 'w-resize';
+                    break;
+                case this.canvas.id + 'right':
+                    this.canvas.style.cursor = 'e-resize'; break;
+                case this.canvas.id + 'top':
+                    this.canvas.style.cursor = 'n-resize'; break;
+                case this.canvas.id + 'bottom':
+                    this.canvas.style.cursor = 's-resize'; break;
+                case this.canvas.id + 'topleft':
+                    this.canvas.style.cursor = 'nw-resize'; break;
+                case this.canvas.id + 'topright':
+                    this.canvas.style.cursor = 'ne-resize'; break;
+                case this.canvas.id + 'bottomleft':
+                    this.canvas.style.cursor = 'sw-resize'; break;
+                case this.canvas.id + 'bottomright':
+                    this.canvas.style.cursor = 'se-resize'; break;
             }
         } else {
             this.canvas.style.cursor = 'default';
@@ -816,28 +819,28 @@ export class Overview extends Component<HTMLElement> implements INotifyPropertyC
         this.currentPoint = this.mousePosition(evt);
         if (this.actionName) {
             switch (this.actionName) {
-            case 'draw':
-                if (!this.inAction && (this.startPoint.x !== this.currentPoint.x || this.startPoint.y !== this.currentPoint.y)) {
-                    this.initHelper();
-                    this.inAction = true;
-                }
-                if (this.inAction) {
-                    this.updateHelper();
-                }
-                break;
-            case 'scale':
-                if (!this.inAction) {
-                    this.initHelper();
-                    this.inAction = true;
-                }
-                this.updateOverviewRectangle();
-                break;
-            case 'pan':
-                if ((this.startPoint.x !== this.currentPoint.x || this.startPoint.y === this.currentPoint.y) || this.inAction) {
-                    this.inAction = true;
-                    this.translateOverviewRectangle();
-                }
-                break;
+                case 'draw':
+                    if (!this.inAction && (this.startPoint.x !== this.currentPoint.x || this.startPoint.y !== this.currentPoint.y)) {
+                        this.initHelper();
+                        this.inAction = true;
+                    }
+                    if (this.inAction) {
+                        this.updateHelper();
+                    }
+                    break;
+                case 'scale':
+                    if (!this.inAction) {
+                        this.initHelper();
+                        this.inAction = true;
+                    }
+                    this.updateOverviewRectangle();
+                    break;
+                case 'pan':
+                    if ((this.startPoint.x !== this.currentPoint.x || this.startPoint.y === this.currentPoint.y) || this.inAction) {
+                        this.inAction = true;
+                        this.translateOverviewRectangle();
+                    }
+                    break;
 
             }
         }
@@ -890,23 +893,23 @@ export class Overview extends Component<HTMLElement> implements INotifyPropertyC
         if (hasClass(evt.target as HTMLElement, 'overviewresizer')) {
             this.actionName = 'scale';
             switch ((evt.target as HTMLElement).id) {
-            case this.canvas.id + 'left':
-                this.resizeDirection = 'left';
-                break;
-            case this.canvas.id + 'right':
-                this.resizeDirection = 'right'; break;
-            case this.canvas.id + 'top':
-                this.resizeDirection = 'top'; break;
-            case this.canvas.id + 'bottom':
-                this.resizeDirection = 'bottom'; break;
-            case this.canvas.id + 'topleft':
-                this.resizeDirection = 'topleft'; break;
-            case this.canvas.id + 'topright':
-                this.resizeDirection = 'topright'; break;
-            case this.canvas.id + 'bottomleft':
-                this.resizeDirection = 'bottomleft'; break;
-            case this.canvas.id + 'bottomright':
-                this.resizeDirection = 'bottomright'; break;
+                case this.canvas.id + 'left':
+                    this.resizeDirection = 'left';
+                    break;
+                case this.canvas.id + 'right':
+                    this.resizeDirection = 'right'; break;
+                case this.canvas.id + 'top':
+                    this.resizeDirection = 'top'; break;
+                case this.canvas.id + 'bottom':
+                    this.resizeDirection = 'bottom'; break;
+                case this.canvas.id + 'topleft':
+                    this.resizeDirection = 'topleft'; break;
+                case this.canvas.id + 'topright':
+                    this.resizeDirection = 'topright'; break;
+                case this.canvas.id + 'bottomleft':
+                    this.resizeDirection = 'bottomleft'; break;
+                case this.canvas.id + 'bottomright':
+                    this.resizeDirection = 'bottomright'; break;
             }
         }
         this.startPoint = this.prevPoint = this.mousePosition(evt);

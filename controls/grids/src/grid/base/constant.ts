@@ -99,6 +99,8 @@ export const beforeDataBound: string = 'beforeDataBound';
 /** @hidden */
 export const beforeOpenColumnChooser: string = 'beforeOpenColumnChooser';
 /** @hidden */
+export const beforeOpenAdaptiveDialog: string = 'beforeOpenAdaptiveDialog';
+/** @hidden */
 export const resizeStart: string = 'resizeStart';
 /** @hidden */
 export const onResize: string = 'resizing';
@@ -493,8 +495,6 @@ export const infiniteCrudCancel: string = 'infinite-crud-cancel';
 /** @hidden */
 export const filterDialogClose: string = 'filter-dialog-close';
 /** @hidden */
-export const setCustomFilterHeader: string = 'set-custom-filter-header';
-/** @hidden */
 export const refreshCustomFilterOkBtn: string = 'refresh-cutsom-filter-ok-button';
 /** @hidden */
 export const refreshCustomFilterClearBtn: string = 'refresh-cutsom-filter-clear-button';
@@ -526,3 +526,7 @@ export const closeInline: string = 'closeinline';
 export const closeBatch: string = 'closebatch';
 /** @hidden */
 export const closeEdit: string = 'close-edit';
+/** @hidden */
+export const resetVirtualFocus: string = 'reset-virtual-focus';
+/** @hidden */
+export const afterContentRender: string = 'after-content-renderer';

@@ -211,7 +211,12 @@ export class Filter {
     }
     private actionComplete(args: GroupEventArgs): void {
         if (args.requestType === filterAfterOpen) {
-            this.filterMenuElement = getValue('filterModel.dlgObj.element', args);
+            if(this.parent.treeGrid.filterSettings.type === 'Menu') {
+                this.filterMenuElement = getValue('filterModel.dlgObj.element', args);
+            }
+            else {
+                this.filterMenuElement = getValue('filterModel.dialogObj.element', args);
+            }
             this.updateFilterMenuPosition(this.filterMenuElement, args);
             // To set default values as 'contains' in filter dialog
             const taskID: string = this.parent.taskFields.id;
@@ -225,7 +230,7 @@ export class Filter {
                 const instanceObj: DropDownList = getValue('ej2_instances[0]', element);
                 instanceObj.index = 2;
                 instanceObj.dataBind();
-            } else if (args.columnName === taskID && isNullOrUndefined(getValue(taskID, filterValues))) {
+            } else if (args.columnName === taskID && isNullOrUndefined(getValue(taskID, filterValues)) && this.parent.treeGrid.filterSettings.type === 'Menu') {
                 const element: HTMLElement = this.filterMenuElement.querySelector('.e-numerictextbox');
                 const instanceObj: NumericTextBox = getValue('ej2_instances[0]', element);
                 if (!isNullOrUndefined(instanceObj) && isNullOrUndefined(this.parent.columnByField[args.columnName].format)) {
@@ -258,12 +263,24 @@ export class Filter {
         if (this.parent.showColumnMenu) {
             targetElement = document.querySelector('#treeGrid' + this.parent.controlId + '_gridcontrol_colmenu_Filter');
             element.style.zIndex = targetElement.parentElement.style.zIndex;
-            this.setPosition(targetElement, getValue('filterModel.dlgObj.element', args));
+            if(this.parent.treeGrid.filterSettings.type === 'Menu') {
+                this.setPosition(targetElement, getValue('filterModel.dlgObj.element', args));
+            }
+            else {
+                this.setPosition(targetElement, getValue('filterModel.dialogObj.element', args));
+            }
         } else {
             targetElement = this.parent.treeGrid.grid.getColumnHeaderByField(args.columnName).querySelector('.e-filtermenudiv');
-            getFilterMenuPostion(targetElement, getValue('filterModel.dlgObj', args), this.parent.treeGrid.grid as IXLFilter);
+            if(this.parent.treeGrid.filterSettings.type === 'Menu') {
+                getFilterMenuPostion(targetElement, getValue('filterModel.dlgObj', args), this.parent.treeGrid.grid as IXLFilter);
+            }
+            else {
+                getFilterMenuPostion(targetElement, getValue('filterModel.dialogObj', args), this.parent.treeGrid.grid as IXLFilter);
+            }
         }
-        (element.querySelector('.e-valid-input') as HTMLElement).focus();
+        if(this.parent.treeGrid.filterSettings.type === 'Menu') {
+            (element.querySelector('.e-valid-input') as HTMLElement).focus();
+        }
     }
     private removeEventListener(): void {
         if (this.parent.isDestroyed) {

@@ -53,7 +53,7 @@ export class EventBase {
             }
             if (timeZonePropChanged) {
                 this.processTimezoneChange(event, oldTimezone);
-            } else {
+            } else if(!this.parent.isPrinting) {
                 event = this.processTimezone(event);
             }
             for (let level: number = 0; level < resourceCollection.length; level++) {

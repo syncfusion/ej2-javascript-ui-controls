@@ -103,6 +103,14 @@ export class FormFields {
                             }
                             // eslint-disable-next-line
                             currentData['uniqueID'] = this.pdfViewer.element.id + 'input_' + pageIndex + '_' + i;
+                            for (let j: number = 0; j< this.pdfViewer.formFieldCollections.length; j++) {
+                                if (inputField.type === 'text' || inputField.type === 'password' || inputField.type === 'textarea') {
+                                    if (currentData['uniqueID'] === this.pdfViewer.formFieldCollections[j].id) {
+                                        currentData['Value'] = this.pdfViewer.formFieldCollections[j].value;
+                                        inputField.value = this.pdfViewer.formFieldCollections[j].value;
+                                    }
+                                }
+                            }
                             this.applyCommonProperties(inputField, pageIndex, i, currentData);
                             this.checkIsReadonly(currentData, inputField);
                             this.applyTabIndex(currentData, inputField, pageIndex);
@@ -922,7 +930,7 @@ export class FormFields {
             currentWidth = this.pdfViewer.handWrittenSignatureSettings.width ? this.pdfViewer.handWrittenSignatureSettings.width : 150;
             currentHeight = this.pdfViewer.handWrittenSignatureSettings.height ? this.pdfViewer.handWrittenSignatureSettings.height : 100;
         } else {
-            if (currentField.style.width > currentField.style.height) {
+            if (currentField.style.transform === 'rotate(90deg)' || currentField.style.transform === 'rotate(270deg)') {
                 // eslint-disable-next-line
                 currentWidth = parseFloat(currentField.style.height) / zoomvalue;
                 // eslint-disable-next-line
@@ -990,7 +998,7 @@ export class FormFields {
             // eslint-disable-next-line
             let currentData: any = FormFieldsData[m];
             if (currentData.uniqueID === target.id) {
-                if (target.type === 'text' || target.type === 'password' || target.type === 'textarea') {
+                if (target && target.type === 'text' || target.type === 'password' || target.type === 'textarea') {
                     const signField: HTMLElement = target as HTMLElement;
                     if (signField.classList.contains('e-pdfviewer-signatureformfields') || signField.classList.contains('e-pdfviewer-signatureformfields-signature')) {
                         currentData.Value = signaturePath;
