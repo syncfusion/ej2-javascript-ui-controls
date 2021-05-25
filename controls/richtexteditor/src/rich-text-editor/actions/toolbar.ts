@@ -6,8 +6,8 @@ import * as events from '../base/constant';
 import * as classes from '../base/classes';
 import { RenderType, ToolbarType, ToolbarItems } from '../base/enum';
 import { setToolbarStatus, updateUndoRedoStatus, getTBarItemsIndex, getCollection, toObjectLowerCase, isIDevice } from '../base/util';
+import { updateDropDownFontFormatLocale } from '../base/util';
 import * as model from '../models/items';
-import * as tools from '../models/toolbar-settings';
 import { IRichTextEditor, IRenderer, NotifyArgs, IToolbarRenderOptions, IColorPickerRenderArgs  } from '../base/interface';
 import { IToolbarItemModel, IToolsItems, IUpdateItemsModel, IDropDownRenderArgs, ISetToolbarStatusArgs } from '../base/interface';
 import { ServiceLocator } from '../services/service-locator';
@@ -48,7 +48,7 @@ export class Toolbar {
         this.isTransformChild = false;
         this.renderFactory = this.locator.getService<RendererFactory>('rendererFactory');
         model.updateDropDownLocale(this.parent);
-        tools.updateDropDownFontFormatLocale(this.parent);
+        updateDropDownFontFormatLocale(this.parent);
         this.renderFactory.addRenderer(RenderType.Toolbar, new ToolbarRenderer(this.parent));
         this.toolbarRenderer = this.renderFactory.getRenderer(RenderType.Toolbar);
         this.baseToolbar = new BaseToolbar(this.parent, this.locator);

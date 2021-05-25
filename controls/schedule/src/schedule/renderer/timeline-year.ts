@@ -196,7 +196,8 @@ export class TimelineYear extends Year {
                 contentTr.appendChild(td);
                 const dateHeader: HTMLElement = createElement('div', {
                     className: cls.DATE_HEADER_CLASS + ' ' + cls.NAVIGATE_CLASS,
-                    innerHTML: (isDateAvail) ? date.getDate().toString() : ''
+                    innerHTML: (isDateAvail) ?
+                        this.parent.globalize.formatDate(date, { skeleton: 'd', calendar: this.parent.getCalendarMode() }) : ''
                 });
                 const skeleton: string = 'full';
                 const announcementText: string = this.parent.globalize.formatDate(date, {

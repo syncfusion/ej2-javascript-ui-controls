@@ -51,7 +51,7 @@ import { Layer } from '../diagram/layer';
 import { SelectorConstraints, Direction, DiagramConstraints } from '../enum/enum';
 import { PageSettings } from '../diagram/page-settings';
 import { DiagramScroller, Segment } from '../interaction/scroller';
-import { remove, isBlazor } from '@syncfusion/ej2-base';
+import { remove, isBlazor, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { ConnectTool } from './tool';
 import { getOppositeDirection, getPortDirection, findAngle, Intersection } from './../utility/connector';
 import { ILayout } from '../layout/layout-base';
@@ -172,6 +172,22 @@ export class CommandHandler {
     public showTooltip(
         node: IElement, position: PointModel, content: string | HTMLElement, toolName: string,
         isTooltipVisible: boolean): void {
+        let targetId: string;
+        let targetEle: HTMLElement;
+        if (node instanceof Selector) {
+            if ((node.nodes.length == 1) && node.connectors.length == 0) { targetId = node.nodes[0].id }
+            else if ((node.nodes.length == 0) && node.connectors.length == 1) { targetId = node.connectors[0].id }
+            else {
+                targetEle = document.getElementById(this.diagram.element.id + '_SelectorElement');
+            }
+        } else if (node instanceof Node) {
+            targetId = (node as Node).id;
+        } else {
+            targetId = (node as Connector).id;
+        }
+        if (isNullOrUndefined(targetEle) && !isNullOrUndefined(targetId)) {
+            targetEle = document.getElementById(targetId + '_groupElement');
+        }
         if (isTooltipVisible) {
             this.diagram.tooltipObject.position = 'BottomCenter';
             this.diagram.tooltipObject.animation = { open: { delay: 0, duration: 0 } };
@@ -198,19 +214,17 @@ export class CommandHandler {
         }
 
         this.diagram.tooltipObject.content = content;
-        const tooltipOffset: PointModel = getTooltipOffset(this.diagram, { x: position.x, y: position.y }, node, toolName ===
-            'ConnectTool' ? 'Mouse' : 'Object');
-        this.diagram.tooltipObject.offsetX = tooltipOffset.x + (toolName === 'ConnectTool' ? 10 : 0);
-        this.diagram.tooltipObject.offsetY = tooltipOffset.y + 10;
+        this.diagram.tooltipObject.offsetX = 0;
+        this.diagram.tooltipObject.offsetY = 0;
         if (isBlazor()) {
             (this.diagram.tooltipObject as BlazorTooltip).updateTooltip(this.diagram.element);
         } else {
-            ( this.diagram.tooltipObject as Tooltip).dataBind();
+            (this.diagram.tooltipObject as Tooltip).refresh(targetEle);
         }
         if (isTooltipVisible) {
             setTimeout(
                 () => {
-                    ( this.diagram.tooltipObject as Tooltip).open(this.diagram.element);
+                    (this.diagram.tooltipObject as Tooltip).open(targetEle);
                 },
                 1);
         }
@@ -5441,7 +5455,61 @@ Remove terinal segment in initial
             addChildToContainer(this.diagram, parent, node);
         }
     }
+     /**
+     *
+     * @private
+     */
+    public updateLaneChildrenZindex(node: Node, target: IElement): void {
+        let lowerIndexobject: Node = this.findLeastIndexObject(node, target) as Node;
+        let swimlane: Node = this.diagram.nameTable[(target as Node).parentId];
+        if (swimlane.zIndex > lowerIndexobject.zIndex) {
+            let layerIndex: number = this.diagram.layers.indexOf(this.diagram.getActiveLayer());
+            const layerZIndexTable: {} = (this.diagram.layers[layerIndex] as Layer).zIndexTable;
+            let startIndex: number = lowerIndexobject.zIndex;
+            let endIndex: number = swimlane.zIndex;
+            for (var i = endIndex; i >= startIndex; i--) {
+                if (startIndex !== i) {
+                    if (!layerZIndexTable[i - 1]) {
+                        layerZIndexTable[i - 1] = layerZIndexTable[i];
+                        this.diagram.nameTable[layerZIndexTable[i - 1]].zIndex = i;
+                        delete layerZIndexTable[i];
+                    } else {
+                        //bringing the objects forward
+                        layerZIndexTable[i] = layerZIndexTable[i - 1];
+                        this.diagram.nameTable[layerZIndexTable[i]].zIndex = i;
+                    }
+                } else {
+                    layerZIndexTable[i] = swimlane.id;
+                    this.diagram.nameTable[swimlane.id].zIndex = i;
+                }
+            }
+            if (this.diagram.mode === 'SVG') {
+                this.moveSvgNode((target as Node).parentId, lowerIndexobject.id);
+                this.updateNativeNodeIndex((target as Node).parentId, lowerIndexobject.id);
 
+            } else {
+                this.diagram.refreshCanvasLayers();
+            }
+        }
+    }
+    private findLeastIndexConnector(edges: string[], target: IElement, index: Node | Connector): Node | Connector {
+        for (let i: number = 0; i < edges.length; i++) {
+            let connector: Connector = this.diagram.nameTable[edges[i]];
+            if ((index as Node).zIndex > connector.zIndex) {
+                index = connector
+            }
+        }
+        return index;
+    }
+    private findLeastIndexObject(node: Node, target: IElement): Node | Connector {
+        let lowerIndexobject: Node | Connector = node as Node;
+        if(node instanceof Node) {
+            lowerIndexobject = this.findLeastIndexConnector(node.inEdges, target, lowerIndexobject) as Node;
+            lowerIndexobject = this.findLeastIndexConnector(node.outEdges, target, lowerIndexobject) as Node;
+        }
+        
+        return lowerIndexobject;
+    }
     /**
      * checkSelection method \
      *

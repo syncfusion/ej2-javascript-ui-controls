@@ -11329,6 +11329,9 @@ export class Editor {
                         this.removedBookmarkElements.push(inline);
                     }
                 }
+                if (inline instanceof CommentCharacterElementBox && inline.commentType === 0) {
+                    (inline.comment.ownerComment) ? this.deleteCommentWidget(inline.comment.ownerComment): this.deleteCommentWidget(inline.comment);
+                }
                 if (inline instanceof BookmarkElementBox) {
                     if (this.documentHelper.bookmarks.containsKey(inline.name)) {
                         this.documentHelper.bookmarks.remove(inline.name);

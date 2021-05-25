@@ -61,4 +61,15 @@ export class Data {
         return this.dataManager.executeQuery(query);
     }
 
+    /**
+     * To destroy the crud module.
+     *
+     * @returns {void}
+     * @private
+     */
+    public destroy(): void {
+        this.dataManager = null;
+        this.query = null;
+    }
+
 }

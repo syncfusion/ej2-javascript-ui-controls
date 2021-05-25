@@ -591,6 +591,86 @@ describe('Selection Testing with Multiple nodes', () => {
     });
 });
 
+describe('Removing multiple strong node Testing', () => {
+    //HTML value
+    let innervalue: string = '<p><strong><strong>Testing</br></strong></strong></p>';
+
+    let rteEle: HTMLElement;
+    let rteObj: any;
+    let rteID: any;
+    let boldItem: any;
+    let italicItem: any;
+    let underlineItem: any;
+
+    beforeAll((done: Function) => {
+        rteObj = renderRTE({
+            value: innervalue,
+            toolbarSettings: {
+                items: ['Bold', 'Italic', 'Underline']
+            },
+            created: function() {
+                rteID = document.body.querySelector('.e-richtexteditor').id;
+                boldItem = document.body.querySelector('#' + rteID + '_toolbar_Bold')
+                italicItem = document.body.querySelector('#' + rteID + '_toolbar_Italic')
+                underlineItem = document.body.querySelector('#' + rteID + '_toolbar_Underline')
+            }
+        });
+        done();
+    });
+    afterAll(() => {
+        destroy(rteObj);
+    });
+    it('Checking the multiple strong tags removal', (done) => {
+        rteObj.inputElement.childNodes[0].focus();
+        rteObj.formatter.editorManager.nodeSelection.setSelectionText(document, rteObj.inputElement.childNodes[0].childNodes[0].childNodes[0].childNodes[0], rteObj.inputElement.childNodes[0].childNodes[0].childNodes[0].childNodes[0], 0, 7);
+        boldItem.click();
+        expect(rteObj.inputElement.innerHTML).toBe('<p>Testing<br></p>');            
+        done();
+    });
+});
+
+describe('Removing multiple strong and em nodes Testing', () => {
+    //HTML value
+    let innervalue: string = '<strong><em><strong><em id="multiple">Testing</em></strong><br></em></strong>';
+
+    let rteEle: HTMLElement;
+    let rteObj: any;
+    let rteID: any;
+    let boldItem: any;
+    let italicItem: any;
+    let underlineItem: any;
+
+    beforeAll((done: Function) => {
+        rteObj = renderRTE({
+            value: innervalue,
+            toolbarSettings: {
+                items: ['Bold', 'Italic', 'Underline']
+            },
+            created: function() {
+                rteID = document.body.querySelector('.e-richtexteditor').id;
+                boldItem = document.body.querySelector('#' + rteID + '_toolbar_Bold')
+                italicItem = document.body.querySelector('#' + rteID + '_toolbar_Italic')
+                underlineItem = document.body.querySelector('#' + rteID + '_toolbar_Underline')
+            }
+        });
+        done();
+    });
+    afterAll(() => {
+        destroy(rteObj);
+    });
+    it('Checking the multiple strong and em tags removal', (done) => {
+        rteObj.inputElement.childNodes[0].focus();
+        rteObj.formatter.editorManager.nodeSelection.setSelectionText(document, rteObj.inputElement.childNodes[0].querySelector('#multiple').childNodes[0], rteObj.inputElement.childNodes[0].querySelector('#multiple').childNodes[0], 0, 4);
+        italicItem.click();
+        expect(rteObj.inputElement.childNodes[0].querySelectorAll('em').length).toBe(1);
+        boldItem.click();            
+        expect(rteObj.inputElement.childNodes[0].firstChild.nodeType).toBe(3);
+        expect(rteObj.inputElement.childNodes[0].querySelectorAll('em').length).toBe(1);
+        expect(rteObj.inputElement.childNodes[0].querySelectorAll('strong').length).toBe(1);
+        done();
+    });
+});
+
 describe('Remove Br tags when applying formatting', () => {
     //HTML value
     let innervalue: string = '<p><br></p>';

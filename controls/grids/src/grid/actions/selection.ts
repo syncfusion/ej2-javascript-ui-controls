@@ -286,15 +286,18 @@ export class Selection implements IAction {
         let selectData: Object;
         let isRemoved: boolean = false;
         if (gObj.enableVirtualization && index > -1) {
-            this.parent.notify(events.selectVirtualRow, { selectedIndex: index });
+            let e: { selectedIndex: number, isAvailable: boolean } = { selectedIndex: index, isAvailable: true };
+            this.parent.notify(events.selectVirtualRow, e);
             let frozenData: Object = gObj.isFrozenGrid() ? (gObj.contentModule as VirtualFreezeRenderer).getRowObjectByIndex(index)
                 : null;
             if (selectedRow && (gObj.getRowObjectFromUID(selectedRow.getAttribute('data-uid')) || frozenData)) {
                 selectData = frozenData ? frozenData : gObj.getRowObjectFromUID(selectedRow.getAttribute('data-uid')).data;
             } else {
-                let prevSelectedData: Object[] = this.parent.getSelectedRecords();
-                if (prevSelectedData.length > 0) {
-                    this.clearRowSelection();
+                if (e.isAvailable && !gObj.selectionSettings.persistSelection) {
+                    let prevSelectedData: Object[] = this.parent.getSelectedRecords();
+                    if (prevSelectedData.length > 0) {
+                        this.clearRowSelection();
+                    }
                 }
                 return;
             }
@@ -2861,7 +2864,8 @@ export class Selection implements IAction {
             } else if (this.parent.checkAllRows === 'Uncheck') {
                 this.selectedRowIndexes = [];
             } else {
-                if (index && this.parent.getRowByIndex(index).getAttribute('aria-selected') === 'false') {
+                let row: Element = this.parent.getRowByIndex(index);
+                if (index && row && row.getAttribute('aria-selected') === 'false') {
                     let selectedVal: number = this.selectedRowIndexes.indexOf(index);
                     this.selectedRowIndexes.splice(selectedVal, 1);
                 }

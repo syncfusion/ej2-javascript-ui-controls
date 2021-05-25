@@ -1,10 +1,9 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { formatUnit, isNullOrUndefined, closest, extend, append, prepend } from '@syncfusion/ej2-base';
-import { createElement, remove, addClass, EventHandler } from '@syncfusion/ej2-base';
+import { createElement, addClass, EventHandler } from '@syncfusion/ej2-base';
 import { IRenderer, NotifyEventArgs, EventFieldsMapping, TdData } from '../base/interface';
 import { AgendaBase } from '../event-renderer/agenda-base';
 import { Schedule } from '../base/schedule';
-import { ViewBase } from './view-base';
 import * as util from '../base/util';
 import * as event from '../base/constant';
 import * as cls from '../base/css-constant';
@@ -12,17 +11,15 @@ import * as cls from '../base/css-constant';
 /**
  * agenda view
  */
-export class Agenda extends ViewBase implements IRenderer {
+export class Agenda extends AgendaBase implements IRenderer {
     public viewClass: string = 'e-agenda-view';
     public isInverseTableSelect: boolean = false;
     public agendaDates: { [key: string]: Date } = {};
     public virtualScrollTop: number = 1;
-    public agendaBase: AgendaBase;
     public dataSource: Record<string, any>[];
 
     constructor(parent: Schedule) {
         super(parent);
-        this.agendaBase = new AgendaBase(parent);
     }
 
     protected getModuleName(): string {
@@ -46,7 +43,7 @@ export class Agenda extends ViewBase implements IRenderer {
         wrap.appendChild(tbl);
         const tBody: Element = tbl.querySelector('tbody');
         const agendaDate: Date = util.resetTime(this.parent.selectedDate);
-        this.agendaBase.renderEmptyContent(tBody, agendaDate);
+        this.renderEmptyContent(tBody, agendaDate);
         this.wireEvents();
         if (this.parent.resourceBase) {
             this.parent.resourceBase.generateResourceLevels([(<TdData>{ renderDates: this.parent.activeView.renderDates })]);
@@ -68,12 +65,12 @@ export class Agenda extends ViewBase implements IRenderer {
             this.dataSource = this.parent.eventBase.filterEventsByResource(resource, this.dataSource);
             eventCollection = this.parent.eventBase.filterEventsByResource(resource, eventCollection);
         }
-        this.parent.eventsProcessed = this.agendaBase.processAgendaEvents(eventCollection);
+        this.parent.eventsProcessed = this.processAgendaEvents(eventCollection);
         const agendaDate: Date = util.resetTime(this.parent.selectedDate);
         const tBody: Element = this.element.querySelector('.' + cls.CONTENT_TABLE_CLASS + ' tbody') as HTMLElement;
         util.removeChildren(tBody);
         this.renderInitialContent(tBody, agendaDate);
-        this.agendaBase.wireEventActions();
+        this.wireEventActions();
         const contentArea: HTMLElement = closest(tBody, '.' + cls.CONTENT_WRAP_CLASS) as HTMLElement;
         contentArea.scrollTop = 1;
         this.parent.notify(event.eventsLoaded, {});
@@ -91,7 +88,7 @@ export class Agenda extends ViewBase implements IRenderer {
                 processedData = processedData.concat(this.parent.eventBase.generateOccurrence(data, refreshDate));
             }
         }
-        this.parent.eventsProcessed = this.parent.eventsProcessed.concat(this.agendaBase.processAgendaEvents(processedData));
+        this.parent.eventsProcessed = this.parent.eventsProcessed.concat(this.processAgendaEvents(processedData));
     }
 
     private renderInitialContent(tBody: Element, agendaDate: Date): void {
@@ -118,7 +115,7 @@ export class Agenda extends ViewBase implements IRenderer {
             }
         }
         if (tBody.childNodes.length <= 0) {
-            this.agendaBase.renderEmptyContent(tBody, agendaDate);
+            this.renderEmptyContent(tBody, agendaDate);
         }
     }
 
@@ -143,11 +140,11 @@ export class Agenda extends ViewBase implements IRenderer {
                         this.parent.headerModule.updateHeaderItems('remove');
                     }
                 }
-                this.agendaBase.calculateResourceTableElement(tBody, this.parent.agendaDaysCount, date);
+                this.calculateResourceTableElement(tBody, this.parent.agendaDaysCount, date);
             } else {
                 for (let day: number = 0; day < this.parent.agendaDaysCount; day++) {
                     const filterData: Record<string, any>[] = this.appointmentFiltering(agendaDate);
-                    const nTr: Element = this.agendaBase.createTableRowElement(agendaDate, 'data');
+                    const nTr: Element = this.createTableRowElement(agendaDate, 'data');
                     if (this.element.querySelector('tr[aria-rowindex="' + parseInt(nTr.getAttribute('aria-rowindex'), 10) + '"]')) {
                         continue;
                     }
@@ -155,9 +152,9 @@ export class Agenda extends ViewBase implements IRenderer {
                     const aTd: Element = nTr.children[1];
                     if (filterData.length > 0 || (!this.parent.hideEmptyAgendaDays && filterData.length === 0)) {
                         const elementType: string = (!this.parent.hideEmptyAgendaDays && filterData.length === 0) ? 'noEvents' : 'data';
-                        dTd.appendChild(this.agendaBase.createDateHeaderElement(agendaDate));
+                        dTd.appendChild(this.createDateHeaderElement(agendaDate));
                         nTr.appendChild(dTd);
-                        const cTd: Element = this.agendaBase.createAgendaContentElement(elementType, filterData, aTd);
+                        const cTd: Element = this.createAgendaContentElement(elementType, filterData, aTd);
                         nTr.appendChild(cTd);
                         if (cTd.querySelectorAll('li').length > 0) {
                             tBody.appendChild(nTr);
@@ -206,7 +203,7 @@ export class Agenda extends ViewBase implements IRenderer {
             if (filterData.length > 0 || !this.parent.hideEmptyAgendaDays) {
                 this.renderContent(emptyTBody, filterDate.start, filterDate.end);
                 prepend([].slice.call(emptyTBody.childNodes), tBody);
-                this.agendaBase.wireEventActions();
+                this.wireEventActions();
                 for (let s: number = 0, element: HTMLCollection = tBody.children; s < element.length; s++) {
                     if (element[s].getAttribute('aria-rowindex') === topElement.getAttribute('aria-colindex')) {
                         const scrollToValue: number = (<HTMLElement>element[s]).offsetTop -
@@ -223,7 +220,7 @@ export class Agenda extends ViewBase implements IRenderer {
             if (filterData.length > 0 || !this.parent.hideEmptyAgendaDays) {
                 this.renderContent(emptyTBody, filterDate.start, filterDate.end);
                 append([].slice.call(emptyTBody.childNodes), tBody);
-                this.agendaBase.wireEventActions();
+                this.wireEventActions();
                 this.updateHeaderText(scrollDate);
             }
         } else {
@@ -363,7 +360,7 @@ export class Agenda extends ViewBase implements IRenderer {
         const element: HTMLTableCellElement = closest((<Element>e.currentTarget), '.' + cls.AGENDA_CELLS_CLASS) as HTMLTableCellElement;
         const date: Date = this.parent.getDateFromElement(element);
         if (!isNullOrUndefined(date) && !this.parent.isAdaptive && this.parent.isMinMaxDate(date)) {
-            this.parent.setScheduleProperties({ selectedDate: date });
+            this.parent.setProperties({ selectedDate: date }, true);
             this.parent.changeView('Day', e);
         }
     }
@@ -386,8 +383,10 @@ export class Agenda extends ViewBase implements IRenderer {
     }
 
     public removeEventListener(): void {
-        this.parent.off(event.scrollUiUpdate, this.onAgendaScrollUiUpdate);
-        this.parent.off(event.dataReady, this.eventLoad);
+        if (this.parent) {
+            this.parent.off(event.scrollUiUpdate, this.onAgendaScrollUiUpdate);
+            this.parent.off(event.dataReady, this.eventLoad);
+        }
     }
 
     private onAgendaScrollUiUpdate(): void {
@@ -406,17 +405,16 @@ export class Agenda extends ViewBase implements IRenderer {
     }
 
     public destroy(): void {
-        if (this.parent.isDestroyed) { return; }
+        if (!this.parent || this.parent && this.parent.isDestroyed) { return; }
         if (this.element) {
             this.unWireEvents();
             if (this.parent.resourceBase) {
                 this.parent.resourceBase.destroy();
             }
-            remove(this.element);
-            this.element = null;
             if (this.parent.headerModule && this.parent.activeViewOptions.allowVirtualScrolling) {
                 this.parent.headerModule.updateHeaderItems('remove');
             }
+            super.destroy();
         }
     }
 

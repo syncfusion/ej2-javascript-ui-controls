@@ -322,6 +322,7 @@ export interface PivotViewModel extends ComponentModel{
      * line types that are shown horizontally and vertically to indicate the value of the axis at the mouse hover or touch position in the pivot chart.
      * * `description`: Allows you to add a description of the pivot chart.
      * * `enableAnimation`: Allows you to enable/disable the tooltip animation while performing the mouse move from one point to another in the pivot chart.
+     * * `enableCanvas`: Allows you to render the pivot chart in canvas mode.
      * * `enableExport`: Allows the pivot chart to be exported to either **PDF** or **PNG** or **JPEG** or **SVG** filter formats.
      * * `enableMultipleAxis`: Allows you to draw the pivot chart with multiple value fields as separate chart area.
      * * `enableSideBySidePlacement`: Allows you to draw points of the column type pivot chart series as side by side.

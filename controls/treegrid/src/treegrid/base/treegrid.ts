@@ -1929,6 +1929,7 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
         this.grid.detailTemplate = getActualProperties(this.detailTemplate);
         this.grid.frozenRows = this.frozenRows;
         this.grid.frozenColumns = this.frozenColumns;
+        this.grid.clipMode = getActualProperties(this.clipMode);
         const templateInstance: string = 'templateDotnetInstance';
         this.grid[templateInstance] = this[templateInstance];
         const isJsComponent: string = 'isJsComponent';
@@ -2100,8 +2101,9 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
         if (old) {
             const keys: string[] = Object.keys(old);
             let isEqual: boolean = true;
+            let excludeKeys: string[] = ["Children", "childRecords","taskData","uniqueID","parentItem", "parentUniqueID"];
             for (let i: number = 0; i < keys.length; i++) {
-                if (old[keys[i]] !== current[keys[i]]) {
+                if (old[keys[i]] !== current[keys[i]] && excludeKeys.indexOf(keys[i]) === -1) {
                     isEqual = false; break;
                 }
             }
@@ -2224,9 +2226,10 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
         if (this.dataSource instanceof DataManager && (this.dataSource.dataSource.offline || this.dataSource.ready)) {
             this.grid.dataSource[dataSource].json = extendArray(this.dataSource[dataSource].json);
             this.grid.dataSource[ready] = this.dataSource.ready;
-            const dm: Object = this.grid.dataSource;
+            let proxy: TreeGrid = this;
             if ( !isNullOrUndefined(this.grid.dataSource[ready]) ) {
                 this.grid.dataSource[ready].then((e: ReturnOption): void => {
+                    let dm: Object = proxy.grid.dataSource;
                     dm[dataSource].offline = true;
                     dm[isDataAvailable] = true;
                     dm[dataSource].json = e.result;
@@ -3502,7 +3505,7 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
         }else {
             const rowInfo: RowInfo = this.grid.getRowInfo(target);
             let record: ITreeData = <ITreeData>rowInfo.rowData;
-            if (this.enableImmutableMode && Object.keys(record).length === 0) {
+            if (this.enableImmutableMode) {
                 record = this.getCurrentViewRecords()[(<HTMLTableRowElement>rowInfo).rowIndex];
             }
             if (target.classList.contains('e-treegridexpand')) {

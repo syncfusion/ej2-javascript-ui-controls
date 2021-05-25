@@ -225,3 +225,23 @@ export let toolsLocale: { [key: string]: string } = {
     'insertrowafter': 'insertRowAfter',
     'deleterow': 'deleteRow'
 };
+
+export let fontNameLocale : { [ket: string]: string }[] = [
+    { locale: 'fontNameSegoeUI', value: 'Segoe UI'},
+    { locale: 'fontNameArial', value: 'Arial,Helvetica,sans-serif'},
+    { locale: 'fontNameGeorgia', value: 'Georgia,serif'},
+    { locale: 'fontNameImpact', value: 'Impact,Charcoal,sans-serif'},
+    { locale: 'fontNameTahoma', value: 'Tahoma,Geneva,sans-serif'},
+    { locale: 'fontNameTimesNewRoman', value: 'Times New Roman,Times,serif'},
+    { locale: 'fontNameVerdana', value: 'Verdana,Geneva,sans-serif'}
+];
+
+export let formatsLocale : { [ket: string]: string }[] = [
+    { locale: 'formatsDropDownParagraph', value: 'P' },
+    { locale: 'formatsDropDownCode', value: 'Pre' },
+    { locale: 'formatsDropDownQuotation', value: 'BlockQuote' },
+    { locale: 'formatsDropDownHeading1', value: 'H1' },
+    { locale: 'formatsDropDownHeading2', value: 'H2' },
+    { locale: 'formatsDropDownHeading3', value: 'H3' },
+    { locale: 'formatsDropDownHeading4', value: 'H4' }
+];

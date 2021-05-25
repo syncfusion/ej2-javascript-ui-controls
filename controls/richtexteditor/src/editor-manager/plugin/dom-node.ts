@@ -525,7 +525,7 @@ export class DOMNode {
         const startChildNodes: NodeListOf<Node> = range.startContainer.childNodes;
         const isTableStart: boolean = startChildNodes.length > 1 && startChildNodes[0].nodeName === 'TABLE';
         let start: Element = <Element>((isTableStart ? getLastTextNode(startChildNodes[range.startOffset + 1]) :
-            startChildNodes[range.startOffset]) || range.startContainer);
+            startChildNodes[(range.startOffset > 0) ? (range.startOffset - 1) : range.startOffset]) || range.startContainer);
         let end: Element = <Element>(range.endContainer.childNodes[(range.endOffset > 0) ? (range.endOffset - 1) : range.endOffset]
             || range.endContainer);
         if ((start.nodeType === Node.ELEMENT_NODE && end.nodeType === Node.ELEMENT_NODE) && (start.contains(end) || end.contains(start))) {

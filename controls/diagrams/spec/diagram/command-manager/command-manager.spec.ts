@@ -402,3 +402,52 @@ describe('SendToBack exception', () => {
         done();
     });
 });
+describe('Default Template tooltip', () => {
+    var diagram: Diagram;
+    let ele: HTMLElement;
+    let mouseEvents: MouseEvents = new MouseEvents();
+    beforeAll((): void => {
+        const isDef = (o: any) => o !== undefined && o !== null;
+        if (!isDef(window.performance)) {
+            console.log("Unsupported environment, window.performance.memory is unavailable");
+            this.skip(); //Skips test (in Chai)
+            return;
+        }
+        ele = createElement('div', { id: 'tooltipCheck' });
+        document.body.appendChild(ele);
+        let connector: ConnectorModel = {
+            id: 'connector1', sourcePoint: { x: 300, y: 100 }, targetPoint: { x: 400, y: 200 }
+        };
+        let node: NodeModel = {
+            id: 'node1', width: 100, height: 100, offsetX: 100, offsetY: 450, annotations: [{ content: 'Node1' }]
+        };
+        let node2: NodeModel = {
+            id: 'node2', width: 100, height: 100, offsetX: 550, offsetY: 450, annotations: [{ content: 'Node1' }],
+            tooltip: { openOn: 'Custom' }
+        };
+        diagram = new Diagram({
+            width: '1000px', height: '500px',
+            nodes: [node, node2],
+            connectors: [connector],
+        });
+        diagram.appendTo('#tooltipCheck');
+    });
+    afterAll((): void => {
+        diagram.destroy();
+        ele.remove();
+    });
+    it('Checking custom tooltip template with default template', (done: Function) => {
+        let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
+        diagram.showTooltip(diagram.nodes[1]);
+        setTimeout(() => { done(); }, 50);
+    });
+    it('Checking tooltip on mouse enter of custom object', (done: Function) => {
+        let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
+        mouseEvents.mouseMoveEvent(diagramCanvas, 320, 320);
+        let tooltipElement: HTMLElement = document.getElementsByClassName('e-tooltip-wrap e-popup e-control e-popup-open')[0] as HTMLElement;
+        expect(tooltipElement !== null).toBe(true);
+        expect(tooltipElement.offsetLeft).toEqual(522);
+        expect(tooltipElement.offsetTop).toEqual(517);
+        done();
+    });
+});

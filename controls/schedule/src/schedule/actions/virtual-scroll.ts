@@ -26,12 +26,12 @@ export class VirtualScroll {
     }
 
     private addEventListener(): void {
-        if (this.parent.isDestroyed) { return; }
+        if (!this.parent || this.parent && this.parent.isDestroyed) { return; }
         this.parent.on(events.virtualScroll, this.virtualScrolling, this);
     }
 
     private removeEventListener(): void {
-        if (this.parent.isDestroyed) { return; }
+        if (!this.parent || this.parent && this.parent.isDestroyed) { return; }
         this.parent.off(events.virtualScroll, this.virtualScrolling);
     }
 
@@ -117,7 +117,7 @@ export class VirtualScroll {
     }
 
     private renderEvents(): void {
-        this.setTabIndex(),
+        this.setTabIndex();
         this.parent.notify(events.dataReady, {});
         this.parent.notify(events.contentReady, {});
         this.parent.hideSpinner();
@@ -201,12 +201,12 @@ export class VirtualScroll {
     }
 
     public updateContent(resWrap: HTMLElement, conWrap: HTMLElement, eventWrap: HTMLElement, resCollection: TdData[]): void {
-        const renderedLenth: number = resWrap.querySelector('tbody').children.length;
+        const renderedLength: number = resWrap.querySelector('tbody').children.length;
         if (document.activeElement && document.activeElement.classList.contains(cls.RESOURCE_CELLS_CLASS)) {
             this.isResourceCell = true;
             this.parent.element.focus();
         }
-        for (let i: number = 0; i < renderedLenth; i++) {
+        for (let i: number = 0; i < renderedLength; i++) {
             remove(resWrap.querySelector('tbody tr'));
             remove(conWrap.querySelector('tbody tr'));
             remove(eventWrap.querySelector('div'));
@@ -247,8 +247,8 @@ export class VirtualScroll {
     }
 
     private setTabIndex(): void {
-        let resColWrap: HTMLElement = this.parent.element.querySelector('.' + cls.RESOURCE_COLUMN_WRAP_CLASS);
-        let resCells: HTMLElement[] = [].slice.call(this.parent.element.querySelectorAll('.' + cls.RESOURCE_CELLS_CLASS));
+        const resColWrap: HTMLElement = this.parent.element.querySelector('.' + cls.RESOURCE_COLUMN_WRAP_CLASS);
+        const resCells: HTMLElement[] = [].slice.call(this.parent.element.querySelectorAll('.' + cls.RESOURCE_CELLS_CLASS));
         if (resCells && resColWrap) {
             resCells.forEach((element: HTMLElement) => {
                 if (element.getBoundingClientRect().top >= resColWrap.getBoundingClientRect().top) {
@@ -256,7 +256,7 @@ export class VirtualScroll {
                 }
             });
         }
-        const focusResCell: HTMLElement = this.parent.element.querySelector(`.${cls.RESOURCE_CELLS_CLASS}[tabindex="${0}"]`)
+        const focusResCell: HTMLElement = this.parent.element.querySelector(`.${cls.RESOURCE_CELLS_CLASS}[tabindex="${0}"]`);
         if (this.isResourceCell && focusResCell) {
             focusResCell.focus();
             this.isResourceCell = false;

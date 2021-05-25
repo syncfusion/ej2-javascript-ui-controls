@@ -45,6 +45,7 @@ export class Link {
         this.parent.on(events.insertLink, this.linkDialog, this);
         this.parent.on(events.keyDown, this.onKeyDown, this);
         this.parent.on(events.insertCompleted, this.showLinkQuickToolbar, this);
+        this.parent.on(events.clearDialogObj, this.clearDialogObj, this);
         this.parent.on(events.linkToolbarAction, this.onToolbarAction, this);
         this.parent.on(events.iframeMouseDown, this.onIframeMouseDown, this);
         this.parent.on(events.unLink, this.removeLink, this);
@@ -74,6 +75,7 @@ export class Link {
         this.parent.off(events.insertLink, this.linkDialog);
         this.parent.off(events.keyDown, this.onKeyDown);
         this.parent.off(events.insertCompleted, this.showLinkQuickToolbar);
+        this.parent.off(events.clearDialogObj, this.clearDialogObj);
         this.parent.off(events.linkToolbarAction, this.onToolbarAction);
         this.parent.off(events.unLink, this.removeLink);
         this.parent.off(events.iframeMouseDown, this.onIframeMouseDown);
@@ -202,9 +204,17 @@ export class Link {
             break;
         }
     }
+    private clearDialogObj(): void {
+        if (this.dialogObj) {
+            this.dialogObj.destroy();
+            detach(this.dialogObj.element);
+            this.dialogObj = null;
+        }
+    }
     private linkDialog(e?: NotifyArgs, inputDetails?: { [key: string]: string }): void {
         if (this.dialogObj) {
-            this.dialogObj.hide({ returnValue: true } as Event); return;
+            this.dialogObj.hide({ returnValue: true } as Event);
+            return;
         }
         if (this.parent.editorMode === 'HTML' && (e.selectParent.length > 0 &&
             !isNullOrUndefined((e.selectParent[0] as HTMLElement).classList) &&
@@ -289,6 +299,7 @@ export class Link {
         this.dialogObj.createElement = this.parent.createElement;
         this.dialogObj.appendTo(linkDialogEle);
         linkDialogEle.style.maxHeight = 'inherit';
+        if (isNullOrUndefined(this.dialogObj)) { return; }
         if (!isNullOrUndefined(inputDetails)) {
             linkUrl.value = inputDetails.url;
             linkText.value = inputDetails.text;

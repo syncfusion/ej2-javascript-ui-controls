@@ -2920,6 +2920,7 @@ export class MultiSelect extends DropDownBase implements IInput {
             this.updateWrapperText(this.delimiterWrapper, data);
             this.delimiterWrapper.setAttribute('id', getUniqueID('delim_val'));
             this.inputElement.setAttribute('aria-describedby', this.delimiterWrapper.id);
+            this.inputElement.setAttribute('aria-labelledby', this.delimiterWrapper.id);
         }
         const targetEle: HTMLElement = e && e.target as HTMLElement;
         const isClearAll: boolean = (targetEle && targetEle.classList.contains('e-close-hooker')) ? true : null;
@@ -3819,6 +3820,7 @@ export class MultiSelect extends DropDownBase implements IInput {
             this.updateWrapperText(this.delimiterWrapper, wrapperText);
             this.delimiterWrapper.setAttribute('id', getUniqueID('delim_val'));
             this.inputElement.setAttribute('aria-describedby', this.delimiterWrapper.id);
+            this.inputElement.setAttribute('aria-labelledby', this.delimiterWrapper.id);
             this.setProperties({ text: text.toString() }, true);
             this.refreshInputHight();
             this.refreshPlaceHolder();
@@ -4253,6 +4255,7 @@ export class MultiSelect extends DropDownBase implements IInput {
         }) as HTMLInputElement;
         if (this.mode === 'Default' || this.mode === 'Box') {
             this.inputElement.setAttribute('aria-describedby', this.chipCollectionWrapper.id);
+            this.inputElement.setAttribute('aria-labelledby', this.chipCollectionWrapper.id);
         }
         if (this.element.tagName !== this.getNgDirective()) {
             this.element.style.display = 'none';

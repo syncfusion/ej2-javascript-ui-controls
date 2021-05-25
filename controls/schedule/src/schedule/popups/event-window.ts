@@ -55,7 +55,6 @@ export class EventWindow {
         this.fields = this.parent.eventFields;
         this.timezoneData = this.parent.tzModule.timezoneData;
         this.eventWindowTime = { startTime: new Date(), endTime: new Date() };
-        this.fieldValidator = new FieldValidator();
         this.renderEventWindow();
     }
 
@@ -113,7 +112,7 @@ export class EventWindow {
     }
 
     public refresh(): void {
-        this.destroy();
+        this.destroy(true);
         this.renderEventWindow();
     }
 
@@ -320,15 +319,15 @@ export class EventWindow {
         const repeatParentDiv: HTMLElement = this.createDivElement(cls.EVENT_WINDOW_REPEAT_DIV_CLASS);
         parentDiv.appendChild(repeatParentDiv);
         const repeatDiv: HTMLElement = this.renderCheckBox(cls.EVENT_WINDOW_REPEAT_CLASS);
-        const repeatEditConainer: HTMLElement = createElement('span', { className: REPEAT_CONTAINER_CLASS });
+        const repeatEditContainer: HTMLElement = createElement('span', { className: REPEAT_CONTAINER_CLASS });
         const button: HTMLElement = createElement('button', {
             className: REPEAT_BUTTON_CLASS,
             attrs: { type: 'button', 'title': this.l10n.getConstant('editRecurrence') }
         });
         this.buttonObj = new Button({ iconCss: REPEAT_BUTTON_ICON_CLASS + ' e-icons', cssClass: 'e-medium ' + this.parent.cssClass });
-        repeatEditConainer.appendChild(button);
+        repeatEditContainer.appendChild(button);
         this.buttonObj.appendTo(button);
-        repeatDiv.appendChild(repeatEditConainer);
+        repeatDiv.appendChild(repeatEditContainer);
         repeatParentDiv.appendChild(repeatDiv);
         if (this.parent.isAdaptive) {
             EventHandler.add(button, 'click', this.loadRecurrenceEditor, this);
@@ -466,7 +465,7 @@ export class EventWindow {
             });
             listObj.appendTo(resourceInput);
         } else {
-            const drowDownList: DropDownList = new DropDownList({
+            const dropDownList: DropDownList = new DropDownList({
                 cssClass: this.parent.cssClass || '',
                 change: this.onDropdownResourceChange.bind(this),
                 dataSource: resourceData.dataSource as Record<string, any>[],
@@ -482,7 +481,7 @@ export class EventWindow {
                 popupWidth: '447px',
                 itemTemplate: resourceTemplate
             });
-            drowDownList.appendTo(resourceInput);
+            dropDownList.appendTo(resourceInput);
         }
         return resourceDiv;
     }
@@ -492,7 +491,7 @@ export class EventWindow {
         const timezoneDiv: HTMLElement = this.createDivElement(value + '-container');
         const timezoneInput: HTMLElement = this.createInputElement(value + ' ' + EVENT_FIELD, fieldName);
         timezoneDiv.appendChild(timezoneInput);
-        const drowDownList: DropDownList = new DropDownList({
+        const dropDownList: DropDownList = new DropDownList({
             allowFiltering: true,
             change: this.onTimezoneChange.bind(this),
             cssClass: this.parent.cssClass || '',
@@ -510,7 +509,7 @@ export class EventWindow {
             placeholder: this.getFieldLabel(value),
             popupHeight: '230px'
         });
-        drowDownList.appendTo(timezoneInput);
+        dropDownList.appendTo(timezoneInput);
         return timezoneDiv;
     }
 
@@ -857,6 +856,7 @@ export class EventWindow {
         rules[this.parent.eventSettings.fields.endTime.name] = getValidationRule(this.parent.eventSettings.fields.endTime.validation);
         rules[this.parent.eventSettings.fields.description.name] =
             getValidationRule(this.parent.eventSettings.fields.description.validation);
+        this.fieldValidator = new FieldValidator();
         this.fieldValidator.renderFormValidator(form, rules, this.element);
     }
 
@@ -866,9 +866,9 @@ export class EventWindow {
             this.trimAllDay(eventObj);
         }
         this.eventData = eventObj;
-        const formelement: HTMLInputElement[] = this.getFormElements(cls.EVENT_WINDOW_DIALOG_CLASS);
+        const formElements: HTMLInputElement[] = this.getFormElements(cls.EVENT_WINDOW_DIALOG_CLASS);
         const keyNames: string[] = Object.keys(eventObj);
-        for (const curElement of formelement) {
+        for (const curElement of formElements) {
             const columnName: string = curElement.name || this.getColumnName(curElement);
             if (!isNullOrUndefined(columnName) && columnName !== '') {
                 if (keyNames.indexOf(columnName) !== -1) {
@@ -1289,8 +1289,8 @@ export class EventWindow {
         let resourceData: string[] | number[] = null;
         if (!isNullOrUndefined(this.parent.resourceBase) && !isNullOrUndefined(this.parent.resourceBase.resourceCollection)
             && this.parent.resourceBase.resourceCollection.length > 0) {
-            const lastResouceData: ResourcesModel = this.parent.resourceBase.resourceCollection.slice(-1)[0];
-            resourceData = eventObj[lastResouceData.field] as string[] | number[];
+            const lastResourceData: ResourcesModel = this.parent.resourceBase.resourceCollection.slice(-1)[0];
+            resourceData = eventObj[lastResourceData.field] as string[] | number[];
         }
         return resourceData;
     }
@@ -1355,7 +1355,7 @@ export class EventWindow {
                 const obj: Record<string, any> = { 'SU': 0, 'MO': 1, 'TU': 2, 'WE': 3, 'TH': 4, 'FR': 5, 'SA': 6 };
                 const temp: number[] = [];
                 const tempDiff: number[] = [];
-                let tempvalue: number[];
+                let tempValue: number[];
                 switch (recEditor.value.split(';')[0].split('=')[1]) {
                 case 'DAILY':
                     if ((((endDate.getTime() - startDate.getTime()) / (1000 * 3600)) > (interval * 24))) {
@@ -1367,9 +1367,9 @@ export class EventWindow {
                     for (let index: number = 0; index < types.length * (interval + 1); index++) {
                         temp[index] = (types.length > index) ? <number>obj[types[index]] : temp[index - types.length] + (7 * interval);
                     }
-                    tempvalue = temp.sort((a: number, b: number) => a - b);
-                    for (let index: number = 1; index < tempvalue.length; index++) {
-                        tempDiff.push(tempvalue[index] - tempvalue[index - 1]);
+                    tempValue = temp.sort((a: number, b: number) => a - b);
+                    for (let index: number = 1; index < tempValue.length; index++) {
+                        tempDiff.push(tempValue[index] - tempValue[index - 1]);
                     }
                     if ((((endDate.getTime() - startDate.getTime()) / (1000 * 3600)) >= Math.min(...tempDiff) * 24)
                         || isNullOrUndefined(interval)) {
@@ -1489,10 +1489,10 @@ export class EventWindow {
     }
 
     private resourceSaveEvent(eventObj: Record<string, any>, action?: CurrentAction, currentAction?: CurrentAction): void {
-        const lastResouceData: ResourcesModel = this.parent.resourceBase.resourceCollection.slice(-1)[0];
-        let resourceData: string[] | number[] = eventObj[lastResouceData.field] as string[] | number[];
+        const lastResourceData: ResourcesModel = this.parent.resourceBase.resourceCollection.slice(-1)[0];
+        let resourceData: string[] | number[] = eventObj[lastResourceData.field] as string[] | number[];
         resourceData = (resourceData instanceof Array) ? resourceData : [resourceData];
-        const lastlevel: TdData[] = this.parent.resourceBase.lastResourceLevel;
+        const lastLevel: TdData[] = this.parent.resourceBase.lastResourceLevel;
         const eventList: Record<string, any>[] = [];
         for (let i: number = 0; i < resourceData.length; i++) {
             const events: Record<string, any> = <Record<string, any>>extend({}, eventObj, null, true);
@@ -1523,21 +1523,21 @@ export class EventWindow {
                     }
                 }
             };
-            if (this.parent.activeViewOptions.group.byGroupID && (!isNullOrUndefined(lastlevel))) {
-                const lastResource: Record<string, any>[] = lastResouceData.dataSource as Record<string, any>[];
+            if (this.parent.activeViewOptions.group.byGroupID && (!isNullOrUndefined(lastLevel))) {
+                const lastResource: Record<string, any>[] = lastResourceData.dataSource as Record<string, any>[];
                 const resCol: Record<string, any>[] = this.parent.resourceCollection as Record<string, any>[];
                 let index: number;
                 if (resCol.length > 1) {
-                    index = util.findIndexInData(lastResource, lastResouceData.idField, resourceData[i] as string, events, resCol);
+                    index = util.findIndexInData(lastResource, lastResourceData.idField, resourceData[i] as string, events, resCol);
                 } else {
-                    index = util.findIndexInData(lastResource, lastResouceData.idField, resourceData[i] as string);
+                    index = util.findIndexInData(lastResource, lastResourceData.idField, resourceData[i] as string);
                 }
                 if (index < 0) {
                     return;
                 }
-                const groupId: Record<string, any> = lastResource[index][lastResouceData.groupIDField] as Record<string, any>;
-                const filter: TdData = lastlevel.filter((obj: TdData) => obj.resourceData[lastResouceData.idField] === resourceData[i]).
-                    filter((obj: TdData) => obj.resourceData[lastResouceData.groupIDField] === groupId)[0];
+                const groupId: Record<string, any> = lastResource[index][lastResourceData.groupIDField] as Record<string, any>;
+                const filter: TdData = lastLevel.filter((obj: TdData) => obj.resourceData[lastResourceData.idField] === resourceData[i]).
+                    filter((obj: TdData) => obj.resourceData[lastResourceData.groupIDField] === groupId)[0];
                 const groupOrder: number[] | string[] = filter.groupOrder;
                 for (let index: number = 0; index < this.parent.resourceBase.resourceCollection.length; index++) {
                     const field: string = this.parent.resourceBase.resourceCollection[index].field;
@@ -1551,14 +1551,14 @@ export class EventWindow {
                         for (let k: number = 0; k < (events[field] as Record<string, any>[]).length; k++) {
                             const event: Record<string, any> = <Record<string, any>>extend({}, events, null, true);
                             event[field] = (eventObj[field] as Record<string, any>)[k];
-                            event[lastResouceData.field] = resourceData[i];
+                            event[lastResourceData.field] = resourceData[i];
                             temp.push(event);
                         }
                     } else {
                         if (temp.length === 0) {
                             events[field] = (eventObj[field] instanceof Array) ?
                                 (eventObj[field] as Record<string, any>)[0] : eventObj[field];
-                            events[lastResouceData.field] = resourceData[i];
+                            events[lastResourceData.field] = resourceData[i];
                         } else {
                             for (let l: number = 0; l < temp.length; l++) {
                                 temp[l][field] = (eventObj[field] instanceof Array) ?
@@ -1567,7 +1567,7 @@ export class EventWindow {
                         }
                     }
                 }
-                events[lastResouceData.field] = resourceData[i];
+                events[lastResourceData.field] = resourceData[i];
                 addValues();
             }
         }
@@ -1718,8 +1718,8 @@ export class EventWindow {
     }
 
     private destroyComponents(): void {
-        const formelement: HTMLInputElement[] = this.getFormElements(cls.EVENT_WINDOW_DIALOG_CLASS);
-        for (const element of formelement) {
+        const formElements: HTMLInputElement[] = this.getFormElements(cls.EVENT_WINDOW_DIALOG_CLASS);
+        for (const element of formElements) {
             let instance: Record<string, any>[];
             if (element.classList.contains('e-datetimepicker')) {
                 instance = ((<HTMLElement>element) as EJ2Instance).ej2_instances;
@@ -1741,18 +1741,22 @@ export class EventWindow {
         }
     }
 
-    public destroy(): void {
-        if (!this.parent.isDestroyed) {
+    public destroy(isIgnore?: boolean): void {
+        if (this.parent && !this.parent.isDestroyed) {
             this.parent.resetTemplates(['editorTemplate']);
         }
+        this.destroyComponents();
         if (this.recurrenceEditor) {
             this.recurrenceEditor.destroy();
+            this.recurrenceEditor = null;
         }
-        this.destroyComponents();
-        this.fieldValidator.destroy();
+        if (this.fieldValidator) {
+            this.fieldValidator.destroy();
+            this.fieldValidator = null;
+        }
         if (this.repeatDialogObject) {
             this.repeatDialogObject.destroy();
-            remove(this.repeatDialogObject.element);
+            this.repeatDialogObject = null;
         }
         if (this.dialogObject) {
             this.dialogObject.destroy();
@@ -1761,6 +1765,15 @@ export class EventWindow {
         if (this.element) {
             remove(this.element);
             this.element = null;
+        }
+        if (!isIgnore) {
+            this.l10n = null;
+            this.parent = null;
+            this.fields = null;
+            this.buttonObj = null;
+            this.repeatStatus = null;
+            this.timezoneData = null;
+            this.eventWindowTime = null;
         }
     }
 

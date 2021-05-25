@@ -378,7 +378,8 @@ export class TreeInterSectionObserver extends InterSectionObserver {
     private lastPos: number = 0;
     private timer: number = 0;
     public observes(callback: Function): void {
-        setValue('containerRect', getValue('options', this).container.getBoundingClientRect(), this);
+        const containerRect: string = 'containerRect';
+        super[containerRect] = getValue('options', this).container.getBoundingClientRect();
         EventHandler.add(getValue('options', this).container, 'scroll', this.virtualScrollHandlers(callback), this);
     }
     private clear(): void {

@@ -95,6 +95,15 @@ export class Page {
     private collapseExpandPagedchilds(rowDetails: { action: string, row: HTMLTableRowElement,
         record: ITreeData, args: RowCollapsedEventArgs }): void {
         rowDetails.record.expanded = rowDetails.action === 'collapse' ? false : true;
+        if (this.parent.enableImmutableMode) {
+            let primaryKeyField: string = this.parent.getPrimaryKeyFieldNames()[0];
+            let record: ITreeData[] = this.parent.flatData.filter(e => {
+                return e[primaryKeyField] === rowDetails.record[primaryKeyField];
+            });
+            if (record.length) {
+                record[0].expanded = rowDetails.record.expanded;
+            }
+        }
         const ret: Object = {
             result: this.parent.flatData,
             row: rowDetails.row,

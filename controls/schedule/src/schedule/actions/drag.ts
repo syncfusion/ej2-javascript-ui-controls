@@ -924,11 +924,12 @@ export class DragAndDrop extends ActionBase {
             }
         } else {
             if (this.isCursorAhead || cursorDrag) {
-                eventStart.setMinutes(eventStart.getMinutes() + (this.isTimelineDayProcess ? MINUTES_PER_DAY : this.actionObj.slotInterval));
+                eventStart.setMinutes(eventStart.getMinutes() +
+                    (this.isTimelineDayProcess ? MINUTES_PER_DAY : this.actionObj.slotInterval));
                 eventStart.setMilliseconds(-(eventDuration));
             } else {
-            eventStart.setMinutes(eventStart.getMinutes() -
-                (this.cursorPointIndex * (this.isTimelineDayProcess ? MINUTES_PER_DAY : this.actionObj.slotInterval)));
+                eventStart.setMinutes(eventStart.getMinutes() -
+                    (this.cursorPointIndex * (this.isTimelineDayProcess ? MINUTES_PER_DAY : this.actionObj.slotInterval)));
             }
         }
         eventStart = this.calculateIntervalTime(eventStart);

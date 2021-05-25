@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { EventHandler, formatUnit, remove, createElement, addClass, closest, prepend } from '@syncfusion/ej2-base';
+import { EventHandler, formatUnit, createElement, addClass, closest, prepend } from '@syncfusion/ej2-base';
 import { Schedule } from '../base/schedule';
 import { ViewBase } from './view-base';
 import { IRenderer, EventClickArgs, TdData, NotifyEventArgs } from '../base/interface';
@@ -17,6 +17,7 @@ export class Year extends ViewBase implements IRenderer {
     public colLevels: TdData[][];
     public rowCount: number;
     public columnCount: number;
+    private yearEventModule: YearEvent = null;
 
     constructor(parent: Schedule) {
         super(parent);
@@ -112,11 +113,11 @@ export class Year extends ViewBase implements IRenderer {
             const weekDates: Date[] = dateCollection.splice(0, util.WEEK_LENGTH);
             const tr: HTMLElement = createElement('tr', { attrs: { 'role': 'row' } });
             if (this.parent.activeViewOptions.showWeekNumber) {
-                const weekNumber: number = this.parent.getWeekNumberContent(weekDates);
+                const weekNumber: string = this.parent.getWeekNumberContent(weekDates);
                 const td: HTMLElement = createElement('td', {
                     className: 'e-week-number',
                     attrs: { 'role': 'gridcell', 'title': 'Week ' + weekNumber },
-                    innerHTML: weekNumber.toString()
+                    innerHTML: weekNumber
                 });
                 tr.appendChild(td);
                 this.parent.trigger(event.renderCell, { elementType: 'weekNumberCells', element: td });
@@ -127,7 +128,7 @@ export class Year extends ViewBase implements IRenderer {
                     attrs: { 'role': 'gridcell', 'aria-selected': 'false', 'data-date': date.getTime().toString() }
                 });
                 const span: HTMLElement = createElement('span', {
-                    className: 'e-day', innerHTML: date.getDate().toString(),
+                    className: 'e-day', innerHTML: this.parent.globalize.formatDate(date, { skeleton: 'd', calendar: this.parent.getCalendarMode() }),
                     attrs: { title: this.parent.globalize.formatDate(date, { type: 'date', skeleton: 'full' }) }
                 });
                 td.appendChild(span);
@@ -325,13 +326,15 @@ export class Year extends ViewBase implements IRenderer {
     }
 
     public removeEventListener(): void {
-        this.parent.off(event.scrollUiUpdate, this.onScrollUiUpdate);
-        this.parent.off(event.dataReady, this.onDataReady);
+        if (this.parent) {
+            this.parent.off(event.scrollUiUpdate, this.onScrollUiUpdate);
+            this.parent.off(event.dataReady, this.onDataReady);
+        }
     }
 
     public onDataReady(args: NotifyEventArgs): void {
-        const yearEventModule: YearEvent = new YearEvent(this.parent);
-        yearEventModule.renderAppointments();
+        this.yearEventModule = new YearEvent(this.parent);
+        this.yearEventModule.renderAppointments();
         this.parent.notify('events-loaded', args);
     }
 
@@ -351,15 +354,22 @@ export class Year extends ViewBase implements IRenderer {
     }
 
     public destroy(): void {
-        if (this.parent.isDestroyed) {
+        if (!this.parent || this.parent && this.parent.isDestroyed) {
             return;
         }
         if (this.element) {
+            const contentScroll: Element = this.element.querySelector('.' + cls.CONTENT_WRAP_CLASS);
+            if (contentScroll) {
+                EventHandler.remove(contentScroll, 'scroll', this.onContentScroll);
+            }
+            if (this.yearEventModule) {
+                this.yearEventModule.destroy();
+                this.yearEventModule = null;
+            }
             if (this.parent.resourceBase) {
                 this.parent.resourceBase.destroy();
             }
-            remove(this.element);
-            this.element = null;
+            super.destroy();
         }
     }
 

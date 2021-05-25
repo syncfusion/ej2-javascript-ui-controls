@@ -7,6 +7,7 @@ import { InsertMethods } from './insert-methods';
 import { IsFormatted } from './isformatted';
 import { isIDevice, setEditFrameFocus } from '../../common/util';
 import { isNullOrUndefined as isNOU, Browser, closest, detach } from '@syncfusion/ej2-base';
+import { DOMNode } from './dom-node';
 
 export class SelectionCommands {
     /**
@@ -30,6 +31,7 @@ export class SelectionCommands {
             }
             let preventRestore: boolean = false;
             let domSelection: NodeSelection = new NodeSelection();
+            let domNode: DOMNode = new DOMNode((endNode as HTMLElement), docElement);
             const nodeCutter: NodeCutter = new NodeCutter();
             const isFormatted: IsFormatted = new IsFormatted();
             let range: Range = domSelection.getRange(docElement);
@@ -49,7 +51,7 @@ export class SelectionCommands {
                     isCollapsed = true;
                     range = nodeCutter.GetCursorRange(docElement, range, range.startContainer);
                     nodes.push(range.startContainer);
-                } else if (range.startContainer.nodeName.toLowerCase() !== 'td') {
+                } else {
                     const cursorNode: Node = this.insertCursorNode(
                         docElement, domSelection, range, isFormatted, nodeCutter, format, value, endNode);
                     domSelection.endContainer = domSelection.startContainer = domSelection.getNodeArray(cursorNode, true);
@@ -90,7 +92,9 @@ export class SelectionCommands {
                         nodeCutter,
                         format,
                         value,
-                        domSelection);
+                        domSelection,
+                        endNode,
+                        domNode);
                 } else {
                     nodes[index] = this.insertFormat(
                         docElement,
@@ -165,7 +169,9 @@ export class SelectionCommands {
         nodeCutter: NodeCutter,
         format: string,
         value: string,
-        domSelection: NodeSelection): Node {
+        domSelection: NodeSelection,
+        endNode: Node,
+        domNode: DOMNode): Node {
         let splitNode: HTMLElement = null;
         if (!(range.startContainer === range.endContainer && range.startOffset === 0
             && range.endOffset === (range.startContainer as Text).length)) {
@@ -225,6 +231,31 @@ export class SelectionCommands {
         const formatNodeStyles: string = (formatNode as HTMLElement).getAttribute('style');
         const formatNodeTagName: string = (formatNode as HTMLElement).tagName;
         const child: Node[] = InsertMethods.unwrap(formatNode);
+        if(child[0] && !isFontStyle) {
+            let nodeTraverse: Node = child[index] ? child[index] : child[0];
+            let textNode: Node = nodeTraverse;
+            for ( ; nodeTraverse && nodeTraverse.parentElement && nodeTraverse.parentElement !== endNode;
+                nodeTraverse = nodeTraverse ) {
+                if (nodeTraverse.parentElement && nodeTraverse.parentElement.tagName.toLocaleLowerCase()
+                    === (formatNode as HTMLElement).tagName.toLocaleLowerCase() &&
+                    (nodeTraverse.parentElement.childElementCount > 1 || range.startOffset > 1)) {
+                    if (textNode.parentElement && textNode.parentElement.tagName.toLocaleLowerCase()
+                        === (formatNode as HTMLElement).tagName.toLocaleLowerCase()) {
+                        if ((range.startOffset === range.endOffset) && textNode.nodeType !== 1 &&
+                        !isNOU(textNode.textContent) && textNode.parentElement.childElementCount > 1) {
+                            range.setStart(textNode, 0);
+                            range.setEnd(textNode, textNode.textContent.length);
+                            nodeCutter.SplitNode(range, textNode.parentElement, false);
+                        }
+                    }
+                    InsertMethods.unwrap(nodeTraverse.parentElement);
+                    nodeTraverse = !isNOU(nodeTraverse.parentElement) && !domNode.isBlockNode(nodeTraverse.parentElement) ? textNode :
+                    nodeTraverse.parentElement;
+                } else {
+                    nodeTraverse = nodeTraverse.parentElement;
+                }
+            }
+        }
         if (child.length > 0 && isFontStyle) {
             for (let num: number = 0; num < child.length; num++) {
                 child[num] = InsertMethods.Wrap(

@@ -1,3 +1,4 @@
+/* eslint-disable max-len */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { isNullOrUndefined, setStyleAttribute, extend, EventHandler, createElement } from '@syncfusion/ej2-base';
 import { Schedule } from '../base/schedule';
@@ -112,7 +113,7 @@ export class TimelineEvent extends MonthEvent {
         event.Index = overlapCount;
         const elem: HTMLElement = this.element.querySelector('.' + cls.APPOINTMENT_CLASS);
         const eleHeight: number = (elem) ? elem.getBoundingClientRect().height : 0;
-        let appHeight: number = (elem && eleHeight > 0) ? eleHeight : this.eventHeight;
+        const appHeight: number = (elem && eleHeight > 0) ? eleHeight : this.eventHeight;
         const diffInDays: number = eventData.count as number;
         const eventObj: Record<string, any> = extend({}, event, null, true) as Record<string, any>;
         eventObj[this.fields.startTime] = eventData[this.fields.startTime];
@@ -168,17 +169,18 @@ export class TimelineEvent extends MonthEvent {
                         new Date(this.dateRender[this.day + i].getTime()) : new Date(startTime);
                     let endDate: Date = util.addDays(this.dateRender[this.day + i], 1);
                     if (this.parent.activeViewOptions.option === 'TimelineMonth' || this.renderType === 'day') {
-                        const position = this.getPosition(startDate, endDate, event[this.fields.isAllDay], (this.day + i));
+                        const position: number = this.getPosition(startDate, endDate, event[this.fields.isAllDay], (this.day + i));
                         this.renderTimelineMoreIndicator(startTime, startDate, endDate, appHeight, interval, resIndex, appointmentsList, top, appLeft, appRight, cellTd, moreIndicator, appPos, position);
                     } else {
-                        let slotCount: number = (util.getUniversalTime(endTime) - util.getUniversalTime(startTime)) / util.MS_PER_MINUTE * this.slotCount / this.interval;
+                        const slotCount: number = (util.getUniversalTime(endTime) - util.getUniversalTime(startTime)) / util.MS_PER_MINUTE *
+                            this.slotCount / this.interval;
                         for (let k: number = 0; k < slotCount; k++) {
                             startDate = (k === 0) ? new Date(startDate.getTime()) : new Date(startDate.getTime() + (60000 * interval));
                             endDate = new Date(startDate.getTime() + (60000 * interval));
                             if (endDate.getTime() > endTime.getTime()) {
                                 break;
                             }
-                            let position: number = this.getPosition(startDate, endDate, false, (this.day + i));
+                            const position: number = this.getPosition(startDate, endDate, false, (this.day + i));
                             if (appPos > position) {
                                 break;
                             }
@@ -192,12 +194,11 @@ export class TimelineEvent extends MonthEvent {
         this.parent.renderTemplates();
     }
 
-    private renderTimelineMoreIndicator(startTime: Date, startDate: Date, endDate: Date, appHeight: number, interval: number, resIndex: number,
-        appointmentsList: Record<string, any>[], top: number, appLeft: number, appRight: number, cellTd: HTMLElement, moreIndicator: HTMLElement, appPos: number, position: number) {
-            appLeft = (this.parent.enableRtl) ? appRight = position : position;
-            appPos = (this.parent.enableRtl) ? appRight : appLeft;
-            appPos = (Math.floor(appPos / this.cellWidth) * this.cellWidth);
-            if ((cellTd && isNullOrUndefined(moreIndicator)) ||
+    private renderTimelineMoreIndicator(startTime: Date, startDate: Date, endDate: Date, appHeight: number, interval: number, resIndex: number, appointmentsList: Record<string, any>[], top: number, appLeft: number, appRight: number, cellTd: HTMLElement, moreIndicator: HTMLElement, appPos: number, position: number): void {
+        appLeft = (this.parent.enableRtl) ? appRight = position : position;
+        appPos = (this.parent.enableRtl) ? appRight : appLeft;
+        appPos = (Math.floor(appPos / this.cellWidth) * this.cellWidth);
+        if ((cellTd && isNullOrUndefined(moreIndicator)) ||
             (!this.isAlreadyAvail(appPos, cellTd))) {
             const startDateTime: Date = (this.parent.activeViewOptions.option === 'TimelineMonth' || this.renderType === 'day') ? new Date(+startTime) : startDate;
             const slotStartTime: Date =
@@ -387,7 +388,6 @@ export class TimelineEvent extends MonthEvent {
         return cellIndex * this.cellWidth;
     }
 
-    // eslint-disable-next-line max-len
     private getFilterEvents(startDate: Date, endDate: Date, startTime: Date, endTime: Date, gIndex: string, eventsList?: Record<string, any>[]): Record<string, any>[] {
         if (this.renderType === 'day') {
             return this.getFilteredEvents(startDate, endDate, gIndex, eventsList);
@@ -451,6 +451,15 @@ export class TimelineEvent extends MonthEvent {
         setStyleAttribute(event, {
             'height': (this.cellHeight - (this.maxHeight ? 0 : EVENT_GAP) - (this.maxHeight ? 0 : this.moreIndicatorHeight)) + 'px'
         });
+    }
+
+    public destroy(): void {
+        this.renderType = null;
+        this.eventContainers = null;
+        this.dayLength = null;
+        this.content = null;
+        super.destroy();
+        this.parent = null;
     }
 
 }

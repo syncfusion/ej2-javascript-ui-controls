@@ -532,6 +532,9 @@ export class HeaderRenderer {
             remove(this.element);
             this.toolbarObj = null;
         }
+        this.element = null;
+        this.parent = null;
+        this.l10n = null;
     }
 
 }

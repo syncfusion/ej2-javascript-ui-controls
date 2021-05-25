@@ -233,7 +233,10 @@ export class ScheduleTouch {
     }
 
     public destroy(): void {
-        this.touchObj.destroy();
+        if (this.touchObj) {
+            this.touchObj.destroy();
+            this.touchObj = null;
+        }
         EventHandler.remove(this.element, 'transitionend', this.onTransitionEnd);
         this.resetValues();
     }

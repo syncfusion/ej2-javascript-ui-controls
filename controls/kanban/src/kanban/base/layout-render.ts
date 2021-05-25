@@ -869,7 +869,7 @@ export class LayoutRender extends MobileLayout {
         }
         if (cardRow) {
             const td: HTMLElement = [].slice.call(cardRow.children).filter((e: Element) =>
-                e.getAttribute('data-key').replace(/\s/g, '').split(',').indexOf(key.replace(/\s/g, '')) !== -1)[0];
+                e.getAttribute('data-key').replace(/\s/g, '').split(',').indexOf(key.toString().replace(/\s/g, '')) !== -1)[0];
             const cardWrapper: Element = td.querySelector('.' + cls.CARD_WRAPPER_CLASS);
             const emptyCard: Element = cardWrapper.querySelector('.' + cls.EMPTY_CARD_CLASS);
             if (emptyCard) {

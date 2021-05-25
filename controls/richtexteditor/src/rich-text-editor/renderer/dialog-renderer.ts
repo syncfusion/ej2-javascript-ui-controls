@@ -33,7 +33,12 @@ export class DialogRenderer {
         return dlgObj;
     }
     private beforeOpen(args: BeforeOpenEventArgs): void {
-        this.parent.trigger(events.beforeDialogOpen, args);
+        this.parent.trigger(events.beforeDialogOpen, args, this.beforeOpenCallback.bind(this, args));
+    }
+    private beforeOpenCallback(args: BeforeOpenEventArgs): void {
+        if (args.cancel) {
+            this.parent.notify(events.clearDialogObj, null);
+        }
     }
     // eslint-disable-next-line
     private open(args: Object): void {

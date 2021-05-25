@@ -11,7 +11,7 @@ import { RenderType, freezeMode } from '../base/enum';
 import { ContentRender } from './content-renderer';
 import { HeaderRender } from './header-renderer';
 import { ServiceLocator } from '../services/service-locator';
-import { InterSectionObserver } from '../services/intersection-observer';
+import { InterSectionObserver, ScrollDirection } from '../services/intersection-observer';
 import { RendererFactory } from '../services/renderer-factory';
 import { VirtualRowModelGenerator } from '../services/virtual-row-model-generator';
 import { isGroupAdaptive, ensureLastRow, ensureFirstRow, getEditedDataIndex, getTransformValues, resetRowObjectIndex } from '../base/util';
@@ -88,6 +88,8 @@ export class VirtualContentRenderer extends ContentRender implements IRenderer {
     private mvbOrderRowObj: Row<Column>[] = [];
     private frOrderRowObj: Row<Column>[] = [];
     private isContextMenuOpen: boolean = false;
+    private selectRowIndex: number;
+    private isSelectionScroll: boolean = false;
 
     constructor(parent: IGrid, locator?: ServiceLocator) {
         super(parent, locator);
@@ -402,8 +404,20 @@ export class VirtualContentRenderer extends ContentRender implements IRenderer {
         this.focusCell(e);
         this.restoreEdit(e);
         this.restoreAdd(e);
+        this.ensureSelectedRowPosition();
         if (!this.initialRowTop) {
-            this.initialRowTop = this.parent.getRowByIndex(0).getBoundingClientRect().top;
+            const gridTop: number = this.parent.element.getBoundingClientRect().top;
+            this.initialRowTop = this.parent.getRowByIndex(0).getBoundingClientRect().top - gridTop;
+        }
+    }
+
+    private ensureSelectedRowPosition(): void {
+        if (!this.isSelection && this.isSelectionScroll && !isNullOrUndefined(this.selectRowIndex)) {
+            this.isSelectionScroll = false;
+            let row: Element = this.parent.getRowByIndex(this.selectRowIndex);
+            if (row && !this.isRowInView(row)) {
+                this.rowSelected({ rowIndex: this.selectRowIndex, row: row }, true);
+            }
         }
     }
 
@@ -615,15 +629,21 @@ export class VirtualContentRenderer extends ContentRender implements IRenderer {
         }
     }
 
-    private rowSelected(args: RowSelectEventArgs): void {
-        if (this.isSelection && !this.isLastBlockRow(args.rowIndex)) {
+    private rowSelected(args: RowSelectEventArgs, isSelection?: boolean): void {
+        if ((this.isSelection || isSelection) && !this.isLastBlockRow(args.rowIndex)) {
             let transform: { width: number, height: number } = getTransformValues(this.content.firstElementChild);
-            let rowTop: number = (args.row as HTMLElement).getBoundingClientRect().top;
+            const gridTop: number = this.parent.element.getBoundingClientRect().top;
+            const rowTop: number = (args.row as HTMLElement).getBoundingClientRect().top - gridTop;
             let height: number = this.content.getBoundingClientRect().height;
             let isBottom: boolean = height < rowTop;
             let remainHeight: number = isBottom ? rowTop - height : this.initialRowTop - rowTop;
             let translateY: number = isBottom ? transform.height - remainHeight : transform.height + remainHeight;
             this.virtualEle.adjustTable(transform.width, translateY);
+            const lastRowTop: number = this.content.querySelector('tbody').lastElementChild.getBoundingClientRect().top - gridTop;
+            if (lastRowTop < height) {
+                translateY = translateY + (height - ((args.row as HTMLElement).getBoundingClientRect().top - gridTop));
+                this.virtualEle.adjustTable(transform.width, translateY - (this.parent.getRowHeight() / 2));
+            }
         }
         this.isSelection = false;
     }
@@ -1096,9 +1116,11 @@ export class VirtualContentRenderer extends ContentRender implements IRenderer {
         }
     }
 
-    private selectVirtualRow(args: { selectedIndex: number }): void {
-        if (!this.isContextMenuOpen && this.activeKey !== 'upArrow' && this.activeKey !== 'downArrow'
-            && !this.requestTypes.some((value: string) => value === this.requestType) && !this.parent.selectionModule.isInteracted) {
+    private selectVirtualRow(args: { selectedIndex: number, isAvailable: boolean }): void {
+        args.isAvailable = args.selectedIndex < this.count;
+        if (args.isAvailable && !this.isContextMenuOpen && this.activeKey !== 'upArrow'
+            && this.activeKey !== 'downArrow' && !this.isSelection && !this.requestTypes.some((value: string) => value === this.requestType)
+            && !this.parent.selectionModule.isInteracted) {
             let selectedRow: Element = this.parent.getRowByIndex(args.selectedIndex);
             let rowHeight: number = this.parent.getRowHeight();
             if (!selectedRow || !this.isRowInView(selectedRow)) {
@@ -1106,7 +1128,10 @@ export class VirtualContentRenderer extends ContentRender implements IRenderer {
                 this.selectedRowIndex = args.selectedIndex;
                 let scrollTop: number = (args.selectedIndex + 1) * rowHeight;
                 if (!isNullOrUndefined(scrollTop)) {
+                    let direction: ScrollDirection = this.content.scrollTop < scrollTop ? 'down' : 'up';
+                    this.selectRowIndex = args.selectedIndex;
                     this.content.scrollTop = scrollTop;
+                    this.isSelectionScroll = this.observer.check(direction);
                 }
             }
         }
@@ -1123,7 +1148,7 @@ export class VirtualContentRenderer extends ContentRender implements IRenderer {
     }
 
     private isRowInView(row: Element): boolean {
-        let top: number = row.getBoundingClientRect().top;
+        let top: number = row.getBoundingClientRect().top - this.parent.element.getBoundingClientRect().top;
         return (top >= this.initialRowTop && top <= this.content.offsetHeight);
     }
 }

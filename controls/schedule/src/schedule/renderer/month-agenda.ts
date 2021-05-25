@@ -14,13 +14,11 @@ import * as cls from '../base/css-constant';
 export class MonthAgenda extends Month {
     public dayNameFormat: string = 'narrow';
     public viewClass: string = 'e-month-agenda-view';
-    public agendaDates: { [key: string]: Date } = {};
     public agendaBase: AgendaBase;
     private monthAgendaDate: Date;
 
     constructor(parent: Schedule) {
         super(parent);
-        this.agendaBase = new AgendaBase(parent);
         this.monthAgendaDate = new Date('' + parent.selectedDate);
     }
 
@@ -69,6 +67,7 @@ export class MonthAgenda extends Month {
             const resource: TdData = this.parent.resourceBase.lastResourceLevel[this.parent.uiStateValues.groupIndex];
             eventCollection = this.parent.eventBase.filterEventsByResource(resource, eventCollection);
         }
+        this.agendaBase = this.getAgendaBase();
         this.parent.eventsProcessed = this.agendaBase.processAgendaEvents(eventCollection);
         let count: number = 0;
         for (const date of this.renderDates) {
@@ -98,6 +97,7 @@ export class MonthAgenda extends Month {
     }
 
     private onEventRender(events: Record<string, any>[], date?: Date): void {
+        this.agendaBase = this.getAgendaBase();
         const appWrap: Element = this.element.querySelector('.' + cls.APPOINTMENT_WRAP_CLASS);
         util.removeChildren(appWrap);
         if (this.parent.activeViewOptions.group.resources.length === 0 || this.parent.uiStateValues.isGroupAdaptive) {
@@ -152,6 +152,18 @@ export class MonthAgenda extends Month {
         const date: number = (lastDate >= this.monthAgendaDate.getDate()) ? this.monthAgendaDate.getDate() : lastDate;
         this.monthAgendaDate = new Date(navigateDate.getFullYear(), navigateDate.getMonth(), date);
         return this.monthAgendaDate;
+    }
+
+    private getAgendaBase(): AgendaBase {
+        return this.agendaBase || new AgendaBase(this.parent);
+    }
+
+    public destroy(): void {
+        if (this.agendaBase) {
+            this.agendaBase.destroy();
+            this.agendaBase = null;
+        }
+        super.destroy();
     }
 
 }

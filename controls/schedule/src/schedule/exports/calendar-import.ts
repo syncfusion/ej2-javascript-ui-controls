@@ -184,7 +184,7 @@ export class ICalendarImport {
     }
 
     public destroy(): void {
-        if (this.parent.isDestroyed) { return; }
+        if (!this.parent || this.parent && this.parent.isDestroyed) { return; }
     }
 
 }

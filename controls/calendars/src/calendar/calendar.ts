@@ -763,6 +763,18 @@ export class CalendarBase extends Component<HTMLElement> implements INotifyPrope
             }
         }
     }
+    protected resetCalendar(): void {
+        detach(this.calendarElement);
+        detach(this.tableBodyElement);
+        detach(this.table);
+        detach(this.tableHeadElement);
+        detach(this.nextIcon);
+        detach(this.previousIcon);
+        detach(this.footer);
+        this.todayElement = null;
+        this.renderDayCellArgs = null;
+        this.calendarElement = this.tableBodyElement = this.footer = this.tableHeadElement = this.nextIcon = this.previousIcon = this.table = null;
+    }
     protected checkDeviceMode(ref?: object): void {
         if (Browser.isDevice && isBlazor() && ref) {
             // eslint-disable-next-line @typescript-eslint/no-explicit-any

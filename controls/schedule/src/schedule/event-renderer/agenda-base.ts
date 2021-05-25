@@ -16,13 +16,10 @@ interface AgendaSlotData extends TdData {
     eventData?: Record<string, any>[];
 }
 
-export class AgendaBase {
-    public parent: Schedule;
-    public viewBase: ViewBase;
+export class AgendaBase extends ViewBase {
 
     constructor(parent: Schedule) {
-        this.parent = parent;
-        this.viewBase = new ViewBase(parent);
+        super(parent);
     }
 
     // eslint-disable-next-line max-len
@@ -53,7 +50,7 @@ export class AgendaBase {
                         'aria-readonly': this.parent.eventBase.getReadonlyAttribute(listData[li]),
                         'aria-selected': 'false',
                         'aria-grabbed': 'true',
-                        'aria-label': this.parent.getAnnocementString(listData[li])
+                        'aria-label': this.parent.getAnnouncementString(listData[li])
                     }
                 });
                 if (!isNullOrUndefined(groupIndex)) {
@@ -139,8 +136,8 @@ export class AgendaBase {
             return eventsProcessed;
         }
         for (const event of events) {
-            const splited: Record<string, any>[] = this.parent.eventBase.splitEventByDay(event);
-            eventsProcessed = eventsProcessed.concat(splited.length > 1 ? splited : event);
+            const spanned: Record<string, any>[] = this.parent.eventBase.splitEventByDay(event);
+            eventsProcessed = eventsProcessed.concat(spanned.length > 1 ? spanned : event);
         }
         return eventsProcessed;
     }
@@ -158,7 +155,7 @@ export class AgendaBase {
 
     public calculateResourceTableElement(tBody: Element, noOfDays: number, agendaDate: Date): void {
         if (isNullOrUndefined(this.parent.resourceBase.lastResourceLevel)) {
-            const level: TdData[] = this.viewBase.getDateSlots(this.viewBase.renderDates, this.parent.activeViewOptions.workDays);
+            const level: TdData[] = this.getDateSlots(this.renderDates, this.parent.activeViewOptions.workDays);
             this.parent.resourceBase.generateResourceLevels(level);
         }
         const agendaLastDate: Date = util.addDays(new Date(agendaDate.getTime()), noOfDays);
@@ -303,7 +300,7 @@ export class AgendaBase {
                 } else {
                     ntd.setAttribute('rowspan', data.rowSpan.toString());
                     addClass([ntd], cls.AGENDA_RESOURCE_CLASS);
-                    this.viewBase.setResourceHeaderContent(ntd, data, data.className[0]);
+                    this.setResourceHeaderContent(ntd, data, data.className[0]);
                     ntr.appendChild(ntd);
                 }
             }
@@ -334,7 +331,7 @@ export class AgendaBase {
                 [].slice.call(this.parent.getDateHeaderTemplate()(args, this.parent, 'dateHeaderTemplate', templateId, false));
             append(dateTemplate, dateHeader);
         } else {
-            dateHeader = this.viewBase.getMobileDateElement(date, cls.AGENDA_HEADER_CLASS);
+            dateHeader = this.getMobileDateElement(date, cls.AGENDA_HEADER_CLASS);
         }
         return dateHeader;
     }
@@ -369,6 +366,10 @@ export class AgendaBase {
             tr.appendChild(aTd);
         }
         return tr;
+    }
+
+    public destroy(): void {
+        super.destroy();
     }
 
 }

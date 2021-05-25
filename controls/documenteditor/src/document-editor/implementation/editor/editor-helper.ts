@@ -242,7 +242,7 @@ export class HelperMethods {
     public static writeCharacterFormat(characterFormat: any, isInline: boolean, format: WCharacterFormat): void {
         characterFormat.bold = isInline ? format.bold : format.getValue('bold');
         characterFormat.italic = isInline ? format.italic : format.getValue('italic');
-        characterFormat.fontSize = parseInt(isInline ? this.toWriteInline(format, 'fontSize') : format.getValue('fontSize'));
+        characterFormat.fontSize = isInline ? this.toWriteInline(format, 'fontSize') : format.getValue('fontSize');
         characterFormat.fontFamily = isInline ? this.toWriteInline(format, 'fontFamily') : format.getValue('fontFamily');
         characterFormat.underline = isInline ? format.underline : format.getValue('underline');
         characterFormat.strikethrough = isInline ? format.strikethrough : format.getValue('strikethrough');
@@ -341,6 +341,9 @@ export class HelperMethods {
         case 'lowercase':
             text = value.toLowerCase();
             break;
+        case 'firstlower':
+            text = this.lowerFirstChar(value);
+            break;
         case 'firstcapital':
             text = this.capitaliseFirst(value, 'FirstCapital');
             break;
@@ -399,6 +402,10 @@ export class HelperMethods {
             text = this.capitaliseFirstInternal(value);
         }
         return text;
+    }
+
+    private static lowerFirstChar(value: string): string {
+        return (value.charAt(0).toLowerCase() + value.slice(1, value.length));
     }
 
     private static capitaliseFirstInternal(value: string): string {

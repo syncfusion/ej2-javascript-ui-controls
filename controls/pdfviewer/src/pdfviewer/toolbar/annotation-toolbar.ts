@@ -457,7 +457,7 @@ export class AnnotationToolbar {
         this.stampElement = this.pdfViewerBase.getElement('_annotation_stamp');
         // eslint-disable-next-line max-len
         this.primaryToolbar.createTooltip(this.pdfViewerBase.getElement('_annotation_stamp'), this.pdfViewer.localeObj.getConstant('Add Stamp'));
-        const contextMenuElement: HTMLElement = createElement('ul', { id: 'contextMenuElement' });
+        const contextMenuElement: HTMLElement = createElement('ul', { id: this.pdfViewer.element.id + 'contextMenuElement' });
         this.pdfViewerBase.getElement('_annotation_stamp').appendChild(contextMenuElement);
         const items: Object[] = [];
 
@@ -629,7 +629,7 @@ export class AnnotationToolbar {
                 }
             }
         };
-        this.menuItems = new Menu(menuOptions, '#contextMenuElement');
+        this.menuItems = new Menu(menuOptions,  '#' + this.pdfViewer.element.id + 'contextMenuElement');
         contextMenuElement.parentElement.classList.add('e-pv-stamp');
         return contextMenuElement;
     }
@@ -2926,6 +2926,9 @@ export class AnnotationToolbar {
             }
             if (this.pdfViewer.enableInkAnnotation) {
                 this.toolbar.enableItems(this.inkAnnotationItem.parentElement, isEnable);
+            }
+            if (this.pdfViewer.enableCommentPanel) {
+                this.enableCommentPanelTool(isEnable);
             }
         }
     }

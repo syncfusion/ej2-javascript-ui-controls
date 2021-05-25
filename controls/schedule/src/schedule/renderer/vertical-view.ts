@@ -17,6 +17,7 @@ export class VerticalView extends ViewBase implements IRenderer {
     public viewClass: string = 'e-day-view';
     public isInverseTableSelect: boolean = true;
     public baseCssClass: string = 'e-vertical-view';
+    private appointment: VerticalEvent | MonthEvent = null;
 
     constructor(parent: Schedule) {
         super(parent);
@@ -32,18 +33,16 @@ export class VerticalView extends ViewBase implements IRenderer {
     }
 
     public removeEventListener(): void {
-        this.parent.off(event.scrollUiUpdate, this.scrollUiUpdate);
-        this.parent.off(event.dataReady, this.renderEvents);
+        if (this.parent) {
+            this.parent.off(event.scrollUiUpdate, this.scrollUiUpdate);
+            this.parent.off(event.dataReady, this.renderEvents);
+        }
     }
 
     public renderEvents(): void {
-        if (this.parent.activeViewOptions.timeScale.enable) {
-            const appointment: VerticalEvent = new VerticalEvent(this.parent);
-            appointment.renderAppointments();
-        } else {
-            const appointment: MonthEvent = new MonthEvent(this.parent);
-            appointment.renderAppointments();
-        }
+        this.appointment = this.parent.activeViewOptions.timeScale.enable ?
+            new VerticalEvent(this.parent) : new MonthEvent(this.parent);
+        this.appointment.renderAppointments();
         this.parent.notify(event.eventsLoaded, {});
     }
 
@@ -63,15 +62,17 @@ export class VerticalView extends ViewBase implements IRenderer {
         this.setPersistence();
     }
 
-    private onApaptiveMove(e: Event): void {
+    private onAdaptiveMove(e: Event): void {
         if (this.parent.uiStateValues.action) {
             e.preventDefault();
         }
     }
 
-    private onApaptiveScroll(e: Event): void {
-        this.parent.removeNewEventElement();
-        this.parent.uiStateValues.top = (<HTMLElement>e.target).scrollTop;
+    private onAdaptiveScroll(e: Event): void {
+        if (this.parent && !this.parent.isDestroyed) {
+            this.parent.removeNewEventElement();
+            this.parent.uiStateValues.top = (<HTMLElement>e.target).scrollTop;
+        }
     }
 
     public scrollLeftPanel(target: HTMLElement): void {
@@ -82,14 +83,17 @@ export class VerticalView extends ViewBase implements IRenderer {
     }
 
     private scrollUiUpdate(args: NotifyEventArgs): void {
+        if (!this.parent) {
+            return;
+        }
         const dateHeader: HTMLElement = (this.parent.element.querySelector('.' + cls.DATE_HEADER_WRAP_CLASS) as HTMLElement);
         const headerBarHeight: number = this.getHeaderBarHeight();
-        const timecells: HTMLElement = this.getLeftPanelElement();
+        const timeCells: HTMLElement = this.getLeftPanelElement();
         const content: HTMLElement = this.getScrollableElement() as HTMLElement;
         const header: HTMLElement = this.getDatesHeaderElement();
         const scrollerHeight: number = this.parent.element.offsetHeight - headerBarHeight - header.offsetHeight;
         this.setColWidth(content);
-        this.setContentHeight(content, timecells, scrollerHeight);
+        this.setContentHeight(content, timeCells, scrollerHeight);
         const scrollBarWidth: number = util.getScrollBarWidth();
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         (header.firstElementChild as HTMLElement).style[<any>args.cssProperties.rtlBorder] = '';
@@ -111,8 +115,8 @@ export class VerticalView extends ViewBase implements IRenderer {
                 this.scrollToWorkHour();
                 this.parent.uiStateValues.isInitial = false;
             } else {
-                if (timecells) {
-                    timecells.scrollTop = this.parent.uiStateValues.top;
+                if (timeCells) {
+                    timeCells.scrollTop = this.parent.uiStateValues.top;
                 }
                 content.scrollTop = this.parent.uiStateValues.top;
                 content.scrollLeft = this.parent.uiStateValues.left;
@@ -261,7 +265,7 @@ export class VerticalView extends ViewBase implements IRenderer {
     }
 
     public changeCurrentTimePosition(): void {
-        if (this.parent.isDestroyed) { return; }
+        if (!this.parent || this.parent && this.parent.isDestroyed) { return; }
         this.removeCurrentTimeIndicatorElements();
         const currentDateIndex: number[] = this.getCurrentTimeIndicatorIndex();
         const firstRow: HTMLTableRowElement = (this.parent.getContentTable() as HTMLTableElement).rows[0];
@@ -411,8 +415,8 @@ export class VerticalView extends ViewBase implements IRenderer {
             }
             scrollContainer.appendChild(this.renderContentArea());
             workTd.appendChild(scrollContainer);
-            EventHandler.add(scrollContainer, 'scroll', this.onApaptiveScroll, this);
-            EventHandler.add(scrollContainer, Browser.touchMoveEvent, this.onApaptiveMove, this);
+            EventHandler.add(scrollContainer, 'scroll', this.onAdaptiveScroll, this);
+            EventHandler.add(scrollContainer, Browser.touchMoveEvent, this.onAdaptiveMove, this);
             tr.appendChild(workTd);
         } else {
             workTd.appendChild(this.renderContentArea());
@@ -436,7 +440,7 @@ export class VerticalView extends ViewBase implements IRenderer {
             const data: TdData = { className: [(this.colLevels[i][0] && this.colLevels[i][0].className[0])], type: 'emptyCells' };
             if (this.parent.activeViewOptions.showWeekNumber && data.className.indexOf(cls.HEADER_CELLS_CLASS) !== -1) {
                 data.className.push(cls.WEEK_NUMBER_CLASS);
-                const weekNo: number = this.parent.getWeekNumberContent(this.renderDates);
+                const weekNo: string = this.parent.getWeekNumberContent(this.renderDates);
                 data.template = [createElement('span', {
                     innerHTML: '' + weekNo,
                     attrs: { title: this.parent.localeObj.getConstant('week') + ' ' + weekNo }
@@ -573,7 +577,7 @@ export class VerticalView extends ViewBase implements IRenderer {
         wrap.appendChild(tbl);
         this.wireCellEvents(tbl.querySelector('tbody'));
         EventHandler.add(wrap, 'scroll', this.onContentScroll, this);
-        EventHandler.add(wrap, Browser.touchMoveEvent, this.onApaptiveMove, this);
+        EventHandler.add(wrap, Browser.touchMoveEvent, this.onAdaptiveMove, this);
         return wrap;
     }
 
@@ -734,21 +738,27 @@ export class VerticalView extends ViewBase implements IRenderer {
     }
 
     public destroy(): void {
-        if (this.parent.isDestroyed) { return; }
+        if (!this.parent || this.parent && this.parent.isDestroyed) {
+            return;
+        }
         this.clearCurrentTimeIndicatorTimer();
         if (this.element) {
+            if (this.appointment) {
+                this.appointment.destroy();
+                this.appointment = null;
+            }
             const contentScrollableEle: Element = this.getContentAreaElement();
             if (contentScrollableEle) {
                 EventHandler.remove(contentScrollableEle, 'scroll', this.onContentScroll);
+                EventHandler.remove(contentScrollableEle, Browser.touchMoveEvent, this.onAdaptiveMove);
             }
             if (this.parent.resourceBase) {
                 this.parent.resourceBase.destroy();
             }
-            remove(this.element);
-            this.element = null;
             if (this.parent.scheduleTouchModule) {
                 this.parent.scheduleTouchModule.resetValues();
             }
+            super.destroy();
         }
     }
 

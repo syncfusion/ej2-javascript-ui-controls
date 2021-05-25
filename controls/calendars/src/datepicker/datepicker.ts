@@ -567,9 +567,9 @@ export class DatePicker extends Calendar implements IInput {
         Input.addAttributes({ 'aria-label': 'select' }, this.inputWrapper.buttons[0]);
         addClass([this.inputWrapper.container], DATEWRAPPER);
     }
-    protected updateInput(): void {
+    protected updateInput(isDynamic: boolean = false): void {
         let formatOptions: DateFormatOptions;
-        if (this.value && !this.isCalendar()) {
+        if (this.value && !this.isCalendar() && !isDynamic) {
             if (!this.isBlazorServer) {
                 this.disabledDates();
             }
@@ -1287,8 +1287,11 @@ export class DatePicker extends Calendar implements IInput {
                 if (this.popupObj) {
                     this.popupObj.destroy();
                 }
+                this.resetCalendar();
                 detach(this.popupWrapper);
                 this.popupObj = this.popupWrapper = null;
+                this.preventArgs = null;
+                this.calendarKeyboardModules = null;
                 this.setAriaAttributes();
             }, targetExitViewport: () => {
                 if (!Browser.isDevice) {
@@ -1346,7 +1349,7 @@ export class DatePicker extends Calendar implements IInput {
     protected changeTrigger(event?: MouseEvent | KeyboardEvent): void {
         if (this.inputElement.value !== this.previousElementValue) {
             if (((this.previousDate && this.previousDate.valueOf()) !== (this.value && this.value.valueOf()))) {
-                if (this.isDynamicValueChanged) {
+                if (this.isDynamicValueChanged && this.isCalendar()) {
                     this.popupUpdate();
                 }
                 this.changedArgs.value = this.value;
@@ -2045,7 +2048,7 @@ export class DatePicker extends Calendar implements IInput {
                         this.updateInputValue('');
                         this.currentDate = new Date(new Date().setHours(0, 0, 0, 0));
                     }
-                    this.updateInput();
+                    this.updateInput(true);
                     if (+this.previousDate !== +this.value) {
                         this.changeTrigger(null);
                     }
@@ -2123,7 +2126,7 @@ export class DatePicker extends Calendar implements IInput {
                 Input.addFloating(this.inputElement, this.floatLabelType, this.placeholder);
                 break;
             default:
-                if (this.calendarElement && !this.isBlazorServer) {
+                if (this.calendarElement && !this.isBlazorServer && this.isCalendar()) {
                     super.onPropertyChanged(newProp, oldProp);
                 }
                 break;

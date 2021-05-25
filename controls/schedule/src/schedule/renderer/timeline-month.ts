@@ -14,6 +14,7 @@ import * as cls from '../base/css-constant';
 export class TimelineMonth extends Month {
     public viewClass: string = 'e-timeline-month-view';
     public isInverseTableSelect: boolean = true;
+    private appointment: TimelineEvent = null;
 
     constructor(parent: Schedule) {
         super(parent);
@@ -24,8 +25,8 @@ export class TimelineMonth extends Month {
     }
 
     public onDataReady(): void {
-        const appointment: TimelineEvent = new TimelineEvent(this.parent, 'day');
-        appointment.renderAppointments();
+        this.appointment = new TimelineEvent(this.parent, 'day');
+        this.appointment.renderAppointments();
         this.parent.notify(event.eventsLoaded, {});
     }
 
@@ -122,7 +123,7 @@ export class TimelineMonth extends Month {
         }
     }
 
-    public unwireEvents(): void {
+    public unWireEvents(): void {
         EventHandler.remove(this.getContentAreaElement(), 'scroll', this.onContentScroll);
     }
 
@@ -150,6 +151,21 @@ export class TimelineMonth extends Month {
         }
         this.colLevels = colLevels;
         return colLevels;
+    }
+
+    public destroy(): void {
+        if (!this.parent || this.parent && this.parent.isDestroyed) { return; }
+        if (this.element) {
+            const contentScrollableEle: Element = this.element.querySelector('.' + cls.CONTENT_WRAP_CLASS);
+            if (contentScrollableEle) {
+                EventHandler.remove(contentScrollableEle, 'scroll', this.onContentScroll);
+            }
+        }
+        if (this.appointment) {
+            this.appointment.destroy();
+            this.appointment = null;
+        }
+        super.destroy();
     }
 
 }

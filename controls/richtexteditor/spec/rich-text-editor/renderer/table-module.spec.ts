@@ -602,6 +602,58 @@ describe('Table creation', () => {
         });
     });
 
+    describe('Table tabKey pressed for new rows', () => {
+        let rteEle: HTMLElement;
+        let rteObj: RichTextEditor;
+        let keyboardEventArgs = {
+            preventDefault: function () { },
+            keyCode: 9,
+            shiftKey: false
+        };
+        beforeAll(() => {
+            rteObj = renderRTE({
+                height: 400,
+                toolbarSettings: {
+                    items: ['Bold', 'CreateTable']
+                }
+            });
+            rteEle = rteObj.element;
+        });
+        afterAll(() => {
+            destroy(rteObj);
+        });
+        it('Tabkey at end of table td', () => {
+            expect(rteObj.element.querySelectorAll('.e-rte-content').length).toBe(1);
+            (<HTMLElement>rteEle.querySelectorAll(".e-toolbar-item")[1] as HTMLElement).click();
+            let target: HTMLElement = (rteObj as any).tableModule.popupObj.element.querySelector('.e-insert-table-btn');
+            let clickEvent: any = document.createEvent("MouseEvents");
+            clickEvent.initEvent("click", false, true);
+            target.dispatchEvent(clickEvent);
+            expect(document.body.querySelector('.e-rte-edit-table.e-dialog')).not.toBe(null);
+            expect(rteObj.tableModule.editdlgObj.element.querySelector('#tableColumn')).not.toBe(null);
+            expect(rteObj.tableModule.editdlgObj.element.querySelector('#tableRow')).not.toBe(null);
+            expect((rteObj.tableModule.editdlgObj.element.querySelector('#tableRow') as any).value === '3').toBe(true);
+            expect((rteObj.tableModule.editdlgObj.element.querySelector('#tableColumn') as any).value === '3').toBe(true);
+            target = rteObj.tableModule.editdlgObj.element.querySelector('.e-insert-table') as HTMLElement;
+          
+            target.dispatchEvent(clickEvent);
+            let table: HTMLElement = rteObj.contentModule.getEditPanel().querySelector('table') as HTMLElement;
+            expect(table.querySelectorAll('tr').length === 3).toBe(true);
+            expect(table.querySelectorAll('td').length === 9).toBe(true);
+            let selObj: NodeSelection = new NodeSelection();
+            (table as HTMLElement).querySelectorAll('td')[8].classList.add("e-cell-select");
+            selObj.setSelectionText(rteObj.contentModule.getDocument(), table.querySelectorAll('td')[8], table.querySelectorAll('td')[8], 0, 0);
+            table.querySelectorAll('td')[0].classList.remove("e-cell-select");
+            table.querySelectorAll('td')[6].innerHTML = 'test1' + table.querySelectorAll('td')[6].innerHTML;
+            table.querySelectorAll('td')[7].innerHTML = 'test2' + table.querySelectorAll('td')[7].innerHTML;
+            table.querySelectorAll('td')[8].innerHTML = 'test3' + table.querySelectorAll('td')[8].innerHTML;
+            (<any>rteObj).tableModule.keyDown({ args: keyboardEventArgs });
+            expect(table.querySelectorAll('td')[9].innerText).toBe('\n');
+            expect(table.querySelectorAll('td')[10].innerText).toBe('\n');
+            expect(table.querySelectorAll('td')[11].innerText).toBe('\n');
+        });
+    });
+
     describe('table dialog open close ', () => {
         let rteEle: HTMLElement;
         let rteObj: RichTextEditor;

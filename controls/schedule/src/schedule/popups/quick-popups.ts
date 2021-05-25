@@ -343,7 +343,7 @@ export class QuickPopups {
                         'data-id': '' + eventData[fields.id],
                         'data-guid': eventData.Guid as string, 'role': 'button', 'tabindex': '0',
                         'aria-readonly': this.parent.eventBase.getReadonlyAttribute(eventData),
-                        'aria-selected': 'false', 'aria-grabbed': 'true', 'aria-label': this.parent.getAnnocementString(eventData)
+                        'aria-selected': 'false', 'aria-grabbed': 'true', 'aria-label': this.parent.getAnnouncementString(eventData)
                     }
                 });
                 let templateElement: HTMLElement[];
@@ -1005,7 +1005,7 @@ export class QuickPopups {
         if (target.classList.contains(cls.APPOINTMENT_CLASS)) {
             return this.parent.activeEventData.event as Record<string, any>;
         }
-        // Depricated cells data in quick popups
+        // Deprecated cells data in quick popups
         const eventObj: Record<string, any> = {
             startTime: this.parent.activeCellsData.startTime,
             endTime: this.parent.activeCellsData.endTime,
@@ -1042,7 +1042,7 @@ export class QuickPopups {
         this.parent.trigger(event.popupOpen, eventProp, (popupArgs: PopupOpenEventArgs) => {
             if (popupArgs.cancel) {
                 this.quickPopupHide();
-                this.destroyButtons();
+                this.destroyPopupButtons('quickPopup');
                 if (popupArgs.element.classList.contains(cls.POPUP_OPEN)) {
                     this.quickPopupClose();
                 }
@@ -1144,7 +1144,7 @@ export class QuickPopups {
         if (this.quickPopup.element.querySelectorAll('.e-formvalidator').length) {
             this.fieldValidator.destroy();
         }
-        this.destroyButtons();
+        this.destroyPopupButtons('quickPopup');
         util.removeChildren(this.quickPopup.element);
     }
 
@@ -1231,7 +1231,7 @@ export class QuickPopups {
             const date: Date = this.parent.getDateFromElement(e.currentTarget as HTMLTableCellElement);
             if (!isNullOrUndefined(date)) {
                 this.closeClick();
-                this.parent.setScheduleProperties({ selectedDate: date });
+                this.parent.setProperties({ selectedDate: date }, true);
                 this.parent.changeView(this.parent.getNavigateView(), e);
             }
         }
@@ -1275,15 +1275,16 @@ export class QuickPopups {
         this.parent.on(event.dataReady, this.updateMoreEventContent, this);
     }
 
-    private removeEventListner(): void {
+    private removeEventListener(): void {
         this.parent.off(event.cellClick, this.cellClick);
         this.parent.off(event.eventClick, this.eventClick);
         this.parent.off(event.documentClick, this.documentClick);
         this.parent.off(event.dataReady, this.updateMoreEventContent);
     }
 
-    private destroyButtons(): void {
-        const buttonCollections: HTMLElement[] = [].slice.call(this.quickPopup.element.querySelectorAll('.e-control.e-btn'));
+    private destroyPopupButtons(popupName: string): void {
+        const popup: Popup = popupName === 'quickPopup' ? this.quickPopup : this.morePopup;
+        const buttonCollections: HTMLElement[] = [].slice.call(popup.element.querySelectorAll('.e-control.e-btn'));
         for (const button of buttonCollections) {
             const instance: Button = (button as EJ2Instance).ej2_instances[0] as Button;
             if (instance) {
@@ -1293,46 +1294,59 @@ export class QuickPopups {
     }
 
     public refreshQuickDialog(): void {
-        if (this.quickDialog.element) {
-            this.quickDialog.destroy();
-            remove(this.quickDialog.element);
-            this.quickDialog.element = null;
-        }
+        this.destroyQuickDialog();
         this.renderQuickDialog();
     }
 
     public refreshQuickPopup(): void {
-        if (this.quickPopup.element) {
-            this.quickPopup.destroy();
-            remove(this.quickPopup.element);
-            this.quickPopup.element = null;
-        }
+        this.destroyQuickPopup();
         this.renderQuickPopup();
     }
 
     public refreshMorePopup(): void {
+        this.destroyMorePopup();
+        this.renderMorePopup();
+    }
+
+    private destroyQuickDialog(): void {
+        if (this.quickDialog.element) {
+            this.quickDialog.destroy();
+            remove(this.quickDialog.element);
+            this.quickDialog = null;
+        }
+    }
+
+    private destroyQuickPopup(): void {
+        if (this.quickPopup.element) {
+            this.destroyPopupButtons('quickPopup');
+            this.quickPopup.destroy();
+            remove(this.quickPopup.element);
+            this.quickPopup = null;
+        }
+    }
+
+    private destroyMorePopup(): void {
         if (this.morePopup.element) {
+            this.destroyPopupButtons('morePopup');
             this.morePopup.destroy();
             remove(this.morePopup.element);
-            this.morePopup.element = null;
+            this.morePopup = null;
         }
-        this.renderMorePopup();
     }
 
     public destroy(): void {
         if (this.quickPopup.element.querySelectorAll('.e-formvalidator').length) {
             this.fieldValidator.destroy();
         }
-        this.removeEventListner();
-        this.destroyButtons();
-        this.quickPopup.destroy();
-        remove(this.quickPopup.element);
-        this.morePopup.destroy();
-        remove(this.morePopup.element);
-        if (this.quickDialog.element) {
-            this.quickDialog.destroy();
-            remove(this.quickDialog.element);
-            this.quickDialog.element = null;
-        }
+        this.removeEventListener();
+        this.destroyQuickPopup();
+        this.destroyMorePopup();
+        this.destroyQuickDialog();
+        this.parent = null;
+        this.l10n = null;
+        this.isCrudAction = null;
+        this.fieldValidator = null;
+        this.isMultipleEventSelect = null;
     }
+
 }

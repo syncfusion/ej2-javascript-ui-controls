@@ -2,15 +2,33 @@
 
 ## [Unreleased]
 
+## 19.1.65 (2021-05-25)
+
+### Document Editor
+
+#### Bug Fixes
+
+- `#I325554` - Resolved the script error in multiple document pasted as SFDT.
+- `#I327626` - Footnote is rendered now.
+- `#I326000` - Resolved the document rendering issue.
+- `#I327097` - Resolved the script error in square wrapping style.
+- `#I327458` - Text overlapping issue is resolved.
+- `#I327647` - Issue with comment removal is resolved.
+- `#I322560` - Resolved the page content duplication issue.
+- `#I322560` - Resolved the font size parsing issue.
+- `#I323423` - Footnote is rendering issue is resolved.
+- `#I325920` - Selection behaviour is handled for moving outside the control.
+- `#I323608` - Textbox with fill color is rendered.
+
 ## 19.1.64 (2021-05-19)
 
 ### Document Editor
 
 #### Bug Fixes
 
-- `I325681` - Resolved the textbox border rendering issue.
-- `I323059` - Resolved the script error when ignore action in spelling dialog.
-- `I323423` - Resolved the footnote moving issue to next page.
+- `#I325681` - Resolved the textbox border rendering issue.
+- `#I323059` - Resolved the script error when ignore action in spelling dialog.
+- `#I323423` - Resolved the footnote moving issue to next page.
 - `#I324169` - Resolved opacity issue in toolbar item. 
 - `#I322560`, `#I323516` - Script error in the top and bottom layout is resolved.
 - `#I323824` - Resolved the document corruption issue in MS Office 2007.

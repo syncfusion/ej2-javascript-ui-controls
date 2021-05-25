@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 19.1.65 (2021-05-25)
+
+### Diagram
+
+#### Bug Fixes
+
+- `#I327071` - the issue "When node is placed at the bottom position of the diagram component the tooltip position is rendered wrongly" issue has been fixed.
+
 ## 19.1.64 (2021-05-19)
 
 ### Diagram

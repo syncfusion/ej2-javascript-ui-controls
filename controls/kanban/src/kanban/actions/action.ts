@@ -335,16 +335,16 @@ export class Action {
         }
     }
 
-    public showColumn(key: string): void {
-        const index: number = this.hideColumnKeys.indexOf(key);
+    public showColumn(key: string | number): void {
+        const index: number = this.hideColumnKeys.indexOf(key.toString());
         if (index !== -1) {
             this.hideColumnKeys.splice(index, 1);
             this.parent.notify(events.dataReady, { processedData: this.parent.kanbanData });
         }
     }
 
-    public hideColumn(key: string): void {
-        this.hideColumnKeys.push(key);
+    public hideColumn(key: string | number): void {
+        this.hideColumnKeys.push(key.toString());
         this.parent.notify(events.dataReady, { processedData: this.parent.kanbanData });
     }
 

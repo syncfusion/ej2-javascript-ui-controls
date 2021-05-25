@@ -64,6 +64,7 @@ export class Table {
         this.parent.on(events.dynamicModule, this.afterRender, this);
         this.parent.on(events.docClick, this.docClick, this);
         this.parent.on(events.editAreaClick, this.editAreaClickHandler, this);
+        this.parent.on(events.clearDialogObj, this.clearDialogObj, this);
         this.parent.on(events.tableToolbarAction, this.onToolbarAction, this);
         this.parent.on(events.dropDownSelect, this.dropdownSelect, this);
         this.parent.on(events.keyDown, this.keyDown, this);
@@ -80,6 +81,7 @@ export class Table {
         this.parent.off(events.dynamicModule, this.afterRender);
         this.parent.off(events.docClick, this.docClick);
         this.parent.off(events.editAreaClick, this.editAreaClickHandler);
+        this.parent.off(events.clearDialogObj, this.clearDialogObj);
         this.parent.off(events.tableToolbarAction, this.onToolbarAction);
         this.parent.off(events.dropDownSelect, this.dropdownSelect);
         this.parent.off(events.mouseDown, this.cellSelect);
@@ -306,7 +308,9 @@ export class Table {
                     selection.setSelectionText(this.contentModule.getDocument(), nextElement, nextElement, 0, 0);
             }
             if (ele === nextElement && event.keyCode !== 39 && nextElement) {
+                ele.classList.add(classes.CLS_TABLE_SEL);
                 this.addRow(selection, event, true);
+                ele.classList.remove(classes.CLS_TABLE_SEL);
                 nextElement = nextElement.parentElement.nextSibling.firstChild as HTMLElement;
                 // eslint-disable-next-line
                 (nextElement.textContent.trim() !== '' && closest(nextElement, 'td')) ?
@@ -1017,6 +1021,7 @@ export class Table {
         const dlgContent: HTMLElement = proxy.tableCellDlgContent();
         const insert: string = proxy.l10n.getConstant('dialogInsert');
         const cancel: string = proxy.l10n.getConstant('dialogCancel');
+        if (isNullOrUndefined(proxy.editdlgObj)) { return; }
         proxy.editdlgObj.setProperties({
             height: 'initial', width: '290px', content: dlgContent,
             buttons: [{
@@ -1067,7 +1072,13 @@ export class Table {
         this.rowTextBox.appendTo(tableWrap.querySelector('#tableRow') as HTMLElement);
         return tableWrap;
     }
-
+    private clearDialogObj(): void {
+        if (this.editdlgObj) {
+            this.editdlgObj.destroy();
+            detach(this.editdlgObj.element);
+            this.editdlgObj = null;
+        }
+    }
     // eslint-disable-next-line
     private createDialog(args: ITableArgs | ClickEventArgs | MouseEvent): void {
         if (this.editdlgObj) {

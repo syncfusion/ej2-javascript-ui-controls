@@ -65,6 +65,7 @@ export class Image {
         this.parent.on(events.insertImage, this.insertImage, this);
         this.parent.on(events.windowResize, this.onWindowResize, this);
         this.parent.on(events.insertCompleted, this.showImageQuickToolbar, this);
+        this.parent.on(events.clearDialogObj, this.clearDialogObj, this);
         this.parent.on(events.imageToolbarAction, this.onToolbarAction, this);
         this.parent.on(events.imageCaption, this.caption, this);
         this.parent.on(events.imageDelete, this.deleteImg, this);
@@ -89,6 +90,7 @@ export class Image {
         this.parent.off(events.windowResize, this.onWindowResize);
         this.parent.off(events.insertImage, this.insertImage);
         this.parent.off(events.insertCompleted, this.showImageQuickToolbar);
+        this.parent.off(events.clearDialogObj, this.clearDialogObj);
         this.parent.off(events.imageCaption, this.caption);
         this.parent.off(events.imageToolbarAction, this.onToolbarAction);
         this.parent.off(events.imageDelete, this.deleteImg);
@@ -1158,6 +1160,13 @@ export class Image {
             ((e.args as ClickEventArgs).item as IDropDownItemModel).subCommand : type;
         this.parent.formatter.process(this.parent, e.args, e.args, { selectNode: e.selectNode, subCommand: subCommand });
     }
+    private clearDialogObj(): void {
+        if (this.dialogObj) {
+            this.dialogObj.destroy();
+            detach(this.dialogObj.element);
+            this.dialogObj = null;
+        }
+    }
     private imagDialog(e: IImageNotifyArgs): void {
         if (this.dialogObj) {
             this.dialogObj.hide({ returnValue: true } as Event);
@@ -1233,6 +1242,7 @@ export class Image {
         this.dialogObj = this.dialogRenderObj.render(dialogModel);
         this.dialogObj.createElement = this.parent.createElement;
         this.dialogObj.appendTo(imgDialog);
+        if (isNullOrUndefined(this.dialogObj)) { return; }
         if (e.selectNode && e.selectNode[0].nodeName === 'IMG' && (e.name === 'insertImage')) {
             this.dialogObj.element.querySelector('.e-insertImage').textContent = this.parent.localeObj.getConstant('dialogUpdate');
         }

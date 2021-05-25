@@ -117,7 +117,7 @@ export class ResourceBase {
         let rIndex: number;
         const resColl: ResourcesModel[] = this.resourceCollection;
         const tr: Element = createElement('tr');
-        const td: Element = createElement('td', { attrs: { tabindex: isVirtualScroll? '-1' : '0' } });
+        const td: Element = createElement('td', { attrs: { tabindex: isVirtualScroll ? '-1' : '0' } });
         for (let i: number = 0; i < resData.length; i++) {
             const ntd: Element = td.cloneNode() as Element;
             rIndex = util.findIndexInData(<Record<string, any>[]>resColl, 'name', resData[i].resource.name);
@@ -512,7 +512,7 @@ export class ResourceBase {
     }
 
     private dataManagerSuccess(e: ReturnType[], isSetModel: boolean): void {
-        if (this.parent.isDestroyed) { return; }
+        if (!this.parent || this.parent && this.parent.isDestroyed) { return; }
         this.parent.resourceCollection = [];
         for (let i: number = 0, length: number = e.length; i < length; i++) {
             const resource: ResourcesModel = this.parent.resources[i];
@@ -581,7 +581,6 @@ export class ResourceBase {
         const resources: ResourcesModel[] = this.resourceCollection;
         const resTreeGroup: TdData[][][] = [];
         let lastColumnDates: TdData[] = [];
-        // eslint-disable-next-line
         const group: CallbackFunction = (resources: ResourcesModel[], index: number, prevResource?: ResourcesModel, prevResourceData?: Record<string, any>, prevOrder?: string[]): TdData[] => {
             const resTree: TdData[] = [];
             const resource: ResourcesModel = resources[0];
@@ -786,6 +785,7 @@ export class ResourceBase {
     }
 
     public getResourceRenderDates(): Date[] {
+        // eslint-disable-next-line prefer-spread
         const resourceDates: Date[] = [].concat.apply([], this.lastResourceLevel.map((e: TdData) => e.renderDates));
         const removeDuplicateDates: CallbackFunction = (dateColl: Date[]) => dateColl.filter((date: Date, index: number, dates: Date[]) =>
             dates.map((dateObj: Date) => dateObj.getTime()).indexOf(date.getTime()) === index);

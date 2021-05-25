@@ -321,21 +321,18 @@ export class Renderer {
                     let shapeLeft: number = this.getScaledValue(shape.x, 1);
                     let shapeTop: number = this.getScaledValue(shape.y, 2);
                     this.pageContext.beginPath();
-                    if (shape.fillFormat && shape.fillFormat.fill) {
+                    if (shape.fillFormat && shape.fillFormat.color) {
                         this.pageContext.fillStyle = shape.fillFormat.color;
                         this.pageContext.fillRect(shapeLeft, shapeTop, this.getScaledValue(shape.width), this.getScaledValue(shape.height));
                     }
                     if (!isNullOrUndefined(shapeType)) {
                         if ((shapeType === 'StraightConnector' && shape.lineFormat.line && shape.lineFormat.lineFormatType !== 'None') || (!isNullOrUndefined(shape.lineFormat.lineFormatType) && shape.lineFormat.lineFormatType !== 'None')) {
+                            this.pageContext.lineWidth = shape.lineFormat.weight;
                             this.pageContext.strokeStyle = HelperMethods.getColor(shape.lineFormat.color);
                             this.pageContext.strokeRect(shapeLeft, shapeTop, this.getScaledValue(shape.width), this.getScaledValue(shape.height));
                         }
                     }
                     this.pageContext.closePath();
-                    //if (shape.isTextBox) {
-                    //   this.renderSingleBorder(shape.lineFormat.color, shape.x, shape.y, shape.x + shape.width, shape.y, shape.lineFormat.weight);
-                    //    this.renderSingleBorder(shape.lineFormat.color, shape.x, shape.y + shape.height, shape.x + shape.width, shape.y + shape.height, shape.lineFormat.weight);
-                    //}
                     let isClipped: boolean = false;
                     if (shape.width != 0 && shape.height != 0) {
                         isClipped = true;

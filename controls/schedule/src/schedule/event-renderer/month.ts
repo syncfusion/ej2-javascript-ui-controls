@@ -43,7 +43,7 @@ export class MonthEvent extends EventBase {
         this.addEventListener();
     }
 
-    private removeEventWarapper(appElement: Element[]): void {
+    private removeEventWrapper(appElement: Element[]): void {
         if (appElement.length > 0) {
             appElement = (this.parent.currentView === 'Month') ? appElement : [appElement[0]];
             for (const wrap of appElement) {
@@ -65,12 +65,12 @@ export class MonthEvent extends EventBase {
             for (let i: number = 0, len: number = this.parent.crudModule.crudObj.sourceEvent.length; i < len; i++) {
                 const appElement: Element[] = [].slice.call(this.element.querySelectorAll('.e-appointment-wrapper ' + '[data-group-index="' +
                     this.parent.crudModule.crudObj.sourceEvent[i].groupIndex + '"]'));
-                this.removeEventWarapper(appElement);
+                this.removeEventWrapper(appElement);
                 if (this.parent.crudModule.crudObj.sourceEvent[i].groupIndex !==
                     this.parent.crudModule.crudObj.targetEvent[i].groupIndex) {
                     const ele: Element[] = [].slice.call(this.element.querySelectorAll('.e-appointment-wrapper ' + '[data-group-index="' +
                         this.parent.crudModule.crudObj.targetEvent[i].groupIndex + '"]'));
-                    this.removeEventWarapper(ele);
+                    this.removeEventWrapper(ele);
                 }
             }
         } else {
@@ -116,7 +116,7 @@ export class MonthEvent extends EventBase {
                 this.parent.notify(events.contentReady, {});
             }
             if (this.parent.currentView === 'Month' && this.parent.showWeekNumber) {
-                const totalCells: HTMLElement[] = 
+                const totalCells: HTMLElement[] =
                     [].slice.call(this.parent.element.querySelectorAll('.e-content-wrap table tr td:first-child'));
                 const weekNumberCells: HTMLElement[] = [].slice.call(this.parent.element.querySelectorAll('.' + cls.WEEK_NUMBER_CLASS));
                 weekNumberCells.forEach((cell: HTMLElement, i: number) => {
@@ -167,8 +167,8 @@ export class MonthEvent extends EventBase {
             if (this.parent.resourceBase && !resData) {
                 this.cssClass = this.parent.resourceBase.getCssClass(event);
             }
-            const splittedEvents: Record<string, any>[] = this.splitEvent(event, filteredDates || this.dateRender);
-            for (const event of splittedEvents) {
+            const spannedEvents: Record<string, any>[] = this.splitEvent(event, filteredDates || this.dateRender);
+            for (const event of spannedEvents) {
                 if (this.maxHeight) {
                     const sDate: Date = this.parent.currentView === 'Month' ? event[this.fields.startTime] as Date :
                         this.getStartTime(event, event.data as Record<string, any>);
@@ -214,8 +214,8 @@ export class MonthEvent extends EventBase {
                 blockSpannedList.push(event);
             }
             for (const blockEvent of blockSpannedList) {
-                const splittedEvents: Record<string, any>[] = this.splitEvent(blockEvent, this.dateRender);
-                for (const event of splittedEvents) {
+                const spannedEvents: Record<string, any>[] = this.splitEvent(blockEvent, this.dateRender);
+                for (const event of spannedEvents) {
                     this.renderBlockEvents(event, resIndex, !!blockEvent.isBlockIcon);
                 }
             }
@@ -347,7 +347,7 @@ export class MonthEvent extends EventBase {
                 'data-id': 'Appointment_' + record[this.fields.id],
                 'role': 'button', 'tabindex': '0',
                 'aria-readonly': this.parent.eventBase.getReadonlyAttribute(record), 'aria-selected': 'false', 'aria-grabbed': 'true',
-                'aria-label': this.parent.getAnnocementString(newRecord, eventSubject)
+                'aria-label': this.parent.getAnnouncementString(newRecord, eventSubject)
             }
         });
         if (!isCloneElement) {
@@ -589,7 +589,7 @@ export class MonthEvent extends EventBase {
                     const moreArgs: EventClickArgs = { date: startDate, event: filteredEvents, element: event.target } as EventClickArgs;
                     this.parent.quickPopup.moreEventClick(moreArgs, endDate, groupIndex);
                 } else {
-                    this.parent.setScheduleProperties({ selectedDate: startDate });
+                    this.parent.setProperties({ selectedDate: startDate }, true);
                     this.parent.changeView(clickArgs.viewName, event);
                 }
             }
@@ -644,7 +644,7 @@ export class MonthEvent extends EventBase {
     public getMoreIndicatorElement(count: number, startDate: Date, endDate: Date): HTMLElement {
         const moreIndicatorElement: HTMLElement = createElement('div', {
             className: cls.MORE_INDICATOR_CLASS,
-            innerHTML: '+' + count + '&nbsp;' + (this.parent.isAdaptive ? '' : this.parent.localeObj.getConstant('more')),
+            innerHTML: '+' + this.parent.globalize.formatNumber(count) + '&nbsp;' + (this.parent.isAdaptive ? '' : this.parent.localeObj.getConstant('more')),
             attrs: {
                 'tabindex': '0',
                 'data-start-date': startDate.getTime().toString(),
@@ -666,6 +666,17 @@ export class MonthEvent extends EventBase {
         const headerHeight: number = util.getOuterHeight(cell.querySelector('.' + cls.DATE_HEADER_CLASS));
         const height: number = (cell.offsetHeight - headerHeight) - (this.maxHeight ? 0 : this.moreIndicatorHeight);
         setStyleAttribute(event, { 'height': height + 'px', 'align-items': 'center' });
+    }
+
+    public destroy(): void {
+        this.element = null;
+        this.fields = null;
+        this.maxHeight = null;
+        this.withIndicator = null;
+        this.maxOrIndicator = null;
+        this.moreIndicatorHeight = null;
+        this.removeEventListener();
+        super.destroy();
     }
 
 }

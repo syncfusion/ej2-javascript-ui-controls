@@ -426,7 +426,6 @@
       display: block;
       height: 100%;
       line-height: 22px;
-      min-height: 200px;
       overflow: auto;
       padding: 16px;
       resize: none;
@@ -626,8 +625,8 @@
     cursor: pointer;
     display: block;
     float: none;
-    margin: 5px auto;
     max-width: 100%;
+    padding: 1px;
     position: relative;
   }
 
@@ -644,9 +643,8 @@
   .e-rte-image.e-imginline {
     display: inline-block;
     float: none;
-    margin-left: 5px;
-    margin-right: 5px;
     max-width: calc(100% - (2 * 5px));
+    padding: 1px;
     vertical-align: bottom;
   }
 

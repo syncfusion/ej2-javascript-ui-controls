@@ -214,7 +214,7 @@ export class BlazorUiAdaptor {
     // tslint:disable-next-line
     public resetToolbar(): void {
         if (this.pdfViewer.enableToolbar) {
-            this.currentPageBoxElement.textContent = '0';
+            this.currentPageBoxElement.value = '0';
             this.totalPageElement.textContent = this.pdfViewer.localeObj.getConstant('of') + '0';
             if (!this.isEnabled(this.currentPageBoxElementContainer)) {
                 this.currentPageBoxElementContainer.className += this.disableClass;
@@ -228,46 +228,46 @@ export class BlazorUiAdaptor {
             if (!this.isEnabled(this.nextPageElement)) {
                 this.nextPageElement.className += this.disableClass;
             }
-            if (!this.isEnabled(this.currentPageBoxElementContainer)) {
+            if (!this.isEnabled(this.lastPageElement)) {
                 this.lastPageElement.className += this.disableClass;
             }
-            if (!this.isEnabled(this.currentPageBoxElementContainer)) {
+            if (!this.isEnabled(this.zoomInElement)) {
                 this.zoomInElement.className += this.disableClass;
             }
-            if (!this.isEnabled(this.currentPageBoxElementContainer)) {
+            if (!this.isEnabled(this.zommOutElement)) {
                 this.zommOutElement.className += this.disableClass;
             }
-            if (!this.isEnabled(this.currentPageBoxElementContainer)) {
+            if (!this.isEnabled(this.zoomDropDownElement)) {
                 this.zoomDropDownElement.className += this.disableClass;
             }
-            if (!this.isEnabled(this.currentPageBoxElementContainer)) {
+            if (!this.isEnabled(this.selectToolElement)) {
                 this.selectToolElement.className += this.disableClass;
             }
-            if (!this.isEnabled(this.currentPageBoxElementContainer)) {
+            if (!this.isEnabled(this.handToolElement)) {
                 this.handToolElement.className += this.disableClass;
             }
-            if (!this.isEnabled(this.currentPageBoxElementContainer)) {
+            if (!this.isEnabled(this.undoElement)) {
                 this.undoElement.className += this.disableClass;
             }
-            if (!this.isEnabled(this.currentPageBoxElementContainer)) {
+            if (!this.isEnabled(this.redoElement)) {
                 this.redoElement.className += this.disableClass;
             }
-            if (!this.isEnabled(this.currentPageBoxElementContainer)) {
+            if (!this.isEnabled(this.commentElement)) {
                 this.commentElement.className += this.disableClass;
             }
-            if (!this.isEnabled(this.currentPageBoxElementContainer)) {
+            if (!this.isEnabled(this.searchElement)) {
                 this.searchElement.className += this.disableClass;
             }
-            if (!this.isEnabled(this.currentPageBoxElementContainer)) {
+            if (!this.isEnabled(this.submitFormButton)) {
                 this.submitFormButton.className += this.disableClass;
             }
-            if (!this.isEnabled(this.currentPageBoxElementContainer)) {
+            if (!this.isEnabled(this.annotationElement)) {
                 this.annotationElement.className += this.disableClass;
             }
-            if (!this.isEnabled(this.currentPageBoxElementContainer)) {
+            if (!this.isEnabled(this.printElement)) {
                 this.printElement.className += this.disableClass;
             }
-            if (!this.isEnabled(this.currentPageBoxElementContainer)) {
+            if (!this.isEnabled(this.downloadElement)) {
                 this.downloadElement.className += this.disableClass;
             }
         }

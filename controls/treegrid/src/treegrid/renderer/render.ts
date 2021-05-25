@@ -216,6 +216,7 @@ export class Render {
                     if (isNullOrUndefined(this.parent.grid[portals])) {
                         this.parent.grid[portals] = this.parent[portals];
                     }
+                    this.parent.notify('renderReactTemplate', this.parent[portals]);
                     this.parent[renderReactTemplates]();
                 } else {
                     const str: string = 'isStringTemplate';

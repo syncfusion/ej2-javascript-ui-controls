@@ -507,10 +507,12 @@ export class SfdtReader {
         this.parseBody(data, section.childWidgets as BlockWidget[], section, isSectionBreak);
     }
     public addCustomStyles(data: any): void {
-        for (let i: number = 0; i < data.styles.length; i++) {
-            const style: any = this.documentHelper.styles.findByName(data.styles[i].name);
-            if (style === undefined) {
-                this.parseStyle(data, data.styles[i], this.documentHelper.styles);
+        if (!isNullOrUndefined(data.styles)) {
+            for (let i: number = 0; i < data.styles.length; i++) {
+                const style: any = this.documentHelper.styles.findByName(data.styles[i].name);
+                if (style === undefined) {
+                    this.parseStyle(data, data.styles[i], this.documentHelper.styles);
+                }
             }
         }
     }
@@ -959,6 +961,7 @@ export class SfdtReader {
                 image.allowOverlap = inline.allowOverlap;
                 image.textWrappingStyle = isNullOrUndefined(inline.textWrappingStyle) ? 'Inline' : inline.textWrappingStyle;
                 image.textWrappingType = inline.textWrappingType;
+                image.zOrderPosition = inline.zOrderPosition;
                 image.layoutInCell = inline.layoutInCell;
                 if (image.textWrappingStyle !== 'Inline') {
                     paragraph.floatingElements.push(image);
@@ -1094,7 +1097,7 @@ export class SfdtReader {
                     }
                 }
                 hasValidElmts = true;
-            } else if (inline.hasOwnProperty('commentId')) {
+            } else if (inline.hasOwnProperty('commentId') && !this.isPaste) {
                 let commentID: string = inline.commentId;
                 let commentStart: CommentCharacterElementBox = undefined;
                 let comment: CommentElementBox;
@@ -1170,9 +1173,6 @@ export class SfdtReader {
                 shape.layoutInCell = inline.layoutInCell;
                 shape.lockAnchor = inline.lockAnchor;
                 shape.autoShapeType = inline.autoShapeType;
-                if (inline.isTextBox) {
-                    shape.isTextBox = inline.isTextBox;
-                }
                 if (inline.hasOwnProperty('lineFormat')) {
                     let lineFormat: LineFormat = new LineFormat();
                     lineFormat.line = inline.lineFormat.line;
@@ -1599,8 +1599,9 @@ export class SfdtReader {
                 characterFormat.strikethrough = sourceFormat.strikethrough;
             }
             if (!isNullOrUndefined(sourceFormat.fontSize)) {
+                sourceFormat.fontSize = parseFloat(sourceFormat.fontSize);
                 let number: number = sourceFormat.fontSize * 10;
-                if(number % 10 !== 0) {
+                if (number % 10 !== 0) {
                     number = sourceFormat.fontSize.toFixed(1) * 10;
                     //to check worst case scenerio like 8.2 or 8.7 like these to round off
                     if (number % 5 === 0) {
@@ -1609,7 +1610,7 @@ export class SfdtReader {
                         sourceFormat.fontSize = Math.round(sourceFormat.fontSize);
                     }
                 }
-                characterFormat.fontSize = sourceFormat.fontSize;
+                characterFormat.fontSize = parseFloat(sourceFormat.fontSize);
             }
             if (!isNullOrUndefined(sourceFormat.fontFamily)) {
                 if (sourceFormat.fontFamily.indexOf('"') !== -1) {

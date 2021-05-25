@@ -3161,9 +3161,6 @@ export class Selection {
     public getBodyWidgetInternal(sectionIndex: number, blockIndex: number): BodyWidget {
         for (let i: number = 0; i < this.documentHelper.pages.length; i++) {
             let bodyWidget: BodyWidget = this.documentHelper.pages[i].bodyWidgets[0];
-            if (bodyWidget.index === sectionIndex && bodyWidget.childWidgets.length === 1) {
-                return bodyWidget;
-            }
             if (bodyWidget.index === sectionIndex) {
                 if (bodyWidget.childWidgets.length > 0 && (bodyWidget.firstChild as Widget).index <= blockIndex &&
                     (bodyWidget.lastChild as Widget).index >= blockIndex) {

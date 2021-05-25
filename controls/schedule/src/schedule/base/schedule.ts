@@ -143,7 +143,6 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
     public uiStateValues: UIStateArgs;
     public internalTimeFormat: string;
     public calendarUtil: CalendarUtil;
-    public allowExcelExport: boolean;
     public scrollTop: number;
     public scrollLeft: number;
     public isPrinting: boolean;
@@ -1045,8 +1044,7 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
             if (date > maxDate) {
                 date = maxDate;
             }
-            this.setScheduleProperties(
-                { selectedDate: new Date('' + date), minDate: new Date('' + minDate), maxDate: new Date('' + maxDate) });
+            this.setProperties({ selectedDate: new Date('' + date), minDate: new Date('' + minDate), maxDate: new Date('' + maxDate) }, true);
             if (this.eventWindow) {
                 this.eventWindow.updateMinMaxDateToEditor();
             }
@@ -1112,7 +1110,7 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
             count++;
         }
         if (!isModuleLoad && selectedView) {
-            this.setScheduleProperties({ currentView: selectedView });
+            this.setProperties({ currentView: selectedView }, true);
         }
         if (this.viewIndex === -1) {
             const currentIndex: number = this.getViewIndex(this.currentView);
@@ -1321,19 +1319,6 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
     }
 
     /**
-     * Method to set dynamic property values
-     *
-     * @param {Object} properties Accepts the property object
-     * @returns {void}
-     * @private
-     */
-    public setScheduleProperties(properties: Record<string, any>): void {
-        this.allowServerDataBinding = false;
-        this.setProperties(properties, true);
-        this.allowServerDataBinding = true;
-    }
-
-    /**
      * Method to change the current view
      *
      * @param {View} view Accepts the view name
@@ -1360,7 +1345,7 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
                 this.trigger(events.navigating, navArgs, (navigationArgs: NavigatingEventArgs) => {
                     if (!navigationArgs.cancel) {
                         this.viewIndex = navigationArgs.viewIndex;
-                        this.setScheduleProperties({ currentView: view });
+                        this.setProperties({ currentView: view }, true);
                         if (this.headerModule) {
                             this.headerModule.updateActiveView();
                             this.headerModule.setCalendarDate(this.selectedDate);
@@ -1576,8 +1561,8 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
             createError: 'The duration of the event must be shorter than how frequently it occurs. ' +
                 'Shorten the duration, or change the recurrence pattern in the recurrence event editor.',
             sameDayAlert: 'Two occurrences of the same event cannot occur on the same day.',
-            occurenceAlert: 'Cannot reschedule an occurrence of the recurring appointment if it skips over '+ 
-            'a later occurrence of the same appointment.',
+            occurenceAlert: 'Cannot reschedule an occurrence of the recurring appointment if it skips over ' +
+                'a later occurrence of the same appointment.',
             editRecurrence: 'Edit Recurrence',
             repeats: 'Repeats',
             alert: 'Alert',
@@ -1877,7 +1862,7 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
     }
 
     /**
-     * Method to process quick info eader template
+     * Method to process quick info header template
      *
      * @returns {CallbackFunction} Returns the callback function
      * @private
@@ -1988,7 +1973,7 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
      * Method to process the templates
      *
      * @param {string} template Accepts the template in string
-     * @returns {CallbackFunction} Returns the calback function
+     * @returns {CallbackFunction} Returns the callback function
      * @private
      */
     public templateParser(template: string): CallbackFunction {
@@ -2005,14 +1990,14 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
     }
 
     /**
-     * Method to generate the annocement string
+     * Method to generate the announcement string
      *
      * @param {Object} event Accepts the event object
      * @param {string} subject Accepts the subject text
-     * @returns {string} Returns the annocement string
+     * @returns {string} Returns the announcement string
      * @private
      */
-    public getAnnocementString(event: Record<string, any>, subject?: string): string {
+    public getAnnouncementString(event: Record<string, any>, subject?: string): string {
         let resourceName: string;
         if (this.quickPopup && this.activeViewOptions.group.resources.length > 0) {
             const constantText: string = '"s event - ';
@@ -2026,12 +2011,12 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
         const endDateText: string = this.globalize.formatDate(event[this.eventFields.endTime] as Date, {
             type: 'dateTime', skeleton: skeleton, calendar: this.getCalendarMode()
         });
-        let annocementString: string = recordSubject + ' ' + this.localeObj.getConstant('beginFrom') + ' '
+        let announcementString: string = recordSubject + ' ' + this.localeObj.getConstant('beginFrom') + ' '
             + startDateText + ' ' + this.localeObj.getConstant('endAt') + ' ' + endDateText;
         if (resourceName) {
-            annocementString = resourceName + ' ' + annocementString;
+            announcementString = resourceName + ' ' + announcementString;
         }
-        return annocementString;
+        return announcementString;
     }
 
     /**
@@ -2072,24 +2057,24 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
      * @returns {number} Returns the week number
      * @private
      */
-    public getWeekNumberContent(dates: Date[]): number {
-        let weekNumber: number;
+    public getWeekNumberContent(dates: Date[]): string {
+        let weekNumber: string;
         if (this.weekRule === 'FirstDay') {
             const weekNumberDate: Date = util.getWeekLastDate(dates.slice(-1)[0], this.firstDayOfWeek);
-            weekNumber = util.getWeekNumber(weekNumberDate);
+            weekNumber = this.globalize.formatNumber(util.getWeekNumber(weekNumberDate));
         } else if (this.weekRule === 'FirstFourDayWeek') {
             const weekFirstDate: Date = util.getWeekFirstDate(dates.slice(-1)[0], this.firstDayOfWeek);
             const weekLastDate: Date = util.getWeekLastDate(dates.slice(-1)[0], this.firstDayOfWeek);
             const weekMidDate: Date = util.getWeekMiddleDate(weekFirstDate, weekLastDate);
-            weekNumber = util.getWeekNumber(weekMidDate);
+            weekNumber = this.globalize.formatNumber(util.getWeekNumber(weekMidDate));
         } else if (this.weekRule === 'FirstFullWeek') {
             const weekFirstDate: Date = util.getWeekFirstDate(dates.slice(-1)[0], this.firstDayOfWeek);
-            weekNumber = util.getWeekNumber(weekFirstDate);
+            weekNumber = this.globalize.formatNumber(util.getWeekNumber(weekFirstDate));
         }
         return weekNumber;
     }
 
-    private unwireEvents(): void {
+    private unWireEvents(): void {
         EventHandler.remove(<HTMLElement & Window><unknown>window, 'resize', this.onScheduleResize);
         EventHandler.remove(<HTMLElement & Window><unknown>window, 'orientationchange', this.onScheduleResize);
         EventHandler.remove(document, Browser.touchStartEvent, this.onDocumentClick);
@@ -3152,12 +3137,27 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
             this.eventTooltip = null;
         }
         this.destroyPopups();
-        this.unwireEvents();
+        this.unWireEvents();
         this.destroyHeaderModule();
-        this.workCellAction.destroy();
-        this.inlineModule.destroy();
+        if (this.eventTooltip) {
+            this.eventTooltip.destroy();
+            this.eventTooltip = null;
+        }
+        if (this.eventBase) {
+            this.eventBase.destroy();
+            this.eventBase = null;
+        }
+        if (this.workCellAction) {
+            this.workCellAction.destroy();
+            this.workCellAction = null;
+        }
+        if (this.inlineModule) {
+            this.inlineModule.destroy();
+            this.inlineModule = null;
+        }
         if (this.keyboardInteractionModule) {
             this.keyboardInteractionModule.destroy();
+            this.keyboardInteractionModule = null;
         }
         if (this.scrollModule) {
             this.scrollModule.destroy();
@@ -3165,6 +3165,7 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
         }
         if (this.printModule) {
             this.printModule.destroy();
+            this.printModule = null;
         }
         if (this.activeView) {
             this.resetTemplates();
@@ -3176,9 +3177,28 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
             this.scheduleTouchModule.destroy();
             this.scheduleTouchModule = null;
         }
+        if (this.crudModule) {
+            this.crudModule.destroy();
+            this.crudModule = null;
+        }
+        if (this.dataModule) {
+            this.dataModule.destroy();
+            this.dataModule = null;
+        }
         super.destroy();
+        const modules: string[] = [
+            'dayModule', 'weekModule', 'workWeekModule', 'monthModule', 'monthAgendaModule', 'yearModule', 'agendaModule',
+            'timelineViewsModule', 'timelineMonthModule', 'timelineYearModule', 'resizeModule', 'dragAndDropModule',
+            'excelExportModule', 'printModule', 'iCalendarExportModule', 'iCalendarImportModule', 'tzModule', 'eventsData',
+            'eventsProcessed', 'blockData', 'blockProcessed', 'uiStateValues', 'viewCollections', 'viewOptions', 'defaultLocale',
+            'localeObj', 'selectedElements', 'resourceCollection', 'editorTitles', 'eventFields', 'activeViewOptions',
+            'activeEventData', 'activeCellsData', 'renderModule'
+        ];
+        for (const module of modules) {
+            (this as any)[module] = null;
+        }
         util.removeChildren(this.element);
-        let removeClasses: string[] = [cls.ROOT];
+        let removeClasses: string[] = [cls.ROOT, cls.RTL, cls.DEVICE_CLASS, cls.MULTI_DRAG];
         if (this.cssClass) {
             removeClasses = removeClasses.concat(this.cssClass.split(' '));
         }

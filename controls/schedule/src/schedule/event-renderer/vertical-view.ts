@@ -267,7 +267,7 @@ export class VerticalEvent extends EventBase {
                 'aria-readonly': this.parent.eventBase.getReadonlyAttribute(record),
                 'aria-selected': 'false',
                 'aria-grabbed': 'true',
-                'aria-label': this.parent.getAnnocementString(record)
+                'aria-label': this.parent.getAnnouncementString(record)
             }
         });
         if (record[this.fields.isReadonly]) {
@@ -365,7 +365,7 @@ export class VerticalEvent extends EventBase {
             const countCell: HTMLElement = countWrapper.querySelector('.' + cls.MORE_INDICATOR_CLASS) as HTMLElement;
             const moreCount: number = parseInt(countCell.getAttribute('data-count'), 10) + 1;
             countCell.setAttribute('data-count', moreCount.toString());
-            countCell.innerHTML = '+' + moreCount + '&nbsp;' + (this.parent.isAdaptive ? '' : this.parent.localeObj.getConstant('more'));
+            countCell.innerHTML = '+' + this.parent.globalize.formatNumber(moreCount) + '&nbsp;' + (this.parent.isAdaptive ? '' : this.parent.localeObj.getConstant('more'));
         }
     }
 
@@ -765,6 +765,22 @@ export class VerticalEvent extends EventBase {
 
     private animationUiUpdate(): void {
         this.parent.notify(events.contentReady, {});
+    }
+
+    public destroy(): void {
+        if (!this.parent || this.parent && this.parent.isDestroyed) { return; }
+        this.removeEventListener();
+        this.allDayElement = null;
+        this.renderedAllDayEvents = null;
+        this.renderedEvents = null;
+        this.slotCount = null;
+        this.interval = null;
+        this.startHour = null;
+        this.endHour = null;
+        this.element = null;
+        this.fields = null;
+        this.animation = null;
+        super.destroy();
     }
 
 }

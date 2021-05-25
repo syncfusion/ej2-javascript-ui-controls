@@ -12,6 +12,7 @@ import * as util from '../base/util';
 export class EventTooltip {
     private parent: Schedule;
     private tooltipObj: Tooltip;
+
     constructor(parent: Schedule) {
         this.parent = parent;
         this.tooltipObj = new Tooltip({
@@ -151,6 +152,7 @@ export class EventTooltip {
         this.tooltipObj.destroy();
         addClass([this.parent.element], 'e-control');
         this.tooltipObj = null;
+        this.parent = null;
     }
 
 }

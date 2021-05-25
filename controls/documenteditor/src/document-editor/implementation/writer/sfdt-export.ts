@@ -768,6 +768,7 @@ export class SfdtExport {
             inline.textWrappingStyle = element.textWrappingStyle;
             inline.textWrappingType = element.textWrappingType;
             inline.layoutInCell = element.layoutInCell;
+            inline.zOrderPosition = element.zOrderPosition;
         } else if (element instanceof BookmarkElementBox) {
             inline.bookmarkType = element.bookmarkType;
             inline.name = element.name;
@@ -871,6 +872,11 @@ export class SfdtExport {
         inline.layoutInCell = element.layoutInCell;
         inline.lockAnchor = element.lockAnchor;
         inline.autoShapeType = element.autoShapeType;
+        if (element.fillFormat) {
+            inline.fillFormat = {};
+            inline.fillFormat.color = element.fillFormat.color;
+            inline.fillFormat.fill = element.fillFormat.fill;
+        }
         if (element.lineFormat) {
             inline.lineFormat = {};
             inline.lineFormat.lineFormatType = element.lineFormat.lineFormatType;

@@ -2,6 +2,16 @@
 
 ## [Unreleased]
 
+## 19.1.65 (2021-05-25)
+
+### Tree Grid
+
+#### Bug Fixes
+
+- `#I324262` - EllipsisWithTooltip mode of clipMode works fine.
+- `#I326030` - CRUD actions works properly while we bind dataSource using DataManager with Offline mode in load event.
+- `#I325331` - Immutable mode refresh works properly on dataSource changes.
+
 ## 19.1.64 (2021-05-19)
 
 ### Tree Grid

@@ -1,7 +1,7 @@
 ﻿﻿﻿/* eslint-disable @typescript-eslint/no-explicit-any */
 import { Base, Event, getUniqueID, NotifyPropertyChanges, INotifyPropertyChanged, Property } from '@syncfusion/ej2-base';
 import { closest, Draggable, DragPosition, MouseEventArgs, remove, compareElementParent } from '@syncfusion/ej2-base';
-import { addClass, isNullOrUndefined, getComponent, isBlazor, BlazorDragEventArgs } from '@syncfusion/ej2-base';
+import { addClass, removeClass, isNullOrUndefined, getComponent, isBlazor, BlazorDragEventArgs } from '@syncfusion/ej2-base';
 import { SortableModel } from './sortable-model';
 
 /**
@@ -151,6 +151,7 @@ export class Sortable extends Base<HTMLElement> implements INotifyPropertyChange
             element.style.width = `${target.offsetWidth}px`; element.style.height = `${target.offsetHeight}px`;
         }
         addClass([element], ['e-sortableclone']);
+        removeClass([element], ['e-listboxtool-container']);
         document.body.appendChild(element);
         return element;
     }
@@ -312,7 +313,7 @@ export class Sortable extends Base<HTMLElement> implements INotifyPropertyChange
             const curIdx: number = this.getIndex(dropInst.placeHolderElement, dropInst);
             let prevIndx: number = this === dropInst && (prevIdx - curIdx) > 0 ? prevIdx - 1 : prevIdx;
             const args: DropEventArgs = {
-                previousIndex: prevIndx, currentIndex: this.curTarget === this.target ? prevIdx : curIdx, target: e.target, droppedElement: this.target,
+                previousIndex: prevIndx, currentIndex: this.curTarget === this.target ? prevIndx : curIdx, target: e.target, droppedElement: this.target,
                 helper: e.helper, cancel: false, handled: false
             };
             this.trigger('beforeDrop', args, (observedArgs: DropEventArgs) => {

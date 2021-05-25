@@ -84,7 +84,7 @@ export class WorkCellInteraction {
         } else {
             const date: Date = this.parent.getDateFromElement(target);
             if (!isNullOrUndefined(date) && !this.parent.isAdaptive && this.parent.isMinMaxDate(date)) {
-                this.parent.setScheduleProperties({ selectedDate: date });
+                this.parent.setProperties({ selectedDate: date }, true);
                 this.parent.changeView(this.parent.getNavigateView(), e);
             }
         }

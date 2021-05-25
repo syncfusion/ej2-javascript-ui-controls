@@ -2,6 +2,19 @@
 
 ## [Unreleased]
 
+## 19.1.65 (2021-05-25)
+
+### Grid
+
+#### Bug Fixes
+
+- `#I326169` - Column chooser `popup` closing issue has been fixed.
+- `#I327972` - Script error issue has been fixed while using anchor tag in header template.
+- `#I312347` - The selected row is not properly displayed in viewport when `virtualization` is enabled issue has been fixed.
+- `#I328013` - Autofill editing functionality issue has been fixed.
+- `#I327316` - Default value as null is not working in numeric column is fixed.
+- `#I327294` - Batch edit disregards null value in numeric column is fixed.
+
 ## 19.1.64 (2021-05-19)
 
 ### Grid
@@ -9,7 +22,7 @@
 #### Bug Fixes
 
 - `#I323987` - Wrong batch changes while editing date column has been fixed.
-- `#I326727` - `minwidth` issue with detail template has been fixed.
+- `#I325763` - `minwidth` issue with detail template has been fixed.
 - `#I325707` - When enable detail template and `rowDragAndDrop`, aggregate cells alignment issue has been fixed.
 - `#I323588` - Provided `beforeOpenAdaptiveDialog` event to listen the adaptive sort and filter dialog open action.
 - `#I323268` - Provided public methods `showAdaptiveFilterDialog` and `showAdaptiveSortDialog` to open the virtual row mode filter and sort dialog in adaptive horizontal mode.

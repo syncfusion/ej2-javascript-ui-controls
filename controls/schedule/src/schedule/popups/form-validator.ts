@@ -99,6 +99,8 @@ export class FieldValidator {
         if (this.formObj && this.formObj.element && !this.formObj.isDestroyed) {
             this.formObj.destroy();
         }
+        this.formObj = null;
+        this.element = null;
     }
 
 }

@@ -269,9 +269,10 @@ export class ActionBase {
         const xIsScrollable: boolean = parent.offsetWidth <= parent.scrollWidth;
         const yInBounds: boolean = yIsScrollable && parent.scrollTop >= 0 && parent.scrollTop + parent.offsetHeight <= parent.scrollHeight;
         let xInBounds: boolean = xIsScrollable && parent.scrollLeft >= 0 && parent.scrollLeft + parent.offsetWidth <= parent.scrollWidth;
-        if(this.actionObj.action === 'resize' && this.scrollEdges.right && (parent.scrollLeft + parent.offsetWidth) > parent.scrollWidth) {
+        if (this.actionObj.action === 'resize' && this.scrollEdges.right && (parent.scrollLeft + parent.offsetWidth) > parent.scrollWidth) {
             const tdCollections: number = ([].slice.call((this.parent.getContentTable().querySelector('tr') as HTMLTableRowElement).children)).length - 1;
-            const cellIndex: number  = Math.ceil((this.actionObj.clone.offsetLeft + (this.actionObj.clone.offsetWidth)) / this.actionObj.cellWidth);
+            const cellIndex: number = Math.ceil((this.actionObj.clone.offsetLeft + (this.actionObj.clone.offsetWidth)) /
+                this.actionObj.cellWidth);
             xInBounds = cellIndex === tdCollections;
         }
         if (yInBounds && (this.scrollEdges.top || this.scrollEdges.bottom)) {
@@ -458,7 +459,7 @@ export class ActionBase {
     }
 
     public destroy(): void {
-        if (this.parent.isDestroyed) {
+        if (!this.parent || this.parent && this.parent.isDestroyed) {
             return;
         }
         this.actionObj = {};

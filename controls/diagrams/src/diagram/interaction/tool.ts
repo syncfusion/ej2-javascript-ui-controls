@@ -988,6 +988,7 @@ export class MoveTool extends ToolBase {
                     for (let i: number = 0; i < nodes.length; i++) {
                         if (!nodes[i].container && temp) {
                             isEndGroup = true;
+                            this.commandHandler.updateLaneChildrenZindex(nodes[i] as Node,this.currentTarget);
                             this.commandHandler.dropChildToContainer(this.currentTarget, nodes[i]);
                             this.commandHandler.renderContainerHelper(nodes[i]);
                         }

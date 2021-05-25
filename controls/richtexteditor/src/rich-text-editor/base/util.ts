@@ -1,17 +1,16 @@
 /**
  * Defines util methods used by Rich Text Editor.
  */
-import { isNullOrUndefined as isNOU, addClass, removeClass, L10n, selectAll, createElement, Browser, detach } from '@syncfusion/ej2-base';
+import { isNullOrUndefined as isNOU, addClass, removeClass, L10n, selectAll, createElement,  } from '@syncfusion/ej2-base';
+import { Browser, detach, SanitizeHtmlHelper, extend } from '@syncfusion/ej2-base';
 import * as classes from '../base/classes';
 import * as model from '../models/items';
-import * as tools from '../models/toolbar-settings';
-import { IToolsItemConfigs, IRichTextEditor, BeforeSanitizeHtmlArgs } from '../base/interface';
-import { toolsLocale } from '../models/default-locale';
-import { IToolbarItems, IDropDownItemModel, ISetToolbarStatusArgs, IToolbarItemModel } from './interface';
 import { BaseToolbar } from '../actions/base-toolbar';
 import { DropDownButtons } from '../actions/dropdown-buttons';
 import { ServiceLocator } from '../services/service-locator';
-import { SanitizeHtmlHelper, extend, isNullOrUndefined } from '@syncfusion/ej2-base';
+import { toolsLocale, fontNameLocale, formatsLocale } from '../models/default-locale';
+import { IToolsItemConfigs, IRichTextEditor, BeforeSanitizeHtmlArgs } from '../base/interface';
+import { IToolbarItems, IDropDownItemModel, ISetToolbarStatusArgs, IToolbarItemModel } from './interface';
 
 const undoRedoItems: string[] = ['Undo', 'Redo'];
 const inlineNode: string[] = ['a', 'abbr', 'acronym', 'audio', 'b', 'bdi', 'bdo', 'big', 'br', 'button',
@@ -151,7 +150,7 @@ export function getTooltipText(item: string, serviceLocator: ServiceLocator): st
  * @hidden
  */
 export function setToolbarStatus(e: ISetToolbarStatusArgs, isPopToolbar: boolean, self: IRichTextEditor): void {
-    tools.updateDropDownFontFormatLocale(self);
+    updateDropDownFontFormatLocale(self);
     const dropDown: DropDownButtons = e.dropDownModule;
     const data: { [key: string]: string | boolean } = <{ [key: string]: string | boolean }>e.args;
     const keys: string[] = Object.keys(e.args);
@@ -468,7 +467,7 @@ export function sanitizeHelper(value: string, parent?: IRichTextEditor): string 
         };
         extend(item, item, beforeEvent);
         parent.trigger('beforeSanitizeHtml', item);
-        if (item.cancel && !isNullOrUndefined(item.helper)) {
+        if (item.cancel && !isNOU(item.helper)) {
             value = item.helper(value);
         } else if (!item.cancel) {
             value = SanitizeHtmlHelper.serializeValue(item, value);
@@ -492,4 +491,34 @@ export function convertToBlob(dataUrl: string): Blob {
         u8arr[n] = bstr.charCodeAt(n);
     }
     return new Blob([u8arr], { type: mime });
+}
+
+/**
+ * @param {IRichTextEditor} self - specifies the rte
+ * @param {string} localeItems - specifies the locale items
+ * @param {IDropDownItemModel} item - specifies the dropdown item
+ * @returns {string} - returns the value
+ * @hidden
+ */
+export function getLocaleFontFormat(self: IRichTextEditor, localeItems: { [ket: string]: string }[], item: IDropDownItemModel): string {
+    for(let i: number = 0; localeItems.length > i; i++) {
+        if(localeItems[i].value === item.value || localeItems[i].value === item.subCommand) {
+            return self.localeObj.getConstant(localeItems[i].locale);
+        }
+    }
+    return item.text;
+}
+
+/**
+ * @param {IRichTextEditor} self - specifies the rte
+ * @returns {void}
+ * @hidden
+ */
+export function updateDropDownFontFormatLocale(self: IRichTextEditor): void {
+    model.fontFamily.forEach((item: IDropDownItemModel, i: number) => {
+        model.fontFamily[i].text = getLocaleFontFormat(self, fontNameLocale, model.fontFamily[i]);
+    });
+    model.formatItems.forEach((item: IDropDownItemModel, i: number) => {
+        model.formatItems[i].text = getLocaleFontFormat(self, formatsLocale, model.formatItems[i]);
+    });
 }

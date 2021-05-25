@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 19.1.65 (2021-05-25)
+
+### Kanban
+
+#### Bug Fixes
+
+- `#I287435` - The issue with "number type `keyField` arguments not supported on `showColumn`, `hideColumn`, `updateCard` and `getColumnData` public method" has been resolved.
+
 ## 19.1.63 (2021-05-13)
 
 ### Kanban
@@ -33,6 +41,12 @@
 - `#321297` - The issue with "Kanban custom dialog drop down list does not properly return integer type value" has been fixed.
 
 ## 19.1.54 (2021-03-30)
+
+### Kanban
+
+#### Bug Fixes
+
+-`#I326941` - The issue with "'Unassigned' text in the swimlane kanban doesn't have localization" has been resolved.
 
 ### Kanban
 

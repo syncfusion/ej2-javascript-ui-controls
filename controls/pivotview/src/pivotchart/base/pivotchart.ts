@@ -604,6 +604,7 @@ export class PivotChart {
                         selectedDataIndexes: this.chartSettings.selectedDataIndexes,
                         isTransposed: this.chartSettings.isTransposed,
                         enableAnimation: this.chartSettings.enableAnimation,
+                        enableCanvas: this.chartSettings.enableCanvas,
                         useGroupingSeparator: this.chartSettings.useGroupingSeparator,
                         description: this.chartSettings.description,
                         tabIndex: this.chartSettings.tabIndex,
@@ -659,6 +660,7 @@ export class PivotChart {
                 (this.parent.chart as Chart).enableSideBySidePlacement = this.parent.chartSettings.enableSideBySidePlacement;
                 (this.parent.chart as Chart).tabIndex = this.parent.chartSettings.tabIndex;
                 (this.parent.chart as Chart).description = this.parent.chartSettings.description;
+                (this.parent.chart as Chart).enableCanvas = this.parent.chartSettings.enableCanvas;
             }
             if (type === 'Polar' || type === 'Radar') {
                 (this.parent.chart as Chart).primaryXAxis = currentXAxis;

@@ -647,6 +647,10 @@ export abstract class BlockWidget extends Widget {
     /**
      * @private
      */
+    public isLayouted: boolean = false;
+    /**
+     * @private
+     */
     public leftBorderWidth: number;
     /**
      * @private
@@ -5472,10 +5476,6 @@ export class ShapeBase extends ShapeCommon {
      * @private
      */
     public lockAnchor: boolean;
-    /**
-     * @private
-     */
-     public isTextBox: boolean;
 }
 /** 
  * @private
@@ -5807,6 +5807,7 @@ export class ImageElementBox extends ShapeBase {
         image.textWrappingStyle = this.textWrappingStyle;
         image.textWrappingType = this.textWrappingType;
         image.layoutInCell = this.layoutInCell;
+        image.zOrderPosition = this.zOrderPosition;
         return image;
     }
     /**

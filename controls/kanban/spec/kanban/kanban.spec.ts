@@ -1315,6 +1315,206 @@ describe('Kanban base module', () => {
         });
     });
 
+    describe('Key fileld as number type using methods', () => {
+        let kanbanObj: Kanban;
+        beforeAll((done: DoneFn) => {
+            const data: Record<string, any>[] = [
+                {
+                    'Id': 1,
+                    'Status': 'Open',
+                    'StatusNum' : 1,
+                    'Summary': 'Analyze the new requirements gathered from the customer.',
+                    'Type': 'Story',
+                    'Priority': 'Low',
+                    'Tags': 'Analyze,Customer',
+                    'Estimate': 3.5,
+                    'Assignee': 'Andrew Fuller',
+                    'AssigneeName': 'Andrew',
+                    'RankId': 1
+                },
+                {
+                    'Id': 2,
+                    'Status': 'InProgress',
+                    'StatusNum' : 2,
+                    'Summary': 'Improve application performance',
+                    'Type': 'Improvement',
+                    'Priority': 'Normal',
+                    'Tags': 'Improvement',
+                    'Estimate': 6,
+                    'Assignee': 'Andrew Fuller',
+                    'AssigneeName': 'Andrew',
+                    'RankId': 1
+                },
+                {
+                    'Id': 3,
+                    'Status': 'Open',
+                    'StatusNum' : 1,
+                    'Summary': 'Arrange a web meeting with the customer to get new requirements.',
+                    'Type': 'Others',
+                    'Priority': 'Critical',
+                    'Tags': 'Meeting',
+                    'Estimate': 5.5,
+                    'Assignee': 'Janet Leverling',
+                    'AssigneeName': 'Janet',
+                    'RankId': 2
+                },
+                {
+                    'Id': 4,
+                    'Status': 'InProgress',
+                    'StatusNum' : 2,
+                    'Summary': 'Fix the issues reported in the IE browser.',
+                    'Type': 'Bug',
+                    'Priority': 'Release Breaker',
+                    'Tags': 'IE',
+                    'Estimate': 2.5,
+                    'Assignee': 'Janet Leverling',
+                    'AssigneeName': 'Janet',
+                    'RankId': 2
+                },
+                {
+                    'Id': 5,
+                    'Status': 'Testing',
+                    'StatusNum' : 3,
+                    'Summary': 'Fix the issues reported by the customer.',
+                    'Type': 'Bug',
+                    'Priority': 'Low',
+                    'Tags': 'Customer',
+                    'Estimate': '3.5',
+                    'Assignee': 'Steven walker',
+                    'AssigneeName': 'Steven',
+                    'RankId': 1
+                },
+                {
+                    'Id': 6,
+                    'Status': 'Close',
+                    'StatusNum' : 4,
+                    'Summary': 'Arrange a web meeting with the customer to get the login page requirements.',
+                    'Type': 'Others',
+                    'Priority': 'Low',
+                    'Tags': 'Meeting',
+                    'Estimate': 2,
+                    'Assignee': 'Andrew Fuller',
+                    'AssigneeName': 'Andrew',
+                    'RankId': 1
+                },
+                {
+                    'Id': 7,
+                    'Status': 'Validate',
+                    'StatusNum' : 5,
+                    'Summary': 'Validate new requirements',
+                    'Type': 'Improvement',
+                    'Priority': 'Low',
+                    'Tags': 'Validation',
+                    'Estimate': 1.5,
+                    'Assignee': 'Robert King',
+                    'AssigneeName': 'Robert',
+                    'RankId': 1
+                },
+                {
+                    'Id': 8,
+                    'Status': 'Close',
+                    'StatusNum' : 4,
+                    'Summary': 'Login page validation',
+                    'Type': 'Story',
+                    'Priority': 'Release Breaker',
+                    'Tags': 'Validation,Fix',
+                    'Estimate': 2.5,
+                    'Assignee': 'Janet Leverling',
+                    'AssigneeName': 'Janet',
+                    'RankId': 2
+                },
+                {
+                    'Id': 9,
+                    'Status': 'Testing',
+                    'StatusNum' : 3,
+                    'Summary': 'Fix the issues reported in Safari browser.',
+                    'Type': 'Bug',
+                    'Priority': 'Release Breaker',
+                    'Tags': 'Fix,Safari',
+                    'Estimate': 1.5,
+                    'Assignee': 'Nancy Davloio',
+                    'AssigneeName': 'Nancy',
+                    'RankId': 2
+                },
+                {
+                    'Id': 10,
+                    'Status': 'Close',
+                    'StatusNum' : 4,
+                    'Summary': 'Test the application in the IE browser.',
+                    'Type': 'Story',
+                    'Priority': 'Low',
+                    'Tags': 'Testing,IE',
+                    'Estimate': 5.5,
+                    'Assignee': 'Janet Leverling',
+                    'AssigneeName': 'Janet',
+                    'RankId': 3
+                }
+            ];
+            const model: KanbanModel = {
+                keyField: 'StatusNum',
+                dataSource: data,
+                columns: [
+                    { headerText: 'Backlog', keyField: 1 },
+                    { headerText: 'In Progress', keyField: 2 },
+                    { headerText: 'Testing', keyField: 3 },
+                    { headerText: 'Done', keyField: 4 }
+                ],
+                sortSettings: {
+                    sortBy: 'Custom',
+                    field: 'Summary',
+                    direction: 'Descending'
+                },
+                cardSettings: {
+                    contentField: 'Summary',
+                    headerField: 'Id'
+                }
+            };
+            kanbanObj = util.createKanban(model, data, done);
+        });
+
+        afterAll(() => {
+            util.destroy(kanbanObj);
+        });
+
+        it('testing to show and hide column', () => {
+            expect(kanbanObj.columns.length).toEqual(4);
+            kanbanObj.hideColumn(2);
+            expect(kanbanObj.element.querySelectorAll('.e-header-cells').length).toEqual(3);
+        });
+
+        it('testing to show and hide column', () => {
+            expect(kanbanObj.element.querySelectorAll('.e-header-cells').length).toEqual(3);
+            kanbanObj.showColumn(2);
+            expect(kanbanObj.element.querySelectorAll('.e-header-cells').length).toEqual(4);
+            kanbanObj.showColumn(4);
+            expect(kanbanObj.element.querySelectorAll('.e-header-cells').length).toEqual(4);
+        });
+
+        it('testing to update card method', () => {
+            const cardData: Record<string, any> = kanbanObj.kanbanData.filter((data: Record<string, any>) =>
+            data[kanbanObj.cardSettings.headerField] === 2)[0] as Record<string, any>;
+            expect((cardData as any).StatusNum === 2).toBe(true);
+            const curData: Record<string, any> = {
+                Id: 2, StatusNum: 1, Priority: '', Assignee: 'Andrew Fuller', Estimate: 0, Tags: '', Summary: 'Content for 2'
+            };
+            kanbanObj.updateCard(curData);
+            const cardData1: Record<string, any> = kanbanObj.kanbanData.filter((data: Record<string, any>) =>
+            data[kanbanObj.cardSettings.headerField] === 2)[0] as Record<string, any>;
+            expect((cardData1 as any).StatusNum === 1).toBe(true);
+        });
+
+        it('testing to getColumnCards', () => {
+            kanbanObj.getColumnData(1);
+            expect(kanbanObj.element.querySelectorAll('.e-content-cells[data-key="' + 1 + '"] .e-card').length).toEqual(3);
+            kanbanObj.getColumnData(2);
+            expect(kanbanObj.element.querySelectorAll('.e-content-cells[data-key="' + 2 + '"] .e-card').length).toEqual(1);
+            kanbanObj.getColumnData(3);
+            expect(kanbanObj.element.querySelectorAll('.e-content-cells[data-key="' + 3 + '"] .e-card').length).toEqual(2);
+            kanbanObj.getColumnData(4);
+            expect(kanbanObj.element.querySelectorAll('.e-content-cells[data-key="' + 4 + '"] .e-card').length).toEqual(3);
+        });
+    });
+
     it('memory leak', () => {
         profile.sample();
         const average: number = inMB(profile.averageChange);

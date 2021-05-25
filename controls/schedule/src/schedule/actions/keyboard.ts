@@ -139,13 +139,13 @@ export class KeyboardInteraction {
         if ((e.event.target as HTMLElement).classList.contains(cls.WORK_CELLS_CLASS) && e.event.which !== 3) {
             this.parent.removeSelectedClass();
             EventHandler.add(this.parent.getContentTable(), 'mousemove', this.onMouseSelection, this);
-            EventHandler.add(this.parent.getContentTable(), 'mouseup', this.onMoveup, this);
+            EventHandler.add(this.parent.getContentTable(), 'mouseup', this.onMoveUp, this);
         }
         if ((e.event.target as HTMLElement).classList.contains(cls.ALLDAY_CELLS_CLASS) && e.event.which !== 3) {
             this.parent.removeSelectedClass();
             const allDayRow: HTMLTableRowElement = <HTMLTableRowElement>this.parent.getAllDayRow();
             EventHandler.add(allDayRow, 'mousemove', this.onMouseSelection, this);
-            EventHandler.add(allDayRow, 'mouseup', this.onMoveup, this);
+            EventHandler.add(allDayRow, 'mouseup', this.onMoveUp, this);
         }
     }
 
@@ -175,17 +175,17 @@ export class KeyboardInteraction {
     private getClosestCell(e: Event): HTMLTableCellElement {
         return closest(<Element>e.target, '.' + cls.WORK_CELLS_CLASS + ',.' + cls.ALLDAY_CELLS_CLASS) as HTMLTableCellElement;
     }
-    private onMoveup(e: Event): void {
+    private onMoveUp(e: Event): void {
         const appointments: Element[] = [].slice.call(this.parent.element.querySelectorAll('.' + cls.APPOINTMENT_CLASS)) as Element[];
         removeClass(appointments, 'e-allow-select');
         if ((e.target as HTMLElement).classList.contains(cls.WORK_CELLS_CLASS)) {
             EventHandler.remove(this.parent.getContentTable(), 'mousemove', this.onMouseSelection);
-            EventHandler.remove(this.parent.getContentTable(), 'mouseup', this.onMoveup);
+            EventHandler.remove(this.parent.getContentTable(), 'mouseup', this.onMoveUp);
         }
         if ((e.target as HTMLElement).classList.contains(cls.ALLDAY_CELLS_CLASS)) {
             const allDayRow: HTMLTableRowElement = <HTMLTableRowElement>this.parent.getAllDayRow();
             EventHandler.remove(allDayRow, 'mousemove', this.onMouseSelection);
-            EventHandler.remove(allDayRow, 'mouseup', this.onMoveup);
+            EventHandler.remove(allDayRow, 'mouseup', this.onMoveUp);
         }
         if (this.isPreventAction(e)) {
             return;
@@ -261,7 +261,7 @@ export class KeyboardInteraction {
             return;
         }
         if (target.classList.contains(cls.MORE_EVENT_HEADER_DATE_CLASS)) {
-            this.parent.setScheduleProperties({ selectedDate: this.parent.getDateFromElement(target) });
+            this.parent.setProperties({ selectedDate: this.parent.getDateFromElement(target) }, true);
             this.parent.changeView(this.parent.getNavigateView(), e);
             this.processEscape();
             return;
@@ -761,9 +761,10 @@ export class KeyboardInteraction {
                     if (this.parent.virtualScrollModule) {
                         resourceCell.focus({ preventScroll: true });
                     } else {
-                    resourceCell.focus();
+                        resourceCell.focus();
                     }
-                    if (this.parent.activeView.isTimelineView() && this.parent.activeViewOptions.group.resources.length > 0 && isNullOrUndefined(this.parent.virtualScrollModule)) {
+                    if (this.parent.activeView.isTimelineView() && this.parent.activeViewOptions.group.resources.length > 0 &&
+                        isNullOrUndefined(this.parent.virtualScrollModule)) {
                         this.setScrollPosition(index);
                     }
                     e.preventDefault();

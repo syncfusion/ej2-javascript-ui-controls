@@ -7,7 +7,6 @@ import { IToolsItems, IDropDownItemModel, IRichTextEditor } from '../base/interf
 
 export let templateItems: string[] = ['alignments', 'formats', 'fontname', 'fontsize', 'fontcolor', 'backgroundcolor', 'align', 'display', 'tablerows', 'tablecolumns', 'tablecell', 'tablecellhorizontalalign', 'tablecellverticalalign', 'styles'];
 
-
 export let tools: { [key: string]: IToolsItems } = {
     'alignments': {
         'id': 'Alignments',
@@ -551,6 +550,62 @@ export let TableStyleItems: IDropDownItemModel[] = [
     { text: 'Dashed Borders', cssClass: 'e-dashed-borders', command: 'Table', subCommand: 'Dashed' },
     { text: 'Alternate Rows', cssClass: 'e-alternate-rows', command: 'Table', subCommand: 'Alternate' }
 ];
+
+export const predefinedItems: string[] = ['Bold', 'Italic', 'Underline', '|', 'Formats', 'Alignments',
+    'OrderedList', 'UnorderedList', '|', 'CreateLink', 'Image', '|', 'SourceCode', 'Undo', 'Redo'];
+
+export const fontFamily: IDropDownItemModel[] = [
+    { cssClass: 'e-segoe-ui', text: 'Segoe UI', command: 'Font', subCommand: 'FontName', value: 'Segoe UI'},
+    { cssClass: 'e-arial', text: 'Arial', command: 'Font', subCommand: 'FontName', value: 'Arial,Helvetica,sans-serif'},
+    { cssClass: 'e-georgia', text: 'Georgia', command: 'Font', subCommand: 'FontName', value: 'Georgia,serif'},
+    { cssClass: 'e-impact', text: 'Impact', command: 'Font', subCommand: 'FontName', value: 'Impact,Charcoal,sans-serif'},
+    { cssClass: 'e-tahoma', text: 'Tahoma', command: 'Font', subCommand: 'FontName', value: 'Tahoma,Geneva,sans-serif'},
+    { cssClass: 'e-times-new-roman', text: 'Times New Roman', command: 'Font', subCommand: 'FontName', value: 'Times New Roman,Times,serif'},
+    { cssClass: 'e-verdana', text: 'Verdana', command: 'Font', subCommand: 'FontName', value: 'Verdana,Geneva,sans-serif'}
+];
+
+export const fontSize: IDropDownItemModel[] = [
+    { text: '8 pt', value: '8pt' },
+    { text: '10 pt', value: '10pt' },
+    { text: '12 pt', value: '12pt' },
+    { text: '14 pt', value: '14pt' },
+    { text: '18 pt', value: '18pt' },
+    { text: '24 pt', value: '24pt' },
+    { text: '36 pt', value: '36pt' }
+];
+
+export const formatItems: IDropDownItemModel[] = [
+    { cssClass: 'e-paragraph', text: 'Paragraph', command: 'Formats', subCommand: 'P', value: 'P'},
+    { cssClass: 'e-code', text: 'Code', command: 'Formats', subCommand: 'Pre', value: 'Pre'},
+    { cssClass: 'e-quote', text: 'Quotation', command: 'Formats', subCommand: 'BlockQuote', value: 'BlockQuote'},
+    { cssClass: 'e-h1', text: 'Heading 1', command: 'Formats', subCommand: 'H1', value: 'H1'},
+    { cssClass: 'e-h2', text: 'Heading 2', command: 'Formats', subCommand: 'H2', value: 'H2'},
+    { cssClass: 'e-h3', text: 'Heading 3', command: 'Formats', subCommand: 'H3', value: 'H3'},
+    { cssClass: 'e-h4', text: 'Heading 4', command: 'Formats', subCommand: 'H4', value: 'H4'}
+];
+
+export const fontColor: { [key: string]: string[] } = {
+    // eslint-disable-next-line
+    'Custom': [
+        '', '#000000', '#e7e6e6', '#44546a', '#4472c4', '#ed7d31', '#a5a5a5', '#ffc000', '#70ad47', '#ff0000',
+        '#f2f2f2', '#808080', '#cfcdcd', '#d5dce4', '#d9e2f3', '#fbe4d5', '#ededed', '#fff2cc', '#e2efd9', '#ffcccc',
+        '#d9d9d9', '#595959', '#aeaaaa', '#acb9ca', '#b4c6e7', '#f7caac', '#dbdbdb', '#ffe599', '#c5e0b3', '#ff8080',
+        '#bfbfbf', '#404040', '#747070', '#8496b0', '#8eaadb', '#f4b083', '#c9c9c9', '#ffd966', '#a8d08d', '#ff3333',
+        '#a6a6a6', '#262626', '#3b3838', '#323e4f', '#2f5496', '#c45911', '#7b7b7b', '#bf8f00', '#538135', '#b30000',
+        '#7f7f7f', '#0d0d0d', '#161616', '#212934', '#1f3763', '#823b0b', '#525252', '#7f5f00', '#375623', '#660000']
+};
+
+export const backgroundColor: { [key: string]: string[] } = {
+    // eslint-disable-next-line
+    'Custom': [
+        '', '#000000', '#ffff00', '#00ff00', '#00ffff', '#0000ff', '#ff0000', '#000080', '#800080', '#996633',
+        '#f2f2f2', '#808080', '#ffffcc', '#b3ffb3', '#ccffff', '#ccccff', '#ffcccc', '#ccccff', '#ff80ff', '#f2e6d9',
+        '#d9d9d9', '#595959', '#ffff80', '#80ff80', '#b3ffff', '#8080ff', '#ff8080', '#8080ff', '#ff00ff', '#dfbf9f',
+        '#bfbfbf', '#404040', '#ffff33', '#33ff33', '#33ffff', '#3333ff', '#ff3333', '#0000b3', '#b300b3', '#c68c53',
+        '#a6a6a6', '#262626', '#e6e600', '#00b300', '#009999', '#000099', '#b30000', '#000066', '#660066', '#86592d',
+        '#7f7f7f', '#0d0d0d', '#999900', '#006600', '#006666', '#000066', '#660000', '#00004d', '#4d004d', '#734d26'
+    ]
+};
 
 function getLocale(self: IRichTextEditor, localeItems: { [ket: string]: string }[], item: IDropDownItemModel): string {
     for (let i: number = 0; localeItems.length > i; i++) {

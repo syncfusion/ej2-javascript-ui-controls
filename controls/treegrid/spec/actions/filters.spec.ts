@@ -489,7 +489,7 @@ describe('Hierarchy Filter Mode Testing - Parent and child', () => {
     });
     it('Check the count of checkboxes in excel filter ', (done: Function) => {
       actionComplete = (args?: Object): void => {
-        expect(gridObj.element.getElementsByClassName('e-label e-checkboxfiltertext').length==27).toBe(true);
+        expect(document.getElementsByClassName('e-label e-checkboxfiltertext').length==27).toBe(true);
         done();
       }
       gridObj.grid.actionComplete = actionComplete;
@@ -520,7 +520,7 @@ describe('Hierarchy Filter Mode Testing - Parent and child', () => {
       it('Check the filtered records for checkbox count', (done: Function) => {
           actionComplete = (args: CellSaveEventArgs) => {
             if(args.requestType === 'filterchoicerequest'){
-            expect(gridObj.element.getElementsByClassName('e-label e-checkboxfiltertext').length == 6).toBe(true);
+            expect(document.getElementsByClassName('e-label e-checkboxfiltertext').length == 6).toBe(true);
             done();
             }
           }
@@ -567,8 +567,8 @@ describe('Hierarchy Filter Mode Testing - Parent and child', () => {
         }
       } 
       gridObj.grid.actionComplete = actionComplete;
-      (<HTMLElement>gridObj.element.querySelectorAll('.e-filtermenudiv')[1]).click();
-      (<HTMLElement>gridObj.element.getElementsByClassName('e-menu-item')[0]).click();
+      (<HTMLElement>document.querySelectorAll('.e-filtermenudiv')[1]).click();
+      (<HTMLElement>document.getElementsByClassName('e-menu-item')[0]).click();
 
   });
       afterAll(() => {
@@ -613,11 +613,11 @@ describe('Hierarchy Filter Mode Testing - Parent and child', () => {
           }         
         }
         gridObj.grid.actionComplete = actionComplete;
-        (<HTMLElement>gridObj.element.querySelectorAll('.e-filtermenudiv')[1]).click();
-        gridObj.element.getElementsByClassName('e-menu-item')[1].dispatchEvent(new Event('mouseover'));
+        (<HTMLElement>document.querySelectorAll('.e-filtermenudiv')[1]).click();
+        document.getElementsByClassName('e-menu-item')[1].dispatchEvent(new Event('mouseover'));
         var mouseEve = document.createEvent('MouseEvents');
         mouseEve.initEvent('mouseover', true, true);
-        gridObj.element.getElementsByClassName('e-menu-item')[1].dispatchEvent(mouseEve);        
+        document.getElementsByClassName('e-menu-item')[1].dispatchEvent(mouseEve);        
     });
     it('Check the AND of custom filter- Filtering', (done: Function) => {
       actionComplete = (args: CellSaveEventArgs): void => {
@@ -673,11 +673,11 @@ describe('Hierarchy Filter Mode Testing - Parent and child', () => {
           }
         }
         gridObj.grid.actionComplete = actionComplete;
-        (<HTMLElement>gridObj.element.querySelectorAll('.e-filtermenudiv')[1]).click();
-        gridObj.element.getElementsByClassName('e-menu-item')[1].dispatchEvent(new Event('mouseover'));
+        (<HTMLElement>document.querySelectorAll('.e-filtermenudiv')[1]).click();
+        document.getElementsByClassName('e-menu-item')[1].dispatchEvent(new Event('mouseover'));
         var mouseEve = document.createEvent('MouseEvents');
         mouseEve.initEvent('mouseover', true, true);
-        gridObj.element.getElementsByClassName('e-menu-item')[1].dispatchEvent(mouseEve);      
+        document.getElementsByClassName('e-menu-item')[1].dispatchEvent(mouseEve);      
       });
       it('Check the OR of custom filter- Filtering', (done: Function) => {
         actionComplete = (args: CellSaveEventArgs): void => {
@@ -735,10 +735,10 @@ describe('Hierarchy Filter Mode Testing - Parent and child', () => {
         }
         gridObj.grid.actionComplete = actionComplete;
         (<HTMLElement>gridObj.element.querySelectorAll('.e-filtermenudiv')[1]).click();
-        gridObj.element.getElementsByClassName('e-menu-item')[1].dispatchEvent(new Event('mouseover'));
+        document.getElementsByClassName('e-menu-item')[1].dispatchEvent(new Event('mouseover'));
         var mouseEve = document.createEvent('MouseEvents');
         mouseEve.initEvent('mouseover', true, true);
-        gridObj.element.getElementsByClassName('e-menu-item')[1].dispatchEvent(mouseEve);             
+        document.getElementsByClassName('e-menu-item')[1].dispatchEvent(mouseEve);             
     });
       afterAll(() => {
         destroy(gridObj);
@@ -975,14 +975,14 @@ describe('Hierarchy Filter Mode Testing - Parent and child', () => {
       it('Hierarchy Filter Mode Testing - Parent with Search Settings Mode as Both', (done: Function) => {
         actionComplete = (args: CellSaveEventArgs): void => {
           if (args.requestType == "filterafteropen") {
-            (<HTMLElement>gridObj.element.querySelectorAll('.e-excelfilter .e-check')[0]).click();
-            (<HTMLElement>gridObj.element.querySelectorAll('.e-excelfilter .e-uncheck')[1]).click();
-            expect(gridObj.element.querySelectorAll('.e-excelfilter .e-check')[0].textContent == "").toBe(true);
+            (<HTMLElement>document.querySelectorAll('.e-excelfilter .e-check')[0]).click();
+            (<HTMLElement>document.querySelectorAll('.e-excelfilter .e-uncheck')[1]).click();
+            expect(document.querySelectorAll('.e-excelfilter .e-check')[0].textContent == "").toBe(true);
             done();
           }
         }
         gridObj.grid.actionComplete = actionComplete;
-        (<HTMLElement>gridObj.element.querySelectorAll('.e-filtermenudiv')[1]).click();
+        (<HTMLElement>document.querySelectorAll('.e-filtermenudiv')[1]).click();
   
       });
       it('Hierarchy Filter Mode Testing - Parent with Search Settings Mode as Both - result', (done: Function) => {
@@ -994,7 +994,7 @@ describe('Hierarchy Filter Mode Testing - Parent and child', () => {
           }
         }
         gridObj.grid.actionComplete = actionComplete;
-        (<HTMLElement>gridObj.element.querySelector('.e-excelfilter .e-footer-content').getElementsByClassName('e-primary')[0]).click();
+        (<HTMLElement>document.querySelector('.e-excelfilter .e-footer-content').getElementsByClassName('e-primary')[0]).click();
   
       });
       afterAll(() => {

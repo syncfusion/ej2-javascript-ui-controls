@@ -3130,6 +3130,13 @@ export interface ChartSettingsModel {
     enableAnimation?: boolean;
 
     /**
+     * Allows you to render the pivot chart in canvas mode.
+     *
+     * @default false
+     */
+    enableCanvas?: boolean;
+
+    /**
      * Allows the group separator to be shown to the values in the pivot chart.
      * @default true
      */

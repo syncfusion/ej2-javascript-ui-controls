@@ -1848,31 +1848,44 @@ export class DocumentHelper {
      */
     public onMouseLeaveInternal = (event: MouseEvent): void => {
         event.preventDefault();
+        const cursorPoint: Point = new Point(event.offsetX, event.offsetY);
         if (this.isMouseDown) {
             const viewerTop: number = this.viewerContainer.scrollTop;
             if (event.offsetY + viewerTop > viewerTop) {
                 this.scrollMoveTimer = setInterval((): void => {
-                    this.scrollForwardOnSelection();
+                    this.scrollForwardOnSelection(cursorPoint);
                 }, 500);
             } else {
                 this.scrollMoveTimer = setInterval((): void => {
-                    this.scrollBackwardOnSelection();
+                    this.scrollBackwardOnSelection(cursorPoint);
                 }, 500);
             }
             if (this.isMouseEntered) {
                 this.isMouseEntered = false;
             }
         }
-
+        
     };
-    private scrollForwardOnSelection(): void {
+    private scrollForwardOnSelection(cursorPoint: Point): void {
         if (this.viewerContainer) {
             this.viewerContainer.scrollTop = this.viewerContainer.scrollTop + 200;
+            const touchPoint: Point = this.owner.viewer.findFocusedPage(cursorPoint, !this.owner.enableHeaderAndFooter);
+            const textPosition: TextPosition = this.owner.selection.end;
+            if (!this.owner.enableImageResizerMode || !this.owner.imageResizerModule.isImageResizerVisible
+                || this.owner.imageResizerModule.isShapeResize) {
+                this.owner.selection.moveTextPosition(touchPoint, textPosition);
+            }
         }
     }
 
-    private scrollBackwardOnSelection(): void {
+    private scrollBackwardOnSelection(cursorPoint: Point): void {
         this.viewerContainer.scrollTop = this.viewerContainer.scrollTop - 200;
+        const touchPoint: Point = this.owner.viewer.findFocusedPage(cursorPoint, !this.owner.enableHeaderAndFooter);
+            const textPosition: TextPosition = this.owner.selection.end;
+            if (!this.owner.enableImageResizerMode || !this.owner.imageResizerModule.isImageResizerVisible
+                || this.owner.imageResizerModule.isShapeResize) {
+                this.owner.selection.moveTextPosition(touchPoint, textPosition);
+            }
     }
     /**
      * @private

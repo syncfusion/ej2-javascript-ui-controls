@@ -2045,3 +2045,38 @@ describe('Comments Validation', () => {
         expect(() => { editor.open(JSON.stringify(sfdtFileWithComments)); }).not.toThrowError();
     });
 });
+describe('Comments delete comment pane validation', () => {
+    let editor: DocumentEditor;
+    let documentHelper: DocumentHelper;
+    beforeAll((): void => {
+        document.body.appendChild(createElement('div', { id: 'container' }));
+        DocumentEditor.Inject(Editor, Selection, WordExport, SfdtExport, EditorHistory);
+        editor = new DocumentEditor({ enableEditorHistory: true, enableWordExport: true, enableEditor: true, isReadOnly: false, enableSelection: true, enableSfdtExport: true });
+        editor.acceptTab = true;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        editor.appendTo('#container');
+        documentHelper = editor.documentHelper;
+    });
+    afterAll((done): void => {
+        editor.destroy();
+        document.body.removeChild(document.getElementById('container'));
+        editor = undefined;
+        setTimeout(function () {
+            document.body.innerHTML = '';
+            done();
+        }, 1000);
+    });
+    it('Comments delete comment pane validation', () => {
+        editor.openBlank();
+        editor.editor.insertText('comment');
+        editor.selection.selectAll();
+        editor.editor.insertComment('check');
+        editor.selection.selectAll();
+        editor.editor.delete();
+        expect(editor.commentReviewPane.commentPane.comments.length).toBe(0);
+        expect(editor.documentHelper.comments.length).toBe(0);
+    });
+});

@@ -90,6 +90,7 @@ export class PdfViewerBase {
      * @private
      */
     public currentPageNumber: number = 0;
+    private previousZoomValue: number;
     /**
      * @private
      */
@@ -1003,6 +1004,7 @@ export class PdfViewerBase {
         this.initPageDiv(data);
         this.currentPageNumber = pageIndex + 1;
         this.pdfViewer.currentPageNumber = pageIndex + 1;
+        this.previousZoomValue = this.pdfViewer.zoomValue;
         let isZoomMode: boolean = false;
         if (this.pdfViewer.magnificationModule) {
             this.pdfViewer.magnificationModule.isAutoZoom = true;
@@ -1564,6 +1566,9 @@ export class PdfViewerBase {
         this.windowSessionStorageClear();
         if (this.pinchZoomStorage) {
             this.pinchZoomStorage = [];
+        }
+        if ((this.previousZoomValue || this.previousZoomValue === 0) && this.previousZoomValue !== this.pdfViewer.zoomValue) {
+            this.pdfViewer.zoomValue = this.previousZoomValue;
         }
         if (isTriggerEvent && this.pageCount > 0) {
             this.pdfViewer.fireDocumentUnload(this.pdfViewer.fileName);

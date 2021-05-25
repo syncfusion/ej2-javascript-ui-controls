@@ -549,12 +549,14 @@ export class CommentPane {
 
     public deleteComment(comment: CommentElementBox): void {
         const commentView: CommentView = this.comments.get(comment);
-        if (commentView.parentElement && commentView.parentElement.parentElement) {
-            commentView.parentElement.parentElement.removeChild(commentView.parentElement);
+        if (!isNullOrUndefined(commentView)) {
+            if (commentView.parentElement && commentView.parentElement.parentElement) {
+                commentView.parentElement.parentElement.removeChild(commentView.parentElement);
+            }
+            //this.commentPane.removeChild();
+            this.comments.remove(comment);
+            commentView.destroy();
         }
-        //this.commentPane.removeChild();
-        this.comments.remove(comment);
-        commentView.destroy();
         this.updateCommentStatus();
     }
 

@@ -209,11 +209,13 @@ export class Layout {
             nextBlock = this.layoutBlock(block, index);
             index = 0;
             this.viewer.updateClientAreaForBlock(block, false);
+            if (prevBlock && isNullOrUndefined(prevBlock.nextWidget) && prevBlock.bodyWidget
+                && prevBlock.bodyWidget.page.footnoteWidget) {
+                this.layoutfootNote(prevBlock.bodyWidget.page.footnoteWidget);
+            }
             prevBlock = block;
             block = nextBlock;
-            // eslint-disable-next-line max-len
-            if ((isNullOrUndefined(block) || ((block.bodyWidget && block.bodyWidget.page) !== (prevBlock.bodyWidget && prevBlock.bodyWidget.page))) &&
-                prevBlock.bodyWidget.page.footnoteWidget) {
+            if (isNullOrUndefined(block) && prevBlock.bodyWidget.page.footnoteWidget) {
                 this.layoutfootNote(prevBlock.bodyWidget.page.footnoteWidget);
             }
         } while (block);
@@ -471,6 +473,11 @@ export class Layout {
                         }
                         preivousBlock = block.previousWidget as BlockWidget;
                     }
+                } else {
+                    let widget: IWidget[] = block.getSplitWidgets();
+                    if (widget) {
+                        return widget[widget.length - 1] as BlockWidget;
+                    }
                 }
             } else {
                 let table: TableWidget = block as TableWidget;
@@ -594,7 +601,7 @@ export class Layout {
             this.viewer.clientArea = clientArea;
             // tslint:disable-next-line:max-line-length
             if (footnote.page.bodyWidgets[0].lastChild instanceof TableWidget && (((footnote.page.bodyWidgets[0].lastChild as TableWidget).y + (footnote.page.bodyWidgets[0].lastChild as TableWidget).height) > footnote.y)) {
-                this.reLayoutTable(footnote.page.bodyWidgets[0].lastChild as TableWidget);
+                this.reLayoutTable(footnote.page.bodyWidgets[0].lastChild as TableWidget, true);
             }
         }
         return footnote;
@@ -636,6 +643,7 @@ export class Layout {
             }
         }
         this.updateWidgetToPage(this.viewer, paragraph);
+        paragraph.isLayouted = true;
         return paragraph;
     }
     private clearLineMeasures(): void {
@@ -979,6 +987,7 @@ export class Layout {
             } else {
                 element.line.marginTop += (this.viewer.clientActiveArea.y - previousTop)
             }
+            this.isYPositionUpdated = false;
         }
     }
 
@@ -1103,16 +1112,6 @@ export class Layout {
         return true;
     }
     private isNeedDoIntermediateWrapping(remainingClientWidth: number, textWrappingStyle: string, rect: Rect, width: number, paragraph: ParagraphWidget, textWrappingBounds: Rect, leafWidget: ElementBox, minwidth: number, minimumWidthRequired: number): boolean {
-        //return false;
-        // return ((remainingClientWidth > minimumWidthRequired
-        //     && (((Math.round(rect.width) <= Math.round(minwidth) || (rect.width < width && (leafWidget as TextElementBox).text == '\t')) && textWrappingType !== 'Left')
-        //         || textWrappingType === 'Right')) // Check whether the right side width is greater than the left side when the wrap type as largest
-        //     || ((textWrappingBounds.x -
-        //         paragraph.x + paragraph.leftIndent < minimumWidthRequired    // Check whether the left side of text wrap object is have minimum width to layout or not
-        //         || (leafWidget instanceof TextElementBox))
-        //         && (textWrappingType != 'Left' || remainingClientWidth < minimumWidthRequired)));
-
-
         return (((remainingClientWidth > minimumWidthRequired)
             && (((Math.round(rect.width) <= Math.round(minwidth)
                 || (rect.width < width && leafWidget.paragraph.isInsideTable))
@@ -1424,6 +1423,40 @@ export class Layout {
                                         this.viewer.updateClientAreaForTextWrap(rect);
                                     }
                                 }
+                                if ((rect.width < minimumWidthRequired && !(minwidth < remainingClientWidth && ('Tight' === textWrappingStyle)))
+                                    || (rect.width < minwidth && Math.round(rect.right) === Math.round(this.viewer.clientArea.right)
+                                        && textWrappingType === 'Both')) {
+                                    let rect1: Rect = textWrappingBounds;
+                                    if (Math.round(rect.x) === Math.round(bodyWidget.sectionFormat.leftMargin + ownerPara.paragraphFormat.leftIndent)) {
+                                        //Updates top margin of the paragraph when paragraph mark not wrap based on the floating table.
+                                        let topMarginValue: number = 0;
+                                        //topMarginValue = GetTopMarginValueForFloatingTable(ownerPara, floatingItem, rect.y);
+                                        rect.y = rect1.bottom + topMarginValue;
+                                        this.isYPositionUpdated = true;
+                                        rect.width = this.viewer.clientArea.width;
+                                        rect.height = rect.height - (rect1.height + topMarginValue);
+                                        this.viewer.updateClientAreaForTextWrap(rect);
+                                        this.isWrapText = false;
+                                    }
+                                    // Reset the rectangle position when the rectangle right position is equialent to layout area right position
+                                    else if (Math.round(rect.right) >= Math.round(this.viewer.clientArea.right) && textWrappingType === 'Both') {
+                                        //Updates top margin of the paragraph when paragraph mark not wrap based on the floating table.
+                                        let topMarginValue = 0;
+                                        // topMarginValue = GetTopMarginValueForFloatingTable(ownerPara, floatingItem, rect.y);
+                                        rect.y = rect1.bottom + topMarginValue;
+                                        rect.width = this.viewer.clientArea.width;
+                                        rect.height = rect.height - (rect1.height + topMarginValue);
+                                        rect.x = this.viewer.clientArea.x + leftIndent;
+                                        this.viewer.updateClientAreaForTextWrap(rect);
+                                        // this.isXPositionUpdated = true;
+                                        this.isYPositionUpdated = true;
+                                        this.isWrapText = false;
+                                    }
+                                    else {
+                                        rect.width = 0;
+                                        this.viewer.updateClientAreaForTextWrap(rect);
+                                    }
+                                }
                             } else {
                                 //While text intersecting with SQUARE type floating item and there is no space
                                 //available to fit this text in current line then move the text to bottom
@@ -1436,6 +1469,7 @@ export class Layout {
                                     rect.y = textWrappingBounds.bottom;
                                     rect.width = clientLayoutArea.width;
                                     rect.height -= (textWrappingBounds.bottom - rect.y);
+                                    this.isYPositionUpdated = true;
                                 } else if (Math.round(rect.width) <= Math.round(minwidth) && Math.round(rect.x - leftIndent) !== Math.round(this.viewer.clientArea.x)) {
                                     rect.width = 0;
                                 }
@@ -4963,7 +4997,7 @@ export class Layout {
     }
     //#region shifting
 
-    public layoutNextItemsBlock(blockAdv: BlockWidget, viewer: LayoutViewer): void {
+    public layoutNextItemsBlock(blockAdv: BlockWidget, viewer: LayoutViewer, isFootnotRelayout?: boolean): void {
         const sectionIndex: number = blockAdv.bodyWidget.sectionIndex;
         let block: BlockWidget = blockAdv;
         let splittedWidget: BlockWidget[] = block.getSplitWidgets() as BlockWidget[];
@@ -4973,6 +5007,9 @@ export class Layout {
         }
         let updateNextBlockList: boolean = true;
         while (nextBlock instanceof BlockWidget && nextBlock.bodyWidget.sectionIndex === sectionIndex) {
+            if (!isNullOrUndefined(isFootnotRelayout) && isFootnotRelayout && !nextBlock.isLayouted && this.isInitialLoad) {
+                break;
+            }
             let currentWidget: Widget = undefined;
             const blocks: BlockWidget[] = block.getSplitWidgets() as BlockWidget[];
             currentWidget = blocks[blocks.length - 1];
@@ -5163,7 +5200,7 @@ export class Layout {
         }
     }
 
-    public reLayoutTable(block: BlockWidget): void {
+    public reLayoutTable(block: BlockWidget, isFootnotRelayout?: boolean): void {
         //Get Top level owner of block
         const table: TableWidget = this.getParentTable(block);
         //Combine splitted table in to single table
@@ -5197,7 +5234,7 @@ export class Layout {
         this.isBidiReLayout = true;
         this.layoutBlock(currentTable, 0);
         this.viewer.updateClientAreaForBlock(currentTable, false);
-        this.layoutNextItemsBlock(currentTable, this.viewer);
+        this.layoutNextItemsBlock(currentTable, this.viewer, isFootnotRelayout);
     }
 
     public clearTableWidget(table: TableWidget, clearPosition: boolean, clearHeight: boolean, clearGrid?: boolean): void {
@@ -5410,6 +5447,7 @@ export class Layout {
             this.viewer.clientArea = clientAreaForTableWrap.clone();
             table.bodyWidget.floatingElements.push(table);
         }
+        tableView[tableView.length - 1].isLayouted = true;
         return tableView[tableView.length - 1];
     }
 
@@ -6004,6 +6042,16 @@ export class Layout {
         }
         return footnoteElements;
     }
+    private getFootNotesWidgetsInLine(line: LineWidget): BlockWidget[] {
+        const footnoteElements: FootnoteElementBox[] = [];
+        for (let i: number = 0; i < line.children.length; i++) {
+            let element: ElementBox = line.children[i];
+            if (element instanceof FootnoteElementBox) {
+                footnoteElements.push(element);
+            }
+        }
+        return this.getFootNoteWidgetsBy(line.paragraph, footnoteElements);
+    }
     private getFootNoteWidgetsBy(widget: BlockWidget, footnoteElements: FootnoteElementBox[]) {
         const footWidgets: BlockWidget[] = [];
         if (widget.bodyWidget.page.footnoteWidget) {
@@ -6157,9 +6205,16 @@ export class Layout {
     // eslint-disable-next-line max-len
     private splitWidget(paragraphWidget: ParagraphWidget, viewer: LayoutViewer, previousBodyWidget: BodyWidget, index: number, isPageBreak: boolean, footWidget?: BlockWidget[]): boolean {
         const firstLine: LineWidget = paragraphWidget.childWidgets[0] as LineWidget;
-        const maxElementHeight: number = this.getMaxElementHeight(firstLine);
+        let maxElementHeight: number = this.getMaxElementHeight(firstLine);
         const paragraphView: ParagraphWidget[] = paragraphWidget.getSplitWidgets() as ParagraphWidget[];
         let nextBodyWidget: BodyWidget = paragraphWidget.containerWidget as BodyWidget;
+        let footNoteInFirstLine = this.getFootNotesWidgetsInLine(firstLine);
+        if (isNullOrUndefined(paragraphWidget.previousWidget) && footNoteInFirstLine.length > 0) {
+            for (let i: number = 0; i < footNoteInFirstLine.length; i++) {
+                maxElementHeight += footNoteInFirstLine[i].height;
+            }
+            maxElementHeight += (paragraphWidget.bodyWidget.page.footnoteWidget.childWidgets[0] as ParagraphWidget).height;
+        }
         if (viewer.clientActiveArea.height >= maxElementHeight && !isPageBreak) {
             let splittedWidget: ParagraphWidget = undefined;
             const widgetIndex: number = paragraphView.indexOf(paragraphWidget);
@@ -6260,6 +6315,9 @@ export class Layout {
                     }
                     fromBodyWidget.page.footnoteWidget.height -= footNoteWidget.height;
                 }
+            }
+            if (fromBodyWidget.page.footnoteWidget && fromBodyWidget.page.footnoteWidget.childWidgets.length === 1) {
+                fromBodyWidget.page.footnoteWidget = undefined;
             }
         }
     }
@@ -6488,6 +6546,7 @@ export class Layout {
             if (insertPage) {
                 this.documentHelper.insertPage(pageIndex, nextPage);
             }
+            this.clearLineMeasures();
         }
         let isBreak: boolean = false;
         // eslint-disable  no-constant-condition

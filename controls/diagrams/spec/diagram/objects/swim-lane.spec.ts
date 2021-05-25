@@ -10484,5 +10484,62 @@ describe('Swimlane interaction from different lane', () => {
             expect(node.parentId === 'swimlanestackCanvas10').toBe(true);
             done();
         });
+        it('swimlane with lower Zindex children', function (done) {
+         console.log("swimlane with lower Zindex children")
+         diagram.clear();
+         diagram.add({
+             id: 'node1', width: 100, height: 100, offsetX: 100, offsetY: 100,
+         });
+         diagram.add({
+             id: 'node2', width: 100, height: 100, offsetX: 400, offsetY: 100,
+         });
+         diagram.add({
+             id: 'conn1',
+             sourceID: "node1", targetID: "node2"
+         });
+         diagram.add({
+             id: 'swimlane',
+             shape: {
+                 type: 'SwimLane',
+                 orientation: 'Horizontal',
+                 header: {
+                     annotation: { content: 'ONLINE PURCHASE STATUS' },
+                     height: 50,
+                 },
+                 lanes: [
+                     {
+                         id: 'stackCanvas1',
+                         header: {
+                             annotation: { content: 'CUSTOMER' }, width: 50,
+                             style: { fontSize: 11 }
+                         },
+                         height: 100,
+                     }
+                 ],
+             },
+             offsetX: 720, offsetY: 270,
+             height: 100,
+             width: 650,
+         });
+         diagram.select([diagram.nodes[0], diagram.nodes[1]]);
+         mouseEvents.mouseDownEvent(diagramCanvas, 100, 100);
+         mouseEvents.mouseMoveEvent(diagramCanvas, 300, 300);
+         mouseEvents.mouseMoveEvent(diagramCanvas, 300, 400);
+         mouseEvents.mouseMoveEvent(diagramCanvas, 700, 300);
+         mouseEvents.mouseUpEvent(diagramCanvas, 700, 300);
+         setTimeout(function () {
+             console.log("Swim lane zindex update issue ");
+              
+             expect(diagram.nodes[0].zIndex === 16 && diagram.nodes[1].zIndex === 17 && diagram.connectors[0].zIndex === 18).toBe(true);
+             done();
+         }, 1000);
+     });
+     it('swimlane with lower Zindex unde', function (done) {
+       diagram.undo();
+       expect(diagram.nodes.length !==0).toBe(true);
+             done();
+             diagram.redo();
+    });
+     
     });
 });

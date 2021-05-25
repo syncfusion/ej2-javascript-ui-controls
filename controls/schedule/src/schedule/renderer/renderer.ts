@@ -74,7 +74,7 @@ export class Render {
         if (isNullOrUndefined(this.parent.activeView)) {
             const firstView: View = this.parent.viewCollections[0].option;
             if (firstView) {
-                this.parent.setScheduleProperties({ currentView: firstView });
+                this.parent.setProperties({ currentView: firstView }, true);
                 if (this.parent.headerModule) {
                     this.parent.headerModule.updateActiveView();
                     this.parent.headerModule.setCalendarView();
@@ -140,7 +140,7 @@ export class Render {
     }
 
     private dataManagerSuccess(e: ReturnType): void {
-        if (this.parent.isDestroyed) { return; }
+        if (!this.parent || this.parent && this.parent.isDestroyed) { return; }
         this.parent.trigger(events.dataBinding, e, (args: ReturnType) => {
             const resultData: Record<string, any>[] = extend([], args.result, null, true) as Record<string, any>[];
             this.parent.eventsData = resultData.filter((data: Record<string, any>) => !data[this.parent.eventFields.isBlock]);
@@ -160,7 +160,7 @@ export class Render {
     }
 
     public dataManagerFailure(e: ReturnType): void {
-        if (this.parent.isDestroyed) { return; }
+        if (!this.parent || this.parent && this.parent.isDestroyed) { return; }
         this.parent.trigger(events.actionFailure, { error: e }, () => this.parent.hideSpinner());
     }
 

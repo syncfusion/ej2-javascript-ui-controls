@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 19.1.65 (2021-05-25)
+
+### Common
+
+#### Bug Fixes
+
+- Sortable helper element issue resolved.
+
 ## 19.1.56 (2021-04-13)
 
 ### ListView

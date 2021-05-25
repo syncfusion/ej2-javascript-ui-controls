@@ -1,6 +1,6 @@
 import {
     createElement, append, prepend, isNullOrUndefined, getValue, getDefaultDateObject,
-    cldrData, Internationalization, addClass, setStyleAttribute, formatUnit, EventHandler
+    cldrData, Internationalization, addClass, setStyleAttribute, formatUnit, EventHandler, remove
 } from '@syncfusion/ej2-base';
 import { Schedule } from '../base/schedule';
 import { TdData, ResourceDetails, CallbackFunction } from '../base/interface';
@@ -531,6 +531,15 @@ export class ViewBase {
                 conWrap.scrollLeft = this.parent.scrollLeft;
             }
         }
+    }
+
+    public destroy(): void {
+        if (this.element && this.element.parentNode) {
+            remove(this.element);
+        }
+        this.element = null;
+        this.renderDates = null;
+        this.colLevels = null;
     }
 
 }

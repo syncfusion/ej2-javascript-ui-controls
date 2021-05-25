@@ -713,7 +713,7 @@ export class ContentFocus implements IFocus {
          * if no child found then select the cell itself.
          * if Grid is in editable state, check for editable control inside child.
          */
-        return child.length ? isTemplate ? this.target : child[0] : element;
+        return child.length ? isTemplate && child.length > 1 ? this.target : child[0] : element;
     }
 
     public selector(row: Row<Column>, cell: Cell<Column>, isRowTemplate?: boolean): boolean {

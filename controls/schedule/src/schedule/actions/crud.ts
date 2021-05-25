@@ -53,7 +53,6 @@ export class Crud {
             if (args.requestType === 'eventCreated' || args.requestType === 'eventRemoved') {
                 this.crudObj.isCrudAction = true;
                 this.crudObj.sourceEvent = [];
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 const crudData: Record<string, any>[] = args.data instanceof Array ? (args.data.length === 0 &&
                     args.requestType === 'eventRemoved' ? args.editParams.deletedRecords : args.data) :
                     ((typeof args.data === 'string' || typeof args.data === 'number') && args.requestType === 'eventRemoved') ?
@@ -78,14 +77,14 @@ export class Crud {
         } else {
             // eslint-disable-next-line @typescript-eslint/no-unused-vars
             args.promise.then((e: ReturnType) => {
-                if (this.parent.isDestroyed) { return; }
+                if (!this.parent || this.parent && this.parent.isDestroyed) { return; }
                 this.parent.trigger(events.actionComplete, actionArgs, (onlineArgs: ActionEventArgs) => {
                     if (!onlineArgs.cancel) {
                         this.parent.renderModule.refreshDataManager();
                     }
                 });
             }).catch((e: ReturnType) => {
-                if (this.parent.isDestroyed) { return; }
+                if (!this.parent || this.parent && this.parent.isDestroyed) { return; }
                 this.parent.trigger(events.actionFailure, { error: e });
             });
         }
@@ -507,10 +506,10 @@ export class Crud {
                 const editParams: SaveChanges = { addedRecords: [], changedRecords: [], deletedRecords: [] };
                 for (const record of editArgs.changedRecords) {
                     if (!isNullOrUndefined(record[fields.recurrenceRule]) && isNullOrUndefined(record[fields.recurrenceException])) {
-                        let exceptionString: string = getRecurrenceStringFromDate(record[fields.startTime]);
-                        let parentEle: Record<string, any> = this.getParentEvent(record);
+                        const exceptionString: string = getRecurrenceStringFromDate(record[fields.startTime]);
+                        const parentEle: Record<string, any> = this.getParentEvent(record);
                         parentEle[fields.recurrenceException] = isNullOrUndefined(parentEle[fields.recurrenceException]) ?
-                            exceptionString : parentEle[fields.recurrenceException].concat("," + exceptionString);
+                            exceptionString : parentEle[fields.recurrenceException].concat(',' + exceptionString);
                         record[fields.id] = this.parent.getEventMaxID();
                         record[fields.recurrenceException] = exceptionString;
                         editParams.addedRecords.push(this.parent.eventBase.processTimezone(record, true));
@@ -593,6 +592,17 @@ export class Crud {
             value = event[this.parent.eventFields.isBlock] as boolean || false;
         }
         return value;
+    }
+
+    /**
+     * To destroy the crud module.
+     *
+     * @returns {void}
+     * @private
+     */
+    public destroy(): void {
+        this.crudObj = null;
+        this.parent = null;
     }
 
 }

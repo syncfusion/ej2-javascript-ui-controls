@@ -450,6 +450,11 @@ export const beforeDialogOpen: string = 'beforeDialogOpen';
  * @hidden
  * @deprecated
  */
+ export const clearDialogObj: string = 'clearDialogObj';
+/**
+ * @hidden
+ * @deprecated
+ */
 export const dialogOpen: string = 'dialogOpen';
 /**
  * @hidden

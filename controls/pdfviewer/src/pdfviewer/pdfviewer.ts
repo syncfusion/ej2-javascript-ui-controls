@@ -4402,10 +4402,12 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
     public unload(): void {
         this.viewerBase.clear(true);
         this.pageCount = 0;
-        if (!isBlazor() && this.toolbarModule) {
-            this.toolbarModule.resetToolbar();
+        if (!isBlazor()) {
+            if (this.toolbarModule) {
+                this.viewerBase.pageCount = 0;
+                this.toolbarModule.resetToolbar();
+            }
         } else {
-            this._dotnetInstance.invokeMethodAsync('ResetToolbar');
             this.viewerBase.blazorUIAdaptor.resetToolbar();
         }
         this.magnificationModule.zoomTo(100);

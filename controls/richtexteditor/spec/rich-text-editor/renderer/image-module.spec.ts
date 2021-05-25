@@ -3176,6 +3176,38 @@ client side. Customer easy to edit the contents and get the HTML content for
             }, 100);
         });
     });
+    describe('EJ2-48903 - BeforeDialogOpen event is not called for second time', () => {
+        let rteObj: RichTextEditor;
+        let count: number = 0;
+        beforeAll((done: Function) => {
+            rteObj = renderRTE({
+                toolbarSettings: {
+                    items: ['Image']
+                },
+                beforeDialogOpen(e: any): void {
+                    e.cancel = true;
+                    count = count + 1;
+                }
+            });
+            done();
+        });
+        afterAll((done: Function) => {
+            destroy(rteObj);
+            done();
+        });
+        it('beforeDialogOpen event trigger testing', (done) => {
+            expect(count).toBe(0);
+            (rteObj.element.querySelectorAll('.e-toolbar-item')[0].querySelector('button') as HTMLElement).click();
+            setTimeout(() => {
+                expect(count).toBe(1);
+                (rteObj.element.querySelectorAll('.e-toolbar-item')[0].querySelector('button') as HTMLElement).click();
+                setTimeout(() => {
+                    expect(count).toBe(2);
+                    done();
+                }, 100);   
+            }, 100);
+        });
+    });
     describe('EJ2CORE-480 - Provide event to restrict the image insertion when drag and drop', () => {
         let rteObj: RichTextEditor;
         let ele: HTMLElement;

@@ -3521,16 +3521,19 @@ describe('EJ2-41938-Auto-fill functionality not working properly with frozen col
                     { field: 'OrderID', headerText: 'Order ID', width: 120, textAlign: 'Right', minWidth: 10, isPrimaryKey: true },
                     { field: 'Freight', width: 125, format: 'C2', minWidth: 10 },
                     { field: 'CustomerID', headerText: 'Customer ID', width: 130, minWidth: 10 },
-                    { field: 'ShipCity', headerText: 'Ship City', width: 250, minWidth: 10 },
+                    { field: 'ShipCity', headerText: 'Ship City', width: 250, minWidth: 10, allowEditing: false },
                     { field: 'ShipCountry', headerText: 'Ship Country', width: 250, minWidth: 10 }
                 ]
             }, done);
     });
+    it('EJ2-49283 - columns.allowEditing property is not working properly when enable AutoFill ', () => {
+        gridObj.editModule.updateCell(0, 'ShipCity', 'updated');
+        expect((gridObj as any).contentModule.getMovableRows()[0].changes).toBeUndefined();
+    });
     it('Check the updatecell value', () => {
         (select('#'+gridObj.element.id+'_add', gridObj.element) as any).click();
         gridObj.editModule.updateCell(0, 'CustomerID', 'updated');
-        let updateElem: HTMLElement = gridObj.getContent().querySelector('.e-movablecontent').querySelector('table').rows[0].childNodes[0] as any;
-        expect(updateElem.innerHTML).toBe('updated');
+        expect((gridObj as any).contentModule.getMovableRows()[0].changes.CustomerID).toBe('updated');
     });
     afterAll(() => {
         destroy(gridObj);
@@ -3586,7 +3589,7 @@ describe('EJ2-42197 - Delete action was not working properly in checkbox selecti
                     { type:'checkbox', width:50 },
                     { field: 'OrderID', headerText: 'Order ID',isPrimaryKey: true , width: 120, textAlign: 'Right' },
                     { field: 'EmployeeID', type: 'number', allowEditing: false },
-                    { field: 'Freight', type: 'number' },
+                    { field: 'Freight', type: 'number', defaultValue: null },
                     { field: 'ShipCity', type: 'string' },
                 ]
             }, done);
@@ -3595,6 +3598,15 @@ describe('EJ2-42197 - Delete action was not working properly in checkbox selecti
         gridObj.selectRow(2);
         (select('#'+gridObj.element.id+'_delete', gridObj.element) as any).click();
         expect(gridObj.getSelectedRecords().length).toBe(0);
+    });
+    it('EJ2-49265 - Default value as null is not working for the number type column', (done: Function) => {
+        let beforeBatchAdd = (args?: any): void => {
+            expect(args.defaultData["Freight"]).toBeNull();
+            gridObj.beforeBatchAdd = null;
+            done();
+        };
+        gridObj.beforeBatchAdd = beforeBatchAdd;
+        (<any>gridObj.toolbarModule).toolbarClickHandler({ item: { id: gridObj.element.id + '_add' } });
     });
     afterAll(() => {
         destroy(gridObj);

@@ -12,6 +12,8 @@ import * as util from '../base/util';
  * timeline views
  */
 export class TimelineViews extends VerticalView {
+    private timelineAppointment: TimelineEvent = null;
+
     constructor(parent: Schedule) {
         super(parent);
         this.baseCssClass = 'e-timeline-view';
@@ -105,7 +107,7 @@ export class TimelineViews extends VerticalView {
     }
 
     public changeCurrentTimePosition(): void {
-        if (this.parent.isDestroyed) { return; }
+        if (!this.parent || this.parent && this.parent.isDestroyed) { return; }
         this.removeCurrentTimeIndicatorElements();
         const currentDateIndex: number[] = this.getCurrentTimeIndicatorIndex();
         const left: number = this.getLeftFromDateTime(currentDateIndex, this.parent.getCurrentTime());
@@ -243,14 +245,18 @@ export class TimelineViews extends VerticalView {
     }
 
     public renderEvents(): void {
-        if (this.parent.activeViewOptions.timeScale.enable) {
-            const appointment: TimelineEvent = new TimelineEvent(this.parent, 'hour');
-            appointment.renderAppointments();
-        } else {
-            const appointment: TimelineEvent = new TimelineEvent(this.parent, 'day');
-            appointment.renderAppointments();
-        }
+        this.timelineAppointment = new TimelineEvent(this.parent, this.parent.activeViewOptions.timeScale.enable ? 'hour' : 'day');
+        this.timelineAppointment.renderAppointments();
         this.parent.notify(event.eventsLoaded, {});
+    }
+
+    public destroy(): void {
+        if (!this.parent || this.parent && this.parent.isDestroyed) { return; }
+        if (this.timelineAppointment) {
+            this.timelineAppointment.destroy();
+            this.timelineAppointment = null;
+        }
+        super.destroy();
     }
 
 }

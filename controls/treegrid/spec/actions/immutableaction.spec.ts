@@ -481,6 +481,44 @@ describe('Immutable action', () => {
       destroy(TreeGridObj);
     });
   });
+  
+    describe('EJ2-49301 - Immutable dataSource change refresh check', () => {
+    let gridObj: TreeGrid;
+    beforeAll((done: Function) => {
+      gridObj = createGrid(
+        {
+          dataSource: projectData.slice(0, 7),
+          idMapping: 'TaskID',
+          parentIdMapping: 'parentID',
+          treeColumnIndex: 1,
+          created: function(){
+            this.grid.contentModule.mutableData = true;
+          },
+          enableImmutableMode: true,
+          editSettings: { allowEditing: true, allowDeleting: true, allowAdding: true, mode: "Cell", newRowPosition: "Below" },
+          toolbar: ['Add', 'Delete', 'Update', 'Cancel'],
+          columns: [
+            { field: "TaskID", headerText: "Task ID", width: 90, isPrimaryKey: true },
+            { field: 'TaskName', headerText: 'Task Name', width: 60 },
+            { field: 'Progress', headerText: 'Progress', textAlign: 'Right', width: 90 },
+          ]
+        },
+        done
+      );
+    });
+    it('RowDataBound event Triggerred count check and expand/collpase case check after data source refreshed', (done: Function) => {
+      gridObj.dataSource = projectData.slice(0, 9);
+      gridObj.collapseRow(gridObj.getRowByIndex(0) as HTMLTableRowElement);
+      expect(gridObj.getRows()[0].querySelectorAll(".e-treegridcollapse").length === 1).toBe(true);
+      gridObj.expandRow(gridObj.getRowByIndex(0) as HTMLTableRowElement);
+      expect(gridObj.getRows()[0].querySelectorAll(".e-treegridexpand").length === 1).toBe(true);
+      done();
+    });
+    afterAll(() => {
+      destroy(gridObj);
+    });
+  });
+
 
   it('memory leak', () => {
     profile.sample();

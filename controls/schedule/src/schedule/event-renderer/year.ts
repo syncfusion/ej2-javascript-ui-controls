@@ -336,7 +336,7 @@ export class YearEvent extends TimelineEvent {
                 'data-guid': record.Guid as string,
                 'role': 'button', 'tabindex': '0',
                 'aria-readonly': this.parent.eventBase.getReadonlyAttribute(record), 'aria-selected': 'false', 'aria-grabbed': 'true',
-                'aria-label': this.parent.getAnnocementString(record)
+                'aria-label': this.parent.getAnnouncementString(record)
             }
         });
         if (this.cssClass) {
@@ -470,6 +470,11 @@ export class YearEvent extends TimelineEvent {
         for (const row of rows) {
             (row.firstElementChild as HTMLElement).style.height = '';
         }
+    }
+
+    public destroy(): void {
+        super.destroy();
+        this.parent = null;
     }
 
 }

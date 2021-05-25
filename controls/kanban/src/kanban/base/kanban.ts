@@ -666,11 +666,11 @@ export class Kanban extends Component<HTMLElement> {
      * Returns the column data based on column key input.
      *
      * @function getColumnData
-     * @param {string} columnKey Accepts the column key to get the objects.
+     * @param {string | number} columnKey Accepts the column key to get the objects.
      * @param {Object[]} dataSource Accepts the collection of objects to get the results based on given columnKey.
      * @returns {Object[]} Returns the collection of card objects based on given inputs.
      */
-    public getColumnData(columnKey: string, dataSource?: Record<string, any>[]): Record<string, any>[] {
+    public getColumnData(columnKey: string | number, dataSource?: Record<string, any>[]): Record<string, any>[] {
         return this.layoutModule.getColumnCards(dataSource)[columnKey] as Record<string, any>[] || [];
     }
 
@@ -801,10 +801,10 @@ export class Kanban extends Component<HTMLElement> {
      * Shows the column from hidden based on the provided key in the columns.
      *
      * @function showColumn
-     * @param {string} key Accepts the hidden column key name to be shown from the hidden state in board.
+     * @param {string | number} key Accepts the hidden column key name to be shown from the hidden state in board.
      * @returns {void}
      */
-    public showColumn(key: string): void {
+    public showColumn(key: string | number): void {
         this.actionModule.showColumn(key);
     }
 
@@ -812,10 +812,10 @@ export class Kanban extends Component<HTMLElement> {
      * Hides the column from Kanban board based on the provided key in the columns.
      *
      * @function hideColumn
-     * @param {string} key Accepts the visible column key name to be hidden from the board.
+     * @param {string | number} key Accepts the visible column key name to be hidden from the board.
      * @returns {void}
      */
-    public hideColumn(key: string): void {
+    public hideColumn(key: string | number): void {
         this.actionModule.hideColumn(key);
     }
 

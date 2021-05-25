@@ -535,7 +535,7 @@ export class UndoRedo {
                 parentNode.children.splice(parentNode.children.indexOf(actualObject.id), 1);
                 parentNode.wrapper.children.splice(parentNode.wrapper.children.indexOf(actualObject.wrapper), 1);
             }
-            if ((entryObject as Node).parentId !== '') {
+            if ((entryObject as Node).parentId && (entryObject as Node).parentId !== '') {
                 parentNode = diagram.nameTable[(entryObject as Node).parentId];
                 parentNode.children.push((entryObject as Node).id);
                 parentNode.wrapper.children.push(actualObject.wrapper);

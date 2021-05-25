@@ -2324,13 +2324,18 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
                 delete currentObject[val];
             }
         }
-        this.pageSettings.template = undefined;
+        let temp: string = this.pageSettings.template;
+        let settings:PageSettingsModel = Object.assign({template: undefined}, this.pageSettings);
+        this.setProperties({pageSettings: settings}, true);
         /* tslint:disable-next-line:no-any */
         if ((this as any).isAngular) {
         /* tslint:disable:no-string-literal */
         delete this.groupSettings['properties']['captionTemplate']; }
         this.pageTemplateChange = !isNullOrUndefined(this.pagerTemplate);
-        return this.addOnPersist(keyEntity);
+        let persistData: string = this.addOnPersist(keyEntity);
+        settings.template = temp;
+        this.setProperties({pageSettings: settings}, true);
+        return persistData;
     }
 
     /**

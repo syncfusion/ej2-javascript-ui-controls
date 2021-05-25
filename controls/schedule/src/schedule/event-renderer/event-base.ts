@@ -53,7 +53,7 @@ export class EventBase {
             }
             if (timeZonePropChanged) {
                 this.processTimezoneChange(event, oldTimezone);
-            } else if(!this.parent.isPrinting) {
+            } else if (!this.parent.isPrinting) {
                 event = this.processTimezone(event);
             }
             for (let level: number = 0; level < resourceCollection.length; level++) {
@@ -599,6 +599,10 @@ export class EventBase {
         this.parent.on(event.documentClick, this.appointmentBorderRemove, this);
     }
 
+    public removeEventListener(): void {
+        this.parent.off(event.documentClick, this.appointmentBorderRemove);
+    }
+
     private appointmentBorderRemove(event: Event & CellClickEventArgs): void {
         const element: HTMLElement = event.event.target as HTMLElement;
         if (closest(element as Element, '.' + cls.APPOINTMENT_CLASS)) {
@@ -613,10 +617,8 @@ export class EventBase {
     public wireAppointmentEvents(element: HTMLElement, event?: Record<string, any>, isPreventCrud: boolean = false): void {
         const isReadOnly: boolean = (!isNullOrUndefined(event)) ? event[this.parent.eventFields.isReadonly] as boolean : false;
         EventHandler.add(element, 'click', this.eventClick, this);
-        if (!this.parent.isAdaptive) {
-            EventHandler.add(element, 'touchstart', this.eventTouchClick, this);
-        }
         if (!this.parent.isAdaptive && !this.parent.activeViewOptions.readonly && !isReadOnly) {
+            EventHandler.add(element, 'touchstart', this.eventTouchClick, this);
             EventHandler.add(element, 'dblclick', this.eventDoubleClick, this);
         }
         if (!this.parent.activeViewOptions.readonly && !isReadOnly && !isPreventCrud) {
@@ -1158,6 +1160,18 @@ export class EventBase {
         } else {
             removeClass([dateHeader], cls.ALLDAY_APPOINTMENT_SCROLL);
         }
+    }
+
+    private unWireEvents(): void {
+        const appElements: Element[] = [].slice.call(this.parent.element.querySelectorAll('.' + cls.APPOINTMENT_CLASS));
+        for (const element of appElements) {
+            EventHandler.clearEvents(element);
+        }
+    }
+
+    public destroy(): void {
+        this.unWireEvents();
+        this.parent = null;
     }
 
 }

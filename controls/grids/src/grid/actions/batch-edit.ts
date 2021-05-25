@@ -741,7 +741,7 @@ export class BatchEdit {
         let dValues: Object = { 'number': 0, 'string': null, 'boolean': false, 'date': null, 'datetime': null };
         for (let col of ((<{ columnModel?: Column[] }>gObj).columnModel)) {
             if (col.field) {
-                setValue(col.field, col.defaultValue ? col.defaultValue : dValues[col.type], data);
+                setValue(col.field, Object.keys(col).indexOf('defaultValue') >= 0 ? col.defaultValue : dValues[col.type], data);
             }
         }
         return data;
@@ -847,14 +847,14 @@ export class BatchEdit {
         let gObj: IGrid = this.parent;
         let col: Column = gObj.getColumnByField(field);
         let index: number = gObj.getColumnIndexByField(field);
-        if (col && !col.isPrimaryKey) {
+        if (col && !col.isPrimaryKey && col.allowEditing) {
             let td: Element = getCellByColAndRowIndex(this.parent, col, rowIndex, index);
             let rowObj: Row<Column> = col.getFreezeTableName() === 'movable' ? this.parent.getMovableRowsObject()[rowIndex] :
                 col.getFreezeTableName() === literals.frozenRight ? gObj.getFrozenRightRowsObject()[rowIndex]
                     : gObj.getRowObjectFromUID(td.parentElement.getAttribute('data-uid'));
             this.refreshTD(td, col, rowObj, value);
             this.parent.trigger(events.queryCellInfo, {
-                cell: td, column: col, data: rowObj.changes
+                cell: this.newReactTd || td, column: col, data: rowObj.changes
             });
         }
     }
@@ -1094,8 +1094,8 @@ export class BatchEdit {
             removeClass([cellSaveArgs.cell], ['e-editedbatchcell', 'e-boolcell']);
             if (!isNullOrUndefined(cellSaveArgs.value) && cellSaveArgs.value.toString() ===
                 (!isNullOrUndefined(this.cellDetails.value) ? this.cellDetails.value : '').toString() && !this.isColored
-                || (isNullOrUndefined(cellSaveArgs.value) && isNullOrUndefined(this.cellDetails.value) &&
-                    !cellSaveArgs.cell.parentElement.classList.contains('e-insertedrow'))) {
+                || (isNullOrUndefined(cellSaveArgs.value) && isNullOrUndefined(rowObj.data[column.field]) &&
+                    isNullOrUndefined(this.cellDetails.value) && !cellSaveArgs.cell.parentElement.classList.contains('e-insertedrow'))) {
                 cellSaveArgs.cell.classList.remove('e-updatedtd');
             }
             if (isNullOrUndefined(isEscapeCellEdit)) {

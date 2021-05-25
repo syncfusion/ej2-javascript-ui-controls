@@ -1858,7 +1858,7 @@ export class WordExport {
         writer.writeAttributeString(undefined, 'y', undefined, '0');
         writer.writeEndElement();
         writer.writeStartElement('wp', 'positionH', this.wpNamespace);
-        writer.writeAttributeString(undefined, 'relativeFrom', undefined, picture.horizontalOrigin.toString().toLowerCase());
+        writer.writeAttributeString(undefined, 'relativeFrom', undefined, HelperMethods.formatText("firstlower", picture.horizontalOrigin.toString()));
         if (picture.horizontalAlignment === 'None') {
             writer.writeStartElement('wp', 'posOffset', this.wpNamespace);
             const horPos: number = Math.round(picture.horizontalPosition * this.emusPerPoint);
@@ -1872,7 +1872,7 @@ export class WordExport {
         }
         writer.writeEndElement(); //end of postionH
         writer.writeStartElement('wp', 'positionV', this.wpNamespace);
-        writer.writeAttributeString(undefined, 'relativeFrom', undefined, picture.verticalOrigin.toString().toLowerCase());
+        writer.writeAttributeString(undefined, 'relativeFrom', undefined, HelperMethods.formatText("firstlower", picture.verticalOrigin.toString()));
         if (picture.verticalAlignment === 'None') {
             writer.writeStartElement('wp', 'posOffset', this.wpNamespace);
             const vertPos: number = Math.round(picture.verticalPosition * this.emusPerPoint);
@@ -3445,10 +3445,19 @@ export class WordExport {
         writer.writeStartElement('a', 'avLst', this.aNamespace);
         writer.writeEndElement();
         writer.writeEndElement();
-        writer.writeStartElement('a', 'noFill', this.aNamespace);
-        writer.writeEndElement();
+        if (shape.fillFormat.color) {
+            writer.writeStartElement('a', 'solidFill', this.aNamespace);
+            writer.writeStartElement('a', 'srgbClr', this.aNamespace);
+            writer.writeAttributeString(undefined, 'val', undefined, this.getColor(shape.fillFormat.color));
+            writer.writeEndElement();
+            writer.writeEndElement();
+        } else {
+            writer.writeStartElement('a', 'noFill', this.aNamespace);
+            writer.writeEndElement();
+        }
+        let lineWeight: number = shape.lineFormat.weight ? shape.lineFormat.weight * this.emusPerPoint: this.emusPerPoint;
         writer.writeStartElement('a', 'ln', this.aNamespace);
-        writer.writeAttributeString(undefined, 'w', undefined, '12700');
+        writer.writeAttributeString(undefined, 'w', undefined, lineWeight.toString());
         if ((!isNullOrUndefined(shape.lineFormat.lineFormatType) && shape.lineFormat.lineFormatType !== 'None')
             || shape.lineFormat.line) {
             writer.writeStartElement('a', 'solidFill', this.aNamespace);

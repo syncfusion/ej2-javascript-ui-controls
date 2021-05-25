@@ -2167,7 +2167,7 @@ class ObjectFinder {
                 isNode = true;
             }
             let parent: NodeModel = diagram.nameTable[parentNode];
-            if (parent && (parent as Node).zIndex > (obj as Node).zIndex && (parent as Node).isLane) {
+            if (parent && (parent as Node).isLane && diagram.nameTable[(parent as Node).parentId].zIndex > (obj as Node).zIndex ) {
                 actualTarget[m] = parent;
             }
             if (m > 0 && isNode && node && (node.isLane || node.isPhase || node.isHeader)) {
