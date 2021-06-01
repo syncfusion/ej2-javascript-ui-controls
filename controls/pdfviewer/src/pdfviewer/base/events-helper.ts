@@ -214,13 +214,17 @@ export interface ZoomChangeEventArgs extends BaseEventArgs {
  */
 export interface HyperlinkClickEventArgs extends BaseEventArgs {
     /**
-     * Defines the current clicked hyperlink
+     * Get or set the URL to navigate.
      */
     hyperlink: string
     /**
      * Defines the current hyperlink element.
      */
     hyperlinkElement: HTMLAnchorElement
+    /**
+    * Hyperlink navigation will not work if it is set to TRUE. The value is set to FALSE by default.
+    */
+    cancel:boolean
 }
 
 /**

@@ -2,8 +2,8 @@ import { Spreadsheet } from '../base/index';
 import { formulaBar, locale, selectionComplete, enableFormulaInput, DialogBeforeOpenEventArgs, focus } from '../common/index';
 import { mouseUpAfterSelection, click } from '../common/index';
 import { getRangeIndexes, getRangeFromAddress, getCellAddress, getCellIndexes } from './../../workbook/common/address';
-import { CellModel, getSheetName, getTypeFromFormat, getSheet, SheetModel, checkIsFormula, Workbook } from '../../workbook/index';
-import { updateSelectedRange, getSheetNameFromAddress, getSheetIndex, DefineNameModel } from '../../workbook/index';
+import { CellModel, getSheetName, getTypeFromFormat, getSheet, SheetModel, checkIsFormula, Workbook, getCell } from '../../workbook/index';
+import { updateSelectedRange, getSheetNameFromAddress, getSheetIndex, DefineNameModel, isLocked, getColumn } from '../../workbook/index';
 import { ComboBox, DropDownList, SelectEventArgs as DdlSelectArgs } from '@syncfusion/ej2-dropdowns';
 import { BeforeOpenEventArgs } from '@syncfusion/ej2-popups';
 import { rippleEffect, L10n, EventHandler, detach, Internationalization, isNullOrUndefined, closest, select } from '@syncfusion/ej2-base';
@@ -181,7 +181,8 @@ export class FormulaBar {
         const sheet: SheetModel = this.parent.getActiveSheet();
         const range: string[] = sheet.selectedRange.split(':');
         let address: string;
-        const editorEle: Element = document.getElementsByClassName('e-spreadsheet-edit')[0];
+        const editArgs: { action: string, element: HTMLElement } = { action: 'getElement', element: null };
+        this.parent.notify(editOperation, editArgs);
         const formulaBar: HTMLTextAreaElement = this.parent.element.querySelector('.e-formula-bar') as HTMLTextAreaElement;
         const intl: Internationalization = new Internationalization();
         if (e.type === 'mousemove' || e.type === 'pointermove') {
@@ -190,8 +191,8 @@ export class FormulaBar {
             if (this.parent.isEdit) {
                 if (e.target as Element && !(e.target as Element).classList.contains('e-spreadsheet-edit')) {
                     this.parent.notify(editValue, null);
-                } else if (editorEle) {
-                    formulaBar.value = editorEle.textContent;
+                } else if (editArgs.element) {
+                    formulaBar.value = editArgs.element.textContent;
                 }
             }
         } else {
@@ -246,8 +247,8 @@ export class FormulaBar {
                     if (this.parent.isEdit) {
                         if (e.target && !(e.target as Element).classList.contains('e-spreadsheet-edit')) {
                             this.parent.notify(editValue, null);
-                        } else if (editorEle) {
-                            formulaBar.value = editorEle.textContent;
+                        } else if (editArgs.element) {
+                            formulaBar.value = editArgs.element.textContent;
                         }
                     }
                 });
@@ -291,12 +292,17 @@ export class FormulaBar {
     }
     private formulaBarClickHandler(e: MouseEvent & TouchEvent): void {
         const target: HTMLElement = e.target as HTMLElement;
+        const sheet: SheetModel = this.parent.getActiveSheet();
+        const isSheetProtected: boolean = sheet.isProtected;
+        const range: number[] = getCellIndexes(sheet.activeCell);
+        const cell: CellModel = getCell(range[0], range[1], sheet);
+        const isCellLocked: boolean = isLocked(cell, getColumn(sheet, range[1]));
         if (target.classList.contains('e-drop-icon') && closest(target, '.e-formula-bar-panel')) {
             this.toggleFormulaBar(target);
         } else if (target.classList.contains('e-formula-bar')) {
-            if (!this.parent.isEdit && !this.parent.getActiveSheet().isProtected) {
+            if (!this.parent.isEdit && (!isSheetProtected || (isSheetProtected && !isCellLocked))) {
                 this.formulaBarScrollEdit();
-            } else if (this.parent.getActiveSheet().isProtected) {
+            } else if (isSheetProtected && isCellLocked) {
                 this.parent.notify(editAlert, null);
             }
         } else if (target.parentElement && target.parentElement.classList.contains('e-name-box')) {
@@ -314,7 +320,7 @@ export class FormulaBar {
             || (this.parent.element.id + '_insert_function' === target.id) ||
             target.parentElement.classList.contains('e-insert-function')
             || (this.parent.element.id + '_insert_function' === target.parentElement.id))) {
-            if (this.parent.getActiveSheet().isProtected) {
+            if (isSheetProtected) {
                 this.parent.notify(editAlert, null);
                 return;
             }

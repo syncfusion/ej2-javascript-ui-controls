@@ -931,7 +931,7 @@ export class Zoom {
             const panningYDirection: boolean = ((yDifference < 0 ? layerRect.top <= (elementRect.top + map.mapAreaRect.y) :
                 ((layerRect.top + layerRect.height + map.margin.top) >= (elementRect.top + elementRect.height))));
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            const location: any = this.maps.getGeoLocation(this.maps.layersCollection.length - 1, mouseLocation as PointerEvent);
+            const location: any = this.maps.getGeoLocation(this.maps.layersCollection.length - 1, mouseLocation['layerX'], mouseLocation['layerY']);
             panArgs = {
                 cancel: false, name: pan, maps: !map.isBlazor ? map : null,
                 tileTranslatePoint: {}, translatePoint: { previous: translatePoint, current: new Point(x, y) },
@@ -965,7 +965,7 @@ export class Zoom {
             map.translatePoint.x = (map.tileTranslatePoint.x - xDifference) / map.scale;
             map.translatePoint.y = (map.tileTranslatePoint.y - yDifference) / map.scale;
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            const location: any = this.maps.getTileGeoLocation(mouseLocation as PointerEvent);
+            const location: any = this.maps.getTileGeoLocation(mouseLocation['layerX'], mouseLocation['layerY']);
             panArgs = {
                 cancel: false, name: pan, maps: !map.isBlazor ? map : null,
                 tileTranslatePoint: { previous: prevTilePoint, current: map.tileTranslatePoint },

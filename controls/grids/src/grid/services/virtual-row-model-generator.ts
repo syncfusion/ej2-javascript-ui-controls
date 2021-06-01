@@ -2,6 +2,7 @@ import { Browser } from '@syncfusion/ej2-base';
 import { Group } from '@syncfusion/ej2-data';
 import { IModelGenerator, IGrid, VirtualInfo, NotifyArgs } from '../base/interface';
 import { Row } from '../models/row';
+import { Cell } from '../models/cell';
 import { isGroupAdaptive } from '../base/util';
 import { Column } from '../models/column';
 import { PageSettingsModel } from '../models/page-settings-model';
@@ -32,14 +33,13 @@ export class VirtualRowModelGenerator implements IModelGenerator<Column> {
         this.rowModelGenerator = this.parent.allowGrouping ? new GroupModelGenerator(this.parent) : new RowModelGenerator(this.parent);
     }
 
-    // tslint:disable-next-line:max-func-body-length
     public generateRows(data: Object[], e?: NotifyArgs): Row<Column>[] {
-        let isFrozen: boolean = this.parent.isFrozenGrid();
-        let info: VirtualInfo = e.virtualInfo = e.virtualInfo || this.getData();
-        let xAxis: boolean = info.sentinelInfo && info.sentinelInfo.axis === 'X';
-        let page: number = !xAxis && info.loadNext && !info.loadSelf ? info.nextInfo.page : info.page;
-        let result: Row<Column>[] = []; let center: number = ~~(this.model.pageSize / 2);
-        let indexes: number[] = this.getBlockIndexes(page); let loadedBlocks: number[] = [];
+        const isFrozen: boolean = this.parent.isFrozenGrid();
+        const info: VirtualInfo = e.virtualInfo = e.virtualInfo || this.getData();
+        const xAxis: boolean = info.sentinelInfo && info.sentinelInfo.axis === 'X';
+        const page: number = !xAxis && info.loadNext && !info.loadSelf ? info.nextInfo.page : info.page;
+        let result: Row<Column>[] = [];
+        const indexes: number[] = this.getBlockIndexes(page); const loadedBlocks: number[] = [];
         if ((isFrozen && (this.parent.getFrozenMode() !== literals.leftRight && !e.renderMovableContent)
             || this.parent.getFrozenMode() === literals.leftRight && !e.renderMovableContent && !e.renderFrozenRightContent) || !isFrozen) {
             this.checkAndResetCache(e.requestType);
@@ -54,16 +54,16 @@ export class VirtualRowModelGenerator implements IModelGenerator<Column> {
                 }
                 if ((e.renderMovableContent && this.isMovableBlockAvailable(info.blockIndexes[i]))
                     || (e.renderFrozenRightContent && this.isFrozenRightBlockAvailable(info.blockIndexes[i]))) {
-                    let cache: { [x: number]: Row<Column>[] } = e.renderMovableContent
+                    const cache: { [x: number]: Row<Column>[] } = e.renderMovableContent
                         ? this.movableCache : this.frozenRightCache;
                     cache[info.blockIndexes[i]] = this.rowModelGenerator.refreshRows(cache[info.blockIndexes[i]]);
                 }
             }
         }
-        let values: number[] = info.blockIndexes;
+        const values: number[] = info.blockIndexes;
         for (let i: number = 0; i < values.length; i++) {
             if (!this.isBlockAvailable(values[i])) {
-                let rows: Row<Column>[] = this.rowModelGenerator.generateRows(data, {
+                const rows: Row<Column>[] = this.rowModelGenerator.generateRows(data, {
                     virtualInfo: info, startIndex: this.getStartIndex(values[i], data)
                 });
                 if (isGroupAdaptive(this.parent) && !this.parent.vcRows.length) {
@@ -95,12 +95,12 @@ export class VirtualRowModelGenerator implements IModelGenerator<Column> {
             }
             if ((e.renderMovableContent && !this.isMovableBlockAvailable(values[i]))
                 || (e.renderFrozenRightContent && !this.isFrozenRightBlockAvailable(values[i]))) {
-                let cache: { [x: number]: Row<Column>[] } = e.renderMovableContent
+                const cache: { [x: number]: Row<Column>[] } = e.renderMovableContent
                     ? this.movableCache : this.frozenRightCache;
-                let rows: Row<Column>[] = this.rowModelGenerator.generateRows(data, {
+                const rows: Row<Column>[] = this.rowModelGenerator.generateRows(data, {
                     virtualInfo: info, startIndex: this.getStartIndex(values[i], data)
                 });
-                let median: number = ~~Math.max(rows.length, this.model.pageSize) / 2;
+                const median: number = ~~Math.max(rows.length, this.model.pageSize) / 2;
                 if ((e.renderFrozenRightContent && !this.isFrozenRightBlockAvailable(indexes[0]))
                     || (e.renderMovableContent && !this.isMovableBlockAvailable(indexes[0]))) {
                     cache[indexes[0]] = rows.slice(0, median);
@@ -113,7 +113,7 @@ export class VirtualRowModelGenerator implements IModelGenerator<Column> {
             if (!e.renderMovableContent && !e.renderFrozenRightContent && this.cache[values[i]]) {
                 result.push(...this.cache[values[i]]);
             } else {
-                let cache: { [x: number]: Row<Column>[] } = e.renderMovableContent
+                const cache: { [x: number]: Row<Column>[] } = e.renderMovableContent
                     ? this.movableCache : this.frozenRightCache;
                 if (cache[values[i]]) {
                     result.push(...cache[values[i]]);
@@ -124,8 +124,8 @@ export class VirtualRowModelGenerator implements IModelGenerator<Column> {
             }
         }
         info.blockIndexes = loadedBlocks;
-        let grouping: string = 'records';
-        if (this.parent.allowGrouping) {
+        const grouping: string = 'records';
+        if (this.parent.allowGrouping && this.parent.groupSettings.columns.length) {
             this.parent.currentViewData[grouping] = result.map((m: Row<Column>) => m.data);
         } else if (isFrozen) {
             if ((e.renderMovableContent && (this.parent.getFrozenMode() === 'Left'
@@ -168,23 +168,24 @@ export class VirtualRowModelGenerator implements IModelGenerator<Column> {
     }
 
     private getStartIndex(blk: number, data: Object[], full: boolean = true): number {
-        let page: number = this.getPage(blk); let even: boolean = blk % 2 === 0;
-        let index: number = (page - 1) * this.model.pageSize;
+        const page: number = this.getPage(blk); const even: boolean = blk % 2 === 0;
+        const index: number = (page - 1) * this.model.pageSize;
         return full || !even ? index : index + ~~(this.model.pageSize / 2);
     }
 
     public getColumnIndexes(content: HTMLElement =
-        (<HTMLElement>this.parent.getHeaderContent().querySelector('.' + literals.headerContent))): number[] {
+    (<HTMLElement>this.parent.getHeaderContent().querySelector('.' + literals.headerContent))): number[] {
         if (this.parent.isFrozenGrid()) {
             content = content.querySelector('.' + literals.movableHeader);
         }
-        let indexes: number[] = []; let sLeft: number = content.scrollLeft | 0;
-        let keys: string[] = Object.keys(this.cOffsets); let cWidth: number = content.getBoundingClientRect().width;
-        sLeft = Math.min(this.cOffsets[keys.length - 1] - cWidth, sLeft); let calWidth: number = Browser.isDevice ? 2 * cWidth : cWidth / 2;
-        let left: number = sLeft + cWidth + (sLeft === 0 ? calWidth : 0);
-        keys.some((offset: string, indx: number, input: string[]) => {
-            let iOffset: number = Number(offset); let offsetVal: number = this.cOffsets[offset];
-            let border: boolean = sLeft - calWidth <= offsetVal && left + calWidth >= offsetVal;
+        const indexes: number[] = []; let sLeft: number = content.scrollLeft | 0;
+        const keys: string[] = Object.keys(this.cOffsets); const cWidth: number = content.getBoundingClientRect().width;
+        sLeft = Math.min(this.cOffsets[keys.length - 1] - cWidth, sLeft);
+        const calWidth: number = Browser.isDevice ? 2 * cWidth : cWidth / 2;
+        const left: number = sLeft + cWidth + (sLeft === 0 ? calWidth : 0);
+        keys.some((offset: string) => {
+            const iOffset: number = Number(offset); const offsetVal: number = this.cOffsets[offset];
+            const border: boolean = sLeft - calWidth <= offsetVal && left + calWidth >= offsetVal;
             if (border) {
                 indexes.push(iOffset);
             }
@@ -203,12 +204,12 @@ export class VirtualRowModelGenerator implements IModelGenerator<Column> {
     }
 
     public checkAndResetCache(action: string): boolean {
-        let actions: string[] = ['paging', 'refresh', 'sorting', 'filtering', 'searching', 'grouping', 'ungrouping', 'reorder',
+        const actions: string[] = ['paging', 'refresh', 'sorting', 'filtering', 'searching', 'grouping', 'ungrouping', 'reorder',
             'save', 'delete'];
         if (this.parent.getFrozenColumns() && this.parent.frozenRows && this.parent.enableColumnVirtualization && action === 'reorder') {
             actions.splice(actions.indexOf(action), 1);
         }
-        let clear: boolean = actions.some((value: string) => action === value);
+        const clear: boolean = actions.some((value: string) => action === value);
         if (clear) {
             this.cache = {}; this.data = {}; this.groups = {}; this.movableCache = {}; this.frozenRightCache = {};
         }
@@ -216,16 +217,17 @@ export class VirtualRowModelGenerator implements IModelGenerator<Column> {
     }
 
     public refreshColOffsets(): void {
-        let col: number = 0; this.cOffsets = {}; let gLen: number = this.parent.groupSettings.columns.length;
-        let cols: Column[] = (<Column[]>this.parent.columns);
-        let cLen: number = cols.length;
-        let isVisible: Function = (column: Column) => column.visible &&
+        let col: number = 0; this.cOffsets = {}; const gLen: number = this.parent.groupSettings.columns.length;
+        const cols: Column[] = (<Column[]>this.parent.columns);
+        const cLen: number = cols.length;
+        const isVisible: Function = (column: Column) => column.visible &&
             (!this.parent.groupSettings.showGroupedColumn ? this.parent.groupSettings.columns.indexOf(column.field) < 0 : column.visible);
-        let c: string[] = this.parent.groupSettings.columns;
+        const c: string[] = this.parent.groupSettings.columns;
         for (let i: number = 0; i < c.length; i++) {
             this.cOffsets[i] = (this.cOffsets[i - 1] | 0) + 30;
         }
-        let blocks: number[] = Array.apply(null, Array(cLen)).map(() => col++);
+        // eslint-disable-next-line prefer-spread
+        const blocks: number[] = Array.apply(null, Array(cLen)).map(() => col++);
         for (let j: number = 0; j < blocks.length; j++) {
             blocks[j] = blocks[j] + gLen;
             this.cOffsets[blocks[j]] = (this.cOffsets[blocks[j] - 1] | 0) + (isVisible(cols[j]) ? parseInt(<string>cols[j].width, 10) : 0);
@@ -233,9 +235,9 @@ export class VirtualRowModelGenerator implements IModelGenerator<Column> {
     }
 
     public updateGroupRow(current: Row<Column>[], block: number): Row<Column>[] {
-        let currentFirst: Row<Column> = current[0];
+        const currentFirst: Row<Column> = current[0];
         let rows: Row<Column>[] = [];
-        let keys: string[] = Object.keys(this.cache);
+        const keys: string[] = Object.keys(this.cache);
         for (let i: number = 0; i < keys.length; i++) {
             if (Number(keys[i]) < block) {
                 rows = [...rows, ...this.cache[keys[i]]];
@@ -248,14 +250,15 @@ export class VirtualRowModelGenerator implements IModelGenerator<Column> {
     }
 
     private iterateGroup(current: Row<Column>[], rows: Row<Column>[]): Row<Column>[] {
-        let currentFirst: Row<Column> = current[0]; let offset: number = 0;
+        const currentFirst: Row<Column> = current[0]; let offset: number = 0;
         if (currentFirst && currentFirst.isDataRow) {
             return current;
         }
-        let isPresent: boolean = current.some((row: Row<Column>) => {
+        const isPresent: boolean = current.some((row: Row<Column>) => {
             return rows.some((oRow: Row<Column>, index: number) => {
-                let res: boolean = oRow && (<Group>oRow.data).field !== undefined && (<Group>oRow.data).field === (<Group>row.data).field &&
-                (<Group>oRow.data).key === (<Group>row.data).key;
+                const res: boolean = oRow && (<Group>oRow.data).field !== undefined
+                    && (<Group>oRow.data).field === (<Group>row.data).field &&
+                    (<Group>oRow.data).key === (<Group>row.data).key;
                 if (res) { offset = index; }
                 return res;
             });
@@ -269,10 +272,18 @@ export class VirtualRowModelGenerator implements IModelGenerator<Column> {
 
     public getRows(): Row<Column>[] {
         let rows: Row<Column>[] = [];
-        let keys: string[] = Object.keys(this.cache);
+        const keys: string[] = Object.keys(this.cache);
         for (let i: number = 0; i < keys.length; i++) {
             rows = [...rows, ...this.cache[keys[i]]];
         }
         return rows;
+    }
+
+    public generateCells(): Cell<Column>[] {
+        const cells: Cell<Column>[] = [];
+        for (let i: number = 0; i < this.parent.columns.length; i++) {
+            cells.push((this.rowModelGenerator as RowModelGenerator).generateCell(this.parent.columns[i] as Column));
+        }
+        return cells;
     }
 }

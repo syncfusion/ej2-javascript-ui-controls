@@ -285,7 +285,11 @@ export class InsertHtml {
         range.startContainer.childNodes[range.endOffset].nodeName === 'TABLE') {
             range.startContainer.insertBefore(node, range.startContainer.childNodes[range.endOffset]);
         } else {
-            const blockNode: Node = this.getImmediateBlockNode(nodes[nodes.length - 1], editNode);
+            let blockNode: Node = this.getImmediateBlockNode(nodes[nodes.length - 1], editNode);
+            if (isNOU(blockNode.parentElement) && range.endContainer.nodeType !== 3) {
+                blockNode = range.endContainer;
+                range.setEnd(blockNode, range.endContainer.textContent.length);
+            }
             if (blockNode.nodeName === 'TD' || blockNode.nodeName === 'TH') {
                 const tempSpan: HTMLElement = createElement('span', { className: 'tempSpan' });
                 range.insertNode(tempSpan);

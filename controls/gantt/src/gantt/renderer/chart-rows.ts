@@ -38,7 +38,8 @@ export class ChartRows extends DateProcessor {
     private dropSplit: boolean = false;
     private refreshedTr: Element[] = [];
     private refreshedData: IGanttData[] = [];
-
+    private isUpdated: boolean = true;
+   
     constructor(ganttObj?: Gantt) {
         super(ganttObj);
         this.parent = ganttObj;
@@ -64,7 +65,15 @@ export class ChartRows extends DateProcessor {
 
     public refreshChartByTimeline(): void {
         this.taskTable.style.width = formatUnit(this.parent.timelineModule.totalTimelineWidth);
+        const prevDate: Date = getValue('prevProjectStartDate', this.parent.dataOperation);
+        var isUpdated: boolean = false;
+        if (prevDate) {
+            isUpdated = prevDate.getTime() === this.parent.cloneProjectStartDate.getTime();
+        }
+        this.isUpdated =  this.parent.isFromOnPropertyChange && isUpdated &&
+         getValue('mutableData', this.parent.treeGrid.grid.contentModule) ? true : false;
         this.refreshGanttRows();
+        this.isUpdated = true;
     }
 
     /**
@@ -1286,8 +1295,8 @@ export class ChartRows extends DateProcessor {
         this.ganttChartTableBody.innerHTML = '';
         const collapsedResourceRecord: IGanttData[] = [];
         const prevCurrentView: Object[] = this.parent.treeGridModule.prevCurrentView as object[];
-        if (this.parent.enableImmutableMode && prevCurrentView && prevCurrentView.length > 0) {
-            this.refreshedTr = []; this.refreshedData = [];
+        this.refreshedTr = []; this.refreshedData = [];
+        if (this.parent.enableImmutableMode && prevCurrentView && prevCurrentView.length > 0 && this.isUpdated) {
             const oldKeys: object = {};
             const oldRowElements: Element[] = [];
             const key: string = this.parent.treeGrid.getPrimaryKeyFieldNames()[0];
@@ -1303,7 +1312,7 @@ export class ChartRows extends DateProcessor {
                     this.ganttChartTableBody.appendChild(tRow);
                     this.refreshedTr.push(this.ganttChartTableBody.querySelectorAll('tr')[index]);
                     this.refreshedData.push(this.parent.currentViewData[index]);
-                } else if (!isNullOrUndefined(oldIndex) && modifiedRecIndex === -1) {
+                } else {
                     this.ganttChartTableBody.appendChild(oldRowElements[oldIndex]);
                 }
                 this.ganttChartTableBody.querySelectorAll('tr')[index].setAttribute('aria-rowindex', index.toString());
@@ -1316,6 +1325,10 @@ export class ChartRows extends DateProcessor {
                 }
                 const tRow: Node = this.getGanttChartRow(i, tempTemplateData);
                 this.ganttChartTableBody.appendChild(tRow);
+                if (this.parent.enableImmutableMode) {
+                    this.refreshedTr.push(this.ganttChartTableBody.querySelectorAll('tr')[i]);
+                    this.refreshedData.push(this.parent.currentViewData[i]);
+                }
                 // To maintain selection when virtualization is enabled
                 if (this.parent.selectionModule && this.parent.allowSelection) {
                     this.parent.selectionModule.maintainSelectedRecords(parseInt((tRow as Element).getAttribute('aria-rowindex'), 10));
@@ -1484,12 +1497,12 @@ export class ChartRows extends DateProcessor {
         if (!this.parent.queryTaskbarInfo) {
             return;
         }
-        const length: number = this.refreshedTr.length > 0 ?
+        const length: number = this.parent.enableImmutableMode ?
             this.refreshedTr.length : this.ganttChartTableBody.querySelectorAll('tr').length;
         let trElement: Element;
         let data: IGanttData;
         for (let index: number = 0; index < length; index++) {
-            trElement = this.refreshedTr.length > 0 ? this.refreshedTr[index] : this.ganttChartTableBody.querySelectorAll('tr')[index];
+            trElement = this.parent.enableImmutableMode ? this.refreshedTr[index] : this.ganttChartTableBody.querySelectorAll('tr')[index];
             data = this.refreshedData.length > 0 ? this.refreshedData[index] : this.parent.currentViewData[index];
             const segmentLength: number = !isNullOrUndefined(data.ganttProperties.segments) && data.ganttProperties.segments.length;
             if (segmentLength > 0) {
@@ -1499,7 +1512,7 @@ export class ChartRows extends DateProcessor {
                     const segmentElement: HTMLElement = segmentedTasks[i] as HTMLElement;
                     this.triggerQueryTaskbarInfoByIndex(segmentElement, data);
                 }
-            } else {
+            } else if (trElement) {
                 this.triggerQueryTaskbarInfoByIndex(trElement, data);
             }
         }

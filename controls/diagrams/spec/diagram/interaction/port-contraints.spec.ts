@@ -657,5 +657,53 @@ describe('Diagram Control', () => {
             ele.remove();
         });
     });
+    describe('EJ2-49436 - The combination of port constraints is not working', () => {
+        let diagram: Diagram;
+        let ele: HTMLElement;
+
+        let mouseEvents: MouseEvents = new MouseEvents();
+
+        beforeAll((): void => {
+            ele = createElement('div', { id: 'diagramannotation' });
+            document.body.appendChild(ele);
+            let node1: NodeModel = {
+                id: 'node1', width: 100, height: 100, offsetX: 100, offsetY: 150, annotations: [{ content: 'Node1' }],
+                shape: { type: 'Basic', shape: 'Rectangle' },
+                constraints: NodeConstraints.Default,
+                ports: [
+                    { id: 'node8In', height: 10, width: 10, offset: { x: 1, y: 0.5 }, constraints:PortConstraints.Default & ~PortConstraints.InConnect },
+                ]
+            };
+            let node2: NodeModel = { id: 'node2', width: 100, height: 100, offsetX: 500, offsetY: 150, annotations: [{ content: 'Node2' }],
+            shape: { type: 'Basic', shape: 'Rectangle' }, constraints: NodeConstraints.Default,
+            ports: [
+                { id: 'node2Out', height: 10, width: 10, visibility: PortVisibility.Visible, offset: { x: 0, y: 0.5 }, constraints: PortConstraints.Default & ~(PortConstraints.InConnect | PortConstraints.OutConnect) },
+            ]
+            };
+            let connector: ConnectorModel = {id: 'connector7',sourcePoint: { x: 300, y: 150 }, targetPoint: { x: 200, y: 150 },
+            type: 'Orthogonal', segments: [{ type: 'Orthogonal' }], targetDecorator: { height: 10, width: 10 } };
+            diagram = new Diagram({
+                width: '1000px', height: '500px', nodes: [node1, node2],connectors:[connector]
+
+            });
+            diagram.appendTo('#diagramannotation');
+        });
+
+        it('EJ2-49436 - The combination of port constraints is not working', (done: Function) => {
+            let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
+            debugger;
+            mouseEvents.clickEvent(diagramCanvas, 282, 158);
+            mouseEvents.mouseDownEvent(diagramCanvas, 298, 148);
+            mouseEvents.mouseMoveEvent(diagramCanvas, 450, 151);
+            mouseEvents.mouseUpEvent(diagramCanvas, 450 ,151);
+            expect(diagram.connectors[0].sourcePortID === '' && diagram.connectors[0].targetPortID === '').toBe(true);
+            done();
+        });
+
+        afterAll((): void => {
+            diagram.destroy();
+            ele.remove();
+        });
+    });
 
 });

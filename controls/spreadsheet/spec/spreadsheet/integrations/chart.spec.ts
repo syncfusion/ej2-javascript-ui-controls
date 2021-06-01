@@ -67,7 +67,7 @@ describe('Chart ->', () => {
                     'mousedown', { x: chart.getBoundingClientRect().left + 1, y: chart.getBoundingClientRect().top + 1 },
                     chart, chart);
                 helper.triggerMouseAction(
-                    'mousemove', { x: chart.getBoundingClientRect().left + 200, y: chart.getBoundingClientRect().top + 100 },
+                    'mousemove', { x: chart.getBoundingClientRect().left + 200, y: chart.getBoundingClientRect().top + 124 },
                     chart, chart);
                 helper.triggerMouseAction(
                     'mouseup', { x: chart.getBoundingClientRect().left + 200, y: chart.getBoundingClientRect().top + 100 },

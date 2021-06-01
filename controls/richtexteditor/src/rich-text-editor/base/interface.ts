@@ -441,6 +441,7 @@ export interface IEditorModel {
 export interface IToolbarItems {
     template?: string
     tooltipText?: string
+    command?: string
     undo?: boolean
     click?: EmitType<ClickEventArgs>
 }

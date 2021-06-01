@@ -826,8 +826,13 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
      * @returns {void}
      */
     private mergePersistMapsData(): void {
-        let data: string;
-        if (!isNullOrUndefined(window.localStorage)) {
+        let data;
+        try{
+            data = window.localStorage;
+        } catch(e) {
+            data = null;
+        }
+        if (!isNullOrUndefined(data)) {
             data = window.localStorage.getItem(this.getModuleName() + this.element.id);
         }
         if (!(isNullOrUndefined(data) || (data === ''))) {
@@ -1617,64 +1622,31 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
     public mapsOnClick(e: PointerEvent): void {
         const targetEle: Element = <Element>e.target;
         const targetId: string = targetEle.id;
-        let layerIndex: number = 0;
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        let latLongValue: any;
-        let latitude: number = null; let longitude: number = null;
+        let latitude: number = null;
+        let longitude: number = null;
         this.mouseClickEvent = { x: e.x, y: e.y };
         if (targetEle.id.indexOf('_ToolBar') === -1) {
-            if (targetEle.id.indexOf('_LayerIndex_') !== -1 && !this.isTileMap && (this.mouseDownEvent['x'] === this.mouseClickEvent['x'])
-                && (this.mouseDownEvent['y'] === this.mouseClickEvent['y'])) {
-                layerIndex = parseFloat(targetId.split('_LayerIndex_')[1].split('_')[0]);
-                if (this.layers[layerIndex].geometryType === 'Normal') {
-                    if (targetId.indexOf('_shapeIndex_') > -1) {
-                        const location: MapLocation = getMousePosition(e.pageX, e.pageY, (e.target as any).parentElement);
-                        const minLongitude: number = Math.abs((-this.baseMapBounds.longitude.min) * this.mapLayerPanel.currentFactor);
-                        const minLatitude: number = Math.abs(this.baseMapBounds.latitude.max * this.mapLayerPanel.currentFactor);
-                        latLongValue = {
-                            latitude: Math.abs(this.baseMapBounds.latitude.max - (location.y / this.mapLayerPanel.currentFactor)),
-                            longitude: Math.abs((location.x / this.mapLayerPanel.currentFactor) + this.baseMapBounds.longitude.min)
-                        };
-                        if (this.baseMapBounds.longitude.min < 0 && minLongitude > location.x) {
-                            (latLongValue as any).longitude = -(latLongValue as any).longitude;
-                        }
-                        if (this.baseMapBounds.latitude.min < 0 && minLatitude > location.y) {
-                            (latLongValue as any).latitude = - (latLongValue as any).latitude;
-                        }
-                    } else if (targetId.indexOf('_MarkerIndex_') > -1 && this.markerModule) {
-                        const markerIndex: number = parseInt(targetId.split('_MarkerIndex_')[1].split('_')[0], 10);
-                        const dataIndex: number = parseInt(targetId.split('_dataIndex_')[1].split('_')[0], 10);
-                        if (!isNaN(markerIndex) && !isNaN(dataIndex)) {
-                            const dataObject: any = this.layers[layerIndex].markerSettings[markerIndex].dataSource[dataIndex];
-                            latLongValue = { latitude: dataObject['latitude'], longitude: dataObject.longitude };
-                        } else {
-                            latLongValue = { latitude: null, longitude: null };
-                        }
-                    } else { latLongValue = { latitude: null, longitude: null }; }
-                } else {
-                    latLongValue = this.getGeoLocation(layerIndex, e);
-                }
-                latitude = latLongValue['latitude']; longitude = latLongValue['longitude'];
-            } else if (this.isTileMap && (this.mouseDownEvent['x'] === this.mouseClickEvent['x'])
-                && (this.mouseDownEvent['y'] === this.mouseClickEvent['y'])) {
-                latLongValue = this.getTileGeoLocation(e);
-                latitude = latLongValue['latitude']; longitude = latLongValue['longitude'];
+            let latLongValue: GeoPosition = this.getClickLocation(targetId, e.pageX, e.pageY, (targetEle as HTMLElement), e['layerX'], e['layerY']);
+            if (!isNullOrUndefined(latLongValue)) {
+                latitude = latLongValue.latitude;
+                longitude = latLongValue.longitude;
             }
             const eventArgs: IMouseEventArgs = {
                 cancel: false, name: click, target: targetId, x: e.clientX, y: e.clientY,
-                latitude: latitude, longitude: longitude, isShapeSelected : this.SelectedElement(targetEle)
+                latitude: latitude, longitude: longitude,
+                isShapeSelected : this.SelectedElement(targetEle)
             };
             this.trigger('click', eventArgs, (mouseArgs: IMouseEventArgs) => {
                 if (targetEle.id.indexOf('shapeIndex') > -1) {
                     if (this.markerModule && this.markerModule.sameMarkerData.length > 0 &&
-                        (this.zoomModule ? this.zoomModule.isSingleClick : true)) {
-                        mergeSeparateCluster(this.markerModule.sameMarkerData, this, getElement(this.element.id + '_Markers_Group'));
-                        this.markerModule.sameMarkerData = [];
-                    }
-                    if (getElement(this.element.id + '_mapsTooltip') &&
-                        this.mapsTooltipModule.tooltipTargetID.indexOf('_MarkerIndex_') > -1) {
-                        removeElement(this.element.id + '_mapsTooltip');
-                    }
+                         (this.zoomModule ? this.zoomModule.isSingleClick : true)) {
+                            mergeSeparateCluster(this.markerModule.sameMarkerData, this, getElement(this.element.id + '_Markers_Group'));
+                            this.markerModule.sameMarkerData = [];
+                        }
+                        if (getElement(this.element.id + '_mapsTooltip') &&
+                            this.mapsTooltipModule.tooltipTargetID.indexOf('_MarkerIndex_') > -1) {
+                            removeElement(this.element.id + '_mapsTooltip');
+                        }
                 }
                 if (this.markerModule) {
                     this.markerModule.markerClick(e);
@@ -1693,7 +1665,7 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
                     );
                     if (!shapeSelectedEventArgs.cancel && this.selectionModule && !isNullOrUndefined(this.shapeSelected)) {
                         customizeStyle(this.selectionModule.selectionType + 'selectionMap',
-                                       this.selectionModule.selectionType + 'selectionMapStyle', shapeSelectedEventArgs);
+                                        this.selectionModule.selectionType + 'selectionMapStyle', shapeSelectedEventArgs);
                     } else if (shapeSelectedEventArgs.cancel && this.selectionModule
                         && isNullOrUndefined(shapeSelectedEventArgs['data'])) {
                         removeClass(targetEle);
@@ -1702,6 +1674,48 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
                 }
             });
         }
+    }
+
+    private getClickLocation(targetId: string, pageX: number, pageY: number, targetElement: HTMLElement, x: number, y: number): GeoPosition {
+        let layerIndex: number = 0;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        let latLongValue: any;
+        if (targetId.indexOf('_LayerIndex_') !== -1 && !this.isTileMap && (parseInt(this.mouseDownEvent['x']) === parseInt(this.mouseClickEvent['x']))
+            && (parseInt(this.mouseDownEvent['y']) === parseInt(this.mouseClickEvent['y']))) {
+            layerIndex = parseFloat(targetId.split('_LayerIndex_')[1].split('_')[0]);
+            if (this.layers[layerIndex].geometryType === 'Normal') {
+                if (targetId.indexOf('_shapeIndex_') > -1) {
+                    const location: MapLocation = getMousePosition(pageX, pageY, (targetElement as any).parentElement);
+                    const minLongitude: number = Math.abs((-this.baseMapBounds.longitude.min) * this.mapLayerPanel.currentFactor);
+                    const minLatitude: number = Math.abs(this.baseMapBounds.latitude.max * this.mapLayerPanel.currentFactor);
+                    latLongValue = {
+                        latitude: Math.abs(this.baseMapBounds.latitude.max - (location.y / this.mapLayerPanel.currentFactor)),
+                        longitude: Math.abs((location.x / this.mapLayerPanel.currentFactor) + this.baseMapBounds.longitude.min)
+                    };
+                    if (this.baseMapBounds.longitude.min < 0 && minLongitude > location.x) {
+                        (latLongValue as any).longitude = -(latLongValue as any).longitude;
+                    }
+                    if (this.baseMapBounds.latitude.min < 0 && minLatitude > location.y) {
+                        (latLongValue as any).latitude = - (latLongValue as any).latitude;
+                    }
+                } else if (targetId.indexOf('_MarkerIndex_') > -1 && this.markerModule) {
+                    const markerIndex: number = parseInt(targetId.split('_MarkerIndex_')[1].split('_')[0], 10);
+                    const dataIndex: number = parseInt(targetId.split('_dataIndex_')[1].split('_')[0], 10);
+                    if (!isNaN(markerIndex) && !isNaN(dataIndex)) {
+                        const dataObject: any = this.layers[layerIndex].markerSettings[markerIndex].dataSource[dataIndex];
+                        latLongValue = { latitude: dataObject['latitude'], longitude: dataObject.longitude };
+                    } else {
+                        latLongValue = { latitude: null, longitude: null };
+                    }
+                } else { latLongValue = { latitude: null, longitude: null }; }
+            } else {
+                latLongValue = this.getGeoLocation(layerIndex, x, y);
+            }
+        } else if (this.isTileMap && (parseInt(this.mouseDownEvent['x']) === parseInt(this.mouseClickEvent['x']))
+            && (parseInt(this.mouseDownEvent['y']) === parseInt(this.mouseClickEvent['y']))) {
+            latLongValue = this.getTileGeoLocation(x, y);
+        }
+        return latLongValue;
     }
 
     /**
@@ -1713,6 +1727,8 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
         const targetEle: Element = <Element>e.target;
         const targetId: string = targetEle.id;
         let pageX: number;
+        let latitude: number = null;
+        let longitude: number = null;
         let pageY: number;
         let target: Element;
         let touchArg: TouchEvent;
@@ -1724,6 +1740,7 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
             pageX = touchArg.changedTouches[0].pageX;
             pageY = touchArg.changedTouches[0].pageY;
             target = <Element>touchArg.target;
+            this.mouseClickEvent = { x: pageX, y: pageY };
         } else {
             this.isTouch = e.pointerType === 'touch';
             pageX = e.pageX;
@@ -1731,6 +1748,19 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
             target = <Element>e.target;
         }
         if (this.isTouch) {
+            if (targetEle.id.indexOf('_ToolBar') === -1) {
+                let latLongValue: GeoPosition = this.getClickLocation(targetId, pageX, pageY, (targetEle as HTMLElement), pageX, pageY);
+                if (!isNullOrUndefined(latLongValue)) {
+                    latitude = latLongValue.latitude;
+                    longitude = latLongValue.longitude;
+                }
+                const eventArgs: IMouseEventArgs = {
+                    cancel: false, name: click, target: targetId, x: e.clientX, y: e.clientY,
+                    latitude: latitude, longitude: longitude, isShapeSelected: this.SelectedElement(targetEle)
+                };
+                this.trigger('click', eventArgs, (mouseArgs: IMouseEventArgs) => {
+                });
+            }
             this.titleTooltip(e, pageX, pageY, true);
             if (!isNullOrUndefined(this.legendModule)) {
                 this.legendTooltip(e, e.pageX, e.pageY, true);
@@ -1751,6 +1781,9 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
         let target: Element;
         let touchArg: TouchEvent;
         this.mouseDownEvent = { x: e.x, y: e.y };
+        if (e.type.indexOf('touch') !== - 1 && (e as any).changedTouches) {
+            this.mouseDownEvent = { x: (e as any).changedTouches[0].pageX, y: (e as any).changedTouches[0].pageY };
+        }
         const rect: ClientRect = this.element.getBoundingClientRect();
         const element: Element = <Element>e.target;
         if (element.id.indexOf('_ToolBar') === -1) {
@@ -1791,11 +1824,11 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
             if (targetElement.id.indexOf('_LayerIndex_') !== -1 && !this.isTileMap && (this.mouseDownEvent['x'] === e.clientX)
                     && (this.mouseDownEvent['y'] === e.clientY)) {
                 layerIndex = parseFloat(targetElement.id.split('_LayerIndex_')[1].split('_')[0]);
-                latLongValue = this.getGeoLocation(layerIndex, e);
+                latLongValue = this.getGeoLocation(layerIndex, e['layerX'], e['layerY']);
                 latitude = latLongValue['latitude']; longitude = latLongValue['longitude'];
             } else if (this.isTileMap && (this.mouseDownEvent['x'] === e.clientX)
                     && (this.mouseDownEvent['y'] === e.clientY)) {
-                latLongValue = this.getTileGeoLocation(e);
+                latLongValue = this.getTileGeoLocation(e['layerX'], e['layerY']);
                 latitude = latLongValue['latitude']; longitude = latLongValue['longitude'];
             }
             const doubleClickArgs: IMouseEventArgs = { cancel: false, name: doubleClick,  x: e.clientX, y: e.clientY,
@@ -2666,10 +2699,10 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
      * @param {PointerEvent} location - Specifies the location in point format.
      * @return GeoPosition
      */
-    public getGeoLocation(layerIndex: number, location: PointerEvent): GeoPosition {
+    public getGeoLocation(layerIndex: number, x: number, y: number): GeoPosition {
         const container: HTMLElement = document.getElementById(this.element.id);
-        const pageX: number = location['layerX'] - container.offsetLeft;
-        const pageY: number = location['layerY'] - container.offsetTop;
+        const pageX: number = x - container.offsetLeft;
+        const pageY: number = y - container.offsetTop;
         const currentLayer: LayerSettings = <LayerSettings>this.layersCollection[layerIndex];
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const translate: any = getTranslate(this, currentLayer, false);
@@ -2695,13 +2728,13 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
      * @param {PointerEvent} - Specifies the location in point format.
      * @return GeoPosition
      */
-    public getTileGeoLocation(location: PointerEvent): GeoPosition {
+    public getTileGeoLocation(x: number, y: number): GeoPosition {
         const container: HTMLElement = document.getElementById(this.element.id);
         const ele: HTMLElement = document.getElementById(this.element.id + '_tile_parent');
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const latLong: any = this.pointToLatLong(
-            location['layerX'] + this.mapAreaRect.x - (ele.offsetLeft - container.offsetLeft),
-            location['layerY'] + this.mapAreaRect.y - (ele.offsetTop - container.offsetTop));
+            x + this.mapAreaRect.x - (ele.offsetLeft - container.offsetLeft),
+            y + this.mapAreaRect.y - (ele.offsetTop - container.offsetTop));
         return { latitude: latLong['latitude'], longitude: latLong['longitude'] };
     }
     /**

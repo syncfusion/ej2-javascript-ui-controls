@@ -40,6 +40,7 @@ describe('header renderer module', () => {
         });
 
         it('Header div testing', () => {
+            gridObj.headerModule.getRows();
             expect(gridObj.element.querySelectorAll('.e-gridheader').length).toBe(1);
         });
 

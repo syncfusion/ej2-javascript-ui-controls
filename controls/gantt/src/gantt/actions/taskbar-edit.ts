@@ -1466,6 +1466,13 @@ export class TaskbarEdit extends DateProcessor {
                         childProgressResizer.style.left = item.progressWidth - 8 + 'px';
                     }
                 }
+                else {
+                    this.updateSegmentProgress(this.taskBarEditRecord.ganttProperties);
+                    traceChildProgressBar.style.width = item.segments[this.segmentIndex].progressWidth + 'px';
+                    traceChildProgressBar.style.borderBottomRightRadius = this.progressBorderRadius + 'px';
+                    traceChildProgressBar.style.borderTopRightRadius = this.progressBorderRadius + 'px';
+                    childProgressResizer.style.left = item.segments[this.segmentIndex].progressWidth  - 8 + 'px';
+                }
             } else if (this.taskBarEditAction === 'RightResizing' && !isNullOrUndefined(traceChildTaskBar)) {
                 traceChildTaskBar.style.width = (width) + 'px';
                 if (!isNullOrUndefined(traceChildProgressBar)) {

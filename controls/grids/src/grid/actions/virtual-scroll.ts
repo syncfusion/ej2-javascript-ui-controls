@@ -5,6 +5,7 @@ import { ServiceLocator } from '../services/service-locator';
 import { RendererFactory } from '../services/renderer-factory';
 import { VirtualContentRenderer, VirtualHeaderRenderer }  from '../renderer/virtual-content-renderer';
 import * as events from '../base/constant';
+
 /**
  * Virtual Scrolling class
  */
@@ -24,7 +25,7 @@ export class VirtualScroll implements IAction {
 
     private instantiateRenderer(): void {
         this.parent.log(['limitation', 'virtual_height'], 'virtualization');
-        let renderer: RendererFactory = this.locator.getService<RendererFactory>('rendererFactory');
+        const renderer: RendererFactory = this.locator.getService<RendererFactory>('rendererFactory');
         if (!this.parent.isFrozenGrid()) {
             if (this.parent.enableColumnVirtualization) {
                 renderer.addRenderer(RenderType.Header, new VirtualHeaderRenderer(this.parent, this.locator));
@@ -35,12 +36,12 @@ export class VirtualScroll implements IAction {
     }
 
     public ensurePageSize(): void {
-        let rowHeight: number = this.parent.getRowHeight();
-        let vHeight: string | number = this.parent.height.toString().indexOf('%') < 0 ? this.parent.height :
-        this.parent.element.getBoundingClientRect().height;
+        const rowHeight: number = this.parent.getRowHeight();
+        const vHeight: string | number = this.parent.height.toString().indexOf('%') < 0 ? this.parent.height :
+            this.parent.element.getBoundingClientRect().height;
         this.blockSize = ~~(<number>vHeight / rowHeight);
-        let height: number =  this.blockSize * 2;
-        let size: number = this.parent.pageSettings.pageSize;
+        const height: number =  this.blockSize * 2;
+        const size: number = this.parent.pageSettings.pageSize;
         this.parent.setProperties({ pageSettings: { pageSize: size < height ? height : size }}, true);
     }
 
@@ -58,7 +59,7 @@ export class VirtualScroll implements IAction {
 
     private refreshVirtualElement(args: {module: string}): void {
         if (this.parent.enableColumnVirtualization && args.module === 'resize') {
-            let renderer: RendererFactory = this.locator.getService<RendererFactory>('rendererFactory');
+            const renderer: RendererFactory = this.locator.getService<RendererFactory>('rendererFactory');
             (renderer.getRenderer(RenderType.Content) as VirtualContentRenderer).refreshVirtualElement();
         }
     }

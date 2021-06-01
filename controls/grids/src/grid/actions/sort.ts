@@ -1,5 +1,5 @@
 import { Browser, KeyboardEventArgs } from '@syncfusion/ej2-base';
-import { extend, isNullOrUndefined, isBlazor } from '@syncfusion/ej2-base';
+import { extend, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { closest, classList } from '@syncfusion/ej2-base';
 import { SortSettings } from '../base/grid';
 import { Column } from '../models/column';
@@ -16,11 +16,11 @@ import { ResponsiveDialogRenderer } from '../renderer/responsive-dialog-renderer
 import * as literals from '../base/string-literals';
 
 /**
- * 
+ *
  * The `Sort` module is used to handle sorting action.
  */
 export class Sort implements IAction {
-    //Internal variables   
+    //Internal variables
     private columnName: string;
     private direction: SortDirection;
     private isMultiSort: boolean;
@@ -48,6 +48,11 @@ export class Sort implements IAction {
 
     /**
      * Constructor for Grid sorting module
+     *
+     * @param {IGrid} parent - specifies the IGrid
+     * @param {SortSettings} sortSettings - specifies the SortSettings
+     * @param {string[]} sortedColumns - specifies the string
+     * @param {ServiceLocator} locator - specifies the ServiceLocator
      * @hidden
      */
     constructor(parent?: IGrid, sortSettings?: SortSettings, sortedColumns?: string[], locator?: ServiceLocator) {
@@ -61,27 +66,28 @@ export class Sort implements IAction {
     }
 
     /**
-     * The function used to update sortSettings 
-     * @return {void}
+     * The function used to update sortSettings
+     *
+     * @returns {void}
      * @hidden
      */
     public updateModel(): void {
-        let sortedColumn: SortDescriptorModel = { field: this.columnName, direction: this.direction };
+        const sortedColumn: SortDescriptorModel = { field: this.columnName, direction: this.direction };
         let index: number;
-        let gCols: string[] = this.parent.groupSettings.columns;
+        const gCols: string[] = this.parent.groupSettings.columns;
         let flag: boolean = false;
         if (!this.isMultiSort) {
             if (!gCols.length) {
                 this.sortSettings.columns = [sortedColumn];
             } else {
-                let sortedCols: SortDescriptorModel[] = [];
+                const sortedCols: SortDescriptorModel[] = [];
                 for (let i: number = 0, len: number = gCols.length; i < len; i++) {
                     index = this.getSortedColsIndexByField(gCols[i], sortedCols);
                     if (this.columnName === gCols[i]) {
                         flag = true;
                         sortedCols.push(sortedColumn);
                     } else {
-                        let sCol: SortDescriptorModel = this.getSortColumnFromField(gCols[i]);
+                        const sCol: SortDescriptorModel = this.getSortColumnFromField(gCols[i]);
                         sortedCols.push({ field: sCol.field, direction: sCol.direction, isFromGroup: sCol.isFromGroup });
                     }
                 }
@@ -96,6 +102,7 @@ export class Sort implements IAction {
                 this.sortSettings.columns.splice(index, 1);
             }
             this.sortSettings.columns.push(sortedColumn);
+            // eslint-disable-next-line no-self-assign
             this.sortSettings.columns = this.sortSettings.columns;
         }
         this.parent.dataBind();
@@ -104,26 +111,29 @@ export class Sort implements IAction {
 
     /**
      * The function used to trigger onActionComplete
-     * @return {void}
+     *
+     * @param {NotifyArgs} e - specifies the NotifyArgs
+     * @returns {void}
      * @hidden
      */
     public onActionComplete(e: NotifyArgs): void {
-        let args: Object = !this.isRemove ? {
+        const args: Object = !this.isRemove ? {
             columnName: this.columnName, direction: this.direction, requestType: 'sorting', type: events.actionComplete
         } : { requestType: 'sorting', type: events.actionComplete };
         this.isRemove = false;
         this.parent.trigger(events.actionComplete, extend(e, args));
     }
 
-    /** 
-     * Sorts a column with the given options. 
-     * @param {string} columnName - Defines the column name to sort.  
-     * @param {SortDirection} direction - Defines the direction of sorting field.  
-     * @param {boolean} isMultiSort - Specifies whether the previously sorted columns are to be maintained. 
-     * @return {void} 
+    /**
+     * Sorts a column with the given options.
+     *
+     * @param {string} columnName - Defines the column name to sort.
+     * @param {SortDirection} direction - Defines the direction of sorting field.
+     * @param {boolean} isMultiSort - Specifies whether the previously sorted columns are to be maintained.
+     * @returns {void}
      */
     public sortColumn(columnName: string, direction: SortDirection, isMultiSort?: boolean): void {
-        let gObj: IGrid = this.parent;
+        const gObj: IGrid = this.parent;
         if (this.parent.getColumnByField(columnName).allowSorting === false || this.parent.isContextMenuOpen()) {
             this.parent.log('action_disabled_column', {moduleName: this.getModuleName(), columnName: columnName});
             return;
@@ -145,7 +155,6 @@ export class Sort implements IAction {
         this.direction = direction;
         this.isMultiSort = isMultiSort;
         this.removeSortIcons();
-        let column: Element = gObj.getColumnHeaderByField(columnName);
         this.updateSortedCols(columnName, isMultiSort);
         this.updateModel();
     }
@@ -165,7 +174,7 @@ export class Sort implements IAction {
         this.isModelChanged = false;
         this.isMultiSort = true;
         this.parent.setProperties({ sortSettings: { columns: this.lastSortedCols } }, true);
-        //this.parent.sortSettings.columns =  this.lastSortedCols;        
+        //this.parent.sortSettings.columns =  this.lastSortedCols;
         this.sortedColumns = this.lastCols;
         this.isModelChanged = true;
     }
@@ -190,6 +199,8 @@ export class Sort implements IAction {
     }
 
     /**
+     * @param {NotifyArgs} e - specifies the NotifyArgs
+     * @returns {void}
      * @hidden
      */
     public onPropertyChanged(e: NotifyArgs): void {
@@ -197,13 +208,13 @@ export class Sort implements IAction {
             return;
         }
         if (this.contentRefresh) {
-            let args: Object = this.sortSettings.columns.length ? {
+            const args: Object = this.sortSettings.columns.length ? {
                 columnName: this.columnName, direction: this.direction, requestType: 'sorting',
                 type: events.actionBegin, target: this.currentTarget, cancel: false
             } : {
                 requestType: 'sorting', type: events.actionBegin, cancel: false,
-                    target: this.currentTarget
-                };
+                target: this.currentTarget
+            };
             this.parent.notify(events.modelChanged, args);
         }
         this.refreshSortSettings();
@@ -213,7 +224,7 @@ export class Sort implements IAction {
 
     private refreshSortSettings(): void {
         this.sortedColumns.length = 0;
-        let sortColumns: SortDescriptorModel[] = this.sortSettings.columns;
+        const sortColumns: SortDescriptorModel[] = this.sortSettings.columns;
         for (let i: number = 0; i < sortColumns.length; i++) {
             if (!sortColumns[i].isFromGroup) {
                 this.sortedColumns.push(sortColumns[i].field);
@@ -221,12 +232,13 @@ export class Sort implements IAction {
         }
     }
 
-    /**  
-     * Clears all the sorted columns of the Grid.  
-     * @return {void} 
+    /**
+     * Clears all the sorted columns of the Grid.
+     *
+     * @returns {void}
      */
     public clearSorting(): void {
-        let cols: SortDescriptorModel[] = getActualPropFromColl(this.sortSettings.columns);
+        const cols: SortDescriptorModel[] = getActualPropFromColl(this.sortSettings.columns);
         if (this.isActionPrevent()) {
             this.parent.notify(events.preventBatch, { instance: this, handler: this.clearSorting });
             return;
@@ -240,15 +252,16 @@ export class Sort implements IAction {
         return isActionPrevent(this.parent);
     }
 
-    /** 
-     * Remove sorted column by field name. 
-     * @param {string} field - Defines the column field name to remove sort.  
-     * @return {void} 
+    /**
+     * Remove sorted column by field name.
+     *
+     * @param {string} field - Defines the column field name to remove sort.
+     * @returns {void}
      * @hidden
      */
     public removeSortColumn(field: string): void {
-        let gObj: IGrid = this.parent;
-        let cols: SortDescriptorModel[] = this.sortSettings.columns;
+        const gObj: IGrid = this.parent;
+        const cols: SortDescriptorModel[] = this.sortSettings.columns;
         if (cols.length === 0 && this.sortedColumns.indexOf(field) < 0) {
             return; }
         if (this.isActionPrevent()) {
@@ -277,7 +290,7 @@ export class Sort implements IAction {
     }
 
     private getSortedColsIndexByField(field: string, sortedColumns?: SortDescriptorModel[]): number {
-        let cols: SortDescriptorModel[] = sortedColumns ? sortedColumns : this.sortSettings.columns;
+        const cols: SortDescriptorModel[] = sortedColumns ? sortedColumns : this.sortSettings.columns;
         for (let i: number = 0, len: number = cols.length; i < len; i++) {
             if (cols[i].field === field) {
                 return i;
@@ -288,6 +301,8 @@ export class Sort implements IAction {
 
     /**
      * For internal use only - Get the module name.
+     *
+     * @returns {string} returns the module name
      * @private
      */
     protected getModuleName(): string {
@@ -296,12 +311,11 @@ export class Sort implements IAction {
 
     private initialEnd(): void {
         this.parent.off(events.contentReady, this.initialEnd);
-        let isServerRendered: string = 'isServerRendered';
         if (this.parent.getColumns().length && this.sortSettings.columns.length) {
-            let gObj: IGrid = this.parent;
+            const gObj: IGrid = this.parent;
             this.contentRefresh = false;
             this.isMultiSort = this.sortSettings.columns.length > 1;
-            for (let col of gObj.sortSettings.columns.slice()) {
+            for (const col of gObj.sortSettings.columns.slice()) {
                 if (this.sortedColumns.indexOf(col.field) > -1) {
                     this.sortColumn(col.field, col.direction, true);
                 }
@@ -310,22 +324,26 @@ export class Sort implements IAction {
             this.contentRefresh = true;
         }
     }
+
     /**
+     * @returns {void}
      * @hidden
      */
     public addEventListener(): void {
         if (this.parent.isDestroyed) { return; }
         this.evtHandlers = [{ event: events.setFullScreenDialog, handler: this.setFullScreenDialog },
-        { event: events.contentReady, handler: this.initialEnd },
-        { event: events.sortComplete, handler: this.onActionComplete },
-        { event: events.inBoundModelChanged, handler: this.onPropertyChanged },
-        { event: events.click, handler: this.clickHandler },
-        { event: events.headerRefreshed, handler: this.refreshSortIcons },
-        { event: events.keyPressed, handler: this.keyPressed },
-        { event: events.cancelBegin, handler: this.cancelBeginEvent }];
+            { event: events.contentReady, handler: this.initialEnd },
+            { event: events.sortComplete, handler: this.onActionComplete },
+            { event: events.inBoundModelChanged, handler: this.onPropertyChanged },
+            { event: events.click, handler: this.clickHandler },
+            { event: events.headerRefreshed, handler: this.refreshSortIcons },
+            { event: events.keyPressed, handler: this.keyPressed },
+            { event: events.cancelBegin, handler: this.cancelBeginEvent }];
         addRemoveEventListener(this.parent, this.evtHandlers, true, this);
     }
+
     /**
+     * @returns {void}
      * @hidden
      */
     public removeEventListener(): void {
@@ -334,18 +352,19 @@ export class Sort implements IAction {
     }
 
     /**
-     * To destroy the sorting 
-     * @return {void}
+     * To destroy the sorting
+     *
+     * @returns {void}
      * @hidden
      */
     public destroy(): void {
         this.isModelChanged = false;
-        let gridElement: Element = this.parent.element;
+        const gridElement: Element = this.parent.element;
         if (!gridElement || (!gridElement.querySelector('.' + literals.gridHeader) && !gridElement.querySelector( '.' + literals.gridContent))) { return; }
         if (this.parent.element.querySelector('.e-gridpopup').getElementsByClassName('e-sortdirect').length) {
             (this.parent.element.querySelector('.e-gridpopup') as HTMLElement).style.display = 'none';
         }
-        // tslint:disable-next-line:no-any
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         if (!(<any>this.parent).refreshing) {
             this.clearSorting();
         }
@@ -362,10 +381,10 @@ export class Sort implements IAction {
     }
 
     private clickHandler(e: MouseEvent): void {
-        let gObj: IGrid = this.parent;
+        const gObj: IGrid = this.parent;
         this.currentTarget = null;
         this.popUpClickHandler(e);
-        let target: Element = closest(e.target as Element, '.e-headercell');
+        const target: Element = closest(e.target as Element, '.e-headercell');
         if (target && !(e.target as Element).classList.contains('e-grptogglebtn') &&
             !(target.classList.contains('e-resized')) &&
             !(e.target as Element).classList.contains('e-rhandler') &&
@@ -374,10 +393,8 @@ export class Sort implements IAction {
             !parentsUntil(e.target as Element, 'e-stackedheadercell') &&
             !(gObj.allowSelection && gObj.selectionSettings.allowColumnSelection &&
                 (e.target as Element).classList.contains('e-headercell'))) {
-            let gObj: IGrid = this.parent;
-            let colObj: Column = gObj.getColumnByUid(target.querySelector('.e-headercelldiv').getAttribute('e-mappinguid')) as Column;
-            let direction: SortDirection = !target.getElementsByClassName('e-ascending').length ? 'Ascending' :
-                'Descending';
+            const gObj: IGrid = this.parent;
+            const colObj: Column = gObj.getColumnByUid(target.querySelector('.e-headercelldiv').getAttribute('e-mappinguid')) as Column;
             if (colObj.type !== 'checkbox') {
                 this.initiateSort(target, e, colObj);
                 if (Browser.isDevice) {
@@ -390,31 +407,31 @@ export class Sort implements IAction {
         }
         if (parentsUntil(e.target as Element, 'e-excel-ascending') ||
             parentsUntil(e.target as Element, 'e-excel-descending')) {
-            let colUid: string = (<EJ2Intance>closest(e.target as Element, '.e-filter-popup')).getAttribute('uid');
-            let direction: SortDirection = isNullOrUndefined(parentsUntil(e.target as Element, 'e-excel-descending')) ?
-             'Ascending' : 'Descending';
+            const colUid: string = (<EJ2Intance>closest(e.target as Element, '.e-filter-popup')).getAttribute('uid');
+            const direction: SortDirection = isNullOrUndefined(parentsUntil(e.target as Element, 'e-excel-descending')) ?
+                'Ascending' : 'Descending';
             this.sortColumn(gObj.getColumnByUid(colUid).field, direction, false);
         }
     }
 
     private keyPressed(e: KeyboardEventArgs): void {
-        let ele: Element = e.target as Element;
+        const ele: Element = e.target as Element;
         if (!this.parent.isEdit && (e.action === 'enter' || e.action === 'ctrlEnter' || e.action === 'shiftEnter')
             && closest(ele as Element, '.e-headercell')) {
-            let target: Element = this.focus.getFocusedElement();
+            const target: Element = this.focus.getFocusedElement();
             if (isNullOrUndefined(target) || !target.classList.contains('e-headercell')
                 || !target.querySelector('.e-headercelldiv')) { return; }
 
-            let col: Column = this.parent.getColumnByUid(target.querySelector('.e-headercelldiv').getAttribute('e-mappinguid')) as Column;
+            const col: Column = this.parent.getColumnByUid(target.querySelector('.e-headercelldiv').getAttribute('e-mappinguid')) as Column;
             this.initiateSort(target, e, col);
         }
     }
 
     private initiateSort(target: Element, e: MouseEvent | KeyboardEventArgs, column: Column): void {
-        let gObj: IGrid = this.parent;
-        let field: string = column.field;
+        const gObj: IGrid = this.parent;
+        const field: string = column.field;
         this.currentTarget = e.target as Element;
-        let direction: SortDirection = !target.getElementsByClassName('e-ascending').length ? 'Ascending' :
+        const direction: SortDirection = !target.getElementsByClassName('e-ascending').length ? 'Ascending' :
             'Descending';
         if (e.shiftKey || (this.sortSettings.allowUnsort && target.getElementsByClassName('e-descending').length)
             && !(gObj.groupSettings.columns.indexOf(field) > -1)) {
@@ -426,7 +443,7 @@ export class Sort implements IAction {
     }
 
     private showPopUp(e: MouseEvent): void {
-        let target: HTMLElement = closest(e.target as Element, '.e-headercell') as HTMLElement;
+        const target: HTMLElement = closest(e.target as Element, '.e-headercell') as HTMLElement;
         if (this.parent.allowMultiSorting && (!isNullOrUndefined(target) || this.parent.isContextMenuOpen())) {
             setCssInGridPopUp(
                 <HTMLElement>this.parent.element.querySelector('.e-gridpopup'), e,
@@ -435,7 +452,7 @@ export class Sort implements IAction {
     }
 
     private popUpClickHandler(e: MouseEvent): void {
-        let target: Element = e.target as Element;
+        const target: Element = e.target as Element;
         if (closest(target, '.e-headercell') || (e.target as HTMLElement).classList.contains(literals.rowCell) ||
             closest(target, '.e-gridpopup')) {
             if (target.classList.contains('e-sortdirect')) {
@@ -454,11 +471,11 @@ export class Sort implements IAction {
     }
 
     private addSortIcons(): void {
-        let gObj: IGrid = this.parent;
+        const gObj: IGrid = this.parent;
         let header: Element;
         let filterElement: Element;
-        let cols: SortDescriptorModel[] = this.sortSettings.columns;
-        let fieldNames: string[] = this.parent.getColumns().map((c: Column) => c.field);
+        const cols: SortDescriptorModel[] = this.sortSettings.columns;
+        const fieldNames: string[] = this.parent.getColumns().map((c: Column) => c.field);
         for (let i: number = 0, len: number = cols.length; i < len; i++) {
             header = gObj.getColumnHeaderByField(cols[i].field);
             if (fieldNames.indexOf(cols[i].field) === -1 || isNullOrUndefined(header)) { continue; }
@@ -478,10 +495,10 @@ export class Sort implements IAction {
     }
 
     private removeSortIcons(position?: number): void {
-        let gObj: IGrid = this.parent;
+        const gObj: IGrid = this.parent;
         let header: Element;
-        let cols: SortDescriptorModel[] = this.sortSettings.columns;
-        let fieldNames: string[] = this.parent.getColumns().map((c: Column) => c.field);
+        const cols: SortDescriptorModel[] = this.sortSettings.columns;
+        const fieldNames: string[] = this.parent.getColumns().map((c: Column) => c.field);
         for (let i: number = position ? position : 0,
             len: number = !isNullOrUndefined(position) ? position + 1 : cols.length; i < len; i++) {
             header = gObj.getColumnHeaderByField(cols[i].field);
@@ -509,34 +526,34 @@ export class Sort implements IAction {
     }
 
     private updateAriaAttr(): void {
-        let fieldNames: string[] = this.parent.getColumns().map((c: Column) => c.field);
-        for (let col of this.sortedColumns) {
+        const fieldNames: string[] = this.parent.getColumns().map((c: Column) => c.field);
+        for (const col of this.sortedColumns) {
             if (fieldNames.indexOf(col) === -1) { continue; }
-            let header: Element = this.parent.getColumnHeaderByField(col);
+            const header: Element = this.parent.getColumnHeaderByField(col);
             this.aria.setSort(<HTMLElement>header, this.getSortColumnFromField(col).direction);
         }
     }
 
-    private refreshSortIcons(params: {args: {isFrozen: boolean}} = {args: {isFrozen: false}}): void {
+    private refreshSortIcons(params: { args: { isFrozen: boolean } } = { args: { isFrozen: false } }): void {
         if (!params.args.isFrozen) {
-        this.removeSortIcons();
-        this.isMultiSort = true;
-        this.removeSortIcons();
-        this.addSortIcons();
-        this.isMultiSort = false;
-        this.updateAriaAttr();
+            this.removeSortIcons();
+            this.isMultiSort = true;
+            this.removeSortIcons();
+            this.addSortIcons();
+            this.isMultiSort = false;
+            this.updateAriaAttr();
+        }
     }
-}
 
-    /** 
+    /**
      * To show the responsive custom sort dialog
-     * @return {void}
+     *
+     * @param {boolean} enable - specifes dialog open
+     * @returns {void}
      * @hidden
      */
     public showCustomSort(enable: boolean): void {
         this.responsiveDialogRenderer.isCustomDialog = enable;
         this.responsiveDialogRenderer.showResponsiveDialog();
     }
-
-
 }

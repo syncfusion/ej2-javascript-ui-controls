@@ -20,6 +20,7 @@ import { CheckBoxFilterBase } from '../common/checkbox-filter-base';
 
 /**
  * `filter menu` render boolean column.
+ *
  * @hidden
  */
 export class FilterMenuRenderer {
@@ -37,7 +38,7 @@ export class FilterMenuRenderer {
     private flMuiObj: FlMenuOptrUI;
     private col: Column;
     private isDialogOpen: boolean = false;
-    /* tslint:disable-next-line:no-any */
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     public menuFilterBase: any;
     protected options: IFilterArgs;
     private maxHeight: string = '350px';
@@ -82,9 +83,9 @@ export class FilterMenuRenderer {
             this.parent.destroyTemplate(['filterTemplate']);
             this.parent.renderTemplates();
         }
-        let elem: Element = document.getElementById(this.dlgObj.element.id);
+        const elem: Element = document.getElementById(this.dlgObj.element.id);
         if (this.dlgObj && !this.dlgObj.isDestroyed && elem) {
-            let argument: Object = { cancel: false, column: this.col, target: target, element: elem };
+            const argument: Object = { cancel: false, column: this.col, target: target, element: elem };
             this.parent.notify(events.filterMenuClose, argument);
             if ((<{ cancel?: boolean }>argument).cancel) { return; }
             this.isDialogOpen = false;
@@ -100,19 +101,19 @@ export class FilterMenuRenderer {
     }
 
     private renderDlgContent(target: Element, column: Column): void {
-        let args: Object = {
+        const args: Object = {
             requestType: events.filterBeforeOpen,
             columnName: column.field, columnType: column.type
         };
-        let filterModel: string = 'filterModel';
+        const filterModel: string = 'filterModel';
         args[filterModel] = this;
         this.parent.trigger(events.actionBegin, args);
 
-        let mainDiv: HTMLElement = this.parent.createElement('div', { className: 'e-flmenu-maindiv', id: column.uid + '-flmenu' });
+        const mainDiv: HTMLElement = this.parent.createElement('div', { className: 'e-flmenu-maindiv', id: column.uid + '-flmenu' });
         this.dlgDiv = this.parent.createElement('div', { className: 'e-flmenu', id: column.uid + '-flmdlg' });
         this.dlgDiv.setAttribute('aria-label', this.l10n.getConstant('FilterMenuDialogARIA'));
         if (this.parent.enableAdaptiveUI) {
-            let responsiveCnt: HTMLElement = document.querySelector('.e-resfilter > .e-dlg-content > .e-mainfilterdiv');
+            const responsiveCnt: HTMLElement = document.querySelector('.e-resfilter > .e-dlg-content > .e-mainfilterdiv');
             responsiveCnt.appendChild(this.dlgDiv);
         } else {
             this.parent.element.appendChild(this.dlgDiv);
@@ -141,14 +142,14 @@ export class FilterMenuRenderer {
             animationSettings: { effect: 'None' },
             cssClass: 'e-filter-popup'
         });
-        let isStringTemplate: string = 'isStringTemplate';
+        const isStringTemplate: string = 'isStringTemplate';
         this.dlgObj[isStringTemplate] = true;
         this.renderResponsiveDialog();
         this.dlgObj.appendTo(this.dlgDiv);
     }
 
     private renderResponsiveDialog(): void {
-        let gObj: IGrid = this.parent;
+        const gObj: IGrid = this.parent;
         if (gObj.enableAdaptiveUI) {
             this.dlgObj.position = { X: '', Y: '' };
             this.dlgObj.target = document.querySelector('.e-resfilter > .e-dlg-content > .e-mainfilterdiv') as HTMLElement;
@@ -160,7 +161,7 @@ export class FilterMenuRenderer {
 
     private dialogCreated(target: Element, column: Column): void {
         if (!Browser.isDevice && target) {
-            getFilterMenuPostion(target, this.dlgObj, this.parent as IXLFilter);
+            getFilterMenuPostion(target, this.dlgObj);
         }
         this.renderFilterUI(target, column);
         this.parent.notify(events.filterDialogCreated, {});
@@ -174,11 +175,11 @@ export class FilterMenuRenderer {
         if (!column.filterTemplate) {
             this.writeMethod(column, this.dlgObj.element.querySelector('#' + column.uid + '-flmenu'));
         }
-        let args: Object = {
+        const args: Object = {
             requestType: events.filterAfterOpen,
             columnName: column.field, columnType: column.type
         };
-        let filterModel: string = 'filterModel';
+        const filterModel: string = 'filterModel';
         args[filterModel] = this;
         this.isDialogOpen = true;
         if (!this.isMenuCheck) {
@@ -188,7 +189,7 @@ export class FilterMenuRenderer {
 
     private renderFilterUI(target: Element, col: Column): void {
 
-        let dlgConetntEle: Element = this.dlgObj.element.querySelector('.e-flmenu-maindiv');
+        const dlgConetntEle: Element = this.dlgObj.element.querySelector('.e-flmenu-maindiv');
         this.parent.log('column_type_missing', {column: col});
         this.renderOperatorUI(dlgConetntEle, target, col);
         this.renderFlValueUI(dlgConetntEle, target, col);
@@ -199,29 +200,28 @@ export class FilterMenuRenderer {
     }
 
     private renderFlValueUI(dlgConetntEle: Element, target: Element, column: Column): void {
-        let valueDiv: HTMLElement = this.parent.createElement('div', { className: 'e-flmenu-valuediv' });
-        let fObj: Object = this.filterObj;
+        const valueDiv: HTMLElement = this.parent.createElement('div', { className: 'e-flmenu-valuediv' });
+        const fObj: Object = this.filterObj;
         dlgConetntEle.appendChild(valueDiv);
-        let args: Object = { target: valueDiv, column: column, getOptrInstance: this.flMuiObj, dialogObj: this.dlgObj };
-        let instanceofFilterUI: NumberFilterUI | StringFilterUI | DateFilterUI =
+        const instanceofFilterUI: NumberFilterUI | StringFilterUI | DateFilterUI =
             new this.colTypes[column.type](this.parent, this.serviceLocator, this.parent.filterSettings);
         if (column.filterTemplate) {
-            let fltrData: Object = {};
-            let valueInString: string = 'value';
+            const fltrData: Object = {};
+            const valueInString: string = 'value';
             fltrData[column.field] = fltrData[valueInString] = (<{ values: Object }>fObj).values[column.field];
             if (column.foreignKeyValue) {
                 fltrData[column.foreignKeyValue] = (<{ values: Object }>fObj).values[column.field];
                 fltrData[column.field] = undefined;
             }
-            let col: string = 'column';
+            const col: string = 'column';
             fltrData[col] = column;
-            let isReactCompiler: boolean = this.parent.isReact && typeof (column.filterTemplate) !== 'string';
-            let tempID: string = this.parent.element.id + column.uid + 'filterTemplate';
+            const isReactCompiler: boolean = this.parent.isReact && typeof (column.filterTemplate) !== 'string';
+            const tempID: string = this.parent.element.id + column.uid + 'filterTemplate';
             if (isReactCompiler) {
                 column.getFilterTemplate()(fltrData, this.parent, 'filterTemplate', tempID, null, null, valueDiv);
                 this.parent.renderTemplates();
             } else {
-                let compElement: Element[] = column.getFilterTemplate()(fltrData, this.parent, 'filterTemplate', tempID);
+                const compElement: Element[] = column.getFilterTemplate()(fltrData, this.parent, 'filterTemplate', tempID);
                 updateBlazorTemplate(tempID, 'FilterTemplate', column);
                 appendChildren(valueDiv, compElement);
             }
@@ -254,11 +254,11 @@ export class FilterMenuRenderer {
 
     private writeMethod(col: Column, dlgContentEle: Element): void {
         let flValue: string | number | Date | boolean;
-        let target: Element = dlgContentEle.querySelector('.e-flmenu-valinput');
-        let instanceofFilterUI: NumberFilterUI | StringFilterUI | DateFilterUI =
+        const target: Element = dlgContentEle.querySelector('.e-flmenu-valinput');
+        const instanceofFilterUI: NumberFilterUI | StringFilterUI | DateFilterUI =
             new this.colTypes[col.type](this.parent, this.serviceLocator, this.parent.filterSettings);
-        let columns: PredicateModel[] = this.filterSettings.columns;
-        for (let column of columns) {
+        const columns: PredicateModel[] = this.filterSettings.columns;
+        for (const column of columns) {
             if (col.uid === column.uid) {
                 flValue = column.value;
             }
@@ -277,13 +277,12 @@ export class FilterMenuRenderer {
 
     private filterBtnClick(col: Column): void {
         let flValue: string | number | Date | boolean;
-        let flOptrValue: string;
-        let targ: HTMLInputElement = this.dlgObj.element.querySelector('.e-flmenu-valuediv input') as HTMLInputElement;
-        flOptrValue = this.flMuiObj.getFlOperator();
-        let instanceofFilterUI: NumberFilterUI | StringFilterUI | DateFilterUI =
+        const targ: HTMLInputElement = this.dlgObj.element.querySelector('.e-flmenu-valuediv input') as HTMLInputElement;
+        const flOptrValue: string = this.flMuiObj.getFlOperator();
+        const instanceofFilterUI: NumberFilterUI | StringFilterUI | DateFilterUI =
             new this.colTypes[col.type](this.parent, this.serviceLocator, this.parent.filterSettings);
         if (col.filterTemplate) {
-            let element: Element = this.dlgDiv.querySelector('.e-flmenu-valuediv');
+            const element: Element = this.dlgDiv.querySelector('.e-flmenu-valuediv');
             let fltrValue: string | boolean | Date;
             if ((<HTMLInputElement>element.children[0]).value) {
                 fltrValue = (<HTMLInputElement>element.children[0]).value;
@@ -292,9 +291,9 @@ export class FilterMenuRenderer {
                     fltrValue = ((<EJ2Intance>(element.querySelector('input') as Element)).ej2_instances[0] as
                         { value?: string | boolean | Date }).value;
                 } else {
-                    let eControl: EJ2Intance = ((element.querySelector('.e-control') as Element) as EJ2Intance);
+                    const eControl: EJ2Intance = ((element.querySelector('.e-control') as Element) as EJ2Intance);
                     fltrValue = col.type === 'boolean' ? (eControl as { checked?: boolean }).checked :
-                            !isNullOrUndefined(eControl.ej2_instances) ?
+                        !isNullOrUndefined(eControl.ej2_instances) ?
                             (eControl.ej2_instances[0] as { value?: string | boolean | Date }).value :
                             (eControl as { value?: string | boolean | Date }).value;
                 }
@@ -307,6 +306,7 @@ export class FilterMenuRenderer {
                 if (typeof temp === 'string') {
                     temp = getValue(temp, window);
                 }
+                // eslint-disable-next-line
                 flValue = (temp as Function)({ element: targ, column: col, operator: flOptrValue, fltrObj: this.filterObj });
             } else {
                 instanceofFilterUI.read(targ, col, flOptrValue, this.filterObj);
@@ -323,9 +323,9 @@ export class FilterMenuRenderer {
     private clearBtnClick(column: Column): void {
         this.filterObj.removeFilteredColsByField(column.field);
         this.closeDialog();
-        let iconClass: string = this.parent.showColumnMenu ? '.e-columnmenu' : '.e-icon-filter';
-        let col: Element = this.parent.element.querySelector('[e-mappinguid="' + column.uid + '"]').parentElement;
-        let flIcon: Element = col.querySelector(iconClass);
+        const iconClass: string = this.parent.showColumnMenu ? '.e-columnmenu' : '.e-icon-filter';
+        const col: Element = this.parent.element.querySelector('[e-mappinguid="' + column.uid + '"]').parentElement;
+        const flIcon: Element = col.querySelector(iconClass);
         if (flIcon) {
             flIcon.classList.remove('e-filtered');
         }
@@ -337,6 +337,7 @@ export class FilterMenuRenderer {
     }
 
     /**
+     * @returns {FilterUI} returns the filterUI
      * @hidden
      */
     public getFilterUIInfo(): FilterUI {

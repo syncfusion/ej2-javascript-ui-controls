@@ -5,16 +5,19 @@ import * as literals from '../base/string-literals';
 
 /**
  * Edit render module is used to render grid edit row.
+ *
  * @hidden
  */
 export class BatchEditRender {
-    //Internal variables              
+    //Internal variables
 
     //Module declarations
     private parent: IGrid;
 
     /**
      * Constructor for render module
+     *
+     * @param {IGrid} parent - specifies the IGrid
      */
     constructor(parent?: IGrid) {
         this.parent = parent;
@@ -22,8 +25,8 @@ export class BatchEditRender {
 
     public update(elements: Element[], args: { columnObject?: Column, cell?: Element, row?: Element }): void {
         if (this.parent.isReact && args.columnObject && args.columnObject.template) {
-            let parentRow: HTMLTableRowElement = args.cell.parentElement as HTMLTableRowElement;
-            let newTd: HTMLTableCellElement = args.cell.cloneNode(true) as HTMLTableCellElement;
+            const parentRow: HTMLTableRowElement = args.cell.parentElement as HTMLTableRowElement;
+            const newTd: HTMLTableCellElement = args.cell.cloneNode(true) as HTMLTableCellElement;
             parentRow.insertBefore(newTd, parentRow.children[parseInt(args.cell.getAttribute(literals.ariaColIndex), 10)]);
             newTd.focus();
             args.cell.remove();
@@ -37,9 +40,9 @@ export class BatchEditRender {
     }
 
     private getEditElement(elements: Object, args: { columnObject?: Column, cell?: Element, row?: Element }): Element {
-        let gObj: IGrid = this.parent;
-        let form: HTMLFormElement = this.parent
-        .createElement('form', { id: gObj.element.id + 'EditForm', className: 'e-gridform' }) as HTMLFormElement;
+        const gObj: IGrid = this.parent;
+        const form: HTMLFormElement = this.parent
+            .createElement('form', { id: gObj.element.id + 'EditForm', className: 'e-gridform' }) as HTMLFormElement;
         form.appendChild(elements[args.columnObject.uid]);
         if (args.columnObject.editType === 'booleanedit') {
             args.cell.classList.add('e-boolcell');

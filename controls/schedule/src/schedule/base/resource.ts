@@ -468,25 +468,35 @@ export class ResourceBase {
         }
     }
 
+    public selectResourceByIndex(groupIndex: number): void {
+        if (this.lastResourceLevel && groupIndex > -1 && groupIndex < this.lastResourceLevel.length) {
+            this.triggerEvents(groupIndex);
+        }
+    }
+
     private resourceClick(event: NodeClickEventArgs): void {
         if (!event.node.classList.contains('e-has-child')) {
             this.treePopup.hide();
             removeClass([this.popupOverlay], cls.ENABLE_CLASS);
             const treeNodes: HTMLLIElement[] = [].slice.call(this.treeViewObj.element.querySelectorAll('.e-list-item:not(.e-has-child)'));
             const groupIndex: number = treeNodes.indexOf(event.node);
-            let args: ActionEventArgs = { cancel: false, event: event.event, groupIndex: groupIndex, requestType: 'resourceChange' };
-            this.parent.trigger(events.actionBegin, args, (actionArgs: ActionEventArgs) => {
-                if (!actionArgs.cancel) {
-                    this.parent.uiStateValues.groupIndex = actionArgs.groupIndex;
-                    this.parent.renderModule.render(this.parent.currentView);
-                    args = {
-                        cancel: false, event: event.event, groupIndex: this.parent.uiStateValues.groupIndex, requestType: 'resourceChanged'
-                    };
-                    this.parent.trigger(events.actionComplete, args);
-                }
-            });
-        }
-        event.event.preventDefault();
+            this.triggerEvents(groupIndex, event)
+            event.event.preventDefault();
+    }
+    }
+
+    private triggerEvents(groupIndex: number, event?: NodeClickEventArgs): void {
+        let args: ActionEventArgs = { cancel: false, event: (event) ? event.event: null, groupIndex: groupIndex, requestType: 'resourceChange' };
+        this.parent.trigger(events.actionBegin, args, (actionArgs: ActionEventArgs) => {
+            if (!actionArgs.cancel) {
+                this.parent.uiStateValues.groupIndex = actionArgs.groupIndex;
+                this.parent.renderModule.render(this.parent.currentView);
+                args = {
+                    cancel: false, event: (event) ? event.event: null, groupIndex: this.parent.uiStateValues.groupIndex, requestType: 'resourceChanged'
+                };
+                this.parent.trigger(events.actionComplete, args);
+            }
+        });
     }
 
     private documentClick(args: { event: Event }): void {
@@ -843,8 +853,14 @@ export class ResourceBase {
         this.refreshLayout(true);
     }
 
-    public getIndexFromResourceId(
-        id: string | number, name: string, resourceData?: ResourcesModel, event?: Record<string, any>, parentField?: string): number {
+    public getIndexFromResourceId(id: string | number, name?: string, resourceData?: ResourcesModel, event?: Record<string, any>, parentField?: string): number {
+        name = name || this.parent.resourceCollection.slice(-1)[0].name;
+        if (isNullOrUndefined(resourceData)) {
+            resourceData = this.resourceCollection.filter((e: ResourcesModel) => e.name === name)[0];
+            if (isNullOrUndefined(resourceData)) {
+                return null;
+            }
+        }
         const resource: Record<string, any> = (resourceData.dataSource as Record<string, any>[]).filter((e: Record<string, any>) => {
             if (event && e[resourceData.idField] === id) {
                 if (e[resourceData.groupIDField] === event[parentField]) {
@@ -855,7 +871,6 @@ export class ResourceBase {
                 return e[resourceData.idField] === id;
             }
         })[0] as Record<string, any>;
-
         return (this.lastResourceLevel.map((e: TdData) => e.resourceData).indexOf(resource));
     }
 

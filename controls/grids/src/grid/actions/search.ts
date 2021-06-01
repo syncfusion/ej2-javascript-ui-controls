@@ -9,7 +9,7 @@ import { SearchSettingsModel } from '../base/grid-model';
  */
 export class Search implements IAction {
 
-    //Internal variables    
+    //Internal variables
 
     //Module declarations
     private parent: IGrid;
@@ -18,6 +18,8 @@ export class Search implements IAction {
 
     /**
      * Constructor for Grid search module.
+     *
+     * @param {IGrid} parent - specifies the IGrid
      * @hidden
      */
     constructor(parent?: IGrid) {
@@ -25,15 +27,16 @@ export class Search implements IAction {
         this.addEventListener();
     }
 
-    /** 
+    /**
      * Searches Grid records by given key.
-     * 
+     *
      * > You can customize the default search action by using [`searchSettings`](grid/#searchsettings/).
+     *
      * @param  {string} searchString - Defines the key.
-     * @return {void} 
+     * @returns {void}
      */
     public search(searchString: string): void {
-        let gObj: IGrid = this.parent;
+        const gObj: IGrid = this.parent;
         searchString = isNullOrUndefined(searchString) ? '' : searchString;
         if (isActionPrevent(gObj)) {
             gObj.notify(events.preventBatch, { instance: this, handler: this.search, arg1: searchString });
@@ -46,7 +49,9 @@ export class Search implements IAction {
             gObj.refresh();
         }
     }
+
     /**
+     * @returns {void}
      * @hidden
      */
     public addEventListener(): void {
@@ -58,7 +63,9 @@ export class Search implements IAction {
         this.parent.addEventListener(events.actionComplete, this.actionCompleteFunc);
         this.parent.on(events.cancelBegin, this.cancelBeginEvent, this);
     }
+
     /**
+     * @returns {void}
      * @hidden
      */
     public removeEventListener(): void {
@@ -71,14 +78,18 @@ export class Search implements IAction {
     }
 
     /**
-     * To destroy the print 
-     * @return {void}
+     * To destroy the print
+     *
+     * @returns {void}
      * @hidden
      */
     public destroy(): void {
         this.removeEventListener();
     }
+
     /**
+     * @param {NotifyArgs} e - specfies the NotifyArgs
+     * @returns {void}
      * @hidden
      */
     public onPropertyChanged(e: NotifyArgs): void {
@@ -98,7 +109,9 @@ export class Search implements IAction {
 
     /**
      * The function used to trigger onActionComplete
-     * @return {void}
+     *
+     * @param {NotifyArgs} e - specifies the NotifyArgs
+     * @returns {void}
      * @hidden
      */
     public onSearchComplete(e: NotifyArgs): void {
@@ -107,6 +120,13 @@ export class Search implements IAction {
         }));
     }
 
+    /**
+     * The function used to store the requestType
+     *
+     * @param {NotifyArgs} e - specifies the NotifyArgs
+     * @returns {void}
+     * @hidden
+     */
     public onActionComplete(e: NotifyArgs): void {
         this.refreshSearch = e.requestType !== 'searching';
     }
@@ -119,10 +139,11 @@ export class Search implements IAction {
 
     /**
      * For internal use only - Get the module name.
+     *
+     * @returns {string} returns the module name
      * @private
      */
     protected getModuleName(): string {
         return 'search';
     }
-
 }

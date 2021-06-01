@@ -315,6 +315,7 @@ export class TaskProcessor extends DateProcessor {
         const resourceFields: ResourceFieldsModel = this.parent.resourceFields;
         let progress: number = data[taskSettings.progress];
         let id: string = null; let name: string = null;
+        let notes: string = data[taskSettings.notes];
         progress = progress ? parseFloat(progress.toString()) ? parseFloat(progress.toString()) : 0 : 0;
         const predecessors: string | number | object[] = data[taskSettings.dependency];
         const baselineStartDate: Date = this.getDateFromFormat(data[taskSettings.baselineStartDate], true);
@@ -355,7 +356,7 @@ export class TaskProcessor extends DateProcessor {
         this.parent.setRecordValue('totalProgress', progress, ganttProperties, true);
         this.parent.setRecordValue('predecessorsName', predecessors, ganttProperties, true);
         this.parent.setRecordValue('indicators', data[taskSettings.indicators], ganttProperties, true);
-        this.parent.setRecordValue('notes', data[taskSettings.notes], ganttProperties, true);
+        this.parent.setRecordValue('notes', notes, ganttProperties, true);
         this.parent.setRecordValue('cssClass', data[taskSettings.cssClass], ganttProperties, true);
         this.parent.setRecordValue('parentItem', this.getCloneParent(parentItem), ganttData);
         const parentUniqId: string = ganttData.parentItem ? ganttData.parentItem.uniqueID : null;

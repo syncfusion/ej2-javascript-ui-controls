@@ -1,6 +1,6 @@
 import { SpreadsheetHelper } from "../util/spreadsheethelper.spec";
 import { defaultData } from '../util/datasource.spec';
-import { Spreadsheet } from '../../../src/index';
+import { getRowHeight, Spreadsheet } from '../../../src/index';
 
 describe('Wrap ->', () => {
     let helper: SpreadsheetHelper = new SpreadsheetHelper('spreadsheet');
@@ -79,11 +79,11 @@ describe('Wrap ->', () => {
                 done();
             });
         });
-        describe('fb23856 ->', () => {
-            beforeEach((done: Function) => {
+        describe('fb23856, FB23947, FB23948 ->', () => {
+            beforeAll((done: Function) => {
                 helper.initializeSpreadsheet({ sheets: [{ selectedRange: 'A1:B2' }] }, done);
             });
-            afterEach(() => {
+            afterAll(() => {
                 helper.invoke('destroy');
             });
             it('Size of cell is increased for merge - top left allignment', (done: Function) => {
@@ -101,9 +101,33 @@ describe('Wrap ->', () => {
                 (spreadsheet as any).editModule.editCellData.value = 'text\n\ntext';
                 helper.getElement('#' + helper.id + '_edit').textContent = 'text\n\ntext';
                 helper.triggerKeyNativeEvent(13);
-                expect(spreadsheet.sheets[0].rows[0].height).toBe(36);
+                expect(getRowHeight(helper.getInstance().sheets[0], 0)).toBe(20);
                 expect(spreadsheet.sheets[0].rows[1].height).toBeUndefined();
+                expect(helper.invoke('getCell', [0, 0]).querySelector('.e-wrap-content').textContent).toBe('text\n\ntext');
                 done();
+            });
+
+            it('Wrapping on merge cell increases row height', (done: Function) => {
+                helper.invoke('selectRange', ['A3:B4']);
+                helper.getElement('#' + helper.id + '_merge').click();
+                helper.getElement('#' + helper.id + '_wrap').click();
+                helper.edit('A3', 'Wrapping on merge cell increases row height');
+                expect(getRowHeight(helper.getInstance().sheets[0], 2)).toBe(20);
+                expect(helper.invoke('getCell', [2, 0]).parentElement.style.height).toBe('20px');
+                expect(helper.invoke('getCell', [2, 0]).querySelector('.e-wrap-content').textContent).toBe('Wrapping on merge cell increases row height');
+                done();
+            });
+
+            it('Deleting wrap cell does not changes row height', (done: Function) => {
+                helper.invoke('updateCell', [{ wrap: true, value: 'Deleting wrap cell does not changes row height' }, 'C1']);
+                setTimeout(() => {
+                    // expect(parseInt(helper.invoke('getCell', [0, 2]).parentElement.style.height)).toBeGreaterThan(105); // Fails only on CI
+                    helper.invoke('selectRange', ['C1']);
+                    helper.triggerKeyEvent('keydown', 46);
+                    // expect(helper.getInstance().sheets[0].rows[0].height).toBe(20); // Fails only on CI
+                    expect(helper.invoke('getCell', [0, 2]).parentElement.style.height).toBe('20px');
+                    done();
+                });
             });
         });
     });

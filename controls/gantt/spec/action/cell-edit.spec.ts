@@ -8,6 +8,7 @@ import { cellEditData, resourcesData, resources, scheduleModeData, resourceDataT
 import { createGantt, destroyGantt, triggerMouseEvent, triggerKeyboardEvent, getKeyUpObj } from '../base/gantt-util.spec';
 import { DatePickerEditCell } from '@syncfusion/ej2-grids';
 import { Input } from '@syncfusion/ej2-inputs';
+import { RichTextEditor } from '@syncfusion/ej2-richtexteditor';
 
 interface EJ2Instance extends HTMLElement {
      ej2_instances: Object[];
@@ -1209,5 +1210,86 @@ describe('taskType with resourceUnit mapping', () => {
         let update: HTMLElement = ganttObj.element.querySelector('#' + ganttObj.element.id + '_Gantt_Toolbar > div > div:nth-child(3)') as HTMLElement;
         triggerMouseEvent(update, 'click');
         expect(ganttObj.currentViewData[5].ganttProperties.resourceInfo[0]['unit']).toBe(46.88);
+    });
+    
+    describe('Update notes tab', () => {
+        let ganttObj: Gantt;
+        beforeAll((done: Function) => {
+            ganttObj = createGantt({
+                dataSource: cellEditData,
+                taskFields: {
+                    id: 'TaskID',
+                    name: 'TaskName',
+                    startDate: 'StartDate',
+                    endDate: 'EndDate',
+                    duration: 'Duration',
+                    progress: 'Progress',
+                    notes: 'Notes',
+                    baselineStartDate: 'BaselineStartDate',
+                    baselineEndDate: 'BaselineEndDate',
+                    resourceInfo: 'Resource',
+                    dependency: 'Predecessor',
+                    child: 'subtasks'
+                },
+                resourceFields: {
+                    id: 'resourceId',
+                    name: 'resourceName',
+                    unit: 'resourceUnit'
+                },
+                resources: resources,
+                projectStartDate: new Date('03/25/2019'),
+                projectEndDate: new Date('05/30/2019'),
+                renderBaseline: true,
+                editSettings: {
+                    allowAdding: true,
+                    allowEditing: true,
+                    allowDeleting: true,
+                },
+                editDialogFields: [
+                    { type: 'General' },
+                    { type: 'Dependency' },
+                    { type: 'Resources' },
+                    { type: 'Notes' },
+                ],
+                splitterSettings: {
+                    columnIndex: 9
+                },
+                allowUnscheduledTasks: true,
+                toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel'],
+                columns: [
+                    { field: 'TaskID', width: 60 },
+                    { field: 'TaskName', editType: 'stringedit', width: 100 },
+                    { field: 'StartDate', editType: 'datepickeredit', width: 100 },
+                    { field: 'EndDate', editType: 'datepickeredit', width: 100 },
+                    { field: 'Duration', width: 100 },
+                    { field: 'Predecessor', width: 100 },
+                    { field: 'Progress', width: 100 },
+                    { field: 'Resource', width: 100 },
+                    { field: 'Notes', width: 100 },
+                ],
+            }, done);
+        });
+        afterAll(() => {
+            if (ganttObj) {
+                destroyGantt(ganttObj);
+            }
+        });
+        beforeEach((done) => {
+            setTimeout(done, 1000);
+            ganttObj.openAddDialog();
+            let notesTab: any = (<EJ2Instance>document.getElementById(ganttObj.element.id + '_Tab')).ej2_instances[0];
+            notesTab.selectedItem = 3;
+        });
+        it('Add Notes using add dialog', () => {
+            ganttObj.actionComplete = (args: any): void => {
+                if (args.requestType === 'add') {
+                    expect(ganttObj.currentViewData[0].ganttProperties.notes).toBe('Updated');
+                }
+            };
+            let notesTab: RichTextEditor = (document.getElementById(ganttObj.element.id + 'NotesTabContainer') as any).ej2_instances[0]
+            notesTab.value = "Updated";
+            let saveButton: HTMLElement = ganttObj.element.querySelector('#' + ganttObj.element.id + '_dialog > div.e-footer-content > button.e-control.e-btn.e-lib.e-primary.e-flat') as HTMLElement;
+            triggerMouseEvent(saveButton, 'click');
+        });
     });
 });

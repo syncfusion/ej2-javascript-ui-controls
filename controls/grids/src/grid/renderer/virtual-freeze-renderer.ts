@@ -22,6 +22,7 @@ import * as literals from '../base/string-literals';
 
 /**
  * VirtualFreezeRenderer is used to render the virtual table within the frozen and movable content table
+ *
  * @hidden
  */
 export class VirtualFreezeRenderer extends FreezeContentRender implements IRenderer {
@@ -63,10 +64,10 @@ export class VirtualFreezeRenderer extends FreezeContentRender implements IRende
     }
 
     private refreshVirtualFrozenRows(args: NotifyArgs): void {
-        let gObj: IGrid = this.parent;
+        const gObj: IGrid = this.parent;
         if (args.requestType === 'delete' && gObj.frozenRows) {
             args.isFrozenRowsRender = true;
-            let query: Query = gObj.renderModule.data.generateQuery(true).clone();
+            const query: Query = gObj.renderModule.data.generateQuery(true).clone();
             query.page(1, gObj.pageSettings.pageSize);
             gObj.renderModule.data.getData({}, query).then((e: ReturnType) => {
                 renderFrozenRows(
@@ -86,6 +87,7 @@ export class VirtualFreezeRenderer extends FreezeContentRender implements IRende
     }
 
     /**
+     * @returns {void}
      * @hidden
      */
     public renderTable(): void {
@@ -97,8 +99,8 @@ export class VirtualFreezeRenderer extends FreezeContentRender implements IRende
         super.renderTable();
         this.virtualRenderer.setPanel(this.parent.getContent());
         this.scrollbar = this.parent.getContent().querySelector('.e-movablescrollbar');
-        let movableCont: Element = this.getMovableContent();
-        let minHeight: number = <number>this.parent.height;
+        const movableCont: Element = this.getMovableContent();
+        const minHeight: number = <number>this.parent.height;
         this.virtualRenderer.virtualEle.content = this.virtualRenderer.content = <HTMLElement>this.getPanel().querySelector('.' + literals.content);
         (this.virtualRenderer.virtualEle.content as HTMLElement).style.overflowX = 'hidden';
         this.virtualRenderer.virtualEle.renderFrozenWrapper(minHeight);
@@ -108,7 +110,7 @@ export class VirtualFreezeRenderer extends FreezeContentRender implements IRende
                 = <HTMLElement>this.getPanel().querySelector('.' + literals.movableContent);
             this.virtualRenderer.virtualEle.renderMovableWrapper(minHeight);
             this.virtualRenderer.virtualEle.renderMovablePlaceHolder();
-            let tbl: HTMLElement = movableCont.querySelector('table');
+            const tbl: HTMLElement = movableCont.querySelector('table');
             this.virtualRenderer.virtualEle.movableTable = tbl;
             this.virtualRenderer.virtualEle.movableWrapper.appendChild(tbl);
             movableCont.appendChild(this.virtualRenderer.virtualEle.movableWrapper);
@@ -121,6 +123,10 @@ export class VirtualFreezeRenderer extends FreezeContentRender implements IRende
     }
 
     /**
+     * @param {HTMLElement} target - specifies the target
+     * @param {DocumentFragment} newChild - specifies the newChild
+     * @param {NotifyArgs} e - specifies the notifyargs
+     * @returns {void}
      * @hidden
      */
     public appendContent(target: HTMLElement, newChild: DocumentFragment, e: NotifyArgs): void {
@@ -128,6 +134,9 @@ export class VirtualFreezeRenderer extends FreezeContentRender implements IRende
     }
 
     /**
+     * @param {Object[]} data - specifies the data
+     * @param {NotifyArgs} notifyArgs - specifies the notifyargs
+     * @returns {Row<Column>[]} returns the row
      * @hidden
      */
     public generateRows(data: Object[], notifyArgs?: NotifyArgs): Row<Column>[] {
@@ -138,6 +147,8 @@ export class VirtualFreezeRenderer extends FreezeContentRender implements IRende
     }
 
     /**
+     * @param {number} index - specifies the index
+     * @returns {Element} returns the element
      * @hidden
      */
     public getRowByIndex(index: number): Element {
@@ -145,6 +156,8 @@ export class VirtualFreezeRenderer extends FreezeContentRender implements IRende
     }
 
     /**
+     * @param {number} index - specifies the index
+     * @returns {Element} returns the element
      * @hidden
      */
     public getMovableRowByIndex(index: number): Element {
@@ -156,6 +169,7 @@ export class VirtualFreezeRenderer extends FreezeContentRender implements IRende
     }
 
     /**
+     * @returns {HTMLCollection} returns the Htmlcollection
      * @hidden
      */
     public getMovableRows(): Row<Column>[] | HTMLCollectionOf<HTMLTableRowElement> {
@@ -163,6 +177,7 @@ export class VirtualFreezeRenderer extends FreezeContentRender implements IRende
     }
 
     /**
+     * @returns {HTMLCollectionOf<HTMLTableRowElement>} returns the html collection
      * @hidden
      */
     public getRows(): Row<Column>[] | HTMLCollectionOf<HTMLTableRowElement> {
@@ -170,14 +185,17 @@ export class VirtualFreezeRenderer extends FreezeContentRender implements IRende
     }
 
     /**
+     * @returns {Element} returns the element
      * @hidden
      */
     public getColGroup(): Element {
-        let mCol: Element = this.parent.getMovableVirtualContent();
+        const mCol: Element = this.parent.getMovableVirtualContent();
         return this.isXaxis() ? mCol.querySelector(literals.colGroup) : this.colgroup;
     }
 
     /**
+     * @param {NotifyArgs} args - specifies the args
+     * @returns {Row<Column>[]} returns the row
      * @hidden
      */
     public getReorderedFrozenRows(args: NotifyArgs): Row<Column>[] {
@@ -185,7 +203,7 @@ export class VirtualFreezeRenderer extends FreezeContentRender implements IRende
     }
 
     protected isXaxis(): boolean {
-       return isXaxis(this.virtualRenderer);
+        return isXaxis(this.virtualRenderer);
     }
 
     protected getHeaderCells(): Element[] {
@@ -201,6 +219,8 @@ export class VirtualFreezeRenderer extends FreezeContentRender implements IRende
     }
 
     /**
+     * @param {number} index - specifies the index
+     * @returns {object} returns the object
      * @hidden
      */
     public getRowObjectByIndex(index: number): Object {
@@ -209,8 +229,9 @@ export class VirtualFreezeRenderer extends FreezeContentRender implements IRende
 
     /**
      * Set the header colgroup element
-     * @param {Element} colgroup
-     * @returns {Element}
+     *
+     * @param {Element} colGroup - specifies the colgroup
+     * @returns {Element} returns the element
      */
     public setColGroup(colGroup: Element): Element {
         return setColGroup(colGroup, this.virtualRenderer, this);
@@ -219,6 +240,7 @@ export class VirtualFreezeRenderer extends FreezeContentRender implements IRende
 
 /**
  * VirtualFreezeHdrRenderer is used to render the virtual table within the frozen and movable header table
+ *
  * @hidden
  */
 export class VirtualFreezeHdrRenderer extends FreezeRender implements IRenderer {
@@ -231,6 +253,7 @@ export class VirtualFreezeHdrRenderer extends FreezeRender implements IRenderer 
     public virtualHdrRenderer: VirtualHeaderRenderer;
 
     /**
+     * @returns {void}
      * @hidden
      */
     public renderTable(): void {
@@ -263,14 +286,25 @@ export class VirtualFreezeHdrRenderer extends FreezeRender implements IRenderer 
     }
 }
 
-/** @hidden */
+/**
+ * @param {NotifyArgs} args - specifies the args
+ * @param {Object[]} data - specifies the data
+ * @param {number[]}selectedIdx - specifies the selected index
+ * @param {IGrid} parent - specifies the IGrid
+ * @param {IModelGenerator} rowModelGenerator - specifies the rowModeGenerator
+ * @param {ServiceLocator} locator - specifies the locator
+ * @param {VirtualContentRenderer} virtualRenderer - specifies the virtual renderer
+ * @param {VirtualFreezeRenderer} instance - specifies the instance
+ * @returns {void}
+ * @hidden
+ */
 export function renderFrozenRows(
     args: NotifyArgs, data: Object[], selectedIdx: number[], parent: IGrid, rowModelGenerator: IModelGenerator<Column>,
     locator: ServiceLocator, virtualRenderer: VirtualContentRenderer, instance: VirtualFreezeRenderer | ColumnVirtualFreezeRenderer
 ): void {
     parent.clearSelection();
     (<{ startIndex?: number }>args).startIndex = 0;
-    let rowRenderer: RowRenderer<Column> = new RowRenderer<Column>(locator, null, parent);
+    const rowRenderer: RowRenderer<Column> = new RowRenderer<Column>(locator, null, parent);
     let rows: Row<Column>[] = rowModelGenerator.generateRows(data, args);
     if (args.renderMovableContent) {
         virtualRenderer.vgenerator.movableCache[1] = rows;
@@ -282,7 +316,7 @@ export function renderFrozenRows(
         virtualRenderer.vgenerator.frozenRightCache[1] = rows;
         rows = parent.getFrozenRightRowsObject();
     }
-    let hdr: Element = !args.renderMovableContent && !args.renderFrozenRightContent
+    const hdr: Element = !args.renderMovableContent && !args.renderFrozenRightContent
         ? parent.getHeaderContent().querySelector('.' + literals.frozenHeader).querySelector( literals.tbody) : args.renderMovableContent
             ? parent.getHeaderContent().querySelector('.' + literals.movableHeader).querySelector( literals.tbody)
             : parent.getHeaderContent().querySelector('.e-frozen-right-header').querySelector( literals.tbody);
@@ -314,9 +348,15 @@ export function renderFrozenRows(
     }
 }
 
-/** @hidden */
+/**
+ * @param {Row<Column>[]} data - specifies the data
+ * @param {freezeTable} tableName -specifies the table
+ * @param {IGrid} parent - specifies the IGrid
+ * @returns {Row<Column>[]} returns the row
+ * @hidden
+ */
 export function splitCells(data: Row<Column>[], tableName: freezeTable, parent: IGrid): Row<Column>[] {
-    let rows: Row<Column>[] = [];
+    const rows: Row<Column>[] = [];
     for (let i: number = 0; i < data.length; i++) {
         rows.push(extend({}, data[i]) as Row<Column>);
         rows[i].cells = splitFrozenRowObjectCells(parent, rows[i].cells, tableName);
@@ -324,7 +364,13 @@ export function splitCells(data: Row<Column>[], tableName: freezeTable, parent: 
     return rows;
 }
 
-/** @hidden */
+/**
+ * @param {freezeTable} tableName - specifies the freeze tabel
+ * @param {VirtualContentRenderer} virtualRenderer - specifies the virtual renderer
+ * @param {IGrid} parent - specifies the IGrid
+ * @returns {Row<Column>[]} returns the row
+ * @hidden
+ */
 export function collectRows(tableName: freezeTable, virtualRenderer: VirtualContentRenderer, parent: IGrid): Row<Column>[] {
     let rows: Row<Column>[] = [];
     let cache: { [x: number]: Row<Column>[] };
@@ -335,18 +381,27 @@ export function collectRows(tableName: freezeTable, virtualRenderer: VirtualCont
     } else if (tableName === literals.frozenRight) {
         cache = parent.getFrozenMode() === 'Right' ? virtualRenderer.vgenerator.cache : virtualRenderer.vgenerator.frozenRightCache;
     }
-    let keys: string[] = Object.keys(cache);
+    const keys: string[] = Object.keys(cache);
     for (let i: number = 0; i < keys.length; i++) {
         rows = [...rows, ...splitCells(cache[keys[i]], tableName, parent)];
     }
     return rows;
 }
 
-/** @hidden */
-export function setFreezeSelection(args: { uid: string, set: boolean, clearAll?: boolean }, virtualRenderer: VirtualContentRenderer): void {
-    let leftKeys: string[] = Object.keys(virtualRenderer.vgenerator.cache);
-    let movableKeys: string[] = Object.keys(virtualRenderer.vgenerator.movableCache);
-    let rightKeys: string[] = Object.keys(virtualRenderer.vgenerator.frozenRightCache);
+/**
+ * @param {object} args - specifies the args
+ * @param {string} args.uid - specifirs the uid
+ * @param {boolean} args.set - specifies the set
+ * @param {boolean} args.clearAll - specifies the boolean to clearall
+ * @param {VirtualContentRenderer} virtualRenderer - specifies the virtual renderer
+ * @returns {void}
+ * @hidden
+ */
+export function setFreezeSelection(args: { uid: string, set: boolean, clearAll?: boolean },
+                                   virtualRenderer: VirtualContentRenderer): void {
+    const leftKeys: string[] = Object.keys(virtualRenderer.vgenerator.cache);
+    const movableKeys: string[] = Object.keys(virtualRenderer.vgenerator.movableCache);
+    const rightKeys: string[] = Object.keys(virtualRenderer.vgenerator.frozenRightCache);
     for (let i: number = 0; i < leftKeys.length; i++) {
         selectFreezeRows(args, virtualRenderer.vgenerator.cache[leftKeys[i]]);
     }
@@ -358,19 +413,35 @@ export function setFreezeSelection(args: { uid: string, set: boolean, clearAll?:
     }
 }
 
-/** @hidden */
+/**
+ * @param {Object} args - specifies the args
+ * @param {string} args.uid - specifirs the uid
+ * @param {boolean} args.set - specifies the set
+ * @param {boolean} args.clearAll - specifies the boolean to clearall
+ * @param {Row<Column>[]} cache - specifies the cache
+ * @returns {void}
+ * @hidden
+ */
 export function selectFreezeRows(args: { uid: string, set: boolean, clearAll?: boolean }, cache: Row<Column>[]): void {
-    let rows: Row<Column>[] = cache.filter((row: Row<Column>) => args.clearAll || args.uid === row.uid);
+    const rows: Row<Column>[] = cache.filter((row: Row<Column>) => args.clearAll || args.uid === row.uid);
     for (let j: number = 0; j < rows.length; j++) {
         rows[j].isSelected = args.set;
-        let cells: Cell<Column>[] = rows[j].cells;
+        const cells: Cell<Column>[] = rows[j].cells;
         for (let k: number = 0; k < cells.length; k++) {
             cells[k].isSelected = args.set;
         }
     }
 }
 
-/** @hidden */
+/**
+ * @param {VirtualContentRenderer} virtualRenderer - specifies the virtual renderer
+ * @param {ColumnWidthService} widthService - specifies the width service
+ * @param {HTMLElement} target - specifies the target
+ * @param {DocumentFragment} newChild - specifies the newchild
+ * @param {NotifyArgs} e - specifies the notifyargs
+ * @returns {void}
+ * @hidden
+ */
 export function appendContent(
     virtualRenderer: VirtualContentRenderer, widthService: ColumnWidthService, target: HTMLElement,
     newChild: DocumentFragment, e: NotifyArgs
@@ -379,12 +450,20 @@ export function appendContent(
     widthService.refreshFrozenScrollbar();
 }
 
-/** @hidden */
+/**
+ * @param {VirtualContentRenderer} virtualRenderer - specifies the virtual renderer
+ * @param {object[]} data - specifies the data
+ * @param {NotifyArgs} notifyArgs - specifies the notifyargs
+ * @param {FreezeRowModelGenerator} freezeRowGenerator - specifies the freeze row generator
+ * @param {IGrid} parent - specifies the IGrid
+ * @returns {Row<Column>[]} returns the row
+ * @hidden
+ */
 export function generateRows(
     virtualRenderer: VirtualContentRenderer, data: Object[], notifyArgs: NotifyArgs,
     freezeRowGenerator: FreezeRowModelGenerator, parent: IGrid
 ): Row<Column>[] {
-    let virtualRows: Row<Column>[] = virtualRenderer.vgenerator.generateRows(data, notifyArgs);
+    const virtualRows: Row<Column>[] = virtualRenderer.vgenerator.generateRows(data, notifyArgs);
     let arr: Row<Column>[] = [];
     arr = virtualRows.map((row: Row<Column>) => extend({}, row) as Row<Column>);
     let rows: Row<Column>[] = freezeRowGenerator.generateRows(data, notifyArgs, arr);
@@ -394,32 +473,47 @@ export function generateRows(
     return rows;
 }
 
-/** @hidden */
+/**
+ * @param {NotifyArgs} args -specifies the args
+ * @param {VirtualContentRenderer} virtualRenderer - specifies the virtual renderer
+ * @param {IGrid} parent - specifies the IGrid
+ * @param {FreezeRowModelGenerator} freezeRowGenerator - specifies the freezeRowGenerator
+ * @param {Object[]} firstPageRecords - specifies the first page records
+ * @returns {Row<Column>[]} returns the row
+ * @hidden
+ */
 export function getReorderedFrozenRows(
     args: NotifyArgs, virtualRenderer: VirtualContentRenderer, parent: IGrid, freezeRowGenerator: FreezeRowModelGenerator,
     firstPageRecords: Object[]
 ): Row<Column>[] {
-    let rows: Row<Column>[];
-    let bIndex: number[] = args.virtualInfo.blockIndexes;
-    let colIndex: number[] = args.virtualInfo.columnIndexes;
-    let page: number = args.virtualInfo.page;
+    const bIndex: number[] = args.virtualInfo.blockIndexes;
+    const colIndex: number[] = args.virtualInfo.columnIndexes;
+    const page: number = args.virtualInfo.page;
     args.virtualInfo.blockIndexes = [1, 2];
     args.virtualInfo.page = 1;
     if (!args.renderMovableContent) {
         args.virtualInfo.columnIndexes = [];
     }
-    let firstRecordslength: number = parent.getCurrentViewRecords().length;
+    const firstRecordslength: number = parent.getCurrentViewRecords().length;
     firstPageRecords = parent.renderModule.data.dataManager.dataSource.json.slice(0, firstRecordslength);
-    let virtualRows: Row<Column>[] = virtualRenderer.vgenerator.generateRows(firstPageRecords, args);
-    rows = splitReorderedRows(virtualRows, parent, args, freezeRowGenerator);
+    const virtualRows: Row<Column>[] = virtualRenderer.vgenerator.generateRows(firstPageRecords, args);
+    const rows: Row<Column>[] = splitReorderedRows(virtualRows, parent, args, freezeRowGenerator);
     args.virtualInfo.blockIndexes = bIndex;
     args.virtualInfo.columnIndexes = colIndex;
     args.virtualInfo.page = page;
     return rows.splice(0, parent.frozenRows);
 }
 
-/** @hidden */
+/**
+ * @param {Row<Column>[]} rows - specifies the row
+ * @param {IGrid} parent - specifies the IGrid
+ * @param {NotifyArgs} args - specifies the notify arguments
+ * @param {FreezeRowModelGenerator} freezeRowGenerator - specifies the freezerowgenerator
+ * @returns {Row<Column>[]} returns the row
+ * @hidden
+ */
 export function splitReorderedRows(
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     rows: Row<Column>[], parent: IGrid, args: NotifyArgs, freezeRowGenerator: FreezeRowModelGenerator
 ): Row<Column>[] {
     let tableName: freezeTable;
@@ -436,7 +530,11 @@ export function splitReorderedRows(
     return rows;
 }
 
-/** @hidden */
+/**
+ * @param {VirtualContentRenderer} virtualRenderer - specifies the VirtualRenderer
+ * @returns {boolean} returns the isXaxis
+ * @hidden
+ */
 export function isXaxis(virtualRenderer: VirtualContentRenderer): boolean {
     let value: boolean = false;
     if (virtualRenderer) {
@@ -446,13 +544,23 @@ export function isXaxis(virtualRenderer: VirtualContentRenderer): boolean {
     return value;
 }
 
-/** @hidden */
+/**
+ * @param {VirtualContentRenderer} virtualRenderer - specifies the virtualrenderer
+ * @param {IGrid} parent - specifies the IGrid
+ * @returns {Element[]} returns the element
+ * @hidden
+ */
 export function getHeaderCells(virtualRenderer: VirtualContentRenderer, parent: IGrid): Element[] {
-    let content: Element = isXaxis(virtualRenderer) ? parent.getMovableVirtualHeader() : parent.getHeaderContent();
+    const content: Element = isXaxis(virtualRenderer) ? parent.getMovableVirtualHeader() : parent.getHeaderContent();
     return content ? [].slice.call(content.querySelectorAll('.e-headercell:not(.e-stackedheadercell)')) : [];
 }
 
-/** @hidden */
+/**
+ * @param {VirtualContentRenderer} virtualRenderer - specifies the virtual Renderer
+ * @param {IGrid} parent - specifies the IGrid
+ * @returns {Element} returns the element
+ * @hidden
+ */
 export function getVirtualFreezeHeader(virtualRenderer: VirtualContentRenderer, parent: IGrid): Element {
     let headerTable: Element;
     if (isXaxis(virtualRenderer)) {
@@ -463,14 +571,25 @@ export function getVirtualFreezeHeader(virtualRenderer: VirtualContentRenderer, 
     return headerTable;
 }
 
-/** @hidden */
+/**
+ * @param {Column[]} columns - specifies the columns
+ * @param {IGrid} parent - specifies the IGrid
+ * @returns {Column[]} returns the column[]
+ * @hidden
+ */
 export function ensureFrozenCols(columns: Column[], parent: IGrid): Column[] {
-    let frozenCols: Column[] = parent.columns.slice(0, parent.getFrozenColumns()) as Column[];
+    const frozenCols: Column[] = parent.columns.slice(0, parent.getFrozenColumns()) as Column[];
     columns = frozenCols.concat(columns);
     return columns;
 }
 
-/** @hidden */
+/**
+ * @param {Element} colGroup - specifies the colGroup
+ * @param {VirtualContentRenderer} virtualRenderer - specifies the virtual renderer
+ * @param {ColumnVirtualFreezeRenderer} instance - specifies the instances
+ * @returns {Element} returns the element
+ * @hidden
+ */
 export function setColGroup(
     colGroup: Element, virtualRenderer: VirtualContentRenderer, instance: ColumnVirtualFreezeRenderer | VirtualFreezeRenderer
 ): Element {
@@ -483,7 +602,12 @@ export function setColGroup(
     return instance.colgroup;
 }
 
-/** @hidden */
+/**
+ * @param {VirtualFreezeRenderer} instance - specifies the instance
+ * @param {number} index - specifies the index
+ * @returns {void}
+ * @hidden
+ */
 export function setCache(instance: VirtualFreezeRenderer | ColumnVirtualFreezeRenderer, index: number): void {
     if (instance.virtualRenderer.vgenerator.cache[1]) {
         instance.virtualRenderer.vgenerator.cache[1][index] = instance.frzRows[index];
@@ -497,10 +621,17 @@ export function setCache(instance: VirtualFreezeRenderer | ColumnVirtualFreezeRe
     }
 }
 
-/** @hidden */
+/**
+ * @param {IGrid} parent - specifies the IGrid
+ * @param {VirtualContentRenderer} virtualRenderer - specifies the virtualRenderer
+ * @param {Element} scrollbar - specifies the scrollbr
+ * @param {Element} mCont - specifies the mCont
+ * @returns {void}
+ * @hidden
+ */
 export function setDebounce(parent: IGrid, virtualRenderer: VirtualContentRenderer, scrollbar: Element, mCont: Element): void {
-    let debounceEvent: boolean = (parent.dataSource instanceof DataManager && !parent.dataSource.dataSource.offline);
-    let opt: InterSection = {
+    const debounceEvent: boolean = (parent.dataSource instanceof DataManager && !parent.dataSource.dataSource.offline);
+    const opt: InterSection = {
         container: virtualRenderer.content, pageHeight: virtualRenderer.getBlockHeight() * 2, debounceEvent: debounceEvent,
         axes: parent.enableColumnVirtualization ? ['X', 'Y'] : ['Y'], scrollbar: scrollbar,
         movableContainer: mCont
@@ -513,6 +644,7 @@ export function setDebounce(parent: IGrid, virtualRenderer: VirtualContentRender
 
 /**
  * ColumnVirtualFreezeRenderer is used to render the virtual table within the frozen and movable content table
+ *
  * @hidden
  */
 export class ColumnVirtualFreezeRenderer extends ColumnFreezeContentRenderer implements IRenderer {
@@ -562,9 +694,9 @@ export class ColumnVirtualFreezeRenderer extends ColumnFreezeContentRenderer imp
     private refreshVirtualFrozenRows(args: NotifyArgs): void {
         if (args.requestType === 'delete' && this.parent.frozenRows) {
             args.isFrozenRowsRender = true;
-            let query: Query = this.parent.renderModule.data.generateQuery(true).clone();
+            const query: Query = this.parent.renderModule.data.generateQuery(true).clone();
             query.page(1, this.parent.pageSettings.pageSize);
-            let selectedIdx: number[] = this.parent.getSelectedRowIndexes();
+            const selectedIdx: number[] = this.parent.getSelectedRowIndexes();
             this.parent.renderModule.data.getData({}, query).then((e: ReturnType) => {
                 renderFrozenRows(
                     args, e.result, selectedIdx, this.parent, this.rowModelGenerator, this.serviceLoc, this.virtualRenderer, this
@@ -590,6 +722,7 @@ export class ColumnVirtualFreezeRenderer extends ColumnFreezeContentRenderer imp
     }
 
     /**
+     * @returns {void}
      * @hidden
      */
     public renderTable(): void {
@@ -601,15 +734,15 @@ export class ColumnVirtualFreezeRenderer extends ColumnFreezeContentRenderer imp
         super.renderTable();
         this.virtualRenderer.setPanel(this.parent.getContent());
         this.scrollbar = this.parent.getContent().querySelector('.e-movablescrollbar');
-        let frozenRightCont: Element = this.getFrozenRightContent();
+        const frozenRightCont: Element = this.getFrozenRightContent();
         let frzCont: Element = this.getFrozenContent();
-        let movableCont: Element = this.getMovableContent();
+        const movableCont: Element = this.getMovableContent();
         if (this.parent.getFrozenMode() === 'Right') {
             frzCont = frozenRightCont;
         }
         this.virtualRenderer.virtualEle.content = this.virtualRenderer.content = <HTMLElement>this.getPanel().querySelector('.' + literals.content);
         (this.virtualRenderer.virtualEle.content as HTMLElement).style.overflowX = 'hidden';
-        let minHeight: number = <number>this.parent.height;
+        const minHeight: number = <number>this.parent.height;
         this.virtualRenderer.virtualEle.renderFrozenWrapper(minHeight);
         this.virtualRenderer.virtualEle.renderFrozenPlaceHolder();
         this.renderVirtualFrozenLeft(frzCont, movableCont);
@@ -642,6 +775,10 @@ export class ColumnVirtualFreezeRenderer extends ColumnFreezeContentRenderer imp
     }
 
     /**
+     * @param {HTMLElement} target - specifies the target
+     * @param {DocumentFragment} newChild - specifies the newchild
+     * @param {NotifyArgs} e - specifies the NotifyArgs
+     * @returns {void}
      * @hidden
      */
     public appendContent(target: HTMLElement, newChild: DocumentFragment, e: NotifyArgs): void {
@@ -650,6 +787,9 @@ export class ColumnVirtualFreezeRenderer extends ColumnFreezeContentRenderer imp
     }
 
     /**
+     * @param {Object[]} data - specifies the data
+     * @param {NotifyArgs} e - specifies the notifyargs
+     * @returns {Row<Column>[]} returns the row
      * @hidden
      */
     public generateRows(data: Object[], e?: NotifyArgs): Row<Column>[] {
@@ -660,6 +800,8 @@ export class ColumnVirtualFreezeRenderer extends ColumnFreezeContentRenderer imp
     }
 
     /**
+     * @param {number} index - specifies the number
+     * @returns {Element} returns the element
      * @hidden
      */
     public getRowByIndex(index: number): Element {
@@ -667,6 +809,8 @@ export class ColumnVirtualFreezeRenderer extends ColumnFreezeContentRenderer imp
     }
 
     /**
+     * @param {number} index - specifies the index
+     * @returns {Element} - returns the element
      * @hidden
      */
     public getFrozenRightRowByIndex(index: number): Element {
@@ -678,6 +822,8 @@ export class ColumnVirtualFreezeRenderer extends ColumnFreezeContentRenderer imp
     }
 
     /**
+     * @param {number} index - specifies the index
+     * @returns {Element} returns the element
      * @hidden
      */
     public getMovableRowByIndex(index: number): Element {
@@ -685,6 +831,7 @@ export class ColumnVirtualFreezeRenderer extends ColumnFreezeContentRenderer imp
     }
 
     /**
+     * @returns {Row<Column>[]} returns the row
      * @hidden
      */
     public getFrozenRightRows(): Row<Column>[] | HTMLCollectionOf<HTMLTableRowElement> {
@@ -692,6 +839,7 @@ export class ColumnVirtualFreezeRenderer extends ColumnFreezeContentRenderer imp
     }
 
     /**
+     * @returns {Row<Column>[]} returns the row
      * @hidden
      */
     public getMovableRows(): Row<Column>[] | HTMLCollectionOf<HTMLTableRowElement> {
@@ -699,14 +847,16 @@ export class ColumnVirtualFreezeRenderer extends ColumnFreezeContentRenderer imp
     }
 
     /**
+     * @returns {Element} returns the element
      * @hidden
      */
     public getColGroup(): Element {
-        let mCol: Element = this.parent.getMovableVirtualContent();
+        const mCol: Element = this.parent.getMovableVirtualContent();
         return isXaxis(this.virtualRenderer) ? mCol.querySelector(literals.colGroup) : this.colgroup;
     }
 
     /**
+     * @returns {Row<Column>[]} returns the row
      * @hidden
      */
     public getRows(): Row<Column>[] | HTMLCollectionOf<HTMLTableRowElement> {
@@ -714,10 +864,12 @@ export class ColumnVirtualFreezeRenderer extends ColumnFreezeContentRenderer imp
     }
 
     /**
+     * @param {NotifyArgs} args - specifies the args
+     * @returns {Row<Column>[]} returns the row object
      * @hidden
      */
     public getReorderedFrozenRows(args: NotifyArgs): Row<Column>[] {
-       return getReorderedFrozenRows(args, this.virtualRenderer, this.parent, this.freezeRowGenerator, this.firstPageRecords);
+        return getReorderedFrozenRows(args, this.virtualRenderer, this.parent, this.freezeRowGenerator, this.firstPageRecords);
     }
 
     protected getHeaderCells(): Element[] {
@@ -733,6 +885,8 @@ export class ColumnVirtualFreezeRenderer extends ColumnFreezeContentRenderer imp
     }
 
     /**
+     * @param {number} index - specifies the index
+     * @returns {object} - returns the object
      * @hidden
      */
     public getRowObjectByIndex(index: number): Object {
@@ -745,8 +899,9 @@ export class ColumnVirtualFreezeRenderer extends ColumnFreezeContentRenderer imp
 
     /**
      * Set the header colgroup element
-     * @param {Element} colgroup
-     * @returns {Element}
+     *
+     * @param {Element} colGroup - specifies the colgroup
+     * @returns {Element} - returns the element
      */
     public setColGroup(colGroup: Element): Element {
         return setColGroup(colGroup, this.virtualRenderer, this);

@@ -10,6 +10,7 @@ import * as events from '../base/constant';
 
 /**
  * RowModelGenerator is used to generate grid data rows.
+ *
  * @hidden
  */
 export class RowModelGenerator implements IModelGenerator<Column> {
@@ -19,13 +20,15 @@ export class RowModelGenerator implements IModelGenerator<Column> {
 
     /**
      * Constructor for header renderer module
+     *
+     * @param {IGrid} parent - specifies the IGrid
      */
     constructor(parent?: IGrid) {
         this.parent = parent;
     }
 
     public generateRows(data: Object, args?: { startIndex?: number, requestType?: Action }): Row<Column>[] {
-        let rows: Row<Column>[] = [];
+        const rows: Row<Column>[] = [];
         let startIndex: number = this.parent.enableVirtualization && args ? args.startIndex : 0;
         startIndex = this.parent.enableInfiniteScrolling && args ? this.getInfiniteIndex(args) : startIndex;
         for (let i: number = 0, len: number = Object.keys(data).length; i < len; i++ , startIndex++) {
@@ -36,10 +39,10 @@ export class RowModelGenerator implements IModelGenerator<Column> {
 
     protected ensureColumns(): Cell<Column>[] {
         //TODO: generate dummy column for group, detail here;
-        let cols: Cell<Column>[] = [];
+        const cols: Cell<Column>[] = [];
 
         if (this.parent.detailTemplate || this.parent.childGrid) {
-            let args: object = {};
+            const args: object = {};
             this.parent.notify(events.detailIndentCellInfo, args);
             cols.push(this.generateCell(args as Column, null, CellType.DetailExpand));
         }
@@ -54,7 +57,7 @@ export class RowModelGenerator implements IModelGenerator<Column> {
 
     protected generateRow(
         data: Object, index: number, cssClass?: string, indent?: number, pid?: number, tIndex?: number, parentUid?: string): Row<Column> {
-        let options: IRow<Column> = {};
+        const options: IRow<Column> = {};
         options.foreignKeyData = {};
         options.uid = getUid('grid-row');
         options.data = data;
@@ -76,23 +79,23 @@ export class RowModelGenerator implements IModelGenerator<Column> {
         options.isAltRow = this.parent.enableAltRow ? index % 2 !== 0 : false;
         options.isSelected = this.parent.getSelectedRowIndexes().indexOf(index) > -1;
         this.refreshForeignKeyRow(options);
-        let cells: Cell<Column>[] = this.ensureColumns();
-        let row: Row<Column> = new Row<Column>(<{ [x: string]: Object }>options, this.parent);
+        const cells: Cell<Column>[] = this.ensureColumns();
+        const row: Row<Column> = new Row<Column>(<{ [x: string]: Object }>options, this.parent);
         row.cells = this.parent.getFrozenMode() === 'Right' ? this.generateCells(options).concat(cells)
             : cells.concat(this.generateCells(options));
         return row;
     }
 
     protected refreshForeignKeyRow(options: IRow<Column>): void {
-        let foreignKeyColumns: Column[] = this.parent.getForeignKeyColumns();
+        const foreignKeyColumns: Column[] = this.parent.getForeignKeyColumns();
         for (let i: number = 0; i < foreignKeyColumns.length; i++) {
             setValue(foreignKeyColumns[i].field, getForeignData(foreignKeyColumns[i], options.data), options.foreignKeyData);
         }
     }
 
     protected generateCells(options: IRow<Column>): Cell<Column>[] {
-        let dummies: Column[] = this.parent.getColumns() as Column[];
-        let tmp: Cell<Column>[] = [];
+        const dummies: Column[] = this.parent.getColumns() as Column[];
+        const tmp: Cell<Column>[] = [];
 
         for (let i: number = 0; i < dummies.length; i++) {
             tmp.push(this.generateCell(
@@ -102,10 +105,21 @@ export class RowModelGenerator implements IModelGenerator<Column> {
         return tmp;
     }
 
-    protected generateCell(
+    /**
+     *
+     * @param {Column} column - Defines column details
+     * @param {string} rowId - Defines row id
+     * @param {CellType} cellType  - Defines cell type
+     * @param {number} colSpan - Defines colSpan
+     * @param {number} oIndex - Defines index
+     * @param {Object} foreignKeyData - Defines foreign key data
+     * @returns {Cell<Column>} returns cell model
+     * @hidden
+     */
+    public generateCell(
         column: Column, rowId?: string, cellType?: CellType, colSpan?: number,
         oIndex?: number, foreignKeyData?: Object): Cell<Column> {
-        let opt: ICell<Column> = {
+        const opt: ICell<Column> = {
             'visible': column.visible,
             'isDataCell': !isNullOrUndefined(column.field || column.template),
             'isTemplate': !isNullOrUndefined(column.template),

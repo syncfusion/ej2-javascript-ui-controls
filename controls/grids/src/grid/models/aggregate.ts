@@ -27,6 +27,7 @@ export class AggregateColumn extends ChildProperty<AggregateColumn> {
      * * falsecount
      * * custom
      * > Specify the `type` value as `custom` to use custom aggregation.
+     *
      * @aspType string
      * @default null
      */
@@ -35,6 +36,7 @@ export class AggregateColumn extends ChildProperty<AggregateColumn> {
 
     /**
      * Defines the column name to perform aggregation.
+     *
      * @default null
      */
     @Property()
@@ -43,19 +45,21 @@ export class AggregateColumn extends ChildProperty<AggregateColumn> {
     /**
      * Defines the column name to display the aggregate value. If `columnName` is not defined,
      * then `field` name value will be assigned to the `columnName` property.
+     *
      * @default null
      */
     @Property()
     public columnName: string;
 
-    /**    
+    /**
      * Format is applied to a calculated value before it is displayed.
      * Gets the format from the user, which can be standard or custom
      * [`number`](../../common/internationalization/#number-formatting/)
      * and [`date`](../../common/internationalization/#number-formatting/) formats.
+     *
      * @aspType string
      * @blazorType string
-     * @default null    
+     * @default null
      */
     @Property()
     public format: string | NumberFormatOptions | DateFormatOptions;
@@ -63,21 +67,23 @@ export class AggregateColumn extends ChildProperty<AggregateColumn> {
     /**
      * Defines the footer cell template as a string for the aggregate column.
      * The `type` name should be used to access aggregate values inside the template.
-     * 
+     *
      * {% codeBlock src="grid/footer-template-api/index.ts" %}{% endcodeBlock %}
+     *
      * @default null
      */
     @Property()
     public footerTemplate: string;
 
     /**
-     * Defines the group footer cell template as a string for the aggregate column. 
+     * Defines the group footer cell template as a string for the aggregate column.
      * The `type` name should be used to access aggregate values inside the template.
      * Additionally, the following fields can be accessed in the template.
      * * **field**: The current grouped field.
      * * **key**: The current grouped value.
-     * 
+     *
      * {% codeBlock src="grid/group-footer-api/index.ts" %}{% endcodeBlock %}
+     *
      * @default null
      */
     @Property()
@@ -89,8 +95,9 @@ export class AggregateColumn extends ChildProperty<AggregateColumn> {
      * Additionally, the following fields can be accessed in the template.
      * * **field**: The current grouped field name.
      * * **key**: The current grouped field value.
-     * 
+     *
      * {% codeBlock src="grid/group-caption-api/index.ts" %}{% endcodeBlock %}
+     *
      * @default null
      */
     @Property()
@@ -101,24 +108,29 @@ export class AggregateColumn extends ChildProperty<AggregateColumn> {
      * To use custom aggregate value in the template, use the key as `${custom}`.
      * **Total aggregation**: The custom function will be called with the whole data and the current `AggregateColumn` object.
      * **Group aggregation**: This will be called with the current group details and the `AggregateColumn` object.
-     * 
+     *
      * @default null
      */
     @Property()
     public customAggregate: CustomSummaryType | string;
     /**
+     * @param {Function} value - specifies the value
+     * @returns {void}
      * @hidden
      */
     public setFormatter(value: Function): void {
         this.formatFn = value;
     }
     /**
+     * @returns {Function} returns the Function
      * @hidden
      */
     public getFormatter(): Function {
         return this.formatFn;
     }
     /**
+     * @param {Object} helper - specifies the helper
+     * @returns {void}
      * @hidden
      */
     public setTemplate(helper: Object = {}): void {
@@ -139,6 +151,8 @@ export class AggregateColumn extends ChildProperty<AggregateColumn> {
         }
     }
     /**
+     * @param {CellType} type - specifies the cell type
+     * @returns {Object} returns the object
      * @hidden
      */
     public getTemplate(type: CellType): { fn: Function, property: string } {
@@ -146,6 +160,8 @@ export class AggregateColumn extends ChildProperty<AggregateColumn> {
     }
 
     /**
+     * @param {Object} prop - returns the Object
+     * @returns {void}
      * @hidden
      */
     public setPropertiesSilent(prop: Object): void {
@@ -155,16 +171,16 @@ export class AggregateColumn extends ChildProperty<AggregateColumn> {
 }
 
 /**
- * Configures the aggregate rows. 
+ * Configures the aggregate rows.
  */
 export class AggregateRow extends ChildProperty<AggregateRow> {
 
     /**
-     * Configures the aggregate columns. 
+     * Configures the aggregate columns.
+     *
      * @default []
      */
     @Collection<AggregateColumnModel>([], AggregateColumn)
     public columns: AggregateColumnModel[];
 
 }
-

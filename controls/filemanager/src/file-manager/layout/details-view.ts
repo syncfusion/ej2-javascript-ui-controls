@@ -741,7 +741,7 @@ export class DetailsView {
     private onRefreshEnd(args: ReadArgs): void {
         if (this.parent.view !== 'Details') { return; }
         this.isInteracted = false;
-        this.removePathColumn(true);
+        this.removePathColumn(false);
         this.gridObj.dataSource = getSortedData(this.parent, args.files);
         this.emptyArgs = args;
     }
@@ -981,6 +981,7 @@ export class DetailsView {
                 if (this.dragObj) { this.dragObj.destroy(); }
                 this.dragObj = new Draggable(this.gridObj.element, {
                     cursorAt: this.parent.dragCursorPosition,
+                    distance: 5,
                     enableTailMode: true,
                     dragArea: this.parent.element,
                     dragTarget: '.' + CLS.ROW,

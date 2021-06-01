@@ -1477,6 +1477,7 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
                         s = sheet + s;
                     }
                     textName = this.getParentObjectCellValue(s).toString();
+                    sheet = '';
                     if (typeof textName === 'string' && this.getErrorStrings().indexOf(textName) > -1) {
                         return textName;
                     }

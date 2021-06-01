@@ -5,6 +5,7 @@ import { DataManager } from '@syncfusion/ej2-data';
 
 /**
  * Row
+ *
  * @hidden
  */
 export class Row<T> {
@@ -73,7 +74,7 @@ export class Row<T> {
     }
 
     public clone(): Row<T> {
-        let row: Row<T> = new Row<T>({});
+        const row: Row<T> = new Row<T>({});
         merge(row, this);
         row.cells = this.cells.map((cell: Cell<T>) => cell.clone());
         return row;
@@ -81,31 +82,33 @@ export class Row<T> {
 
     /**
      * Replaces the row data and grid refresh the particular row element only.
+     *
      * @param  {Object} data - To update new data for the particular row.
-     * @return {void}
+     * @returns {void}
      */
     public setRowValue(data: Object): void {
         if (!this.parent) {
             return;
         }
-        let key: string | number = this.data[this.parent.getPrimaryKeyFieldNames()[0]];
+        const key: string | number = this.data[this.parent.getPrimaryKeyFieldNames()[0]];
         this.parent.setRowData(key, data);
     }
 
     /**
      * Replaces the given field value and refresh the particular cell element only.
+     *
      * @param {string} field - Specifies the field name which you want to update.
      * @param {string | number | boolean | Date} value - To update new value for the particular cell.
-     * @return {void}
+     * @returns {void}
      */
     public setCellValue(field: string, value: string | number | boolean | Date): void {
         if (!this.parent) {
             return;
         }
-        let isValDiff: boolean = !(this.data[field].toString() === value.toString());
+        const isValDiff: boolean = !(this.data[field].toString() === value.toString());
         if (isValDiff) {
-            let pKeyField: string = this.parent.getPrimaryKeyFieldNames()[0];
-            let key: string | number = this.data[pKeyField];
+            const pKeyField: string = this.parent.getPrimaryKeyFieldNames()[0];
+            const key: string | number = this.data[pKeyField];
             this.parent.setCellValue(key, field, value);
             this.makechanges(pKeyField, this.data);
         } else {
@@ -117,9 +120,8 @@ export class Row<T> {
         if (!this.parent) {
             return;
         }
-        let gObj: IGrid = this.parent;
-        let dataManager: DataManager = gObj.getDataModule().dataManager;
+        const gObj: IGrid = this.parent;
+        const dataManager: DataManager = gObj.getDataModule().dataManager;
         dataManager.update(key, data);
     }
-
 }

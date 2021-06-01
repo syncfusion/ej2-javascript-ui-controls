@@ -777,7 +777,8 @@ export class ConnectTool extends ToolBase {
             return true;
         } else if (canPortOutConnect(target) && this.endPoint === 'ConnectorSourceEnd') {
             return true;
-        } else if (!(target.constraints & PortConstraints.None) && !canPortInConnect(target) && !canPortOutConnect(target)) {
+        } else if (!(target.constraints & PortConstraints.None) && !canPortInConnect(target) && !canPortOutConnect(target) 
+        && (target.constraints == undefined || (target.constraints & (PortConstraints.Default & ~(PortConstraints.InConnect | PortConstraints.OutConnect))) > 0)) {
             return true;
         }
         return false;

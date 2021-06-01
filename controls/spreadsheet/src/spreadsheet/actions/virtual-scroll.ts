@@ -249,7 +249,7 @@ export class VirtualScroll {
     private skipHiddenIdx(
         index: number, increase: boolean, layout: string = 'rows', sheet: SheetModel = this.parent.getActiveSheet()): number {
         if ((sheet[layout])[index] && (sheet[layout])[index].hidden) {
-            index = increase ? index++ : index--;
+            index = increase ? ++index : --index;
             index = this.skipHiddenIdx(index, increase, layout, sheet);
         }
         return index;

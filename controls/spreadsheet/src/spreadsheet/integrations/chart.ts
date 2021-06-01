@@ -17,7 +17,7 @@ import { getTypeFromFormat } from '../../workbook/integrations/index';
 import { updateChart, deleteChartColl, getFormattedCellObject, setChart, getCellAddress, ChartTheme } from '../../workbook/common/index';
 import { insertChart, chartRangeSelection, addChartEle, chartDesignTab, removeDesignChart } from '../common/index';
 import { DataLabel, DataLabelSettingsModel, IBeforeResizeEventArgs } from '@syncfusion/ej2-charts';
-import { LegendSettingsModel, LabelPosition, ChartType, getCellIndexes } from '../../workbook/common/index';
+import { LegendSettingsModel, LabelPosition, ChartType, getCellIndexes, isHiddenCol } from '../../workbook/index';
 
 Chart.Inject(ColumnSeries, LineSeries, BarSeries, AreaSeries, StackingColumnSeries, StackingLineSeries, StackingBarSeries, ScatterSeries);
 Chart.Inject(StackingAreaSeries, Category, Legend, Tooltip, DataLabel);
@@ -297,34 +297,24 @@ export class SpreadsheetChart {
     }
 
     private getRangeData(options: { range: number[], sheetIdx: number, skipFormula: boolean, isYvalue: boolean }): { value: number }[] {
-        options.sheetIdx = isNullOrUndefined(options.sheetIdx) ? this.parent.getActiveSheet().index : options.sheetIdx;
-        const sheet: SheetModel = this.parent.sheets[options.sheetIdx];
         options.range = this.toIntrnlRange(options.range, options.sheetIdx);
-        let minc: number; let maxr: number;
         const rowIdx: number[] = []; const arr: { value: number }[] = [];
-        const skipVirtualHiddenRow: boolean = false;
-        const minr: number = options.range[0];
-        maxr = options.range[2];
-        const maxc: number = options.range[3];
-        const isRowHidden: boolean = isHiddenRow(sheet, minr);
-        if (skipVirtualHiddenRow && isRowHidden) {
-            maxr++;
-        } else if (!isRowHidden) {
-            minc = skipVirtualHiddenRow ? 0 : options.range[1];
-            this.pushRowData(options, minr, minc, maxr, maxc, arr, rowIdx, true, options.isYvalue);
-        }
+        this.pushRowData(
+            options, options.range[0], options.range[1], options.range[2], options.range[3], arr, rowIdx, true, options.isYvalue);
         return arr;
     }
 
     private pushRowData(
         options: { range: number[], sheetIdx: number, skipFormula: boolean }, minr: number,
         minc: number, maxr: number, maxc: number, arr: object[], rowIdx: number[], isDataSrcEnsured: boolean, isYvalue: boolean): void {
-        const minCol: number = minc;
+        const minCol: number = minc; const sheet: SheetModel = this.parent.sheets[options.sheetIdx];
         while (minr <= maxr) {
+            if (isHiddenRow(sheet, minr)) { minr++; continue; }
             minc = minCol;
             while (minc <= maxc) {
+                if (isHiddenCol(sheet, minc)) { minc++; continue; }
                 let value: string | number = '';
-                const cell: CellModel = getCell(minr, minc, this.parent.sheets[options.sheetIdx]);
+                const cell: CellModel = getCell(minr, minc, sheet);
                 if (cell && cell.format && !isYvalue) {
                     const forArgs: { [key: string]: string | boolean | CellModel } = {
                         value: cell && cell.value, format: cell && cell.format ? cell.format : 'General',
@@ -386,9 +376,11 @@ export class SpreadsheetChart {
         let j: number;
         let i: number = 0; let yInc: number = 0;
         const sArr: SeriesModel[] = []; let dtVal: number;
+        sheetIndex = isNullOrUndefined(sheetIndex) ? this.parent.getActiveSheet().index : sheetIndex;
+        const sheet: SheetModel = this.parent.sheets[sheetIndex];
         const yValue: { value: number }[] = this.getRangeData({ range: yRange, sheetIdx: sheetIndex, skipFormula: true, isYvalue: true });
-        const rDiff: number = (yRange[2] - yRange[0]) + 1;
-        const cDiff: number = (yRange[3] - yRange[1]) + 1;
+        const rDiff: number = ((yRange[2] - yRange[0]) + 1) - this.parent.hiddenCount(yRange[0], yRange[2], 'rows', sheet);
+        const cDiff: number = ((yRange[3] - yRange[1]) + 1) - this.parent.hiddenCount(yRange[0], yRange[2], 'columns', sheet);
         if (options.isSeriesInRows) {
             xValue = lRange ? this.toArrayData(
                 this.getRangeData({ range: lRange, sheetIdx: sheetIndex, skipFormula: false, isYvalue: false })) :

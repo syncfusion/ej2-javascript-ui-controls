@@ -2306,11 +2306,13 @@ export class CommandHandler {
                 if (this.diagram.mode === 'SVG') {
                     let i: number = 1;
                     let target: string = zIndexTable[i];
-                    // EJ2-46656 - CR issue fix
-                    target = this.resetTargetNode(objectId,target,i,zIndexTable)
+                    
+                    // EJ2-49326 - (CR issue fix) An exception raised when send the swimlane back to the normal node.
                     while (!target && i < index) {
                         target = zIndexTable[++i];
                     }
+                    // EJ2-46656 - CR issue fix
+                    target = this.resetTargetNode(objectId,target,i,zIndexTable);                    
                     target = this.diagram.nameTable[target].parentId ? this.checkParentExist(target) : target;
                     this.moveSvgNode(objectId, target);
                     this.updateNativeNodeIndex(objectId);
@@ -2463,29 +2465,28 @@ export class CommandHandler {
                     const htmlLayer: HTMLElement = getHTMLLayer(this.diagram.element.id);
                     this.diagram.diagramRenderer.renderElement(this.diagram.nameTable[objectName].wrapper, diagramLayer, htmlLayer);
                 } else {
-                    //const target: string;
-                    const layer: LayerModel = this.getObjectLayer(objectName);
-                    for (let i: number = 0; i < layer.objects.length; i++) {
-                        if ((layer.objects[i] !== objectName) && (this.diagram.nameTable[layer.objects[i]].parentId) !== objectName) {
+                    Object.keys(zIndexTable).forEach((key: string) => {
+                        let zIndexValue: string = zIndexTable[key];
+                        if ((zIndexValue !== objectName) && (this.diagram.nameTable[zIndexValue].parentId) !== objectName) {
                             //EJ2-42101 - SendToBack and BringToFront not working for connector with group node
                             //Added @Dheepshiva to restrict the objects with lower zIndex
-                            if (layer.objects[i] !== undefined &&
-                                (oldzIndexTable.indexOf(objectName) < oldzIndexTable.indexOf(layer.objects[i]))) {
-                                if (this.diagram.nameTable[objectName].parentId === ''
-                                && this.diagram.nameTable[layer.objects[i]].parentId === '' 
-                                && this.diagram.nameTable[layer.objects[i]].parentId === undefined
-                                    && this.diagram.nameTable[objectName].parentId !== this.diagram.nameTable[layer.objects[i]].id) {
-                                    this.moveSvgNode(layer.objects[i], objectName);
+                            if (zIndexValue !== undefined &&
+                                (oldzIndexTable.indexOf(objectName) < oldzIndexTable.indexOf(zIndexValue))) {
+                                let objectNode: Node | Connector = this.diagram.nameTable[objectName];
+                                let zIndexNode: Node | Connector = this.diagram.nameTable[zIndexValue];
+                                if (objectNode.parentId === '' && zIndexNode.parentId === '' && zIndexNode.parentId === undefined
+                                    && objectNode.parentId !== zIndexNode.id) {
+                                    this.moveSvgNode(zIndexValue, objectName);
                                     this.updateNativeNodeIndex(objectName);
                                 } else {
-                                    if (this.checkGroupNode(objectName, layer.objects[i], this.diagram.nameTable)) {
-                                        this.moveSvgNode(layer.objects[i], objectName);
+                                    if (this.checkGroupNode(objectName, zIndexValue, this.diagram.nameTable)) {
+                                        this.moveSvgNode(zIndexValue, objectName);
                                         this.updateNativeNodeIndex(objectName);
                                     }
                                 }
                             }
                         }
-                    }
+                    });
                 }
             } else {
                 this.diagram.refreshCanvasLayers();

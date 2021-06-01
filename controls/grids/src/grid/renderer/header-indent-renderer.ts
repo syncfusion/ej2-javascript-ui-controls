@@ -4,7 +4,8 @@ import { CellRenderer } from './cell-renderer';
 import { Column } from '../models/column';
 
 /**
- * HeaderIndentCellRenderer class which responsible for building header indent cell. 
+ * HeaderIndentCellRenderer class which responsible for building header indent cell.
+ *
  * @hidden
  */
 export class HeaderIndentCellRenderer extends CellRenderer implements ICellRenderer<Column> {
@@ -13,11 +14,14 @@ export class HeaderIndentCellRenderer extends CellRenderer implements ICellRende
 
     /**
      * Function to render the indent cell
-     * @param  {Cell} cell
-     * @param  {Object} data        
+     *
+     * @param  {Cell} cell - specifies the cell
+     * @param  {Object} data - specifies the data
+     * @returns {Element} returns the element
      */
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     public render(cell: Cell<Column>, data: Object): Element {
-        let node: Element = this.element.cloneNode() as Element;
+        const node: Element = this.element.cloneNode() as Element;
         node.appendChild(this.parent.createElement('div', { className: 'e-headercelldiv e-emptycell', innerHTML: '' }));
         return node;
     }

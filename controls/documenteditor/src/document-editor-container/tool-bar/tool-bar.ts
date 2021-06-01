@@ -779,9 +779,12 @@ export class Toolbar {
             this.enableDisableFormField(!this.documentEditor.enableHeaderAndFooter && enable && !this.documentEditor.isReadOnlyMode);
         }
         if (this.documentEditor.selection.isinFootnote || this.documentEditor.selection.isinEndnote) {
-            enable = false;
-            this.toolbar.enableItems(document.getElementById(id + ENDNOTE_ID).parentElement, enable);
-            this.toolbar.enableItems(document.getElementById(id + FOOTNOTE_ID).parentElement, enable);
+            if (this.containsItem(id + ENDNOTE_ID)) {
+                this.toolbar.enableItems(document.getElementById(id + ENDNOTE_ID).parentElement, false);
+            }
+            if (this.containsItem(id + FOOTNOTE_ID)) {
+                this.toolbar.enableItems(document.getElementById(id + FOOTNOTE_ID).parentElement, false);
+            }
         }
         if (!isProtectedContent || this.container.showPropertiesPane) {
             if (isProtectedContent) {
@@ -793,6 +796,14 @@ export class Toolbar {
             this.documentEditor.documentHelper.protectionType === 'FormFieldsOnly')) {
             this.enableDisableUndoRedo();
         }
+    }
+    private containsItem(id: string): boolean {
+        for (const item of this.toolbar.items) {
+            if (item.id === id) {
+                return true;
+            }
+        }
+        return false;
     }
     /**
      * @private

@@ -3485,3 +3485,31 @@ describe('EJ2-45604 - Dialogs primary button without flat appearance', () => {
         expect(buttonElements[0].classList.contains('e-flat')).toBe(false);
     });
 });
+
+describe('EJ2-49019 - Dialog z-index changes every time when closed and opened', () => {
+    let dialog: Dialog;
+    beforeEach(() => {
+        let target: HTMLElement = createElement('div', { id: 'block' });
+        document.body.appendChild(target);
+        dialog = undefined;
+        let ele: HTMLElement = createElement('div', { id: 'dialog' });
+        document.body.appendChild(ele);
+        dialog = new Dialog({
+            header: "Zindex Testing",
+            target: target,
+            animationSettings: { effect: 'None' }
+        }, '#dialog');
+    });
+    afterEach(() => {
+        destroyDialog(dialog);
+    });
+
+    it('Dialog Z-index checking with hide/show', () => {
+        expect((dialog.element as HTMLElement).style.zIndex).toBe('1000');
+        (dialog.element as HTMLElement).style.zIndex = "1000";
+        (dialog.element as HTMLElement).style.position = "absolute";
+        dialog.hide();
+        dialog.show();
+        expect((dialog.element as HTMLElement).style.zIndex).toBe('1000');
+    });
+});

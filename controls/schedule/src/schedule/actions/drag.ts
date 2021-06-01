@@ -1075,7 +1075,8 @@ export class DragAndDrop extends ActionBase {
         translateY = (isNullOrUndefined(translateY)) ? 0 : translateY;
         const rowHeight: number = (this.parent.rowAutoHeight) ?
             ~~(dragArea.querySelector('table').offsetHeight / trCollection.length) : this.actionObj.cellHeight;
-        let rowIndex: number = Math.floor(Math.floor((this.actionObj.Y + (dragArea.scrollTop - translateY - window.scrollY)) -
+        let rowIndex: number = Math.floor(Math.floor((this.actionObj.Y +
+            (dragArea.scrollTop - translateY - (window.scrollY || window.pageYOffset))) -
             dragArea.getBoundingClientRect().top) / rowHeight);
         rowIndex = (rowIndex < 0) ? 0 : (rowIndex > trCollection.length - 1) ? trCollection.length - 1 : rowIndex;
         this.actionObj.index = rowIndex;

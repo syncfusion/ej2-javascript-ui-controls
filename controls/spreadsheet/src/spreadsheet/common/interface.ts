@@ -1,5 +1,5 @@
-import { CellModel, BeforeSortEventArgs, SheetModel, InsertDeleteEventArgs, ImageModel } from './../../workbook/index';
-import { ValidationType, ValidationOperator, MergeArgs, HyperlinkModel, TopBottom, ChartType } from './../../workbook/index';
+import { CellModel, BeforeSortEventArgs, SheetModel, ImageModel, ChartType, ConditionalFormatModel } from './../../workbook/index';
+import { ValidationType, ValidationOperator, MergeArgs, InsertDeleteEventArgs, HyperlinkModel, TopBottom } from './../../workbook/index';
 import { RefreshType } from './index';
 import { MenuEventArgs } from '@syncfusion/ej2-navigations';
 import { BaseEventArgs, KeyboardEventArgs } from '@syncfusion/ej2-base';
@@ -300,6 +300,22 @@ export interface CellSaveEventArgs {
     displayText?: string;
     /** Defines the type of Event. */
     originalEvent?: MouseEvent & TouchEvent | KeyboardEventArgs;
+}
+
+/**
+ * CellSaveEventArgs
+ */
+ export interface ConditionalFormatEventArgs {
+    /** Defines the applied conditional format. */
+    conditionalFormat: ConditionalFormatModel;
+    /** Defines the cell element. */
+    element: HTMLElement;
+    /** Defines the cell model */
+    cell: CellModel;
+    /** Defines the address. */
+    address: string;
+    /** Defines whether the formatting is applied to a cell or not. */
+    apply: boolean;
 }
 
 /** @hidden */

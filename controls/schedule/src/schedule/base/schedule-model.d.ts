@@ -293,10 +293,12 @@ export interface ScheduleModel extends ComponentModel{
      * The template option which is used to render the customized work cells on the Schedule. Here, the template accepts either
      *  the string or HTMLElement as template design and then the parsed design is displayed onto the work cells.
      *  The fields accessible via template are as follows.
-     *  * date
-     *  * groupIndex
-     *  * type
+     * * date
+     * * groupIndex
+     * * type
      *
+     * Refer to the below code snippet
+     * 
      * {% codeBlock src='schedule/cellTemplate/index.md' %}{% endcodeBlock %}
      *
      * @default null
@@ -458,6 +460,9 @@ export interface ScheduleModel extends ComponentModel{
      * The following can be accessible via template.
      * * resource - All the resource fields.
      * * resourceData - object collection of current resource.
+     * 
+     * Refer to the below code snippet
+     * 
      * {% codeBlock src='schedule/resourceHeaderTemplate/index.md' %}{% endcodeBlock %}
      *
      * @default null

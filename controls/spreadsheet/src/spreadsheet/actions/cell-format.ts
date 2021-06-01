@@ -3,7 +3,7 @@ import { getExcludedColumnWidth, selectRange } from '../common/index';
 import { rowHeightChanged, setRowEleHeight, setMaxHgt, getTextHeight, getMaxHgt, getLines, initialLoad } from '../common/index';
 import { CellFormatArgs, getRowHeight, applyCellFormat, CellStyleModel, CellStyleExtendedModel, CellModel, Workbook} from '../../workbook/index';
 import { SheetModel, isHiddenRow, getCell, getRangeIndexes, getSheetIndex, clearCFRule } from '../../workbook/index';
-import {  wrapEvent, getRangeAddress, ClearOptions,  clear } from '../../workbook/index';
+import { wrapEvent, getRangeAddress, ClearOptions, clear, activeCellMergedRange } from '../../workbook/index';
 import { removeClass, isNullOrUndefined } from '@syncfusion/ej2-base';
 /**
  * CellFormat module allows to format the cell styles.
@@ -23,6 +23,7 @@ export class CellFormat {
         if (args.lastCell && getMaxHgt(sheet, args.rowIdx) <= 20 && !keys.length) { return; }
         const cell: HTMLElement = args.cell || this.parent.getCell(args.rowIdx, args.colIdx);
         if (cell) {
+            this.updateMergeBorder(args, sheet);
             if (args.style.border !== undefined || args.style.borderTop !== undefined || args.style.borderLeft !== undefined) {
                 const curStyle: CellStyleModel = {};
                 Object.keys(args.style).forEach((key: string): void => { curStyle[key] = args.style[key]; });
@@ -143,6 +144,24 @@ export class CellFormat {
                         setRowEleHeight(this.parent, sheet, maxHgt, rowIdx, row);
                     }
                 }
+            }
+        }
+    }
+
+    private updateMergeBorder(args: CellFormatArgs, sheet: SheetModel): void {
+        const cellModel: CellModel = getCell(args.rowIdx, args.colIdx, sheet, null, true);
+        const mergeArgs: { range: number[] } = { range: [args.rowIdx, args.colIdx, args.rowIdx, args.colIdx] };
+        this.parent.notify(activeCellMergedRange, mergeArgs);
+        if (cellModel.rowSpan > 1 && !args.style.borderBottom) {
+            const bottomCell: CellModel = getCell(mergeArgs.range[2], mergeArgs.range[1], sheet, null, true);
+            if (bottomCell.style && bottomCell.style.borderBottom) {
+                args.style.borderBottom = bottomCell.style.borderBottom;
+            }
+        }
+        if (cellModel.colSpan > 1 && !args.style.borderRight) {
+            const rightCell: CellModel = getCell(mergeArgs.range[0], mergeArgs.range[3], sheet, null, true);
+            if (rightCell.style && rightCell.style.borderRight) {
+                args.style.borderRight = rightCell.style.borderRight;
             }
         }
     }

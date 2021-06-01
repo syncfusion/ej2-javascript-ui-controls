@@ -90,7 +90,6 @@ export class ContextMenu implements IAction {
     public isOpen: boolean;
     public row: HTMLTableRowElement;
     public cell: HTMLTableCellElement;
-    private keyPressHandlerFunction: Function;
     private targetRowdata: RowInfo;
 
     constructor(parent?: IGrid, serviceLocator?: ServiceLocator) {
@@ -99,7 +98,9 @@ export class ContextMenu implements IAction {
         this.serviceLocator = serviceLocator;
         this.addEventListener();
     }
+
     /**
+     * @returns {void}
      * @hidden
      */
     public addEventListener(): void {
@@ -109,6 +110,7 @@ export class ContextMenu implements IAction {
     }
 
     /**
+     * @returns {void}
      * @hidden
      */
     public removeEventListener(): void {
@@ -135,7 +137,7 @@ export class ContextMenu implements IAction {
         this.element = this.parent.createElement('ul', { id: this.gridID + '_cmenu' }) as HTMLUListElement;
         EventHandler.add(this.element, 'keydown', this.keyDownHandler.bind(this));
         this.parent.element.appendChild(this.element);
-        let target: string = '#' + this.gridID;
+        const target: string = '#' + this.gridID;
         this.contextMenu = new Menu({
             items: this.getMenuItems(),
             enableRtl: this.parent.enableRtl,
@@ -163,9 +165,9 @@ export class ContextMenu implements IAction {
     }
 
     private getMenuItems(): ContextMenuItemModel[] {
-        let menuItems: MenuItemModel[] = [];
-        let exportItems: MenuItemModel[] = [];
-        for (let item of this.parent.contextMenuItems) {
+        const menuItems: MenuItemModel[] = [];
+        const exportItems: MenuItemModel[] = [];
+        for (const item of this.parent.contextMenuItems) {
             if (typeof item === 'string' && this.getDefaultItems().indexOf(item) !== -1) {
                 if (item.toLocaleLowerCase().indexOf('export') !== -1) {
                     exportItems.push(this.buildDefaultItems(item));
@@ -177,7 +179,7 @@ export class ContextMenu implements IAction {
             }
         }
         if (exportItems.length > 0) {
-            let exportGroup: ContextMenuItemModel = this.buildDefaultItems('export');
+            const exportGroup: ContextMenuItemModel = this.buildDefaultItems('export');
             exportGroup.items = exportItems;
             menuItems.push(exportGroup);
         }
@@ -195,91 +197,95 @@ export class ContextMenu implements IAction {
     private contextMenuOpen(): void {
         this.isOpen = true;
     }
+
     /**
+     * @param {ContextMenuClickEventArgs} args - specifies the ContextMenuClickEventArgs argument type
+     * @returns {void}
      * @hidden
      */
     public contextMenuItemClick(args: ContextMenuClickEventArgs): void {
-        let item: string = this.getKeyFromId(args.item.id);
+        const item: string = this.getKeyFromId(args.item.id);
         switch (item) {
-            case 'AutoFitAll':
-                this.parent.autoFitColumns([]);
-                break;
-            case 'AutoFit':
-                this.parent.autoFitColumns(this.targetColumn.field);
-                break;
-            case 'Group':
-                this.parent.groupColumn(this.targetColumn.field);
-                break;
-            case 'Ungroup':
-                this.parent.ungroupColumn(this.targetColumn.field);
-                break;
-            case 'Edit':
-                if (this.parent.editModule) {
-                    if (this.parent.editSettings.mode === 'Batch') {
-                        if (this.row && this.cell && !isNaN(parseInt(this.cell.getAttribute(literals.ariaColIndex), 10))) {
-                            this.parent.editModule.editCell(parseInt(this.row.getAttribute(literals.ariaRowIndex), 10), (this.parent.getColumns()
-                            [parseInt(this.cell.getAttribute(literals.ariaColIndex), 10)] as Column).field);
-                        }
-                    } else {
-                        this.parent.editModule.endEdit();
-                        this.parent.editModule.startEdit(this.row);
+        case 'AutoFitAll':
+            this.parent.autoFitColumns([]);
+            break;
+        case 'AutoFit':
+            this.parent.autoFitColumns(this.targetColumn.field);
+            break;
+        case 'Group':
+            this.parent.groupColumn(this.targetColumn.field);
+            break;
+        case 'Ungroup':
+            this.parent.ungroupColumn(this.targetColumn.field);
+            break;
+        case 'Edit':
+            if (this.parent.editModule) {
+                if (this.parent.editSettings.mode === 'Batch') {
+                    if (this.row && this.cell && !isNaN(parseInt(this.cell.getAttribute(literals.ariaColIndex), 10))) {
+                        this.parent.editModule.editCell(parseInt(this.row.getAttribute(literals.ariaRowIndex), 10),
+                                                        // eslint-disable-next-line
+                                                        (this.parent.getColumns()[parseInt(this.cell.getAttribute(literals.ariaColIndex), 10)] as Column).field);
                     }
+                } else {
+                    this.parent.editModule.endEdit();
+                    this.parent.editModule.startEdit(this.row);
                 }
-                break;
-            case 'Delete':
-                if (this.parent.editModule) {
-                    if (this.parent.editSettings.mode !== 'Batch') {
-                        this.parent.editModule.endEdit();
-                    }
-                    if (this.parent.getSelectedRecords().length === 1) {
-                        this.parent.editModule.deleteRow(this.row);
-                    } else {
-                        this.parent.deleteRecord();
-                    }
-                }
-                break;
-            case 'Save':
-                if (this.parent.editModule) {
+            }
+            break;
+        case 'Delete':
+            if (this.parent.editModule) {
+                if (this.parent.editSettings.mode !== 'Batch') {
                     this.parent.editModule.endEdit();
                 }
-                break;
-            case 'Cancel':
-                if (this.parent.editModule) {
-                    this.parent.editModule.closeEdit();
+                if (this.parent.getSelectedRecords().length === 1) {
+                    this.parent.editModule.deleteRow(this.row);
+                } else {
+                    this.parent.deleteRecord();
                 }
-                break;
-            case 'Copy':
-                this.parent.copy();
-                break;
-            case 'PdfExport':
-                this.parent.pdfExport();
-                break;
-            case 'ExcelExport':
-                this.parent.excelExport();
-                break;
-            case 'CsvExport':
-                this.parent.csvExport();
-                break;
-            case 'SortAscending':
-                this.isOpen = false;
-                this.parent.sortColumn(this.targetColumn.field, 'Ascending');
-                break;
-            case 'SortDescending':
-                this.isOpen = false;
-                this.parent.sortColumn(this.targetColumn.field, 'Descending');
-                break;
-            case 'FirstPage':
-                this.parent.goToPage(1);
-                break;
-            case 'PrevPage':
-                this.parent.goToPage(this.parent.pageSettings.currentPage - 1);
-                break;
-            case 'LastPage':
-                this.parent.goToPage(this.getLastPage());
-                break;
-            case 'NextPage':
-                this.parent.goToPage(this.parent.pageSettings.currentPage + 1);
-                break;
+            }
+            break;
+        case 'Save':
+            if (this.parent.editModule) {
+                this.parent.editModule.endEdit();
+            }
+            break;
+        case 'Cancel':
+            if (this.parent.editModule) {
+                this.parent.editModule.closeEdit();
+            }
+            break;
+        case 'Copy':
+            this.parent.copy();
+            break;
+        case 'PdfExport':
+            this.parent.pdfExport();
+            break;
+        case 'ExcelExport':
+            this.parent.excelExport();
+            break;
+        case 'CsvExport':
+            this.parent.csvExport();
+            break;
+        case 'SortAscending':
+            this.isOpen = false;
+            this.parent.sortColumn(this.targetColumn.field, 'Ascending');
+            break;
+        case 'SortDescending':
+            this.isOpen = false;
+            this.parent.sortColumn(this.targetColumn.field, 'Descending');
+            break;
+        case 'FirstPage':
+            this.parent.goToPage(1);
+            break;
+        case 'PrevPage':
+            this.parent.goToPage(this.parent.pageSettings.currentPage - 1);
+            break;
+        case 'LastPage':
+            this.parent.goToPage(this.getLastPage());
+            break;
+        case 'NextPage':
+            this.parent.goToPage(this.parent.pageSettings.currentPage + 1);
+            break;
         }
         args.column = this.targetColumn;
         args.rowInfo = this.targetRowdata;
@@ -287,7 +293,7 @@ export class ContextMenu implements IAction {
     }
 
     private contextMenuOnClose(args: OpenCloseMenuEventArgs): void {
-        let parent: string = 'parentObj';
+        const parent: string = 'parentObj';
         if (args.items.length > 0 && args.items[0][parent] instanceof Menu) {
             this.updateItemStatus();
         }
@@ -306,7 +312,7 @@ export class ContextMenu implements IAction {
     }
 
     private contextMenuBeforeOpen(args: ContextMenuOpenEventArgs): void {
-        let closestGrid: Element = closest(args.event.target as Element, '.e-grid');
+        const closestGrid: Element = closest(args.event.target as Element, '.e-grid');
         if (args.event && closestGrid && closestGrid !== this.parent.element) {
             args.cancel = true;
         } else if (args.event && (closest(args.event.target as Element, '.' + menuClass.groupHeader)
@@ -325,11 +331,11 @@ export class ContextMenu implements IAction {
                     && this.parent.selectionSettings.type === 'Multiple') ? false : true);
                 }
             }
-            let hideSepItems: string[] = [];
-            let showSepItems: string[] = [];
-            for (let item of args.items) {
-                let key: string = this.getKeyFromId(item.id);
-                let dItem: ContextMenuItemModel = this.defaultItems[key];
+            const hideSepItems: string[] = [];
+            const showSepItems: string[] = [];
+            for (const item of args.items) {
+                const key: string = this.getKeyFromId(item.id);
+                const dItem: ContextMenuItemModel = this.defaultItems[key];
                 if (this.getDefaultItems().indexOf(key) !== -1) {
                     if (this.ensureDisabledStatus(key)) {
                         this.disableItems.push(item.text);
@@ -393,97 +399,98 @@ export class ContextMenu implements IAction {
             && closest(targetElement, menuClass.header) ? true : false;
     }
 
-    private ensureDisabledStatus(item: string): Boolean {
-        let status: Boolean = false;
+    private ensureDisabledStatus(item: string): boolean {
+        let status: boolean = false;
         switch (item) {
-            case 'AutoFitAll':
-            case 'AutoFit':
-                status = !(this.parent.ensureModuleInjected(Resize) && !this.parent.isEdit)
-                || (this.targetColumn && !this.targetColumn.field && item === 'AutoFit');
-                break;
-            case 'Group':
-                if (!this.parent.allowGrouping || (this.parent.ensureModuleInjected(Group) && this.targetColumn
-                    && this.parent.groupSettings.columns.indexOf(this.targetColumn.field) >= 0) ||
-                    (this.targetColumn && !this.targetColumn.field)) {
-                    status = true;
-                }
-                break;
-            case 'Ungroup':
-                if (!this.parent.allowGrouping || !this.parent.ensureModuleInjected(Group)
-                    || (this.parent.ensureModuleInjected(Group) && this.targetColumn
-                        && this.parent.groupSettings.columns.indexOf(this.targetColumn.field) < 0)) {
-                    status = true;
-                }
-                break;
-            case 'Edit':
-            case 'Delete':
-            case 'Save':
-            case 'Cancel':
-                if (!this.parent.editModule || (this.parent.getDataRows().length === 0)) {
-                    status = true;
-                }
-                break;
-            case 'Copy':
-                if (this.parent.getSelectedRowIndexes().length === 0 ||
-                    this.parent.getCurrentViewRecords().length === 0) {
-                    status = true;
-                }
-                break;
-            case 'export':
-                if ((!this.parent.allowExcelExport || !this.parent.excelExport) ||
-                    !this.parent.ensureModuleInjected(PdfExport) && !this.parent.ensureModuleInjected(ExcelExport)) {
-                    status = true;
-                }
-                break;
-            case 'PdfExport':
-                if (!(this.parent.allowPdfExport) || !this.parent.ensureModuleInjected(PdfExport)) {
-                    status = true;
-                }
-                break;
-            case 'ExcelExport':
-            case 'CsvExport':
-                if (!(this.parent.allowExcelExport) || !this.parent.ensureModuleInjected(ExcelExport)) {
-                    status = true;
-                }
-                break;
-            case 'SortAscending':
-            case 'SortDescending':
-                if ((!this.parent.allowSorting) || !this.parent.ensureModuleInjected(Sort) ||
-                    (this.targetColumn && !this.targetColumn.field)) {
+        case 'AutoFitAll':
+        case 'AutoFit':
+            status = !(this.parent.ensureModuleInjected(Resize) && !this.parent.isEdit)
+            || (this.targetColumn && !this.targetColumn.field && item === 'AutoFit');
+            break;
+        case 'Group':
+            if (!this.parent.allowGrouping || (this.parent.ensureModuleInjected(Group) && this.targetColumn
+                && this.parent.groupSettings.columns.indexOf(this.targetColumn.field) >= 0) ||
+                (this.targetColumn && !this.targetColumn.field)) {
+                status = true;
+            }
+            break;
+        case 'Ungroup':
+            if (!this.parent.allowGrouping || !this.parent.ensureModuleInjected(Group)
+                || (this.parent.ensureModuleInjected(Group) && this.targetColumn
+                    && this.parent.groupSettings.columns.indexOf(this.targetColumn.field) < 0)) {
+                status = true;
+            }
+            break;
+        case 'Edit':
+        case 'Delete':
+        case 'Save':
+        case 'Cancel':
+            if (!this.parent.editModule || (this.parent.getDataRows().length === 0)) {
+                status = true;
+            }
+            break;
+        case 'Copy':
+            if (this.parent.getSelectedRowIndexes().length === 0 ||
+                this.parent.getCurrentViewRecords().length === 0) {
+                status = true;
+            }
+            break;
+        case 'export':
+            if ((!this.parent.allowExcelExport || !this.parent.excelExport) ||
+                !this.parent.ensureModuleInjected(PdfExport) && !this.parent.ensureModuleInjected(ExcelExport)) {
+                status = true;
+            }
+            break;
+        case 'PdfExport':
+            if (!(this.parent.allowPdfExport) || !this.parent.ensureModuleInjected(PdfExport)) {
+                status = true;
+            }
+            break;
+        case 'ExcelExport':
+        case 'CsvExport':
+            if (!(this.parent.allowExcelExport) || !this.parent.ensureModuleInjected(ExcelExport)) {
+                status = true;
+            }
+            break;
+        case 'SortAscending':
+        case 'SortDescending':
+            if ((!this.parent.allowSorting) || !this.parent.ensureModuleInjected(Sort) ||
+                (this.targetColumn && !this.targetColumn.field)) {
+                status = true;
+            } else if (this.parent.ensureModuleInjected(Sort) && this.parent.sortSettings.columns.length > 0 && this.targetColumn) {
+                const sortColumns: SortDescriptorModel[] = this.parent.sortSettings.columns;
+                for (let i: number = 0; i < sortColumns.length; i++) {
+                    if (sortColumns[i].field === this.targetColumn.field
+                        && sortColumns[i].direction.toLowerCase() === item.toLowerCase().replace('sort', '').toLocaleLowerCase()) {
                         status = true;
-                } else if (this.parent.ensureModuleInjected(Sort) && this.parent.sortSettings.columns.length > 0 && this.targetColumn) {
-                    let sortColumns: SortDescriptorModel[] = this.parent.sortSettings.columns;
-                    for (let i: number = 0; i < sortColumns.length; i++) {
-                        if (sortColumns[i].field === this.targetColumn.field
-                            && sortColumns[i].direction.toLowerCase() === item.toLowerCase().replace('sort', '').toLocaleLowerCase()) {
-                            status = true;
-                        }
                     }
                 }
-                break;
-            case 'FirstPage':
-            case 'PrevPage':
-                if (!this.parent.allowPaging || !this.parent.ensureModuleInjected(Page) ||
-                    this.parent.getCurrentViewRecords().length === 0 ||
-                    (this.parent.ensureModuleInjected(Page) && this.parent.pageSettings.currentPage === 1)) {
-                    status = true;
-                }
-                break;
-            case 'LastPage':
-            case 'NextPage':
-                if (!this.parent.allowPaging || !this.parent.ensureModuleInjected(Page) ||
-                    this.parent.getCurrentViewRecords().length === 0 ||
-                    (this.parent.ensureModuleInjected(Page) && this.parent.pageSettings.currentPage === this.getLastPage())) {
-                    status = true;
-                }
-                break;
+            }
+            break;
+        case 'FirstPage':
+        case 'PrevPage':
+            if (!this.parent.allowPaging || !this.parent.ensureModuleInjected(Page) ||
+                this.parent.getCurrentViewRecords().length === 0 ||
+                (this.parent.ensureModuleInjected(Page) && this.parent.pageSettings.currentPage === 1)) {
+                status = true;
+            }
+            break;
+        case 'LastPage':
+        case 'NextPage':
+            if (!this.parent.allowPaging || !this.parent.ensureModuleInjected(Page) ||
+                this.parent.getCurrentViewRecords().length === 0 ||
+                (this.parent.ensureModuleInjected(Page) && this.parent.pageSettings.currentPage === this.getLastPage())) {
+                status = true;
+            }
+            break;
         }
         return status;
     }
 
     /**
      * Gets the context menu element from the Grid.
-     * @return {Element}
+     *
+     * @returns {Element} returns the element
      */
     public getContextMenu(): Element {
         return this.element;
@@ -491,12 +498,13 @@ export class ContextMenu implements IAction {
 
     /**
      * Destroys the context menu component in the Grid.
-     * @method destroy
-     * @return {void}
+     *
+     * @function destroy
+     * @returns {void}
      * @hidden
      */
     public destroy(): void {
-        let gridElement: Element = this.parent.element;
+        const gridElement: Element = this.parent.element;
         if (!gridElement || (!gridElement.querySelector('.' + literals.gridHeader) && !gridElement.querySelector( '.' + literals.gridContent))) { return; }
         this.contextMenu.destroy();
         remove(this.element);
@@ -520,61 +528,61 @@ export class ContextMenu implements IAction {
     private buildDefaultItems(item: string): ContextMenuItemModel {
         let menuItem: ContextMenuItemModel;
         switch (item) {
-            case 'AutoFitAll':
-            case 'AutoFit':
-                menuItem = { target: menuClass.header };
-                break;
-            case 'Group':
-                menuItem = { target: menuClass.header, iconCss: menuClass.group };
-                break;
-            case 'Ungroup':
-                menuItem = { target: menuClass.header, iconCss: menuClass.ungroup };
-                break;
-            case 'Edit':
-                menuItem = { target: menuClass.content, iconCss: menuClass.editIcon };
-                break;
-            case 'Delete':
-                menuItem = { target: menuClass.content, iconCss: menuClass.delete };
-                break;
-            case 'Save':
-                menuItem = { target: menuClass.edit, iconCss: menuClass.save };
-                break;
-            case 'Cancel':
-                menuItem = { target: menuClass.edit, iconCss: menuClass.cancel };
-                break;
-            case 'Copy':
-                menuItem = { target: menuClass.content, iconCss: menuClass.copy };
-                break;
-            case 'export':
-                menuItem = { target: menuClass.content };
-                break;
-            case 'PdfExport':
-                menuItem = { target: menuClass.content, iconCss: menuClass.pdf };
-                break;
-            case 'ExcelExport':
-                menuItem = { target: menuClass.content, iconCss: menuClass.excel };
-                break;
-            case 'CsvExport':
-                menuItem = { target: menuClass.content, iconCss: menuClass.csv };
-                break;
-            case 'SortAscending':
-                menuItem = { target: menuClass.header, iconCss: menuClass.ascending };
-                break;
-            case 'SortDescending':
-                menuItem = { target: menuClass.header, iconCss: menuClass.descending };
-                break;
-            case 'FirstPage':
-                menuItem = { target: menuClass.pager, iconCss: menuClass.fPage };
-                break;
-            case 'PrevPage':
-                menuItem = { target: menuClass.pager, iconCss: menuClass.pPage };
-                break;
-            case 'LastPage':
-                menuItem = { target: menuClass.pager, iconCss: menuClass.lPage };
-                break;
-            case 'NextPage':
-                menuItem = { target: menuClass.pager, iconCss: menuClass.nPage };
-                break;
+        case 'AutoFitAll':
+        case 'AutoFit':
+            menuItem = { target: menuClass.header };
+            break;
+        case 'Group':
+            menuItem = { target: menuClass.header, iconCss: menuClass.group };
+            break;
+        case 'Ungroup':
+            menuItem = { target: menuClass.header, iconCss: menuClass.ungroup };
+            break;
+        case 'Edit':
+            menuItem = { target: menuClass.content, iconCss: menuClass.editIcon };
+            break;
+        case 'Delete':
+            menuItem = { target: menuClass.content, iconCss: menuClass.delete };
+            break;
+        case 'Save':
+            menuItem = { target: menuClass.edit, iconCss: menuClass.save };
+            break;
+        case 'Cancel':
+            menuItem = { target: menuClass.edit, iconCss: menuClass.cancel };
+            break;
+        case 'Copy':
+            menuItem = { target: menuClass.content, iconCss: menuClass.copy };
+            break;
+        case 'export':
+            menuItem = { target: menuClass.content };
+            break;
+        case 'PdfExport':
+            menuItem = { target: menuClass.content, iconCss: menuClass.pdf };
+            break;
+        case 'ExcelExport':
+            menuItem = { target: menuClass.content, iconCss: menuClass.excel };
+            break;
+        case 'CsvExport':
+            menuItem = { target: menuClass.content, iconCss: menuClass.csv };
+            break;
+        case 'SortAscending':
+            menuItem = { target: menuClass.header, iconCss: menuClass.ascending };
+            break;
+        case 'SortDescending':
+            menuItem = { target: menuClass.header, iconCss: menuClass.descending };
+            break;
+        case 'FirstPage':
+            menuItem = { target: menuClass.pager, iconCss: menuClass.fPage };
+            break;
+        case 'PrevPage':
+            menuItem = { target: menuClass.pager, iconCss: menuClass.pPage };
+            break;
+        case 'LastPage':
+            menuItem = { target: menuClass.pager, iconCss: menuClass.lPage };
+            break;
+        case 'NextPage':
+            menuItem = { target: menuClass.pager, iconCss: menuClass.nPage };
+            break;
         }
         this.defaultItems[item] = {
             text: this.getLocaleText(item), id: this.generateID(item),
@@ -590,7 +598,7 @@ export class ContextMenu implements IAction {
             'FirstPage', 'PrevPage', 'LastPage', 'NextPage'];
     }
     private setLocaleKey(): { [key: string]: string } {
-        let localeKeys: { [key: string]: string } = {
+        const localeKeys: { [key: string]: string } = {
             'AutoFitAll': 'autoFitAll',
             'AutoFit': 'autoFit',
             'Copy': 'Copy',
@@ -615,12 +623,12 @@ export class ContextMenu implements IAction {
     }
 
     private getColumn(e: Event): Column {
-        let cell: HTMLElement = <HTMLElement>closest(<HTMLElement>e.target, 'th.e-headercell');
+        const cell: HTMLElement = <HTMLElement>closest(<HTMLElement>e.target, 'th.e-headercell');
         if (cell) {
-            let uid: string = cell.querySelector('.e-headercelldiv, .e-stackedheadercelldiv').getAttribute('e-mappinguid');
+            const uid: string = cell.querySelector('.e-headercelldiv, .e-stackedheadercelldiv').getAttribute('e-mappinguid');
             return this.parent.getColumnByUid(uid);
         } else {
-            let ele: Column = (this.parent.getRowInfo(e.target as Element).column) as Column;
+            const ele: Column = (this.parent.getRowInfo(e.target as Element).column) as Column;
             return ele || null;
         }
     }

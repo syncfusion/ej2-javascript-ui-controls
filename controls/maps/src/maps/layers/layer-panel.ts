@@ -232,7 +232,13 @@ export class LayerPanel {
         if (!this.mapObject.enablePersistence) {
             const itemName: string = this.mapObject.getModuleName() + this.mapObject.element.id;
             if (navigator.userAgent.indexOf('Edge') === -1) {
-                if (!isNullOrUndefined(window.localStorage) && window.localStorage.getItem(itemName)) {
+                let data;
+                try{
+                    data = window.localStorage;
+                } catch(e) {
+                    data = null;
+                }
+                if (!isNullOrUndefined(data) && window.localStorage.getItem(itemName)) {
                     window.localStorage.removeItem(itemName);
                 }
             }

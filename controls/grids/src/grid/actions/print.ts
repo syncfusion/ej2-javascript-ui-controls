@@ -9,6 +9,7 @@ import { Column } from '../models/column';
 import * as literals from '../base/string-literals';
 
 /**
+ * @returns {string[]} returns the cloned property
  * @hidden
  */
 export function getCloneProperties(): string[] {
@@ -21,7 +22,7 @@ export function getCloneProperties(): string[] {
 }
 
 /**
- * 
+ *
  * The `Print` module is used to handle print action.
  */
 export class Print {
@@ -37,6 +38,9 @@ export class Print {
 
     /**
      * Constructor for the Grid print module
+     *
+     * @param {IGrid} parent - specifies the IGrid
+     * @param {Scroll} scrollModule - specifies the scroll module
      * @hidden
      */
     constructor(parent?: IGrid, scrollModule?: Scroll) {
@@ -65,17 +69,18 @@ export class Print {
 
     private hierarchyPrint(): void {
         this.removeColGroup(this.parent);
-        let printGridObj: IGrid = (<{printGridObj?: IGrid}>window).printGridObj;
+        const printGridObj: IGrid = (<{printGridObj?: IGrid}>window).printGridObj;
         if (printGridObj && !printGridObj.element.querySelector('[aria-busy=true')) {
             printGridObj.printModule.defered.resolve();
         }
     }
 
     /**
-     * By default, prints all the Grid pages and hides the pager. 
-     * > You can customize print options using the 
-     * [`printMode`](grid/#printmode-string/). 
-     * @return {void}
+     * By default, prints all the Grid pages and hides the pager.
+     * > You can customize print options using the
+     * [`printMode`](grid/#printmode-string/).
+     *
+     * @returns {void}
      */
     public print(): void {
         this.renderPrintGrid();
@@ -95,31 +100,31 @@ export class Print {
         }
     }
     private renderPrintGrid(): void {
-        let gObj: IGrid = this.parent;
-        let element: HTMLElement = createElement('div', {
+        const gObj: IGrid = this.parent;
+        const element: HTMLElement = createElement('div', {
             id: this.parent.element.id + '_print', className: gObj.element.className + ' e-print-grid'
         });
         element.classList.remove('e-gridhover');
         document.body.appendChild(element);
-        let printGrid: IGrid = new Grid(getPrintGridModel(gObj, gObj.hierarchyPrintMode) as Object);
+        const printGrid: IGrid = new Grid(getPrintGridModel(gObj, gObj.hierarchyPrintMode) as Object);
         if (gObj.isFrozenGrid() && !gObj.getFrozenColumns()) {
             for (let i: number = 0; i < printGrid.columns.length; i++) {
                 (printGrid.columns[i] as Column) = extend({}, printGrid.columns[i]) as Column;
                 (printGrid.columns[i] as Column).freeze = undefined;
             }
         }
-        /* tslint:disable-next-line:no-any */
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         if ((this.parent as any).isAngular ) {
-            /* tslint:disable-next-line:no-any */
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             (printGrid as any).viewContainerRef = (this.parent as any).viewContainerRef;
         }
-        /* tslint:disable:no-empty */
+        // eslint-disable-next-line @typescript-eslint/no-empty-function
         (printGrid as Grid).load = () => {};
         printGrid.query = gObj.getQuery().clone();
         (<{printGridObj?: IGrid}>window).printGridObj = printGrid;
         printGrid.isPrinting = true;
-        let modules: Function[] = printGrid.getInjectedModules();
-        let injectedModues: Function[] = gObj.getInjectedModules();
+        const modules: Function[] = printGrid.getInjectedModules();
+        const injectedModues: Function[] = gObj.getInjectedModules();
         if (!modules || modules.length !== injectedModues.length) {
             (printGrid as Grid).setInjectedModules(injectedModues);
         }
@@ -132,12 +137,12 @@ export class Print {
 
     private contentReady(): void {
         if (this.isPrintGrid()) {
-            let gObj: IGrid = this.parent;
+            const gObj: IGrid = this.parent;
             if (this.isAsyncPrint) {
                 this.printGrid();
                 return;
             }
-            let args: PrintEventArgs = {
+            const args: PrintEventArgs = {
                 requestType: 'print',
                 element: gObj.element,
                 selectedRows: gObj.getContentTable().querySelectorAll('tr[aria-selected="true"]'),
@@ -158,15 +163,15 @@ export class Print {
     }
 
     private printGrid(): void {
-        let gObj: IGrid = this.parent;
+        const gObj: IGrid = this.parent;
         // Height adjustment on print grid
         if (gObj.height !== 'auto') { // if scroller enabled
-            let cssProps: {
+            const cssProps: {
                 padding?: string,
                 border?: string
             } = this.scrollModule.getCssProperties();
-            let contentDiv: HTMLElement = (gObj.element.querySelector('.' + literals.content) as HTMLElement);
-            let headerDiv: HTMLElement = (<HTMLElement>gObj.element.querySelector('.' + literals.gridHeader));
+            const contentDiv: HTMLElement = (gObj.element.querySelector('.' + literals.content) as HTMLElement);
+            const headerDiv: HTMLElement = (<HTMLElement>gObj.element.querySelector('.' + literals.gridHeader));
             contentDiv.style.height = 'auto';
             contentDiv.style.overflowY = 'auto';
             headerDiv.style[cssProps.padding] = '';
@@ -181,18 +186,18 @@ export class Print {
             }
         }
         // hide horizontal scroll
-        for (let element of [].slice.call(gObj.element.getElementsByClassName(literals.content))) {
+        for (const element of [].slice.call(gObj.element.getElementsByClassName(literals.content))) {
             element.style.overflowX = 'hidden';
         }
         // Hide the waiting popup
-        let waitingPop: NodeListOf<Element> = [].slice.call(gObj.element.getElementsByClassName('e-spin-show'));
-        for (let element of [].slice.call(waitingPop)) {
+        const waitingPop: NodeListOf<Element> = [].slice.call(gObj.element.getElementsByClassName('e-spin-show'));
+        for (const element of [].slice.call(waitingPop)) {
             classList(element, ['e-spin-hide'], ['e-spin-show']);
         }
         this.printGridElement(gObj);
         gObj.isPrinting = false;
         delete (<{printGridObj?: IGrid}>window).printGridObj;
-        let args: PrintEventArgs = {
+        const args: PrintEventArgs = {
             element: gObj.element
         };
         gObj.trigger(events.printComplete, args);
@@ -208,19 +213,19 @@ export class Print {
     }
 
     private removeColGroup(gObj: IGrid) : void {
-        let depth: number = gObj.groupSettings.columns.length;
-        let element: HTMLElement = gObj.element;
-        let id: string = '#' + gObj.element.id;
+        const depth: number = gObj.groupSettings.columns.length;
+        const element: HTMLElement = gObj.element;
+        const id: string = '#' + gObj.element.id;
         if (!depth) {
             return;
         }
-        let groupCaption: HTMLElement[] = selectAll(`${id}captioncell.e-groupcaption`, element);
-        let colSpan: string = (<HTMLElement>groupCaption[depth - 1]).getAttribute('colspan');
+        const groupCaption: HTMLElement[] = selectAll(`${id}captioncell.e-groupcaption`, element);
+        const colSpan: string = (<HTMLElement>groupCaption[depth - 1]).getAttribute('colspan');
         for (let i: number = 0; i < groupCaption.length; i++) {
             (<HTMLElement>groupCaption[i]).setAttribute('colspan', colSpan);
         }
-        let colGroups: HTMLElement[] = selectAll(`colgroup${id}colGroup`, element);
-        let contentColGroups: HTMLElement[] = selectAll('.e-content colgroup', element);
+        const colGroups: HTMLElement[] = selectAll(`colgroup${id}colGroup`, element);
+        const contentColGroups: HTMLElement[] = selectAll('.e-content colgroup', element);
         this.hideColGroup(colGroups, depth);
         this.hideColGroup(contentColGroups, depth);
     }
@@ -235,6 +240,8 @@ export class Print {
 
     /**
      * To destroy the print
+     *
+     * @returns {boolean} returns the isPrintGrid or not
      * @hidden
      */
     public isPrintGrid(): boolean {
@@ -242,8 +249,9 @@ export class Print {
     }
 
     /**
-     * To destroy the print 
-     * @return {void}
+     * To destroy the print
+     *
+     * @returns {void}
      * @hidden
      */
     public destroy(): void {
@@ -256,10 +264,11 @@ export class Print {
 
     /**
      * For internal use only - Get the module name.
+     *
+     * @returns {string} returns the module name
      * @private
      */
     protected getModuleName(): string {
         return 'print';
     }
-
 }

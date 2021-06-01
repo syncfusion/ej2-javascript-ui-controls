@@ -6,6 +6,7 @@ import { ResponsiveDialogRenderer } from '../renderer/responsive-dialog-renderer
 
 /**
  * ServiceLocator
+ *
  * @hidden
  */
 export class ServiceLocator {
@@ -20,6 +21,7 @@ export class ServiceLocator {
 
     public getService<T>(name: string): T {
         if (isNullOrUndefined(this.services[name])) {
+            // eslint-disable-next-line no-throw-literal
             throw `The service ${name} is not registered`;
         }
 

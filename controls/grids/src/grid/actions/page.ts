@@ -14,7 +14,7 @@ import { PagerModel } from '../../pager';
  * The `Page` module is used to render pager and handle paging action.
  */
 export class Page implements IAction {
-    //Internal variables          
+    //Internal variables
     private element: HTMLElement;
     private pageSettings: PageSettingsModel;
     private isForceCancel: boolean;
@@ -39,6 +39,9 @@ export class Page implements IAction {
 
     /**
      * Constructor for the Grid paging module
+     *
+     * @param {IGrid} parent - specifies the IGrid
+     * @param {PageSettingsModel} pageSettings - specifies the PageSettingsModel
      * @hidden
      */
     constructor(parent?: IGrid, pageSettings?: PageSettingsModel) {
@@ -50,6 +53,8 @@ export class Page implements IAction {
 
     /**
      * For internal use only - Get the module name.
+     *
+     * @returns {string} returns the module name
      * @private
      */
     protected getModuleName(): string {
@@ -58,19 +63,19 @@ export class Page implements IAction {
 
     /**
      * The function used to render pager from grid pageSettings
-     * @return {void}
+     *
+     * @returns {void}
      * @hidden
      */
     public render(): void {
-        let gObj: IGrid = this.parent;
-        let pagerObj: PagerModel;
+        const gObj: IGrid = this.parent;
         this.pagerDestroy();
         if (!isNullOrUndefined(this.parent.pagerTemplate)) {
             this.pageSettings.template = this.parent.pagerTemplate;
             this.parent.pageTemplateChange = true;
         }
         this.element = this.parent.createElement('div', { className: 'e-gridpager' });
-        pagerObj = <PagerModel>gridExtend(
+        const pagerObj: PagerModel = <PagerModel>gridExtend(
             {},
             extend({}, getActualProperties(this.pageSettings)),
             {
@@ -95,26 +100,26 @@ export class Page implements IAction {
 
     private addAriaAttr(): void {
         if (!(this.pageSettings.template)) {
-            let numericContainerNew: Element = this.parent.createElement('div', { className: 'e-numericcontainer' });
-            let pagerContainer: Element = this.element.querySelector('.e-pagercontainer');
-            let frag: DocumentFragment = document.createDocumentFragment();
-            let numericContainer: Element = this.element.querySelector('.e-numericcontainer');
-            let links: NodeList = numericContainer.querySelectorAll('a');
+            const numericContainerNew: Element = this.parent.createElement('div', { className: 'e-numericcontainer' });
+            const pagerContainer: Element = this.element.querySelector('.e-pagercontainer');
+            const frag: DocumentFragment = document.createDocumentFragment();
+            const numericContainer: Element = this.element.querySelector('.e-numericcontainer');
+            const links: NodeList = numericContainer.querySelectorAll('a');
             for (let i: number = 0; i < links.length; i++) {
                 if (this.parent.getContentTable()) {
                     (<Element>links[i]).setAttribute('aria-owns', this.parent.getContentTable().id);
                 } else {
                     (<Element>links[i]).setAttribute('aria-owns', this.parent.element.getAttribute('id') + '_content_table');
                 }
-                let numericContainerDiv: Element = this.parent.createElement('div');
+                const numericContainerDiv: Element = this.parent.createElement('div');
                 numericContainerDiv.appendChild(links[i]);
                 frag.appendChild(numericContainerDiv);
             }
             numericContainerNew.appendChild(frag);
             pagerContainer.replaceChild(numericContainerNew, numericContainer);
-            let classList: string[] = ['.e-mfirst', '.e-mprev', '.e-first', '.e-prev', '.e-next', '.e-last', '.e-mnext', '.e-mlast'];
+            const classList: string[] = ['.e-mfirst', '.e-mprev', '.e-first', '.e-prev', '.e-next', '.e-last', '.e-mnext', '.e-mlast'];
             for (let j: number = 0; j < classList.length; j++) {
-                let element: Element = this.element.querySelector(classList[j]);
+                const element: Element = this.element.querySelector(classList[j]);
                 if (this.parent.getContentTable()) {
                     element.setAttribute('aria-owns', this.parent.getContentTable().id);
                 }
@@ -126,24 +131,28 @@ export class Page implements IAction {
         this.updateModel(e);
     }
 
-    /** 
-     * Refreshes the page count, pager information, and external message. 
-     * @return {void} 
+    /**
+     * Refreshes the page count, pager information, and external message.
+     *
+     * @returns {void}
      */
     public refresh(): void {
         this.pagerObj.refresh();
     }
 
-    /** 
-     * Navigates to the target page according to the given number. 
-     * @param  {number} pageNo - Defines the page number to navigate. 
-     * @return {void} 
+    /**
+     * Navigates to the target page according to the given number.
+     *
+     * @param  {number} pageNo - Defines the page number to navigate.
+     * @returns {void}
      */
     public goToPage(pageNo: number): void {
         this.pagerObj.goToPage(pageNo);
     }
 
     /**
+     * @param {number} pageSize - specifies the page size
+     * @returns {void}
      * @hidden
      */
     public setPageSize(pageSize: number): void {
@@ -152,7 +161,9 @@ export class Page implements IAction {
 
     /**
      * The function used to update pageSettings model
-     * @return {void}
+     *
+     * @param {NotifyArgs} e - specfies the NotifyArgs
+     * @returns {void}
      * @hidden
      */
     public updateModel(e?: NotifyArgs): void {
@@ -162,7 +173,9 @@ export class Page implements IAction {
 
     /**
      * The function used to trigger onActionComplete
-     * @return {void}
+     *
+     * @param {NotifyArgs} e - specifies the NotifyArgs
+     * @returns {void}
      * @hidden
      */
     public onActionComplete(e: NotifyArgs): void {
@@ -171,23 +184,25 @@ export class Page implements IAction {
             type: events.actionComplete
         }));
     }
+
     /**
+     * @param {NotifyArgs} e - specifies the NotifyArgs
+     * @returns {void}
      * @hidden
      */
     public onPropertyChanged(e: NotifyArgs): void {
         if (e.module !== this.getModuleName()) {
             return;
         }
-
-        let newProp: Object = e.properties;
-        for (let prop of Object.keys(newProp)) {
+        const newProp: Object = e.properties;
+        for (const prop of Object.keys(newProp)) {
             this.pagerObj[prop] = newProp[prop];
         }
         this.pagerObj.dataBind();
     }
 
     private clickHandler(e: { currentPage: number, newProp: PagerModel, oldProp: PagerModel, cancel: boolean }): void {
-        let gObj: IGrid = this.parent;
+        const gObj: IGrid = this.parent;
         if (this.isForceCancel || isActionPrevent(gObj) && !gObj.prevPageMoving) {
             if (!this.isForceCancel) {
                 if (!isNullOrUndefined(e.newProp) && !isNullOrUndefined(e.newProp.pageSize)) {
@@ -210,9 +225,9 @@ export class Page implements IAction {
         }
         gObj.pageSettings.pageSize = this.pagerObj.pageSize;
         gObj.prevPageMoving = false;
-        let prevPage: number = this.pageSettings.currentPage;
+        const prevPage: number = this.pageSettings.currentPage;
         this.pageSettings.currentPage = e.currentPage;
-        let args: Object = {
+        const args: Object = {
             cancel: false, requestType: 'paging', previousPage: prevPage,
             currentPage: e.currentPage, type: events.actionBegin
         };
@@ -230,10 +245,11 @@ export class Page implements IAction {
         }
     }
 
-    /** 
+    /**
      * Defines the text of the external message.
-     * @param  {string} message - Defines the message to update. 
-     * @return {void} 
+     *
+     * @param  {string} message - Defines the message to update.
+     * @returns {void}
      */
     public updateExternalMessage(message: string): void {
         if (!this.pagerObj.enableExternalMessage) {
@@ -244,7 +260,7 @@ export class Page implements IAction {
         this.pagerObj.dataBind();
     }
 
-    private appendToElement(e?: NotifyArgs): void {
+    private appendToElement(): void {
         this.isInitialLoad = true;
         this.parent.element.appendChild(this.element);
         this.parent.setGridPager(this.element);
@@ -266,6 +282,7 @@ export class Page implements IAction {
     }
 
     /**
+     * @returns {void}
      * @hidden
      */
     public addEventListener(): void {
@@ -284,13 +301,12 @@ export class Page implements IAction {
             this.parent.addEventListener(events.created, this.handlers.created.bind(this));
         }
         this.evtHandlers = [{ event: events.initialLoad, handler: this.handlers.load },
-        { event: events.initialEnd, handler: this.handlers.end },
-        { event: events.dataReady, handler: this.handlers.ready },
-        { event: events.pageComplete, handler: this.handlers.complete },
-        { event: events.uiUpdate, handler: this.handlers.updateLayout },
-        { event: events.inBoundModelChanged, handler: this.handlers.inboundChange },
-        { event: events.keyPressed, handler: this.handlers.keyPress },
-        ];
+            { event: events.initialEnd, handler: this.handlers.end },
+            { event: events.dataReady, handler: this.handlers.ready },
+            { event: events.pageComplete, handler: this.handlers.complete },
+            { event: events.uiUpdate, handler: this.handlers.updateLayout },
+            { event: events.inBoundModelChanged, handler: this.handlers.inboundChange },
+            { event: events.keyPressed, handler: this.handlers.keyPress }];
         addRemoveEventListener(this.parent, this.evtHandlers, true, this);
     }
 
@@ -310,18 +326,19 @@ export class Page implements IAction {
             this.parent.destroyTemplate(['pagerTemplate']);
             this.element.classList.add('e-pagertemplate');
             this.pagerObj.compile(this.pagerObj.template);
-            let page: PageSettingsModel = this.parent.pageSettings;
-            let data: Object = {
+            const page: PageSettingsModel = this.parent.pageSettings;
+            const data: Object = {
                 currentPage: page.currentPage, pageSize: page.pageSize, pageCount: page.pageCount,
                 totalRecordsCount: page.totalRecordsCount, totalPages: this.pagerObj.totalPages
             };
-            let tempId: string = this.parent.id + '_pagertemplate';
+            const tempId: string = this.parent.id + '_pagertemplate';
             this.pagerObj.templateFn(data, this.parent, 'pagerTemplate', tempId, null, null, this.pagerObj.element);
             this.parent.renderTemplates();
         }
     }
 
     /**
+     * @returns {void}
      * @hidden
      */
     public removeEventListener(): void {
@@ -334,8 +351,9 @@ export class Page implements IAction {
     }
 
     /**
-     * To destroy the pager 
-     * @return {void}
+     * To destroy the pager
+     *
+     * @returns {void}
      * @hidden
      */
     public destroy(): void {
@@ -352,7 +370,6 @@ export class Page implements IAction {
             remove(this.element);
         }
     }
-
 }
 
 /**
@@ -366,10 +383,10 @@ const keyActions: {
     altPageUp: string;
     altPageDown: string;
 } = {
-        pageUp: '.e-prev',
-        pageDown: '.e-next',
-        ctrlAltPageDown: '.e-last',
-        ctrlAltPageUp: '.e-first',
-        altPageUp: '.e-pp',
-        altPageDown: '.e-np'
-    };
+    pageUp: '.e-prev',
+    pageDown: '.e-next',
+    ctrlAltPageDown: '.e-last',
+    ctrlAltPageUp: '.e-first',
+    altPageUp: '.e-pp',
+    altPageDown: '.e-np'
+};

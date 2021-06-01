@@ -12,7 +12,8 @@ import { ServiceLocator } from '../services/service-locator';
 import { CellMergeRender } from './cell-merge-renderer';
 import * as literals from '../base/string-literals';
 /**
- * RowRenderer class which responsible for building row content. 
+ * RowRenderer class which responsible for building row content.
+ *
  * @hidden
  */
 export class RowRenderer<T> implements IRowRenderer<T> {
@@ -36,35 +37,45 @@ export class RowRenderer<T> implements IRowRenderer<T> {
         this.element = this.parent.createElement('tr', { attrs: { role: 'row' } });
     }
 
+    /* eslint-disable */
     /**
      * Function to render the row content based on Column[] and data.
-     * @param  {Column[]} columns
-     * @param  {Object} data?
-     * @param  {{[x:string]:Object}} attributes?
-     * @param  {string} rowTemplate?
+     *
+     * @param {Row<T>} row - specifies the row
+     * @param {Column[]} columns - specifies the columns
+     * @param {Object} attributes - specifies the attributes
+     * @param {string} rowTemplate - specifies the rowTemplate
+     * @param {Element} cloneNode - specifies the cloneNode
+     * @returns {Element} returns the element
      */
+    /* eslint-enable */
     public render(row: Row<T>, columns: Column[], attributes?: { [x: string]: Object }, rowTemplate?: string, cloneNode?: Element):
-        Element {
+    Element {
         return this.refreshRow(row, columns, attributes, rowTemplate, cloneNode);
     }
 
+    /* eslint-disable */
     /**
      * Function to refresh the row content based on Column[] and data.
-     * @param  {Column[]} columns
-     * @param  {Object} data?
-     * @param  {{[x:string]:Object}} attributes?
-     * @param  {string} rowTemplate?
+     *
+     * @param {Row<T>} row - specifies the row
+     * @param {Column[]} columns - specifies the column
+     * @param {boolean} isChanged - specifies isChanged
+     * @param {Object} attributes - specifies the attributes
+     * @param {string} rowTemplate - specifies the rowTemplate
+     * @returns {void}
      */
+    /* eslint-enable */
     public refresh(row: Row<T>, columns: Column[], isChanged: boolean, attributes?: { [x: string]: Object }, rowTemplate?: string): void {
         if (isChanged) {
             row.data = extendObjWithFn({}, row.changes);
             this.refreshMergeCells(row);
         }
-        let node: Element = this.parent.element.querySelector('[data-uid=' + row.uid + ']');
-        let tr: Element = this.refreshRow(row, columns, attributes, rowTemplate, null, isChanged);
-        let cells: HTMLTableDataCellElement[] = [].slice.call((tr as HTMLTableRowElement).cells);
+        const node: Element = this.parent.element.querySelector('[data-uid=' + row.uid + ']');
+        const tr: Element = this.refreshRow(row, columns, attributes, rowTemplate, null, isChanged);
+        const cells: HTMLTableDataCellElement[] = [].slice.call((tr as HTMLTableRowElement).cells);
         node.innerHTML = '';
-        for (let cell of cells) {
+        for (const cell of cells) {
             node.appendChild(cell);
         }
     }
@@ -73,15 +84,15 @@ export class RowRenderer<T> implements IRowRenderer<T> {
     private refreshRow(
         row: Row<T>, columns: Column[], attributes?: { [x: string]: Object }, rowTemplate?: string, cloneNode?: Element, isEdit?: boolean):
         Element {
-        let tr: Element = !isNullOrUndefined(cloneNode) ? cloneNode : this.element.cloneNode() as Element;
-        let rowArgs: RowDataBoundEventArgs = { data: row.data };
-        let cellArgs: QueryCellInfoEventArgs = { data: row.data };
-        let chekBoxEnable: Column = this.parent.getColumns().filter((col: Column) => col.type === 'checkbox' && col.field)[0];
+        const tr: Element = !isNullOrUndefined(cloneNode) ? cloneNode : this.element.cloneNode() as Element;
+        const rowArgs: RowDataBoundEventArgs = { data: row.data };
+        const cellArgs: QueryCellInfoEventArgs = { data: row.data };
+        const chekBoxEnable: Column = this.parent.getColumns().filter((col: Column) => col.type === 'checkbox' && col.field)[0];
         let value: boolean = false;
         if (chekBoxEnable) {
             value = getObject(chekBoxEnable.field, rowArgs.data);
         }
-        let selIndex: number[] = this.parent.getSelectedRowIndexes();
+        const selIndex: number[] = this.parent.getSelectedRowIndexes();
         if (row.isDataRow) {
             row.isSelected = selIndex.indexOf(row.index) > -1 || value;
         }
@@ -98,12 +109,12 @@ export class RowRenderer<T> implements IRowRenderer<T> {
         addAttributes(tr, extend({}, attributes, {}) as { [x: string]: string });
         setStyleAndAttributes(tr, row.attributes);
 
-        let cellRendererFact: CellRendererFactory = this.serviceLocator.getService<CellRendererFactory>('cellRendererFactory');
+        const cellRendererFact: CellRendererFactory = this.serviceLocator.getService<CellRendererFactory>('cellRendererFactory');
         for (let i: number = 0, len: number = row.cells.length; i < len; i++) {
-            let cell: Cell<T> = row.cells[i]; cell.isSelected = row.isSelected;
+            const cell: Cell<T> = row.cells[i]; cell.isSelected = row.isSelected;
             cell.isColumnSelected = (<{ isSelected?: boolean }>cell.column).isSelected;
-            let cellRenderer: ICellRenderer<T> = cellRendererFact.getCellRenderer(row.cells[i].cellType || CellType.Data);
-            let attrs: {} = { 'index': !isNullOrUndefined(row.index) ? row.index.toString() : '' };
+            const cellRenderer: ICellRenderer<T> = cellRendererFact.getCellRenderer(row.cells[i].cellType || CellType.Data);
+            const attrs: {} = { 'index': !isNullOrUndefined(row.index) ? row.index.toString() : '' };
             if (row.isExpand && row.cells[i].cellType === CellType.DetailExpand) {
                 attrs['class'] = this.parent.isPrinting ? 'e-detailrowcollapse' : 'e-detailrowexpand';
             }
@@ -118,17 +129,17 @@ export class RowRenderer<T> implements IRowRenderer<T> {
                         }));
                     let isRowSpanned: boolean = false;
                     if (row.index > 0 && this.isSpan) {
-                        let prevRowCells: Cell<Column>[] = this.parent.groupSettings.columns.length > 0 &&
+                        const prevRowCells: Cell<Column>[] = this.parent.groupSettings.columns.length > 0 &&
                             !this.parent.getRowsObject()[row.index - 1].isDataRow ?
                             this.parent.getRowsObject()[row.index].cells : this.parent.getRowsObject()[row.index - 1].cells;
-                        let uid: string = 'uid';
-                        let prevRowCell: Cell<Column> = prevRowCells.filter((cell: Cell<Column>) =>
+                        const uid: string = 'uid';
+                        const prevRowCell: Cell<Column> = prevRowCells.filter((cell: Cell<Column>) =>
                             cell.column.uid === row.cells[i].column[uid])[0];
                         isRowSpanned = prevRowCell.isRowSpanned ? prevRowCell.isRowSpanned : prevRowCell.rowSpanRange > 1;
                     }
                     if (cellArgs.colSpan > 1 || row.cells[i].cellSpan > 1 || cellArgs.rowSpan > 1 || isRowSpanned) {
                         this.isSpan = true;
-                        let cellMerge: CellMergeRender<T> = new CellMergeRender(this.serviceLocator, this.parent);
+                        const cellMerge: CellMergeRender<T> = new CellMergeRender(this.serviceLocator, this.parent);
                         td = cellMerge.render(cellArgs, row, i, td);
                     }
                 }
@@ -137,11 +148,11 @@ export class RowRenderer<T> implements IRowRenderer<T> {
                 }
             }
         }
-        let args: RowDataBoundEventArgs = { row: tr, rowHeight: this.parent.rowHeight };
+        const args: RowDataBoundEventArgs = { row: tr, rowHeight: this.parent.rowHeight };
         if (row.isDataRow) {
             this.parent.trigger(rowDataBound, extend(rowArgs, args));
             if (this.parent.childGrid || this.parent.isRowDragable() || this.parent.detailTemplate) {
-                let td: Element = tr.querySelectorAll('.e-rowcell:not(.e-hide)')[0];
+                const td: Element = tr.querySelectorAll('.e-rowcell:not(.e-hide)')[0];
                 if (td) {
                     td.classList.add('e-detailrowvisible');
                 }
@@ -161,17 +172,17 @@ export class RowRenderer<T> implements IRowRenderer<T> {
         if (row.lazyLoadCssClass) {
             tr.classList.add(row.lazyLoadCssClass);
         }
-        let vFTable: boolean = this.parent.enableColumnVirtualization && this.parent.frozenColumns !== 0;
+        const vFTable: boolean = this.parent.enableColumnVirtualization && this.parent.frozenColumns !== 0;
         if (!vFTable && this.parent.element.scrollHeight > this.parent.height && this.parent.aggregates.length) {
             for (let i: number = 0; i < this.parent.aggregates.length; i++) {
-                let property: string = 'properties';
-                let column: string = 'columns';
+                const property: string = 'properties';
+                const column: string = 'columns';
                 if (this.parent.aggregates[i][property][column][0].footerTemplate) {
-                    let summarycell: NodeList = [].slice.call(tr.getElementsByClassName('e-summarycell'));
+                    const summarycell: NodeList = [].slice.call(tr.getElementsByClassName('e-summarycell'));
                     if (summarycell.length) {
-                        let lastSummaryCell: Element = (summarycell[summarycell.length - 1]) as Element;
+                        const lastSummaryCell: Element = (summarycell[summarycell.length - 1]) as Element;
                         addClass([lastSummaryCell], ['e-lastsummarycell']);
-                        let firstSummaryCell: Element = (summarycell[0]) as Element;
+                        const firstSummaryCell: Element = (summarycell[0]) as Element;
                         addClass([firstSummaryCell], ['e-firstsummarycell']);
                     }
                 }
@@ -180,21 +191,25 @@ export class RowRenderer<T> implements IRowRenderer<T> {
         return tr;
     }
     private refreshMergeCells(row: Row<T>): Row<T> {
-        for (let cell of row.cells) {
+        for (const cell of row.cells) {
             cell.isSpanned = false;
         }
         return row;
     }
+    /* eslint-disable */
     /**
      * Function to check and add alternative row css class.
-     * @param  {Element} tr
-     * @param  {{[x:string]:Object}} attr
+     *
+     * @param {Element} tr - specifies the tr element
+     * @param {Row<T>} row - specifies the row
+     * @returns {void}
      */
+    /* eslint-enable */
     public buildAttributeFromRow(tr: Element, row: Row<T>): void {
-        let attr: IRow<T> & { 'class'?: string[] } = {};
-        let prop: { 'rowindex'?: string; 'dataUID'?: string, 'ariaSelected'?: string }
+        const attr: IRow<T> & { 'class'?: string[] } = {};
+        const prop: { 'rowindex'?: string; 'dataUID'?: string, 'ariaSelected'?: string }
             = { 'rowindex': literals.ariaRowIndex, 'dataUID': 'data-uid', 'ariaSelected': 'aria-selected' };
-        let classes: string[] = [];
+        const classes: string[] = [];
 
         if (row.isDataRow) {
             classes.push(literals.row);

@@ -565,6 +565,7 @@ export class CellRenderer implements ICellRenderer {
             for (let i: number = cRange[0]; i <= cRange[2]; i++) {
                 if (isHiddenRow(sheet, i)) { continue; }
                 for (let j: number = cRange[1]; j <= cRange[3]; j++) {
+                    if (isHiddenCol(sheet, j)) { continue; }
                     const cell: HTMLElement = this.parent.getCell(i, j);
                     if (cell) {
                         this.update(<CellRenderArgs>{

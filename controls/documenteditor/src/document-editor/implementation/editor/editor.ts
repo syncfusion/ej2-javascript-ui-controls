@@ -2113,7 +2113,7 @@ export class Editor {
     private mapMatchedRevisions(revisions: Revision[], revisionElement: any, elementToInclude: any, isBegin: boolean): any {
         for (let i: number = 0; i < revisions.length; i++) {
             let currentRevision: Revision = revisions[i];
-            if (!this.isRevisionAlreadyIn(elementToInclude, currentRevision)) {
+            if (!this.isRevisionAlreadyIn(elementToInclude, currentRevision) || elementToInclude instanceof WCharacterFormat) {
                 elementToInclude.revisions.splice(0, 0, currentRevision);
                 let rangeIndex: number = currentRevision.range.indexOf(revisionElement);
                 currentRevision.range.splice((isBegin) ? rangeIndex : rangeIndex + 1, 0, elementToInclude);
@@ -3499,6 +3499,7 @@ export class Editor {
                 if (formFieldIndex !== -1) {
                     this.documentHelper.formFields.splice(formFieldIndex, 1);
                 }
+                inline.fieldBegin.fieldEnd = undefined;
                 inline.fieldBegin = undefined;
             }
         }
@@ -12687,7 +12688,12 @@ export class Editor {
                         if (isNullOrUndefined(elementIndex)) {
                             removedNode = this.removeCharacterInLine(elementBox, indexInInline, endOffset);
                         } else {
-                            revision.range.splice(revision.range.indexOf(elementBox), 1);
+                            let index: number = revision.range.indexOf(elementBox);
+                            let count: number = 1;
+                            if (revision.range.length > index + 1 && revision.range[index + 1] instanceof WCharacterFormat) {
+                                count += 1;
+                            }
+                            revision.range.splice(index, count);
                             if (revision.range.length === 0) {
                                 this.owner.revisionsInternal.remove(revision);
                             }
@@ -15186,7 +15192,11 @@ export class Editor {
         }
         if (tocField instanceof FieldElementBox) {
             this.selection.start.setPositionForSelection(tocField.line, tocField, 0, this.selection.start.location);
-            this.selection.end.setPositionForSelection(tocField.fieldEnd.line, tocField.fieldEnd, 2, this.selection.end.location);
+            let offset: number = 2;
+            if (tocField.fieldEnd.paragraph === tocField.fieldEnd.paragraph.bodyWidget.lastChild) {
+                offset--;
+            }
+            this.selection.end.setPositionForSelection(tocField.fieldEnd.line, tocField.fieldEnd, offset, this.selection.end.location);
             this.delete();
         }
         // Build TOC field code based on parameter
@@ -16113,7 +16123,7 @@ export class Editor {
         span.characterFormat.copyFormat(textFormat);
         span.text = this.getDefaultText(formData);
         if (type === 'CheckBox') {
-            span.characterFormat = fieldBegin.characterFormat.cloneFormat();
+            span.characterFormat.copyFormat(fieldBegin.characterFormat);
             if ((formData as CheckBoxFormField).sizeType === 'Exactly') {
                 span.characterFormat.fontSize = (formData as CheckBoxFormField).size;
             }
@@ -16450,6 +16460,9 @@ export class Editor {
      * @returns {void}
      */
     public insertFootnote(): void {
+        if (this.selection.isinFootnote || this.selection.isinEndnote) {
+            return;
+        }
         let footnote: FootnoteElementBox = new FootnoteElementBox();
         footnote.characterFormat.baselineAlignment = 'Superscript';
         footnote.footnoteType = 'Footnote';
@@ -16522,6 +16535,9 @@ export class Editor {
      * @returns {void}     
      */
     public insertEndnote(): void {
+        if (this.selection.isinFootnote || this.selection.isinEndnote) {
+            return;
+        }
         this.documentHelper.layout.isEndnoteContentChanged = true;
         let endnote: FootnoteElementBox = new FootnoteElementBox();
         endnote.characterFormat.baselineAlignment = 'Superscript';

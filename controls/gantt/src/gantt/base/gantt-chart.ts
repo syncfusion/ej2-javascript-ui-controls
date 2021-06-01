@@ -345,6 +345,7 @@ export class GanttChart {
             || (this.scrollElement.scrollLeft > scrollLeft)) {
             this.scrollObject.setScrollLeft(scrollLeft - 50);
         }
+        this.parent.ganttChartModule.scrollObject.updateLeftPosition();
     }
 
     /**

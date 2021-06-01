@@ -38,7 +38,7 @@ export class UndoRedo {
         case 'clipboard':
             copiedInfo = eventArgs.copiedInfo;
             address = getRangeIndexes(getRangeFromAddress(eventArgs.pastedRange));
-            if (copiedInfo.isCut) {
+            if (copiedInfo && copiedInfo.isCut) {
                 cutCellDetails = this.getCellDetails(
                     copiedInfo.range as number[], getSheet(this.parent as Workbook,
                                                            getSheetIndexFromId(this.parent as Workbook, <number>copiedInfo.sId)));
@@ -186,6 +186,10 @@ export class UndoRedo {
             this.parent.notify(getBeforeActionData, beforeActionDetails);
             eventArgs.beforeActionData = beforeActionDetails.beforeDetails;
         }
+        if (action === 'clipboard' && eventArgs.copiedInfo.isExternal) {
+            const addressInfo: { sheetIndex: number, indices: number[] } = this.parent.getAddressInfo(eventArgs.pastedRange);
+            eventArgs.copiedInfo.cellDetails = this.getCellDetails(addressInfo.indices, getSheet(this.parent, addressInfo.sheetIndex));
+        }
         this.undoCollection.push(options.args);
         this.redoCollection = [];
         if (this.undoCollection.length > this.undoRedoStep) {
@@ -308,7 +312,13 @@ export class UndoRedo {
                     mergeArgs.merge = !mergeArgs.merge; this.parent.notify(setMerge, mergeArgs); mergeArgs.merge = !mergeArgs.merge;
                 });
             } else {
-                updateAction(args, this.parent, copiedInfo.isCut as boolean);
+                if (copiedInfo.isExternal) {
+                    const addressInfo: { sheetIndex: number, indices: number[] } = this.parent.getAddressInfo(eventArgs.pastedRange);
+                    this.updateCellDetails(copiedInfo.cellDetails as PreviousCellDetails[], getSheet(this.parent, addressInfo.sheetIndex),
+                        addressInfo.indices, true);
+                } else {
+                    updateAction(args, this.parent, copiedInfo.isCut as boolean);
+                }
             }
             if (isRefresh) { this.parent.notify(selectRange, { address: address[1] }); }
         }

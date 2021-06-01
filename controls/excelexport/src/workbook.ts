@@ -1157,7 +1157,12 @@ export class Workbook {
         let length: number = this.worksheets.length;
         for (let i: number = 0; i < length; i++) {
             /* tslint:disable-next-line:max-line-length */
-            sheets += '<sheet name="' + this.worksheets[i].name + '" sheetId="' + (i + 1).toString() + '" r:id ="rId' + (i + 1).toString() + '" />';
+            let sheetName= this.worksheets[i].name;
+            sheetName= sheetName.replace("&", "&amp;");
+            sheetName= sheetName.replace("<", "&lt;");
+            sheetName= sheetName.replace(">", "&gt;");
+            sheetName= sheetName.replace("\"", "&quot;");
+            sheets += '<sheet name="' + sheetName + '" sheetId="' + (i + 1).toString() + '" r:id ="rId' + (i + 1).toString() + '" />';
         }
         sheets += '</sheets>';
         workbookTemp += sheets;

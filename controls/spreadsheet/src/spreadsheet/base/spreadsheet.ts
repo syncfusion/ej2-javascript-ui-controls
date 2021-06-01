@@ -46,8 +46,8 @@ import { FindAllArgs, findAllValues, ClearOptions, ConditionalFormatModel, Image
 import { ConditionalFormatting } from '../actions/conditional-formatting';
 import { WorkbookImage, WorkbookChart } from '../../workbook/integrations/index';
 import { WorkbookProtectSheet } from '../../workbook/actions/index';
-import { beginAction, contentLoaded, completeAction, freeze, getScrollBarWidth } from '../common/index';
-import { getFilteredCollection } from './../../workbook/common/index';
+import { beginAction, contentLoaded, completeAction, freeze, getScrollBarWidth, ConditionalFormatEventArgs } from '../common/index';
+import { getFilteredCollection, deleteHyperlink } from './../../workbook/common/index';
 /**
  * Represents the Spreadsheet component.
  *
@@ -618,6 +618,24 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
     @Event()
     public afterHyperlinkClick: EmitType<AfterHyperlinkArgs>;
 
+    /**
+     * Triggers before apply or remove the conditional format from a cell in a range.
+     *
+     * ```html
+     * <div id='Spreadsheet'></div>
+     * ```
+     * ```typescript
+     * new Spreadsheet({
+     *       beforeConditionalFormat: (args: ConditionalFormatEventArgs) => {
+     *       }
+     *      ...
+     *  }, '#Spreadsheet');
+     * ```
+     *
+     * @event cellSave
+     */
+     @Event()
+     public beforeConditionalFormat: EmitType<ConditionalFormatEventArgs>;
 
     /* eslint-disable */
     /**
@@ -787,8 +805,8 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
      * @returns {number} - To get hidden row/column count between two specified index.
      * @hidden
      */
-    public hiddenCount(startIndex: number, endIndex: number, layout: string = 'rows'): number {
-        const sheet: SheetModel = this.getActiveSheet(); let count: number = 0;
+    public hiddenCount(startIndex: number, endIndex: number, layout: string = 'rows', sheet: SheetModel = this.getActiveSheet()): number {
+        let count: number = 0;
         for (let i: number = startIndex; i <= endIndex; i++) {
             if ((sheet[layout])[i] && (sheet[layout])[i].hidden) { count++; }
         }
@@ -1515,35 +1533,7 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
         for (let rowIdx: number = rangeIndexes[0]; rowIdx <= rangeIndexes[2]; rowIdx++) {
             for (let colIdx: number = rangeIndexes[1]; colIdx <= rangeIndexes[3]; colIdx++) {
                 if (sheet && sheet.rows[rowIdx] && sheet.rows[rowIdx].cells[colIdx]) {
-                    cellMod = sheet.rows[rowIdx].cells[colIdx];
-                    if (cellMod && cellMod.hyperlink) {
-                        if (typeof (cellMod.hyperlink) === 'string') {
-                            cellMod.value = cellMod.value ? cellMod.value : cellMod.hyperlink;
-                        } else {
-                            cellMod.value = cellMod.value ? cellMod.value : cellMod.hyperlink.address;
-                        }
-                        delete (cellMod.hyperlink);
-                        if (cellMod.style) {
-                            if (sheet === this.getActiveSheet()) {
-                                this.serviceLocator.getService<ICellRenderer>('cell').refreshRange([rowIdx, colIdx, rowIdx, colIdx]);
-                                this.notify(refreshRibbonIcons, null);
-                            }
-                        }
-                        if (sheet === this.getActiveSheet()) {
-                            let eleRowIdx: number;
-                            let eleColIdx: number;
-                            if (this.scrollSettings.enableVirtualization) {
-                                eleRowIdx = rowIdx - this.viewport.topIndex;
-                                eleColIdx = colIdx - this.viewport.leftIndex;
-                            }
-                            const cell: HTMLElement = this.element.getElementsByClassName('e-sheet-content')[0].
-                                getElementsByClassName('e-row')[eleRowIdx].getElementsByClassName('e-cell')[eleColIdx] as HTMLElement;
-                            if (cell.getElementsByClassName('e-hyperlink')[0]) {
-                                cell.innerText = cell.getElementsByClassName('e-hyperlink')[0].innerHTML;
-                            }
-                        }
-
-                    }
+                    this.notify(deleteHyperlink, { sheet: sheet, rowIdx: rowIdx, colIdx: colIdx });
                 }
             }
         }
@@ -2040,14 +2030,18 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
             value = !isNullOrUndefined(value) ? value : '';
             if (!isNullOrUndefined(td)) {
                 let node: Node = td.lastChild;
+                const wrapContent: Element = td.querySelector('.e-wrap-content');
                 if (td.querySelector('.e-databar-value')) {
                     node = td.querySelector('.e-databar-value').lastChild;
                 }
                 if (td.querySelector('.e-hyperlink')) {
                     node = td.querySelector('.e-hyperlink').lastChild;
                 }
-                if (td.querySelector('.e-wrap-content')) {
-                    node = td.querySelector('.e-wrap-content').lastChild;
+                if (wrapContent) {
+                    if (!wrapContent.lastChild) {
+                        wrapContent.appendChild(document.createTextNode(''));
+                    }
+                    node = wrapContent.lastChild;
                 }
                 if (node && (node.nodeType === 3 || node.nodeType === 1)) {
                     node.nodeValue = value;

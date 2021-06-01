@@ -19,6 +19,7 @@ export interface CommandColumnModelModel {
 
     /**
      * Define the command Button type.
+     *
      * @blazorDefaultValue none
      */
     type?: CommandButtonType;

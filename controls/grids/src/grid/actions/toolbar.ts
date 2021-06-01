@@ -11,6 +11,7 @@ import { SearchBox } from '../services/focus-strategy';
 
 /**
  * The `Toolbar` module is used to handle ToolBar actions.
+ *
  * @hidden
  */
 export class Toolbar {
@@ -40,17 +41,17 @@ export class Toolbar {
 
     private render(): void {
         this.l10n = this.serviceLocator.getService<L10n>('localization');
-        let preItems: ToolbarItems[] = ['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'Print',
+        const preItems: ToolbarItems[] = ['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'Print',
             'PdfExport', 'ExcelExport', 'WordExport', 'CsvExport'];
-        let isAdaptive: boolean = this.parent.enableAdaptiveUI;
-        let excludingItems: string[] = ['Edit', 'Delete', 'Update', 'Cancel'];
-        for (let item of preItems) {
-            let itemStr: string = item.toLowerCase();
-            let localeName: string = itemStr[0].toUpperCase() + itemStr.slice(1);
+        const isAdaptive: boolean = this.parent.enableAdaptiveUI;
+        const excludingItems: string[] = ['Edit', 'Delete', 'Update', 'Cancel'];
+        for (const item of preItems) {
+            const itemStr: string = item.toLowerCase();
+            const localeName: string = itemStr[0].toUpperCase() + itemStr.slice(1);
             this.predefinedItems[item] = {
                 id: this.gridID + '_' + itemStr, prefixIcon: 'e-' + itemStr,
                 text: this.l10n.getConstant(localeName), tooltipText
-                    : this.l10n.getConstant(localeName)
+                : this.l10n.getConstant(localeName)
             };
             if (isAdaptive) {
                 this.predefinedItems[item].text = '';
@@ -65,7 +66,7 @@ export class Toolbar {
         (this.predefinedItems as { ColumnChooser: ItemModel }).ColumnChooser = {
             id: this.gridID + '_' + 'columnchooser', cssClass: 'e-cc e-ccdiv e-cc-toolbar', suffixIcon: 'e-' + 'columnchooser-btn',
             text: isAdaptive ? '' : this.l10n.getConstant('Columnchooser'),
-            tooltipText: this.l10n.getConstant('Columnchooser'), align: 'Right',
+            tooltipText: this.l10n.getConstant('Columnchooser'), align: 'Right'
         };
         if (this.parent.rowRenderingMode === 'Vertical') {
             if (this.parent.allowFiltering && this.parent.filterSettings.type !== 'FilterBar') {
@@ -92,7 +93,8 @@ export class Toolbar {
 
     /**
      * Gets the toolbar of the Grid.
-     * @return {Element}
+     *
+     * @returns {Element} returns the element
      * @hidden
      */
     public getToolbar(): Element {
@@ -101,8 +103,9 @@ export class Toolbar {
 
     /**
      * Destroys the ToolBar.
-     * @method destroy
-     * @return {void}
+     *
+     * @function destroy
+     * @returns {void}
      */
     public destroy(): void {
         if (this.toolbar && !this.toolbar.isDestroyed) {
@@ -135,7 +138,7 @@ export class Toolbar {
             if (!this.parent.enableAdaptiveUI || isNormal) {
                 this.element.querySelector('.e-search-wrapper').innerHTML = '<div class="e-input-group e-search" role="search">\
                     <input id="' + this.gridID + '_searchbar" class="e-input" name="input" type="search" \
-                    placeholder= \"' + this.l10n.getConstant('Search') + '\"/>\
+                    placeholder= "' + this.l10n.getConstant('Search') + '"/>\
                     <span id="' + this.gridID + '_searchbutton" class="e-input-group-icon e-search-icon e-icons" \
                     tabindex="-1" title="' + this.l10n.getConstant('Search') + '" aria-label= "search"></span> \
                     </div>';
@@ -150,7 +153,7 @@ export class Toolbar {
     }
 
     private createToolbar(): void {
-        let items: ItemModel[] = this.getItems();
+        const items: ItemModel[] = this.getItems();
         this.toolbar = new tool({
             items: items,
             clicked: this.toolbarClickHandler.bind(this),
@@ -160,10 +163,10 @@ export class Toolbar {
         });
         (<{ isReact?: boolean }>this.toolbar).isReact = this.parent.isReact;
         this.toolbar.on('render-react-toolbar-template', this.addReactToolbarPortals, this);
-        let isStringTemplate: string = 'isStringTemplate';
+        const isStringTemplate: string = 'isStringTemplate';
         this.toolbar[isStringTemplate] = true;
-        let viewStr: string = 'viewContainerRef';
-        let registerTemp: string = 'registeredTemplate';
+        const viewStr: string = 'viewContainerRef';
+        const registerTemp: string = 'registeredTemplate';
         if (this.parent[viewStr]) {
             this.toolbar[registerTemp] = {};
             this.toolbar[viewStr] = this.parent[viewStr];
@@ -177,8 +180,8 @@ export class Toolbar {
                 this.toolbar.appendTo(this.parent.toolbarTemplate);
                 this.element = this.toolbar.element;
             } else {
-                let isReactCompiler: boolean = this.parent.isReact && typeof (this.parent.toolbarTemplate) !== 'string';
-                let ID: string = this.parent.element.id + 'toolbarTemplate';
+                const isReactCompiler: boolean = this.parent.isReact && typeof (this.parent.toolbarTemplate) !== 'string';
+                const ID: string = this.parent.element.id + 'toolbarTemplate';
                 if (isReactCompiler) {
                     templateCompiler(this.parent.toolbarTemplate)({}, this.parent, 'toolbarTemplate', ID, null, null, this.element);
                     this.parent.renderTemplates();
@@ -204,7 +207,7 @@ export class Toolbar {
             this.toolbarCreated(true);
             this.refreshResponsiveToolbarItems(ResponsiveToolbarAction.isSearch);
             this.searchElement = (<HTMLInputElement>select('#' + this.gridID + '_searchbar', this.element));
-            let right: HTMLElement = parentsUntil(this.searchElement, 'e-toolbar-right') as HTMLElement;
+            const right: HTMLElement = parentsUntil(this.searchElement, 'e-toolbar-right') as HTMLElement;
             right.classList.add('e-responsive-right');
             if (this.parent.searchSettings) {
                 this.updateSearchBox();
@@ -218,12 +221,12 @@ export class Toolbar {
 
     private refreshResponsiveToolbarItems(action: ResponsiveToolbarAction): void {
         if (action === ResponsiveToolbarAction.isInitial) {
-            let id: string = this.parent.element.id;
-            let items: string[] = [id + '_edit', id + '_delete'];
-            let selectedRecords: number[] = this.parent.getSelectedRowIndexes();
-            let excludingItems: string[] = [id + '_responsiveback', id + '_update', id + '_cancel'];
-            for (let item of this.toolbar.items) {
-                let toolbarEle: Element = this.toolbar.element.querySelector('#' + item.id);
+            const id: string = this.parent.element.id;
+            const items: string[] = [id + '_edit', id + '_delete'];
+            const selectedRecords: number[] = this.parent.getSelectedRowIndexes();
+            const excludingItems: string[] = [id + '_responsiveback', id + '_update', id + '_cancel'];
+            for (const item of this.toolbar.items) {
+                const toolbarEle: Element = this.toolbar.element.querySelector('#' + item.id);
                 if (toolbarEle) {
                     if (items.indexOf(item.id) > -1) {
                         if (selectedRecords.length) {
@@ -241,7 +244,7 @@ export class Toolbar {
                 }
             }
             if (this.searchElement) {
-                let right: HTMLElement = parentsUntil(this.searchElement, 'e-toolbar-right') as HTMLElement;
+                const right: HTMLElement = parentsUntil(this.searchElement, 'e-toolbar-right') as HTMLElement;
                 right.classList.remove('e-responsive-right');
                 this.toolbarCreated(false);
                 this.unWireEvent();
@@ -249,9 +252,9 @@ export class Toolbar {
             }
         }
         if (action === ResponsiveToolbarAction.isSearch) {
-            let items: string[] = [this.parent.element.id + '_responsiveback', this.parent.element.id + '_search'];
-            for (let item of this.toolbar.items) {
-                let toolbarEle: Element = this.toolbar.element.querySelector('#' + item.id);
+            const items: string[] = [this.parent.element.id + '_responsiveback', this.parent.element.id + '_search'];
+            for (const item of this.toolbar.items) {
+                const toolbarEle: Element = this.toolbar.element.querySelector('#' + item.id);
                 if (toolbarEle) {
                     if (items.indexOf(item.id) > -1) {
                         toolbarEle.parentElement.classList.remove('e-hidden');
@@ -263,15 +266,28 @@ export class Toolbar {
         }
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     private refreshToolbarItems(args?: { editSettings: EditSettingsModel, name: string }): void {
-        let gObj: IGrid = this.parent;
+        const gObj: IGrid = this.parent;
         let enableItems: string[] = [];
         let disableItems: string[] = [];
-        let edit: EditSettingsModel = gObj.editSettings;
-        let hasData: number = gObj.currentViewData && gObj.currentViewData.length;
-        edit.allowAdding ? enableItems.push(this.gridID + '_add') : disableItems.push(this.gridID + '_add');
-        edit.allowEditing && hasData ? enableItems.push(this.gridID + '_edit') : disableItems.push(this.gridID + '_edit');
-        edit.allowDeleting && hasData ? enableItems.push(this.gridID + '_delete') : disableItems.push(this.gridID + '_delete');
+        const edit: EditSettingsModel = gObj.editSettings;
+        const hasData: number = gObj.currentViewData && gObj.currentViewData.length;
+        if (edit.allowAdding) {
+            enableItems.push(this.gridID + '_add');
+        } else {
+            disableItems.push(this.gridID + '_add');
+        }
+        if (edit.allowEditing && hasData) {
+            enableItems.push(this.gridID + '_edit');
+        } else {
+            disableItems.push(this.gridID + '_edit');
+        }
+        if (edit.allowDeleting && hasData) {
+            enableItems.push(this.gridID + '_delete');
+        } else {
+            disableItems.push(this.gridID + '_delete');
+        }
         if (gObj.editSettings.mode === 'Batch') {
             if (gObj.element.getElementsByClassName('e-updatedtd').length && (edit.allowAdding || edit.allowEditing)) {
                 enableItems.push(this.gridID + '_update');
@@ -294,8 +310,8 @@ export class Toolbar {
     }
 
     private getItems(): ItemModel[] {
-        let items: ItemModel[] = [];
-        let toolbarItems: (ToolbarItems | string | ItemModel | ToolbarItem)[] = this.parent.toolbar || [];
+        const items: ItemModel[] = [];
+        const toolbarItems: (ToolbarItems | string | ItemModel | ToolbarItem)[] = this.parent.toolbar || [];
         if (typeof (this.parent.toolbar) === 'string') {
             return [];
         }
@@ -307,16 +323,16 @@ export class Toolbar {
                 items.push(this.getItemObject('responsiveSort'));
             }
         }
-        for (let item of toolbarItems) {
+        for (const item of toolbarItems) {
             switch (typeof item) {
-                case 'number':
-                    items.push(this.getItemObject(this.items[item as number]));
-                    break;
-                case 'string':
-                    items.push(this.getItemObject(item as string));
-                    break;
-                default:
-                    items.push(this.getItem(item as ItemModel));
+            case 'number':
+                items.push(this.getItemObject(this.items[item as number]));
+                break;
+            case 'string':
+                items.push(this.getItemObject(item as string));
+                break;
+            default:
+                items.push(this.getItem(item as ItemModel));
             }
         }
         if (this.parent.enableAdaptiveUI && this.parent.toolbar.indexOf('Search') > -1) {
@@ -326,7 +342,7 @@ export class Toolbar {
     }
 
     private getItem(itemObject: ItemModel): ItemModel {
-        let item: ItemModel = this.predefinedItems[itemObject.text];
+        const item: ItemModel = this.predefinedItems[itemObject.text];
         return item ? extend(item, item, itemObject) : itemObject;
     }
 
@@ -336,14 +352,15 @@ export class Toolbar {
 
     /**
      * Enables or disables ToolBar items.
+     *
      * @param {string[]} items - Defines the collection of itemID of ToolBar items.
      * @param {boolean} isEnable - Defines the items to be enabled or disabled.
-     * @return {void}
+     * @returns {void}
      * @hidden
      */
     public enableItems(items: string[], isEnable: boolean): void {
-        for (let item of items) {
-            let element: HTMLElement = select('#' + item, this.element);
+        for (const item of items) {
+            const element: HTMLElement = select('#' + item, this.element);
             if (element) {
                 this.toolbar.enableItems(element.parentElement, isEnable);
             }
@@ -351,59 +368,61 @@ export class Toolbar {
     }
 
     private toolbarClickHandler(args: ClickEventArgs): void {
-        let gObj: IGrid = this.parent;
-        let gID: string = this.gridID;
+        const gObj: IGrid = this.parent;
+        const gID: string = this.gridID;
         extend(args, { cancel: false });
-        let newArgs: Object = args;
-        let originalEvent: Event = args.originalEvent;
+        const newArgs: Object = args;
+        const originalEvent: Event = args.originalEvent;
         gObj.trigger(events.toolbarClick, newArgs, (toolbarargs: ClickEventArgs) => {
             toolbarargs.originalEvent = toolbarargs.originalEvent ? toolbarargs.originalEvent : originalEvent;
             if (!toolbarargs.cancel) {
                 switch (!isNullOrUndefined(toolbarargs.item) && toolbarargs.item.id) {
-                    case gID + '_print':
-                        gObj.print();
-                        break;
-                    case gID + '_edit':
-                        gObj.startEdit();
-                        break;
-                    case gID + '_update':
-                        gObj.endEdit();
-                        break;
-                    case gID + '_cancel':
-                        gObj.closeEdit();
-                        break;
-                    case gID + '_add':
-                        gObj.addRecord();
-                        break;
-                    case gID + '_delete':
-                        gObj.deleteRecord();
-                        break;
-                    case gID + '_search':
-                        if ((<HTMLElement>toolbarargs.originalEvent.target).id === gID + '_searchbutton' && this.searchElement) {
-                            this.search();
-                        } else if (gObj.enableAdaptiveUI && !this.searchElement
-                            && ((<HTMLElement>toolbarargs.originalEvent.target).classList.contains('e-search-wrapper')
-                                || (<HTMLElement>toolbarargs.originalEvent.target).id === gID + '_searchbutton')) {
-                            this.renderResponsiveSearch(true);
-                        }
-                        break;
-                    case gID + '_columnchooser':
-                        let tarElement: Element = this.parent.element.querySelector('.e-ccdiv');
-                        let y: number = tarElement.getBoundingClientRect().top;
-                        let x: number = tarElement.getBoundingClientRect().left;
-                        let targetEle: Element = (<HTMLElement>toolbarargs.originalEvent.target);
-                        y = tarElement.getBoundingClientRect().top + (<HTMLElement>tarElement).offsetTop;
-                        gObj.createColumnchooser(x, y, targetEle);
-                        break;
-                    case gID + '_responsivefilter':
-                        gObj.showResponsiveCustomFilter();
-                        break;
-                    case gID + '_responsivesort':
-                        gObj.showResponsiveCustomSort();
-                        break;
-                    case gID + '_responsiveback':
-                        this.renderResponsiveSearch(false);
-                        break;
+                case gID + '_print':
+                    gObj.print();
+                    break;
+                case gID + '_edit':
+                    gObj.startEdit();
+                    break;
+                case gID + '_update':
+                    gObj.endEdit();
+                    break;
+                case gID + '_cancel':
+                    gObj.closeEdit();
+                    break;
+                case gID + '_add':
+                    gObj.addRecord();
+                    break;
+                case gID + '_delete':
+                    gObj.deleteRecord();
+                    break;
+                case gID + '_search':
+                    if ((<HTMLElement>toolbarargs.originalEvent.target).id === gID + '_searchbutton' && this.searchElement) {
+                        this.search();
+                    } else if (gObj.enableAdaptiveUI && !this.searchElement
+                        && ((<HTMLElement>toolbarargs.originalEvent.target).classList.contains('e-search-wrapper')
+                            || (<HTMLElement>toolbarargs.originalEvent.target).id === gID + '_searchbutton')) {
+                        this.renderResponsiveSearch(true);
+                    }
+                    break;
+                case gID + '_columnchooser':
+                    /* eslint-disable */
+                    const tarElement: Element = this.parent.element.querySelector('.e-ccdiv');
+                    let y: number = tarElement.getBoundingClientRect().top;
+                    const x: number = tarElement.getBoundingClientRect().left;
+                    const targetEle: Element = (<HTMLElement>toolbarargs.originalEvent.target);
+                    /* eslint-enable */
+                    y = tarElement.getBoundingClientRect().top + (<HTMLElement>tarElement).offsetTop;
+                    gObj.createColumnchooser(x, y, targetEle);
+                    break;
+                case gID + '_responsivefilter':
+                    gObj.showResponsiveCustomFilter();
+                    break;
+                case gID + '_responsivesort':
+                    gObj.showResponsiveCustomSort();
+                    break;
+                case gID + '_responsiveback':
+                    this.renderResponsiveSearch(false);
+                    break;
                 }
             }
         });
@@ -466,15 +485,15 @@ export class Toolbar {
     protected addEventListener(): void {
         if (this.parent.isDestroyed) { return; }
         this.evtHandlers = [{ event: events.setFullScreenDialog, handler: this.reRenderToolbar },
-        { event: events.initialEnd, handler: this.render },
-        { event: events.uiUpdate, handler: this.onPropertyChanged },
-        { event: events.inBoundModelChanged, handler: this.updateSearchBox.bind(this) },
-        { event: events.modelChanged, handler: this.refreshToolbarItems },
-        { event: events.toolbarRefresh, handler: this.refreshToolbarItems },
-        { event: events.inBoundModelChanged, handler: this.modelChanged },
-        { event: events.dataBound, handler: this.refreshToolbarItems },
-        { event: events.click, handler: this.removeResponsiveSearch },
-        { event: events.rowModeChange, handler: this.reRenderToolbar }];
+            { event: events.initialEnd, handler: this.render },
+            { event: events.uiUpdate, handler: this.onPropertyChanged },
+            { event: events.inBoundModelChanged, handler: this.updateSearchBox.bind(this) },
+            { event: events.modelChanged, handler: this.refreshToolbarItems },
+            { event: events.toolbarRefresh, handler: this.refreshToolbarItems },
+            { event: events.inBoundModelChanged, handler: this.modelChanged },
+            { event: events.dataBound, handler: this.refreshToolbarItems },
+            { event: events.click, handler: this.removeResponsiveSearch },
+            { event: events.rowModeChange, handler: this.reRenderToolbar }];
         addRemoveEventListener(this.parent, this.evtHandlers, true, this);
         this.rowSelectedFunction = this.rowSelected.bind(this);
         this.rowDeSelectedFunction = this.rowSelected.bind(this);
@@ -490,8 +509,8 @@ export class Toolbar {
     }
 
     private removeResponsiveSearch(e: MouseEventArgs): void {
-        let target: Element = e.target as Element;
-        let isSearch: boolean = target.classList.contains('e-search-icon') || target.classList.contains('e-search-wrapper');
+        const target: Element = e.target as Element;
+        const isSearch: boolean = target.classList.contains('e-search-icon') || target.classList.contains('e-search-wrapper');
         if (this.parent.enableAdaptiveUI && !isSearch && this.searchElement
             && !parentsUntil(e.target as Element, 'e-res-toolbar')) {
             this.renderResponsiveSearch(false);
@@ -506,6 +525,8 @@ export class Toolbar {
 
     /**
      * For internal use only - Get the module name.
+     *
+     * @returns {string} returns the module name
      */
     private getModuleName(): string {
         return 'toolbar';

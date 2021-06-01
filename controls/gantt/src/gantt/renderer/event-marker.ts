@@ -17,7 +17,7 @@ export class EventMarker {
      */
     public renderEventMarkers(): void {
         if (this.parent.eventMarkers && this.parent.eventMarkers.length > 0) {
-            if (!this.parent.ganttChartModule.chartBodyContent.contains(this.eventMarkersContainer)) {
+            if (!this.parent.ganttChartModule.chartBodyContainer.contains(this.eventMarkersContainer)) {
                 this.eventMarkersContainer = createElement('div', {
                     className: cls.eventMarkersContainer, styles: 'top:' +
                      this.parent.ganttChartModule.chartTimelineContainer.offsetHeight + 'px;'

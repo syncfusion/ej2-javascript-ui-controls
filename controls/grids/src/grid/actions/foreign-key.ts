@@ -34,18 +34,18 @@ export class ForeignKey extends Data {
         for (let i: number = 0; i < columns.length; i++) {
             columns[i].dataSource = (columns[i].dataSource instanceof DataManager ? <DataManager>columns[i].dataSource :
                 (isNullOrUndefined(columns[i].dataSource) ? new DataManager() : 'result' in columns[i].dataSource ? columns[i].dataSource :
-                new DataManager(columns[i].dataSource as Object[])));
+                    new DataManager(columns[i].dataSource as Object[])));
         }
     }
 
     private eventfPromise(
         args: { requestType?: string, foreignKeyData?: string[], data?: Object, action: NotifyArgs },
         query?: Query, key?: string, column?: Column): Deferred {
-        let state: ColumnDataStateChangeEventArgs = this.getStateEventArgument(query) as ColumnDataStateChangeEventArgs;
-        let def: Deferred = new Deferred();
-        let deff: Deferred = new Deferred();
+        const state: ColumnDataStateChangeEventArgs = this.getStateEventArgument(query) as ColumnDataStateChangeEventArgs;
+        const def: Deferred = new Deferred();
+        const deff: Deferred = new Deferred();
         state.action = args.action;
-        let dataModule: Data = this.parent.getDataModule();
+        const dataModule: Data = this.parent.getDataModule();
         if (!isNullOrUndefined(args.action) && args.action.requestType && dataModule.foreignKeyDataState.isDataChanged !== false) {
             dataModule.setForeignKeyDataState({
                 isPending: true, resolver: deff.resolve
@@ -66,16 +66,16 @@ export class ForeignKey extends Data {
         data: Promise<Object>, result: ReturnType, promise: Deferred, isComplex?: boolean,
         column?: Column, action: NotifyArgs
     }): void {
-        let foreignColumns: Column[] = args.column ? [args.column] : this.parent.getForeignKeyColumns();
-        let allPromise: Promise<Object>[] = [];
+        const foreignColumns: Column[] = args.column ? [args.column] : this.parent.getForeignKeyColumns();
+        const allPromise: Promise<Object>[] = [];
         for (let i: number = 0; i < foreignColumns.length; i++) {
             let promise: Promise<Object>;
-            let query: Query = args.isComplex ? this.genarateColumnQuery(foreignColumns[i]) :
+            const query: Query = args.isComplex ? this.genarateColumnQuery(foreignColumns[i]) :
                 <Query>this.genarateQuery(foreignColumns[i], <{ records?: Object[] }>args.result.result, false, true);
             query.params = this.parent.query.params;
-            let dataSource: DataManager = <DataManager>foreignColumns[i].dataSource;
+            const dataSource: DataManager = <DataManager>foreignColumns[i].dataSource;
             if (dataSource && 'result' in dataSource) {
-                let def: Deferred = this.eventfPromise(args, query, dataSource, foreignColumns[i]);
+                const def: Deferred = this.eventfPromise(args, query, dataSource, foreignColumns[i]);
                 promise = def.promise;
             } else if (!dataSource.ready || dataSource.dataSource.offline) {
                 promise = dataSource.executeQuery(query);
@@ -114,20 +114,20 @@ export class ForeignKey extends Data {
     }
 
     private genarateQuery(column: Column, e?: { records?: Object[] }, fromData?: boolean, needQuery?: boolean): Predicate | Query {
-        let gObj: IGrid = this.parent;
-        let predicates: Predicate[] = [];
-        let predicate: Predicate;
-        let query: Query = new Query();
+        const gObj: IGrid = this.parent;
+        const predicates: Predicate[] = [];
+        const query: Query = new Query();
         let field: string = fromData ? column.foreignKeyField : column.field;
         if (gObj.allowPaging || gObj.enableVirtualization || fromData) {
             e = <{ records?: Object[] }>new DataManager(((gObj.allowGrouping && gObj.groupSettings.columns.length && !fromData) ?
                 e.records : e) as JSON[]).executeLocal(new Query().select(field));
-            let filteredValue: Object[] = DataUtil.distinct(<Object[]>e, field, false);
+            const filteredValue: Object[] = DataUtil.distinct(<Object[]>e, field, false);
             field = fromData ? column.field : column.foreignKeyField;
             for (let i: number = 0; i < filteredValue.length; i++) {
                 if (filteredValue[i] && (<Date>filteredValue[i]).getDay) {
-                    predicates.push(getDatePredicate
-                        ({ field: field, operator: 'equal', value: <string>filteredValue[i], matchCase: false }));
+                    predicates.push(
+                        getDatePredicate({ field: field, operator: 'equal', value: <string>filteredValue[i], matchCase: false })
+                    );
                 } else {
                     predicates.push(new Predicate(field, 'equal', <string>filteredValue[i], false));
                 }
@@ -136,20 +136,19 @@ export class ForeignKey extends Data {
         if (needQuery) {
             return predicates.length ? query.where(Predicate.or(predicates)) : query;
         }
-        predicate = (predicates.length ? Predicate.or(predicates) : { predicates: [] }) as Predicate;
-        return predicate;
+        return (predicates.length ? Predicate.or(predicates) : { predicates: [] }) as Predicate;
     }
 
     private genarateColumnQuery(column: Column): Query {
-        let gObj: IGrid = this.parent;
+        const gObj: IGrid = this.parent;
         let query: Query = new Query();
-        let queryColumn: { column: PredicateModel[], isTrue: boolean } = this.isFiltered(column);
+        const queryColumn: { column: PredicateModel[], isTrue: boolean } = this.isFiltered(column);
         if (queryColumn.isTrue) {
             query = this.filterQuery(query, <PredicateModel[]>queryColumn.column, true);
         }
 
         if (gObj.searchSettings.key.length) {
-            let sSettings: SearchSettingsModel = gObj.searchSettings;
+            const sSettings: SearchSettingsModel = gObj.searchSettings;
             if (column.dataSource instanceof DataManager && ((<{ getModuleName?: Function }>column.dataSource.adaptor).getModuleName &&
                 (<{ getModuleName?: Function }>column.dataSource.adaptor).getModuleName() === 'ODataV4Adaptor')) {
                 query = this.searchQuery(query, column, true);
@@ -162,7 +161,7 @@ export class ForeignKey extends Data {
     }
 
     private isFiltered(column: Column): { column: PredicateModel[], isTrue: boolean } {
-        let filterColumn: PredicateModel[] = this.parent.filterSettings.columns.filter((fColumn: PredicateModel) => {
+        const filterColumn: PredicateModel[] = this.parent.filterSettings.columns.filter((fColumn: PredicateModel) => {
             return (fColumn.field === column.foreignKeyValue && fColumn.uid === column.uid);
         });
         return {

@@ -4163,4 +4163,73 @@ describe('Datepicker', () => {
             expect(datePicker.inputElement.value === "1/1/2020").toBe(true)
         });
     });
+    describe('EJ2-49003 - Datepicker focus class not added for selected date',function(){
+        let datePicker:any;
+        let keyEventArgs: any = {
+            preventDefault: (): void => { /** NO Code */ },
+            action: 'moveLeft'
+        };
+        beforeEach(function(){
+            let element: HTMLElement = createElement('input',{id:'date'});
+            document.body.appendChild(element);
+        });
+        afterEach(function(){
+            if(datePicker){
+                datePicker.destroy();
+            }
+            document.body.innerHTML = '';
+        });
+        it('check the focus class added for selected date',function(){
+            datePicker = new DatePicker({
+            });
+            datePicker.appendTo('#date');
+            datePicker.show();
+            datePicker.value = new Date('05/12/2020');
+            datePicker.dataBind();
+            keyEventArgs.action = "moveRight";
+            datePicker.inputKeyActionHandle(keyEventArgs);
+            expect(datePicker.tableBodyElement.querySelectorAll('.e-focused-date').length).toEqual(1);
+            keyEventArgs.action = "moveLeft";
+            datePicker.inputKeyActionHandle(keyEventArgs);
+            expect(datePicker.tableBodyElement.querySelectorAll('.e-focused-date').length).toEqual(1);
+            var selectedCell = datePicker.tableBodyElement.querySelector('.e-selected');
+            expect(selectedCell.classList.contains('e-focused-date')).toBe(true);
+        });
+        it('check the focus class added for predefined value',function(){
+            datePicker = new DatePicker({
+                value: new Date('05/12/2020')
+            });
+            datePicker.appendTo('#date');
+            datePicker.show();
+            keyEventArgs.action = "moveRight";
+            datePicker.inputKeyActionHandle(keyEventArgs);
+            expect(datePicker.tableBodyElement.querySelectorAll('.e-focused-date').length).toEqual(1);
+            keyEventArgs.action = "moveLeft";
+            datePicker.inputKeyActionHandle(keyEventArgs);
+            expect(datePicker.tableBodyElement.querySelectorAll('.e-focused-date').length).toEqual(1);
+            var selectedCell = datePicker.tableBodyElement.querySelector('.e-selected');
+            expect(selectedCell.classList.contains('e-focused-date')).toBe(true);
+        });
+    });
+    describe('EJ2CORE-564 - console error thrown, when disabled the today button property', () => {
+        let datePicker: any;
+        beforeEach(() => {
+            let ele: HTMLElement = createElement('input', { id: 'date' });
+            document.body.appendChild(ele);
+        });
+        afterEach(() => {
+            if (datePicker) {
+                datePicker.destroy();
+            }
+            document.body.innerHTML = '';
+        });
+        it('disable the today button on initialize', () => {
+            datePicker = new DatePicker({showTodayButton: false});
+            datePicker.appendTo('#date');
+            datePicker.show(); 
+            expect(datePicker.footer).toBe(undefined);
+            expect(datePicker.showTodayButton).toBe(false);
+            datePicker.hide();
+        });
+    });
 });

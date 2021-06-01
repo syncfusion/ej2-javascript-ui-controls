@@ -1,13 +1,12 @@
-import { EventHandler, isNullOrUndefined } from '@syncfusion/ej2-base';
+import { Browser, EventHandler, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { Spreadsheet } from '../base/index';
 import { contentLoaded, spreadsheetDestroyed, onVerticalScroll, onHorizontalScroll, getScrollBarWidth, IScrollArgs } from '../common/index';
 import { IOffset, onContentScroll, deInitProperties, setScrollEvent, skipHiddenIdx, mouseDown, selectionStatus } from '../common/index';
 import { SheetModel, getRowHeight, getColumnWidth, getCellAddress } from '../../workbook/index';
-import { isFormulaBarEdit, FormulaBarEdit, virtualContentLoaded, colWidthChanged } from '../common/index';
+import { isFormulaBarEdit, FormulaBarEdit, virtualContentLoaded, colWidthChanged, getUpdateUsingRaf } from '../common/index';
 
 /**
  * The `Scroll` module is used to handle scrolling behavior.
- *
  * @hidden
  */
 export class Scroll {
@@ -202,9 +201,7 @@ export class Scroll {
 
     private contentLoaded(): void {
         this.setScrollEvent();
-        if (this.parent.enableRtl) {
-            this.initScrollValue = this.parent.getScrollElement().scrollLeft;
-        }
+        if (this.parent.enableRtl) { this.initScrollValue = this.parent.getScrollElement().scrollLeft; }
         if (!this.parent.scrollSettings.enableVirtualization) {
             const scrollTrack: HTMLElement = this.parent.createElement('div', { className: 'e-virtualtrack' });
             this.updateNonVirualScrollWidth({ scrollTrack: scrollTrack });
@@ -217,52 +214,37 @@ export class Scroll {
         args.scrollTrack.style.width = Math.abs(this.parent.getContentTable().getBoundingClientRect().width) + 'px';
     }
 
-    private onWheel(e: WheelEvent): void {
+    private onHeaderWheel(e: WheelEvent): void {
         e.preventDefault();
         this.parent.getMainContent().parentElement.scrollTop += e.deltaY;
+        this.parent.getScrollElement().scrollLeft += e.deltaX;
+    }
+
+    private onContentWheel(e: WheelEvent): void {
+        if (e.deltaX !== 0) {
+            e.preventDefault();
+            this.parent.getScrollElement().scrollLeft += e.deltaX;
+        }
     }
 
     private scrollHandler(e: MouseEvent): void {
         this.onContentScroll({ scrollLeft: (e.target as Element).scrollLeft });
     }
 
-    private mouseDownHandler(e: TouchEvent): void {
-        if (e.type === 'mousedown') { return; }
-        const args: { touchSelectionStarted: boolean } = { touchSelectionStarted: false };
-        this.parent.notify(selectionStatus, args);
-        if (args.touchSelectionStarted) { return; }
-        const sheetContent: HTMLElement = document.getElementById(this.parent.element.id + '_sheet');
-        this.clientX = e.changedTouches[0].clientX;
-        EventHandler.add(sheetContent, 'touchmove', this.mouseMoveHandler, this);
-        EventHandler.add(sheetContent, 'touchend', this.mouseUpHandler, this);
-    }
-
-    private mouseMoveHandler(e: TouchEvent): void {
-        const scroller: Element = this.parent.element.getElementsByClassName('e-scroller')[0];
-        const diff: number = this.clientX - e.changedTouches[0].clientX;
-        if (diff > 10 || diff < -10) {
-            e.preventDefault();
-            scroller.scrollLeft += diff;
-            this.clientX = e.changedTouches[0].clientX;
-        }
-    }
-
-    private mouseUpHandler(): void {
-        const sheetContent: HTMLElement = document.getElementById(this.parent.element.id + '_sheet');
-        EventHandler.remove(sheetContent, 'touchmove', this.mouseMoveHandler);
-        EventHandler.remove(sheetContent, 'touchend', this.mouseUpHandler);
-    }
-
     private setScrollEvent(args: { set: boolean } = { set: true }): void {
         if (args.set) {
             EventHandler.add(this.parent.sheetModule.contentPanel, 'scroll', this.onContentScroll, this);
-            EventHandler.add(this.parent.getColumnHeaderContent(), 'wheel', this.onWheel, this);
-            EventHandler.add(this.parent.getSelectAllContent(), 'wheel', this.onWheel, this);
+            EventHandler.add(this.parent.getColumnHeaderContent(), 'wheel', this.onHeaderWheel, this);
+            EventHandler.add(this.parent.getSelectAllContent(), 'wheel', this.onHeaderWheel, this);
+            EventHandler.add(this.parent.getMainContent(), 'wheel', this.onContentWheel, this);
+            EventHandler.add(this.parent.getRowHeaderContent(), 'wheel', this.onContentWheel, this);
             EventHandler.add(this.parent.getScrollElement(), 'scroll', this.scrollHandler, this);
         } else {
             EventHandler.remove(this.parent.sheetModule.contentPanel, 'scroll', this.onContentScroll);
-            EventHandler.remove(this.parent.getColumnHeaderContent(), 'wheel', this.onWheel);
-            EventHandler.remove(this.parent.getSelectAllContent(), 'wheel', this.onWheel);
+            EventHandler.remove(this.parent.getColumnHeaderContent(), 'wheel', this.onHeaderWheel);
+            EventHandler.remove(this.parent.getSelectAllContent(), 'wheel', this.onHeaderWheel);
+            EventHandler.remove(this.parent.getMainContent(), 'wheel', this.onContentWheel);
+            EventHandler.remove(this.parent.getRowHeaderContent(), 'wheel', this.onContentWheel);
             EventHandler.remove(this.parent.getScrollElement(), 'scroll', this.scrollHandler);
         }
     }
@@ -289,13 +271,52 @@ export class Scroll {
         }
     }
 
+    private setClientX(e: PointerEvent | TouchEvent): void {
+        if (e.type === 'mousedown' || (e as PointerEvent).pointerType === 'mouse') { return; }
+        const args: { touchSelectionStarted: boolean } = { touchSelectionStarted: false };
+        this.parent.notify(selectionStatus, args);
+        if (args.touchSelectionStarted) { return; }
+        this.clientX = this.getPointX(e);
+        const sheetContent: HTMLElement = document.getElementById(this.parent.element.id + '_sheet');
+        EventHandler.add(sheetContent, Browser.isPointer ? 'pointermove' : 'touchmove', this.onTouchScroll, this);
+        EventHandler.add(sheetContent, Browser.isPointer ? 'pointerup' : 'touchend', this.pointerUpHandler, this);
+    }
+
+    private getPointX(e: PointerEvent | TouchEvent): number {
+        let clientX: number = 0;
+        if ((e as TouchEvent).touches && (e as TouchEvent).touches.length) {
+            clientX = (e as TouchEvent).touches[0].clientX;
+        } else {
+            clientX = (e as PointerEvent).clientX;
+        }
+        return clientX;
+    }
+
+    private onTouchScroll(e: PointerEvent | TouchEvent): void {
+        if ((e as PointerEvent).pointerType === 'mouse') { return; }
+        const clientX: number = this.getPointX(e);
+        const diff: number = this.clientX - clientX;
+        const scroller: Element = this.parent.element.getElementsByClassName('e-scroller')[0];
+        if ((diff > 10 || diff < -10) && scroller.scrollLeft + diff >= 0) {
+            e.preventDefault();
+            this.clientX = clientX;
+            getUpdateUsingRaf((): void => { scroller.scrollLeft += diff; });
+        }
+    }
+
+    private pointerUpHandler(): void {
+        const sheetContent: HTMLElement = document.getElementById(this.parent.element.id + '_sheet');
+        EventHandler.remove(sheetContent, Browser.isPointer ? 'pointermove' : 'touchmove', this.onTouchScroll);
+        EventHandler.remove(sheetContent, Browser.isPointer ? 'pointerup' : 'touchend', this.pointerUpHandler);
+    }
+
     private addEventListener(): void {
         this.parent.on(contentLoaded, this.contentLoaded, this);
         this.parent.on(onContentScroll, this.onContentScroll, this);
         this.parent.on(deInitProperties, this.initProps, this);
         this.parent.on(spreadsheetDestroyed, this.destroy, this);
         this.parent.on(setScrollEvent, this.setScrollEvent, this);
-        this.parent.on(mouseDown, this.mouseDownHandler, this);
+        this.parent.on(mouseDown, this.setClientX, this);
         if (!this.parent.scrollSettings.enableVirtualization) {
             this.parent.on(virtualContentLoaded, this.updateNonVirualScrollWidth, this);
             this.parent.on(colWidthChanged, this.updateNonVirualScrollWidth, this);
@@ -313,7 +334,7 @@ export class Scroll {
         this.parent.off(deInitProperties, this.initProps);
         this.parent.off(spreadsheetDestroyed, this.destroy);
         this.parent.off(setScrollEvent, this.setScrollEvent);
-        this.parent.off(mouseDown, this.mouseDownHandler);
+        this.parent.off(mouseDown, this.setClientX);
         if (!this.parent.scrollSettings.enableVirtualization) {
             this.parent.off(virtualContentLoaded, this.updateNonVirualScrollWidth);
             this.parent.off(colWidthChanged, this.updateNonVirualScrollWidth);

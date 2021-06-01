@@ -214,3 +214,5 @@ export const validationHighlight: string = 'validationHighlight';
 export const dataRefresh: string = 'dataRefresh';
 /** @hidden */
 export const updateFilter: string = 'updateFilter';
+/** @hidden */
+export const deleteHyperlink: string = 'deleteHyperlink';

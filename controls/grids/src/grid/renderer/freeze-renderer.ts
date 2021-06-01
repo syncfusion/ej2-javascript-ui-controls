@@ -16,6 +16,7 @@ import * as literals from '../base/string-literals';
 
 /**
  * Freeze module is used to render grid content with frozen rows and columns
+ *
  * @hidden
  */
 export class FreezeContentRender extends ContentRender implements IRenderer {
@@ -41,11 +42,11 @@ export class FreezeContentRender extends ContentRender implements IRenderer {
     }
 
     protected batchAdd(args: { name: string }): void {
-        let isAdd: boolean = args.name !== 'batchCancel'
+        const isAdd: boolean = args.name !== 'batchCancel'
             && !(this.parent.frozenRows && this.parent.editSettings.newRowPosition === 'Top');
         if (this.parent.height !== 'auto' && (isAdd || args.name === 'batchCancel' || args.name === 'batchDelete')) {
             this.refreshScrollOffset();
-            let height: number = (this.getTable() as HTMLElement).offsetHeight;
+            const height: number = (this.getTable() as HTMLElement).offsetHeight;
             if (args.name === 'add' && this.parent.editSettings.newRowPosition === 'Bottom') {
                 (this.parent.getContent().firstChild as HTMLElement).scroll(0, height);
             }
@@ -62,7 +63,7 @@ export class FreezeContentRender extends ContentRender implements IRenderer {
             && (<{ row?: HTMLElement }>args).row.classList.contains(literals.addedRow)))
             && (!this.parent.frozenRows || this.parent.editSettings.newRowPosition === 'Bottom') && this.parent.height !== 'auto') {
             this.refreshScrollOffset();
-            let height: number = (this.getTable() as HTMLElement).offsetHeight;
+            const height: number = (this.getTable() as HTMLElement).offsetHeight;
             if (args.requestType === 'add' && this.parent.editSettings.newRowPosition === 'Bottom') {
                 (this.parent.getContent().firstChild as HTMLElement).scroll(0, height);
             }
@@ -119,6 +120,8 @@ export class FreezeContentRender extends ContentRender implements IRenderer {
     }
 
     /**
+     * @param {Element} ele - specifies the element
+     * @returns {void}
      * @hidden
      */
     public setMovableContent(ele: Element): void {
@@ -160,10 +163,10 @@ export class FreezeContentRender extends ContentRender implements IRenderer {
         if (this.getMovableContent().querySelector(literals.colGroup)) {
             remove(this.getMovableContent().querySelector(literals.colGroup));
         }
-        let colGroup: Element
+        const colGroup: Element
             = ((this.parent.getHeaderContent().querySelector('.' + literals.movableHeader).querySelector(literals.colGroup)).cloneNode(true)) as Element;
         mTbl.insertBefore(colGroup, mTbl.querySelector( literals.tbody));
-        let style: string = this.parent.enableVirtualization ? '' : 'flex';
+        const style: string = this.parent.enableVirtualization ? '' : 'flex';
         (this.getPanel().firstChild as HTMLElement).style.display = style;
         this.renderHorizontalScrollbar('e-frozenscrollbar e-frozen-left-scrollbar', this.getScrollbarDisplay());
     }
@@ -178,18 +181,19 @@ export class FreezeContentRender extends ContentRender implements IRenderer {
     }
 
     protected renderHorizontalScrollbar(className: string, display: string, isRight?: boolean): void {
-        let left: Element = this.parent.createElement('div', { className: className, styles: 'display:' + display });
-        let movable: Element = this.parent.createElement('div', { className: 'e-movablescrollbar' });
-        let child: Element = this.parent.createElement('div', { className: 'e-movablechild' });
-        let scrollbarHeight: string = getScrollBarWidth().toString();
+        const left: Element = this.parent.createElement('div', { className: className, styles: 'display:' + display });
+        const movable: Element = this.parent.createElement('div', { className: 'e-movablescrollbar' });
+        const child: Element = this.parent.createElement('div', { className: 'e-movablechild' });
+        const scrollbarHeight: string = getScrollBarWidth().toString();
         this.setScrollbarHeight(movable as HTMLElement, scrollbarHeight);
         this.setScrollbarHeight(child as HTMLElement, scrollbarHeight);
         movable.appendChild(child);
         this.appendScrollbar(left, movable, isRight);
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     protected appendScrollbar(frozen: Element, movable: Element, isRight?: boolean): void {
-        let parent: Element = this.parent.createElement('div', { className: 'e-scrollbar', styles: 'display: flex' });
+        const parent: Element = this.parent.createElement('div', { className: 'e-scrollbar', styles: 'display: flex' });
         parent.appendChild(frozen);
         parent.appendChild(movable);
         this.parent.getContent().appendChild(parent);
@@ -201,13 +205,20 @@ export class FreezeContentRender extends ContentRender implements IRenderer {
     }
 
     /**
+     * @param {NotifyArgs} args - specifies the NotifyArgs
+     * @param {freezeTable} tableName - specifies the Freeze Table
+     * @returns {void}
      * @hidden
      */
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     public setIsFrozen(args: NotifyArgs, tableName: freezeTable): void {
         args.isFrozen = !args.isFrozen;
     }
 
     /**
+     * @param {Row<Column>[]} modelData - specifies the modeldata
+     * @param {NotifyArgs} args - specifies the args
+     * @returns {freezeTable} returns the freeze table
      * @hidden
      */
     public setTbody(modelData: Row<Column>[], args: NotifyArgs): freezeTable {
@@ -239,6 +250,8 @@ export class FreezeContentRender extends ContentRender implements IRenderer {
     }
 
     /**
+     * @param {string} tableName - specifies the table name
+     * @returns {void}
      * @hidden
      */
     public splitRows(tableName: string): void {
@@ -251,10 +264,13 @@ export class FreezeContentRender extends ContentRender implements IRenderer {
     }
 
     /**
+     * @param {NotifyArgs} args - specifies the notifyargs
+     * @param {string} tableName - specifies the tableName
+     * @returns {void}
      * @hidden
      */
     public renderNextFrozentPart(args: NotifyArgs, tableName: string): void {
-        let isVFTable: boolean = this.parent.enableVirtualization;
+        const isVFTable: boolean = this.parent.enableVirtualization;
         if (tableName === literals.frozenLeft) {
             if (isVFTable) {
                 args.renderMovableContent = true;
@@ -286,18 +302,17 @@ export class FreezeContentRender extends ContentRender implements IRenderer {
         }
     }
 
-    /**
-     * @hidden
-     */
     public refreshScrollOffset(): void {
         if (this.parent.height !== 'auto') {
-            let height: number = (this.getTable() as HTMLElement).offsetHeight + 1;
+            const height: number = (this.getTable() as HTMLElement).offsetHeight + 1;
             this.setHeightToContent(height);
         }
         this.parent.notify(events.refreshFrozenHeight, {});
     }
 
     /**
+     * @param {string} tableName - specifies the table name
+     * @returns {HTMLElement} returns the Html element
      * @hidden
      */
     public getFrozenHeader(tableName: string): HTMLElement {
@@ -330,6 +345,8 @@ export class FreezeContentRender extends ContentRender implements IRenderer {
     }
 
     /**
+     * @param {freezeTable} tableName - specifies the table name
+     * @returns {Element} returns the element
      * @hidden
      */
     public getTbody(tableName: freezeTable): Element {
@@ -353,8 +370,8 @@ export class FreezeRender extends HeaderRender implements IRenderer {
 
     public addEventListener(): void {
         this.eventHandler = [{ event: events.freezeRender, handler: this.refreshFreeze },
-        { event: events.frozenHeight, handler: this.setFrozenHeight },
-        { event: events.uiUpdate, handler: this.enableAfterRender }];
+            { event: events.frozenHeight, handler: this.setFrozenHeight },
+            { event: events.uiUpdate, handler: this.enableAfterRender }];
         addRemoveEventListener(this.parent, this.eventHandler, true, this);
     }
 
@@ -395,7 +412,7 @@ export class FreezeRender extends HeaderRender implements IRenderer {
     }
 
     public refreshUI(): void {
-        let tbody: Element = this.getMovableHeader().querySelector(literals.tbody);
+        const tbody: Element = this.getMovableHeader().querySelector(literals.tbody);
         remove(this.getMovableHeader().querySelector('table'));
         super.refreshUI();
         this.rfshMovable();
@@ -427,13 +444,13 @@ export class FreezeRender extends HeaderRender implements IRenderer {
 
     protected addMovableFirstCls(): void {
         if (this.parent.getVisibleFrozenColumns()) {
-            let movablefirstcell: NodeListOf<Element> = [].slice.call(
+            const movablefirstcell: NodeListOf<Element> = [].slice.call(
                 this.parent.element.querySelector('.' + literals.movableHeader).querySelector('thead').getElementsByClassName('e-columnheader')
             );
-            let len: number = movablefirstcell.length;
+            const len: number = movablefirstcell.length;
             for (let i: number = 0; i < len; i++) {
-                let cells: string = 'cells';
-                let element: Element = movablefirstcell[i][cells][0];
+                const cells: string = 'cells';
+                const element: Element = movablefirstcell[i][cells][0];
                 if (element) {
                     addClass([element], ['e-movablefirst']);
                     if (movablefirstcell[i][cells][0].rowSpan > 1) {
@@ -446,14 +463,14 @@ export class FreezeRender extends HeaderRender implements IRenderer {
 
     protected refreshFreeze(obj: { case: string, isModeChg?: boolean }): void {
         if (obj.case === 'filter') {
-            let filterRow: Element = this.getTable().querySelector('.e-filterbar');
+            const filterRow: Element = this.getTable().querySelector('.e-filterbar');
             if (this.parent.allowFiltering && filterRow && this.getMovableHeader().querySelector('thead')) {
                 this.getMovableHeader().querySelector('thead')
                     .appendChild(this.filterRenderer(filterRow, this.parent.getFrozenColumns()));
-                let elements: HTMLInputElement[] = [].slice.call(this.getMovableHeader().
-                querySelectorAll('thead .e-filterbarcell .e-input'));
-                for (let elem of elements) {
-                    let args: InputArgs = {
+                const elements: HTMLInputElement[] = [].slice.call(this.getMovableHeader().
+                    querySelectorAll('thead .e-filterbarcell .e-input'));
+                for (const elem of elements) {
+                    const args: InputArgs = {
                         element: elem as HTMLInputElement, floatLabelType: 'Never',
                         properties: {
                             enableRtl: this.parent.enableRtl, showClearButton: true
@@ -471,11 +488,11 @@ export class FreezeRender extends HeaderRender implements IRenderer {
     protected refreshHeight(obj: { case: string, isModeChg?: boolean }): void {
         let fRows: NodeListOf<HTMLElement>;
         let mRows: NodeListOf<HTMLElement>;
-        let fHdr: Element = this.getFrozenHeader();
-        let mHdr: Element = this.getMovableHeader();
-        let cont: Element = this.parent.getContent();
-        let wrapMode: string = this.parent.textWrapSettings.wrapMode;
-        let hdrClassList: DOMTokenList = (this.parent.getHeaderContent().querySelector('.' + literals.headerContent) as Element).classList;
+        const fHdr: Element = this.getFrozenHeader();
+        const mHdr: Element = this.getMovableHeader();
+        const cont: Element = this.parent.getContent();
+        const wrapMode: string = this.parent.textWrapSettings.wrapMode;
+        const hdrClassList: DOMTokenList = (this.parent.getHeaderContent().querySelector('.' + literals.headerContent) as Element).classList;
         if (obj.case === 'textwrap') {
             if (wrapMode !== 'Header' || obj.isModeChg) {
                 fRows = cont.querySelector('.' + literals.frozenContent).querySelectorAll('tr') as NodeListOf<HTMLElement>;
@@ -492,9 +509,9 @@ export class FreezeRender extends HeaderRender implements IRenderer {
                 mRows = mHdr.querySelectorAll('tr') as NodeListOf<HTMLElement>;
             } else {
                 mRows = mHdr.querySelector(wrapMode === 'Content' ?
-                     literals.tbody : 'thead').querySelectorAll('tr') as NodeListOf<HTMLElement>;
+                    literals.tbody : 'thead').querySelectorAll('tr') as NodeListOf<HTMLElement>;
                 fRows = fHdr.querySelector(wrapMode === 'Content' ?
-                     literals.tbody : 'thead').querySelectorAll('tr') as NodeListOf<HTMLElement>;
+                    literals.tbody : 'thead').querySelectorAll('tr') as NodeListOf<HTMLElement>;
             }
             if (!this.parent.getHeaderContent().getElementsByClassName('e-stackedheadercell').length) {
                 this.setWrapHeight(fRows, mRows, obj.isModeChg, false, this.colDepth > 1);
@@ -517,7 +534,7 @@ export class FreezeRender extends HeaderRender implements IRenderer {
     }
 
     private updateResizeHandler(): void {
-        let elements: HTMLElement[] = [].slice.call(this.parent.getHeaderContent().getElementsByClassName('e-rhandler'));
+        const elements: HTMLElement[] = [].slice.call(this.parent.getHeaderContent().getElementsByClassName('e-rhandler'));
         for (let i: number = 0; i < elements.length; i++) {
             elements[i].style.height = elements[i].parentElement.offsetHeight + 'px';
         }
@@ -528,13 +545,13 @@ export class FreezeRender extends HeaderRender implements IRenderer {
         isContReset?: boolean, isStackedHdr?: boolean): void {
         let fRowHgt: number;
         let mRowHgt: number;
-        let isWrap: boolean = this.parent.allowTextWrap;
-        let wrapMode: string = this.parent.textWrapSettings.wrapMode;
-        let tHead: Element = this.parent.getHeaderContent().querySelector('thead');
-        let tBody: Element = this.parent.getHeaderContent().querySelector( literals.tbody);
-        let height: number[] = [];
-        let width: number[] = [];
-        for (let i: number = 0, len: number = fRows.length; i < len; i++) { //separate loop for performance issue 
+        const isWrap: boolean = this.parent.allowTextWrap;
+        const wrapMode: string = this.parent.textWrapSettings.wrapMode;
+        const tHead: Element = this.parent.getHeaderContent().querySelector('thead');
+        const tBody: Element = this.parent.getHeaderContent().querySelector( literals.tbody);
+        const height: number[] = [];
+        const width: number[] = [];
+        for (let i: number = 0, len: number = fRows.length; i < len; i++) { //separate loop for performance issue
             if (!isNullOrUndefined(fRows[i]) && !isNullOrUndefined(mRows[i])) {
                 height[i] = fRows[i].getBoundingClientRect().height; //https://pagebuildersandwich.com/increased-plugins-performance-200/
                 width[i] = mRows[i].getBoundingClientRect().height;
@@ -565,11 +582,11 @@ export class FreezeRender extends HeaderRender implements IRenderer {
     }
 
     protected setFrozenHeight(height: number = getScrollBarWidth()): void {
-        let movableContentHeight: number = this.parent.element.querySelector('.' + literals.movableContent).getBoundingClientRect().height;
-        let movableContent: HTMLElement = this.parent.element.querySelector('.' + literals.movableContent) as HTMLElement;
-        let frozenContent: HTMLElement = this.parent.element.querySelector('.' + literals.frozenContent) as HTMLElement;
-        let contentScrollWidth: number = this.parent.getContent().scrollWidth;
-        let contentTableScrollWidth: number = this.parent.element.querySelector('.e-movablecontent table').scrollWidth +
+        const movableContentHeight: number = this.parent.element.querySelector('.' + literals.movableContent).getBoundingClientRect().height;
+        const movableContent: HTMLElement = this.parent.element.querySelector('.' + literals.movableContent) as HTMLElement;
+        const frozenContent: HTMLElement = this.parent.element.querySelector('.' + literals.frozenContent) as HTMLElement;
+        const contentScrollWidth: number = this.parent.getContent().scrollWidth;
+        const contentTableScrollWidth: number = this.parent.element.querySelector('.e-movablecontent table').scrollWidth +
             this.parent.getContentTable().scrollWidth;
         if (movableContent.scrollWidth - movableContent.clientWidth) {
             frozenContent.style.height = movableContentHeight -
@@ -589,8 +606,8 @@ export class FreezeRender extends HeaderRender implements IRenderer {
     protected refreshStackedHdrHgt(): void {
         let fRowSpan: { min: number, max: number };
         let mRowSpan: { min: number, max: number };
-        let fTr: NodeListOf<Element> = [].slice.call(this.getFrozenHeader().getElementsByClassName('e-columnheader'));
-        let mTr: NodeListOf<Element> = [].slice.call(this.getMovableHeader().getElementsByClassName('e-columnheader'));
+        const fTr: NodeListOf<Element> = [].slice.call(this.getFrozenHeader().getElementsByClassName('e-columnheader'));
+        const mTr: NodeListOf<Element> = [].slice.call(this.getMovableHeader().getElementsByClassName('e-columnheader'));
         for (let i: number = 0, len: number = fTr.length; i < len; i++) {
             fRowSpan = this.getRowSpan(fTr[i]);
             mRowSpan = this.getRowSpan(mTr[i]);
@@ -634,6 +651,8 @@ export class FreezeRender extends HeaderRender implements IRenderer {
     }
 
     /**
+     * @param {Element} ele - specifies the element
+     * @returns {void}
      * @hidden
      */
     public setMovableHeader(ele: Element): void {
@@ -648,19 +667,20 @@ export class FreezeRender extends HeaderRender implements IRenderer {
         return this.movableHeader;
     }
     /**
+     * @returns {void}
      * @hidden
      */
     public updateColgroup(): void {
-        let mTable: Element = this.getMovableHeader().querySelector('table');
+        const mTable: Element = this.getMovableHeader().querySelector('table');
         remove(this.getMovableHeader().querySelector(literals.colGroup));
         mTable.insertBefore(
             renderMovable(this.getFrozenHeader().querySelector(literals.colGroup), this.parent.getFrozenColumns(), this.parent),
             mTable.querySelector('thead'));
     }
     protected filterRenderer(ele: Element, frozenColumn: number, total?: number): Element {
-        let clone: Element = ele.cloneNode(true) as Element;
+        const clone: Element = ele.cloneNode(true) as Element;
         clone.innerHTML = '';
-        let end: number = total ? total : this.parent.getColumns().length;
+        const end: number = total ? total : this.parent.getColumns().length;
         for (let i: number = frozenColumn; i < end; i++) {
             clone.appendChild(ele.removeChild(ele.children[frozenColumn]));
         }

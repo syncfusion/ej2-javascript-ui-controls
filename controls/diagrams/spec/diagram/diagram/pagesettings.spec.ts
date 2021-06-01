@@ -1147,11 +1147,13 @@ describe('Swimlane Resize functionality', () => {
     });
     it('Check whether swimlane is resized properly or not ', (done: Function) => {
         let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
-        mouseEvents.clickEvent(diagramCanvas, 200, 300);
-        mouseEvents.mouseMoveEvent(diagramCanvas, 200, 300);
-        mouseEvents.mouseDownEvent(diagramCanvas, 200, 300);
-        mouseEvents.mouseMoveEvent(diagramCanvas, 200, 350);
-        mouseEvents.mouseUpEvent(diagramCanvas, 200, 350);
+        mouseEvents.clickEvent(diagramCanvas, 200+diagram.element.offsetLeft, 300+diagram.element.offsetTop);
+        let x = diagram.selectedItems.wrapper.bounds.x + diagram.selectedItems.wrapper.bounds.width / 2 + diagram.element.offsetLeft;
+        let y = diagram.selectedItems.wrapper.bounds.y + diagram.selectedItems.wrapper.bounds.height + diagram.element.offsetTop;
+        mouseEvents.mouseMoveEvent(diagramCanvas, x, y);
+        mouseEvents.mouseDownEvent(diagramCanvas, 200+diagram.element.offsetLeft, y);
+        mouseEvents.mouseMoveEvent(diagramCanvas, 200+diagram.element.offsetLeft, y +50);
+        mouseEvents.mouseUpEvent(diagramCanvas, 200+diagram.element.offsetLeft, y+50);
         console.log(diagram.selectedItems.nodes[0].wrapper.height);
         expect(diagram.selectedItems.nodes[0].wrapper.height != 100).toBe(true);
         done();

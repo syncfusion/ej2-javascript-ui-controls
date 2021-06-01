@@ -4065,8 +4065,8 @@ export abstract class ElementBox {
                                 childNode.fieldSeparator = fieldEnd.fieldSeparator;
                             }
                         }
+                        return !isNullOrUndefined(fieldEnd.fieldBegin);
                     }
-                    return !isNullOrUndefined(fieldEnd.fieldBegin);
                 } else if (childNode.fieldType === 2 && isNullOrUndefined((childNode as FieldElementBox).fieldEnd)) {
                     fieldEnd.fieldSeparator = childNode as FieldElementBox;
                     (childNode as FieldElementBox).fieldEnd = fieldEnd;

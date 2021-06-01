@@ -3241,9 +3241,6 @@ export class Selection {
     public getBlockByIndex(container: Widget, blockIndex: number): Widget {
         let childWidget: Widget;
         if (container) {
-            if (container instanceof BodyWidget && container.childWidgets.length === 1) {
-                return container.childWidgets[0] as Widget;
-            }
             for (let j: number = 0; j < container.childWidgets.length; j++) {
                 if ((container.childWidgets[j] as Widget).index === blockIndex) {
                     childWidget = container.childWidgets[j] as Widget;

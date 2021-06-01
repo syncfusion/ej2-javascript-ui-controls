@@ -12,11 +12,12 @@ import { ReturnType } from '../base/type';
 import { FormValidator } from '@syncfusion/ej2-inputs';
 import { DataUtil } from '@syncfusion/ej2-data';
 import { freezeTable } from '../base/enum';
-import { addRemoveEventListener } from '../base/util';
+import { addRemoveEventListener, setValidationRuels } from '../base/util';
 import * as literals from '../base/string-literals';
 
 /**
  * `NormalEdit` module is used to handle normal('inline, dialog, external') editing actions.
+ *
  * @hidden
  */
 export class NormalEdit {
@@ -45,12 +46,13 @@ export class NormalEdit {
     }
 
     protected clickHandler(e: MouseEvent): void {
-        let target: Element = e.target as Element;
-        let gObj: IGrid = this.parent;
+        const target: Element = e.target as Element;
+        const gObj: IGrid = this.parent;
         if ((((parentsUntil(target,  literals.gridContent) &&
             parentsUntil(parentsUntil(target,  literals.gridContent), 'e-grid').id === gObj.element.id)) || (gObj.frozenRows
                 && parentsUntil(target, literals.headerContent))) && !parentsUntil(target, 'e-unboundcelldiv')) {
-            this.rowIndex = parentsUntil(target, literals.rowCell) ? parseInt(target.parentElement.getAttribute(literals.ariaRowIndex), 10) : -1;
+            this.rowIndex = parentsUntil(target, literals.rowCell)
+                ? parseInt(target.parentElement.getAttribute(literals.ariaRowIndex), 10) : -1;
             if (gObj.isEdit) {
                 gObj.editModule.endEdit();
             }
@@ -65,70 +67,77 @@ export class NormalEdit {
 
     /**
      * The function used to trigger editComplete
-     * @return {void}
+     *
+     * @param {NotifyArgs} e - specifies the NotifyArgs
+     * @returns {void}
      * @hidden
      */
     public editComplete(e: NotifyArgs): void {
         this.parent.isEdit = false;
-        let action: string = 'action';
+        const action: string = 'action';
         switch (e.requestType as string) {
-            case 'save':
-                if (!(this.parent.isCheckBoxSelection || this.parent.selectionSettings.type === 'Multiple')
-                    || (!this.parent.isPersistSelection)) {
-                    if (e[action] !== 'edit') {
-                        this.parent.selectRow(0);
-                    }
+        case 'save':
+            if (!(this.parent.isCheckBoxSelection || this.parent.selectionSettings.type === 'Multiple')
+                || (!this.parent.isPersistSelection)) {
+                if (e[action] !== 'edit') {
+                    this.parent.selectRow(0);
                 }
-                this.parent.trigger(events.actionComplete, extend(e, {
-                    requestType: 'save',
-                    type: events.actionComplete
-                }));
-                break;
-            case 'delete':
-                this.parent.trigger(events.actionComplete, extend(e, {
-                    requestType: 'delete',
-                    type: events.actionComplete
-                }));
-                if (!this.parent.isCheckBoxSelection) {
-                    this.parent.selectRow(this.editRowIndex);
-                }
-                break;
+            }
+            this.parent.trigger(events.actionComplete, extend(e, {
+                requestType: 'save',
+                type: events.actionComplete
+            }));
+            break;
+        case 'delete':
+            this.parent.trigger(events.actionComplete, extend(e, {
+                requestType: 'delete',
+                type: events.actionComplete
+            }));
+            if (!this.parent.isCheckBoxSelection) {
+                this.parent.selectRow(this.editRowIndex);
+            }
+            break;
         }
     }
 
+    private getEditArgs(editedData: object, rowObj?: Row<Column>, isScroll?: boolean): CustomEditEventArgs {
+        const primaryKeys: string[] = this.parent.getPrimaryKeyFieldNames();
+        const primaryKeyValues: string[] = [];
+        for (let i: number = 0; i < primaryKeys.length; i++) {
+            primaryKeyValues.push(getObject(primaryKeys[i], editedData));
+        }
+        const args: CustomEditEventArgs = {
+            primaryKey: primaryKeys, primaryKeyValue: primaryKeyValues, requestType: 'beginEdit',
+            rowData: editedData, rowIndex: this.rowIndex, type: 'edit', cancel: false,
+            foreignKeyData: rowObj && rowObj.foreignKeyData, target: undefined, isScroll: isScroll
+        };
+        return args;
+    }
+
     protected startEdit(tr: Element): void {
-        let gObj: IGrid = this.parent;
-        let primaryKeys: string[] = gObj.getPrimaryKeyFieldNames();
-        let primaryKeyValues: string[] = [];
+        const gObj: IGrid = this.parent;
         this.rowIndex = this.editRowIndex = parseInt(tr.getAttribute(literals.ariaRowIndex), 10);
         if (gObj.enableVirtualization || gObj.enableInfiniteScrolling) {
-            let selector: string = '.e-row[aria-rowindex="' + this.rowIndex + '"]';
-            let virtualRow: Element = this.parent.element.querySelector(selector);
+            const selector: string = '.e-row[aria-rowindex="' + this.rowIndex + '"]';
+            const virtualRow: Element = this.parent.element.querySelector(selector);
             if (!virtualRow) {
                 return;
             }
         }
-        let e: { data: Object, index: number, isScroll: boolean } = { data: undefined, index: this.rowIndex, isScroll: false };
+        const e: { data: Object, index: number, isScroll: boolean } = { data: undefined, index: this.rowIndex, isScroll: false };
         this.parent.notify(events.virtualScrollEditActionBegin, e);
         if (isGroupAdaptive(gObj)) {
-            let rObj: Row<Column> = gObj.getRowObjectFromUID(tr.getAttribute('data-uid'));
+            const rObj: Row<Column> = gObj.getRowObjectFromUID(tr.getAttribute('data-uid'));
             this.previousData = rObj.data;
         } else if (!this.previousData && (this.parent.enableVirtualization || this.parent.enableInfiniteScrolling)) {
             this.previousData = e.data;
         } else if (!this.parent.enableVirtualization) {
             this.previousData = extend({}, {}, gObj.getCurrentViewRecords()[this.rowIndex], true);
         }
-        let editedData: Object = extend({}, {}, e.data || this.previousData, true);
-        for (let i: number = 0; i < primaryKeys.length; i++) {
-            primaryKeyValues.push(getObject(primaryKeys[i], editedData));
-        }
+        const editedData: Object = extend({}, {}, e.data || this.previousData, true);
         this.uid = tr.getAttribute('data-uid');
-        let rowObj: Row<Column> = gObj.getRowObjectFromUID(this.uid);
-        let args: CustomEditEventArgs = {
-            primaryKey: primaryKeys, primaryKeyValue: primaryKeyValues, requestType: 'beginEdit',
-            rowData: editedData, rowIndex: this.rowIndex, type: 'edit', cancel: false,
-            foreignKeyData: rowObj && rowObj.foreignKeyData, target: undefined, isScroll: e.isScroll
-        };
+        const rowObj: Row<Column> = gObj.getRowObjectFromUID(this.uid);
+        const args: CustomEditEventArgs = this.getEditArgs(editedData, rowObj, e.isScroll);
         args.row = tr;
         if (!args.isScroll) {
             gObj.trigger(events.beginEdit, args, (begineditargs: EditEventArgs) => {
@@ -145,7 +154,7 @@ export class NormalEdit {
     }
 
     private inlineEditHandler(editargs: EditEventArgs, tr: Element): void {
-        let gObj: IGrid = this.parent;
+        const gObj: IGrid = this.parent;
         gObj.isEdit = true;
         editargs.row = editargs.row ? editargs.row : tr;
         if (gObj.editSettings.mode !== 'Dialog') {
@@ -167,9 +176,9 @@ export class NormalEdit {
     }
 
     protected updateRow(index: number, data: Object): void {
-        let gObj: IGrid = this.parent;
+        const gObj: IGrid = this.parent;
         this.editRowIndex = index;
-        let args: SaveEventArgs = {
+        const args: SaveEventArgs = {
             requestType: 'save', action: 'edit', type: events.actionBegin, data: data, cancel: false,
             previousData: gObj.getCurrentViewRecords()[index],
             row: gObj.getRowByIndex(index)
@@ -184,28 +193,81 @@ export class NormalEdit {
     }
 
     private editFormValidate(): boolean {
-        let gObj: IGrid = this.parent;
-        let form1: boolean = gObj.editModule.formObj.validate();
-        let form2: boolean = gObj.editModule.mFormObj ? gObj.editModule.mFormObj.validate() : true;
-        let form3: boolean = gObj.editModule.frFormObj ? gObj.editModule.frFormObj.validate() : true;
-        return (form1 && form2 && form3);
+        const gObj: IGrid = this.parent;
+        let virtualFormValidation: boolean = true;
+        const form1: boolean = gObj.editModule.formObj.validate();
+        const form2: boolean = gObj.editModule.mFormObj ? gObj.editModule.mFormObj.validate() : true;
+        const form3: boolean = gObj.editModule.frFormObj ? gObj.editModule.frFormObj.validate() : true;
+        if (this.parent.enableVirtualization) {
+            virtualFormValidation = this.virtualEditFormValidation();
+        }
+        return (form1 && form2 && form3 && virtualFormValidation);
+    }
+
+    private virtualEditFormValidation(): boolean {
+        const gObj: IGrid = this.parent;
+        let isValid: boolean = true;
+        const error: HTMLElement = this.parent.element.querySelector('.e-griderror:not([style*="display: none"])');
+        if (gObj.enableVirtualization && !gObj.isFrozenGrid() && gObj.editSettings.mode === 'Normal' && (!error || error.style.display === 'none')) {
+            const cols: Column[] = gObj.columns as Column[];
+            const rowRenderer: RowRenderer<Column> = new RowRenderer<Column>(this.serviceLocator, null, this.parent);
+            const data: { virtualData: Object, isAdd: boolean, isScroll: boolean, endEdit?: boolean } = {
+                virtualData: extend({}, {}, this.previousData, true), isAdd: false, isScroll: false, endEdit: true
+            };
+            const rowObj: Row<Column> = extend({}, {}, gObj.getRowObjectFromUID(this.uid), true) as Row<Column>;
+            this.parent.notify(events.refreshVirtualEditFormCells, rowObj);
+            this.parent.notify(events.getVirtualData, data);
+            const args: CustomEditEventArgs = this.getEditArgs(data.virtualData, {} as Row<Column>, false);
+            args.isCustomFormValidation = true;
+            args.row = rowRenderer.render(rowObj, cols);
+            this.renderer.update(args);
+            const rules: Object = {};
+            for (let i: number = 0; i < cols.length; i++) {
+                if (!cols[i].visible) {
+                    continue;
+                }
+                if (cols[i].validationRules) {
+                    setValidationRuels(cols[i], 0, rules, {}, {}, cols.length, true);
+                }
+            }
+            args.form.classList.add('e-virtual-validation');
+            this.parent.editModule.virtualFormObj = gObj.editModule.createFormObj(args.form, rules);
+            isValid = this.parent.editModule.virtualFormObj.validate();
+            if (!isValid) {
+                const field: string = args.form.querySelector('.e-tooltip-wrap').id.split('_')[0];
+                const col: Column = gObj.getColumnByField(field);
+                const scrollTop: number = this.parent.getContent().firstElementChild.scrollTop;
+                const row: Element = gObj.getRowByIndex(this.editRowIndex);
+                if (!col || (!isNullOrUndefined(this.addedRowIndex) && scrollTop > 0) || (!isNullOrUndefined(this.editRowIndex) && !row)) {
+                    let validationCol: Column;
+                    for (let i: number = 0; i < cols.length && !col; i++) {
+                        if (cols[i].field === field) {
+                            validationCol = cols[i] as Column;
+                            break;
+                        }
+                    }
+                    this.parent.notify(events.scrollToEdit, validationCol);
+                }
+            }
+        }
+        return isValid;
     }
 
     protected endEdit(): void {
-        let gObj: IGrid = this.parent;
+        const gObj: IGrid = this.parent;
         if (!this.parent.isEdit || !this.editFormValidate()) {
             return;
         }
         let editedData: Object = extend({}, {}, this.previousData, true);
-        let args: SaveEventArgs = extend(this.args, {
+        const args: SaveEventArgs = extend(this.args, {
             requestType: 'save', type: events.actionBegin, data: editedData, cancel: false,
             previousData: this.previousData, selectedRow: gObj.selectedRowIndex, foreignKeyData: {}
         });
-        let index: number = gObj.getFrozenMode() === 'Right' ? 1 : 0;
-        let isDlg: Boolean = gObj.editSettings.mode === 'Dialog';
-        let dlgWrapper: Element = select('#' + gObj.element.id + '_dialogEdit_wrapper', document);
-        let dlgForm: Element = isDlg ? dlgWrapper.querySelector('.e-gridform') : gObj.element.getElementsByClassName('e-gridform')[index];
-        let data: { virtualData: Object, isAdd: boolean, isScroll: boolean, endEdit?: boolean } = {
+        const index: number = gObj.getFrozenMode() === 'Right' ? 1 : 0;
+        const isDlg: boolean = gObj.editSettings.mode === 'Dialog';
+        const dlgWrapper: Element = select('#' + gObj.element.id + '_dialogEdit_wrapper', document);
+        const dlgForm: Element = isDlg ? dlgWrapper.querySelector('.e-gridform') : gObj.element.getElementsByClassName('e-gridform')[index];
+        const data: { virtualData: Object, isAdd: boolean, isScroll: boolean, endEdit?: boolean } = {
             virtualData: extend({}, {}, this.previousData, true), isAdd: false, isScroll: false, endEdit: true
         };
         this.parent.notify(events.getVirtualData, data);
@@ -218,9 +280,9 @@ export class NormalEdit {
             editedData = gObj.editModule.getCurrentEditedData(dlgForm, editedData);
         }
         if (gObj.isFrozenGrid() && gObj.editSettings.mode === 'Normal') {
-            let mhdrFrm: Element = gObj.getMovableVirtualHeader().querySelector('.e-gridform');
-            let mCntFrm: Element = gObj.getMovableVirtualContent().querySelector('.e-gridform');
-            let mvblEle: Element[] = [mhdrFrm || mCntFrm];
+            const mhdrFrm: Element = gObj.getMovableVirtualHeader().querySelector('.e-gridform');
+            const mCntFrm: Element = gObj.getMovableVirtualContent().querySelector('.e-gridform');
+            const mvblEle: Element[] = [mhdrFrm || mCntFrm];
             let frHdrFrm: Element; let frCntFrm: Element; let frEle: Element[] = [];
             if (gObj.getFrozenMode() === literals.leftRight) {
                 frHdrFrm = gObj.getFrozenRightHeader().querySelector('.e-gridform');
@@ -230,7 +292,7 @@ export class NormalEdit {
             gridActionHandler(
                 this.parent,
                 (tableName: freezeTable, elements: Element[]) => {
-                    for (let ele of elements) {
+                    for (const ele of elements) {
                         if (ele) {
                             editedData = gObj.editModule.getCurrentEditedData(ele, editedData);
                         }
@@ -266,7 +328,7 @@ export class NormalEdit {
     }
 
     private destroyElements(): void {
-        let gObj: IGrid = this.parent;
+        const gObj: IGrid = this.parent;
         gObj.editModule.destroyWidgets();
         gObj.editModule.destroyForm();
         this.parent.notify(events.dialogDestroy, {});
@@ -307,10 +369,9 @@ export class NormalEdit {
 
     private editSuccess(e: Object, args: EditArgs): void {
         if (!isNullOrUndefined(e) && !(e instanceof Array)) {
-            let rowData: string = 'rowData';
+            const rowData: string = 'rowData';
             args.data = extend({}, extend({}, args[rowData], args.data), e);
         }
-        let editArgs: Object;
         this.requestSuccess(args);
         this.parent.trigger(events.beforeDataBound, args);
         args.type = events.actionComplete;
@@ -326,7 +387,7 @@ export class NormalEdit {
         if (!(this.parent.isCheckBoxSelection || this.parent.selectionSettings.type === 'Multiple')
             || (!this.parent.isPersistSelection) && !this.parent.selectionSettings.checkboxOnly) {
             if (this.parent.editSettings.mode !== 'Dialog') {
-                    this.parent.selectRow(this.rowIndex > -1 ? this.rowIndex : this.editRowIndex);
+                this.parent.selectRow(this.rowIndex > -1 ? this.rowIndex : this.editRowIndex);
             }
         }
         this.parent.hideSpinner();
@@ -348,12 +409,12 @@ export class NormalEdit {
     }
 
     private blazorTemplate(): void {
-        let cols: Column[] = this.parent.getColumns();
+        const cols: Column[] = this.parent.getColumns();
         if (this.parent.editSettings.template && this.parent.editSettings.mode === 'Normal') {
             updateBlazorTemplate(this.parent.element.id + 'editSettingsTemplate', 'Template', this.parent.editSettings);
         }
         for (let i: number = 0; i < cols.length; i++) {
-            let col: Column = cols[i];
+            const col: Column = cols[i];
             if (col.template) {
                 updateBlazorTemplate(this.parent.element.id + col.uid, 'Template', col, false);
             }
@@ -371,7 +432,7 @@ export class NormalEdit {
 
     private needRefresh(): boolean {
         let refresh: boolean = true;
-        let editedRow: Element = this.parent.element.querySelector('.e-gridform');
+        const editedRow: Element = this.parent.element.querySelector('.e-gridform');
         if ((this.parent.enableVirtualization || this.parent.infiniteScrollSettings.enableCache)
             && this.parent.editSettings.mode === 'Normal' && !editedRow) {
             refresh = false;
@@ -380,8 +441,8 @@ export class NormalEdit {
     }
 
     private refreshRow(data: Object): void {
-        let frzCols: boolean = this.parent.isFrozenGrid();
-        let row: RowRenderer<Column> = new RowRenderer<Column>(this.serviceLocator, null, this.parent);
+        const frzCols: boolean = this.parent.isFrozenGrid();
+        const row: RowRenderer<Column> = new RowRenderer<Column>(this.serviceLocator, null, this.parent);
         let rowObj: Row<Column> = this.parent.getRowObjectFromUID(this.uid);
         if (rowObj) {
             rowObj.changes = data;
@@ -390,10 +451,10 @@ export class NormalEdit {
             if (this.needRefresh()) {
                 row.refresh(rowObj, this.parent.getColumns() as Column[], true);
             }
-            let tr: Element[] = [].slice.call(this.parent.element.querySelectorAll('[aria-rowindex="' + rowObj.index + '"]'));
+            const tr: Element[] = [].slice.call(this.parent.element.querySelectorAll('[aria-rowindex="' + rowObj.index + '"]'));
             if (frzCols && tr.length) {
                 for (let i: number = 0; i < tr.length; i++) {
-                    let rowUid: string = tr[i].getAttribute('data-uid');
+                    const rowUid: string = tr[i].getAttribute('data-uid');
                     if (rowUid !== this.uid) {
                         rowObj = this.parent.getRowObjectFromUID(rowUid);
                         rowObj.changes = data;
@@ -407,15 +468,15 @@ export class NormalEdit {
 
     protected closeEdit(): void {
         if (!this.parent.isEdit) { return; }
-        let gObj: IGrid = this.parent;
-        let args: { data: Object, requestType: string, cancel: Boolean, selectedRow: Number, type: string } = extend(this.args, {
+        const gObj: IGrid = this.parent;
+        const args: { data: Object, requestType: string, cancel: boolean, selectedRow: number, type: string } = extend(this.args, {
             requestType: 'cancel', type: events.actionBegin, cancel: false, data: this.previousData, selectedRow: gObj.selectedRowIndex
-        }) as { data: Object, requestType: string, cancel: Boolean, selectedRow: Number, type: string };
+        }) as { data: Object, requestType: string, cancel: boolean, selectedRow: number, type: string };
         gObj.notify(events.virtualScrollEditCancel, args);
         this.blazorTemplate();
         gObj.trigger(
             events.actionBegin, args,
-            (closeEditArgs: { cancel: Boolean, data: Object, requestType: string, selectedRow: Number, type: string }) => {
+            (closeEditArgs: { cancel: boolean, data: Object, requestType: string, selectedRow: number, type: string }) => {
                 if (closeEditArgs.cancel) {
                     return;
                 }
@@ -426,9 +487,9 @@ export class NormalEdit {
                 this.stopEditStatus();
                 closeEditArgs.type = events.actionComplete;
                 if (gObj.editSettings.mode !== 'Dialog') {
-                        this.refreshRow(closeEditArgs.data);
+                    this.refreshRow(closeEditArgs.data);
                 }
-                let isLazyLoad: boolean = gObj.groupSettings.enableLazyLoading && gObj.groupSettings.columns.length
+                const isLazyLoad: boolean = gObj.groupSettings.enableLazyLoading && gObj.groupSettings.columns.length
                     && !gObj.getContentTable().querySelector('tr.e-emptyrow');
                 if (!gObj.getContentTable().querySelector('tr.e-emptyrow') &&
                     !gObj.getContentTable().querySelector('tr.e-row') && !isLazyLoad) {
@@ -442,7 +503,7 @@ export class NormalEdit {
     }
 
     protected addRecord(data?: Object, index?: number): void {
-        let gObj: IGrid = this.parent;
+        const gObj: IGrid = this.parent;
         this.addedRowIndex = index = !isNullOrUndefined(index) ? index : 0;
         if (data) {
             gObj.notify(events.modelChanged, {
@@ -455,8 +516,8 @@ export class NormalEdit {
         }
         this.previousData = {};
         this.uid = '';
-        let cols: Column[] = gObj.getColumns();
-        let rowData: { virtualData: Object, isScroll: boolean } = { virtualData: {}, isScroll: false };
+        const cols: Column[] = gObj.getColumns();
+        const rowData: { virtualData: Object, isScroll: boolean } = { virtualData: {}, isScroll: false };
         this.parent.notify(events.getVirtualData, rowData);
         for (let i: number = 0; i < cols.length; i++) {
             if (rowData.isScroll && cols[i].getFreezeTableName() !== 'movable') {
@@ -466,11 +527,10 @@ export class NormalEdit {
                 DataUtil.setValue(cols[i].field, cols[i].defaultValue, this.previousData);
             }
         }
-        let args: CustomAddEventArgs = {
+        const args: CustomAddEventArgs = {
             cancel: false, foreignKeyData: {}, //foreign key support
             requestType: 'add', data: this.previousData, type: events.actionBegin, index: index,
             rowData: this.previousData, target: undefined, isScroll: rowData.isScroll
-            
         };
         if ((this.parent.enableVirtualization || this.parent.infiniteScrollSettings.enableCache)
             && Object.keys(rowData.virtualData).length) {
@@ -489,7 +549,7 @@ export class NormalEdit {
     }
 
     private inlineAddHandler(addArgs: AddEventArgs): void {
-        let gObj: IGrid = this.parent;
+        const gObj: IGrid = this.parent;
         gObj.isEdit = true;
         if (gObj.editSettings.mode !== 'Dialog') {
             gObj.clearSelection();
@@ -506,20 +566,19 @@ export class NormalEdit {
         this.editRowIndex = this.parent.selectedRowIndex;
         if (data) {
             data = (data instanceof Array) ? data : [data];
-            let gObj: IGrid = this.parent;
-            let index: number = 0;
-            let dataLen: number = Object.keys(data).length;
+            const gObj: IGrid = this.parent;
+            const dataLen: number = Object.keys(data).length;
             fieldname = fieldname || this.parent.getPrimaryKeyFieldNames()[0];
             for (let i: number = 0; i < dataLen; i++) {
                 let tmpRecord: Object;
-                let contained: boolean = gObj.currentViewData.some((record: Object) => {
+                const contained: boolean = gObj.currentViewData.some((record: Object) => {
                     tmpRecord = record;
                     return data[i] === getObject(fieldname, record) || data[i] === record;
                 });
                 data[i] = contained ? tmpRecord : data[i][fieldname] ? data[i] : { [fieldname]: data[i] };
             }
         }
-        let args: object = {
+        const args: object = {
             requestType: 'delete', type: events.actionBegin, foreignKeyData: {}, //foreign key support
             data: data ? data : this.parent.getSelectedRecords(), tr: this.parent.getSelectedRows(), cancel: false
         };
@@ -528,17 +587,16 @@ export class NormalEdit {
             this.parent.getRowObjectFromUID(this.parent.getRowByIndex(this.parent.commandDelIndex).getAttribute('data-uid')).data;
         }
         if (this.parent.enableVirtualization && (<{ data?: Object[] }>args).data.length > 1) {
-            let uid: string = this.parent.getSelectedRows()[0].getAttribute('data-uid');
+            const uid: string = this.parent.getSelectedRows()[0].getAttribute('data-uid');
             (<{ data?: Object[] }>args).data = [this.parent.getRowObjectFromUID(uid).data];
         }
-        let dataInString: string = 'data';
         this.parent.notify(events.modelChanged, args);
     }
 
     private stopEditStatus(): void {
-        let gObj: IGrid = this.parent;
-        let addElements: Element[] = [].slice.call(gObj.element.getElementsByClassName(literals.addedRow));
-        let editElements: Element[] = [].slice.call(gObj.element.getElementsByClassName(literals.editedRow));
+        const gObj: IGrid = this.parent;
+        const addElements: Element[] = [].slice.call(gObj.element.getElementsByClassName(literals.addedRow));
+        const editElements: Element[] = [].slice.call(gObj.element.getElementsByClassName(literals.editedRow));
         for (let i: number = 0; i < addElements.length; i++) {
             remove(addElements[i]);
         }
@@ -548,24 +606,25 @@ export class NormalEdit {
     }
 
     /**
+     * @returns {void}
      * @hidden
      */
     public addEventListener(): void {
         if (this.parent.isDestroyed) { return; }
         this.evtHandlers = [{ event: events.crudAction, handler: this.editHandler },
-        { event: events.doubleTap, handler: this.dblClickHandler },
-        { event: events.click, handler: this.clickHandler },
-        { event: events.recordAdded, handler: this.requestSuccess },
-        { event: events.dblclick, handler: this.dblClickHandler },
-        { event: events.deleteComplete, handler: this.editComplete },
-        { event: events.saveComplete, handler: this.editComplete },
-        { event: events.rowModeChange, handler: this.closeEdit },
-        { event: events.closeInline, handler: this.closeForm },
-        ];
+            { event: events.doubleTap, handler: this.dblClickHandler },
+            { event: events.click, handler: this.clickHandler },
+            { event: events.recordAdded, handler: this.requestSuccess },
+            { event: events.dblclick, handler: this.dblClickHandler },
+            { event: events.deleteComplete, handler: this.editComplete },
+            { event: events.saveComplete, handler: this.editComplete },
+            { event: events.rowModeChange, handler: this.closeEdit },
+            { event: events.closeInline, handler: this.closeForm }];
         addRemoveEventListener(this.parent, this.evtHandlers, true, this);
     }
 
     /**
+     * @returns {void}
      * @hidden
      */
     public removeEventListener(): void {
@@ -574,6 +633,7 @@ export class NormalEdit {
     }
 
     /**
+     * @returns {void}
      * @hidden
      */
     public destroy(): void {
@@ -586,7 +646,7 @@ interface EditArgs {
     data?: Object;
     requestType?: string;
     previousData?: Object;
-    selectedRow?: Number;
+    selectedRow?: number;
     type?: string;
     promise?: Promise<Object>;
     row?: Element;

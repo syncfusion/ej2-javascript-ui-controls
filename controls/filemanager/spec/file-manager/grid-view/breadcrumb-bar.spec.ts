@@ -400,6 +400,7 @@ describe('FileManager control Grid view', () => {
                     expect(treeObj.selectedNodes[0]).toEqual("fe_tree");
                     expect(treeLi.length).toEqual(5);
                     expect(gridLi.length).toEqual(5);
+                    expect(feObj.detailsviewModule.gridObj.element.querySelector('.e-sortfilter .e-columnheader').querySelectorAll('.e-headercell').length).toEqual(5);
                     expect(feObj.detailsviewModule.gridObj.getColumns().length).toEqual(5);
                     done();
                 }, 500);

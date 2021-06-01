@@ -310,7 +310,15 @@ export class SheetRender implements IRenderer {
                         }
                     }
                 }
-                if (triggerEvent) { this.triggerCreatedEvent(); }
+                if (triggerEvent) {
+                    /* eslint-disable */
+                    if ((this.parent as any).isReact) {
+                        setTimeout(() => this.triggerCreatedEvent());
+                    /* eslint-enable */
+                    } else {
+                        this.triggerCreatedEvent();
+                    }
+                }
             }
         });
     }

@@ -2494,13 +2494,15 @@ export class Edit {
         this.parent.treeGrid.parentData = [];
         this.parent.treeGrid.refresh();
         if (this.parent.enableImmutableMode) {
+            this.parent.modifiedRecords = args.modifiedRecords;
+            this.parent.modifiedRecords.push(args.data as IGanttData);
             this.refreshRecordInImmutableMode();
         }
     }
 
     private refreshRecordInImmutableMode(): void {
-        for (let i: number = 0; i < this.parent.editedRecords.length; i++) {
-            const originalData: IGanttData = this.parent.editedRecords[i];
+        for (let i: number = 0; i < this.parent.modifiedRecords.length; i++) {
+            const originalData: IGanttData = this.parent.modifiedRecords[i];
             const dataId: number | string = this.parent.viewType === 'ProjectView' ?
                 originalData.ganttProperties.taskId : originalData.ganttProperties.rowUniqueID;
             this.parent.treeGrid.grid.setRowData(dataId, originalData);

@@ -868,4 +868,95 @@ describe('Column virtualization', () => {
             gObj = null;
         });
     });
+    
+    describe('EJ2-49631 - Empty virtualization grid throw script when canceling the add action', () => {
+        let gObj: Grid;
+        let columns: Column[] = largeDatasetColumns(30);
+        beforeAll((done: Function) => {
+            gObj = createGrid(
+                {
+                    dataSource: [],
+                    columns: columns,
+                    enableVirtualization: true,
+                    enableColumnVirtualization: true,
+                    editSettings: {
+                        allowEditing: true,
+                        allowAdding: true,
+                        allowDeleting: true
+                    },
+                    toolbar: ['Add', 'Edit', 'Delete', 'Update', 'Cancel'],
+                    height: 300,
+                    width: 400
+                }, done);
+        });
+
+        it('added record', (done: Function) => {
+            let actionComplete = (args: EditEventArgs) => {
+                gObj.actionComplete = null;
+                done();
+            };
+            gObj.actionComplete = actionComplete;
+            gObj.addRecord();
+        });
+
+        it('get row by index', (done: Function) => {
+            let actionComplete = (args: EditEventArgs) => {
+                gObj.actionComplete = null;
+                done();
+            };
+            gObj.actionComplete = actionComplete;
+            gObj.closeEdit();
+        });
+
+        afterAll(() => {
+            destroy(gObj);
+            gObj = null;
+        });
+    });
+
+    describe("EJ2-49680 - Editing validation doesn't properly work with the column virtualization feature", () => {
+        let gObj: Grid;
+        let columns: Column[] = largeDatasetColumns(30);
+        columns[columns.length - 1].validationRules = { required: true };
+        beforeAll((done: Function) => {
+            gObj = createGrid(
+                {
+                    dataSource: largeDataset,
+                    columns: columns,
+                    enableVirtualization: true,
+                    enableColumnVirtualization: true,
+                    editSettings: {
+                        allowEditing: true,
+                        allowAdding: true,
+                        allowDeleting: true
+                    },
+                    toolbar: ['Add', 'Edit', 'Delete', 'Update', 'Cancel'],
+                    height: 300,
+                    width: 400
+                }, done);
+        });
+
+        it('check validation msg width', (done: Function) => {
+            let actionComplete = (args?: any): void => {
+                if (args.requestType === 'add') {
+                    gObj.element.focus();
+                    (<any>gObj.toolbarModule).toolbarClickHandler({ item: { id: gObj.element.id + '_update' } });
+                    gObj.actionComplete = undefined;
+                    done();
+                }
+            };
+            gObj.actionComplete = actionComplete;
+            (<any>gObj.toolbarModule).toolbarClickHandler({ item: { id: gObj.element.id + '_add' } });
+        });
+
+        it('check edit form', () => {
+            expect(gObj.getContent().querySelector('.e-addedrow')).not.toBeNull();
+        });
+
+        afterAll(() => {
+            destroy(gObj);
+            gObj = null;
+        });
+    });
+
 });

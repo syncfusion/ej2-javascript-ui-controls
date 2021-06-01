@@ -10,6 +10,7 @@ import { Cell } from '../models/cell';
 
 /**
  * `CellMergeRender` module.
+ *
  * @hidden
  */
 export class CellMergeRender<T> {
@@ -22,22 +23,22 @@ export class CellMergeRender<T> {
     }
 
     public render(cellArgs: QueryCellInfoEventArgs, row: Row<T>, i: number, td: Element): Element {
-        let cellRendererFact: CellRendererFactory = this.serviceLocator.getService<CellRendererFactory>('cellRendererFactory');
-        let cellRenderer: ICellRenderer<T> = cellRendererFact.getCellRenderer(row.cells[i].cellType || CellType.Data);
+        const cellRendererFact: CellRendererFactory = this.serviceLocator.getService<CellRendererFactory>('cellRendererFactory');
+        const cellRenderer: ICellRenderer<T> = cellRendererFact.getCellRenderer(row.cells[i].cellType || CellType.Data);
         let colSpan: number = row.cells[i].cellSpan ? row.cells[i].cellSpan :
             (cellArgs.colSpan + i) <= row.cells.length ? cellArgs.colSpan : row.cells.length - i;
-        let rowSpan: number = cellArgs.rowSpan;
+        const rowSpan: number = cellArgs.rowSpan;
         let visible: number = 0;
         let spannedCell: Cell<Column>;
         if (row.index > 0) {
-            let cells: Cell<Column>[] = this.parent.groupSettings.columns.length > 0 &&
+            const cells: Cell<Column>[] = this.parent.groupSettings.columns.length > 0 &&
                 !this.parent.getRowsObject()[row.index - 1].isDataRow ? this.parent.getRowsObject()[row.index].cells :
                 this.parent.getRowsObject()[row.index - 1].cells;
-            let targetCell: Cell<T> = row.cells[i];
-            let uid: string = 'uid';
+            const targetCell: Cell<T> = row.cells[i];
+            const uid: string = 'uid';
             spannedCell = cells.filter((cell: Cell<Column>) => cell.column.uid === targetCell.column[uid])[0];
         }
-        let colSpanLen: number = spannedCell && spannedCell.colSpanRange > 1 && spannedCell.rowSpanRange > 1 ?
+        const colSpanLen: number = spannedCell && spannedCell.colSpanRange > 1 && spannedCell.rowSpanRange > 1 ?
             spannedCell.colSpanRange : colSpan;
         for (let j: number = i + 1; j < i + colSpanLen && j < row.cells.length; j++) {
 
@@ -96,6 +97,7 @@ export class CellMergeRender<T> {
     }
 
     private containsKey(fname: string, data: string): boolean {
+        // eslint-disable-next-line no-prototype-builtins
         return this.getMergeCells().hasOwnProperty(this.generteKey(fname, data));
     }
 
@@ -108,15 +110,15 @@ export class CellMergeRender<T> {
     }
 
     public updateVirtualCells(rows:  Row<Column>[]):  Row<Column>[] {
-        let mCells: {[key: string]: number} = this.getMergeCells();
-        for (let key of Object.keys(mCells)) {
-            let value: number = mCells[key];
-            let merge: string[] = this.splitKey(key);
-            let columnIndex: number = this.getIndexFromAllColumns(merge[0]);
-            let vColumnIndices: number[] = this.parent.getColumnIndexesInView();
-            let span: number = value - (vColumnIndices[0] - columnIndex);
+        const mCells: {[key: string]: number} = this.getMergeCells();
+        for (const key of Object.keys(mCells)) {
+            const value: number = mCells[key];
+            const merge: string[] = this.splitKey(key);
+            const columnIndex: number = this.getIndexFromAllColumns(merge[0]);
+            const vColumnIndices: number[] = this.parent.getColumnIndexesInView();
+            const span: number = value - (vColumnIndices[0] - columnIndex);
             if (columnIndex < vColumnIndices[0] && span > 1) {
-                for ( let row of rows) {
+                for ( const row of rows) {
                     if (row.data[merge[0]].toString() === merge[1].toString()) {
                         row.cells[0].cellSpan = span;
                         row.cells[0].spanText = merge[1];
@@ -129,7 +131,7 @@ export class CellMergeRender<T> {
     }
 
     private getIndexFromAllColumns(field: string): number {
-        let index: number = iterateArrayOrObject<number, Column>(
+        const index: number = iterateArrayOrObject<number, Column>(
             <Column[]>this.parent.getVisibleColumns(), (item: Column, index: number) => {
                 if (item.field === field) {
                     return index;

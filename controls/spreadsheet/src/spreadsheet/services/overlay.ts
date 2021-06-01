@@ -188,8 +188,8 @@ export class Overlay {
                 if (aY > checkOffset[0]) {
                     overlayElem.style.top = aY + 'px';
                 }
-                this.resizedReorderLeft = aX; //resized divLeft
-                this.resizedReorderTop = aY; // resized divTop
+                this.resizedReorderLeft = aX < 0 ? 0: aX; //resized divLeft
+                this.resizedReorderTop = aY < 0 ? 0 : aY; // resized divTop
             } else {
                 this.overlayMouseUpHandler(e, true);
             }
@@ -211,8 +211,8 @@ export class Overlay {
         const eventArgs: BeforeImageRefreshData = {
             prevTop: sheet.frozenRows || sheet.frozenColumns ? this.prevY : this.originalReorderTop,
             prevLeft: sheet.frozenRows || sheet.frozenColumns ? this.prevX : this.originalReorderLeft,
-            currentTop: this.resizedReorderTop ? this.resizedReorderTop : this.originalReorderTop,
-            currentLeft: this.resizedReorderLeft ? this.resizedReorderLeft : this.originalReorderLeft,
+            currentTop: this.resizedReorderTop >= 0 ? this.resizedReorderTop : this.originalReorderTop,
+            currentLeft: this.resizedReorderLeft >= 0 ? this.resizedReorderLeft : this.originalReorderLeft,
             id: elem.id, currentHeight: this.currenHeight, currentWidth: this.currentWidth,
             requestType: 'imageRefresh', prevHeight: this.originalHeight, prevWidth: this.originalWidth
         };
@@ -270,7 +270,7 @@ export class Overlay {
                 }
             }
             if (this.originalReorderTop !== this.resizedReorderTop || this.originalReorderLeft !== this.resizedReorderLeft) {
-                eventArgs.id = elem.id;
+                eventArgs.id = overlayEle.id;
                 if (overlayElems && overlayElems[0]) {
                     eventArgs.requestType = 'chartRefresh';
                     this.parent.notify(refreshChartCellObj, eventArgs);

@@ -3,6 +3,7 @@ import { Internationalization, setCulture, NumberFormatOptions, DateFormatOption
 import { IValueFormatter } from '../base/interface';
 /**
  * ValueFormatter class to globalize the value.
+ *
  * @hidden
  */
 export class ValueFormatter implements IValueFormatter {

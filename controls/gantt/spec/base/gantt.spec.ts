@@ -4,8 +4,9 @@
 import { createElement, remove } from '@syncfusion/ej2-base';
 import { DataManager, RemoteSaveAdaptor } from '@syncfusion/ej2-data';
 import { Gantt, Selection, Toolbar, DayMarkers, Edit, Filter,  ContextMenu, Sort, ColumnMenu, ITaskbarClickEventArgs, RecordDoubleClickEventArgs } from '../../src/index';
-import { unscheduledData, projectResources, resourceGanttData, dragSelfReferenceData } from '../base/data-source.spec';
+import { unscheduledData, projectResources, resourceGanttData, dragSelfReferenceData, selfReference } from '../base/data-source.spec';
 import { createGantt, destroyGantt, triggerMouseEvent } from './gantt-util.spec';
+import { getValue, setValue } from '@syncfusion/ej2-base';
 Gantt.Inject(Edit, Selection, ContextMenu, Sort, Toolbar, Filter, DayMarkers, ColumnMenu);
 describe('Gantt - Base', () => {
 
@@ -305,6 +306,55 @@ describe('Gantt - Base', () => {
             ganttObj.splitTask(5, new Date("04/05/2019"));
             expect(ganttObj.currentViewData[4].taskData[ganttObj.taskFields.segments].length).toBe(3);
          });
+        
+        afterAll(() => {
+            destroyGantt(ganttObj);
+        });
+        beforeEach((done: Function) => {
+            setTimeout(done, 2000);
+        });
+    });
+    describe('CR issues', () => {
+        let ganttObj: Gantt;
+        beforeAll((done: Function) => {
+            ganttObj = createGantt(
+                {
+                    dataSource: selfReference.slice(0, 3),
+                    taskFields: {
+                        id: 'TaskID',
+                        name: 'TaskName',
+                        startDate: 'StartDate',
+                        endDate: 'EndDate',
+                        progress: 'Progress',
+                        parentID: 'parentID'
+                    },
+                    editSettings: {
+                        allowEditing: true
+                    },
+                    enableImmutableMode: true,
+                    rowDataBound: function (args) {
+                        // background is set only when mutableData is false
+                        if(!(getValue('mutableData', ganttObj.treeGrid.grid.contentModule))) {
+                            setValue('style.background', 'pink', args.row);
+                        }
+                    },
+                    queryTaskbarInfo: function (args) {
+                        // background is set only when mutableData is false
+                        if(!(getValue('mutableData', ganttObj.treeGrid.grid.contentModule))) {
+                            setValue('rowElement.style.background', 'pink', args);
+                        }
+                    },
+                }, done);
+        });
+        it('EJ2-48738-Immutable - refresh data source', () => {
+            setValue('mutableData', true, ganttObj.treeGrid.grid.contentModule)
+            ganttObj.dataSource = selfReference.slice(0, 15);
+            ganttObj.dataBound = function (args: any): void {
+                expect(getValue('style.background', ganttObj.element.querySelectorAll('.e-row')[0])).toBe('pink');
+                expect(getValue('style.background', ganttObj.element.querySelectorAll('.e-chart-row')[0])).toBe('pink');
+            };
+            ganttObj.dataBind();
+        });
         
         afterAll(() => {
             destroyGantt(ganttObj);

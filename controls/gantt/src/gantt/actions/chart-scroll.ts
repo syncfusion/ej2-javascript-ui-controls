@@ -54,8 +54,9 @@ export class ChartScroll {
      * Method to update vertical grid line, holiday, event markers and weekend container's left position on scroll action
      *
      * @returns {void} .
+     * @private
      */
-    private updateLeftPosition(): void {
+    public updateLeftPosition(): void {
         if (!isNullOrUndefined(this.parent.dayMarkersModule)) {
             const holidayContainer: HTMLElement = getValue('nonworkingDayRender.holidayContainer', this.parent.dayMarkersModule);
             const weekendContainer: HTMLElement = getValue('nonworkingDayRender.weekendContainer', this.parent.dayMarkersModule);

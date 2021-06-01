@@ -9,22 +9,24 @@ import { Column } from '../models/column';
 import { refreshAggregateCell } from '../base/constant';
 
 /**
- * SummaryCellRenderer class which responsible for building summary cell content. 
+ * SummaryCellRenderer class which responsible for building summary cell content.
+ *
  * @hidden
  */
 export class SummaryCellRenderer extends CellRenderer implements ICellRenderer<AggregateColumnModel> {
 
     public element: HTMLElement = this.parent
-    .createElement('TD', { className: 'e-summarycell', attrs: { role: 'gridcell', tabindex: '-1' } });
+        .createElement('TD', { className: 'e-summarycell', attrs: { role: 'gridcell', tabindex: '-1' } });
 
     public getValue(field: string, data: Object, column: AggregateColumnModel): Object {
-        let key: string = !isNullOrUndefined(column.type) ?
+        const key: string = !isNullOrUndefined(column.type) ?
             column.field + ' - ' + (typeof column.type === 'string' ? column.type.toLowerCase() : '') : column.columnName;
         return data[column.columnName] ? data[column.columnName][key] : '';
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     public evaluate(node: Element, cell: Cell<AggregateColumnModel>, data: Object, attributes?: Object): boolean {
-        let column: AggregateColumn = <AggregateColumn>cell.column;
+        const column: AggregateColumn = <AggregateColumn>cell.column;
         this.parent.on(refreshAggregateCell, this.refreshWithAggregate(node, cell), this);
         if (!(column.footerTemplate || column.groupFooterTemplate || column.groupCaptionTemplate)) {
             if (this.parent.rowRenderingMode === 'Vertical') {
@@ -36,13 +38,13 @@ export class SummaryCellRenderer extends CellRenderer implements ICellRenderer<A
                 (node as HTMLElement).classList.add('e-lastsummarycell');
             }
         }
-        let tempObj: { fn: Function, property: string } = column.getTemplate(cell.cellType);
-        let tempID: string = '';
-        let gColumn: Column = this.parent.getColumnByField(data[column.columnName].field);
+        const tempObj: { fn: Function, property: string } = column.getTemplate(cell.cellType);
+        const tempID: string = '';
+        const gColumn: Column = this.parent.getColumnByField(data[column.columnName].field);
         if (!isNullOrUndefined(gColumn)) {
             data[column.columnName].headerText = gColumn.headerText;
             if (gColumn.isForeignColumn()) {
-                let fData: object = gColumn.columnData.filter((e: object) => {
+                const fData: object = gColumn.columnData.filter((e: object) => {
                     return e[gColumn.foreignKeyField] === data[column.columnName].key;
                 })[0];
                 if (fData) {
@@ -50,13 +52,13 @@ export class SummaryCellRenderer extends CellRenderer implements ICellRenderer<A
                 }
             }
         }
-        let isReactCompiler: boolean = this.parent.isReact && (column.footerTemplate ?
+        const isReactCompiler: boolean = this.parent.isReact && (column.footerTemplate ?
             typeof (column.footerTemplate) !== 'string' : column.groupFooterTemplate ? typeof (column.groupFooterTemplate) !== 'string'
                 : column.groupCaptionTemplate ? typeof (column.groupCaptionTemplate) !== 'string' : false);
         if (isReactCompiler) {
-            let prop: object = data[column.columnName];
+            const prop: object = data[column.columnName];
             if (tempObj.property === 'groupCaptionTemplate' || tempObj.property === 'groupFooterTemplate') {
-                let groupKey: string = 'groupKey'; let key: string = 'key';
+                const groupKey: string = 'groupKey'; const key: string = 'key';
                 prop[groupKey] = prop[key];
             }
             tempObj.fn(prop, this.parent, tempObj.property, tempID, null, null, node);
@@ -67,11 +69,11 @@ export class SummaryCellRenderer extends CellRenderer implements ICellRenderer<A
         return false;
     }
     public refreshWithAggregate(node: Element, cell: Cell<AggregateColumnModel>): Function {
-        let cellNode: Cell<AggregateColumnModel> = cell;
+        const cellNode: Cell<AggregateColumnModel> = cell;
         return (args: { cells: Object[], data: Object, dataUid: string }) => {
-            let cell: Cell<AggregateColumnModel> = cellNode;
-            let field: string = cell.column.columnName ? cell.column.columnName : null;
-            let curCell: Cell<Column> = <Cell<Column>>(!isNullOrUndefined(field) ? args.cells.filter((cell: Cell<AggregateColumn>) =>
+            const cell: Cell<AggregateColumnModel> = cellNode;
+            const field: string = cell.column.columnName ? cell.column.columnName : null;
+            const curCell: Cell<Column> = <Cell<Column>>(!isNullOrUndefined(field) ? args.cells.filter((cell: Cell<AggregateColumn>) =>
                 cell.column.columnName === field)[0] : null);
             if (node.parentElement && node.parentElement.getAttribute('data-uid') === args.dataUid && field &&
                 field === (<Cell<Column> & { column: AggregateColumn }>curCell).column.columnName) {

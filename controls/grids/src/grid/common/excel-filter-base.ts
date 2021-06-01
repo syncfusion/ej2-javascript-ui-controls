@@ -24,7 +24,7 @@ import * as literals from '../base/string-literals';
  * `ExcelFilter` module is used to handle filtering action.
  */
 export class ExcelFilterBase extends CheckBoxFilterBase {
-    //Internal variables            
+    //Internal variables
     private datePicker: DatePicker;
     private dateTimePicker: DateTimePicker;
     private actObj: AutoComplete;
@@ -44,6 +44,9 @@ export class ExcelFilterBase extends CheckBoxFilterBase {
 
     /**
      * Constructor for excel filtering module
+     *
+     * @param {IXLFilter} parent - parent details
+     * @param {Object} customFltrOperators - operator details
      * @hidden
      */
     constructor(parent?: IXLFilter, customFltrOperators?: Object) {
@@ -53,14 +56,14 @@ export class ExcelFilterBase extends CheckBoxFilterBase {
     }
 
     private getCMenuDS(type: string, operator?: string): MenuItemModel[] {
-        let options: { number?: string[], date?: string[], string?: string[], datetime?: string[] } = {
+        const options: { number?: string[], date?: string[], string?: string[], datetime?: string[] } = {
             number: ['Equal', 'NotEqual', '', 'LessThan', 'LessThanOrEqual', 'GreaterThan',
                 'GreaterThanOrEqual', 'Between', '', 'CustomFilter'],
-            string: ['Equal', 'NotEqual', '', 'StartsWith', 'EndsWith', '', 'Contains', '', 'CustomFilter'],
+            string: ['Equal', 'NotEqual', '', 'StartsWith', 'EndsWith', '', 'Contains', '', 'CustomFilter']
         };
         options.date = options.number;
         options.datetime = options.number;
-        let model: MenuItemModel[] = [];
+        const model: MenuItemModel[] = [];
         for (let i: number = 0; i < options[type].length; i++) {
             if (options[type][i].length) {
                 if (operator) {
@@ -80,9 +83,10 @@ export class ExcelFilterBase extends CheckBoxFilterBase {
         return model;
     }
 
-    /** 
-     * To destroy the filter bar. 
-     * @return {void} 
+    /**
+     * To destroy the filter bar.
+     *
+     * @returns {void}
      * @hidden
      */
     public destroy(): void {
@@ -96,29 +100,29 @@ export class ExcelFilterBase extends CheckBoxFilterBase {
     }
 
     private createMenu(type: string, isFiltered: boolean, isCheckIcon: boolean, eleOptions?: IFilterArgs ): void {
-        let options: Object = { string: 'TextFilter', date: 'DateFilter', datetime: 'DateTimeFilter', number: 'NumberFilter' };
+        const options: Object = { string: 'TextFilter', date: 'DateFilter', datetime: 'DateTimeFilter', number: 'NumberFilter' };
         this.menu = this.parent.createElement('div', { className: 'e-contextmenu-wrapper' });
         if (this.parent.enableRtl) {
             this.menu.classList.add('e-rtl');
         } else {
             this.menu.classList.remove('e-rtl');
         }
-        let ul: Element = this.parent.createElement('ul');
-        let icon: string = isFiltered ? 'e-excl-filter-icon e-filtered' : 'e-excl-filter-icon';
-        // tslint:disable-next-line:no-any
+        const ul: Element = this.parent.createElement('ul');
+        const icon: string = isFiltered ? 'e-excl-filter-icon e-filtered' : 'e-excl-filter-icon';
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         if (this.parent.allowSorting && (this.parent as any).getModuleName() === 'grid'
             && !this.options.isResponsiveFilter) {
-            let hdrele: string = this.parent.getColumnHeaderByUid(eleOptions.uid).getAttribute('aria-sort');
-            let colIsSort: object = this.parent.getColumnByField(eleOptions.field).allowSorting;
-            let isAsc: string = (!colIsSort || hdrele === 'Ascending') ? 'e-disabled e-excel-ascending' : 'e-excel-ascending';
-            let isDesc: string = (!colIsSort || hdrele === 'Descending') ? 'e-disabled e-excel-descending' : 'e-excel-descending';
-            let ascName: string = (type === 'string') ? this.getLocalizedLabel('SortAtoZ') : (type === 'datetime' || type === 'date') ?
-            this.getLocalizedLabel('SortByOldest') : this.getLocalizedLabel('SortSmallestToLargest');
-            let descName: string = (type === 'string') ? this.getLocalizedLabel('SortZtoA') : (type === 'datetime' || type === 'date') ?
-            this.getLocalizedLabel('SortByNewest') : this.getLocalizedLabel('SortLargestToSmallest') ;
+            const hdrele: string = this.parent.getColumnHeaderByUid(eleOptions.uid).getAttribute('aria-sort');
+            const colIsSort: object = this.parent.getColumnByField(eleOptions.field).allowSorting;
+            const isAsc: string = (!colIsSort || hdrele === 'Ascending') ? 'e-disabled e-excel-ascending' : 'e-excel-ascending';
+            const isDesc: string = (!colIsSort || hdrele === 'Descending') ? 'e-disabled e-excel-descending' : 'e-excel-descending';
+            const ascName: string = (type === 'string') ? this.getLocalizedLabel('SortAtoZ') : (type === 'datetime' || type === 'date') ?
+                this.getLocalizedLabel('SortByOldest') : this.getLocalizedLabel('SortSmallestToLargest');
+            const descName: string = (type === 'string') ? this.getLocalizedLabel('SortZtoA') : (type === 'datetime' || type === 'date') ?
+                this.getLocalizedLabel('SortByNewest') : this.getLocalizedLabel('SortLargestToSmallest') ;
             ul.appendChild(this.createMenuElem(ascName, isAsc, 'e-sortascending'));
             ul.appendChild(this.createMenuElem(descName, isDesc, 'e-sortdescending'));
-            let separator: Element = this.parent.createElement('li', { className: 'e-separator e-menu-item e-excel-separator'});
+            const separator: Element = this.parent.createElement('li', { className: 'e-separator e-menu-item e-excel-separator'});
             ul.appendChild(separator);
         }
         if (!this.options.isResponsiveFilter) {
@@ -135,7 +139,7 @@ export class ExcelFilterBase extends CheckBoxFilterBase {
     }
 
     private createMenuElem(val: string, className?: string, iconName?: string, isSubMenu?: boolean): Element {
-        let li: Element = this.parent.createElement('li', { className: className + ' e-menu-item' });
+        const li: Element = this.parent.createElement('li', { className: className + ' e-menu-item' });
         li.innerHTML = val;
         li.insertBefore(this.parent.createElement('span', { className: 'e-menu-icon e-icons ' + iconName }), li.firstChild);
         if (isSubMenu) {
@@ -155,8 +159,8 @@ export class ExcelFilterBase extends CheckBoxFilterBase {
     }
 
     private clickExHandler(e: MouseEvent): void {
-        let options: Object = { string: 'TextFilter', date: 'DateFilter', datetime: 'DateTimeFilter', number: 'NumberFilter' };
-        let menuItem: HTMLElement = parentsUntil(e.target as Element, 'e-menu-item') as HTMLElement;
+        const options: Object = { string: 'TextFilter', date: 'DateFilter', datetime: 'DateTimeFilter', number: 'NumberFilter' };
+        const menuItem: HTMLElement = parentsUntil(e.target as Element, 'e-menu-item') as HTMLElement;
         if (menuItem) {
             if (this.getLocalizedLabel('ClearFilter') === menuItem.innerText.trim()) {
                 this.clearFilter();
@@ -180,9 +184,9 @@ export class ExcelFilterBase extends CheckBoxFilterBase {
         if (this.options.isResponsiveFilter && e.type === 'mouseover') {
             return;
         }
-        let target: Element = (e.target as Element).querySelector('.e-contextmenu');
-        let li: Element = parentsUntil(e.target as Element, 'e-menu-item');
-        let focused: Element = this.menu.querySelector('.e-focused');
+        const target: Element = (e.target as Element).querySelector('.e-contextmenu');
+        const li: Element = parentsUntil(e.target as Element, 'e-menu-item');
+        const focused: Element = this.menu.querySelector('.e-focused');
         let isSubMenu: boolean;
         if (focused) {
             focused.classList.remove('e-focused');
@@ -195,17 +199,17 @@ export class ExcelFilterBase extends CheckBoxFilterBase {
             return;
         }
         if (!isSubMenu) {
-            let submenu: Element = this.menu.querySelector('.e-submenu');
+            const submenu: Element = this.menu.querySelector('.e-submenu');
             if (!isNullOrUndefined(submenu)) {
                 submenu.classList.remove('e-selected');
             }
             this.destroyCMenu();
         }
-        let selectedMenu: string = this.ensureTextFilter();
+        const selectedMenu: string = this.ensureTextFilter();
         if (!this.isCMenuOpen && isSubMenu) {
             li.classList.add('e-selected');
             this.isCMenuOpen = true;
-            let menuOptions: ContextMenuModel = {
+            const menuOptions: ContextMenuModel = {
                 items: this.getCMenuDS(this.options.type, selectedMenu ? selectedMenu.replace(/\s/g, '') : undefined),
                 select: this.selectHandler.bind(this),
                 onClose: this.destroyCMenu.bind(this),
@@ -215,27 +219,27 @@ export class ExcelFilterBase extends CheckBoxFilterBase {
             };
             this.parent.element.appendChild(this.cmenu);
             this.menuObj = new ContextMenu(menuOptions, this.cmenu);
-            let client: ClientRect = this.menu.querySelector('.e-submenu').getBoundingClientRect();
-            let pos: OffsetPosition = { top: 0, left: 0 };
+            const client: ClientRect = this.menu.querySelector('.e-submenu').getBoundingClientRect();
+            const pos: OffsetPosition = { top: 0, left: 0 };
             if (this.options.isResponsiveFilter) {
-                let options: Object = { string: 'TextFilter', date: 'DateFilter', datetime: 'DateTimeFilter', number: 'NumberFilter' };
-                let content: HTMLElement = document.querySelector('.e-responsive-dialog > .e-dlg-header-content');
-                let height: number = content.offsetHeight + 4;
+                const options: Object = { string: 'TextFilter', date: 'DateFilter', datetime: 'DateTimeFilter', number: 'NumberFilter' };
+                const content: HTMLElement = document.querySelector('.e-responsive-dialog > .e-dlg-header-content');
+                const height: number = content.offsetHeight + 4;
                 this.menuObj.element.style.height = 'calc(100% - ' + height + 'px)';
                 this.menuObj.open(height, 0, document.body);
-                let header: string = this.getLocalizedLabel(options[this.options.type]);
+                const header: string = this.getLocalizedLabel(options[this.options.type]);
                 this.parent.notify(events.renderResponsiveCmenu, {
                     target: this.menuObj.element.parentElement, header: header, isOpen: true
                 });
             } else {
                 if (Browser.isDevice) {
-                    let contextRect: ClientRect = this.getContextBounds(this.menuObj);
+                    const contextRect: ClientRect = this.getContextBounds();
                     pos.top = (window.innerHeight - contextRect.height) / 2;
                     pos.left = (window.innerWidth - contextRect.width) / 2;
                     this.closeDialog();
                 } else {
                     pos.top = Browser.isIE ? window.pageYOffset + client.top : window.scrollY + client.top;
-                    pos.left = this.getCMenuYPosition(this.dlg, this.menuObj);
+                    pos.left = this.getCMenuYPosition(this.dlg);
                 }
                 this.menuObj.open(pos.top, pos.left, e.target as HTMLElement);
             }
@@ -245,7 +249,7 @@ export class ExcelFilterBase extends CheckBoxFilterBase {
 
     private ensureTextFilter(): string {
         let selectedMenu: string;
-        let predicates: PredicateModel[] = this.existingPredicate[this.options.field];
+        const predicates: PredicateModel[] = this.existingPredicate[this.options.field];
         if (predicates && predicates.length === 2) {
             if (predicates[0].operator === 'greaterthanorequal' && predicates[1].operator === 'lessthanorequal') {
                 selectedMenu = 'between';
@@ -263,8 +267,8 @@ export class ExcelFilterBase extends CheckBoxFilterBase {
 
     private preventClose(args: BeforeOpenCloseMenuEventArgs): void {
         if (this.options && this.options.isResponsiveFilter && args.event) {
-            let target: Element = (<Element>args.event.target);
-            let isFilterBack: boolean = target.classList.contains('e-resfilterback')
+            const target: Element = (<Element>args.event.target);
+            const isFilterBack: boolean = target.classList.contains('e-resfilterback')
                 || target.classList.contains('e-res-back-btn') || target.classList.contains('e-menu-item');
             args.cancel = !isFilterBack;
         } else {
@@ -274,15 +278,14 @@ export class ExcelFilterBase extends CheckBoxFilterBase {
         }
     }
 
-    private getContextBounds(context: ContextMenu): ClientRect {
-        let elementVisible: string = this.menuObj.element.style.display;
+    private getContextBounds(): ClientRect {
         this.menuObj.element.style.display = 'block';
         return this.menuObj.element.getBoundingClientRect();
     }
-    private getCMenuYPosition(target: Element, context: ContextMenu): number {
-        let contextWidth: number = this.getContextBounds(context).width;
-        let targetPosition: ClientRect = target.getBoundingClientRect();
-        let leftPos: number = targetPosition.right + contextWidth - this.parent.element.clientWidth;
+    private getCMenuYPosition(target: Element): number {
+        const contextWidth: number = this.getContextBounds().width;
+        const targetPosition: ClientRect = target.getBoundingClientRect();
+        const leftPos: number = targetPosition.right + contextWidth - this.parent.element.clientWidth;
         let targetBorder: number = (target as HTMLElement).offsetWidth - (target as HTMLElement).clientWidth;
         targetBorder = targetBorder ? targetBorder + 1 : 0;
         return (leftPos < 1) ? (targetPosition.right + 1 - targetBorder) : (targetPosition.left - contextWidth - 1 + targetBorder);
@@ -293,7 +296,7 @@ export class ExcelFilterBase extends CheckBoxFilterBase {
         this.getAndSetChkElem(options);
         this.showDialog(options);
         this.dialogObj.dataBind();
-        let filterLength: number = (this.existingPredicate[options.field] && this.existingPredicate[options.field].length) ||
+        const filterLength: number = (this.existingPredicate[options.field] && this.existingPredicate[options.field].length) ||
             this.options.filteredColumns.filter((col: Predicate) => {
                 return this.options.field === col.field;
             }).length;
@@ -321,13 +324,17 @@ export class ExcelFilterBase extends CheckBoxFilterBase {
         }
     }
 
-    /** @hidden */
+    /**
+     * @hidden
+     * @param {MenuEventArgs} e - event args
+     * @returns {void}
+     */
     public renderDialogue(e?: MenuEventArgs): void {
-        let target: HTMLElement = e ? e.element as HTMLElement : undefined;
-        let column: string = this.options.field;
-        let isComplex: boolean = !isNullOrUndefined(column) && isComplexField(column);
-        let complexFieldName: string = !isNullOrUndefined(column) && getComplexFieldID(column);
-        let mainDiv: HTMLElement = this.parent.createElement('div', {
+        const target: HTMLElement = e ? e.element as HTMLElement : undefined;
+        const column: string = this.options.field;
+        const isComplex: boolean = !isNullOrUndefined(column) && isComplexField(column);
+        const complexFieldName: string = !isNullOrUndefined(column) && getComplexFieldID(column);
+        const mainDiv: HTMLElement = this.parent.createElement('div', {
             className: 'e-xlfl-maindiv',
             id: isComplex ? complexFieldName + '-xlflmenu' : column + '-xlflmenu'
         });
@@ -336,7 +343,7 @@ export class ExcelFilterBase extends CheckBoxFilterBase {
             id: isComplex ? complexFieldName + '-xlfldlg' : column + '-xlfldlg'
         });
         if (this.options.isResponsiveFilter) {
-            let responsiveCnt: HTMLElement = document.querySelector('.e-resfilter > .e-dlg-content > .e-xl-customfilterdiv');
+            const responsiveCnt: HTMLElement = document.querySelector('.e-resfilter > .e-dlg-content > .e-xl-customfilterdiv');
             responsiveCnt.appendChild(this.dlgDiv);
         } else {
             this.parent.element.appendChild(this.dlgDiv);
@@ -352,7 +359,7 @@ export class ExcelFilterBase extends CheckBoxFilterBase {
             visible: false,
             enableRtl: this.parent.enableRtl,
             open: () => {
-                let row: HTMLTableRowElement = this.dlgObj.element.querySelector('table.e-xlfl-table>tr') as HTMLTableRowElement;
+                const row: HTMLTableRowElement = this.dlgObj.element.querySelector('table.e-xlfl-table>tr') as HTMLTableRowElement;
                 if (this.options.column.filterTemplate) {
                     (row.querySelector('#' + this.options.column.field + '-xlfl-frstvalue') as HTMLElement).focus();
                 } else {
@@ -373,9 +380,9 @@ export class ExcelFilterBase extends CheckBoxFilterBase {
             }],
             content: mainDiv,
             width: 430,
-            animationSettings: { effect: 'None' },
+            animationSettings: { effect: 'None' }
         });
-        let isStringTemplate: string = 'isStringTemplate';
+        const isStringTemplate: string = 'isStringTemplate';
         this.dlgObj[isStringTemplate] = true;
         this.renderResponsiveDialog();
         this.dlgDiv.setAttribute('aria-label', this.getLocalizedLabel('CustomFilterDialogARIA'));
@@ -384,7 +391,7 @@ export class ExcelFilterBase extends CheckBoxFilterBase {
 
     private renderResponsiveDialog(): void {
         if (this.options.isResponsiveFilter) {
-            let rowResponsiveDlg: Element = document.querySelector('.e-row-responsive-filter');
+            const rowResponsiveDlg: Element = document.querySelector('.e-row-responsive-filter');
             if (rowResponsiveDlg) {
                 rowResponsiveDlg.classList.remove('e-row-responsive-filter');
             }
@@ -398,7 +405,10 @@ export class ExcelFilterBase extends CheckBoxFilterBase {
         }
     }
 
-    /** @hidden */
+    /**
+     * @hidden
+     * @returns {void}
+     */
     public removeDialog(): void {
         this.parent.notify(events.customFilterClose, {});
         if (this.parent.isReact) {
@@ -416,8 +426,8 @@ export class ExcelFilterBase extends CheckBoxFilterBase {
         if (!this.options.isResponsiveFilter) {
             this.dlgObj.element.style.top = '0px';
         } else {
-            let content: HTMLElement = document.querySelector('.e-responsive-dialog > .e-dlg-header-content');
-            let height: number = content.offsetHeight + 4;
+            const content: HTMLElement = document.querySelector('.e-responsive-dialog > .e-dlg-header-content');
+            const height: number = content.offsetHeight + 4;
             this.dlgObj.element.style.top = height + 'px';
         }
         if (!this.options.isResponsiveFilter && Browser.isDevice && window.innerWidth < 440) {
@@ -429,35 +439,37 @@ export class ExcelFilterBase extends CheckBoxFilterBase {
     }
 
     private renderCustomFilter(target: Element, column: string): void {
-        let dlgConetntEle: Element = this.dlgObj.element.querySelector('.e-xlfl-maindiv');
+        const dlgConetntEle: Element = this.dlgObj.element.querySelector('.e-xlfl-maindiv');
 
-        /* tslint:disable-next-line:max-line-length */
-        let dlgFields: HTMLElement = this.parent.createElement('div', { innerHTML: this.getLocalizedLabel('ShowRowsWhere'), className: 'e-xlfl-dlgfields' });
+        const dlgFields: HTMLElement = this.parent.createElement('div', { innerHTML: this.getLocalizedLabel('ShowRowsWhere'), className: 'e-xlfl-dlgfields' });
         dlgConetntEle.appendChild(dlgFields);
 
         //column name
-        let fieldSet: HTMLElement = this.parent.createElement('div', { innerHTML: this.options.displayName, className: 'e-xlfl-fieldset' });
+        const fieldSet: HTMLElement = this.parent.createElement('div', { innerHTML: this.options.displayName, className: 'e-xlfl-fieldset' });
         dlgConetntEle.appendChild(fieldSet);
 
         this.renderFilterUI(column, dlgConetntEle);
     }
 
-    /** @hidden */
+    /**
+     * @hidden
+     * @param {string} col - Defines column details
+     * @returns {void}
+     */
     public filterBtnClick(col: string): void {
-        let isComplex: boolean = !isNullOrUndefined(col) && isComplexField(col);
-        let complexFieldName: string = !isNullOrUndefined(col) && getComplexFieldID(col);
-        let colValue: string = isComplex ? complexFieldName : col;
-        let fValue: NumericTextBox = (<EJ2Intance>this.dlgDiv.querySelector('#' + colValue + '-xlfl-frstvalue')).ej2_instances[0];
-        let fOperator: DropDownList = (<EJ2Intance>this.dlgDiv.querySelector('#' + colValue + '-xlfl-frstoptr')).ej2_instances[0];
-        let sValue: NumericTextBox = (<EJ2Intance>this.dlgDiv.querySelector('#' + colValue + '-xlfl-secndvalue')).ej2_instances[0];
-        let sOperator: DropDownList = (<EJ2Intance>this.dlgDiv.querySelector('#' + colValue + '-xlfl-secndoptr')).ej2_instances[0];
+        const isComplex: boolean = !isNullOrUndefined(col) && isComplexField(col);
+        const complexFieldName: string = !isNullOrUndefined(col) && getComplexFieldID(col);
+        const colValue: string = isComplex ? complexFieldName : col;
+        const fValue: NumericTextBox = (<EJ2Intance>this.dlgDiv.querySelector('#' + colValue + '-xlfl-frstvalue')).ej2_instances[0];
+        const fOperator: DropDownList = (<EJ2Intance>this.dlgDiv.querySelector('#' + colValue + '-xlfl-frstoptr')).ej2_instances[0];
+        const sValue: NumericTextBox = (<EJ2Intance>this.dlgDiv.querySelector('#' + colValue + '-xlfl-secndvalue')).ej2_instances[0];
+        const sOperator: DropDownList = (<EJ2Intance>this.dlgDiv.querySelector('#' + colValue + '-xlfl-secndoptr')).ej2_instances[0];
         let checkBoxValue: boolean;
         if (this.options.type === 'string') {
-            let checkBox: CheckBox = (<EJ2Intance>this.dlgDiv.querySelector('#' + colValue + '-xlflmtcase')).ej2_instances[0];
+            const checkBox: CheckBox = (<EJ2Intance>this.dlgDiv.querySelector('#' + colValue + '-xlflmtcase')).ej2_instances[0];
             checkBoxValue = checkBox.checked;
         }
-        let andRadio: CheckBox = (<EJ2Intance>this.dlgDiv.querySelector('#' + colValue + 'e-xlfl-frstpredicate')).ej2_instances[0];
-        let orRadio: CheckBox = (<EJ2Intance>this.dlgDiv.querySelector('#' + colValue + 'e-xlfl-secndpredicate')).ej2_instances[0];
+        const andRadio: CheckBox = (<EJ2Intance>this.dlgDiv.querySelector('#' + colValue + 'e-xlfl-frstpredicate')).ej2_instances[0];
         let predicate: string = (andRadio.checked ? 'and' : 'or');
         if (sValue.value === null) {
             predicate = 'or';
@@ -470,6 +482,7 @@ export class ExcelFilterBase extends CheckBoxFilterBase {
     /**
      * @hidden
      * Filters grid row by column name with given options.
+     *
      * @param {string} fieldName - Defines the field name of the filter column.
      * @param {string} firstOperator - Defines the first operator by how to filter records.
      * @param {string | number | Date | boolean} firstValue - Defines the first value which is used to filter records.
@@ -479,13 +492,14 @@ export class ExcelFilterBase extends CheckBoxFilterBase {
      * @param {boolean} ignoreAccent - If ignoreAccent set to true, then ignores the diacritic characters or accents when filtering.
      * @param {string} secondOperator - Defines the second operator by how to filter records.
      * @param {string | number | Date | boolean} secondValue - Defines the first value which is used to filter records.
+     * @returns {void}
      */
     public filterByColumn(
         fieldName: string, firstOperator: string, firstValue: string | number | Date | boolean, predicate?: string,
         matchCase?: boolean, ignoreAccent?: boolean, secondOperator?: string, secondValue?: string | number | Date | boolean): void {
-        let col: Column = this.parent.getColumnByField ? this.parent.getColumnByField(fieldName) : this.options.column;
-        let field: string = this.isForeignColumn(col) ? col.foreignKeyValue : fieldName;
-        let fColl: PredicateModel[] = [];
+        const col: Column = this.parent.getColumnByField ? this.parent.getColumnByField(fieldName) : this.options.column;
+        const field: string = this.isForeignColumn(col) ? col.foreignKeyValue : fieldName;
+        const fColl: PredicateModel[] = [];
         let mPredicate: Predicate;
         fColl.push({
             field: field,
@@ -496,7 +510,7 @@ export class ExcelFilterBase extends CheckBoxFilterBase {
             value: firstValue,
             type: this.options.type
         });
-        let arg: {
+        const arg: {
             instance: ExcelFilterBase, handler: Function, cancel: boolean, arg1: string, arg2: string,
             arg3: string, arg4: string, arg5: boolean, arg6: boolean, arg7: string, arg8: string
         } = {
@@ -518,10 +532,10 @@ export class ExcelFilterBase extends CheckBoxFilterBase {
                 value: secondValue,
                 type: this.options.type
             });
-            /* tslint:disable-next-line:max-line-length */
+            // eslint-disable-next-line max-len
             mPredicate = (mPredicate as Object)[predicate](field, secondOperator.toLowerCase(), secondValue as string, !matchCase, ignoreAccent);
         }
-        let args: Object = {
+        const args: Object = {
             action: 'filtering', filterCollection: fColl, field: this.options.field,
             ejpredicate: mPredicate, actualPredicate: fColl
         };
@@ -531,27 +545,27 @@ export class ExcelFilterBase extends CheckBoxFilterBase {
             this.options.handler(args);
         }
     }
-    /* tslint:disable-next-line:max-line-length */
+    // eslint-disable-next-line max-len
     private renderOperatorUI(column: string, table: HTMLElement, elementID: string, predicates: PredicateModel[], isFirst?: boolean): { fieldElement: HTMLElement, operator: string } {
 
-        let fieldElement: HTMLElement = this.parent.createElement('tr', { className: 'e-xlfl-fields' });
+        const fieldElement: HTMLElement = this.parent.createElement('tr', { className: 'e-xlfl-fields' });
         table.appendChild(fieldElement);
 
-        let xlfloptr: HTMLElement = this.parent.createElement('td', { className: 'e-xlfl-optr' });
+        const xlfloptr: HTMLElement = this.parent.createElement('td', { className: 'e-xlfl-optr' });
         fieldElement.appendChild(xlfloptr);
 
-        let optrDiv: HTMLElement = this.parent.createElement('div', { className: 'e-xlfl-optrdiv' });
+        const optrDiv: HTMLElement = this.parent.createElement('div', { className: 'e-xlfl-optrdiv' });
 
-        let isComplex: boolean = !isNullOrUndefined(column) && isComplexField(column);
-        let complexFieldName: string = !isNullOrUndefined(column) && getComplexFieldID(column);
+        const isComplex: boolean = !isNullOrUndefined(column) && isComplexField(column);
+        const complexFieldName: string = !isNullOrUndefined(column) && getComplexFieldID(column);
 
-        let optrInput: HTMLElement = this.parent
+        const optrInput: HTMLElement = this.parent
             .createElement('input', { id: isComplex ? complexFieldName + elementID : column + elementID });
 
         optrDiv.appendChild(optrInput);
         xlfloptr.appendChild(optrDiv);
-        let optr: string = this.options.type + 'Operator';
-        let dropDatasource: { [key: string]: Object }[] = this.customFilterOperators[optr];
+        const optr: string = this.options.type + 'Operator';
+        const dropDatasource: { [key: string]: Object }[] = this.customFilterOperators[optr];
         this.optrData = dropDatasource;
         let selectedValue: string = this.dropSelectedVal(this.options.column as Column, predicates, isFirst);
 
@@ -566,7 +580,7 @@ export class ExcelFilterBase extends CheckBoxFilterBase {
                 selectedValue = this.getLocalizedLabel(isFirst ? 'GreaterThanOrEqual' : 'LessThanOrEqual');
             }
         }
-        let col: Column = this.options.column as Column;
+        const col: Column = this.options.column as Column;
         this.dropOptr = new DropDownList(extend(
             {
                 dataSource: dropDatasource,
@@ -578,7 +592,7 @@ export class ExcelFilterBase extends CheckBoxFilterBase {
             },
             col.filter.params));
         this.dropOptr.appendTo(optrInput);
-        let operator: string = this.getSelectedValue(selectedValue);
+        const operator: string = this.getSelectedValue(selectedValue);
         return { fieldElement, operator };
     }
     private dropDownOpen(args: { popup: Popup }): void {
@@ -595,13 +609,14 @@ export class ExcelFilterBase extends CheckBoxFilterBase {
 
     /**
      * @hidden
+     * @returns {FilterUI} returns filter UI
      */
     public getFilterUIInfo(): FilterUI {
         return { firstOperator: this.firstOperator, secondOperator: this.secondOperator, field: this.options.field };
     }
 
     private getSelectedValue(text: string): string {
-        let selectedField: Object = new DataManager(this.optrData).executeLocal(
+        const selectedField: Object = new DataManager(this.optrData).executeLocal(
             new Query().where('text', 'equal', text));
         return !isNullOrUndefined(selectedField[0]) ? selectedField[0].value : '';
     }
@@ -619,29 +634,28 @@ export class ExcelFilterBase extends CheckBoxFilterBase {
         return this.getSelectedText(operator);
     }
     private getSelectedText(operator: string): string {
-        let selectedField: Object = new DataManager(this.optrData).executeLocal(
+        const selectedField: Object = new DataManager(this.optrData).executeLocal(
             new Query().where('value', 'equal', operator));
         return !isNullOrUndefined(selectedField[0]) ? selectedField[0].text : '';
     }
 
     private renderFilterUI(column: string, dlgConetntEle: Element): void {
-        let predicates: PredicateModel[] = this.existingPredicate[column];
-        let table: HTMLElement = this.parent.createElement('table', { className: 'e-xlfl-table' });
+        const predicates: PredicateModel[] = this.existingPredicate[column];
+        const table: HTMLElement = this.parent.createElement('table', { className: 'e-xlfl-table' });
         dlgConetntEle.appendChild(table);
 
-        let colGroup: HTMLElement = this.parent.createElement(literals.colGroup);
+        const colGroup: HTMLElement = this.parent.createElement(literals.colGroup);
         colGroup.innerHTML = '<col style="width: 50%"></col><col style="width: 50%"></col>';
         table.appendChild(colGroup);
 
         //Renders first dropdown
-        /* tslint:disable-next-line:max-line-length */
         let optr: { fieldElement: HTMLElement, operator: string } = this.renderOperatorUI(column, table, '-xlfl-frstoptr', predicates, true);
         this.firstOperator = optr.operator;
 
         //Renders first value
         this.renderFlValueUI(column, optr, '-xlfl-frstvalue', predicates, true);
 
-        let predicate: HTMLElement = this.parent.createElement('tr', { className: 'e-xlfl-predicate' });
+        const predicate: HTMLElement = this.parent.createElement('tr', { className: 'e-xlfl-predicate' });
         table.appendChild(predicate);
 
         //Renders first radion button
@@ -656,19 +670,17 @@ export class ExcelFilterBase extends CheckBoxFilterBase {
     }
     private renderRadioButton(column: string, tr: HTMLElement, predicates: PredicateModel[]): void {
 
-        let td: HTMLElement = this.parent.createElement('td', { className: 'e-xlfl-radio', attrs: { 'colSpan': '2' } });
+        const td: HTMLElement = this.parent.createElement('td', { className: 'e-xlfl-radio', attrs: { 'colSpan': '2' } });
         tr.appendChild(td);
 
-        let radioDiv: HTMLElement = this.parent
+        const radioDiv: HTMLElement = this.parent
             .createElement('div', { className: 'e-xlfl-radiodiv', attrs: { 'style': 'display: inline-block' } });
 
-        let isComplex: boolean = !isNullOrUndefined(column) && isComplexField(column);
-        let complexFieldName: string = !isNullOrUndefined(column) && getComplexFieldID(column);
-        /* tslint:disable-next-line:max-line-length */
-        let frstpredicate: HTMLInputElement = this.parent.createElement('input', { id: isComplex ? complexFieldName + 'e-xlfl-frstpredicate' : column + 'e-xlfl-frstpredicate', attrs: { 'type': 'radio' } }) as HTMLInputElement;
+        const isComplex: boolean = !isNullOrUndefined(column) && isComplexField(column);
+        const complexFieldName: string = !isNullOrUndefined(column) && getComplexFieldID(column);
+        const frstpredicate: HTMLInputElement = this.parent.createElement('input', { id: isComplex ? complexFieldName + 'e-xlfl-frstpredicate' : column + 'e-xlfl-frstpredicate', attrs: { 'type': 'radio' } }) as HTMLInputElement;
 
-        /* tslint:disable-next-line:max-line-length */
-        let secndpredicate: HTMLInputElement = this.parent.createElement('input', { id: isComplex ? complexFieldName + 'e-xlfl-secndpredicate' : column + 'e-xlfl-secndpredicate', attrs: { 'type': 'radio' } }) as HTMLInputElement;
+        const secndpredicate: HTMLInputElement = this.parent.createElement('input', { id: isComplex ? complexFieldName + 'e-xlfl-secndpredicate' : column + 'e-xlfl-secndpredicate', attrs: { 'type': 'radio' } }) as HTMLInputElement;
 
         //appends into div
         radioDiv.appendChild(frstpredicate);
@@ -680,14 +692,12 @@ export class ExcelFilterBase extends CheckBoxFilterBase {
         }
 
         // Initialize AND RadioButton component.
-        /* tslint:disable-next-line:max-line-length */
-        let andRadio: RadioButton = new RadioButton({ label: this.getLocalizedLabel('AND'), name: 'default', cssClass: 'e-xlfl-radio-and', checked: true, enableRtl: this.parent.enableRtl });
+        const andRadio: RadioButton = new RadioButton({ label: this.getLocalizedLabel('AND'), name: 'default', cssClass: 'e-xlfl-radio-and', checked: true, enableRtl: this.parent.enableRtl });
 
         // Initialize OR RadioButton component.
-        /* tslint:disable-next-line:max-line-length */
-        let orRadio: RadioButton = new RadioButton({ label: this.getLocalizedLabel('OR'), name: 'default', cssClass: 'e-xlfl-radio-or', enableRtl: this.parent.enableRtl });
+        const orRadio: RadioButton = new RadioButton({ label: this.getLocalizedLabel('OR'), name: 'default', cssClass: 'e-xlfl-radio-or', enableRtl: this.parent.enableRtl });
 
-        let flValue: string = predicates && predicates.length === 2 ? predicates[1].predicate as string : 'and';
+        const flValue: string = predicates && predicates.length === 2 ? predicates[1].predicate as string : 'and';
         if (flValue === 'and') {
             andRadio.checked = true;
             orRadio.checked = false;
@@ -700,46 +710,46 @@ export class ExcelFilterBase extends CheckBoxFilterBase {
         andRadio.appendTo(frstpredicate);
         orRadio.appendTo(secndpredicate);
     }
-    /* tslint:disable-next-line:no-any */
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     private removeObjects(elements: any[]): void {
-        for (let obj of elements) {
+        for (const obj of elements) {
             if (obj && !obj.isDestroyed) {
                 obj.destroy();
             }
         }
     }
 
-    /* tslint:disable-next-line:max-line-length */
+    // eslint-disable-next-line max-len
     private renderFlValueUI(column: string, optr: { fieldElement: HTMLElement, operator: string }, elementId: string, predicates: PredicateModel[], isFirst?: boolean): void {
 
-        let value: HTMLElement = this.parent.createElement('td', { className: 'e-xlfl-value' });
+        const value: HTMLElement = this.parent.createElement('td', { className: 'e-xlfl-value' });
         optr.fieldElement.appendChild(value);
 
-        let isComplex: boolean = !isNullOrUndefined(column) && isComplexField(column);
-        let complexFieldName: string = !isNullOrUndefined(column) && getComplexFieldID(column);
+        const isComplex: boolean = !isNullOrUndefined(column) && isComplexField(column);
+        const complexFieldName: string = !isNullOrUndefined(column) && getComplexFieldID(column);
 
-        let valueDiv: HTMLElement = this.parent.createElement('div', { className: 'e-xlfl-valuediv' });
-        let isFilteredCol: boolean = this.options.filteredColumns.some((col: Column) => { return column === col.field; });
-        let fltrPredicates: Object[] = this.options.filteredColumns.filter((col: Column) => col.field === column);
+        const valueDiv: HTMLElement = this.parent.createElement('div', { className: 'e-xlfl-valuediv' });
+        const isFilteredCol: boolean = this.options.filteredColumns.some((col: Column) => { return column === col.field; });
+        const fltrPredicates: Object[] = this.options.filteredColumns.filter((col: Column) => col.field === column);
         if (this.options.column.filterTemplate) {
             let data: Object = {};
-            let columnObj: Column = this.options.column as Column;
+            const columnObj: Column = this.options.column as Column;
             if (isFilteredCol && elementId) {
                 data = this.getExcelFilterData(elementId, data, columnObj, predicates, fltrPredicates);
             }
-            let isReactCompiler: boolean = this.parent.isReact && typeof (this.options.column.filterTemplate) !== 'string';
-            let tempID: string = this.parent.element.id + columnObj.uid + 'filterTemplate';
+            const isReactCompiler: boolean = this.parent.isReact && typeof (this.options.column.filterTemplate) !== 'string';
+            const tempID: string = this.parent.element.id + columnObj.uid + 'filterTemplate';
             if (isReactCompiler) {
                 (this.options.column as Column).getFilterTemplate()(data, this.parent, 'filterTemplate', tempID, null, null, valueDiv);
                 this.parent.renderTemplates();
             } else {
-                let element: Element[] = (this.options.column as Column).getFilterTemplate()(data, this.parent, 'filterTemplate', tempID);
+                const element: Element[] = (this.options.column as Column).getFilterTemplate()(data, this.parent, 'filterTemplate', tempID);
                 appendChildren(valueDiv, element);
             }
             valueDiv.querySelector('input').id = isComplex ? complexFieldName + elementId : column + elementId;
             value.appendChild(valueDiv);
         } else {
-            let valueInput: Element = this.parent
+            const valueInput: Element = this.parent
                 .createElement('input', { id: isComplex ? complexFieldName + elementId : column + elementId });
 
             valueDiv.appendChild(valueInput);
@@ -757,7 +767,7 @@ export class ExcelFilterBase extends CheckBoxFilterBase {
                     flValue = undefined;
                 }
             }
-            let types: Object = {
+            const types: Object = {
                 'string': this.renderAutoComplete.bind(this),
                 'number': this.renderNumericTextBox.bind(this),
                 'date': this.renderDate.bind(this),
@@ -767,14 +777,13 @@ export class ExcelFilterBase extends CheckBoxFilterBase {
         }
     }
 
-    /* tslint:disable-next-line:max-line-length */
     private getExcelFilterData(
         elementId?: string, data?: Object, columnObj?: Column,
         predicates?: PredicateModel[], fltrPredicates?: Object[]): Object {
-        let predIndex: number = elementId === '-xlfl-frstvalue' ? 0 : 1;
+        const predIndex: number = elementId === '-xlfl-frstvalue' ? 0 : 1;
         if (elementId === '-xlfl-frstvalue' || fltrPredicates.length > 1) {
             data = { column: predicates instanceof Array ? predicates[predIndex] : predicates };
-            let indx: number = this.options.column.columnData && fltrPredicates.length > 1 ?
+            const indx: number = this.options.column.columnData && fltrPredicates.length > 1 ?
                 (this.options.column.columnData.length === 1 ? 0 : 1) : predIndex;
             data[this.options.field] = columnObj.foreignKeyValue ? this.options.column.columnData[indx][columnObj.foreignKeyValue] :
                 ((<HTMLInputElement>fltrPredicates[indx]) as { value?: string | boolean | Date }).value;
@@ -785,16 +794,14 @@ export class ExcelFilterBase extends CheckBoxFilterBase {
         return data;
     }
 
-    /* tslint:disable-next-line:max-line-length */
+    // eslint-disable-next-line max-len
     private renderMatchCase(column: string, tr: HTMLElement, matchCase: HTMLElement, elementId: string, predicates: PredicateModel[]): void {
+        const matchCaseDiv: HTMLElement = this.parent.createElement('div', { className: 'e-xlfl-matchcasediv', attrs: { 'style': 'display: inline-block' } });
 
-        /* tslint:disable-next-line:max-line-length */
-        let matchCaseDiv: HTMLElement = this.parent.createElement('div', { className: 'e-xlfl-matchcasediv', attrs: { 'style': 'display: inline-block' } });
+        const isComplex: boolean = !isNullOrUndefined(column) && isComplexField(column);
+        const complexFieldName: string = !isNullOrUndefined(column) && getComplexFieldID(column);
 
-        let isComplex: boolean = !isNullOrUndefined(column) && isComplexField(column);
-        let complexFieldName: string = !isNullOrUndefined(column) && getComplexFieldID(column);
-
-        let matchCaseInput: HTMLInputElement = this.parent.createElement(
+        const matchCaseInput: HTMLInputElement = this.parent.createElement(
             'input',
             { id: isComplex ? complexFieldName + elementId : column + elementId, attrs: { 'type': 'checkbox' } }
         ) as HTMLInputElement;
@@ -802,12 +809,12 @@ export class ExcelFilterBase extends CheckBoxFilterBase {
         matchCaseDiv.appendChild(matchCaseInput);
         matchCase.appendChild(matchCaseDiv);
 
-        let flValue: boolean = predicates && predicates.length > 0 ?
+        const flValue: boolean = predicates && predicates.length > 0 ?
             (predicates && predicates.length === 2 ? predicates[1].matchCase : predicates[0].matchCase) :
             false;
 
         // Initialize Match Case check box.
-        let checkbox: CheckBox = new CheckBox({
+        const checkbox: CheckBox = new CheckBox({
             label: this.getLocalizedLabel('MatchCase'),
             enableRtl: this.parent.enableRtl, checked: flValue
         });
@@ -816,9 +823,9 @@ export class ExcelFilterBase extends CheckBoxFilterBase {
         checkbox.appendTo(matchCaseInput);
     }
 
-    /* tslint:disable-next-line:max-line-length */
+    // eslint-disable-next-line max-len
     private renderDate(options: IFilterArgs, column: string, inputValue: HTMLElement, fValue: string | number | Date | boolean, isRtl: boolean): void {
-        let format: string = getCustomDateFormat(options.format, options.type);
+        const format: string = getCustomDateFormat(options.format, options.type);
         this.datePicker = new DatePicker(extend(
             {
                 format: format,
@@ -827,15 +834,15 @@ export class ExcelFilterBase extends CheckBoxFilterBase {
                 width: '100%',
                 enableRtl: isRtl,
                 value: new Date(fValue as string),
-                locale: this.parent.locale,
+                locale: this.parent.locale
             },
             options.column.filter.params));
         this.datePicker.appendTo(inputValue);
     }
 
-    /* tslint:disable-next-line:max-line-length */
+    // eslint-disable-next-line max-len
     private renderDateTime(options: IFilterArgs, column: string, inputValue: HTMLElement, fValue: string | number | Date | boolean, isRtl: boolean): void {
-        let format: string = getCustomDateFormat(options.format, options.type);
+        const format: string = getCustomDateFormat(options.format, options.type);
         this.dateTimePicker = new DateTimePicker(extend(
             {
                 format: format,
@@ -844,7 +851,7 @@ export class ExcelFilterBase extends CheckBoxFilterBase {
                 width: '100%',
                 enableRtl: isRtl,
                 value: new Date(fValue as string),
-                locale: this.parent.locale,
+                locale: this.parent.locale
             },
             options.column.filter.params));
         this.dateTimePicker.appendTo(inputValue);
@@ -854,7 +861,7 @@ export class ExcelFilterBase extends CheckBoxFilterBase {
         e.result = distinctStringValues(e.result);
     }
 
-    /* tslint:disable-next-line:max-line-length */
+    // eslint-disable-next-line max-len
     private renderNumericTextBox(options: IFilterArgs, column: string, inputValue: HTMLElement, fValue: string | number | Date | boolean, isRtl: boolean): void {
         this.numericTxtObj = new NumericTextBox(extend(
             {
@@ -862,19 +869,19 @@ export class ExcelFilterBase extends CheckBoxFilterBase {
                 placeholder: this.getLocalizedLabel('CustomFilterPlaceHolder'),
                 enableRtl: isRtl,
                 value: fValue as number,
-                locale: this.parent.locale,
+                locale: this.parent.locale
             },
             options.column.filter.params));
         this.numericTxtObj.appendTo(inputValue);
     }
 
-    /* tslint:disable-next-line:max-line-length */
+    // eslint-disable-next-line max-len
     private renderAutoComplete(options: IFilterArgs, column: string, inputValue: HTMLElement, fValue: string | number | Date | boolean, isRtl: boolean): void {
-        let colObj: Column = this.options.column as Column;
-        let isForeignColumn: boolean = this.isForeignColumn(colObj);
-        let dataSource: Object = isForeignColumn ? colObj.dataSource : options.dataSource;
-        let fields: Object = { value: isForeignColumn ? colObj.foreignKeyValue : column };
-        let actObj: AutoComplete = new AutoComplete(extend(
+        const colObj: Column = this.options.column as Column;
+        const isForeignColumn: boolean = this.isForeignColumn(colObj);
+        const dataSource: Object = isForeignColumn ? colObj.dataSource : options.dataSource;
+        const fields: Object = { value: isForeignColumn ? colObj.foreignKeyValue : column };
+        const actObj: AutoComplete = new AutoComplete(extend(
             {
                 dataSource: dataSource instanceof DataManager ? dataSource : new DataManager(dataSource as object),
                 fields: fields,
@@ -884,9 +891,9 @@ export class ExcelFilterBase extends CheckBoxFilterBase {
                 cssClass: 'e-popup-flmenu',
                 autofill: true,
                 focus: () => {
-                    let isComplex: boolean = !isNullOrUndefined(column) && isComplexField(column);
-                    let complexFieldName: string = !isNullOrUndefined(column) && getComplexFieldID(column);
-                    let columnvalue: string = isComplex ? complexFieldName : column;
+                    const isComplex: boolean = !isNullOrUndefined(column) && isComplexField(column);
+                    const complexFieldName: string = !isNullOrUndefined(column) && getComplexFieldID(column);
+                    const columnvalue: string = isComplex ? complexFieldName : column;
                     actObj.filterType = ((<EJ2Intance>this.dlgDiv.querySelector('#' + columnvalue +
                         (inputValue.id === (columnvalue + '-xlfl-frstvalue') ?
                             '-xlfl-frstoptr' :
@@ -901,7 +908,7 @@ export class ExcelFilterBase extends CheckBoxFilterBase {
                 placeholder: this.getLocalizedLabel('CustomFilterPlaceHolder'),
                 enableRtl: isRtl,
                 actionComplete: (e: { result: { [key: string]: Object; }[] }) => {
-                    let isComplex: boolean = !isNullOrUndefined(column) && isComplexField(column);
+                    const isComplex: boolean = !isNullOrUndefined(column) && isComplexField(column);
                     e.result = e.result.filter((obj: { [key: string]: Object; }, index: number, arr: { [key: string]: Object; }[]) => {
                         return arr.map((mapObject: Object) => {
                             return isComplex ? performComplexDataOperation(actObj.fields.value, mapObject)
@@ -914,9 +921,9 @@ export class ExcelFilterBase extends CheckBoxFilterBase {
             },
             colObj.filter.params));
         if (dataSource && 'result' in dataSource) {
-            let defObj: FilterStateObj = eventPromise({ requestType: 'stringfilterrequest' }, this.getQuery());
+            const defObj: FilterStateObj = eventPromise({ requestType: 'stringfilterrequest' }, this.getQuery());
             this.parent.trigger(events.dataStateChange, defObj.state);
-            let def: Deferred = defObj.deffered;
+            const def: Deferred = defObj.deffered;
             def.promise.then((e: Object[]) => {
                 actObj.dataSource = new DataManager(e);
             });

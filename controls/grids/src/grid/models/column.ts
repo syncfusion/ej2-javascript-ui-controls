@@ -12,296 +12,309 @@ import { getUid, templateCompiler, getForeignData, getObject } from '../base/uti
  * Represents Grid `Column` model class.
  */
 export class Column {
-    /**    
-     * Defines the field name of column which is mapped with mapping name of DataSource.  
-     * The bounded columns can be sort, filter and group etc., 
-     * The `field` name must be a valid JavaScript identifier, 
+    /**
+     * Defines the field name of column which is mapped with mapping name of DataSource.
+     * The bounded columns can be sort, filter and group etc.,
+     * The `field` name must be a valid JavaScript identifier,
      * the first character must be an alphabet and should not contain spaces and special characters.
-     * @default ''    
+     *
+     * @default ''
      */
-
     public field: string;
 
-    /**    
-     * Gets the unique identifier value of the column. It is used to get the column object.   
-     * @default ''    
+    /**
+     * Gets the unique identifier value of the column. It is used to get the column object.
+     *
+     * @default ''
      */
 
     public uid: string;
 
-    /**    
-     * Gets the unique identifier value of the column. It is used to get the column object.   
-     * @default null    
+    /**
+     * Gets the unique identifier value of the column. It is used to get the column object.
+     *
+     * @default null
      */
+    public index: number;
 
-     public index: number;
-    /**    
-     * Defines the header text of column which is used to display in column header.    
-     * If `headerText` is not defined, then field name value will be assigned to header text.   
-     * @default null  
+    /**
+     * Defines the header text of column which is used to display in column header.
+     * If `headerText` is not defined, then field name value will be assigned to header text.
+     *
+     * @default null
      */
-
     public headerText: string;
 
-    /**    
-     * Defines the width of the column in pixels or percentage.    
-     * @default ''   
+    /**
+     * Defines the width of the column in pixels or percentage.
+     *
+     * @default ''
      */
-
     public width: string | number;
 
-    /**    
-     * Defines the minimum Width of the column in pixels or percentage.    
-     * @default ''    
+    /**
+     * Defines the minimum Width of the column in pixels or percentage.
+     *
+     * @default ''
      */
     public minWidth: string | number;
 
-    /**    
-     * Defines the maximum width of the column in pixel or percentage, which will restrict resizing beyond this pixel or percentage.   
-     * @default ''    
+    /**
+     * Defines the maximum width of the column in pixel or percentage, which will restrict resizing beyond this pixel or percentage.
+     *
+     * @default ''
      */
     public maxWidth: string | number;
 
-    /**    
-     * Defines the alignment of the column in both header and content cells.    
-     * @default Left  
+    /**
+     * Defines the alignment of the column in both header and content cells.
+     *
+     * @default Left
      */
-
     public textAlign: TextAlign;
 
     /**
      * Defines the cell content's overflow mode. The available modes are
-     * * `Clip` -  Truncates the cell content when it overflows its area. 
+     * * `Clip` -  Truncates the cell content when it overflows its area.
      * * `Ellipsis` -  Displays ellipsis when the cell content overflows its area.
-     * * `EllipsisWithTooltip` - Displays ellipsis when the cell content overflows its area 
+     * * `EllipsisWithTooltip` - Displays ellipsis when the cell content overflows its area
      * also it will display tooltip while hover on ellipsis applied cell.
+     *
      * @default Ellipsis
      */
     public clipMode: ClipMode;
 
-    /**   
-     * Define the alignment of column header which is used to align the text of column header.       
+    /**
+     * Define the alignment of column header which is used to align the text of column header.
+     *
      * @default null
      */
     public headerTextAlign: TextAlign;
 
-    /**    
-     * If `disableHtmlEncode` is set to true, it encodes the HTML of the header and content cells.  
-     * @default true    
+    /**
+     * If `disableHtmlEncode` is set to true, it encodes the HTML of the header and content cells.
+     *
+     * @default true
      */
-
     public disableHtmlEncode: boolean = true;
 
-    /**    
-     * Defines the data type of the column.    
+    /**
+     * Defines the data type of the column.
+     *
      * @default null
      * @blazorType ColumnType
      */
-
     public type: string;
 
-    /**    
-     * It is used to change display value with the given format and does not affect the original data.  
-     * Gets the format from the user which can be standard or custom 
-     * [`number`](../base/internationalization/#number-formatting/) 
-     * and [`date`](../base/internationalization/#date-formatting/) formats.  
+    /**
+     * It is used to change display value with the given format and does not affect the original data.
+     * Gets the format from the user which can be standard or custom
+     * [`number`](../base/internationalization/#number-formatting/)
+     * and [`date`](../base/internationalization/#date-formatting/) formats.
+     *
      * @default null
      * @aspType string
      * @blazorType string
      */
-
     public format: string | NumberFormatOptions | DateFormatOptions;
 
-    /**    
-     * If `visible` is set to false, hides the particular column. By default, columns are displayed.    
-     * @default true  
+    /**
+     * If `visible` is set to false, hides the particular column. By default, columns are displayed.
+     *
+     * @default true
      */
     public visible: boolean;
 
     /**
      * Defines the column template that renders customized element in each cell of the column.
-     * It accepts either [template string](https://ej2.syncfusion.com/documentation/common/template-engine/) or HTML element ID.   
-     * @default null    
-     */
-
-    public template: string;
-
-    /**        
-     * Defines the header template as string or HTML element ID which is used to add customized element in the column header.     
+     * It accepts either [template string](https://ej2.syncfusion.com/documentation/common/template-engine/) or HTML element ID.
+     *
      * @default null
      */
+    public template: string;
 
+    /**
+     * Defines the header template as string or HTML element ID which is used to add customized element in the column header.
+     *
+     * @default null
+     */
     public headerTemplate: string;
 
-    /**        
+    /**
      * You can use this property to freeze selected columns in grid
+     *
      * @default false
      */
     public isFrozen: boolean;
 
-    /**    
-     * If `allowSorting` set to false, then it disables sorting option of a particular column.    
-     * By default all columns are sortable. 
-     * @default true    
+    /**
+     * If `allowSorting` set to false, then it disables sorting option of a particular column.
+     * By default all columns are sortable.
+     *
+     * @default true
      */
-
     public allowSorting: boolean = true;
 
-    /**         
-     * If `allowResizing` is set to false, it disables resize option of a particular column.  
-     * By default all the columns can be resized. 
-     * @default true    
+    /**
+     * If `allowResizing` is set to false, it disables resize option of a particular column.
+     * By default all the columns can be resized.
+     *
+     * @default true
      */
-
     public allowResizing: boolean = true;
 
     /**
-     * If `allowFiltering` set to false, then it disables filtering option and filter bar element of a particular column. 
-     * By default all columns are filterable.      
-     * @default true    
+     * If `allowFiltering` set to false, then it disables filtering option and filter bar element of a particular column.
+     * By default all columns are filterable.
+     *
+     * @default true
      */
-
     public allowFiltering: boolean = true;
 
-    /**    
-     * If `allowGrouping` set to false, then it disables grouping of a particular column. 
-     * By default all columns are groupable.   
-     * @default true   
+    /**
+     * If `allowGrouping` set to false, then it disables grouping of a particular column.
+     * By default all columns are groupable.
+     *
+     * @default true
      */
-
     public allowGrouping: boolean = true;
 
 
-    /**    
-     * If `allowReordering` set to false, then it disables reorder of a particular column. 
-     * By default all columns can be reorder.   
-     * @default true   
+    /**
+     * If `allowReordering` set to false, then it disables reorder of a particular column.
+     * By default all columns can be reorder.
+     *
+     * @default true
      */
     public allowReordering: boolean = true;
 
-    /**         
-     * If `showColumnMenu` set to false, then it disable the column menu of a particular column.  
+    /**
+     * If `showColumnMenu` set to false, then it disable the column menu of a particular column.
      * By default column menu will show for all columns
-     * @default true    
+     *
+     * @default true
      */
-
     public showColumnMenu: boolean = true;
 
-    /**    
-     * If `enableGroupByFormat` set to true, then it groups the particular column by formatted values.     
-     * @default true   
+    /**
+     * If `enableGroupByFormat` set to true, then it groups the particular column by formatted values.
+     *
+     * @default true
      */
-
     public enableGroupByFormat: boolean = false;
 
-    /**    
-     * If `allowEditing` set to false, then it disables editing of a particular column. 
-     * By default all columns are editable. 
-     * @default true   
+    /**
+     * If `allowEditing` set to false, then it disables editing of a particular column.
+     * By default all columns are editable.
+     *
+     * @default true
      */
-
     public allowEditing: boolean = true;
 
-    /**    
-     * The CSS styles and attributes of the content cells of a particular column can be customized. 
-     *  
+    /**
+     * The CSS styles and attributes of the content cells of a particular column can be customized.
+     *
      * {% codeBlock src="grid/custom-attribute-api/index.ts" %}{% endcodeBlock %}
-     * @default null   
+     *
+     * @default null
      */
-
     public customAttributes: { [x: string]: Object };
 
-    /**    
-     * If `displayAsCheckBox` is set to true, it displays the column value as a check box instead of Boolean value.    
-     * @default false    
+    /**
+     * If `displayAsCheckBox` is set to true, it displays the column value as a check box instead of Boolean value.
+     *
+     * @default false
      */
-
     public displayAsCheckBox: boolean;
 
-    /**    
+    /**
      * Defines the column data source which will act as foreign data source.
-     * @default null 
+     *
+     * @default null
      */
-
     public dataSource: Object[] | DataManager | DataResult;
 
-    /**    
-     * Defines the method which is used to achieve custom formatting from an external function. 
-     * This function triggers before rendering of each cell.  
-     * {% codeBlock src="grid/formatter-api/index.ts" %}{% endcodeBlock %} 
-     * @default null   
+    /**
+     * Defines the method which is used to achieve custom formatting from an external function.
+     * This function triggers before rendering of each cell.
+     * {% codeBlock src="grid/formatter-api/index.ts" %}{% endcodeBlock %}
+     *
+     * @default null
      */
     public formatter: { new(): ICellFormatter } | ICellFormatter | Function;
 
-    /**    
-     * Defines the method used to apply custom cell values from external function and display this on each cell rendered.     
-     *     
+    /**
+     * Defines the method used to apply custom cell values from external function and display this on each cell rendered.
+     *
      * {% codeBlock src="grid/value-accessor-api/index.ts" %}{% endcodeBlock %}
-     *  
-     * @default null    
+     *
+     * @default null
      */
-
     public valueAccessor: ValueAccessor | string;
 
     /**
      * Defines the method used to apply custom header cell values from external function and display this on each header cell rendered.
-     *      
-     * @default null  
-     * @deprecated  
+     *
+     * @default null
+     * @deprecated
      */
-
     public headerValueAccessor: HeaderValueAccessor | string;
 
     /**
-     * The `filterBarTemplate` is used to add a custom component instead of default input component for filter bar.   
-     * It have create and read functions.  
-     * * create: It is used for creating custom components.  
-     * * read: It is used to perform custom filter action. 
-     *  
+     * The `filterBarTemplate` is used to add a custom component instead of default input component for filter bar.
+     * It have create and read functions.
+     * * create: It is used for creating custom components.
+     * * read: It is used to perform custom filter action.
+     *
      * {% codeBlock src="grid/filter-template-api/index.ts" %}{% endcodeBlock %}
-     * @default null    
+     *
+     * @default null
      */
-
     public filterBarTemplate: IFilterUI;
 
     /**
-     *  It is used to customize the default filter options for a specific columns. 
+     *  It is used to customize the default filter options for a specific columns.
      * * type -  Specifies the filter type as menu or checkbox.
      * * ui - to render custom component for specific column it has following functions.
-     * * ui.create – It is used for creating custom components. 
+     * * ui.create – It is used for creating custom components.
      * * ui.read -  It is used for read the value from the component.
      * * ui.write - It is used to apply component model as dynamically.
      * {% codeBlock src="grid/filter-menu-api/index.ts" %}{% endcodeBlock %}
-     * 
+     *
      * > Check the [`Filter UI`](../../grid/filtering/#custom-component-in-filter-menu) for its customization.
+     *
      *  @default {}
      */
 
     public filter: IFilter = {};
 
-    /**    
-     * Used to render multiple header rows(stacked headers) on the Grid header.     
-     * @default null    
+    /**
+     * Used to render multiple header rows(stacked headers) on the Grid header.
+     *
+     * @default null
      */
 
     public columns: Column[] | string[] | ColumnModel[];
 
-    /**    
-     * Defines the tool tip text for stacked headers.    
-     * @default null    
-     * @hidden   
+    /**
+     * Defines the tool tip text for stacked headers.
+     *
+     * @default null
+     * @hidden
      */
     public toolTip: string;
 
-    /**    
-     * If `isPrimaryKey` is set to true, considers this column as the primary key constraint.   
-     * @default false         
+    /**
+     * If `isPrimaryKey` is set to true, considers this column as the primary key constraint.
+     *
+     * @default false
      */
     public isPrimaryKey: boolean;
 
     /**
      * Column visibility can change based on [`Media Queries`](http://cssmediaqueries.com/what-are-css-media-queries.html).
      * `hideAtMedia` accepts only valid Media Queries.
+     *
      * @default ''
      */
     public hideAtMedia?: string;
@@ -310,61 +323,69 @@ export class Column {
     /**
      * If `showInColumnChooser` set to false, then hide the particular column in column chooser.
      *  By default all columns are displayed in column Chooser.
-     * @default true 
+     *
+     * @default true
      */
     public showInColumnChooser?: boolean = true;
 
-    /**    
+    /**
      * Defines the type of component for editable.
-     * @default 'stringedit'   
+     *
+     * @default 'stringedit'
      * @blazorType EditType
      * @blazorDefaultValue EditType.DefaultEdit
      */
     public editType: string;
 
-    /**    
+    /**
      * Defines rules to validate data before creating and updating.
-     * @default null         
+     *
+     * @default null
      */
     public validationRules: Object;
 
-    /**    
+    /**
      * Defines default values for the component when adding a new record to the Grid.
+     *
      * @default null
-     * @aspType object   
-     * @blazorType object      
+     * @aspType object
+     * @blazorType object
      */
     public defaultValue: string;
 
-    /**    
+    /**
      * Defines the `IEditCell` object to customize default edit cell.
-     * @default {}         
+     *
+     * @default {}
      */
     public edit: IEditCell = {};
 
-    /**    
+    /**
      * If `isIdentity` is set to true, then this column is considered as identity column.
-     * @default false         
+     *
+     * @default false
      */
     public isIdentity: boolean;
 
-    /**    
+    /**
      * Defines the display column name from the foreign data source which will be obtained from comparing local and foreign data.
-     * @default null         
+     *
+     * @default null
      */
     public foreignKeyValue: string;
 
-    /**    
+    /**
      * Defines the mapping column name of the foreign data source.
-     * If it is not defined then the `columns.field` will be considered as mapping column name 
-     * @default null         
+     * If it is not defined then the `columns.field` will be considered as mapping column name
+     *
+     * @default null
      */
     public foreignKeyField: string;
 
     /**
      * @hidden
      * Defines the commands column template as string or HTML element ID which is used to add
-     * customized command buttons in each cells of the column.        
+     * customized command buttons in each cells of the column.
      */
     public commandsTemplate: string;
 
@@ -376,6 +397,7 @@ export class Column {
      * * Save - Save the record.
      * * Cancel - Cancel the edit state.
      * {% codeBlock src="grid/command-column-api/index.ts" %}{% endcodeBlock %}
+     *
      * @default null
      */
     public commands: CommandModel[];
@@ -384,13 +406,15 @@ export class Column {
     /**
      * @hidden
      * Gets the current view foreign key data.
-     * @default [] 
+     *
+     * @default []
      */
     public columnData: Object[];
 
     /**
      * Defines the cell edit template that used as editor for a particular column.
      * It accepts either template string or HTML element ID.
+     *
      * @default null
      * @aspIgnore
      */
@@ -399,6 +423,7 @@ export class Column {
     /**
      * Defines the filter template/UI that used as filter for a particular column.
      * It accepts either template string or HTML element ID.
+     *
      * @default null
      * @aspIgnore
      */
@@ -406,17 +431,19 @@ export class Column {
     /** @hidden */
     public toJSON: Function;
 
-    /**    
+    /**
      * Defines the mapping column name of the foreign data source.
-     * If it is not defined then the `columns.field` will be considered as mapping column name 
-     * @default false         
+     * If it is not defined then the `columns.field` will be considered as mapping column name
+     *
+     * @default false
      */
     public lockColumn: boolean;
 
-    /**    
+    /**
      * If `allowSearching` set to false, then it disables Searching of a particular column.
      * By default all columns allow Searching.
-     * @default true   
+     *
+     * @default true
      */
     public allowSearching: boolean = true;
 
@@ -424,6 +451,7 @@ export class Column {
      * If `autoFit` set to true, then the particular column content width will be
      * adjusted based on its content in the initial rendering itself.
      * Setting this property as true is equivalent to calling `autoFitColumns` method in the `dataBound` event.
+     *
      * @default false
      */
     public autoFit: boolean = false;
@@ -433,6 +461,7 @@ export class Column {
      * The available built-in freeze directions are
      * * Left - Freeze the column at left side.
      * * Right - Freeze the column at right side.
+     *
      * @default null
      */
     public freeze: freezeDirection;
@@ -441,7 +470,7 @@ export class Column {
     /**
      * @hidden
      * Sets the selected state.
-     * @default false 
+     * @default false
      */
     public isSelected: boolean;
 
@@ -459,16 +488,16 @@ export class Column {
         if (isNullOrUndefined(this.uid)) {
             this.uid = getUid('grid-column');
         }
-        let valueFormatter: ValueFormatter = new ValueFormatter();
+        const valueFormatter: ValueFormatter = new ValueFormatter();
         if (options.format && ((<DateFormatOptions>options.format).skeleton || (<DateFormatOptions>options.format).format)) {
             this.setFormatter(valueFormatter.getFormatFunction(extend({}, options.format as DateFormatOptions)));
             this.setParser(valueFormatter.getParserFunction(options.format as DateFormatOptions));
         }
         this.toJSON = () => {
-            let col: object = {};
-            let skip: string[] = ['filter', 'dataSource', isBlazor() ? ' ' : 'headerText', 'template', 'headerTemplate', 'edit',
-            'editTemplate', 'filterTemplate', 'commandsTemplate', 'parent'];
-            let keys : string[] = Object.keys(this);
+            const col: object = {};
+            const skip: string[] = ['filter', 'dataSource', isBlazor() ? ' ' : 'headerText', 'template', 'headerTemplate', 'edit',
+                'editTemplate', 'filterTemplate', 'commandsTemplate', 'parent'];
+            const keys : string[] = Object.keys(this);
             for (let i: number = 0; i < keys.length; i++) {
                 if (keys[i] === 'columns') {
                     col[keys[i]] = [];
@@ -526,10 +555,10 @@ export class Column {
                     a = getObject(a, window);
                 }
                 if (this.sortDirection === 'Descending') {
-                    let z: number | string = x;
+                    const z: number | string = x;
                     x = y;
                     y = z;
-                    let obj: Object = xObj;
+                    const obj: Object = xObj;
                     xObj = yObj;
                     yObj = obj;
                 }
@@ -556,31 +585,47 @@ export class Column {
     private sortDirection: string = 'Descending';
     private freezeTable: freezeTable;
 
-    /** @hidden */
+    /**
+     * @returns {Function} returns the edit template
+     * @hidden */
     public getEditTemplate: Function = () => this.editTemplateFn;
 
-    /** @hidden */
+    /**
+     * @returns {Function} returns the filter template
+     * @hidden */
     public getFilterTemplate: Function = () => this.filterTemplateFn;
 
-    /** @hidden */
+    /**
+     * @returns {string} returns the sort direction
+     * @hidden */
     public getSortDirection(): string {
         return this.sortDirection;
     }
 
-    /** @hidden */
+    /**
+     * @param {string} direction - specifies the direction
+     * @returns {void}
+     * @hidden
+     */
     public setSortDirection(direction: string): void {
         this.sortDirection = direction;
     }
 
-    /** @hidden */
+    /**
+     * @returns {freezeTable} returns the FreezeTable
+     * @hidden */
     public getFreezeTableName(): freezeTable {
         return this.freezeTable;
     }
 
-    /** @hidden */
+    /**
+     * @param {Column} column - specifies the column
+     * @returns {void}
+     * @hidden
+     */
     public setProperties(column: Column): void {
         //Angular two way binding
-        let keys: string[] = Object.keys(column);
+        const keys: string[] = Object.keys(column);
         for (let i: number = 0; i < keys.length; i++) {
             this[keys[i]] = column[keys[i]];
             //Refresh the react columnTemplates on state change
@@ -592,13 +637,14 @@ export class Column {
 
     /**
      * Defines the custom sort comparer function.
-     * The sort comparer function has the same functionality like 
+     * The sort comparer function has the same functionality like
      * [`Array.sort`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/sort) sort comparer.
      * {% codeBlock src="grid/sort-comparer-api/index.ts" %}{% endcodeBlock %}
      */
     public sortComparer: SortComparer | string;
 
     /**
+     * @returns {boolean} returns true for foreign column
      * @hidden
      * It defines the column is foreign key column or not.
      */
@@ -606,35 +652,56 @@ export class Column {
         return !!(this.dataSource && this.foreignKeyValue);
     }
 
-    /** @hidden */
+    /**
+     * @returns {Function} returns the function
+     * @hidden
+     */
     public getFormatter(): Function {
         return this.formatFn;
     }
-    /** @hidden */
+    /**
+     * @param {Function} value - specifies the value
+     * @returns {void}
+     * @hidden
+     */
     public setFormatter(value: Function): void {
         this.formatFn = value;
     }
-    /** @hidden */
+    /**
+     * @returns {Function} returns the function
+     * @hidden */
     public getParser(): Function {
         return this.parserFn;
     }
-    /** @hidden */
+    /**
+     * @param {Function} value - specifies the value
+     * @returns {void}
+     * @hidden
+     */
     public setParser(value: Function): void {
         this.parserFn = value;
     }
-    /** @hidden */
+    /**
+     * @returns {Function} returns the function
+     * @hidden */
     public getColumnTemplate(): Function {
         return this.templateFn;
     }
-    /** @hidden */
+    /**
+     * @returns {Function} returns the function
+     * @hidden */
     public getHeaderTemplate(): Function {
         return this.headerTemplateFn;
     }
-    /** @hidden */
+    /**
+     * @returns {Function} returns the function
+     * @hidden */
     public getFilterItemTemplate(): Function {
         return this.fltrTemplateFn;
     }
-    /** @hidden */
+    /**
+     * @returns {string} returns the string
+     * @hidden */
     public getDomSetter(): string {
         return this.disableHtmlEncode ? 'textContent' : 'innerHTML';
     }
@@ -645,195 +712,218 @@ export class Column {
  */
 export interface ColumnModel {
 
-    /**    
-     * Defines the field name of column which is mapped with mapping name of DataSource.  
-     * The bounded columns can be sort, filter and group etc., 
-     * If the `field` name contains “dot”, then it is considered as complex binding. 
-     * The `field` name must be a valid JavaScript identifier, 
+    /**
+     * Defines the field name of column which is mapped with mapping name of DataSource.
+     * The bounded columns can be sort, filter and group etc.,
+     * If the `field` name contains “dot”, then it is considered as complex binding.
+     * The `field` name must be a valid JavaScript identifier,
      * the first character must be an alphabet and should not contain spaces and special characters.
-     * @default ''    
+     *
+     * @default ''
      */
     field?: string;
 
-    /**    
-     * Gets the unique identifier value of the column. It is used to get the object.   
-     * @default ''    
+    /**
+     * Gets the unique identifier value of the column. It is used to get the object.
+     *
+     * @default ''
      */
     uid?: string;
 
-    /**    
-     * Gets the unique identifier value of the column. It is used to get the object.   
-     * @default null    
+    /**
+     * Gets the unique identifier value of the column. It is used to get the object.
+     *
+     * @default null
      */
     index?: number;
 
-    /**    
-     * Defines the header text of column which is used to display in column header.    
-     * If `headerText` is not defined, then field name value will be assigned to header text.   
-     * @default null  
+    /**
+     * Defines the header text of column which is used to display in column header.
+     * If `headerText` is not defined, then field name value will be assigned to header text.
+     *
+     * @default null
      */
     headerText?: string;
 
-    /**    
-     * Defines the width of the column in pixels or percentage.    
-     * @default ''    
+    /**
+     * Defines the width of the column in pixels or percentage.
+     *
+     * @default ''
      */
     width?: string | number;
 
-    /**    
-     * Defines the minimum width of the column in pixels or percentage.    
-     * @default ''    
+    /**
+     * Defines the minimum width of the column in pixels or percentage.
+     *
+     * @default ''
      */
     minWidth?: string | number;
-    /**    
-     * Defines the maximum width of the column in pixel or percentage, which will restrict resizing beyond this pixel or percentage.  
-     * @default ''    
+    /**
+     * Defines the maximum width of the column in pixel or percentage, which will restrict resizing beyond this pixel or percentage.
+     *
+     * @default ''
      */
     maxWidth?: string | number;
-    /**   
-     * Defines the alignment of the column in both header and content cells.    
-     * @default Left 
+    /**
+     * Defines the alignment of the column in both header and content cells.
+     *
+     * @default Left
      */
     textAlign?: TextAlign;
 
-    /**   
+    /**
      * Defines the cell content's overflow mode. The available modes are
-     * * `Clip` -  Truncates the cell content when it overflows its area. 
+     * * `Clip` -  Truncates the cell content when it overflows its area.
      * * `Ellipsis` -  Displays ellipsis when the cell content overflows its area.
-     * * `EllipsisWithTooltip` - Displays ellipsis when the cell content overflows its area 
+     * * `EllipsisWithTooltip` - Displays ellipsis when the cell content overflows its area
      * also it will display tooltip while hover on ellipsis applied cell.
-     * @default Ellipsis 
+     *
+     * @default Ellipsis
      */
     clipMode?: ClipMode;
 
-    /**   
+    /**
      * Define the alignment of column header which is used to align the text of column header.
+     *
      * @aspdefaultvalueignore
      * @blazorDefaultValueIgnore
      * @default null
      */
     headerTextAlign?: TextAlign;
 
-    /**    
-     * If `disableHtmlEncode` is set to true, it encodes the HTML of the header and content cells.  
-     * @default true    
+    /**
+     * If `disableHtmlEncode` is set to true, it encodes the HTML of the header and content cells.
+     *
+     * @default true
      */
     disableHtmlEncode?: boolean;
 
-    /**    
-     * Defines the data type of the column.    
-     * @default null   
-     * @blazorType ColumnType 
+    /**
+     * Defines the data type of the column.
+     *
+     * @default null
+     * @blazorType ColumnType
      */
     type?: string;
 
-    /**    
-     * It is used to change display value with the given format and does not affect the original data.   
-     * Gets the format from the user which can be standard or custom 
-     * [`number`](../../common/internationalization/#manipulating-numbers) 
-     * and [`date`](../../common/internationalization/#manipulating-datetime) formats.  
+    /**
+     * It is used to change display value with the given format and does not affect the original data.
+     * Gets the format from the user which can be standard or custom
+     * [`number`](../../common/internationalization/#manipulating-numbers)
+     * and [`date`](../../common/internationalization/#manipulating-datetime) formats.
+     *
      * @default null
      * @aspType string
      * @blazorType string
      */
     format?: string | NumberFormatOptions | DateFormatOptions;
 
-    /**    
-     * If `visible` is set to false, hides the particular column. By default, all columns are displayed.      
-     * @default true    
+    /**
+     * If `visible` is set to false, hides the particular column. By default, all columns are displayed.
+     *
+     * @default true
      */
     visible?: boolean;
 
     /**
      * Defines the column template that renders customized element in each cell of the column.
-     * It accepts either [template string](../../common/template-engine/) or HTML element ID.   
-     * @default null    
+     * It accepts either [template string](../../common/template-engine/) or HTML element ID.
+     *
+     * @default null
      */
     template?: string;
 
-    /**        
-     * Defines the column template as string or HTML element ID which is used to add customized element in the column header.      
-     * @default null         
+    /**
+     * Defines the column template as string or HTML element ID which is used to add customized element in the column header.
+     *
+     * @default null
      */
-
     headerTemplate?: string;
 
-    /**        
+    /**
      * You can use this property to freeze selected columns in grid.
+     *
      * @default false
      */
     isFrozen?: boolean;
 
-    /**    
-     * If `allowSorting` set to false, then it disables sorting option of a particular column.  
-     * By default all columns are sortable. 
-     * @default true    
+    /**
+     * If `allowSorting` set to false, then it disables sorting option of a particular column.
+     * By default all columns are sortable.
+     *
+     * @default true
      */
     allowSorting?: boolean;
 
-    /**         
-     * If `allowResizing` set to false, it disables resize option of a particular column. 
-     * @default true    
+    /**
+     * If `allowResizing` set to false, it disables resize option of a particular column.
+     *
+     * @default true
      */
     allowResizing?: boolean;
 
-    /**         
-     * If `showColumnMenu` set to false, then it disable the column menu of a particular column.  
+    /**
+     * If `showColumnMenu` set to false, then it disable the column menu of a particular column.
      * By default column menu will show for all columns
-     * @default true    
+     *
+     * @default true
      */
-
     showColumnMenu?: boolean;
 
-    /**    
-     * If `allowFiltering` set to false, then it disables filtering option and filter bar element of a particular column. 
-     * By default all columns are filterable.  
-     * @default true    
+    /**
+     * If `allowFiltering` set to false, then it disables filtering option and filter bar element of a particular column.
+     * By default all columns are filterable.
+     *
+     * @default true
      */
     allowFiltering?: boolean;
 
-    /**    
-     * If `allowGrouping` set to false, then it disables grouping of a particular column. 
-     * By default all columns are groupable. 
-     * @default true   
+    /**
+     * If `allowGrouping` set to false, then it disables grouping of a particular column.
+     * By default all columns are groupable.
+     *
+     * @default true
      */
     allowGrouping?: boolean;
 
-    /**    
-     * If `allowReordering` set to false, then it disables reorder of a particular column. 
-     * By default all columns can be reorder. 
-     * @default true   
+    /**
+     * If `allowReordering` set to false, then it disables reorder of a particular column.
+     * By default all columns can be reorder.
+     *
+     * @default true
      */
     allowReordering?: boolean;
 
-    /**    
-     * If `enableGroupByFormat` set to true, then it groups the particular column by formatted values. 
-     * By default no columns are group by format.   
-     * @default true   
+    /**
+     * If `enableGroupByFormat` set to true, then it groups the particular column by formatted values.
+     * By default no columns are group by format.
+     *
+     * @default true
      */
     enableGroupByFormat?: boolean;
 
-    /**    
-     * If `allowEditing` set to false, then it disables editing of a particular column. 
-     * By default all columns are editable.   
-     * @default true   
+    /**
+     * If `allowEditing` set to false, then it disables editing of a particular column.
+     * By default all columns are editable.
+     *
+     * @default true
      */
     allowEditing?: boolean;
 
     /**
      * @hidden
      * Gets the current view foreign key data.
-     * @default [] 
+     * @default []
      */
     columnData?: Object[];
 
-    /**   
-     * The CSS styles and attributes of the content cells of a particular column can be customized.   
-     * 
+    /**
+     * The CSS styles and attributes of the content cells of a particular column can be customized.
+     *
      * ```html
      * <div id="Grid"></div>
      * ```
-     * ```typescript 
+     * ```typescript
      * let gridObj: Grid = new Grid({
      * dataSource: filterData,
      * columns: [
@@ -847,32 +937,34 @@ export interface ColumnModel {
      * });
      * gridObj.appendTo('#Grid');
      * ```
-     * 
-     * @default null  
+     *
+     * @default null
      */
 
     customAttributes?: { [x: string]: Object };
 
-    /**    
-     * If `displayAsCheckBox` is set to true, it displays the column value as a check box instead of Boolean value.    
-     * @default false    
+    /**
+     * If `displayAsCheckBox` is set to true, it displays the column value as a check box instead of Boolean value.
+     *
+     * @default false
      */
     displayAsCheckBox?: boolean;
 
-    /**    
+    /**
      * Defines the column data source  which will act as foreign data source.
-     * @default null 
+     *
+     * @default null
      */
     dataSource?: Object[] | DataManager | DataResult;
 
-    /**    
-     * Defines the method which is used to achieve custom formatting from an external function. 
-     * This function triggers before rendering of each cell. 
-     * 
+    /**
+     * Defines the method which is used to achieve custom formatting from an external function.
+     * This function triggers before rendering of each cell.
+     *
      * ```html
      * <div id="Grid"></div>
      * ```
-     * ```typescript 
+     * ```typescript
      * class ExtendedFormatter implements ICellFormatter {
      * public getValue(column: Column, data: Object): Object {
      *   return '<span style="color:' + (data['Verified'] ? 'green' : 'red') + '"><i>' + data['Verified'] + '</i><span>';
@@ -886,14 +978,14 @@ export interface ColumnModel {
      * });
      * gridObj.appendTo('#Grid');
      * ```
-     * 
-     * @default null  
+     *
+     * @default null
      */
     formatter?: { new(): ICellFormatter } | ICellFormatter | Function;
 
-    /**    
-     * Defines the method used to apply custom cell values from external function and display this on each cell rendered.     
-     *     
+    /**
+     * Defines the method used to apply custom cell values from external function and display this on each cell rendered.
+     *
      * ```html
      * <div id="Grid"></div>
      * ```
@@ -902,21 +994,21 @@ export interface ColumnModel {
      * dataSource: [{ EmployeeID: 1, EmployeeName: ['John', 'M'] }, { EmployeeID: 2, EmployeeName: ['Peter', 'A'] }],
      * columns: [
      *     { field: 'EmployeeID', headerText: 'Employee ID' },
-     *     { field: 'EmployeeName', headerText: 'Employee First Name', 
+     *     { field: 'EmployeeName', headerText: 'Employee First Name',
      *       valueAccessor: (field: string, data: Object, column: Column) => {
      *             return data['EmployeeName'][0];
      *         },
      *     }]
-     * }); 
+     * });
      * ```
-     *  
-     * @default null    
+     *
+     * @default null
      */
     valueAccessor?: ValueAccessor | string;
 
-    /**    
-     * Defines the method used to apply custom header cell values from external function and display this on each cell rendered.     
-     *     
+    /**
+     * Defines the method used to apply custom header cell values from external function and display this on each cell rendered.
+     *
      * ```html
      * <div id="Grid"></div>
      * ```
@@ -925,42 +1017,42 @@ export interface ColumnModel {
      * dataSource: [{ EmployeeID: 1, EmployeeName: ['John', 'M'] }, { EmployeeID: 2, EmployeeName: ['Peter', 'A'] }],
      * columns: [
      *     { field: 'EmployeeID', headerText: 'Employee ID' },
-     *     { field: 'EmployeeName', headerText: 'Employee First Name', 
+     *     { field: 'EmployeeName', headerText: 'Employee First Name',
      *       headerValueAccessor: (field: string,column: Column) => {
      *             return "newheadername";
      *         },
      *     }]
-     * }); 
+     * });
      * ```
-     *  
+     *
      * @default null
-     * @deprecated  
+     * @deprecated
      */
     headerValueAccessor?: HeaderValueAccessor | string;
 
-    /**    
-     * The `filterBarTemplate` is used to add a custom component instead of default input component for filter bar.   
-     * It have create and read functions.  
-     * * create: It is used for creating custom components.  
-     * * read: It is used to perform custom filter action. 
-     * 
+    /**
+     * The `filterBarTemplate` is used to add a custom component instead of default input component for filter bar.
+     * It have create and read functions.
+     * * create: It is used for creating custom components.
+     * * read: It is used to perform custom filter action.
+     *
      * ```html
      * <div id="Grid"></div>
      * ```
-     * ```typescript 
+     * ```typescript
      * let gridObj: Grid = new Grid({
      * dataSource: filterData,
      * columns: [
      *   { field: 'OrderID', headerText: 'Order ID' },
      *   {
      *      field: 'EmployeeID', filterBarTemplate: {
-     *         create: (args: { element: Element, column: Column }) => {                    
+     *         create: (args: { element: Element, column: Column }) => {
      *              let input: HTMLInputElement = document.createElement('input');
      *              input.id = 'EmployeeID';
      *              input.type = 'text';
      *              return input;
      *         },
-     *         write: (args: { element: Element, column: Column }) => {                    
+     *         write: (args: { element: Element, column: Column }) => {
      *             args.element.addEventListener('input', args.column.filterBarTemplate.read as EventListener);
      *         },
      *         read: (args: { element: HTMLInputElement, columnIndex: number, column: Column }) => {
@@ -972,94 +1064,107 @@ export interface ColumnModel {
      * });
      * gridObj.appendTo('#Grid');
      * ```
-     * 
-     * @default null   
+     *
+     * @default null
      */
     filterBarTemplate?: IFilterUI;
 
     /**
      *  Defines the filter options to customize filtering for the particular column.
+     *
      *  @default null
      */
 
     filter?: IFilter;
 
-    /**    
-     * Used to render multiple header rows(stacked headers) on the Grid header.          
-     * @default null    
+    /**
+     * Used to render multiple header rows(stacked headers) on the Grid header.
+     *
+     * @default null
      */
     columns?: Column[] | string[] | ColumnModel[];
 
-    /**    
-     * Defines the tool tip text for stacked headers.    
-     * @hidden   
-     * @default null    
+    /**
+     * Defines the tool tip text for stacked headers.
+     *
+     * @hidden
+     * @default null
      */
     toolTip?: string;
 
-    /**    
-     * If `isPrimaryKey` is set to true, considers this column as the primary key constraint.   
-     * @default false         
+    /**
+     * If `isPrimaryKey` is set to true, considers this column as the primary key constraint.
+     *
+     * @default false
      */
     isPrimaryKey?: boolean;
 
-    /**    
+    /**
      * Defines the type of component for editing.
-     * @default 'stringedit'  
-     * @blazorType EditType  
+     *
+     * @default 'stringedit'
+     * @blazorType EditType
      * @blazorDefaultValue EditType.DefaultEdit
      */
     editType?: string;
 
-    /**    
+    /**
      * `editType`(../../grid/edit/#cell-edit-type-and-its-params) Defines rules to validate data before creating and updating.
-     * @default null         
+     *
+     * @default null
      */
     validationRules?: Object;
 
-    /**    
+    /**
      * Defines default values for the component when adding a new record to the Grid.
-     * @default null      
-     * @aspType object   
+     *
+     * @default null
+     * @aspType object
      * @blazorType object
      */
     defaultValue?: string;
 
-    /**    
+    /**
      * Defines the `IEditCell`(../../grid/edit/#cell-edit-template) object to customize default edit cell.
-     * @default {}         
+     *
+     * @default {}
      */
     edit?: IEditCell;
 
-    /**    
+    /**
      * If `isIdentity` is set to true, then this column is considered as identity column.
-     * @default false         
+     *
+     * @default false
      */
     isIdentity?: boolean;
 
-    /**    
+    /**
      * Defines the mapping column name of the foreign data source.
-     * If it is not defined then the `columns.field` will be considered as mapping column name 
-     * @default null         
+     * If it is not defined then the `columns.field` will be considered as mapping column name
+     *
+     * @default null
      */
     foreignKeyField?: string;
 
-    /**    
-     * Defines the display column name from the foreign data source which will be obtained from comparing local and foreign data 
-     * @default null         
+    /**
+     * Defines the display column name from the foreign data source which will be obtained from comparing local and foreign data
+     *
+     * @default null
      */
     foreignKeyValue?: string;
 
     /**
-     * column visibility can change based on its [`Media Queries`](http://cssmediaqueries.com/what-are-css-media-queries.html). 
+     * column visibility can change based on its [`Media Queries`](http://cssmediaqueries.com/what-are-css-media-queries.html).
      * `hideAtMedia` accepts only valid Media Queries.
+     *
      * @default ''
      */
     hideAtMedia?: string;
 
-    /**    
+    /**
      * If `showInColumnChooser` set to false, then hides the particular column in column chooser.
      * By default all columns are displayed in column Chooser.
+     *
      * @default true
      */
     showInColumnChooser?: boolean;
@@ -1067,7 +1172,7 @@ export interface ColumnModel {
     /**
      * @hidden
      * Defines the commands column template as string or HTML element ID which is used to add
-     * customized command buttons in each cells of the column.        
+     * customized command buttons in each cells of the column.
      */
     commandsTemplate?: string;
 
@@ -1099,6 +1204,7 @@ export interface ColumnModel {
      * ]
      * gridObj.appendTo("#Grid");
      * ```
+     *
      * @default null
      */
     commands?: CommandModel[];
@@ -1118,6 +1224,7 @@ export interface ColumnModel {
     /**
      * Defines the cell edit template that used as editor for a particular column.
      * It accepts either template string or HTML element ID.
+     *
      * @aspIgnore
      */
     editTemplate?: string;
@@ -1125,21 +1232,24 @@ export interface ColumnModel {
     /**
      * Defines the filter template/UI that used as filter for a particular column.
      * It accepts either template string or HTML element ID.
+     *
      * @aspIgnore
      */
     filterTemplate?: string;
 
     /**
      * Defines the mapping column name of the foreign data source.
-     * If it is not defined then the `columns.field` will be considered as mapping column name 
-     * @default false         
+     * If it is not defined then the `columns.field` will be considered as mapping column name
+     *
+     * @default false
      */
     lockColumn?: boolean;
 
-    /**    
+    /**
      * If `allowSearching` set to false, then it disables Searching of a particular column.
      * By default all columns allow Searching.
-     * @default true   
+     *
+     * @default true
      */
     allowSearching?: boolean;
 
@@ -1147,7 +1257,8 @@ export interface ColumnModel {
      * If `autoFit` set to true, then the particular column content width will be
      * adjusted based on its content in the initial rendering itself.
      * Setting this property as true is equivalent to calling `autoFitColumns` method in the `dataBound` event.
-     * @default false  
+     *
+     * @default false
      */
     autoFit?: boolean;
 
@@ -1183,10 +1294,12 @@ export interface ActionEventArgs {
     /** Defines the direction of sort column. */
     direction?: SortDirection;
     /** Defines the record objects.
+     *
      * @isGenericType true
      */
     data?: Object;
     /** Defines the previous data.
+     *
      * @isGenericType true
      */
     previousData?: Object;
@@ -1195,6 +1308,7 @@ export interface ActionEventArgs {
     /** Added row index */
     index?: number;
     /** Defines the record objects.
+     *
      * @isGenericType true
      */
     rowData?: Object;
@@ -1224,8 +1338,9 @@ export interface ActionEventArgs {
     rowIndex?: number;
     /** Defines take number of data while Filtering */
     filterChoiceCount: number;
-    /**  
+    /**
      * Defines the excel search operator
+     *
      * @blazorType Syncfusion.Blazor.Operator
      * @blazorDefaultValue Syncfusion.Blazor.Operator.None
      */
@@ -1236,18 +1351,19 @@ export interface ActionEventArgs {
  * Define options for custom command buttons.
  */
 export class CommandColumnModel {
-    /**  
+    /**
      * Define the command Button tooltip.
      */
     @Property()
     public title: string;
-    /**  
+    /**
      * Define the command Button type.
+     *
      * @blazorDefaultValue none
      */
     @Property()
     public type: CommandButtonType;
-    /**  
+    /**
      * Define the button model
      */
     @Property()

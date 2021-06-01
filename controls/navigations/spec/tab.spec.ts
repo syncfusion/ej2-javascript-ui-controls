@@ -1817,6 +1817,75 @@ describe('Tab Control', () => {
             expect(element.children.item(1).classList.contains('e-tab-header')).toEqual(true);
             expect(element.children.item(1).classList.contains('e-toolbar')).toEqual(true);
         });
+        it('Items - headerPlacement and overflowMode property testing', () => {
+            tab = new Tab({
+                headerPlacement: 'Top',
+                height: '100px',
+                width: '200px',
+                overflowMode: 'Popup',
+                items: [
+                    { header: { "text": "item1" }, content: "Content1" },
+                    { header: { "text": "item2" }, content: "Content2" },
+                    { header: { "text": "item3" }, content: "Content3" },
+                    { header: { "text": "item4" }, content: "Content4" },
+                    { header: { "text": "item5" }, content: "Content5" },
+                    { header: { "text": "item6" }, content: "Content6" },
+                    { header: { "text": "item7" }, content: "Content7" },
+                    { header: { "text": "item8" }, content: "Content8" },
+                    { header: { "text": "item9" }, content: "Content9" },
+                    { header: { "text": "item10" }, content: "Content10" }
+                ]
+            });
+            tab.appendTo('#ej2Tab');
+            let element: HTMLElement = document.getElementById('ej2Tab');
+            expect(element.querySelectorAll('.e-toolbar-item').item(0).classList.contains('e-active')).toEqual(true);
+            expect((<HTMLElement>element.querySelector('.e-toolbar-items').firstChild).classList.contains('e-indicator')).toEqual(true);
+            expect((<HTMLElement>element.querySelector('.e-toolbar-items').firstChild).classList.contains('e-ignore')).toEqual(true);
+            expect((<HTMLElement>element.querySelector('.e-toolbar-items').firstChild).classList.contains('e-hidden')).toEqual(false);
+            expect(element.children.item(0).classList.contains('e-tab-header')).toEqual(true);
+            expect(element.getAttribute('aria-orientation')).toEqual('horizontal');
+            expect(tab.headerPlacement).toEqual('Top');
+            tab.select(8);
+            tab.headerPlacement = 'Left';
+            tab.dataBind();
+            expect(element.querySelectorAll('.e-toolbar-item').item(4).classList.contains('e-active')).toEqual(true);
+            expect((<HTMLElement>element.querySelector('.e-toolbar-items').firstChild).classList.contains('e-indicator')).toEqual(true);
+            expect((<HTMLElement>element.querySelector('.e-toolbar-items').firstChild).classList.contains('e-ignore')).toEqual(true);
+            expect((<HTMLElement>element.querySelector('.e-toolbar-items').firstChild).classList.contains('e-hidden')).toEqual(false);
+            expect(tab.headerPlacement).toEqual('Left');
+            expect(element.getAttribute('aria-orientation')).toEqual('vertical');
+            expect(element.classList.contains('e-vertical-tab')).toEqual(true);
+            expect(element.querySelectorAll('.e-tab-header').length).toEqual(1);
+            expect(element.children.item(0).classList.contains('e-tab-header')).toEqual(true);
+            expect(element.children.item(0).classList.contains('e-vertical')).toEqual(true);
+            expect(element.children.item(0).classList.contains('e-vertical-left')).toEqual(true);
+            tab.headerPlacement = 'Bottom';
+            tab.dataBind();
+            expect(element.querySelectorAll('.e-toolbar-item').item(3).classList.contains('e-active')).toEqual(true);
+            expect((<HTMLElement>element.querySelector('.e-toolbar-items').firstChild).classList.contains('e-indicator')).toEqual(true);
+            expect((<HTMLElement>element.querySelector('.e-toolbar-items').firstChild).classList.contains('e-ignore')).toEqual(true);
+            expect((<HTMLElement>element.querySelector('.e-toolbar-items').firstChild).classList.contains('e-hidden')).toEqual(false);
+            expect(tab.headerPlacement).toEqual('Bottom');
+            expect(element.getAttribute('aria-orientation')).toEqual('horizontal');
+            expect(element.classList.contains('e-vertical-tab')).toEqual(false);
+            expect(element.querySelectorAll('.e-tab-header').length).toEqual(1);
+            expect(element.children.item(1).classList.contains('e-tab-header')).toEqual(true);
+            expect(element.children.item(1).classList.contains('e-vertical')).toEqual(false);
+            expect(element.children.item(1).classList.contains('e-vertical-right')).toEqual(false);
+            tab.headerPlacement = 'Right';
+            tab.dataBind();
+            expect(element.querySelectorAll('.e-toolbar-item').item(4).classList.contains('e-active')).toEqual(true);
+            expect((<HTMLElement>element.querySelector('.e-toolbar-items').firstChild).classList.contains('e-indicator')).toEqual(true);
+            expect((<HTMLElement>element.querySelector('.e-toolbar-items').firstChild).classList.contains('e-ignore')).toEqual(true);
+            expect((<HTMLElement>element.querySelector('.e-toolbar-items').firstChild).classList.contains('e-hidden')).toEqual(false);
+            expect(tab.headerPlacement).toEqual('Right');
+            expect(element.getAttribute('aria-orientation')).toEqual('vertical');
+            expect(element.classList.contains('e-vertical-tab')).toEqual(true);
+            expect(element.querySelectorAll('.e-tab-header').length).toEqual(1);
+            expect(element.children.item(0).classList.contains('e-tab-header')).toEqual(true);
+            expect(element.children.item(0).classList.contains('e-vertical')).toEqual(true);
+            expect(element.children.item(0).classList.contains('e-vertical-right')).toEqual(true);
+        });
     });
     describe('enableRTL property testing', () => {
         let tab: Tab;

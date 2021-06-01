@@ -4,6 +4,7 @@ import { DropDownList, ChangeEventArgs } from '@syncfusion/ej2-dropdowns';
 
 /**
  * IPager interface
+ *
  * @hidden
  */
 export interface IPager {
@@ -11,18 +12,22 @@ export interface IPager {
         value: number | string | boolean
     };
 }
+
 /**
- * `PagerDropDown` module handles selected pageSize from DropDownList. 
+ * `PagerDropDown` module handles selected pageSize from DropDownList.
  */
 export class PagerDropDown {
-    //Internal variables    
+    //Internal variables
     private pagerCons: HTMLElement;
     private dropDownListObject: DropDownList;
     private pagerDropDownDiv: HTMLElement;
     //Module declarations
     private pagerModule: Pager;
+
     /**
      * Constructor for pager module
+     *
+     * @param {Pager} pagerModule - specifies the pagermodule
      * @hidden
      */
     constructor(pagerModule?: Pager) {
@@ -30,7 +35,9 @@ export class PagerDropDown {
     }
 
     /**
-     * For internal use only - Get the module name. 
+     * For internal use only - Get the module name.
+     *
+     * @returns {string} returns the module name
      * @private
      * @hidden
      */
@@ -40,26 +47,28 @@ export class PagerDropDown {
 
     /**
      * The function is used to render pager dropdown
+     *
+     * @returns {void}
      * @hidden
      */
     public render(): void {
-        let pagerObj: Pager = this.pagerModule;
+        const pagerObj: Pager = this.pagerModule;
         this.pagerDropDownDiv = createElement('div', { className: 'e-pagesizes' });
-        let dropDownDiv: Element = createElement('div', { className: 'e-pagerdropdown' });
-        let defaultTextDiv: Element = createElement('div', { className: 'e-pagerconstant' });
-        let input: HTMLElement = createElement('input', { attrs: { type: 'text', tabindex: '1' } });
+        const dropDownDiv: Element = createElement('div', { className: 'e-pagerdropdown' });
+        const defaultTextDiv: Element = createElement('div', { className: 'e-pagerconstant' });
+        const input: HTMLElement = createElement('input', { attrs: { type: 'text', tabindex: '1' } });
         this.pagerCons = createElement('span', { className: 'e-constant', innerHTML: isBlazor() ?
-        this.pagerModule.getLocalizedLabel('PagerDropDown') :
-        this.pagerModule.getLocalizedLabel('pagerDropDown') });
+            this.pagerModule.getLocalizedLabel('PagerDropDown') :
+            this.pagerModule.getLocalizedLabel('pagerDropDown') });
         dropDownDiv.appendChild(input);
         defaultTextDiv.appendChild(this.pagerCons);
         this.pagerDropDownDiv.appendChild(dropDownDiv);
         this.pagerDropDownDiv.appendChild(defaultTextDiv);
         this.pagerModule.element.appendChild(this.pagerDropDownDiv);
-        let pageSizesModule: boolean | (number | string)[] = this.pagerModule.pageSizes;
-        let pageSizesArray: string[] = ((<string[]>pageSizesModule).length ? this.convertValue(pageSizesModule as string[]) :
+        const pageSizesModule: boolean | (number | string)[] = this.pagerModule.pageSizes;
+        const pageSizesArray: string[] = ((<string[]>pageSizesModule).length ? this.convertValue(pageSizesModule as string[]) :
             [this.pagerModule.getLocalizedLabel('All'), '5', '10', '12', '20']) as string[];
-        let defaultValue: Number | String = this.pagerModule.pageSize;
+        const defaultValue: number | string = this.pagerModule.pageSize;
         this.dropDownListObject = new DropDownList({
             dataSource: pageSizesArray,
             value: defaultValue.toString() as string,
@@ -75,8 +84,12 @@ export class PagerDropDown {
         pagerObj.trigger('dropDownChanged', { pageSize: defaultValue });
         this.addEventListener();
     }
+
     /**
-     * For internal use only - Get the pagesize. 
+     * For internal use only - Get the pagesize.
+     *
+     * @param {ChangeEventArgs} e - specifies the changeeventargs
+     * @returns {void}
      * @private
      * @hidden
      */
@@ -97,25 +110,27 @@ export class PagerDropDown {
         this.pagerModule.dataBind();
         this.pagerModule.trigger('dropDownChanged', { pageSize: parseInt(this.dropDownListObject.value as string, 10) });
     }
+
     public refresh(): void {
         if (this.pagerCons) {
-        if (this.pagerModule.pageSize === this.pagerModule.totalRecordsCount) {
-            this.pagerCons.innerHTML = isBlazor() ? this.pagerModule.getLocalizedLabel('PagerAllDropDown') :
-                this.pagerModule.getLocalizedLabel('pagerAllDropDown');
-        } else {
-            this.pagerCons.innerHTML = isBlazor() ? this.pagerModule.getLocalizedLabel('PagerDropDown') :
-                this.pagerModule.getLocalizedLabel('pagerDropDown');
-        } }
+            if (this.pagerModule.pageSize === this.pagerModule.totalRecordsCount) {
+                this.pagerCons.innerHTML = isBlazor() ? this.pagerModule.getLocalizedLabel('PagerAllDropDown') :
+                    this.pagerModule.getLocalizedLabel('pagerAllDropDown');
+            } else {
+                this.pagerCons.innerHTML = isBlazor() ? this.pagerModule.getLocalizedLabel('PagerDropDown') :
+                    this.pagerModule.getLocalizedLabel('pagerDropDown');
+            }
+        }
     }
 
     private beforeValueChange(prop: IPager): void {
         if (typeof prop.newProp.value === 'number') {
-            let val: string = prop.newProp.value.toString();
+            const val: string = prop.newProp.value.toString();
             prop.newProp.value = val;
         }
     }
     private convertValue(pageSizeValue: (number | string)[]): (number | string)[] {
-        let item: (number | string)[] = pageSizeValue;
+        const item: (number | string)[] = pageSizeValue;
         for (let i: number = 0; i < item.length; i++) {
             item[i] = parseInt(item[i] as string, 10) ? item[i].toString() : (this.pagerModule.getLocalizedLabel(item[i] as string) !== '')
                 ? this.pagerModule.getLocalizedLabel(item[i] as string) : item[i];
@@ -137,10 +152,13 @@ export class PagerDropDown {
 
     /**
      * To destroy the Pagerdropdown
-     * @method destroy
-     * @return {void} 
-     * @hidden 
+     *
+     * @param {string} args - specifies the arguments
+     * @param {string} args.requestType - specfies the request type
+     * @returns {void}
+     * @hidden
      */
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     public destroy(args?: { requestType: string }): void {
         if (this.dropDownListObject && !this.dropDownListObject.isDestroyed) {
             this.removeEventListener();

@@ -1107,7 +1107,9 @@ export class TextMarkupAnnotation {
             const x: number = bound.X ? bound.X : bound.left;
             const y: number = bound.Y ? bound.Y : bound.top;
             const width: number = bound.Width ? bound.Width : bound.width;
-            const height: number = bound.Height ? bound.Height : bound.height;
+            let height: number = bound.Height ? bound.Height : bound.height;
+            // The highlighted position is slightly increased. So Subtract -1 from the height. 
+            height = height - 1;
             if (context.canvas.id === this.pdfViewer.element.id + '_print_annotation_layer_' + pageIndex) {
                 if (isPrint) {
                     // eslint-disable-next-line max-len

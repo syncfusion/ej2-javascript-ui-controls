@@ -3,7 +3,7 @@ import { spreadsheetDestroyed, IRowRenderer, HideShowEventArgs, ICellRenderer, C
 import { autoFit, hideShow, virtualContentLoaded, completeAction, setScrollEvent, onContentScroll, skipHiddenIdx } from '../common/index';
 import { beginAction, hiddenMerge, updateTableWidth } from '../common/index';
 import { SheetModel, getCellAddress, isHiddenRow, setRow, setColumn, isHiddenCol, getRangeAddress, getCell } from '../../workbook/index';
-import { getCellIndexes, getColumnWidth, applyCellFormat, CellFormatArgs, CellModel, MergeArgs } from '../../workbook/index';
+import { getCellIndexes, getColumnWidth, applyCellFormat, CellFormatArgs, CellModel, MergeArgs, refreshChart } from '../../workbook/index';
 import { activeCellMergedRange, setMerge } from '../../workbook/index';
 import { detach } from '@syncfusion/ej2-base';
 
@@ -50,6 +50,7 @@ export class ShowHide {
                     idx = this.parent.getViewportIndex(i); count = 0;
                 }
                 setRow(sheet, i, { hidden: true });
+                this.refreshChart(i, 'rows');
                 row = content && content.rows[idx];
                 if (row) {
                     if (!merge) {
@@ -136,6 +137,7 @@ export class ShowHide {
                 }
                 if (startRow === undefined) { startRow = i; }
                 setRow(sheet, i, { hidden: false });
+                this.refreshChart(i, 'rows');
                 if (idx === undefined) {
                     hFrag = document.createDocumentFragment(); frag = document.createDocumentFragment();
                     rowRenderer = this.parent.serviceLocator.getService<IRowRenderer>('row');
@@ -229,6 +231,7 @@ export class ShowHide {
         for (let i: number = args.startIndex; i <= args.endIndex; i++) {
             if (args.hide ? isHiddenCol(sheet, i) : !isHiddenCol(sheet, i)) { continue; }
             setColumn(sheet, i, { hidden: args.hide });
+            this.refreshChart(i, 'columns');
             if (this.parent.scrollSettings.enableVirtualization && (i < this.parent.viewport.leftIndex ||
                 i > this.parent.viewport.rightIndex)) {
                 if (i < this.parent.viewport.leftIndex) { beforeViewportIdx.push(i); }
@@ -460,6 +463,9 @@ export class ShowHide {
         }
         mergeCollection.forEach((mergeArgs: MergeArgs): void => { this.parent.notify(setMerge, mergeArgs); });
         this.parent.viewport.rightIndex = skipHiddenIdx(sheet, this.parent.viewport.rightIndex - indexes.length, false, 'columns');
+    }
+    private refreshChart(index: number, showHide: string): void {
+        this.parent.notify(refreshChart, { rIdx: index, showHide: showHide });
     }
     private addEventListener(): void {
         this.parent.on(hideShow, this.hideShow, this);

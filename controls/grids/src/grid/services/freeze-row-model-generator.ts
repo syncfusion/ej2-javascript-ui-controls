@@ -7,6 +7,7 @@ import { splitFrozenRowObjectCells } from '../base/util';
 
 /**
  * FreezeRowModelGenerator is used to generate grid data rows with freeze row and column.
+ *
  * @hidden
  */
 export class FreezeRowModelGenerator implements IModelGenerator<Column> {
@@ -20,7 +21,6 @@ export class FreezeRowModelGenerator implements IModelGenerator<Column> {
     }
 
     public generateRows(data: Object, notifyArgs?: NotifyArgs, virtualRows?: Row<Column>[]): Row<Column>[] {
-        let frzCols: number = this.parent.getFrozenColumns();
         let tableName: freezeTable;
         if (notifyArgs.renderFrozenRightContent || (notifyArgs.renderMovableContent && !this.parent.enableVirtualization)) {
             tableName = 'frozen-right';
@@ -29,13 +29,12 @@ export class FreezeRowModelGenerator implements IModelGenerator<Column> {
         } else {
             tableName = this.parent.getFrozenLeftCount() ? 'frozen-left' : 'frozen-right';
         }
-        frzCols = frzCols && this.parent.isRowDragable() ? frzCols + 1 : frzCols;
         if (notifyArgs.requestType === 'virtualscroll' && notifyArgs.virtualInfo.sentinelInfo.axis === 'X') {
             if (tableName !== 'movable') {
                 return null;
             }
         }
-        let row: Row<Column>[] = this.parent.enableVirtualization && !notifyArgs.isFrozenRowsRender ? virtualRows
+        const row: Row<Column>[] = this.parent.enableVirtualization && !notifyArgs.isFrozenRowsRender ? virtualRows
             : this.rowModelGenerator.generateRows(data, notifyArgs);
         for (let i: number = 0, len: number = row.length; i < len; i++) {
             row[i].cells = splitFrozenRowObjectCells(this.parent, row[i].cells, tableName);

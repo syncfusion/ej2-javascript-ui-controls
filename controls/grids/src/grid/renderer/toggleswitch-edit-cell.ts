@@ -1,5 +1,5 @@
 import { isNullOrUndefined } from '@syncfusion/ej2-base';
-import { IEditCell, IGrid } from '../base/interface';
+import { IEditCell } from '../base/interface';
 import { Row } from '../models/row';
 import { Column } from '../models/column';
 import { Switch, ChangeEventArgs } from '@syncfusion/ej2-buttons';
@@ -10,6 +10,7 @@ import { EditCellBase } from './edit-cell-base';
 
 /**
  * `ToggleEditCell` is used to handle boolean cell type editing.
+ *
  * @hidden
  */
 export class ToggleEditCell extends EditCellBase implements IEditCell {
@@ -18,11 +19,11 @@ export class ToggleEditCell extends EditCellBase implements IEditCell {
     private activeClasses: string[] = ['e-selectionbackground', 'e-active'];
 
     public create(args: { column: Column, value: string, type: string }): Element {
-        let classNames: string = 'e-field e-boolcell';
+        let clsNames: string = 'e-field e-boolcell';
         if (args.column.type === 'checkbox') {
-            classNames = 'e-field e-boolcell e-edit-checkselect';
+            clsNames = 'e-field e-boolcell e-edit-checkselect';
         }
-        return createEditElement(this.parent, args.column, classNames, {type: 'checkbox', value: args.value,});
+        return createEditElement(this.parent, args.column, clsNames, { type: 'checkbox', value: args.value });
     }
 
     public read(element: Element): boolean {
@@ -30,14 +31,14 @@ export class ToggleEditCell extends EditCellBase implements IEditCell {
     }
 
     public write(args: { rowData: Object, element: Element, column: Column, requestType: string, row: Element }): void {
-        let chkBoxElement: Element = !isNullOrUndefined(args.row) && args.row.querySelector('.e-edit-checkselect') as Element;
-        let data: object = getObject(args.column.field, args.rowData);
+        const chkBoxElement: Element = !isNullOrUndefined(args.row) && args.row.querySelector('.e-edit-checkselect') as Element;
+        const data: object = getObject(args.column.field, args.rowData);
         let checkState: boolean = data && JSON.parse(data.toString().toLowerCase());
         if (!isNullOrUndefined(chkBoxElement)) {
             this.editType = this.parent.editSettings.mode;
             this.editRow = args.row as HTMLElement;
             if (args.requestType !== 'add') {
-                let row: Row<Column> = this.parent.getRowObjectFromUID(args.row.getAttribute('data-uid'));
+                const row: Row<Column> = this.parent.getRowObjectFromUID(args.row.getAttribute('data-uid'));
                 checkState = row ? row.isSelected : false;
             }
             addRemoveActiveClasses([].slice.call(args.row.getElementsByClassName(literals.rowCell)), checkState, ...this.activeClasses);

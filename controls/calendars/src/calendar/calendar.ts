@@ -764,13 +764,13 @@ export class CalendarBase extends Component<HTMLElement> implements INotifyPrope
         }
     }
     protected resetCalendar(): void {
-        detach(this.calendarElement);
-        detach(this.tableBodyElement);
-        detach(this.table);
-        detach(this.tableHeadElement);
-        detach(this.nextIcon);
-        detach(this.previousIcon);
-        detach(this.footer);
+        this.calendarElement && detach(this.calendarElement);
+        this.tableBodyElement && detach(this.tableBodyElement);
+        this.table && detach(this.table);
+        this.tableHeadElement && detach(this.tableHeadElement);
+        this.nextIcon && detach(this.nextIcon);
+        this.previousIcon && detach(this.previousIcon);
+        this.footer && detach(this.footer);
         this.todayElement = null;
         this.renderDayCellArgs = null;
         this.calendarElement = this.tableBodyElement = this.footer = this.tableHeadElement = this.nextIcon = this.previousIcon = this.table = null;
@@ -1132,9 +1132,8 @@ export class CalendarBase extends Component<HTMLElement> implements INotifyPrope
                 }
             } else if (!disabledCls && this.getDateVal(localDate, value)) {
                 addClass([tdEle], SELECTED);
-            } else {
-                this.updateFocus(otherMnthBool, disabledCls, localDate, tdEle, currentDate);
             }
+            this.updateFocus(otherMnthBool, disabledCls, localDate, tdEle, currentDate);
             if (date.getFullYear() === todayDate.getFullYear() && date.getMonth() === todayDate.getMonth()
                 && date.getDate() === todayDate.getDate()) {
                 addClass([tdEle], TODAY);

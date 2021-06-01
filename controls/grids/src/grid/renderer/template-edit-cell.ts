@@ -2,6 +2,7 @@ import { IEditCell, IGrid } from '../base/interface';
 
 /**
  * `TemplateEditCell` is used to handle template cell.
+ *
  * @hidden
  */
 export class TemplateEditCell implements IEditCell {

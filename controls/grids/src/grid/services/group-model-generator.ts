@@ -10,6 +10,7 @@ import { GroupSummaryModelGenerator, CaptionSummaryModelGenerator } from '../ser
 import { getForeignData, getUid } from '../../grid/base/util';
 /**
  * GroupModelGenerator is used to generate group caption rows and data rows.
+ *
  * @hidden
  */
 export class GroupModelGenerator extends RowModelGenerator implements IModelGenerator<Column> {
@@ -49,8 +50,8 @@ export class GroupModelGenerator extends RowModelGenerator implements IModelGene
 
     private getGroupedRecords(
         index: number, data: GroupedData, raw?: Object, parentid?: number, childId?: number, tIndex?: number, parentUid?: string): void {
-        let isRenderCaption: boolean = this.isInfiniteScroll  && this.prevKey === data.key;
-        let level: number = <number>raw;
+        const isRenderCaption: boolean = this.isInfiniteScroll  && this.prevKey === data.key;
+        const level: number = <number>raw;
         if (isNullOrUndefined(data.items)) {
             if (isNullOrUndefined(data.GroupGuid)) {
                 this.rows = this.rows.concat(this.generateDataRows((data as Object[]), index, parentid, this.rows.length, parentUid));
@@ -60,7 +61,7 @@ export class GroupModelGenerator extends RowModelGenerator implements IModelGene
                 }
             }
         } else {
-            let captionRow: Row<Column> = this.generateCaptionRow(data, index, parentid, childId, tIndex, parentUid);
+            const captionRow: Row<Column> = this.generateCaptionRow(data, index, parentid, childId, tIndex, parentUid);
             if (!isRenderCaption) {
                 this.rows = this.rows.concat(captionRow);
             }
@@ -68,7 +69,7 @@ export class GroupModelGenerator extends RowModelGenerator implements IModelGene
                 this.getGroupedRecords(index + 1, data.items, data.items.level, parentid, index + 1, this.rows.length, captionRow.uid);
             }
             if (this.parent.aggregates.length) {
-                let rowCnt: number = this.rows.length;
+                const rowCnt: number = this.rows.length;
                 this.rows.push(
                     ...(<Row<Column>[]>this.summaryModelGen.generateRows(<Object>data, { level: level, parentUid: captionRow.uid })));
                 for (let i: number = rowCnt - 1; i >= 0; i--) {
@@ -85,12 +86,12 @@ export class GroupModelGenerator extends RowModelGenerator implements IModelGene
     }
 
     private getCaptionRowCells(field: string, indent: number, data: Object): Cell<Column>[] {
-        let cells: Cell<Column>[] = []; let visibles: Cell<Column>[] = [];
-        let column: Column = this.parent.getColumnByField(field); let indexes: number[] = this.parent.getColumnIndexesInView();
+        const cells: Cell<Column>[] = []; let visibles: Cell<Column>[] = [];
+        let column: Column = this.parent.getColumnByField(field); const indexes: number[] = this.parent.getColumnIndexesInView();
         if (this.parent.enableColumnVirtualization) {
             column = (<Column[]>this.parent.columns).filter((c: Column) => c.field === field)[0];
         }
-        let groupedLen: number = this.parent.groupSettings.columns.length; let gObj: IGrid = this.parent;
+        const groupedLen: number = this.parent.groupSettings.columns.length; const gObj: IGrid = this.parent;
         if (!this.parent.enableColumnVirtualization || indexes.indexOf(indent) !== -1) {
             for (let i: number = 0; i < indent; i++) {
                 cells.push(this.generateIndentCell());
@@ -101,9 +102,9 @@ export class GroupModelGenerator extends RowModelGenerator implements IModelGene
         indent = this.parent.enableColumnVirtualization ? 1 :
             (this.parent.getVisibleColumns().length + groupedLen + (gObj.detailTemplate || gObj.childGrid ? 1 : 0) -
                 indent + (this.parent.getVisibleColumns().length ? -1 : 0));
-        //Captionsummary cells will be added here.    
+        //Captionsummary cells will be added here.
         if (this.parent.aggregates.length && !this.captionModelGen.isEmpty()) {
-            let captionCells: Row<Column> = <Row<Column>>this.captionModelGen.generateRows(data)[0];
+            const captionCells: Row<Column> = <Row<Column>>this.captionModelGen.generateRows(data)[0];
             extend(data, captionCells.data); let cIndex: number = 0;
             captionCells.cells.some((cell: Cell<Column>, index: number) => { cIndex = index; return cell.visible && cell.isDataCell; });
             visibles = captionCells.cells.slice(cIndex).filter((cell: Cell<Column>) => cell.visible);
@@ -115,12 +116,12 @@ export class GroupModelGenerator extends RowModelGenerator implements IModelGene
             }
             indent = indent - visibles.length;
         }
-        let cols: Column[] = (!this.parent.enableColumnVirtualization ? [column] : this.parent.getColumns());
+        const cols: Column[] = (!this.parent.enableColumnVirtualization ? [column] : this.parent.getColumns());
         let wFlag: boolean = true;
         for (let j: number = 0; j < cols.length; j++) {
-            let tmpFlag: boolean = wFlag && indexes.indexOf(indent) !== -1;
+            const tmpFlag: boolean = wFlag && indexes.indexOf(indent) !== -1;
             if (tmpFlag) { wFlag = false; }
-            let cellType: CellType = !this.parent.enableColumnVirtualization || tmpFlag ?
+            const cellType: CellType = !this.parent.enableColumnVirtualization || tmpFlag ?
                 CellType.GroupCaption : CellType.GroupCaptionEmpty;
             indent = this.parent.enableColumnVirtualization && cellType === CellType.GroupCaption ? indent + groupedLen : indent;
             if (gObj.isRowDragable()) {
@@ -133,13 +134,21 @@ export class GroupModelGenerator extends RowModelGenerator implements IModelGene
         return cells;
     }
 
-    /** @hidden */
+    /**
+     * @param {GroupedData} data - specifies the data
+     * @param {number} indent - specifies the indent
+     * @param {number} parentID - specifies the parentID
+     * @param {number} childID - specifies the childID
+     * @param {number} tIndex - specifies the TIndex
+     * @param {string} parentUid - specifies the ParentUid
+     * @returns {Row<Column>} returns the Row object
+     * @hidden
+     */
     public generateCaptionRow(
         data: GroupedData, indent: number, parentID?: number, childID?: number, tIndex?: number, parentUid?: string): Row<Column> {
-        let options: IRow<Column> = {};
-        let tmp: Cell<Column>[] = [];
-        let records: string = 'records';
-        let col: Column = this.parent.getColumnByField(data.field);
+        const options: IRow<Column> = {};
+        const records: string = 'records';
+        const col: Column = this.parent.getColumnByField(data.field);
         options.data = extend({}, data);
         if (col) {
             (<GroupedData>options.data).field = data.field;
@@ -153,7 +162,7 @@ export class GroupModelGenerator extends RowModelGenerator implements IModelGene
         options.parentUid = parentUid;
         options.gSummary = !isNullOrUndefined(data.items[records]) ? data.items[records].length : (<Object[]>data.items).length;
         options.uid = getUid('grid-row');
-        let row: Row<Column> = new Row<Column>(<{ [x: string]: Object }>options);
+        const row: Row<Column> = new Row<Column>(<{ [x: string]: Object }>options);
         row.indent = indent;
         this.getForeignKeyData(row);
         row.cells = this.getCaptionRowCells(data.field, indent, row.data);
@@ -161,12 +170,11 @@ export class GroupModelGenerator extends RowModelGenerator implements IModelGene
     }
 
     private getForeignKeyData(row: IRow<Column>): void {
-        let data: GroupedData = row.data;
-        let col: Column = this.parent.getColumnByField(data.field);
+        const data: GroupedData = row.data;
+        const col: Column = this.parent.getColumnByField(data.field);
         if (col && col.isForeignColumn && col.isForeignColumn()) {
-            let fkValue: string | Date = <string | Date>
-            (isNullOrUndefined(data.key) ? '' : (col.valueAccessor as Function)
-            (col.foreignKeyValue, getForeignData(col, {}, <string>data.key)[0], col));
+            const fkValue: string | Date = <string | Date>
+            (isNullOrUndefined(data.key) ? '' : (col.valueAccessor as Function)(col.foreignKeyValue, getForeignData(col, {}, <string>data.key)[0], col));
             setValue(
                 'foreignKey',
                 fkValue,
@@ -174,9 +182,17 @@ export class GroupModelGenerator extends RowModelGenerator implements IModelGene
         }
     }
 
-    /** @hidden */
+    /**
+     * @param {Object[]} data - specifies the data
+     * @param {number} indent - specifies the indent
+     * @param {number} childID - specifies the childID
+     * @param {number} tIndex - specifies the tIndex
+     * @param {string} parentUid - specifies the ParentUid
+     * @returns {Row<Column>[]} returns the row object
+     * @hidden
+     */
     public generateDataRows(data: Object[], indent: number, childID?: number, tIndex?: number, parentUid?: string): Row<Column>[] {
-        let rows: Row<Column>[] = []; let indexes: number[] = this.parent.getColumnIndexesInView();
+        const rows: Row<Column>[] = []; const indexes: number[] = this.parent.getColumnIndexesInView();
         for (let i: number = 0, len: number = data.length; i < len; i++ , tIndex++) {
             rows[i] = this.generateRow(data[i], this.index, i ? undefined : 'e-firstchildrow', indent, childID, tIndex, parentUid);
             for (let j: number = 0; j < indent; j++) {
@@ -193,7 +209,7 @@ export class GroupModelGenerator extends RowModelGenerator implements IModelGene
     }
 
     public refreshRows(input?: Row<Column>[]): Row<Column>[] {
-        let indexes: number[] = this.parent.getColumnIndexesInView();
+        const indexes: number[] = this.parent.getColumnIndexesInView();
         for (let i: number = 0; i < input.length; i++) {
             if (input[i].isDataRow) {
                 input[i].cells = this.generateCells(input[i]);
@@ -202,7 +218,7 @@ export class GroupModelGenerator extends RowModelGenerator implements IModelGene
                     input[i].cells.unshift(this.generateIndentCell());
                 }
             } else {
-                let cRow: Row<Column> = this.generateCaptionRow(input[i].data, input[i].indent);
+                const cRow: Row<Column> = this.generateCaptionRow(input[i].data, input[i].indent);
                 input[i].cells = cRow.cells;
             }
         }
@@ -211,16 +227,16 @@ export class GroupModelGenerator extends RowModelGenerator implements IModelGene
 
     public ensureRowVisibility(): void {
         for (let i: number = 0; i < this.rows.length; i++) {
-            let row: Row<object> = this.rows[i];
+            const row: Row<object> = this.rows[i];
             if (!row.isCaptionRow) { continue; }
             for (let j: number = i + 1; j < this.rows.length; j++) {
-                let childRow: Row<object> = this.rows[j];
+                const childRow: Row<object> = this.rows[j];
                 if (row.uid === childRow.parentUid) {
                     this.rows[j].visible = row.isExpand;
                 }
             }
         }
-}
+    }
 
 }
 

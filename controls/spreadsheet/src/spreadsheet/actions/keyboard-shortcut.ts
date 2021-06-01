@@ -37,7 +37,9 @@ export class KeyboardShortcut {
     private keyDownHandler(e: KeyboardEvent): void {
         if (e.ctrlKey || e.metaKey) {
             if (!closest(e.target as Element, '.e-find-dlg')) {
-                if ([79, 83, 65].indexOf(e.keyCode) > -1) {
+                if ([79, 83].indexOf(e.keyCode) > -1) {
+                    e.preventDefault();
+                } else if (e.keyCode === 65 && !this.parent.isEdit) {
                     e.preventDefault();
                 }
             }

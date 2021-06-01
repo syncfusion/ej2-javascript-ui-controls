@@ -7177,9 +7177,2659 @@ console.log('comment mark position validation');
 //   // });
 // });
 
-
-
-
-
-
-
+let checkboxWithStyle: any = {
+  "sections": [
+      {
+          "sectionFormat": {
+              "pageWidth": 612,
+              "pageHeight": 792,
+              "leftMargin": 54,
+              "rightMargin": 54,
+              "topMargin": 41.04999923706055,
+              "bottomMargin": 72,
+              "differentFirstPage": true,
+              "differentOddAndEvenPages": false,
+              "headerDistance": 25.200000762939453,
+              "footerDistance": 25.200000762939453,
+              "bidi": false,
+              "restartPageNumbering": true,
+              "pageStartingNumber": 1
+          },
+          "blocks": [
+              {
+                  "paragraphFormat": {
+                      "styleName": "Normal",
+                      "listFormat": {}
+                  },
+                  "characterFormat": {
+                      "fontSize": 9,
+                      "fontFamily": "Arial Narrow",
+                      "fontSizeBidi": 9,
+                      "fontFamilyBidi": "Arial Narrow"
+                  },
+                  "inlines": [
+                      {
+                          "characterFormat": {
+                              "styleName": "DPSTNR8 Char"
+                          },
+                          "fieldType": 0,
+                          "hasFieldEnd": true,
+                          "formFieldData": {
+                              "name": "Check16",
+                              "enabled": true,
+                              "helpText": "",
+                              "statusText": "",
+                              "checkBox": {
+                                  "sizeType": "Auto",
+                                  "size": 20,
+                                  "defaultValue": false,
+                                  "checked": false
+                              }
+                          }
+                      },
+                      {
+                          "characterFormat": {
+                              "styleName": "DPSTNR8 Char"
+                          },
+                          "text": " FORMCHECKBOX "
+                      },
+                      {
+                          "characterFormat": {},
+                          "fieldType": 2
+                      },
+                      {
+                          "characterFormat": {},
+                          "fieldType": 1
+                      },
+                      {
+                          "characterFormat": {
+                              "fontSize": 9,
+                              "fontFamily": "Arial Narrow",
+                              "fontSizeBidi": 9,
+                              "fontFamilyBidi": "Arial Narrow"
+                          },
+                          "text": "  "
+                      },
+                      {
+                          "characterFormat": {
+                              "styleName": "DPSTNR8 Char"
+                          },
+                          "text": "INJURED"
+                      }
+                  ]
+              },
+              {
+                  "paragraphFormat": {
+                      "styleName": "DPSTNR8",
+                      "listFormat": {}
+                  },
+                  "characterFormat": {},
+                  "inlines": [
+                      {
+                          "characterFormat": {},
+                          "fieldType": 0,
+                          "hasFieldEnd": true,
+                          "formFieldData": {
+                              "name": "Check16",
+                              "enabled": true,
+                              "helpText": "",
+                              "statusText": "",
+                              "checkBox": {
+                                  "sizeType": "Auto",
+                                  "size": 20,
+                                  "defaultValue": false,
+                                  "checked": false
+                              }
+                          }
+                      },
+                      {
+                          "characterFormat": {},
+                          "text": " FORMCHECKBOX "
+                      },
+                      {
+                          "characterFormat": {},
+                          "fieldType": 2
+                      },
+                      {
+                          "characterFormat": {},
+                          "fieldType": 1
+                      },
+                      {
+                          "characterFormat": {},
+                          "text": "  "
+                      },
+                      {
+                          "characterFormat": {},
+                          "text": "DECEASED"
+                      }
+                  ]
+              },
+              {
+                  "paragraphFormat": {
+                      "styleName": "Normal",
+                      "listFormat": {}
+                  },
+                  "characterFormat": {},
+                  "inlines": [
+                      {
+                          "characterFormat": {},
+                          "text": " "
+                      }
+                  ]
+              }
+          ],
+          "headersFooters": {
+              "header": {
+                  "blocks": [
+                      {
+                          "paragraphFormat": {
+                              "listFormat": {}
+                          },
+                          "characterFormat": {},
+                          "inlines": []
+                      }
+                  ]
+              },
+              "footer": {
+                  "blocks": [
+                      {
+                          "paragraphFormat": {
+                              "textAlignment": "Center",
+                              "styleName": "DPSTNR10",
+                              "listFormat": {}
+                          },
+                          "characterFormat": {
+                              "fontSize": 11,
+                              "fontFamily": "Cambria",
+                              "fontSizeBidi": 11,
+                              "fontFamilyBidi": "Cambria"
+                          },
+                          "inlines": [
+                              {
+                                  "characterFormat": {
+                                      "fontSize": 11,
+                                      "fontFamily": "Cambria",
+                                      "fontSizeBidi": 11,
+                                      "fontFamilyBidi": "Cambria"
+                                  },
+                                  "text": "000181401225 "
+                              }
+                          ]
+                      }
+                  ]
+              },
+              "evenHeader": {
+                  "blocks": [
+                      {
+                          "paragraphFormat": {
+                              "listFormat": {}
+                          },
+                          "characterFormat": {},
+                          "inlines": []
+                      }
+                  ]
+              },
+              "evenFooter": {
+                  "blocks": [
+                      {
+                          "paragraphFormat": {
+                              "textAlignment": "Center",
+                              "styleName": "DPSTNR10",
+                              "listFormat": {}
+                          },
+                          "characterFormat": {
+                              "fontSize": 11,
+                              "fontFamily": "Cambria",
+                              "fontSizeBidi": 11,
+                              "fontFamilyBidi": "Cambria"
+                          },
+                          "inlines": [
+                              {
+                                  "characterFormat": {
+                                      "fontSize": 11,
+                                      "fontFamily": "Cambria",
+                                      "fontSizeBidi": 11,
+                                      "fontFamilyBidi": "Cambria"
+                                  },
+                                  "text": "000181401225 "
+                              }
+                          ]
+                      }
+                  ]
+              },
+              "firstPageHeader": {
+                  "blocks": [
+                      {
+                          "paragraphFormat": {
+                              "listFormat": {}
+                          },
+                          "characterFormat": {},
+                          "inlines": []
+                      }
+                  ]
+              },
+              "firstPageFooter": {
+                  "blocks": [
+                      {
+                          "paragraphFormat": {
+                              "textAlignment": "Center",
+                              "styleName": "DPSTNR10",
+                              "listFormat": {}
+                          },
+                          "characterFormat": {
+                              "fontSize": 11,
+                              "fontFamily": "Cambria",
+                              "fontSizeBidi": 11,
+                              "fontFamilyBidi": "Cambria"
+                          },
+                          "inlines": [
+                              {
+                                  "characterFormat": {
+                                      "fontSize": 11,
+                                      "fontFamily": "Cambria",
+                                      "fontSizeBidi": 11,
+                                      "fontFamilyBidi": "Cambria"
+                                  },
+                                  "text": "000181401225 "
+                              }
+                          ]
+                      }
+                  ]
+              }
+          }
+      }
+  ],
+  "characterFormat": {
+      "bold": false,
+      "italic": false,
+      "fontSize": 12,
+      "fontFamily": "Arial",
+      "underline": "None",
+      "strikethrough": "None",
+      "baselineAlignment": "Normal",
+      "highlightColor": "NoColor",
+      "fontColor": "empty",
+      "boldBidi": false,
+      "italicBidi": false,
+      "fontSizeBidi": 12,
+      "fontFamilyBidi": "Arial",
+      "allCaps": false
+  },
+  "paragraphFormat": {
+      "leftIndent": 0,
+      "rightIndent": 0,
+      "firstLineIndent": 0,
+      "textAlignment": "Left",
+      "beforeSpacing": 0,
+      "afterSpacing": 0,
+      "lineSpacing": 1,
+      "lineSpacingType": "Multiple",
+      "listFormat": {},
+      "bidi": false
+  },
+  "defaultTabWidth": 35.400001525878906,
+  "trackChanges": false,
+  "enforcement": false,
+  "hashValue": "",
+  "saltValue": "",
+  "formatting": false,
+  "protectionType": "NoProtection",
+  "dontUseHTMLParagraphAutoSpacing": false,
+  "formFieldShading": true,
+  "styles": [
+      {
+          "name": "Normal",
+          "type": "Paragraph",
+          "paragraphFormat": {
+              "listFormat": {}
+          },
+          "characterFormat": {
+              "fontSize": 10,
+              "fontFamily": "Times New Roman",
+              "fontColor": "#000000FF",
+              "fontSizeBidi": 10,
+              "fontFamilyBidi": "Times New Roman"
+          },
+          "next": "Normal"
+      },
+      {
+          "name": "Heading 1",
+          "type": "Paragraph",
+          "paragraphFormat": {
+              "outlineLevel": "Level1",
+              "listFormat": {}
+          },
+          "characterFormat": {
+              "bold": true,
+              "fontSize": 12,
+              "boldBidi": true,
+              "fontSizeBidi": 12
+          },
+          "basedOn": "Normal",
+          "link": "Heading 1 Char",
+          "next": "Normal"
+      },
+      {
+          "name": "Heading 1 Char",
+          "type": "Character",
+          "characterFormat": {
+              "bold": true,
+              "fontSize": 10,
+              "fontColor": "#3366FFFF",
+              "boldBidi": true,
+              "fontSizeBidi": 10
+          },
+          "basedOn": "Default Paragraph Font"
+      },
+      {
+          "name": "Default Paragraph Font",
+          "type": "Character",
+          "characterFormat": {
+              "fontColor": "empty"
+          }
+      },
+      {
+          "name": "Heading 2",
+          "type": "Paragraph",
+          "paragraphFormat": {
+              "outlineLevel": "Level2",
+              "listFormat": {}
+          },
+          "characterFormat": {
+              "bold": true,
+              "fontSize": 36,
+              "fontFamily": "Imago Book",
+              "boldBidi": true,
+              "fontSizeBidi": 36,
+              "fontFamilyBidi": "Imago Book"
+          },
+          "basedOn": "Normal",
+          "next": "Normal"
+      },
+      {
+          "name": "Heading 3",
+          "type": "Paragraph",
+          "paragraphFormat": {
+              "leftIndent": 144,
+              "firstLineIndent": 36,
+              "textAlignment": "Right",
+              "outlineLevel": "Level3",
+              "listFormat": {}
+          },
+          "characterFormat": {
+              "bold": true,
+              "boldBidi": true
+          },
+          "basedOn": "Normal",
+          "next": "Normal"
+      },
+      {
+          "name": "Heading 4",
+          "type": "Paragraph",
+          "paragraphFormat": {
+              "textAlignment": "Center",
+              "outlineLevel": "Level4",
+              "listFormat": {}
+          },
+          "characterFormat": {
+              "bold": true,
+              "fontSize": 8,
+              "boldBidi": true,
+              "fontSizeBidi": 8
+          },
+          "basedOn": "Normal",
+          "next": "Normal"
+      },
+      {
+          "name": "Heading 5",
+          "type": "Paragraph",
+          "paragraphFormat": {
+              "textAlignment": "Center",
+              "outlineLevel": "Level5",
+              "listFormat": {}
+          },
+          "characterFormat": {
+              "bold": true,
+              "boldBidi": true
+          },
+          "basedOn": "Normal",
+          "next": "Normal"
+      },
+      {
+          "name": "Heading 6",
+          "type": "Paragraph",
+          "paragraphFormat": {
+              "outlineLevel": "Level6",
+              "listFormat": {},
+              "tabs": [
+                  {
+                      "position": 0,
+                      "deletePosition": 0,
+                      "tabJustification": "Left",
+                      "tabLeader": "None"
+                  },
+                  {
+                      "position": 36,
+                      "deletePosition": 0,
+                      "tabJustification": "Left",
+                      "tabLeader": "None"
+                  },
+                  {
+                      "position": 108,
+                      "deletePosition": 0,
+                      "tabJustification": "Left",
+                      "tabLeader": "None"
+                  },
+                  {
+                      "position": 234,
+                      "deletePosition": 0,
+                      "tabJustification": "Left",
+                      "tabLeader": "None"
+                  },
+                  {
+                      "position": 288,
+                      "deletePosition": 0,
+                      "tabJustification": "Left",
+                      "tabLeader": "None"
+                  }
+              ]
+          },
+          "characterFormat": {
+              "bold": true,
+              "fontSize": 8,
+              "fontFamily": "Arial",
+              "boldBidi": true,
+              "fontSizeBidi": 8,
+              "fontFamilyBidi": "Arial"
+          },
+          "basedOn": "Normal",
+          "next": "Normal"
+      },
+      {
+          "name": "DPSAR11BOLDCENTERCar",
+          "type": "Character",
+          "characterFormat": {
+              "bold": true,
+              "fontSize": 11,
+              "fontFamily": "Arial",
+              "fontColor": "#000000FF",
+              "boldBidi": true,
+              "fontSizeBidi": 11,
+              "fontFamilyBidi": "Arial"
+          },
+          "basedOn": "Default Paragraph Font"
+      },
+      {
+          "name": "DPSAR11BOLDCENTER",
+          "type": "Paragraph",
+          "paragraphFormat": {
+              "textAlignment": "Center",
+              "listFormat": {}
+          },
+          "characterFormat": {
+              "bold": true,
+              "fontSize": 11,
+              "fontColor": "#000000FF",
+              "boldBidi": true,
+              "fontSizeBidi": 11
+          },
+          "link": "DPSAR11BOLDCENTERCar",
+          "next": "DPSAR11BOLDCENTER"
+      },
+      {
+          "name": "DPSAR11LISTNUMBERUPPERCASECar",
+          "type": "Character",
+          "characterFormat": {
+              "fontSize": 11,
+              "fontFamily": "Arial",
+              "fontColor": "#000000FF",
+              "fontSizeBidi": 11,
+              "fontFamilyBidi": "Arial"
+          },
+          "basedOn": "Default Paragraph Font"
+      },
+      {
+          "name": "DPSAR11LISTNUMBERUPPERCASE",
+          "type": "Paragraph",
+          "paragraphFormat": {
+              "listFormat": {}
+          },
+          "characterFormat": {
+              "fontSize": 11,
+              "fontColor": "#000000FF",
+              "fontSizeBidi": 11
+          },
+          "link": "DPSAR11LISTNUMBERUPPERCASECar",
+          "next": "DPSAR11LISTNUMBERUPPERCASE"
+      },
+      {
+          "name": "DPSTMR10Column2Car",
+          "type": "Character",
+          "characterFormat": {
+              "fontSize": 10,
+              "fontFamily": "Times New Roman",
+              "fontColor": "#000000FF",
+              "fontSizeBidi": 10,
+              "fontFamilyBidi": "Times New Roman"
+          },
+          "basedOn": "Default Paragraph Font"
+      },
+      {
+          "name": "DPSTMR10Column2",
+          "type": "Paragraph",
+          "paragraphFormat": {
+              "listFormat": {}
+          },
+          "characterFormat": {
+              "fontSize": 10,
+              "fontFamily": "Times New Roman",
+              "fontColor": "#000000FF",
+              "fontSizeBidi": 10,
+              "fontFamilyBidi": "Times New Roman"
+          },
+          "link": "DPSTMR10Column2Car",
+          "next": "DPSTMR10Column2"
+      },
+      {
+          "name": "DPSTNR1011Car",
+          "type": "Character",
+          "characterFormat": {
+              "fontSize": 10,
+              "fontFamily": "Times New Roman",
+              "fontColor": "#000000FF",
+              "fontSizeBidi": 10,
+              "fontFamilyBidi": "Times New Roman"
+          },
+          "basedOn": "Default Paragraph Font"
+      },
+      {
+          "name": "DPSTNR1011",
+          "type": "Paragraph",
+          "paragraphFormat": {
+              "listFormat": {}
+          },
+          "characterFormat": {
+              "fontSize": 10,
+              "fontFamily": "Times New Roman",
+              "fontColor": "#000000FF",
+              "fontSizeBidi": 10,
+              "fontFamilyBidi": "Times New Roman"
+          },
+          "link": "DPSTNR1011Car",
+          "next": "DPSTNR1011"
+      },
+      {
+          "name": "DPSTNR1011ptCar",
+          "type": "Character",
+          "characterFormat": {
+              "fontSize": 11,
+              "fontFamily": "Times New Roman",
+              "fontColor": "#000000FF",
+              "fontSizeBidi": 11,
+              "fontFamilyBidi": "Times New Roman"
+          },
+          "basedOn": "Default Paragraph Font"
+      },
+      {
+          "name": "DPSTNR1011pt",
+          "type": "Paragraph",
+          "paragraphFormat": {
+              "listFormat": {}
+          },
+          "characterFormat": {
+              "fontSize": 11,
+              "fontFamily": "Times New Roman",
+              "fontColor": "#000000FF",
+              "fontSizeBidi": 11,
+              "fontFamilyBidi": "Times New Roman"
+          },
+          "link": "DPSTNR1011ptCar",
+          "next": "DPSTNR1011pt"
+      },
+      {
+          "name": "DPSTNR10UPPERCASECar",
+          "type": "Character",
+          "characterFormat": {
+              "fontSize": 10,
+              "fontFamily": "Times New Roman",
+              "fontColor": "#000000FF",
+              "fontSizeBidi": 10,
+              "fontFamilyBidi": "Times New Roman",
+              "allCaps": true
+          },
+          "basedOn": "Default Paragraph Font"
+      },
+      {
+          "name": "DPSTNR10UPPERCASE",
+          "type": "Paragraph",
+          "paragraphFormat": {
+              "listFormat": {}
+          },
+          "characterFormat": {
+              "fontSize": 10,
+              "fontFamily": "Times New Roman",
+              "fontColor": "#000000FF",
+              "fontSizeBidi": 10,
+              "fontFamilyBidi": "Times New Roman",
+              "allCaps": true
+          },
+          "link": "DPSTNR10UPPERCASECar",
+          "next": "DPSTNR10UPPERCASE"
+      },
+      {
+          "name": "DPSTNR11Car",
+          "type": "Character",
+          "characterFormat": {
+              "fontSize": 10,
+              "fontFamily": "Times New Roman",
+              "fontColor": "#000000FF",
+              "fontSizeBidi": 10,
+              "fontFamilyBidi": "Times New Roman"
+          },
+          "basedOn": "Default Paragraph Font"
+      },
+      {
+          "name": "DPSTNR11",
+          "type": "Paragraph",
+          "paragraphFormat": {
+              "listFormat": {}
+          },
+          "characterFormat": {
+              "fontSize": 10,
+              "fontFamily": "Times New Roman",
+              "fontColor": "#000000FF",
+              "fontSizeBidi": 10,
+              "fontFamilyBidi": "Times New Roman"
+          },
+          "link": "DPSTNR11Car",
+          "next": "DPSTNR11"
+      },
+      {
+          "name": "Style023Car",
+          "type": "Character",
+          "characterFormat": {
+              "fontSize": 12,
+              "fontFamily": "Arial",
+              "fontColor": "#000000FF",
+              "fontSizeBidi": 12,
+              "fontFamilyBidi": "Arial"
+          },
+          "basedOn": "Default Paragraph Font"
+      },
+      {
+          "name": "Style023",
+          "type": "Paragraph",
+          "paragraphFormat": {
+              "listFormat": {}
+          },
+          "characterFormat": {
+              "fontColor": "#000000FF"
+          },
+          "link": "Style023Car",
+          "next": "Style023"
+      },
+      {
+          "name": "TableTextCar",
+          "type": "Character",
+          "characterFormat": {
+              "fontSize": 12,
+              "fontFamily": "Times New Roman",
+              "fontColor": "#000000FF",
+              "fontSizeBidi": 12,
+              "fontFamilyBidi": "Times New Roman"
+          },
+          "basedOn": "Default Paragraph Font"
+      },
+      {
+          "name": "TableText",
+          "type": "Paragraph",
+          "paragraphFormat": {
+              "listFormat": {}
+          },
+          "characterFormat": {
+              "fontFamily": "Times New Roman",
+              "fontColor": "#000000FF",
+              "fontFamilyBidi": "Times New Roman"
+          },
+          "link": "TableTextCar",
+          "next": "TableText"
+      },
+      {
+          "name": "heading1Car",
+          "type": "Character",
+          "characterFormat": {
+              "fontSize": 12,
+              "fontFamily": "Times New Roman",
+              "fontColor": "#000000FF",
+              "fontSizeBidi": 12,
+              "fontFamilyBidi": "Times New Roman"
+          },
+          "basedOn": "Default Paragraph Font"
+      },
+      {
+          "name": "heading1",
+          "type": "Paragraph",
+          "paragraphFormat": {
+              "listFormat": {}
+          },
+          "characterFormat": {
+              "fontFamily": "Times New Roman",
+              "fontColor": "#000000FF",
+              "fontFamilyBidi": "Times New Roman"
+          },
+          "next": "heading1"
+      },
+      {
+          "name": "Placeholder Text",
+          "type": "Character",
+          "characterFormat": {
+              "fontColor": "#808080FF"
+          },
+          "basedOn": "Default Paragraph Font"
+      },
+      {
+          "name": "TOC 1",
+          "type": "Paragraph",
+          "paragraphFormat": {
+              "afterSpacing": 5,
+              "lineSpacing": 1.1999999284744263,
+              "lineSpacingType": "Multiple",
+              "listFormat": {}
+          },
+          "characterFormat": {
+              "fontSize": 10,
+              "fontColor": "#000000FF",
+              "fontSizeBidi": 10
+          },
+          "next": "TOC 1"
+      },
+      {
+          "name": "TOC 2",
+          "type": "Paragraph",
+          "paragraphFormat": {
+              "leftIndent": 11.050000190734863,
+              "afterSpacing": 5,
+              "lineSpacing": 1.1999999284744263,
+              "lineSpacingType": "Multiple",
+              "listFormat": {}
+          },
+          "characterFormat": {
+              "fontSize": 10,
+              "fontColor": "#000000FF",
+              "fontSizeBidi": 10
+          },
+          "next": "TOC 2"
+      },
+      {
+          "name": "TOC 3",
+          "type": "Paragraph",
+          "paragraphFormat": {
+              "leftIndent": 22.100000381469727,
+              "afterSpacing": 5,
+              "lineSpacing": 1.1999999284744263,
+              "lineSpacingType": "Multiple",
+              "listFormat": {}
+          },
+          "characterFormat": {
+              "fontSize": 10,
+              "fontColor": "#000000FF",
+              "fontSizeBidi": 10
+          },
+          "next": "TOC 3"
+      },
+      {
+          "name": "TOC 4",
+          "type": "Paragraph",
+          "paragraphFormat": {
+              "leftIndent": 32.900001525878906,
+              "afterSpacing": 5,
+              "lineSpacing": 1.1999999284744263,
+              "lineSpacingType": "Multiple",
+              "listFormat": {}
+          },
+          "characterFormat": {
+              "fontSize": 10,
+              "fontColor": "#000000FF",
+              "fontSizeBidi": 10
+          },
+          "next": "TOC 4"
+      },
+      {
+          "name": "TOC 5",
+          "type": "Paragraph",
+          "paragraphFormat": {
+              "leftIndent": 43.95000076293945,
+              "afterSpacing": 5,
+              "lineSpacing": 1.1999999284744263,
+              "lineSpacingType": "Multiple",
+              "listFormat": {}
+          },
+          "characterFormat": {
+              "fontSize": 10,
+              "fontColor": "#000000FF",
+              "fontSizeBidi": 10
+          },
+          "next": "TOC 5"
+      },
+      {
+          "name": "TOC 6",
+          "type": "Paragraph",
+          "paragraphFormat": {
+              "leftIndent": 55,
+              "afterSpacing": 5,
+              "lineSpacing": 1.1999999284744263,
+              "lineSpacingType": "Multiple",
+              "listFormat": {}
+          },
+          "characterFormat": {
+              "fontSize": 10,
+              "fontColor": "#000000FF",
+              "fontSizeBidi": 10
+          },
+          "next": "TOC 6"
+      },
+      {
+          "name": "TOC 7",
+          "type": "Paragraph",
+          "paragraphFormat": {
+              "leftIndent": 66.05000305175781,
+              "afterSpacing": 5,
+              "lineSpacing": 1.1999999284744263,
+              "lineSpacingType": "Multiple",
+              "listFormat": {}
+          },
+          "characterFormat": {
+              "fontSize": 10,
+              "fontColor": "#000000FF",
+              "fontSizeBidi": 10
+          },
+          "next": "TOC 7"
+      },
+      {
+          "name": "TOC 8",
+          "type": "Paragraph",
+          "paragraphFormat": {
+              "leftIndent": 77.0999984741211,
+              "afterSpacing": 5,
+              "lineSpacing": 1.1999999284744263,
+              "lineSpacingType": "Multiple",
+              "listFormat": {}
+          },
+          "characterFormat": {
+              "fontSize": 10,
+              "fontColor": "#000000FF",
+              "fontSizeBidi": 10
+          },
+          "next": "TOC 8"
+      },
+      {
+          "name": "TOC 9",
+          "type": "Paragraph",
+          "paragraphFormat": {
+              "leftIndent": 87.9000015258789,
+              "afterSpacing": 5,
+              "lineSpacing": 1.1999999284744263,
+              "lineSpacingType": "Multiple",
+              "listFormat": {}
+          },
+          "characterFormat": {
+              "fontSize": 10,
+              "fontColor": "#000000FF",
+              "fontSizeBidi": 10
+          },
+          "next": "TOC 9"
+      },
+      {
+          "name": "Header",
+          "type": "Paragraph",
+          "paragraphFormat": {
+              "listFormat": {},
+              "tabs": [
+                  {
+                      "position": 234,
+                      "deletePosition": 0,
+                      "tabJustification": "Center",
+                      "tabLeader": "None"
+                  },
+                  {
+                      "position": 468,
+                      "deletePosition": 0,
+                      "tabJustification": "Right",
+                      "tabLeader": "None"
+                  }
+              ]
+          },
+          "characterFormat": {},
+          "basedOn": "Normal",
+          "link": "Header Char",
+          "next": "Header"
+      },
+      {
+          "name": "Header Char",
+          "type": "Character",
+          "characterFormat": {
+              "fontSize": 10,
+              "fontFamily": "Times New Roman",
+              "fontColor": "#000000FF",
+              "fontSizeBidi": 10,
+              "fontFamilyBidi": "Times New Roman"
+          },
+          "basedOn": "Default Paragraph Font"
+      },
+      {
+          "name": "Footer",
+          "type": "Paragraph",
+          "paragraphFormat": {
+              "listFormat": {},
+              "tabs": [
+                  {
+                      "position": 234,
+                      "deletePosition": 0,
+                      "tabJustification": "Center",
+                      "tabLeader": "None"
+                  },
+                  {
+                      "position": 468,
+                      "deletePosition": 0,
+                      "tabJustification": "Right",
+                      "tabLeader": "None"
+                  }
+              ]
+          },
+          "characterFormat": {},
+          "basedOn": "Normal",
+          "link": "Footer Char",
+          "next": "Footer"
+      },
+      {
+          "name": "Footer Char",
+          "type": "Character",
+          "characterFormat": {
+              "fontSize": 10,
+              "fontFamily": "Times New Roman",
+              "fontColor": "#000000FF",
+              "fontSizeBidi": 10,
+              "fontFamilyBidi": "Times New Roman"
+          },
+          "basedOn": "Default Paragraph Font"
+      },
+      {
+          "name": "DPSTNR10B01",
+          "type": "Paragraph",
+          "paragraphFormat": {
+              "listFormat": {
+                  "listId": 5
+              }
+          },
+          "characterFormat": {},
+          "basedOn": "DPSTNR10",
+          "next": "DPSTNR10B01"
+      },
+      {
+          "name": "DPSTNR10",
+          "type": "Paragraph",
+          "paragraphFormat": {
+              "listFormat": {}
+          },
+          "characterFormat": {
+              "fontSize": 10,
+              "fontFamily": "Times New Roman",
+              "fontColor": "#000000FF",
+              "fontSizeBidi": 10,
+              "fontFamilyBidi": "Times New Roman"
+          },
+          "link": "DPSTNR10 Char",
+          "next": "DPSTNR10"
+      },
+      {
+          "name": "DPSTNR10 Char",
+          "type": "Character",
+          "characterFormat": {
+              "fontColor": "empty"
+          },
+          "basedOn": "Default Paragraph Font"
+      },
+      {
+          "name": "DPSTNR10B02",
+          "type": "Paragraph",
+          "paragraphFormat": {
+              "leftIndent": 36,
+              "firstLineIndent": -36,
+              "listFormat": {},
+              "tabs": [
+                  {
+                      "position": 36,
+                      "deletePosition": 0,
+                      "tabJustification": "List",
+                      "tabLeader": "None"
+                  }
+              ]
+          },
+          "characterFormat": {},
+          "basedOn": "DPSTNR10",
+          "next": "DPSTNR10B02"
+      },
+      {
+          "name": "DPSTNR10B03",
+          "type": "Paragraph",
+          "paragraphFormat": {
+              "leftIndent": 36,
+              "firstLineIndent": -36,
+              "listFormat": {},
+              "tabs": [
+                  {
+                      "position": 36,
+                      "deletePosition": 0,
+                      "tabJustification": "List",
+                      "tabLeader": "None"
+                  }
+              ]
+          },
+          "characterFormat": {},
+          "basedOn": "DPSTNR10",
+          "next": "DPSTNR10B03"
+      },
+      {
+          "name": "DPSTNR10B04",
+          "type": "Paragraph",
+          "paragraphFormat": {
+              "leftIndent": 36,
+              "firstLineIndent": -36,
+              "listFormat": {},
+              "tabs": [
+                  {
+                      "position": 36,
+                      "deletePosition": 0,
+                      "tabJustification": "Left",
+                      "tabLeader": "None"
+                  },
+                  {
+                      "position": 72,
+                      "deletePosition": 0,
+                      "tabJustification": "Left",
+                      "tabLeader": "None"
+                  },
+                  {
+                      "position": 108,
+                      "deletePosition": 0,
+                      "tabJustification": "Left",
+                      "tabLeader": "None"
+                  },
+                  {
+                      "position": 144,
+                      "deletePosition": 0,
+                      "tabJustification": "Left",
+                      "tabLeader": "None"
+                  },
+                  {
+                      "position": 180,
+                      "deletePosition": 0,
+                      "tabJustification": "Left",
+                      "tabLeader": "None"
+                  },
+                  {
+                      "position": 216,
+                      "deletePosition": 0,
+                      "tabJustification": "Left",
+                      "tabLeader": "None"
+                  },
+                  {
+                      "position": 252,
+                      "deletePosition": 0,
+                      "tabJustification": "Left",
+                      "tabLeader": "None"
+                  },
+                  {
+                      "position": 288,
+                      "deletePosition": 0,
+                      "tabJustification": "Left",
+                      "tabLeader": "None"
+                  },
+                  {
+                      "position": 324,
+                      "deletePosition": 0,
+                      "tabJustification": "Left",
+                      "tabLeader": "None"
+                  },
+                  {
+                      "position": 360,
+                      "deletePosition": 0,
+                      "tabJustification": "Left",
+                      "tabLeader": "None"
+                  },
+                  {
+                      "position": 396,
+                      "deletePosition": 0,
+                      "tabJustification": "Left",
+                      "tabLeader": "None"
+                  },
+                  {
+                      "position": 432,
+                      "deletePosition": 0,
+                      "tabJustification": "Left",
+                      "tabLeader": "None"
+                  },
+                  {
+                      "position": 468,
+                      "deletePosition": 0,
+                      "tabJustification": "Left",
+                      "tabLeader": "None"
+                  }
+              ]
+          },
+          "characterFormat": {},
+          "basedOn": "DPSTNR10",
+          "next": "DPSTNR10B04"
+      },
+      {
+          "name": "DPSTNR10LISTNUMBER",
+          "type": "Paragraph",
+          "paragraphFormat": {
+              "leftIndent": 36,
+              "firstLineIndent": -36,
+              "listFormat": {},
+              "tabs": [
+                  {
+                      "position": 36,
+                      "deletePosition": 0,
+                      "tabJustification": "List",
+                      "tabLeader": "None"
+                  }
+              ]
+          },
+          "characterFormat": {},
+          "basedOn": "Normal",
+          "next": "DPSTNR10LISTNUMBER"
+      },
+      {
+          "name": "DPSTNR10LIST",
+          "type": "Paragraph",
+          "paragraphFormat": {
+              "leftIndent": 36,
+              "firstLineIndent": -36,
+              "afterSpacing": 0,
+              "listFormat": {},
+              "tabs": [
+                  {
+                      "position": 36,
+                      "deletePosition": 0,
+                      "tabJustification": "List",
+                      "tabLeader": "None"
+                  },
+                  {
+                      "position": 432,
+                      "deletePosition": 0,
+                      "tabJustification": "Left",
+                      "tabLeader": "None"
+                  },
+                  {
+                      "position": 468,
+                      "deletePosition": 0,
+                      "tabJustification": "Left",
+                      "tabLeader": "None"
+                  }
+              ]
+          },
+          "characterFormat": {},
+          "basedOn": "List Continue",
+          "next": "DPSTNR10LIST"
+      },
+      {
+          "name": "List Continue",
+          "type": "Paragraph",
+          "paragraphFormat": {
+              "leftIndent": 14.149999618530273,
+              "afterSpacing": 6,
+              "listFormat": {}
+          },
+          "characterFormat": {},
+          "basedOn": "DPSTNR10",
+          "next": "List Continue"
+      },
+      {
+          "name": "DPSTNR10Column2",
+          "type": "Paragraph",
+          "paragraphFormat": {
+              "listFormat": {}
+          },
+          "characterFormat": {
+              "fontColor": "empty"
+          },
+          "next": "DPSTNR10Column2"
+      },
+      {
+          "name": "DPSTNR10LISTLETTER",
+          "type": "Paragraph",
+          "paragraphFormat": {
+              "leftIndent": 36,
+              "firstLineIndent": -36,
+              "listFormat": {},
+              "tabs": [
+                  {
+                      "position": 36,
+                      "deletePosition": 0,
+                      "tabJustification": "Left",
+                      "tabLeader": "None"
+                  },
+                  {
+                      "position": 72,
+                      "deletePosition": 0,
+                      "tabJustification": "Left",
+                      "tabLeader": "None"
+                  },
+                  {
+                      "position": 108,
+                      "deletePosition": 0,
+                      "tabJustification": "Left",
+                      "tabLeader": "None"
+                  },
+                  {
+                      "position": 144,
+                      "deletePosition": 0,
+                      "tabJustification": "Left",
+                      "tabLeader": "None"
+                  },
+                  {
+                      "position": 180,
+                      "deletePosition": 0,
+                      "tabJustification": "Left",
+                      "tabLeader": "None"
+                  },
+                  {
+                      "position": 216,
+                      "deletePosition": 0,
+                      "tabJustification": "Left",
+                      "tabLeader": "None"
+                  },
+                  {
+                      "position": 252,
+                      "deletePosition": 0,
+                      "tabJustification": "Left",
+                      "tabLeader": "None"
+                  },
+                  {
+                      "position": 288,
+                      "deletePosition": 0,
+                      "tabJustification": "Left",
+                      "tabLeader": "None"
+                  },
+                  {
+                      "position": 324,
+                      "deletePosition": 0,
+                      "tabJustification": "Left",
+                      "tabLeader": "None"
+                  },
+                  {
+                      "position": 360,
+                      "deletePosition": 0,
+                      "tabJustification": "Left",
+                      "tabLeader": "None"
+                  },
+                  {
+                      "position": 396,
+                      "deletePosition": 0,
+                      "tabJustification": "Left",
+                      "tabLeader": "None"
+                  },
+                  {
+                      "position": 432,
+                      "deletePosition": 0,
+                      "tabJustification": "Left",
+                      "tabLeader": "None"
+                  }
+              ]
+          },
+          "characterFormat": {},
+          "basedOn": "Normal",
+          "next": "DPSTNR10LISTLETTER"
+      },
+      {
+          "name": "Signature",
+          "type": "Paragraph",
+          "paragraphFormat": {
+              "afterSpacing": 6,
+              "listFormat": {}
+          },
+          "characterFormat": {
+              "bold": true,
+              "fontSize": 30,
+              "fontFamily": "Script",
+              "fontColor": "empty",
+              "boldBidi": true,
+              "fontSizeBidi": 30,
+              "fontFamilyBidi": "Script"
+          },
+          "link": "Signature Char",
+          "next": "Signature"
+      },
+      {
+          "name": "Signature Char",
+          "type": "Character",
+          "characterFormat": {
+              "bold": true,
+              "fontSize": 30,
+              "fontFamily": "Script",
+              "fontColor": "#000000FF",
+              "boldBidi": true,
+              "fontSizeBidi": 30,
+              "fontFamilyBidi": "Script"
+          },
+          "basedOn": "Default Paragraph Font"
+      },
+      {
+          "name": "Balloon Text",
+          "type": "Paragraph",
+          "paragraphFormat": {
+              "listFormat": {}
+          },
+          "characterFormat": {
+              "fontSize": 8,
+              "fontFamily": "Tahoma",
+              "fontSizeBidi": 8,
+              "fontFamilyBidi": "Tahoma"
+          },
+          "basedOn": "Normal",
+          "link": "Balloon Text Char",
+          "next": "Balloon Text"
+      },
+      {
+          "name": "Balloon Text Char",
+          "type": "Character",
+          "characterFormat": {
+              "fontSize": 8,
+              "fontFamily": "Tahoma",
+              "fontColor": "empty",
+              "fontSizeBidi": 8,
+              "fontFamilyBidi": "Tahoma"
+          },
+          "basedOn": "Default Paragraph Font"
+      },
+      {
+          "name": "Salutation",
+          "type": "Paragraph",
+          "paragraphFormat": {
+              "listFormat": {}
+          },
+          "characterFormat": {},
+          "basedOn": "Normal",
+          "link": "Salutation Char",
+          "next": "Normal"
+      },
+      {
+          "name": "Salutation Char",
+          "type": "Character",
+          "characterFormat": {
+              "fontSize": 10,
+              "fontFamily": "Times New Roman",
+              "fontColor": "#000000FF",
+              "fontSizeBidi": 10,
+              "fontFamilyBidi": "Times New Roman"
+          },
+          "basedOn": "Default Paragraph Font"
+      },
+      {
+          "name": "Hyperlink",
+          "type": "Character",
+          "characterFormat": {
+              "underline": "Single",
+              "fontColor": "#0000FFFF"
+          },
+          "basedOn": "Default Paragraph Font"
+      },
+      {
+          "name": "Body Text Indent",
+          "type": "Paragraph",
+          "paragraphFormat": {
+              "leftIndent": 36,
+              "listFormat": {},
+              "tabs": [
+                  {
+                      "position": 36,
+                      "deletePosition": 0,
+                      "tabJustification": "Left",
+                      "tabLeader": "None"
+                  },
+                  {
+                      "position": 72,
+                      "deletePosition": 0,
+                      "tabJustification": "Left",
+                      "tabLeader": "None"
+                  },
+                  {
+                      "position": 108,
+                      "deletePosition": 0,
+                      "tabJustification": "Left",
+                      "tabLeader": "None"
+                  },
+                  {
+                      "position": 144,
+                      "deletePosition": 0,
+                      "tabJustification": "Left",
+                      "tabLeader": "None"
+                  },
+                  {
+                      "position": 180,
+                      "deletePosition": 0,
+                      "tabJustification": "Left",
+                      "tabLeader": "None"
+                  },
+                  {
+                      "position": 216,
+                      "deletePosition": 0,
+                      "tabJustification": "Left",
+                      "tabLeader": "None"
+                  },
+                  {
+                      "position": 252,
+                      "deletePosition": 0,
+                      "tabJustification": "Left",
+                      "tabLeader": "None"
+                  },
+                  {
+                      "position": 288,
+                      "deletePosition": 0,
+                      "tabJustification": "Left",
+                      "tabLeader": "None"
+                  },
+                  {
+                      "position": 324,
+                      "deletePosition": 0,
+                      "tabJustification": "Left",
+                      "tabLeader": "None"
+                  },
+                  {
+                      "position": 360,
+                      "deletePosition": 0,
+                      "tabJustification": "Left",
+                      "tabLeader": "None"
+                  },
+                  {
+                      "position": 396,
+                      "deletePosition": 0,
+                      "tabJustification": "Left",
+                      "tabLeader": "None"
+                  },
+                  {
+                      "position": 432,
+                      "deletePosition": 0,
+                      "tabJustification": "Left",
+                      "tabLeader": "None"
+                  },
+                  {
+                      "position": 468,
+                      "deletePosition": 0,
+                      "tabJustification": "Left",
+                      "tabLeader": "None"
+                  }
+              ]
+          },
+          "characterFormat": {},
+          "basedOn": "Normal",
+          "link": "Body Text Indent Char",
+          "next": "Body Text Indent"
+      },
+      {
+          "name": "Body Text Indent Char",
+          "type": "Character",
+          "characterFormat": {
+              "fontSize": 10,
+              "fontFamily": "Times New Roman",
+              "fontColor": "#000000FF",
+              "fontSizeBidi": 10,
+              "fontFamilyBidi": "Times New Roman"
+          },
+          "basedOn": "Default Paragraph Font"
+      },
+      {
+          "name": "Body Text",
+          "type": "Paragraph",
+          "paragraphFormat": {
+              "listFormat": {}
+          },
+          "characterFormat": {},
+          "basedOn": "Normal",
+          "link": "Body Text Char",
+          "next": "Body Text"
+      },
+      {
+          "name": "Body Text Char",
+          "type": "Character",
+          "characterFormat": {
+              "fontSize": 10,
+              "fontFamily": "Times New Roman",
+              "fontColor": "#000000FF",
+              "fontSizeBidi": 10,
+              "fontFamilyBidi": "Times New Roman"
+          },
+          "basedOn": "Default Paragraph Font"
+      },
+      {
+          "name": "Body Text Indent 2",
+          "type": "Paragraph",
+          "paragraphFormat": {
+              "leftIndent": 36,
+              "textAlignment": "Justify",
+              "listFormat": {},
+              "tabs": [
+                  {
+                      "position": 21.600000381469727,
+                      "deletePosition": 0,
+                      "tabJustification": "Left",
+                      "tabLeader": "None"
+                  },
+                  {
+                      "position": 36,
+                      "deletePosition": 0,
+                      "tabJustification": "Left",
+                      "tabLeader": "None"
+                  },
+                  {
+                      "position": 72,
+                      "deletePosition": 0,
+                      "tabJustification": "Left",
+                      "tabLeader": "None"
+                  },
+                  {
+                      "position": 108,
+                      "deletePosition": 0,
+                      "tabJustification": "Left",
+                      "tabLeader": "None"
+                  },
+                  {
+                      "position": 144,
+                      "deletePosition": 0,
+                      "tabJustification": "Left",
+                      "tabLeader": "None"
+                  },
+                  {
+                      "position": 180,
+                      "deletePosition": 0,
+                      "tabJustification": "Left",
+                      "tabLeader": "None"
+                  },
+                  {
+                      "position": 216,
+                      "deletePosition": 0,
+                      "tabJustification": "Left",
+                      "tabLeader": "None"
+                  },
+                  {
+                      "position": 252,
+                      "deletePosition": 0,
+                      "tabJustification": "Left",
+                      "tabLeader": "None"
+                  },
+                  {
+                      "position": 288,
+                      "deletePosition": 0,
+                      "tabJustification": "Left",
+                      "tabLeader": "None"
+                  },
+                  {
+                      "position": 324,
+                      "deletePosition": 0,
+                      "tabJustification": "Left",
+                      "tabLeader": "None"
+                  },
+                  {
+                      "position": 360,
+                      "deletePosition": 0,
+                      "tabJustification": "Left",
+                      "tabLeader": "None"
+                  },
+                  {
+                      "position": 396,
+                      "deletePosition": 0,
+                      "tabJustification": "Left",
+                      "tabLeader": "None"
+                  },
+                  {
+                      "position": 432,
+                      "deletePosition": 0,
+                      "tabJustification": "Left",
+                      "tabLeader": "None"
+                  },
+                  {
+                      "position": 468,
+                      "deletePosition": 0,
+                      "tabJustification": "Left",
+                      "tabLeader": "None"
+                  }
+              ]
+          },
+          "characterFormat": {},
+          "basedOn": "Normal",
+          "link": "Body Text Indent 2 Char",
+          "next": "Body Text Indent 2"
+      },
+      {
+          "name": "Body Text Indent 2 Char",
+          "type": "Character",
+          "characterFormat": {
+              "fontSize": 10,
+              "fontFamily": "Times New Roman",
+              "fontColor": "#000000FF",
+              "fontSizeBidi": 10,
+              "fontFamilyBidi": "Times New Roman"
+          },
+          "basedOn": "Default Paragraph Font"
+      },
+      {
+          "name": "Title",
+          "type": "Paragraph",
+          "paragraphFormat": {
+              "textAlignment": "Center",
+              "listFormat": {}
+          },
+          "characterFormat": {
+              "bold": true,
+              "boldBidi": true
+          },
+          "basedOn": "Normal",
+          "link": "Title Char",
+          "next": "Title"
+      },
+      {
+          "name": "Title Char",
+          "type": "Character",
+          "characterFormat": {
+              "bold": true,
+              "fontSize": 10,
+              "fontFamily": "Times New Roman",
+              "fontColor": "#000000FF",
+              "boldBidi": true,
+              "fontSizeBidi": 10,
+              "fontFamilyBidi": "Times New Roman"
+          },
+          "basedOn": "Default Paragraph Font"
+      },
+      {
+          "name": "List Paragraph",
+          "type": "Paragraph",
+          "paragraphFormat": {
+              "leftIndent": 36,
+              "afterSpacing": 8,
+              "lineSpacing": 1.0791666507720947,
+              "lineSpacingType": "Multiple",
+              "listFormat": {},
+              "contextualSpacing": true
+          },
+          "characterFormat": {
+              "fontSize": 11,
+              "fontFamily": "Calibri",
+              "fontColor": "#00000000",
+              "fontSizeBidi": 11,
+              "fontFamilyBidi": "Calibri"
+          },
+          "basedOn": "Normal",
+          "next": "List Paragraph"
+      },
+      {
+          "name": "Body Text 0.0",
+          "type": "Paragraph",
+          "paragraphFormat": {
+              "listFormat": {}
+          },
+          "characterFormat": {
+              "fontSize": 11,
+              "fontFamily": "Arial",
+              "fontColor": "#00000000",
+              "fontSizeBidi": 11,
+              "fontFamilyBidi": "Arial"
+          },
+          "basedOn": "Body Text",
+          "next": "Body Text 0.0"
+      },
+      {
+          "name": "Body Text Centered",
+          "type": "Paragraph",
+          "paragraphFormat": {
+              "textAlignment": "Center",
+              "beforeSpacing": 12,
+              "lineSpacing": 12,
+              "lineSpacingType": "Exactly",
+              "listFormat": {}
+          },
+          "characterFormat": {
+              "fontFamily": "Arial",
+              "fontColor": "#00000000",
+              "fontFamilyBidi": "Arial"
+          },
+          "basedOn": "Body Text",
+          "next": "Body Text Centered"
+      },
+      {
+          "name": "Block Text",
+          "type": "Paragraph",
+          "paragraphFormat": {
+              "leftIndent": -9,
+              "rightIndent": -36,
+              "listFormat": {}
+          },
+          "characterFormat": {
+              "fontSize": 9,
+              "fontSizeBidi": 9
+          },
+          "basedOn": "Normal",
+          "next": "Block Text"
+      },
+      {
+          "name": "DPSTNR8 Char",
+          "type": "Character",
+          "characterFormat": {
+              "fontSize": 8,
+              "fontColor": "empty",
+              "fontSizeBidi": 8
+          },
+          "basedOn": "Default Paragraph Font"
+      },
+      {
+          "name": "DPSTNR8ArialNarrow",
+          "type": "Paragraph",
+          "paragraphFormat": {
+              "listFormat": {}
+          },
+          "characterFormat": {
+              "fontSize": 9,
+              "fontFamily": "Arial Narrow",
+              "fontSizeBidi": 9,
+              "fontFamilyBidi": "Arial Narrow"
+          },
+          "basedOn": "Normal",
+          "next": "DPSTNR8ArialNarrow"
+      },
+      {
+          "name": "DPSTNR8Arialnarrow",
+          "type": "Paragraph",
+          "paragraphFormat": {
+              "listFormat": {}
+          },
+          "characterFormat": {},
+          "basedOn": "DPSTNR8",
+          "next": "DPSTNR8Arialnarrow"
+      },
+      {
+          "name": "DPSTNR8",
+          "type": "Paragraph",
+          "paragraphFormat": {
+              "listFormat": {}
+          },
+          "characterFormat": {
+              "fontSize": 8,
+              "fontFamily": "Times New Roman",
+              "fontColor": "#000000FF",
+              "fontSizeBidi": 8,
+              "fontFamilyBidi": "Times New Roman"
+          },
+          "link": "DPSTNR8Car",
+          "next": "DPSTNR8"
+      },
+      {
+          "name": "DPSTNR8Car",
+          "type": "Character",
+          "characterFormat": {
+              "fontSize": 8,
+              "fontFamily": "Times New Roman",
+              "fontColor": "#000000FF",
+              "fontSizeBidi": 8,
+              "fontFamilyBidi": "Times New Roman"
+          },
+          "basedOn": "Default Paragraph Font"
+      },
+      {
+          "name": "Subtitle",
+          "type": "Paragraph",
+          "paragraphFormat": {
+              "listFormat": {}
+          },
+          "characterFormat": {
+              "bold": true,
+              "fontSize": 12,
+              "fontFamily": "Arial",
+              "boldBidi": true,
+              "fontSizeBidi": 12,
+              "fontFamilyBidi": "Arial"
+          },
+          "basedOn": "Normal",
+          "link": "Subtitle Char",
+          "next": "Subtitle"
+      },
+      {
+          "name": "Subtitle Char",
+          "type": "Character",
+          "characterFormat": {
+              "bold": true,
+              "fontColor": "#000000FF",
+              "boldBidi": true
+          },
+          "basedOn": "Default Paragraph Font"
+      },
+      {
+          "name": "Body Text 2",
+          "type": "Paragraph",
+          "paragraphFormat": {
+              "afterSpacing": 6,
+              "lineSpacing": 2,
+              "lineSpacingType": "Multiple",
+              "listFormat": {}
+          },
+          "characterFormat": {},
+          "basedOn": "Normal",
+          "next": "Body Text 2"
+      },
+      {
+          "name": "DPSTNR12 Char",
+          "type": "Character",
+          "characterFormat": {
+              "fontSize": 12,
+              "fontColor": "empty",
+              "fontSizeBidi": 12
+          },
+          "basedOn": "DPSTNR10 Char"
+      },
+      {
+          "name": "DPSTNR10Car",
+          "type": "Character",
+          "characterFormat": {
+              "fontSize": 10,
+              "fontFamily": "Times New Roman",
+              "fontColor": "#000000FF",
+              "fontSizeBidi": 10,
+              "fontFamilyBidi": "Times New Roman"
+          },
+          "basedOn": "Default Paragraph Font"
+      },
+      {
+          "name": "DPSCOURRIERCar",
+          "type": "Character",
+          "characterFormat": {
+              "fontSize": 10,
+              "fontFamily": "Calibri",
+              "fontColor": "#000000FF",
+              "fontSizeBidi": 10,
+              "fontFamilyBidi": "Calibri"
+          },
+          "basedOn": "Default Paragraph Font"
+      },
+      {
+          "name": "DPSCOURRIER",
+          "type": "Paragraph",
+          "paragraphFormat": {
+              "listFormat": {}
+          },
+          "characterFormat": {
+              "fontSize": 10,
+              "fontFamily": "Calibri",
+              "fontColor": "#000000FF",
+              "fontSizeBidi": 10,
+              "fontFamilyBidi": "Calibri"
+          },
+          "link": "DPSCOURRIERCar",
+          "next": "DPSCOURRIER"
+      },
+      {
+          "name": "DPSTNR10RIGHTCar",
+          "type": "Character",
+          "characterFormat": {
+              "fontSize": 10,
+              "fontFamily": "Times New Roman",
+              "fontColor": "#000000FF",
+              "fontSizeBidi": 10,
+              "fontFamilyBidi": "Times New Roman"
+          },
+          "basedOn": "Default Paragraph Font"
+      },
+      {
+          "name": "DPSTNR10RIGHT",
+          "type": "Paragraph",
+          "paragraphFormat": {
+              "textAlignment": "Right",
+              "listFormat": {}
+          },
+          "characterFormat": {
+              "fontSize": 10,
+              "fontFamily": "Times New Roman",
+              "fontColor": "#000000FF",
+              "fontSizeBidi": 10,
+              "fontFamilyBidi": "Times New Roman"
+          },
+          "link": "DPSTNR10RIGHTCar",
+          "next": "DPSTNR10RIGHT"
+      },
+      {
+          "name": "DPSTNR8ArialnarrowArialNarrow8ptCar",
+          "type": "Character",
+          "characterFormat": {
+              "fontSize": 7,
+              "fontFamily": "Arial Narrow",
+              "fontColor": "#000000FF",
+              "fontSizeBidi": 7,
+              "fontFamilyBidi": "Arial Narrow"
+          },
+          "basedOn": "Default Paragraph Font"
+      },
+      {
+          "name": "DPSTNR8ArialnarrowArialNarrow8pt",
+          "type": "Paragraph",
+          "paragraphFormat": {
+              "listFormat": {}
+          },
+          "characterFormat": {
+              "fontSize": 7,
+              "fontFamily": "Arial Narrow",
+              "fontColor": "#000000FF",
+              "fontSizeBidi": 7,
+              "fontFamilyBidi": "Arial Narrow"
+          },
+          "link": "DPSTNR8ArialnarrowArialNarrow8ptCar",
+          "next": "DPSTNR8ArialnarrowArialNarrow8pt"
+      },
+      {
+          "name": "DPSTNR8BoldCenteredCar",
+          "type": "Character",
+          "characterFormat": {
+              "bold": true,
+              "fontSize": 8,
+              "fontFamily": "Times New Roman",
+              "fontColor": "#000000FF",
+              "boldBidi": true,
+              "fontSizeBidi": 8,
+              "fontFamilyBidi": "Times New Roman"
+          },
+          "basedOn": "Default Paragraph Font"
+      },
+      {
+          "name": "DPSTNR8BoldCentered",
+          "type": "Paragraph",
+          "paragraphFormat": {
+              "textAlignment": "Center",
+              "listFormat": {}
+          },
+          "characterFormat": {
+              "bold": true,
+              "fontSize": 8,
+              "fontFamily": "Times New Roman",
+              "fontColor": "#000000FF",
+              "boldBidi": true,
+              "fontSizeBidi": 8,
+              "fontFamilyBidi": "Times New Roman"
+          },
+          "link": "DPSTNR8BoldCenteredCar",
+          "next": "DPSTNR8BoldCentered"
+      },
+      {
+          "name": "DPSTNR12Car",
+          "type": "Character",
+          "characterFormat": {
+              "fontSize": 12,
+              "fontFamily": "Times New Roman",
+              "fontColor": "#000000FF",
+              "fontSizeBidi": 12,
+              "fontFamilyBidi": "Times New Roman"
+          },
+          "basedOn": "Default Paragraph Font"
+      },
+      {
+          "name": "DPSTNR12",
+          "type": "Paragraph",
+          "paragraphFormat": {
+              "listFormat": {}
+          },
+          "characterFormat": {
+              "fontFamily": "Times New Roman",
+              "fontColor": "#000000FF",
+              "fontFamilyBidi": "Times New Roman"
+          },
+          "link": "DPSTNR12 Char",
+          "next": "DPSTNR12"
+      },
+      {
+          "name": "DPSTM10Column2Car",
+          "type": "Character",
+          "characterFormat": {
+              "fontSize": 10,
+              "fontFamily": "Times New Roman",
+              "fontColor": "#000000FF",
+              "fontSizeBidi": 10,
+              "fontFamilyBidi": "Times New Roman"
+          },
+          "basedOn": "Default Paragraph Font"
+      },
+      {
+          "name": "DPSTM10Column2",
+          "type": "Paragraph",
+          "paragraphFormat": {
+              "listFormat": {}
+          },
+          "characterFormat": {
+              "fontSize": 10,
+              "fontFamily": "Times New Roman",
+              "fontColor": "#000000FF",
+              "fontSizeBidi": 10,
+              "fontFamilyBidi": "Times New Roman"
+          },
+          "link": "DPSTM10Column2Car",
+          "next": "DPSTM10Column2"
+      },
+      {
+          "name": "NormalSubCar",
+          "type": "Character",
+          "characterFormat": {
+              "fontColor": "empty"
+          },
+          "basedOn": "Default Paragraph Font"
+      },
+      {
+          "name": "H1",
+          "type": "Paragraph",
+          "paragraphFormat": {
+              "beforeSpacing": 12,
+              "listFormat": {
+                  "listId": 0
+              }
+          },
+          "characterFormat": {
+              "fontSize": 16,
+              "fontColor": "#000000FF",
+              "fontSizeBidi": 16
+          },
+          "next": "H1"
+      },
+      {
+          "name": "H2",
+          "type": "Paragraph",
+          "paragraphFormat": {
+              "leftIndent": 36,
+              "beforeSpacing": 2,
+              "listFormat": {
+                  "listId": 0,
+                  "listLevelNumber": 1
+              }
+          },
+          "characterFormat": {
+              "fontSize": 13,
+              "fontColor": "#000000FF",
+              "fontSizeBidi": 13
+          },
+          "next": "H2"
+      },
+      {
+          "name": "H3",
+          "type": "Paragraph",
+          "paragraphFormat": {
+              "leftIndent": 72,
+              "beforeSpacing": 2,
+              "listFormat": {
+                  "listId": 0,
+                  "listLevelNumber": 2
+              }
+          },
+          "characterFormat": {
+              "fontColor": "#000000FF"
+          },
+          "next": "H3"
+      },
+      {
+          "name": "H4",
+          "type": "Paragraph",
+          "paragraphFormat": {
+              "leftIndent": 108,
+              "beforeSpacing": 2,
+              "listFormat": {
+                  "listId": 0,
+                  "listLevelNumber": 3
+              }
+          },
+          "characterFormat": {
+              "fontColor": "#000000FF"
+          },
+          "next": "H4"
+      },
+      {
+          "name": "H5",
+          "type": "Paragraph",
+          "paragraphFormat": {
+              "leftIndent": 144,
+              "beforeSpacing": 2,
+              "listFormat": {
+                  "listId": 0,
+                  "listLevelNumber": 4
+              }
+          },
+          "characterFormat": {
+              "fontColor": "#000000FF"
+          },
+          "next": "H5"
+      },
+      {
+          "name": "H6",
+          "type": "Paragraph",
+          "paragraphFormat": {
+              "leftIndent": 180,
+              "beforeSpacing": 2,
+              "listFormat": {
+                  "listId": 0,
+                  "listLevelNumber": 5
+              }
+          },
+          "characterFormat": {
+              "fontColor": "#000000FF"
+          },
+          "next": "H6"
+      },
+      {
+          "name": "H7",
+          "type": "Paragraph",
+          "paragraphFormat": {
+              "leftIndent": 216.0500030517578,
+              "beforeSpacing": 2,
+              "listFormat": {
+                  "listId": 0,
+                  "listLevelNumber": 6
+              }
+          },
+          "characterFormat": {
+              "fontColor": "#000000FF"
+          },
+          "next": "H7"
+      },
+      {
+          "name": "H8",
+          "type": "Paragraph",
+          "paragraphFormat": {
+              "leftIndent": 252.0500030517578,
+              "beforeSpacing": 2,
+              "listFormat": {
+                  "listId": 0,
+                  "listLevelNumber": 7
+              }
+          },
+          "characterFormat": {
+              "fontColor": "#000000FF"
+          },
+          "next": "H8"
+      },
+      {
+          "name": "H9",
+          "type": "Paragraph",
+          "paragraphFormat": {
+              "leftIndent": 288.04998779296875,
+              "beforeSpacing": 2,
+              "listFormat": {
+                  "listId": 0,
+                  "listLevelNumber": 8
+              }
+          },
+          "characterFormat": {
+              "fontColor": "#000000FF"
+          },
+          "next": "H9"
+      }
+  ],
+  "lists": [
+      {
+          "abstractListId": 0,
+          "levelOverrides": [],
+          "listId": 0
+      },
+      {
+          "abstractListId": 5,
+          "levelOverrides": [],
+          "listId": 5
+      }
+  ],
+  "abstractLists": [
+      {
+          "abstractListId": 0,
+          "levels": [
+              {
+                  "characterFormat": {
+                      "fontColor": "empty"
+                  },
+                  "paragraphFormat": {
+                      "listFormat": {}
+                  },
+                  "followCharacter": "None",
+                  "listLevelPattern": "Arabic",
+                  "numberFormat": "%1) ",
+                  "restartLevel": 0,
+                  "startAt": 1
+              },
+              {
+                  "characterFormat": {
+                      "fontColor": "empty"
+                  },
+                  "paragraphFormat": {
+                      "listFormat": {}
+                  },
+                  "followCharacter": "None",
+                  "listLevelPattern": "LowLetter",
+                  "numberFormat": "%2) ",
+                  "restartLevel": 1,
+                  "startAt": 1
+              },
+              {
+                  "characterFormat": {
+                      "fontColor": "empty"
+                  },
+                  "paragraphFormat": {
+                      "listFormat": {}
+                  },
+                  "followCharacter": "None",
+                  "listLevelPattern": "LowRoman",
+                  "numberFormat": "%3) ",
+                  "restartLevel": 2,
+                  "startAt": 1
+              },
+              {
+                  "characterFormat": {
+                      "fontColor": "empty"
+                  },
+                  "paragraphFormat": {
+                      "listFormat": {}
+                  },
+                  "followCharacter": "None",
+                  "listLevelPattern": "Arabic",
+                  "numberFormat": "(%4) ",
+                  "restartLevel": 3,
+                  "startAt": 1
+              },
+              {
+                  "characterFormat": {
+                      "fontColor": "empty"
+                  },
+                  "paragraphFormat": {
+                      "listFormat": {}
+                  },
+                  "followCharacter": "None",
+                  "listLevelPattern": "LowLetter",
+                  "numberFormat": "(%5) ",
+                  "restartLevel": 4,
+                  "startAt": 1
+              },
+              {
+                  "characterFormat": {
+                      "fontColor": "empty"
+                  },
+                  "paragraphFormat": {
+                      "listFormat": {}
+                  },
+                  "followCharacter": "None",
+                  "listLevelPattern": "LowRoman",
+                  "numberFormat": "(%6) ",
+                  "restartLevel": 5,
+                  "startAt": 1
+              },
+              {
+                  "characterFormat": {
+                      "fontColor": "empty"
+                  },
+                  "paragraphFormat": {
+                      "listFormat": {}
+                  },
+                  "followCharacter": "None",
+                  "listLevelPattern": "Arabic",
+                  "numberFormat": "%7. ",
+                  "restartLevel": 6,
+                  "startAt": 1
+              },
+              {
+                  "characterFormat": {
+                      "fontColor": "empty"
+                  },
+                  "paragraphFormat": {
+                      "listFormat": {}
+                  },
+                  "followCharacter": "None",
+                  "listLevelPattern": "LowLetter",
+                  "numberFormat": "%8. ",
+                  "restartLevel": 7,
+                  "startAt": 1
+              },
+              {
+                  "characterFormat": {
+                      "fontColor": "empty"
+                  },
+                  "paragraphFormat": {
+                      "listFormat": {}
+                  },
+                  "followCharacter": "None",
+                  "listLevelPattern": "LowRoman",
+                  "numberFormat": "%9. ",
+                  "restartLevel": 8,
+                  "startAt": 1
+              }
+          ]
+      },
+      {
+          "abstractListId": 5,
+          "levels": [
+              {
+                  "characterFormat": {
+                      "fontColor": "empty"
+                  },
+                  "paragraphFormat": {
+                      "leftIndent": 36,
+                      "firstLineIndent": -36,
+                      "listFormat": {},
+                      "tabs": [
+                          {
+                              "position": 36,
+                              "deletePosition": 0,
+                              "tabJustification": "List",
+                              "tabLeader": "None"
+                          }
+                      ]
+                  },
+                  "followCharacter": "Tab",
+                  "listLevelPattern": "Arabic",
+                  "numberFormat": "%1.",
+                  "restartLevel": 0,
+                  "startAt": 1
+              },
+              {
+                  "characterFormat": {
+                      "fontColor": "empty"
+                  },
+                  "paragraphFormat": {
+                      "leftIndent": 72,
+                      "firstLineIndent": -36,
+                      "listFormat": {},
+                      "tabs": [
+                          {
+                              "position": 72,
+                              "deletePosition": 0,
+                              "tabJustification": "List",
+                              "tabLeader": "None"
+                          }
+                      ]
+                  },
+                  "followCharacter": "Tab",
+                  "listLevelPattern": "Arabic",
+                  "numberFormat": "%2.",
+                  "restartLevel": 1,
+                  "startAt": 1
+              },
+              {
+                  "characterFormat": {
+                      "fontColor": "empty"
+                  },
+                  "paragraphFormat": {
+                      "leftIndent": 108,
+                      "firstLineIndent": -36,
+                      "listFormat": {},
+                      "tabs": [
+                          {
+                              "position": 108,
+                              "deletePosition": 0,
+                              "tabJustification": "List",
+                              "tabLeader": "None"
+                          }
+                      ]
+                  },
+                  "followCharacter": "Tab",
+                  "listLevelPattern": "Arabic",
+                  "numberFormat": "%3.",
+                  "restartLevel": 2,
+                  "startAt": 1
+              },
+              {
+                  "characterFormat": {
+                      "fontColor": "empty"
+                  },
+                  "paragraphFormat": {
+                      "leftIndent": 144,
+                      "firstLineIndent": -36,
+                      "listFormat": {},
+                      "tabs": [
+                          {
+                              "position": 144,
+                              "deletePosition": 0,
+                              "tabJustification": "List",
+                              "tabLeader": "None"
+                          }
+                      ]
+                  },
+                  "followCharacter": "Tab",
+                  "listLevelPattern": "Arabic",
+                  "numberFormat": "%4.",
+                  "restartLevel": 3,
+                  "startAt": 1
+              },
+              {
+                  "characterFormat": {
+                      "fontColor": "empty"
+                  },
+                  "paragraphFormat": {
+                      "leftIndent": 180,
+                      "firstLineIndent": -36,
+                      "listFormat": {},
+                      "tabs": [
+                          {
+                              "position": 180,
+                              "deletePosition": 0,
+                              "tabJustification": "List",
+                              "tabLeader": "None"
+                          }
+                      ]
+                  },
+                  "followCharacter": "Tab",
+                  "listLevelPattern": "Arabic",
+                  "numberFormat": "%5.",
+                  "restartLevel": 4,
+                  "startAt": 1
+              },
+              {
+                  "characterFormat": {
+                      "fontColor": "empty"
+                  },
+                  "paragraphFormat": {
+                      "leftIndent": 216,
+                      "firstLineIndent": -36,
+                      "listFormat": {},
+                      "tabs": [
+                          {
+                              "position": 216,
+                              "deletePosition": 0,
+                              "tabJustification": "List",
+                              "tabLeader": "None"
+                          }
+                      ]
+                  },
+                  "followCharacter": "Tab",
+                  "listLevelPattern": "Arabic",
+                  "numberFormat": "%6.",
+                  "restartLevel": 5,
+                  "startAt": 1
+              },
+              {
+                  "characterFormat": {
+                      "fontColor": "empty"
+                  },
+                  "paragraphFormat": {
+                      "leftIndent": 252,
+                      "firstLineIndent": -36,
+                      "listFormat": {},
+                      "tabs": [
+                          {
+                              "position": 252,
+                              "deletePosition": 0,
+                              "tabJustification": "List",
+                              "tabLeader": "None"
+                          }
+                      ]
+                  },
+                  "followCharacter": "Tab",
+                  "listLevelPattern": "Arabic",
+                  "numberFormat": "%7.",
+                  "restartLevel": 6,
+                  "startAt": 1
+              },
+              {
+                  "characterFormat": {
+                      "fontColor": "empty"
+                  },
+                  "paragraphFormat": {
+                      "leftIndent": 288,
+                      "firstLineIndent": -36,
+                      "listFormat": {},
+                      "tabs": [
+                          {
+                              "position": 288,
+                              "deletePosition": 0,
+                              "tabJustification": "List",
+                              "tabLeader": "None"
+                          }
+                      ]
+                  },
+                  "followCharacter": "Tab",
+                  "listLevelPattern": "Arabic",
+                  "numberFormat": "%8.",
+                  "restartLevel": 7,
+                  "startAt": 1
+              },
+              {
+                  "characterFormat": {
+                      "fontColor": "empty"
+                  },
+                  "paragraphFormat": {
+                      "leftIndent": 324,
+                      "firstLineIndent": -36,
+                      "listFormat": {},
+                      "tabs": [
+                          {
+                              "position": 324,
+                              "deletePosition": 0,
+                              "tabJustification": "List",
+                              "tabLeader": "None"
+                          }
+                      ]
+                  },
+                  "followCharacter": "Tab",
+                  "listLevelPattern": "Arabic",
+                  "numberFormat": "%9.",
+                  "restartLevel": 8,
+                  "startAt": 1
+              }
+          ]
+      }
+  ],
+  "comments": [],
+  "revisions": [],
+  "customXml": [],
+  "footnotes": {
+      "separator": [
+          {
+              "paragraphFormat": {
+                  "styleName": "Normal",
+                  "listFormat": {}
+              },
+              "characterFormat": {},
+              "inlines": [
+                  {
+                      "characterFormat": {},
+                      "text": "\u0003"
+                  }
+              ]
+          }
+      ],
+      "continuationSeparator": [
+          {
+              "paragraphFormat": {
+                  "styleName": "Normal",
+                  "listFormat": {}
+              },
+              "characterFormat": {},
+              "inlines": [
+                  {
+                      "characterFormat": {},
+                      "text": "\u0004"
+                  }
+              ]
+          }
+      ],
+      "continuationNotice": [
+          {
+              "paragraphFormat": {
+                  "listFormat": {}
+              },
+              "characterFormat": {},
+              "inlines": []
+          }
+      ]
+  },
+  "endnotes": {
+      "separator": [
+          {
+              "paragraphFormat": {
+                  "styleName": "Normal",
+                  "listFormat": {}
+              },
+              "characterFormat": {},
+              "inlines": [
+                  {
+                      "characterFormat": {},
+                      "text": "\u0003"
+                  }
+              ]
+          }
+      ],
+      "continuationSeparator": [
+          {
+              "paragraphFormat": {
+                  "styleName": "Normal",
+                  "listFormat": {}
+              },
+              "characterFormat": {},
+              "inlines": [
+                  {
+                      "characterFormat": {},
+                      "text": "\u0004"
+                  }
+              ]
+          }
+      ],
+      "continuationNotice": [
+          {
+              "paragraphFormat": {
+                  "listFormat": {}
+              },
+              "characterFormat": {},
+              "inlines": []
+          }
+      ]
+  }
+};
+describe('Check box with character style and paragraph character validation', () => {
+  let editor: DocumentEditor = undefined;
+  beforeAll(() => {
+    let ele: HTMLElement = createElement('div', { id: 'container' });
+    // ele.setAttribute("style", "width: 1000px");
+    document.body.appendChild(ele);
+    DocumentEditor.Inject(Selection, Editor)
+    editor = new DocumentEditor({ isReadOnly: false, enableEditor: true });
+    (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+    (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+    (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+    (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+    editor.width='1000px';
+    editor.appendTo('#container');
+  });
+  afterAll((done) => {
+    editor.destroy();
+    document.body.removeChild(document.getElementById('container'));
+    editor = undefined;
+    document.body.innerHTML = '';
+    setTimeout(function () {
+      done();
+    }, 1000);
+  });
+  it('Checkbox with character style validation', () => {
+    editor.open(JSON.stringify(checkboxWithStyle));
+    expect(((editor.documentHelper.pages[0].bodyWidgets[0].childWidgets[0] as ParagraphWidget).childWidgets[0] as LineWidget).children[0].characterFormat.fontSize).toBe(9.6);
+  });
+  it('Checkbox with paragraph character format validation', () => {
+    editor.open(JSON.stringify(checkboxWithStyle));
+    expect(((editor.documentHelper.pages[0].bodyWidgets[0].childWidgets[1] as ParagraphWidget).childWidgets[0] as LineWidget).children[0].characterFormat.fontSize).toBe(9.6);
+  });
+});

@@ -1294,8 +1294,13 @@ export class Dialog extends Component<HTMLElement> implements INotifyPropertyCha
             if (this.isBlazorServerRender()) {
                 this.ftrTemplateContent = this.element.querySelector('.' + DLG_FOOTER_CONTENT);
             }
-            if (!isNullOrUndefined(this.ftrTemplateContent) && typeof (this.buttons[i].click) === 'function' && footerBtn.length > 0) {
-                EventHandler.add(footerBtn[i], 'click', this.buttons[i].click, this);
+            if (!isNullOrUndefined(this.ftrTemplateContent) && footerBtn.length > 0) {
+                if (typeof (this.buttons[i].click) === 'function') {
+                    EventHandler.add(footerBtn[i], 'click', this.buttons[i].click, this);
+                }
+                if (typeof (this.buttons[i].click) === 'object') {
+                    EventHandler.add(footerBtn[i], 'click', this.buttonClickHandler.bind(this, i), this);
+                }
             }
             if (!this.isBlazorServerRender() && !isNullOrUndefined(this.ftrTemplateContent)) {
                 this.btnObj[i].appendTo(this.ftrTemplateContent.children[i] as HTMLElement);
@@ -1304,6 +1309,10 @@ export class Dialog extends Component<HTMLElement> implements INotifyPropertyCha
             }
         }
     }
+
+    private buttonClickHandler(index: number): void {
+        this.trigger('buttons[' + index + '].click', {});
+    };
 
     private setContent(): void {
         attributes(this.element, { 'aria-describedby': this.element.id + '_dialog-content' });

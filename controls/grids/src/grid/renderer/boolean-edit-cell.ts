@@ -1,5 +1,5 @@
 import { isNullOrUndefined } from '@syncfusion/ej2-base';
-import { IEditCell, IGrid } from '../base/interface';
+import { IEditCell } from '../base/interface';
 import { Row } from '../models/row';
 import { Column } from '../models/column';
 import { CheckBox, ChangeEventArgs } from '@syncfusion/ej2-buttons';
@@ -10,6 +10,7 @@ import { EditCellBase } from './edit-cell-base';
 
 /**
  * `BooleanEditCell` is used to handle boolean cell type editing.
+ *
  * @hidden
  */
 export class BooleanEditCell extends EditCellBase implements IEditCell {
@@ -18,7 +19,7 @@ export class BooleanEditCell extends EditCellBase implements IEditCell {
     private activeClasses: string[] = ['e-selectionbackground', 'e-active'];
 
     public create(args: { column: Column, value: string, type: string }): Element {
-        let col: Column = args.column;
+        const col: Column = args.column;
         let classNames: string = 'e-field e-boolcell';
         if (col.type === 'checkbox') {
             classNames = 'e-field e-boolcell e-edit-checkselect';
@@ -43,7 +44,7 @@ export class BooleanEditCell extends EditCellBase implements IEditCell {
             this.editType = this.parent.editSettings.mode;
             this.editRow = args.row as HTMLElement;
             if (args.requestType !== 'add') {
-                let row: Row<Column> = this.parent.getRowObjectFromUID(args.row.getAttribute('data-uid'));
+                const row: Row<Column> = this.parent.getRowObjectFromUID(args.row.getAttribute('data-uid'));
                 chkState = row ? row.isSelected : false;
             }
             addRemoveActiveClasses([].slice.call(args.row.getElementsByClassName(literals.rowCell)), chkState, ...this.activeClasses);

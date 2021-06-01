@@ -14,6 +14,7 @@ import { ReturnType } from '../base/type';
 
 /**
  * Summary row model generator
+ *
  * @hidden
  */
 export class SummaryModelGenerator implements IModelGenerator<AggregateColumnModel> {
@@ -22,16 +23,18 @@ export class SummaryModelGenerator implements IModelGenerator<AggregateColumnMod
 
     /**
      * Constructor for Summary row model generator
+     *
+     * @param {IGrid} parent - specifies the IGrid
      */
     constructor(parent?: IGrid) {
         this.parent = parent;
     }
 
     public getData(): Object {
-        let rows: AggregateRowModel[] = [];
-        let row: AggregateRowModel[] = this.parent.aggregates.slice();
+        const rows: AggregateRowModel[] = [];
+        const row: AggregateRowModel[] = this.parent.aggregates.slice();
         for (let i: number = 0; i < row.length; i++) {
-            let columns: AggregateColumnModel[] = row[i].columns.filter((column: AggregateColumnModel) => {
+            const columns: AggregateColumnModel[] = row[i].columns.filter((column: AggregateColumnModel) => {
                 return !(column.footerTemplate || column.groupFooterTemplate || column.groupCaptionTemplate)
                     || this.columnSelector(column);
             });
@@ -47,7 +50,7 @@ export class SummaryModelGenerator implements IModelGenerator<AggregateColumnMod
     }
 
     public getColumns(start?: number, end?: number): Column[] {
-        let columns: Column[] = [];
+        const columns: Column[] = [];
         if (this.parent.allowGrouping) {
             for (let i: number = 0; i < this.parent.groupSettings.columns.length; i++) {
                 columns.push(new Column({}));
@@ -60,7 +63,7 @@ export class SummaryModelGenerator implements IModelGenerator<AggregateColumnMod
             columns.push(new Column({}));
         }
         columns.push(...<Column[]>this.parent.getColumns());
-        end = end ? end + this.parent.getIndentCount() : end;
+        end = end && !start ? end + this.parent.getIndentCount() : end;
         return isNullOrUndefined(start) ? columns : columns.slice(start, end);
     }
 
@@ -71,9 +74,9 @@ export class SummaryModelGenerator implements IModelGenerator<AggregateColumnMod
                 return [];
             }
         }
-        let data: Object[] = this.buildSummaryData(input, <SummaryData>args);
-        let rows: Row<AggregateColumnModel>[] = [];
-        let row: AggregateRowModel[] = (<AggregateRowModel[]>this.getData());
+        const data: Object[] = this.buildSummaryData(input, <SummaryData>args);
+        const rows: Row<AggregateColumnModel>[] = [];
+        const row: AggregateRowModel[] = (<AggregateRowModel[]>this.getData());
         for (let i: number = 0; i < row.length; i++) {
             rows.push(
                 this.getGeneratedRow(
@@ -87,26 +90,26 @@ export class SummaryModelGenerator implements IModelGenerator<AggregateColumnMod
     public getGeneratedRow(
         summaryRow: AggregateRowModel,
         data: Object, raw: number, start: number, end: number, parentUid?: string, columns?: Column[]): Row<AggregateColumnModel> {
-        let tmp: Cell<AggregateColumnModel>[] = [];
-        let indents: string[] = this.getIndentByLevel(raw);
-        let isDetailGridAlone: boolean = !isNullOrUndefined(this.parent.childGrid);
-        let indentLength: number = this.parent.getIndentCount();
-        if (this.parent.isRowDragable()) {
+        const tmp: Cell<AggregateColumnModel>[] = [];
+        let indents: string[] = this.getIndentByLevel();
+        const isDetailGridAlone: boolean = !isNullOrUndefined(this.parent.childGrid);
+        const indentLength: number = !start ? this.parent.getIndentCount() : 0;
+        if (this.parent.isRowDragable() && !start) {
             indents = ['e-indentcelltop'];
         }
 
-        let values: Column[] = columns ? columns : this.getColumns(start, end);
+        const values: Column[] = columns ? columns : this.getColumns(start, end);
         for (let i: number = 0; i < values.length; i++) {
             tmp.push(
                 this.getGeneratedCell(
                     values[i],
                     summaryRow,
                     i >= indentLength ? this.getCellType() :
-                    i < this.parent.groupSettings.columns.length ? CellType.Indent : CellType.DetailFooterIntent,
+                        i < this.parent.groupSettings.columns.length ? CellType.Indent : CellType.DetailFooterIntent,
                     indents[i], isDetailGridAlone));
         }
 
-        let row: Row<AggregateColumnModel> = new Row<AggregateColumnModel>({ data: data, attributes: { class: 'e-summaryrow' } });
+        const row: Row<AggregateColumnModel> = new Row<AggregateColumnModel>({ data: data, attributes: { class: 'e-summaryrow' } });
         row.cells = tmp;
         row.uid = getUid('grid-row');
         row.parentUid = parentUid;
@@ -118,10 +121,9 @@ export class SummaryModelGenerator implements IModelGenerator<AggregateColumnMod
         column: Column, summaryRow: AggregateRowModel, cellType?: CellType, indent?: string, isDetailGridAlone?: boolean)
         : Cell<AggregateColumnModel> {
         //Get the summary column by display
-        let sColumn: AggregateColumnModel = summaryRow.columns.filter(
-            (scolumn: AggregateColumnModel) => scolumn.columnName === column.field)
-        [0];
-        let attrs: { style: Object, 'e-mappinguid': string, index: number, class?: string } = {
+        const sColumn: AggregateColumnModel = summaryRow.columns.filter(
+            (scolumn: AggregateColumnModel) => scolumn.columnName === column.field)[0];
+        const attrs: { style: Object, 'e-mappinguid': string, index: number, class?: string } = {
             'style': { 'textAlign': column.textAlign },
             'e-mappinguid': column.uid, index: column.index
         };
@@ -134,7 +136,7 @@ export class SummaryModelGenerator implements IModelGenerator<AggregateColumnMod
             attrs.class = 'e-detailindentcelltop';
         }
 
-        let opt: { [o: string]: Object } = {
+        const opt: { [o: string]: Object } = {
             'visible': column.visible,
             'isDataCell': !isNullOrUndefined(sColumn),
             'isTemplate': sColumn && !isNullOrUndefined(sColumn.footerTemplate
@@ -149,13 +151,12 @@ export class SummaryModelGenerator implements IModelGenerator<AggregateColumnMod
     }
 
     private buildSummaryData(data: Object[] | Group, args?: SummaryData): Object[] {
-        let dummy: Object[] = [];
-        let summaryRows: AggregateRowModel[] = <AggregateRowModel[]>this.getData();
+        const dummy: Object[] = [];
+        const summaryRows: AggregateRowModel[] = <AggregateRowModel[]>this.getData();
         let single: Object = {};
-        let key: string = '';
         for (let i: number = 0; i < summaryRows.length; i++) {
             single = {};
-            let column: AggregateColumn[] = (summaryRows[i].columns as AggregateColumn[]);
+            const column: AggregateColumn[] = (summaryRows[i].columns as AggregateColumn[]);
             for (let j: number = 0; j < column.length; j++) {
                 single = this.setTemplate(
                     (column[j] as AggregateColumn), (args && args.aggregates) ? <Object[]>args : <Object[]>data, single);
@@ -166,21 +167,21 @@ export class SummaryModelGenerator implements IModelGenerator<AggregateColumnMod
         return dummy;
     }
 
-    protected getIndentByLevel(data?: number): string[] {
+    protected getIndentByLevel(): string[] {
         return this.parent.groupSettings.columns.map(() => 'e-indentcelltop');
     }
 
     protected setTemplate(column: AggregateColumn, data: Object[], single: Object | Group): Object {
         let types: AggregateType[] = <AggregateType[]>column.type;
-        let helper: Object & { format?: Function } = {};
-        let formatFn: Function = column.getFormatter() || ((): Function => (a: Object) => a)();
-        let group: Group = (<Group>data);
+        const helper: Object & { format?: Function } = {};
+        const formatFn: Function = column.getFormatter() || ((): Function => (a: Object) => a)();
+        const group: Group = (<Group>data);
         if (!(types instanceof Array)) {
             types = <AggregateType[]>[column.type];
         }
         for (let i: number = 0; i < types.length; i++) {
-            let key: string = column.field + ' - ' + types[i].toLowerCase(); let disp: string = column.columnName;
-            let val: Object = types[i] !== 'Custom' && group.aggregates && key in group.aggregates ? group.aggregates[key] :
+            const key: string = column.field + ' - ' + types[i].toLowerCase(); const disp: string = column.columnName;
+            const val: Object = types[i] !== 'Custom' && group.aggregates && key in group.aggregates ? group.aggregates[key] :
                 calculateAggregate(types[i], group.aggregates ? group : <Object[]>data, column, this.parent);
             single[disp] = single[disp] || {}; single[disp][key] = val;
             single[disp][types[i]] = !isNullOrUndefined(val) ? formatFn(val) : ' ';
@@ -219,7 +220,7 @@ export class CaptionSummaryModelGenerator extends SummaryModelGenerator implemen
     }
 
     public getData(): Object {
-        let initVal: AggregateRowModel = { columns: [] };
+        const initVal: AggregateRowModel = { columns: [] };
         return [(<AggregateRowModel[]>super.getData()).reduce(
             (prev: AggregateRowModel, cur: AggregateRowModel) => {
                 prev.columns = [...prev.columns, ...cur.columns];

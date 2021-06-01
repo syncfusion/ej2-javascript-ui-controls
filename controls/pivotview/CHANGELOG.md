@@ -2,6 +2,16 @@
 
 ## [Unreleased]
 
+## 19.1.65 (2021-05-25)
+
+### Pivot Table
+ 
+#### Bug Fixes
+ 
+- `#327239` - The issue on excluding fields has been fixed.
+- `#326340` - The font style of the pivot chart tooltip can now be customized.
+- `#325094` - The number formatting can now be applied in the drill-through grid.
+
 ## 19.1.59 (2021-05-04)
 
 ### Pivot Table

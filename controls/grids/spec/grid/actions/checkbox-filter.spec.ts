@@ -19,6 +19,7 @@ import { Query } from '@syncfusion/ej2-data';
 import { FilterSearchBeginEventArgs } from '../../../src/grid/base/interface';
 import { select } from '@syncfusion/ej2-base';
 import { L10n } from '@syncfusion/ej2-base';
+import * as events from '../../../src/grid/base/constant';
 
 Grid.Inject(Filter, Page,Toolbar, Selection, Group, Freeze, Edit, Filter, VirtualScroll);
 
@@ -2474,5 +2475,35 @@ describe('EJ2-47692 - Throws script error while using hideSearchbox as true in I
     afterAll(() => {
         destroy(gridObj);
         gridObj = actionComplete = null;
+    });
+});
+
+describe('EJ2-49551 - Provide public event to handle queries on custom ExcelFilter dataSource.', () => {
+    let gridObj: Grid;
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: filterData,
+                allowFiltering: true,
+                filterSettings: { type: 'Excel' },
+                height: 500,
+                columns: [
+                    { field: 'OrderID', headerText: 'Order ID', width: 120, textAlign: 'Right' },
+                    { field: 'EmployeeID', headerText: 'EmployeeID', width: 150, },
+                ],
+            }, done);
+    });
+
+    it('beforeCheckboxRendererQuery internal event check', (done: Function) => {
+        gridObj.on(events.beforeCheckboxRendererQuery, (args: any) => {
+            gridObj.off(events.beforeCheckboxRendererQuery);
+            done();
+        });
+        (gridObj.element.getElementsByClassName('e-filtermenudiv e-icons e-icon-filter')[1] as any).click();
+    });
+    
+    afterAll(() => {
+        destroy(gridObj);
+        gridObj = null;
     });
 });

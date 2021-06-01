@@ -56,6 +56,7 @@ export class WrapText {
                 for (let j: number = args.range[1]; j <= args.range[3]; j++) {
                     cell = getCell(i, j, args.sheet, null, true);
                     if (cell.rowSpan < 0 || cell.colSpan < 0) { continue; }
+                    const isMerge: boolean = (cell.rowSpan > 1 || cell.colSpan > 1);
                     ele = args.initial ? args.td : this.parent.getCell(i, j);
                     if (ele) {
                         if (args.wrap) {
@@ -63,7 +64,7 @@ export class WrapText {
                         } else {
                             ele.classList.remove(WRAPTEXT);
                         }
-                        if (isCustomHgt) {
+                        if (isCustomHgt || isMerge) {
                             if (ele.children.length === 0 || !ele.querySelector('.e-wrap-content')) {
                                 ele.innerHTML
                                     = this.parent.createElement('span', {
@@ -76,7 +77,7 @@ export class WrapText {
                     if (Browser.isIE) {
                         ele.classList.add('e-ie-wrap');
                     }
-                    if (!isCustomHgt) {
+                    if (!(isCustomHgt || isMerge)) {
                         colwidth = getExcludedColumnWidth(args.sheet, i, j, cell.colSpan > 1 ? j + cell.colSpan - 1 : j);
                         let displayText: string = this.parent.getDisplayText(cell);
                         if (displayText.indexOf('\n') < 0) {
@@ -124,12 +125,12 @@ export class WrapText {
                                 setMaxHgt(args.sheet, i, j, hgt);
                                 maxHgt = Math.max(getMaxHgt(args.sheet, i), 20);
                             }
-                        } else if (!args.wrap) {
+                        } else if (!args.wrap || !displayText) {
                             setMaxHgt(args.sheet, i, j, 20);
-                            maxHgt = 20;
+                            maxHgt = Math.max(getMaxHgt(args.sheet, i), 20);
                         }
-                        if (j === args.range[3] && ((args.wrap && maxHgt > 20 && getMaxHgt(args.sheet, i) <= maxHgt) || (!args.wrap
-                            && getMaxHgt(args.sheet, i) < getRowHeight(args.sheet, i) && getRowHeight(args.sheet, i) > 20))) {
+                        if (j === args.range[3] && ((args.wrap && maxHgt > 20 && getMaxHgt(args.sheet, i) <= maxHgt) || ((!args.wrap ||
+                            !displayText) && getMaxHgt(args.sheet, i) < getRowHeight(args.sheet, i) && getRowHeight(args.sheet, i) > 20))) {
                             setRowEleHeight(this.parent, args.sheet, maxHgt, i, args.row, args.hRow);
                         }
                     }

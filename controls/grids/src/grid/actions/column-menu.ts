@@ -17,6 +17,7 @@ import * as literals from '../base/string-literals';
 
 /**
  * 'column menu module used to handle column menu actions'
+ *
  * @hidden
  */
 export class ColumnMenu implements IAction {
@@ -34,7 +35,6 @@ export class ColumnMenu implements IAction {
     private hiddenItems: string[] = [];
     private headerCell: HTMLElement;
     private isOpen: boolean = false;
-    private eventArgs: Event;
     // default class names
     private GROUP: string = 'e-icon-group';
     private UNGROUP: string = 'e-icon-ungroup';
@@ -54,26 +54,27 @@ export class ColumnMenu implements IAction {
     }
 
     private wireEvents(): void {
-        let elements: HTMLElement[] = this.getColumnMenuHandlers();
+        const elements: HTMLElement[] = this.getColumnMenuHandlers();
         for (let i: number = 0; i < elements.length; i++) {
             EventHandler.add(elements[i], 'mousedown', this.columnMenuHandlerDown, this);
         }
     }
 
     private unwireEvents(): void {
-        let elements: HTMLElement[] = this.getColumnMenuHandlers();
+        const elements: HTMLElement[] = this.getColumnMenuHandlers();
         for (let i: number = 0; i < elements.length; i++) {
             EventHandler.remove(elements[i], 'mousedown', this.columnMenuHandlerDown);
         }
     }
 
     /**
-     * To destroy the resize 
-     * @return {void}
+     * To destroy the resize
+     *
+     * @returns {void}
      * @hidden
      */
     public destroy(): void {
-        let gridElement: Element = this.parent.element;
+        const gridElement: Element = this.parent.element;
         if (!gridElement || (!gridElement.querySelector('.' + literals.gridHeader) && !gridElement.querySelector( '.' + literals.gridContent))) { return; }
         this.columnMenu.destroy();
         this.removeEventListener();
@@ -98,7 +99,11 @@ export class ColumnMenu implements IAction {
         }
     }
 
-    /** @hidden */
+    /**
+     * @param {string} field - specifies the field name
+     * @returns {void}
+     * @hidden
+     */
     public openColumnMenuByField(field: string): void {
         this.openColumnMenu({ target: this.parent.getColumnHeaderByField(field).querySelector('.e-columnmenu') });
     }
@@ -106,7 +111,7 @@ export class ColumnMenu implements IAction {
     private openColumnMenu(e: { target: Element | EventTarget, preventDefault?: Function }): void {
         let pos: OffsetPosition = { top: 0, left: 0 };
         this.element.style.cssText = 'display:block;visibility:hidden';
-        let elePos: ClientRect = this.element.getBoundingClientRect();
+        const elePos: ClientRect = this.element.getBoundingClientRect();
         this.element.style.cssText = 'display:none;visibility:visible';
         this.headerCell = this.getHeaderCell(e);
         if (Browser.isDevice) {
@@ -127,7 +132,7 @@ export class ColumnMenu implements IAction {
         applyBiggerTheme(this.parent.element, this.columnMenu.element.parentElement);
     }
 
-    private columnMenuHandlerDown(e: Event): void {
+    private columnMenuHandlerDown(): void {
         this.isOpen = !(this.element.style.display === 'none' || this.element.style.display === '');
     }
 
@@ -136,6 +141,7 @@ export class ColumnMenu implements IAction {
     }
 
     /**
+     * @returns {void}
      * @hidden
      */
     public addEventListener(): void {
@@ -151,6 +157,7 @@ export class ColumnMenu implements IAction {
     }
 
     /**
+     * @returns {void}
      * @hidden
      */
     public removeEventListener(): void {
@@ -166,11 +173,11 @@ export class ColumnMenu implements IAction {
     }
 
     private keyPressHandler(e: KeyboardEventArgs): void {
-        let gObj: IGrid = this.parent;
+        const gObj: IGrid = this.parent;
         if (e.action === 'altDownArrow') {
-            let element: HTMLElement = gObj.focusModule.currentInfo.element;
+            const element: HTMLElement = gObj.focusModule.currentInfo.element;
             if (element && element.classList.contains('e-headercell')) {
-                let column: Column = gObj.getColumnByUid(element.firstElementChild.getAttribute('e-mappinguid'));
+                const column: Column = gObj.getColumnByUid(element.firstElementChild.getAttribute('e-mappinguid'));
                 this.openColumnMenuByField(column.field);
             }
         }
@@ -222,9 +229,9 @@ export class ColumnMenu implements IAction {
 
     private beforeMenuItemRender(args: MenuEventArgs): void {
         if (this.isChooserItem(args.item)) {
-            let field: string = this.getKeyFromId(args.item.id, this.CHOOSER);
-            let column: Column[] = (<{ columnModel?: Column[] }>this.parent).columnModel.filter((col: Column) => col.field === field);
-            let check: Element = createCheckBox(this.parent.createElement, false, {
+            const field: string = this.getKeyFromId(args.item.id, this.CHOOSER);
+            const column: Column[] = (<{ columnModel?: Column[] }>this.parent).columnModel.filter((col: Column) => col.field === field);
+            const check: Element = createCheckBox(this.parent.createElement, false, {
                 label: args.item.text,
                 checked: column[0].visible
             });
@@ -240,7 +247,7 @@ export class ColumnMenu implements IAction {
     }
 
     private columnMenuBeforeClose(args: ColumnMenuOpenEventArgs): void {
-        let colChooser: Element = args.event ? closest(args.event.target as Node, '.e-menu-item') : null;
+        const colChooser: Element = args.event ? closest(args.event.target as Node, '.e-menu-item') : null;
         if (!isNullOrUndefined(args.parentItem) &&
             this.getKeyFromId(args.parentItem.id) === 'ColumnChooser' &&
             colChooser && this.isChooserItem(colChooser)) {
@@ -263,9 +270,9 @@ export class ColumnMenu implements IAction {
     private columnMenuBeforeOpen(args: ColumnMenuOpenEventArgs): void {
         args.column = this.targetColumn = this.getColumn();
         this.parent.trigger(events.columnMenuOpen, args);
-        for (let item of args.items) {
-            let key: string = this.getKeyFromId(item.id);
-            let dItem: ColumnMenuItemModel = this.defaultItems[key];
+        for (const item of args.items) {
+            const key: string = this.getKeyFromId(item.id);
+            const dItem: ColumnMenuItemModel = this.defaultItems[key];
             if (this.getDefaultItems().indexOf(key) !== -1 && this.ensureDisabledStatus(key) && !dItem.hide) {
                 this.disableItems.push(item.text);
             }
@@ -286,95 +293,97 @@ export class ColumnMenu implements IAction {
         }
     }
 
-    private ensureDisabledStatus(item: string): Boolean {
-        let status: Boolean = false;
+    private ensureDisabledStatus(item: string): boolean {
+        let status: boolean = false;
         switch (item) {
-            case 'Group':
-                if (!this.parent.allowGrouping || (this.parent.ensureModuleInjected(Group) && this.targetColumn
-                    && this.parent.groupSettings.columns.indexOf(this.targetColumn.field) >= 0 ||
-                    this.targetColumn && !this.targetColumn.allowGrouping)) {
-                    status = true;
-                }
-                break;
-            case 'AutoFitAll':
-            case 'AutoFit':
-                status = !this.parent.ensureModuleInjected(Resize);
-                break;
-            case 'Ungroup':
-                if (!this.parent.ensureModuleInjected(Group) || (this.parent.ensureModuleInjected(Group) && this.targetColumn
-                    && this.parent.groupSettings.columns.indexOf(this.targetColumn.field) < 0)) {
-                    status = true;
-                }
-                break;
-            case 'SortDescending':
-            case 'SortAscending':
-                if (this.parent.allowSorting && this.parent.ensureModuleInjected(Sort)
-                    && this.parent.sortSettings.columns.length > 0 && this.targetColumn && this.targetColumn.allowSorting) {
-                    let sortColumns: SortDescriptorModel[] = this.parent.sortSettings.columns;
-                    for (let i: number = 0; i < sortColumns.length; i++) {
-                        if (sortColumns[i].field === this.targetColumn.field
-                            && sortColumns[i].direction.toLocaleLowerCase() === item.toLocaleLowerCase().replace('sort', '')) {
-                            status = true;
-                        }
+        case 'Group':
+            if (!this.parent.allowGrouping || (this.parent.ensureModuleInjected(Group) && this.targetColumn
+                && this.parent.groupSettings.columns.indexOf(this.targetColumn.field) >= 0 ||
+                this.targetColumn && !this.targetColumn.allowGrouping)) {
+                status = true;
+            }
+            break;
+        case 'AutoFitAll':
+        case 'AutoFit':
+            status = !this.parent.ensureModuleInjected(Resize);
+            break;
+        case 'Ungroup':
+            if (!this.parent.ensureModuleInjected(Group) || (this.parent.ensureModuleInjected(Group) && this.targetColumn
+                && this.parent.groupSettings.columns.indexOf(this.targetColumn.field) < 0)) {
+                status = true;
+            }
+            break;
+        case 'SortDescending':
+        case 'SortAscending':
+            if (this.parent.allowSorting && this.parent.ensureModuleInjected(Sort)
+                && this.parent.sortSettings.columns.length > 0 && this.targetColumn && this.targetColumn.allowSorting) {
+                const sortColumns: SortDescriptorModel[] = this.parent.sortSettings.columns;
+                for (let i: number = 0; i < sortColumns.length; i++) {
+                    if (sortColumns[i].field === this.targetColumn.field
+                        && sortColumns[i].direction.toLocaleLowerCase() === item.toLocaleLowerCase().replace('sort', '')) {
+                        status = true;
                     }
-                } else if (!this.parent.allowSorting || !this.parent.ensureModuleInjected(Sort) ||
-                    this.parent.allowSorting && this.targetColumn && !this.targetColumn.allowSorting) {
-                    status = true;
                 }
-                break;
-            case 'Filter':
-                if (this.parent.allowFiltering && (this.parent.filterSettings.type !== 'FilterBar')
-                    && this.parent.ensureModuleInjected(Filter) && this.targetColumn && this.targetColumn.allowFiltering) {
-                    status = false;
-                } else if (this.parent.ensureModuleInjected(Filter) && this.parent.allowFiltering
-                    && this.targetColumn && (!this.targetColumn.allowFiltering || this.parent.filterSettings.type === 'FilterBar')) {
-                    status = true;
-                }
+            } else if (!this.parent.allowSorting || !this.parent.ensureModuleInjected(Sort) ||
+                this.parent.allowSorting && this.targetColumn && !this.targetColumn.allowSorting) {
+                status = true;
+            }
+            break;
+        case 'Filter':
+            if (this.parent.allowFiltering && (this.parent.filterSettings.type !== 'FilterBar')
+                && this.parent.ensureModuleInjected(Filter) && this.targetColumn && this.targetColumn.allowFiltering) {
+                status = false;
+            } else if (this.parent.ensureModuleInjected(Filter) && this.parent.allowFiltering
+                && this.targetColumn && (!this.targetColumn.allowFiltering || this.parent.filterSettings.type === 'FilterBar')) {
+                status = true;
+            }
         }
         return status;
     }
     private columnMenuItemClick(args: ColumnMenuClickEventArgs): void {
-        let item: string = this.isChooserItem(args.item) ? 'ColumnChooser' : this.getKeyFromId(args.item.id);
+        const item: string = this.isChooserItem(args.item) ? 'ColumnChooser' : this.getKeyFromId(args.item.id);
         switch (item) {
-            case 'AutoFit':
-                this.parent.autoFitColumns(this.targetColumn.field);
-                break;
-            case 'AutoFitAll':
-                this.parent.autoFitColumns([]);
-                break;
-            case 'Ungroup':
-                this.parent.ungroupColumn(this.targetColumn.field);
-                break;
-            case 'Group':
-                this.parent.groupColumn(this.targetColumn.field);
-                break;
-            case 'SortAscending':
-                this.parent.sortColumn(this.targetColumn.field, 'Ascending');
-                break;
-            case 'SortDescending':
-                this.parent.sortColumn(this.targetColumn.field, 'Descending');
-                break;
-            case 'ColumnChooser':
-                let key: string = this.getKeyFromId(args.item.id, this.CHOOSER);
-                let checkbox: HTMLElement = args.element.querySelector('.e-checkbox-wrapper .e-frame') as HTMLElement;
-                if (checkbox && checkbox.classList.contains('e-check')) {
-                    checkbox.classList.remove('e-check');
-                    this.parent.hideColumns(key, 'field');
-                } else if (checkbox) {
-                    this.parent.showColumns(key, 'field');
-                    checkbox.classList.add('e-check');
-                }
-                break;
-            case 'Filter':
-                this.getFilter(args.element, args.item.id);
-                break;
+        case 'AutoFit':
+            this.parent.autoFitColumns(this.targetColumn.field);
+            break;
+        case 'AutoFitAll':
+            this.parent.autoFitColumns([]);
+            break;
+        case 'Ungroup':
+            this.parent.ungroupColumn(this.targetColumn.field);
+            break;
+        case 'Group':
+            this.parent.groupColumn(this.targetColumn.field);
+            break;
+        case 'SortAscending':
+            this.parent.sortColumn(this.targetColumn.field, 'Ascending');
+            break;
+        case 'SortDescending':
+            this.parent.sortColumn(this.targetColumn.field, 'Descending');
+            break;
+        case 'ColumnChooser':
+            // eslint-disable-next-line no-case-declarations
+            const key: string = this.getKeyFromId(args.item.id, this.CHOOSER);
+            // eslint-disable-next-line no-case-declarations
+            const checkbox: HTMLElement = args.element.querySelector('.e-checkbox-wrapper .e-frame') as HTMLElement;
+            if (checkbox && checkbox.classList.contains('e-check')) {
+                checkbox.classList.remove('e-check');
+                this.parent.hideColumns(key, 'field');
+            } else if (checkbox) {
+                this.parent.showColumns(key, 'field');
+                checkbox.classList.add('e-check');
+            }
+            break;
+        case 'Filter':
+            this.getFilter(args.element, args.item.id);
+            break;
         }
         args.column = this.targetColumn;
         this.parent.trigger(events.columnMenuClick, args);
     }
 
     private columnMenuOnClose(args: OpenCloseMenuEventArgs): void {
-        let parent: string = 'parentObj';
+        const parent: string = 'parentObj';
         if (args.items.length > 0 && args.items[0][parent] instanceof Menu) {
             this.columnMenu.enableItems(this.disableItems, false);
             this.disableItems = [];
@@ -394,12 +403,12 @@ export class ColumnMenu implements IAction {
     }
 
     private getItems(): ColumnMenuItemModel[] {
-        let items: ColumnMenuItemModel[] = [];
-        let defultItems: string[] | ColumnMenuItemModel[] = this.parent.columnMenuItems ? this.parent.columnMenuItems : this.getDefault();
-        for (let item of defultItems) {
+        const items: ColumnMenuItemModel[] = [];
+        const defultItems: string[] | ColumnMenuItemModel[] = this.parent.columnMenuItems ? this.parent.columnMenuItems : this.getDefault();
+        for (const item of defultItems) {
             if (typeof item === 'string') {
                 if (item === 'ColumnChooser') {
-                    let col: ColumnMenuItemModel = this.getDefaultItem(item);
+                    const col: ColumnMenuItemModel = this.getDefaultItem(item);
                     col.items = this.createChooserItems();
                     items.push(col);
                 } else {
@@ -416,21 +425,21 @@ export class ColumnMenu implements IAction {
     private getDefaultItem(item: string): ColumnMenuItemModel {
         let menuItem: ColumnMenuItemModel = {};
         switch (item) {
-            case 'SortAscending':
-                menuItem = { iconCss: this.ASCENDING };
-                break;
-            case 'SortDescending':
-                menuItem = { iconCss: this.DESCENDING };
-                break;
-            case 'Group':
-                menuItem = { iconCss: this.GROUP };
-                break;
-            case 'Ungroup':
-                menuItem = { iconCss: this.UNGROUP };
-                break;
-            case 'Filter':
-                menuItem = { iconCss: this.FILTER };
-                break;
+        case 'SortAscending':
+            menuItem = { iconCss: this.ASCENDING };
+            break;
+        case 'SortDescending':
+            menuItem = { iconCss: this.DESCENDING };
+            break;
+        case 'Group':
+            menuItem = { iconCss: this.GROUP };
+            break;
+        case 'Ungroup':
+            menuItem = { iconCss: this.UNGROUP };
+            break;
+        case 'Filter':
+            menuItem = { iconCss: this.FILTER };
+            break;
         }
         this.defaultItems[item] = {
             text: this.getLocaleText(item), id: this.generateID(item),
@@ -451,7 +460,9 @@ export class ColumnMenu implements IAction {
         return id.indexOf('_colmenu_') > 0 &&
             id.replace(this.gridID + '_colmenu_' + (append ? append : ''), '');
     }
+
     /**
+     * @returns {HTMLElement} returns the HTMLElement
      * @hidden
      */
     public getColumnMenu(): HTMLElement {
@@ -463,7 +474,7 @@ export class ColumnMenu implements IAction {
     }
 
     private setLocaleKey(): { [key: string]: string } {
-        let localeKeys: { [key: string]: string } = {
+        const localeKeys: { [key: string]: string } = {
             'AutoFitAll': 'autoFitAll',
             'AutoFit': 'autoFit',
             'Group': 'Group',
@@ -482,15 +493,15 @@ export class ColumnMenu implements IAction {
 
     private getColumn(): Column {
         if (this.headerCell) {
-            let uid: string = this.headerCell.querySelector('.e-headercelldiv').getAttribute('e-mappinguid');
+            const uid: string = this.headerCell.querySelector('.e-headercelldiv').getAttribute('e-mappinguid');
             return this.parent.getColumnByUid(uid);
         }
         return null;
     }
 
     private createChooserItems(): ColumnMenuItemModel[] {
-        let items: ColumnMenuItemModel[] = [];
-        for (let col of (<{ columnModel?: Column[] }>this.parent).columnModel) {
+        const items: ColumnMenuItemModel[] = [];
+        for (const col of (<{ columnModel?: Column[] }>this.parent).columnModel) {
             if (col.showInColumnChooser && col.field) {
                 items.push({ id: this.generateID(col.field, this.CHOOSER), text: col.headerText ? col.headerText : col.field });
             }
@@ -499,9 +510,9 @@ export class ColumnMenu implements IAction {
     }
 
     private appendFilter(e: Event): void {
-        let filter: string = 'Filter';
+        const filter: string = 'Filter';
         if (!this.defaultItems[filter]) { return; } else {
-            let key: string = this.defaultItems[filter].id;
+            const key: string = this.defaultItems[filter].id;
             if (closest((e as Event).target as Element, '#' + key) && !this.isFilterPopupOpen()) {
                 this.getFilter((e as Event).target as Element, key);
             } else if (!closest((e as Event).target as Element, '#' + key) && this.isFilterPopupOpen()) {
@@ -511,7 +522,7 @@ export class ColumnMenu implements IAction {
     }
 
     private getFilter(target: Element, id: string, isClose?: boolean): void {
-        let filterPopup: HTMLElement = this.getFilterPop();
+        const filterPopup: HTMLElement = this.getFilterPop();
         if (filterPopup) {
             filterPopup.style.display = !Browser.isDevice && isClose ? 'none' : 'block';
         } else {
@@ -522,9 +533,9 @@ export class ColumnMenu implements IAction {
     }
 
     private setPosition(li: Element, ul: HTMLElement): void {
-        let gridPos: ClientRect = this.parent.element.getBoundingClientRect();
-        let liPos: ClientRect = li.getBoundingClientRect();
-        let gridTop: number =  this.parent.element.offsetTop;
+        const gridPos: ClientRect = this.parent.element.getBoundingClientRect();
+        const liPos: ClientRect = li.getBoundingClientRect();
+        const gridTop: number =  this.parent.element.offsetTop;
         let left: number = liPos.left;
         let top: number = gridTop;
         if (window.innerHeight < ul.offsetHeight + gridPos.top) {
@@ -543,13 +554,13 @@ export class ColumnMenu implements IAction {
         ul.style.left = left + 'px';
     }
 
-    private filterPosition(e: Event): void {
-        let filterPopup: HTMLElement = this.getFilterPop();
+    private filterPosition(): void {
+        const filterPopup: HTMLElement = this.getFilterPop();
         filterPopup.classList.add(this.WRAP);
         if (!Browser.isDevice) {
-            let disp: string = filterPopup.style.display;
+            const disp: string = filterPopup.style.display;
             filterPopup.style.cssText += 'display:block;visibility:hidden';
-            let li: HTMLElement = this.element.querySelector('.' + this.FILTER) as HTMLElement;
+            const li: HTMLElement = this.element.querySelector('.' + this.FILTER) as HTMLElement;
             if (li) {
                 this.setPosition(li.parentElement, filterPopup);
                 filterPopup.style.cssText += 'display:' + disp + ';visibility:visible';
@@ -558,7 +569,7 @@ export class ColumnMenu implements IAction {
     }
 
     private getDefault(): string[] {
-        let items: string[] = [];
+        const items: string[] = [];
         if (this.parent.ensureModuleInjected(Resize)) {
             items.push('AutoFitAll');
             items.push('AutoFit');
@@ -580,7 +591,7 @@ export class ColumnMenu implements IAction {
     }
 
     private isFilterPopupOpen(): boolean {
-        let filterPopup: HTMLElement = this.getFilterPop();
+        const filterPopup: HTMLElement = this.getFilterPop();
         return filterPopup && filterPopup.style.display !== 'none';
     }
 

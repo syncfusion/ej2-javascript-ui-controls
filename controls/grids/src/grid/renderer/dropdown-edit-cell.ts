@@ -10,6 +10,7 @@ import { EditCellBase } from './edit-cell-base';
 
 /**
  * `DropDownEditCell` is used to handle dropdown cell type editing.
+ *
  * @hidden
  */
 export class DropDownEditCell extends EditCellBase implements IEditCell {
@@ -25,13 +26,13 @@ export class DropDownEditCell extends EditCellBase implements IEditCell {
     }
 
     public write(args: { rowData: Object, element: Element, column: Column, row: HTMLElement, requestType: string }): void {
-        let isInline: boolean = this.parent.editSettings.mode !== 'Dialog';
+        const isInline: boolean = this.parent.editSettings.mode !== 'Dialog';
         this.column = args.column;
-        let pred: Predicate = new Predicate(args.column.field, 'notequal', null, true, false);
-        let params: DropDownListModel = {};
+        const pred: Predicate = new Predicate(args.column.field, 'notequal', null, true, false);
+        const params: DropDownListModel = {};
         if (args.column.edit.params) {
-            let keys: string[] = Object.keys(args.column.edit.params);
-            for (let i = 0; i < keys.length; i++) {
+            const keys: string[] = Object.keys(args.column.edit.params);
+            for (let i: number = 0; i < keys.length; i++) {
                 params[keys[i]] = keys[i] === 'query' ? args.column.edit.params[keys[i]].clone() : args.column.edit.params[keys[i]];
             }
         }
@@ -55,6 +56,7 @@ export class DropDownEditCell extends EditCellBase implements IEditCell {
         args.element.setAttribute('name', getComplexFieldID(args.column.field));
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     private dropdownCreated(e: FilteringEventArgs): void {
         this.flag = true;
     }
@@ -72,9 +74,9 @@ export class DropDownEditCell extends EditCellBase implements IEditCell {
     }
 
     private dropDownOpen(args: { popup: Popup }): void {
-        let dlgElement: Element = parentsUntil(this.obj.element, 'e-dialog');
+        const dlgElement: Element = parentsUntil(this.obj.element, 'e-dialog');
         if (this.parent.editSettings.mode === 'Dialog' && !isNullOrUndefined(dlgElement)) {
-            let dlgObj: Dialog = (<EJ2Intance>select('#' + dlgElement.id, document)).ej2_instances[0];
+            const dlgObj: Dialog = (<EJ2Intance>select('#' + dlgElement.id, document)).ej2_instances[0];
             args.popup.element.style.zIndex = (dlgObj.zIndex + 1).toString();
         }
     }

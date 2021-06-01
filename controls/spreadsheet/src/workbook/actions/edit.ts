@@ -4,6 +4,7 @@ import { getRangeIndexes, parseIntValue } from '../common/index';
 import { isNullOrUndefined, getNumericObject } from '@syncfusion/ej2-base';
 import { checkIsFormula } from '../../workbook/common/index';
 import { getTypeFromFormat } from '../integrations/index';
+import { checkConditionalFormat } from '../../spreadsheet/common/event';
 
 /**
  * The `WorkbookEdit` module is used to handle the editing functionalities in Workbook.
@@ -135,6 +136,9 @@ export class WorkbookEdit {
         this.parent.setUsedRange(range[0], range[1], sheet);
         if (this.parent.allowChart) {
             this.parent.notify(refreshChart, {cell: cell, rIdx: range[0], cIdx: range[1], sheetIdx: sheetIdx });
+        }
+        if (this.parent.allowConditionalFormat) {
+            this.parent.notify(checkConditionalFormat, { rowIdx: range[0], colIdx: range[1], cell: cell, isAction: true });
         }
     }
 }

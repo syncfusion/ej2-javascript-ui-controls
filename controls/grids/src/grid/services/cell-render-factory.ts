@@ -5,6 +5,7 @@ import { CellType } from '../base/enum';
 
 /**
  * CellRendererFactory
+ *
  * @hidden
  */
 export class CellRendererFactory {
@@ -23,6 +24,7 @@ export class CellRendererFactory {
         name = typeof name === 'string' ? name : <string>getEnumValue(CellType, <CellType>name);
 
         if (isNullOrUndefined(this.cellRenderMap[name])) {
+            // eslint-disable-next-line no-throw-literal
             throw `The cellRenderer ${name} is not found`;
         } else {
             return this.cellRenderMap[name];

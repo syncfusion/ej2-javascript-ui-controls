@@ -278,7 +278,7 @@ export class StripLine {
         appendChildElement(
             chart.enableCanvas, parent, chart.renderer.drawPath(
                 new PathOption(
-                    id, '', stripline.size, stripline.color, stripline.opacity, stripline.dashArray, d
+                    id, 'none', stripline.size, stripline.color, stripline.opacity, stripline.dashArray, d
                 )
             ),
             chart.redraw, true, 'x', 'y', null, direction, true

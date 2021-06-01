@@ -86,9 +86,8 @@ export class Render {
                 // eslint-disable-next-line
                 const childNodes: Element[] = <NodeListOf<Element> & Element[]>this.parent.contentModule.getEditPanel().childNodes;
                 if ((childNodes.length === 0) ||
-                    (childNodes.length === 1 && (((childNodes[0] as Element).tagName === 'BR') ||
-                            ((childNodes[0] as Element).tagName === 'P' &&
-                                ( childNodes[0].childNodes.length === 0 ||  childNodes[0].textContent === ''))))) {
+                    (childNodes.length === 1 && childNodes[0].childNodes.length === 0 && (((childNodes[0] as Element).tagName === 'BR') ||
+                            ((childNodes[0] as Element).tagName === 'P' && childNodes[0].textContent === '')))) {
                     const node: Element = this.parent.contentModule.getEditPanel();
                     node.innerHTML = '<p><br/></p>';
                     this.parent.formatter.editorManager.nodeSelection.setCursorPoint(

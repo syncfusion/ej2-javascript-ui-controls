@@ -36,10 +36,11 @@ import * as literals from '../base/string-literals';
 
 /**
  * Content module is used to render grid content
+ *
  * @hidden
  */
 export class Render {
-    //Internal variables              
+    //Internal variables
     private isColTypeDef: boolean;
     //Module declarations
     private parent: IGrid;
@@ -56,6 +57,9 @@ export class Render {
 
     /**
      * Constructor for render module
+     *
+     * @param {IGrid} parent - specifies the IGrid
+     * @param {ServiceLocator} locator - specifies the serviceLocator
      */
     constructor(parent?: IGrid, locator?: ServiceLocator) {
         this.parent = parent;
@@ -69,10 +73,11 @@ export class Render {
 
     /**
      * To initialize grid header, content and footer rendering
+     *
+     * @returns {void}
      */
     public render(): void {
-        let gObj: IGrid = this.parent;
-        let isServerRendered: string = 'isServerRendered';
+        const gObj: IGrid = this.parent;
         this.headerRenderer = <HeaderRender>this.renderer.getRenderer(RenderType.Header);
         this.contentRenderer = <ContentRender>this.renderer.getRenderer(RenderType.Content);
         this.headerRenderer.renderPanel();
@@ -91,25 +96,26 @@ export class Render {
         this.refreshDataManager();
     }
 
-    /** 
-     * Refresh the entire Grid. 
-     * @return {void} 
+    /**
+     * Refresh the entire Grid.
+     *
+     * @param {NotifyArgs} e - specifies the NotifyArgs
+     * @returns {void}
      */
     public refresh(e: NotifyArgs = { requestType: 'refresh' }): void {
-        let gObj: IGrid = this.parent;
-        let preventUpdate: string = 'preventUpdate';
+        const gObj: IGrid = this.parent;
         gObj.notify(`${e.requestType}-begin`, e);
-        let tempPreventUpdate: boolean = this.parent[preventUpdate];
         gObj.trigger(events.actionBegin, e, (args: NotifyArgs = { requestType: 'refresh' }) => {
             if (args.cancel) {
                 gObj.notify(events.cancelBegin, args);
                 return;
             }
             if (args.requestType === 'delete' as Action && gObj.allowPaging) {
-                let dataLength: number = (<{ data?: NotifyArgs[] }>args).data.length;
-                let count: number = gObj.pageSettings.totalRecordsCount - dataLength;
-                let currentViewData: number = gObj.getCurrentViewRecords().length;
-                if (!(currentViewData - dataLength) && count && ((gObj.pageSettings.currentPage -1) * gObj.pageSettings.pageSize) == count) {
+                const dataLength: number = (<{ data?: NotifyArgs[] }>args).data.length;
+                const count: number = gObj.pageSettings.totalRecordsCount - dataLength;
+                const currentViewData: number = gObj.getCurrentViewRecords().length;
+                // eslint-disable-next-line max-len
+                if (!(currentViewData - dataLength) && count && ((gObj.pageSettings.currentPage - 1) * gObj.pageSettings.pageSize) === count) {
                     gObj.prevPageMoving = true;
                     gObj.setProperties({
                         pageSettings: {
@@ -132,13 +138,14 @@ export class Render {
     }
 
     /**
+     * @returns {void}
      * @hidden
      */
     public resetTemplates(): void {
-        let gObj: IGrid = this.parent;
-        let gridColumns: Column[] = gObj.getColumns();
+        const gObj: IGrid = this.parent;
+        const gridColumns: Column[] = gObj.getColumns();
         if (gObj.detailTemplate) {
-            let detailTemplateID: string = gObj.element.id + 'detailTemplate';
+            const detailTemplateID: string = gObj.element.id + 'detailTemplate';
             blazorTemplates[detailTemplateID] = [];
             resetBlazorTemplate(detailTemplateID, 'DetailTemplate');
         }
@@ -166,20 +173,20 @@ export class Render {
                 resetBlazorTemplate(gObj.element.id + gridColumns[i].uid + 'filterTemplate', 'FilterTemplate');
             }
         }
-        let guid: string = 'guid';
+        const guid: string = 'guid';
         for (let k: number = 0; k < gObj.aggregates.length; k++) {
 
             for (let j: number = 0; j < gObj.aggregates[k].columns.length; j++) {
                 if (gObj.aggregates[k].columns[j].footerTemplate) {
-                    let tempID: string = gObj.element.id + gObj.aggregates[k].columns[j][guid] + 'footerTemplate';
+                    const tempID: string = gObj.element.id + gObj.aggregates[k].columns[j][guid] + 'footerTemplate';
                     resetBlazorTemplate(tempID, 'FooterTemplate');
                 }
                 if (gObj.aggregates[k].columns[j].groupFooterTemplate) {
-                    let tempID: string = gObj.element.id + gObj.aggregates[k].columns[j][guid] + 'groupFooterTemplate';
+                    const tempID: string = gObj.element.id + gObj.aggregates[k].columns[j][guid] + 'groupFooterTemplate';
                     resetBlazorTemplate(tempID, 'GroupFooterTemplate');
                 }
                 if (gObj.aggregates[k].columns[j].groupCaptionTemplate) {
-                    let tempID: string = gObj.element.id + gObj.aggregates[k].columns[j][guid] + 'groupCaptionTemplate';
+                    const tempID: string = gObj.element.id + gObj.aggregates[k].columns[j][guid] + 'groupCaptionTemplate';
                     resetBlazorTemplate(tempID, 'GroupCaptionTemplate');
                 }
             }
@@ -191,7 +198,9 @@ export class Render {
 
     /**
      * The function is used to refresh the dataManager
-     * @return {void}
+     *
+     * @param {NotifyArgs} args - specifies the args
+     * @returns {void}
      */
     private refreshDataManager(args: NotifyArgs = {}): void {
         if (args.requestType !== 'virtualscroll') {
@@ -200,19 +209,20 @@ export class Render {
         this.parent.notify(events.resetInfiniteBlocks, args);
         this.emptyGrid = false;
         let dataManager: Promise<Object>;
-        let isFActon: boolean = this.isNeedForeignAction();
+        const isFActon: boolean = this.isNeedForeignAction();
         this.ariaService.setBusy(<HTMLElement>this.parent.getContent().querySelector('.' + literals.content), true);
         if (isFActon) {
-            let deffered: Deferred = new Deferred();
+            const deffered: Deferred = new Deferred();
             dataManager = this.getFData(deffered, args);
         }
         if (!dataManager) {
             dataManager = this.data.getData(args as NotifyArgs, this.data.generateQuery().requiresCount());
         } else {
+            // eslint-disable-next-line @typescript-eslint/no-unused-vars
             dataManager = dataManager.then((e: Object) => {
-                let query: Query = this.data.generateQuery().requiresCount();
+                const query: Query = this.data.generateQuery().requiresCount();
                 if (this.emptyGrid) {
-                    let def: Deferred = new Deferred();
+                    const def: Deferred = new Deferred();
                     def.resolve(<ReturnType>{ result: [], count: 0 });
                     return def.promise;
                 }
@@ -220,7 +230,7 @@ export class Render {
             });
         }
         if (this.parent.getForeignKeyColumns().length && (!isFActon || this.parent.searchSettings.key.length)) {
-            let deffered: Deferred = new Deferred();
+            const deffered: Deferred = new Deferred();
             dataManager = dataManager.then((e: ReturnType) => {
                 this.parent.notify(events.getForeignKeyData, { dataManager: dataManager, result: e, promise: deffered, action: args});
                 return deffered.promise;
@@ -239,7 +249,7 @@ export class Render {
     }
 
     private isNeedForeignAction(): boolean {
-        let gObj: IGrid = this.parent;
+        const gObj: IGrid = this.parent;
         return !!((gObj.allowFiltering && gObj.filterSettings.columns.length) ||
             (gObj.searchSettings.key.length)) && this.foreignKey(this.parent.getForeignKeyColumns());
     }
@@ -256,14 +266,15 @@ export class Render {
 
     private sendBulkRequest(args?: NotifyArgs): void {
         args.requestType = 'batchsave';
-        let promise: Promise<Object> = this.data.saveChanges(
+        const promise: Promise<Object> = this.data.saveChanges(
             (<{ changes?: Object }>args).changes, this.parent.getPrimaryKeyFieldNames()[0],
             (<{ original?: Object }>args).original);
-        let query: Query = this.data.generateQuery().requiresCount();
+        const query: Query = this.data.generateQuery().requiresCount();
         if (this.data.dataManager.dataSource.offline) {
             this.refreshDataManager({ requestType: 'batchsave' });
             return;
         } else {
+            // eslint-disable-next-line @typescript-eslint/no-unused-vars
             promise.then((e: ReturnType) => {
                 this.data.getData(args, query)
                     .then((e: { result: Object[], count: number }) => this.dmSuccess(e, args))
@@ -281,9 +292,10 @@ export class Render {
         this.dataManagerFailure(e, args);
     }
 
-    /** 
-     * Render empty row to Grid which is used at the time to represent to no records. 
-     * @return {void} 
+    /**
+     * Render empty row to Grid which is used at the time to represent to no records.
+     *
+     * @returns {void}
      * @hidden
      */
     public renderEmptyRow(): void {
@@ -291,9 +303,8 @@ export class Render {
     }
 
     public emptyRow(isTrigger?: boolean): void {
-        let gObj: IGrid = this.parent;
+        const gObj: IGrid = this.parent;
         let tbody: Element = this.contentRenderer.getTable().querySelector( literals.tbody);
-        let tr: Element;
         if (!isNullOrUndefined(tbody)) {
             remove(tbody);
         }
@@ -302,7 +313,7 @@ export class Render {
         if (gObj.detailTemplate || gObj.childGrid) {
             ++spanCount;
         }
-        tr = this.parent.createElement('tr', { className: 'e-emptyrow' });
+        const tr: Element = this.parent.createElement('tr', { className: 'e-emptyrow' });
         tr.appendChild(this.parent.createElement('td', {
             innerHTML: this.l10n.getConstant('EmptyRecord'),
             attrs: { colspan: (gObj.getVisibleColumns().length + spanCount).toString() }
@@ -325,12 +336,12 @@ export class Render {
     }
 
     private updateColumnType(record: Object): void {
-        let columns: Column[] = this.parent.getColumns() as Column[];
+        const columns: Column[] = this.parent.getColumns() as Column[];
         let value: Date;
-        let cFormat: string = 'customFormat';
-        let equalTo: string = 'equalTo';
-        let data: Object = record && (<{ items: Object[] }>record).items ? (<{ items: Object[] }>record).items[0] : record;
-        let fmtr: IValueFormatter = this.locator.getService<IValueFormatter>('valueFormatter');
+        const cFormat: string = 'customFormat';
+        const equalTo: string = 'equalTo';
+        const data: Object = record && (<{ items: Object[] }>record).items ? (<{ items: Object[] }>record).items[0] : record;
+        const fmtr: IValueFormatter = this.locator.getService<IValueFormatter>('valueFormatter');
         for (let i: number = 0, len: number = columns.length; i < len; i++) {
             value = getObject(columns[i].field || '', data);
             if (!isNullOrUndefined(columns[i][cFormat])) {
@@ -351,14 +362,14 @@ export class Render {
             } else {
                 columns[i].type = columns[i].type || null;
             }
-            let valueFormatter: ValueFormatter = new ValueFormatter();
+            const valueFormatter: ValueFormatter = new ValueFormatter();
             if (columns[i].format && ((<DateFormatOptions>columns[i].format).skeleton || (<DateFormatOptions>columns[i].format).format)) {
                 columns[i].setFormatter(valueFormatter.getFormatFunction(extend({}, columns[i].format as DateFormatOptions)));
                 columns[i].setParser(valueFormatter.getParserFunction(columns[i].format as DateFormatOptions));
             }
             if (typeof (columns[i].format) === 'string') {
-                let isServerRendered: string = 'isServerRendered';
-                let isServerDateMap: boolean = this.parent[isServerRendered] || this.parent.printModule.isPrintGrid();
+                const isServerRendered: string = 'isServerRendered';
+                const isServerDateMap: boolean = this.parent[isServerRendered] || this.parent.printModule.isPrintGrid();
                 setFormatter(this.locator, columns[i], isServerDateMap);
             } else if (!columns[i].format && columns[i].type === 'number') {
                 columns[i].setParser(
@@ -367,14 +378,19 @@ export class Render {
         }
     }
 
-    /** @hidden */
+    /**
+     * @param {ReturnType} e - specifies the return type
+     * @param {NotifyArgs} args - specifies the Notifyargs
+     * @returns {void}
+     * @hidden
+     */
     // tslint:disable-next-line:max-func-body-length
     public dataManagerSuccess(e: ReturnType, args?: NotifyArgs): void {
-        let gObj: IGrid = this.parent;
+        const gObj: IGrid = this.parent;
         this.contentRenderer = <ContentRender>this.renderer.getRenderer(RenderType.Content);
         this.headerRenderer = <HeaderRender>this.renderer.getRenderer(RenderType.Header);
         (<{ actionArgs?: NotifyArgs }>e).actionArgs = args;
-        let isInfiniteDelete: boolean = this.parent.enableInfiniteScrolling && !this.parent.infiniteScrollSettings.enableCache
+        const isInfiniteDelete: boolean = this.parent.enableInfiniteScrolling && !this.parent.infiniteScrollSettings.enableCache
             && (args.requestType === 'delete' || (args.requestType === 'save' && this.parent.infiniteScrollModule.requestType === 'add'));
         // tslint:disable-next-line:max-func-body-length
         gObj.trigger(events.beforeDataBound, e, (dataArgs: ReturnType) => {
@@ -382,7 +398,7 @@ export class Render {
                 return;
             }
             dataArgs.result = isNullOrUndefined(dataArgs.result) ? [] : dataArgs.result;
-            let len: number = Object.keys(dataArgs.result).length;
+            const len: number = Object.keys(dataArgs.result).length;
             if (this.parent.isDestroyed) { return; }
             if ((!gObj.getColumns().length && !len) && !(gObj.columns.length && gObj.columns[0] instanceof Column)) {
                 gObj.hideSpinner();
@@ -432,7 +448,7 @@ export class Render {
             }
             if (len) {
                 if (isGroupAdaptive(gObj)) {
-                    let content: string = 'content';
+                    const content: string = 'content';
                     args.scrollTop = { top: this.contentRenderer[content].scrollTop };
                 }
                 if (!isInfiniteDelete) {
@@ -455,7 +471,7 @@ export class Render {
                 this.ariaService.setBusy(<HTMLElement>this.parent.getContent().querySelector('.' + literals.content), false);
                 this.renderEmptyRow();
                 if (args) {
-                    let action: string = (args.requestType || '').toLowerCase() + '-complete';
+                    const action: string = (args.requestType || '').toLowerCase() + '-complete';
                     this.parent.notify(action, args);
                     if (args.requestType === 'batchsave') {
                         args.cancel = false;
@@ -472,7 +488,13 @@ export class Render {
         });
     }
 
-    /** @hidden */
+    /**
+     * @param {object} e - specifies the object
+     * @param {Object[]} e.result - specifies the result
+     * @param {NotifyArgs} args - specifies the args
+     * @returns {void}
+     * @hidden
+     */
     public dataManagerFailure(e: { result: Object[] }, args: NotifyArgs): void {
         this.ariaService.setOptions(<HTMLElement>this.parent.getContent().querySelector('.' + literals.content), { busy: false, invalid: true });
         this.setRowCount(1);
@@ -488,7 +510,6 @@ export class Render {
     }
 
     private setRowCount(dataRowCount: number): void {
-        let gObj: IGrid = this.parent;
         this.ariaService.setOptions(<HTMLElement>this.parent.getHeaderTable() as HTMLElement, {
             rowcount: dataRowCount ? dataRowCount.toString() : '1'
         });
@@ -511,10 +532,10 @@ export class Render {
     }
 
     private iterateComplexColumns(obj: Object, field: string, split: Object): void {
-        let keys: string[] = Object.keys(obj);
+        const keys: string[] = Object.keys(obj);
         for (let i: number = 0; i < keys.length; i++) {
-            let childKeys: string[] =  typeof obj[keys[i]] === 'object' && obj[keys[i]] && !(obj[keys[i]] instanceof Date) ?
-            Object.keys(obj[keys[i]]) : [];
+            const childKeys: string[] = typeof obj[keys[i]] === 'object' && obj[keys[i]] && !(obj[keys[i]] instanceof Date) ?
+                Object.keys(obj[keys[i]]) : [];
             if (childKeys.length) {
                 this.iterateComplexColumns(obj[keys[i]], field + (keys[i] + '.'), split);
             } else {
@@ -525,10 +546,10 @@ export class Render {
     }
 
     private buildColumns(record: Object): void {
-        let cols: Column[] = [];
-        let complexCols: Object = {};
+        const cols: Column[] = [];
+        const complexCols: Object = {};
         this.iterateComplexColumns(record, '', complexCols);
-        let columns: string[] = Object.keys(complexCols).filter((e: string) => complexCols[e] !== 'BlazId').
+        const columns: string[] = Object.keys(complexCols).filter((e: string) => complexCols[e] !== 'BlazId').
             map((field: string) => complexCols[field]);
         for (let i: number = 0, len: number = columns.length; i < len; i++) {
             cols[i] = { 'field': columns[i] } as Column;
@@ -543,7 +564,7 @@ export class Render {
         this.renderer.addRenderer(RenderType.Header, new HeaderRender(this.parent, this.locator));
         this.renderer.addRenderer(RenderType.Content, new ContentRender(this.parent, this.locator));
 
-        let cellrender: CellRendererFactory = this.locator.getService<CellRendererFactory>('cellRendererFactory');
+        const cellrender: CellRendererFactory = this.locator.getService<CellRendererFactory>('cellRendererFactory');
         cellrender.addCellRenderer(CellType.Header, new HeaderCellRenderer(this.parent, this.locator));
         cellrender.addCellRenderer(CellType.Data, new CellRenderer(this.parent, this.locator));
         cellrender.addCellRenderer(CellType.StackedHeader, new StackedHeaderCellRenderer(this.parent, this.locator));
@@ -571,26 +592,30 @@ export class Render {
         this.parent.on(events.autoCol, this.dynamicColumnChange, this);
     }
 
-    /** @hidden */
+    /**
+     * @param {ReturnType} e - specifies the Return type
+     * @returns {Promise<Object>} returns the object
+     * @hidden
+     */
     public validateGroupRecords(e: ReturnType): Promise<Object> {
-        let index: number = e.result.length - 1;
+        const index: number = e.result.length - 1;
         if (index < 0) { return Promise.resolve(e); }
-        let group0: Group = <Group>e.result[0];
-        let groupN: Group = <Group>e.result[index]; let predicate: Predicate[] = [];
-        let addWhere: (query: Query) => void =
+        const group0: Group = <Group>e.result[0];
+        const groupN: Group = <Group>e.result[index]; const predicate: Predicate[] = [];
+        const addWhere: (query: Query) => void =
             (input: Query) => {
-                let groups: Group[] = [group0, groupN];
+                const groups: Group[] = [group0, groupN];
                 for (let i: number = 0; i < groups.length; i++) {
                     predicate.push(new Predicate('field', '==', groups[i].field).and(this.getPredicate('key', 'equal', groups[i].key)));
                 }
                 input.where(Predicate.or(predicate));
             };
-        let query: Query = new Query(); addWhere(query);
-        let curDm: DataManager = new DataManager(e.result as JSON[]);
-        let curFilter: Object[] = <Object[]>curDm.executeLocal(query);
-        let newQuery: Query = this.data.generateQuery(true); let rPredicate: Predicate[] = [];
+        const query: Query = new Query(); addWhere(query);
+        const curDm: DataManager = new DataManager(e.result as JSON[]);
+        const curFilter: Object[] = <Object[]>curDm.executeLocal(query);
+        const newQuery: Query = this.data.generateQuery(true); const rPredicate: Predicate[] = [];
         if (this.data.isRemote()) {
-            let groups: Group[] = [group0, groupN];
+            const groups: Group[] = [group0, groupN];
             for (let i: number = 0; i < groups.length; i++) {
                 rPredicate.push(this.getPredicate((groups[i] as Group).field, 'equal', (groups[i] as Group).key));
             }
@@ -598,7 +623,7 @@ export class Render {
         } else {
             addWhere(newQuery);
         }
-        let deferred: Deferred = new Deferred();
+        const deferred: Deferred = new Deferred();
         this.data.getData({}, newQuery).then((r: ReturnType) => {
             this.updateGroupInfo(curFilter, r.result);
             deferred.resolve(e);
@@ -614,34 +639,34 @@ export class Render {
     }
 
     private updateGroupInfo(current: Object[], untouched: Object[]): Object[] {
-        let dm: DataManager = new DataManager(<JSON[]>untouched);
-        let elements: Group[] = current;
+        const dm: DataManager = new DataManager(<JSON[]>untouched);
+        const elements: Group[] = current;
         for (let i: number = 0; i < elements.length; i++) {
-            let uGroup: Group = dm.executeLocal(new Query()
+            const uGroup: Group = dm.executeLocal(new Query()
                 .where(new Predicate('field', '==', elements[i].field).and(this.getPredicate('key', 'equal', elements[i].key))))[0];
-            elements[i].count = uGroup.count; let itemGroup: Group = (<Group>elements[i].items);
-            let uGroupItem: Group = (<Group>uGroup.items);
+            elements[i].count = uGroup.count; const itemGroup: Group = (<Group>elements[i].items);
+            const uGroupItem: Group = (<Group>uGroup.items);
             if (itemGroup.GroupGuid) {
                 elements[i].items = <Object[]>this.updateGroupInfo(elements[i].items, uGroup.items);
             }
-            let rows: AggregateRowModel[] = this.parent.aggregates;
+            const rows: AggregateRowModel[] = this.parent.aggregates;
             for (let j: number = 0; j < rows.length; j++) {
-                let row: AggregateRowModel = (rows as AggregateRowModel)[j];
+                const row: AggregateRowModel = (rows as AggregateRowModel)[j];
                 for (let k: number = 0; k < row.columns.length; k++) {
-                    let types: string[] = row.columns[k].type instanceof Array ? (row.columns[k].type) as string[] :
-                    [(row.columns[k].type)] as string[];
+                    const types: string[] = row.columns[k].type instanceof Array ? (row.columns[k].type) as string[] :
+                        [(row.columns[k].type)] as string[];
                     for (let l: number = 0; l < types.length; l++) {
-                        let key: string = (row.columns[k] as AggregateColumnModel).field + ' - ' + types[l].toLowerCase();
-                        let data: Object[] = itemGroup.level ? uGroupItem.records : uGroup.items;
-                        let context: Object = this.parent;
+                        const key: string = (row.columns[k] as AggregateColumnModel).field + ' - ' + types[l].toLowerCase();
+                        const data: Object[] = itemGroup.level ? uGroupItem.records : uGroup.items;
+                        const context: Object = this.parent;
                         if (types[l] === 'Custom') {
-                            let data: Group = itemGroup.level ? uGroupItem : uGroup;
+                            const data: Group = itemGroup.level ? uGroupItem : uGroup;
                             elements[i].aggregates[key] = (row.columns[k] as AggregateColumnModel).customAggregate ?
                                 (<Function>(row.columns[k] as AggregateColumnModel).customAggregate)
-                                .call(context, data, (row.columns[k] as AggregateColumnModel)) : '';
+                                    .call(context, data, (row.columns[k] as AggregateColumnModel)) : '';
                         } else {
-                            elements[i].aggregates[key] = DataUtil.aggregates[types[l].toLowerCase()]
-                            (data, (row.columns[k] as AggregateColumnModel).field);
+                            // eslint-disable-next-line max-len
+                            elements[i].aggregates[key] = DataUtil.aggregates[types[l].toLowerCase()](data, (row.columns[k] as AggregateColumnModel).field);
                         }
                     }
                 }

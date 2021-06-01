@@ -824,7 +824,9 @@ export class Edit {
      */
 
     public addRecord(data?: Object, index?: number, position?: RowPosition): void {
-        this.previousNewRowPosition = this.parent.editSettings.newRowPosition;
+        if (this.parent.editSettings.newRowPosition === this.previousNewRowPosition || this.previousNewRowPosition === null) {
+            this.previousNewRowPosition = this.parent.editSettings.newRowPosition;
+        }
         if (!this.isSelfReference && !isNullOrUndefined(data) && Object.hasOwnProperty.call(data, this.parent.childMapping)) {
             const addRecords: ITreeData[] = [];
             const previousEditMode: string = this.parent.editSettings.mode;

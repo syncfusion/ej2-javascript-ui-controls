@@ -462,6 +462,72 @@ describe('ContextMenu module', () => {
     });
   }); 
 
+  describe('EJ2-49323-Add new row with AddRow - Child', () => {
+    let gridObj: TreeGrid;
+    let actionComplete: (args: CellSaveEventArgs) => void;
+    beforeAll((done: Function) => {
+      gridObj = createGrid(
+        {
+          dataSource: sampleData,
+          childMapping: 'subtasks',
+          allowPaging: true,
+          pageSettings: { pageSize: 10 },
+          treeColumnIndex: 1,
+          editSettings: { allowAdding: true, allowDeleting: true, allowEditing: true, mode: 'Row', newRowPosition: 'Child' },
+          contextMenuItems: ['AddRow'],
+          toolbar: ['Add', 'Delete', 'Update', 'Cancel'],
+          columns: [
+              { field: 'taskID', headerText: 'Task ID', width: 80, isPrimaryKey: true, textAlign: 'Right', editType: 'numericedit' },
+              { field: 'taskName', headerText: 'Task Name', width: 190 },
+              { field: 'startDate', headerText: 'Start Date', format: 'yMd', width: 90,
+                  editType: 'datepickeredit', textAlign: 'Right' },
+              { field: 'endDate', headerText: 'End Date', format: 'yMd', width: 90, editType: 'datepickeredit', textAlign: 'Right' },
+              { field: 'duration', headerText: 'Duration', width: 85, textAlign: 'Right', editType: 'numericedit',
+                   edit: {params: {format: 'n'}} },
+              { field: 'priority', headerText: 'Priority', width: 80 }
+          ],
+        },
+        done
+      );
+    });
+    it('Add new row with AddRow - Child', (done: Function) => {
+        gridObj.selectRow(2);
+        actionComplete = (args: CellSaveEventArgs): void => {
+          if(args.requestType === 'add'){
+          expect((<any>gridObj.getContentTable().querySelectorAll(".e-addedrow")[0]).rowIndex === 3).toBe(true);
+          }
+          done();
+         }
+         gridObj.actionComplete = actionComplete;
+        (gridObj.grid.contextMenuModule as any).eventArgs =  { target: gridObj.getContentTable().querySelectorAll('tr')[2] };
+        let e: Object = {
+            event: (gridObj.grid.contextMenuModule as any).eventArgs,
+            items: gridObj.grid.contextMenuModule.contextMenu.items,
+            parentItem: document.querySelector('tr'), element: document.getElementById(gridObj.element.id + '_gridcontrol_cmenu')
+        };
+        (gridObj.grid.contextMenuModule as any).contextMenuBeforeOpen(e);
+        (gridObj.grid.contextMenuModule as any).contextMenuOpen();
+        document.getElementsByClassName('e-menu-item')[0].dispatchEvent(new Event('mouseover'));
+        var mouseEve = document.createEvent('MouseEvents');
+        mouseEve.initEvent('mouseover', true, true);
+        document.getElementsByClassName('e-menu-item')[0].dispatchEvent(mouseEve);
+        (<HTMLElement>document.getElementsByClassName('e-menu-parent e-ul')[0].children[2]).click();
+    });
+    it('Save the added row', (done: Function) => {
+      actionComplete = (args: CellSaveEventArgs): void => {
+        if(args.requestType === 'save'){
+          expect(gridObj.getRows()[3].getElementsByTagName('td')[0].innerText === '55').toBe(true);
+        }
+        done();
+       }
+       gridObj.actionComplete = actionComplete;
+       (<any>gridObj.getContentTable().getElementsByClassName('e-numerictextbox')[0]).ej2_instances[0].value = '55';
+       (<HTMLElement>gridObj.element.getElementsByClassName('e-tbar-btn-text')[2]).click();
+  });
+    afterAll(() => {
+      destroy(gridObj);
+    });
+  });
 
   it('memory leak', () => {
     profile.sample();

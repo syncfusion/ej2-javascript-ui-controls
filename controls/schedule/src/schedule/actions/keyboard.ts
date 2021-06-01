@@ -808,7 +808,7 @@ export class KeyboardInteraction {
         if (activeEle && activeEle.classList.contains(cls.APPOINTMENT_CLASS)) {
             addClass([activeEle], cls.APPOINTMENT_BORDER);
             this.parent.activeEventData = this.parent.eventBase.getSelectedEvents();
-            if (this.parent.activeViewOptions.readonly || activeEle.classList.contains(cls.READ_ONLY)) {
+            if (this.parent.activeViewOptions.readonly || activeEle.classList.contains(cls.READ_ONLY) || !this.parent.eventSettings.allowDeleting) {
                 return;
             }
             this.parent.quickPopup.deleteClick();

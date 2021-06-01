@@ -782,6 +782,136 @@ describe('CRUD actions module', () => {
         });
     });
 
+    describe('EJ2CORE-555 - Descending order the cards to the column does not work properly when adding a new card', () => {
+        let kanbanObj: Kanban;
+        let card: Record<string, any>;
+        let length: number;
+        beforeAll((done: DoneFn) => {
+            let model: KanbanModel = {
+                sortSettings: {
+                    sortBy: 'Index',
+                    field: 'RankId',
+                    direction: 'Descending'
+                },
+            };
+            kanbanObj = util.createKanban(model, kanbanData, done);
+        });
+
+        afterAll(() => {
+            util.destroy(kanbanObj);
+        });
+
+        it('Check cards are alinged in descending order', () => {
+            expect(kanbanObj.getColumnData('Open')[0][kanbanObj.sortSettings.field]).toBe(14);
+            expect(kanbanObj.getColumnData('Open')[0][kanbanObj.cardSettings.headerField]).toBe(74);
+            expect(kanbanObj.getColumnData('Open')[1][kanbanObj.sortSettings.field]).toBe(13);
+            expect(kanbanObj.getColumnData('Open')[1][kanbanObj.cardSettings.headerField]).toBe(69);
+            expect(kanbanObj.getColumnData('Open')[kanbanObj.getColumnData('Open').length - 1][kanbanObj.sortSettings.field]).toBe(1);
+            expect(kanbanObj.getColumnData('Open')[kanbanObj.getColumnData('Open').length - 1][kanbanObj.cardSettings.headerField]).toBe(1);
+        });
+        it('Check the descending order after adding the card', () => {
+            expect(kanbanObj.kanbanData.length).toEqual(75);
+            expect(kanbanObj.element.querySelectorAll('.e-card').length).toEqual(64);
+            let cardData: { [key: string]: Object } = {
+                Id: 76,
+                Status: 'Open',
+                Summary: 'Check test cases.',
+                Type: 'Story',
+                Priority: 'Release Breaker',
+                Tags: 'Testing',
+                Estimate: 0.5,
+                Assignee: 'Nancy Davloio',
+                RankId: 22
+            };
+            kanbanObj.addCard(cardData);
+            expect(kanbanObj.kanbanData.length).toEqual(76);
+            expect(kanbanObj.element.querySelectorAll('.e-card').length).toEqual(65);
+            expect(kanbanObj.getColumnData('Open')[0][kanbanObj.sortSettings.field]).toBe(22);
+            expect(kanbanObj.getColumnData('Open')[0][kanbanObj.cardSettings.headerField]).toBe(76);
+            expect(kanbanObj.getColumnData('Open')[1][kanbanObj.sortSettings.field]).toBe(14);
+            expect(kanbanObj.getColumnData('Open')[1][kanbanObj.cardSettings.headerField]).toBe(74);
+            expect(kanbanObj.getColumnData('Open')[2][kanbanObj.sortSettings.field]).toBe(13);
+            expect(kanbanObj.getColumnData('Open')[2][kanbanObj.cardSettings.headerField]).toBe(69);
+        });
+
+        it('Pass without sorting field with add card in descending order', () => {
+            expect(kanbanObj.kanbanData.length).toEqual(76);
+            expect(kanbanObj.element.querySelectorAll('.e-card').length).toEqual(65);
+            let cardData: { [key: string]: Object } = {
+                Id: 77,
+                Status: 'Open',
+                Summary: 'Check test cases.',
+                Type: 'Story',
+                Priority: 'Release Breaker',
+                Tags: 'Testing',
+                Estimate: 0.5,
+                Assignee: 'Nancy Davloio'
+            };
+            kanbanObj.addCard(cardData);
+            expect(kanbanObj.kanbanData.length).toEqual(77);
+            expect(kanbanObj.element.querySelectorAll('.e-card').length).toEqual(66);
+            expect(kanbanObj.getColumnData('Open')[0][kanbanObj.sortSettings.field]).toBe(23);
+            expect(kanbanObj.getColumnData('Open')[0][kanbanObj.cardSettings.headerField]).toBe(77);
+            expect(kanbanObj.getColumnData('Open')[1][kanbanObj.sortSettings.field]).toBe(22);
+            expect(kanbanObj.getColumnData('Open')[1][kanbanObj.cardSettings.headerField]).toBe(76);
+            expect(kanbanObj.getColumnData('Open')[2][kanbanObj.sortSettings.field]).toBe(14);
+            expect(kanbanObj.getColumnData('Open')[2][kanbanObj.cardSettings.headerField]).toBe(74);
+        });
+
+        it('Pass field with inbetween cards with add card in descending order', () => {
+            expect(kanbanObj.kanbanData.length).toEqual(77);
+            expect(kanbanObj.element.querySelectorAll('.e-card').length).toEqual(66);
+            expect(kanbanObj.getColumnData('Open')[0][kanbanObj.sortSettings.field]).toBe(23);
+            expect(kanbanObj.getColumnData('Open')[0][kanbanObj.cardSettings.headerField]).toBe(77);
+            expect(kanbanObj.getColumnData('Open')[1][kanbanObj.sortSettings.field]).toBe(22);
+            expect(kanbanObj.getColumnData('Open')[1][kanbanObj.cardSettings.headerField]).toBe(76);
+            expect(kanbanObj.getColumnData('Open')[2][kanbanObj.sortSettings.field]).toBe(14);
+            expect(kanbanObj.getColumnData('Open')[2][kanbanObj.cardSettings.headerField]).toBe(74);
+            expect(kanbanObj.getColumnData('Open')[3][kanbanObj.sortSettings.field]).toBe(13);
+            expect(kanbanObj.getColumnData('Open')[3][kanbanObj.cardSettings.headerField]).toBe(69);
+            expect(kanbanObj.getColumnData('Open')[4][kanbanObj.sortSettings.field]).toBe(12);
+            expect(kanbanObj.getColumnData('Open')[4][kanbanObj.cardSettings.headerField]).toBe(64);
+            expect(kanbanObj.getColumnData('Open')[5][kanbanObj.sortSettings.field]).toBe(11);
+            expect(kanbanObj.getColumnData('Open')[5][kanbanObj.cardSettings.headerField]).toBe(63);
+            expect(kanbanObj.getColumnData('Open')[6][kanbanObj.sortSettings.field]).toBe(10);
+            expect(kanbanObj.getColumnData('Open')[6][kanbanObj.cardSettings.headerField]).toBe(61);
+            expect(kanbanObj.getColumnData('Open')[7][kanbanObj.sortSettings.field]).toBe(9);
+            expect(kanbanObj.getColumnData('Open')[7][kanbanObj.cardSettings.headerField]).toBe(51);
+            let cardData: { [key: string]: Object } = {
+                Id: 78,
+                Status: 'Open',
+                Summary: 'Check test cases.',
+                Type: 'Story',
+                Priority: 'Release Breaker',
+                Tags: 'Testing',
+                Estimate: 0.5,
+                Assignee: 'Nancy Davloio',
+                RankId: 10
+            };
+            kanbanObj.addCard(cardData);
+            expect(kanbanObj.kanbanData.length).toEqual(78);
+            expect(kanbanObj.element.querySelectorAll('.e-card').length).toEqual(67);
+            expect(kanbanObj.getColumnData('Open')[0][kanbanObj.sortSettings.field]).toBe(17);
+            expect(kanbanObj.getColumnData('Open')[0][kanbanObj.cardSettings.headerField]).toBe(77);
+            expect(kanbanObj.getColumnData('Open')[1][kanbanObj.sortSettings.field]).toBe(16);
+            expect(kanbanObj.getColumnData('Open')[1][kanbanObj.cardSettings.headerField]).toBe(76);
+            expect(kanbanObj.getColumnData('Open')[2][kanbanObj.sortSettings.field]).toBe(15);
+            expect(kanbanObj.getColumnData('Open')[2][kanbanObj.cardSettings.headerField]).toBe(74);
+            expect(kanbanObj.getColumnData('Open')[3][kanbanObj.sortSettings.field]).toBe(14);
+            expect(kanbanObj.getColumnData('Open')[3][kanbanObj.cardSettings.headerField]).toBe(69);
+            expect(kanbanObj.getColumnData('Open')[4][kanbanObj.sortSettings.field]).toBe(13);
+            expect(kanbanObj.getColumnData('Open')[4][kanbanObj.cardSettings.headerField]).toBe(64);
+            expect(kanbanObj.getColumnData('Open')[5][kanbanObj.sortSettings.field]).toBe(12);
+            expect(kanbanObj.getColumnData('Open')[5][kanbanObj.cardSettings.headerField]).toBe(63);
+            expect(kanbanObj.getColumnData('Open')[6][kanbanObj.sortSettings.field]).toBe(11);
+            expect(kanbanObj.getColumnData('Open')[6][kanbanObj.cardSettings.headerField]).toBe(61);
+            expect(kanbanObj.getColumnData('Open')[7][kanbanObj.sortSettings.field]).toBe(10);
+            expect(kanbanObj.getColumnData('Open')[7][kanbanObj.cardSettings.headerField]).toBe(78);
+            expect(kanbanObj.getColumnData('Open')[8][kanbanObj.sortSettings.field]).toBe(9);
+            expect(kanbanObj.getColumnData('Open')[8][kanbanObj.cardSettings.headerField]).toBe(51);
+        });
+    });
+
     it('memory leak', () => {
         profile.sample();
         const average: number = inMB(profile.averageChange);

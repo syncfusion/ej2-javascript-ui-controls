@@ -355,7 +355,7 @@ export class Image {
             }
         } else if (height > width) {
             if (this.parent.insertImageSettings.resizeByPercent) {
-                img.style.width = this.pixToPerc(expectedX, (img.previousElementSibling || img.parentElement)) + '%';
+                img.style.width = this.pixToPerc((expectedX / height * expectedY), (img.previousElementSibling || img.parentElement)) + '%';
                 img.style.height = null;
                 img.removeAttribute('height');
             } else if (img.style.width !== '') {

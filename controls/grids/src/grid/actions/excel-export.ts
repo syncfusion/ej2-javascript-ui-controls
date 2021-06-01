@@ -1,7 +1,7 @@
 import {
     IGrid, ExcelExportProperties, ExcelHeader, ExcelFooter, ExcelRow,
     ExcelCell, ExcelTheme, ExcelHeaderQueryCellInfoEventArgs, ExcelStyle, ExportDetailDataBoundEventArgs, ExportGroupCaptionEventArgs,
-     AggregateQueryCellInfoEventArgs
+    AggregateQueryCellInfoEventArgs
 } from '../base/interface';
 import * as events from '../base/constant';
 import { Workbook, Worksheets, Worksheet, Column as ExcelColumn } from '@syncfusion/ej2-excel-export';
@@ -31,7 +31,7 @@ export class ExcelExport {
     private parent: IGrid;
     private isExporting: boolean;
     private theme: ExcelTheme;
-    /* tslint:disable-next-line:no-any */
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     private book: any = {};
     private workSheet: Worksheets = [];
     private rows: ExcelRow[] = [];
@@ -57,6 +57,9 @@ export class ExcelExport {
 
     /**
      * Constructor for the Grid Excel Export module.
+     *
+     * @param {IGrid} parent - specifies the IGrid
+     * @param {ServiceLocator} locator - specifies the ServiceLocator
      * @hidden
      */
     constructor(parent?: IGrid, locator?: ServiceLocator) {
@@ -65,8 +68,11 @@ export class ExcelExport {
         this.locator = locator;
         this.l10n = this.locator.getService<L10n>('localization');
     }
+
     /**
      * For internal use only - Get the module name.
+     *
+     * @returns {string} returns the module name
      */
     private getModuleName(): string {
         return 'ExcelExport';
@@ -96,32 +102,34 @@ export class ExcelExport {
 
     /**
      * Export Grid to Excel file.
+     *
+     * @param {IGrid} grid - Defines the grid.
      * @param  {exportProperties} exportProperties - Defines the export properties of the Grid.
      * @param  {isMultipleExport} isMultipleExport - Defines is multiple Grid's are exported.
-     * @param  {workbook} workbook - Defined the Workbook if multiple Grid is exported.
-     * @param  {isCsv} isCsv - true if export to CSV.
-     * @return {Promise<any>} 
+     * @param  {Workbook} workbook - Defined the Workbook if multiple Grid is exported.
+     * @param  {boolean} isCsv - true if export to CSV.
+     * @param {boolean} isBlob - true if isBlob is enabled.
+     * @returns {Promise<any>} - Returns the map for export.
      */
-    /* tslint:disable-next-line:max-line-length */
-    /* tslint:disable-next-line:no-any */
-    public Map(grid: IGrid, exportProperties: ExcelExportProperties, isMultipleExport: boolean, workbook: any, isCsv: boolean, isBlob: boolean): Promise<any> {
-        let gObj: IGrid = grid;
-        let cancel: string = 'cancel';
-        let isBlb: string = 'isBlob';
-        let csv: string = 'isCsv';
-        let workbk: string = 'workbook';
-        let isMultiEx: string = 'isMultipleExport';
+    // eslint-disable-next-line
+    public Map(grid: IGrid, exportProperties: ExcelExportProperties, isMultipleExport: boolean, workbook: Workbook, isCsv: boolean, isBlob: boolean): Promise<any> {
+        const gObj: IGrid = grid;
+        const cancel: string = 'cancel';
+        const isBlb: string = 'isBlob';
+        const csv: string = 'isCsv';
+        const workbk: string = 'workbook';
+        const isMultiEx: string = 'isMultipleExport';
         this.gridPool = {};
         if (grid.childGrid && !(!isNullOrUndefined(exportProperties) && exportProperties.hierarchyExportMode === 'None')) {
             grid.expandedRows = getPrintGridModel(grid).expandedRows;
         }
-        let args: Object = {
+        const args: Object = {
             requestType: 'beforeExcelExport', gridObject: gObj, cancel: false,
             isMultipleExport: isMultipleExport, workbook: workbook, isCsv: isCsv, isBlob: isBlob
         };
         gObj.trigger(events.beforeExcelExport, args);
         if (args[cancel]) {
-            return new Promise((resolve: Function, reject: Function) => {
+            return new Promise((resolve: Function) => {
                 return resolve();
             });
         }
@@ -148,16 +156,16 @@ export class ExcelExport {
         this.sheet.images = [];
     }
 
-    /* tslint:disable-next-line:no-any */
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     private processRecords(gObj: IGrid, exportProperties: ExcelExportProperties, isMultipleExport: boolean, workbook: any): Promise<any> {
         if (!isNullOrUndefined(exportProperties) && !isNullOrUndefined(exportProperties.dataSource) &&
             exportProperties.dataSource instanceof DataManager) {
-            let query: Query = exportProperties.query ? exportProperties.query : new Query();
+            const query: Query = exportProperties.query ? exportProperties.query : new Query();
             if (isNullOrUndefined(query.isCountRequired) || gObj.aggregates) {
                 query.isCountRequired = true;
             }
-            return new Promise((resolve: Function, reject: Function) => {
-                let dataManager: Promise<Object> = (exportProperties.dataSource as DataManager).executeQuery(query);
+            return new Promise((resolve: Function) => {
+                const dataManager: Promise<Object> = (exportProperties.dataSource as DataManager).executeQuery(query);
                 dataManager.then((r: ReturnType) => {
                     this.init(gObj);
                     this.processInnerRecords(gObj, exportProperties, isMultipleExport, workbook, r).then(() => {
@@ -166,13 +174,13 @@ export class ExcelExport {
                 });
             });
         } else if (!isNullOrUndefined(exportProperties) && exportProperties.exportType === 'CurrentPage') {
-            return new Promise((resolve: Function, reject: Function) => {
-                    this.init(gObj);
-                    this.processInnerRecords(gObj, exportProperties, isMultipleExport, workbook, this.parent.getCurrentViewRecords());
-                    this.exportingSuccess(resolve);
+            return new Promise((resolve: Function) => {
+                this.init(gObj);
+                this.processInnerRecords(gObj, exportProperties, isMultipleExport, workbook, this.parent.getCurrentViewRecords());
+                this.exportingSuccess(resolve);
             });
         } else {
-            let allPromise: Promise<Object>[] = [];
+            const allPromise: Promise<Object>[] = [];
             allPromise.push(this.data.getData({}, ExportHelper.getQuery(gObj, this.data)));
             allPromise.push(this.helper.getColumnData(<Grid>gObj));
             return new Promise((resolve: Function, reject: Function) => {
@@ -189,18 +197,16 @@ export class ExcelExport {
         }
     }
 
-    /* tslint:disable-next-line:max-func-body-length */
     private processInnerRecords(gObj: IGrid, exportProperties: ExcelExportProperties,
-        /* tslint:disable-next-line:no-any */
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
                                 isMultipleExport: boolean, workbook: any, r: ReturnType | Object[]): Promise<Object> {
         this.groupedColLength = gObj.groupSettings.columns.length;
         let blankRows: number = 5;
         let separator: string;
         let rows: ExcelRow[] = [];
         const colDepth: number = measureColumnDepth(gObj.columns as Column[]);
-        let isExportPropertiesPresent: boolean = !isNullOrUndefined(exportProperties);
+        const isExportPropertiesPresent: boolean = !isNullOrUndefined(exportProperties);
         if (isExportPropertiesPresent && !isNullOrUndefined(exportProperties.multipleExport)) {
-            /* tslint:disable-next-line:max-line-length */
             this.expType = (!isNullOrUndefined(exportProperties.multipleExport.type) ? exportProperties.multipleExport.type : 'AppendToSheet');
             if (!isNullOrUndefined(exportProperties.multipleExport.blankRows)) {
                 blankRows = exportProperties.multipleExport.blankRows;
@@ -249,6 +255,7 @@ export class ExcelExport {
             }
         }
         this.includeHiddenColumn = (isExportPropertiesPresent ? exportProperties.includeHiddenColumn : false);
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         return new Promise((resolve: Function, reject: Function) => {
             (<{childGridLevel?: number}>gObj).childGridLevel = 0;
             rows = this.processGridExport(gObj, exportProperties, r);
@@ -256,11 +263,11 @@ export class ExcelExport {
             this.gridPool[gObj.id] = true;
             this.helper.checkAndExport(this.gridPool, this.globalResolve);
         }).then(() => {
-            let organisedRows: ExcelRow[] = [];
+            const organisedRows: ExcelRow[] = [];
             this.organiseRows(rows, rows[0].index, organisedRows);
 
             this.rows = this.rows.concat(organisedRows);
-             //footer template add
+            //footer template add
             if (!isNullOrUndefined(this.footer)) {
                 if ((this.expType === 'AppendToSheet' && !isMultipleExport) || (this.expType === 'NewSheet')) {
                     this.processExcelFooter(this.footer);
@@ -270,12 +277,12 @@ export class ExcelExport {
             if (this.columns.length > 0) {
                 this.sheet.columns = this.columns;
             }
-            /* tslint:disable-next-line:no-any */
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             this.sheet.rows = this.rows as any;
             this.sheet.enableRtl = this.parent.enableRtl;
             if (this.parent.allowFiltering && gObj.getVisibleColumns().length && isExportPropertiesPresent &&
                 exportProperties.enableFilter) {
-                let autoFilters: AutoFilters = {
+                const autoFilters: AutoFilters = {
                     row: colDepth, column: this.groupedColLength ? this.groupedColLength + 1 :
                         this.sheet.columns[0].index, lastRow: this.sheet.rows.length, lastColumn: this.sheet.columns.length
                 };
@@ -292,9 +299,10 @@ export class ExcelExport {
                     if (isExportPropertiesPresent && !isNullOrUndefined(exportProperties.separator)
                     && exportProperties.separator !== ',') {
                         separator = exportProperties.separator;
-                      }
-                       /* tslint:disable-next-line:max-line-length */
-                    let book: Workbook = new Workbook(this.book, 'csv', gObj.locale, (<{currencyCode?: string}>gObj).currencyCode, separator);
+                    }
+                    const book: Workbook = new Workbook(
+                        this.book, 'csv', gObj.locale, (<{ currencyCode?: string }>gObj).currencyCode, separator
+                    );
                     if (!this.isBlob) {
                         if (isExportPropertiesPresent && exportProperties.fileName) {
                             book.save(exportProperties.fileName);
@@ -305,7 +313,7 @@ export class ExcelExport {
                         this.blobPromise = book.saveAsBlob('text/csv');
                     }
                 } else {
-                    let book: Workbook = new Workbook(this.book, 'xlsx', gObj.locale, (<{currencyCode?: string}>gObj).currencyCode);
+                    const book: Workbook = new Workbook(this.book, 'xlsx', gObj.locale, (<{currencyCode?: string}>gObj).currencyCode);
                     if (!this.isBlob) {
                         if (isExportPropertiesPresent && exportProperties.fileName) {
                             book.save(exportProperties.fileName);
@@ -330,8 +338,8 @@ export class ExcelExport {
             return initialIndex;
         }
         for (let i: number = 0; i < rows.length; i++) {
-            let row: ExcelRow = rows[i];
-            let childRows: ExcelRow[] = (<{childRows?: ExcelRow[] }>row).childRows;
+            const row: ExcelRow = rows[i];
+            const childRows: ExcelRow[] = (<{childRows?: ExcelRow[] }>row).childRows;
             if (childRows) {
                 row.index = initialIndex++;
                 delete (<{childRows?: ExcelRow[] }>row).childRows;
@@ -347,22 +355,23 @@ export class ExcelExport {
 
     private processGridExport(gObj: IGrid, exportProperties: ExcelExportProperties, r: ReturnType | Object[]): ExcelRow[] {
         let excelRows: ExcelRow[] = [];
-        let isFrozen: boolean = this.parent.isFrozenGrid() && !this.parent.getFrozenColumns();
+        const isFrozen: boolean = this.parent.isFrozenGrid() && !this.parent.getFrozenColumns();
         if (!isNullOrUndefined(exportProperties) && !isNullOrUndefined(exportProperties.theme)) {
             this.theme = exportProperties.theme;
         }
         if (gObj.childGrid && !isNullOrUndefined(exportProperties)) {
             gObj.hierarchyPrintMode = exportProperties.hierarchyExportMode || 'Expanded';
         }
-        let helper: ExportHelper = new ExportHelper(gObj, this.helper.getForeignKeyData());
-        let gColumns: Column[] = isExportColumns(exportProperties) ?
+        const helper: ExportHelper = new ExportHelper(gObj, this.helper.getForeignKeyData());
+        const gColumns: Column[] = isExportColumns(exportProperties) ?
             prepareColumns(exportProperties.columns, gObj.enableColumnVirtualization) :
             helper.getGridExportColumns(isFrozen ? gObj.getColumns() : gObj.columns as Column[]);
-        let headerRow: IHeader = helper.getHeaders(gColumns, this.includeHiddenColumn);
-        let groupIndent: number = gObj.groupSettings.columns.length;
+        const headerRow: IHeader = helper.getHeaders(gColumns, this.includeHiddenColumn);
+        const groupIndent: number = gObj.groupSettings.columns.length;
         excelRows = this.processHeaderContent(gObj, headerRow, groupIndent, excelRows);
-        /* tslint:disable-next-line:max-line-length */
+        // eslint-disable-next-line max-len
         if (!isNullOrUndefined(exportProperties) && !isNullOrUndefined(exportProperties.dataSource) && !(exportProperties.dataSource instanceof DataManager)) {
+            // eslint-disable-next-line max-len
             excelRows = this.processRecordContent(gObj, r, headerRow, exportProperties, exportProperties.dataSource as Object[], excelRows, helper);
         } else if (!isNullOrUndefined(exportProperties) && exportProperties.exportType === 'CurrentPage') {
             excelRows = this.processRecordContent(gObj, r, headerRow, exportProperties, gObj.currentViewData, excelRows, helper);
@@ -393,29 +402,32 @@ export class ExcelExport {
             if (!isNullOrUndefined(currentViewRecords)) {
                 this.processAggregates(gObj, (returnType as ReturnType).result, excelRow, currentViewRecords);
             } else {
-                let result: Object[] = ((returnType as ReturnType).result as Group).GroupGuid ?
-                                       ((returnType as ReturnType).result as Group).records : (returnType as ReturnType).result;
+                const result: Object[] = ((returnType as ReturnType).result as Group).GroupGuid ?
+                    ((returnType as ReturnType).result as Group).records : (returnType as ReturnType).result;
                 this.processAggregates(gObj, result, excelRow );
             }
         }
         return excelRow;
     }
-    /* tslint:disable-next-line:no-any */
-    private processGroupedRows(gObj: IGrid, dataSource: any, headerRow: IHeader, level: number, startIndex: number, excelExportProperties:
-        ExcelExportProperties, excelRows: ExcelRow[], helper: ExportHelper): void {
-        for (let item of dataSource) {
-            let cells: ExcelCell[] = [];
-            let index: number = 1;
-            /* tslint:disable-next-line:no-any */
-            let cell: any = {};
+
+    private processGroupedRows(
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        gObj: IGrid, dataSource: any, headerRow: IHeader, level: number, startIndex: number,
+        excelExportProperties: ExcelExportProperties, excelRows: ExcelRow[], helper: ExportHelper
+    ): void {
+        for (const item of dataSource) {
+            const cells: ExcelCell[] = [];
+            const index: number = 1;
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            const cell: any = {};
             cell.index = index + level;
-            let col: Column = gObj.getColumnByField(item.field);
-            /* tslint:disable-next-line:no-any */
-            let args: any = {
+            const col: Column = gObj.getColumnByField(item.field);
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            const args: any = {
                 value: item.key,
                 column: col,
                 style: undefined,
-                isForeignKey: col.isForeignColumn(),
+                isForeignKey: col.isForeignColumn()
             };
 
             let value: string = gObj.getColumnByField(item.field).headerText +
@@ -425,18 +437,18 @@ export class ExcelExport {
             } else {
                 value += item.count + ' item';
             }
-            let cArgs: ExportGroupCaptionEventArgs = { captionText: value, type: this.isCsvExport ? 'CSV' : 'Excel' };
+            const cArgs: ExportGroupCaptionEventArgs = { captionText: value, type: this.isCsvExport ? 'CSV' : 'Excel' };
             this.parent.trigger(events.exportGroupCaption, cArgs);
             cell.value = cArgs.captionText;
             cell.style = this.getCaptionThemeStyle(this.theme);
-            let captionModelGen: CaptionSummaryModelGenerator = new CaptionSummaryModelGenerator(gObj);
-            let groupCaptionSummaryRows: Row<AggregateColumnModel>[] = captionModelGen.generateRows(item);
+            const captionModelGen: CaptionSummaryModelGenerator = new CaptionSummaryModelGenerator(gObj);
+            const groupCaptionSummaryRows: Row<AggregateColumnModel>[] = captionModelGen.generateRows(item);
             this.fillAggregates(gObj, groupCaptionSummaryRows, dataSource.level + dataSource.childLevels, excelRows, this.rowLength);
             cells.push(cell);
             if (excelRows[excelRows.length - 1].cells.length > 0) {
                 let lIndex: number = dataSource.level + dataSource.childLevels + groupCaptionSummaryRows[0].cells.length;
                 let hIndex: number = 0;
-                for (let tCell of excelRows[excelRows.length - 1].cells) {
+                for (const tCell of excelRows[excelRows.length - 1].cells) {
                     if (tCell.index < lIndex) {
                         lIndex = tCell.index;
                     }
@@ -451,8 +463,8 @@ export class ExcelExport {
                     cell.colSpan = lIndex - cell.index;
                 }
                 while (hIndex < (headerRow.columns.length + level + dataSource.childLevels)) {
-                    /* tslint:disable-next-line:no-any */
-                    let sCell: any = {};
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                    const sCell: any = {};
                     sCell.index = (hIndex + 1);
                     sCell.style = this.getCaptionThemeStyle(this.theme);
                     cells.push(sCell);
@@ -461,7 +473,7 @@ export class ExcelExport {
             } else {
                 let span: number = 0;
                 //Calculation for column span when group caption dont have aggregates
-                for (let col of headerRow.columns) {
+                for (const col of headerRow.columns) {
                     if ((col as Column).visible) {
                         span++;
                     }
@@ -471,7 +483,7 @@ export class ExcelExport {
             excelRows[excelRows.length - 1].cells = cells;
             this.rowLength++;
             if (this.groupedColLength < 8 && level > 1) {
-                let grouping: Object = { outlineLevel: level - 1, isCollapsed: true };
+                const grouping: Object = { outlineLevel: level - 1, isCollapsed: true };
                 excelRows[excelRows.length - 1].grouping = grouping;
             }
 
@@ -487,26 +499,25 @@ export class ExcelExport {
         }
     }
 
-    /* tslint:disable-next-line:max-func-body-length */
     private processRecordRows(gObj: IGrid, record: Object[], headerRow: IHeader, level: number, startIndex: number,
                               excelExportProperties: ExcelExportProperties, excelRows: ExcelRow[], helper: ExportHelper): number {
         let index: number = 1;
         let cells: ExcelCell[] = [];
-        let columns: Column[] = headerRow.columns;
-        let rows: Row<Column>[] = helper.getGridRowModel(columns, record, gObj, startIndex);
+        const columns: Column[] = headerRow.columns;
+        const rows: Row<Column>[] = helper.getGridRowModel(columns, record, gObj, startIndex);
         for (const row of rows) {
             cells = [];
             startIndex++;
             index = 1;
             let templateRowHeight: number;
             for (let c: number = 0, len: number = row.cells.length; c < len; c++) {
-                let gCell: Cell<Column> = row.cells[c];
+                const gCell: Cell<Column> = row.cells[c];
                 if (gCell.cellType !== CellType.Data) {
                     continue;
                 }
-                let column: Column = gCell.column;
-                let field: string = column.field;
-                let cellValue: string = !isNullOrUndefined(field) ? (column.valueAccessor as Function)(field, row.data, column) : '';
+                const column: Column = gCell.column;
+                const field: string = column.field;
+                const cellValue: string = !isNullOrUndefined(field) ? (column.valueAccessor as Function)(field, row.data, column) : '';
                 let value: string = !isNullOrUndefined(cellValue) ? cellValue : '';
                 let fkData: Object;
                 if (column.isForeignColumn && column.isForeignColumn()) {
@@ -515,8 +526,8 @@ export class ExcelExport {
                 }
                 if (!isNullOrUndefined(value)) {
                     let cell: ExcelCell = {};
-                    let idx: number = index + level + (<{childGridLevel?: number}>gObj).childGridLevel;
-                    /* tslint:disable-next-line:no-any */
+                    const idx: number = index + level + (<{childGridLevel?: number}>gObj).childGridLevel;
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
                     let excelCellArgs: any = {
                         data: row.data, column: column, foreignKeyData: fkData,
                         value: value, style: undefined, colSpan: 1, cell: cell
@@ -526,8 +537,8 @@ export class ExcelExport {
                         if (isNullOrUndefined(this.sheet.images)) {
                             this.sheet.images = [];
                         }
-                        /* tslint:disable-next-line:no-any */
-                        let excelImage: any = {
+                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                        const excelImage: any = {
                             image: excelCellArgs.image.base64, row: this.rowLength, column: idx,
                             lastRow: this.rowLength, lastColumn: idx
                         };
@@ -544,7 +555,7 @@ export class ExcelExport {
                     cell.index = idx;
                     cell.value = excelCellArgs.value;
                     if (excelCellArgs.data === '' && (<{childGridLevel?: number}>gObj).childGridLevel && index === 1) {
-                        let style: ExcelStyle = {};
+                        const style: ExcelStyle = {};
                         style.hAlign = 'left' as ExcelHAlign;
                         excelCellArgs = {style: style};
                         cell.colSpan = gObj.getVisibleColumns().length;
@@ -554,7 +565,7 @@ export class ExcelExport {
                         cell.colSpan = excelCellArgs.colSpan;
                     }
                     if (!isNullOrUndefined(excelCellArgs.style)) {
-                        let styleIndex: number = this.getColumnStyle(gObj, index + level);
+                        const styleIndex: number = this.getColumnStyle(gObj, index + level);
                         cell.style = this.mergeOptions(this.styles[styleIndex], excelCellArgs.style);
                     } else {
                         cell.style = { name: gObj.element.id + 'column' + (index + level) } as ExcelStyle;
@@ -564,9 +575,9 @@ export class ExcelExport {
                 index++;
 
             }
-            let excelRow: ExcelRow = { index: this.rowLength++, cells: cells };
+            const excelRow: ExcelRow = { index: this.rowLength++, cells: cells };
             if (!isNullOrUndefined(templateRowHeight)) {
-                /* tslint:disable-next-line:no-any */
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 (excelRow as any).height = templateRowHeight;
             }
             if (this.groupedColLength < 8 && level > 0) {
@@ -577,15 +588,17 @@ export class ExcelExport {
             }
             if (!isNullOrUndefined(gObj.childGrid)) {
                 gObj.isPrinting = true;
-                let exportType: ExportType = (!isNullOrUndefined(excelExportProperties) && excelExportProperties.exportType) ?
-                excelExportProperties.exportType : 'AllPages';
-                let returnVal: {childGrid: IGrid, element: HTMLElement} = this.helper.createChildGrid(gObj, row, exportType, this.gridPool);
-                let childGridObj: IGrid = returnVal.childGrid;
-                let element: HTMLElement = returnVal.element;
+                const exportType: ExportType = (!isNullOrUndefined(excelExportProperties) && excelExportProperties.exportType) ?
+                    excelExportProperties.exportType : 'AllPages';
+                const returnVal: { childGrid: IGrid, element: HTMLElement } = this.helper.createChildGrid(
+                    gObj, row, exportType, this.gridPool
+                );
+                const childGridObj: IGrid = returnVal.childGrid;
+                const element: HTMLElement = returnVal.element;
                 (<{actionFailure?: Function}>childGridObj).actionFailure =
                 helper.failureHandler(this.gridPool, childGridObj, this.globalResolve);
                 (<{childGridLevel?: number}>childGridObj).childGridLevel = (<{childGridLevel?: number}>gObj).childGridLevel + 1;
-                let args: ExportDetailDataBoundEventArgs = {childGrid: childGridObj, row, exportProperties: excelExportProperties };
+                const args: ExportDetailDataBoundEventArgs = {childGrid: childGridObj, row, exportProperties: excelExportProperties };
                 this.parent.trigger(events.exportDetailDataBound, args);
                 (<Grid>childGridObj).beforeDataBound = this.childGridCell(excelRow, childGridObj, excelExportProperties, row);
                 childGridObj.appendTo(element);
@@ -604,11 +617,11 @@ export class ExcelExport {
                 result.result = [''];
             }
             (<{childRows?: ExcelRow[] }>excelRow).childRows = this.processGridExport(childGridObj, excelExportProps, result);
-            let intent: number = this.parent.groupSettings.columns.length;
-            let rows: ExcelRow[] = (<{childRows?: ExcelRow[] }>excelRow).childRows;
+            const intent: number = this.parent.groupSettings.columns.length;
+            const rows: ExcelRow[] = (<{childRows?: ExcelRow[] }>excelRow).childRows;
             for (let i: number = 0; i < rows.length; i++) {
                 rows[i].grouping = { outlineLevel: intent + (<{childGridLevel?: number}>childGridObj).childGridLevel,
-                isCollapsed: !gRow.isExpand, isHidden: !gRow.isExpand};
+                    isCollapsed: !gRow.isExpand, isHidden: !gRow.isExpand};
             }
             (<Grid>childGridObj).destroy();
             detach(childGridObj.element);
@@ -618,10 +631,9 @@ export class ExcelExport {
         };
     }
 
-    // tslint:disable-next-line:max-line-length
     private processAggregates(gObj: IGrid, rec: Object[], excelRows: ExcelRow[], currentViewRecords?: Object[], indent?: number,
                               byGroup?: boolean): ExcelRow[] {
-        let summaryModel: SummaryModelGenerator = new SummaryModelGenerator(gObj);
+        const summaryModel: SummaryModelGenerator = new SummaryModelGenerator(gObj);
         let columns: Column[] = summaryModel.getColumns();
         columns = columns.filter((col: Column) => { return isNullOrUndefined(col.commands) && col.type !== 'checkbox'; });
         if (gObj.aggregates.length && this.parent !== gObj) {
@@ -637,15 +649,15 @@ export class ExcelExport {
             indent = 0;
         }
         if (gObj.groupSettings.columns.length > 0 && byGroup) {
-            let groupSummaryModel: GroupSummaryModelGenerator = new GroupSummaryModelGenerator(gObj);
-            let groupSummaryRows: Row<AggregateColumnModel>[] =
+            const groupSummaryModel: GroupSummaryModelGenerator = new GroupSummaryModelGenerator(gObj);
+            const groupSummaryRows: Row<AggregateColumnModel>[] =
             groupSummaryModel.generateRows(<Object>data, { level: (<Group>data).level });
             if (groupSummaryRows.length > 0) {
                 excelRows = this.fillAggregates(gObj, groupSummaryRows, indent, excelRows);
             }
         } else {
             indent = gObj.groupSettings.columns.length > 0 && !byGroup ? gObj.groupSettings.columns.length : indent;
-            let sRows: Row<AggregateColumnModel>[] = summaryModel.generateRows(data, (<SummaryData>rec).aggregates, null, null, columns);
+            const sRows: Row<AggregateColumnModel>[] = summaryModel.generateRows(data, (<SummaryData>rec).aggregates, null, null, columns);
             if (sRows.length > 0 && !byGroup) {
                 excelRows = this.fillAggregates(gObj, sRows, indent, excelRows);
             }
@@ -653,15 +665,16 @@ export class ExcelExport {
         return excelRows;
     }
 
-    // tslint:disable-next-line:max-line-length
-    private fillAggregates(gObj: IGrid, rows: Row<AggregateColumnModel>[], indent: number, excelRows: ExcelRow[], customIndex?: number): ExcelRow[] {
-        for (let row of rows) {
-            let cells: ExcelCell[] = [];
+    private fillAggregates(
+        gObj: IGrid, rows: Row<AggregateColumnModel>[], indent: number, excelRows: ExcelRow[], customIndex?: number
+    ): ExcelRow[] {
+        for (const row of rows) {
+            const cells: ExcelCell[] = [];
             let isEmpty: boolean = true;
             let index: number = 0;
-            for (let cell of row.cells) {
-                /* tslint:disable-next-line:no-any */
-                let eCell: any = {};
+            for (const cell of row.cells) {
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                const eCell: any = {};
                 if (cell.cellType === CellType.DetailFooterIntent) {
                     continue;
                 }
@@ -669,9 +682,9 @@ export class ExcelExport {
                     index++;
                     if (cell.isDataCell) {
                         isEmpty = false;
-                        let footerTemplate: boolean = !isNullOrUndefined(cell.column.footerTemplate);
-                        let groupFooterTemplate: boolean = !isNullOrUndefined(cell.column.groupFooterTemplate);
-                        let groupCaptionTemplate: boolean = !isNullOrUndefined(cell.column.groupCaptionTemplate);
+                        const footerTemplate: boolean = !isNullOrUndefined(cell.column.footerTemplate);
+                        const groupFooterTemplate: boolean = !isNullOrUndefined(cell.column.groupFooterTemplate);
+                        const groupCaptionTemplate: boolean = !isNullOrUndefined(cell.column.groupCaptionTemplate);
                         eCell.index = index + indent + (<{childGridLevel?: number}>gObj).childGridLevel;
                         if (footerTemplate) {
                             eCell.value = this.getAggreateValue(CellType.Summary, cell.column.footerTemplate, cell, row);
@@ -680,7 +693,7 @@ export class ExcelExport {
                         } else if (groupCaptionTemplate) {
                             eCell.value = this.getAggreateValue(CellType.CaptionSummary, cell.column.groupCaptionTemplate, cell, row);
                         } else {
-                            for (let key of Object.keys(row.data[cell.column.field])) {
+                            for (const key of Object.keys(row.data[cell.column.field])) {
                                 if (key === cell.column.type) {
                                     if (!isNullOrUndefined(row.data[cell.column.field].Sum)) {
                                         eCell.value = row.data[cell.column.field][`${cell.column.field} - sum`];
@@ -704,11 +717,11 @@ export class ExcelExport {
                         }
                         eCell.style = this.getCaptionThemeStyle(this.theme); //{ name: gObj.element.id + 'column' + index };
                         this.aggregateStyle(cell.column, eCell.style, cell.column.field);
-                        let gridCellStyle: {textAlign?: ExcelHAlign} = cell.attributes.style;
+                        const gridCellStyle: {textAlign?: ExcelHAlign} = cell.attributes.style;
                         if (gridCellStyle.textAlign) {
                             eCell.style.hAlign = gridCellStyle.textAlign.toLowerCase() as ExcelHAlign;
                         }
-                        let args: AggregateQueryCellInfoEventArgs = {
+                        const args: AggregateQueryCellInfoEventArgs = {
                             row: row,
                             type: footerTemplate ? 'Footer' : groupFooterTemplate ? 'GroupFooter' : 'GroupCaption',
                             style: eCell
@@ -730,25 +743,25 @@ export class ExcelExport {
             } else {
                 let row: Object = {};
                 if (this.groupedColLength < 8 && this.groupedColLength > 0) {
-                    let dummyOutlineLevel: string = 'outlineLevel';
-                    let dummyGrouping: string = 'grouping';
-                    let level: number = excelRows[excelRows.length - 1][dummyGrouping][dummyOutlineLevel];
-                    let grouping: Object = { outlineLevel: level, isCollapsed: true };
+                    const dummyOutlineLevel: string = 'outlineLevel';
+                    const dummyGrouping: string = 'grouping';
+                    const level: number = excelRows[excelRows.length - 1][dummyGrouping][dummyOutlineLevel];
+                    const grouping: Object = { outlineLevel: level, isCollapsed: true };
                     row = {index: this.rowLength++, cells: cells, grouping};
                 } else {
                     row = {index: this.rowLength++, cells: cells};
                 }
                 if (!isEmpty) {
-                excelRows.push(row); }
+                    excelRows.push(row); }
             }
         }
         return excelRows;
     }
 
     private aggregateStyle(col: AggregateColumnModel, style: ExcelStyle, field: string): void {
-        let column: Column = this.parent.getColumnByField(field);
+        const column: Column = this.parent.getColumnByField(field);
         if (typeof col.format === 'object') {
-            let format: DateFormatOptions = col.format;
+            const format: DateFormatOptions = col.format;
             style.numberFormat = !isNullOrUndefined(format.format) ? format.format : format.skeleton;
             if (!isNullOrUndefined(format.type)) {
                 style.type = format.type.toLowerCase();
@@ -763,10 +776,10 @@ export class ExcelExport {
 
     private getAggreateValue(cellType: CellType, template: string,
                              cell: Cell<AggregateColumnModel>, row: Row<AggregateColumnModel>): string {
-        let templateFn: { [x: string]: Function } = {};
+        const templateFn: { [x: string]: Function } = {};
         templateFn[getEnumValue(CellType, cell.cellType)] = compile(template);
         let txt: NodeList;
-        let data: Object = row.data[cell.column.field ? cell.column.field : cell.column.columnName];
+        const data: Object = row.data[cell.column.field ? cell.column.field : cell.column.columnName];
         if (this.parent.isReact || this.parent.isVue) {
             txt = (templateFn[getEnumValue(CellType, cell.cellType)](data, this.parent));
             if (this.parent.isReact) {
@@ -779,7 +792,7 @@ export class ExcelExport {
     }
 
     private mergeOptions(JSON1: Object, JSON2: Object): Object {
-        let result: Object = {};
+        const result: Object = {};
         let attrname: string[] = Object.keys(JSON1);
         for (let index: number = 0; index < attrname.length; index++) {
             if (attrname[index] !== 'name') {
@@ -797,7 +810,7 @@ export class ExcelExport {
 
     private getColumnStyle(gObj: IGrid, columnIndex: number): number {
         let index: number = 0;
-        for (let style of this.styles) {
+        for (const style of this.styles) {
             if ((<{name: string}>style).name === gObj.element.id + 'column' + columnIndex) {
                 return index;
             }
@@ -807,11 +820,11 @@ export class ExcelExport {
     }
 
     private processHeaderContent(gObj: IGrid, headerRow: IHeader, indent: number, excelRows: ExcelRow[]): ExcelRow[] {
-        let rowIndex: number = 1;
-        let gridRows: Row<Column>[] = headerRow.rows;
+        const rowIndex: number = 1;
+        const gridRows: Row<Column>[] = headerRow.rows;
         // Column collection with respect to the records in the grid
-        let gridColumns: Column[] = headerRow.columns;
-        let spannedCells: ISpannedCell[] = [];
+        const gridColumns: Column[] = headerRow.columns;
+        const spannedCells: ISpannedCell[] = [];
         if (indent > 0) {
             let index: number = 0;
             while (index !== indent) {
@@ -821,14 +834,14 @@ export class ExcelExport {
         }
         for (let row: number = 0; row < gridRows.length; row++) {
             let currentCellIndex: number = 1 + indent;
-            let cells: ExcelCell[] = [];
+            const cells: ExcelCell[] = [];
 
             for (let column: number = 0; column < gridRows[row].cells.length; column++) {
-                /* tslint:disable-next-line:no-any */
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 let style: any = {};
-                let cell: ExcelCell = {};
+                const cell: ExcelCell = {};
 
-                let gridCell: Cell<Column> = gridRows[row].cells[column];
+                const gridCell: Cell<Column> = gridRows[row].cells[column];
 
                 if (gridCell.cellType === CellType.HeaderIndent || gridCell.cellType === CellType.DetailHeader) {
                     continue;
@@ -846,7 +859,7 @@ export class ExcelExport {
                 if (!isNullOrUndefined(gridCell.rowSpan) && gridCell.rowSpan !== 1) {
                     cell.rowSpan = gridCell.rowSpan;
                     for (let i: number = rowIndex; i < gridCell.rowSpan + rowIndex; i++) {
-                        let spannedCell: { rowIndex: number, columnIndex: number } = { rowIndex: 0, columnIndex: 0 };
+                        const spannedCell: { rowIndex: number, columnIndex: number } = { rowIndex: 0, columnIndex: 0 };
                         spannedCell.rowIndex = i;
                         spannedCell.columnIndex = currentCellIndex;
                         spannedCells.push(spannedCell);
@@ -866,7 +879,7 @@ export class ExcelExport {
                     style.hAlign = gridCell.column.headerTextAlign.toLowerCase() as ExcelHAlign;
                 }
 
-                let excelHeaderCellArgs: ExcelHeaderQueryCellInfoEventArgs = { cell: cell, gridCell: gridCell, style: style };
+                const excelHeaderCellArgs: ExcelHeaderQueryCellInfoEventArgs = { cell: cell, gridCell: gridCell, style: style };
                 gObj.trigger(events.excelHeaderQueryCellInfo, excelHeaderCellArgs);
                 cell.style = excelHeaderCellArgs.style;
                 cells.push(cell);
@@ -931,7 +944,7 @@ export class ExcelExport {
             }
             this.rowLength++;
             for (let row: number = 0; row < noRows; row++) {
-                let json: ExcelRow = header.rows[row];
+                const json: ExcelRow = header.rows[row];
 
                 //Row index
                 if (!(json.index !== null && !isNullOrUndefined(json.index))) {
@@ -943,9 +956,9 @@ export class ExcelExport {
     }
 
     private updatedCellIndex(json: ExcelRow): void {
-        let cellsLength: number = json.cells.length;
+        const cellsLength: number = json.cells.length;
         for (let cellId: number = 0; cellId < cellsLength; cellId++) {
-            let jsonCell: ExcelCell = json.cells[cellId];
+            const jsonCell: ExcelCell = json.cells[cellId];
             //cell index
             if (!(jsonCell.index !== null && !isNullOrUndefined(jsonCell.index))) {
                 jsonCell.index = (cellId + 1);
@@ -969,7 +982,7 @@ export class ExcelExport {
             }
 
             for (let row: number = 0; row < noRows; row++) {
-                let json: ExcelRow = footer.rows[row];
+                const json: ExcelRow = footer.rows[row];
 
                 //Row index
                 if (json.index === null || json.index === undefined) {
@@ -983,7 +996,7 @@ export class ExcelExport {
     }
 
     private getIndex(spannedCells: ISpannedCell[], rowIndex: number, columnIndex: number): { contains: boolean, index: number } {
-        for (let spannedCell of spannedCells) {
+        for (const spannedCell of spannedCells) {
             if ((spannedCell.rowIndex === rowIndex) && (spannedCell.columnIndex === columnIndex)) {
                 columnIndex = columnIndex + 1;
                 return { contains: true, index: columnIndex };
@@ -995,7 +1008,7 @@ export class ExcelExport {
     private parseStyles(gObj: IGrid, col: Column, style: ExcelStyle, index: number): void {
         if (!isNullOrUndefined(col.format)) {
             if (typeof col.format === 'object') {
-                let format: DateFormatOptions = col.format;
+                const format: DateFormatOptions = col.format;
                 style.numberFormat = !isNullOrUndefined(format.format) ? format.format : format.skeleton;
                 if (!isNullOrUndefined(format.type)) {
                     style.type = format.type.toLowerCase();
@@ -1014,14 +1027,10 @@ export class ExcelExport {
         }
         if (!isNullOrUndefined(col.width) && col.width !== 'auto') {
             this.columns.push({ index: index + (<{childGridLevel?: number}>gObj).childGridLevel, width: typeof col.width === 'number' ?
-            col.width : this.helper.getConvertedWidth(col.width) });
+                col.width : this.helper.getConvertedWidth(col.width) });
         }
     }
-    /**
-     * To destroy the excel export
-     * @return {void}
-     * @hidden
-     */
+
     public destroy(): void {
         //destroy for exporting
     }

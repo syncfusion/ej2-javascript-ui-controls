@@ -14,6 +14,7 @@ import { Gantt } from './gantt';
  */
 export class DateProcessor {
     protected parent: Gantt;
+    private prevProjectStartDate: Date;
     constructor(parent: Gantt) {
         this.parent = parent;
     }
@@ -1220,6 +1221,7 @@ export class DateProcessor {
         }
 
         if (!editArgs) {
+            this.prevProjectStartDate = this.parent.cloneProjectStartDate;
             this.parent.cloneProjectStartDate = minStartDate ? minStartDate : new Date(projectStartDate.getTime());
             this.parent.cloneProjectEndDate = maxEndDate ? maxEndDate : new Date(projectEndDate.getTime());
         } else {

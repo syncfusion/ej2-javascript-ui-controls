@@ -1284,8 +1284,14 @@ export class NumericTextBox extends Component<HTMLInputElement> implements INoti
         EventHandler.add(document, 'mouseup', this.mouseUpClick, this);
     }
 
-    private touchMoveOnSpinner(event: MouseEvent): void {
-        const target: Element = document.elementFromPoint(event.clientX, event.clientY);
+    private touchMoveOnSpinner(event: MouseEvent | TouchEvent): void {
+        let target: Element
+        if (event.type === "touchmove") {
+            let touchEvent: TouchList = (event as TouchEvent).touches;
+            target = touchEvent.length && document.elementFromPoint(touchEvent[0].pageX, touchEvent[0].pageY);
+        } else {
+            target = document.elementFromPoint((event as MouseEvent).clientX, (event as MouseEvent).clientY);
+        }
         if (!(target.classList.contains(SPINICON))) {
             clearInterval(this.timeOut);
         }

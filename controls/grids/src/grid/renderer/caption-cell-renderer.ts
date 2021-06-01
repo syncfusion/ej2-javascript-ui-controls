@@ -8,36 +8,38 @@ import { appendChildren, templateCompiler } from '../base/util';
 import { GroupedData } from '../services/group-model-generator';
 
 /**
- * GroupCaptionCellRenderer class which responsible for building group caption cell. 
+ * GroupCaptionCellRenderer class which responsible for building group caption cell.
+ *
  * @hidden
  */
 export class GroupCaptionCellRenderer extends CellRenderer implements ICellRenderer<Column> {
 
     public element: HTMLElement = this.parent
-    .createElement('TD', { className: 'e-groupcaption',
-    attrs: { id: this.parent.element.id + 'captioncell', role: 'gridcell', tabindex: '-1' } });
+        .createElement('TD', { className: 'e-groupcaption',
+            attrs: { id: this.parent.element.id + 'captioncell', role: 'gridcell', tabindex: '-1' } });
 
     /**
      * Function to render the cell content based on Column object.
-     * @param  {Cell} cell
-     * @param  {Object} data         
+     *
+     * @param  {Cell} cell - specifies the cell
+     * @param  {Object} data - specifies the GroupedData
+     * @returns {Element} returns the element
      */
     public render(cell: Cell<Column>, data: GroupedData): Element {
-        let node: Element = this.element.cloneNode() as Element;
-        let gObj: IGrid = this.parent;
+        const node: Element = this.element.cloneNode() as Element;
+        const gObj: IGrid = this.parent;
         let result: Element[];
-        let helper: object = {};
         let fKeyValue: string;
         data.headerText = cell.column.headerText;
         if (cell.isForeignKey) {
             fKeyValue = this.format(cell.column, (cell.column.valueAccessor as Function)('foreignKey', data, cell.column));
         }
-        let value: string = cell.isForeignKey ? fKeyValue : cell.column.enableGroupByFormat ? data.key :
+        const value: string = cell.isForeignKey ? fKeyValue : cell.column.enableGroupByFormat ? data.key :
             this.format(cell.column, (cell.column.valueAccessor as Function)('key', data, cell.column));
         if (!isNullOrUndefined(gObj.groupSettings.captionTemplate)) {
-            let isReactCompiler: boolean = this.parent.isReact && typeof (gObj.groupSettings.captionTemplate) !== 'string';
+            const isReactCompiler: boolean = this.parent.isReact && typeof (gObj.groupSettings.captionTemplate) !== 'string';
             if (isReactCompiler) {
-                let tempID: string = gObj.element.id + 'captionTemplate';
+                const tempID: string = gObj.element.id + 'captionTemplate';
                 templateCompiler(gObj.groupSettings.captionTemplate)(data, this.parent, 'captionTemplate', tempID, null, null, node);
                 this.parent.renderTemplates();
             } else if (this.parent.isVue) {
@@ -64,7 +66,8 @@ export class GroupCaptionCellRenderer extends CellRenderer implements ICellRende
 }
 
 /**
- * GroupCaptionEmptyCellRenderer class which responsible for building group caption empty cell. 
+ * GroupCaptionEmptyCellRenderer class which responsible for building group caption empty cell.
+ *
  * @hidden
  */
 export class GroupCaptionEmptyCellRenderer extends CellRenderer implements ICellRenderer<Column> {
@@ -73,11 +76,17 @@ export class GroupCaptionEmptyCellRenderer extends CellRenderer implements ICell
 
     /**
      * Function to render the cell content based on Column object.
-     * @param  {Cell} cell
-     * @param  {Object} data         
+     *
+     * @param {Cell} cell - specifies the cell
+     * @param {Object} data - specifies the Object
+     * @param {string} data.field - Defines the field
+     * @param {string} data.key - Defines the key
+     * @param {number} data.count - Defines the count
+     * @returns {Element} returns the element
      */
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     public render(cell: Cell<Column>, data: { field: string, key: string, count: number }): Element {
-        let node: Element = this.element.cloneNode() as Element;
+        const node: Element = this.element.cloneNode() as Element;
         node.innerHTML = '&nbsp;';
         node.setAttribute('colspan', cell.colSpan.toString());
         return node;

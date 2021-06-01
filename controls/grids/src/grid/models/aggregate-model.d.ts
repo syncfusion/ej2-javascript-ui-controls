@@ -18,6 +18,7 @@ export interface AggregateColumnModel {
      * * falsecount
      * * custom
      * > Specify the `type` value as `custom` to use custom aggregation.
+     *
      * @aspType string
      * @default null
      */
@@ -25,6 +26,7 @@ export interface AggregateColumnModel {
 
     /**
      * Defines the column name to perform aggregation.
+     *
      * @default null
      */
     field?: string;
@@ -32,6 +34,7 @@ export interface AggregateColumnModel {
     /**
      * Defines the column name to display the aggregate value. If `columnName` is not defined,
      * then `field` name value will be assigned to the `columnName` property.
+     *
      * @default null
      */
     columnName?: string;
@@ -41,29 +44,32 @@ export interface AggregateColumnModel {
      * Gets the format from the user, which can be standard or custom
      * [`number`](../../common/internationalization/#number-formatting/)
      * and [`date`](../../common/internationalization/#number-formatting/) formats.
+     *
      * @aspType string
      * @blazorType string
-     * @default null    
+     * @default null
      */
     format?: string | NumberFormatOptions | DateFormatOptions;
 
     /**
      * Defines the footer cell template as a string for the aggregate column.
      * The `type` name should be used to access aggregate values inside the template.
-     * 
+     *
      * {% codeBlock src="grid/footer-template-api/index.ts" %}{% endcodeBlock %}
+     *
      * @default null
      */
     footerTemplate?: string;
 
     /**
-     * Defines the group footer cell template as a string for the aggregate column. 
+     * Defines the group footer cell template as a string for the aggregate column.
      * The `type` name should be used to access aggregate values inside the template.
      * Additionally, the following fields can be accessed in the template.
      * * **field**: The current grouped field.
      * * **key**: The current grouped value.
-     * 
+     *
      * {% codeBlock src="grid/group-footer-api/index.ts" %}{% endcodeBlock %}
+     *
      * @default null
      */
     groupFooterTemplate?: string;
@@ -74,8 +80,9 @@ export interface AggregateColumnModel {
      * Additionally, the following fields can be accessed in the template.
      * * **field**: The current grouped field name.
      * * **key**: The current grouped field value.
-     * 
+     *
      * {% codeBlock src="grid/group-caption-api/index.ts" %}{% endcodeBlock %}
+     *
      * @default null
      */
     groupCaptionTemplate?: string;
@@ -85,7 +92,7 @@ export interface AggregateColumnModel {
      * To use custom aggregate value in the template, use the key as `${custom}`.
      * **Total aggregation**: The custom function will be called with the whole data and the current `AggregateColumn` object.
      * **Group aggregation**: This will be called with the current group details and the `AggregateColumn` object.
-     * 
+     *
      * @default null
      */
     customAggregate?: CustomSummaryType | string;
@@ -98,7 +105,8 @@ export interface AggregateColumnModel {
 export interface AggregateRowModel {
 
     /**
-     * Configures the aggregate columns. 
+     * Configures the aggregate columns.
+     *
      * @default []
      */
     columns?: AggregateColumnModel[];

@@ -8,7 +8,23 @@
 
 ## [Unreleased]
 
-## 19.1.65 (2021-05-25)
+## 19.1.66 (2021-06-01)
+
+### Maps
+
+#### Bug Fixes
+
+- `#322790` - When third-party cookies are disabled in the web browser, Maps will now display correctly.
+
+## 19.1.59 (2021-05-04)
+
+### Maps
+
+#### Bug Fixes
+
+- `#F164278` - `click` event will now work properly in the mobile devices.
+
+## 19.1.57 (2021-04-20)
 
 ### Maps
 

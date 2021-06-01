@@ -26,7 +26,7 @@ import { DataResult, EJ2Intance } from '../base/interface';
  * `CheckBoxFilterBase` module is used to handle filtering action.
  */
 export class CheckBoxFilterBase {
-    //Internal variables     
+    //Internal variables
     protected sBox: HTMLElement;
     protected isExcel: boolean;
     protected id: string;
@@ -62,6 +62,8 @@ export class CheckBoxFilterBase {
     private isMenuNotEqual: boolean;
     /**
      * Constructor for checkbox filtering module
+     *
+     * @param {IXLFilter} parent - specifies the IXLFilter
      * @hidden
      */
     constructor(parent?: IXLFilter) {
@@ -86,9 +88,8 @@ export class CheckBoxFilterBase {
         }
     }
 
-    /** 
-     * To destroy the filter bar. 
-     * @return {void} 
+    /**
+     * @returns {void}
      * @hidden
      */
     public destroy(): void {
@@ -100,7 +101,7 @@ export class CheckBoxFilterBase {
         EventHandler.add(this.dlg, 'click', this.clickHandler, this);
         EventHandler.add(this.dlg, 'keyup', this.keyupHandler, this);
         this.searchHandler = debounce(this.searchBoxKeyUp, 200);
-        let elem: Element = this.dialogObj.element.querySelector('.e-searchinput');
+        const elem: Element = this.dialogObj.element.querySelector('.e-searchinput');
         if (elem) {
             EventHandler.add(elem, 'keyup', this.searchHandler, this);
         }
@@ -109,49 +110,49 @@ export class CheckBoxFilterBase {
     private unWireEvents(): void {
         EventHandler.remove(this.dlg, 'click', this.clickHandler);
         EventHandler.remove(this.dlg, 'keyup', this.keyupHandler);
-        let elem: Element = this.dialogObj.element.querySelector('.e-searchinput');
+        const elem: Element = this.dialogObj.element.querySelector('.e-searchinput');
         if (elem) {
             EventHandler.remove(elem, 'keyup', this.searchHandler);
         }
     }
 
     protected foreignKeyFilter(args: Object, fColl?: Object[], mPredicate?: Predicate): void {
-        let fPredicate: { predicate?: Predicate } = {};
-        let filterCollection: PredicateModel[] = [];
-        let query: Query = this.foreignKeyQuery.clone();
+        const fPredicate: { predicate?: Predicate } = {};
+        const filterCollection: PredicateModel[] = [];
+        const query: Query = this.foreignKeyQuery.clone();
         (<Promise<Object>>(<DataManager>this.options.column.dataSource).
             executeQuery(query.where(mPredicate))).then((e: ReturnType) => {
-                this.options.column.columnData = e.result;
-                this.parent.notify(events.generateQuery, { predicate: fPredicate, column: this.options.column });
-                (<{ ejpredicate: Predicate[] }>args).ejpredicate = fPredicate.predicate.predicates;
-                let fpred: Predicate[] = fPredicate.predicate.predicates;
-                for (let i: number = 0; i < fpred.length; i++) {
-                    filterCollection.push({
-                        field: fpred[i].field,
-                        predicate: 'or',
-                        matchCase: fpred[i].ignoreCase,
-                        ignoreAccent: fpred[i].ignoreAccent,
-                        operator: fpred[i].operator,
-                        value: <string>fpred[i].value,
-                        type: this.options.type
-                    });
-                }
-                (<{ filterCollection: PredicateModel[] }>args).filterCollection = filterCollection.length ? filterCollection :
-                    fColl.filter((col: PredicateModel) => col.field = this.options.field);
-                this.options.handler(args);
-            });
+            this.options.column.columnData = e.result;
+            this.parent.notify(events.generateQuery, { predicate: fPredicate, column: this.options.column });
+            (<{ ejpredicate: Predicate[] }>args).ejpredicate = fPredicate.predicate.predicates;
+            const fpred: Predicate[] = fPredicate.predicate.predicates;
+            for (let i: number = 0; i < fpred.length; i++) {
+                filterCollection.push({
+                    field: fpred[i].field,
+                    predicate: 'or',
+                    matchCase: fpred[i].ignoreCase,
+                    ignoreAccent: fpred[i].ignoreAccent,
+                    operator: fpred[i].operator,
+                    value: <string>fpred[i].value,
+                    type: this.options.type
+                });
+            }
+            (<{ filterCollection: PredicateModel[] }>args).filterCollection = filterCollection.length ? filterCollection :
+                fColl.filter((col: PredicateModel) => col.field = this.options.field);
+            this.options.handler(args);
+        });
     }
 
     private foreignFilter(args: { filterCollection?: PredicateModel[] }, value: string): void {
-        let operator: string = this.options.isRemote ?
+        const operator: string = this.options.isRemote ?
             (this.options.column.type === 'string' ? 'contains' : 'equal') : (this.options.column.type ? 'contains' : 'equal');
-        let initalPredicate: Predicate =
+        const initalPredicate: Predicate =
             new Predicate(this.options.column.foreignKeyValue, operator, value, true, this.options.ignoreAccent);
         this.foreignKeyFilter(args, [args.filterCollection], initalPredicate);
     }
 
     private searchBoxClick(e: MouseEvent): void {
-        let target: Element = e.target as Element;
+        const target: Element = e.target as Element;
         if (target.classList.contains('e-searchclear')) {
             this.sInput.value = '';
             this.refreshCheckboxes();
@@ -160,6 +161,7 @@ export class CheckBoxFilterBase {
         }
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     private searchBoxKeyUp(e?: KeyboardEvent): void {
         this.refreshCheckboxes();
         this.updateSearchIcon();
@@ -173,22 +175,24 @@ export class CheckBoxFilterBase {
         }
     }
 
-    /** 
-     * Gets the localized label by locale keyword. 
-     * @param  {string} key  
-     * @return {string}  
+    /**
+     * Gets the localized label by locale keyword.
+     *
+     * @param {string} key - Defines localization key
+     * @returns {string} - returns localization label
      */
     public getLocalizedLabel(key: string): string {
         return this.localeObj.getConstant(key);
     }
 
     private updateDataSource(): void {
-        let dataSource: Object[] = this.options.dataSource as Object[];
-        let str: string = 'object';
+        const dataSource: Object[] = this.options.dataSource as Object[];
+        const str: string = 'object';
         if (!(dataSource instanceof DataManager)) {
             for (let i: number = 0; i < dataSource.length; i++) {
+                // eslint-disable-next-line valid-typeof
                 if (typeof dataSource !== str) {
-                    let obj: Object = {};
+                    const obj: Object = {};
                     obj[this.options.field] = dataSource[i];
                     dataSource[i] = obj;
                 }
@@ -236,7 +240,7 @@ export class CheckBoxFilterBase {
             this.searchBox = this.parent.createElement('span', { className: 'e-searchbox e-fields' });
             this.searchBox.appendChild(this.sInput);
             this.sBox.appendChild(this.searchBox);
-            let inputargs: InputArgs = {
+            const inputargs: InputArgs = {
                 element: this.sInput as HTMLInputElement, floatLabelType: 'Never', properties: {
                     placeholder: this.getLocalizedLabel('Search')
                 }
@@ -258,14 +262,14 @@ export class CheckBoxFilterBase {
     }
 
     protected showDialog(options: IFilterArgs): void {
-        let args: {
+        const args: {
             requestType: string, filterModel?: CheckBoxFilterBase, columnName: string,
             columnType: string, cancel: boolean
         } = {
             requestType: events.filterBeforeOpen,
             columnName: this.options.field, columnType: this.options.type, cancel: false
         };
-        let filterModel: string = 'filterModel';
+        const filterModel: string = 'filterModel';
         args[filterModel] = this;
         this.parent.notify(events.cBoxFltrBegin, args);
         if (args.cancel) {
@@ -293,12 +297,12 @@ export class CheckBoxFilterBase {
             created: this.dialogCreated.bind(this),
             open: this.dialogOpen.bind(this)
         });
-        let isStringTemplate: string = 'isStringTemplate';
+        const isStringTemplate: string = 'isStringTemplate';
         this.dialogObj[isStringTemplate] = true;
         this.renderResponsiveFilter(options);
         this.dlg.setAttribute('aria-label', this.getLocalizedLabel('ExcelFilterDialogARIA'));
         if (options.isResponsiveFilter) {
-            let responsiveCnt: HTMLElement = document.querySelector('.e-responsive-dialog > .e-dlg-content > .e-mainfilterdiv');
+            const responsiveCnt: HTMLElement = document.querySelector('.e-responsive-dialog > .e-dlg-content > .e-mainfilterdiv');
             responsiveCnt.appendChild(this.dlg);
         } else {
             this.parent.element.appendChild(this.dlg);
@@ -306,7 +310,7 @@ export class CheckBoxFilterBase {
         this.dialogObj.appendTo(this.dlg as HTMLElement);
         this.dialogObj.element.style.maxHeight = options.isResponsiveFilter ? 'none' : this.options.height + 'px';
         this.dialogObj.show();
-        let content: HTMLElement = this.dialogObj.element.querySelector('.e-dlg-content');
+        const content: HTMLElement = this.dialogObj.element.querySelector('.e-dlg-content');
         content.appendChild(this.sBox);
         this.wireEvents();
         createSpinner({ target: this.spinner }, this.parent.createElement);
@@ -328,7 +332,7 @@ export class CheckBoxFilterBase {
             this.dialogObj.element.style.left = '0px';
         } else {
             if (!Browser.isDevice) {
-                getFilterMenuPostion(this.options.target, this.dialogObj, this.parent);
+                getFilterMenuPostion(this.options.target, this.dialogObj);
             } else {
                 this.dialogObj.position = { X: 'center', Y: 'center' };
             }
@@ -344,9 +348,9 @@ export class CheckBoxFilterBase {
 
     public closeDialog(): void {
         if (this.dialogObj && !this.dialogObj.isDestroyed) {
-            let filterTemplateCol: Column[] = (this.options.columns as Column[]).filter((col: Column) => col.getFilterItemTemplate());
-            // tslint:disable-next-line:no-any
-            let registeredTemplate: any = (this.parent as any).registeredTemplate;
+            const filterTemplateCol: Column[] = (this.options.columns as Column[]).filter((col: Column) => col.getFilterItemTemplate());
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            const registeredTemplate: any = (this.parent as any).registeredTemplate;
             if (filterTemplateCol.length && !isNullOrUndefined(registeredTemplate) && registeredTemplate.filterItemTemplate) {
                 this.parent.destroyTemplate(['filterItemTemplate']);
             }
@@ -363,10 +367,14 @@ export class CheckBoxFilterBase {
         }
     }
 
-    /** @hidden */
+    /**
+     * @param {Column} col - Defines column details
+     * @returns {void}
+     * @hidden
+     */
     public clearFilter(col?: Column): void {
-        /* tslint:disable-next-line:max-line-length */
-        let args: { instance: CheckBoxFilterBase, handler: Function, cancel: boolean } = { instance: this, handler: this.clearFilter, cancel: false };
+        // eslint-disable-next-line max-len
+        const args: { instance: CheckBoxFilterBase, handler: Function, cancel: boolean } = { instance: this, handler: this.clearFilter, cancel: false };
         this.parent.notify(events.fltrPrevent, args);
         if (args.cancel) {
             return;
@@ -377,7 +385,7 @@ export class CheckBoxFilterBase {
     private btnClick(e: MouseEvent): void {
         if (this.filterState) {
             if ((<Element>e.target).tagName.toLowerCase() === 'input' && (<Element>e.target).classList.contains('e-searchinput')) {
-                let value: string | Boolean = (<HTMLInputElement>e.target).value;
+                let value: string | boolean = (<HTMLInputElement>e.target).value;
                 if (this.options.column.type === 'boolean') {
                     if (value !== '' &&
                         this.getLocalizedLabel('FilterTrue').toLowerCase().indexOf((value as string).toLowerCase()) !== -1) {
@@ -387,7 +395,7 @@ export class CheckBoxFilterBase {
                         value = false;
                     }
                 }
-                let args: Object = {
+                const args: Object = {
                     action: 'filtering', filterCollection: {
                         field: this.options.field,
                         operator: this.options.isRemote ?
@@ -398,14 +406,21 @@ export class CheckBoxFilterBase {
                     },
                     field: this.options.field
                 };
-                value !== undefined && value !== null && value !== '' ? this.isForeignColumn(this.options.column as Column) ?
-                    this.foreignFilter(args, value as string) : this.options.handler(args) : this.closeDialog();
+                if (value !== undefined && value !== null && value !== '') {
+                    if (this.isForeignColumn(this.options.column as Column)) {
+                        this.foreignFilter(args, value as string);
+                    } else {
+                        this.options.handler(args);
+                    }
+                } else {
+                    this.closeDialog();
+                }
             } else {
                 if ((<{ keyCode?: number }>e).keyCode === 13) {
                     this.fltrBtnHandler();
                 } else {
 
-                    let text: string = (e.target as HTMLElement).firstChild.textContent.toLowerCase();
+                    const text: string = (e.target as HTMLElement).firstChild.textContent.toLowerCase();
                     if (this.getLocalizedLabel(this.isExcel ? 'OKButton' : 'FilterButton').toLowerCase() === text) {
                         this.fltrBtnHandler();
                     } else if (this.getLocalizedLabel('ClearButton').toLowerCase() === text) {
@@ -420,12 +435,15 @@ export class CheckBoxFilterBase {
         }
     }
 
-    /** @hidden */
+    /**
+     * @returns {void}
+     * @hidden
+     */
     public fltrBtnHandler(): void {
         let checked: Element[] = [].slice.call(this.cBox.querySelectorAll('.e-check:not(.e-selectall)'));
-        let check: Element[] = checked;
+        const check: Element[] = checked;
         let optr: string = 'equal';
-        let ddlValue: EJ2Intance = (this.dialogObj.element.querySelector('.e-dropdownlist') as EJ2Intance);
+        const ddlValue: EJ2Intance = (this.dialogObj.element.querySelector('.e-dropdownlist') as EJ2Intance);
         if (ddlValue) {
             this.options.operator = optr = ddlValue.ej2_instances[0].value as string;
         }
@@ -434,15 +452,15 @@ export class CheckBoxFilterBase {
         if (!this.options.hideSearchbox) {
             searchInput = this.searchBox.querySelector('.e-searchinput') as HTMLInputElement;
         }
-        let caseSen: boolean = this.options.allowCaseSensitive;
-        let defaults: {
+        const caseSen: boolean = this.options.allowCaseSensitive;
+        const defaults: {
             predicate?: string, field?: string, type?: string, uid?: string
             operator?: string, matchCase?: boolean, ignoreAccent?: boolean
         } = {
             field: this.options.field, predicate: this.isMenuNotEqual ? 'and' : 'or', uid: this.options.uid,
             operator: optr, type: this.options.type, matchCase: caseSen, ignoreAccent: this.options.ignoreAccent
         };
-        let isNotEqual: boolean = this.itemsCnt !== checked.length && this.itemsCnt - checked.length < checked.length;
+        const isNotEqual: boolean = this.itemsCnt !== checked.length && this.itemsCnt - checked.length < checked.length;
         if (isNotEqual && searchInput && searchInput.value === '') {
             optr = this.isMenuNotEqual ? 'equal' : 'notequal';
             checked = [].slice.call(this.cBox.querySelectorAll('.e-uncheck:not(.e-selectall)'));
@@ -468,7 +486,7 @@ export class CheckBoxFilterBase {
                 } else {
                     coll.push(fObj);
                 }
-                let args: {
+                const args: {
                     cancel: boolean, instance: CheckBoxFilterBase, handler: Function, arg1: string, arg2: Object, arg3: string
                     , arg4: boolean, arg5: boolean, arg6: string
                 } = {
@@ -496,6 +514,7 @@ export class CheckBoxFilterBase {
         }
     }
 
+    // eslint-disable-next-line
     /** @hidden */
     public static generateNullValuePredicates(
         defaults: {
@@ -503,7 +522,7 @@ export class CheckBoxFilterBase {
             operator?: string, matchCase?: boolean, ignoreAccent?: boolean
         }
     ): PredicateModel[] {
-        let coll: PredicateModel[] = [];
+        const coll: PredicateModel[] = [];
         if (defaults.type === 'string') {
             coll.push(
                 {
@@ -525,7 +544,7 @@ export class CheckBoxFilterBase {
     }
 
     private initiateFilter(fColl: PredicateModel[]): void {
-        let firstVal: PredicateModel = fColl[0];
+        const firstVal: PredicateModel = fColl[0];
         let predicate: PredicateModel;
         if (!isNullOrUndefined(firstVal)) {
             predicate = firstVal.ejpredicate ? firstVal.ejpredicate :
@@ -537,7 +556,7 @@ export class CheckBoxFilterBase {
                         fColl[j].field, fColl[j].operator, fColl[j].value, !fColl[j].matchCase, fColl[j].ignoreAccent
                     );
             }
-            let args: Object = {
+            const args: Object = {
                 action: 'filtering', filterCollection: fColl, field: this.options.field,
                 ejpredicate: Predicate.or(predicate)
             };
@@ -550,22 +569,22 @@ export class CheckBoxFilterBase {
     }
 
     private refreshCheckboxes(): void {
-        let val: string = this.sInput.value;
-        let column: Column = this.options.column as Column;
-        let query: Query = this.isForeignColumn(column) ? this.foreignKeyQuery.clone() : this.options.query.clone();
-        let foreignQuery: Query = this.options.query.clone();
-        let pred: QueryOptions = query.queries.filter((e : QueryOptions) => { return e && e.fn === 'onWhere'; })[0];
+        const val: string = this.sInput.value;
+        const column: Column = this.options.column as Column;
+        const query: Query = this.isForeignColumn(column) ? this.foreignKeyQuery.clone() : this.options.query.clone();
+        const foreignQuery: Query = this.options.query.clone();
+        const pred: QueryOptions = query.queries.filter((e : QueryOptions) => { return e && e.fn === 'onWhere'; })[0];
         query.queries = [];
         foreignQuery.queries = [];
         let parsed: string | number | Date | boolean = (this.options.type !== 'string' && parseFloat(val)) ? parseFloat(val) : val;
         let operator: string = this.options.isRemote ?
             (this.options.type === 'string' ? 'contains' : 'equal') : (this.options.type ? 'contains' : 'equal');
-        let matchCase: boolean = true;
-        let ignoreAccent: boolean = this.options.ignoreAccent;
-        let field: string = this.isForeignColumn(column) ? column.foreignKeyValue : column.field;
+        const matchCase: boolean = true;
+        const ignoreAccent: boolean = this.options.ignoreAccent;
+        const field: string = this.isForeignColumn(column) ? column.foreignKeyValue : column.field;
         parsed = (parsed === '' || parsed === undefined) ? undefined : parsed;
         let predicte: Predicate;
-        let moduleName : Function = (<{ getModuleName?: Function }>this.options.dataManager.adaptor).getModuleName;
+        const moduleName : Function = (<{ getModuleName?: Function }>this.options.dataManager.adaptor).getModuleName;
         if (this.options.type === 'boolean') {
             if (parsed !== undefined &&
                 this.getLocalizedLabel('FilterTrue').toLowerCase().indexOf((parsed as string).toLowerCase()) !== -1) {
@@ -576,9 +595,11 @@ export class CheckBoxFilterBase {
             }
             if (parsed !== undefined &&
                 this.getLocalizedLabel('FilterTrue').toLowerCase().indexOf((parsed as string).toLowerCase()) !== -1 && moduleName) {
+                // eslint-disable-next-line no-constant-condition
                 parsed = (moduleName() === 'ODataAdaptor' || 'ODataV4Adaptor') ? true : 'true';
             } else if (parsed !== undefined &&
                 this.getLocalizedLabel('FilterFalse').toLowerCase().indexOf((parsed as string).toLowerCase()) !== -1 && moduleName) {
+                // eslint-disable-next-line no-constant-condition
                 parsed = (moduleName() === 'ODataAdaptor' || 'ODataV4Adaptor') ? false : 'false';
             }
             operator = 'equal';
@@ -587,14 +608,14 @@ export class CheckBoxFilterBase {
             parsed = this.valueFormatter.fromView(val, this.options.parserFn, this.options.type);
         }
         this.addDistinct(query);
-        /* tslint:disable-next-line:max-line-length */
-        let args: FilterSearchBeginEventArgs = {
+        const args: FilterSearchBeginEventArgs = {
             requestType: events.filterSearchBegin,
             filterModel: this, columnName: field, column: column,
             operator: operator, matchCase: matchCase, ignoreAccent: ignoreAccent, filterChoiceCount: null,
             query: query, value: parsed
         };
         this.parent.trigger(events.actionBegin, args, (filterargs: FilterSearchBeginEventArgs) => {
+            // eslint-disable-next-line no-self-assign
             filterargs.operator = filterargs.operator;
             predicte = new Predicate(field, filterargs.operator, parsed, filterargs.matchCase, filterargs.ignoreAccent);
             if (this.options.type === 'date' || this.options.type === 'datetime') {
@@ -602,28 +623,28 @@ export class CheckBoxFilterBase {
                 if (isNullOrUndefined(parsed) && val.length) {
                     return;
                 }
-                let filterObj: Object = {
+                const filterObj: Object = {
                     field: field, operator: operator, value: parsed, matchCase: matchCase,
                     ignoreAccent: ignoreAccent
                 };
                 predicte = getDatePredicate(filterObj, this.options.type);
             }
             if (val.length) {
-             predicte = !isNullOrUndefined(pred) ? predicte.and(pred.e as Predicate) : predicte;
-             query.where(predicte);
+                predicte = !isNullOrUndefined(pred) ? predicte.and(pred.e as Predicate) : predicte;
+                query.where(predicte);
             } else if (!isNullOrUndefined(pred)) {
                 query.where(pred.e as Predicate);
             }
             filterargs.filterChoiceCount = !isNullOrUndefined(filterargs.filterChoiceCount) ? filterargs.filterChoiceCount : 1000;
-            let fPredicate: { predicate?: Predicate } = {};
+            const fPredicate: { predicate?: Predicate } = {};
             showSpinner(this.spinner);
             this.renderEmpty = false;
             if (this.isForeignColumn(column) && val.length) {
-                let colData: DataManager = ('result' in column.dataSource) ? new DataManager((column.dataSource as DataResult).result) :
-                column.dataSource as DataManager;
-                // tslint:disable-next-line:no-any
+                const colData: DataManager = ('result' in column.dataSource) ? new DataManager((column.dataSource as DataResult).result) :
+                    column.dataSource as DataManager;
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 colData.executeQuery(query).then((e: any) => {
-                    let columnData: Object[] = this.options.column.columnData;
+                    const columnData: Object[] = this.options.column.columnData;
                     this.options.column.columnData = e.result;
                     this.parent.notify(events.generateQuery, { predicate: fPredicate, column: column });
                     if (fPredicate.predicate.predicates.length) {
@@ -651,12 +672,12 @@ export class CheckBoxFilterBase {
     }
 
     private getPredicateFromCols(columns: Object[]): Predicate {
-        let predicates: Predicate = CheckBoxFilterBase.getPredicate(columns);
-        let predicateList: Predicate[] = [];
-        let fPredicate: { predicate?: Predicate } = {};
-        let isGrid: boolean = this.parent.getForeignKeyColumns !== undefined;
-        let foreignColumn: Column[] = isGrid ? this.parent.getForeignKeyColumns() : [];
-        for (let prop of Object.keys(predicates)) {
+        const predicates: Predicate = CheckBoxFilterBase.getPredicate(columns);
+        const predicateList: Predicate[] = [];
+        const fPredicate: { predicate?: Predicate } = {};
+        const isGrid: boolean = this.parent.getForeignKeyColumns !== undefined;
+        const foreignColumn: Column[] = isGrid ? this.parent.getForeignKeyColumns() : [];
+        for (const prop of Object.keys(predicates)) {
             let col: Column;
             if (isGrid && this.parent.getColumnByField(prop).isForeignColumn()) {
                 col = getColumnByForeignKeyValue(prop, foreignColumn);
@@ -678,13 +699,13 @@ export class CheckBoxFilterBase {
     }
 
     private getAllData(): void {
-        let query: Query = this.getQuery();
+        const query: Query = this.getQuery();
         query.requiresCount(); //consider take query
         this.addDistinct(query);
-        let args: FilterSearchBeginEventArgs = {
+        const args: FilterSearchBeginEventArgs = {
             requestType: events.filterChoiceRequest, query: query, filterChoiceCount: null
         };
-        let filterModel: string = 'filterModel';
+        const filterModel: string = 'filterModel';
         args[filterModel] = this;
         this.parent.trigger(events.actionBegin, args, (args: FilterSearchBeginEventArgs) => {
             args.filterChoiceCount = !isNullOrUndefined(args.filterChoiceCount) ? args.filterChoiceCount : 1000;
@@ -707,9 +728,9 @@ export class CheckBoxFilterBase {
     }
 
     private filterEvent(args: Object, query: Query): void {
-        let defObj: FilterStateObj = eventPromise(args, query);
+        const defObj: FilterStateObj = eventPromise(args, query);
         this.parent.trigger(events.dataStateChange, defObj.state);
-        let def: Deferred = defObj.deffered;
+        const def: Deferred = defObj.deffered;
         def.promise.then((e: ReturnType[]) => {
             this.dataSuccess(e);
         });
@@ -719,12 +740,12 @@ export class CheckBoxFilterBase {
 
         this.options.dataSource = this.options.dataSource instanceof DataManager ?
             this.options.dataSource : new DataManager(this.options.dataSource as JSON[]);
-        let allPromise: Promise<Object>[] = [];
-        let runArray: Function[] = [];
+        const allPromise: Promise<Object>[] = [];
+        const runArray: Function[] = [];
         if (this.isForeignColumn(this.options.column as Column) && isInitial) {
-            let colData: DataManager = ('result' in this.options.column.dataSource) ?
-            new DataManager((this.options.column.dataSource as DataResult).result) :
-            this.options.column.dataSource as DataManager;
+            const colData: DataManager = ('result' in this.options.column.dataSource) ?
+                new DataManager((this.options.column.dataSource as DataResult).result) :
+                this.options.column.dataSource as DataManager;
             this.foreignKeyQuery.params = query.params;
             allPromise.push(colData.executeQuery(this.foreignKeyQuery));
             runArray.push((data: Object[]) => this.foreignKeyData = data);
@@ -742,52 +763,51 @@ export class CheckBoxFilterBase {
     }
     private dataSuccess(e: Object[]): void {
         this.fullData = e;
-        let args1: CheckBoxBeforeRenderer = { dataSource: this.fullData, executeQuery: true, field: this.options.field };
+        const args1: CheckBoxBeforeRenderer = { dataSource: this.fullData, executeQuery: true, field: this.options.field };
         this.parent.notify(events.beforeCheckboxRenderer, args1 );
         if (args1.executeQuery) {
-        let query: Query = new Query();
-        if (this.parent.searchSettings && this.parent.searchSettings.key.length) {
-            let sSettings: SearchSettingsModel = this.parent.searchSettings;
-            let fields: string[] = sSettings.fields.length ? sSettings.fields : this.options.columns.map((f: Column) => f.field);
-            /* tslint:disable-next-line:max-line-length */
-            query.search(sSettings.key, fields, sSettings.operator, sSettings.ignoreCase, sSettings.ignoreAccent);
-        }
-        if ((this.options.filteredColumns.length)) {
-            let cols: Object[] = [];
-            for (let i: number = 0; i < this.options.filteredColumns.length; i++) {
-                let filterColumn: { uid: string, field: string } = this.options.filteredColumns[i] as { uid: string, field: string };
-                if (this.options.uid) {
-                    filterColumn.uid = filterColumn.uid || this.parent.getColumnByField(filterColumn.field).uid;
-                    if (filterColumn.uid !== this.options.uid) {
-                        cols.push(this.options.filteredColumns[i]);
-                    }
-                } else {
-                    if (filterColumn.field !== this.options.field) {
-                        cols.push(this.options.filteredColumns[i]);
+            const query: Query = new Query();
+            if (this.parent.searchSettings && this.parent.searchSettings.key.length) {
+                const sSettings: SearchSettingsModel = this.parent.searchSettings;
+                const fields: string[] = sSettings.fields.length ? sSettings.fields : this.options.columns.map((f: Column) => f.field);
+                query.search(sSettings.key, fields, sSettings.operator, sSettings.ignoreCase, sSettings.ignoreAccent);
+            }
+            if ((this.options.filteredColumns.length)) {
+                const cols: Object[] = [];
+                for (let i: number = 0; i < this.options.filteredColumns.length; i++) {
+                    const filterColumn: { uid: string, field: string } = this.options.filteredColumns[i] as { uid: string, field: string };
+                    if (this.options.uid) {
+                        filterColumn.uid = filterColumn.uid || this.parent.getColumnByField(filterColumn.field).uid;
+                        if (filterColumn.uid !== this.options.uid) {
+                            cols.push(this.options.filteredColumns[i]);
+                        }
+                    } else {
+                        if (filterColumn.field !== this.options.field) {
+                            cols.push(this.options.filteredColumns[i]);
+                        }
                     }
                 }
+                const predicate: Predicate = this.getPredicateFromCols(cols);
+                if (predicate) {
+                    query.where(predicate);
+                }
             }
-            let predicate: Predicate = this.getPredicateFromCols(cols);
-            if (predicate) {
-                query.where(predicate);
-            }
+            // query.select(this.options.field);
+            const result: Object[] = new DataManager(args1.dataSource as JSON[]).executeLocal(query);
+            const col: Column = this.options.column as Column;
+            this.filteredData = (CheckBoxFilterBase.getDistinct(result, this.options.field, col, this.foreignKeyData) as
+                { records: Object[] }).records || [];
         }
-        // query.select(this.options.field);
-        let result: Object[] = new DataManager(args1.dataSource as JSON[]).executeLocal(query);
-        let col: Column = this.options.column as Column;
-        this.filteredData = (CheckBoxFilterBase.getDistinct(result, this.options.field, col, this.foreignKeyData) as
-            { records: Object[] }).records || [];
-        }
-        let data: object[] = args1.executeQuery ? this.filteredData : args1.dataSource ;
+        const data: object[] = args1.executeQuery ? this.filteredData : args1.dataSource ;
         this.processDataSource(null, true, data, args1);
         if (this.sInput) {
             this.sInput.focus();
         }
-        let args: Object = {
+        const args: Object = {
             requestType: events.filterAfterOpen,
             columnName: this.options.field, columnType: this.options.type
         };
-        let filterModel: string = 'filterModel';
+        const filterModel: string = 'filterModel';
         args[filterModel] = this;
         this.parent.notify(events.cBoxFltrComplete, args);
     }
@@ -808,25 +828,26 @@ export class CheckBoxFilterBase {
 
     private updateResult(): void {
         this.result = {};
-        let predicate: Predicate = this.getPredicateFromCols(this.options.filteredColumns);
-        let query: Query = new Query();
+        const predicate: Predicate = this.getPredicateFromCols(this.options.filteredColumns);
+        const query: Query = new Query();
         if (predicate) {
             query.where(predicate);
         }
-        let result: Object[] = new DataManager(this.fullData as JSON[]).executeLocal(query);
-        for (let res of result) {
+        this.parent.notify(events.beforeCheckboxRendererQuery, { query: query });
+        const result: Object[] = new DataManager(this.fullData as JSON[]).executeLocal(query);
+        for (const res of result) {
             this.result[getObject(this.options.field, res)] = true;
         }
     }
 
     private clickHandler(e: MouseEvent): void {
-        let target: Element = e.target as Element;
-        let elem: Element = parentsUntil(target, 'e-checkbox-wrapper');
+        const target: Element = e.target as Element;
+        const elem: Element = parentsUntil(target, 'e-checkbox-wrapper');
         if (parentsUntil(target, 'e-searchbox')) {
             this.searchBoxClick(e);
         }
         if (elem) {
-            let selectAll: Element = elem.querySelector('.e-selectall');
+            const selectAll: Element = elem.querySelector('.e-selectall');
             if (selectAll) {
                 this.updateAllCBoxes(!selectAll.classList.contains('e-check'));
             } else {
@@ -843,7 +864,7 @@ export class CheckBoxFilterBase {
     }
 
     private setFocus(elem?: Element): void {
-        let prevElem: Element = this.dlg.querySelector('.e-chkfocus');
+        const prevElem: Element = this.dlg.querySelector('.e-chkfocus');
         if (prevElem) {
             prevElem.classList.remove('e-chkfocus');
         }
@@ -853,8 +874,8 @@ export class CheckBoxFilterBase {
     }
 
     private updateAllCBoxes(checked: boolean): void {
-        let cBoxes: Element[] = [].slice.call(this.cBox.getElementsByClassName('e-frame'));
-        for (let cBox of cBoxes) {
+        const cBoxes: Element[] = [].slice.call(this.cBox.getElementsByClassName('e-frame'));
+        for (const cBox of cBoxes) {
             removeAddCboxClasses(cBox, checked);
             setChecked(cBox.previousSibling as HTMLInputElement, checked);
         }
@@ -870,11 +891,11 @@ export class CheckBoxFilterBase {
     }
 
     private createCheckbox(value: string, checked: boolean, data: Object): Element {
-        let elem: Element = checked ? this.cBoxTrue.cloneNode(true) as Element :
+        const elem: Element = checked ? this.cBoxTrue.cloneNode(true) as Element :
             this.cBoxFalse.cloneNode(true) as Element;
         setChecked(elem.querySelector('input'), checked);
-        let label: Element = elem.querySelector('.e-label');
-        let dummyData: Object = extendObjWithFn({}, data, { column: this.options.column, parent: this.parent });
+        const label: Element = elem.querySelector('.e-label');
+        const dummyData: Object = extendObjWithFn({}, data, { column: this.options.column, parent: this.parent });
         label.innerHTML = !isNullOrUndefined(value) && value.toString().length ? value :
             this.getLocalizedLabel('Blanks');
         if (typeof value === 'boolean') {
@@ -883,7 +904,7 @@ export class CheckBoxFilterBase {
         addClass([label], ['e-checkboxfiltertext']);
         if (this.options.template && data[this.options.column.field] !== this.getLocalizedLabel('SelectAll')) {
             label.innerHTML = '';
-            let isReactCompiler: boolean = this.parent.isReact && this.options.column.filter
+            const isReactCompiler: boolean = this.parent.isReact && this.options.column.filter
                 && typeof (this.options.column.filter.itemTemplate) !== 'string';
             if (isReactCompiler) {
                 this.options.template(dummyData, this.parent, 'filterItemTemplate', null, null, null, label);
@@ -896,17 +917,17 @@ export class CheckBoxFilterBase {
     }
 
     private updateIndeterminatenBtn(): void {
-        let cnt: number = this.cBox.children.length - 1;
+        const cnt: number = this.cBox.children.length - 1;
         let className: string[] = [];
         let disabled: boolean = false;
-        let elem: Element = this.cBox.querySelector('.e-selectall');
-        let selected: number = this.cBox.querySelectorAll('.e-check:not(.e-selectall)').length;
+        const elem: Element = this.cBox.querySelector('.e-selectall');
+        const selected: number = this.cBox.querySelectorAll('.e-check:not(.e-selectall)').length;
         let btn: Button;
         if (!this.options.isResponsiveFilter) {
             btn = (<{ btnObj?: Button }>(this.dialogObj as DialogModel)).btnObj[0];
             btn.disabled = false;
         }
-        let input: HTMLInputElement = elem.previousSibling as HTMLInputElement;
+        const input: HTMLInputElement = elem.previousSibling as HTMLInputElement;
         setChecked(input, false);
         input.indeterminate = false;
         if (cnt === selected) {
@@ -930,7 +951,7 @@ export class CheckBoxFilterBase {
     }
 
     private createFilterItems(data: Object[], isInitial?: boolean, args1?: CheckBoxBeforeRenderer): void {
-        let cBoxes: Element = this.parent.createElement('div');
+        const cBoxes: Element = this.parent.createElement('div');
         let btn: Button; let disabled: boolean = false;
         if (!this.options.isResponsiveFilter) {
             btn = (<{ btnObj?: Button }>(this.dialogObj as DialogModel)).btnObj[0];
@@ -941,33 +962,33 @@ export class CheckBoxFilterBase {
             key = args1.field ;
         }
         for (let i: number = 0; i < data.length; i++) {
-            let val: string = getValue(key, data[i]);
+            const val: string = getValue(key, data[i]);
             if (val === '' || isNullOrUndefined(val)) {
                 nullCounter = nullCounter + 1;
             }
         }
         this.itemsCnt = nullCounter !== -1 ? data.length - nullCounter : data.length;
         if (data.length && !this.renderEmpty) {
-            let selectAllValue: string = this.getLocalizedLabel('SelectAll');
-            let checkBox: Element = this.createCheckbox(selectAllValue, false, { [this.options.field]: selectAllValue });
-            let selectAll: Element = createCboxWithWrap(getUid('cbox'), checkBox, 'e-ftrchk');
+            const selectAllValue: string = this.getLocalizedLabel('SelectAll');
+            const checkBox: Element = this.createCheckbox(selectAllValue, false, { [this.options.field]: selectAllValue });
+            const selectAll: Element = createCboxWithWrap(getUid('cbox'), checkBox, 'e-ftrchk');
             selectAll.querySelector('.e-frame').classList.add('e-selectall');
             cBoxes.appendChild(selectAll);
             let predicate: Predicate = new Predicate('field', 'equal', this.options.field);
             if (this.options.foreignKeyValue) {
                 predicate = predicate.or('field', 'equal', this.options.foreignKeyValue);
             }
-            let isColFiltered: number = new DataManager(this.options.filteredColumns as JSON[]).executeLocal(
+            const isColFiltered: number = new DataManager(this.options.filteredColumns as JSON[]).executeLocal(
                 new Query().where(predicate)).length;
             let isRndere: boolean;
             for (let i: number = 0; i < data.length; i++) {
-                let uid: string = getUid('cbox');
+                const uid: string = getUid('cbox');
                 this.values[uid] = getValue(key, data[i]);
                 let value: string | number = getValue(this.options.field, data[i]);
                 if (this.options.formatFn) {
                     value = this.valueFormatter.toView(value as number, this.options.formatFn) as string;
                 }
-                let args: { value: string | number, column: ColumnModel, data: Object }
+                const args: { value: string | number, column: ColumnModel, data: Object }
                             = { value: value, column: this.options.column, data: data[i] };
                 this.parent.notify(events.filterCboxValue, args);
                 value = args.value;
@@ -975,7 +996,7 @@ export class CheckBoxFilterBase {
                     if (isRndere) { continue; }
                     isRndere = true;
                 }
-                let checkbox: Element =
+                const checkbox: Element =
                     this.createCheckbox(
                         value as string, this.getCheckedState(isColFiltered, this.values[uid]), getValue('dataObj', data[i]));
                 cBoxes.appendChild(createCboxWithWrap(uid, checkbox, 'e-ftrchk'));
@@ -996,11 +1017,11 @@ export class CheckBoxFilterBase {
             this.filterState = !btn.disabled;
             btn.dataBind();
         }
-        let args: {
+        const args: {
             dataSource?: Object[], requestType?: string,
             filterModel?: CheckBoxFilterBase
         } = { requestType: events.filterChoiceRequest, dataSource: this.renderEmpty ? [] : data };
-        let filterModel: string = 'filterModel';
+        const filterModel: string = 'filterModel';
         args[filterModel] = this;
         this.parent.notify(events.cBoxFltrComplete, args);
         this.parent.notify(events.refreshCustomFilterOkBtn, { disabled: disabled });
@@ -1011,28 +1032,28 @@ export class CheckBoxFilterBase {
         if (!this.isFiltered || !isColFiltered) {
             return true;
         } else {
-            let checkState: boolean = this.result[value];
+            const checkState: boolean = this.result[value];
             return this.options.operator === 'notequal' ? !checkState : checkState;
         }
     }
 
     public static getDistinct(json: Object[], field: string, column?: Column, foreignKeyData?: Object[]): Object {
         let len: number = json.length;
-        let result: Object[] = [];
+        const result: Object[] = [];
         let value: string;
-        let ejValue: string = 'ejValue';
-        let lookup: Object = {};
-        let isForeignKey: boolean = column && column.isForeignColumn ? column.isForeignColumn() : false;
+        const ejValue: string = 'ejValue';
+        const lookup: Object = {};
+        const isForeignKey: boolean = column && column.isForeignColumn ? column.isForeignColumn() : false;
 
         while (len--) {
             value = json[len] as string;
-            value = getObject(field, value); //local remote diff, check with mdu   
+            value = getObject(field, value); //local remote diff, check with mdu
             if (!(value in lookup)) {
-                let obj: Object = {};
+                const obj: Object = {};
                 obj[ejValue] = value;
                 lookup[value] = true;
                 if (isForeignKey) {
-                    let foreignDataObj: Object = getForeignData(column, {}, value, foreignKeyData)[0];
+                    const foreignDataObj: Object = getForeignData(column, {}, value, foreignKeyData)[0];
                     setValue(events.foreignKeyData, foreignDataObj, json[len]);
                     value = getValue(column.foreignKeyValue, foreignDataObj);
                 }
@@ -1045,9 +1066,9 @@ export class CheckBoxFilterBase {
     }
 
     public static getPredicate(columns: PredicateModel[]): Predicate {
-        let cols: PredicateModel[] = DataUtil.distinct(columns, 'field', true) || [];
+        const cols: PredicateModel[] = DataUtil.distinct(columns, 'field', true) || [];
         let collection: Object[] = [];
-        let pred: Predicate = {} as Predicate;
+        const pred: Predicate = {} as Predicate;
         for (let i: number = 0; i < cols.length; i++) {
             collection = new DataManager(columns as JSON[]).executeLocal(
                 new Query().where('field', 'equal', cols[i].field));
@@ -1059,11 +1080,10 @@ export class CheckBoxFilterBase {
     }
 
     private static generatePredicate(cols: PredicateModel[]): Predicate {
-        let len: number = cols ? cols.length : 0;
+        const len: number = cols ? cols.length : 0;
         let predicate: Predicate;
-        let first: PredicateModel;
-        let operate: string = 'or';
-        first = CheckBoxFilterBase.updateDateFilter(cols[0]);
+        const operate: string = 'or';
+        const first: PredicateModel = CheckBoxFilterBase.updateDateFilter(cols[0]);
         first.ignoreAccent = !isNullOrUndefined(first.ignoreAccent) ? first.ignoreAccent : false;
         if (first.type === 'date' || first.type === 'datetime') {
             predicate = getDatePredicate(first, first.type);
@@ -1093,7 +1113,6 @@ export class CheckBoxFilterBase {
                             getDatePredicate(cols[p], cols[p].type), cols[p].type, cols[p].ignoreAccent);
                     }
                 } else {
-                    /* tslint:disable-next-line:max-line-length */
                     predicate = cols[p].ejpredicate ?
                         (predicate[(cols[p] as Predicate).predicate as string] as Function)(cols[p].ejpredicate) :
                         (predicate[(cols[p].predicate) as string] as Function)(

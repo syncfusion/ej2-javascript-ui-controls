@@ -1,5 +1,5 @@
-import { createElement, EventHandler, addClass, removeClass } from '@syncfusion/ej2-base';
-import { TreeView, NodeClickEventArgs } from '@syncfusion/ej2-navigations';
+import { append, createElement, EventHandler, addClass, removeClass } from '@syncfusion/ej2-base';
+import { TreeView, NodeClickEventArgs, DrawNodeEventArgs } from '@syncfusion/ej2-navigations';
 import { Popup, PopupModel } from '@syncfusion/ej2-popups';
 import { Kanban } from './kanban';
 import * as events from './constant';
@@ -52,10 +52,10 @@ export class MobileLayout {
                 text: 'textField'
             },
             nodeTemplate: this.parent.swimlaneSettings.template,
-            nodeClicked: this.treeSwimlaneClick.bind(this)
+            nodeClicked: this.treeSwimlaneClick.bind(this),
+            drawNode: this.drawNode.bind(this),
         });
         this.treeViewObj.appendTo(swimlaneTree);
-
         const popupObj: PopupModel = {
             targetType: 'relative',
             actionOnScroll: 'none',
@@ -100,4 +100,12 @@ export class MobileLayout {
         return (window.innerWidth * 80) / 100;
     }
 
+    private drawNode(args: DrawNodeEventArgs): void {
+        if (this.parent.swimlaneSettings.template && (this as any).parent.isReact) {
+            const templateId: string = this.parent.element.id + '_treeviewTemplate';
+            const treeViewTemplate: HTMLElement[] = this.parent.templateParser(
+                this.parent.swimlaneSettings.template)(args.nodeData, this.parent, 'nodeTemplate', templateId, false);
+            append(treeViewTemplate, args.node.querySelector('.e-list-text'));
+        }
+    }
 }

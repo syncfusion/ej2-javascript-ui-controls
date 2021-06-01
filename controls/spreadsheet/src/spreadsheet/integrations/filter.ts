@@ -791,6 +791,13 @@ export class Filter {
     private clearAllFilterHandler(): void {
         if (this.filterRange.has(this.parent.activeSheetIndex)) {
             this.filterCollection.set(this.parent.activeSheetIndex, []);
+            const filterColl: FilterCollectionModel[] = this.parent.filterCollection;
+            for (let i: number = 0; i < filterColl.length; i++) {
+                if (filterColl[i].sheetIndex === this.parent.activeSheetIndex) {
+                    filterColl.splice(i, 1);
+                    break;
+                }
+            }
             for (const key of Object.keys(this.filterClassList.get(this.parent.activeSheetIndex))) {
                 this.filterClassList.get(this.parent.activeSheetIndex)[key] = '';
             }
@@ -900,7 +907,7 @@ export class Filter {
                 const address: string  = getRangeAddress(args.filterRange);
                 fil = {
                     sheetIndex: args.sheetIdx, filterRange: address, hasFilter: args.hasFilter, column: colCollection,
-                    criteria: condition, value: value, dataType: type
+                    criteria: condition, value: value, dataType: type, predicates: predi
                 };
                 col.push(fil);
             }
@@ -923,7 +930,8 @@ export class Filter {
                     for (let j: number = 0; j < filterCol.column.length; j++) {
                         let predicateCol: PredicateModel = {
                             field: getCellAddress(0, filterCol.column[j]).charAt(0),
-                            operator: this.getFilterOperator(filterCol.criteria[j]), value: filterCol.value[j].toString().split('*').join('')
+                            operator: this.getFilterOperator(filterCol.criteria[j]), value: filterCol.value[j].toString().split('*').join(''),
+                            predicate: filterCol.predicates && filterCol.predicates[j]
                         };
                         predicates.push(predicateCol);
                     }
@@ -933,7 +941,9 @@ export class Filter {
                         if (!predicates[i].predicate) {
                             predicates[i].predicate = 'or';
                         }
-                        predicates[i + 1].predicate = 'or';
+                        if (!predicates[i + 1].predicate) {
+                            predicates[i + 1].predicate = 'or';
+                        }
                     }
                 }
                 this.parent.notify(initiateFilterUI, { predicates: predicates !== [] ? predicates : null, range: filterCol.filterRange, sIdx: sIdx });

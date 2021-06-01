@@ -7,7 +7,7 @@ import * as events from '../base/constant';
 import * as literals from '../base/string-literals';
 
 /**
- * 
+ *
  * The `Reorder` module is used for reordering columns.
  */
 export class Reorder implements IAction {
@@ -25,6 +25,8 @@ export class Reorder implements IAction {
 
     /**
      * Constructor for the Grid reorder module
+     *
+     * @param {IGrid} parent - specifies the IGrid
      * @hidden
      */
     constructor(parent?: IGrid) {
@@ -42,8 +44,8 @@ export class Reorder implements IAction {
     }
 
     private chkDropPosition(srcElem: Element, destElem: Element): boolean {
-        let col: Column = this.parent.getColumnByUid(destElem.firstElementChild.getAttribute('e-mappinguid'));
-        let bool: boolean = col ? !col.lockColumn : true;
+        const col: Column = this.parent.getColumnByUid(destElem.firstElementChild.getAttribute('e-mappinguid'));
+        const bool: boolean = col ? !col.lockColumn : true;
         return ((srcElem.parentElement.isEqualNode(destElem.parentElement) || this.parent.enableColumnVirtualization)
             || (this.parent.isFrozenGrid()
                 && Array.prototype.indexOf.call(closestElement(srcElem, 'thead').children, srcElem.parentElement)
@@ -53,7 +55,7 @@ export class Reorder implements IAction {
 
     private chkDropAllCols(srcElem: Element, destElem: Element): boolean {
         let isFound: boolean;
-        let headers: Element[] = this.getHeaderCells();
+        const headers: Element[] = this.getHeaderCells();
         let header: Element;
         while (!isFound && headers.length > 0) {
             header = headers.pop();
@@ -63,12 +65,13 @@ export class Reorder implements IAction {
     }
 
     private findColParent(col: Column, cols: Column[], parent: Column[]): boolean {
+        // eslint-disable-next-line no-self-assign
         parent = parent;
         for (let i: number = 0, len: number = cols.length; i < len; i++) {
             if (col === cols[i]) {
                 return true;
             } else if (cols[i].columns) {
-                let cnt: number = parent.length;
+                const cnt: number = parent.length;
                 parent.push(cols[i]);
                 if (!this.findColParent(col, cols[i].columns as Column[], parent)) {
                     parent.splice(cnt, parent.length - cnt);
@@ -100,19 +103,19 @@ export class Reorder implements IAction {
     }
 
     private headerDrop(e: { target: Element }): void {
-        let gObj: IGrid = this.parent;
-        let dropElement: Element = this.element.querySelector('.e-headercelldiv') || this.element.querySelector('.e-stackedheadercelldiv');
-        let uId: string = dropElement.getAttribute('e-mappinguid');
-        let column: Column = gObj.getColumnByUid(uId);
+        const gObj: IGrid = this.parent;
+        const dropElement: Element = this.element.querySelector('.e-headercelldiv') || this.element.querySelector('.e-stackedheadercelldiv');
+        const uId: string = dropElement.getAttribute('e-mappinguid');
+        const column: Column = gObj.getColumnByUid(uId);
         if (!closestElement(e.target, 'th') || (!isNullOrUndefined(column) && (!column.allowReordering || column.lockColumn))) {
             this.parent.log('action_disabled_column', {moduleName: this.getModuleName(), column});
             return;
         }
-        let destElem: Element = closestElement(e.target as Element, '.e-headercell');
-        let destElemDiv: Element = destElem.querySelector('.e-headercelldiv') || destElem.querySelector('.e-stackedheadercelldiv');
-        let destElemUid: string = destElemDiv.getAttribute('e-mappinguid');
+        const destElem: Element = closestElement(e.target as Element, '.e-headercell');
+        const destElemDiv: Element = destElem.querySelector('.e-headercelldiv') || destElem.querySelector('.e-stackedheadercelldiv');
+        const destElemUid: string = destElemDiv.getAttribute('e-mappinguid');
         if (!isNullOrUndefined(destElemUid)) {
-            let destColumn: Column = gObj.getColumnByUid(destElemUid);
+            const destColumn: Column = gObj.getColumnByUid(destElemUid);
             if (isNullOrUndefined(destColumn) || !destColumn.allowReordering || destColumn.lockColumn) {
                 this.parent.log('action_disabled_column', {moduleName: this.getModuleName(), column, destColumn});
                 return;
@@ -120,13 +123,13 @@ export class Reorder implements IAction {
         }
         if (destElem && !(!this.chkDropPosition(this.element, destElem) || !this.chkDropAllCols(this.element, destElem))) {
             if (this.parent.enableColumnVirtualization) {
-                let columns: Column[] = this.parent.columns as Column[];
-                let sourceUid: string = this.element.querySelector('.e-headercelldiv').getAttribute('e-mappinguid');
-                let col: Column[] = (this.parent.columns as Column[]).filter((col: Column) => col.uid === sourceUid);
+                const columns: Column[] = this.parent.columns as Column[];
+                const sourceUid: string = this.element.querySelector('.e-headercelldiv').getAttribute('e-mappinguid');
+                const col: Column[] = (this.parent.columns as Column[]).filter((col: Column) => col.uid === sourceUid);
                 let colMatchIndex: number = null;
-                let column: Column = col[0];
-                let destUid: string = destElem.querySelector('.e-headercelldiv').getAttribute('e-mappinguid');
-                let bool: boolean = columns.some((col: Column, index: number) => {
+                const column: Column = col[0];
+                const destUid: string = destElem.querySelector('.e-headercelldiv').getAttribute('e-mappinguid');
+                columns.some((col: Column, index: number) => {
                     if (col.uid === destUid) {
                         colMatchIndex = index;
                         return col.uid === destUid;
@@ -137,16 +140,16 @@ export class Reorder implements IAction {
                     this.moveColumns(colMatchIndex, column);
                 }
             } else {
-                let newIndex: number = this.targetParentContainerIndex(this.element, destElem);
-                let uid: string = this.element.firstElementChild.getAttribute('e-mappinguid');
+                const newIndex: number = this.targetParentContainerIndex(this.element, destElem);
+                const uid: string = this.element.firstElementChild.getAttribute('e-mappinguid');
                 this.destElement = destElem;
                 this.parent.notify(events.setReorderDestinationElement, { ele: destElem });
                 if (uid) {
                     this.moveColumns(newIndex, this.parent.getColumnByUid(uid));
                 } else {
-                    let headers: Element[] = this.getHeaderCells();
-                    let oldIdx: number = getElementIndex(this.element, headers);
-                    let columns: Column[] = this.getColumnsModel(this.parent.columns as Column[]);
+                    const headers: Element[] = this.getHeaderCells();
+                    const oldIdx: number = getElementIndex(this.element, headers);
+                    const columns: Column[] = this.getColumnsModel(this.parent.columns as Column[]);
                     this.moveColumns(newIndex, columns[oldIdx]);
                 }
             }
@@ -158,14 +161,14 @@ export class Reorder implements IAction {
     }
 
     private moveColumns(destIndex: number, column: Column, reorderByColumn?: boolean, preventRefresh?: boolean): void {
-        let gObj: IGrid = this.parent;
+        const gObj: IGrid = this.parent;
         if (this.isActionPrevent(gObj)) {
             gObj.notify(events.preventBatch, { instance: this, handler: this.moveColumns, arg1: destIndex, arg2: column });
             return;
         }
-        let isFrozen: boolean = !gObj.getFrozenColumns() && gObj.isFrozenGrid();
-        let parent: Column = this.getColParent(column, this.parent.columns as Column[]);
-        let cols: Column[] = parent ? parent.columns as Column[] : isFrozen ? this.parent.getColumns() : this.parent.columns as Column[];
+        const isFrozen: boolean = !gObj.getFrozenColumns() && gObj.isFrozenGrid();
+        const parent: Column = this.getColParent(column, this.parent.columns as Column[]);
+        const cols: Column[] = parent ? parent.columns as Column[] : isFrozen ? this.parent.getColumns() : this.parent.columns as Column[];
         let srcIdx: number = inArray(column, cols);
         if (((this.parent.isFrozenGrid() && parent) || this.parent.lockcolPositionCount) && !reorderByColumn) {
             for (let i: number = 0; i < cols.length; i++) {
@@ -174,7 +177,7 @@ export class Reorder implements IAction {
                     break;
                 }
             }
-            let col: Column =
+            const col: Column =
             this.parent.getColumnByUid(this.destElement.firstElementChild.getAttribute('e-mappinguid'));
             if (col) {
                 for (let i: number = 0; i < cols.length; i++) {
@@ -195,7 +198,7 @@ export class Reorder implements IAction {
             return;
         }
         (cols as Column[]).splice(destIndex, 0, (cols as Column[]).splice(srcIdx, 1)[0] as Column);
-        let args: FrozenReorderArgs = { column: column, destIndex: destIndex, columns: cols, parent: parent, cancel: false };
+        const args: FrozenReorderArgs = { column: column, destIndex: destIndex, columns: cols, parent: parent, cancel: false };
         gObj.notify(events.refreshFrozenColumns, args);
         if (args.cancel) { return; }
         gObj.getColumns(true);
@@ -210,9 +213,9 @@ export class Reorder implements IAction {
     private targetParentContainerIndex(srcElem: Element, destElem: Element): number {
         let cols: Column[] = !this.parent.getFrozenColumns() && this.parent.isFrozenGrid() ? this.parent.getColumns() :
             this.parent.columns as Column[];
-        let headers: Element[] = this.getHeaderCells();
-        let flatColumns: Column[] = this.getColumnsModel(cols);
-        let parent: Column = this.getColParent(flatColumns[getElementIndex(srcElem, headers)], cols);
+        const headers: Element[] = this.getHeaderCells();
+        const flatColumns: Column[] = this.getColumnsModel(cols);
+        const parent: Column = this.getColParent(flatColumns[getElementIndex(srcElem, headers)], cols);
 
         cols = parent ? parent.columns as Column[] : cols;
         return inArray(flatColumns[getElementIndex(destElem, headers)], cols);
@@ -220,15 +223,15 @@ export class Reorder implements IAction {
     }
 
     private getHeaderCells(): Element[] {
-        let frozenColumns: number = this.parent.getFrozenColumns();
+        const frozenColumns: number = this.parent.getFrozenColumns();
         if (frozenColumns || this.parent.lockcolPositionCount) {
             let fTh: HTMLElement[];
             let mTh: HTMLElement[];
             let fHeaders: Element[] = [];
-            let fRows: Element[] = [].slice.call(this.parent.getHeaderTable().getElementsByClassName('e-columnheader'));
+            const fRows: Element[] = [].slice.call(this.parent.getHeaderTable().getElementsByClassName('e-columnheader'));
             if (frozenColumns) {
-                let mRows: Element[] = [].slice.call(this.parent.getHeaderContent()
-                .querySelector('.' + literals.movableHeader).getElementsByClassName('e-columnheader'));
+                const mRows: Element[] = [].slice.call(this.parent.getHeaderContent()
+                    .querySelector('.' + literals.movableHeader).getElementsByClassName('e-columnheader'));
                 for (let i: number = 0; i < fRows.length; i++) {
                     fTh = [].slice.call(fRows[i].getElementsByClassName('e-headercell'));
                     mTh = [].slice.call(mRows[i].getElementsByClassName('e-headercell'));
@@ -272,16 +275,16 @@ export class Reorder implements IAction {
     }
 
     private getColParent(column: Column, columns: Column[]): Column {
-        let parents: Column[] = [];
+        const parents: Column[] = [];
         this.findColParent(column, columns, parents);
         return parents[parents.length - 1];
     }
 
     private reorderSingleColumn(fromFName: string, toFName: string): void {
-        let fColumn: Column = this.parent.enableColumnVirtualization ?
+        const fColumn: Column = this.parent.enableColumnVirtualization ?
             (this.parent.columns as Column[]).filter((col: Column) => col.field === fromFName)[0]
             : this.parent.getColumnByField(fromFName);
-        let toColumn: Column = this.parent.enableColumnVirtualization ?
+        const toColumn: Column = this.parent.enableColumnVirtualization ?
             (this.parent.columns as Column[]).filter((col: Column) => col.field === toFName)[0]
             : this.parent.getColumnByField(toFName);
         if ((!isNullOrUndefined(fColumn) && (!fColumn.allowReordering || fColumn.lockColumn)) ||
@@ -289,10 +292,10 @@ export class Reorder implements IAction {
             this.parent.log('action_disabled_column', { moduleName: this.getModuleName(), column: fColumn, destColumn: toColumn });
             return;
         }
-        let column: Column = toColumn;
-        let parent: Column = this.getColParent(column, this.parent.columns as Column[]);
-        let columns: Column[] = parent ? parent.columns as Column[] : this.parent.columns as Column[];
-        let destIndex: number = inArray(column, columns);
+        const column: Column = toColumn;
+        const parent: Column = this.getColParent(column, this.parent.columns as Column[]);
+        const columns: Column[] = parent ? parent.columns as Column[] : this.parent.columns as Column[];
+        const destIndex: number = inArray(column, columns);
         if (destIndex > -1) {
             this.moveColumns(destIndex, fColumn, true);
         }
@@ -300,21 +303,21 @@ export class Reorder implements IAction {
 
     private reorderMultipleColumns(fromFNames: string[], toFName: string): void {
         let toIndex: number = this.parent.getColumnIndexByField(toFName);
-        let toColumn: Column = this.parent.getColumnByField(toFName);
+        const toColumn: Column = this.parent.getColumnByField(toFName);
         if (toIndex < 0 || (!isNullOrUndefined(toColumn) && (!toColumn.allowReordering || toColumn.lockColumn))) {
             return;
         }
         for (let i: number = 0; i < fromFNames.length; i++) {
-            let column: Column = this.parent.getColumnByField(fromFNames[i]);
+            const column: Column = this.parent.getColumnByField(fromFNames[i]);
             if (!isNullOrUndefined(column) && (!column.allowReordering || column.lockColumn)) {
                 return;
             }
         }
         for (let i: number = 0; i < fromFNames.length; i++) {
-            let column: Column = this.parent.getColumnByIndex(toIndex);
-            let parent: Column = this.getColParent(column, this.parent.columns as Column[]);
-            let columns: Column[] = parent ? parent.columns as Column[] : this.parent.columns as Column[];
-            let destIndex: number = inArray(column, columns);
+            const column: Column = this.parent.getColumnByIndex(toIndex);
+            const parent: Column = this.getColParent(column, this.parent.columns as Column[]);
+            const columns: Column[] = parent ? parent.columns as Column[] : this.parent.columns as Column[];
+            const destIndex: number = inArray(column, columns);
             if (destIndex > -1) {
                 this.moveColumns(
                     destIndex, this.parent.getColumnByField(fromFNames[i]), true, true);
@@ -341,11 +344,12 @@ export class Reorder implements IAction {
         }
     }
 
-    /** 
-     * Changes the position of the Grid columns by field names. 
-     * @param  {string | string[]} fromFName - Defines the origin field names. 
+    /**
+     * Changes the position of the Grid columns by field names.
+     *
+     * @param  {string | string[]} fromFName - Defines the origin field names.
      * @param  {string} toFName - Defines the destination field name.
-     * @return {void} 
+     * @returns {void}
      */
     public reorderColumns(fromFName: string | string[], toFName: string): void {
         if (typeof fromFName === 'string') {
@@ -357,25 +361,30 @@ export class Reorder implements IAction {
         }
     }
 
-    /** 
-     * Changes the position of the Grid columns by field index. 
-     * @param  {number} fromIndex - Defines the origin field index. 
+    /**
+     * Changes the position of the Grid columns by field index.
+     *
+     * @param  {number} fromIndex - Defines the origin field index.
      * @param  {number} toIndex - Defines the destination field index.
-     * @return {void} 
+     * @returns {void}
      */
     public reorderColumnByIndex(fromIndex: number, toIndex: number): void {
         this.moveTargetColumn(this.parent.getColumnByIndex(fromIndex), toIndex);
     }
 
-    /** 
-     * Changes the position of the Grid columns by field index. 
-     * @param  {string | string[]} fieldName - Defines the field name. 
+    /**
+     * Changes the position of the Grid columns by field index.
+     *
+     * @param  {string | string[]} fieldName - Defines the field name.
      * @param  {number} toIndex - Defines the destination field index.
-     * @return {void} 
+     * @returns {void}
      */
     public reorderColumnByTargetIndex(fieldName: string | string[], toIndex: number): void {
-        typeof fieldName === 'string' ? this.reorderSingleColumnByTarget(fieldName, toIndex) :
-        this.reorderMultipleColumnByTarget(fieldName, toIndex);
+        if (typeof fieldName === 'string') {
+            this.reorderSingleColumnByTarget(fieldName, toIndex);
+        } else {
+            this.reorderMultipleColumnByTarget(fieldName, toIndex);
+        }
     }
 
     private enableAfterRender(e: NotifyArgs): void {
@@ -388,7 +397,7 @@ export class Reorder implements IAction {
         if (e && e.args.isXaxis) {
             this.setDisplay('none');
         }
-        let header: Element = (this.parent.element.querySelector('.' + literals.headerContent) as Element);
+        const header: Element = (this.parent.element.querySelector('.' + literals.headerContent) as Element);
         this.upArrow = header.appendChild(
             this.parent
                 .createElement('div', { className: 'e-icons e-icon-reorderuparrow e-reorderuparrow', attrs: { style: 'display:none' } }));
@@ -400,24 +409,27 @@ export class Reorder implements IAction {
 
     /**
      * The function used to trigger onActionComplete
-     * @return {void}
+     *
+     * @param {NotifyArgs} e - specified the NotifyArgs
+     * @returns {void}
      * @hidden
      */
     public onActionComplete(e: NotifyArgs): void {
         this.parent.trigger(events.actionComplete, extend(e, { type: events.actionComplete }));
-        let target: Element = this.fromCol && this.parent.getColumnHeaderByField(this.fromCol);
+        const target: Element = this.fromCol && this.parent.getColumnHeaderByField(this.fromCol);
         if (target) {
             this.parent.focusModule.onClick({ target }, true);
         }
     }
 
     /**
-     * To destroy the reorder 
-     * @return {void}
+     * To destroy the reorder
+     *
+     * @returns {void}
      * @hidden
      */
     public destroy(): void {
-        let gridElement: Element = this.parent.element;
+        const gridElement: Element = this.parent.element;
         if (this.parent.isDestroyed || !gridElement || (!gridElement.querySelector('.' + literals.gridHeader) &&
             !gridElement.querySelector( '.' + literals.gridContent))) { return; }
         remove(this.upArrow);
@@ -434,34 +446,35 @@ export class Reorder implements IAction {
     }
 
     private keyPressHandler(e: KeyboardEventArgs): void {
-        let gObj: IGrid = this.parent;
+        const gObj: IGrid = this.parent;
         switch (e.action) {
-            case 'ctrlLeftArrow':
-            case 'ctrlRightArrow':
-                let element: HTMLElement = gObj.focusModule.currentInfo.element;
-                if (element && element.classList.contains('e-headercell')) {
-                    let column: Column = gObj.getColumnByUid(element.firstElementChild.getAttribute('e-mappinguid'));
-                    let visibleCols: Column[] = gObj.getVisibleColumns();
-                    let index: number = visibleCols.indexOf(column);
-                    let toCol: Column = e.action === 'ctrlLeftArrow' ? visibleCols[index - 1] : visibleCols[index + 1];
-                    if (toCol && toCol.field && column.field) {
-                        this.reorderColumns(column.field, toCol.field);
-                    }
+        case 'ctrlLeftArrow':
+        case 'ctrlRightArrow':
+            // eslint-disable-next-line no-case-declarations
+            const element: HTMLElement = gObj.focusModule.currentInfo.element;
+            if (element && element.classList.contains('e-headercell')) {
+                const column: Column = gObj.getColumnByUid(element.firstElementChild.getAttribute('e-mappinguid'));
+                const visibleCols: Column[] = gObj.getVisibleColumns();
+                const index: number = visibleCols.indexOf(column);
+                const toCol: Column = e.action === 'ctrlLeftArrow' ? visibleCols[index - 1] : visibleCols[index + 1];
+                if (toCol && toCol.field && column.field) {
+                    this.reorderColumns(column.field, toCol.field);
                 }
-                break;
+            }
+            break;
         }
     }
 
     private drag(e: { target: Element, column: Column, event: MouseEvent }): void {
-        let gObj: IGrid = this.parent;
+        const gObj: IGrid = this.parent;
         let target: Element = e.target as Element;
         if (!e.column.allowReordering || e.column.lockColumn) {
             return;
         }
-        let closest: Element = closestElement(target, '.e-headercell:not(.e-stackedHeaderCell)');
-        let cloneElement: HTMLElement = gObj.element.querySelector('.e-cloneproperties') as HTMLElement;
-        let content: Element = gObj.isFrozenGrid() ? gObj.getMovableVirtualContent() : gObj.getContent().firstElementChild;
-        let isLeft: boolean = this.x > getPosition(e.event).x + content.scrollLeft;
+        const closest: Element = closestElement(target, '.e-headercell:not(.e-stackedHeaderCell)');
+        const cloneElement: HTMLElement = gObj.element.querySelector('.e-cloneproperties') as HTMLElement;
+        const content: Element = gObj.isFrozenGrid() ? gObj.getMovableVirtualContent() : gObj.getContent().firstElementChild;
+        const isLeft: boolean = this.x > getPosition(e.event).x + content.scrollLeft;
         removeClass([].slice.call(gObj.getHeaderTable().getElementsByClassName('e-reorderindicate')), ['e-reorderindicate']);
         this.setDisplay('none');
         this.stopTimer();
@@ -469,7 +482,7 @@ export class Reorder implements IAction {
         this.updateScrollPostion(e.event);
         if (closest && !closest.isEqualNode(this.element)) {
             target = closest;
-            //consider stacked, detail header cell 
+            //consider stacked, detail header cell
             if (!(!this.chkDropPosition(this.element, target) || !this.chkDropAllCols(this.element, target))) {
                 this.updateArrowPosition(target, isLeft);
                 classList(target, ['e-allowDrop', 'e-reorderindicate'], []);
@@ -481,14 +494,14 @@ export class Reorder implements IAction {
     }
 
     private updateScrollPostion(e: MouseEvent | TouchEvent): void {
-        let x: number = getPosition(e).x;
-        let cliRect: ClientRect = this.parent.element.getBoundingClientRect();
-        let cliRectBaseRight: number = cliRect.right;
+        const x: number = getPosition(e).x;
+        const cliRect: ClientRect = this.parent.element.getBoundingClientRect();
+        const cliRectBaseRight: number = cliRect.right;
         if (this.parent.isFrozenGrid()) {
             this.updateFrozenScrollPosition(x, cliRect);
         } else {
-            let cliRectBaseLeft: number = cliRect.left;
-            let scrollElem: Element = this.parent.getContent().firstElementChild;
+            const cliRectBaseLeft: number = cliRect.left;
+            const scrollElem: Element = this.parent.getContent().firstElementChild;
             if (x > cliRectBaseLeft && x < cliRectBaseLeft + 35) {
                 this.timer = window.setInterval(
                     () => { this.setScrollLeft(scrollElem, true); }, 50);
@@ -500,12 +513,12 @@ export class Reorder implements IAction {
     }
 
     private updateFrozenScrollPosition(x: number, cliRect: ClientRect): void {
-        let scrollElem: Element = this.parent.getContent().querySelector('.' + literals.movableContent);
-        let mhdrCliRect: ClientRect = this.parent.element.querySelector('.' + literals.movableHeader).getBoundingClientRect();
-        let left: number = this.parent.getFrozenLeftCount();
-        let right: number = this.parent.getFrozenRightColumnsCount();
-        let cliRectBaseRight: number = right ? mhdrCliRect.right : cliRect.right;
-        let cliRectBaseLeft: number = left ? mhdrCliRect.left : cliRect.left;
+        const scrollElem: Element = this.parent.getContent().querySelector('.' + literals.movableContent);
+        const mhdrCliRect: ClientRect = this.parent.element.querySelector('.' + literals.movableHeader).getBoundingClientRect();
+        const left: number = this.parent.getFrozenLeftCount();
+        const right: number = this.parent.getFrozenRightColumnsCount();
+        const cliRectBaseRight: number = right ? mhdrCliRect.right : cliRect.right;
+        const cliRectBaseLeft: number = left ? mhdrCliRect.left : cliRect.left;
         if (x > cliRectBaseLeft && x < cliRectBaseLeft + 35) {
             this.timer = window.setInterval(
                 () => { this.setScrollLeft(scrollElem, true); }, 50);
@@ -516,7 +529,7 @@ export class Reorder implements IAction {
     }
 
     private setScrollLeft(scrollElem: Element, isLeft: boolean): void {
-        let scrollLeft: number = scrollElem.scrollLeft;
+        const scrollLeft: number = scrollElem.scrollLeft;
         scrollElem.scrollLeft = scrollElem.scrollLeft + (isLeft ? -5 : 5);
         if (scrollLeft !== scrollElem.scrollLeft) {
             this.setDisplay('none');
@@ -528,19 +541,19 @@ export class Reorder implements IAction {
     }
 
     private updateArrowPosition(target: Element, isLeft: boolean): void {
-        let cliRect: ClientRect = target.getBoundingClientRect();
-        let cliRectBase: ClientRect = this.parent.element.getBoundingClientRect();
+        const cliRect: ClientRect = target.getBoundingClientRect();
+        const cliRectBase: ClientRect = this.parent.element.getBoundingClientRect();
         if ((isLeft && cliRect.left < cliRectBase.left) || (!isLeft && cliRect.right > cliRectBase.right)) {
             return;
         }
         if (this.parent.isFrozenGrid() && target.classList.contains('e-headercell')) {
-            let left: number = this.parent.getFrozenLeftCount();
-            let right: number = this.parent.getFrozenRightColumnsCount();
-            let dropEle: Element = this.element.querySelector('.e-headercelldiv');
-            let dropCol: Column = dropEle ? this.parent.getColumnByUid(dropEle.getAttribute('data-uid')) : null;
-            let col: Column = this.parent.getColumnByUid(target.firstElementChild.getAttribute('e-mappinguid'));
-            let fhdrWidth: number = Math.round(this.parent.getFrozenVirtualHeader().getBoundingClientRect().right);
-            let mhdrRight: number = Math.round(this.parent.getMovableVirtualHeader().getBoundingClientRect().right);
+            const left: number = this.parent.getFrozenLeftCount();
+            const right: number = this.parent.getFrozenRightColumnsCount();
+            const dropEle: Element = this.element.querySelector('.e-headercelldiv');
+            const dropCol: Column = dropEle ? this.parent.getColumnByUid(dropEle.getAttribute('data-uid')) : null;
+            const col: Column = this.parent.getColumnByUid(target.firstElementChild.getAttribute('e-mappinguid'));
+            const fhdrWidth: number = Math.round(this.parent.getFrozenVirtualHeader().getBoundingClientRect().right);
+            const mhdrRight: number = Math.round(this.parent.getMovableVirtualHeader().getBoundingClientRect().right);
             if (col) {
                 if (left && !right && this.parent.getNormalizedColumnIndex(col.uid) >= left
                     && ((isLeft && Math.round(cliRect.left) < fhdrWidth) || (!isLeft && mhdrRight < cliRect.right))) {
@@ -559,14 +572,14 @@ export class Reorder implements IAction {
     }
 
     private dragStart(e: { target: Element, column: Column, event: MouseEvent }): void {
-        let gObj: IGrid = this.parent;
-        let target: Element = e.target as Element;
+        const gObj: IGrid = this.parent;
+        const target: Element = e.target as Element;
         this.element = target.classList.contains('e-headercell') ? target as HTMLElement :
             parentsUntil(target, 'e-headercell') as HTMLElement;
         if (!e.column.allowReordering || e.column.lockColumn) {
-             return;
+            return;
         }
-        let content: Element = gObj.isFrozenGrid() ? gObj.getMovableVirtualContent() : gObj.getContent().firstElementChild;
+        const content: Element = gObj.isFrozenGrid() ? gObj.getMovableVirtualContent() : gObj.getContent().firstElementChild;
         this.x = getPosition(e.event).x + content.scrollLeft;
         gObj.trigger(events.columnDragStart, {
             target: target, draggableType: 'headercell', column: e.column
@@ -574,7 +587,7 @@ export class Reorder implements IAction {
     }
 
     private dragStop(e: { target: Element, event: MouseEvent, column: Column, cancel: boolean }): void {
-        let gObj: IGrid = this.parent;
+        const gObj: IGrid = this.parent;
         this.setDisplay('none');
         this.stopTimer();
         if (!e.cancel) {
@@ -590,10 +603,11 @@ export class Reorder implements IAction {
 
     /**
      * For internal use only - Get the module name.
+     *
+     * @returns {string} return the module name
      * @private
      */
     protected getModuleName(): string {
         return 'reorder';
     }
-
 }

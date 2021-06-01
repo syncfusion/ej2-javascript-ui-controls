@@ -8,7 +8,8 @@ import { setStyleAndAttributes, appendChildren } from '../base/util';
 
 /**
  * StackedHeaderCellRenderer class which responsible for building stacked header cell content.
- * @hidden 
+ *
+ * @hidden
  */
 export class StackedHeaderCellRenderer extends CellRenderer implements ICellRenderer<Column> {
 
@@ -21,18 +22,21 @@ export class StackedHeaderCellRenderer extends CellRenderer implements ICellRend
 
     /**
      * Function to render the cell content based on Column object.
-     * @param  {Column} column
-     * @param  {Object} data     
-     * @param  {Element}
+     *
+     * @param {Cell<Column>} cell - specifies the cell
+     * @param {Object} data - specifies the data
+     * @param {object} attributes - specifies the attributes
+     * @returns {Element} returns the element
      */
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     public render(cell: Cell<Column>, data: Object, attributes?: { [x: string]: Object }): Element {
 
-        let node: Element = this.element.cloneNode() as Element;
-        let div : Element = this.parent.createElement('div', {
+        const node: Element = this.element.cloneNode() as Element;
+        const div : Element = this.parent.createElement('div', {
             className: 'e-stackedheadercelldiv',
             attrs: { 'e-mappinguid': cell.column.uid }
         });
-        let column: Column = cell.column;
+        const column: Column = cell.column;
         node.appendChild(div);
         if (!isNullOrUndefined(column.headerTemplate)) {
             appendChildren(div, column.getHeaderTemplate()(column, this.parent, 'headerTemplate'));
@@ -62,7 +66,7 @@ export class StackedHeaderCellRenderer extends CellRenderer implements ICellRend
         node.setAttribute('aria-colspan', cell.colSpan.toString());
         node.setAttribute('aria-rowspan', '1');
         if (this.parent.allowResizing) {
-            let handler: HTMLElement = this.parent.createElement('div');
+            const handler: HTMLElement = this.parent.createElement('div');
             handler.className = cell.column.allowResizing ? 'e-rhandler e-rcursor' : 'e-rsuppress';
             node.appendChild(handler);
         }

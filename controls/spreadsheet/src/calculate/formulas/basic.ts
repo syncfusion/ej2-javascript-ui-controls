@@ -1561,6 +1561,7 @@ export class BasicFormulas {
         if (this.parent.isCellReference(lookupVal)) {
             lookupVal = this.parent.getValueFromArg(lookupVal);
         }
+        if (!lookupVal.toString().length) { return this.parent.getErrorStrings()[CommonErrors.na]; }
         argArr[2] = isNullOrUndefined(argArr[2]) ? '1' : argArr[2].split(this.parent.tic).join('');
         if (argArr[2].split(this.parent.tic).join('') === this.parent.trueValue) {
             argArr[2] = '1';
@@ -1580,6 +1581,7 @@ export class BasicFormulas {
                 cellValue[j] = this.parent.getValueFromArg(cellColl[j]).split(this.parent.tic).join('');
             }
             for (let i: number = 0; i < cellValue.length; i++) {
+                if (!cellValue[i].toString().length) { continue; }
                 if (matchType === 1) {
                     if (lookupVal === cellValue[i]) {
                         return i + 1;

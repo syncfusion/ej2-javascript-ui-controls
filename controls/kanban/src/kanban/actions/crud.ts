@@ -34,6 +34,31 @@ export class Crud {
                     } else {
                         modifiedData.push(cardData);
                     }
+                    modifiedData.forEach((data: Record<string, any>, index: number) => {
+                        if (!data[this.parent.sortSettings.field]) {
+                            let columnData: Record<string, any>[] = this.parent.getColumnData(data[this.parent.keyField]);
+                            if (this.parent.sortSettings.direction === 'Ascending' && columnData.length > 0) {
+                                data[this.parent.sortSettings.field] = (columnData[columnData.length - 1][this.parent.sortSettings.field]) + index + 1;
+                            } else if (this.parent.sortSettings.direction === 'Descending' && columnData.length > 0) {
+                                data[this.parent.sortSettings.field] = columnData[0][this.parent.sortSettings.field] + index + 1;
+                            }
+                            if (columnData.length === 0) {
+                                data[this.parent.sortSettings.field] = 1;   
+                            }
+                        }
+                    });
+                    if (!(cardData instanceof Array)) {
+                        if (!index && this.parent.sortSettings.direction === 'Descending') {
+                            this.parent.getColumnData(modifiedData[0][this.parent.keyField]).filter((obj: Record<string, any>, count: number) => {
+                                if (obj[this.parent.sortSettings.field] === modifiedData[0][this.parent.sortSettings.field]) {
+                                    index = count + 1;
+                                }
+                            });
+                        }   
+                    }
+                    if (index !== 0 && !index && this.parent.sortSettings.direction === 'Descending') {
+                        index = 0;
+                    }
                     modifiedData = this.priorityOrder(modifiedData, index);
                 }
                 const addedRecords: Record<string, any>[] = (cardData instanceof Array) ? cardData : [cardData];

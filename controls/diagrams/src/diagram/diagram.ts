@@ -4350,7 +4350,8 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                     this.insertBlazorConnector(newObj);
                 } else {
                     newObj = new Node(this, 'nodes', obj, true);
-                    updateDefaultValues(newObj, obj, this.nodeDefaults); newObj.parentId = (obj as Node).parentId;
+                    updateDefaultValues(newObj, obj, this.nodeDefaults);
+                    newObj.parentId = ((obj as Node).parentId) ? (obj as Node).parentId : newObj.parentId;
                     newObj.umlIndex = (obj as Node).umlIndex; (newObj as Node).status = 'New';
                     (this.nodes as Node[]).push(newObj);
                     this.initObject(newObj, layers, undefined, group);

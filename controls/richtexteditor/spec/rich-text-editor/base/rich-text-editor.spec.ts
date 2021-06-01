@@ -2,7 +2,7 @@
  * Base RTE spec
  */
 import { createElement, L10n, isNullOrUndefined, Browser, getUniqueID, detach } from '@syncfusion/ej2-base';
-import { RichTextEditor, HTMLFormatter, MarkdownFormatter, dispatchEvent } from '../../../src/rich-text-editor/index';
+import { RichTextEditor, HTMLFormatter, MarkdownFormatter, IRenderer, QuickToolbar, dispatchEvent } from '../../../src/rich-text-editor/index';
 import { NodeSelection } from '../../../src/selection/index';
 import { setEditFrameFocus } from '../../../src/common/util';
 import { renderRTE, destroy, dispatchKeyEvent } from './../render.spec';
@@ -14,6 +14,9 @@ function setCursorPoint(curDocument: Document, element: Element, point: number) 
     range.collapse(true);
     sel.removeAllRanges();
     sel.addRange(range);
+}
+function getQTBarModule(rteObj: RichTextEditor): QuickToolbar {
+    return rteObj.quickToolbarModule;
 }
 let keyboardEventArgs = {
     preventDefault: function () { },
@@ -634,6 +637,77 @@ describe('RTE base module', () => {
         it('focus method testing', () => {
             rteObj.focusIn();
             expect(document.activeElement === rteObj.contentModule.getPanel()).toBe(true);            
+        });
+
+        afterAll(() => {
+            destroy(rteObj);
+        });
+    });
+
+    describe('EJ2-49452- Disable toolbar when quicktoolbar is opened', () => {
+        let rteObj: RichTextEditor;
+        let QTBarModule: IRenderer;
+        let trg: HTMLElement;
+        beforeAll(() => {
+            rteObj = renderRTE({
+                toolbarSettings: {
+                    items: [ 'Bold', 'Italic', 'Underline', {
+                            tooltipText: 'Custom tool',
+                            command: 'Custom',
+                            template:
+                              '<button class="e-tbar-btn e-btn" id="custom_tbar" style="width:100%"><div class="e-tbar-btn-text" style="font-weight: 500;"> &#937;</div>custom tool</button>'
+                          }, 'FontColor', 'BackgroundColor', '|',
+                        'SubScript', 'SuperScript', '|',
+                        'LowerCase', 'UpperCase'
+                    ]
+                },
+                value: '<p><img src="https://media.sproutsocial.com/uploads/2017/02/10x-featured-social-media-image-size.png" class="e-resize e-rte-image e-imginline"></p>'
+            });
+            trg = (rteObj as any).element.querySelectorAll(".e-content")[0];
+            let clickEvent: MouseEvent = document.createEvent("MouseEvents");
+            clickEvent.initEvent("mousedown", true, true);
+            trg.dispatchEvent(clickEvent);
+            QTBarModule = getQTBarModule(rteObj);
+            QTBarModule.imageQTBar.showPopup(0, 0, trg);
+        });
+
+        it('When the custom command is configured', () => {            
+            expect((rteObj as any).element.querySelectorAll('.e-template')[0].classList.contains('e-overlay')).toBe(true);
+        });
+
+        afterAll(() => {
+            destroy(rteObj);
+        });
+    });
+
+    describe('EJ2-49452- Disable toolbar when quicktoolbar is opened', () => {
+        let rteObj: RichTextEditor;
+        let QTBarModule: IRenderer;
+        let trg: HTMLElement;
+        beforeAll(() => {
+            rteObj = renderRTE({
+                toolbarSettings: {
+                    items: [ 'Bold', 'Italic', 'Underline', {
+                            tooltipText: 'Custom tool',
+                            template:
+                              '<button class="e-tbar-btn e-btn" id="custom_tbar" style="width:100%"><div class="e-tbar-btn-text" style="font-weight: 500;"> &#937;</div>custom tool</button>'
+                          }, 'FontColor', 'BackgroundColor', '|',
+                        'SubScript', 'SuperScript', '|',
+                        'LowerCase', 'UpperCase'
+                    ]
+                },
+                value: '<p><img src="https://media.sproutsocial.com/uploads/2017/02/10x-featured-social-media-image-size.png" class="e-resize e-rte-image e-imginline"></p>'
+            });
+            trg = (rteObj as any).element.querySelectorAll(".e-content")[0];
+            let clickEvent: MouseEvent = document.createEvent("MouseEvents");
+            clickEvent.initEvent("mousedown", true, true);
+            trg.dispatchEvent(clickEvent);
+            QTBarModule = getQTBarModule(rteObj);
+            QTBarModule.imageQTBar.showPopup(0, 0, trg);
+        });
+
+        it('When the custom command is not configured', () => {            
+            expect((rteObj as any).element.querySelectorAll('.e-template')[0].classList.contains('e-overlay')).toBe(false);
         });
 
         afterAll(() => {

@@ -10,6 +10,7 @@ import { appendChildren } from '../base/util';
 
 /**
  * `CommandColumn` used to render command column in grid
+ *
  * @hidden
  */
 
@@ -27,26 +28,27 @@ export class CommandColumnRenderer extends CellRenderer implements ICellRenderer
     }
     /**
      * Function to render the cell content based on Column object.
-     * @param  {Column} column
-     * @param  {Object} data
-     * @param  {{[x:string]:Object}} attributes?
-     * @param  {Element}
+     *
+     * @param {cell<Column>} cell - specifies the cell
+     * @param {Object} data - specifies the data
+     * @param {Object} attributes - specifies the attributes
+     * @returns {Element} returns the element
      */
     public render(cell: Cell<Column>, data: Object, attributes?: { [x: string]: Object }): Element {
         let node: Element = this.element.cloneNode() as Element;
-        let uid: string = 'uid';
+        const uid: string = 'uid';
         node.appendChild(this.unbounDiv.cloneNode());
         (<HTMLElement>node).setAttribute('aria-label', 'is Command column column header ' + cell.column.headerText);
         if (cell.column.commandsTemplate) {
             if (this.parent.isReact && typeof (cell.column.commandsTemplate) !== 'string') {
-                let tempID: string = this.parent + 'commandsTemplate';
+                const tempID: string = this.parent + 'commandsTemplate';
                 cell.column.getColumnTemplate()(data, this.parent, 'commandsTemplate', tempID, null, null, node.firstElementChild);
                 this.parent.renderTemplates();
             } else {
                 appendChildren(node.firstElementChild, cell.column.getColumnTemplate()(data));
             }
         } else {
-            for (let command of cell.commands) {
+            for (const command of cell.commands) {
                 node = this.renderButton(node, command, <number>attributes.index, command[uid]);
             }
         }
@@ -62,27 +64,26 @@ export class CommandColumnRenderer extends CellRenderer implements ICellRenderer
     }
 
     private renderButton(node: Element, buttonOption: CommandModel, index: number, uid: string): Element {
-        let button: HTMLButtonElement = <HTMLButtonElement>this.buttonElement.cloneNode();
+        const button: HTMLButtonElement = <HTMLButtonElement>this.buttonElement.cloneNode();
         attributes(button, {
             'id': this.parent.element.id + (buttonOption.type || '') + '_' + index + '_' + uid, 'type': 'button',
             title: !isNullOrUndefined(buttonOption.title) ? buttonOption.title :
-            buttonOption.buttonOption.content || this.localizer.getConstant(buttonOption.type) || buttonOption.type,
+                buttonOption.buttonOption.content || this.localizer.getConstant(buttonOption.type) || buttonOption.type,
             'data-uid': uid
-
         });
         button.onclick = buttonOption.buttonOption.click;
-        let buttonObj: Button = new Button(buttonOption.buttonOption, button);
+        const buttonObj: Button = new Button(buttonOption.buttonOption, button);
         (<{ commandType?: CommandButtonType }>buttonObj).commandType = buttonOption.type;
         node.firstElementChild.appendChild(buttonObj.element);
         switch (buttonOption.type) {
-            case 'Edit':
-            case 'Delete':
-                addClass([button], ['e-edit-delete', 'e-' + buttonOption.type.toLowerCase() + 'button']);
-                break;
-            case 'Cancel':
-            case 'Save':
-                addClass([button], ['e-save-cancel', 'e-' + buttonOption.type.toLowerCase() + 'button']);
-                break;
+        case 'Edit':
+        case 'Delete':
+            addClass([button], ['e-edit-delete', 'e-' + buttonOption.type.toLowerCase() + 'button']);
+            break;
+        case 'Cancel':
+        case 'Save':
+            addClass([button], ['e-save-cancel', 'e-' + buttonOption.type.toLowerCase() + 'button']);
+            break;
         }
         return node;
     }

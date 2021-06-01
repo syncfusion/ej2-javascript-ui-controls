@@ -5,7 +5,7 @@ import { Column } from '../models/column';
 import { GroupSettingsModel, SortDescriptorModel } from '../base/grid-model';
 import { parentsUntil, isActionPrevent, isGroupAdaptive, updatecloneRow } from '../base/util';
 import { ReturnType } from '../base/type';
-import { Action, AggregateType } from '../base/enum';
+import { AggregateType } from '../base/enum';
 import { ServiceLocator } from '../services/service-locator';
 import { IGrid, IAction, NotifyArgs } from '../base/interface';
 import * as events from '../base/constant';
@@ -20,8 +20,9 @@ import { Grid } from '../base/grid';
 import { GroupLazyLoadRenderer } from '../renderer/group-lazy-load-renderer';
 import * as literals from '../base/string-literals';
 
+// eslint-disable-next-line valid-jsdoc
 /**
- * 
+ *
  * The `Group` module is used to handle group action.
  */
 export class Group implements IAction {
@@ -40,9 +41,9 @@ export class Group implements IAction {
         styles: 'line-height:23px', attrs: { action: 'grouping' }
     });
     private helper: Function = (e: { sender: MouseEvent }) => {
-        let gObj: IGrid = this.parent;
-        let target: Element = (e.sender.target as Element);
-        let element: HTMLElement = target.classList.contains('e-groupheadercell') ? target as HTMLElement :
+        const gObj: IGrid = this.parent;
+        const target: Element = (e.sender.target as Element);
+        const element: HTMLElement = target.classList.contains('e-groupheadercell') ? target as HTMLElement :
             parentsUntil(target, 'e-groupheadercell') as HTMLElement;
         if (!element || (!target.classList.contains('e-drag') && this.groupSettings.allowReordering)) {
             return false;
@@ -55,6 +56,8 @@ export class Group implements IAction {
         gObj.element.appendChild(this.visualElement);
         return this.visualElement;
     }
+
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     private dragStart: Function = (e: BlazorDragEventArgs): void => {
         this.parent.element.classList.add('e-ungroupdrag');
     }
@@ -62,8 +65,8 @@ export class Group implements IAction {
         if (this.groupSettings.allowReordering) {
             this.animateDropper(e);
         }
-        let target: Element = e.target;
-        let cloneElement: HTMLElement = this.parent.element.querySelector('.e-cloneproperties') as HTMLElement;
+        const target: Element = e.target;
+        const cloneElement: HTMLElement = this.parent.element.querySelector('.e-cloneproperties') as HTMLElement;
         this.parent.trigger(events.columnDrag, { target: target, draggableType: 'headercell', column: this.column });
         if (!this.groupSettings.allowReordering) {
             classList(cloneElement, ['e-defaultcur'], ['e-notallowedcur']);
@@ -74,13 +77,13 @@ export class Group implements IAction {
     }
     private dragStop: Function = (e: { target: HTMLElement, event: MouseEventArgs, helper: Element }) => {
         this.parent.element.classList.remove('e-ungroupdrag');
-        let preventDrop: boolean = !(parentsUntil(e.target,  literals.gridContent) || parentsUntil(e.target, 'e-gridheader'));
+        const preventDrop: boolean = !(parentsUntil(e.target,  literals.gridContent) || parentsUntil(e.target, 'e-gridheader'));
         if (this.groupSettings.allowReordering && preventDrop) {
             remove(e.helper);
             if (parentsUntil(e.target, 'e-groupdroparea')) {
-                this.rearrangeGroup(e);
+                this.rearrangeGroup();
             } else if (!(parentsUntil(e.target, 'e-grid'))) {
-                let field: string = this.parent.getColumnByUid(e.helper.getAttribute('e-mappinguid')).field;
+                const field: string = this.parent.getColumnByUid(e.helper.getAttribute('e-mappinguid')).field;
                 if (this.groupSettings.columns.indexOf(field) !== -1) {
                     this.ungroupColumn(field);
                 }
@@ -91,25 +94,25 @@ export class Group implements IAction {
             return;
         }
     }
+
     private animateDropper: Function = (e: { target: HTMLElement, event: MouseEventArgs, helper: Element }) => {
-        let uid: string = this.parent.element.querySelector('.e-cloneproperties').getAttribute('e-mappinguid');
-        let dragField: string = this.parent.getColumnByUid(uid).field;
-        let parent: Element = parentsUntil(e.target, 'e-groupdroparea');
-        let dropTarget: Element = parentsUntil(e.target, 'e-group-animator');
-        // tslint:disable-next-line
-        let grouped: string[] = [].slice.call(this.element.getElementsByClassName('e-groupheadercell'))
+        const uid: string = this.parent.element.querySelector('.e-cloneproperties').getAttribute('e-mappinguid');
+        const dragField: string = this.parent.getColumnByUid(uid).field;
+        const parent: Element = parentsUntil(e.target, 'e-groupdroparea');
+        const dropTarget: Element = parentsUntil(e.target, 'e-group-animator');
+        const grouped: string[] = [].slice.call(this.element.getElementsByClassName('e-groupheadercell'))
             .map((e: Element) => e.querySelector('div').getAttribute('ej-mappingname'));
-        let cols: string[] = JSON.parse(JSON.stringify(grouped));
+        const cols: string[] = JSON.parse(JSON.stringify(grouped));
         if (dropTarget || parent) {
             if (dropTarget) {
-                let dropField: string = dropTarget.querySelector('div[ej-mappingname]').getAttribute('ej-mappingname');
-                let dropIndex: number = +(dropTarget.getAttribute('index'));
+                const dropField: string = dropTarget.querySelector('div[ej-mappingname]').getAttribute('ej-mappingname');
+                const dropIndex: number = +(dropTarget.getAttribute('index'));
                 if (dropField !== dragField) {
-                    let dragIndex: number = cols.indexOf(dragField);
+                    const dragIndex: number = cols.indexOf(dragField);
                     if (dragIndex !== -1) {
                         cols.splice(dragIndex, 1);
                     }
-                    let flag: boolean = dropIndex !== -1 && dragIndex === dropIndex;
+                    const flag: boolean = dropIndex !== -1 && dragIndex === dropIndex;
                     cols.splice(dropIndex + (flag ? 1 : 0), 0, dragField);
                 }
             } else if (parent && cols.indexOf(dragField) === -1) {
@@ -131,18 +134,18 @@ export class Group implements IAction {
     }
     private addLabel(): void {
         if (!this.element.getElementsByClassName('e-group-animator').length) {
-            let dragLabel: string = this.l10n.getConstant('GroupDropArea');
+            const dragLabel: string = this.l10n.getConstant('GroupDropArea');
             this.element.innerHTML = dragLabel;
             this.element.classList.remove('e-grouped');
         }
     }
-    private rearrangeGroup(e: { target: HTMLElement, event: MouseEventArgs, helper: Element }): void {
+    private rearrangeGroup(): void {
         this.sortRequired = false;
         this.updateModel();
     }
     private drop: Function = (e: DropEventArgs) => {
-        let gObj: IGrid = this.parent;
-        let column: Column = gObj.getColumnByUid(e.droppedElement.getAttribute('e-mappinguid'));
+        const gObj: IGrid = this.parent;
+        const column: Column = gObj.getColumnByUid(e.droppedElement.getAttribute('e-mappinguid'));
         this.element.classList.remove('e-hover');
         remove(e.droppedElement);
         this.aria.setDropTarget(<HTMLElement>this.parent.element.querySelector('.e-groupdroparea'), false);
@@ -166,6 +169,11 @@ export class Group implements IAction {
 
     /**
      * Constructor for Grid group module
+     *
+     * @param {IGrid} parent - specifies the IGrid
+     * @param {GroupSettingsModel} groupSettings - specifies the GroupSettingsModel
+     * @param {string[]} sortedColumns - specifies the sortedColumns
+     * @param {ServiceLocator} serviceLocator - specifies the serviceLocator
      * @hidden
      */
     constructor(parent?: IGrid, groupSettings?: GroupSettingsModel, sortedColumns?: string[], serviceLocator?: ServiceLocator) {
@@ -182,31 +190,33 @@ export class Group implements IAction {
         if (this.groupSettings.allowReordering) {
             this.animateDropper(e);
         }
-        let gObj: IGrid = this.parent;
-        let cloneElement: HTMLElement = this.parent.element.querySelector('.e-cloneproperties') as HTMLElement;
+        const cloneElement: HTMLElement = this.parent.element.querySelector('.e-cloneproperties') as HTMLElement;
         classList(cloneElement, ['e-defaultcur'], ['e-notallowedcur']);
         if (!parentsUntil(e.target as Element, 'e-groupdroparea') &&
             !(this.parent.allowReordering && parentsUntil(e.target as Element, 'e-headercell'))) {
             classList(cloneElement, ['e-notallowedcur'], ['e-defaultcur']);
         }
-        e.target.classList.contains('e-groupdroparea') ? this.element.classList.add('e-hover') : this.element.classList.remove('e-hover');
+        if (e.target.classList.contains('e-groupdroparea')) {
+            this.element.classList.add('e-hover');
+        } else {
+            this.element.classList.remove('e-hover');
+        }
     }
 
     private columnDragStart(e: { target: Element, column: Column }): void {
         if (e.target.classList.contains('e-stackedheadercell')) {
             return;
         }
-        let gObj: IGrid = this.parent;
-        let dropArea: HTMLElement = <HTMLElement>this.parent.element.querySelector('.e-groupdroparea');
+        const dropArea: HTMLElement = <HTMLElement>this.parent.element.querySelector('.e-groupdroparea');
         this.aria.setDropTarget(dropArea, e.column.allowGrouping);
-        let element: Element = e.target.classList.contains('e-headercell') ? e.target : parentsUntil(e.target as Element, 'e-headercell');
+        const element: Element = e.target.classList.contains('e-headercell') ? e.target : parentsUntil(e.target as Element, 'e-headercell');
         this.aria.setGrabbed(<HTMLElement>element, true, !e.column.allowGrouping);
     }
 
     private columnDrop(e: { target: Element, droppedElement: HTMLElement }): void {
-        let gObj: IGrid = this.parent;
+        const gObj: IGrid = this.parent;
         if (e.droppedElement.getAttribute('action') === 'grouping') {
-            let column: Column = gObj.getColumnByUid(e.droppedElement.getAttribute('e-mappinguid'));
+            const column: Column = gObj.getColumnByUid(e.droppedElement.getAttribute('e-mappinguid'));
             if (isNullOrUndefined(column) || column.allowGrouping === false ||
                 parentsUntil(gObj.getColumnHeaderByUid(column.uid), 'e-grid').getAttribute('id') !==
                 gObj.element.getAttribute('id')) {
@@ -217,6 +227,7 @@ export class Group implements IAction {
     }
 
     /**
+     * @returns {void}
      * @hidden
      */
     public addEventListener(): void {
@@ -241,7 +252,9 @@ export class Group implements IAction {
         this.parent.on('group-expand-collapse', this.updateExpand, this);
         this.parent.on('persist-data-changed', this.initialEnd, this);
     }
+
     /**
+     * @returns {void}
      * @hidden
      */
     public removeEventListener(): void {
@@ -271,12 +284,12 @@ export class Group implements IAction {
     }
 
     private initialEnd(): void {
-        let gObj: IGrid = this.parent;
+        const gObj: IGrid = this.parent;
         this.parent.off(events.contentReady, this.initialEnd);
         this.parent.off(events.onEmpty, this.initialEnd);
         if (this.parent.getColumns().length && this.groupSettings.columns.length) {
             this.contentRefresh = false;
-            for (let col of gObj.groupSettings.columns) {
+            for (const col of gObj.groupSettings.columns) {
                 this.groupColumn(col);
             }
             this.contentRefresh = true;
@@ -284,52 +297,58 @@ export class Group implements IAction {
     }
 
     private keyPressHandler(e: KeyboardEventArgs): void {
-        let gObj: IGrid = this.parent;
+        const gObj: IGrid = this.parent;
         if (e.action !== 'ctrlSpace' && (!this.groupSettings.columns.length ||
             ['altDownArrow', 'altUpArrow', 'ctrlDownArrow', 'ctrlUpArrow', 'enter'].indexOf(e.action) === -1)) {
             return;
         }
         e.preventDefault();
         switch (e.action) {
-            case 'altDownArrow':
-            case 'altUpArrow':
-                let selected: number[] = gObj.allowSelection ? gObj.getSelectedRowIndexes() : [];
-                if (selected.length) {
-                    let rows: HTMLCollection = gObj.getContentTable().querySelector( literals.tbody).children;
-                    let dataRow: HTMLTableRowElement = gObj.getDataRows()[selected[selected.length - 1]] as HTMLTableRowElement;
-                    let grpRow: Element;
-                    for (let i: number = dataRow.rowIndex; i >= 0; i--) {
-                        if (!rows[i].classList.contains(literals.row) && !rows[i].classList.contains('e-detailrow')) {
-                            grpRow = rows[i];
-                            break;
-                        }
+        case 'altDownArrow':
+        case 'altUpArrow':
+            // eslint-disable-next-line no-case-declarations
+            const selected: number[] = gObj.allowSelection ? gObj.getSelectedRowIndexes() : [];
+            if (selected.length) {
+                const rows: HTMLCollection = gObj.getContentTable().querySelector( literals.tbody).children;
+                const dataRow: HTMLTableRowElement = gObj.getDataRows()[selected[selected.length - 1]] as HTMLTableRowElement;
+                let grpRow: Element;
+                for (let i: number = dataRow.rowIndex; i >= 0; i--) {
+                    if (!rows[i].classList.contains(literals.row) && !rows[i].classList.contains('e-detailrow')) {
+                        grpRow = rows[i];
+                        break;
                     }
-                    this.expandCollapseRows(grpRow.querySelector(e.action === 'altUpArrow' ?
-                        '.e-recordplusexpand' : '.e-recordpluscollapse'));
                 }
-                break;
-            case 'ctrlDownArrow':
-                this.expandAll();
-                break;
-            case 'ctrlUpArrow':
-                this.collapseAll();
-                break;
-            case 'enter':
-                if (this.parent.isEdit || (closest(e.target as Element, '#' + this.parent.element.id + '_searchbar') !== null)) { return; }
-                let element: HTMLElement = this.focus.getFocusedElement();
-                let row: Element = element ? element.parentElement.querySelector('[class^="e-record"]') : null;
-                if (!row) { break; }
-                this.expandCollapseRows(row);
-                break;
-            case 'ctrlSpace':
-                let elem: HTMLElement = gObj.focusModule.currentInfo.element;
-                if (elem && elem.classList.contains('e-headercell')) {
-                    let column: Column = gObj.getColumnByUid(elem.firstElementChild.getAttribute('e-mappinguid'));
-                    column.field && gObj.groupSettings.columns.indexOf(column.field) < 0 ?
-                        this.groupColumn(column.field) : this.ungroupColumn(column.field);
+                this.expandCollapseRows(grpRow.querySelector(e.action === 'altUpArrow' ?
+                    '.e-recordplusexpand' : '.e-recordpluscollapse'));
+            }
+            break;
+        case 'ctrlDownArrow':
+            this.expandAll();
+            break;
+        case 'ctrlUpArrow':
+            this.collapseAll();
+            break;
+        case 'enter':
+            if (this.parent.isEdit || (closest(e.target as Element, '#' + this.parent.element.id + '_searchbar') !== null)) { return; }
+            // eslint-disable-next-line no-case-declarations
+            const element: HTMLElement = this.focus.getFocusedElement();
+            // eslint-disable-next-line no-case-declarations
+            const row: Element = element ? element.parentElement.querySelector('[class^="e-record"]') : null;
+            if (!row) { break; }
+            this.expandCollapseRows(row);
+            break;
+        case 'ctrlSpace':
+            // eslint-disable-next-line no-case-declarations
+            const elem: HTMLElement = gObj.focusModule.currentInfo.element;
+            if (elem && elem.classList.contains('e-headercell')) {
+                const column: Column = gObj.getColumnByUid(elem.firstElementChild.getAttribute('e-mappinguid'));
+                if (column.field && gObj.groupSettings.columns.indexOf(column.field) < 0) {
+                    this.groupColumn(column.field);
+                } else {
+                    this.ungroupColumn(column.field);
                 }
-                break;
-
+            }
+            break;
         }
     }
 
@@ -364,11 +383,11 @@ export class Group implements IAction {
     }
 
     private applySortFromTarget(target: Element): void {
-        let gObj: IGrid = this.parent;
-        let gHeader: Element = closest(target as Element, '.e-groupheadercell');
+        const gObj: IGrid = this.parent;
+        const gHeader: Element = closest(target as Element, '.e-groupheadercell');
         if (gObj.allowSorting && gHeader && !target.classList.contains('e-ungroupbutton') &&
             !target.classList.contains('e-toggleungroup')) {
-            let field: string = gHeader.firstElementChild.getAttribute('ej-mappingname');
+            const field: string = gHeader.firstElementChild.getAttribute('ej-mappingname');
             if (gObj.getColumnHeaderByField(field).getElementsByClassName('e-ascending').length) {
                 gObj.sortColumn(field, 'Descending', true);
             } else {
@@ -377,26 +396,27 @@ export class Group implements IAction {
         }
     }
 
-    /**  
-     * Expands or collapses grouped rows by target element. 
-     * @param  {Element} target - Defines the target element of the grouped row.      
-     * @return {void}  
+    /**
+     * Expands or collapses grouped rows by target element.
+     *
+     * @param  {Element} target - Defines the target element of the grouped row.
+     * @returns {void}
      */
     public expandCollapseRows(target: Element): void {
-        let trgt: HTMLTableCellElement = parentsUntil(target, 'e-recordplusexpand') as HTMLTableCellElement ||
+        const trgt: HTMLTableCellElement = parentsUntil(target, 'e-recordplusexpand') as HTMLTableCellElement ||
             parentsUntil(target, 'e-recordpluscollapse') as HTMLTableCellElement;
         if (trgt) {
-            let cellIdx: number = trgt.cellIndex;
-            let rowIdx: number = (trgt.parentElement as HTMLTableRowElement).rowIndex;
-            let rowNodes: HTMLCollection = this.parent.getContentTable().querySelector( literals.tbody).children;
-            let rows: HTMLTableRowElement[] = [].slice.call(rowNodes).slice(rowIdx + 1, rowNodes.length);
+            const cellIdx: number = trgt.cellIndex;
+            const rowIdx: number = (trgt.parentElement as HTMLTableRowElement).rowIndex;
+            const rowNodes: HTMLCollection = this.parent.getContentTable().querySelector( literals.tbody).children;
+            const rows: HTMLTableRowElement[] = [].slice.call(rowNodes).slice(rowIdx + 1, rowNodes.length);
             let isHide: boolean;
             let expandElem: Element;
             let dataManager: Promise<Object>;
             let query: Query;
-            let toExpand: Element[] = [];
-            let gObj: IGrid = this.parent;
-            let indent: number = trgt.parentElement.getElementsByClassName('e-indentcell').length;
+            const toExpand: Element[] = [];
+            const gObj: IGrid = this.parent;
+            const indent: number = trgt.parentElement.getElementsByClassName('e-indentcell').length;
             let expand: boolean = false;
             if (trgt.classList.contains('e-recordpluscollapse')) {
                 addClass([trgt], 'e-recordplusexpand'); removeClass([trgt], 'e-recordpluscollapse');
@@ -456,7 +476,7 @@ export class Group implements IAction {
     }
 
     private updateVisibleexpandCollapseRows(): void {
-        let rows: Row<Column>[] = this.parent.getRowsObject();
+        const rows: Row<Column>[] = this.parent.getRowsObject();
         for (let i: number = 0, len: number = rows.length; i < len; i++) {
             if (rows[i].isDataRow && (this.parent.getRowElementByUID(rows[i].uid) as HTMLTableRowElement).style.display === 'none') {
                 (<{ visible?: boolean }>rows[i]).visible = false;
@@ -465,21 +485,22 @@ export class Group implements IAction {
     }
 
     private updateVirtualRows(gObj: IGrid, target: Element, isExpand: boolean, query: Query, dataManager: Promise<Object>): void {
-        let rObj: Row<Column> = gObj.getRowObjectFromUID(target.closest('tr').getAttribute('data-uid'));
+        const rObj: Row<Column> = gObj.getRowObjectFromUID(target.closest('tr').getAttribute('data-uid'));
         rObj.isExpand = isExpand;
         updatecloneRow(gObj);
         this.parent.notify(events.refreshVirtualMaxPage, {});
         query = gObj.getDataModule().generateQuery(false);
         query.queries = gObj.getDataModule().aggregateQuery(gObj.getQuery().clone()).queries;
-        let args: NotifyArgs = { requestType: 'virtualscroll', rowObject: rObj };
+        const args: NotifyArgs = { requestType: 'virtualscroll', rowObject: rObj };
         dataManager = gObj.getDataModule().getData(args, query.requiresCount());
         dataManager.then((e: ReturnType) => gObj.renderModule.dataManagerSuccess(e, args));
     }
+
     private expandCollapse(isExpand: boolean): void {
         if (!isExpand) {
             this.parent.notify(events.initialCollapse, isExpand);
         }
-        let rowNodes: HTMLCollection = this.parent.getContentTable().querySelector( literals.tbody).children;
+        const rowNodes: HTMLCollection = this.parent.getContentTable().querySelector( literals.tbody).children;
         let row: Element;
         for (let i: number = 0, len: number = rowNodes.length; i < len; i++) {
             if (rowNodes[i].querySelectorAll('.e-recordplusexpand, .e-recordpluscollapse').length) {
@@ -501,17 +522,19 @@ export class Group implements IAction {
         this.parent.notify(events.refreshExpandandCollapse, { rows: this.parent.getRowsObject() });
     }
 
-    /** 
-     * Expands all the grouped rows of the Grid.          
-     * @return {void} 
+    /**
+     * Expands all the grouped rows of the Grid.
+     *
+     * @returns {void}
      */
     public expandAll(): void {
         this.expandCollapse(true);
     }
 
-    /** 
-     * Collapses all the grouped rows of the Grid.         
-     * @return {void} 
+    /**
+     * Collapses all the grouped rows of the Grid.
+     *
+     * @returns {void}
      */
     public collapseAll(): void {
         this.expandCollapse(false);
@@ -519,7 +542,8 @@ export class Group implements IAction {
 
     /**
      * The function is used to render grouping
-     * @return {Element} 
+     *
+     * @returns {void}
      * @hidden
      */
     public render(): void {
@@ -530,7 +554,7 @@ export class Group implements IAction {
     }
 
     private renderGroupDropArea(): void {
-        let groupElem: Element = this.parent.element.querySelector('.e-groupdroparea');
+        const groupElem: Element = this.parent.element.querySelector('.e-groupdroparea');
         if (groupElem) {
             remove(groupElem);
         }
@@ -547,7 +571,7 @@ export class Group implements IAction {
 
     private updateGroupDropArea(clear?: boolean): void {
         if (this.groupSettings.showDropArea && !this.groupSettings.columns.length) {
-            let dragLabel: string = this.l10n.getConstant('GroupDropArea');
+            const dragLabel: string = this.l10n.getConstant('GroupDropArea');
             this.element.innerHTML = dragLabel;
             this.element.classList.remove('e-grouped');
         } else {
@@ -565,7 +589,8 @@ export class Group implements IAction {
     }
 
     private initializeGHeaderDrag(): void {
-        let drag: Draggable = new Draggable(this.element as HTMLElement, {
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        const drag: Draggable = new Draggable(this.element as HTMLElement, {
             dragTarget: this.groupSettings.allowReordering ? '.e-drag' : '.e-groupheadercell',
             distance: this.groupSettings.allowReordering ? -10 : 5,
             helper: this.helper,
@@ -576,21 +601,22 @@ export class Group implements IAction {
     }
 
     private initializeGHeaderDrop(): void {
-        let gObj: IGrid = this.parent;
-        let drop: Droppable = new Droppable(this.element, {
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        const drop: Droppable = new Droppable(this.element, {
             accept: '.e-dragclone',
             drop: this.drop as (e: DropEventArgs) => void
         });
     }
 
-    /** 
-     * Groups a column by column name. 
-     * @param  {string} columnName - Defines the column name to group.  
-     * @return {void} 
+    /**
+     * Groups a column by column name.
+     *
+     * @param  {string} columnName - Defines the column name to group.
+     * @returns {void}
      */
     public groupColumn(columnName: string): void {
-        let gObj: IGrid = this.parent;
-        let column: Column = gObj.getColumnByField(columnName);
+        const gObj: IGrid = this.parent;
+        const column: Column = gObj.getColumnByField(columnName);
         if (isNullOrUndefined(column) || column.allowGrouping === false ||
             (this.contentRefresh && this.groupSettings.columns.indexOf(columnName) > -1)) {
             this.parent.log('action_disabled_column', { moduleName: this.getModuleName(), columnName: column.headerText });
@@ -612,14 +638,15 @@ export class Group implements IAction {
         this.isAppliedGroup = false;
     }
 
-    /** 
-     * Ungroups a column by column name. 
-     * @param  {string} columnName - Defines the column name to ungroup.  
-     * @return {void} 
+    /**
+     * Ungroups a column by column name.
+     *
+     * @param  {string} columnName - Defines the column name to ungroup.
+     * @returns {void}
      */
     public ungroupColumn(columnName: string): void {
-        let gObj: IGrid = this.parent;
-        let column: Column = this.parent.enableColumnVirtualization ?
+        const gObj: IGrid = this.parent;
+        const column: Column = this.parent.enableColumnVirtualization ?
             (<Column[]>this.parent.columns).filter((c: Column) => c.field === columnName)[0] : gObj.getColumnByField(columnName);
         if (isNullOrUndefined(column) || column.allowGrouping === false || this.groupSettings.columns.indexOf(columnName) < 0) {
             return;
@@ -630,7 +657,7 @@ export class Group implements IAction {
         }
         column.visible = true;
         this.colName = column.field;
-        let columns: string[] = JSON.parse(JSON.stringify(this.groupSettings.columns));
+        const columns: string[] = JSON.parse(JSON.stringify(this.groupSettings.columns));
         columns.splice(columns.indexOf(this.colName), 1);
         if (this.sortedColumns.indexOf(columnName) < 0) {
             for (let i: number = 0, len: number = gObj.sortSettings.columns.length; i < len; i++) {
@@ -651,13 +678,12 @@ export class Group implements IAction {
     }
 
     /**
-     * The function used to update groupSettings 
-     * @return {void}
+     * The function used to update groupSettings
+     *
+     * @returns {void}
      * @hidden
      */
     public updateModel(): void {
-        let gObj: IGrid = this.parent;
-        let i: number = 0;
         let columns: string[] =  JSON.parse(JSON.stringify(this.groupSettings.columns));
         columns = this.reorderingColumns.length ? JSON.parse(JSON.stringify(this.reorderingColumns)) : columns;
         if (this.sortRequired) {
@@ -673,17 +699,18 @@ export class Group implements IAction {
 
     /**
      * The function used to trigger onActionComplete
-     * @return {void}
+     *
+     * @param {NotifyArgs} e - specifies the NotifyArgs
+     * @returns {void}
      * @hidden
      */
     public onActionComplete(e: NotifyArgs): void {
-        let gObj: IGrid = this.parent;
         if (e.requestType === 'grouping') {
             this.addColToGroupDrop(this.colName);
         } else {
             this.removeColFromGroupDrop(this.colName);
         }
-        let args: Object = this.groupSettings.columns.indexOf(this.colName) > -1 ? {
+        const args: Object = this.groupSettings.columns.indexOf(this.colName) > -1 ? {
             columnName: this.colName, requestType: 'grouping', type: events.actionComplete
         } : { requestType: 'ungrouping', type: events.actionComplete };
         this.parent.trigger(events.actionComplete, extend(e, args));
@@ -705,15 +732,15 @@ export class Group implements IAction {
         }
     }
     private createElement(field: string): Element {
-        let gObj: IGrid = this.parent;
+        const gObj: IGrid = this.parent;
         let direction: string = 'Ascending';
-        let animator: Element = this.parent.createElement('div', { className: 'e-grid-icon e-group-animator' });
+        const animator: Element = this.parent.createElement('div', { className: 'e-grid-icon e-group-animator' });
         let groupedColumn: Element = this.parent.createElement('div', { className: 'e-grid-icon e-groupheadercell' });
-        let childDiv: Element = this.parent.createElement('div', { attrs: { 'ej-mappingname': field } });
+        const childDiv: Element = this.parent.createElement('div', { attrs: { 'ej-mappingname': field } });
 
-        let column: Column = this.parent.getColumnByField(field);
-        //Todo headerTemplateID for grouped column, disableHtmlEncode                          
-        let headerCell: Element = gObj.getColumnHeaderByUid(column.uid);
+        const column: Column = this.parent.getColumnByField(field);
+        //Todo headerTemplateID for grouped column, disableHtmlEncode
+        const headerCell: Element = gObj.getColumnHeaderByUid(column.uid);
         // if (!isNullOrUndefined(column.headerTemplate)) {
         //     if (column.headerTemplate.indexOf('#') !== -1) {
         //         childDiv.innerHTML = document.querySelector(column.headerTemplate).innerHTML.trim();
@@ -725,9 +752,9 @@ export class Group implements IAction {
         if (this.groupSettings.allowReordering) {
             childDiv.appendChild(this.parent.createElement(
                 'span', {
-                className: 'e-drag e-icons e-icon-drag', innerHTML: '&nbsp;',
-                attrs: { title: 'Drag', tabindex: '-1', 'aria-label': 'Drag the grouped column' }
-            }));
+                    className: 'e-drag e-icons e-icon-drag', innerHTML: '&nbsp;',
+                    attrs: { title: 'Drag', tabindex: '-1', 'aria-label': 'Drag the grouped column' }
+                }));
         }
         childDiv.appendChild(this.parent.createElement('span', {
             className: 'e-grouptext', innerHTML: column.headerText,
@@ -738,9 +765,9 @@ export class Group implements IAction {
         if (this.groupSettings.showToggleButton) {
             childDiv.appendChild(this.parent.createElement(
                 'span', {
-                className: 'e-togglegroupbutton e-icons e-icon-ungroup e-toggleungroup', innerHTML: '&nbsp;',
-                attrs: { tabindex: '-1', 'aria-label': 'ungroup button' }
-            }));
+                    className: 'e-togglegroupbutton e-icons e-icon-ungroup e-toggleungroup', innerHTML: '&nbsp;',
+                    attrs: { tabindex: '-1', 'aria-label': 'ungroup button' }
+                }));
         }
 
         if (headerCell.querySelectorAll('.e-ascending,.e-descending').length) {
@@ -748,20 +775,19 @@ export class Group implements IAction {
         }
         childDiv.appendChild(this.parent.createElement(
             'span', {
-            className: 'e-groupsort e-icons ' +
+                className: 'e-groupsort e-icons ' +
                 ('e-' + direction.toLowerCase() + ' e-icon-' + direction.toLowerCase()), innerHTML: '&nbsp;',
-            attrs: { tabindex: '-1', 'aria-label': 'sort the grouped column' }
-        }));
+                attrs: { tabindex: '-1', 'aria-label': 'sort the grouped column' }
+            }));
         childDiv.appendChild(this.parent.createElement(
             'span', {
-            className: 'e-ungroupbutton e-icons e-icon-hide', innerHTML: '&nbsp;',
-            attrs: { title: this.l10n.getConstant('UnGroup'),
-            tabindex: '-1', 'aria-label': 'ungroup the grouped column' },
-            styles: this.groupSettings.showUngroupButton ? '' : 'display:none'
-        }));
+                className: 'e-ungroupbutton e-icons e-icon-hide', innerHTML: '&nbsp;',
+                attrs: { title: this.l10n.getConstant('UnGroup'),
+                    tabindex: '-1', 'aria-label': 'ungroup the grouped column' },
+                styles: this.groupSettings.showUngroupButton ? '' : 'display:none'
+            }));
 
         groupedColumn.appendChild(childDiv);
-        let index: number = this.groupSettings.columns.indexOf(field);
         if (this.groupSettings.allowReordering) {
             animator.appendChild(groupedColumn);
             animator.appendChild(this.createSeparator());
@@ -769,24 +795,26 @@ export class Group implements IAction {
         }
         return groupedColumn;
     }
+
     private addColToGroupDrop(field: string): void {
         if (this.groupSettings.allowReordering
             && this.parent.element.querySelector('.e-groupdroparea div[ej-mappingname=' + field + ']')) {
             return;
         }
-        let column: Column = this.parent.getColumnByField(field);
+        const column: Column = this.parent.getColumnByField(field);
         if (isNullOrUndefined(column)) {
             return;
         }
-        let groupedColumn: Element = this.createElement(field);
+        const groupedColumn: Element = this.createElement(field);
         if (this.groupSettings.allowReordering) {
-            let index: number = this.element.getElementsByClassName('e-group-animator').length;
+            const index: number = this.element.getElementsByClassName('e-group-animator').length;
             groupedColumn.setAttribute('index', index.toString());
         }
         this.element.appendChild(groupedColumn);
 
-        //Todo:  rtl 
+        //Todo:  rtl
     }
+
     private createSeparator(): Element {
         return this.parent.createElement('span', {
             className: 'e-nextgroup e-icons e-icon-next', innerHTML: '&nbsp;',
@@ -794,12 +822,13 @@ export class Group implements IAction {
             styles: this.groupSettings.showUngroupButton ? '' : 'display:none'
         });
     }
+
     private refreshToggleBtn(isRemove?: boolean): void {
         if (this.groupSettings.showToggleButton) {
-            let headers: Element[] = [].slice.call(this.parent.getHeaderTable().getElementsByClassName('e-headercelldiv'));
+            const headers: Element[] = [].slice.call(this.parent.getHeaderTable().getElementsByClassName('e-headercelldiv'));
             for (let i: number = 0, len: number = headers.length; i < len; i++) {
                 if (!((headers[i].classList.contains('e-emptycell')) || (headers[i].classList.contains('e-headerchkcelldiv')))) {
-                    let column: Column = this.parent.getColumnByUid(headers[i].getAttribute('e-mappinguid'));
+                    const column: Column = this.parent.getColumnByUid(headers[i].getAttribute('e-mappinguid'));
                     if (!this.parent.showColumnMenu || (this.parent.showColumnMenu && !column.showColumnMenu)) {
                         if (headers[i].getElementsByClassName('e-grptogglebtn').length) {
                             remove(headers[i].querySelectorAll('.e-grptogglebtn')[0] as Element);
@@ -807,10 +836,10 @@ export class Group implements IAction {
                         if (!isRemove) {
                             headers[i].appendChild(this.parent.createElement(
                                 'span', {
-                                className: 'e-grptogglebtn e-icons ' +
+                                    className: 'e-grptogglebtn e-icons ' +
                                     (this.groupSettings.columns.indexOf(column.field) > -1 ? 'e-toggleungroup e-icon-ungroup'
                                         : 'e-togglegroup e-icon-group'), attrs: { tabindex: '-1', 'aria-label': 'Group button' }
-                            }));
+                                }));
                         }
                     }
                 }
@@ -820,9 +849,9 @@ export class Group implements IAction {
 
     private removeColFromGroupDrop(field: string): void {
         if (!isNullOrUndefined(this.getGHeaderCell(field))) {
-            let elem: Element = this.getGHeaderCell(field);
+            const elem: Element = this.getGHeaderCell(field);
             if (this.groupSettings.allowReordering) {
-                let parent: Element = parentsUntil(elem, 'e-group-animator');
+                const parent: Element = parentsUntil(elem, 'e-group-animator');
                 remove(parent);
             } else {
                 remove(elem);
@@ -836,67 +865,71 @@ export class Group implements IAction {
         if (e.module !== this.getModuleName()) {
             return;
         }
-        for (let prop of Object.keys(e.properties)) {
+        for (const prop of Object.keys(e.properties)) {
             switch (prop) {
-                case 'columns':
-                    let args: Object;
-                    if (this.contentRefresh) {
-                        if (!this.isAppliedUnGroup) {
-                            if (!this.isAppliedGroup) {
-                                this.updateGroupDropArea(true);
-                                for (let j: number = 0; j < this.parent.sortSettings.columns.length; j++) {
-                                    if (this.parent.sortSettings.columns[j].isFromGroup) {
-                                        this.parent.sortSettings.columns.splice(j, 1);
-                                        j--;
-                                    }
-                                }
-                                for (let i: number = 0; i < this.groupSettings.columns.length; i++) {
-                                    this.colName = this.groupSettings.columns[i];
-                                    let col: Column = this.parent.getColumnByField(this.colName);
-                                    col.visible = this.parent.groupSettings.showGroupedColumn;
-                                    this.groupAddSortingQuery(this.colName);
-                                    if (i < this.groupSettings.columns.length - 1) {
-                                        this.addColToGroupDrop(this.groupSettings.columns[i]);
-                                    }
+            case 'columns':
+                // eslint-disable-next-line no-case-declarations
+                let args: Object;
+                if (this.contentRefresh) {
+                    if (!this.isAppliedUnGroup) {
+                        if (!this.isAppliedGroup) {
+                            this.updateGroupDropArea(true);
+                            for (let j: number = 0; j < this.parent.sortSettings.columns.length; j++) {
+                                if (this.parent.sortSettings.columns[j].isFromGroup) {
+                                    this.parent.sortSettings.columns.splice(j, 1);
+                                    j--;
                                 }
                             }
-                            args = {
-                                columnName: this.colName, requestType: e.properties[prop].length ? 'grouping' : 'ungrouping',
-                                type: events.actionBegin
-                            };
-                        } else {
-                            args = { columnName: this.colName, requestType: 'ungrouping', type: events.actionBegin };
-                        }
-                        if (!this.groupSettings.showGroupedColumn) {
-                            let columns: string[] = e.oldProperties[prop];
-                            for (let i: number = 0; i < columns.length; i++) {
-                                if (e.properties[prop].indexOf(columns[i]) === -1) {
-                                    this.parent.getColumnByField(columns[i]).visible = true;
+                            for (let i: number = 0; i < this.groupSettings.columns.length; i++) {
+                                this.colName = this.groupSettings.columns[i];
+                                const col: Column = this.parent.getColumnByField(this.colName);
+                                col.visible = this.parent.groupSettings.showGroupedColumn;
+                                this.groupAddSortingQuery(this.colName);
+                                if (i < this.groupSettings.columns.length - 1) {
+                                    this.addColToGroupDrop(this.groupSettings.columns[i]);
                                 }
                             }
                         }
-                        let requestType: string = 'requestType';
-                        this.parent.notify(events.modelChanged, args);
+                        args = {
+                            columnName: this.colName, requestType: e.properties[prop].length ? 'grouping' : 'ungrouping',
+                            type: events.actionBegin
+                        };
+                    } else {
+                        args = { columnName: this.colName, requestType: 'ungrouping', type: events.actionBegin };
                     }
-                    break;
-                case 'showDropArea':
-                    this.updateGroupDropArea();
-                    this.groupSettings.showDropArea ? this.element.style.display = '' : this.element.style.display = 'none';
-                    break;
-                case 'showGroupedColumn':
-                    this.updateGroupedColumn(this.groupSettings.showGroupedColumn);
-                    this.parent.notify(events.modelChanged, { requestType: 'refresh' });
-                    break;
-                case 'showUngroupButton':
-                    this.updateButtonVisibility(this.groupSettings.showUngroupButton, 'e-ungroupbutton');
-                    break;
-                case 'showToggleButton':
-                    this.updateButtonVisibility(this.groupSettings.showToggleButton, 'e-togglegroupbutton ');
-                    this.parent.refreshHeader();
-                    break;
-                case 'enableLazyLoading':
-                    (this.parent as Grid).freezeRefresh();
-                    break;
+                    if (!this.groupSettings.showGroupedColumn) {
+                        const columns: string[] = e.oldProperties[prop];
+                        for (let i: number = 0; i < columns.length; i++) {
+                            if (e.properties[prop].indexOf(columns[i]) === -1) {
+                                this.parent.getColumnByField(columns[i]).visible = true;
+                            }
+                        }
+                    }
+                    this.parent.notify(events.modelChanged, args);
+                }
+                break;
+            case 'showDropArea':
+                this.updateGroupDropArea();
+                if (this.groupSettings.showDropArea) {
+                    this.element.style.display = '';
+                } else {
+                    this.element.style.display = 'none';
+                }
+                break;
+            case 'showGroupedColumn':
+                this.updateGroupedColumn(this.groupSettings.showGroupedColumn);
+                this.parent.notify(events.modelChanged, { requestType: 'refresh' });
+                break;
+            case 'showUngroupButton':
+                this.updateButtonVisibility(this.groupSettings.showUngroupButton, 'e-ungroupbutton');
+                break;
+            case 'showToggleButton':
+                this.updateButtonVisibility(this.groupSettings.showToggleButton, 'e-togglegroupbutton ');
+                this.parent.refreshHeader();
+                break;
+            case 'enableLazyLoading':
+                (this.parent as Grid).freezeRefresh();
+                break;
             }
         }
     }
@@ -908,7 +941,7 @@ export class Group implements IAction {
     }
 
     private updateButtonVisibility(isVisible: boolean, className: string): void {
-        let gHeader: HTMLElement[] = [].slice.call(this.element.getElementsByClassName(className));
+        const gHeader: HTMLElement[] = [].slice.call(this.element.getElementsByClassName(className));
         for (let i: number = 0; i < gHeader.length; i++) {
             gHeader[i].style.display = isVisible ? '' : 'none';
         }
@@ -922,14 +955,15 @@ export class Group implements IAction {
     }
 
     /**
-     * To destroy the reorder 
-     * @return {void}
+     * To destroy the reorder
+     *
+     * @returns {void}
      * @hidden
      */
     public destroy(): void {
-        let gridElement: Element = this.parent.element;
+        const gridElement: Element = this.parent.element;
         if (!gridElement || (!gridElement.querySelector('.' + literals.gridHeader) && !gridElement.querySelector( '.' + literals.gridContent))) { return; }
-        // tslint:disable-next-line:no-any
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         if (!this.parent.isDestroyed && !(<any>this.parent).refreshing) {
             this.clearGrouping();
         }
@@ -939,12 +973,13 @@ export class Group implements IAction {
         //call ejdrag and drop destroy
     }
 
-    /**  
-     * Clears all the grouped columns of the Grid.  
-     * @return {void} 
+    /**
+     * Clears all the grouped columns of the Grid.
+     *
+     * @returns {void}
      */
     public clearGrouping(): void {
-        let cols: string[] = JSON.parse(JSON.stringify(this.groupSettings.columns));
+        const cols: string[] = JSON.parse(JSON.stringify(this.groupSettings.columns));
         this.contentRefresh = false;
         for (let i: number = 0, len: number = cols.length; i < len; i++) {
             if (i === (len - 1)) {
@@ -957,18 +992,20 @@ export class Group implements IAction {
 
     /**
      * For internal use only - Get the module name.
+     *
+     * @returns {string} returns the module name
      * @private
      */
     protected getModuleName(): string {
         return 'group';
     }
 
-    private refreshSortIcons(e?: { requestType?: Action, columnName: string }): void {
-        let gObj: IGrid = this.parent;
+    private refreshSortIcons(): void {
+        const gObj: IGrid = this.parent;
         let header: Element;
-        let cols: SortDescriptorModel[] = gObj.sortSettings.columns;
-        let gCols: string[] = gObj.groupSettings.columns;
-        let fieldNames: string[] = this.parent.getColumns().map((c: Column) => c.field);
+        const cols: SortDescriptorModel[] = gObj.sortSettings.columns;
+        const gCols: string[] = gObj.groupSettings.columns;
+        const fieldNames: string[] = this.parent.getColumns().map((c: Column) => c.field);
         this.refreshToggleBtn();
         for (let i: number = 0, len: number = cols.length; i < len; i++) {
             if (fieldNames.indexOf(cols[i].field) === -1) { continue; }
@@ -1006,62 +1043,62 @@ export class Group implements IAction {
     }
 
     private onGroupAggregates(editedData: Object[]): void {
-        let aggregates: Object[] = this.iterateGroupAggregates(editedData);
-        let rowData: Object[] = this.groupGenerator.generateRows(aggregates, {});
-        let summaryRows: Row<Column>[] = this.parent.getRowsObject().filter((row: Row<Column>) => !row.isDataRow);
-        let updateSummaryRows: Object[] = rowData.filter((data: Row<Column>) => !data.isDataRow);
+        const aggregates: Object[] = this.iterateGroupAggregates(editedData);
+        const rowData: Object[] = this.groupGenerator.generateRows(aggregates, {});
+        const summaryRows: Row<Column>[] = this.parent.getRowsObject().filter((row: Row<Column>) => !row.isDataRow);
+        const updateSummaryRows: Object[] = rowData.filter((data: Row<Column>) => !data.isDataRow);
         if (this.parent.isReact) {
             this.parent.destroyTemplate(['groupFooterTemplate', 'groupCaptionTemplate', 'footerTemplate']);
         }
         for (let i: number = 0; i < updateSummaryRows.length; i++) {
-            let row: Row<Column> = updateSummaryRows[i] as Row<Column>;
-            let cells: Object[] = row.cells.filter((cell: Cell<{}>) => cell.isDataCell);
-            let args: Object = { cells: cells, data: row.data, dataUid: summaryRows[i] ? summaryRows[i].uid : '' };
+            const row: Row<Column> = updateSummaryRows[i] as Row<Column>;
+            const cells: Object[] = row.cells.filter((cell: Cell<{}>) => cell.isDataCell);
+            const args: Object = { cells: cells, data: row.data, dataUid: summaryRows[i] ? summaryRows[i].uid : '' };
             this.parent.notify(events.refreshAggregateCell, args);
         }
     }
 
     private iterateGroupAggregates(editedData: Object[]): Object[] {
-        let updatedData: Object[] = editedData instanceof Array ? editedData : [];
-        let rows: Object[] = this.parent.getRowsObject();
-        let initData: Object[] = this.parent.getCurrentViewRecords();
-        let deletedCols: Object[] = [];
+        const updatedData: Object[] = editedData instanceof Array ? editedData : [];
+        const rows: Object[] = this.parent.getRowsObject();
+        const initData: Object[] = this.parent.getCurrentViewRecords();
+        const deletedCols: Object[] = [];
         let changeds: Object[] = rows.map((row: Row<AggregateColumn> | Row<Column>) => {
             if (row.edit === 'delete') { deletedCols.push(row.data); }
             return row.changes instanceof Object ? row.changes : row.data;
         });
-        let field: string = this.parent.getPrimaryKeyFieldNames()[0];
+        const field: string = this.parent.getPrimaryKeyFieldNames()[0];
         changeds = updatedData.length === 0 ? changeds : updatedData;
-        let mergeData: Object[] = initData.map((item: Object) => {
-            let pKeyVal: Object = DataUtil.getObject(field, item);
+        const mergeData: Object[] = initData.map((item: Object) => {
+            const pKeyVal: Object = DataUtil.getObject(field, item);
             let value: Object;
-            let hasVal: boolean = changeds.some((cItem: Object) => {
+            const hasVal: boolean = changeds.some((cItem: Object) => {
                 value = cItem;
                 return pKeyVal === DataUtil.getObject(field, cItem);
             });
             return hasVal ? value : item;
         });
-        let eData: Object = editedData;
+        const eData: Object = editedData;
         if (!((<{ type: string }>eData).type && (<{ type: string }>eData).type === 'cancel') && deletedCols.length > 0) {
             for (let i: number = 0; i < deletedCols.length; i++) {
-                let index: number = mergeData.indexOf(deletedCols[i]);
+                const index: number = mergeData.indexOf(deletedCols[i]);
                 mergeData.splice(index, 1);
             }
         }
-        let aggregates: Object[] = [];
-        let aggregateRows: AggregateRow | Object[] = this.parent.aggregates;
+        const aggregates: Object[] = [];
+        const aggregateRows: AggregateRow | Object[] = this.parent.aggregates;
         for (let j: number = 0; j < aggregateRows.length; j++) {
-            let row: AggregateRow = aggregateRows[j] as AggregateRow;
+            const row: AggregateRow = aggregateRows[j] as AggregateRow;
             for (let k: number = 0; k < row.columns.length; k++) {
                 let aggr: Object = {};
-                let type: string | AggregateType[] = row.columns[k].type.toString();
+                const type: string | AggregateType[] = row.columns[k].type.toString();
                 aggr = { type: type.toLowerCase(), field: row.columns[k].field };
                 aggregates.push(aggr);
             }
         }
         let result: Object[];
         let aggrds: Object[];
-        let groupedCols: string[] = this.parent.groupSettings.columns;
+        const groupedCols: string[] = this.parent.groupSettings.columns;
         for (let l: number = 0; l < groupedCols.length; l++) {
             aggrds = result ? result : mergeData;
             result = DataUtil.group(aggrds, groupedCols[l], aggregates, null, null);
@@ -1070,14 +1107,14 @@ export class Group implements IAction {
     }
 
     public updateExpand(args: { uid?: string, isExpand?: boolean }): void {
-        let uid: string = args.uid; let isExpand: boolean = args.isExpand;
-        let rows: Row<Column>[] = this.parent.getRowsObject();
+        const uid: string = args.uid; const isExpand: boolean = args.isExpand;
+        const rows: Row<Column>[] = this.parent.getRowsObject();
         for (let i: number = 0; i < rows.length; i++) {
-            let row: Row<Column> = rows[i];
+            const row: Row<Column> = rows[i];
             if (row.uid === uid || isNullOrUndefined(uid)) {
                 row.isExpand = isExpand;
                 for (let j: number = i + 1; j < rows.length; j++) {
-                    let childRow: Row<Column> = rows[j];
+                    const childRow: Row<Column> = rows[j];
                     let closestParent: Row<Column>;
 
                     if (childRow.parentUid !== row.uid) {

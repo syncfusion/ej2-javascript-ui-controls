@@ -1,4 +1,4 @@
-import { EventHandler, detach, formatUnit, Browser, closest, classList, isBlazor, extend } from '@syncfusion/ej2-base';
+import { EventHandler, detach, formatUnit, Browser, closest } from '@syncfusion/ej2-base';
 import { Column } from '../models/column';
 import { IGrid, IAction, ResizeArgs } from '../base/interface';
 import { ColumnWidthService } from '../services/width-controller';
@@ -29,13 +29,12 @@ export interface ResizeClasses {
 
 /**
  * `Resize` module is used to handle Resize to fit for columns.
+ *
  * @hidden
  * @private
  */
 export class Resize implements IAction {
-    //Internal variable    
-    private content: HTMLDivElement;
-    private header: HTMLDivElement;
+    //Internal variable
     private pageX: number;
     private column: Column;
     private element: HTMLElement;
@@ -51,6 +50,8 @@ export class Resize implements IAction {
 
     /**
      * Constructor for the Grid resize module
+     *
+     * @param {IGrid} parent - specifies the IGrid
      * @hidden
      */
     constructor(parent?: IGrid) {
@@ -62,19 +63,20 @@ export class Resize implements IAction {
         this.addEventListener();
     }
 
-    /** 
-     * Resize by field names. 
-     * @param  {string|string[]} fName - Defines the field name.  
-     * @return {void} 
+    /**
+     * Resize by field names.
+     *
+     * @param  {string|string[]} fName - Defines the field name.
+     * @returns {void}
      */
     public autoFitColumns(fName?: string | string[]): void {
-        let columnName: string[] = (fName === undefined || fName === null || fName.length <= 0) ?
+        const columnName: string[] = (fName === undefined || fName === null || fName.length <= 0) ?
             this.parent.getColumns().map((x: Column) => x.field) : (typeof fName === 'string') ? [fName] : fName;
         this.findColumn(columnName);
     }
 
     private autoFit(): void {
-        let newarray: string[] = this.parent.getColumns().filter((c: Column) => c.autoFit === true)
+        const newarray: string[] = this.parent.getColumns().filter((c: Column) => c.autoFit === true)
             .map((c: Column) => c.field || c.headerText);
         if (newarray.length > 0) {
             this.autoFitColumns(newarray);
@@ -84,30 +86,29 @@ export class Resize implements IAction {
         }
     }
 
-    /* tslint:disable-next-line:max-func-body-length */
     private resizeColumn(fName: string, index: number, id?: string): void {
-        let gObj: IGrid = this.parent;
+        const gObj: IGrid = this.parent;
         let tWidth: number = 0;
         let headerTable: Element;
         let contentTable: Element;
         let footerTable: Element;
-        let headerDivTag: string = 'e-gridheader';
-        let contentDivTag: string =  literals.gridContent;
-        let footerDivTag: string = literals.gridFooter;
+        const headerDivTag: string = 'e-gridheader';
+        const contentDivTag: string =  literals.gridContent;
+        const footerDivTag: string = literals.gridFooter;
         let indentWidth: number = 0;
-        let uid: string = id ? id : this.parent.getUidByColumnField(fName);
-        let columnIndex: number = this.parent.getNormalizedColumnIndex(uid);
+        const uid: string = id ? id : this.parent.getUidByColumnField(fName);
+        const columnIndex: number = this.parent.getNormalizedColumnIndex(uid);
         let headerTextClone: Element;
         let contentTextClone: NodeListOf<Element>;
         let footerTextClone: NodeListOf<Element>;
-        let columnIndexByField: number = this.parent.getColumnIndexByField(fName);
-        let left: number = gObj.getFrozenColumns() || gObj.getFrozenLeftColumnsCount();
-        let movable: number = gObj.getMovableColumnsCount();
+        const columnIndexByField: number = this.parent.getColumnIndexByField(fName);
+        const left: number = gObj.getFrozenColumns() || gObj.getFrozenLeftColumnsCount();
+        const movable: number = gObj.getMovableColumnsCount();
         if (!isNullOrUndefined(gObj.getFooterContent())) {
             footerTable = gObj.getFooterContentTable();
         }
         if (gObj.isFrozenGrid()) {
-            let col: Column = gObj.getColumnByField(fName);
+            const col: Column = gObj.getColumnByField(fName);
             if (col.getFreezeTableName() === literals.frozenLeft) {
                 headerTable = gObj.getHeaderTable();
                 contentTable = gObj.getContentTable();
@@ -144,20 +145,20 @@ export class Resize implements IAction {
                 footerTextClone = footerTable.querySelectorAll(`td:nth-child(${columnIndex + 1}):not(.e-groupcaption)`);
             }
         }
-        let indentWidthClone: NodeListOf<Element> = [].slice.call(headerTable.querySelector('tr').getElementsByClassName('e-grouptopleftcell'));
+        const indentWidthClone: NodeListOf<Element> = [].slice.call(headerTable.querySelector('tr').getElementsByClassName('e-grouptopleftcell'));
         if (indentWidthClone.length > 0) {
             for (let i: number = 0; i < indentWidthClone.length; i++) {
                 indentWidth += (<HTMLElement>indentWidthClone[i]).offsetWidth;
             }
         }
-        let detailsElement: HTMLElement = <HTMLElement>contentTable.querySelector('.e-detailrowcollapse') ||
+        const detailsElement: HTMLElement = <HTMLElement>contentTable.querySelector('.e-detailrowcollapse') ||
             <HTMLElement>contentTable.querySelector('.e-detailrowexpand');
         if ((this.parent.detailTemplate || this.parent.childGrid) && detailsElement) {
             indentWidth += detailsElement.offsetWidth;
         }
-        let headerText: Element[] = [headerTextClone];
-        let contentText: Element[] = [];
-        let footerText: Element[] = [];
+        const headerText: Element[] = [headerTextClone];
+        const contentText: Element[] = [];
+        const footerText: Element[] = [];
         if (footerTable) {
             for (let i: number = 0; i < footerTextClone.length; i++) {
                 footerText[i] = footerTextClone[i].cloneNode(true) as Element;
@@ -166,23 +167,23 @@ export class Resize implements IAction {
         for (let i: number = 0; i < contentTextClone.length; i++) {
             contentText[i] = contentTextClone[i].cloneNode(true) as Element;
         }
-        let wHeader: number = this.createTable(headerTable, headerText, headerDivTag);
-        let wContent: number = this.createTable(contentTable, contentText, contentDivTag);
+        const wHeader: number = this.createTable(headerTable, headerText, headerDivTag);
+        const wContent: number = this.createTable(contentTable, contentText, contentDivTag);
         let wFooter: number = null;
         if (footerText.length) {
             wFooter = this.createTable(footerTable, footerText, footerDivTag);
         }
-        let columnbyindex: Column = gObj.getColumns()[columnIndexByField];
-        let result: Boolean;
-        let width: string = columnbyindex.width = formatUnit(Math.max(wHeader, wContent, wFooter));
-        let colMaxWidth: number =  columnbyindex.maxWidth && parseFloat(columnbyindex.maxWidth.toString());
+        const columnbyindex: Column = gObj.getColumns()[columnIndexByField];
+        const width: string = columnbyindex.width = formatUnit(Math.max(wHeader, wContent, wFooter));
+        const colMaxWidth: number =  columnbyindex.maxWidth && parseFloat(columnbyindex.maxWidth.toString());
         if (parseInt(width, 10) > colMaxWidth) {
             columnbyindex.width = colMaxWidth;
         }
         this.widthService.setColumnWidth(gObj.getColumns()[columnIndexByField] as Column);
-        result = gObj.getColumns().some((x: Column) => x.width === null || x.width === undefined || (x.width as string).length <= 0);
+        const result: boolean = gObj.getColumns().some((x: Column) => x.width === null
+            || x.width === undefined || (x.width as string).length <= 0);
         if (result === false) {
-            let element: Column[] = (gObj.getColumns() as Column[]);
+            const element: Column[] = (gObj.getColumns() as Column[]);
             for (let i: number = 0; i < element.length; i++) {
                 if (element[i].visible) {
                     tWidth = tWidth + parseFloat(element[i].width as string);
@@ -203,8 +204,8 @@ export class Resize implements IAction {
                 (<HTMLTableElement>footerTable).style.width = formatUnit(calcTableWidth);
             }
         }
-        let tableWidth: number = (headerTable as HTMLElement).offsetWidth;
-        let contentwidth: number = (gObj.getContent().scrollWidth);
+        const tableWidth: number = (headerTable as HTMLElement).offsetWidth;
+        const contentwidth: number = (gObj.getContent().scrollWidth);
         if (contentwidth > tableWidth) {
             headerTable.classList.add('e-tableborder');
             contentTable.classList.add('e-tableborder');
@@ -218,51 +219,62 @@ export class Resize implements IAction {
     }
 
     /**
-     * To destroy the resize 
-     * @return {void}
+     * To destroy the resize
+     *
+     * @returns {void}
      * @hidden
      */
     public destroy(): void {
-        let gridElement: Element = this.parent.element;
+        const gridElement: Element = this.parent.element;
         if (!gridElement || (!gridElement.querySelector('.' + literals.gridHeader) && !gridElement.querySelector( '.' + literals.gridContent))) { return; }
         this.widthService = null;
         this.unwireEvents();
         this.removeEventListener();
     }
+
     /**
      * For internal use only - Get the module name.
+     *
+     * @returns {string} returns the module name
      * @private
      */
     protected getModuleName(): string {
         return 'resize';
     }
+
     private findColumn(fName: string[]): void {
         for (let i: number = 0; i < fName.length; i++) {
-            let fieldName: string = fName[i] as string;
-            let columnIndex: number = this.parent.getColumnIndexByField(fieldName);
-            let column: Column = this.parent.getColumns()[columnIndex];
+            const fieldName: string = fName[i] as string;
+            const columnIndex: number = this.parent.getColumnIndexByField(fieldName);
+            const column: Column = this.parent.getColumns()[columnIndex];
             if (columnIndex > -1 && !isNullOrUndefined(column) && column.visible === true) {
                 this.resizeColumn(fieldName, columnIndex);
             }
         }
     }
+
     /**
-     * To create table for autofit 
+     * To create table for autofit
+     *
+     * @param {Element} table - specifies the table
+     * @param {Element[]} text - specifies the text
+     * @param {string} tag - specifies the tag name
+     * @returns {number} returns the number
      * @hidden
      */
     protected createTable(table: Element, text: Element[], tag: string): number {
-        let myTableDiv: HTMLDivElement = this.parent.createElement('div') as HTMLDivElement;
+        const myTableDiv: HTMLDivElement = this.parent.createElement('div') as HTMLDivElement;
         myTableDiv.className = this.parent.element.className;
         myTableDiv.style.cssText = 'display: inline-block;visibility:hidden;position:absolute';
-        let mySubDiv: HTMLDivElement = this.parent.createElement('div') as HTMLDivElement;
+        const mySubDiv: HTMLDivElement = this.parent.createElement('div') as HTMLDivElement;
         mySubDiv.className = tag;
-        let myTable: HTMLTableElement = this.parent.createElement('table') as HTMLTableElement;
+        const myTable: HTMLTableElement = this.parent.createElement('table') as HTMLTableElement;
         myTable.className = table.className;
         myTable.classList.add('e-resizetable');
         myTable.style.cssText = 'table-layout: auto;width: auto';
-        let myTr: HTMLTableRowElement = this.parent.createElement('tr') as HTMLTableRowElement;
+        const myTr: HTMLTableRowElement = this.parent.createElement('tr') as HTMLTableRowElement;
         for (let i: number = 0; i < text.length; i++) {
-            let tr: HTMLTableRowElement = myTr.cloneNode() as HTMLTableRowElement;
+            const tr: HTMLTableRowElement = myTr.cloneNode() as HTMLTableRowElement;
             tr.className = table.querySelector('tr').className;
             tr.appendChild(text[i]);
             myTable.appendChild(tr);
@@ -270,11 +282,13 @@ export class Resize implements IAction {
         mySubDiv.appendChild(myTable);
         myTableDiv.appendChild(mySubDiv);
         document.body.appendChild(myTableDiv);
-        let offsetWidthValue: number = myTable.getBoundingClientRect().width;
+        const offsetWidthValue: number = myTable.getBoundingClientRect().width;
         document.body.removeChild(myTableDiv);
         return Math.ceil(offsetWidthValue);
     }
+
     /**
+     * @returns {void}
      * @hidden
      */
     public addEventListener(): void {
@@ -286,7 +300,9 @@ export class Resize implements IAction {
         this.parent.on(events.contentReady, this.autoFit, this);
         this.parent.on(events.refreshHandlers, this.refreshHeight, this);
     }
+
     /**
+     * @returns {void}
      * @hidden
      */
     public removeEventListener(): void {
@@ -297,7 +313,9 @@ export class Resize implements IAction {
         this.parent.off(events.initialEnd, this.wireEvents);
         this.parent.off(events.refreshHandlers, this.refreshHeight);
     }
+
     /**
+     * @returns {void}
      * @hidden
      */
     public render(): void {
@@ -307,7 +325,7 @@ export class Resize implements IAction {
     }
 
     private refreshHeight(): void {
-        let element: HTMLElement[] = this.getResizeHandlers();
+        const element: HTMLElement[] = this.getResizeHandlers();
         for (let i: number = 0; i < element.length; i++) {
             if (element[i].parentElement.offsetHeight > 0) {
                 element[i].style.height = element[i].parentElement.offsetHeight + 'px';
@@ -333,7 +351,7 @@ export class Resize implements IAction {
     }
 
     private setHandlerHeight(): void {
-        let element: HTMLElement[] = [].slice.call(this.parent.getHeaderTable().getElementsByClassName(resizeClassList.suppress));
+        const element: HTMLElement[] = [].slice.call(this.parent.getHeaderTable().getElementsByClassName(resizeClassList.suppress));
         for (let i: number = 0; i < element.length; i++) {
             element[i].style.height = element[i].parentElement.offsetHeight + 'px';
         }
@@ -341,12 +359,12 @@ export class Resize implements IAction {
 
     private callAutoFit(e: PointerEvent | TouchEvent): void {
         if ((e.target as HTMLElement).classList.contains('e-rhandler')) {
-            let col: Column = this.getTargetColumn(e);
+            const col: Column = this.getTargetColumn(e);
             if (col.columns) {
                 return;
             }
             this.resizeColumn(col.field, this.parent.getNormalizedColumnIndex(col.uid), col.uid);
-            let header: HTMLElement = <HTMLElement>closest(<HTMLElement>e.target, resizeClassList.header);
+            const header: HTMLElement = <HTMLElement>closest(<HTMLElement>e.target, resizeClassList.header);
             header.classList.add('e-resized');
         }
     }
@@ -375,7 +393,7 @@ export class Resize implements IAction {
                             this.widthService.setColumnWidth(new Column({ width: '30px' }), i);
                         }
                     }
-                    for (let col of this.refreshColumnWidth()) {
+                    for (const col of this.refreshColumnWidth()) {
                         this.widthService.setColumnWidth(col);
                     }
                     this.widthService.setWidthToTable();
@@ -383,11 +401,11 @@ export class Resize implements IAction {
                 this.refreshStackedColumnWidth();
                 this.element = e.target as HTMLElement;
                 if (this.parent.getVisibleFrozenColumns()) {
-                    let mtbody: Element = this.parent.getMovableContentTbody();
-                    let ftbody: Element = this.parent.getFrozenLeftContentTbody();
-                    let frtbody: Element = this.parent.getFrozenRightContentTbody();
-                    let mtr: Element[] = [].slice.call(mtbody.querySelectorAll('tr'));
-                    let ftr: Element[] = [].slice.call(ftbody.querySelectorAll('tr'));
+                    const mtbody: Element = this.parent.getMovableContentTbody();
+                    const ftbody: Element = this.parent.getFrozenLeftContentTbody();
+                    const frtbody: Element = this.parent.getFrozenRightContentTbody();
+                    const mtr: Element[] = [].slice.call(mtbody.querySelectorAll('tr'));
+                    const ftr: Element[] = [].slice.call(ftbody.querySelectorAll('tr'));
                     let frTr: HTMLElement[] = [];
                     if (this.parent.getFrozenMode() === literals.leftRight && frtbody) {
                         frTr = [].slice.call(frtbody.querySelectorAll('tr'));
@@ -432,7 +450,7 @@ export class Resize implements IAction {
                 EventHandler.add(document, Browser.touchStartEvent, this.removeHelper, this);
                 EventHandler.add(this.helper, Browser.touchStartEvent, this.resizeStart, this);
             } else {
-                let args: ResizeArgs = { e : e, column: this.column };
+                const args: ResizeArgs = { e : e, column: this.column };
                 this.parent.trigger(events.resizeStart, args, (args: ResizeArgs) => {
                     if (args.cancel || this.parent.isEdit) {
                         this.cancelResizeAction();
@@ -471,7 +489,7 @@ export class Resize implements IAction {
     }
 
     private updateResizeEleHeight(): void {
-        let elements: HTMLElement[] = [].slice.call(this.parent.getHeaderContent().getElementsByClassName('e-rhandler'));
+        const elements: HTMLElement[] = [].slice.call(this.parent.getHeaderContent().getElementsByClassName('e-rhandler'));
         for (let i: number = 0; i < elements.length; i++) {
             elements[i].style.height = this.element.parentElement.offsetHeight + 'px';
         }
@@ -503,7 +521,7 @@ export class Resize implements IAction {
         if (this.column.getFreezeTableName() === literals.frozenRight) {
             mousemove = this.parent.enableRtl ? (pageX - this.pageX) : (this.pageX - pageX);
         }
-        let colData: { [key: string]: number } = this.getColData(this.column, mousemove);
+        const colData: { [key: string]: number } = this.getColData(this.column, mousemove);
         if (!colData.width) {
             colData.width = (closest(this.element, 'th') as HTMLElement).offsetWidth;
         }
@@ -526,7 +544,7 @@ export class Resize implements IAction {
             offsetWidth.toString() : this.column.width.toString())) {
             this.pageX = pageX;
             this.column.width = formatUnit(width);
-            let args: ResizeArgs = {
+            const args: ResizeArgs = {
                 e: e,
                 column: this.column
             };
@@ -551,14 +569,14 @@ export class Resize implements IAction {
     }
 
     private calulateColumnsWidth(columns: Column[], isUpdate: boolean, mousemove: number): Column[] {
-        let finalColumns: Column[] = [];
+        const finalColumns: Column[] = [];
         for (const col of columns) {
             let totalWidth: number = 0;
             for (let i: number = 0; i < columns.length; i++) {
                 totalWidth += parseFloat(columns[i].width.toString());
             }
-            let colData: { [key: string]: number } = this.getColData(col, (parseFloat(col.width as string)) * mousemove / totalWidth);
-            let colWidth: number = this.getWidth(colData.width, colData.minWidth, colData.maxWidth);
+            const colData: { [key: string]: number } = this.getColData(col, (parseFloat(col.width as string)) * mousemove / totalWidth);
+            const colWidth: number = this.getWidth(colData.width, colData.minWidth, colData.maxWidth);
             if ((colWidth !== parseFloat(col.width.toString()))) {
                 if (isUpdate) {
                     col.width = formatUnit(colWidth < 1 ? 1 : colWidth);
@@ -588,9 +606,9 @@ export class Resize implements IAction {
         EventHandler.remove(document, Browser.touchEndEvent, this.resizeEnd);
         this.updateCursor('remove');
         detach(this.helper);
-        let args: ResizeArgs = { e : e, column: this.column };
-        let content: HTMLElement = this.parent.getContent().querySelector('.' + literals.content);
-        let cTable: HTMLElement = content.querySelector('.' + literals.movableContent) ? content.querySelector('.' + literals.movableContent) : content;
+        const args: ResizeArgs = { e : e, column: this.column };
+        const content: HTMLElement = this.parent.getContent().querySelector('.' + literals.content);
+        const cTable: HTMLElement = content.querySelector('.' + literals.movableContent) ? content.querySelector('.' + literals.movableContent) : content;
         if (cTable.scrollHeight > cTable.clientHeight) {
             this.parent.scrollModule.setPadding();
             cTable.style.overflowY = 'scroll';
@@ -623,9 +641,9 @@ export class Resize implements IAction {
     }
 
     private refreshColumnWidth(): Column[] {
-        let columns: Column[] = this.parent.getColumns();
-        for (let ele of [].slice.apply(this.parent.getHeaderContent().querySelectorAll('th.e-headercell'))) {
-            for (let column of columns) {
+        const columns: Column[] = this.parent.getColumns();
+        for (const ele of [].slice.apply(this.parent.getHeaderContent().querySelectorAll('th.e-headercell'))) {
+            for (const column of columns) {
                 if (ele.querySelector('[e-mappinguid]') &&
                     ele.querySelector('[e-mappinguid]').getAttribute('e-mappinguid') === column.uid && column.visible) {
                     column.width = ele.getBoundingClientRect().width;
@@ -658,14 +676,14 @@ export class Resize implements IAction {
     private getTargetColumn(e: PointerEvent | TouchEvent): Column {
         let cell: HTMLElement = <HTMLElement>closest(<HTMLElement>e.target, resizeClassList.header);
         cell = cell.querySelector('.e-headercelldiv') || cell.querySelector('.e-stackedheadercelldiv');
-        let uid: string = cell.getAttribute('e-mappinguid');
+        const uid: string = cell.getAttribute('e-mappinguid');
         return this.parent.getColumnByUid(uid);
     }
 
     private updateCursor(action: string): void {
-        let headerRows: Element[] = [].slice.call(this.parent.getHeaderContent().querySelectorAll('th'));
+        const headerRows: Element[] = [].slice.call(this.parent.getHeaderContent().querySelectorAll('th'));
         headerRows.push(this.parent.element);
-        for (let row of headerRows) {
+        for (const row of headerRows) {
             row.classList[action](resizeClassList.cursor);
         }
     }
@@ -686,12 +704,12 @@ export class Resize implements IAction {
     }
 
     private setHelperHeight(): void {
-        let isFrozen: boolean = this.parent.isFrozenGrid();
+        const isFrozen: boolean = this.parent.isFrozenGrid();
         let height: number = isFrozen ? (<HTMLElement>this.parent.getContent().querySelector('.' + literals.content)).offsetHeight
             : (<HTMLElement>this.parent.getContent()).offsetHeight - this.getScrollBarWidth();
-        let rect: HTMLElement = closest(this.element, resizeClassList.header) as HTMLElement;
+        const rect: HTMLElement = closest(this.element, resizeClassList.header) as HTMLElement;
         let tr: HTMLElement[] = [].slice.call(this.parent.getHeaderContent().querySelectorAll('tr'));
-        let right: number = this.parent.getFrozenRightColumnsCount();
+        const right: number = this.parent.getFrozenRightColumnsCount();
         if (isFrozen) {
             if (parentsUntil(rect, literals.movableHeader)) {
                 tr = [].slice.call(this.parent.getHeaderContent().querySelector('.' + literals.movableHeader).querySelectorAll('tr'));
@@ -704,7 +722,7 @@ export class Resize implements IAction {
         for (let i: number = tr.indexOf(rect.parentElement); i < tr.length && i > -1; i++) {
             height += tr[i].offsetHeight;
         }
-        let pos: OffsetPosition = this.calcPos(rect);
+        const pos: OffsetPosition = this.calcPos(rect);
         if (parentsUntil(rect, 'e-frozen-right-header')) {
             pos.left += (this.parent.enableRtl ? rect.offsetWidth - 2 : 0 - 1);
         } else {
@@ -717,13 +735,13 @@ export class Resize implements IAction {
     }
 
     private getScrollBarWidth(height?: boolean): number {
-        let ele: HTMLElement = this.parent.getContent().firstChild as HTMLElement;
+        const ele: HTMLElement = this.parent.getContent().firstChild as HTMLElement;
         return (ele.scrollHeight > ele.clientHeight && height) ||
             ele.scrollWidth > ele.clientWidth ? getScrollBarWidth() : 0;
     }
 
     private removeHelper(e: MouseEvent): void {
-        let cls: DOMTokenList = (e.target as HTMLElement).classList;
+        const cls: DOMTokenList = (e.target as HTMLElement).classList;
         if (!(cls.contains(resizeClassList.root) || cls.contains(resizeClassList.icon)) && this.helper) {
             EventHandler.remove(document, Browser.touchStartEvent, this.removeHelper);
             EventHandler.remove(this.helper, Browser.touchStartEvent, this.resizeStart);
@@ -733,20 +751,20 @@ export class Resize implements IAction {
     }
 
     private updateHelper(): void {
-        let rect: HTMLElement = closest(this.element, resizeClassList.header) as HTMLElement;
+        const rect: HTMLElement = closest(this.element, resizeClassList.header) as HTMLElement;
         let left: number;
         if (parentsUntil(rect, 'e-frozen-right-header')) {
             left = Math.floor(this.calcPos(rect).left + (this.parent.enableRtl ? rect.offsetWidth - 2 : 0 - 1));
         } else {
             left = Math.floor(this.calcPos(rect).left + (this.parent.enableRtl ? 0 - 1 : rect.offsetWidth - 2));
         }
-        let borderWidth: number = 2; // to maintain the helper inside of grid element.
+        const borderWidth: number = 2; // to maintain the helper inside of grid element.
         if (left > this.parentElementWidth) {
             left = this.parentElementWidth - borderWidth;
         }
         if (this.parent.isFrozenGrid()) {
-            let table: HTMLElement = closest(rect, '.' + literals.table) as HTMLElement;
-            let fLeft: number = table.offsetLeft;
+            const table: HTMLElement = closest(rect, '.' + literals.table) as HTMLElement;
+            const fLeft: number = table.offsetLeft;
             if (left < fLeft) {
                 left = fLeft;
             }
@@ -759,8 +777,8 @@ export class Resize implements IAction {
             top: 0,
             left: 0
         };
-        let offset: OffsetPosition = elem.getBoundingClientRect();
-        let doc: Document = elem.ownerDocument;
+        const offset: OffsetPosition = elem.getBoundingClientRect();
+        const doc: Document = elem.ownerDocument;
         let offsetParent: Node = parentsUntil(elem, 'e-grid') || doc.documentElement;
         while (offsetParent &&
             (offsetParent === doc.body || offsetParent === doc.documentElement) &&
@@ -793,7 +811,7 @@ export class Resize implements IAction {
     }
 
     private getUserAgent(): boolean {
-        let userAgent: string = Browser.userAgent.toLowerCase();
+        const userAgent: string = Browser.userAgent.toLowerCase();
         return (/iphone|ipod|ipad/ as RegExp).test(userAgent);
     }
 

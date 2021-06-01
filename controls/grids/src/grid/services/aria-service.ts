@@ -2,12 +2,13 @@ import { ValueType } from '../base/type';
 import { SortDirection } from '../base/enum';
 /**
  * AriaService
+ *
  * @hidden
  */
 export class AriaService {
 
     public setOptions(target: HTMLElement, options: IAriaOptions<boolean>): void {
-        let props: string[] = Object.keys(options);
+        const props: string[] = Object.keys(options);
         for (let i: number = 0; i < props.length; i++) {
             setStateAndProperties(target, config[props[i]], options[props[i]]);
         }
@@ -35,6 +36,11 @@ export class AriaService {
     }
 }
 /**
+ * @param {HTMLElement} target - specifies the target
+ * @param {string} attribute - specifies the attribute
+ * @param {ValueType} value - specifies the value
+ * @param {boolean} remove - specifies the boolean for remove
+ * @returns {void}
  * @hidden
  */
 function setStateAndProperties(target: HTMLElement, attribute?: string, value?: ValueType, remove?: boolean): void {

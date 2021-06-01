@@ -2171,7 +2171,7 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
     private readFileFromDirectory(directoryReader: any, event?: MouseEvent | TouchEvent | DragEvent | ClipboardEvent): void {
         directoryReader.readEntries( (entries: any) => {
             for (let i: number = 0; i < entries.length; i++) {
-                this.traverseFileTree(entries[i]);
+                this.traverseFileTree(entries[i], event);
             }
             this.pushFilesEntries(event);
             if (entries.length) {

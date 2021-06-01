@@ -211,7 +211,12 @@ export class KanbanDialog {
         if (parseInt(args.maxHeight, 10) <= 250) {
             args.maxHeight = '250px';
         }
-        this.parent.trigger(events.dialogOpen, eventProp, (openArgs: DialogEventArgs) => args.cancel = openArgs.cancel);
+        this.parent.trigger(events.dialogOpen, eventProp, (openArgs: DialogEventArgs) => {
+            args.cancel = openArgs.cancel;
+            if (openArgs.cancel) {
+                this.destroy();
+            }
+        });
     }
 
     private onBeforeDialogClose(args: BeforeCloseEventArgs): void {

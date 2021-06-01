@@ -13,6 +13,7 @@ import * as literals from '../base/string-literals';
 
 /**
  * FocusStrategy class
+ *
  * @hidden
  */
 export class FocusStrategy {
@@ -44,7 +45,7 @@ export class FocusStrategy {
     }
 
     protected focusCheck(e: Event): void {
-        let target: HTMLElement = <HTMLElement>e.target;
+        const target: HTMLElement = <HTMLElement>e.target;
         this.focusByClick = true;
         this.skipFocus = target.classList.contains('e-grid');
     }
@@ -59,7 +60,7 @@ export class FocusStrategy {
                     this.rowModelGen.generateRows({ rows: [new Row<Column>({ isDataRow: true })] }),
                     this.getContent().selector, false);
         }
-        let current: number[] = this.getContent().matrix.get(0, -1, [0, 1], null, this.getContent().validator());
+        const current: number[] = this.getContent().matrix.get(0, -1, [0, 1], null, this.getContent().validator());
         this.getContent().matrix.select(current[0], current[1]);
         if (this.skipFocus) {
             this.focus();
@@ -89,7 +90,7 @@ export class FocusStrategy {
             return;
         }
         let isContent: boolean = !isNullOrUndefined(closest(<HTMLElement>e.target,  '.' + literals.gridContent));
-        let isHeader: boolean = !isNullOrUndefined(closest(<HTMLElement>e.target, '.' + literals.gridHeader));
+        const isHeader: boolean = !isNullOrUndefined(closest(<HTMLElement>e.target, '.' + literals.gridHeader));
         isContent = isContent && isHeader ? !isContent : isContent;
         let isFrozen: boolean = !isNullOrUndefined(closest(<HTMLElement>e.target, '.' + literals.frozenContent)) ||
             !isNullOrUndefined(closest(<HTMLElement>e.target, '.' + literals.frozenHeader));
@@ -104,12 +105,12 @@ export class FocusStrategy {
             !isNullOrUndefined(closest(<HTMLElement>e.target, '.e-unboundcell'))) { return; }
         this.setActive(isContent, isFrozen, isFrozenRight);
         if (!isContent && isNullOrUndefined(closest(<HTMLElement>e.target, '.' + literals.gridHeader))) { this.clearOutline(); return; }
-        let beforeArgs: CellFocusArgs = { cancel: false, byKey: false, byClick: !isNullOrUndefined(e.target), clickArgs: <Event>e };
+        const beforeArgs: CellFocusArgs = { cancel: false, byKey: false, byClick: !isNullOrUndefined(e.target), clickArgs: <Event>e };
         this.parent.notify(event.beforeCellFocused, beforeArgs);
         if (beforeArgs.cancel || closest(<Element>e.target, '.e-inline-edit')) { return; }
         this.setActive(isContent, isFrozen, isFrozenRight);
         if (this.getContent()) {
-            let returnVal: boolean = this.getContent().onClick(e, force);
+            const returnVal: boolean = this.getContent().onClick(e, force);
             if (returnVal === false) { return; }
             this.focus();
         }
@@ -120,12 +121,12 @@ export class FocusStrategy {
             return;
         }
         this.activeKey = e.action;
-        let beforeArgs: CellFocusArgs = { cancel: false, byKey: true, byClick: false, keyArgs: e };
+        const beforeArgs: CellFocusArgs = { cancel: false, byKey: true, byClick: false, keyArgs: e };
         this.parent.notify(event.beforeCellFocused, beforeArgs);
         if (beforeArgs.cancel) { return; }
-        let bValue: number[] = this.getContent().matrix.current;
+        const bValue: number[] = this.getContent().matrix.current;
         this.currentInfo.outline = true;
-        let swapInfo: SwapInfo = this.getContent().jump(e.action, bValue);
+        const swapInfo: SwapInfo = this.getContent().jump(e.action, bValue);
         this.swap = swapInfo;
         if (swapInfo.swap) {
             this.setActive(!swapInfo.toHeader, swapInfo.toFrozen, swapInfo.toFrozenRight);
@@ -133,19 +134,19 @@ export class FocusStrategy {
             this.prevIndexes = {};
         }
         this.setActiveByKey(e.action, this.getContent());
-        let returnVal: boolean = this.content.lastIdxCell ? false : this.getContent().onKeyPress(e);
+        const returnVal: boolean = this.content.lastIdxCell ? false : this.getContent().onKeyPress(e);
         if (returnVal === false) { this.clearIndicator(); return; }
         e.preventDefault();
         this.focus(e);
     }
 
     private skipOn(e: KeyboardEventArgs): boolean {
-        let target: HTMLElement = <HTMLElement>e.target; if (!target) { return false; }
+        const target: HTMLElement = <HTMLElement>e.target; if (!target) { return false; }
         if (this.currentInfo.skipAction) { this.clearIndicator(); return true; }
         if (['pageUp', 'pageDown', 'altDownArrow'].indexOf(e.action) > -1) { this.clearIndicator(); return true; }
-        let th: boolean = closest(target, 'th') && !(closest(target, 'th') as HTMLElement).tabIndex;
+        const th: boolean = closest(target, 'th') && !(closest(target, 'th') as HTMLElement).tabIndex;
         if ((e.target as HTMLElement).classList.contains('e-filterbaroperator') && (e.keyCode === 13 || e.keyCode === 27)) {
-            let inputTarget: Element = closest(e.target as HTMLElement, '.e-filterbarcell');
+            const inputTarget: Element = closest(e.target as HTMLElement, '.e-filterbarcell');
             inputTarget.querySelector('input').focus();
         }
         if (th && closest(document.activeElement, '.e-filterbarcell') !== null) {
@@ -153,8 +154,8 @@ export class FocusStrategy {
         }
         let filterCell: boolean = closest(document.activeElement, '.e-filterbarcell') !== null;
         if (this.parent.enableHeaderFocus && filterCell) {
-            let matrix: Matrix = this.active.matrix;
-            let current: number[] = matrix.current;
+            const matrix: Matrix = this.active.matrix;
+            const current: number[] = matrix.current;
             filterCell = matrix.matrix[current[0]].lastIndexOf(1) !== current[1];
         }
         return (e.action === 'delete'
@@ -170,10 +171,10 @@ export class FocusStrategy {
 
     private focusVirtualElement(e?: KeyboardEventArgs): void {
         if (this.parent.enableVirtualization || this.parent.enableInfiniteScrolling) {
-            let data: { virtualData: Object, isAdd: boolean, isCancel: boolean } = { virtualData: {}, isAdd: false, isCancel: false };
+            const data: { virtualData: Object, isAdd: boolean, isCancel: boolean } = { virtualData: {}, isAdd: false, isCancel: false };
             this.parent.notify(event.getVirtualData, data);
-            let isKeyFocus: boolean = this.actions.some((value: string) => value === this.activeKey);
-            let isSelected: boolean = this.parent.contentModule ?
+            const isKeyFocus: boolean = this.actions.some((value: string) => value === this.activeKey);
+            const isSelected: boolean = this.parent.contentModule ?
                 (<{ selectedRowIndex?: number }>this.parent.contentModule).selectedRowIndex > -1 : false;
             if (data.isAdd || Object.keys(data.virtualData).length || isKeyFocus || data.isCancel || isSelected) {
                 this.parent.notify(event.resetVirtualFocus, { isCancel: false });
@@ -183,11 +184,11 @@ export class FocusStrategy {
                     this.activeKey = this.empty;
                     this.parent.notify('virtaul-key-handler', e);
                 }
-                // tslint:disable-next-line:no-any
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 (this.currentInfo.elementToFocus as any).focus({ preventScroll: true });
             } else {
                 if (this.isVirtualScroll) {
-                    // tslint:disable-next-line:no-any
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
                     (this.currentInfo.elementToFocus as any).focus({ preventScroll: true });
                 } else {
                     this.currentInfo.elementToFocus.focus();
@@ -231,34 +232,41 @@ export class FocusStrategy {
         this.addFocus(this.getContent().getFocusInfo(), e);
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     protected removeFocus(e?: FocusEvent): void {
         if (!this.currentInfo.element) { return; }
         removeClass([this.currentInfo.element, this.currentInfo.elementToFocus], ['e-focused', 'e-focus']);
         this.currentInfo.element.tabIndex = -1;
     }
 
-    /** @hidden */
+    /**
+     * @returns {void}
+     * @hidden */
     public addOutline(): void {
-        let info: FocusInfo = this.getContent().getFocusInfo();
+        const info: FocusInfo = this.getContent().getFocusInfo();
         if (info.element) {
             addClass([info.element], ['e-focused']);
             addClass([info.elementToFocus], ['e-focus']);
         }
     }
 
-    /** @hidden */
+    /**
+     * @returns {void}
+     * @hidden */
     public focusHeader(): void {
         this.setActive(false, this.parent.isFrozenGrid());
         this.resetFocus();
     }
-    /** @hidden */
+    /**
+     * @returns {void}
+     * @hidden */
     public focusContent(): void {
         this.setActive(true, this.parent.isFrozenGrid());
         this.resetFocus();
     }
 
     private resetFocus(): void {
-        let current: number[] = this.getContent().matrix.get(0, -1, [0, 1], null, this.getContent().validator());
+        const current: number[] = this.getContent().matrix.get(0, -1, [0, 1], null, this.getContent().validator());
         this.getContent().matrix.select(current[0], current[1]);
         this.focus();
     }
@@ -266,7 +274,7 @@ export class FocusStrategy {
     protected addFocus(info: FocusInfo, e?: KeyboardEventArgs): void {
         this.currentInfo = info; this.currentInfo.outline = info.outline && !isNullOrUndefined(e);
         if (!info.element) { return; }
-        let isFocused: boolean = info.elementToFocus.classList.contains('e-focus');
+        const isFocused: boolean = info.elementToFocus.classList.contains('e-focus');
         if (isFocused) { return; }
         if (this.currentInfo.outline) {
             addClass([info.element], ['e-focused']);
@@ -288,7 +296,7 @@ export class FocusStrategy {
             outline: !isNullOrUndefined(e),
             swapInfo: this.swap
         });
-        let [rowIndex, cellIndex]: number[] = this.getContent().matrix.current;
+        const [rowIndex, cellIndex]: number[] = this.getContent().matrix.current;
         this.prevIndexes = { rowIndex, cellIndex };
         this.focusedColumnUid = this.parent.getColumnByIndex(cellIndex).uid;
         this.focusByClick = false;
@@ -310,25 +318,25 @@ export class FocusStrategy {
             } else if (!content && !this.header) {
                 this.header = new HeaderFocus(this.parent);
             }
-            let cFocus: IFocus = content ? (e.args && e.args.isFrozen) ? this.fContent : (e.args && e.args.renderFrozenRightContent)
+            const cFocus: IFocus = content ? (e.args && e.args.isFrozen) ? this.fContent : (e.args && e.args.renderFrozenRightContent)
                 ? this.frContent : this.content : (e.args && e.args.isFrozen) ? this.fHeader : (e.args && e.args.renderFrozenRightContent)
-                    ? this.frHeader : this.header;
+                ? this.frHeader : this.header;
             let rows: Row<Column>[] = content ? e.rows.slice(this.parent.frozenRows) : e.rows;
-            let updateRow: Row<Column>[] = content ? e.rows.slice(0, this.parent.frozenRows) : e.rows;
+            const updateRow: Row<Column>[] = content ? e.rows.slice(0, this.parent.frozenRows) : e.rows;
             if (this.parent.isCollapseStateEnabled() && content) {
                 rows = rows.filter((x: Row<Column>) => x.visible !== false);
             }
-            let isRowTemplate: boolean = !isNullOrUndefined(this.parent.rowTemplate);
-            let matrix: number[][] = cFocus.matrix.generate(updateRow, cFocus.selector, isRowTemplate);
+            const isRowTemplate: boolean = !isNullOrUndefined(this.parent.rowTemplate);
+            const matrix: number[][] = cFocus.matrix.generate(updateRow, cFocus.selector, isRowTemplate);
             if (e.name === 'batchAdd' && this.parent.isFrozenGrid()) {
-                let mRows: Row<Column>[] = this.parent.getMovableRowsObject();
-                let newMovableRows: Row<Column>[] = mRows.map((row: Row<Column>) => { return row.clone(); });
-                let newFrozenRows: Row<Column>[] = rows.map((row: Row<Column>) => { return row.clone(); });
+                const mRows: Row<Column>[] = this.parent.getMovableRowsObject();
+                const newMovableRows: Row<Column>[] = mRows.map((row: Row<Column>) => { return row.clone(); });
+                const newFrozenRows: Row<Column>[] = rows.map((row: Row<Column>) => { return row.clone(); });
                 this.fContent.matrix.generate(newFrozenRows, this.fContent.selector, isRowTemplate);
                 this.content.matrix.generate(newMovableRows, this.content.selector, isRowTemplate);
                 if (this.parent.getFrozenMode() === literals.leftRight) {
-                    let frRows: Row<Column>[] = this.parent.getFrozenRightRowsObject();
-                    let newfrRows: Row<Column>[] = frRows.map((row: Row<Column>) => { return row.clone(); });
+                    const frRows: Row<Column>[] = this.parent.getFrozenRightRowsObject();
+                    const newfrRows: Row<Column>[] = frRows.map((row: Row<Column>) => { return row.clone(); });
                     this.frContent.matrix.generate(newfrRows, this.frContent.selector, isRowTemplate);
                 }
             } else {
@@ -352,17 +360,17 @@ export class FocusStrategy {
             if (e && e.args && e.args.requestType === 'virtualscroll') {
                 if (this.currentInfo.uid) {
                     let index: number;
-                    let bool: boolean = e.rows.some((row: Row<Column>, i: number) => {
+                    const bool: boolean = e.rows.some((row: Row<Column>, i: number) => {
                         index = i;
                         return row.uid === this.currentInfo.uid;
                     });
                     if (bool) {
                         this.content.matrix.current[0] = index;
                         this.content.matrix.current[1] = this.parent.getColumnIndexByUid(this.focusedColumnUid) || 0;
-                        let focusElement: HTMLElement = this.getContent().getFocusInfo().elementToFocus;
+                        const focusElement: HTMLElement = this.getContent().getFocusInfo().elementToFocus;
                         if (focusElement) {
-                            let cellPosition: ClientRect = focusElement.getBoundingClientRect();
-                            let gridPosition: ClientRect = this.parent.element.getBoundingClientRect();
+                            const cellPosition: ClientRect = focusElement.getBoundingClientRect();
+                            const gridPosition: ClientRect = this.parent.element.getBoundingClientRect();
                             if (cellPosition.top >= 0 && cellPosition.left >= 0 &&
                                 cellPosition.right <= Math.min(gridPosition.right, window.innerWidth ||
                                     document.documentElement.clientWidth) &&
@@ -374,7 +382,7 @@ export class FocusStrategy {
                         }
                     }
                 } else if (e.args.focusElement && e.args.focusElement.classList.contains('e-filtertext')) {
-                    let focusElement: HTMLElement = <HTMLElement>this.parent.element.querySelector('#' + e.args.focusElement.id);
+                    const focusElement: HTMLElement = <HTMLElement>this.parent.element.querySelector('#' + e.args.focusElement.id);
                     if (focusElement) {
                         focusElement.focus();
                     }
@@ -390,25 +398,25 @@ export class FocusStrategy {
         this.parent.element.addEventListener('focus', this.passiveHandler = (e: FocusEvent) => this.passiveFocus(e), true);
         EventHandler.add(this.parent.element, 'focusout', this.onBlur, this);
         this.evtHandlers = [{ event: event.keyPressed, handler: this.onKeyPress },
-        { event: event.click, handler: this.onClick },
-        { event: event.contentReady, handler: this.refMatrix },
-        { event: event.partialRefresh, handler: this.refMatrix },
-        { event: event.refreshExpandandCollapse, handler: this.refMatrix },
-        { event: event.headerRefreshed, handler: this.refreshMatrix() },
-        { event: event.closeEdit, handler: this.restoreFocus },
-        { event: event.restoreFocus, handler: this.restoreFocus },
-        { event: 'start-edit', handler: this.clearIndicator },
-        { event: 'start-add', handler: this.clearIndicator },
-        { event: 'sorting-complete', handler: this.restoreFocus },
-        { event: 'filtering-complete', handler: this.filterfocus },
-        { event: 'grouping-complete', handler: this.restoreFocusWithAction },
-        { event: 'ungrouping-complete', handler: this.restoreFocusWithAction },
-        { event: event.batchAdd, handler: this.refMatrix },
-        { event: event.batchCancel, handler: this.refMatrix },
-        { event: event.batchDelete, handler: this.refMatrix },
-        { event: event.detailDataBound, handler: this.refMatrix },
-        { event: event.onEmpty, handler: this.refMatrix },
-        { event: event.cellFocused, handler: this.internalCellFocus }];
+            { event: event.click, handler: this.onClick },
+            { event: event.contentReady, handler: this.refMatrix },
+            { event: event.partialRefresh, handler: this.refMatrix },
+            { event: event.refreshExpandandCollapse, handler: this.refMatrix },
+            { event: event.headerRefreshed, handler: this.refreshMatrix() },
+            { event: event.closeEdit, handler: this.restoreFocus },
+            { event: event.restoreFocus, handler: this.restoreFocus },
+            { event: 'start-edit', handler: this.clearIndicator },
+            { event: 'start-add', handler: this.clearIndicator },
+            { event: 'sorting-complete', handler: this.restoreFocus },
+            { event: 'filtering-complete', handler: this.filterfocus },
+            { event: 'grouping-complete', handler: this.restoreFocusWithAction },
+            { event: 'ungrouping-complete', handler: this.restoreFocusWithAction },
+            { event: event.batchAdd, handler: this.refMatrix },
+            { event: event.batchCancel, handler: this.refMatrix },
+            { event: event.batchDelete, handler: this.refMatrix },
+            { event: event.detailDataBound, handler: this.refMatrix },
+            { event: event.onEmpty, handler: this.refMatrix },
+            { event: event.cellFocused, handler: this.internalCellFocus }];
         addRemoveEventListener(this.parent, this.evtHandlers, true, this);
     }
 
@@ -437,15 +445,15 @@ export class FocusStrategy {
 
     public restoreFocusWithAction(e: NotifyArgs): void {
         if (!this.parent.enableInfiniteScrolling) {
-            let matrix: Matrix = this.getContent().matrix;
-            let current: number[] = matrix.current;
+            const matrix: Matrix = this.getContent().matrix;
+            const current: number[] = matrix.current;
             switch (e.requestType) {
-                case 'grouping':
-                case 'ungrouping':
-                    current[1] = current.length &&
-                        !this.parent.groupSettings.showGroupedColumn && !isNullOrUndefined(matrix.matrix[current[0]]) ?
-                        matrix.matrix[current[0]].indexOf(1) : e.requestType === 'grouping' ? current[1] + 1 : current[1] - 1;
-                    break;
+            case 'grouping':
+            case 'ungrouping':
+                current[1] = current.length &&
+                    !this.parent.groupSettings.showGroupedColumn && !isNullOrUndefined(matrix.matrix[current[0]]) ?
+                    matrix.matrix[current[0]].indexOf(1) : e.requestType === 'grouping' ? current[1] + 1 : current[1] - 1;
+                break;
             }
             this.getContent().matrix.current = current;
             this.addFocus(this.getContent().getFocusInfo());
@@ -463,7 +471,7 @@ export class FocusStrategy {
     }
 
     public getPrevIndexes(): IIndex {
-        let forget: boolean = this.forget; this.forget = false;
+        const forget: boolean = this.forget; this.forget = false;
         return forget || !Object.keys(this.prevIndexes).length ? { rowIndex: null, cellIndex: null } : this.prevIndexes;
     }
 
@@ -475,8 +483,9 @@ export class FocusStrategy {
         if (!this.parent.isFrozenGrid() && this.parent.frozenRows === 0) {
             return;
         }
+        // eslint-disable-next-line prefer-const
         let info: FocusedContainer;
-        let actions: { [x: string]: Function } = {
+        const actions: { [x: string]: Function } = {
             'home': () => ({ toHeader: !info.isContent, toFrozen: true }),
             'end': () => ({ toHeader: !info.isContent, toFrozen: false }),
             'ctrlHome': () => ({ toHeader: true, toFrozen: this.parent.isFrozenGrid() }),
@@ -484,7 +493,7 @@ export class FocusStrategy {
         };
         if (!(action in actions)) { return; }
         info = active.getInfo();
-        let swap: SwapInfo = actions[action]();
+        const swap: SwapInfo = actions[action]();
         this.setActive(!swap.toHeader, swap.toFrozen);
         this.getContent().matrix.current = active.matrix.current;
     }
@@ -496,7 +505,7 @@ export class FocusStrategy {
             return;
         }
         this.clearIndicator();
-        let focusEle: HTMLElement = this.getContent().getFocusable(this.getFocusedElement());
+        const focusEle: HTMLElement = this.getContent().getFocusable(this.getFocusedElement());
         this.setFocusedElement(focusEle);
         this.currentInfo.skipAction = true;
     }
@@ -504,6 +513,7 @@ export class FocusStrategy {
 
 /**
  * Create matrix from row collection which act as mental model for cell navigation
+ *
  * @hidden
  */
 export class Matrix {
@@ -520,15 +530,15 @@ export class Matrix {
     }
 
     public get(rowIndex: number, columnIndex: number, navigator: number[], action?: string, validator?: Function): number[] {
-        let tmp: number = columnIndex; if (rowIndex + navigator[0] < 0) { return [rowIndex, columnIndex]; }
+        const tmp: number = columnIndex; if (rowIndex + navigator[0] < 0) { return [rowIndex, columnIndex]; }
         rowIndex = Math.max(0, Math.min(rowIndex + navigator[0], this.rows));
         let emptyTable: boolean = true;
         if (isNullOrUndefined(this.matrix[rowIndex])) { return null; }
         columnIndex = Math.max(0, Math.min(columnIndex + navigator[1], this.matrix[rowIndex].length - 1));
         if (tmp + navigator[1] > this.matrix[rowIndex].length - 1 && validator(rowIndex, columnIndex, action)) { return [rowIndex, tmp]; }
-        let first: number = this.first(this.matrix[rowIndex], columnIndex, navigator, true, action);
+        const first: number = this.first(this.matrix[rowIndex], columnIndex, navigator, true, action);
         columnIndex = first === null ? tmp : first;
-        let val: number = getValue(`${rowIndex}.${columnIndex}`, this.matrix);
+        const val: number = getValue(`${rowIndex}.${columnIndex}`, this.matrix);
         if (rowIndex === this.rows && (action === 'downArrow' || action === 'enter')) {
             navigator[0] = -1;
         }
@@ -569,7 +579,7 @@ export class Matrix {
     public generate(rows: Row<Column>[], selector: Function, isRowTemplate?: boolean): number[][] {
         this.rows = rows.length - 1; this.matrix = [];
         for (let i: number = 0; i < rows.length; i++) {
-            let cells: Cell<Column>[] = rows[i].cells.filter((c: Cell<Column>) => c.isSpanned !== true);
+            const cells: Cell<Column>[] = rows[i].cells.filter((c: Cell<Column>) => c.isSpanned !== true);
             this.columns = Math.max(cells.length - 1, this.columns | 0);
             for (let j: number = 0; j < cells.length; j++) {
                 this.set(i, j, rows[i].visible === false ? false : selector(rows[i], cells[j], isRowTemplate));
@@ -609,7 +619,7 @@ export class ContentFocus implements IFocus {
             'shiftEnter': [-1, 0]
         };
         this.indexesByKey = (action: string) => {
-            let opt: Object = {
+            const opt: Object = {
                 'home': [this.matrix.current[0], -1, 0, 1],
                 'end': [this.matrix.current[0], this.matrix.columns + 1, 0, -1],
                 'ctrlHome': [0, -1, 0, 1],
@@ -626,7 +636,7 @@ export class ContentFocus implements IFocus {
     }
 
     public onKeyPress(e: KeyboardEventArgs): void | boolean {
-        let navigator: number[] = this.keyActions[e.action];
+        const navigator: number[] = this.keyActions[e.action];
         let current: number[] = this.getCurrentFromAction(e.action, navigator, e.action in this.keyActions, e);
         if (!current) { return; }
         if ((['tab', 'shiftTab'].indexOf(e.action) > -1 && this.matrix.current || []).toString() === current.toString()) {
@@ -642,13 +652,13 @@ export class ContentFocus implements IFocus {
     }
 
     private editNextRow(rowIndex: number, cellIndex: number, action: string): number[] {
-        let gObj: IGrid = this.parent;
-        let editNextRow: boolean = gObj.editSettings.allowNextRowEdit && (gObj.isEdit || gObj.isLastCellPrimaryKey);
-        let visibleIndex: number = gObj.getColumnIndexByField(gObj.getVisibleColumns()[0].field);
-        let cell: HTMLElement = this.getTable().rows[rowIndex].cells[cellIndex];
+        const gObj: IGrid = this.parent;
+        const editNextRow: boolean = gObj.editSettings.allowNextRowEdit && (gObj.isEdit || gObj.isLastCellPrimaryKey);
+        const visibleIndex: number = gObj.getColumnIndexByField(gObj.getVisibleColumns()[0].field);
+        const cell: HTMLElement = this.getTable().rows[rowIndex].cells[cellIndex];
         if (action === 'tab' && editNextRow) {
             rowIndex++;
-            let index: number = (this.getTable().rows[rowIndex].getElementsByClassName('e-indentcell').length +
+            const index: number = (this.getTable().rows[rowIndex].getElementsByClassName('e-indentcell').length +
                 this.getTable().rows[rowIndex].getElementsByClassName('e-detailrowcollapse').length);
             cellIndex = visibleIndex + index;
         }
@@ -664,8 +674,8 @@ export class ContentFocus implements IFocus {
     public getCurrentFromAction(action: string, navigator: number[] = [0, 0], isPresent?: boolean, e?: KeyboardEventArgs): number[] {
         if (!isPresent && !this.indexesByKey(action) || (this.matrix.current.length === 0)) { return null; }
         if (!this.shouldFocusChange(e)) { return this.matrix.current; }
-        let [rowIndex, cellIndex, rN, cN]: number[] = this.indexesByKey(action) || [...this.matrix.current, ...navigator];
-        let current: number[] = this.matrix.get(rowIndex, cellIndex, [rN, cN], action, this.validator());
+        const [rowIndex, cellIndex, rN, cN]: number[] = this.indexesByKey(action) || [...this.matrix.current, ...navigator];
+        const current: number[] = this.matrix.get(rowIndex, cellIndex, [rN, cN], action, this.validator());
         return current;
     }
 
@@ -679,16 +689,16 @@ export class ContentFocus implements IFocus {
             isNullOrUndefined(closest(closest(<Element>e.target, '.e-grid'), 'td.e-detailcell')) ? null : target : target;
         target = target && closest(target, 'table').classList.contains(literals.table) ? target : null;
         if (!target) { return false; }
-        let [rowIndex, cellIndex]: number[] = [(<HTMLTableRowElement>target.parentElement).rowIndex, target.cellIndex];
-        let [oRowIndex, oCellIndex]: number[] = this.matrix.current;
-        let val: number = getValue(`${rowIndex}.${cellIndex}`, this.matrix.matrix);
+        const [rowIndex, cellIndex]: number[] = [(<HTMLTableRowElement>target.parentElement).rowIndex, target.cellIndex];
+        const [oRowIndex, oCellIndex]: number[] = this.matrix.current;
+        const val: number = getValue(`${rowIndex}.${cellIndex}`, this.matrix.matrix);
         if (this.matrix.inValid(val) || (!force && oRowIndex === rowIndex && oCellIndex === cellIndex) ||
             (!parentsUntil(e.target as Element, literals.rowCell) && !parentsUntil(e.target as Element, 'e-groupcaption'))) { return false; }
         this.matrix.select(rowIndex, cellIndex);
     }
 
     public getFocusInfo(): FocusInfo {
-        let info: FocusInfo = {}; let [rowIndex = 0, cellIndex = 0]: number[] = this.matrix.current;
+        const info: FocusInfo = {}; const [rowIndex = 0, cellIndex = 0]: number[] = this.matrix.current;
         this.matrix.current = [rowIndex, cellIndex];
         info.element = !isNullOrUndefined(this.getTable().rows[rowIndex]) ? this.getTable().rows[rowIndex].cells[cellIndex] : null;
         if (!info.element) {
@@ -703,11 +713,11 @@ export class ContentFocus implements IFocus {
 
     public getFocusable(element: HTMLElement): HTMLElement {
         let query: string = 'button, [href], input:not([type="hidden"]), select, textarea, [tabindex]:not([tabindex="-1"])';
-        let isTemplate: boolean = !isNullOrUndefined(closest(<HTMLElement>element, '.e-templatecell'));
+        const isTemplate: boolean = !isNullOrUndefined(closest(<HTMLElement>element, '.e-templatecell'));
         if (this.parent.isEdit) {
             query = 'input:not([type="hidden"]), select:not([aria-hidden="true"]), textarea';
         }
-        let child: HTMLElement[] = [].slice.call(element.querySelectorAll(query));
+        const child: HTMLElement[] = [].slice.call(element.querySelectorAll(query));
 
         /* Select the first focusable child element
          * if no child found then select the cell itself.
@@ -717,7 +727,7 @@ export class ContentFocus implements IFocus {
     }
 
     public selector(row: Row<Column>, cell: Cell<Column>, isRowTemplate?: boolean): boolean {
-        let types: CellType[] = [CellType.Expand, CellType.GroupCaption, CellType.CaptionSummary, CellType.GroupSummary];
+        const types: CellType[] = [CellType.Expand, CellType.GroupCaption, CellType.CaptionSummary, CellType.GroupSummary];
         return ((row.isDataRow && cell.visible && (cell.isDataCell || cell.isTemplate))
             || (row.isDataRow && cell.cellType === CellType.DetailExpand && isNullOrUndefined(cell.visible))
             || (!row.isDataRow && types.indexOf(cell.cellType) > -1)
@@ -728,7 +738,7 @@ export class ContentFocus implements IFocus {
     }
 
     public nextRowFocusValidate(index: number): number {
-        let lastIndex: number = index;
+        const lastIndex: number = index;
         for (let i: number = index, len: number = this.matrix.rows; i < len; i++) {
             if (this.matrix.matrix[index].indexOf(1) === -1) {
                 index = index + 1;
@@ -741,7 +751,7 @@ export class ContentFocus implements IFocus {
     }
 
     public previousRowFocusValidate(index: number): number {
-        let firstIndex: number = index;
+        const firstIndex: number = index;
         for (let i: number = index, len: number = 0; i >= len; i--) {
             if (this.matrix.matrix[index].indexOf(1) === -1) {
                 index = index - 1;
@@ -759,13 +769,13 @@ export class ContentFocus implements IFocus {
     public jump(action: string, current: number[]): SwapInfo {
         let frozenSwap: boolean = this.parent.getFrozenLeftCount() &&
             ((action === 'leftArrow' || action === 'shiftTab') && current[1] === 0);
-        let right: boolean = ((action === 'rightArrow' || action === 'tab') && current[1] === this.matrix.columns);
-        let frSwap: boolean = this.parent.getFrozenMode() === literals.leftRight && right;
+        const right: boolean = ((action === 'rightArrow' || action === 'tab') && current[1] === this.matrix.columns);
+        const frSwap: boolean = this.parent.getFrozenMode() === literals.leftRight && right;
         if (this.parent.getFrozenMode() === 'Right') {
             frozenSwap = right;
         }
         this.lastIdxCell = false;
-        let enterFrozen: boolean = this.parent.frozenRows !== 0 && action === 'shiftEnter';
+        const enterFrozen: boolean = this.parent.frozenRows !== 0 && action === 'shiftEnter';
         if (action === 'tab' && !this.parent.isEdit &&
             current[1] === this.matrix.matrix[current[0]].lastIndexOf(1) && this.matrix.matrix.length - 1 !== current[0]) {
             this.matrix.current[0] = this.nextRowFocusValidate(this.matrix.current[0] + 1);
@@ -778,13 +788,13 @@ export class ContentFocus implements IFocus {
             this.matrix.current[1] = this.matrix.matrix[current[0]].length;
         }
         let isHeaderFocus: boolean = false;
-        let row: Element = document.activeElement.parentElement;
+        const row: Element = document.activeElement.parentElement;
         if ((this.parent.enableVirtualization || this.parent.infiniteScrollSettings.enableCache)
             && row.classList.contains(literals.row)) {
-            let rowIndex: number = parseInt(row.getAttribute(literals.ariaRowIndex), 10);
+            const rowIndex: number = parseInt(row.getAttribute(literals.ariaRowIndex), 10);
             isHeaderFocus = rowIndex > 0;
         }
-        let info: SwapInfo = {
+        const info: SwapInfo = {
             swap: !isHeaderFocus ? ((action === 'upArrow' || enterFrozen) && current[0] === 0) || frozenSwap || frSwap : false,
             toHeader: (action === 'upArrow' || enterFrozen) && current[0] === 0,
             toFrozen: frozenSwap,
@@ -794,7 +804,7 @@ export class ContentFocus implements IFocus {
     }
 
     public getNextCurrent(previous: number[] = [], swap?: SwapInfo, active?: IFocus, action?: string): number[] {
-        let current: number[] = [];
+        const current: number[] = [];
         if (this.parent.getFrozenMode() === 'Right' || this.parent.getFrozenMode() === literals.leftRight) {
             if (action === 'leftArrow' || action === 'shiftTab') {
                 current[0] = previous[0];
@@ -816,9 +826,9 @@ export class ContentFocus implements IFocus {
     }
 
     public generateRows(rows?: Row<Column>[], optionals?: Object): void {
-        let { matrix, handlerInstance }: { matrix?: number[][], handlerInstance?: IFocus } = optionals;
-        let len: number = handlerInstance.matrix.matrix.length;
-        let defaultLen: number = this.parent.allowFiltering && this.parent.filterSettings.type === 'FilterBar' ? len + 1 : len;
+        const { matrix, handlerInstance }: { matrix?: number[][], handlerInstance?: IFocus } = optionals;
+        const len: number = handlerInstance.matrix.matrix.length;
+        const defaultLen: number = this.parent.allowFiltering && this.parent.filterSettings.type === 'FilterBar' ? len + 1 : len;
         handlerInstance.matrix.matrix = handlerInstance.matrix.matrix.slice(0, defaultLen); //Header matrix update.
         handlerInstance.matrix.rows = defaultLen;
         handlerInstance.matrix.matrix.push(...matrix);
@@ -826,17 +836,18 @@ export class ContentFocus implements IFocus {
     }
 
     public getInfo(e?: KeyboardEventArgs): FocusedContainer {
-        let info: FocusInfo = this.getFocusInfo(); let [rIndex, cIndex]: number[] = this.matrix.current;
-        let isData: boolean = info.element.classList.contains(literals.rowCell);
-        let isSelectable: boolean = isData || (e && e.action !== 'enter' && (info.element.classList.contains('e-detailrowcollapse')
+        const info: FocusInfo = this.getFocusInfo(); const [rIndex, cIndex]: number[] = this.matrix.current;
+        const isData: boolean = info.element.classList.contains(literals.rowCell);
+        const isSelectable: boolean = isData || (e && e.action !== 'enter' && (info.element.classList.contains('e-detailrowcollapse')
             || info.element.classList.contains('e-detailrowexpand')));
-        let [rowIndex, cellIndex]: number[] = [Math.min(parseInt(info.element.parentElement.getAttribute(literals.ariaRowIndex), 10), rIndex),
-        Math.min(parseInt(info.element.getAttribute(literals.ariaColIndex), 10), cIndex)];
+        // eslint-disable-next-line max-len
+        const [rowIndex, cellIndex]: number[] = [Math.min(parseInt(info.element.parentElement.getAttribute(literals.ariaRowIndex), 10), rIndex),
+            Math.min(parseInt(info.element.getAttribute(literals.ariaColIndex), 10), cIndex)];
         return { isContent: true, isDataCell: isData, indexes: [rowIndex, cellIndex], isSelectable: isSelectable };
     }
 
     public validator(): Function {
-        let table: HTMLTableElement = this.getTable();
+        const table: HTMLTableElement = this.getTable();
         return (rowIndex: number, cellIndex: number, action?: string) => {
             if (!isNullOrUndefined(table.rows[rowIndex])) {
                 let cell: HTMLElement;
@@ -846,7 +857,7 @@ export class ContentFocus implements IFocus {
                 } else {
                     cell = table.rows[rowIndex].cells[cellIndex];
                 }
-                let isCellWidth: boolean = cell.getBoundingClientRect().width !== 0;
+                const isCellWidth: boolean = cell.getBoundingClientRect().width !== 0;
                 if (action === 'enter' || action === 'shiftEnter') {
                     return isCellWidth && cell.classList.contains(literals.rowCell);
                 }
@@ -861,9 +872,9 @@ export class ContentFocus implements IFocus {
     }
 
     protected shouldFocusChange(e: KeyboardEventArgs): boolean {
-        let [rIndex = -1, cIndex = -1]: number[] = this.matrix.current;
+        const [rIndex = -1, cIndex = -1]: number[] = this.matrix.current;
         if (rIndex < 0 || cIndex < 0) { return true; }
-        let cell: Element = getValue(`${rIndex}.cells.${cIndex}`, this.getTable().rows);
+        const cell: Element = getValue(`${rIndex}.cells.${cIndex}`, this.getTable().rows);
         if (!cell) { return true; }
         return e.action === 'enter' || e.action === 'shiftEnter' ?
             cell.classList.contains(literals.rowCell) && !cell.classList.contains('e-unboundcell')
@@ -900,14 +911,14 @@ export class HeaderFocus extends ContentFocus implements IFocus {
             return false;
         }
         if (!target) { return; }
-        let [rowIndex, cellIndex]: number[] = [(<HTMLTableRowElement>target.parentElement).rowIndex, target.cellIndex];
-        let val: number = getValue(`${rowIndex}.${cellIndex}`, this.matrix.matrix);
+        const [rowIndex, cellIndex]: number[] = [(<HTMLTableRowElement>target.parentElement).rowIndex, target.cellIndex];
+        const val: number = getValue(`${rowIndex}.${cellIndex}`, this.matrix.matrix);
         if (this.matrix.inValid(val)) { return false; }
         this.matrix.select((<HTMLTableRowElement>target.parentElement).rowIndex, target.cellIndex);
     }
 
     public getFocusInfo(): FocusInfo {
-        let info: FocusInfo = {}; let [rowIndex = 0, cellIndex = 0]: number[] = this.matrix.current;
+        const info: FocusInfo = {}; const [rowIndex = 0, cellIndex = 0]: number[] = this.matrix.current;
         info.element = this.getTable().rows[rowIndex].cells[cellIndex];
         if (!isNullOrUndefined(info.element)) {
             info.elementToFocus = this.getFocusable(info.element);
@@ -924,18 +935,18 @@ export class HeaderFocus extends ContentFocus implements IFocus {
     public jump(action: string, current: number[]): SwapInfo {
         let frozenSwap: boolean = this.parent.getFrozenLeftCount() &&
             (action === 'leftArrow' || (action === 'shiftLeft' && this.getGridSeletion()) || action === 'shiftTab') && current[1] === 0;
-        let right: boolean = (action === 'rightArrow' || (action === 'shiftRight' && this.getGridSeletion())
+        const right: boolean = (action === 'rightArrow' || (action === 'shiftRight' && this.getGridSeletion())
             || action === 'tab') && current[1] === this.matrix.columns;
-        let frSwap: boolean = this.parent.getFrozenMode() === literals.leftRight && right;
+        const frSwap: boolean = this.parent.getFrozenMode() === literals.leftRight && right;
         if (this.parent.getFrozenMode() === 'Right') {
             frozenSwap = right;
         }
-        let enterFrozen: boolean = this.parent.frozenRows !== 0 && action === 'enter';
+        const enterFrozen: boolean = this.parent.frozenRows !== 0 && action === 'enter';
         let isLastCell: boolean;
         let lastRow: boolean;
         let headerSwap: boolean = frozenSwap || frSwap;
-        let fMatrix: number[][] = this.parent.focusModule.fHeader && this.parent.focusModule.fHeader.matrix.matrix;
-        let isPresent: boolean = fMatrix && !isNullOrUndefined(fMatrix[current[0]]);
+        const fMatrix: number[][] = this.parent.focusModule.fHeader && this.parent.focusModule.fHeader.matrix.matrix;
+        const isPresent: boolean = fMatrix && !isNullOrUndefined(fMatrix[current[0]]);
         if (this.parent.enableHeaderFocus && action === 'tab') {
             lastRow = this.matrix.matrix.length - 1 === current[0];
             isLastCell = current[1] === this.matrix.matrix[current[0]].lastIndexOf(1);
@@ -963,7 +974,7 @@ export class HeaderFocus extends ContentFocus implements IFocus {
     }
 
     public getNextCurrent(previous: number[] = [], swap?: SwapInfo, active?: IFocus, action?: string): number[] {
-        let current1: number[] = [];
+        const current1: number[] = [];
         if (this.parent.getFrozenMode() === 'Right' || this.parent.getFrozenMode() === literals.leftRight) {
             if (action === 'leftArrow' || (action === 'shiftLeft' && this.getGridSeletion()) || action === 'shiftTab') {
                 current1[0] = previous[0];
@@ -986,10 +997,10 @@ export class HeaderFocus extends ContentFocus implements IFocus {
     }
 
     public generateRows(rows?: Row<Column>[]): void {
-        let length: number = this.matrix.matrix.length;
+        const length: number = this.matrix.matrix.length;
         if (this.parent.allowFiltering && this.parent.filterSettings.type === 'FilterBar') {
             this.matrix.rows = ++this.matrix.rows;
-            let cells: Cell<Column>[] = rows[0].cells;
+            const cells: Cell<Column>[] = rows[0].cells;
             for (let i: number = 0; i < cells.length; i++) {
                 this.matrix.set(length, i, cells[i].visible && cells[i].column.allowFiltering !== false);
             }
@@ -1004,9 +1015,9 @@ export class HeaderFocus extends ContentFocus implements IFocus {
         return () => true;
     }
     protected shouldFocusChange(e: KeyboardEventArgs): boolean {
-        let [rowIndex, columnIndex]: number[] = this.matrix.current;
+        const [rowIndex, columnIndex]: number[] = this.matrix.current;
         if (rowIndex < 0 || columnIndex < 0) { return true; }
-        let cell: Element = getValue(`${rowIndex}.cells.${columnIndex}`, this.getTable().rows);
+        const cell: Element = getValue(`${rowIndex}.cells.${columnIndex}`, this.getTable().rows);
         if (!cell) {
             return true;
         }
@@ -1021,10 +1032,10 @@ export class FixedContentFocus extends ContentFocus {
     }
 
     public jump(action: string, current: number[]): SwapInfo {
-        let enterFrozen: boolean = this.parent.frozenRows !== 0 && action === 'shiftEnter';
-        let toHeader: boolean = (action === 'upArrow' || enterFrozen) && current[0] === 0;
+        const enterFrozen: boolean = this.parent.frozenRows !== 0 && action === 'shiftEnter';
+        const toHeader: boolean = (action === 'upArrow' || enterFrozen) && current[0] === 0;
         if (this.parent.getFrozenMode() === 'Right') {
-            let swap: boolean = toHeader || ((action === 'shiftTab' || action === 'leftArrow') && current[1] === 0);
+            const swap: boolean = toHeader || ((action === 'shiftTab' || action === 'leftArrow') && current[1] === 0);
             return { swap: swap, toHeader: toHeader, toFrozen: toHeader };
         }
         return {
@@ -1035,7 +1046,7 @@ export class FixedContentFocus extends ContentFocus {
     }
 
     public getNextCurrent(previous: number[] = [], swap?: SwapInfo, active?: IFocus, action?: string): number[] {
-        let current2: number[] = [];
+        const current2: number[] = [];
         if (this.parent.getFrozenMode() === 'Right') {
             if (action === 'rightArrow' || action === 'tab') {
                 current2[0] = previous[0];
@@ -1061,15 +1072,15 @@ export class FixedContentFocus extends ContentFocus {
 
 export class FixedHeaderFocus extends HeaderFocus {
     public jump(action: string, current: number[]): SwapInfo {
-        let enterFrozen: boolean = this.parent.frozenRows !== 0 && action === 'enter';
-        let hMatrix: number[][] = this.parent.focusModule.header && this.parent.focusModule.header.matrix.matrix;
-        let isPresent: boolean = hMatrix && !isNullOrUndefined(hMatrix[current[0]]);
+        const enterFrozen: boolean = this.parent.frozenRows !== 0 && action === 'enter';
+        const hMatrix: number[][] = this.parent.focusModule.header && this.parent.focusModule.header.matrix.matrix;
+        const isPresent: boolean = hMatrix && !isNullOrUndefined(hMatrix[current[0]]);
         if (this.parent.getFrozenMode() === 'Right') {
-            let frSwap: boolean = (action === 'leftArrow' || (action === 'shiftLeft' && this.getGridSeletion())
+            const frSwap: boolean = (action === 'leftArrow' || (action === 'shiftLeft' && this.getGridSeletion())
                 || action === 'shiftTab') && current[1] === 0;
-            let swap: boolean = ((action === 'downArrow' || enterFrozen) && current[0] === this.matrix.matrix.length - 1) ||
+            const swap: boolean = ((action === 'downArrow' || enterFrozen) && current[0] === this.matrix.matrix.length - 1) ||
                 (isPresent && frSwap);
-            let toFrozen: boolean = (action === 'downArrow' || enterFrozen) && current[0] === this.matrix.matrix.length - 1;
+            const toFrozen: boolean = (action === 'downArrow' || enterFrozen) && current[0] === this.matrix.matrix.length - 1;
             return { swap: swap, toHeader: frSwap, toFrozen: toFrozen };
         }
         return {
@@ -1086,7 +1097,7 @@ export class FixedHeaderFocus extends HeaderFocus {
     }
 
     public getNextCurrent(previous: number[] = [], swap?: SwapInfo, active?: IFocus, action?: string): number[] {
-        let current3: number[] = [];
+        const current3: number[] = [];
         if (this.parent.getFrozenMode() === 'Right') {
             if (action === 'rightArrow' || (action === 'shiftRight' && this.getGridSeletion()) || action === 'tab') {
                 current3[0] = previous[0];
@@ -1114,7 +1125,6 @@ export class SearchBox {
         this.searchBox = searchBox;
     }
 
-    /** @hidden */
     public searchFocus(args: { target: HTMLInputElement }): void {
         args.target.parentElement.classList.add('e-input-focus');
     }
@@ -1145,8 +1155,8 @@ export class FixedRightContentFocus extends ContentFocus {
     }
 
     public jump(action: string, current: number[]): SwapInfo {
-        let enterFrozen: boolean = this.parent.frozenRows !== 0 && action === 'shiftEnter';
-        let toHeader: boolean = (action === 'upArrow' || enterFrozen) && current[0] === 0;
+        const enterFrozen: boolean = this.parent.frozenRows !== 0 && action === 'shiftEnter';
+        const toHeader: boolean = (action === 'upArrow' || enterFrozen) && current[0] === 0;
         return {
             swap: toHeader || ((action === 'shiftTab' || action === 'leftArrow') && current[1] === 0),
             toHeader: toHeader,
@@ -1155,7 +1165,7 @@ export class FixedRightContentFocus extends ContentFocus {
     }
 
     public getNextCurrent(previous: number[] = [], swap?: SwapInfo, active?: IFocus, action?: string): number[] {
-        let current2: number[] = [];
+        const current2: number[] = [];
         if (action === 'rightArrow' || action === 'tab') {
             current2[0] = previous[0];
             current2[1] = -1;
@@ -1170,14 +1180,14 @@ export class FixedRightContentFocus extends ContentFocus {
 
 export class FixedRightHeaderFocus extends HeaderFocus {
     public jump(action: string, current: number[]): SwapInfo {
-        let headerMat: number[][] = this.parent.focusModule.header && this.parent.focusModule.header.matrix.matrix;
-        let isPresent: boolean = headerMat && !isNullOrUndefined(headerMat[current[0]]);
-        let enterFrozen: boolean = this.parent.frozenRows !== 0 && action === 'enter';
-        let frozenSwap: boolean = (action === 'leftArrow' || (action === 'shiftLeft' && this.getGridSeletion())
+        const headerMat: number[][] = this.parent.focusModule.header && this.parent.focusModule.header.matrix.matrix;
+        const isPresent: boolean = headerMat && !isNullOrUndefined(headerMat[current[0]]);
+        const enterFrozen: boolean = this.parent.frozenRows !== 0 && action === 'enter';
+        const frozenSwap: boolean = (action === 'leftArrow' || (action === 'shiftLeft' && this.getGridSeletion())
             || action === 'shiftTab') && current[1] === 0;
-        let swap: boolean = ((action === 'downArrow' || enterFrozen) && current[0] === this.matrix.matrix.length - 1) ||
+        const swap: boolean = ((action === 'downArrow' || enterFrozen) && current[0] === this.matrix.matrix.length - 1) ||
             (isPresent && frozenSwap);
-        let toFrozen: boolean = (action === 'downArrow' || enterFrozen) && current[0] === this.matrix.matrix.length - 1;
+        const toFrozen: boolean = (action === 'downArrow' || enterFrozen) && current[0] === this.matrix.matrix.length - 1;
         return { swap: swap, toHeader: frozenSwap, toFrozenRight: toFrozen };
     }
 
@@ -1186,7 +1196,7 @@ export class FixedRightHeaderFocus extends HeaderFocus {
     }
 
     public getNextCurrent(previous: number[] = [], swap?: SwapInfo, active?: IFocus, action?: string): number[] {
-        let current3: number[] = [];
+        const current3: number[] = [];
         if (action === 'rightArrow' || (action === 'shiftRight' && this.getGridSeletion()) || action === 'tab') {
             current3[0] = previous[0];
             current3[1] = 0;

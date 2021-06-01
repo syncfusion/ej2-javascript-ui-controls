@@ -1,13 +1,13 @@
 import { isNullOrUndefined, isBlazor } from '@syncfusion/ej2-base';
 import { EventHandler } from '@syncfusion/ej2-base';
-import { createElement, remove, classList, append } from '@syncfusion/ej2-base';
+import { createElement, classList, append } from '@syncfusion/ej2-base';
 import { Pager, IRender } from './pager';
 
 /**
  * `NumericContainer` module handles rendering and refreshing numeric container.
  */
 export class NumericContainer implements IRender {
-    //Internal variables   
+    //Internal variables
     private element: Element;
     private first: Element;
     private prev: Element;
@@ -18,12 +18,13 @@ export class NumericContainer implements IRender {
     private links: HTMLElement[];
     private pagerElement: Element;
 
-
     //Module declarations
     private pagerModule: Pager;
 
     /**
      * Constructor for numericContainer module
+     *
+     * @param {Pager} pagerModule - specifies the pagerModule
      * @hidden
      */
     constructor(pagerModule?: Pager) {
@@ -32,6 +33,8 @@ export class NumericContainer implements IRender {
 
     /**
      * The function is used to render numericContainer
+     *
+     * @returns {void}
      * @hidden
      */
     public render(): void {
@@ -42,7 +45,9 @@ export class NumericContainer implements IRender {
     }
 
     /**
-     * Refreshes the numeric container of Pager. 
+     * Refreshes the numeric container of Pager.
+     *
+     * @returns {void}
      */
     public refresh(): void {
         this.pagerModule.updateTotalPages();
@@ -54,19 +59,21 @@ export class NumericContainer implements IRender {
 
     /**
      * The function is used to refresh refreshNumericLinks
+     *
+     * @returns {void}
      * @hidden
      */
     public refreshNumericLinks(): void {
         let link: HTMLElement;
-        let pagerObj: Pager = this.pagerModule;
-        let div: Element = pagerObj.element.querySelector('.e-numericcontainer');
-        let frag: DocumentFragment = document.createDocumentFragment();
+        const pagerObj: Pager = this.pagerModule;
+        const div: Element = pagerObj.element.querySelector('.e-numericcontainer');
+        const frag: DocumentFragment = document.createDocumentFragment();
         div.innerHTML = '';
         for (let i: number = 1; i <= pagerObj.pageCount; i++) {
             link = createElement('a', {
                 className: 'e-link e-numericitem e-spacing e-pager-default',
                 attrs: { role: 'link', tabindex: '-1', 'aria-label': 'Goto Page ' + i,
-                href: 'javascript:void(0);' , name: 'Goto page' + i }
+                    href: 'javascript:void(0);' , name: 'Goto page' + i }
             });
             if (pagerObj.currentPage === i) {
                 classList(link, ['e-currentitem', 'e-active'], ['e-pager-default']);
@@ -79,6 +86,8 @@ export class NumericContainer implements IRender {
 
     /**
      * Binding events to the element while component creation
+     *
+     * @returns {void}
      * @hidden
      */
     public wireEvents(): void {
@@ -87,6 +96,8 @@ export class NumericContainer implements IRender {
 
     /**
      * Unbinding events from the element while component destroy
+     *
+     * @returns {void}
      * @hidden
      */
     public unwireEvents(): void {
@@ -95,8 +106,9 @@ export class NumericContainer implements IRender {
 
     /**
      * To destroy the PagerMessage
-     * @method destroy
-     * @return {void}  
+     *
+     * @function destroy
+     * @returns {void}
      * @hidden
      */
     public destroy(): void {
@@ -121,9 +133,9 @@ export class NumericContainer implements IRender {
                 className: 'e-first e-icons e-icon-first',
                 attrs: {
                     title: isBlazor() ? this.pagerModule.getLocalizedLabel('FirstPageTooltip') :
-                    this.pagerModule.getLocalizedLabel('firstPageTooltip'),
+                        this.pagerModule.getLocalizedLabel('firstPageTooltip'),
                     'aria-label': isBlazor() ? this.pagerModule.getLocalizedLabel('FirstPageTooltip') :
-                    this.pagerModule.getLocalizedLabel('firstPageTooltip'),
+                        this.pagerModule.getLocalizedLabel('firstPageTooltip'),
                     tabindex: '-1'
                 }
             });
@@ -132,9 +144,9 @@ export class NumericContainer implements IRender {
                 className: 'e-prev e-icons e-icon-prev',
                 attrs: {
                     title: isBlazor() ? this.pagerModule.getLocalizedLabel('PreviousPageTooltip') :
-                    this.pagerModule.getLocalizedLabel('previousPageTooltip'),
+                        this.pagerModule.getLocalizedLabel('previousPageTooltip'),
                     'aria-label': isBlazor() ? this.pagerModule.getLocalizedLabel('PreviousPageTooltip') :
-                    this.pagerModule.getLocalizedLabel('previousPageTooltip'),
+                        this.pagerModule.getLocalizedLabel('previousPageTooltip'),
                     tabindex: '-1'
                 }
             });
@@ -142,18 +154,18 @@ export class NumericContainer implements IRender {
     }
 
     private renderPrevPagerSet(pagerContainer: Element): void {
-        let prevPager: Element = createElement('div');
+        const prevPager: Element = createElement('div');
         this.PP = createElement(
             'a', {
                 className: 'e-link e-pp e-spacing', innerHTML: '...',
                 attrs: {
                     title: isBlazor() ? this.pagerModule.getLocalizedLabel('PreviousPagerTooltip') :
-                    this.pagerModule.getLocalizedLabel('previousPagerTooltip'), role: 'link',
+                        this.pagerModule.getLocalizedLabel('previousPagerTooltip'), role: 'link',
                     'aria-label': isBlazor() ? this.pagerModule.getLocalizedLabel('PreviousPagerTooltip') :
-                    this.pagerModule.getLocalizedLabel('previousPagerTooltip'),
+                        this.pagerModule.getLocalizedLabel('previousPagerTooltip'),
                     tabindex: '-1',
                     name: isBlazor() ? this.pagerModule.getLocalizedLabel('PreviousPagerTooltip') :
-                    this.pagerModule.getLocalizedLabel('previousPagerTooltip'),
+                        this.pagerModule.getLocalizedLabel('previousPagerTooltip'),
                     href: 'javascript:void(0);'
                 }
             });
@@ -162,18 +174,18 @@ export class NumericContainer implements IRender {
     }
 
     private renderNextPagerSet(pagerContainer: Element): void {
-        let nextPager: Element = createElement('div');
+        const nextPager: Element = createElement('div');
         this.NP = createElement(
             'a', {
                 className: 'e-link e-np e-spacing',
                 innerHTML: '...', attrs: {
                     title: isBlazor() ? this.pagerModule.getLocalizedLabel('NextPagerTooltip') :
-                    this.pagerModule.getLocalizedLabel('nextPagerTooltip'), role: 'link',
+                        this.pagerModule.getLocalizedLabel('nextPagerTooltip'), role: 'link',
                     'aria-label': isBlazor() ? this.pagerModule.getLocalizedLabel('NextPagerTooltip') :
-                    this.pagerModule.getLocalizedLabel('nextPagerTooltip'),
+                        this.pagerModule.getLocalizedLabel('nextPagerTooltip'),
                     tabindex: '-1',
                     name: isBlazor() ? this.pagerModule.getLocalizedLabel('NextPagerTooltip') :
-                    this.pagerModule.getLocalizedLabel('nextPagerTooltip'),
+                        this.pagerModule.getLocalizedLabel('nextPagerTooltip'),
                     href: 'javascript:void(0);'
                 }
             });
@@ -187,9 +199,9 @@ export class NumericContainer implements IRender {
                 className: 'e-next e-icons e-icon-next',
                 attrs: {
                     title: isBlazor() ? this.pagerModule.getLocalizedLabel('NextPageTooltip') :
-                    this.pagerModule.getLocalizedLabel('nextPageTooltip'),
+                        this.pagerModule.getLocalizedLabel('nextPageTooltip'),
                     'aria-label': isBlazor() ? this.pagerModule.getLocalizedLabel('NextPageTooltip') :
-                    this.pagerModule.getLocalizedLabel('nextPageTooltip'),
+                        this.pagerModule.getLocalizedLabel('nextPageTooltip'),
                     tabindex: '-1'
                 }
             });
@@ -198,9 +210,9 @@ export class NumericContainer implements IRender {
                 className: 'e-last e-icons e-icon-last',
                 attrs: {
                     title: isBlazor() ? this.pagerModule.getLocalizedLabel('LastPageTooltip') :
-                    this.pagerModule.getLocalizedLabel('lastPageTooltip'),
+                        this.pagerModule.getLocalizedLabel('lastPageTooltip'),
                     'aria-label': isBlazor() ? this.pagerModule.getLocalizedLabel('LastPageTooltip') :
-                    this.pagerModule.getLocalizedLabel('lastPageTooltip'),
+                        this.pagerModule.getLocalizedLabel('lastPageTooltip'),
                     tabindex: '-1'
                 }
             });
@@ -208,8 +220,8 @@ export class NumericContainer implements IRender {
     }
 
     private clickHandler(e: Event): boolean {
-        let pagerObj: Pager = this.pagerModule;
-        let target: Element = <Element>e.target as Element;
+        const pagerObj: Pager = this.pagerModule;
+        const target: Element = <Element>e.target as Element;
         pagerObj.previousPageNo = pagerObj.currentPage;
         if (!target.classList.contains('e-disable') && !isNullOrUndefined(target.getAttribute('index'))) {
             pagerObj.currentPage = parseInt(target.getAttribute('index'), 10);
@@ -219,7 +231,7 @@ export class NumericContainer implements IRender {
     }
 
     private updateLinksHtml(): void {
-        let pagerObj: Pager = this.pagerModule;
+        const pagerObj: Pager = this.pagerModule;
         let currentPageSet: number;
         let pageNo: number;
         pagerObj.currentPage = pagerObj.totalPages === 1 ? 1 : pagerObj.currentPage;
@@ -270,10 +282,10 @@ export class NumericContainer implements IRender {
     }
 
     private updateFirstNPrevStyles(): void {
-        let firstPage: string[] = ['e-firstpage', 'e-pager-default'];
-        let firstPageDisabled: string[] = ['e-firstpagedisabled', 'e-disable'];
-        let prevPage: string[] = ['e-prevpage', 'e-pager-default'];
-        let prevPageDisabled: string[] = ['e-prevpagedisabled', 'e-disable'];
+        const firstPage: string[] = ['e-firstpage', 'e-pager-default'];
+        const firstPageDisabled: string[] = ['e-firstpagedisabled', 'e-disable'];
+        const prevPage: string[] = ['e-prevpage', 'e-pager-default'];
+        const prevPageDisabled: string[] = ['e-prevpagedisabled', 'e-disable'];
         if (this.pagerModule.totalPages > 0 && this.pagerModule.currentPage > 1) {
             classList(this.prev, prevPage, prevPageDisabled);
             classList(this.first, firstPage, firstPageDisabled);
@@ -296,8 +308,8 @@ export class NumericContainer implements IRender {
     }
 
     private updateNextPagerSetStyles(): void {
-        let pagerObj: Pager = this.pagerModule;
-        let firstPage: string = this.links[0].innerHTML.replace(pagerObj.customText, '');
+        const pagerObj: Pager = this.pagerModule;
+        const firstPage: string = this.links[0].innerHTML.replace(pagerObj.customText, '');
         if (!firstPage.length || !this.links.length || (parseInt(firstPage, 10) + pagerObj.pageCount > pagerObj.totalPages)) {
             classList(this.NP, ['e-nextprevitemdisabled', 'e-disable'], ['e-numericitem', 'e-pager-default']);
         } else {
@@ -306,11 +318,11 @@ export class NumericContainer implements IRender {
     }
 
     private updateNextNLastStyles(): void {
-        let lastPage: string[] = ['e-lastpage', 'e-pager-default'];
-        let lastPageDisabled: string[] = ['e-lastpagedisabled', 'e-disable'];
-        let nextPage: string[] = ['e-nextpage', 'e-pager-default'];
-        let nextPageDisabled: string[] = ['e-nextpagedisabled', 'e-disable'];
-        let pagerObj: Pager = this.pagerModule;
+        const lastPage: string[] = ['e-lastpage', 'e-pager-default'];
+        const lastPageDisabled: string[] = ['e-lastpagedisabled', 'e-disable'];
+        const nextPage: string[] = ['e-nextpage', 'e-pager-default'];
+        const nextPageDisabled: string[] = ['e-nextpagedisabled', 'e-disable'];
+        const pagerObj: Pager = this.pagerModule;
         if (pagerObj.currentPage === pagerObj.totalPages || pagerObj.totalRecordsCount === 0) {
             classList(this.last, lastPageDisabled, lastPage);
             classList(this.next, nextPageDisabled, nextPage);

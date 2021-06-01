@@ -47,6 +47,7 @@ export class VirtualScroll {
             let mCont: HTMLElement = this.parent.element.querySelector('.' + cls.MOVABLECONTENT_DIV) as HTMLElement;
             let fCont: HTMLElement = this.parent.element.querySelector('.' + cls.FROZENCONTENT_DIV) as HTMLElement;
             let mHdr: HTMLElement = this.parent.element.querySelector('.' + cls.MOVABLEHEADER_DIV) as HTMLElement;
+            let mScrollBar: HTMLElement = mCont.parentElement.parentElement.querySelector('.' + cls.MOVABLESCROLL_DIV);
             EventHandler.clearEvents(mCont);
             EventHandler.clearEvents(fCont);
             if (this.engineModule) {
@@ -54,6 +55,9 @@ export class VirtualScroll {
                 EventHandler.add(ele, 'scroll touchmove pointermove', this.onHorizondalScroll(mHdr, mCont, fCont), this);
                 EventHandler.add(mCont.parentElement, 'scroll wheel touchmove pointermove keyup keydown', this.onVerticalScroll(fCont, mCont), this);
                 EventHandler.add(mCont.parentElement.parentElement, 'mouseup touchend', this.common(mHdr, mCont, fCont), this);
+                EventHandler.add(mScrollBar, 'scroll', this.onCustomScrollbarScroll(mCont, mHdr), this);
+                EventHandler.add(mCont, 'scroll', this.onCustomScrollbarScroll(mScrollBar, mHdr), this);
+                EventHandler.add(mHdr, 'scroll', this.onCustomScrollbarScroll(mScrollBar, mCont), this);
                 // EventHandler.add(fCont.parentElement, 'wheel', this.onWheelScroll(mCont, fCont), this);
                 // EventHandler.add(fCont.parentElement, 'touchstart pointerdown', this.setPageXY(), this);
                 // EventHandler.add(fCont.parentElement, 'touchmove pointermove', this.onTouchScroll(mHdr, mCont, fCont), this);
@@ -95,6 +99,27 @@ export class VirtualScroll {
         }
         return pageXY;
     }
+
+    private onCustomScrollbarScroll(mCont: HTMLElement, mHdr: HTMLElement): Function {
+        let content: HTMLElement = mCont;
+        let header: HTMLElement = mHdr;
+        return (e: Event) => {
+            let eContent: HTMLElement = (this.parent.element.querySelector('.' + cls.MOVABLECONTENT_DIV) as HTMLElement).parentElement;
+            if (eContent.querySelector('tbody') === null) {
+                return;
+            }
+            let target: HTMLElement = <HTMLElement>e.target;
+            let left: number = target.scrollLeft;
+            if (this.previousValues.left === left) {
+                return;
+            }
+            content.scrollLeft = left;
+            header.scrollLeft = left;
+            this.previousValues.left = left;
+            if (this.parent.isDestroyed) { return; }
+        };
+    }
+
 
     private onTouchScroll(mHdr: HTMLElement, mCont: HTMLElement, fCont: HTMLElement): Function {    /* eslint-disable-line */
         let element: HTMLElement = mCont;

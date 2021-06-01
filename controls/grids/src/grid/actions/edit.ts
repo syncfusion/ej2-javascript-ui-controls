@@ -30,14 +30,18 @@ import * as literals from '../base/string-literals';
  * The `Edit` module is used to handle editing actions.
  */
 export class Edit implements IAction {
-    //Internal variables                  
+    //Internal variables
     protected renderer: EditRender;
     /** @hidden */
     public editModule: IEdit;
     /** @hidden */
     public formObj: FormValidator;
+    /** @hidden */
     public mFormObj: FormValidator;
+    /** @hidden */
     public frFormObj: FormValidator;
+    /** @hidden */
+    public virtualFormObj: FormValidator;
     private static editCellType: Object = {
         'dropdownedit': DropDownEditCell, 'numericedit': NumericEditCell,
         'datepickeredit': DatePickerEditCell, 'datetimepickeredit': DatePickerEditCell,
@@ -65,6 +69,9 @@ export class Edit implements IAction {
     public deleteRowUid: string;
     /**
      * Constructor for the Grid editing module
+     *
+     * @param {IGrid} parent - specifies the IGrid
+     * @param {ServiceLocator} serviceLocator - specifies the servicelocator
      * @hidden
      */
     constructor(parent?: IGrid, serviceLocator?: ServiceLocator) {
@@ -78,10 +85,10 @@ export class Edit implements IAction {
     }
 
     private updateColTypeObj(): void {
-        let cols: Column[] = (<{columnModel?: Column[]}>this.parent).columnModel;
+        const cols: Column[] = (<{columnModel?: Column[]}>this.parent).columnModel;
         for (let i: number = 0; i < cols.length; i++) {
             if (this.parent.editSettings.template || cols[i].editTemplate) {
-                let templteCell: string = 'templateedit';
+                const templteCell: string = 'templateedit';
                 cols[i].edit = extend(new Edit.editCellType[templteCell](this.parent), cols[i].edit || {});
             } else {
                 cols[i].edit = extend(
@@ -96,6 +103,8 @@ export class Edit implements IAction {
 
     /**
      * For internal use only - Get the module name.
+     *
+     * @returns {string} returns the module name
      * @private
      */
     protected getModuleName(): string {
@@ -103,27 +112,29 @@ export class Edit implements IAction {
     }
 
     /**
+     * @param {NotifyArgs} e - specifies the notifyargs
+     * @returns {void}
      * @hidden
      */
     public onPropertyChanged(e: NotifyArgs): void {
         if (e.module !== this.getModuleName()) {
             return;
         }
-        let gObj: IGrid = this.parent;
-        for (let prop of Object.keys(e.properties)) {
+        const gObj: IGrid = this.parent;
+        for (const prop of Object.keys(e.properties)) {
             switch (prop) {
-                case 'allowAdding':
-                case 'allowDeleting':
-                case 'allowEditing':
-                    if (gObj.editSettings.allowAdding || gObj.editSettings.allowEditing || gObj.editSettings.allowDeleting) {
-                        this.initialEnd();
-                    }
-                    break;
-                case 'mode':
-                    this.updateEditObj();
-                    gObj.isEdit = false;
-                    gObj.refresh();
-                    break;
+            case 'allowAdding':
+            case 'allowDeleting':
+            case 'allowEditing':
+                if (gObj.editSettings.allowAdding || gObj.editSettings.allowEditing || gObj.editSettings.allowDeleting) {
+                    this.initialEnd();
+                }
+                break;
+            case 'mode':
+                this.updateEditObj();
+                gObj.isEdit = false;
+                gObj.refresh();
+                break;
             }
         }
     }
@@ -142,10 +153,12 @@ export class Edit implements IAction {
 
     /**
      * Edits any bound record in the Grid by TR element.
+     *
      * @param {HTMLTableRowElement} tr - Defines the table row to be edited.
+     * @returns {void}
      */
     public startEdit(tr?: HTMLTableRowElement): void {
-        let gObj: IGrid = this.parent;
+        const gObj: IGrid = this.parent;
         if (!gObj.editSettings.allowEditing || gObj.isEdit || gObj.editSettings.mode === 'Batch') {
             return;
         }
@@ -169,10 +182,15 @@ export class Edit implements IAction {
     }
 
     /**
+     * @param {Element} tr - specifies the tr element
+     * @param {object} args - specifies the object
+     * @param {Element} args.row -specfifes the row
+     * @param {string} args.requestType - specifies the request type
+     * @returns {void}
      * @hidden
      */
     public checkLastRow(tr: Element, args?: { row?: Element, requestType?: string }): void {
-        let checkLastRow: boolean = this.isLastRow;
+        const checkLastRow: boolean = this.isLastRow;
         if (this.parent.height !== 'auto' && this.parent.editSettings.newRowPosition === 'Bottom' && args &&
             args.requestType === 'add' && this.parent.height > this.parent.getContentTable().scrollHeight) {
             addClass([].slice.call(tr.getElementsByClassName(literals.rowCell)), 'e-lastrowadded');
@@ -183,6 +201,8 @@ export class Edit implements IAction {
 
     /**
      * Cancels edited state.
+     *
+     * @returns {void}
      */
     public closeEdit(): void {
         if (this.parent.editSettings.mode === 'Batch' && this.parent.editSettings.showConfirmDialog
@@ -203,14 +223,16 @@ export class Edit implements IAction {
     /**
      * To adds a new row at the top with the given data. When data is not passed, it will add empty rows.
      * > `editSettings.allowEditing` should be true.
+     *
      * @param {Object} data - Defines the new add record data.
      * @param {number} index - Defines the row index to be added
+     * @returns {void}
      */
     public addRecord(data?: Object, index?: number): void {
         if (!this.parent.editSettings.allowAdding) {
             return;
         }
-        let args: { startEdit: boolean } = { startEdit: true };
+        const args: { startEdit: boolean } = { startEdit: true };
         if (!data) {
             this.parent.notify(events.virtualScrollAddActionBegin, args);
         }
@@ -225,11 +247,13 @@ export class Edit implements IAction {
     /**
      * Deletes a record with the given options. If fieldname and data are not given, the Grid will delete the selected record.
      * > `editSettings.allowDeleting` should be true.
+     *
      * @param {string} fieldname - Defines the primary key field name of the column.
      * @param {Object} data - Defines the JSON data record to be deleted.
+     * @returns {void}
      */
     public deleteRecord(fieldname?: string, data?: Object): void {
-        let gObj: IGrid = this.parent;
+        const gObj: IGrid = this.parent;
         if (!gObj.editSettings.allowDeleting) {
             return;
         }
@@ -249,11 +273,13 @@ export class Edit implements IAction {
 
     /**
      * Deletes a visible row by TR element.
+     *
      * @param {HTMLTableRowElement} tr - Defines the table row element.
+     * @returns {void}
      */
     public deleteRow(tr: HTMLTableRowElement): void {
         this.deleteRowUid = tr.getAttribute('data-uid');
-        let rowObj: Row<Column> = this.parent.getRowObjectFromUID(this.deleteRowUid);
+        const rowObj: Row<Column> = this.parent.getRowObjectFromUID(this.deleteRowUid);
         if (!isNullOrUndefined(rowObj)) {
             this.deleteRecord(null, rowObj.data);
         }
@@ -261,6 +287,8 @@ export class Edit implements IAction {
 
     /**
      * If Grid is in editable state, you can save a record by invoking endEdit.
+     *
+     * @returns {void}
      */
     public endEdit(): void {
         if (this.parent.editSettings.mode === 'Batch' && this.parent.editSettings.showConfirmDialog &&
@@ -276,10 +304,12 @@ export class Edit implements IAction {
     }
 
     /**
-     * To update the specified cell by given value without changing into edited state. 
+     * To update the specified cell by given value without changing into edited state.
+     *
      * @param {number} rowIndex Defines the row index.
      * @param {string} field Defines the column field.
      * @param {string | number | boolean | Date} value - Defines the value to be changed.
+     * @returns {void}
      */
     public updateCell(rowIndex: number, field: string, value: string | number | boolean | Date): void {
         this.editModule.updateCell(rowIndex, field, value);
@@ -287,8 +317,10 @@ export class Edit implements IAction {
 
     /**
      * To update the specified row by given values without changing into edited state.
+     *
      * @param {number} index Defines the row index.
      * @param {Object} data Defines the data object to be updated.
+     * @returns {void}
      */
     public updateRow(index: number, data: Object): void {
         this.editModule.updateRow(index, data);
@@ -296,6 +328,8 @@ export class Edit implements IAction {
 
     /**
      * Resets added, edited, and deleted records in the batch mode.
+     *
+     * @returns {void}
      */
     public batchCancel(): void {
         this.closeEdit();
@@ -303,6 +337,8 @@ export class Edit implements IAction {
 
     /**
      * Bulk saves added, edited, and deleted records in the batch mode.
+     *
+     * @returns {void}
      */
     public batchSave(): void {
         this.endEdit();
@@ -310,8 +346,10 @@ export class Edit implements IAction {
 
     /**
      * Changes a particular cell into edited state based on the row index and field name provided in the `batch` mode.
+     *
      * @param {number} index - Defines row index to edit a particular cell.
      * @param {string} field - Defines the field name of the column to perform batch edit.
+     * @returns {void}
      */
     public editCell(index: number, field: string): void {
         this.editModule.editCell(index, field);
@@ -319,7 +357,8 @@ export class Edit implements IAction {
 
     /**
      * Checks the status of validation at the time of editing. If validation is passed, it returns true.
-     * @return {boolean}
+     *
+     * @returns {boolean} returns whether the form is validated
      */
     public editFormValidate(): boolean {
         if (this.formObj) {
@@ -330,7 +369,8 @@ export class Edit implements IAction {
 
     /**
      * Gets the added, edited,and deleted data before bulk save to the DataSource in batch mode.
-     * @return {Object}
+     *
+     * @returns {Object} returns the Object
      */
     public getBatchChanges(): Object {
         return this.editModule.getBatchChanges ? this.editModule.getBatchChanges() : {};
@@ -338,14 +378,18 @@ export class Edit implements IAction {
 
     /**
      * Gets the current value of the edited component.
+     *
+     * @returns {Object} returns the Object
      */
     public getCurrentEditCellData(): Object {
-        let obj: Object = this.getCurrentEditedData(this.formObj.element, {});
+        const obj: Object = this.getCurrentEditedData(this.formObj.element, {});
         return obj[Object.keys(obj)[0]];
     }
 
     /**
      * Saves the cell that is currently edited. It does not save the value to the DataSource.
+     *
+     * @returns {void}
      */
     public saveCell(): void {
         this.editModule.saveCell();
@@ -366,30 +410,30 @@ export class Edit implements IAction {
     public getValueFromType(col: Column, value: string | Date | boolean): number | string | Date | boolean {
         let val: number | string | Date | boolean = value;
         switch (col.type) {
-            case 'number':
-                val = !isNaN(parseFloat(value as string)) ? parseFloat(value as string) : null;
-                break;
-            case 'boolean':
-                if (col.editType !== 'booleanedit') {
-                    val = value === this.l10n.getConstant('True') || value === true ? true : false;
-                }
-                break;
-            case 'date':
-            case 'datetime':
-                if (col.editType !== 'datepickeredit' && col.editType !== 'datetimepickeredit'
+        case 'number':
+            val = !isNaN(parseFloat(value as string)) ? parseFloat(value as string) : null;
+            break;
+        case 'boolean':
+            if (col.editType !== 'booleanedit') {
+                val = value === this.l10n.getConstant('True') || value === true ? true : false;
+            }
+            break;
+        case 'date':
+        case 'datetime':
+            if (col.editType !== 'datepickeredit' && col.editType !== 'datetimepickeredit'
                 && value && (value as string).length) {
-                    val = new Date(value as string);
-                } else if (value === '') {
-                    val = null;
-                }
-                break;
+                val = new Date(value as string);
+            } else if (value === '') {
+                val = null;
+            }
+            break;
         }
         return val;
     }
 
     private destroyToolTip(): void {
-        let elements: Element[] = [].slice.call(this.parent.element.getElementsByClassName('e-griderror'));
-        for (let elem of elements) {
+        const elements: Element[] = [].slice.call(this.parent.element.getElementsByClassName('e-griderror'));
+        for (const elem of elements) {
             remove(elem);
         }
         (this.parent.getContent().firstElementChild as HTMLElement).style.position = 'relative';
@@ -426,9 +470,9 @@ export class Edit implements IAction {
     }
 
     private dlgWidget(btnOptions: Object[], name: string): Dialog {
-        let div: HTMLElement = this.parent.createElement('div', { id: this.parent.element.id + name });
+        const div: HTMLElement = this.parent.createElement('div', { id: this.parent.element.id + name });
         this.parent.element.appendChild(div);
-        let options: Object = {
+        const options: Object = {
             showCloseIcon: false,
             isModal: true,
             visible: false,
@@ -438,8 +482,8 @@ export class Edit implements IAction {
             animationSettings: { effect: 'None' }
         };
         (options as { buttons: Object[] }).buttons = btnOptions;
-        let obj: Dialog = new Dialog(options);
-        let isStringTemplate: string = 'isStringTemplate';
+        const obj: Dialog = new Dialog(options);
+        const isStringTemplate: string = 'isStringTemplate';
         obj[isStringTemplate] = true;
         obj.appendTo(div);
         return obj;
@@ -451,40 +495,40 @@ export class Edit implements IAction {
         this.dialogObj.hide();
     }
 
-    private dlgOk(e: MouseEvent): void {
+    private dlgOk(): void {
         switch ((this.dialogObj.element.querySelector('.e-dlg-content').firstElementChild as HTMLElement).innerText) {
-            case this.l10n.getConstant('ConfirmDelete'):
-                this.editModule.deleteRecord();
-                break;
-            case this.l10n.getConstant('CancelEdit'):
-                this.editModule.closeEdit();
-                break;
-            case this.l10n.getConstant('BatchSaveConfirm'):
-                this.endEditing();
-                break;
-            case this.l10n.getConstant('BatchSaveLostChanges'):
-                if (this.parent.editSettings.mode === 'Batch') {
-                    this.editModule.addCancelWhilePaging();
-                }
-                this.executeAction();
-                break;
+        case this.l10n.getConstant('ConfirmDelete'):
+            this.editModule.deleteRecord();
+            break;
+        case this.l10n.getConstant('CancelEdit'):
+            this.editModule.closeEdit();
+            break;
+        case this.l10n.getConstant('BatchSaveConfirm'):
+            this.endEditing();
+            break;
+        case this.l10n.getConstant('BatchSaveLostChanges'):
+            if (this.parent.editSettings.mode === 'Batch') {
+                this.editModule.addCancelWhilePaging();
+            }
+            this.executeAction();
+            break;
         }
         this.dlgCancel();
     }
 
     /**
+     * @returns {void}
      * @hidden
      */
     public addEventListener(): void {
         if (this.parent.isDestroyed) { return; }
         this.eventDetails = [{ event: events.inBoundModelChanged, handler: this.onPropertyChanged },
-        { event: events.initialEnd, handler: this.initialEnd },
-        { event: events.keyPressed, handler: this.keyPressHandler },
-        { event: events.autoCol, handler: this.updateColTypeObj },
-        { event: events.tooltipDestroy, handler: this.destroyToolTip },
-        { event: events.preventBatch, handler: this.preventBatch },
-        { event: events.destroyForm, handler: this.destroyForm },
-        ];
+            { event: events.initialEnd, handler: this.initialEnd },
+            { event: events.keyPressed, handler: this.keyPressHandler },
+            { event: events.autoCol, handler: this.updateColTypeObj },
+            { event: events.tooltipDestroy, handler: this.destroyToolTip },
+            { event: events.preventBatch, handler: this.preventBatch },
+            { event: events.destroyForm, handler: this.destroyForm }];
         addRemoveEventListener(this.parent, this.eventDetails, true, this);
         this.actionBeginFunction = this.onActionBegin.bind(this);
         this.actionCompleteFunction = this.actionComplete.bind(this);
@@ -493,6 +537,7 @@ export class Edit implements IAction {
     }
 
     /**
+     * @returns {void}
      * @hidden
      */
     public removeEventListener(): void {
@@ -503,7 +548,7 @@ export class Edit implements IAction {
     }
 
     private actionComplete(e: NotifyArgs): void {
-        let actions: string[] = ['add', 'beginEdit', 'save', 'delete', 'cancel'];
+        const actions: string[] = ['add', 'beginEdit', 'save', 'delete', 'cancel'];
         if (actions.indexOf(e.requestType) < 0) {
             this.parent.isEdit = false;
         }
@@ -514,19 +559,22 @@ export class Edit implements IAction {
     }
 
     /**
+     * @param {Element} form - specifies the element
+     * @param {Object} editedData - specifies the edited data
+     * @returns {Object} returns the object
      * @hidden
      */
     public getCurrentEditedData(form: Element, editedData: Object): Object {
-        let gObj: IGrid = this.parent;
+        const gObj: IGrid = this.parent;
         if (gObj.editSettings.template) {
-            let elements: HTMLInputElement[] = [].slice.call((<HTMLFormElement>form).elements);
+            const elements: HTMLInputElement[] = [].slice.call((<HTMLFormElement>form).elements);
             for (let k: number = 0; k < elements.length; k++) {
                 if (((elements[k].hasAttribute('name') && (elements[k].className !== 'e-multi-hidden')) ||
                     elements[k].classList.contains('e-multiselect')) && !(elements[k].type === 'hidden' &&
                     (parentsUntil(elements[k], 'e-switch-wrapper') || parentsUntil(elements[k], 'e-checkbox-wrapper')))) {
-                    let field: string = (elements[k].hasAttribute('name')) ? setComplexFieldID(elements[k].getAttribute('name')) :
+                    const field: string = (elements[k].hasAttribute('name')) ? setComplexFieldID(elements[k].getAttribute('name')) :
                         setComplexFieldID(elements[k].getAttribute('id'));
-                    let column: Column = gObj.getColumnByField(field) || { field: field, type: elements[k].getAttribute('type') } as Column;
+                    const column: Column = gObj.getColumnByField(field) || { field: field, type: elements[k].getAttribute('type') } as Column;
                     let value: string | Date | boolean;
                     if (column.type === 'checkbox' || column.type === 'boolean') {
                         value = elements[k].checked;
@@ -563,7 +611,7 @@ export class Edit implements IAction {
             return editedData;
         }
 
-        let col: Column[] = (<{columnModel?: Column[]}>gObj).columnModel.filter((col: Column) => col.editTemplate);
+        const col: Column[] = (<{columnModel?: Column[]}>gObj).columnModel.filter((col: Column) => col.editTemplate);
         for (let j: number = 0; j < col.length; j++) {
             if (form[getComplexFieldID(col[j].field)]) {
                 let inputElements: HTMLInputElement[] = [].slice.call(form[getComplexFieldID(col[j].field)]);
@@ -574,17 +622,17 @@ export class Edit implements IAction {
                     temp = inputElements.filter((e: HTMLInputElement) => e.hasAttribute('name'));
                 }
                 for (let k: number = 0; k < temp.length; k++) {
-                    let value: number | string | Date | boolean = this.getValue(col[j], temp[k], editedData);
+                    const value: number | string | Date | boolean = this.getValue(col[j], temp[k], editedData);
                     DataUtil.setValue(col[j].field, value, editedData);
                 }
             }
         }
 
-        let inputs: HTMLInputElement[] = [].slice.call(form.getElementsByClassName('e-field'));
+        const inputs: HTMLInputElement[] = [].slice.call(form.getElementsByClassName('e-field'));
         for (let i: number = 0, len: number = inputs.length; i < len; i++) {
-            let col: Column = gObj.getColumnByUid(inputs[i].getAttribute('e-mappinguid'));
+            const col: Column = gObj.getColumnByUid(inputs[i].getAttribute('e-mappinguid'));
             if (col && col.field) {
-                let value:  number | string | Date | boolean = this.getValue(col, inputs[i], editedData);
+                const value:  number | string | Date | boolean = this.getValue(col, inputs[i], editedData);
                 DataUtil.setValue(col.field, value, editedData);
             }
         }
@@ -594,7 +642,7 @@ export class Edit implements IAction {
     private getValue(col: Column, input: HTMLInputElement, editedData: Object): string | boolean | number | Date {
         let value: string | boolean | number | Date = (<EJ2Intance>(input as Element)).ej2_instances ?
             (<EJ2Intance>(input as Element)).ej2_instances[0].value : input.value;
-        let gObj: IGrid = this.parent;
+        const gObj: IGrid = this.parent;
         let temp: Function = col.edit.read as Function;
         if (col.type === 'checkbox' || col.type === 'boolean') {
             value = input.checked;
@@ -612,6 +660,8 @@ export class Edit implements IAction {
     }
 
     /**
+     * @param {NotifyArgs} e - specifies the NotifyArgs
+     * @returns {void}
      * @hidden
      */
     public onActionBegin(e: NotifyArgs): void {
@@ -619,12 +669,12 @@ export class Edit implements IAction {
         && this.parent.editSettings.mode !== 'Batch') {
             this.closeEdit();
         } else {
-            let editRow: Element = this.parent.element.querySelector('.' + literals.editedRow);
+            const editRow: Element = this.parent.element.querySelector('.' + literals.editedRow);
             if (editRow && this.parent.frozenRows && e.requestType === 'virtualscroll'
                 && parseInt(parentsUntil(editRow, literals.row).getAttribute(literals.ariaRowIndex), 10) < this.parent.frozenRows) {
                 return;
             }
-            let restrictedRequestTypes: string[] = ['filterafteropen', 'filterbeforeopen', 'filterchoicerequest', 'save', 'infiniteScroll', 'virtualscroll'];
+            const restrictedRequestTypes: string[] = ['filterafteropen', 'filterbeforeopen', 'filterchoicerequest', 'save', 'infiniteScroll', 'virtualscroll'];
             if (this.parent.editSettings.mode !== 'Batch' && this.formObj && !this.formObj.isDestroyed
                 && restrictedRequestTypes.indexOf(e.requestType) === -1 && !e.cancel) {
                 this.destroyWidgets();
@@ -635,10 +685,12 @@ export class Edit implements IAction {
     }
 
     /**
+     * @param {Column[]} cols - specfies the column
+     * @returns {void}
      * @hidden
      */
     public destroyWidgets(cols?: Column[]): void {
-        let gObj: IGrid = this.parent;
+        const gObj: IGrid = this.parent;
         if (gObj.editSettings.template) {
             this.parent.destroyTemplate(['editSettingsTemplate']);
             if (this.parent.isReact) {
@@ -652,7 +704,7 @@ export class Edit implements IAction {
                 this.parent.renderTemplates();
             }
         }
-        for (let col of cols) {
+        for (const col of cols) {
             let temp: Function = col.edit.destroy as Function;
             if (col.edit.destroy) {
                 if (typeof temp === 'string') {
@@ -663,7 +715,7 @@ export class Edit implements IAction {
                 }
             }
         }
-        let elements: HTMLInputElement[] = [].slice.call((<HTMLFormElement>this.formObj.element).elements);
+        const elements: HTMLInputElement[] = [].slice.call((<HTMLFormElement>this.formObj.element).elements);
         for (let i: number = 0; i < elements.length; i++) {
             if (elements[i].hasAttribute('name')) {
                 if ((<EJ2Intance>(elements[i] as Element)).ej2_instances &&
@@ -676,6 +728,7 @@ export class Edit implements IAction {
     }
 
     /**
+     * @returns {void}
      * @hidden
      */
     public destroyForm(): void {
@@ -687,14 +740,15 @@ export class Edit implements IAction {
     }
 
     /**
-     * To destroy the editing. 
-     * @return {void}
+     * To destroy the editing.
+     *
+     * @returns {void}
      * @hidden
      */
     public destroy(): void {
-        let gridElement: Element = this.parent.element;
+        const gridElement: Element = this.parent.element;
         if (!gridElement) { return; }
-        let hasGridChild: Boolean = gridElement.querySelector('.' + literals.gridHeader) &&
+        const hasGridChild: boolean = gridElement.querySelector('.' + literals.gridHeader) &&
             gridElement.querySelector( '.' + literals.gridContent) ? true : false;
         if (hasGridChild) { this.destroyForm(); }
         this.removeEventListener();
@@ -716,35 +770,36 @@ export class Edit implements IAction {
 
     private keyPressHandler(e: KeyboardEventArgs): void {
         switch (e.action) {
-            case 'insert':
-                this.addRecord();
-                break;
-            case 'delete':
-                if (((e.target as HTMLElement).tagName !== 'INPUT' || (e.target as HTMLElement).classList.contains('e-checkselect'))
-                    && !document.querySelector('.e-popup-open')) {
-                    this.deleteRecord();
-                }
-                break;
-            case 'f2':
-                this.startEdit();
-                break;
-            case 'enter':
-                if (!parentsUntil(e.target as HTMLElement, 'e-unboundcelldiv') && this.parent.editSettings.mode !== 'Batch' &&
-                    (parentsUntil(e.target as HTMLElement,  literals.gridContent) || (this.parent.frozenRows
-                        && parentsUntil(e.target as HTMLElement, literals.headerContent)))
+        case 'insert':
+            this.addRecord();
+            break;
+        case 'delete':
+            if (((e.target as HTMLElement).tagName !== 'INPUT' || (e.target as HTMLElement).classList.contains('e-checkselect'))
+                && !document.querySelector('.e-popup-open')) {
+                this.deleteRecord();
+            }
+            break;
+        case 'f2':
+            this.startEdit();
+            break;
+        case 'enter':
+            if (!parentsUntil(e.target as HTMLElement, 'e-unboundcelldiv') && this.parent.editSettings.mode !== 'Batch' &&
+                    (parentsUntil(e.target as HTMLElement, literals.gridContent) || (this.parent.frozenRows
+                    && parentsUntil(e.target as HTMLElement, literals.headerContent)))
                     && !document.getElementsByClassName('e-popup-open').length) {
-                    e.preventDefault();
-                    this.endEdit();
+                e.preventDefault();
+                this.endEdit();
+            }
+            break;
+        case 'escape':
+            if (this.parent.isEdit) {
+                if (this.parent.editSettings.mode === 'Batch') {
+                    this.editModule.escapeCellEdit();
+                } else {
+                    this.closeEdit();
                 }
-                break;
-            case 'escape':
-                if (this.parent.isEdit) {
-                    if (this.parent.editSettings.mode === 'Batch') {
-                        this.editModule.escapeCellEdit();
-                    } else {
-                        this.closeEdit(); }
-                }
-                break;
+            }
+            break;
         }
     }
 
@@ -764,21 +819,23 @@ export class Edit implements IAction {
     }
 
     /**
+     * @param {Column[]} cols - specifies the column
+     * @returns {void}
      * @hidden
      */
     public applyFormValidation(cols?: Column[]): void {
-        let gObj: IGrid = this.parent;
-        let frzCols: boolean = gObj.isFrozenGrid();
-        let isInline: boolean = this.parent.editSettings.mode === 'Normal';
-        let idx: number = this.parent.getFrozenMode() === 'Right' && isInline ? 1 : 0;
-        let form: HTMLFormElement = this.parent.editSettings.mode !== 'Dialog' ?
+        const gObj: IGrid = this.parent;
+        const frzCols: boolean = gObj.isFrozenGrid();
+        const isInline: boolean = this.parent.editSettings.mode === 'Normal';
+        const idx: number = this.parent.getFrozenMode() === 'Right' && isInline ? 1 : 0;
+        const form: HTMLFormElement = this.parent.editSettings.mode !== 'Dialog' ?
             gObj.element.getElementsByClassName('e-gridform')[idx] as HTMLFormElement :
             select('#' + gObj.element.id + '_dialogEdit_wrapper .e-gridform', document) as HTMLFormElement;
-        let index: number = this.parent.getFrozenMode() === 'Right' && isInline ? 0 : 1;
-        let mForm: HTMLFormElement = gObj.element.getElementsByClassName('e-gridform')[index] as HTMLFormElement;
+        const index: number = this.parent.getFrozenMode() === 'Right' && isInline ? 0 : 1;
+        const mForm: HTMLFormElement = gObj.element.getElementsByClassName('e-gridform')[index] as HTMLFormElement;
         let rules: Object = {};
-        let mRules: Object = {};
-        let frRules: Object = {};
+        const mRules: Object = {};
+        const frRules: Object = {};
         cols = cols ? cols : gObj.getColumns() as Column[];
         for (let i: number = 0; i < cols.length; i++) {
             if (!cols[i].visible) {
@@ -791,7 +848,7 @@ export class Edit implements IAction {
         if (frzCols && this.parent.editSettings.mode !== 'Dialog') {
             this.parent.editModule.mFormObj = this.createFormObj(mForm, mRules);
             if (this.parent.getFrozenMode() === literals.leftRight) {
-                let frForm: HTMLFormElement = gObj.element.getElementsByClassName('e-gridform')[2] as HTMLFormElement;
+                const frForm: HTMLFormElement = gObj.element.getElementsByClassName('e-gridform')[2] as HTMLFormElement;
                 this.parent.editModule.frFormObj = this.createFormObj(frForm, frRules);
             }
         } else {
@@ -800,7 +857,13 @@ export class Edit implements IAction {
         this.parent.editModule.formObj = this.createFormObj(form, rules);
     }
 
-    private createFormObj(form: HTMLFormElement, rules: Object): FormValidator {
+    /**
+     * @param {HTMLFormElement} form - Defined Form element
+     * @param {Object} rules - Defines form rules
+     * @returns {FormValidator} Returns formvalidator instance
+     * @hidden
+     */
+    public createFormObj(form: HTMLFormElement, rules: Object): FormValidator {
         return new FormValidator(form, {
             rules: rules as { [name: string]: { [rule: string]: Object } },
             locale: this.parent.locale,
@@ -808,12 +871,12 @@ export class Edit implements IAction {
                 this.validationComplete(args);
             },
             customPlacement: (inputElement: HTMLElement, error: HTMLElement) => {
-                let uid: string = inputElement.getAttribute('e-mappinguid');
-                let args: Object = {
+                const uid: string = inputElement.getAttribute('e-mappinguid');
+                const args: Object = {
                     column: this.parent.getColumnByUid(uid),
                     error: error,
                     inputElement: inputElement,
-                    value: (inputElement as HTMLInputElement).value,
+                    value: (inputElement as HTMLInputElement).value
                 };
                 this.valErrorPlacement(inputElement, error);
                 this.parent.notify(events.valCustomPlacement, args);
@@ -823,8 +886,8 @@ export class Edit implements IAction {
 
     private valErrorPlacement(inputElement: HTMLElement, error: HTMLElement): void {
         if (this.parent.isEdit) {
-            let id: string = error.getAttribute('for');
-            let elem: Element = this.getElemTable(inputElement).querySelector('#' + id + '_Error');
+            const id: string = error.getAttribute('for');
+            const elem: Element = this.getElemTable(inputElement).querySelector('#' + id + '_Error');
             if (!elem) {
                 this.createTooltip(inputElement, error, id, '');
             } else {
@@ -845,12 +908,12 @@ export class Edit implements IAction {
 
     public resetElemPosition(elem: HTMLElement, args: { status: string, inputName: string,
         element: HTMLElement, message: string }): void {
-        let td: Element = parentsUntil(args.element, literals.rowCell);
+        const td: Element = parentsUntil(args.element, literals.rowCell);
         if (td) {
-            let tdRight: number = td.getBoundingClientRect().right;
-            let elemRight: number = elem.getBoundingClientRect().right;
+            const tdRight: number = td.getBoundingClientRect().right;
+            const elemRight: number = elem.getBoundingClientRect().right;
             if (elemRight > tdRight) {
-                let offSet: number = elemRight - tdRight;
+                const offSet: number = elemRight - tdRight;
                 elem.style.left = (elem.offsetLeft - offSet) + 'px';
             }
         }
@@ -858,7 +921,7 @@ export class Edit implements IAction {
 
     private validationComplete(args: { status: string, inputName: string, element: HTMLElement, message: string }): void {
         if (this.parent.isEdit) {
-            let elem: HTMLElement = this.getElemTable(args.element).querySelector('#' + args.inputName + '_Error') as HTMLElement;
+            const elem: HTMLElement = this.getElemTable(args.element).querySelector('#' + args.inputName + '_Error') as HTMLElement;
             if (elem) {
                 if (args.status === 'failure') {
                     elem.style.display = '';
@@ -870,28 +933,31 @@ export class Edit implements IAction {
         }
     }
 
-     // tslint:disable-next-line:max-func-body-length
-     private createTooltip(element: Element, error: HTMLElement, name: string, display: string): void {
-        let column: Column = this.parent.getColumnByField(name);
+    private createTooltip(element: Element, error: HTMLElement, name: string, display: string): void {
+        const column: Column = this.parent.getColumnByField(name);
         let formObj: HTMLFormElement = this.parent.getFrozenMode() === literals.leftRight && this.parent.editSettings.mode === 'Normal'
             && column.getFreezeTableName() === literals.frozenRight ? this.frFormObj.element : this.formObj.element;
+        const customForm: Element = parentsUntil(element, 'e-virtual-validation');
+        if (customForm) {
+            formObj = this.virtualFormObj.element;
+        }
         let gcontent: HTMLElement = this.parent.getContent().firstElementChild as HTMLElement;
-        let frzCols: number = this.parent.getFrozenColumns() || this.parent.getFrozenLeftColumnsCount()
-         || this.parent.getFrozenRightColumnsCount();
+        const frzCols: number = this.parent.getFrozenColumns() || this.parent.getFrozenLeftColumnsCount()
+            || this.parent.getFrozenRightColumnsCount();
         if (frzCols) {
             gcontent = this.parent.getMovableVirtualContent() as HTMLElement;
         }
-        let isScroll: boolean = gcontent.scrollHeight > gcontent.clientHeight || gcontent.scrollWidth > gcontent.clientWidth;
-        let isInline: boolean = this.parent.editSettings.mode !== 'Dialog';
-        let td: Element = closest(element, '.' + literals.rowCell);
-        let row: Element = closest(element, '.' + literals.row);
-        let fCont: Element = this.parent.getContent().querySelector('.' + literals.frozenContent);
+        const isScroll: boolean = gcontent.scrollHeight > gcontent.clientHeight || gcontent.scrollWidth > gcontent.clientWidth;
+        const isInline: boolean = this.parent.editSettings.mode !== 'Dialog';
+        const td: Element = closest(element, '.' + literals.rowCell);
+        const row: Element = closest(element, '.' + literals.row);
+        const fCont: Element = this.parent.getContent().querySelector('.' + literals.frozenContent);
         let isFHdr: boolean;
         let isFHdrLastRow: boolean = false;
         let validationForBottomRowPos: boolean;
         let isBatchModeLastRow: boolean = false;
-        let viewPortRowCount: number = Math.round(this.parent.getContent().clientHeight / this.parent.getRowHeight()) - 1;
-        let rows: Element[] = !fCont ? [].slice.call(this.parent.getContent().getElementsByClassName(literals.row))
+        const viewPortRowCount: number = Math.round(this.parent.getContent().clientHeight / this.parent.getRowHeight()) - 1;
+        const rows: Element[] = !fCont ? [].slice.call(this.parent.getContent().getElementsByClassName(literals.row))
             : [].slice.call(this.parent.getFrozenVirtualContent().getElementsByClassName(literals.row));
         if (this.parent.editSettings.mode === 'Batch') {
             if (viewPortRowCount > 1 && rows.length >= viewPortRowCount
@@ -901,8 +967,8 @@ export class Edit implements IAction {
         }
         if (isInline) {
             if (this.parent.frozenRows) {
-                let fHeraderRows: HTMLCollection = frzCols ? this.parent.getFrozenVirtualHeader().querySelector( literals.tbody).children
-                    : this.parent.getHeaderTable().querySelector( literals.tbody).children;
+                const fHeraderRows: HTMLCollection = frzCols ? this.parent.getFrozenVirtualHeader().querySelector(literals.tbody).children
+                    : this.parent.getHeaderTable().querySelector(literals.tbody).children;
                 isFHdr = fHeraderRows.length > (parseInt(row.getAttribute(literals.ariaRowIndex), 10) || 0);
                 isFHdrLastRow = isFHdr && parseInt(row.getAttribute(literals.ariaRowIndex), 10) === fHeraderRows.length - 1;
             }
@@ -913,15 +979,15 @@ export class Edit implements IAction {
                 validationForBottomRowPos = true;
             }
         }
-        let table: Element = isInline ?
+        const table: Element = isInline ?
             (isFHdr ? this.parent.getHeaderTable() : this.parent.getContentTable()) :
             select('#' + this.parent.element.id + '_dialogEdit_wrapper .e-dlg-content', document);
-        let client: ClientRect = table.getBoundingClientRect();
-        let left: number = isInline ?
+        const client: ClientRect = table.getBoundingClientRect();
+        const left: number = isInline ?
             this.parent.element.getBoundingClientRect().left : client.left;
-        let input: HTMLElement = closest(element, 'td') as HTMLElement;
-        let inputClient: ClientRect = input ? input.getBoundingClientRect() : element.parentElement.getBoundingClientRect();
-        let div: HTMLElement = this.parent.createElement('div', {
+        const input: HTMLElement = closest(element, 'td') as HTMLElement;
+        const inputClient: ClientRect = input ? input.getBoundingClientRect() : element.parentElement.getBoundingClientRect();
+        const div: HTMLElement = this.parent.createElement('div', {
             className: 'e-tooltip-wrap e-lib e-control e-popup e-griderror',
             id: name + '_Error',
             styles: 'display:' + display + ';top:' +
@@ -934,7 +1000,7 @@ export class Edit implements IAction {
         if (isInline && client.left < left) {
             div.style.left = parseInt(div.style.left, 10) - client.left + left + 'px';
         }
-        let content: Element = this.parent.createElement('div', { className: 'e-tip-content' });
+        const content: Element = this.parent.createElement('div', { className: 'e-tip-content' });
         content.appendChild(error);
         let arrow: Element;
         if (validationForBottomRowPos) {
@@ -949,7 +1015,7 @@ export class Edit implements IAction {
         div.appendChild(content);
         div.appendChild(arrow);
         if ((frzCols || this.parent.frozenRows) && this.parent.editSettings.mode !== 'Dialog') {
-            let getEditCell: HTMLElement = this.parent.editSettings.mode === 'Normal' ?
+            const getEditCell: HTMLElement = this.parent.editSettings.mode === 'Normal' ?
                 closest(element, '.e-editcell') as HTMLElement : closest(element, '.' + literals.table) as HTMLElement;
             getEditCell.style.position = 'relative';
             div.style.position = 'absolute';
@@ -961,12 +1027,16 @@ export class Edit implements IAction {
                 this.mFormObj.element.appendChild(div);
             }
         } else {
-            this.formObj.element.appendChild(div);
+            if (customForm) {
+                this.virtualFormObj.element.appendChild(div);
+            } else {
+                this.formObj.element.appendChild(div);
+            }
         }
         if (!validationForBottomRowPos && isInline && gcontent.getBoundingClientRect().bottom < inputClient.bottom + inputClient.height) {
             gcontent.scrollTop = gcontent.scrollTop + div.offsetHeight + arrow.scrollHeight;
         }
-        let lineHeight: number = parseInt(
+        const lineHeight: number = parseInt(
             document.defaultView.getComputedStyle(div, null).getPropertyValue('font-size'), 10
         );
         if (div.getBoundingClientRect().width < inputClient.width &&
@@ -980,13 +1050,13 @@ export class Edit implements IAction {
         }
         if (isInline && !isScroll && !this.parent.allowPaging || frzCols || this.parent.frozenRows) {
             gcontent.style.position = 'static';
-            let pos: OffsetPosition = calculateRelativeBasedPosition(input, div);
+            const pos: OffsetPosition = calculateRelativeBasedPosition(input, div);
             div.style.top = pos.top + inputClient.height + 9 + 'px';
         }
         if (validationForBottomRowPos) {
             if (isScroll && !frzCols && this.parent.height !== 'auto' && !this.parent.frozenRows
                 && !this.parent.enableVirtualization) {
-                let scrollWidth: number = gcontent.scrollWidth > gcontent.offsetWidth ? getScrollBarWidth() : 0;
+                const scrollWidth: number = gcontent.scrollWidth > gcontent.offsetWidth ? getScrollBarWidth() : 0;
                 div.style.bottom = ((this.parent.height as number) - gcontent.querySelector('table').offsetHeight
                     - scrollWidth) + inputClient.height + 9 + 'px';
             } else {
@@ -994,15 +1064,18 @@ export class Edit implements IAction {
             }
             if (rows.length < viewPortRowCount && this.parent.editSettings.newRowPosition === 'Bottom' && (this.editModule.args
                 && this.editModule.args.requestType === 'add')) {
-                let rowsCount: number = this.parent.frozenRows ? this.parent.frozenRows + (rows.length - 1) : rows.length - 1;
-                let rowsHeight: number = rowsCount * this.parent.getRowHeight();
-                let position: number = this.parent.getContent().clientHeight - rowsHeight;
+                const rowsCount: number = this.parent.frozenRows ? this.parent.frozenRows + (rows.length - 1) : rows.length - 1;
+                const rowsHeight: number = rowsCount * this.parent.getRowHeight();
+                const position: number = this.parent.getContent().clientHeight - rowsHeight;
                 div.style.bottom = position + 9 + 'px';
             }
             div.style.top = null;
         }
     }
+
     /**
+     * @param {Column} col - specfies the column
+     * @returns {boolean} returns the whether column is grouped
      * @hidden
      */
     public checkColumnIsGrouped(col: Column): boolean {
@@ -1010,6 +1083,8 @@ export class Edit implements IAction {
     }
 
     /**
+     * @param {object} editors -specfies the editors
+     * @returns {void}
      * @hidden
      */
     public static AddEditors(editors: object): void {

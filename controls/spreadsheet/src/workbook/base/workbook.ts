@@ -903,7 +903,7 @@ export class Workbook extends Component<HTMLElement> implements INotifyPropertyC
             if (index && index + 1 === this.sheets.length) {
                 index = initIdx - 1;
             } else {
-                index = index < initIdx ? index-- : index++;
+                index = index < initIdx ? --index : ++index;
             }
             index = this.skipHiddenSheets(index, initIdx, ++hiddenCount);
         }

@@ -181,6 +181,39 @@ describe('Dialog actions module', () => {
         });
     });
 
+    describe('EJ2-49463- Kanban edit dialog element not removed when "args.cancel" is set to true', () => {
+        let kanbanObj: Kanban;
+        let element1: HTMLElement;
+        beforeAll((done: DoneFn) => {
+            const model: KanbanModel = {
+                dialogSettings: {
+                    fields: [
+                        { text: 'ID', key: 'Id', type: 'Numeric' },
+                        { key: 'Status', type: 'DropDown' },
+                        { key: 'Assignee', type: 'DropDown' },
+                        { key: 'Estimate', type: 'Numeric' },
+                        { key: 'Summary', type: 'TextArea' }
+                    ]
+                },
+                dialogOpen: function (args : any) {
+                    args.cancel = true;
+                }
+            };
+            kanbanObj = util.createKanban(model, kanbanData, done);
+        });
+
+        afterAll(() => {
+            util.destroy(kanbanObj);
+        });
+        it('Checking the dialog element removed, when double clicked on cards to open', () => {
+            element1 = kanbanObj.element.querySelector('.e-card[data-id="5"]') as HTMLElement;
+            util.triggerMouseEvent(element1, 'dblclick');
+            expect((kanbanObj.dialogModule as any).element).toBe(null);
+            util.triggerMouseEvent(element1, 'dblclick');
+            expect((kanbanObj.dialogModule as any).element).toBe(null);
+        });
+    });
+
     // describe('Public method Editor', () => {
     //     let kanbanObj: Kanban;
     //     beforeAll((done: DoneFn) => {

@@ -3241,7 +3241,7 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
      */
     public excelExport(excelExportProperties?: ExcelExportProperties, isMultipleExport?: boolean, workbook?: any, isBlob?: boolean): void { /* eslint-disable-line */
         if (this.enableVirtualization && this.dataSourceSettings.mode !== 'Server') {
-            this.excelExportModule.exportToExcel('Excel');
+            this.excelExportModule.exportToExcel('Excel', excelExportProperties);
         } else {
             this.grid.excelExport(excelExportProperties, isMultipleExport, workbook, isBlob);
         }
@@ -3257,7 +3257,7 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
      */
     public csvExport(excelExportProperties?: ExcelExportProperties, isMultipleExport?: boolean, workbook?: any, isBlob?: boolean): void {   /* eslint-disable-line */
         if (this.enableVirtualization && this.dataSourceSettings.mode !== 'Server') {
-            this.excelExportModule.exportToExcel('CSV');
+            this.excelExportModule.exportToExcel('CSV', excelExportProperties);
         } else {
             this.grid.csvExport(excelExportProperties, isMultipleExport, workbook, isBlob);
         }
@@ -3273,7 +3273,7 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
      */
     public pdfExport(pdfExportProperties?: PdfExportProperties, isMultipleExport?: boolean, pdfDoc?: Object, isBlob?: boolean): void {  /* eslint-disable-line */
         if (this.enableVirtualization && this.dataSourceSettings.mode !== 'Server') {
-            this.pdfExportModule.exportToPDF();
+            this.pdfExportModule.exportToPDF(pdfExportProperties);
         } else {
             this.grid.pdfExport(pdfExportProperties, isMultipleExport, pdfDoc, isBlob);
         }

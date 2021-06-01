@@ -1,10 +1,10 @@
-import { Spreadsheet } from '../index';
+import { ConditionalFormatEventArgs, Spreadsheet } from '../index';
 import { checkConditionalFormat, initiateConditionalFormat, locale, dialog, setCF, CFormattingEventArgs, focus } from '../common/index';
 import { beginAction, completeAction } from '../common/index';
 import { CellModel, SheetModel, getCell, setRow, setCell } from '../../workbook/base/index';
 import { getRangeIndexes, checkDateFormat, cFInitialCheck, isNumber, cFRender, cFDelete, DataBar } from '../../workbook/common/index';
 import { CellFormatArgs, isDateTime, dateToInt, CellStyleModel, applyCellFormat, clearCF } from '../../workbook/common/index';
-import { setCFRule, clearCells } from '../../workbook/common/index';
+import { setCFRule, clearCells, getCellAddress } from '../../workbook/common/index';
 import { extend, isNullOrUndefined, L10n } from '@syncfusion/ej2-base';
 import { Dialog } from '../services';
 import { DropDownList } from '@syncfusion/ej2-dropdowns';
@@ -72,7 +72,7 @@ export class ConditionalFormatting {
             conditionalFormat.cFColor = eventArgs.cFColor;
             conditionalFormat.value = eventArgs.value;
             conditionalFormat.range = eventArgs.range;
-            this.parent.notify(setCFRule, { conditionalFormat: conditionalFormat });
+            this.parent.notify(setCFRule, { conditionalFormat: conditionalFormat, isAction: true });
             delete eventArgs.cancel;
             this.parent.notify(completeAction, { eventArgs: eventArgs, action: 'conditionalFormat' });
         }
@@ -475,23 +475,33 @@ export class ConditionalFormatting {
         }
     }
 
+    private triggetConditionalFormatEvent(args: ConditionalFormatEventArgs, isAction: boolean): void {
+        if (isAction && (args.conditionalFormat.value || args.conditionalFormat.type === 'AboveAverage' || args.conditionalFormat.type ===
+            'BelowAverage' || args.conditionalFormat.type === 'Duplicate')) {
+            this.parent.trigger('beforeConditionalFormat', args);
+        }
+    }
+
     private cFInitialCheckHandler(
         args: {
             rowIdx: number, colIdx: number, cell: CellModel, td?: HTMLElement,
-            conditionalFormat: ConditionalFormatModel
+            conditionalFormat: ConditionalFormatModel, isAction?: boolean
         }): void {
         let formatStyle: CellStyleModel;
         let isApply: boolean = false;
         const cFColors: string[] = ['e-redft', 'e-yellowft', 'e-greenft', 'e-redf', 'e-redt'];
         const value: string = args.cell.value || '';
-        const cFRule: ConditionalFormatModel = args.conditionalFormat;
         const td: HTMLElement = args.td || this.parent.getCell(args.rowIdx, args.colIdx);
         if (!td) {
             return;
         }
+        const cFRule: ConditionalFormatModel = args.conditionalFormat;
         cFRule.type = cFRule.type || 'GreaterThan';
         cFRule.cFColor = cFRule.cFColor ? cFRule.cFColor : cFRule.format ? cFRule.cFColor : 'RedFT';
         isApply = this.cFRCheck(cFRule, value, td, args.rowIdx, args.colIdx, true);
+        this.triggetConditionalFormatEvent(
+            { conditionalFormat: cFRule, cell: args.cell, element: td, address: getCellAddress(args.rowIdx, args.colIdx), apply: isApply },
+            args.isAction);
         if (isApply) {
             for (let idx: number = 0; idx < cFColors.length; idx++) {
                 if (td.classList.contains(cFColors[idx])) {
@@ -527,7 +537,7 @@ export class ConditionalFormatting {
         }
     }
 
-    private checkConditionalFormatHandler(args: { rowIdx: number, colIdx: number, cell: CellModel }): void {
+    private checkConditionalFormatHandler(args: { rowIdx: number, colIdx: number, cell: CellModel, isAction?: true }): void {
         let indexes: number[];
         let isApply: boolean = false;
         let result: boolean = false;
@@ -562,7 +572,7 @@ export class ConditionalFormatting {
                     } else {
                         isApply = this.cFRCheck(sheet.conditionalFormats[cFRuleIdx], cellVal, td);
                     }
-                    this.setColor(td, args.rowIdx, args.colIdx, cFRuleIdx, isApply);
+                    this.setColor(td, args.rowIdx, args.colIdx, cFRuleIdx, isApply, args.isAction);
                 } else if (('Top10Items' + 'Bottom10Items' + 'Top10%' + 'Bottom10%' + 'AboveAverage' +
                     'BelowAverage' + 'Duplicate' + 'Unique').includes(sheet.conditionalFormats[cFRuleIdx].type)) {
                     for (let rangeIdx: number = 0; rangeIdx < cFRanges.length; rangeIdx++) {
@@ -577,7 +587,7 @@ export class ConditionalFormatting {
                                     getCell(rowIdx, colIdx, sheet).value : '';
                                 isApply = this.cFRCheck(sheet.conditionalFormats[cFRuleIdx], cellVal, td, rowIdx, colIdx, false);
                                 td = this.parent.getCell(rowIdx, colIdx);
-                                this.setColor(td, rowIdx, colIdx, cFRuleIdx, isApply);
+                                this.setColor(td, rowIdx, colIdx, cFRuleIdx, isApply, args.isAction);
                             }
                         }
                     }
@@ -603,9 +613,12 @@ export class ConditionalFormatting {
         }
     }
 
-    private setColor(td: HTMLElement, rIdx: number, cIdx: number, cFRuleIdx: number, isApply: boolean): void {
+    private setColor(td: HTMLElement, rIdx: number, cIdx: number, cFRuleIdx: number, isApply: boolean, isAction: boolean): void {
         const sheet: SheetModel = this.parent.getActiveSheet();
         const cFRules: ConditionalFormatModel[] = sheet.conditionalFormats as ConditionalFormatModel[];
+        this.triggetConditionalFormatEvent(
+            { conditionalFormat: cFRules[cFRuleIdx], cell: getCell(rIdx, cIdx, sheet), element: td, address: getCellAddress(rIdx, cIdx),
+                apply: isApply }, isAction);
         const cFColors: string[] = ['e-redft', 'e-yellowft', 'e-greenft', 'e-redf', 'e-redt'];
         let isActiveCF: boolean = false;
         if (cFRules[cFRuleIdx].cFColor) {

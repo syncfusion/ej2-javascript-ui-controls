@@ -13,10 +13,11 @@ import * as literals from '../base/string-literals';
 
 /**
  * Edit render module is used to render grid edit row.
+ *
  * @hidden
  */
 export class DialogEditRender {
-    //Internal variables              
+    //Internal variables
 
     //Module declarations
     private parent: IGrid;
@@ -27,6 +28,9 @@ export class DialogEditRender {
     private dialogObj: Dialog;
     /**
      * Constructor for render module
+     *
+     * @param {IGrid} parent - specifies the IGrid
+     * @param {ServiceLocator} serviceLocator - specifies the serviceLocator
      */
     constructor(parent?: IGrid, serviceLocator?: ServiceLocator) {
         this.parent = parent;
@@ -51,10 +55,10 @@ export class DialogEditRender {
     }
 
     private createDialogHeader(args: ResponsiveDialogArgs): Element | string {
-        let gObj: IGrid = this.parent;
+        const gObj: IGrid = this.parent;
         let header: Element | string;
         if (this.parent.enableAdaptiveUI) {
-            let responsiveDlgRenderer: ResponsiveDialogRenderer = new ResponsiveDialogRenderer(this.parent, this.serviceLocator);
+            const responsiveDlgRenderer: ResponsiveDialogRenderer = new ResponsiveDialogRenderer(this.parent, this.serviceLocator);
             responsiveDlgRenderer.action = this.isEdit ? ResponsiveDialogAction.isEdit : ResponsiveDialogAction.isAdd;
             return responsiveDlgRenderer.renderResponsiveHeader(undefined, args);
         } else {
@@ -73,7 +77,7 @@ export class DialogEditRender {
         primaryKeyValue?: string[], rowData?: Object,
         dialog?: DialogModel, target?: HTMLElement
     }): void {
-        let gObj: IGrid = this.parent;
+        const gObj: IGrid = this.parent;
         this.dialog = this.parent.createElement('div', { id: gObj.element.id + '_dialogEdit_wrapper', styles: 'width: auto' });
         if (gObj.enableAdaptiveUI) {
             this.dialog.classList.add('e-responsive-dialog');
@@ -104,7 +108,7 @@ export class DialogEditRender {
             gObj.editSettings.dialog ? (gObj.editSettings.dialog.params || {}) : {}
         ));
         args.dialog = this.dialogObj;
-        let isStringTemplate: string = 'isStringTemplate';
+        const isStringTemplate: string = 'isStringTemplate';
         this.dialogObj[isStringTemplate] = true;
         this.renderResponsiveDialog();
         this.dialogObj.appendTo(this.dialog);
@@ -145,12 +149,13 @@ export class DialogEditRender {
         this.parent.closeEdit();
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     private destroy(args?: { requestType: string }): void {
-        let dialogEditTemplates: string[] = ['template', 'headerTemplate', 'footerTemplate'];
+        const dialogEditTemplates: string[] = ['template', 'headerTemplate', 'footerTemplate'];
         for (let i: number = 0; i < dialogEditTemplates.length; i++) {
             if (this.parent.editSettings[dialogEditTemplates[i]]) {
-                let templateName: string = dialogEditTemplates[i].charAt(0).toUpperCase() + dialogEditTemplates[i].slice(1);
-                let editTemplateID: string = this.parent.element.id + 'editSettings' + templateName;
+                const templateName: string = dialogEditTemplates[i].charAt(0).toUpperCase() + dialogEditTemplates[i].slice(1);
+                const editTemplateID: string = this.parent.element.id + 'editSettings' + templateName;
                 updateBlazorTemplate(editTemplateID, templateName, this.parent.editSettings);
             }
         }
@@ -164,9 +169,9 @@ export class DialogEditRender {
     }
 
     private getDialogEditTemplateElement(dialogTemp: string, args: { rowData?: Object, form?: Element }): Element {
-        let tempDiv: Element = this.parent.createElement('div', { className: 'e-dialog' + dialogTemp });
-        let dummyData: Object = extend({}, args.rowData, { isAdd: !this.isEdit }, true);
-        let templateID: string = this.parent.element.id + 'editSettings' + dialogTemp;
+        const tempDiv: Element = this.parent.createElement('div', { className: 'e-dialog' + dialogTemp });
+        const dummyData: Object = extend({}, args.rowData, { isAdd: !this.isEdit }, true);
+        const templateID: string = this.parent.element.id + 'editSettings' + dialogTemp;
         appendChildren(tempDiv, (dialogTemp === 'HeaderTemplate' ?  this.parent.getEditHeaderTemplate() :
             this.parent.getEditFooterTemplate())(dummyData, this.parent, 'editSettings' + dialogTemp, templateID));
         updateBlazorTemplate(templateID, dialogTemp, this.parent.editSettings);
@@ -174,22 +179,22 @@ export class DialogEditRender {
     }
 
     private getEditElement(elements: Object, args: { rowData?: Object, form?: Element }): Element {
-        let gObj: IGrid = this.parent;
-        let div: Element = this.parent.createElement('div', { className: this.isEdit ? literals.editedRow : 'e-insertedrow' });
-        let form: HTMLFormElement = args.form =
+        const gObj: IGrid = this.parent;
+        const div: Element = this.parent.createElement('div', { className: this.isEdit ? literals.editedRow : 'e-insertedrow' });
+        const form: HTMLFormElement = args.form =
             this.parent.createElement('form', { id: gObj.element.id + 'EditForm', className: 'e-gridform' }) as HTMLFormElement;
         if (this.parent.editSettings.template) {
-            let editTemplateID: string = this.parent.element.id + 'editSettingsTemplate';
-            let dummyData: Object = extend({}, args.rowData, { isAdd: !this.isEdit }, true);
-            let isReactCompiler: boolean = this.parent.isReact && typeof (this.parent.editSettings.template) !== 'string';
+            const editTemplateID: string = this.parent.element.id + 'editSettingsTemplate';
+            const dummyData: Object = extend({}, args.rowData, { isAdd: !this.isEdit }, true);
+            const isReactCompiler: boolean = this.parent.isReact && typeof (this.parent.editSettings.template) !== 'string';
             if (isReactCompiler) {
                 this.parent.getEditTemplate()(dummyData, this.parent, 'editSettingsTemplate', editTemplateID, null, null, form);
                 this.parent.renderTemplates();
             } else {
                 appendChildren(form, this.parent.getEditTemplate()(dummyData, this.parent, 'editSettingsTemplate', editTemplateID));
             }
-            let setRules: Function = () => {
-                let columns: Column[] = this.parent.getColumns();
+            const setRules: Function = () => {
+                const columns: Column[] = this.parent.getColumns();
                 for (let i: number = 0; i < columns.length; i++) {
                     if ((columns[i] as Column).validationRules) {
                         this.parent.editModule.formObj.rules[(columns[i] as Column).field] =
@@ -201,21 +206,20 @@ export class DialogEditRender {
             div.appendChild(form);
             return div;
         }
-        let table: Element = this.parent.createElement('table', { className: literals.table, attrs: { cellspacing: '6px' } });
-        let tbody: Element = this.parent.createElement( literals.tbody);
-        let cols: Column[] = gObj.getColumns() as Column[];
+        const table: Element = this.parent.createElement('table', { className: literals.table, attrs: { cellspacing: '6px' } });
+        const tbody: Element = this.parent.createElement( literals.tbody);
+        const cols: Column[] = gObj.getColumns() as Column[];
         for (let i: number = 0; i < cols.length; i++) {
             if (this.parent.editModule.checkColumnIsGrouped(cols[i]) || cols[i].commands || cols[i].commandsTemplate ||
                 cols[i].type === 'checkbox') {
                 continue;
             }
-            let tr: Element = this.parent.createElement('tr');
-            let dataCell: HTMLElement = this.parent.createElement('td', {
+            const tr: Element = this.parent.createElement('tr');
+            const dataCell: HTMLElement = this.parent.createElement('td', {
                 className: literals.rowCell, attrs: {
                     style: 'text-align:' + (this.parent.enableRtl ? 'right' : 'left') + ';width:190px'
                 }
             });
-            let label: Element = this.parent.createElement('label', { innerHTML: cols[i].field });
             elements[cols[i].uid].classList.remove('e-input');
             dataCell.appendChild(elements[cols[i].uid]);
             tr.appendChild(dataCell);

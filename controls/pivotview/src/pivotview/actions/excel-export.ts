@@ -7,6 +7,7 @@ import { IPageSettings } from '../../base/engine';
 import { OlapEngine } from '../../base/olap/engine';
 import { isNullOrUndefined } from '@syncfusion/ej2-base';
 import { PivotUtil } from '../../base/util';
+import { ExcelExportProperties, ExcelFooter, ExcelHeader } from '@syncfusion/ej2-grids';
 
 /**
  * @hidden
@@ -15,6 +16,8 @@ import { PivotUtil } from '../../base/util';
 export class ExcelExport {
     private parent: PivotView;
     private engine: PivotEngine | OlapEngine;
+    private rows: ExcelRow[];
+    private actualrCnt: number = 0;
 
     /**
      * Constructor for the PivotGrid Excel Export module.
@@ -34,16 +37,56 @@ export class ExcelExport {
         return 'excelExport';
     }
 
+    private addHeaderAndFooter(excelExportProperties?: ExcelHeader | ExcelFooter, stringValue?: string, type?: string, rowCount?: number): void {
+        let cells: ExcelCell[] = [];
+        if (!isNullOrUndefined(excelExportProperties.rows)) {
+            this.actualrCnt = (type === 'footer') ? this.actualrCnt + rowCount - (excelExportProperties.rows[0].cells.length) : this.actualrCnt;
+            let row: ExcelRow[] = excelExportProperties.rows;
+            for (let i: number = 0; i < row.length; i++) {
+                for (let j: number = 0; j < row[i].cells.length; j++) {
+                    cells = [];
+                    cells.push({
+                        index: i + 1, value: row[i].cells[j].value,
+                        colSpan: row[i].cells[j].colSpan, rowSpan: row[i].cells[j].rowSpan, style: row[i].cells[j].style
+                    });
+                    this.actualrCnt++;
+                    this.rows.push({ index: this.actualrCnt, cells: cells });
+                }
+            }
+            this.actualrCnt = (type === 'header') ? rowCount : this.actualrCnt;
+        }
+        else {
+            if (stringValue !== '') {
+                if (type === 'footer') {
+                    this.actualrCnt++;
+                }
+                cells.push({
+                    index: 1, value: stringValue,
+                });
+                this.rows.push({ index: this.actualrCnt + 1, cells: cells });
+                this.actualrCnt = (type === 'header') ? this.actualrCnt + 2 : this.actualrCnt;
+            }
+        }
+    }
+
     /* eslint-disable */
     /**
      * Method to perform excel export.
      * @hidden
      */
-    public exportToExcel(type: string): void {
+    public exportToExcel(type: string, exportProperties?: ExcelExportProperties): void {
+        this.rows = []; this.actualrCnt = 0;
+        let isHeaderSet: boolean = !isNullOrUndefined(exportProperties) && !isNullOrUndefined(exportProperties.header);
+        let isFooterSet: boolean = !isNullOrUndefined(exportProperties) && !isNullOrUndefined(exportProperties.footer);
+        let isFileNameSet: boolean = !isNullOrUndefined(exportProperties) && !isNullOrUndefined(exportProperties.fileName);
         this.engine = this.parent.dataType === 'olap' ? this.parent.olapEngineModule : this.parent.engineModule;
         /** Event trigerring */
         let clonedValues: IPivotValues;
         let currentPivotValues: IPivotValues = PivotUtil.getClonedPivotValues(this.engine.pivotValues);
+        let customFileName: string = isFileNameSet ? exportProperties.fileName : 'default.xlsx';
+        if (isHeaderSet) {
+            this.addHeaderAndFooter(exportProperties.header, '', 'header', exportProperties.header.headerRows);
+        }
         if (this.parent.exportAllPages && this.parent.enableVirtualization && this.parent.dataType !== 'olap') {
             let pageSettings: IPageSettings = this.engine.pageSettings; this.engine.pageSettings = null;
             (this.engine as PivotEngine).generateGridData(this.parent.dataSourceSettings);
@@ -55,7 +98,7 @@ export class ExcelExport {
             clonedValues = currentPivotValues;
         }
         let args: BeforeExportEventArgs = {
-            fileName: 'default', header: '', footer: '', dataCollections: [clonedValues]
+            fileName: customFileName, header: '', footer: '', dataCollections: [clonedValues]
         };
         let fileName: string; let header: string;
         let footer: string; let dataCollections: IPivotValues[];
@@ -63,16 +106,22 @@ export class ExcelExport {
             fileName = observedArgs.fileName; header = observedArgs.header;
             footer = observedArgs.footer; dataCollections = observedArgs.dataCollections;
         });
+        if (!isHeaderSet && isNullOrUndefined(args.excelExportProperties) && header !== '') {
+            this.addHeaderAndFooter({}, header, 'header', undefined);
+        }
+        else if (!isNullOrUndefined(args.excelExportProperties) && !isNullOrUndefined(args.excelExportProperties.header)) {
+            this.addHeaderAndFooter(args.excelExportProperties.header, '', 'header', args.excelExportProperties.header.headerRows)
+        }
 
         /** Fill data and export */
         let workSheets: any = [];
         for (let dataColl: number = 0; dataColl < dataCollections.length; dataColl++) {
             let pivotValues: IPivotValues = dataCollections[dataColl]; let colLen: number = 0; let rowLen: number = pivotValues.length;
-            let actualrCnt: number = 0; let formatList: { [key: string]: string } = this.parent.renderModule.getFormatList();
-            let rows: ExcelRow[] = []; let maxLevel: number = 0;
+            let formatList: { [key: string]: string } = this.parent.renderModule.getFormatList();
+            let maxLevel: number = 0;
             for (let rCnt: number = 0; rCnt < rowLen; rCnt++) {
                 if (pivotValues[rCnt]) {
-                    actualrCnt++; colLen = pivotValues[rCnt].length; let cells: ExcelCell[] = [];
+                    this.actualrCnt++; colLen = pivotValues[rCnt].length; let cells: ExcelCell[] = [];
                     for (let cCnt: number = 0; cCnt < colLen; cCnt++) {
                         if (pivotValues[rCnt][cCnt]) {
                             let pivotCell: IAxisSet = (pivotValues[rCnt][cCnt] as IAxisSet);
@@ -135,8 +184,17 @@ export class ExcelExport {
                             });
                         }
                     }
-                    rows.push({ index: actualrCnt, cells: cells });
+                    this.rows.push({ index: this.actualrCnt, cells: cells });
                 }
+            }
+            if (isFooterSet) {
+                this.addHeaderAndFooter(exportProperties.footer, '', 'footer', exportProperties.footer.footerRows);
+            }
+            else if (!isFooterSet && footer !== '' && isNullOrUndefined(args.excelExportProperties)) {
+                this.addHeaderAndFooter({}, footer, 'footer', undefined);
+            }
+            else if (!isNullOrUndefined(args.excelExportProperties) && !isNullOrUndefined(args.excelExportProperties.footer)) {
+                this.addHeaderAndFooter(args.excelExportProperties.footer, '', 'footer', args.excelExportProperties.footer.footerRows)
             }
             let columns: ExcelColumn[] = [];
             for (let cCnt: number = 0; cCnt < colLen; cCnt++) {
@@ -145,10 +203,15 @@ export class ExcelExport {
             if (maxLevel > 0) {
                 columns[0].width = 100 + (maxLevel * 20);
             }
-            workSheets.push({ columns: columns, rows: rows });
+            workSheets.push({ columns: columns, rows: this.rows });
         }
         let book: Workbook = new Workbook({ worksheets: workSheets }, type === 'Excel' ? 'xlsx' : 'csv', undefined, (this.parent as any).currencyCode);
-        book.save(fileName + (type === 'Excel' ? '.xlsx' : '.csv'));
+        if ('.xlsx' === fileName.substring(fileName.length - 5, fileName.length) || '.csv' === fileName.substring(fileName.length - 4, fileName.length)) {
+            book.save(fileName);
+        }
+        else {
+            book.save(fileName + (type === 'Excel' ? '.xlsx' : '.csv'));
+        }
     }
 
     /**

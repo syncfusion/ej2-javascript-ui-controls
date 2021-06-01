@@ -4,7 +4,8 @@ import { Column } from '../models/column';
 import { Cell } from '../models/cell';
 
 /**
- * ExpandCellRenderer class which responsible for building group expand cell. 
+ * ExpandCellRenderer class which responsible for building group expand cell.
+ *
  * @hidden
  */
 export class RowDragDropRenderer extends CellRenderer implements ICellRenderer<Column> {
@@ -15,10 +16,15 @@ export class RowDragDropRenderer extends CellRenderer implements ICellRenderer<C
     });
 
     /**
-     * Function to render the detail expand cell           
+     * Function to render the detail expand cell
+     *
+     * @param {Cell<Column>} cell - specifies the cell
+     * @param {Object} data - specifies the data
+     * @returns {Element} returns the element
      */
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     public render(cell: Cell<Column>, data: Object): Element {
-        let nodeElement: Element = this.element.cloneNode() as Element;
+        const nodeElement: Element = this.element.cloneNode() as Element;
         nodeElement.appendChild(this.parent.createElement('div', {
             className: 'e-icons e-rowcelldrag e-dtdiagonalright e-icon-rowdragicon'
         }));

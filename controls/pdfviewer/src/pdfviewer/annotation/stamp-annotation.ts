@@ -178,8 +178,11 @@ export class StampAnnotation {
                                 // eslint-disable-next-line
                                 text = stampShapes['text'];
                             }
-                            // eslint-disable-next-line
-                            if (text.toLowerCase() !== annotation['Subject'].toLowerCase()) {
+                            if (text.split('(').length === 2) {
+                                if (text.split('(')[1].split(')')[0].toLowerCase() !== annotation['Subject'].toLowerCase()){
+                                    this.dynamicText += text.split('(')[1].split(')')[0];
+                                }
+                            } else if(text.toLowerCase() !== annotation['Subject'].toLowerCase()) {
                                 this.dynamicText += text;
                             }
                         }

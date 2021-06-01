@@ -4,6 +4,7 @@
 import { Gantt, ColumnMenu } from '../../src/index';
 import { baselineData } from './data-source.spec';
 import { createGantt, destroyGantt } from './gantt-util.spec';
+import { getValue } from '@syncfusion/ej2-base';
 describe('Gantt spec for  scroll', () => {
     Gantt.Inject(ColumnMenu);
     describe('Gantt base module', () => {        
@@ -70,5 +71,34 @@ describe('Gantt spec for  scroll', () => {
             element.click();
          });
     });
+    describe('CR-Issue-EJ2-49364-', () => {        
+        let ganttObj: Gantt;
+        beforeAll((done: Function) => {
+            ganttObj = createGantt({
+                dataSource: baselineData,
+                taskFields: {
+                    id: 'TaskId',
+                    name: 'TaskName',
+                    startDate: 'StartDate',
+                    endDate: 'EndDate',
+                    duration: 'Duration',
+                    progress: 'Progress',
+                    child: 'Children',
+                },
+                gridLines:'Both',
+               projectStartDate: new Date('10/23/2017'),
+               projectEndDate: new Date('12/23/2017')
+            }, done);
 
+        });
+        afterAll(() => {
+            destroyGantt(ganttObj);
+        });
+        it('scrollToDate', () => {
+            ganttObj.scrollToDate('12/03/2017');
+            let scrollLeft: number = getValue('element.scrollLeft', ganttObj.ganttChartModule.scrollObject);
+            let gridLeft: number = ganttObj.chartVerticalLineContainer.offsetLeft;
+            expect(scrollLeft === Math.abs(gridLeft)).toBe(true);
+        });
+    });
 });

@@ -24,9 +24,13 @@ export class DetailRow {
     //Module declarations
     private parent: IGrid;
     private focus: FocusStrategy;
-    private lastrowcell: Boolean;
+    private lastrowcell: boolean;
+
     /**
      * Constructor for the Grid detail template module
+     *
+     * @param {IGrid} parent - specifies the IGrid
+     * @param {ServiceLocator} locator - specifes the serviceLocator
      * @hidden
      */
     constructor(parent?: IGrid, locator?: ServiceLocator) {
@@ -44,39 +48,37 @@ export class DetailRow {
         this.toogleExpandcollapse(closest(e.target as Element, 'td'));
     }
 
-    // tslint:disable-next-line:max-func-body-length
     private toogleExpandcollapse(target: Element): void {
-        let gObj: IGrid = this.parent;
-        let table: Element = this.parent.getContentTable();
-        let lastrowIdx: number = this.parent.getCurrentViewRecords().length - 1;
-        let parent: string = 'parentDetails';
-        let isServerRendered: string = 'isServerRendered';
+        const gObj: IGrid = this.parent;
+        const table: Element = this.parent.getContentTable();
+        const lastrowIdx: number = this.parent.getCurrentViewRecords().length - 1;
+        const parent: string = 'parentDetails';
         let childGrid: Grid;
-        let isExpanded: boolean = target &&  target.classList.contains('e-detailrowcollapse') ;
+        const isExpanded: boolean = target &&  target.classList.contains('e-detailrowcollapse') ;
         if (!(target && (target.classList.contains('e-detailrowcollapse') || target.classList.contains('e-detailrowexpand')))) {
             return;
         }
-        let tr: HTMLTableRowElement = target.parentElement as HTMLTableRowElement;
-        let uid: string = tr.getAttribute('data-uid');
-        let rowObj: Row<Column> = gObj.getRowObjectFromUID(uid);
-        let nextRow: HTMLElement =
+        const tr: HTMLTableRowElement = target.parentElement as HTMLTableRowElement;
+        const uid: string = tr.getAttribute('data-uid');
+        const rowObj: Row<Column> = gObj.getRowObjectFromUID(uid);
+        const nextRow: HTMLElement =
             this.parent.getContentTable().querySelector( literals.tbody).children[tr.rowIndex + 1] as HTMLElement;
         if (target.classList.contains('e-detailrowcollapse')) {
-            let data: Object = rowObj.data;
+            const data: Object = rowObj.data;
             if (this.isDetailRow(nextRow)) {
                 nextRow.style.display = '';
                 gObj.notify(events.detailStateChange, {data: data,
                     childGrid: gObj.childGrid, detailElement: target, isExpanded: isExpanded });
             } else if (gObj.getDetailTemplate() || gObj.childGrid) {
-                let rowId: string = getUid('grid-row');
-                let detailRow: Element = this.parent.createElement('tr', { className: 'e-detailrow', attrs: {'data-uid': rowId} });
-                let detailCell: Element = this.parent.createElement('td', { className: 'e-detailcell' });
+                const rowId: string = getUid('grid-row');
+                const detailRow: Element = this.parent.createElement('tr', { className: 'e-detailrow', attrs: {'data-uid': rowId} });
+                const detailCell: Element = this.parent.createElement('td', { className: 'e-detailcell' });
                 let colSpan: number = this.parent.getVisibleColumns().length;
                 if (this.parent.allowRowDragAndDrop) {
                     colSpan++;
                 }
                 detailCell.setAttribute('colspan', colSpan.toString());
-                let row: Row<Column> = new Row<Column>({
+                const row: Row<Column> = new Row<Column>({
                     isDataRow: true,
                     isExpand: true,
                     uid: rowId,
@@ -91,8 +93,8 @@ export class DetailRow {
                 detailRow.appendChild(detailCell);
                 tr.parentNode.insertBefore(detailRow, tr.nextSibling);
                 if (gObj.detailTemplate) {
-                    let isReactCompiler: boolean = this.parent.isReact && typeof (gObj.detailTemplate) !== 'string';
-                    let detailTemplateID: string = gObj.element.id + 'detailTemplate';
+                    const isReactCompiler: boolean = this.parent.isReact && typeof (gObj.detailTemplate) !== 'string';
+                    const detailTemplateID: string = gObj.element.id + 'detailTemplate';
                     if (isReactCompiler) {
                         gObj.getDetailTemplate()(data, gObj, 'detailTemplate', detailTemplateID, null, null, detailCell);
                         this.parent.renderTemplates();
@@ -119,12 +121,12 @@ export class DetailRow {
                         childGrid.on(events.onEmpty, this.promiseResolve(childGrid), this);
                     }
                     rowObj.childGrid = childGrid;
-                    let modules: Function[] = childGrid.getInjectedModules();
-                    let injectedModues: Function[] = gObj.getInjectedModules();
+                    const modules: Function[] = childGrid.getInjectedModules();
+                    const injectedModues: Function[] = gObj.getInjectedModules();
                     if (!modules || modules.length !== injectedModues.length) {
                         childGrid.setInjectedModules(injectedModues);
                     }
-                    let gridElem: HTMLElement = this.parent.createElement('div', {
+                    const gridElem: HTMLElement = this.parent.createElement('div', {
                         id: 'child' + parents(tr, 'e-grid').length +
                         '_grid' + tr.rowIndex + getUid('')
                     });
@@ -147,7 +149,7 @@ export class DetailRow {
             rowObj.isExpand = true;
             if (target.classList.contains('e-lastrowcell') && this.parent.getContent().clientHeight > table.scrollHeight) {
                 removeClass(target.parentElement.querySelectorAll('td'), 'e-lastrowcell');
-                let detailrowIdx: number = table.querySelector(literals.tbody).getElementsByClassName('e-detailrow').length - 1;
+                const detailrowIdx: number = table.querySelector(literals.tbody).getElementsByClassName('e-detailrow').length - 1;
                 addClass(table.querySelector(literals.tbody).getElementsByClassName('e-detailrow')[detailrowIdx].childNodes, ['e-lastrowcell']);
                 this.lastrowcell = true;
             }
@@ -168,17 +170,20 @@ export class DetailRow {
             this.aria.setExpand(target as HTMLElement, false);
         }
     }
+
     /**
      * @hidden
-     * @param gObj 
-     * @param rowObj 
+     * @param {IGrid} gObj - specifies the grid Object
+     * @param {Row<Column>}rowObj - specifies the row object
+     * @param {string} printMode - specifies the printmode
+     * @returns {Object} returns the object
      */
     public getGridModel(gObj: IGrid, rowObj: Row<Column>, printMode: string): Object {
         let gridModel: Object;
         if (gObj.isPrinting && rowObj.isExpand && gObj.expandedRows &&
             gObj.expandedRows[rowObj.index] && gObj.expandedRows[rowObj.index].gridModel) {
-                (gObj.expandedRows[rowObj.index].gridModel as IGrid).hierarchyPrintMode = gObj.childGrid.hierarchyPrintMode;
-                gridModel = gObj.expandedRows[rowObj.index].gridModel;
+            (gObj.expandedRows[rowObj.index].gridModel as IGrid).hierarchyPrintMode = gObj.childGrid.hierarchyPrintMode;
+            gridModel = gObj.expandedRows[rowObj.index].gridModel;
         } else {
             if (gObj.isPrinting && gObj.childGrid.allowPaging) {
                 gObj.childGrid.allowPaging = printMode === 'CurrentPage';
@@ -203,7 +208,7 @@ export class DetailRow {
     }
 
     private destroy(): void {
-        let gridElement: Element = this.parent.element;
+        const gridElement: Element = this.parent.element;
         if (this.parent.isDestroyed || !gridElement || (!gridElement.querySelector('.' + literals.gridHeader) &&
             !gridElement.querySelector( '.' + literals.gridContent))) { return; }
         this.parent.off(events.click, this.clickHandler);
@@ -214,17 +219,18 @@ export class DetailRow {
     }
 
     private getTDfromIndex(index: number, className: string): Element {
-        let tr: Element = this.parent.getDataRows()[index];
+        const tr: Element = this.parent.getDataRows()[index];
         if (tr && tr.querySelector(className)) {
             return tr.querySelector(className);
         }
         return null;
     }
 
-    /** 
-     * Expands a detail row with the given target.  
+    /**
+     * Expands a detail row with the given target.
+     *
      * @param  {Element} target - Defines the collapsed element to expand.
-     * @return {void} 
+     * @returns {void}
      */
     public expand(target: number | Element): void {
         if (!isNaN(target as number)) {
@@ -235,10 +241,11 @@ export class DetailRow {
         }
     }
 
-    /** 
-     * Collapses a detail row with the given target.     
+    /**
+     * Collapses a detail row with the given target.
+     *
      * @param  {Element} target - Defines the expanded element to collapse.
-     * @return {void} 
+     * @returns {void}
      */
     public collapse(target: number | Element): void {
         if (!isNaN(target as number)) {
@@ -249,18 +256,20 @@ export class DetailRow {
         }
     }
 
-    /** 
-     * Expands all the detail rows of the Grid.          
-     * @return {void} 
+    /**
+     * Expands all the detail rows of the Grid.
+     *
+     * @returns {void}
      */
     public expandAll(): void {
         this.expandCollapse(true);
         this.parent.trigger(events.actionComplete, { requestType: 'expandAllComplete', type: events.actionComplete, moduleObj: this });
     }
 
-    /** 
-     * Collapses all the detail rows of the Grid.         
-     * @return {void} 
+    /**
+     * Collapses all the detail rows of the Grid.
+     *
+     * @returns {void}
      */
     public collapseAll(): void {
         this.expandCollapse(false);
@@ -269,44 +278,54 @@ export class DetailRow {
 
     private expandCollapse(isExpand: boolean): void {
         let td: Element;
-        let rows: Element[] = this.parent.getDataRows();
+        const rows: Element[] = this.parent.getDataRows();
         for (let i: number = 0, len: number = rows.length; i < len; i++) {
             td = rows[i].querySelector('.e-detailrowcollapse, .e-detailrowexpand');
-            isExpand ? this.expand(td) : this.collapse(td);
+            if (isExpand) {
+                this.expand(td);
+            } else {
+                this.collapse(td);
+            }
         }
     }
 
     private keyPressHandler(e: KeyboardEventArgs): void {
-        let gObj: IGrid = this.parent;
+        const gObj: IGrid = this.parent;
         switch (e.action) {
-            case 'ctrlDownArrow':
-                this.expandAll();
-                break;
-            case 'ctrlUpArrow':
-                this.collapseAll();
-                break;
-            case 'altUpArrow':
-            case 'altDownArrow':
-                let selected: number[] = gObj.allowSelection ? gObj.getSelectedRowIndexes() : [];
-                if (selected.length) {
-                    let dataRow: HTMLTableRowElement = gObj.getDataRows()[selected[selected.length - 1]] as HTMLTableRowElement;
-                    let td: Element = dataRow.querySelector('.e-detailrowcollapse, .e-detailrowexpand');
-                    e.action === 'altDownArrow' ? this.expand(td) : this.collapse(td);
+        case 'ctrlDownArrow':
+            this.expandAll();
+            break;
+        case 'ctrlUpArrow':
+            this.collapseAll();
+            break;
+        case 'altUpArrow':
+        case 'altDownArrow':
+            // eslint-disable-next-line no-case-declarations
+            const selected: number[] = gObj.allowSelection ? gObj.getSelectedRowIndexes() : [];
+            if (selected.length) {
+                const dataRow: HTMLTableRowElement = gObj.getDataRows()[selected[selected.length - 1]] as HTMLTableRowElement;
+                const td: Element = dataRow.querySelector('.e-detailrowcollapse, .e-detailrowexpand');
+                if (e.action === 'altDownArrow') {
+                    this.expand(td);
+                } else {
+                    this.collapse(td);
                 }
-                break;
-            case 'enter':
-                if (this.parent.isEdit) { return; }
-                let element: HTMLElement = this.focus.getFocusedElement();
-                if (!(<Element>e.target).classList.contains('e-detailrowcollapse') &&
-                     !(<Element>e.target).classList.contains('e-detailrowexpand')) { break; }
-                this.toogleExpandcollapse(element);
-                break;
+            }
+            break;
+        case 'enter':
+            if (this.parent.isEdit) { return; }
+            // eslint-disable-next-line no-case-declarations
+            const element: HTMLElement = this.focus.getFocusedElement();
+            if (!(<Element>e.target).classList.contains('e-detailrowcollapse') &&
+                !(<Element>e.target).classList.contains('e-detailrowexpand')) { break; }
+            this.toogleExpandcollapse(element);
+            break;
         }
     }
 
     private refreshColSpan(): void {
-        let detailrows: NodeListOf<Element> = (<Grid>this.parent).contentModule.getTable().querySelectorAll('tr.e-detailrow');
-        let colSpan: number = (<Grid>this.parent).getVisibleColumns().length;
+        const detailrows: NodeListOf<Element> = (<Grid>this.parent).contentModule.getTable().querySelectorAll('tr.e-detailrow');
+        const colSpan: number = (<Grid>this.parent).getVisibleColumns().length;
         for (let i: number = 0; i < detailrows.length; i++) {
             (<HTMLElement>detailrows[i]).querySelector('.e-detailcell').setAttribute('colspan', colSpan + '');
         }
@@ -314,6 +333,8 @@ export class DetailRow {
 
     /**
      * For internal use only - Get the module name.
+     *
+     * @returns {string} returns the module name
      * @private
      */
     protected getModuleName(): string {

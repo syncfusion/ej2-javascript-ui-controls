@@ -9,7 +9,7 @@ import { isTouchEnd, isTouchMove, getClientX, getClientY, mouseUpAfterSelection,
 import { colWidthChanged, protectSelection, editOperation, initiateFormulaReference, initiateCur, clearCellRef } from '../common/index';
 import { getRangeIndexes, getCellAddress, getRangeAddress, getCellIndexes, getSwapRange } from '../../workbook/common/address';
 import { addressHandle, removeDesignChart, isMouseDown, isMouseMove, selectionStatus, setPosition, removeRangeEle } from '../common/index';
-import { isCellReference, getSheetNameFromAddress } from '../../workbook/index';
+import { isCellReference, getSheetNameFromAddress, CellModel, isLocked, getColumn, getCell } from '../../workbook/index';
 import { getIndexesFromAddress } from '../../workbook/common/address';
 
 
@@ -216,8 +216,7 @@ export class Selection {
             (e.target as Element).classList.contains('e-sheet')) { return; }
         const eventArgs: { action: string, editedValue: string } = { action: 'getCurrentEditValue', editedValue: '' };
         this.parent.notify(editOperation, eventArgs);
-        const isFormulaEdit: boolean = (eventArgs.editedValue && eventArgs.editedValue.toString().indexOf('=') === 0) ||
-        checkIsFormula(eventArgs.editedValue);
+        const isFormulaEdit: boolean =  checkIsFormula(eventArgs.editedValue, true);
         if (!this.parent.isEdit || isFormulaEdit) {
             const overlayElem: HTMLElement = document.getElementById(this.parent.element.id + '_overlay');
             if (typeof((e.target as HTMLElement).className) === 'string' ) {
@@ -326,8 +325,7 @@ export class Selection {
         }
         const eventArgs: { action: string, editedValue: string } = { action: 'getCurrentEditValue', editedValue: '' };
         this.parent.notify(editOperation, eventArgs);
-        const isFormulaEdit: boolean = checkIsFormula(eventArgs.editedValue) ||
-            (eventArgs.editedValue && eventArgs.editedValue.toString().indexOf('=') === 0);
+        const isFormulaEdit: boolean = checkIsFormula(eventArgs.editedValue, true);
         const verticalContent: Element = this.parent.getMainContent().parentElement;
         const horizontalContent: Element = this.parent.element.getElementsByClassName('e-scroller')[0];
         const clientRect: ClientRect = verticalContent.getBoundingClientRect(); const frozenCol: number = this.parent.frozenColCount(sheet);
@@ -384,7 +382,7 @@ export class Selection {
             }
             this.selectRangeByIdx(indexes, e);
         }
-        if (isFormulaEdit && this.parent.isEdit) {
+        if (isFormulaEdit && this.parent.isEdit && !closest(e.target as Element, '#' + this.parent.element.id + '_edit')) {
             const range: string = this.parent.getActiveSheet().selectedRange;
             this.parent.notify(addressHandle, { range: range, isSelect: false });
         }
@@ -410,8 +408,8 @@ export class Selection {
         this.parent.notify(editOperation, eventArgs);
         const isFormulaEdit: boolean = checkIsFormula(eventArgs.editedValue) ||
             (eventArgs.editedValue && eventArgs.editedValue.toString().indexOf('=') === 0);
-        if (isFormulaEdit && this.parent.isEdit && !(e.target as HTMLElement).classList.contains('e-spreadsheet-edit')) {
-            this.parent.notify(initiateCur, {});
+        if (isFormulaEdit && this.parent.isEdit) {
+            this.parent.notify(initiateCur, { isCellEdit: (e.target as HTMLElement).classList.contains('e-spreadsheet-edit') });
         }
     }
 
@@ -529,10 +527,11 @@ export class Selection {
     private selectRangeByIdx(
         range: number[], e?: MouseEvent, isScrollRefresh?: boolean,
         isActCellChanged?: boolean, isInit?: boolean, skipChecking?: boolean, selectedRowColIdx?: number): void {
-        const eventArgs: { action: string, editedValue: string } = { action: 'getCurrentEditValue', editedValue: '' };
+        if (e && e.target && closest(e.target as Element, '#' + this.parent.element.id + '_edit')) { return; }
+        const eventArgs: { action: string, editedValue: string, endFormulaRef: boolean } = { action: 'getCurrentEditValue', editedValue: '',
+            endFormulaRef: false };
         this.parent.notify(editOperation, eventArgs);
-        const isFormulaEdit: boolean = checkIsFormula(eventArgs.editedValue) ||
-            (eventArgs.editedValue && eventArgs.editedValue.toString().indexOf('=') === 0);
+        const isFormulaEdit: boolean = checkIsFormula(eventArgs.editedValue, true) && !eventArgs.endFormulaRef;
         const isMultiRange: boolean = e && e.ctrlKey && isMouseDown(e);
         const ele: HTMLElement = this.getSelectionElement(e, selectedRowColIdx);
         const sheet: SheetModel = this.parent.getActiveSheet();
@@ -652,6 +651,16 @@ export class Selection {
         range = mergeArgs.range as number[];
         if (sheet.activeCell !== getCellAddress(range[0], range[1]) || isInit) {
             this.parent.setSheetPropertyOnMute(sheet, 'activeCell', getCellAddress(range[0], range[1]));
+            if (sheet.isProtected) {
+                let element: HTMLTextAreaElement = this.parent.element.querySelector('.e-formula-bar') as HTMLTextAreaElement;
+                const cell: CellModel = getCell(range[0], range[1], sheet);
+                const isCellLocked: boolean = isLocked(cell, getColumn(sheet, range[1]));
+                if (isCellLocked && element && !element.disabled) {
+                    element.disabled = true;
+                } else if (!isCellLocked && element && element.disabled) {
+                    element.disabled = false;
+                }
+            }
             if (this.getActiveCell()) {
                 const offset: { left: IOffset, top: IOffset } = this.getOffset(range[2], range[3]);
                 if (isMergeRange) {

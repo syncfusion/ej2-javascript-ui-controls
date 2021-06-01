@@ -1189,6 +1189,41 @@ describe('FileManager control LargeIcons view', () => {
             expect(drag > 1).toBe(true);
             expect((<HTMLElement>document.querySelector('.e-fe-errorcontent')).innerText).toBe("The destination folder is the subfolder of the source folder.");
         });
+        it('Quick drag on treeview nodes', () => {
+            let treeObj = feObj.navigationpaneModule.treeObj;
+            let li: Element[] = <Element[] & NodeListOf<HTMLLIElement>>treeObj.element.querySelectorAll('li');
+            let rect: any = li[1].querySelector('.e-fullrow').getClientRects();
+            expect(document.querySelector('.e-fe-clone')).toBe(null);
+            let mousedown: any = getEventObject('MouseEvents', 'mousedown', li[1].querySelector('.e-fullrow'), li[1].querySelector('.e-fullrow'), rect[0].x + 4, rect[0].y + 4);
+            EventHandler.trigger(treeObj.element, 'mousedown', mousedown);
+            let mousemove: any = getEventObject('MouseEvents', 'mousemove', li[1].querySelector('.e-fullrow'), li[1].querySelector('.e-fullrow'), rect[0].x + 5, rect[0].y + 5);
+            EventHandler.trigger(<any>(document), 'mousemove', mousemove);
+            expect(document.querySelector('.e-fullrow') === null).toBe(false);
+            expect(li[1].classList.contains('e-blur')).toBe(false);
+            rect = li[2].querySelector('.e-fullrow').getClientRects();
+            mousemove.srcElement = mousemove.target = mousemove.toElement = li[2].querySelector('.e-fullrow');
+            mousemove = setMouseCordinates(mousemove, rect[0].x + 5, rect[0].y + 5);
+            EventHandler.trigger(<any>(document), 'mousemove', mousemove);
+            rect = li[3].querySelector('.e-fullrow').getClientRects();
+            mousemove.srcElement = mousemove.target = mousemove.toElement = li[3].querySelector('.e-fullrow');
+            mousemove = setMouseCordinates(mousemove, rect[0].x + 5, rect[0].y + 5);
+            EventHandler.trigger(<any>(document), 'mousemove', mousemove);
+            rect = li[2].querySelector('.e-fullrow').getClientRects();
+            mousemove.srcElement = mousemove.target = mousemove.toElement = li[2].querySelector('.e-fullrow');
+            mousemove = setMouseCordinates(mousemove, rect[0].x + 5, rect[0].y + 5);
+            EventHandler.trigger(<any>(document), 'mousemove', mousemove);
+            rect = li[1].querySelector('.e-fullrow').getClientRects();
+            mousemove.srcElement = mousemove.target = mousemove.toElement = li[1].querySelector('.e-fullrow');
+            mousemove = setMouseCordinates(mousemove, rect[0].x + 5, rect[0].y + 5);
+            EventHandler.trigger(<any>(document), 'mousemove', mousemove);
+            let mouseup: any = getEventObject('MouseEvents', 'mouseup', li[1].querySelector('.e-fullrow'), li[1].querySelector('.e-fullrow'), rect[0].x + 5, rect[0].y + 5);
+            mouseup.type = 'mouseup'; mouseup.currentTarget = document;
+            EventHandler.trigger(<any>(document), 'mouseup', mouseup);
+            expect(document.querySelector('.e-fe-clone')).toBe(null);
+            expect(start).toBe(1);
+            expect(stop).toBe(1);
+            expect(drop).toBe(0);
+        });
         it('drag and drop different folder tree', (done) => {
             let treeObj = feObj.navigationpaneModule.treeObj;
             expect(treeObj.element.querySelector('[title="Documents"]').classList.contains('e-level-2')).toBe(true);
@@ -1198,7 +1233,7 @@ describe('FileManager control LargeIcons view', () => {
             expect(document.querySelector('.e-fe-clone')).toBe(null);
             let mousedown: any = getEventObject('MouseEvents', 'mousedown', li[1].querySelector('.e-fullrow'), li[1].querySelector('.e-fullrow'), rect[0].x + 4, rect[0].y + 4);
             EventHandler.trigger(treeObj.element, 'mousedown', mousedown);
-            let mousemove: any = getEventObject('MouseEvents', 'mousemove', li[1].querySelector('.e-fullrow'), li[1].querySelector('.e-fullrow'), rect[0].x + 5, rect[0].y + 5);
+            let mousemove: any = getEventObject('MouseEvents', 'mousemove', li[1].querySelector('.e-fullrow'), li[1].querySelector('.e-fullrow'), rect[0].x + 10, rect[0].y + 5);
             EventHandler.trigger(<any>(document), 'mousemove', mousemove);
             expect(document.querySelector('.e-fullrow') === null).toBe(false);
             expect(li[1].classList.contains('e-blur')).toBe(true);
@@ -1387,7 +1422,7 @@ describe('FileManager control LargeIcons view', () => {
             expect(document.querySelector('.e-fe-clone')).toBe(null);
             let mousedown: any = getEventObject('MouseEvents', 'mousedown', li[1].querySelector('.e-fullrow'), li[1].querySelector('.e-fullrow'), rect[0].x + 4, rect[0].y + 4);
             EventHandler.trigger(treeObj.element, 'mousedown', mousedown);
-            let mousemove: any = getEventObject('MouseEvents', 'mousemove', li[1].querySelector('.e-fullrow'), li[1].querySelector('.e-fullrow'), rect[0].x + 5, rect[0].y + 5);
+            let mousemove: any = getEventObject('MouseEvents', 'mousemove', li[1].querySelector('.e-fullrow'), li[1].querySelector('.e-fullrow'), rect[0].x + 10, rect[0].y + 5);
             EventHandler.trigger(<any>(document), 'mousemove', mousemove);
             expect(document.querySelector('.e-fullrow') === null).toBe(false);
             expect(li[1].classList.contains('e-blur')).toBe(true);
@@ -1457,7 +1492,7 @@ describe('FileManager control LargeIcons view', () => {
                 let rect: any = li[1].querySelector('.e-fullrow').getClientRects();
                 let mousedown: any = getEventObject('MouseEvents', 'mousedown', li[1].querySelector('.e-fullrow'), li[1].querySelector('.e-fullrow'), rect[0].x + 4, rect[0].y + 4);
                 EventHandler.trigger(treeObj.element, 'mousedown', mousedown);
-                let mousemove: any = getEventObject('MouseEvents', 'mousemove', li[1].querySelector('.e-fullrow'), li[1].querySelector('.e-fullrow'), rect[0].x + 5, rect[0].y + 5);
+                let mousemove: any = getEventObject('MouseEvents', 'mousemove', li[1].querySelector('.e-fullrow'), li[1].querySelector('.e-fullrow'), rect[0].x + 10, rect[0].y + 5);
                 EventHandler.trigger(<any>(document), 'mousemove', mousemove);
                 expect(document.querySelector('.e-fullrow') === null).toBe(false);
                 expect(li[1].classList.contains('e-blur')).toBe(true);
@@ -1527,7 +1562,7 @@ describe('FileManager control LargeIcons view', () => {
                 let rect: any = li[3].querySelector('.e-fullrow').getClientRects();
                 let mousedown: any = getEventObject('MouseEvents', 'mousedown', li[3].querySelector('.e-fullrow'), li[3].querySelector('.e-fullrow'), rect[0].x + 4, rect[0].y + 4);
                 EventHandler.trigger(treeObj.element, 'mousedown', mousedown);
-                let mousemove: any = getEventObject('MouseEvents', 'mousemove', li[3].querySelector('.e-fullrow'), li[3].querySelector('.e-fullrow'), rect[0].x + 5, rect[0].y + 5);
+                let mousemove: any = getEventObject('MouseEvents', 'mousemove', li[3].querySelector('.e-fullrow'), li[3].querySelector('.e-fullrow'), rect[0].x + 10, rect[0].y + 5);
                 EventHandler.trigger(<any>(document), 'mousemove', mousemove);
                 expect(document.querySelector('.e-fullrow') === null).toBe(false);
                 expect(li[3].classList.contains('e-blur')).toBe(true);

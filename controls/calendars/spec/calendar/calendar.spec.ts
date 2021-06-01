@@ -1127,8 +1127,8 @@ describe('Calendar', () => {
                 min: new Date('1/10/2017')
             });
             calendar.appendTo('#calendar');
-            expect(calendar.tableBodyElement.querySelector('tr td.e-focused-date'))
-                .toBe(null);
+            expect(calendar.tableBodyElement.querySelectorAll('tr td.e-focused-date').length)
+                .toBe(1);
             calendar.navigateTo('Month', new Date('2/2/2017'));
             expect(getIdValue(calendar.tableBodyElement.querySelector('tr td.e-focused-date')))
                 .toBe((new Date('2/2/2017')).valueOf());

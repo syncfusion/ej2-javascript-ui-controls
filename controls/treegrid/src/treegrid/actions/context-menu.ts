@@ -49,7 +49,7 @@ export class ContextMenu {
         }
     }
     private contextMenuClick(args: MenuEventArgs): void {
-        if (args.item.id === 'Above' || args.item.id === 'Below') {
+        if (args.item.id === 'Above' || args.item.id === 'Below' || args.item.id === 'Child') {
             this.parent.notify('savePreviousRowPosition', args);
             this.parent.setProperties({editSettings: {newRowPosition:  args.item.id }}, true);
             this.parent.addRecord();

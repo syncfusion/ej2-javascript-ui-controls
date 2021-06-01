@@ -19,6 +19,11 @@ export class ExcelFilter extends CheckBoxFilter {
 
     /**
      * Constructor for excelbox filtering module
+     *
+     * @param {IGrid} parent - specifies the IGrid
+     * @param {FilterSettings} filterSettings - specifies the Filtersettings
+     * @param {ServiceLocator} serviceLocator - specifies the serviceLocator
+     * @param {object} customFltrOperators - specifies the customFltrOperators
      * @hidden
      */
     constructor(parent?: IGrid, filterSettings?: FilterSettings, serviceLocator?: ServiceLocator, customFltrOperators?: Object) {
@@ -28,9 +33,10 @@ export class ExcelFilter extends CheckBoxFilter {
         this.excelFilterBase = new ExcelFilterBase(parent as IXLFilter, customFltrOperators);
     }
 
-    /** 
+    /**
      * To destroy the excel filter.
-     * @return {void} 
+     *
+     * @returns {void}
      * @hidden
      */
     public destroy(): void {
@@ -52,7 +58,7 @@ export class ExcelFilter extends CheckBoxFilter {
         this.excelFilterBase.clearFilter(col);
     }
 
-    protected closeResponsiveDialog(isCustomFilter: boolean): void {
+    protected closeResponsiveDialog(isCustomFilter?: boolean): void {
         if (isCustomFilter) {
             this.excelFilterBase.removeDialog();
         } else {
@@ -60,7 +66,7 @@ export class ExcelFilter extends CheckBoxFilter {
         }
     }
 
-    protected applyCustomFilter(args: { col: Column, isCustomFilter: boolean }): void {
+    protected applyCustomFilter(args?: { col: Column, isCustomFilter: boolean }): void {
         if (!args.isCustomFilter) {
             this.excelFilterBase.fltrBtnHandler();
             this.excelFilterBase.closeDialog();
@@ -69,15 +75,16 @@ export class ExcelFilter extends CheckBoxFilter {
         }
     }
 
-    /* tslint:disable-next-line:max-line-length */
     public filterByColumn(
         fieldName: string, firstOperator: string, firstValue: string | number | Date | boolean, predicate?: string,
         matchCase?: boolean, ignoreAccent?: boolean, secondOperator?: string, secondValue?: string | number | Date | boolean): void {
-        /* tslint:disable-next-line:max-line-length */
-        this.excelFilterBase.filterByColumn(fieldName, firstOperator, firstValue, predicate, matchCase, ignoreAccent, secondOperator, secondValue);
+        this.excelFilterBase.filterByColumn(
+            fieldName, firstOperator, firstValue, predicate, matchCase, ignoreAccent, secondOperator, secondValue
+        );
     }
 
     /**
+     * @returns {FilterUI} returns the filterUI
      * @hidden
      */
     public getFilterUIInfo(): FilterUI {
@@ -86,10 +93,11 @@ export class ExcelFilter extends CheckBoxFilter {
 
     /**
      * For internal use only - Get the module name.
+     *
+     * @returns {string} returns the module name
      * @private
      */
     protected getModuleName(): string {
         return 'excelFilter';
     }
-
 }

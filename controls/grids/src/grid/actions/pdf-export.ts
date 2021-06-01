@@ -1,7 +1,7 @@
 import {
     IGrid, PdfExportProperties, PdfHeader, PdfFooter, PdfHeaderFooterContent,
     PdfTheme, PdfThemeStyle, PdfBorder, PdfQueryCellInfoEventArgs, ExportDetailDataBoundEventArgs, ExportGroupCaptionEventArgs,
-     AggregateQueryCellInfoEventArgs
+    AggregateQueryCellInfoEventArgs, ExportHelperArgs
 } from '../base/interface';
 import { Column } from './../models/column';
 import { Row } from './../models/row';
@@ -32,6 +32,7 @@ import { ColumnModel } from '../models/models';
 
 /**
  * `PDF Export` module is used to handle the exportToPDF action.
+ *
  * @hidden
  */
 export class PdfExport {
@@ -56,6 +57,8 @@ export class PdfExport {
 
     /**
      * Constructor for the Grid PDF Export module
+     *
+     * @param {IGrid} parent - specifies the IGrid
      * @hidden
      */
     constructor(parent?: IGrid) {
@@ -63,8 +66,11 @@ export class PdfExport {
         this.helper = new ExportHelper(parent);
         this.gridPool = {};
     }
+
     /**
      * For internal use only - Get the module name.
+     *
+     * @returns {string} returns the module name
      */
     private getModuleName(): string {
         return 'PdfExport';
@@ -100,9 +106,16 @@ export class PdfExport {
             this.parent.trigger(events.actionFailure, e);
         });
     }
+
     /**
      * Used to map the input data
-     * @return {void}
+     *
+     * @param {IGrid} parent - specifies the IGrid
+     * @param {PdfExportProperties} pdfExportProperties - specifies the PdfExportProperties
+     * @param {boolean} isMultipleExport - specifies the isMultipleExport
+     * @param {Object} pdfDoc - specifies the pdfDoc
+     * @param {boolean} isBlob - speciies whether it is Blob or not
+     * @returns {void}
      */
     public Map(
         parent?: IGrid, pdfExportProperties?: PdfExportProperties,
@@ -114,18 +127,19 @@ export class PdfExport {
         if (parent.childGrid && !(!isNullOrUndefined(pdfExportProperties) && pdfExportProperties.hierarchyExportMode === 'None')) {
             parent.expandedRows = getPrintGridModel(parent).expandedRows;
         }
-        let args: Object = {
+        const args: Object = {
             requestType: 'beforePdfExport', cancel: false,
             headerPageNumbers: [], gridDrawPosition: { xPosition: 0, yPosition: 0 }, generateQuery : false
         };
-        let gridObject: string = 'gridObject';
+        const gridObject: string = 'gridObject';
         args[gridObject] = parent;
-        let can: string = 'cancel';
-        let generateQuery : string = 'generateQuery';
-        let header: string = 'headerPageNumbers';
-        let drawPos: string = 'gridDrawPosition';
+        const can: string = 'cancel';
+        const generateQuery : string = 'generateQuery';
+        const header: string = 'headerPageNumbers';
+        const drawPos: string = 'gridDrawPosition';
         parent.trigger(events.beforePdfExport, args);
         if (args[can] === true) {
+            // eslint-disable-next-line @typescript-eslint/no-unused-vars
             return new Promise((resolve: Function, reject: Function) => {
                 return resolve();
             });
@@ -134,7 +148,7 @@ export class PdfExport {
             updateColumnTypeForExportColumns(pdfExportProperties, parent);
         }
         if (args[generateQuery]) {
-             query = ExportHelper.getQuery(parent, this.data);
+            query = ExportHelper.getQuery(parent, this.data);
         }
         this.headerOnPages = args[header];
         this.drawPosition = args[drawPos];
@@ -152,7 +166,7 @@ export class PdfExport {
                                     isMultipleExport, reject);
             });
         } else {
-            let allPromise: Promise<Object>[] = [];
+            const allPromise: Promise<Object>[] = [];
             allPromise.push(this.data.getData({}, ExportHelper.getQuery(parent, this.data)));
             allPromise.push(this.helper.getColumnData(<Grid>parent));
             return new Promise((resolve: Function, reject: Function) => {
@@ -179,10 +193,11 @@ export class PdfExport {
 
     private processExport(gObj: IGrid, returnType: ReturnType,
                           pdfExportProperties: PdfExportProperties, isMultipleExport: boolean): Promise<Object> {
-        let section: PdfSection = this.pdfDocument.sections.add() as PdfSection;
+        const section: PdfSection = this.pdfDocument.sections.add() as PdfSection;
         let pdfGrid: PdfGrid;
         this.processSectionExportProperties(section, pdfExportProperties);
-        let pdfPage: PdfPage = section.pages.add();
+        const pdfPage: PdfPage = section.pages.add();
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         return new Promise((resolve: Function, reject: Function) => {
             pdfGrid = <PdfGrid>this.processGridExport(gObj, returnType, pdfExportProperties);
             this.globalResolve = resolve;
@@ -190,8 +205,8 @@ export class PdfExport {
             this.helper.checkAndExport(this.gridPool, this.globalResolve);
         }).then(() => {
             // draw the grid
-            let xPosition: string = 'xPosition';
-            let yPosition: string = 'yPosition';
+            const xPosition: string = 'xPosition';
+            const yPosition: string = 'yPosition';
             pdfGrid.draw(pdfPage, this.drawPosition[xPosition], this.drawPosition[yPosition]);
             this.drawHeader(pdfExportProperties);
             if (!isMultipleExport) {
@@ -216,7 +231,7 @@ export class PdfExport {
         if (!isNullOrUndefined(pdfExportProperties) && (!isNullOrUndefined(pdfExportProperties.pageOrientation)
             || !isNullOrUndefined(pdfExportProperties.pageSize))) {
             this.pdfPageSettings.orientation = (pdfExportProperties.pageOrientation === 'Landscape') ?
-            PdfPageOrientation.Landscape : PdfPageOrientation.Portrait;
+                PdfPageOrientation.Landscape : PdfPageOrientation.Portrait;
             this.pdfPageSettings.size = this.getPageSize(pdfExportProperties.pageSize);
             section.setPageSettings(this.pdfPageSettings);
         }
@@ -225,14 +240,14 @@ export class PdfExport {
 
     private processGridExport(gObj: IGrid, returnType: ReturnType, pdfExportProperties: PdfExportProperties): PdfGrid {
         let allowHorizontalOverflow: boolean = true;
-        let isFrozen: boolean = this.parent.isFrozenGrid() && !this.parent.getFrozenColumns();
+        const isFrozen: boolean = this.parent.isFrozenGrid() && !this.parent.getFrozenColumns();
         if (!isNullOrUndefined(pdfExportProperties)) {
             this.gridTheme = pdfExportProperties.theme;
             allowHorizontalOverflow = isNullOrUndefined(pdfExportProperties.allowHorizontalOverflow) ?
-            true : pdfExportProperties.allowHorizontalOverflow;
+                true : pdfExportProperties.allowHorizontalOverflow;
         }
-        let helper: ExportHelper = new ExportHelper(gObj, this.helper.getForeignKeyData());
-        let dataSource: Object[] | Group = this.processExportProperties(pdfExportProperties, returnType.result);
+        const helper: ExportHelper = new ExportHelper(gObj, this.helper.getForeignKeyData());
+        const dataSource: Object[] | Group = this.processExportProperties(pdfExportProperties, returnType.result);
         let columns: Column[] = isExportColumns(pdfExportProperties) ?
             prepareColumns(pdfExportProperties.columns, gObj.enableColumnVirtualization) :
             helper.getGridExportColumns(isFrozen ? gObj.getColumns() : gObj.columns as Column[]);
@@ -250,15 +265,15 @@ export class PdfExport {
         let pdfGrid: PdfGrid = new PdfGrid();
 
         // get header theme style
-        let headerThemeStyle: IThemeStyles = this.getHeaderThemeStyle();
+        const headerThemeStyle: IThemeStyles = this.getHeaderThemeStyle();
 
         let border: PdfBorders = headerThemeStyle.border;
-        let headerFont: PdfFont = headerThemeStyle.font;
-        let headerBrush: PdfSolidBrush = headerThemeStyle.brush;
-        let returnValue: { rows: Row<Column>[], columns: Column[] } = helper.getHeaders(columns, this.hideColumnInclude);
+        const headerFont: PdfFont = headerThemeStyle.font;
+        const headerBrush: PdfSolidBrush = headerThemeStyle.brush;
+        const returnValue: { rows: Row<Column>[], columns: Column[] } = helper.getHeaders(columns, this.hideColumnInclude);
 
         // Column collection with respect to the records in the grid
-        let gridColumns: Column[] = returnValue.columns;
+        const gridColumns: Column[] = returnValue.columns;
 
         // process grid header content
         pdfGrid = this.processGridHeaders(gObj.groupSettings.columns.length, pdfGrid, returnValue.rows,
@@ -266,21 +281,19 @@ export class PdfExport {
 
         // set alignment, width and type of the values of the column
         this.setColumnProperties(gridColumns, pdfGrid, helper, gObj, allowHorizontalOverflow);
-
-        let captionThemeStyle: IThemeStyles = this.getSummaryCaptionThemeStyle();
-
+        const captionThemeStyle: IThemeStyles = this.getSummaryCaptionThemeStyle();
         if (!isNullOrUndefined(dataSource) && dataSource.length) {
             if (isGrouping) {
                 if (!isNullOrUndefined(captionThemeStyle.border)) {
                     border = captionThemeStyle.border;
                 }
                 this.processGroupedRecords(pdfGrid, dataSource, gridColumns, gObj, border, 0, captionThemeStyle.font, captionThemeStyle.
-                                    brush, captionThemeStyle.backgroundBrush, returnType, pdfExportProperties, helper, 0);
+                    brush, captionThemeStyle.backgroundBrush, returnType, pdfExportProperties, helper, 0);
             } else {
                 this.processRecord(border, gridColumns, gObj, dataSource, pdfGrid, 0, pdfExportProperties, helper, 0);
             }
             if (!isNullOrUndefined(returnType.aggregates)) {
-                let summaryModel: SummaryModelGenerator = new SummaryModelGenerator(gObj);
+                const summaryModel: SummaryModelGenerator = new SummaryModelGenerator(gObj);
                 let sRows: Row<AggregateColumnModel>[];
                 let column: Column[] =  summaryModel.getColumns();
                 column = column.filter((col: Column) => { return isNullOrUndefined(col.commands) && col.type !== 'checkbox'; });
@@ -300,25 +313,24 @@ export class PdfExport {
                                        captionThemeStyle.brush, captionThemeStyle.backgroundBrush, false);
             }
         } else {
-            let row: PdfGridRow = pdfGrid.rows.addRow();
+            const row: PdfGridRow = pdfGrid.rows.addRow();
             row.style.setBorder(border);
         }
-
         return pdfGrid;
     }
 
     private getSummaryCaptionThemeStyle(): IThemeStyles {
         if (!isNullOrUndefined(this.gridTheme) && !isNullOrUndefined(this.gridTheme.caption)) {
-            let fontSize: number = !isNullOrUndefined(this.gridTheme.caption.fontSize) ? this.gridTheme.caption.fontSize : 9.75;
-            let fontFamily: number = !isNullOrUndefined(this.gridTheme.caption.fontName) ?
-            this.getFontFamily(this.gridTheme.caption.fontName) : PdfFontFamily.Helvetica;
-            let fontStyle: PdfFontStyle = this.getFontStyle(this.gridTheme.caption);
+            const fontSize: number = !isNullOrUndefined(this.gridTheme.caption.fontSize) ? this.gridTheme.caption.fontSize : 9.75;
+            const fontFamily: number = !isNullOrUndefined(this.gridTheme.caption.fontName) ?
+                this.getFontFamily(this.gridTheme.caption.fontName) : PdfFontFamily.Helvetica;
+            const fontStyle: PdfFontStyle = this.getFontStyle(this.gridTheme.caption);
             let pdfColor: PdfColor = new PdfColor(0, 0, 0);
             if (!isNullOrUndefined(this.gridTheme.caption.fontColor)) {
-                let penBrushColor: { r: number, g: number, b: number } = this.hexToRgb(this.gridTheme.caption.fontColor);
+                const penBrushColor: { r: number, g: number, b: number } = this.hexToRgb(this.gridTheme.caption.fontColor);
                 pdfColor = new PdfColor(penBrushColor.r, penBrushColor.g, penBrushColor.b);
             }
-            let borderCaption: PdfBorders = this.gridTheme.caption.border ? this.getBorderStyle(this.gridTheme.caption.border) : null;
+            const borderCaption: PdfBorders = this.gridTheme.caption.border ? this.getBorderStyle(this.gridTheme.caption.border) : null;
             let font: PdfStandardFont | PdfTrueTypeFont = new PdfStandardFont(fontFamily, fontSize, fontStyle);
             if (!isNullOrUndefined(this.gridTheme.caption.font)) {
                 font = this.gridTheme.caption.font;
@@ -333,62 +345,62 @@ export class PdfExport {
     }
 
     private getGridPdfFont(args: PdfTheme): void {
-        let fontFamily: string = 'fontFamily';
-        let fontSize: string = 'fontSize';
-        let fontStyle: string = 'fontStyle';
-        let isTrueType: string = 'isTrueType';
+        const fontFamily: string = 'fontFamily';
+        const fontSize: string = 'fontSize';
+        const fontStyle: string = 'fontStyle';
+        const isTrueType: string = 'isTrueType';
         let style: number = 0;
         if (args.header && args.header.font) {
-            let headerFont: string = args.header.font[fontFamily];
-            let headerSize: number = args.header.font[fontSize];
-            let headerStyle: string = args.header.font[fontStyle];
+            const headerFont: string = args.header.font[fontFamily];
+            const headerSize: number = args.header.font[fontSize];
+            const headerStyle: string = args.header.font[fontStyle];
             style = (isNullOrUndefined(PdfFontStyle[headerStyle]) ? 0 : PdfFontStyle[headerStyle]);
             if (args.header.font[isTrueType]) {
                 args.header.font = new PdfTrueTypeFont(headerFont, headerSize, style);
             } else {
-                let fontFamily: number = !isNullOrUndefined(headerFont) ?
+                const fontFamily: number = !isNullOrUndefined(headerFont) ?
                     this.getFontFamily(headerFont) : PdfFontFamily.Helvetica;
                 args.header.font = new PdfStandardFont(fontFamily, headerSize, style);
             }
         }
         if (args.caption && args.caption.font) {
-            let captionFont: string = args.caption.font[fontFamily];
-            let captionSize: number = args.caption.font[fontSize];
-            let captionStyle: string = args.caption.font[fontStyle];
+            const captionFont: string = args.caption.font[fontFamily];
+            const captionSize: number = args.caption.font[fontSize];
+            const captionStyle: string = args.caption.font[fontStyle];
             style = (isNullOrUndefined(PdfFontStyle[captionStyle]) ? 0 : PdfFontStyle[captionStyle]);
             if (args.caption.font[isTrueType]) {
                 args.caption.font = new PdfTrueTypeFont(captionFont, captionSize, style);
             } else {
-                let fontFamily: number = !isNullOrUndefined(captionFont) ?
+                const fontFamily: number = !isNullOrUndefined(captionFont) ?
                     this.getFontFamily(captionFont) : PdfFontFamily.Helvetica;
                 args.caption.font = new PdfStandardFont(fontFamily, captionSize, style);
-                }
+            }
         }
         if (args.record && args.record.font) {
-            let recordFont: string = args.record.font[fontFamily];
-            let recordSize: number = args.record.font[fontSize];
-            let recordStyle: string = args.record.font[fontStyle];
+            const recordFont: string = args.record.font[fontFamily];
+            const recordSize: number = args.record.font[fontSize];
+            const recordStyle: string = args.record.font[fontStyle];
             style = (isNullOrUndefined(PdfFontStyle[recordStyle]) ? 0 : PdfFontStyle[recordStyle]);
             if (args.record.font[isTrueType]) {
                 args.record.font = new PdfTrueTypeFont(recordFont, recordSize, style);
             } else {
-                let fontFamily: number = !isNullOrUndefined(recordFont) ?
+                const fontFamily: number = !isNullOrUndefined(recordFont) ?
                     this.getFontFamily(recordFont) : PdfFontFamily.Helvetica;
                 args.record.font = new PdfStandardFont(fontFamily, recordSize, style);
-              }
+            }
         }
     }
 
     private getHeaderThemeStyle(): IThemeStyles {
-        let border: PdfBorders = new PdfBorders();
+        const border: PdfBorders = new PdfBorders();
         if (!isNullOrUndefined(this.gridTheme) && !isNullOrUndefined(this.gridTheme.header)) {
-            let fontFamily: number = !isNullOrUndefined(this.gridTheme.header.fontName) ?
-            this.getFontFamily(this.gridTheme.header.fontName) : PdfFontFamily.Helvetica;
-            let fontStyle: PdfFontStyle = this.getFontStyle(this.gridTheme.header);
-            let fontSize: number = !isNullOrUndefined(this.gridTheme.header.fontSize) ? this.gridTheme.header.fontSize : 10.5;
+            const fontFamily: number = !isNullOrUndefined(this.gridTheme.header.fontName) ?
+                this.getFontFamily(this.gridTheme.header.fontName) : PdfFontFamily.Helvetica;
+            const fontStyle: PdfFontStyle = this.getFontStyle(this.gridTheme.header);
+            const fontSize: number = !isNullOrUndefined(this.gridTheme.header.fontSize) ? this.gridTheme.header.fontSize : 10.5;
             let pdfColor: PdfColor = new PdfColor();
             if (!isNullOrUndefined(this.gridTheme.header.fontColor)) {
-                let penBrushColor: { r: number, g: number, b: number } = this.hexToRgb(this.gridTheme.header.fontColor);
+                const penBrushColor: { r: number, g: number, b: number } = this.hexToRgb(this.gridTheme.header.fontColor);
                 pdfColor = new PdfColor(penBrushColor.r, penBrushColor.g, penBrushColor.b);
             }
 
@@ -404,24 +416,23 @@ export class PdfExport {
                 brush: new PdfSolidBrush(new PdfColor(102, 102, 102)) };
         }
     }
-    /* tslint:disable-next-line:no-any */
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     private processGroupedRecords(pdfGrid: PdfGrid, dataSource: any, gridColumns: Column[], gObj: IGrid, border: PdfBorders, level: number,
                                   font: PdfFont, brush: PdfSolidBrush, backgroundBrush: PdfSolidBrush, returnType: ReturnType,
                                   pdfExportProperties: PdfExportProperties, helper: ExportHelper, index: number): void {
-        let groupIndex: number = level;
-        for (let dataSourceItems of dataSource) {
-            let row: PdfGridRow = pdfGrid.rows.addRow();
-            let col: Column = gObj.getColumnByField(dataSourceItems.field);
-            /* tslint:disable-next-line:no-any */
-            let args: any = {
+        const groupIndex: number = level;
+        for (const dataSourceItems of dataSource) {
+            const row: PdfGridRow = pdfGrid.rows.addRow();
+            const col: Column = gObj.getColumnByField(dataSourceItems.field);
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            const args: any = {
                 value: dataSourceItems.key,
                 column: col,
                 style: undefined,
-                isForeignKey: col.isForeignColumn(),
+                isForeignKey: col.isForeignColumn()
             };
-            /* tslint:disable-next-line:max-line-length */
-            let value: string = this.parent.getColumnByField(dataSourceItems.field).headerText + ': ' + (!col.enableGroupByFormat ? this.exportValueFormatter.formatCellValue(args) : dataSourceItems.key) + ' - ' + dataSourceItems.count + (dataSource.count > 1 ? ' items' : ' item');
-            let cArgs: ExportGroupCaptionEventArgs = { captionText: value, type: 'PDF' };
+            const value: string = this.parent.getColumnByField(dataSourceItems.field).headerText + ': ' + (!col.enableGroupByFormat ? this.exportValueFormatter.formatCellValue(args) : dataSourceItems.key) + ' - ' + dataSourceItems.count + (dataSource.count > 1 ? ' items' : ' item');
+            const cArgs: ExportGroupCaptionEventArgs = { captionText: value, type: 'PDF' };
             this.parent.trigger(events.exportGroupCaption, cArgs, (cArgs: ExportGroupCaptionEventArgs) => {
                 row.cells.getCell(groupIndex).value = cArgs.captionText;
                 row.cells.getCell(groupIndex + 1).style.stringFormat = new PdfStringFormat(PdfTextAlignment.Left);
@@ -430,7 +441,7 @@ export class PdfExport {
                 row.style.setTextBrush(brush);
                 row.style.setBackgroundBrush(backgroundBrush);
                 let sRows: Row<AggregateColumnModel>[];
-                let captionSummaryModel: CaptionSummaryModelGenerator = new CaptionSummaryModelGenerator(gObj);
+                const captionSummaryModel: CaptionSummaryModelGenerator = new CaptionSummaryModelGenerator(gObj);
                 if (!isNullOrUndefined(dataSourceItems.items.records)) {
                     sRows = captionSummaryModel.generateRows(dataSourceItems.items.records, dataSourceItems);
                 } else {
@@ -443,16 +454,16 @@ export class PdfExport {
                     this.processAggregates(sRows, pdfGrid, border, font, brush, backgroundBrush, true, row, groupIndex);
                     this.processGroupedRecords(pdfGrid, dataSourceItems.items, gridColumns, gObj, border, (groupIndex + 1), font, brush,
                                                backgroundBrush, returnType, pdfExportProperties, helper, index);
-                    let groupSummaryModel: GroupSummaryModelGenerator = new GroupSummaryModelGenerator(gObj);
+                    const groupSummaryModel: GroupSummaryModelGenerator = new GroupSummaryModelGenerator(gObj);
                     sRows = groupSummaryModel.generateRows(dataSourceItems.items.records, dataSourceItems);
                     this.processAggregates(sRows, pdfGrid, border, font, brush, backgroundBrush, false);
                 } else {
                     this.processAggregates(sRows, pdfGrid, border, font, brush, backgroundBrush, true, row, groupIndex);
                     index = this.processRecord(border, gridColumns, gObj, dataSourceItems.items,
                                                pdfGrid, (groupIndex + 1), pdfExportProperties, helper, index);
-                    let groupSummaryModel: GroupSummaryModelGenerator = new GroupSummaryModelGenerator(gObj);
+                    const groupSummaryModel: GroupSummaryModelGenerator = new GroupSummaryModelGenerator(gObj);
                     sRows = groupSummaryModel.generateRows(dataSourceItems.items, dataSourceItems);
-                    let isGroupedFooter: boolean = true ;
+                    const isGroupedFooter: boolean = true ;
                     this.processAggregates(sRows, pdfGrid, border, font, brush, backgroundBrush, false, null, null, isGroupedFooter);
                 }
             });
@@ -461,19 +472,19 @@ export class PdfExport {
     private processGridHeaders(childLevels: number, pdfGrid: PdfGrid, rows: Row<Column>[],
                                gridColumn: Column[], border: PdfBorders, headerFont: PdfFont, headerBrush: PdfSolidBrush, grid: IGrid,
                                allowHorizontalOverflow: boolean, eCols: Column[]): PdfGrid {
-        let columnCount: number = gridColumn.length + childLevels;
-        let depth: number = measureColumnDepth(eCols);
-        let cols: Column[] | string[] | ColumnModel[] = eCols;
+        const columnCount: number = gridColumn.length + childLevels;
+        const depth: number = measureColumnDepth(eCols);
+        const cols: Column[] | string[] | ColumnModel[] = eCols;
         let index: number = 0;
         if (this.parent.allowGrouping) {
             index = this.parent.groupSettings.columns.length;
         }
         pdfGrid.columns.add(columnCount);
         pdfGrid.headers.add(rows.length);
-        let applyTextAndSpan: Function = (rowIdx: number, colIdx: number, col: Column, rowSpan: number, colSpan: number) => {
-            let gridHeader: PdfGridRow = pdfGrid.headers.getHeader(rowIdx);
-            let pdfCell: PdfGridCell = gridHeader.cells.getCell(colIdx);
-            let cell: Cell<Column> = rows[rowIdx].cells[colIdx];
+        const applyTextAndSpan: Function = (rowIdx: number, colIdx: number, col: Column, rowSpan: number, colSpan: number) => {
+            const gridHeader: PdfGridRow = pdfGrid.headers.getHeader(rowIdx);
+            const pdfCell: PdfGridCell = gridHeader.cells.getCell(colIdx);
+            const cell: Cell<Column> = rows[rowIdx].cells[colIdx];
             if (!isNullOrUndefined((col as Column).headerTextAlign)) {
                 pdfCell.style.stringFormat = this.getHorizontalAlignment(col.headerTextAlign);
             }
@@ -492,15 +503,15 @@ export class PdfExport {
                 pdfCell.value = '';
                 pdfCell.width = 20;
             }
-            let args: Object = {
+            const args: Object = {
                 cell: pdfCell,
                 gridCell: cell,
                 style: pdfCell.style
             };
             this.parent.trigger(events.pdfHeaderQueryCellInfo, args);
         };
-        let recuHeader: Function = (cols: Column[], depth: number, spanCnt: number, colIndex: number,
-            rowIndex: number, isRoot: boolean) => {
+        const recuHeader: Function = (cols: Column[], depth: number, spanCnt: number, colIndex: number,
+                                      rowIndex: number, isRoot: boolean) => {
             let cidx: number = 0;
             for (let i: number = 0; i < cols.length; i++) {
                 if (isRoot) {
@@ -509,7 +520,7 @@ export class PdfExport {
                     spanCnt = 0;
                 }
                 if ((cols[i] as Column).columns && (cols[i] as Column).columns.length) {
-                    let newSpanCnt: number = recuHeader((cols[i] as Column).columns, depth - 1, 0, i + colIndex, rowIndex + 1, false);
+                    const newSpanCnt: number = recuHeader((cols[i] as Column).columns, depth - 1, 0, i + colIndex, rowIndex + 1, false);
                     applyTextAndSpan(rowIndex, i + colIndex, cols[i] as Column, 0, newSpanCnt);
                     spanCnt = spanCnt + newSpanCnt;
                     colIndex = colIndex + newSpanCnt - 1;
@@ -531,14 +542,14 @@ export class PdfExport {
             if (!isNullOrUndefined(pdfExportProperties.theme)) {
                 this.gridTheme = pdfExportProperties.theme;
             }
-            let clientSize: SizeF = this.pdfPageSettings.size;
+            const clientSize: SizeF = this.pdfPageSettings.size;
             this.drawHeader(pdfExportProperties);
             if (!isNullOrUndefined(pdfExportProperties.footer)) {
-                /* tslint:disable-next-line:no-any */
-                let footer: any = pdfExportProperties.footer;
-                let position: PointF = new PointF(0, ((clientSize.width - 80) - (footer.fromBottom * 0.75)));
-                let size: SizeF = new SizeF((clientSize.width - 80), (footer.height * 0.75));
-                let bounds: RectangleF = new RectangleF(position, size);
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                const footer: any = pdfExportProperties.footer;
+                const position: PointF = new PointF(0, ((clientSize.width - 80) - (footer.fromBottom * 0.75)));
+                const size: SizeF = new SizeF((clientSize.width - 80), (footer.height * 0.75));
+                const bounds: RectangleF = new RectangleF(position, size);
                 this.pdfDocument.template.bottom = this.drawPageTemplate(new PdfPageTemplateElement(bounds), footer);
             }
             if (!isNullOrUndefined(pdfExportProperties.includeHiddenColumn) && !this.isGrouping) {
@@ -571,21 +582,21 @@ export class PdfExport {
     }
 
     private drawHeader(pdfExportProperties: PdfExportProperties): void {
-        let clientSize: SizeF = this.pdfPageSettings.size;
+        const clientSize: SizeF = this.pdfPageSettings.size;
         if (!isNullOrUndefined(pdfExportProperties) && !isNullOrUndefined(pdfExportProperties.header)) {
-             /* tslint:disable-next-line:no-any */
-            let header: any = pdfExportProperties.header;
-            let position: PointF = new PointF(0, header.fromTop);
-            let size: SizeF = new SizeF((clientSize.width - 80), (header.height * 0.75));
-            let bounds: RectangleF = new RectangleF(position, size);
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            const header: any = pdfExportProperties.header;
+            const position: PointF = new PointF(0, header.fromTop);
+            const size: SizeF = new SizeF((clientSize.width - 80), (header.height * 0.75));
+            const bounds: RectangleF = new RectangleF(position, size);
             if (!this.headerOnPages.length) {
                 this.pdfDocument.template.top = this.drawPageTemplate(new PdfPageTemplateElement(bounds), header);
             } else {
-                let headerTemplate: PdfPageTemplateElement = this.drawPageTemplate(new PdfPageTemplateElement(bounds), header);
+                const headerTemplate: PdfPageTemplateElement = this.drawPageTemplate(new PdfPageTemplateElement(bounds), header);
                 this.headerOnPages.filter((index: number) => {
                     if (index - 1 >= 0 && index - 1 < this.pdfDocument.pages.count - 1) {
                         this.pdfDocument.pages.getPageByIndex(index - 1).graphics
-                        .drawPdfTemplate(headerTemplate.template, new PointF(0, 0));
+                            .drawPdfTemplate(headerTemplate.template, new PointF(0, 0));
                     }
                 });
             }
@@ -593,30 +604,29 @@ export class PdfExport {
     }
 
     private drawPageTemplate(template: PdfPageTemplateElement, element: PdfHeader | PdfFooter): PdfPageTemplateElement {
-        for (let content of element.contents) {
+        for (const content of element.contents) {
             this.processContentValidation(content);
             switch (content.type) {
-                case 'Text':
-                    /* tslint:disable-next-line:max-line-length */
-                    if (content.value === '' || content.value === undefined || content.value === null || typeof content.value !== 'string') {
-                        throw new Error('please enter the valid input value in text content...');
-                    }
-                    this.drawText(template, content);
-                    break;
-                case 'PageNumber':
-                    this.drawPageNumber(template, content);
-                    break;
-                case 'Image':
-                    if (content.src === undefined || content.src === null || content.src === '') {
-                        throw new Error('please enter the valid base64 string in image content...');
-                    }
-                    this.drawImage(template, content);
-                    break;
-                case 'Line':
-                    this.drawLine(template, content);
-                    break;
-                default:
-                    throw new Error('Please set valid content type...');
+            case 'Text':
+                if (content.value === '' || content.value === undefined || content.value === null || typeof content.value !== 'string') {
+                    throw new Error('please enter the valid input value in text content...');
+                }
+                this.drawText(template, content);
+                break;
+            case 'PageNumber':
+                this.drawPageNumber(template, content);
+                break;
+            case 'Image':
+                if (content.src === undefined || content.src === null || content.src === '') {
+                    throw new Error('please enter the valid base64 string in image content...');
+                }
+                this.drawImage(template, content);
+                break;
+            case 'Line':
+                this.drawLine(template, content);
+                break;
+            default:
+                throw new Error('Please set valid content type...');
             }
         }
         return template;
@@ -657,49 +667,49 @@ export class PdfExport {
             }
         }
     }
-    /* tslint:disable-next-line:no-any */
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     private drawText(pageTemplate: PdfPageTemplateElement, content: any): void {
-        let font: PdfFont = this.getFont(content);
+        const font: PdfFont = this.getFont(content);
         let brush: PdfSolidBrush = this.getBrushFromContent(content);
         let pen: PdfPen = null;
         if (!isNullOrUndefined(content.style.textPenColor)) {
-            let penColor: { r: number, g: number, b: number } = this.hexToRgb(content.style.textPenColor);
+            const penColor: { r: number, g: number, b: number } = this.hexToRgb(content.style.textPenColor);
             pen = new PdfPen(new PdfColor(penColor.r, penColor.g, penColor.b));
         }
         if (brush == null && pen == null) {
             brush = new PdfSolidBrush(new PdfColor(0, 0, 0));
         }
-        let value: string = content.value.toString();
-        let x: number = content.position.x * 0.75;
-        let y: number = content.position.y * 0.75;
-        let format: PdfStringFormat = new PdfStringFormat();
-        let result: { format: PdfStringFormat, size: SizeF } = this.setContentFormat(content, format);
+        const value: string = content.value.toString();
+        const x: number = content.position.x * 0.75;
+        const y: number = content.position.y * 0.75;
+        const format: PdfStringFormat = new PdfStringFormat();
+        const result: { format: PdfStringFormat, size: SizeF } = this.setContentFormat(content, format);
         if (result !== null && !isNullOrUndefined(result.format) && !isNullOrUndefined(result.size)) {
             pageTemplate.graphics.drawString(value, font, pen, brush, x, y, result.size.width, result.size.height, result.format);
         } else {
             pageTemplate.graphics.drawString(value, font, pen, brush, x, y, format);
         }
     }
-    /* tslint:disable-next-line:no-any */
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     private drawPageNumber(documentHeader: PdfPageTemplateElement, content: any): void {
-        let font: PdfFont = this.getFont(content);
+        const font: PdfFont = this.getFont(content);
         let brush: PdfSolidBrush = null;
         if (!isNullOrUndefined(content.style.textBrushColor)) {
-            /* tslint:disable-next-line:max-line-length */
-            let brushColor: { r: number, g: number, b: number } = this.hexToRgb(content.style.textBrushColor);
+            const brushColor: { r: number, g: number, b: number } = this.hexToRgb(content.style.textBrushColor);
             brush = new PdfSolidBrush(new PdfColor(brushColor.r, brushColor.g, brushColor.b));
         } else {
             brush = new PdfSolidBrush(new PdfColor(0, 0, 0));
         }
-        let pageNumber: PdfPageNumberField = new PdfPageNumberField(font, brush);
+        const pageNumber: PdfPageNumberField = new PdfPageNumberField(font, brush);
         pageNumber.numberStyle = this.getPageNumberStyle(content.pageNumberType);
         let compositeField: PdfCompositeField;
         let format: string;
         if (!isNullOrUndefined(content.format)) {
-            let total: string = '$total';
-            let current: string = '$current';
+            const total: string = '$total';
+            const current: string = '$current';
             if ((content.format as string).indexOf(total) !== -1 && (content.format as string).indexOf(current) !== -1) {
-                let pageCount: PdfPageCountField = new PdfPageCountField(font);
+                const pageCount: PdfPageCountField = new PdfPageCountField(font);
                 pageCount.numberStyle = this.getPageNumberStyle(content.pageNumberType);
                 if ((content.format as string).indexOf(total) > (content.format as string).indexOf(current)) {
                     format = (content.format as string).replace(current, '0');
@@ -713,7 +723,7 @@ export class PdfExport {
                 format = (content.format as string).replace(current, '0');
                 compositeField = new PdfCompositeField(font, brush, format, pageNumber);
             } else {
-                let pageCount: PdfPageCountField = new PdfPageCountField(font);
+                const pageCount: PdfPageCountField = new PdfPageCountField(font);
                 format = (content.format as string).replace(total, '0');
                 compositeField = new PdfCompositeField(font, brush, format, pageCount);
             }
@@ -721,35 +731,37 @@ export class PdfExport {
             format = '{0}';
             compositeField = new PdfCompositeField(font, brush, format, pageNumber);
         }
-        let x: number = content.position.x * 0.75;
-        let y: number = content.position.y * 0.75;
-        let result: { format: PdfStringFormat, size: SizeF } = this.setContentFormat(content, compositeField.stringFormat);
+        const x: number = content.position.x * 0.75;
+        const y: number = content.position.y * 0.75;
+        const result: { format: PdfStringFormat, size: SizeF } = this.setContentFormat(content, compositeField.stringFormat);
         if (result !== null && !isNullOrUndefined(result.format) && !isNullOrUndefined(result.size)) {
             compositeField.stringFormat = result.format;
             compositeField.bounds = new RectangleF(x, y, result.size.width, result.size.height);
         }
         compositeField.draw(documentHeader.graphics, x, y);
     }
-    /* tslint:disable-next-line:no-any */
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     private drawImage(documentHeader: PdfPageTemplateElement, content: any): void {
-        let x: number = content.position.x * 0.75;
-        let y: number = content.position.y * 0.75;
-        let width: number = (!isNullOrUndefined(content.size)) ? (content.size.width * 0.75) : undefined;
-        let height: number = (!isNullOrUndefined(content.size)) ? (content.size.height * 0.75) : undefined;
-        let image: PdfBitmap = new PdfBitmap(content.src);
+        const x: number = content.position.x * 0.75;
+        const y: number = content.position.y * 0.75;
+        const width: number = (!isNullOrUndefined(content.size)) ? (content.size.width * 0.75) : undefined;
+        const height: number = (!isNullOrUndefined(content.size)) ? (content.size.height * 0.75) : undefined;
+        const image: PdfBitmap = new PdfBitmap(content.src);
         if (!isNullOrUndefined(width)) {
             documentHeader.graphics.drawImage(image, x, y, width, height);
         } else {
             documentHeader.graphics.drawImage(image, x, y);
         }
     }
-    /* tslint:disable-next-line:no-any */
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     private drawLine(documentHeader: PdfPageTemplateElement, content: any): void {
-        let x1: number = content.points.x1 * 0.75;
-        let y1: number = content.points.y1 * 0.75;
-        let x2: number = content.points.x2 * 0.75;
-        let y2: number = content.points.y2 * 0.75;
-        let pen: PdfPen = this.getPenFromContent(content);
+        const x1: number = content.points.x1 * 0.75;
+        const y1: number = content.points.y1 * 0.75;
+        const x2: number = content.points.x2 * 0.75;
+        const y2: number = content.points.y2 * 0.75;
+        const pen: PdfPen = this.getPenFromContent(content);
         if (!isNullOrUndefined(content.style) && content.style !== null) {
             if (!isNullOrUndefined(content.style.penSize) && content.style.penSize !== null && typeof content.style.penSize === 'number') {
                 pen.width = content.style.penSize * 0.75;
@@ -758,16 +770,18 @@ export class PdfExport {
         }
         documentHeader.graphics.drawLine(pen, x1, y1, x2, y2);
     }
-    /* tslint:disable-next-line:no-any *//* tslint:disable-next-line:max-line-length *//* tslint:disable-next-line:max-func-body-length */
-    private processAggregates(sRows: Row<AggregateColumnModel>[], pdfGrid: PdfGrid, border: PdfBorders, font: PdfFont,
-                              brush: PdfSolidBrush, backgroundBrush: PdfSolidBrush, isCaption: boolean, captionRow?: PdfGridRow, groupIndex?: number, isGroupedFooter?: boolean): void {
-        for (let row of sRows) {
-            let startIndex: number = 0;
+
+    private processAggregates(
+        sRows: Row<AggregateColumnModel>[], pdfGrid: PdfGrid, border: PdfBorders, font: PdfFont,
+        brush: PdfSolidBrush, backgroundBrush: PdfSolidBrush, isCaption: boolean,
+        captionRow?: PdfGridRow, groupIndex?: number, isGroupedFooter?: boolean
+    ): void {
+        for (const row of sRows) {
             let leastCaptionSummaryIndex: number = -1;
             let index: number = 0;
             let isEmpty: boolean = true;
-            /* tslint:disable-next-line:no-any */
-            let value: any[] = [];
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            const value: any[] = [];
             for (let i: number = 0; i < pdfGrid.columns.count; i++) {
                 let cell: Cell<AggregateColumnModel> = row.cells[index];
                 if (cell.cellType === CellType.DetailFooterIntent) {
@@ -781,8 +795,7 @@ export class PdfExport {
                         }
                         if (!isNullOrUndefined(captionRow)) {
                             if (!isNullOrUndefined(captionRow.cells.getCell(i).value)) {
-                                /* tslint:disable-next-line:max-line-length */
-                                let args: AggregateQueryCellInfoEventArgs = { row: row, type: 'GroupCaption', style: captionRow.cells };
+                                const args: AggregateQueryCellInfoEventArgs = { row: row, type: 'GroupCaption', style: captionRow.cells };
                                 this.parent.trigger(events.pdfAggregateQueryCellInfo, args);
                                 value.push('');
                                 value.push(captionRow.cells.getCell(i).value);
@@ -807,14 +820,14 @@ export class PdfExport {
                 }
                 if (cell.isDataCell) {
                     let templateFn: { [x: string]: Function } = {};
-                    /* tslint:disable-next-line:max-line-length */
-                    if (!isNullOrUndefined(cell.column.footerTemplate) || !isNullOrUndefined(cell.column.groupCaptionTemplate) || !isNullOrUndefined(cell.column.groupFooterTemplate)) {
-                        /* tslint:disable-next-line:no-any */
-                        let result: any = this.getTemplateFunction(templateFn, i, leastCaptionSummaryIndex, cell);
+                    if (!isNullOrUndefined(cell.column.footerTemplate) || !isNullOrUndefined(cell.column.groupCaptionTemplate)
+                        || !isNullOrUndefined(cell.column.groupFooterTemplate)) {
+                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                        const result: any = this.getTemplateFunction(templateFn, i, leastCaptionSummaryIndex, cell);
                         templateFn = result.templateFunction;
                         leastCaptionSummaryIndex = result.leastCaptionSummaryIndex;
                         let txt: NodeList;
-                        let data: Object = row.data[cell.column.field ? cell.column.field : cell.column.columnName];
+                        const data: Object = row.data[cell.column.field ? cell.column.field : cell.column.columnName];
                         if (this.parent.isReact || this.parent.isVue) {
                             txt = (templateFn[getEnumValue(CellType, cell.cellType)](data, this.parent));
                             if (this.parent.isReact) {
@@ -826,8 +839,8 @@ export class PdfExport {
                         value.push((<Text>txt[0]).textContent);
                         isEmpty = false;
                     } else {
-                        /* tslint:disable-next-line:no-any */
-                        let result: any = this.getSummaryWithoutTemplate(row.data[cell.column.field]);
+                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                        const result: any = this.getSummaryWithoutTemplate(row.data[cell.column.field]);
                         if (!isNullOrUndefined(result)) {
                             value.push(result);
                         }
@@ -845,13 +858,14 @@ export class PdfExport {
                     value[i] = value[i + 1]; }}
             if (!isEmpty) {
                 if (!isCaption) {
-                    let gridRow: PdfGridRow = pdfGrid.rows.addRow();
+                    const gridRow: PdfGridRow = pdfGrid.rows.addRow();
                     gridRow.style.setBorder(border);
                     gridRow.style.setFont(font);
                     gridRow.style.setTextBrush(brush);
                     gridRow.style.setBackgroundBrush(backgroundBrush);
-                     /* tslint:disable-next-line:max-line-length */
-                    let args: AggregateQueryCellInfoEventArgs = { row: row, type: isGroupedFooter ? 'GroupFooter' : 'Footer', style: gridRow.cells };
+                    const args: AggregateQueryCellInfoEventArgs = {
+                        row: row, type: isGroupedFooter ? 'GroupFooter' : 'Footer', style: gridRow.cells
+                    };
                     this.parent.trigger(events.pdfAggregateQueryCellInfo, args);
                     for (let i: number = 0; i < pdfGrid.columns.count; i++) {
                         gridRow.cells.getCell(i).value = value[i].toString();
@@ -869,7 +883,8 @@ export class PdfExport {
             }
         }
     }
-    /* tslint:disable-next-line:no-any */
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     private getTemplateFunction(templateFn: any, index: number, leastCaptionSummaryIndex: number, cell: any): any {
         if (!isNullOrUndefined(cell.column.footerTemplate) &&  cell.cellType === CellType.Summary) {
             templateFn[getEnumValue(CellType, CellType.Summary)] = compile(cell.column.footerTemplate);
@@ -883,7 +898,8 @@ export class PdfExport {
         }
         return { templateFunction: templateFn, leastCaptionSummaryIndex: leastCaptionSummaryIndex };
     }
-    /* tslint:disable-next-line:no-any */
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     private getSummaryWithoutTemplate(data: any): any {
         if (!isNullOrUndefined(data.Sum)) {
             return data.Sum;
@@ -905,11 +921,18 @@ export class PdfExport {
     }
 
     /**
-     * Set alignment, width and type of the values of the column 
+     * Set alignment, width and type of the values of the column
+     *
+     * @param {Column[]} gridColumns - specifies the grid column
+     * @param {PdfGrid} pdfGrid - specifies the pdfGrid
+     * @param {ExportHelper} helper - specifies the helper
+     * @param {IGrid} gObj - specifies the IGrid
+     * @param {boolean} allowHorizontalOverflow - specifies the allowHorizontalOverflow
+     * @returns {void}
      */
     private setColumnProperties(gridColumns: Column[], pdfGrid: PdfGrid, helper: ExportHelper, gObj: IGrid,
                                 allowHorizontalOverflow: boolean): void {
-        let startIndex: number = gObj.groupSettings.columns.length;
+        const startIndex: number = gObj.groupSettings.columns.length;
         for (let i: number = 0; i < startIndex; i++) {
             pdfGrid.columns.getColumn(i).width = 20;
         }
@@ -920,20 +943,25 @@ export class PdfExport {
             // Need to add width consideration with % value
             if (pdfGrid.style.allowHorizontalOverflow && !isNullOrUndefined(gridColumns[i].width) && allowHorizontalOverflow) {
                 pdfGrid.columns.getColumn(i + startIndex).width = typeof gridColumns[i].width === 'number' ?
-                gridColumns[i].width as number * 0.75 : helper.getConvertedWidth(gridColumns[i].width as string) * 0.75;
+                    gridColumns[i].width as number * 0.75 : helper.getConvertedWidth(gridColumns[i].width as string) * 0.75;
             }
         }
     }
+
     /**
      * set default style properties of each rows in exporting grid
+     *
+     * @param {PdfGridRow} row - specifies the PdfGridRow
+     * @param {PdfBorders} border - specifies the PdfBorders
+     * @returns {PdfGrid} returns the pdfgrid
      * @private
      */
     private setRecordThemeStyle(row: PdfGridRow, border: PdfBorders): PdfGridRow {
         if (!isNullOrUndefined(this.gridTheme) && !isNullOrUndefined(this.gridTheme.record)) {
-            let fontFamily: number = !isNullOrUndefined(this.gridTheme.record.fontName) ?
-            this.getFontFamily(this.gridTheme.record.fontName) : PdfFontFamily.Helvetica;
-            let fontSize: number = !isNullOrUndefined(this.gridTheme.record.fontSize) ? this.gridTheme.record.fontSize : 9.75;
-            let fontStyle: PdfFontStyle = this.getFontStyle(this.gridTheme.record);
+            const fontFamily: number = !isNullOrUndefined(this.gridTheme.record.fontName) ?
+                this.getFontFamily(this.gridTheme.record.fontName) : PdfFontFamily.Helvetica;
+            const fontSize: number = !isNullOrUndefined(this.gridTheme.record.fontSize) ? this.gridTheme.record.fontSize : 9.75;
+            const fontStyle: PdfFontStyle = this.getFontStyle(this.gridTheme.record);
             let font: PdfStandardFont | PdfTrueTypeFont  = new PdfStandardFont(fontFamily, fontSize, fontStyle);
             if (!isNullOrUndefined(this.gridTheme.record.font)) {
                 font = this.gridTheme.record.font;
@@ -941,48 +969,60 @@ export class PdfExport {
             row.style.setFont(font);
             let pdfColor: PdfColor = new PdfColor();
             if (!isNullOrUndefined(this.gridTheme.record.fontColor)) {
-                let penBrushColor: { r: number, g: number, b: number } = this.hexToRgb(this.gridTheme.record.fontColor);
+                const penBrushColor: { r: number, g: number, b: number } = this.hexToRgb(this.gridTheme.record.fontColor);
                 pdfColor = new PdfColor(penBrushColor.r, penBrushColor.g, penBrushColor.b);
             }
             row.style.setTextBrush(new PdfSolidBrush(pdfColor));
         } else {
             row.style.setTextBrush(new PdfSolidBrush(new PdfColor(0, 0, 0)));
         }
-        let borderRecord: PdfBorders = this.gridTheme && this.gridTheme.record &&
+        const borderRecord: PdfBorders = this.gridTheme && this.gridTheme.record &&
         this.gridTheme.record.border ? this.getBorderStyle(this.gridTheme.record.border) : border;
         row.style.setBorder(borderRecord);
         return row;
     }
+
     /**
      * generate the formatted cell values
+     *
+     * @param {PdfBorders} border - specifies the border
+     * @param {Column[]} columns - specifies the columns
+     * @param {IGrid} gObj - specifies the IGrid
+     * @param {Object[]} dataSource - specifies the datasource
+     * @param {PdfGrid} pdfGrid - specifies the pdfGrid
+     * @param {number} startIndex - specifies the startindex
+     * @param {PdfExportProperties} pdfExportProperties - specifies the pdfExportProperties
+     * @param {ExportHelper} helper - specifies the helper
+     * @param {number} rowIndex - specifies the rowIndex
+     * @returns {number} returns the number of records
      * @private
      */
     private processRecord(border: PdfBorders, columns: Column[], gObj: IGrid, dataSource: Object[],
                           pdfGrid: PdfGrid, startIndex: number, pdfExportProperties: PdfExportProperties,
                           helper: ExportHelper, rowIndex?: number): number {
-        let rows: Row<Column>[] = helper.getGridRowModel(columns, dataSource, gObj, rowIndex);
+        const rows: Row<Column>[] = helper.getGridRowModel(columns, dataSource, gObj, rowIndex);
         for (const row of rows) {
             rowIndex++;
             // create a new row and set default style properties
-            let gridRow: PdfGridRow = this.setRecordThemeStyle(pdfGrid.rows.addRow(), border);
-            let cellLength: number = row.cells.length;
+            const gridRow: PdfGridRow = this.setRecordThemeStyle(pdfGrid.rows.addRow(), border);
+            const cellLength: number = row.cells.length;
             for (let j: number = 0; j < cellLength; j++) {
-                let gridCell: Cell<Column> = row.cells[j];
+                const gridCell: Cell<Column> = row.cells[j];
                 if (gridCell.cellType !== CellType.Data) {
                     continue;
                 }
-                let column: Column = gridCell.column;
-                let field: string = column.field;
-                let cellValue: string = !isNullOrUndefined(field) ? (column.valueAccessor as Function)(field, row.data, column) : '';
+                const column: Column = gridCell.column;
+                const field: string = column.field;
+                const cellValue: string = !isNullOrUndefined(field) ? (column.valueAccessor as Function)(field, row.data, column) : '';
                 let value: string = !isNullOrUndefined(cellValue) ? cellValue : '';
                 let foreignKeyData: Object;
                 if (column.isForeignColumn && column.isForeignColumn()) {
                     foreignKeyData = helper.getFData(value, column);
                     value = getValue(column.foreignKeyValue, foreignKeyData);
                 }
-                let data: Object = row.data;
-                let cell: PdfGridCell = gridRow.cells.getCell(j);
-                let args: PdfQueryCellInfoEventArgs = {
+                const data: Object = row.data;
+                const cell: PdfGridCell = gridRow.cells.getCell(j);
+                const args: ExportHelperArgs = {
                     data: data,
                     value: value,
                     column: column,
@@ -999,7 +1039,7 @@ export class PdfExport {
                 cell.value = args.value;
                 if (!isNullOrUndefined(args.hyperLink)) {
                     // create the Text Web Link
-                    let textLink: PdfTextWebLink = new PdfTextWebLink();
+                    const textLink: PdfTextWebLink = new PdfTextWebLink();
                     // set the hyperlink
                     textLink.url = args.hyperLink.target;
                     // set the link text
@@ -1019,27 +1059,27 @@ export class PdfExport {
                     }
                     cell.columnSpan = args.colSpan;
                     for (let i: number = 1; i < cell.columnSpan; i++) {
-                        let spanCell: PdfGridCell = gridRow.cells.getCell(j + i);
+                        const spanCell: PdfGridCell = gridRow.cells.getCell(j + i);
                         spanCell.value = '';
                     }
                     j += (args.colSpan - 1);
                 }
             }
             if (row.isExpand) {
-                let gridRow: PdfGridRow = this.setRecordThemeStyle(pdfGrid.rows.addRow(), border);
-                let cell: PdfGridCell = gridRow.cells.getCell(startIndex);
+                const gridRow: PdfGridRow = this.setRecordThemeStyle(pdfGrid.rows.addRow(), border);
+                const cell: PdfGridCell = gridRow.cells.getCell(startIndex);
                 cell.columnSpan = gridRow.cells.count - (startIndex);
                 cell.style.cellPadding = new PdfPaddings(10, 10, 10, 10);
                 gObj.isPrinting = true;
-                let exportType: ExportType = (!isNullOrUndefined(pdfExportProperties) && pdfExportProperties.exportType) ?
-                pdfExportProperties.exportType : 'AllPages';
-                let returnValue: {childGrid: IGrid, element: HTMLElement} =
+                const exportType: ExportType = (!isNullOrUndefined(pdfExportProperties) && pdfExportProperties.exportType) ?
+                    pdfExportProperties.exportType : 'AllPages';
+                const returnValue: {childGrid: IGrid, element: HTMLElement} =
                 this.helper.createChildGrid(gObj, row, exportType, this.gridPool);
-                let childGridObj: IGrid = returnValue.childGrid;
-                let element: HTMLElement = returnValue.element;
+                const childGridObj: IGrid = returnValue.childGrid;
+                const element: HTMLElement = returnValue.element;
                 (<{actionFailure?: Function}>childGridObj).actionFailure =
                 helper.failureHandler(this.gridPool, childGridObj, this.globalResolve);
-                let args: ExportDetailDataBoundEventArgs = {childGrid: childGridObj, row, cell, exportProperties: pdfExportProperties };
+                const args: ExportDetailDataBoundEventArgs = {childGrid: childGridObj, row, cell, exportProperties: pdfExportProperties };
                 this.parent.trigger(events.exportDetailDataBound, args);
                 (<Grid>childGridObj).beforeDataBound = this.childGridCell(cell, childGridObj, pdfExportProperties);
                 childGridObj.appendTo(element);
@@ -1063,9 +1103,8 @@ export class PdfExport {
     }
 
     private processCellStyle(cell: PdfGridCell, args: PdfQueryCellInfoEventArgs): void {
-
         if (!isNullOrUndefined(args.style.backgroundColor)) {
-            let backColor: { r: number, g: number, b: number } = this.hexToRgb(args.style.backgroundColor);
+            const backColor: { r: number, g: number, b: number } = this.hexToRgb(args.style.backgroundColor);
             cell.style.backgroundBrush = new PdfSolidBrush(new PdfColor(backColor.r, backColor.g, backColor.b));
         }
 
@@ -1082,12 +1121,12 @@ export class PdfExport {
         }
 
         if (!isNullOrUndefined(args.style.textBrushColor)) {
-            let textBrushColor: { r: number, g: number, b: number } = this.hexToRgb(args.style.textBrushColor);
+            const textBrushColor: { r: number, g: number, b: number } = this.hexToRgb(args.style.textBrushColor);
             cell.style.textBrush = new PdfSolidBrush(new PdfColor(textBrushColor.r, textBrushColor.g, textBrushColor.b));
         }
 
         if (!isNullOrUndefined(args.style.textPenColor)) {
-            let textPenColor: { r: number, g: number, b: number } = this.hexToRgb(args.style.textPenColor);
+            const textPenColor: { r: number, g: number, b: number } = this.hexToRgb(args.style.textPenColor);
             cell.style.textPen = new PdfPen(new PdfColor(textPenColor.r, textPenColor.g, textPenColor.b));
         }
 
@@ -1097,17 +1136,17 @@ export class PdfExport {
         }
 
         if (!isNullOrUndefined(args.style.border)) {
-            let border: PdfBorders = new PdfBorders();
-            let borderWidth: number = args.style.border.width;
+            const border: PdfBorders = new PdfBorders();
+            const borderWidth: number = args.style.border.width;
             // set border width
-            let width: number = (!isNullOrUndefined(borderWidth) && typeof borderWidth === 'number') ? (borderWidth * 0.75) : (undefined);
+            const width: number = (!isNullOrUndefined(borderWidth) && typeof borderWidth === 'number') ? (borderWidth * 0.75) : (undefined);
             // set border color
             let color: PdfColor = new PdfColor(196, 196, 196);
             if (!isNullOrUndefined(args.style.border.color)) {
-                let borderColor: { r: number, g: number, b: number } = this.hexToRgb(args.style.border.color);
+                const borderColor: { r: number, g: number, b: number } = this.hexToRgb(args.style.border.color);
                 color = new PdfColor(borderColor.r, borderColor.g, borderColor.b);
             }
-            let pen: PdfPen = new PdfPen(color, width);
+            const pen: PdfPen = new PdfPen(color, width);
             // set border dashStyle 'Solid <default>, Dash, Dot, DashDot, DashDotDot'
             if (!isNullOrUndefined(args.style.border.dashStyle)) {
                 pen.dashStyle = this.getDashStyle(args.style.border.dashStyle);
@@ -1121,8 +1160,13 @@ export class PdfExport {
             cell.style.stringFormat.paragraphIndent = args.style.paragraphIndent;
         }
     }
+
     /**
      * set text alignment of each columns in exporting grid
+     *
+     * @param {string} textAlign - specifies the textAlign
+     * @param {PdfStringFormat} format - specifies the PdfStringFormat
+     * @returns {PdfStringFormat} returns the PdfStringFormat
      * @private
      */
     private getHorizontalAlignment(textAlign: string, format?: PdfStringFormat): PdfStringFormat {
@@ -1130,23 +1174,29 @@ export class PdfExport {
             format = new PdfStringFormat();
         }
         switch (textAlign) {
-            case 'Right':
-                format.alignment = PdfTextAlignment.Right;
-                break;
-            case 'Center':
-                format.alignment = PdfTextAlignment.Center;
-                break;
-            case 'Justify':
-                format.alignment = PdfTextAlignment.Justify;
-                break;
-            case 'Left':
-                format.alignment = PdfTextAlignment.Left;
-                break;
+        case 'Right':
+            format.alignment = PdfTextAlignment.Right;
+            break;
+        case 'Center':
+            format.alignment = PdfTextAlignment.Center;
+            break;
+        case 'Justify':
+            format.alignment = PdfTextAlignment.Justify;
+            break;
+        case 'Left':
+            format.alignment = PdfTextAlignment.Left;
+            break;
         }
         return format;
     }
+
     /**
      * set vertical alignment of each columns in exporting grid
+     *
+     * @param {string} verticalAlign - specifies the verticalAlign
+     * @param {PdfStringFormat} format - specifies the PdfStringFormat
+     * @param {string} textAlign - specifies the text align
+     * @returns {PdfStringFormat} returns the PdfStringFormat
      * @private
      */
     private getVerticalAlignment(verticalAlign: string, format?: PdfStringFormat, textAlign?: string): PdfStringFormat {
@@ -1155,44 +1205,42 @@ export class PdfExport {
             format = this.getHorizontalAlignment(textAlign, format);
         }
         switch (verticalAlign) {
-            case 'Bottom':
-                format.lineAlignment = PdfVerticalAlignment.Bottom;
-                break;
-            case 'Middle':
-                format.lineAlignment = PdfVerticalAlignment.Middle;
-                break;
-            case 'Top':
-                format.lineAlignment = PdfVerticalAlignment.Top;
-                break;
+        case 'Bottom':
+            format.lineAlignment = PdfVerticalAlignment.Bottom;
+            break;
+        case 'Middle':
+            format.lineAlignment = PdfVerticalAlignment.Middle;
+            break;
+        case 'Top':
+            format.lineAlignment = PdfVerticalAlignment.Top;
+            break;
         }
         return format;
     }
 
     private getFontFamily(fontFamily: string): number {
         switch (fontFamily) {
-            case 'TimesRoman':
-                return 2;
-            case 'Courier':
-                return 1;
-            case 'Symbol':
-                return 3;
-            case 'ZapfDingbats':
-                return 4;
-            default:
-                return 0;
+        case 'TimesRoman':
+            return 2;
+        case 'Courier':
+            return 1;
+        case 'Symbol':
+            return 3;
+        case 'ZapfDingbats':
+            return 4;
+        default:
+            return 0;
         }
     }
 
-    /* tslint:disable-next-line:no-any */
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     private getFont(content: any): PdfFont {
         if (content.font) {
             return content.font;
         }
-        let fontSize: number = (!isNullOrUndefined(content.style.fontSize)) ? (content.style.fontSize * 0.75) : 9.75;
-
-        let fontFamily: number = (!isNullOrUndefined(content.style.fontFamily)) ?
-        (this.getFontFamily(content.style.fontFamily)) : PdfFontFamily.TimesRoman;
-
+        const fontSize: number = (!isNullOrUndefined(content.style.fontSize)) ? (content.style.fontSize * 0.75) : 9.75;
+        const fontFamily: number = (!isNullOrUndefined(content.style.fontFamily)) ?
+            (this.getFontFamily(content.style.fontFamily)) : PdfFontFamily.TimesRoman;
         let fontStyle: PdfFontStyle = PdfFontStyle.Regular;
         if (!isNullOrUndefined(content.style.bold) && content.style.bold) {
             fontStyle |= PdfFontStyle.Bold;
@@ -1215,37 +1263,37 @@ export class PdfExport {
 
     private getPageNumberStyle(pageNumberType: PdfPageNumberType): number {
         switch (pageNumberType) {
-            case 'LowerLatin':
-                return 2;
-            case 'LowerRoman':
-                return 3;
-            case 'UpperLatin':
-                return 4;
-            case 'UpperRoman':
-                return 5;
-            default:
-                return 1;
+        case 'LowerLatin':
+            return 2;
+        case 'LowerRoman':
+            return 3;
+        case 'UpperLatin':
+            return 4;
+        case 'UpperRoman':
+            return 5;
+        default:
+            return 1;
         }
     }
 
     private setContentFormat(content: PdfHeaderFooterContent, format: PdfStringFormat): { format: PdfStringFormat, size: SizeF } {
         if (!isNullOrUndefined(content.size)) {
-            let width: number = content.size.width * 0.75;
-            let height: number = content.size.height * 0.75;
+            const width: number = content.size.width * 0.75;
+            const height: number = content.size.height * 0.75;
             format = new PdfStringFormat(PdfTextAlignment.Left, PdfVerticalAlignment.Middle);
             if (!isNullOrUndefined(content.style.hAlign)) {
                 switch (content.style.hAlign) {
-                    case 'Right':
-                        format.alignment = PdfTextAlignment.Right;
-                        break;
-                    case 'Center':
-                        format.alignment = PdfTextAlignment.Center;
-                        break;
-                    case 'Justify':
-                        format.alignment = PdfTextAlignment.Justify;
-                        break;
-                    default:
-                        format.alignment = PdfTextAlignment.Left;
+                case 'Right':
+                    format.alignment = PdfTextAlignment.Right;
+                    break;
+                case 'Center':
+                    format.alignment = PdfTextAlignment.Center;
+                    break;
+                case 'Justify':
+                    format.alignment = PdfTextAlignment.Justify;
+                    break;
+                default:
+                    format.alignment = PdfTextAlignment.Left;
                 }
             }
             if (!isNullOrUndefined(content.style.vAlign)) {
@@ -1258,85 +1306,85 @@ export class PdfExport {
 
     private getPageSize(pageSize: PdfPageSize): SizeF {
         switch (pageSize) {
-            case 'Letter':
-                return new SizeF(612, 792);
-            case 'Note':
-                return new SizeF(540, 720);
-            case 'Legal':
-                return new SizeF(612, 1008);
-            case 'A0':
-                return new SizeF(2380, 3368);
-            case 'A1':
-                return new SizeF(1684, 2380);
-            case 'A2':
-                return new SizeF(1190, 1684);
-            case 'A3':
-                return new SizeF(842, 1190);
-            case 'A5':
-                return new SizeF(421, 595);
-            case 'A6':
-                return new SizeF(297, 421);
-            case 'A7':
-                return new SizeF(210, 297);
-            case 'A8':
-                return new SizeF(148, 210);
-            case 'A9':
-                return new SizeF(105, 148);
-            // case 'A10':
-            //     return new SizeF(74, 105);
-            case 'B0':
-                return new SizeF(2836, 4008);
-            case 'B1':
-                return new SizeF(2004, 2836);
-            case 'B2':
-                return new SizeF(1418, 2004);
-            case 'B3':
-                return new SizeF(1002, 1418);
-            case 'B4':
-                return new SizeF(709, 1002);
-            case 'B5':
-                return new SizeF(501, 709);
-            case 'Archa':
-                return new SizeF(648, 864);
-            case 'Archb':
-                return new SizeF(864, 1296);
-            case 'Archc':
-                return new SizeF(1296, 1728);
-            case 'Archd':
-                return new SizeF(1728, 2592);
-            case 'Arche':
-                return new SizeF(2592, 3456);
-            case 'Flsa':
-                return new SizeF(612, 936);
-            case 'HalfLetter':
-                return new SizeF(396, 612);
-            case 'Letter11x17':
-                return new SizeF(792, 1224);
-            case 'Ledger':
-                return new SizeF(1224, 792);
-            default:
-                return new SizeF(595, 842);
+        case 'Letter':
+            return new SizeF(612, 792);
+        case 'Note':
+            return new SizeF(540, 720);
+        case 'Legal':
+            return new SizeF(612, 1008);
+        case 'A0':
+            return new SizeF(2380, 3368);
+        case 'A1':
+            return new SizeF(1684, 2380);
+        case 'A2':
+            return new SizeF(1190, 1684);
+        case 'A3':
+            return new SizeF(842, 1190);
+        case 'A5':
+            return new SizeF(421, 595);
+        case 'A6':
+            return new SizeF(297, 421);
+        case 'A7':
+            return new SizeF(210, 297);
+        case 'A8':
+            return new SizeF(148, 210);
+        case 'A9':
+            return new SizeF(105, 148);
+        // case 'A10':
+            // return new SizeF(74, 105);
+        case 'B0':
+            return new SizeF(2836, 4008);
+        case 'B1':
+            return new SizeF(2004, 2836);
+        case 'B2':
+            return new SizeF(1418, 2004);
+        case 'B3':
+            return new SizeF(1002, 1418);
+        case 'B4':
+            return new SizeF(709, 1002);
+        case 'B5':
+            return new SizeF(501, 709);
+        case 'Archa':
+            return new SizeF(648, 864);
+        case 'Archb':
+            return new SizeF(864, 1296);
+        case 'Archc':
+            return new SizeF(1296, 1728);
+        case 'Archd':
+            return new SizeF(1728, 2592);
+        case 'Arche':
+            return new SizeF(2592, 3456);
+        case 'Flsa':
+            return new SizeF(612, 936);
+        case 'HalfLetter':
+            return new SizeF(396, 612);
+        case 'Letter11x17':
+            return new SizeF(792, 1224);
+        case 'Ledger':
+            return new SizeF(1224, 792);
+        default:
+            return new SizeF(595, 842);
         }
     }
     private getDashStyle(dashStyle: PdfDashStyle): number {
         switch (dashStyle) {
-            case 'Dash':
-                return 1;
-            case 'Dot':
-                return 2;
-            case 'DashDot':
-                return 3;
-            case 'DashDotDot':
-                return 4;
-            default:
-                return 0;
+        case 'Dash':
+            return 1;
+        case 'Dot':
+            return 2;
+        case 'DashDot':
+            return 3;
+        case 'DashDotDot':
+            return 4;
+        default:
+            return 0;
         }
     }
 
     private getPenFromContent(content: PdfHeaderFooterContent): PdfPen {
         let pen: PdfPen = new PdfPen(new PdfColor(0, 0, 0));
         if (!isNullOrUndefined(content.style) && content.style !== null && !isNullOrUndefined(content.style.penColor)) {
-            let penColor: { r: number, g: number, b: number } = this.hexToRgb(content.style.penColor);
+            const penColor: { r: number, g: number, b: number } = this.hexToRgb(content.style.penColor);
             pen = new PdfPen(new PdfColor(penColor.r, penColor.g, penColor.b));
         }
         return pen;
@@ -1346,7 +1394,7 @@ export class PdfExport {
         let brush: PdfSolidBrush = null;
         if (!isNullOrUndefined(content.style.textBrushColor)) {
             /* tslint:disable-next-line:max-line-length */
-            let brushColor: { r: number, g: number, b: number } = this.hexToRgb(content.style.textBrushColor);
+            const brushColor: { r: number, g: number, b: number } = this.hexToRgb(content.style.textBrushColor);
             brush = new PdfSolidBrush(new PdfColor(brushColor.r, brushColor.g, brushColor.b));
         }
         return brush;
@@ -1356,10 +1404,10 @@ export class PdfExport {
             throw new Error('please set valid hex value for color...');
         }
         hex = hex.substring(1);
-        let bigint: number = parseInt(hex, 16);
-        let r: number = (bigint >> 16) & 255;
-        let g: number = (bigint >> 8) & 255;
-        let b: number = bigint & 255;
+        const bigint: number = parseInt(hex, 16);
+        const r: number = (bigint >> 16) & 255;
+        const g: number = (bigint >> 8) & 255;
+        const b: number = bigint & 255;
         return { r: r, g: g, b: b };
     }
 
@@ -1380,39 +1428,35 @@ export class PdfExport {
         return fontStyle;
     }
 
-    private getBorderStyle(border: PdfBorder) : PdfBorders {
-        let borders: PdfBorders = new PdfBorders();
+    private getBorderStyle(border: PdfBorder): PdfBorders {
+        const borders: PdfBorders = new PdfBorders();
         if (!isNullOrUndefined(border)) {
-            let borderWidth: number = border.width;
+            const borderWidth: number = border.width;
             // set border width
-            let width: number = (!isNullOrUndefined(borderWidth) && typeof borderWidth === 'number') ? borderWidth * 0.75 : undefined;
+            const width: number = (!isNullOrUndefined(borderWidth) && typeof borderWidth === 'number') ? borderWidth * 0.75 : undefined;
             // set border color
             let color: PdfColor = new PdfColor(196, 196, 196);
             if (!isNullOrUndefined(border.color)) {
-                let borderColor: { r: number, g: number, b: number } = this.hexToRgb(border.color);
+                const borderColor: { r: number, g: number, b: number } = this.hexToRgb(border.color);
                 color = new PdfColor(borderColor.r, borderColor.g, borderColor.b);
             }
-            let pen: PdfPen = new PdfPen(color, width);
+            const pen: PdfPen = new PdfPen(color, width);
             // set border dashStyle 'Solid <default>, Dash, Dot, DashDot, DashDotDot'
             if (!isNullOrUndefined(border.dashStyle)) {
                 pen.dashStyle = this.getDashStyle(border.dashStyle);
             }
             borders.all = pen;
-    } else {
-        borders.all = new PdfPen(new PdfColor(234, 234, 234));
-    }
+        } else {
+            borders.all = new PdfPen(new PdfColor(234, 234, 234));
+        }
         return borders;
-}
+    }
 
-    /**
-     * To destroy the pdf export
-     * @return {void}
-     * @hidden
-     */
     public destroy(): void {
         //destroy for exporting
     }
 }
+
 interface SummaryData {
     aggregates?: Object;
     level?: number;

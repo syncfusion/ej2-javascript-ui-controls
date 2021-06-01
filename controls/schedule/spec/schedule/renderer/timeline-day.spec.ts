@@ -2041,6 +2041,57 @@ describe('Schedule timeline day view', () => {
         });
     });
 
+    describe('selectResourceByIndex method testing in mobile device', () => {
+        let schObj: Schedule;
+        const uA: string = Browser.userAgent;
+        const androidUserAgent: string = 'Mozilla/5.0 (Linux; Android 4.3; Nexus 7 Build/JWR66Y) ' +
+            'AppleWebKit/537.36 (KHTML, like Gecko) Chrome/30.0.1599.92 Safari/537.36';
+        beforeAll((done: DoneFn) => {
+            Browser.userAgent = androidUserAgent;
+            const model: ScheduleModel = {
+                width: 300, height: '500px', selectedDate: new Date(2018, 3, 1), currentView: 'TimelineDay',
+                views: ['TimelineDay', 'TimelineWeek', 'TimelineWorkWeek', 'TimelineMonth'],
+                group: { resources: ['Rooms', 'Owners'] },
+                resources: [{
+                    field: 'RoomId', name: 'Rooms',
+                    dataSource: [
+                        { Text: 'Room 1', Id: 1, Color: '#ffaa00' },
+                        { Text: 'Room 2', Id: 2, Color: '#f8a398' }
+                    ]
+                }, {
+                    field: 'OwnerId', name: 'Owners',
+                    dataSource: [
+                        { Text: 'Nancy', Id: 1, GroupID: 1, Color: '#ffaa00' },
+                        { Text: 'Steven', Id: 2, GroupID: 2, Color: '#f8a398' },
+                        { Text: 'Michael', Id: 3, GroupID: 1, Color: '#7499e1' }
+                    ]
+                }]
+            };
+            schObj = util.createSchedule(model, resourceData, done);
+        });
+        afterAll(() => {
+            util.destroy(schObj);
+            Browser.userAgent = uA;
+        });
+
+        it('resource treeview testing', () => {
+            expect(schObj.element.querySelectorAll('.e-resource-tree-popup').length).toEqual(1);
+            expect(schObj.element.querySelectorAll('.e-resource-tree').length).toEqual(1);
+            expect(schObj.element.querySelectorAll('.e-resource-tree .e-list-item.e-has-child').length).toEqual(2);
+            expect(schObj.element.querySelectorAll('.e-resource-tree .e-list-item:not(.e-has-child)').length).toEqual(3);
+        });
+
+        it('select resource by using public method testing ', () => {
+            const menuElement: HTMLElement = schObj.element.querySelector('.e-resource-menu .e-icon-menu');
+            schObj.selectResourceByIndex(2);
+            menuElement.click();
+            expect((schObj.element.querySelector('.e-resource-tree  .e-active') as HTMLElement).innerText).toEqual('Steven');
+            schObj.selectResourceByIndex(schObj.getIndexFromResourceId(1, 'Owners'))
+            menuElement.click();
+            expect((schObj.element.querySelector('.e-resource-tree  .e-active') as HTMLElement).innerText).toEqual('Nancy');
+        });
+    });
+
     describe('Multiple resource grouping rendering normal view in mobile device ', () => {
         let schObj: Schedule;
         const uA: string = Browser.userAgent;

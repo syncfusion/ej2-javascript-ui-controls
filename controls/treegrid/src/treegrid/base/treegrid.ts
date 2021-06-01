@@ -1391,6 +1391,7 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
         this.defaultLocale = {
             Above: 'Above',
             Below: 'Below',
+            Child: 'Child',
             AddRow: 'Add Row',
             ExpandAll: 'Expand All',
             CollapseAll: 'Collapse All',
@@ -2429,7 +2430,7 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
                 case ContextMenuItems.AddRow:
                     items.push(<ContextMenuItemModel>{ text: this.l10n.getConstant('AddRow') ,
                         target: '.e-content' , id: this.element.id + '_gridcontrol_cmenu_AddRow' ,
-                        items: [{ text: this.l10n.getConstant('Above') , id: 'Above' }, { text: this.l10n.getConstant('Below') , id: 'Below'}]});
+                        items: [{ text: this.l10n.getConstant('Above') , id: 'Above' }, { text: this.l10n.getConstant('Below') , id: 'Below'}, { text: this.l10n.getConstant('Child') , id: 'Child'}]});
                     break;
                 default:
                     items.push(this.contextMenuItems[i]);

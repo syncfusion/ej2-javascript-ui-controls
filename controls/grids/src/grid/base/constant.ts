@@ -530,3 +530,9 @@ export const closeEdit: string = 'close-edit';
 export const resetVirtualFocus: string = 'reset-virtual-focus';
 /** @hidden */
 export const afterContentRender: string = 'after-content-renderer';
+/** @hidden */
+export const refreshVirtualEditFormCells: string = 'refresh-virtual-editform-cells';
+/** @hidden */
+export const scrollToEdit: string = 'scroll-to-edit';
+/** @hidden */
+export const beforeCheckboxRendererQuery: string = 'before-checkbox-renderer-query';

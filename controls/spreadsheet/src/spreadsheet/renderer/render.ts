@@ -21,7 +21,7 @@ export class Render {
     }
 
     public render(isRefreshing: boolean): void {
-        this.parent.activeSheetIndex = this.parent.skipHiddenSheets(this.parent.activeSheetIndex);
+        this.parent.setProperties({ activeSheetIndex: this.parent.skipHiddenSheets(this.parent.activeSheetIndex) }, true);
         if (!this.parent.isMobileView()) {
             this.parent.notify(ribbon, null);
             this.parent.notify(formulaBar, null);

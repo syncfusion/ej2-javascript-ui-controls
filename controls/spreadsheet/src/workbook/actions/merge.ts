@@ -25,7 +25,6 @@ export class WorkbookMerge {
         }
         if (typeof(args.range) === 'string') { args.range = getRangeIndexes(args.range); }
         args.range = getSwapRange(args.range);
-        const sheet: SheetModel = args.sheet || this.parent.getActiveSheet();
         if (!args.skipChecking) { this.mergedRange(args); }
         if (!args.merge || args.type === 'All') {
             this.mergeAll(args); if (args.refreshRibbon) { this.parent.notify(activeCellChanged, null); }
@@ -36,6 +35,7 @@ export class WorkbookMerge {
         }
         this.parent.setUsedRange(args.range[2], args.range[3]);
         if (args.isAction) { this.parent.notify('actionComplete', { eventArgs: args, action: 'merge' }); }
+        const sheet: SheetModel = args.sheet || this.parent.getActiveSheet();
         if (this.parent.sheets.indexOf(sheet) === this.parent.activeSheetIndex) {
             this.parent.notify('selectRange', { address: sheet.selectedRange, skipChecking: true });
         }
@@ -43,21 +43,6 @@ export class WorkbookMerge {
     private mergeAll(args: MergeArgs): void {
         let rowSpan: number = 0; let cell: CellModel; args.range = args.range as number[]; let colSpan: number;
         let value: string; const sheet: SheetModel = args.sheet || this.parent.getActiveSheet(); let curCell: CellModel;
-        const startCell: HTMLElement = getCell(args.range[0], args.range[1], sheet) as HTMLElement;
-        let border: string = startCell ? (startCell.style ? startCell.style.borderLeft : null) : null;
-        if (border === 'none') {
-            border = startCell.style.borderRight !== 'none' ? startCell.style.borderRight :
-                (startCell.style.borderTop ? startCell.style.borderTop : null);
-        }
-        if (border === 'none') {
-            border = startCell.style.borderBottom !== 'none' ? startCell.style.borderBottom : null;
-        }
-        if (!isNullOrUndefined(startCell) && !isNullOrUndefined(border)) {
-            startCell.style.borderBottom = '';
-            startCell.style.borderLeft = '';
-            startCell.style.borderTop = '';
-            startCell.style.borderRight = '';
-        }
         for (let i: number = args.range[0]; i <= args.range[2]; i++) {
             colSpan = 0; if (args.isAction) { args.model.push({ cells: [] }); }
             for (let j: number = args.range[1]; j <= args.range[3]; j++) {
@@ -99,9 +84,6 @@ export class WorkbookMerge {
             cell = this.getCellValue(args.range[0], args.range[1], value, sheet);
             setCell(args.range[0], args.range[1], sheet, cell, true);
             if (!args.preventRefresh) { this.parent.notify(applyMerge, { rowIdx: args.range[0], colIdx: args.range[1] }); }
-        }
-        if (!isNullOrUndefined(border)) {
-            this.parent.notify(setCellFormat, { style: { border: border }, range: args.range , onActionUpdate: true });
         }
     }
     private mergeHorizontally(args: MergeArgs): void {

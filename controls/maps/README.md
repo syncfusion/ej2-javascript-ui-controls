@@ -58,7 +58,7 @@ Maps component is also offered in following list of frameworks.
 
 ## Support
 
-Product support is available for through following mediums
+Product support is available for through following mediums.
 
 * Creating incident in Syncfusion [Direct-trac](https://www.syncfusion.com/support/directtrac/incidents?utm_source=npm&utm_campaign=maps) support system or [Community forum](https://www.syncfusion.com/forums/essential-js2?utm_source=npm&utm_campaign=maps).
 * New [GitHub issues](https://github.com/syncfusion/ej2-javascript-ui-controls/issues).

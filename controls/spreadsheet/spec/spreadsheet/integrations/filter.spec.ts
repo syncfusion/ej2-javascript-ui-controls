@@ -43,8 +43,8 @@ describe('Filter ->', () => {
     });
 
     describe('CR-Issues ->', () => {
-        describe('I289560, FB22087 ->', () => {
-            beforeEach((done: Function) => {
+        describe('I289560, FB22087, FB24231 ->', () => {
+            beforeAll((done: Function) => {
                 helper.initializeSpreadsheet({
                     sheets: [{ ranges: [{ dataSource: defaultData }] }],
                     created: (): void => {
@@ -53,7 +53,7 @@ describe('Filter ->', () => {
                     }
                 }, done);
             });
-            afterEach(() => {
+            afterAll(() => {
                 helper.invoke('destroy');
             });
             it('Facing issues on spreadsheet - Filter applied after the specified range using applyFilter method', (done: Function) => {
@@ -81,6 +81,39 @@ describe('Filter ->', () => {
                     });
                 });
             });
+
+            // it('Filter with unchecked values after open from json', (done: Function) => {
+            //     const spreadsheet: Spreadsheet = helper.getInstance();
+            //     spreadsheet.applyFilter();
+            //     spreadsheet.applyFilter([{ field: 'A', predicate: 'and', operator: 'notequal', value: 'Casual Shoes' }, { field: 'A', predicate: 'and', operator: 'notequal', value: 'Sneakers' }]);
+            //     setTimeout(() => {
+            //         spreadsheet.saveAsJson().then((json: any) => {
+            //             spreadsheet.openFromJson({ file: json.jsonObject });
+            //             setTimeout(() => {
+            //                 expect(spreadsheet.filterCollection[0].predicates.toString()).toBe('and,and');
+            //                 expect((helper.getContentTableElement().querySelector('tbody tr:nth-child(2)') as any).ariaRowIndex).toBe('3');
+            //                 expect(helper.getContentTableElement().querySelector('tbody tr:nth-child(2) td').textContent).toBe('Sports Shoes');
+            //                 expect(helper.getContentTableElement().querySelector('tbody tr:nth-child(6) td').textContent).toBe('Running Shoes');
+            //                 done();
+            //             });
+            //         });
+            //     });
+            // });
+
+            // it('Cleared filter is not removed after open from json', (done: Function) => {
+            //     const spreadsheet: Spreadsheet = helper.getInstance();
+            //     helper.triggerKeyEvent('keydown', 76, null, true, true);
+            //     expect(spreadsheet.filterCollection.length).toBe(0);
+            //     spreadsheet.saveAsJson().then((json: any) => {
+            //         spreadsheet.openFromJson({ file: json.jsonObject });
+            //         setTimeout(() => {
+            //             expect(helper.invoke('getCell', [0, 0]).querySelector('.e-filter-iconbtn')).toBeNull();
+            //             expect(helper.invoke('getCell', [0, 7]).querySelector('.e-filtered')).toBeNull();
+            //             expect((helper.getContentTableElement().querySelector('tbody tr:nth-child(2)') as any).ariaRowIndex).toBe('2');
+            //             done();
+            //         });
+            //     });
+            // });
         });
     });
 });

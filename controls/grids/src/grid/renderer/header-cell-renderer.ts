@@ -9,13 +9,14 @@ import { AriaService, IAriaOptions } from '../services/aria-service';
 import { createCheckBox } from '@syncfusion/ej2-buttons';
 import { headerCellInfo } from '../base/constant';
 /**
- * HeaderCellRenderer class which responsible for building header cell content. 
+ * HeaderCellRenderer class which responsible for building header cell content.
+ *
  * @hidden
  */
 export class HeaderCellRenderer extends CellRenderer implements ICellRenderer<Column> {
 
     public element: HTMLElement = this.parent
-    .createElement('TH', { className: 'e-headercell', attrs: { role: 'columnheader', tabindex: '-1' } });
+        .createElement('TH', { className: 'e-headercell', attrs: { role: 'columnheader', tabindex: '-1' } });
     private ariaService: AriaService = new AriaService();
     private hTxtEle: Element = this.parent.createElement('span', { className: 'e-headertext' });
     private sortEle: Element = this.parent.createElement('div', { className: 'e-sortfilterdiv e-icons' });
@@ -23,7 +24,8 @@ export class HeaderCellRenderer extends CellRenderer implements ICellRenderer<Co
     private chkAllBox: Element = this.parent.createElement('input', { className: 'e-checkselectall', attrs: { 'type': 'checkbox' } });
     /**
      * Function to return the wrapper for the TH content.
-     * @returns string 
+     *
+     * @returns {string | Element} returns the element
      */
     public getGui(): string | Element {
         return <Element>this.gui.cloneNode();
@@ -31,24 +33,29 @@ export class HeaderCellRenderer extends CellRenderer implements ICellRenderer<Co
 
     /**
      * Function to render the cell content based on Column object.
-     * @param  {Column} column
-     * @param  {Object} data     
-     * @param  {Element}
+     *
+     * @param {Cell} cell - specifies the column
+     * @param {Object} data - specifies the data
+     * @param {object} attributes - specifies the aattributes
+     * @returns {Element} returns the element
      */
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     public render(cell: Cell<Column>, data: Object, attributes?: { [x: string]: Object }): Element {
-        let node: Element = this.element.cloneNode() as Element;
-        let fltrMenuEle: Element = this.parent.createElement('div', { className: 'e-filtermenudiv e-icons e-icon-filter' });
+        const node: Element = this.element.cloneNode() as Element;
+        const fltrMenuEle: Element = this.parent.createElement('div', { className: 'e-filtermenudiv e-icons e-icon-filter' });
         return this.prepareHeader(cell, node, fltrMenuEle);
     }
 
     /**
      * Function to refresh the cell content based on Column object.
-     * @param  {Cell} cell
-     * @param  {Element} node          
+     *
+     * @param  {Cell} cell - specifies the cell
+     * @param  {Element} node - specifies the noe
+     * @returns {Element} returns the element
      */
     public refresh(cell: Cell<Column>, node: Element): Element {
         this.clean(node);
-        let fltrMenuEle: Element = this.parent.createElement('div', { className: 'e-filtermenudiv e-icons e-icon-filter' });
+        const fltrMenuEle: Element = this.parent.createElement('div', { className: 'e-filtermenudiv e-icons e-icon-filter' });
         return this.prepareHeader(cell, node, fltrMenuEle);
     }
 
@@ -58,9 +65,9 @@ export class HeaderCellRenderer extends CellRenderer implements ICellRenderer<Co
 
     /* tslint:disable-next-line:max-func-body-length */
     private prepareHeader(cell: Cell<Column>, node: Element, fltrMenuEle: Element): Element {
-        let column: Column = cell.column; let ariaAttr: IAriaOptions<boolean> = {};
+        const column: Column = cell.column; const ariaAttr: IAriaOptions<boolean> = {};
         //Prepare innerHtml
-        let innerDIV: HTMLDivElement = <HTMLDivElement>this.getGui();
+        const innerDIV: HTMLDivElement = <HTMLDivElement>this.getGui();
         let hValueAccer: string;
         attributes(innerDIV, {
             'e-mappinguid': column.uid,
@@ -73,12 +80,12 @@ export class HeaderCellRenderer extends CellRenderer implements ICellRenderer<Co
             let value: string = column.headerText;
             if (!isNullOrUndefined(hValueAccer)) {
                 value = hValueAccer; }
-            let headerText: Element = <Element>this.hTxtEle.cloneNode();
+            const headerText: Element = <Element>this.hTxtEle.cloneNode();
             headerText[column.getDomSetter()] = value;
             innerDIV.appendChild(headerText);
         } else {
             column.editType = 'booleanedit';
-            let checkAllWrap: Element = createCheckBox(this.parent.createElement, false, { checked: false, label: ' ' });
+            const checkAllWrap: Element = createCheckBox(this.parent.createElement, false, { checked: false, label: ' ' });
             checkAllWrap.insertBefore(this.chkAllBox.cloneNode(), checkAllWrap.firstChild);
             innerDIV.appendChild(checkAllWrap);
             innerDIV.classList.add('e-headerchkcelldiv');
@@ -90,12 +97,12 @@ export class HeaderCellRenderer extends CellRenderer implements ICellRenderer<Co
             (column.allowFiltering && !isNullOrUndefined(column.field)) &&
             !(this.parent.showColumnMenu && column.showColumnMenu)) {
             attributes(fltrMenuEle, {
-                'e-mappinguid': 'e-flmenu-' + column.uid,
+                'e-mappinguid': 'e-flmenu-' + column.uid
             });
             node.classList.add('e-fltr-icon');
-            let matchFlColumns: Object[] = [];
+            const matchFlColumns: Object[] = [];
             if (this.parent.filterSettings.columns.length && this.parent.filterSettings.columns.length !== matchFlColumns.length) {
-                let foreignColumn: Column[] = this.parent.getForeignKeyColumns();
+                const foreignColumn: Column[] = this.parent.getForeignKeyColumns();
                 for (let index: number = 0; index < this.parent.columns.length; index++) {
                     for (let count: number = 0; count < this.parent.filterSettings.columns.length; count++) {
                         if (this.parent.filterSettings.columns[count].field === column.field || (foreignColumn.length
@@ -126,16 +133,16 @@ export class HeaderCellRenderer extends CellRenderer implements ICellRenderer<Co
         }
         node = this.extendPrepareHeader(column, node);
         let result: Element[];
-        let gridObj: IGrid = this.parent;
-        let colIndex: number = gridObj.getColumnIndexByField(column.field);
+        const gridObj: IGrid = this.parent;
+        const colIndex: number = gridObj.getColumnIndexByField(column.field);
         if (!isNullOrUndefined(column.headerTemplate)) {
             //need to pass the template id for blazor headertemplate
-            let headerTempID: string = gridObj.element.id + column.uid + 'headerTemplate';
-            let str: string = 'isStringTemplate';
-            let col: Column = column;
-            let isReactCompiler: boolean = this.parent.isReact && typeof (column.headerTemplate) !== 'string';
+            const headerTempID: string = gridObj.element.id + column.uid + 'headerTemplate';
+            const str: string = 'isStringTemplate';
+            const col: Column = column;
+            const isReactCompiler: boolean = this.parent.isReact && typeof (column.headerTemplate) !== 'string';
             if (isReactCompiler) {
-                let copied: Object = { 'index': colIndex };
+                const copied: Object = { 'index': colIndex };
                 node.firstElementChild.innerHTML = '';
                 column.getHeaderTemplate()(
                     extend(copied, col), gridObj, 'headerTemplate', headerTempID, this.parent[str], null, node.firstElementChild);
@@ -149,7 +156,7 @@ export class HeaderCellRenderer extends CellRenderer implements ICellRenderer<Co
         }
         this.ariaService.setOptions(<HTMLElement>node, ariaAttr);
         if (!isNullOrUndefined(column.headerTextAlign) || !isNullOrUndefined(column.textAlign)) {
-            let alignment: string = column.headerTextAlign || column.textAlign;
+            const alignment: string = column.headerTextAlign || column.textAlign;
             (innerDIV as HTMLElement).style.textAlign = alignment;
             if (alignment === 'Right' || alignment === 'Left') {
                 node.classList.add(alignment === 'Right' ? 'e-rightalign' : 'e-leftalign');
@@ -176,8 +183,8 @@ export class HeaderCellRenderer extends CellRenderer implements ICellRenderer<Co
 
     private extendPrepareHeader(column: Column, node: Element): Element {
         if (this.parent.showColumnMenu && column.showColumnMenu && !isNullOrUndefined(column.field)) {
-            let element: Element = (this.parent.createElement('div', { className: 'e-icons e-columnmenu' }));
-            let matchFilteredColumns: Object[] = [];
+            const element: Element = (this.parent.createElement('div', { className: 'e-icons e-columnmenu' }));
+            const matchFilteredColumns: Object[] = [];
             if (this.parent.filterSettings.columns.length && this.parent.filterSettings.columns.length !== matchFilteredColumns.length) {
                 for (let i: number = 0; i < this.parent.columns.length; i++) {
                     for (let j: number = 0; j < this.parent.filterSettings.columns.length; j++) {
@@ -194,7 +201,7 @@ export class HeaderCellRenderer extends CellRenderer implements ICellRenderer<Co
         }
 
         if (this.parent.allowResizing) {
-            let handler: HTMLElement = this.parent.createElement('div');
+            const handler: HTMLElement = this.parent.createElement('div');
             handler.className = column.allowResizing ? 'e-rhandler e-rcursor' : 'e-rsuppress';
             node.appendChild(handler);
         }
@@ -203,9 +210,10 @@ export class HeaderCellRenderer extends CellRenderer implements ICellRenderer<Co
 
     /**
      * Function to specifies how the result content to be placed in the cell.
-     * @param  {Element} node
-     * @param  {string|Element} innerHtml
-     * @returns Element
+     *
+     * @param  {Element} node - specifies the node
+     * @param  {string|Element} innerHtml - specifies the innerHtml
+     * @returns {Element} returns the element
      */
     public appendHtml(node: Element, innerHtml: string | Element): Element {
         node.appendChild(<Element>innerHtml);

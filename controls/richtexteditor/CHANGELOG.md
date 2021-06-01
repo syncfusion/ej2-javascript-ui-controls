@@ -2,6 +2,18 @@
 
 ## [Unreleased]
 
+## 19.1.66 (2021-06-01)
+
+### RichTextEditor
+
+#### Bug Fixes
+
+- `#I327566` - The issue with "Image resizing is not working properly when `resizeByPercent` is set true" has been resolved.
+
+- `#I327676` - The issue with "Custom toolbar icons not disabled/enabled on various scenarios" has been resolved.
+
+- `#I327536` - The issue with "Pasting content from outlook doesn't work properly after the first time"  has been resolved.
+
 ## 19.1.65 (2021-05-25)
 
 ### RichTextEditor

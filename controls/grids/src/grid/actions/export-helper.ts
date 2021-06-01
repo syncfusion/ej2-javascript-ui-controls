@@ -1,6 +1,6 @@
 import { Column } from './../models/column';
 import { Row } from './../models/row';
-import { IGrid, ICell } from '../base/interface';
+import { IGrid, ICell, ExportHelperArgs, ForeignKeyFormat } from '../base/interface';
 import { CellType } from '../base/enum';
 import { isNullOrUndefined, DateFormatOptions, Internationalization, getValue, createElement } from '@syncfusion/ej2-base';
 import { Cell } from '../models/cell';
@@ -27,7 +27,7 @@ export class ExportHelper {
         }
     }
     public static getQuery(parent: IGrid, data: Data): Query {
-        let query: Query = data.generateQuery(true).requiresCount();
+        const query: Query = data.generateQuery(true).requiresCount();
         if (data.isRemote()) {
             if (parent.groupSettings.enableLazyLoading && parent.groupSettings.columns.length) {
                 query.lazyLoad = [];
@@ -39,16 +39,16 @@ export class ExportHelper {
     }
 
     public getFData(value: string, column: Column): Object {
-        let foreignKeyData: Object = getForeignData(column, {}, value, this.foreignKeyData[column.field])[0];
+        const foreignKeyData: Object = getForeignData(column, {}, value, this.foreignKeyData[column.field])[0];
         return foreignKeyData;
     }
 
     public getGridRowModel(columns: Column[], dataSource: Object[], gObj: IGrid, startIndex: number = 0): Row<Column>[] {
-        let rows: Row<Column>[] = [];
-        let length: number = dataSource.length;
+        const rows: Row<Column>[] = [];
+        const length: number = dataSource.length;
         if (length) {
             for (let i: number = 0; i < length; i++, startIndex++) {
-                let options: { [x: string]: Object } = {isExpand: false};
+                const options: { [x: string]: Object } = {isExpand: false};
                 options.data = dataSource[i];
                 options.index = startIndex;
                 if (gObj.childGrid) {
@@ -59,7 +59,7 @@ export class ExportHelper {
                         options.isExpand = gObj.expandedRows[startIndex].isExpand;
                     }
                 }
-                let row: Row<Column> = new Row(<{ [x: string]: Object }>options);
+                const row: Row<Column> = new Row(<{ [x: string]: Object }>options);
                 row.cells = this.generateCells(columns, gObj);
                 rows.push(row);
             }
@@ -69,9 +69,9 @@ export class ExportHelper {
     }
 
     private generateCells(columns: Column[], gObj: IGrid): Cell<Column>[] {
-        let cells: Cell<Column>[] = [];
+        const cells: Cell<Column>[] = [];
         if ((<{childGridLevel?: number}>gObj).childGridLevel) {
-            let len: number = (<{childGridLevel?: number}>gObj).childGridLevel;
+            const len: number = (<{childGridLevel?: number}>gObj).childGridLevel;
             for (let i: number = 0; len > i; i++) {
                 cells.push(this.generateCell({} as Column, CellType.Indent));
             }
@@ -83,21 +83,21 @@ export class ExportHelper {
     }
 
     public getColumnData(gridObj: Grid): Promise<Object> {
-        let columnPromise: Promise<Object>[] = [];
+        const columnPromise: Promise<Object>[] = [];
         let promise: Promise<Object>;
-        let fColumns: Column[] = gridObj.getForeignKeyColumns();
+        const fColumns: Column[] = gridObj.getForeignKeyColumns();
         if (fColumns.length) {
             for (let i: number = 0; i < fColumns.length; i++) {
-                let colData: DataManager = ('result' in fColumns[i].dataSource) ?
-                new DataManager((fColumns[i].dataSource as DataResult).result) :
-                fColumns[i].dataSource as DataManager;
+                const colData: DataManager = ('result' in fColumns[i].dataSource) ?
+                    new DataManager((fColumns[i].dataSource as DataResult).result) :
+                    fColumns[i].dataSource as DataManager;
                 columnPromise.push(colData.executeQuery(new Query()));
             }
             promise = Promise.all(columnPromise).then((e: ReturnType[]) => {
                 for (let j: number = 0; j < fColumns.length; j++) {
                     this.foreignKeyData[fColumns[j].field] = e[j].result;
                 }
-                // tslint:disable-next-line:no-any
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
             }) as any;
         }
         return promise;
@@ -120,7 +120,7 @@ export class ExportHelper {
         return { rows, columns: this.generateActualColumns(columns) };
     }
     public getConvertedWidth(input: string): number {
-        let value: number = parseFloat(input);
+        const value: number = parseFloat(input);
         return (input.indexOf('%') !== -1) ? (this.parent.element.getBoundingClientRect().width * value / 100) : value;
     }
 
@@ -135,7 +135,7 @@ export class ExportHelper {
                 }
             } else {
                 if (column.visible || this.hideColumnInclude) {
-                    let colSpan: number = this.getCellCount(column, 0);
+                    const colSpan: number = this.getCellCount(column, 0);
                     if (colSpan !== 0) {
                         this.generateActualColumns(<Column[]>column.columns, actualColumns);
                     }
@@ -146,7 +146,7 @@ export class ExportHelper {
     }
 
     private processHeaderCells(rows: Row<Column>[], cols: Column[]): Row<Column>[] {
-        let columns: Column[] = cols;
+        const columns: Column[] = cols;
         for (let i: number = 0; i < columns.length; i++) {
             if (!columns[i].commands) {
                 rows = this.appendGridCells(columns[i], rows, 0);
@@ -160,7 +160,7 @@ export class ExportHelper {
             gridRows[index].cells.push(this.generateCell(
                 cols, CellType.Header, this.colDepth - index, index));
         } else if (cols.columns) {
-            let colSpan: number = this.getCellCount(cols, 0);
+            const colSpan: number = this.getCellCount(cols, 0);
             if (colSpan) {
                 gridRows[index].cells.push(new Cell<Column>(<{ [x: string]: Object }>{
                     cellType: CellType.StackedHeader, column: cols, colSpan: colSpan
@@ -180,7 +180,7 @@ export class ExportHelper {
     private generateCell(
         gridColumn: Column, cellType?: CellType, rowSpan?: number,
         rowIndex?: number): Cell<Column> {
-        let option: ICell<Column> = {
+        const option: ICell<Column> = {
             'visible': gridColumn.visible,
             'isDataCell':  cellType === CellType.Data,
             'column': gridColumn,
@@ -195,7 +195,7 @@ export class ExportHelper {
     }
     private processColumns(rows: Row<Column>[]): Row<Column>[] {
         //TODO: generate dummy column for group, detail, stacked row here; ensureColumns here
-        let gridObj: IGrid = this.parent;
+        const gridObj: IGrid = this.parent;
         let columnIndexes: number[] = [];
         if (gridObj.enableColumnVirtualization) {
             columnIndexes = gridObj.getColumnIndexesInView();
@@ -225,7 +225,7 @@ export class ExportHelper {
     }
 
     public checkAndExport(gridPool: Object, globalResolve: Function): void {
-        let bool: boolean = Object.keys(gridPool).some((key: string) => {
+        const bool: boolean = Object.keys(gridPool).some((key: string) => {
             return !gridPool[key];
         });
         if (!bool) {
@@ -240,11 +240,10 @@ export class ExportHelper {
         };
     }
 
-    // tslint:disable-next-line:no-any
-    public createChildGrid(gObj: IGrid, row: any, exportType: string, gridPool: Object): {childGrid: IGrid, element: HTMLElement} {
-        let childGridObj: IGrid = new Grid(this.parent.detailRowModule.getGridModel(gObj, row, exportType));
+    public createChildGrid(gObj: IGrid, row: Row<Column>, exportType: string, gridPool: Object): {childGrid: IGrid, element: HTMLElement} {
+        const childGridObj: IGrid = new Grid(this.parent.detailRowModule.getGridModel(gObj, row, exportType));
         gObj.isPrinting = false;
-        let parent: string = 'parentDetails';
+        const parent: string = 'parentDetails';
         childGridObj[parent] = {
             parentID: gObj.element.id,
             parentPrimaryKeys: gObj.getPrimaryKeyFieldNames(),
@@ -252,8 +251,8 @@ export class ExportHelper {
             parentKeyFieldValue: getValue(childGridObj.queryString, row.data),
             parentRowData: row.data
         };
-        let exportId: string = getUid('child-grid');
-        let element: HTMLElement = createElement('div', {
+        const exportId: string = getUid('child-grid');
+        const element: HTMLElement = createElement('div', {
             id: exportId, styles: 'display: none'
         });
         document.body.appendChild(element);
@@ -261,8 +260,9 @@ export class ExportHelper {
         gridPool[exportId] = false;
         return {childGrid: childGridObj, element};
     }
+
     public getGridExportColumns(columns: Column[]): Column[] {
-        let actualGridColumns: Column[] = [];
+        const actualGridColumns: Column[] = [];
         for (let i: number = 0, gridColumns: Column[] = columns; i < gridColumns.length; i++) {
             if (gridColumns[i].type !== 'checkbox') {
                 actualGridColumns.push(gridColumns[i]);
@@ -271,8 +271,13 @@ export class ExportHelper {
         return actualGridColumns;
     }
 
-    /** @hidden */
-    public getForeignKeyData(): { [key: string]: Object[] } {
+    /**
+     * Gets the foreignkey data.
+     *
+     * @returns {ForeignKeyFormat} returns the foreignkey data
+     * @hidden
+     */
+    public getForeignKeyData(): ForeignKeyFormat {
         return this.foreignKeyData;
     }
 }
@@ -292,8 +297,7 @@ export class ExportValueFormatter {
         this.internationalization = new Internationalization(culture);
     }
 
-    /* tslint:disable-next-line:no-any */
-    private returnFormattedValue(args: any, customFormat: DateFormatOptions): string {
+    private returnFormattedValue(args: ExportHelperArgs, customFormat: DateFormatOptions): string {
         if (!isNullOrUndefined(args.value) && args.value) {
             return this.valueFormatter.getFormatFunction(customFormat)(args.value);
         } else {
@@ -301,15 +305,21 @@ export class ExportValueFormatter {
         }
     }
 
-
-    /* tslint:disable-next-line:no-any */
-    public formatCellValue(args: any, isServerBlaz?: boolean): string {
+    /**
+     * Used to format the exporting cell value
+     *
+     * @param  {ExportHelperArgs} args - Specifies cell details.
+     * @param  {boolean} isServerBlaz - Specifies blazor platform
+     * @returns {string} returns formated value
+     * @hidden
+     */
+    public formatCellValue(args: ExportHelperArgs, isServerBlaz?: boolean): string {
         if (args.isForeignKey) {
-            args.value = getValue(args.column.foreignKeyValue, getForeignData(args.column, {}, args.value)[0]);
+            args.value = getValue(args.column.foreignKeyValue, getForeignData(args.column, {}, args.value as string | number)[0]);
         }
         if (args.column.type === 'number' && args.column.format !== undefined && args.column.format !== '') {
             return args.value || args.value === 0  ?
-             this.internationalization.getNumberFormat({ format: args.column.format })(args.value) : '';
+                this.internationalization.getNumberFormat({ format: args.column.format as string })(args.value) : '';
         } else if (args.column.type === 'boolean' && args.value !== '') {
             return args.value ? 'true' : 'false';
             /* tslint:disable-next-line:max-line-length */
@@ -319,7 +329,7 @@ export class ExportValueFormatter {
             }
             if (typeof args.column.format === 'string') {
                 let format: DateFormatOptions;
-                let cFormat: string = args.column.format;
+                const cFormat: string = args.column.format;
                 if (args.column.type === 'date') {
                     format = isServerBlaz ? { type: 'date', format: cFormat } : { type: 'date', skeleton: cFormat };
                 } else if (args.column.type === 'time') {
@@ -329,14 +339,15 @@ export class ExportValueFormatter {
                 }
                 return this.returnFormattedValue(args, format);
             } else {
-                if (args.column.format instanceof Object && args.column.format.type === undefined) {
+                if (args.column.format instanceof Object && (args.column.format as DateFormatOptions).type === undefined) {
                     return (args.value.toString());
                 } else {
-                    /* tslint:disable-next-line:max-line-length */
                     let customFormat: DateFormatOptions;
                     if (args.column.type === 'date') {
-                        /* tslint:disable-next-line:max-line-length */
-                        customFormat = { type: args.column.format.type, format: args.column.format.format, skeleton: args.column.format.skeleton };
+                        customFormat = {
+                            type: (args.column.format as DateFormatOptions).type,
+                            format: args.column.format.format, skeleton: args.column.format.skeleton
+                        };
                     } else if (args.column.type === 'time') {
                         customFormat = { type: 'time', format: args.column.format.format, skeleton: args.column.format.skeleton };
                     } else {

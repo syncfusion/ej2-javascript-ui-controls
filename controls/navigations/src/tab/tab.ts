@@ -1267,11 +1267,15 @@ export class Tab extends Component<HTMLElement> implements INotifyPropertyChange
     }
     private changeOrientation(place: Str): void {
         this.setOrientation(place, this.hdrEle);
+        const activeTab: HTMLElement = this.hdrEle.querySelector('.' + CLS_ACTIVE);
         const isVertical: boolean = this.hdrEle.classList.contains(CLS_VERTICAL) ? true : false;
         removeClass([this.element], [CLS_VTAB]);
         removeClass([this.hdrEle], [CLS_VERTICAL, CLS_VLEFT, CLS_VRIGHT]);
         if (isVertical !== this.isVertical()) {
             this.changeToolbarOrientation();
+            if (!isNOU(activeTab) && activeTab.classList.contains(CLS_TB_POPUP)) {
+                this.popupHandler(activeTab);
+            }
         }
         this.addVerticalClass();
         this.updateOrientationAttribute();

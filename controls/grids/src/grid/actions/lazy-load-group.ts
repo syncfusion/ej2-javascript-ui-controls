@@ -14,6 +14,9 @@ export class LazyLoadGroup implements IAction {
 
     /**
      * Constructor for Grid group lazy load module
+     *
+     * @param {IGrid} parent - specifies the IGrid
+     * @param {ServiceLocator} serviceLocator - specifies the ServiceLocator
      * @hidden
      */
     constructor(parent?: IGrid, serviceLocator?: ServiceLocator) {
@@ -24,6 +27,8 @@ export class LazyLoadGroup implements IAction {
 
     /**
      * For internal use only - Get the module name.
+     *
+     * @returns {string} returns the module name
      * @private
      */
     protected getModuleName(): string {
@@ -31,6 +36,7 @@ export class LazyLoadGroup implements IAction {
     }
 
     /**
+     * @returns {void}
      * @hidden
      */
     public addEventListener(): void {
@@ -39,6 +45,7 @@ export class LazyLoadGroup implements IAction {
     }
 
     /**
+     * @returns {void}
      * @hidden
      */
     public removeEventListener(): void {
@@ -50,13 +57,14 @@ export class LazyLoadGroup implements IAction {
         if (this.parent.height === 'auto') {
             this.parent.height = this.parent.pageSettings.pageSize * this.parent.getRowHeight();
         }
-        let renderer: RendererFactory = this.serviceLocator.getService<RendererFactory>('rendererFactory');
+        const renderer: RendererFactory = this.serviceLocator.getService<RendererFactory>('rendererFactory');
         if (this.parent.groupSettings.enableLazyLoading) {
             renderer.addRenderer(RenderType.Content, new GroupLazyLoadRenderer(this.parent, this.serviceLocator));
         }
     }
 
     /**
+     * @returns {void}
      * @hidden
      */
     public destroy(): void {

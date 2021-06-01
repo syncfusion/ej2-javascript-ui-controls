@@ -2,31 +2,15 @@
 
 ## [Unreleased]
 
-## 19.1.65 (2021-05-25)
+## 19.1.66 (2021-06-01)
 
 ### Excel Export
 
 #### Bug Fixes
 
-- Auto filter corruption issue fixed in Grid to Excel export.
+- Sheet name proper in Grid to Excel export.
 
-## 18.4.34 (2021-01-12)
-
-### Excel Export
-
-#### Bug Fixes
-
-- Auto filter support is provided in Grid to Excel export.
-
-## 18.4.32 (2020-12-29)
-
-### Excel Export
-
-#### Bug Fixes
-
-- Font size is set correctly in Grid to Excel export.
-
-## 18.4.30 (2020-12-17)
+## 19.1.54 (2021-03-30)
 
 ### Excel Export
 

@@ -5,7 +5,7 @@ import { Pager, IRender } from './pager';
  * `ExternalMessage` module is used to display user provided message.
  */
 export class ExternalMessage implements IRender {
-    //Internal variables  
+    //Internal variables
     private element: HTMLElement;
 
     //Module declarations
@@ -13,8 +13,8 @@ export class ExternalMessage implements IRender {
 
     /**
      * Constructor for externalMessage module
-     * @param  {Pager} pagerModule?
-     * @returns defaultType
+     *
+     * @param {Pager} pagerModule - specifies the pagermodule
      * @hidden
      */
     constructor(pagerModule?: Pager) {
@@ -22,7 +22,9 @@ export class ExternalMessage implements IRender {
     }
 
     /**
-     * For internal use only - Get the module name. 
+     * For internal use only - Get the module name.
+     *
+     * @returns {string} returns the module name
      * @private
      */
     protected getModuleName(): string {
@@ -31,6 +33,8 @@ export class ExternalMessage implements IRender {
 
     /**
      * The function is used to render pager externalMessage
+     *
+     * @returns {void}
      * @hidden
      */
     public render(): void {
@@ -40,7 +44,9 @@ export class ExternalMessage implements IRender {
     }
 
     /**
-     * Refreshes the external message of Pager. 
+     * Refreshes the external message of Pager.
+     *
+     * @returns {void}
      */
     public refresh(): void {
         if (this.pagerModule.externalMessage && this.pagerModule.externalMessage.toString().length) {
@@ -52,7 +58,9 @@ export class ExternalMessage implements IRender {
     }
 
     /**
-     * Hides the external message of Pager. 
+     * Hides the external message of Pager.
+     *
+     * @returns {void}
      */
     public hideMessage(): void {
         if (!isNullOrUndefined(this.element)) {
@@ -61,7 +69,9 @@ export class ExternalMessage implements IRender {
     }
 
     /**
-     * Shows the external message of the Pager. 
+     * Shows the external message of the Pager.
+     *
+     * @returns {void}s
      */
     public showMessage(): void {
         this.element.style.display = '';
@@ -69,12 +79,12 @@ export class ExternalMessage implements IRender {
 
     /**
      * To destroy the PagerMessage
-     * @method destroy
-     * @return {void} 
-     * @hidden 
+     *
+     * @function destroy
+     * @returns {void}
+     * @hidden
      */
     public destroy(): void {
         remove(this.element);
     }
-
 }

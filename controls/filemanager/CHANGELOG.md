@@ -2,7 +2,16 @@
 
 ## [Unreleased]
 
-## 19.1.65 (2021-05-25)
+## 19.1.66 (2021-06-01)
+
+### File Manager
+
+#### Bug Fixes
+
+- `#F165213` - The issue with "The Details view path column is not removed when refreshing the File Manager files" has been resolved.
+- `#F160683` - The issue with "Error dialog shown while quickly clicking on the folders when enabling drag and drop support" has been resolved.
+
+## 19.1.63 (2021-05-13)
 
 ### File Manager
 

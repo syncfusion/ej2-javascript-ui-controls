@@ -2074,7 +2074,10 @@ export class Layout {
                     // So, mutiplied the font side by below factor to render check box character large.
                     let factor: number = 1.2;
                     const checkBoxTextElement: TextElementBox = new TextElementBox();
-                    checkBoxTextElement.characterFormat = fieldBegin.characterFormat.cloneFormat();
+                    checkBoxTextElement.line = fieldBegin.line;
+                    const index: number = fieldBegin.line.children.indexOf(fieldBegin.fieldEnd);
+                    fieldBegin.line.children.splice(index, 0, checkBoxTextElement);
+                    checkBoxTextElement.characterFormat.copyFormat(fieldBegin.characterFormat);
                     if (formFieldData.checked) {
                         checkBoxTextElement.text = String.fromCharCode(9745);
                     } else {
@@ -2085,12 +2088,9 @@ export class Layout {
                     } else {
                         checkBoxTextElement.characterFormat.fontSize = checkBoxTextElement.characterFormat.fontSize * factor;
                     }
-                    checkBoxTextElement.line = fieldBegin.line;
-                    const index: number = fieldBegin.line.children.indexOf(fieldBegin.fieldEnd);
-                    fieldBegin.line.children.splice(index, 0, checkBoxTextElement);
                 } else if (formFieldData instanceof DropDownFormField) {
                     const dropDownTextElement: TextElementBox = new TextElementBox();
-                    dropDownTextElement.characterFormat = fieldBegin.characterFormat.cloneFormat();
+                    dropDownTextElement.characterFormat.copyFormat(fieldBegin.characterFormat);
                     dropDownTextElement.line = fieldBegin.line;
                     if (formFieldData.dropdownItems.length > 0) {
                         dropDownTextElement.text = formFieldData.dropdownItems[formFieldData.selectedIndex];
@@ -4016,7 +4016,7 @@ export class Layout {
                         if ((heightType === 'AtLeast' && HelperMethods.convertPointToPixel(row.rowFormat.height) < viewer.clientActiveArea.height && isAllowBreakAcrossPages) || (heightType !== 'Exactly' && tableRowWidget.y === viewer.clientArea.y) || (heightType === 'Auto' && isAllowBreakAcrossPages)) {
                             splittedWidget = this.splitWidgets(tableRowWidget, viewer, tableWidgets, rowWidgets, splittedWidget, isLastRow);
                         }
-                        if (heightType === 'AtLeast' && HelperMethods.convertPointToPixel(row.rowFormat.height) > viewer.clientActiveArea.height && isAllowBreakAcrossPages && tableRowWidget.ownerTable.tableHolder.columns.length > tableRowWidget.childWidgets.length) {
+                        if (heightType === 'AtLeast' && HelperMethods.convertPointToPixel(row.rowFormat.height) > viewer.clientActiveArea.height && isAllowBreakAcrossPages && tableRowWidget.ownerTable.tableHolder.columns.length > this.getTotalColumnSpan(tableRowWidget)) {
                             tableRowWidget = this.splitWidgets(tableRowWidget, viewer, tableWidgets, rowWidgets, splittedWidget, isLastRow);
                             splittedWidget = tableRowWidget;
                         }
@@ -7569,5 +7569,13 @@ export class Layout {
             }
         }
         return false;
+    }
+    private getTotalColumnSpan(row: TableRowWidget): number {
+        let tableRow: TableRowWidget = row;
+        let totalColumnSpan: number = 0;
+        for (let i: number = 0; i < tableRow.childWidgets.length; i++) {
+            totalColumnSpan += (tableRow.childWidgets[i] as TableCellWidget).cellFormat.columnSpan;
+        }
+        return totalColumnSpan;
     }
 }

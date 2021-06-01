@@ -4758,10 +4758,22 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
      * @param hyperlinkElement
      * @private
      */
-    public fireHyperlinkClick(hyperlink: string, hyperlinkElement: HTMLAnchorElement): void {
+    public async fireHyperlinkClick(hyperlink: string, hyperlinkElement: HTMLAnchorElement): Promise<boolean> {
         // eslint-disable-next-line max-len
-        const eventArgs: HyperlinkClickEventArgs = { name: 'hyperlinkClick', hyperlink: hyperlink, hyperlinkElement: hyperlinkElement };
-        this.trigger('hyperlinkClick', eventArgs);
+        let eventArgs: HyperlinkClickEventArgs = { name: 'hyperlinkClick', hyperlink: hyperlink, hyperlinkElement: hyperlinkElement, cancel:false};
+        if (isBlazor()) {
+            eventArgs = await this.triggerEvent('hyperlinkClick', eventArgs) as HyperlinkClickEventArgs || eventArgs;
+        } else { 
+            this.triggerEvent('hyperlinkClick', eventArgs);
+        }
+        if(eventArgs.hyperlinkElement.href != eventArgs.hyperlink){
+            hyperlinkElement.href = eventArgs.hyperlink;
+        }
+        if(eventArgs.cancel){
+            return false;
+        }else{
+           return true;
+        }
     }
 
     /**

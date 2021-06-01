@@ -10,6 +10,7 @@ import { Dialog, Popup } from '@syncfusion/ej2-popups';
 
 /**
  * `filter operators` render boolean column.
+ *
  * @hidden
  */
 
@@ -32,20 +33,26 @@ export class FlMenuOptrUI {
     }
 
     /**
+     * @param {Element} dlgConetntEle - specifies the content element
+     * @param {Element} target - specifies the target
+     * @param {Column} column - specifies the column
+     * @param {Dialog} dlgObj - specifies the dialog
+     * @param {Object[]} operator - specifies the operator list
+     * @returns {void}
      * @hidden
      */
-    /* tslint:disable-next-line:max-line-length */
+    // eslint-disable-next-line max-len
     public renderOperatorUI(dlgConetntEle: Element, target: Element, column: Column, dlgObj: Dialog, operator?: { [key: string]: Object }[]): void {
         this.dialogObj = dlgObj;
-        let optr: string = column.type + 'Operator';
+        const optr: string = column.type + 'Operator';
         this.optrData = this.customOptr = !isNullOrUndefined(operator) ? operator :
             (!isNullOrUndefined(this.parent.filterSettings.operators) && !isNullOrUndefined(this.parent.filterSettings.operators[optr])) ?
                 this.parent.filterSettings.operators[optr] : this.customFilterOperators[optr];
-        let dropDatasource: { [key: string]: Object }[] = this.customOptr;
-        let selectedValue: string = this.dropSelectedVal(column, optr);
-        let optrDiv: HTMLElement = this.parent.createElement('div', { className: 'e-flm_optrdiv' });
+        const dropDatasource: { [key: string]: Object }[] = this.customOptr;
+        const selectedValue: string = this.dropSelectedVal(column, optr);
+        const optrDiv: HTMLElement = this.parent.createElement('div', { className: 'e-flm_optrdiv' });
         dlgConetntEle.appendChild(optrDiv);
-        let optrInput: Element = this.parent.createElement('input', { id: column.uid + '-floptr' });
+        const optrInput: Element = this.parent.createElement('input', { id: column.uid + '-floptr' });
         optrDiv.appendChild(optrInput);
         this.dropOptr = new DropDownList({
             dataSource: dropDatasource,
@@ -69,19 +76,20 @@ export class FlMenuOptrUI {
         }
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     private dropSelectedVal(col: Column, optr: string): string {
         let selValue: string = '';
-        let columns: PredicateModel[] = this.parent.filterSettings.columns;
-        for (let column of columns) {
+        const columns: PredicateModel[] = this.parent.filterSettings.columns;
+        for (const column of columns) {
             if (col.field === column.field || (col.isForeignColumn() && col.foreignKeyValue === column.field)) {
-                let selectedField: Object = new DataManager(this.optrData).executeLocal(
+                const selectedField: Object = new DataManager(this.optrData).executeLocal(
                     new Query().where('value', 'equal', column.operator));
                 selValue = !isNullOrUndefined(selectedField[0]) ? selectedField[0].text : '';
             }
         }
         if (selValue === '') {// rewuired or not
             if (col.filter.operator) {
-                let optrLen: number = Object.keys(this.optrData).length;
+                const optrLen: number = Object.keys(this.optrData).length;
                 for (let i: number = 0; i < optrLen; i++) {
                     if (this.optrData[i].value === col.filter.operator) {
                         selValue = this.optrData[i].text;
@@ -97,6 +105,7 @@ export class FlMenuOptrUI {
     }
 
     /**
+     * @returns {string} returns the operator
      * @hidden
      */
     public getFlOperator(): string {

@@ -1,15 +1,16 @@
 import { extend } from '@syncfusion/ej2-base';
-import { IGrid, EJ2Intance, IEditCell } from '../base/interface';
+import { IEditCell } from '../base/interface';
 import { Column } from '../models/column';
 import { ComboBox } from '@syncfusion/ej2-dropdowns';
 import { Query, DataManager, DataUtil } from '@syncfusion/ej2-data';
-import { isEditable, createEditElement, getObject } from '../base/util';
+import { isEditable, getObject } from '../base/util';
 import { EditCellBase } from './edit-cell-base';
 
 
 
 /**
  * `ComboBoxEditCell` is used to handle ComboBoxEdit cell type editing.
+ *
  * @hidden
  */
 export class ComboboxEditCell extends EditCellBase implements IEditCell {
@@ -18,18 +19,18 @@ export class ComboboxEditCell extends EditCellBase implements IEditCell {
 
     public write(args: { rowData: Object, element: Element, column: Column, row: HTMLElement, requestType: string }): void {
         this.column = args.column;
-        let isInlineMode: boolean = this.parent.editSettings.mode !== 'Dialog';
+        const isInlineMode: boolean = this.parent.editSettings.mode !== 'Dialog';
         this.obj = new ComboBox(extend(
             {
                 dataSource: this.parent.dataSource instanceof DataManager ?
-                this.parent.dataSource : new DataManager(this.parent.dataSource),
+                    this.parent.dataSource : new DataManager(this.parent.dataSource),
                 query: new Query().select(args.column.field),
                 fields: { value: args.column.field },
                 value: getObject(args.column.field, args.rowData),
                 enableRtl: this.parent.enableRtl, actionComplete: this.finalValue.bind(this),
                 placeholder: isInlineMode ? '' : args.column.headerText,
                 floatLabelType: isInlineMode ? 'Never' : 'Always',
-                enabled: isEditable(args.column, args.requestType, args.element),
+                enabled: isEditable(args.column, args.requestType, args.element)
             },
             args.column.edit.params));
         this.obj.appendTo(args.element as HTMLElement);

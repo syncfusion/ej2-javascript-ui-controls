@@ -11,7 +11,8 @@ import { CellType } from '../base/enum';
 import * as literals from '../base/string-literals';
 
 /**
- * CellRenderer class which responsible for building cell content. 
+ * CellRenderer class which responsible for building cell content.
+ *
  * @hidden
  */
 export class CellRenderer implements ICellRenderer<Column> {
@@ -31,7 +32,8 @@ export class CellRenderer implements ICellRenderer<Column> {
     }
     /**
      * Function to return the wrapper for the TD content
-     * @returns string
+     *
+     * @returns {string | Element} returns the string
      */
     public getGui(): string | Element {
         return '';
@@ -39,10 +41,13 @@ export class CellRenderer implements ICellRenderer<Column> {
 
     /**
      * Function to format the cell value.
-     * @param  {Column} column
-     * @param  {Object} value
-     * @param  {Object} data
+     *
+     * @param  {Column} column - specifies the column
+     * @param  {Object} value - specifies the value
+     * @param  {Object} data - specifies the data
+     * @returns {string} returns the format
      */
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     public format(column: Column, value: Object, data?: Object): string {
         if (!isNullOrUndefined(column.format)) {
 
@@ -55,16 +60,17 @@ export class CellRenderer implements ICellRenderer<Column> {
         return isNullOrUndefined(value) ? '' : value.toString();
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     public evaluate(node: Element, cell: Cell<Column>, data: Object, attributes?: Object, fData?: Object, isEdit?: boolean): boolean {
         let result: Element[];
         if (cell.column.template) {
-            let isReactCompiler: boolean = this.parent.isReact && typeof (cell.column.template) !== 'string';
-            let literals: string[] = ['index'];
-            let dummyData: Object = extendObjWithFn({}, data, { [foreignKeyData]: fData, column: cell.column });
-            let templateID: string = this.parent.element.id + cell.column.uid;
-            let str: string = 'isStringTemplate';
+            const isReactCompiler: boolean = this.parent.isReact && typeof (cell.column.template) !== 'string';
+            const literals: string[] = ['index'];
+            const dummyData: Object = extendObjWithFn({}, data, { [foreignKeyData]: fData, column: cell.column });
+            const templateID: string = this.parent.element.id + cell.column.uid;
+            const str: string = 'isStringTemplate';
             if (isReactCompiler) {
-                let copied: Object = { 'index': attributes[literals[0]] };
+                const copied: Object = { 'index': attributes[literals[0]] };
                 cell.column.getColumnTemplate()(
                     extend(copied, dummyData), this.parent, 'columnTemplate', templateID, this.parent[str], null, node);
                 this.parent.renderTemplates();
@@ -86,14 +92,16 @@ export class CellRenderer implements ICellRenderer<Column> {
 
     /**
      * Function to invoke the custom formatter available in the column object.
-     * @param  {Column} column
-     * @param  {Object} value
-     * @param  {Object} data
+     *
+     * @param  {Column} column - specifies the column
+     * @param  {Object} value - specifies the value
+     * @param  {Object} data - specifies the data
+     * @returns {Object} returns the object
      */
     public invokeFormatter(column: Column, value: Object, data: Object): Object {
         if (!isNullOrUndefined(column.formatter)) {
             if (doesImplementInterface(column.formatter, 'getValue')) {
-                let formatter: { new(): ICellFormatter } = <{ new(): ICellFormatter }>column.formatter;
+                const formatter: { new(): ICellFormatter } = <{ new(): ICellFormatter }>column.formatter;
                 value = new formatter().getValue(column, data);
 
             } else if (typeof column.formatter === 'function') {
@@ -107,10 +115,13 @@ export class CellRenderer implements ICellRenderer<Column> {
 
     /**
      * Function to render the cell content based on Column object.
-     * @param  {Column} column
-     * @param  {Object} data
-     * @param  {{[x:string]:Object}} attributes?
-     * @param  {Element}
+     *
+     * @param {Cell<Column>} cell - specifies the cell
+     * @param {Object} data - specifies the data
+     * @param {Object} attributes - specifies the attributes
+     * @param {boolean} isExpand - specifies the boolean for expand
+     * @param {boolean} isEdit - specifies the boolean for edit
+     * @returns {Element} returns the element
      */
     public render(cell: Cell<Column>, data: Object, attributes?: { [x: string]: Object }, isExpand?: boolean, isEdit?: boolean): Element {
         return this.refreshCell(cell, data, attributes, isEdit);
@@ -118,40 +129,45 @@ export class CellRenderer implements ICellRenderer<Column> {
 
     /**
      * Function to refresh the cell content based on Column object.
-     * @param  {Column} column
-     * @param  {Object} data
-     * @param  {{[x:string]:Object}} attributes?
-     * @param  {Element}
+     *
+     * @param {Element} td - specifies the element
+     * @param {Cell<Column>} cell - specifies the cell
+     * @param {Object} data - specifies the data
+     * @param {Object} attributes - specifies the attribute
+     * @returns {void}
      */
     public refreshTD(td: Element, cell: Cell<Column>, data: Object, attributes?: { [x: string]: Object }): void {
-        let isEdit: boolean = this.parent.editSettings.mode === 'Batch' && td.classList.contains('e-editedbatchcell');
+        const isEdit: boolean = this.parent.editSettings.mode === 'Batch' && td.classList.contains('e-editedbatchcell');
         if (this.parent.isReact) {
             td.innerHTML = '';
-            let cellIndex: number = (td as HTMLTableCellElement).cellIndex;
-            let parentRow: HTMLTableRowElement = td.parentElement as HTMLTableRowElement;
+            const cellIndex: number = (td as HTMLTableCellElement).cellIndex;
+            const parentRow: HTMLTableRowElement = td.parentElement as HTMLTableRowElement;
             remove(td);
-            let newTD: Element = this.refreshCell(cell, data, attributes, isEdit);
+            const newTD: Element = this.refreshCell(cell, data, attributes, isEdit);
             this.cloneAttributes(newTD, td);
-            parentRow.cells.length !== cellIndex - 1 ? parentRow.insertBefore(newTD, parentRow.cells[cellIndex])
-                : parentRow.appendChild(newTD);
+            if (parentRow.cells.length !== cellIndex - 1) {
+                parentRow.insertBefore(newTD, parentRow.cells[cellIndex]);
+            } else {
+                parentRow.appendChild(newTD);
+            }
         } else {
-            let node: Element = this.refreshCell(cell, data, attributes, isEdit);
+            const node: Element = this.refreshCell(cell, data, attributes, isEdit);
             td.innerHTML = '';
             td.setAttribute('aria-label', node.getAttribute('aria-label'));
-            let elements: Element[] = [].slice.call(node.childNodes);
-            for (let elem of elements) {
+            const elements: Element[] = [].slice.call(node.childNodes);
+            for (const elem of elements) {
                 td.appendChild(elem);
             }
         }
     }
 
-    // tslint:disable-next-line:no-any
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     private cloneAttributes(target: Element, source: any): void {
-        // tslint:disable-next-line:no-any
-        let attrs: any = source.attributes;
-        // tslint:disable-next-line:no-any
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const attrs: any = source.attributes;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         let i: any = attrs.length;
-        // tslint:disable-next-line:no-any
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         let attr: any;
         while (i--) {
             attr = attrs[i];
@@ -160,8 +176,8 @@ export class CellRenderer implements ICellRenderer<Column> {
     }
 
     private refreshCell(cell: Cell<Column>, data: Object, attributes?: { [x: string]: Object }, isEdit?: boolean): Element {
-        let node: Element = this.element.cloneNode() as Element;
-        let column: Column = cell.column;
+        const node: Element = this.element.cloneNode() as Element;
+        const column: Column = cell.column;
         let fData: Object;
         if (cell.isForeignKey) {
             fData = cell.foreignKeyData[0] || { [column.foreignKeyValue]: column.format ? null : '' };
@@ -180,11 +196,11 @@ export class CellRenderer implements ICellRenderer<Column> {
         innerHtml = value.toString();
 
         if (column.type === 'boolean' && !column.displayAsCheckBox) {
-            let localeStr: string = (value !== 'true' && value !== 'false') ? null : value === 'true' ? 'True' : 'False';
+            const localeStr: string = (value !== 'true' && value !== 'false') ? null : value === 'true' ? 'True' : 'False';
             innerHtml = localeStr ? this.localizer.getConstant(localeStr) : innerHtml;
         }
 
-        let fromFormatter: Object = this.invokeFormatter(column, value, data);
+        const fromFormatter: Object = this.invokeFormatter(column, value, data);
 
         innerHtml = !isNullOrUndefined(column.formatter) ? isNullOrUndefined(fromFormatter) ? '' : fromFormatter.toString() : innerHtml;
         node.setAttribute('aria-label', innerHtml + ' column header ' + cell.column.headerText);
@@ -198,7 +214,7 @@ export class CellRenderer implements ICellRenderer<Column> {
             } else {
                 value = false;
             }
-            let checkWrap: Element = createCheckBox(this.parent.createElement, false, { checked: value as boolean, label: ' ' });
+            const checkWrap: Element = createCheckBox(this.parent.createElement, false, { checked: value as boolean, label: ' ' });
             checkWrap.insertBefore(this.rowChkBox.cloneNode(), checkWrap.firstChild);
             node.appendChild(checkWrap);
         }
@@ -210,8 +226,8 @@ export class CellRenderer implements ICellRenderer<Column> {
         this.setAttributes(<HTMLElement>node, cell, attributes);
 
         if (column.type === 'boolean' && column.displayAsCheckBox) {
-            let checked: boolean = isNaN(parseInt(value.toString(), 10)) ? value === 'true' : parseInt(value.toString(), 10) > 0;
-            let checkWrap: Element = createCheckBox(this.parent.createElement, false, { checked: checked, label: ' ' });
+            const checked: boolean = isNaN(parseInt(value.toString(), 10)) ? value === 'true' : parseInt(value.toString(), 10) > 0;
+            const checkWrap: Element = createCheckBox(this.parent.createElement, false, { checked: checked, label: ' ' });
             node.innerHTML = '';
             checkWrap.classList.add('e-checkbox-disabled');
             node.appendChild(checkWrap);
@@ -223,19 +239,26 @@ export class CellRenderer implements ICellRenderer<Column> {
 
     /**
      * Function to specifies how the result content to be placed in the cell.
-     * @param  {Element} node
-     * @param  {string|Element} innerHtml
-     * @returns Element
+     *
+     * @param {Element} node - specifies the node
+     * @param {string|Element} innerHtml - specifies the innerHTML
+     * @param {string} property - specifies the element
+     * @returns {Element} returns the element
      */
     public appendHtml(node: Element, innerHtml: string | Element, property: string = 'innerHTML'): Element {
         node[property] = innerHtml as string;
         return node;
     }
+
     /**
+     * @param {HTMLElement} node - specifies the node
+     * @param {cell<Column>} cell - specifies the cell
+     * @param {Object} attributes - specifies the attributes
+     * @returns {void}
      * @hidden
      */
     public setAttributes(node: HTMLElement, cell: Cell<Column>, attributes?: { [x: string]: Object }): void {
-        let column: Column = cell.column;
+        const column: Column = cell.column;
         this.buildAttributeFromCell(node, cell, column.type === 'checkbox');
 
         setStyleAndAttributes(node, attributes);
@@ -263,9 +286,9 @@ export class CellRenderer implements ICellRenderer<Column> {
     }
 
     public buildAttributeFromCell<Column>(node: HTMLElement, cell: Cell<Column>, isCheckBoxType?: boolean): void {
-        let attr: ICell<Column> & { 'class'?: string[] } = {};
-        let prop: { 'colindex'?: string } = { 'colindex': literals.ariaColIndex };
-        let classes: string[] = [];
+        const attr: ICell<Column> & { 'class'?: string[] } = {};
+        const prop: { 'colindex'?: string } = { 'colindex': literals.ariaColIndex };
+        const classes: string[] = [];
 
         if (cell.colSpan) {
             attr.colSpan = cell.colSpan;

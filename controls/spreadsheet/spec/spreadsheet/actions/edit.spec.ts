@@ -170,27 +170,19 @@ describe('Editing ->', () => {
             coords = td.getBoundingClientRect();
             helper.triggerMouseAction('mousedown', { x: coords.left, y: coords.top }, null, td);
             helper.triggerMouseAction('mouseup', { x: coords.left, y: coords.top }, document, td);
+            helper.invoke('endEdit');
             done();
         });
 
         it('Double click to save on formula', (done: Function) => {
             helper.invoke('selectRange', ['K15']);
             helper.invoke('startEdit');
-            let coords: ClientRect = helper.getElement('.e-spreadsheet-edit').getBoundingClientRect();
-            helper.triggerMouseAction('dblclick', { x: coords.left, y: coords.top }, null, helper.getElement('.e-spreadsheet-edit'));
-            expect(helper.invoke('getCell', [14, 10]).classList).not.toContain('e-ss-edited');
-            expect(helper.getElement('.e-spreadsheet-edit').textContent).toBe('')
-            expect(helper.getInstance().editModule.isEdit).toBeFalsy();
-            done();
-        });
-
-        it('Double click to save', (done: Function) => {
-            helper.invoke('selectRange', ['E2']);
-            helper.invoke('startEdit');
             const coords: ClientRect = helper.getElement('.e-spreadsheet-edit').getBoundingClientRect();
             helper.triggerMouseAction('dblclick', { x: coords.left, y: coords.top }, null, helper.getElement('.e-spreadsheet-edit'));
-            expect(helper.invoke('getCell', [14, 10]).classList).not.toContain('e-ss-edited');
-            expect(helper.getElement('.e-spreadsheet-edit').textContent).toBe('')
+            expect(helper.invoke('getCell', [14, 10]).classList).toContain('e-ss-edited');
+            expect(helper.getElement('.e-spreadsheet-edit').textContent).toBe('5:56:32 AM');
+            expect(helper.getInstance().editModule.isEdit).toBeTruthy();
+            helper.invoke('endEdit');
             done();
         });
 

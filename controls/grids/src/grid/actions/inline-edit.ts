@@ -6,6 +6,7 @@ import { NormalEdit } from './normal-edit';
 
 /**
  * `InlineEdit` module is used to handle inline editing actions.
+ *
  * @hidden
  */
 export class InlineEdit extends NormalEdit {
@@ -44,5 +45,4 @@ export class InlineEdit extends NormalEdit {
     protected startEdit(tr?: Element): void {
         super.startEdit(tr);
     }
-
 }

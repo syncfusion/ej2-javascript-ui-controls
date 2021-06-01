@@ -1015,11 +1015,9 @@ export class SfdtReader {
                         field.fieldBegin.fieldSeparator = field;
                         //finds the whether the field is page filed or not
                         let lineWidgetCount: number = lineWidget.children.length;
-                        if (lineWidgetCount >= 2 && (lineWidget.children[lineWidgetCount - 2] instanceof FieldElementBox)
-                            && (lineWidget.children[lineWidgetCount - 2] as FieldElementBox).hasFieldEnd
-                            && (lineWidget.children[lineWidgetCount - 1] instanceof TextElementBox)) {
-                            let fieldElementText: string = (lineWidget.children[lineWidgetCount - 1] as TextElementBox).text;
-                            if (fieldElementText.match('PAGE')) {
+                        if (lineWidgetCount >= 2) {
+                            let fieldTextElement: ElementBox = this.containsFieldBegin(lineWidget);
+                            if (!isNullOrUndefined(fieldTextElement) && fieldTextElement instanceof TextElementBox && fieldTextElement.text.match('PAGE')) {
                                 this.documentHelper.isPageField = true;
                             }
                         }
@@ -1605,7 +1603,7 @@ export class SfdtReader {
                     number = sourceFormat.fontSize.toFixed(1) * 10;
                     //to check worst case scenerio like 8.2 or 8.7 like these to round off
                     if (number % 5 === 0) {
-                    sourceFormat.fontSize = sourceFormat.fontSize.toFixed(1);
+                        sourceFormat.fontSize = sourceFormat.fontSize.toFixed(1);
                     } else {
                         sourceFormat.fontSize = Math.round(sourceFormat.fontSize);
                     }
@@ -1813,5 +1811,17 @@ export class SfdtReader {
             return false;
         }
         return true;
+    }
+    private containsFieldBegin(line: LineWidget): ElementBox {
+        let element: ElementBox = undefined;
+        for (let i: number = line.children.length - 1; i >= 0; i--) {
+            element = line.children[i];
+            if (element instanceof FieldElementBox && element.hasFieldEnd && element.nextElement instanceof TextElementBox) {
+                return element.nextElement;
+            } else if (element instanceof FieldElementBox) {
+                return undefined;
+            }
+        }
+        return element;
     }
 }

@@ -876,10 +876,12 @@ export function getZindexPartial(element: HTMLElement): number {
     if (!isNullOrUndefined(element.parentElement) && element.parentElement.tagName !== 'BODY') {
         const childNodes: HTMLElement[] = [].slice.call(element.parentElement.children);
         for (let i: number = 0; i < childNodes.length; i++) {
-            const index: string = document.defaultView.getComputedStyle(childNodes[i], null).getPropertyValue('z-index');
-            const position: string = document.defaultView.getComputedStyle(childNodes[i], null).getPropertyValue('position');
-            if (index !== 'auto' && position !== 'static') {
-                siblingsZindex.push(index);
+            if (!element.isEqualNode(childNodes[i])) {
+                const index: string = document.defaultView.getComputedStyle(childNodes[i], null).getPropertyValue('z-index');
+                const position: string = document.defaultView.getComputedStyle(childNodes[i], null).getPropertyValue('position');
+                if (index !== 'auto' && position !== 'static') {
+                    siblingsZindex.push(index);
+                }
             }
         }
     }

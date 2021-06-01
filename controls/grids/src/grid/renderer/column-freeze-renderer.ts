@@ -14,6 +14,7 @@ import * as literals from '../base/string-literals';
 
 /**
  * ColumnFreezeHeaderRenderer is used to freeze the columns header at right and left
+ *
  * @hidden
  */
 export class ColumnFreezeHeaderRenderer extends FreezeRender implements IRenderer {
@@ -28,9 +29,9 @@ export class ColumnFreezeHeaderRenderer extends FreezeRender implements IRendere
 
     public addEventListener(): void {
         this.evtHandlers = [{ event: events.freezeRender, handler: this.refreshFreeze },
-        { event: events.refreshFrozenColumns, handler: this.refreshFrozenColumns },
-        { event: events.setReorderDestinationElement, handler: this.setReorderElement },
-        { event: events.columnVisibilityChanged, handler: this.setVisible }];
+            { event: events.refreshFrozenColumns, handler: this.refreshFrozenColumns },
+            { event: events.setReorderDestinationElement, handler: this.setReorderElement },
+            { event: events.columnVisibilityChanged, handler: this.setVisible }];
         addRemoveEventListener(this.parent, this.evtHandlers, true, this);
     }
 
@@ -47,10 +48,10 @@ export class ColumnFreezeHeaderRenderer extends FreezeRender implements IRendere
         if (!args.parent) {
             this.parent.setProperties({ columns: args.columns }, true);
         }
-        let isFrozenLeft: Element = parentsUntil(this.destEle, 'e-frozen-left-header');
-        let isFrozenRight: Element = parentsUntil(this.destEle, 'e-frozen-right-header');
-        let left: number = this.parent.getFrozenLeftColumnsCount();
-        let right: number = this.parent.getFrozenRightColumnsCount();
+        const isFrozenLeft: Element = parentsUntil(this.destEle, 'e-frozen-left-header');
+        const isFrozenRight: Element = parentsUntil(this.destEle, 'e-frozen-right-header');
+        const left: number = this.parent.getFrozenLeftColumnsCount();
+        const right: number = this.parent.getFrozenRightColumnsCount();
         args.column.freeze = null;
         if (isFrozenLeft) {
             args.column.freeze = 'Left';
@@ -68,14 +69,14 @@ export class ColumnFreezeHeaderRenderer extends FreezeRender implements IRendere
         let fRowHgt: number;
         let mRowHgt: number;
         let frRowHgt: number;
-        let isWrap: boolean = this.parent.allowTextWrap;
-        let tBody: Element = this.parent.getHeaderContent().querySelector( literals.tbody);
-        let wrapMode: string = this.parent.textWrapSettings.wrapMode;
-        let tHead: Element = this.parent.getHeaderContent().querySelector('thead');
-        let height: number[] = [];
-        let width: number[] = [];
-        let rightHeight: number[] = [];
-        for (let i: number = 0, len: number = fRows.length; i < len; i++) { //separate loop for performance issue 
+        const isWrap: boolean = this.parent.allowTextWrap;
+        const tBody: Element = this.parent.getHeaderContent().querySelector( literals.tbody);
+        const wrapMode: string = this.parent.textWrapSettings.wrapMode;
+        const tHead: Element = this.parent.getHeaderContent().querySelector('thead');
+        const height: number[] = [];
+        const width: number[] = [];
+        const rightHeight: number[] = [];
+        for (let i: number = 0, len: number = fRows.length; i < len; i++) { //separate loop for performance issue
             if (!isNullOrUndefined(fRows[i]) && !isNullOrUndefined(mRows[i])) {
                 if (frRows) {
                     rightHeight[i] = frRows[i].getBoundingClientRect().height;
@@ -94,7 +95,7 @@ export class ColumnFreezeHeaderRenderer extends FreezeRender implements IRendere
             fRowHgt = height[i];
             mRowHgt = width[i];
             frRowHgt = rightHeight[i] ? rightHeight[i] : 0;
-            let maxHeight: number = Math.max(fRowHgt, mRowHgt, frRowHgt);
+            const maxHeight: number = Math.max(fRowHgt, mRowHgt, frRowHgt);
             if (!isNullOrUndefined(fRows[i]) && fRows[i].childElementCount && ((isWrap && fRowHgt < maxHeight) ||
                 (!isWrap && fRowHgt < maxHeight) || (this.parent.allowResizing && this.parent.resizeModule &&
                     this.parent.resizeModule.isFrozenColResized === false))) {
@@ -117,16 +118,16 @@ export class ColumnFreezeHeaderRenderer extends FreezeRender implements IRendere
     }
 
     protected refreshHeight(obj: { case: string, isModeChg?: boolean }): void {
-        let isLeftRight: boolean = this.parent.getFrozenMode() === literals.leftRight;
+        const isLeftRight: boolean = this.parent.getFrozenMode() === literals.leftRight;
         let fRows: NodeListOf<HTMLElement>;
         let frRows: NodeListOf<HTMLElement>;
         let mRows: NodeListOf<HTMLElement>;
-        let frHdr: Element = this.getFrozenRightHeader();
-        let fHdr: Element = this.parent.getHeaderContent().querySelector('.' + literals.frozenHeader);
-        let cont: Element = this.parent.getContent();
-        let mHdr: Element = this.getMovableHeader();
-        let hdrClassList: DOMTokenList = (this.parent.getHeaderContent().querySelector('.' + literals.headerContent) as Element).classList;
-        let wrapMode: string = this.parent.textWrapSettings.wrapMode;
+        const frHdr: Element = this.getFrozenRightHeader();
+        const fHdr: Element = this.parent.getHeaderContent().querySelector('.' + literals.frozenHeader);
+        const cont: Element = this.parent.getContent();
+        const mHdr: Element = this.getMovableHeader();
+        const hdrClassList: DOMTokenList = (this.parent.getHeaderContent().querySelector('.' + literals.headerContent) as Element).classList;
+        const wrapMode: string = this.parent.textWrapSettings.wrapMode;
         if (obj.case === 'textwrap') {
             if (wrapMode !== 'Header' || obj.isModeChg) {
                 if (isLeftRight) {
@@ -150,12 +151,12 @@ export class ColumnFreezeHeaderRenderer extends FreezeRender implements IRendere
             } else {
                 if (isLeftRight) {
                     frRows = frHdr.querySelector(wrapMode === 'Content' ?
-                         literals.tbody : 'thead').querySelectorAll('tr') as NodeListOf<HTMLElement>;
+                        literals.tbody : 'thead').querySelectorAll('tr') as NodeListOf<HTMLElement>;
                 }
                 fRows = fHdr.querySelector(wrapMode === 'Content' ?
-                     literals.tbody : 'thead').querySelectorAll('tr') as NodeListOf<HTMLElement>;
+                    literals.tbody : 'thead').querySelectorAll('tr') as NodeListOf<HTMLElement>;
                 mRows = mHdr.querySelector(wrapMode === 'Content' ?
-                     literals.tbody : 'thead').querySelectorAll('tr') as NodeListOf<HTMLElement>;
+                    literals.tbody : 'thead').querySelectorAll('tr') as NodeListOf<HTMLElement>;
             }
             if (!this.parent.getHeaderContent().getElementsByClassName('e-stackedheadercell').length) {
                 this.setWrapHeight(fRows, mRows, obj.isModeChg, false, this.colDepth > 1, frRows);
@@ -181,29 +182,31 @@ export class ColumnFreezeHeaderRenderer extends FreezeRender implements IRendere
 
     /**
      * Function to hide header table column based on visible property
-     * @param  {Column[]} columns?
+     *
+     * @param {Column[]} columns - specifies the column[]
+     * @returns {void}
      */
     public setVisible(columns?: Column[]): void {
-        let gObj: IGrid = this.parent;
+        const gObj: IGrid = this.parent;
         let displayVal: string;
         let idx: number;
-        let left: number = this.parent.getFrozenLeftColumnsCount();
-        let right: number = this.parent.getFrozenRightColumnsCount();
-        let movable: number = this.parent.getMovableColumnsCount();
+        const left: number = this.parent.getFrozenLeftColumnsCount();
+        const right: number = this.parent.getFrozenRightColumnsCount();
+        const movable: number = this.parent.getMovableColumnsCount();
         for (let c: number = 0, clen: number = columns.length; c < clen; c++) {
-            let column: Column = columns[c];
+            const column: Column = columns[c];
             idx = gObj.getNormalizedColumnIndex(column.uid);
             displayVal = column.visible ? '' : 'none';
             if (column.freeze === 'Left' || column.freeze === 'Right') {
                 if (left && !right) {
-                    let leftColGrp: Element = gObj.getHeaderContent().querySelector('.e-frozen-left-header').querySelector(literals.colGroup);
+                    const leftColGrp: Element = gObj.getHeaderContent().querySelector('.e-frozen-left-header').querySelector(literals.colGroup);
                     setStyleAttribute(<HTMLElement>leftColGrp.children[idx], { 'display': displayVal });
                 } else if (!left && right) {
-                    let rightColGrp: Element = gObj.getHeaderContent().querySelector('.e-frozen-right-header').querySelector(literals.colGroup);
+                    const rightColGrp: Element = gObj.getHeaderContent().querySelector('.e-frozen-right-header').querySelector(literals.colGroup);
                     setStyleAttribute(<HTMLElement>rightColGrp.children[idx - movable], { 'display': displayVal });
                 }
             } else {
-                let mTblColGrp: Element = gObj.getHeaderContent().querySelector('.' + literals.movableHeader).querySelector(literals.colGroup);
+                const mTblColGrp: Element = gObj.getHeaderContent().querySelector('.' + literals.movableHeader).querySelector(literals.colGroup);
                 setStyleAttribute(<HTMLElement>mTblColGrp.children[idx - left], { 'display': displayVal });
             }
         }
@@ -216,7 +219,7 @@ export class ColumnFreezeHeaderRenderer extends FreezeRender implements IRendere
 
     public refreshUI(): void {
         let frTbody: Element;
-        let tbody: Element = this.getMovableHeader().querySelector( literals.tbody);
+        const tbody: Element = this.getMovableHeader().querySelector( literals.tbody);
         remove(this.getMovableHeader().querySelector('table'));
         if (this.parent.getFrozenMode() === literals.leftRight) {
             frTbody = this.getFrozenRightHeader().querySelector( literals.tbody);
@@ -233,15 +236,15 @@ export class ColumnFreezeHeaderRenderer extends FreezeRender implements IRendere
             wrap([].slice.call(this.getMovableHeader().querySelectorAll('tr.e-columnheader')), true);
         }
         this.parent.updateDefaultCursor();
-        let mTbl: Element = this.parent.getContent().querySelector('.' + literals.movableContent).querySelector('.' + literals.table);
+        const mTbl: Element = this.parent.getContent().querySelector('.' + literals.movableContent).querySelector('.' + literals.table);
         remove(mTbl.querySelector(literals.colGroup));
-        let mColGroup: Element
+        const mColGroup: Element
             = (this.getMovableHeader().querySelector(literals.colGroup).cloneNode(true)) as Element;
         mTbl.insertBefore(mColGroup, mTbl.querySelector( literals.tbody));
         if (frTbody) {
-            let frtbl: Element = this.parent.getContent().querySelector('.e-frozen-right-content').querySelector('.' + literals.table);
+            const frtbl: Element = this.parent.getContent().querySelector('.e-frozen-right-content').querySelector('.' + literals.table);
             remove(frtbl.querySelector(literals.colGroup));
-            let frtblColGroup: Element
+            const frtblColGroup: Element
                 = (this.getFrozenRightHeader().querySelector(literals.colGroup).cloneNode(true)) as Element;
             frtbl.insertBefore(frtblColGroup, frtbl.querySelector( literals.tbody));
         }
@@ -251,25 +254,25 @@ export class ColumnFreezeHeaderRenderer extends FreezeRender implements IRendere
     }
 
     protected refreshFreeze(obj: { case: string, isModeChg?: boolean }): void {
-        let left: number = this.parent.getFrozenLeftColumnsCount();
-        let right: number = this.parent.getFrozenRightColumnsCount();
-        let movable: number = this.parent.getMovableColumnsCount();
+        const left: number = this.parent.getFrozenLeftColumnsCount();
+        const right: number = this.parent.getFrozenRightColumnsCount();
+        const movable: number = this.parent.getMovableColumnsCount();
         if (obj.case === 'filter') {
-            let filterRow: Element = this.getTable().querySelector('.e-filterbar');
+            const filterRow: Element = this.getTable().querySelector('.e-filterbar');
             if (this.parent.allowFiltering && filterRow && this.getMovableHeader().querySelector('thead')) {
-                let isDraggable: boolean = this.parent.isRowDragable();
-                let index: number = left ? isDraggable ? left + 1 : left : 0;
-                let total: number = left + movable + (left && isDraggable ? 1 : 0);
+                const isDraggable: boolean = this.parent.isRowDragable();
+                const index: number = left ? isDraggable ? left + 1 : left : 0;
+                const total: number = left + movable + (left && isDraggable ? 1 : 0);
                 this.getMovableHeader().querySelector('thead')
                     .appendChild(this.filterRenderer(filterRow, index, total));
                 if (this.parent.getFrozenMode() === literals.leftRight) {
-                    let ele: HTMLInputElement[] = [].slice.call(this.getMovableHeader().
+                    const ele: HTMLInputElement[] = [].slice.call(this.getMovableHeader().
                         querySelectorAll('thead .e-filterbarcell .e-input'));
                     this.getFrozenRightHeader().querySelector('thead').appendChild(this.filterRenderer(filterRow, index, index + right));
                     this.adjudtFilterBarCell(ele);
                 }
-                let elements: HTMLInputElement[] = [].slice.call(this.getMovableHeader().
-                querySelectorAll('thead .e-filterbarcell .e-input'));
+                const elements: HTMLInputElement[] = [].slice.call(this.getMovableHeader().
+                    querySelectorAll('thead .e-filterbarcell .e-input'));
                 this.adjudtFilterBarCell(elements);
             }
         } else if (obj.case === 'textwrap' || obj.case === 'refreshHeight') {
@@ -285,8 +288,8 @@ export class ColumnFreezeHeaderRenderer extends FreezeRender implements IRendere
     }
 
     private adjudtFilterBarCell(elements: HTMLElement[]): void {
-        for (let elem of elements) {
-            let args: InputArgs = {
+        for (const elem of elements) {
+            const args: InputArgs = {
                 element: elem as HTMLInputElement, floatLabelType: 'Never',
                 properties: {
                     enableRtl: this.parent.enableRtl, showClearButton: true
@@ -321,7 +324,7 @@ export class ColumnFreezeHeaderRenderer extends FreezeRender implements IRendere
         if (this.parent.getFrozenLeftColumnsCount()) {
             super.rfshMovable();
             if (this.parent.getFrozenRightColumnsCount()) {
-                let rows: Row<Column>[] = this.rows;
+                const rows: Row<Column>[] = this.rows;
                 this.getFrozenRightHeader().appendChild(this.createHeader(undefined, 'frozen-right'));
                 this.refreshStackedHdrHgt();
                 this.parent.notify(events.headerRefreshed, { rows: this.rows, args: { renderFrozenRightContent: true } });
@@ -348,12 +351,10 @@ export class ColumnFreezeHeaderRenderer extends FreezeRender implements IRendere
 
     private refreshFrozenRightStackedHdrHgt(): void {
         let fRowSpan: { min: number, max: number };
-        let mRowSpan: { min: number, max: number };
-        let frTr: NodeListOf<Element> = [].slice.call(this.getFrozenRightHeader().getElementsByClassName('e-columnheader'));
-        let mTr: NodeListOf<Element> = [].slice.call(this.getMovableHeader().getElementsByClassName('e-columnheader'));
+        const frTr: NodeListOf<Element> = [].slice.call(this.getFrozenRightHeader().getElementsByClassName('e-columnheader'));
+        const mTr: NodeListOf<Element> = [].slice.call(this.getMovableHeader().getElementsByClassName('e-columnheader'));
         for (let i: number = 0, len: number = frTr.length; i < len; i++) {
             fRowSpan = this.getRowSpan(frTr[i]);
-            mRowSpan = this.getRowSpan(mTr[i]);
             if (fRowSpan.min > 1) {
                 this.updateStackedHdrRowHgt(i, fRowSpan.max, frTr[i], mTr);
             }
@@ -361,6 +362,7 @@ export class ColumnFreezeHeaderRenderer extends FreezeRender implements IRendere
     }
 
     /**
+     * @returns {void}
      * @hidden
      */
     public updateColgroup(): void {
@@ -407,9 +409,9 @@ export class ColumnFreezeHeaderRenderer extends FreezeRender implements IRendere
     }
 
     private updateFrozenLeftColGroup(): void {
-        let leftColGroup: HTMLCollection = this.getFrozenHeader().querySelector(literals.colGroup).children;
-        let start: number = this.parent.isRowDragable() ? 1 : 0;
-        let count: number = this.parent.isRowDragable() ? this.parent.getFrozenLeftColumnsCount() + 1
+        const leftColGroup: HTMLCollection = this.getFrozenHeader().querySelector(literals.colGroup).children;
+        const start: number = this.parent.isRowDragable() ? 1 : 0;
+        const count: number = this.parent.isRowDragable() ? this.parent.getFrozenLeftColumnsCount() + 1
             : this.parent.getFrozenLeftColumnsCount();
         for (let i: number = start; i < leftColGroup.length; i++) {
             if (i >= count) {
@@ -420,13 +422,13 @@ export class ColumnFreezeHeaderRenderer extends FreezeRender implements IRendere
     }
 
     private updateMovableColGroup(): void {
-        let movableColGroup: HTMLCollection = this.getMovableHeader().querySelector(literals.colGroup).children;
+        const movableColGroup: HTMLCollection = this.getMovableHeader().querySelector(literals.colGroup).children;
         if (this.parent.isRowDragable()) {
             remove(movableColGroup[0]);
         }
-        let length: number = movableColGroup.length;
-        let left: number = this.parent.getFrozenLeftColumnsCount();
-        let movable: number = this.parent.getMovableColumnsCount();
+        const length: number = movableColGroup.length;
+        const left: number = this.parent.getFrozenLeftColumnsCount();
+        const movable: number = this.parent.getMovableColumnsCount();
         let k: number = 0;
         for (let i: number = 0; i < length; i++, k++) {
             if (i < left || i >= left + movable) {
@@ -437,15 +439,15 @@ export class ColumnFreezeHeaderRenderer extends FreezeRender implements IRendere
     }
 
     private updateFrozenRightColGroup(): void {
-        let isDraggable: boolean = this.parent.isRowDragable();
-        let rightColumns: Column[] = this.parent.getFrozenRightColumns();
-        let rightColGroup: HTMLCollection = this.getFrozenRightHeader().querySelector(literals.colGroup).children;
+        const isDraggable: boolean = this.parent.isRowDragable();
+        const rightColumns: Column[] = this.parent.getFrozenRightColumns();
+        const rightColGroup: HTMLCollection = this.getFrozenRightHeader().querySelector(literals.colGroup).children;
         if (this.parent.getFrozenMode() === literals.leftRight && isDraggable) {
             remove(rightColGroup[0]);
         }
-        let length: number = rightColGroup.length;
-        let left: number = this.parent.getFrozenLeftColumnsCount();
-        let movable: number = this.parent.getMovableColumnsCount();
+        const length: number = rightColGroup.length;
+        const left: number = this.parent.getFrozenLeftColumnsCount();
+        const movable: number = this.parent.getMovableColumnsCount();
         let k: number = 0;
         for (let i: number = 0; i < length; i++) {
             if (i < left + movable) {
@@ -468,6 +470,7 @@ export class ColumnFreezeHeaderRenderer extends FreezeRender implements IRendere
 
 /**
  * ColumnFreezeContentRenderer is used to freeze the columns content at right and left
+ *
  * @hidden
  */
 export class ColumnFreezeContentRenderer extends FreezeContentRender implements IRenderer {
@@ -476,7 +479,7 @@ export class ColumnFreezeContentRenderer extends FreezeContentRender implements 
     private frozenRightRows: Row<Column>[];
     private frozenRightRowElements: Element[];
     private frzCount: number = 0;
-    private isColGroupRefresh: Boolean = false;
+    private isColGroupRefresh: boolean = false;
     protected widthService: ColumnWidthService;
 
     constructor(parent?: IGrid, locator?: ServiceLocator) {
@@ -491,9 +494,9 @@ export class ColumnFreezeContentRenderer extends FreezeContentRender implements 
                 this.renderFrozenLeftWithRightPanel();
             }
         } else {
-           this.renderFrozenRightPanelAlone();
+            this.renderFrozenRightPanelAlone();
         }
-        let display: string = this.parent.enableVirtualization ? '' : 'flex';
+        const display: string = this.parent.enableVirtualization ? '' : 'flex';
         (this.getPanel().firstChild as HTMLElement).style.display = display;
     }
 
@@ -502,19 +505,19 @@ export class ColumnFreezeContentRenderer extends FreezeContentRender implements 
             super.renderTable();
             if (this.parent.getFrozenRightColumnsCount()) {
                 this.renderFrozenLeftWithRightTable();
-                let display: string = !this.parent.getVisibleFrozenRightCount() ? 'none' : '';
+                const display: string = !this.parent.getVisibleFrozenRightCount() ? 'none' : '';
                 this.renderHorizontalScrollbar('e-frozenscrollbar e-frozen-right-scrollbar', display, true);
             }
         } else {
             this.renderFrozenRightTableAlone();
-            let display: string = !this.parent.getVisibleFrozenRightCount() ? 'none' : '';
+            const display: string = !this.parent.getVisibleFrozenRightCount() ? 'none' : '';
             this.renderHorizontalScrollbar('e-frozenscrollbar e-frozen-right-scrollbar', display);
         }
         (this.getMovableContent() as HTMLElement).style.flex = '1';
     }
 
     protected appendScrollbar(frozen: Element, movable: Element, isRight?: boolean): void {
-        let parent: Element = this.parent.createElement('div', { className: 'e-scrollbar', styles: 'display: flex' });
+        const parent: Element = this.parent.createElement('div', { className: 'e-scrollbar', styles: 'display: flex' });
         if (this.parent.getFrozenLeftColumnsCount()) {
             if (!isRight) {
                 parent.appendChild(frozen);
@@ -573,19 +576,19 @@ export class ColumnFreezeContentRenderer extends FreezeContentRender implements 
         if (this.getMovableContent().querySelector(literals.colGroup)) {
             remove(this.getMovableContent().querySelector(literals.colGroup));
         }
-        let colgroup: Element = ((this.parent.getHeaderContent().querySelector('.' + literals.movableHeader)
+        const colgroup: Element = ((this.parent.getHeaderContent().querySelector('.' + literals.movableHeader)
             .querySelector(literals.colGroup)).cloneNode(true)) as Element;
         mTbl.insertBefore(colgroup, mTbl.querySelector( literals.tbody));
     }
 
     private renderFrozenLeftWithRightTable(): void {
-        let frozenRight: Element = this.getTable().cloneNode(true) as Element;
+        const frozenRight: Element = this.getTable().cloneNode(true) as Element;
         this.getFrozenRightContent().appendChild(frozenRight);
-        let oldColGroup: Element = this.getFrozenRightContent().querySelector(literals.colGroup);
+        const oldColGroup: Element = this.getFrozenRightContent().querySelector(literals.colGroup);
         if (oldColGroup) {
             remove(oldColGroup);
         }
-        let rightTable: Element = this.getFrozenRightContent().querySelector('.' + literals.table);
+        const rightTable: Element = this.getFrozenRightContent().querySelector('.' + literals.table);
         rightTable.insertBefore(this.getFrozenRightHeaderColGroup(), rightTable.querySelector( literals.tbody));
     }
 
@@ -601,6 +604,8 @@ export class ColumnFreezeContentRenderer extends FreezeContentRender implements 
     }
 
     /**
+     * @param {string} tableName - specfies the table name
+     * @returns {HTMLElement} returns the element
      * @hidden
      */
     public getFrozenHeader(tableName: string): HTMLElement {
@@ -632,7 +637,7 @@ export class ColumnFreezeContentRenderer extends FreezeContentRender implements 
     protected getHeaderColGroup(): Element {
         let colGroup: Element = <Element>this.parent.element.querySelector('.' + literals.gridHeader).querySelector(literals.colGroup).cloneNode(true);
         if (!this.parent.getFrozenLeftColumnsCount()) {
-            let right: Element = this.getFrozenRightHeaderColGroup();
+            const right: Element = this.getFrozenRightHeaderColGroup();
             colGroup = right && this.frzCount ? right.cloneNode(true) as Element : colGroup;
             this.frzCount++;
             this.isColGroupRefresh = true;
@@ -670,7 +675,7 @@ export class ColumnFreezeContentRenderer extends FreezeContentRender implements 
                 this.renderFrozenLeftWithRightEmptyRow();
             }
         } else {
-           this.renderFrozenRightEmptyRowAlone(tbody);
+            this.renderFrozenRightEmptyRowAlone(tbody);
         }
         this.parent.notify(events.freezeRender, { case: 'refreshHeight' });
     }
@@ -694,6 +699,8 @@ export class ColumnFreezeContentRenderer extends FreezeContentRender implements 
     }
 
     /**
+     * @param {freezeTable} tableName - specfies the table name
+     * @returns {Element} - returns the element
      * @hidden
      */
     public getTbody(tableName: freezeTable): Element {
@@ -709,6 +716,9 @@ export class ColumnFreezeContentRenderer extends FreezeContentRender implements 
     }
 
     /**
+     * @param {NotifyArgs} args - specfies the args
+     * @param {freezeTable} tableName - specfies the freeze table
+     * @returns {void}
      * @hidden
      */
     public setIsFrozen(args: NotifyArgs, tableName: freezeTable): void {
@@ -719,6 +729,11 @@ export class ColumnFreezeContentRenderer extends FreezeContentRender implements 
     }
 
     /**
+     * @param {Element} tbody - specfies the element
+     * @param {DocumentFragment | HTMLElement} frag - specfies the frag
+     * @param {NotifyArgs} args - specfies the args
+     * @param {freezeTable} tableName - specfies the tableName
+     * @returns {void}
      * @hidden
      */
     public appendContent(tbody: Element, frag: DocumentFragment | HTMLElement, args: NotifyArgs, tableName?: freezeTable): void {
@@ -782,11 +797,13 @@ export class ColumnFreezeContentRenderer extends FreezeContentRender implements 
     }
 
     /**
+     * @param {freezeTable} tableName - specifies the table
+     * @returns {void}
      * @hidden
      */
     public splitRows(tableName: freezeTable): void {
-        let left: number = this.parent.getFrozenLeftColumnsCount();
-        let right: number = this.parent.getFrozenRightColumnsCount();
+        const left: number = this.parent.getFrozenLeftColumnsCount();
+        const right: number = this.parent.getFrozenRightColumnsCount();
         if (left && !right) {
             if (tableName === literals.frozenLeft) {
                 this.freezeRows = this.rows;
@@ -817,7 +834,8 @@ export class ColumnFreezeContentRenderer extends FreezeContentRender implements 
 
     /**
      * Get the Freeze pane movable content table data row elements
-     * @return {Element} 
+     *
+     * @returns {Element} returns the element
      */
     public getMovableRowElements(): Element[] {
         if (this.parent.getFrozenMode() !== literals.leftRight) {
@@ -829,7 +847,8 @@ export class ColumnFreezeContentRenderer extends FreezeContentRender implements 
 
     /**
      * Get the Freeze pane frozen right content table data row elements
-     * @return {Element} 
+     *
+     * @returns {Element} returns the Element
      */
     public getFrozenRightRowElements(): Element[] {
         if (this.parent.getFrozenMode() !== literals.leftRight) {
@@ -841,7 +860,8 @@ export class ColumnFreezeContentRenderer extends FreezeContentRender implements 
 
     /**
      * Get the frozen right row collection in the Freeze pane Grid.
-     * @returns {Row[] | HTMLCollectionOf<HTMLTableRowElement>}
+     *
+     * @returns {Row[] | HTMLCollectionOf<HTMLTableRowElement>} returns the row object
      */
     public getFrozenRightRows(): Row<Column>[] | HTMLCollectionOf<HTMLTableRowElement> {
         if (this.parent.getFrozenMode() === literals.leftRight) {
@@ -855,6 +875,8 @@ export class ColumnFreezeContentRenderer extends FreezeContentRender implements 
     }
 
     /**
+     * @param {number} index - specifies the index
+     * @returns {Element} returns the element
      * @hidden
      */
     public getFrozenRightRowByIndex(index: number): Element {
@@ -863,16 +885,18 @@ export class ColumnFreezeContentRenderer extends FreezeContentRender implements 
 
     /**
      * Get the Row collection in the Grid.
-     * @returns {Row[] | HTMLCollectionOf<HTMLTableRowElement>}
+     *
+     * @returns {Row[] | HTMLCollectionOf<HTMLTableRowElement>} returns the row object
      */
     public getRows(): Row<Column>[] | HTMLCollectionOf<HTMLTableRowElement> {
-        let infiniteRows: Row<Column>[] = this.getInfiniteRows();
+        const infiniteRows: Row<Column>[] = this.getInfiniteRows();
         return infiniteRows.length ? infiniteRows : this.freezeRows;
     }
 
     /**
      * Get the content table data row elements
-     * @return {Element} 
+     *
+     * @returns {Element} returns the element
      */
     public getRowElements(): Element[] {
         return this.freezeRowElements;

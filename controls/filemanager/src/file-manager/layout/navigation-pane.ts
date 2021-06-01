@@ -101,6 +101,7 @@ export class NavigationPane {
                 this.dragObj = new Draggable(this.treeObj.element, {
                     cursorAt: this.parent.dragCursorPosition,
                     dragTarget: '.' + CLS.FULLROW,
+                    distance: 5,
                     dragArea: this.parent.element,
                     drag: draggingHandler.bind(this, this.parent),
                     dragStart: (args: DragEventArgs & BlazorDragEventArgs) => {

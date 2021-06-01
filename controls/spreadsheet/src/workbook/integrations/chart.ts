@@ -101,7 +101,7 @@ export class WorkbookChart {
         }
     }
 
-    private refreshChartData(args: { cell: CellModel, rIdx: number, cIdx: number, sheetIdx: number }): void {
+    private refreshChartData(args: { cell: CellModel, rIdx: number, cIdx: number, sheetIdx: number, showHide?: string }): void {
         let i: number;
         let j: number = 1;
         const cnt: number = this.parent.sheets.length + 1;
@@ -111,16 +111,21 @@ export class WorkbookChart {
             if (i) {
                 while (i--) {
                     const chart: ChartModel = this.parent.chartColl[i];
-                    const isInRange: boolean = inRange(getRangeIndexes(chart.range), args.rIdx, args.cIdx);
+                    const isRange: boolean = isNullOrUndefined(args.showHide) ? inRange(getRangeIndexes(chart.range), args.rIdx, args.cIdx)
+                        : this.inRowColumnRange(getRangeIndexes(chart.range), args.rIdx, args.showHide);
                     const rangeSheetIdx: number = chart.range.indexOf('!') > -1 ?
                         getSheetIndex(this.parent, getSheetNameFromAddress(chart.range)) : this.parent.activeSheetIndex;
-                    if (isInRange && rangeSheetIdx === this.parent.activeSheetIndex) {
+                    if (isRange && rangeSheetIdx === this.parent.activeSheetIndex) {
                         this.parent.notify(updateChart, { chart: chart });
                     }
                 }
             }
             j++;
         }
+    }
+
+    private inRowColumnRange(range: number[], index: number, showHide: string): boolean {
+        return showHide === 'rows' ? index >= range[0] && index <= range[2] : index >= range[1] && index <= range[3];
     }
 
     private refreshChartSize(args: { height: string, width: string, overlayEle: HTMLElement }): void {

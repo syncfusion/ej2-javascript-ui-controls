@@ -272,10 +272,10 @@ export class Filter {
         } else {
             targetElement = this.parent.treeGrid.grid.getColumnHeaderByField(args.columnName).querySelector('.e-filtermenudiv');
             if(this.parent.treeGrid.filterSettings.type === 'Menu') {
-                getFilterMenuPostion(targetElement, getValue('filterModel.dlgObj', args), this.parent.treeGrid.grid as IXLFilter);
+                getFilterMenuPostion(targetElement, getValue('filterModel.dlgObj', args));
             }
             else {
-                getFilterMenuPostion(targetElement, getValue('filterModel.dialogObj', args), this.parent.treeGrid.grid as IXLFilter);
+                getFilterMenuPostion(targetElement, getValue('filterModel.dialogObj', args));
             }
         }
         if(this.parent.treeGrid.filterSettings.type === 'Menu') {

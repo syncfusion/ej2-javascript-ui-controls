@@ -3,6 +3,7 @@ import { CellType } from '../base/enum';
 import { CommandModel } from '../base/interface';
 /**
  * Cell
+ *
  * @hidden
  */
 export class Cell<T> {
@@ -59,7 +60,7 @@ export class Cell<T> {
     }
 
     public clone(): Cell<T> {
-        let cell: Cell<T> = new Cell<T>({});
+        const cell: Cell<T> = new Cell<T>({});
         merge(cell, this);
         return cell;
     }

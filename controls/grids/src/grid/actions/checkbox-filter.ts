@@ -19,8 +19,13 @@ export class CheckBoxFilter {
 
     /**
      * Constructor for checkbox filtering module
+     *
+     * @param {IGrid} parent - specifies the IGrid
+     * @param {FilterSettings} filterSettings - specifies the filtersettings
+     * @param {ServiceLocator} serviceLocator - specifies the ServiceLocator
      * @hidden
      */
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     constructor(parent?: IGrid, filterSettings?: FilterSettings, serviceLocator?: ServiceLocator) {
         this.parent = parent;
         this.isresetFocus = true;
@@ -28,9 +33,10 @@ export class CheckBoxFilter {
         this.addEventListener();
     }
 
-    /** 
+    /**
      * To destroy the check box filter.
-     * @return {void} 
+     *
+     * @returns {void}
      * @hidden
      */
     public destroy(): void {
@@ -50,12 +56,14 @@ export class CheckBoxFilter {
         }
     }
 
-    protected closeResponsiveDialog(isCustomFilter: boolean): void {
+    protected closeResponsiveDialog(): void {
         this.checkBoxBase.closeDialog();
     }
 
     /**
      * For internal use only - Get the module name.
+     *
+     * @returns {string} - returns the module name
      * @private
      */
     protected getModuleName(): string {
@@ -81,7 +89,7 @@ export class CheckBoxFilter {
         this.checkBoxBase.clearFilter(col);
     }
 
-    protected applyCustomFilter(args: { col: Column, isCustomFilter: boolean }): void {
+    protected applyCustomFilter(): void {
         this.checkBoxBase.fltrBtnHandler();
         this.checkBoxBase.closeDialog();
     }

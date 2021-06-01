@@ -140,9 +140,6 @@ export class CartesianChart {
             if ((series[i] as StockSeries).localData) {
                 chartSeries[i].dataSource = (series[i] as StockSeries).localData;
             }
-            if (chartSeries[i].type !== 'HiloOpenClose' && chartSeries[i].type !== 'Candle' && chartSeries[i].yName === 'volume') {
-                chartSeries[i].enableTooltip = false;
-            }
         }
         return chartSeries;
     }

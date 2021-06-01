@@ -1,4 +1,4 @@
-import { detach, EventHandler, Browser, L10n, isNullOrUndefined } from '@syncfusion/ej2-base';
+import { detach, EventHandler, Browser, L10n, isNullOrUndefined, extend } from '@syncfusion/ej2-base';
 import { ClickEventArgs } from '@syncfusion/ej2-navigations';
 import { Spreadsheet } from '../base/index';
 import { SheetModel, getRangeIndexes, getCell, setCell, getSheet, CellModel, getSwapRange, inRange, isHiddenRow, Workbook } from '../../workbook/index';
@@ -15,13 +15,13 @@ import { Deferred } from '@syncfusion/ej2-data';
 import { BeforeOpenEventArgs } from '@syncfusion/ej2-popups';
 import { refreshRibbonIcons, isCellReference, getColumn, isLocked as isCellLocked, FilterCollectionModel } from '../../workbook/index';
 import { getFilteredCollection, setChart, parseIntValue, isSingleCell, activeCellMergedRange, getRowsHeight } from '../../workbook/index';
+import { ConditionalFormatModel } from '../../workbook/index';
 
 /**
  * Represents clipboard support for Spreadsheet.
  */
 export class Clipboard {
     private parent: Spreadsheet;
-    private cutInfo: boolean;
     private externalMerge: boolean = false;
     private externalMergeRow: number;
     private copiedInfo: { range: number[], sId: number, isCut: boolean };
@@ -162,7 +162,7 @@ export class Clipboard {
         let isExternal: DataTransfer | boolean = ((args && args.clipboardData) || window['clipboardData']);
         const copiedIdx: number = this.getCopiedIdx();
         let isCut: boolean;
-        const copyInfo: { range: number[], sId: number, isCut: boolean } = Object.assign({}, this.copiedInfo);
+        const copyInfo: { range: number[], sId: number, isCut: boolean } = Object.assign({ isExternal: isExternal }, this.copiedInfo);
         if (isExternal || this.copiedShapeInfo || (args.isInternal && this.copiedInfo)) {
             const cSIdx: number = (args && args.sIdx > -1) ? args.sIdx : this.parent.activeSheetIndex;
             const curSheet: SheetModel = getSheet(this.parent as Workbook, cSIdx);
@@ -196,7 +196,7 @@ export class Clipboard {
                 type: (args && args.type) || 'All',
                 cancel: false
             };
-            if (args.isAction && !this.copiedShapeInfo && this.copiedInfo) {
+            if (args.isAction && !this.copiedShapeInfo) {
                 this.parent.notify(beginAction, { eventArgs: beginEventArgs, action: 'clipboard' });
             }
             if (beginEventArgs.cancel) {
@@ -269,8 +269,8 @@ export class Clipboard {
                             if (isInRange) {
                                 cRows[selIdx[0] + l].cells[selIdx[1] + k] = getCell(selIdx[0] + l, selIdx[1] + k, prevSheet);
                             }
-                            cell = isExternal ? rows[i].cells[j] : Object.assign({}, (isInRange && cRows[i] && cRows[i].cells[j])
-                                ? cRows[i].cells[j] : getCell(i, j, prevSheet));
+                            cell = isExternal ? rows[i].cells[j] : extend({}, (isInRange && cRows[i] && cRows[i].cells[j])
+                                ? cRows[i].cells[j] : getCell(i, j, prevSheet), null, true);
                             this.copiedCell = [i, j];
                             if (cell && args && args.type || pasteType) {
                                 switch (pasteType) {
@@ -294,6 +294,7 @@ export class Clipboard {
                                 this.showDialog();
                                 return;
                             }
+                            const conditionalFormats: ConditionalFormatModel[] = this.getConditionalFormats(i, j, prevSheet);
                             if (isRepeative) {
                                 for (let x: number = selIdx[0]; x <= selIdx[2]; x += (cIdx[2] - cIdx[0]) + 1) {
                                     for (let y: number = selIdx[1]; y <= selIdx[3]; y += (cIdx[3] - cIdx[1] + 1)) {
@@ -318,6 +319,7 @@ export class Clipboard {
                                                 cell.formula = newFormula;
                                             }
                                         }
+                                        this.setConditionalFormats(conditionalFormats, x + l, colInd, curSheet);
                                         let toSkip: boolean = false;
                                         if (this.parent.filteredRows && this.parent.filteredRows.rowIdxColl &&
                                             this.parent.filteredRows.sheetIdxColl) {
@@ -335,8 +337,8 @@ export class Clipboard {
                                                 (isNullOrUndefined(cell.isLocked) || cell.isLocked === true)) {
                                                 cell.isLocked = prevCell.isLocked;
                                             }
-                                            this.setCell(x + l, colInd, curSheet, cell, isExtend, false, y === selIdx[3],
-                                                         isExternal as boolean);
+                                            this.setCell(x + l, colInd, curSheet, cell, isExtend, false, conditionalFormats.length ? true
+                                                : y === selIdx[3], isExternal as boolean);
                                         }
                                         const sId: number = this.parent.activeSheetIndex;
                                         const cellElem: HTMLTableCellElement = this.parent.getCell(x + l, colInd) as HTMLTableCellElement;
@@ -388,7 +390,6 @@ export class Clipboard {
                 this.parent.notify(refreshRibbonIcons, null);
                 this.parent.setUsedRange(rfshRange[2] + 1, rfshRange[3]);
                 if (cSIdx === this.parent.activeSheetIndex) {
-                    this.parent.serviceLocator.getService<ICellRenderer>('cell').refreshRange(rfshRange);
                     this.parent.notify(selectRange, { address: getRangeAddress(rfshRange) });
                 }
                 if (!isExternal && this.copiedInfo.isCut) {
@@ -397,7 +398,6 @@ export class Clipboard {
                         this.parent.serviceLocator.getService<ICellRenderer>('cell').refreshRange(cIdx);
                     }
                     this.clearCopiedInfo();
-                    this.cutInfo = isCut;
                 }
                 if ((isExternal || isInRange) && this.copiedInfo) {
                     this.clearCopiedInfo();
@@ -418,9 +418,7 @@ export class Clipboard {
                         pastedRange: getSheetName(this.parent as Workbook) + '!' + getRangeAddress(rfshRange),
                         type: pasteType || 'All'
                     };
-                    if (!isExternal) {
-                        this.parent.notify(completeAction, { eventArgs: eventArgs, action: 'clipboard' });
-                    }
+                    this.parent.notify(completeAction, { eventArgs: eventArgs, action: 'clipboard' });
                 }
                 if (isCut) {
                     this.updateFilter(copyInfo, rfshRange);
@@ -441,6 +439,26 @@ export class Clipboard {
             }
         } else {
             this.getClipboardEle().select();
+        }
+    }
+
+    private getConditionalFormats(rowIdx: number, colIdx: number, sheet: SheetModel): ConditionalFormatModel[] {
+        let conditionalFormats: ConditionalFormatModel[] = [];
+        if (sheet.conditionalFormats) {
+            for (let i: number = 0; i < sheet.conditionalFormats.length; i++) {
+                if (inRange(getRangeIndexes(sheet.conditionalFormats[i].range), rowIdx, colIdx)) {
+                    conditionalFormats.push(extend({}, sheet.conditionalFormats[i]));
+                }
+            }
+        }
+        return conditionalFormats;
+    }
+
+    private setConditionalFormats(conditionalFormats: ConditionalFormatModel[], rowIdx: number, colIdx: number, sheet: SheetModel)
+        : void {
+        for (let i: number = 0; i < conditionalFormats.length; i++) {
+            sheet.conditionalFormats.push(extend({}, (conditionalFormats[i] as { properties: Object }).properties || conditionalFormats[i],
+                { range: getRangeAddress([rowIdx, colIdx]) }));
         }
     }
 
@@ -808,7 +826,7 @@ export class Clipboard {
                     });
                 }
                 data += '">';
-                if (cell && cell.value) {
+                if (cell && !isNullOrUndefined(cell.value)) {
                     const eventArgs: { [key: string]: string | number | boolean } = {
                         formattedText: cell.value,
                         value: cell.value,
@@ -874,6 +892,7 @@ export class Clipboard {
                     (rows as RowModel[]).push({ cells: cells });
                     cells = [];
                 });
+                this.updateMergeCells(rows);
             }
         } else if (text) {
             if (html) {
@@ -905,6 +924,31 @@ export class Clipboard {
         }
         setTimeout(() => { this.getClipboardEle().innerHTML = ''; }, 0);
         return rows;
+    }
+
+    private updateMergeCells(rows: RowModel[]): void {
+        let rowSpan: number;
+        let colSpan: number;
+        for (let i: number = 0; i < rows.length; i++) {
+            for (let j: number = 0; j < rows[i].cells.length; j++) {
+                if (rows[i].cells[j]) {
+                    colSpan = rows[i].cells[j].colSpan;
+                    rowSpan = rows[i].cells[j].rowSpan;
+                    if (colSpan > 1) {
+                        for (let k: number = 1; k < colSpan; k++) {
+                            rows[i].cells.splice(j + 1, 0, { colSpan: k - colSpan });
+                        }
+                    }
+                    if (rowSpan > 1) {
+                        for (let k: number = rowSpan - 1; k > 0; k--) {
+                            for (let l: number = 0; l < colSpan; l++) {
+                                rows[i + k].cells.splice(l === 0 ? j : j + 1, 0, { rowSpan: -k, colSpan: -l });
+                            }
+                        }
+                    }
+                }
+            }
+        }
     }
 
     private getStyle(td: Element, ele: Element): CellStyleModel {

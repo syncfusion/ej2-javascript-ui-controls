@@ -1,6 +1,6 @@
 import { Droppable, DropEventArgs } from '@syncfusion/ej2-base';
 import { isNullOrUndefined, extend } from '@syncfusion/ej2-base';
-import { setStyleAttribute, remove, updateBlazorTemplate, removeClass } from '@syncfusion/ej2-base';
+import { setStyleAttribute, remove, updateBlazorTemplate } from '@syncfusion/ej2-base';
 import { getUpdateUsingRaf, appendChildren, setDisplayValue } from '../base/util';
 import * as events from '../base/constant';
 import { IRenderer, IGrid, NotifyArgs, IModelGenerator, RowDataBoundEventArgs, CellFocusArgs, InfiniteScrollArgs } from '../base/interface';
@@ -14,7 +14,7 @@ import { ServiceLocator } from '../services/service-locator';
 import { AriaService } from '../services/aria-service';
 import { RowModelGenerator } from '../services/row-model-generator';
 import { GroupModelGenerator } from '../services/group-model-generator';
-import { getScrollBarWidth, isGroupAdaptive } from '../base/util';
+import { isGroupAdaptive } from '../base/util';
 import { Grid } from '../base/grid';
 import { VirtualFreezeRenderer } from './virtual-freeze-renderer';
 import { VirtualContentRenderer } from '../renderer/virtual-content-renderer';
@@ -24,12 +24,14 @@ import { freezeTable } from '../base/enum';
 import * as literals from '../base/string-literals';
 
 
+// eslint-disable-next-line valid-jsdoc
 /**
  * Content module is used to render grid content
+ *
  * @hidden
  */
 export class ContentRender implements IRenderer {
-    //Internal variables             
+    //Internal variables
     private contentTable: Element;
     private contentPanel: Element;
     protected rows: Row<Column>[] = [];
@@ -68,15 +70,15 @@ export class ContentRender implements IRenderer {
     private mutableData: boolean = false;
 
     private rafCallback: Function = (args: NotifyArgs) => {
-        let arg: NotifyArgs = args;
+        const arg: NotifyArgs = args;
         return () => {
             if (this.parent.isFrozenGrid() && this.parent.enableVirtualization) {
-                let mContentRows: Element[] = [].slice.call(this.parent.getMovableVirtualContent().getElementsByClassName(literals.row));
-                let fContentRows: Element[] = [].slice.call(this.parent.getFrozenVirtualContent().getElementsByClassName(literals.row));
+                const mContentRows: Element[] = [].slice.call(this.parent.getMovableVirtualContent().getElementsByClassName(literals.row));
+                const fContentRows: Element[] = [].slice.call(this.parent.getFrozenVirtualContent().getElementsByClassName(literals.row));
                 this.isLoaded = !mContentRows ? false : mContentRows.length === fContentRows.length;
                 if (this.parent.enableColumnVirtualization && args.requestType === 'virtualscroll' && this.isLoaded) {
-                    let mHdr: Element[] = [].slice.call(this.parent.getMovableVirtualHeader().getElementsByClassName(literals.row));
-                    let fHdr: Element[] = [].slice.call(this.parent.getFrozenVirtualHeader().getElementsByClassName(literals.row));
+                    const mHdr: Element[] = [].slice.call(this.parent.getMovableVirtualHeader().getElementsByClassName(literals.row));
+                    const fHdr: Element[] = [].slice.call(this.parent.getFrozenVirtualHeader().getElementsByClassName(literals.row));
                     this.isLoaded = mHdr.length === fHdr.length;
                 }
             }
@@ -96,7 +98,7 @@ export class ContentRender implements IRenderer {
                 });
             }
             if (arg) {
-                let action: string = (arg.requestType || '').toLowerCase() + '-complete';
+                const action: string = (arg.requestType || '').toLowerCase() + '-complete';
                 this.parent.notify(action, arg);
                 if (args.requestType === 'batchsave') {
                     args.cancel = false;
@@ -116,6 +118,9 @@ export class ContentRender implements IRenderer {
 
     /**
      * Constructor for content renderer module
+     *
+     * @param {IGrid} parent - specifies the Igrid
+     * @param {ServiceLocator} serviceLocator - specifies the service locator
      */
     constructor(parent?: IGrid, serviceLocator?: ServiceLocator) {
         this.parent = parent;
@@ -144,10 +149,12 @@ export class ContentRender implements IRenderer {
     }
 
     /**
-     * The function is used to render grid content div    
+     * The function is used to render grid content div
+     *
+     * @returns {void}
      */
     public renderPanel(): void {
-        let gObj: IGrid = this.parent;
+        const gObj: IGrid = this.parent;
         let div: Element =  this.parent.element.querySelector( '.' + literals.gridContent);
         if (div) {
             this.ariaService.setOptions(<HTMLElement>this.parent.element.querySelector('.' + literals.content), { busy: false });
@@ -155,7 +162,7 @@ export class ContentRender implements IRenderer {
             return;
         }
         div = this.parent.createElement('div', { className:  literals.gridContent });
-        let innerDiv: Element = this.parent.createElement('div', {
+        const innerDiv: Element = this.parent.createElement('div', {
             className: literals.content
         });
         this.ariaService.setOptions(<HTMLElement>innerDiv, { busy: false });
@@ -165,12 +172,14 @@ export class ContentRender implements IRenderer {
     }
 
     /**
-     * The function is used to render grid content table    
+     * The function is used to render grid content table
+     *
+     * @returns {void}
      */
     public renderTable(): void {
-        let contentDiv: Element = this.getPanel();
-        let virtualTable: Element = contentDiv.querySelector('.e-virtualtable');
-        let virtualTrack: Element = contentDiv.querySelector('.e-virtualtrack');
+        const contentDiv: Element = this.getPanel();
+        const virtualTable: Element = contentDiv.querySelector('.e-virtualtable');
+        const virtualTrack: Element = contentDiv.querySelector('.e-virtualtrack');
         if (this.parent.enableVirtualization && !isNullOrUndefined(virtualTable) && !isNullOrUndefined(virtualTrack)) {
             remove(virtualTable);
             remove(virtualTrack);
@@ -188,20 +197,23 @@ export class ContentRender implements IRenderer {
 
     /**
      * The function is used to create content table elements
-     * @return {Element} 
+     *
+     * @param {string} id - specifies the id
+     * @returns {Element} returns the element
      * @hidden
      */
-    public createContentTable(id: String): Element {
-        let innerDiv: Element = <Element>this.getPanel().firstElementChild;
+    public createContentTable(id: string): Element {
+        const innerDiv: Element = <Element>this.getPanel().firstElementChild;
         if (this.getTable()) {
             remove(this.getTable());
         }
-        let table: Element = innerDiv.querySelector('.' + literals.table) ? innerDiv.querySelector('.' + literals.table) :
-                             this.parent.createElement('table', {className: literals.table, attrs: {
-                cellspacing: '0.25px', role: 'grid',
-                id: this.parent.element.id + id
-            }
-        });
+        const table: Element = innerDiv.querySelector('.' + literals.table) ? innerDiv.querySelector('.' + literals.table) :
+            this.parent.createElement('table', {
+                className: literals.table, attrs: {
+                    cellspacing: '0.25px', role: 'grid',
+                    id: this.parent.element.id + id
+                }
+            });
         this.setColGroup(<Element>this.parent.getHeaderTable().querySelector(literals.colGroup).cloneNode(true));
         table.appendChild(this.getColGroup());
         table.appendChild(this.parent.createElement( literals.tbody));
@@ -209,34 +221,36 @@ export class ContentRender implements IRenderer {
         return innerDiv;
     }
 
-    /** 
-     * Refresh the content of the Grid. 
-     * @return {void}  
+    /**
+     * Refresh the content of the Grid.
+     *
+     * @param {NotifyArgs} args - specifies the args
+     * @returns {void}
      */
     // tslint:disable-next-line:max-func-body-length
     public refreshContentRows(args: NotifyArgs = {}): void {
-        let gObj: IGrid = this.parent;
+        const gObj: IGrid = this.parent;
         if (gObj.currentViewData.length === 0) { return; }
-        let dataSource: Object = this.currentMovableRows || gObj.currentViewData;
-        let contentModule: FreezeContentRender = (this.parent.contentModule as FreezeContentRender);
-        let isReact: boolean = gObj.isReact && !isNullOrUndefined(gObj.rowTemplate);
+        const dataSource: Object = this.currentMovableRows || gObj.currentViewData;
+        const contentModule: FreezeContentRender = (this.parent.contentModule as FreezeContentRender);
+        const isReact: boolean = gObj.isReact && !isNullOrUndefined(gObj.rowTemplate);
         let frag: DocumentFragment | HTMLElement = isReact ? gObj.createElement( literals.tbody) : document.createDocumentFragment();
         if (!this.initialPageRecords) {
             this.initialPageRecords = extend([], dataSource);
         }
-        let hdrfrag: DocumentFragment = isReact ? gObj.createElement( literals.tbody) : document.createDocumentFragment();
-        let columns: Column[] = <Column[]>gObj.getColumns();
-        let tr: Element; let hdrTbody: HTMLElement; let frzCols: number = gObj.getFrozenColumns();
-        let isFrozenGrid: boolean = this.parent.isFrozenGrid();
+        const hdrfrag: DocumentFragment = isReact ? gObj.createElement( literals.tbody) : document.createDocumentFragment();
+        const columns: Column[] = <Column[]>gObj.getColumns();
+        let tr: Element; let hdrTbody: HTMLElement; const frzCols: number = gObj.getFrozenColumns();
+        const isFrozenGrid: boolean = this.parent.isFrozenGrid();
         let trElement: Element;
-        let row: RowRenderer<Column> = new RowRenderer<Column>(this.serviceLocator, null, this.parent);
-        let isInfiniteScroll: boolean = this.parent.enableInfiniteScrolling
+        const row: RowRenderer<Column> = new RowRenderer<Column>(this.serviceLocator, null, this.parent);
+        const isInfiniteScroll: boolean = this.parent.enableInfiniteScrolling
             && (args as InfiniteScrollArgs).requestType === 'infiniteScroll';
         this.rowElements = [];
         this.rows = [];
-        let fCont: Element = this.getPanel().querySelector('.' + literals.frozenContent);
-        let mCont: HTMLElement = this.getPanel().querySelector('.' + literals.movableContent) as HTMLElement;
-        let cont: HTMLElement = this.getPanel().querySelector('.' + literals.content) as HTMLElement;
+        const fCont: Element = this.getPanel().querySelector('.' + literals.frozenContent);
+        const mCont: HTMLElement = this.getPanel().querySelector('.' + literals.movableContent) as HTMLElement;
+        const cont: HTMLElement = this.getPanel().querySelector('.' + literals.content) as HTMLElement;
         let tbdy: Element;
         let tableName: freezeTable;
         if (isGroupAdaptive(gObj)) {
@@ -261,21 +275,21 @@ export class ContentRender implements IRenderer {
         }
         this.setGroupCache(modelData, args);
         this.parent.notify(events.setInfiniteCache, { isInfiniteScroll: isInfiniteScroll, modelData: modelData, args: args });
-        let idx: number = modelData[0].cells[0].index;
+        const idx: number = modelData[0].cells[0].index;
         if (isFrozenGrid) {
             tableName = contentModule.setTbody(modelData, args);
             tbdy = contentModule.getTbody(tableName);
         }
-        let isFrozenLeft: boolean = this.parent.getFrozenMode() === literals.leftRight && tableName === literals.frozenRight;
-        /* tslint:disable:no-any */
+        const isFrozenLeft: boolean = this.parent.getFrozenMode() === literals.leftRight && tableName === literals.frozenRight;
+        /* eslint-disable */
         if (args.requestType !== 'infiniteScroll' && (this.parent as any).registeredTemplate
             && (this.parent as any).registeredTemplate.template && !args.isFrozen && !isFrozenLeft) {
-            let templatetoclear: any = [];
+            const templatetoclear: any = [];
             for (let i: number = 0; i < (this.parent as any).registeredTemplate.template.length; i++) {
                 for (let j: number = 0; j < (this.parent as any).registeredTemplate.template[i].rootNodes.length; j++) {
                     if (isNullOrUndefined((this.parent as any).registeredTemplate.template[i].rootNodes[j].parentNode)) {
                         templatetoclear.push((this.parent as any).registeredTemplate.template[i]);
-                        /* tslint:enable:no-any */
+                        /* eslint-enable */
                     }
                 }
             }
@@ -286,7 +300,7 @@ export class ContentRender implements IRenderer {
             this.parent.renderTemplates();
         }
         if (this.parent.enableColumnVirtualization) {
-            let cellMerge: CellMergeRender<Column> = new CellMergeRender(this.serviceLocator, this.parent);
+            const cellMerge: CellMergeRender<Column> = new CellMergeRender(this.serviceLocator, this.parent);
             cellMerge.updateVirtualCells(modelData);
         }
         if (!isFrozenGrid) {
@@ -295,13 +309,13 @@ export class ContentRender implements IRenderer {
         let startIndex: number = 0;
         let blockLoad: boolean = true;
         if (isGroupAdaptive(gObj) && gObj.vcRows.length) {
-            let top: string = 'top';
-            let scrollTop: number = !isNullOrUndefined(args.virtualInfo.offsets) ? args.virtualInfo.offsets.top :
+            const top: string = 'top';
+            const scrollTop: number = !isNullOrUndefined(args.virtualInfo.offsets) ? args.virtualInfo.offsets.top :
                 (!isNullOrUndefined(args.scrollTop) ? args.scrollTop[top] : 0);
             if (scrollTop !== 0) {
-                let offsets: { [x: number]: number } = gObj.vGroupOffsets;
-                let bSize: number = gObj.pageSettings.pageSize / 2;
-                let values: number[] = Object.keys(offsets).map((key: string) => offsets[key]);
+                const offsets: { [x: number]: number } = gObj.vGroupOffsets;
+                const bSize: number = gObj.pageSettings.pageSize / 2;
+                const values: number[] = Object.keys(offsets).map((key: string) => offsets[key]);
                 for (let m: number = 0; m < values.length; m++) {
                     if (scrollTop < values[m]) {
                         if (!isNullOrUndefined(args.virtualInfo) && args.virtualInfo.direction === 'up') {
@@ -321,17 +335,17 @@ export class ContentRender implements IRenderer {
                 }
             }
         }
-        let isVFFrozenOnly: boolean = gObj.frozenRows && !gObj.isFrozenGrid() && this.parent.enableVirtualization
+        const isVFFrozenOnly: boolean = gObj.frozenRows && !gObj.isFrozenGrid() && this.parent.enableVirtualization
             && args.requestType === 'reorder';
         if ((gObj.frozenRows && args.requestType === 'virtualscroll' && args.virtualInfo.sentinelInfo.axis === 'X') || isVFFrozenOnly) {
-            let bIndex: number[] = args.virtualInfo.blockIndexes;
-            let page: number = args.virtualInfo.page;
+            const bIndex: number[] = args.virtualInfo.blockIndexes;
+            const page: number = args.virtualInfo.page;
             args.virtualInfo.blockIndexes = [1, 2];
             if (isVFFrozenOnly) {
                 args.virtualInfo.page = 1;
             }
-            let data: Object = isVFFrozenOnly ? this.initialPageRecords : dataSource;
-            let mhdrData: Row<Column>[] = (<{ generateRows?: Function }>(<{ vgenerator?: Function }>this).vgenerator)
+            const data: Object = isVFFrozenOnly ? this.initialPageRecords : dataSource;
+            const mhdrData: Row<Column>[] = (<{ generateRows?: Function }>(<{ vgenerator?: Function }>this).vgenerator)
                 .generateRows(data, args);
             mhdrData.splice(this.parent.frozenRows);
             for (let i: number = 0; i < this.parent.frozenRows; i++) {
@@ -360,7 +374,7 @@ export class ContentRender implements IRenderer {
             }
             if (!gObj.rowTemplate) {
                 tr = row.render(modelData[i], columns);
-                let isVFreorder: boolean = this.ensureFrozenHeaderRender(args);
+                const isVFreorder: boolean = this.ensureFrozenHeaderRender(args);
                 if (gObj.frozenRows && i < gObj.frozenRows && !isInfiniteScroll && args.requestType !== 'virtualscroll' && isVFreorder
                     && this.ensureVirtualFrozenHeaderRender(args)) {
                     hdrfrag.appendChild(tr);
@@ -371,11 +385,11 @@ export class ContentRender implements IRenderer {
                     gObj.notify(events.expandChildGrid, (<HTMLTableRowElement>tr).cells[gObj.groupSettings.columns.length]);
                 }
             } else {
-                let rowTemplateID: string = gObj.element.id + 'rowTemplate';
+                const rowTemplateID: string = gObj.element.id + 'rowTemplate';
                 let elements: NodeList;
                 if (gObj.isReact) {
-                    let isHeader: boolean = gObj.frozenRows && i < gObj.frozenRows;
-                    let copied: Object = extend({ index: i }, dataSource[i]);
+                    const isHeader: boolean = gObj.frozenRows && i < gObj.frozenRows;
+                    const copied: Object = extend({ index: i }, dataSource[i]);
                     gObj.getRowTemplate()(copied, gObj, 'rowTemplate', rowTemplateID, null, null, isHeader ? hdrfrag : frag);
                     gObj.renderTemplates();
                 } else {
@@ -383,7 +397,7 @@ export class ContentRender implements IRenderer {
                 }
                 if (!gObj.isReact && (elements[0] as Element).tagName ===  'TBODY') {
                     for (let j: number = 0; j < elements.length; j++) {
-                        let isTR: boolean = elements[j].nodeName.toLowerCase() === 'tr';
+                        const isTR: boolean = elements[j].nodeName.toLowerCase() === 'tr';
                         if (isTR || ((elements[j] as Element).querySelectorAll && (elements[j] as Element).querySelectorAll('tr').length)) {
                             tr = isTR ? elements[j] as Element : (elements[j] as Element).querySelector('tr');
                         }
@@ -405,7 +419,7 @@ export class ContentRender implements IRenderer {
                         trElement = gObj.isReact ? frag.lastElementChild : tr.lastElementChild;
                     }
                 }
-                let arg: RowDataBoundEventArgs = { data: modelData[i].data, row: trElement ? trElement : tr };
+                const arg: RowDataBoundEventArgs = { data: modelData[i].data, row: trElement ? trElement : tr };
                 this.parent.trigger(events.rowDataBound, arg);
             }
             if (modelData[i].isDataRow) {
@@ -420,7 +434,7 @@ export class ContentRender implements IRenderer {
             || (args.requestType === 'virtualscroll' && args.virtualInfo.sentinelInfo && args.virtualInfo.sentinelInfo.axis === 'X')) {
             hdrTbody = isFrozenGrid ? contentModule.getFrozenHeader(tableName) : gObj.getHeaderTable().querySelector( literals.tbody);
             if (isReact) {
-                let parentTable: HTMLElement = hdrTbody.parentElement;
+                const parentTable: HTMLElement = hdrTbody.parentElement;
                 remove(hdrTbody);
                 parentTable.appendChild(hdrfrag);
             } else {
@@ -439,10 +453,10 @@ export class ContentRender implements IRenderer {
         getUpdateUsingRaf<HTMLElement>(
             () => {
                 this.parent.notify(events.beforeFragAppend, args);
-                let isVFTable: boolean = this.parent.enableVirtualization && this.parent.isFrozenGrid();
+                const isVFTable: boolean = this.parent.enableVirtualization && this.parent.isFrozenGrid();
                 if (!this.parent.enableVirtualization && !isInfiniteScroll) {
                     if (this.parent.isFrozenGrid()) {
-                        remove(tbdy);
+                        remove(contentModule.getTbody(tableName));
                         tbdy = this.parent.createElement( literals.tbody);
                     } else {
                         remove(this.tbody);
@@ -457,7 +471,7 @@ export class ContentRender implements IRenderer {
                     }
                     if (isVFTable) {
                         if (args.renderFrozenRightContent) {
-                            let frCont: Element = gObj.getContent().querySelector('.e-frozen-right-content').querySelector( literals.tbody);
+                            const frCont: Element = gObj.getContent().querySelector('.e-frozen-right-content').querySelector( literals.tbody);
                             this.appendContent(frCont, frag as DocumentFragment, args);
                         } else if (!args.renderMovableContent) {
                             this.appendContent(fCont.querySelector( literals.tbody), frag as DocumentFragment, args);
@@ -504,8 +518,9 @@ export class ContentRender implements IRenderer {
         this.parent.vRows = [];
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     public appendContent(tbody: Element, frag: DocumentFragment, args: NotifyArgs, tableName?: string): void {
-        let isReact: boolean = this.parent.isReact && !isNullOrUndefined(this.parent.rowTemplate);
+        const isReact: boolean = this.parent.isReact && !isNullOrUndefined(this.parent.rowTemplate);
         if (isReact) {
             this.getTable().appendChild(frag);
         } else {
@@ -539,14 +554,14 @@ export class ContentRender implements IRenderer {
 
     private checkCache(modelData: Row<Column>[], args: InfiniteScrollArgs): Row<Column>[] {
         if (this.parent.infiniteScrollSettings.enableCache && args.requestType === 'infiniteScroll') {
-            let index: number = args.isFrozen ? 1 : 0;
-            let frozenCols: boolean = this.parent.isFrozenGrid();
+            const index: number = args.isFrozen ? 1 : 0;
+            const frozenCols: boolean = this.parent.isFrozenGrid();
             this.isAddRows = !isNullOrUndefined(this.infiniteCache[this.parent.pageSettings.currentPage]);
             if (frozenCols && !isNullOrUndefined(this.infiniteCache[this.parent.pageSettings.currentPage])) {
                 this.isAddRows = (this.infiniteCache[this.parent.pageSettings.currentPage][index] as Row<Column>[]).length !== 0;
             }
             if (this.isAddRows) {
-                let data: Row<Column>[] = !frozenCols ? this.infiniteCache[this.parent.pageSettings.currentPage] as Row<Column>[]
+                const data: Row<Column>[] = !frozenCols ? this.infiniteCache[this.parent.pageSettings.currentPage] as Row<Column>[]
                     : this.infiniteCache[this.parent.pageSettings.currentPage][index] as Row<Column>[];
                 modelData = this.parent.pageSettings.currentPage === 1 ? data.slice(this.parent.frozenRows) : data;
             }
@@ -562,7 +577,7 @@ export class ContentRender implements IRenderer {
     }
 
     private setInfiniteVisibleRows(args: InfiniteScrollArgs, data: Row<Column>, tableName: freezeTable): void {
-        let frozenCols: boolean = this.parent.isFrozenGrid();
+        const frozenCols: boolean = this.parent.isFrozenGrid();
         if (this.parent.enableInfiniteScrolling && !this.parent.infiniteScrollSettings.enableCache) {
             if (frozenCols) {
                 if (tableName === literals.frozenLeft || (this.parent.getFrozenMode() === 'Right' && tableName === literals.frozenRight)) {
@@ -584,14 +599,14 @@ export class ContentRender implements IRenderer {
             if (!Object.keys(this.infiniteCache).length) {
                 return [];
             }
-            let frozenCols: boolean = this.parent.isFrozenGrid();
-            let rows: Element[] = this.parent.getRows();
+            const frozenCols: boolean = this.parent.isFrozenGrid();
+            const rows: Element[] = this.parent.getRows();
             let index: number = parseInt(rows[this.parent.frozenRows].getAttribute(literals.ariaRowIndex), 10);
-            let first: number = Math.ceil((index + 1) / this.parent.pageSettings.pageSize);
+            const first: number = Math.ceil((index + 1) / this.parent.pageSettings.pageSize);
             index = parseInt(rows[rows.length - 1].getAttribute(literals.ariaRowIndex), 10);
-            let last: number = Math.ceil(index / this.parent.pageSettings.pageSize);
+            const last: number = Math.ceil(index / this.parent.pageSettings.pageSize);
             if (frozenCols) {
-                let idx: number = isFreeze ? 0 : 1;
+                const idx: number = isFreeze ? 0 : 1;
                 for (let i: number = first; i <= last; i++) {
                     data = !data.length ? this.infiniteCache[i][idx] as Row<Column>[]
                         : data.concat(this.infiniteCache[i][idx] as Row<Column>[]);
@@ -648,10 +663,10 @@ export class ContentRender implements IRenderer {
 
     protected getInfiniteRows(): Row<Column>[] {
         let rows: Row<Column>[] = [];
-        let frozenCols: boolean = this.parent.isFrozenGrid();
+        const frozenCols: boolean = this.parent.isFrozenGrid();
         if (this.parent.enableInfiniteScrolling) {
             if (this.parent.infiniteScrollSettings.enableCache) {
-                let keys: string[] = Object.keys(this.infiniteCache);
+                const keys: string[] = Object.keys(this.infiniteCache);
                 for (let i: number = 0; i < keys.length; i++) {
                     rows = !frozenCols ? [...rows, ...this.infiniteCache[keys[i]]] : [...rows, ...this.infiniteCache[keys[i]][0]];
                 }
@@ -663,15 +678,16 @@ export class ContentRender implements IRenderer {
     }
 
     private getInfiniteMovableRows(): Row<Column>[] {
-        let infiniteCacheRows: Row<Column>[] = this.getCurrentBlockInfiniteRecords();
-        let infiniteRows: Row<Column>[] = this.parent.enableInfiniteScrolling ? infiniteCacheRows.length ? infiniteCacheRows
+        const infiniteCacheRows: Row<Column>[] = this.getCurrentBlockInfiniteRecords();
+        const infiniteRows: Row<Column>[] = this.parent.enableInfiniteScrolling ? infiniteCacheRows.length ? infiniteCacheRows
             : this.visibleRows : [];
         return infiniteRows;
     }
 
     /**
      * Get the content div element of grid
-     * @return {Element} 
+     *
+     * @returns {Element} returns the element
      */
     public getPanel(): Element {
         return this.contentPanel;
@@ -679,7 +695,9 @@ export class ContentRender implements IRenderer {
 
     /**
      * Set the content div element of grid
-     * @param  {Element} panel   
+     *
+     * @param  {Element} panel - specifies the panel
+     * @returns {void}
      */
     public setPanel(panel: Element): void {
         this.contentPanel = panel;
@@ -687,7 +705,8 @@ export class ContentRender implements IRenderer {
 
     /**
      * Get the content table element of grid
-     * @return {Element} 
+     *
+     * @returns {Element} returns the element
      */
     public getTable(): Element {
         return this.contentTable;
@@ -695,33 +714,38 @@ export class ContentRender implements IRenderer {
 
     /**
      * Set the content table element of grid
-     * @param  {Element} table   
+     *
+     * @param  {Element} table - specifies the table
+     * @returns {void}
      */
     public setTable(table: Element): void {
         this.contentTable = table;
     }
 
     /**
-     * Get the Row collection in the Grid.
-     * @returns {Row[] | HTMLCollectionOf<HTMLTableRowElement>}
+     * Get the Movable Row collection in the Freeze pane Grid.
+     *
+     * @returns {Row[] | HTMLCollectionOf<HTMLTableRowElement>} returns the row
      */
     public getRows(): Row<Column>[] | HTMLCollectionOf<HTMLTableRowElement> {
-        let infiniteRows: Row<Column>[] = this.getInfiniteRows();
+        const infiniteRows: Row<Column>[] = this.getInfiniteRows();
         return infiniteRows.length ? infiniteRows : this.parent.getFrozenColumns() ? this.freezeRows : this.rows;
     }
 
     /**
      * Get the Movable Row collection in the Freeze pane Grid.
-     * @returns {Row[] | HTMLCollectionOf<HTMLTableRowElement>}
+     *
+     * @returns {Row[] | HTMLCollectionOf<HTMLTableRowElement>} returns the row
      */
     public getMovableRows(): Row<Column>[] | HTMLCollectionOf<HTMLTableRowElement> {
-        let infiniteRows: Row<Column>[] = this.getInfiniteMovableRows();
+        const infiniteRows: Row<Column>[] = this.getInfiniteMovableRows();
         return infiniteRows.length ? infiniteRows : this.movableRows;
     }
 
     /**
      * Get the content table data row elements
-     * @return {Element} 
+     *
+     * @returns {Element} returns the element
      */
     public getRowElements(): Element[] {
         return this.parent.getFrozenColumns() ? this.freezeRowElements : this.rowElements;
@@ -729,7 +753,8 @@ export class ContentRender implements IRenderer {
 
     /**
      * Get the Freeze pane movable content table data row elements
-     * @return {Element} 
+     *
+     * @returns {Element} returns the element
      */
     public getMovableRowElements(): Element[] {
         return this.rowElements;
@@ -737,7 +762,9 @@ export class ContentRender implements IRenderer {
 
     /**
      * Get the content table data row elements
-     * @return {Element} 
+     *
+     * @param {Element[]} elements - specifies the elements
+     * @returns {void}
      */
     public setRowElements(elements: Element[]): void {
         this.rowElements = elements;
@@ -745,7 +772,8 @@ export class ContentRender implements IRenderer {
 
     /**
      * Get the header colgroup element
-     * @returns {Element}
+     *
+     * @returns {Element} returns the element
      */
     public getColGroup(): Element {
         return this.colgroup;
@@ -753,8 +781,9 @@ export class ContentRender implements IRenderer {
 
     /**
      * Set the header colgroup element
-     * @param {Element} colgroup
-     * @returns {Element}
+     *
+     * @param {Element} colGroup - specifies the colgroup
+     * @returns {Element} returns the element
      */
     public setColGroup(colGroup: Element): Element {
         if (!isNullOrUndefined(colGroup)) {
@@ -762,19 +791,22 @@ export class ContentRender implements IRenderer {
         }
         return this.colgroup = colGroup;
     }
+
     /**
      * Function to hide content table column based on visible property
-     * @param  {Column[]} columns?
+     *
+     * @param {Column[]} columns - specifies the column
+     * @returns {void}
      */
     public setVisible(columns?: Column[]): void {
-        let gObj: IGrid = this.parent;
-        let isFrozenGrid: boolean = this.parent.isFrozenGrid();
-        let frzCols: number = gObj.getFrozenColumns();
+        const gObj: IGrid = this.parent;
+        const isFrozenGrid: boolean = this.parent.isFrozenGrid();
+        const frzCols: number = gObj.getFrozenColumns();
         let rows: Row<Column>[] = [];
         if (isFrozenGrid) {
-            let fRows: Row<Column>[] = this.freezeRows;
-            let mRows: Row<Column>[] = this.movableRows;
-            let rowLen: number = fRows.length;
+            const fRows: Row<Column>[] = this.freezeRows;
+            const mRows: Row<Column>[] = this.movableRows;
+            const rowLen: number = fRows.length;
             let cellLen: number;
             let rightRows: Row<Column>[] = [];
             if (gObj.getFrozenMode() === literals.leftRight) {
@@ -782,7 +814,7 @@ export class ContentRender implements IRenderer {
             }
             for (let i: number = 0, row: Row<Column>; i < rowLen; i++) {
                 cellLen = mRows[i].cells.length;
-                let rightLen: number = rightRows.length ? rightRows[i].cells.length : 0;
+                const rightLen: number = rightRows.length ? rightRows[i].cells.length : 0;
                 row = fRows[i].clone();
                 for (let j: number = 0; j < cellLen; j++) {
                     row.cells.push(mRows[i].cells[j]);
@@ -795,48 +827,46 @@ export class ContentRender implements IRenderer {
         } else {
             rows = <Row<Column>[]>this.getRows();
         }
-        let element: Row<Column>;
         let testRow: Row<Column>;
         rows.some((r: Row<Column>) => { if (r.isDataRow) { testRow = r; } return r.isDataRow; });
-        let tasks: Function[] = [];
 
         let needFullRefresh: boolean = true;
         if (!gObj.groupSettings.columns.length && testRow) {
             needFullRefresh = false;
         }
         let tr: Object = gObj.getDataRows();
-        let args: NotifyArgs = {};
-        let infiniteData: Row<Column>[] = this.infiniteRowVisibility();
+        const args: NotifyArgs = {};
+        const infiniteData: Row<Column>[] = this.infiniteRowVisibility();
         let contentrows: Row<Column>[] = infiniteData ? infiniteData
             : this.rows.filter((row: Row<Column>) => !row.isDetailRow);
         for (let c: number = 0, clen: number = columns.length; c < clen; c++) {
-            let column: Column = columns[c];
+            const column: Column = columns[c];
             let idx: number = this.parent.getNormalizedColumnIndex(column.uid);
             let colIdx: number = this.parent.getColumnIndexByUid(column.uid);
-            let displayVal: string = column.visible === true ? '' : 'none';
+            const displayVal: string = column.visible === true ? '' : 'none';
             if (idx !== -1 && testRow && idx < testRow.cells.length) {
                 if (isFrozenGrid) {
                     if (column.getFreezeTableName() !== 'movable') {
                         if (column.getFreezeTableName() === literals.frozenRight) {
-                            let left: number = this.parent.getFrozenLeftColumnsCount();
-                            let movable: number = this.parent.getMovableColumnsCount();
+                            const left: number = this.parent.getFrozenLeftColumnsCount();
+                            const movable: number = this.parent.getMovableColumnsCount();
                             colIdx = idx = idx - (left + movable);
-                            let colG: Element = this.parent.getContent().querySelector('.e-frozen-right-content').querySelector(literals.colGroup);
+                            const colG: Element = this.parent.getContent().querySelector('.e-frozen-right-content').querySelector(literals.colGroup);
                             setStyleAttribute(<HTMLElement>colG.childNodes[idx], { 'display': displayVal });
                             contentrows = gObj.getFrozenRightRowsObject();
                             tr = gObj.getFrozenRightDataRows();
                         } else {
                             setStyleAttribute(<HTMLElement>this.getColGroup().childNodes[idx], { 'display': displayVal });
-                            let infiniteFreezeData: Row<Column>[] = this.infiniteRowVisibility(true);
+                            const infiniteFreezeData: Row<Column>[] = this.infiniteRowVisibility(true);
                             contentrows = infiniteFreezeData ? infiniteFreezeData : this.freezeRows;
                             tr = gObj.getDataRows();
                         }
                     } else {
-                        let mTable: Element = gObj.getContent().querySelector('.' + literals.movableContent).querySelector(literals.colGroup);
+                        const mTable: Element = gObj.getContent().querySelector('.' + literals.movableContent).querySelector(literals.colGroup);
                         colIdx = idx = idx - frzCols - this.parent.getFrozenLeftColumnsCount();
                         setStyleAttribute(<HTMLElement>mTable.childNodes[idx], { 'display': displayVal });
                         tr = (<Grid>gObj).getMovableDataRows();
-                        let infiniteMovableData: Row<Column>[] = this.infiniteRowVisibility();
+                        const infiniteMovableData: Row<Column>[] = this.infiniteRowVisibility();
                         contentrows = infiniteMovableData ? infiniteMovableData : this.movableRows;
                     }
                 } else {
@@ -863,7 +893,12 @@ export class ContentRender implements IRenderer {
         }
     }
 
-    /** 
+    /**
+     * @param {Object} tr - specifies the trr
+     * @param {number} idx - specifies the idx
+     * @param {string} displayVal - specifies the displayval
+     * @param {Row<Column>} rows - specifies the rows
+     * @returns {void}
      * @hidden
      */
     public setDisplayNone(tr: Object, idx: number, displayVal: string, rows: Row<Column>[]): void {
@@ -903,7 +938,7 @@ export class ContentRender implements IRenderer {
     }
 
     private initializeContentDrop(): void {
-        let gObj: IGrid = this.parent;
+        const gObj: IGrid = this.parent;
         this.droppable = new Droppable(gObj.element as HTMLElement, {
             accept: '.e-dragclone',
             drop: this.drop as (e: DropEventArgs) => void
@@ -925,7 +960,7 @@ export class ContentRender implements IRenderer {
          * 3. cell`s isVisible property is same as column`s visible property.
          */
         return isNullOrUndefined(row) ||           //(1)
-            isNullOrUndefined(column.visible) ||   //(2)    
+            isNullOrUndefined(column.visible) ||   //(2)
             row.cells[index].visible === column.visible;  //(3)
     }
 
@@ -942,20 +977,20 @@ export class ContentRender implements IRenderer {
 
     public setSelection(uid: string, set: boolean, clearAll?: boolean): void {
         this.parent.notify(events.setFreezeSelection, { uid: uid, set: set, clearAll: clearAll });
-        let isFrozen: boolean = this.parent.isFrozenGrid();
+        const isFrozen: boolean = this.parent.isFrozenGrid();
         if (isFrozen && this.parent.enableVirtualization) {
             return;
         }
         if (isFrozen) {
-            let rows: Row<Column>[] = (<Row<Column>[]>this.getMovableRows()).filter((row: Row<Column>) => clearAll || uid === row.uid);
+            const rows: Row<Column>[] = (<Row<Column>[]>this.getMovableRows()).filter((row: Row<Column>) => clearAll || uid === row.uid);
             for (let i: number = 0; i < rows.length; i++) {
                 rows[i].isSelected = set;
             }
         }
-        let row: Row<Column>[] = (<Row<Column>[]>this.getRows()).filter((row: Row<Column>) => clearAll || uid === row.uid);
+        const row: Row<Column>[] = (<Row<Column>[]>this.getRows()).filter((row: Row<Column>) => clearAll || uid === row.uid);
         for (let j: number = 0; j < row.length; j++) {
             row[j].isSelected = set;
-            let cells: Cell<Column>[] = row[j].cells;
+            const cells: Cell<Column>[] = row[j].cells;
             for (let k: number = 0; k < cells.length; k++) {
                 cells[k].isSelected = set;
             }
@@ -969,9 +1004,9 @@ export class ContentRender implements IRenderer {
 
     private getInfiniteRowIndex(index: number): number {
         if (this.parent.infiniteScrollSettings.enableCache) {
-            let fRows: number = this.parent.frozenRows;
-            let idx: number = fRows > index ? 0 : fRows;
-            let firstRowIndex: number = parseInt(this.parent.getRows()[idx].getAttribute(literals.ariaRowIndex), 10);
+            const fRows: number = this.parent.frozenRows;
+            const idx: number = fRows > index ? 0 : fRows;
+            const firstRowIndex: number = parseInt(this.parent.getRows()[idx].getAttribute(literals.ariaRowIndex), 10);
             index = fRows > index ? index : (index - firstRowIndex) + fRows;
         }
         return index;
@@ -997,28 +1032,32 @@ export class ContentRender implements IRenderer {
         this.rows = rows;
     }
 
-    /** @hidden */
+    /**
+     * @param {NotifyArgs} args - specifies the args
+     * @returns {void}
+     * @hidden
+     */
     public immutableModeRendering(args: NotifyArgs = {}): void {
-        let gObj: IGrid = this.parent;
+        const gObj: IGrid = this.parent;
         gObj.hideSpinner();
-        let key: string = gObj.getPrimaryKeyFieldNames()[0];
-        let oldKeys: object = {}; let newKeys: object = {}; let newRowObjs: Row<Column>[] = [];
-        let oldIndexes: Object = {};
-        let oldRowObjs: Row<Column>[] = gObj.getRowsObject().slice();
-        let batchChangeKeys: Object = this.getBatchEditedRecords(key, oldRowObjs); let newIndexes: Object = {};
-        let hasBatch: boolean = Object.keys(batchChangeKeys).length !== 0;
+        const key: string = gObj.getPrimaryKeyFieldNames()[0];
+        const oldKeys: object = {}; const newKeys: object = {}; const newRowObjs: Row<Column>[] = [];
+        const oldIndexes: Object = {};
+        const oldRowObjs: Row<Column>[] = gObj.getRowsObject().slice();
+        const batchChangeKeys: Object = this.getBatchEditedRecords(key, oldRowObjs); const newIndexes: Object = {};
+        const hasBatch: boolean = Object.keys(batchChangeKeys).length !== 0;
         if (gObj.getContent().querySelector('.e-emptyrow') || args.requestType === 'reorder'
             || this.parent.groupSettings.columns.length) {
             this.refreshContentRows(args);
         } else {
             if (gObj.currentViewData.length === 0) { return; }
-            let oldRowElements: Object = {};
-            let tbody: Element = gObj.createElement( literals.tbody);
-            let dataSource: Object[] = gObj.currentViewData;
-            let trs: Element[] = [].slice.call(this.getTable().querySelector( literals.tbody).children);
+            const oldRowElements: Object = {};
+            const tbody: Element = gObj.createElement( literals.tbody);
+            const dataSource: Object[] = gObj.currentViewData;
+            const trs: Element[] = [].slice.call(this.getTable().querySelector( literals.tbody).children);
             if (this.prevCurrentView.length) {
-                let prevLen: number = this.prevCurrentView.length;
-                let currentLen: number = dataSource.length;
+                const prevLen: number = this.prevCurrentView.length;
+                const currentLen: number = dataSource.length;
                 if (prevLen === currentLen) {
                     for (let i: number = 0; i < currentLen; i++) {
                         if (this.parent.editSettings.mode === 'Batch'
@@ -1051,13 +1090,13 @@ export class ContentRender implements IRenderer {
                 }
             }
             for (let i: number = 0; i < dataSource.length; i++) {
-                let oldIndex: number = oldKeys[dataSource[i][key]];
+                const oldIndex: number = oldKeys[dataSource[i][key]];
                 if (!isNullOrUndefined(oldIndex)) {
                     let isEqual: boolean = false;
                     if (this.mutableData) {
                         isEqual = this.objectEqualityChecker(this.prevCurrentView[i], dataSource[i]);
                     }
-                    let tr: HTMLTableRowElement = oldRowElements[oldRowObjs[oldIndex].uid] as HTMLTableRowElement;
+                    const tr: HTMLTableRowElement = oldRowElements[oldRowObjs[oldIndex].uid] as HTMLTableRowElement;
                     newRowObjs.push(oldRowObjs[oldIndex]);
                     if (this.rowElements[i] && this.rowElements[i].getAttribute('data-uid') === newRowObjs[i].uid
                         && ((hasBatch && isNullOrUndefined(batchChangeKeys[newIndexes[i]]))
@@ -1076,10 +1115,10 @@ export class ContentRender implements IRenderer {
                     tbody.appendChild(tr);
                     this.refreshImmutableContent(i, tr, newRowObjs[i]);
                 } else {
-                    let row: RowRenderer<Column> = new RowRenderer<Column>(this.serviceLocator, null, gObj);
-                    let modelData: Row<Column>[] = this.generator.generateRows([dataSource[i]]);
+                    const row: RowRenderer<Column> = new RowRenderer<Column>(this.serviceLocator, null, gObj);
+                    const modelData: Row<Column>[] = this.generator.generateRows([dataSource[i]]);
                     newRowObjs.push(modelData[0]);
-                    let tr: HTMLTableRowElement = row.render(modelData[0], gObj.getColumns()) as HTMLTableRowElement;
+                    const tr: HTMLTableRowElement = row.render(modelData[0], gObj.getColumns()) as HTMLTableRowElement;
                     tbody.appendChild(tr);
                     this.refreshImmutableContent(i, tr, newRowObjs[i]);
                 }
@@ -1094,15 +1133,14 @@ export class ContentRender implements IRenderer {
                 }
             });
             if (args) {
-                let action: string = (args.requestType || '').toLowerCase() + '-complete';
+                const action: string = (args.requestType || '').toLowerCase() + '-complete';
                 this.parent.notify(action, args);
             }
         }
     }
 
-    /** @hidden */
-    public objectEqualityChecker(old: Object, next: Object): boolean {
-        let keys: string[] = Object.keys(old);
+    private objectEqualityChecker(old: Object, next: Object): boolean {
+        const keys: string[] = Object.keys(old);
         let isEqual: boolean = true;
         for (let i: number = 0; i < keys.length; i++) {
             if (old[keys[i]] !== next[keys[i]]) {
@@ -1113,15 +1151,15 @@ export class ContentRender implements IRenderer {
     }
 
     private getBatchEditedRecords(primaryKey: string, rows: Row<Column>[]): Object {
-        let keys: Object = {};
-        let changes: Object = (this.parent as Grid).getBatchChanges();
+        const keys: Object = {};
+        const changes: Object = (this.parent as Grid).getBatchChanges();
         let changedRecords: Object[] = [];
         let addedRecords: Object[] = [];
         if (Object.keys(changes).length) {
             changedRecords = (<{ changedRecords?: Object[] }>changes).changedRecords;
             addedRecords = (<{ addedRecords?: Object[] }>changes).addedRecords;
         }
-        let args: NotifyArgs = { cancel: false };
+        const args: NotifyArgs = { cancel: false };
         this.parent.notify(events.immutableBatchCancel, { rows: rows, args: args });
         if (addedRecords.length) {
             if (this.parent.editSettings.newRowPosition === 'Bottom') {
@@ -1140,7 +1178,11 @@ export class ContentRender implements IRenderer {
 
     private refreshImmutableContent(index: number, tr: HTMLTableRowElement, row: Row<Column>): void {
         row.isAltRow = this.parent.enableAltRow ? index % 2 !== 0 : false;
-        row.isAltRow ? tr.classList.add('e-altrow') : tr.classList.remove('e-altrow');
+        if (row.isAltRow) {
+            tr.classList.add('e-altrow');
+        } else {
+            tr.classList.remove('e-altrow');
+        }
         row.index = index;
         row.edit = undefined;
         row.isDirty = false;

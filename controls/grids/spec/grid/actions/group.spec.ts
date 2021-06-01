@@ -13,11 +13,12 @@ import { Group } from '../../../src/grid/actions/group';
 import { Reorder } from '../../../src/grid/actions/reorder';
 import { filterData } from '../base/datasource.spec';
 import { createGrid, destroy, getClickObj, getKeyActionObj } from '../base/specutil.spec';
+import { VirtualScroll } from '../../../src/grid/actions/virtual-scroll';
 import '../../../node_modules/es6-promise/dist/es6-promise';
 import { Render } from '../../../src/grid/renderer/render';
 import  {profile , inMB, getMemoryProfile} from '../base/common.spec';
 
-Grid.Inject(Sort, Page, Filter, Group, Selection, Reorder);
+Grid.Inject(Sort, Page, Filter, Group, Selection, Reorder, VirtualScroll);
 
 
 function copyObject(source: Object, destiation: Object): Object {
@@ -1609,5 +1610,32 @@ describe('EJ2-44597-Sorting not removed when groupsettings column is changed => 
         destroy(gridObj);
         gridObj = null;
         gridObj = actionBegin = null;
+    });
+});
+
+describe('EJ2-49314- Error hiding/showing columns => ', () => {
+    let gridObj: Grid;
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: filterData.slice(0,40),
+                enableVirtualization: true,
+                allowGrouping: true,
+                height: 300,
+                pageSettings : { pageSize: 100 },
+                columns: [{ field: 'OrderID', headerText: 'Order ID' },
+                { field: 'CustomerID', headerText: 'CustomerID' },
+                { field: 'EmployeeID', headerText: 'Employee ID' },
+                { field: 'Freight', headerText: 'Freight' },
+                { field: 'ShipCity', headerText: 'Ship City' }],
+            }, done);
+    });
+    it('Checking initial Grouping sorting columns', () => {
+        expect(Object.keys(gridObj.currentViewData).length).toBe(40);
+    });
+    
+    afterAll(() => {
+        destroy(gridObj);
+        gridObj = null;
     });
 });

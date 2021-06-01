@@ -36,14 +36,10 @@ export class ResponsiveDialogRenderer implements IAction {
     private evtHandlers: { event: string, handler: Function }[];
 
     /** @hidden */
-    public action: ResponsiveDialogAction;    
+    public action: ResponsiveDialogAction;
     /** @hidden */
     public isCustomDialog: boolean = false;
 
-    /**
-     * Constructor for Grid Responsive dialog renderer
-     * @hidden
-     */
     constructor(parent?: IGrid, serviceLocator?: ServiceLocator) {
         this.parent = parent;
         this.serviceLocator = serviceLocator;
@@ -52,11 +48,11 @@ export class ResponsiveDialogRenderer implements IAction {
 
     public addEventListener(): void {
         this.evtHandlers = [{ event: events.filterDialogClose, handler: this.closeCustomDialog },
-        { event: events.refreshCustomFilterOkBtn, handler: this.refreshCustomFilterOkBtn },
-        { event: events.renderResponsiveCmenu, handler: this.renderResponsiveContextMenu },
-        { event: events.filterCmenuSelect, handler: this.renderCustomFilterDiv },
-        { event: events.customFilterClose, handler: this.customExFilterClose },
-        { event: events.refreshCustomFilterClearBtn, handler: this.refreshCustomFilterClearBtn }];
+            { event: events.refreshCustomFilterOkBtn, handler: this.refreshCustomFilterOkBtn },
+            { event: events.renderResponsiveCmenu, handler: this.renderResponsiveContextMenu },
+            { event: events.filterCmenuSelect, handler: this.renderCustomFilterDiv },
+            { event: events.customFilterClose, handler: this.customExFilterClose },
+            { event: events.refreshCustomFilterClearBtn, handler: this.refreshCustomFilterClearBtn }];
         addRemoveEventListener(this.parent, this.evtHandlers, true, this);
         this.onActionCompleteFn = this.editComplate.bind(this);
         this.parent.addEventListener(events.actionComplete, this.onActionCompleteFn);
@@ -67,9 +63,9 @@ export class ResponsiveDialogRenderer implements IAction {
     }
 
     private renderCustomFilterDiv(): void {
-        let header: HTMLElement = this.customResponsiveDlg.element.querySelector('.e-dlg-header-content');
-        let title: HTMLElement = header.querySelector('.e-dlg-custom-header');
-        let closeBtn: HTMLElement = header.querySelector('.e-dlg-closeicon-btn');
+        const header: HTMLElement = this.customResponsiveDlg.element.querySelector('.e-dlg-header-content');
+        const title: HTMLElement = header.querySelector('.e-dlg-custom-header');
+        const closeBtn: HTMLElement = header.querySelector('.e-dlg-closeicon-btn');
         this.isCustomDlgRender = true;
         this.parent.filterModule.filterModule.closeDialog();
         this.saveBtn.element.style.display = '';
@@ -77,17 +73,17 @@ export class ResponsiveDialogRenderer implements IAction {
         this.backBtn.element.style.display = 'none';
         closeBtn.style.display = '';
         title.innerHTML = this.parent.localeObj.getConstant('CustomFilter');
-        let content: HTMLElement = this.customResponsiveDlg.element.querySelector('.e-dlg-content');
+        const content: HTMLElement = this.customResponsiveDlg.element.querySelector('.e-dlg-content');
         this.customExcelFilterParent = this.parent.createElement('div', { className: 'e-xl-customfilterdiv e-default-filter' });
         content.appendChild(this.customExcelFilterParent);
     }
 
     private renderResponsiveContextMenu(args: { target: HTMLElement, header: string, isOpen: boolean, col: Column }): void {
         if (this.action === ResponsiveDialogAction.isFilter) {
-            let content: HTMLElement = this.customResponsiveDlg.element.querySelector('.e-dlg-content');
-            let header: HTMLElement = this.customResponsiveDlg.element.querySelector('.e-dlg-header-content');
-            let closeBtn: HTMLElement = header.querySelector('.e-dlg-closeicon-btn');
-            let text: HTMLElement = header.querySelector('.e-dlg-custom-header');
+            const content: HTMLElement = this.customResponsiveDlg.element.querySelector('.e-dlg-content');
+            const header: HTMLElement = this.customResponsiveDlg.element.querySelector('.e-dlg-header-content');
+            const closeBtn: HTMLElement = header.querySelector('.e-dlg-closeicon-btn');
+            const text: HTMLElement = header.querySelector('.e-dlg-custom-header');
             if (args.isOpen) {
                 (content.firstChild as HTMLElement).style.display = 'none';
                 content.appendChild(args.target);
@@ -95,8 +91,8 @@ export class ResponsiveDialogRenderer implements IAction {
                 this.saveBtn.element.style.display = 'none';
                 this.filterClearBtn.element.style.display = 'none';
                 text.innerHTML = args.header;
-                let backBtn: HTMLElement = this.parent.createElement('button');
-                let span: HTMLElement = this.parent.createElement('span', { className: 'e-btn-icon e-resfilterback e-icons' });
+                const backBtn: HTMLElement = this.parent.createElement('button');
+                const span: HTMLElement = this.parent.createElement('span', { className: 'e-btn-icon e-resfilterback e-icons' });
                 backBtn.appendChild(span);
                 this.backBtn = new Button({
                     cssClass: 'e-res-back-btn'
@@ -130,7 +126,7 @@ export class ResponsiveDialogRenderer implements IAction {
     }
 
     private renderResponsiveContent(col?: Column): HTMLElement {
-        let gObj: IGrid = this.parent;
+        const gObj: IGrid = this.parent;
         if (col) {
             this.filterParent = this.parent.createElement(
                 'div',
@@ -138,12 +134,12 @@ export class ResponsiveDialogRenderer implements IAction {
             );
             return this.filterParent;
         } else {
-            let cols: Column[] = gObj.getColumns();
+            const cols: Column[] = gObj.getColumns();
             this.customColumnDiv = gObj.createElement('div', { className: 'columndiv', styles: 'width: 100%' });
-            let sortBtnParent: HTMLElement = gObj.createElement('div', { className: 'e-ressortbutton-parent' });
-            let filteredCols: string[] = [];
-            let isSort: boolean = this.action === ResponsiveDialogAction.isSort;
-            let isFilter: boolean = this.action === ResponsiveDialogAction.isFilter;
+            const sortBtnParent: HTMLElement = gObj.createElement('div', { className: 'e-ressortbutton-parent' });
+            const filteredCols: string[] = [];
+            const isSort: boolean = this.action === ResponsiveDialogAction.isSort;
+            const isFilter: boolean = this.action === ResponsiveDialogAction.isFilter;
             if (isFilter) {
                 for (let i: number = 0; i < gObj.filterSettings.columns.length; i++) {
                     filteredCols.push(gObj.filterSettings.columns[i].field);
@@ -153,20 +149,20 @@ export class ResponsiveDialogRenderer implements IAction {
                 if (!cols[i].visible || (!cols[i].allowSorting && isSort) || (!cols[i].allowFiltering && isFilter)) {
                     continue;
                 }
-                let cDiv: HTMLElement = gObj.createElement('div', { className: 'e-responsivecoldiv' });
+                const cDiv: HTMLElement = gObj.createElement('div', { className: 'e-responsivecoldiv' });
                 cDiv.setAttribute('data-e-mappingname', cols[i].field);
                 cDiv.setAttribute('data-e-mappinguid', cols[i].uid);
-                let span: HTMLElement = gObj.createElement('span', { innerHTML: cols[i].headerText, className: 'e-res-header-text' });
+                const span: HTMLElement = gObj.createElement('span', { innerHTML: cols[i].headerText, className: 'e-res-header-text' });
                 cDiv.appendChild(span);
                 this.customColumnDiv.appendChild(cDiv);
                 if (isSort) {
-                    let fields: string[] = this.getSortedFieldsAndDirections('field');
-                    let index: number = fields.indexOf(cols[i].field);
-                    let button: HTMLElement = gObj.createElement('button', { id: gObj.element.id + cols[i].field + 'sortbutton' });
-                    let clone: Element = sortBtnParent.cloneNode() as Element;
+                    const fields: string[] = this.getSortedFieldsAndDirections('field');
+                    const index: number = fields.indexOf(cols[i].field);
+                    const button: HTMLElement = gObj.createElement('button', { id: gObj.element.id + cols[i].field + 'sortbutton' });
+                    const clone: Element = sortBtnParent.cloneNode() as Element;
                     clone.appendChild(button);
                     cDiv.appendChild(clone);
-                    let btnObj: Button = new Button({
+                    const btnObj: Button = new Button({
                         cssClass: 'e-ressortbutton'
                     });
                     btnObj.appendTo(button);
@@ -176,8 +172,8 @@ export class ResponsiveDialogRenderer implements IAction {
                     };
                 }
                 if (isFilter && filteredCols.indexOf(cols[i].field) > -1) {
-                    let divIcon: HTMLElement = gObj.createElement('div', { className: 'e-icons e-res-icon e-filtersetdiv' });
-                    let iconSpan: HTMLElement = gObj.createElement('span', { className: 'e-icons e-res-icon e-filterset' });
+                    const divIcon: HTMLElement = gObj.createElement('div', { className: 'e-icons e-res-icon e-filtersetdiv' });
+                    const iconSpan: HTMLElement = gObj.createElement('span', { className: 'e-icons e-res-icon e-filterset' });
                     iconSpan.setAttribute('colType', cols[i].type);
                     divIcon.appendChild(iconSpan);
                     cDiv.appendChild(divIcon);
@@ -189,7 +185,7 @@ export class ResponsiveDialogRenderer implements IAction {
     }
 
     private getSortedFieldsAndDirections(name: string): string[] {
-        let fields: string[] = [];
+        const fields: string[] = [];
         for (let i: number = 0; i < this.parent.sortSettings.columns.length; i++) {
             fields.push(this.parent.sortSettings.columns[i][name]);
         }
@@ -198,21 +194,21 @@ export class ResponsiveDialogRenderer implements IAction {
 
     private sortButtonClickHandler(target: Element): void {
         if (target) {
-            let columndiv: Element = parentsUntil(target as Element, 'e-responsivecoldiv');
-            let field: string = columndiv.getAttribute('data-e-mappingname');
+            const columndiv: Element = parentsUntil(target as Element, 'e-responsivecoldiv');
+            const field: string = columndiv.getAttribute('data-e-mappingname');
             if (!this.parent.allowMultiSorting) {
                 this.sortPredicate = []; this.sortedCols = []; this.isSortApplied = false;
                 this.resetSortButtons(target);
             }
-            let txt: string = target.textContent;
-            let direction: string = txt === 'None' ? 'Ascending' : txt === 'Ascending' ? 'Descending' : 'None';
+            const txt: string = target.textContent;
+            const direction: string = txt === 'None' ? 'Ascending' : txt === 'Ascending' ? 'Descending' : 'None';
             target.innerHTML = direction;
             this.setSortedCols(field, direction);
         }
     }
 
     private resetSortButtons(target?: Element): void {
-        let buttons: HTMLElement[] = [].slice.call(this.customColumnDiv.getElementsByClassName('e-ressortbutton'));
+        const buttons: HTMLElement[] = [].slice.call(this.customColumnDiv.getElementsByClassName('e-ressortbutton'));
         for (let i: number = 0; i < buttons.length; i++) {
             if (buttons[i] !== target) {
                 buttons[i].innerHTML = 'None';
@@ -221,8 +217,8 @@ export class ResponsiveDialogRenderer implements IAction {
     }
 
     private setSortedCols(field: string, direction: string): void {
-        let fields: string[] = this.getCurrentSortedFields();
-        let index: number = fields.indexOf(field);
+        const fields: string[] = this.getCurrentSortedFields();
+        const index: number = fields.indexOf(field);
         if (this.parent.allowMultiSorting && index > -1) {
             this.sortedCols.splice(index, 1);
             this.sortPredicate.splice(index, 1);
@@ -235,7 +231,7 @@ export class ResponsiveDialogRenderer implements IAction {
     }
 
     private getCurrentSortedFields(): string[] {
-        let fields: string[] = [];
+        const fields: string[] = [];
         for (let i: number = 0; i < this.sortedCols.length; i++) {
             fields.push(this.sortedCols[i]);
         }
@@ -244,22 +240,22 @@ export class ResponsiveDialogRenderer implements IAction {
 
     private customFilterColumnClickHandler(e: MouseEvent): void {
         if (this.action !== ResponsiveDialogAction.isFilter) { return; }
-        let gObj: IGrid = this.parent;
-        let target: HTMLElement = e.target as HTMLElement;
+        const gObj: IGrid = this.parent;
+        const target: HTMLElement = e.target as HTMLElement;
         if (gObj.filterSettings.type !== 'FilterBar') {
             if (target.classList.contains('e-responsivecoldiv') || target.parentElement.classList.contains('e-responsivecoldiv')) {
                 let field: string = target.getAttribute('data-e-mappingname');
                 if (!field) { field = target.parentElement.getAttribute('data-e-mappingname'); }
                 if (field) {
-                    let col: Column = gObj.getColumnByField(field);
+                    const col: Column = gObj.getColumnByField(field);
                     this.isRowResponsive = true;
                     this.showResponsiveDialog(col);
                 }
             } else if (target.classList.contains('e-filterset') || target.parentElement.classList.contains('e-filtersetdiv')) {
-                let colDiv: Element = parentsUntil(target, 'e-responsivecoldiv');
+                const colDiv: Element = parentsUntil(target, 'e-responsivecoldiv');
                 if (colDiv) {
-                    let field: string = colDiv.getAttribute('data-e-mappingname');
-                    let col: Column = gObj.getColumnByField(field);
+                    const field: string = colDiv.getAttribute('data-e-mappingname');
+                    const col: Column = gObj.getColumnByField(field);
                     if (col.filter.type === 'Menu' || (!col.filter.type && gObj.filterSettings.type === 'Menu')) {
                         this.isDialogClose = true;
                     }
@@ -270,10 +266,11 @@ export class ResponsiveDialogRenderer implements IAction {
         }
     }
 
-    /** 
-     * To show the responsive custom filter dialog
-     * @return {void}
-     * @hidden
+    /**
+     * Function to show the responsive dialog
+     *
+     * @param {Column} col - specifies the column
+     * @returns {void}
      */
     public showResponsiveDialog(col?: Column): void {
         if (this.isCustomDialog && this.action === ResponsiveDialogAction.isFilter && !this.isRowResponsive) {
@@ -286,9 +283,9 @@ export class ResponsiveDialogRenderer implements IAction {
                 this.parent.filterModule.filterModule.openDialog(this.parent.filterModule.createOptions(col, undefined));
             }
             if (this.action === ResponsiveDialogAction.isSort) {
-                let args: { cancel: boolean, dialogObj: Dialog, requestType: string } = {
+                const args: { cancel: boolean, dialogObj: Dialog, requestType: string } = {
                     cancel: false, dialogObj: this.customResponsiveDlg, requestType: 'beforeOpenAptiveSortDialog'
-                }
+                };
                 this.parent.trigger(events.beforeOpenAdaptiveDialog, args);
                 if (args.cancel) {
                     return;
@@ -301,17 +298,17 @@ export class ResponsiveDialogRenderer implements IAction {
     }
 
     private setTopToChildDialog(dialogEle: Element): void {
-        let child: HTMLElement = dialogEle.querySelector('.e-dialog');
+        const child: HTMLElement = dialogEle.querySelector('.e-dialog');
         if (child) {
-            let top: number = dialogEle.querySelector('.e-dlg-header-content').getBoundingClientRect().height;
+            const top: number = dialogEle.querySelector('.e-dlg-header-content').getBoundingClientRect().height;
             child.style.top = top + 'px';
         }
     }
 
     private renderCustomFilterDialog(col?: Column): void {
-        let gObj: IGrid = this.parent;
+        const gObj: IGrid = this.parent;
         if (this.action === ResponsiveDialogAction.isFilter && gObj.filterSettings.type === 'FilterBar') { return; }
-        let outerDiv: HTMLElement = this.parent.createElement(
+        const outerDiv: HTMLElement = this.parent.createElement(
             'div',
             {
                 id: gObj.element.id + 'customfilter', className: 'e-customfilterdiv e-responsive-dialog'
@@ -319,9 +316,9 @@ export class ResponsiveDialogRenderer implements IAction {
         );
         this.parent.element.appendChild(outerDiv);
         this.customFilterDlg = this.getDialogOptions(col, true);
-        let args: { cancel: boolean, dialogObj: Dialog, requestType: string } = {
+        const args: { cancel: boolean, dialogObj: Dialog, requestType: string } = {
             cancel: false, dialogObj: this.customFilterDlg, requestType: 'beforeOpenAptiveFilterDialog'
-        }
+        };
         this.parent.trigger(events.beforeOpenAdaptiveDialog, args);
         if (args.cancel) {
             return;
@@ -332,7 +329,7 @@ export class ResponsiveDialogRenderer implements IAction {
     }
 
     private getDialogOptions(col: Column, isCustomFilter: boolean, id?: string): Dialog {
-        let options: Dialog = new Dialog({
+        const options: Dialog = new Dialog({
             isModal: true,
             showCloseIcon: true,
             closeOnEscape: false,
@@ -346,9 +343,9 @@ export class ResponsiveDialogRenderer implements IAction {
             close: this.beforeDialogClose.bind(this),
             width: '100%',
             height: '100%',
-            animationSettings: { effect: 'None' },
+            animationSettings: { effect: 'None' }
         });
-        let isStringTemplate: string = 'isStringTemplate';
+        const isStringTemplate: string = 'isStringTemplate';
         options[isStringTemplate] = true;
         if (isCustomFilter) {
             options.header = this.renderResponsiveHeader(col, undefined, true);
@@ -362,10 +359,10 @@ export class ResponsiveDialogRenderer implements IAction {
     }
 
     private renderResponsiveDialog(col?: Column): void {
-        let gObj: IGrid = this.parent;
+        const gObj: IGrid = this.parent;
         if (this.action === ResponsiveDialogAction.isFilter && gObj.filterSettings.type === 'FilterBar') { return; }
-        let id: string = this.action === ResponsiveDialogAction.isFilter ? 'filter' : 'sort';
-        let outerDiv: HTMLElement = this.parent.createElement(
+        const id: string = this.action === ResponsiveDialogAction.isFilter ? 'filter' : 'sort';
+        const outerDiv: HTMLElement = this.parent.createElement(
             'div',
             {
                 id: gObj.element.id + 'responsive' + id, className: 'e-res' + id + 'div e-responsive-dialog'
@@ -384,8 +381,8 @@ export class ResponsiveDialogRenderer implements IAction {
         if (this.action === ResponsiveDialogAction.isSort && this.parent.allowMultiSorting) {
             for (let i: number = 0; i < this.parent.sortSettings.columns.length; i++) {
                 this.sortedCols.push(this.parent.sortSettings.columns[i].field);
-                let sortField: string = this.parent.sortSettings.columns[i].field;
-                let sortDirection: SortDirection = this.parent.sortSettings.columns[i].direction;
+                const sortField: string = this.parent.sortSettings.columns[i].field;
+                const sortDirection: SortDirection = this.parent.sortSettings.columns[i].direction;
                 this.sortPredicate.push({ field: sortField, direction: sortDirection });
             }
         }
@@ -424,7 +421,7 @@ export class ResponsiveDialogRenderer implements IAction {
     }
 
     private getHeaderTitle(args: ResponsiveDialogArgs, col: Column): string {
-        let gObj: IGrid = this.parent;
+        const gObj: IGrid = this.parent;
         let title: string;
         if (this.action === ResponsiveDialogAction.isEdit) {
             title = gObj.localeObj.getConstant('EditFormTitle') + args.primaryKeyValue[0];
@@ -458,36 +455,44 @@ export class ResponsiveDialogRenderer implements IAction {
         return text;
     }
 
-    /** @hidden */
+    /**
+     * Function to render the responsive header
+     *
+     * @param {Column} col - specifies the column
+     * @param {ResponsiveDialogArgs} args - specifies the responsive dialog arguments
+     * @param {boolean} isCustomFilter - specifies whether it is custom filter or not
+     * @returns {HTMLElement | string} returns the html element or string
+     */
     public renderResponsiveHeader(col: Column, args?: ResponsiveDialogArgs, isCustomFilter?: boolean): HTMLElement | string {
-        let gObj: IGrid = this.parent;
+        const gObj: IGrid = this.parent;
         gObj.on(events.enterKeyHandler, this.keyHandler, this);
-        let id: string = gObj.element.id + this.getDialogName(this.action);
-        let header: HTMLElement | string = gObj.createElement('div', { className: 'e-res-custom-element' });
-        let titleDiv: HTMLElement = gObj.createElement('div', { className: 'e-dlg-custom-header', id: id });
+        const id: string = gObj.element.id + this.getDialogName(this.action);
+        const header: HTMLElement | string = gObj.createElement('div', { className: 'e-res-custom-element' });
+        const titleDiv: HTMLElement = gObj.createElement('div', { className: 'e-dlg-custom-header', id: id });
         titleDiv.innerHTML = this.getHeaderTitle(args, col);
         (header as Element).appendChild(titleDiv);
-        let saveBtn: HTMLElement = gObj.createElement('button');
+        const saveBtn: HTMLElement = gObj.createElement('button');
         if (!isCustomFilter) {
             this.saveBtn = new Button({
-                cssClass: 'e-primary e-flat e-res-apply-btn',
+                cssClass: 'e-primary e-flat e-res-apply-btn'
             });
             saveBtn.innerHTML = gObj.localeObj.getConstant(this.getButtonText(this.action));
             this.saveBtn.appendTo(saveBtn);
+            // eslint-disable-next-line @typescript-eslint/no-unused-vars
             saveBtn.onclick = (e: MouseEvent) => {
                 this.dialogHdrBtnClickHandler();
             };
         }
-        let isSort: boolean = this.action === ResponsiveDialogAction.isSort;
-        let isFilter: boolean = this.action === ResponsiveDialogAction.isFilter;
+        const isSort: boolean = this.action === ResponsiveDialogAction.isSort;
+        const isFilter: boolean = this.action === ResponsiveDialogAction.isFilter;
         if (isFilter || isSort) {
-            let id: string = isSort ? 'sort' : 'filter';
-            let clearBtn: HTMLElement = gObj.createElement('button');
+            const id: string = isSort ? 'sort' : 'filter';
+            const clearBtn: HTMLElement = gObj.createElement('button');
             this.filterClearBtn = new Button({
-                cssClass: 'e-primary e-flat e-res-' + id + '-clear-btn',
+                cssClass: 'e-primary e-flat e-res-' + id + '-clear-btn'
             });
             if (isFilter) {
-                let span: HTMLElement = gObj.createElement('span', { className: 'e-btn-icon e-icon-filter-clear e-icons' });
+                const span: HTMLElement = gObj.createElement('span', { className: 'e-btn-icon e-icon-filter-clear e-icons' });
                 clearBtn.appendChild(span);
             } else {
                 clearBtn.innerHTML = gObj.localeObj.getConstant('Clear');
@@ -534,7 +539,7 @@ export class ResponsiveDialogRenderer implements IAction {
 
     private closeCustomDialog(): void {
         if (this.isCustomDlgRender) {
-            let mainfilterdiv: HTMLElement = this.customResponsiveDlg.element.querySelector('.e-mainfilterdiv');
+            const mainfilterdiv: HTMLElement = this.customResponsiveDlg.element.querySelector('.e-mainfilterdiv');
             remove(mainfilterdiv);
             return;
         }
@@ -545,7 +550,7 @@ export class ResponsiveDialogRenderer implements IAction {
 
     private destroyCustomFilterDialog(): void {
         if (!this.customResponsiveDlg) { return; }
-        let elem: Element = document.getElementById(this.customResponsiveDlg.element.id);
+        const elem: Element = document.getElementById(this.customResponsiveDlg.element.id);
         if (this.customResponsiveDlg && !this.customResponsiveDlg.isDestroyed && elem) {
             this.customResponsiveDlg.destroy();
             remove(elem);
@@ -560,7 +565,7 @@ export class ResponsiveDialogRenderer implements IAction {
 
     private closeCustomFilter(): void {
         if (!this.isDialogClose && this.customFilterDlg) {
-            let customEle: Element = document.getElementById(this.customFilterDlg.element.id);
+            const customEle: Element = document.getElementById(this.customFilterDlg.element.id);
             if (this.customFilterDlg && !this.customFilterDlg.isDestroyed && customEle) {
                 this.customFilterDlg.destroy();
                 remove(customEle);
@@ -578,7 +583,7 @@ export class ResponsiveDialogRenderer implements IAction {
                 remove(target);
             }
         } else {
-            let child: HTMLCollection = this.customColumnDiv.children;
+            const child: HTMLCollection = this.customColumnDiv.children;
             for (let i: number = 0; i < child.length; i++) {
                 target = child[i].querySelector('.e-filtersetdiv');
                 if (target) {

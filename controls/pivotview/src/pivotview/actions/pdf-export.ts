@@ -11,6 +11,7 @@ import { isNullOrUndefined } from '@syncfusion/ej2-base';
 import { PdfBorderStyle } from '../../common/base/enum';
 import { OlapEngine } from '../../base/olap/engine';
 import { PivotUtil } from '../../base/util';
+import { PdfExportProperties } from '@syncfusion/ej2-grids';
 
 /**
  * @hidden
@@ -41,8 +42,11 @@ export class PDFExport {
 
     private addPage(eventParams: { document: PdfDocument; args: BeforeExportEventArgs }): PdfPage {
         let page: PdfPage = eventParams.document.pages.add();
-        let header: string = eventParams.args.header;
-        let footer: string = eventParams.args.footer;
+        let pdfExportProperties: PdfExportProperties = eventParams.args.pdfExportProperties;
+        let header: string = (!isNullOrUndefined(pdfExportProperties) && !isNullOrUndefined(pdfExportProperties.header) && !isNullOrUndefined(pdfExportProperties.header.contents) && !isNullOrUndefined(pdfExportProperties.header.contents[0].value)) ?
+            pdfExportProperties.header.contents[0].value : eventParams.args.header;
+        let footer: string = (!isNullOrUndefined(pdfExportProperties) && !isNullOrUndefined(pdfExportProperties.footer) && !isNullOrUndefined(pdfExportProperties.footer.contents) && !isNullOrUndefined(pdfExportProperties.footer.contents[0].value)) ?
+            pdfExportProperties.footer.contents[0].value : eventParams.args.footer;
         let font: PdfFont = new PdfStandardFont(PdfFontFamily.TimesRoman, 15, PdfFontStyle.Regular);
         let brush: PdfSolidBrush = new PdfSolidBrush(new PdfColor(0, 0, 0));
         let pen: PdfPen = new PdfPen(new PdfColor(0, 0, 0), .5);
@@ -183,7 +187,7 @@ export class PDFExport {
      * @hidden
      */
     /* eslint-disable  */
-    public exportToPDF(): void {
+    public exportToPDF(pdfExportProperties?: PdfExportProperties): void {
         this.engine = this.parent.dataType === 'olap' ? this.parent.olapEngineModule : this.parent.engineModule;
         let eventParams: { document: PdfDocument, args: BeforeExportEventArgs } = this.applyEvent();
         let headerStyle: ITheme = this.getStyle();
@@ -200,6 +204,12 @@ export class PDFExport {
         let colLength: number = pivotValues && pivotValues.length > 0 ? pivotValues[0].length : 0;
         let integratedCnt: number = 0;
         do {
+            if (!isNullOrUndefined(pdfExportProperties)) {
+                eventParams.args.header = (!isNullOrUndefined(pdfExportProperties.header) && !isNullOrUndefined(pdfExportProperties.header.contents) && !isNullOrUndefined(pdfExportProperties.header.contents[0].value)) ?
+                    pdfExportProperties.header.contents[0].value : eventParams.args.header;
+                eventParams.args.footer = (!isNullOrUndefined(pdfExportProperties.footer) && !isNullOrUndefined(pdfExportProperties.footer.contents) && !isNullOrUndefined(pdfExportProperties.footer.contents[0].value)) ?
+                    pdfExportProperties.footer.contents[0].value : eventParams.args.footer;
+            }
             let page: PdfPage = this.addPage(eventParams); let pdfGrid: PdfGrid = new PdfGrid();
             let pageSize: number = size > 1 ? size : 5;
             if (pivotValues && pivotValues.length > 0) {

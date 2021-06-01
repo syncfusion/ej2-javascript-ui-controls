@@ -1098,7 +1098,11 @@ export class Signature {
                     if (currentAnnotation.IsSignature) {
                         data = currentAnnotation.PathData;
                     } else {
-                        data = getPathString(JSON.parse(currentAnnotation.PathData));
+                        if (data.includes('command')) {
+                            data = getPathString(JSON.parse(currentAnnotation.PathData));
+                        } else {
+                            data = currentAnnotation.PathData;;
+                        }
                     }
                 }
                 annot = {
@@ -1118,6 +1122,8 @@ export class Signature {
                 if (this.pdfViewerBase.navigationPane && this.pdfViewerBase.navigationPane.annotationMenuObj && this.pdfViewer.isSignatureEditable) {
                     // eslint-disable-next-line max-len
                     this.pdfViewerBase.navigationPane.annotationMenuObj.enableItems([this.pdfViewer.localeObj.getConstant('Export Annotations')], true);
+                    // eslint-disable-next-line max-len
+                    this.pdfViewerBase.navigationPane.annotationMenuObj.enableItems([this.pdfViewer.localeObj.getConstant('Export XFDF')], true);
                 }
             }
         }

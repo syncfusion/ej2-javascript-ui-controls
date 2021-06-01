@@ -104,7 +104,7 @@ export class FormFields {
                             // eslint-disable-next-line
                             currentData['uniqueID'] = this.pdfViewer.element.id + 'input_' + pageIndex + '_' + i;
                             for (let j: number = 0; j< this.pdfViewer.formFieldCollections.length; j++) {
-                                if (inputField.type === 'text' || inputField.type === 'password' || inputField.type === 'textarea') {
+                                if ((inputField.type === 'text' || inputField.type === 'password' || inputField.type === 'textarea') && currentData.Name !== 'SignatureField') {
                                     if (currentData['uniqueID'] === this.pdfViewer.formFieldCollections[j].id) {
                                         currentData['Value'] = this.pdfViewer.formFieldCollections[j].value;
                                         inputField.value = this.pdfViewer.formFieldCollections[j].value;
@@ -517,18 +517,23 @@ export class FormFields {
                     datas[currentData.Text] = JSON.stringify(childItemsText);
                 } else if (currentData.Name === 'SignatureField') {
                     // eslint-disable-next-line
-                    let collectionData: any = processPathData(currentData.Value);
-                    // eslint-disable-next-line
                     let csData: any;
-                    if (currentData.Value && currentData.Value !== '' && (currentData.Value.split('base64,')[1] || collectionData.length === 0)) {
+                    if (currentData.Value === null || currentData.Value === '') {
+                        this.addSignaturePath(currentData);
+                    }
+                    if (currentData.Value && currentData.Value !== '') {
                         csData = currentData.Value;
-                        if (currentData.fontFamily) {
-                            datas[currentData.FieldName + 'fontName'] = currentData.fontFamily;
+                        let fontFamily: any = currentData.fontFamily ? currentData.fontFamily : currentData.FontFamily;
+                        if (fontFamily) {
+                            datas[currentData.FieldName + 'fontName'] = fontFamily;
+                            datas[currentData.FieldName + 'fontSize'] = currentData.fontSize ? currentData.fontSize : currentData.FontSize;
                         } else if (currentData.Value.split('base64,')[1]) {
                             datas[currentData.FieldName + 'ImageData'] = true;
+                        } else {
+                            // eslint-disable-next-line
+                            let collectionData: any = processPathData(currentData.Value);
+                            csData = splitArrayCollection(collectionData);
                         }
-                    } else {
-                        csData = splitArrayCollection(collectionData);
                     }
                     if (currentData.Value === null || currentData.Value === '') {
                         this.pdfViewerBase.validateForm = true;
@@ -1698,8 +1703,7 @@ export class FormFields {
             // eslint-disable-next-line
             let newBounds : any = this.updateSignatureBounds(bound, currentPage);
             let annot: PdfAnnotationBaseModel;
-            // eslint-disable-next-line
-            let collectionData: any = processPathData(data.Value);
+            let fontFamily: any = data.FontFamily ? data.FontFamily : data.fontFamily;
             // eslint-disable-next-line
             if ((data.Value.split('base64,')[1])) {
                 annot = {
@@ -1707,13 +1711,13 @@ export class FormFields {
                     id: this.pdfViewer.element.id + 'input_' + currentPage + '_' + index, bounds: newBounds, pageIndex: currentPage, data: data.Value, modifiedDate: '',
                     shapeAnnotationType: 'SignatureImage', opacity: 1, rotateAngle: 0, annotName: '', comments: [], review: { state: '', stateModel: '', modifiedDate: '', author: '' }
                 };
-            } else if (collectionData.length === 0) {
+            } else if (fontFamily) {
                 annot = {
                     // eslint-disable-next-line max-len
                     id: this.pdfViewer.element.id + 'input_' + currentPage + '_' + index, bounds: newBounds, pageIndex: currentPage, data: data.Value, modifiedDate: '',
                     shapeAnnotationType: 'SignatureText', opacity: 1, rotateAngle: 0, annotName: '', comments: [], review: { state: '', stateModel: '', modifiedDate: '', author: '' }, fontFamily: data.FontFamily, fontSize: data.FontSize
                 };
-                annot.fontFamily = data.FontFamily ? data.FontFamily : data.fontFamily;
+                annot.fontFamily = fontFamily;
                 annot.fontSize = data.FontSize ? data.FontSize : data.fontSize;
             } else {
                 annot = {

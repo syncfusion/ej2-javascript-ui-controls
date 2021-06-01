@@ -49,6 +49,7 @@ export class LinkAnnotation {
 
     private renderWebLink(hyperlinks: string[], hyperlinksBounds: number[], pageIndex: number): void {
         const proxy: LinkAnnotation = this;
+        let isHyperlinkClicked :boolean = false;
         for (let i: number = 0; i < hyperlinks.length; i++) {
             let aTag: HTMLAnchorElement = createElement('a', { id: 'weblinkdiv_' + i }) as HTMLAnchorElement;
             // eslint-disable-next-line
@@ -63,39 +64,64 @@ export class LinkAnnotation {
             }
             if (this.pdfViewer.hyperlinkOpenState === 'CurrentTab') {
                 aTag.target = '_self';
-                aTag.onclick = () => {
-                    if (proxy.pdfViewerBase.tool instanceof LineTool || proxy.pdfViewerBase.tool instanceof PolygonDrawingTool) {
-                        return false;
-                    } else {
-                        proxy.pdfViewer.fireHyperlinkClick(hyperlinks[i], aTag);
+                aTag.onclick = async (e:any) => {  
+                    if( !isHyperlinkClicked)   {
+                        e.preventDefault();
+
+                        if (proxy.pdfViewerBase.tool instanceof LineTool || proxy.pdfViewerBase.tool instanceof PolygonDrawingTool) {
+                            return false;
+                        } else {                        
+                            let isCancel =  await proxy.pdfViewer.fireHyperlinkClick(hyperlinks[i], aTag);
+                            if(isCancel){
+                                isHyperlinkClicked=true;
+                                aTag.click();
+                            }
+                            return isCancel;
+                        }
+                    }else{
+                        isHyperlinkClicked= false;
                         return true;
-                    }
+                    }      
                 };
                 aTag.onmouseover = () => {
                     proxy.triggerHyperlinkEvent(aTag);
                 };
             } else if (this.pdfViewer.hyperlinkOpenState === 'NewTab') {
                 aTag.target = '_blank';
-                aTag.onclick = () => {
-                    if (proxy.pdfViewerBase.tool instanceof LineTool || proxy.pdfViewerBase.tool instanceof PolygonDrawingTool) {
-                        return false;
-                    } else {
-                        proxy.pdfViewer.fireHyperlinkClick(hyperlinks[i], aTag);
+                aTag.onclick = async (e:any) => {  
+                    if( !isHyperlinkClicked)   {
+                        e.preventDefault();
+
+                        if (proxy.pdfViewerBase.tool instanceof LineTool || proxy.pdfViewerBase.tool instanceof PolygonDrawingTool) {
+                            return false;
+                        } else {                        
+                            let isCancel =  await proxy.pdfViewer.fireHyperlinkClick(hyperlinks[i], aTag);
+                            if(isCancel){
+                                isHyperlinkClicked=true;
+                                aTag.click();
+                            }
+                            return isCancel;
+                        }
+                    }else{
+                        isHyperlinkClicked= false;
                         return true;
-                    }
+                    }      
                 };
                 aTag.onmouseover = () => {
                     proxy.triggerHyperlinkEvent(aTag);
                 };
             } else if (this.pdfViewer.hyperlinkOpenState === 'NewWindow') {
-                aTag.onclick = () => {
+                aTag.onclick = async (e:any) => { 
+                    e.preventDefault();
                     if (proxy.pdfViewerBase.tool instanceof LineTool || proxy.pdfViewerBase.tool instanceof PolygonDrawingTool) {
                         return false;
-                    } else {
-                        proxy.pdfViewer.fireHyperlinkClick(hyperlinks[i], aTag);
-                        window.open(hyperlinks[i], '_blank', 'scrollbars=yes,resizable=yes');
+                    } else {                        
+                        let isCancel =  await proxy.pdfViewer.fireHyperlinkClick(hyperlinks[i], aTag);
+                        if(isCancel){
+                            window.open(aTag.href, '_blank', 'scrollbars=yes,resizable=yes');
+                        }
                         return false;
-                    }
+                    } 
                 };
                 aTag.onmouseover = () => {
                     proxy.triggerHyperlinkEvent(aTag);

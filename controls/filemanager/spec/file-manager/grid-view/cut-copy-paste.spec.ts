@@ -1421,7 +1421,7 @@ describe('FileManager control Details view', () => {
             expect(document.querySelector('.e-fe-clone')).toBe(null);
             let mousedown: any = getEventObject('MouseEvents', 'mousedown', li[1].querySelector('.e-fullrow'), li[1].querySelector('.e-fullrow'), rect[0].x + 4, rect[0].y + 4);
             EventHandler.trigger(treeObj.element, 'mousedown', mousedown);
-            let mousemove: any = getEventObject('MouseEvents', 'mousemove', li[1].querySelector('.e-fullrow'), li[1].querySelector('.e-fullrow'), rect[0].x + 5, rect[0].y + 5);
+            let mousemove: any = getEventObject('MouseEvents', 'mousemove', li[1].querySelector('.e-fullrow'), li[1].querySelector('.e-fullrow'), rect[0].x + 10, rect[0].y + 5);
             EventHandler.trigger(<any>(document), 'mousemove', mousemove);
             expect(document.querySelector('.e-fullrow') === null).toBe(false);
             expect(li[1].classList.contains('e-blur')).toBe(true);
@@ -1604,7 +1604,7 @@ describe('FileManager control Details view', () => {
             expect(document.querySelector('.e-fe-clone')).toBe(null);
             let mousedown: any = getEventObject('MouseEvents', 'mousedown', li[1].querySelector('.e-fullrow'), li[1].querySelector('.e-fullrow'), rect[0].x + 4, rect[0].y + 4);
             EventHandler.trigger(treeObj.element, 'mousedown', mousedown);
-            let mousemove: any = getEventObject('MouseEvents', 'mousemove', li[1].querySelector('.e-fullrow'), li[1].querySelector('.e-fullrow'), rect[0].x + 5, rect[0].y + 5);
+            let mousemove: any = getEventObject('MouseEvents', 'mousemove', li[1].querySelector('.e-fullrow'), li[1].querySelector('.e-fullrow'), rect[0].x + 10, rect[0].y + 5);
             EventHandler.trigger(<any>(document), 'mousemove', mousemove);
             expect(document.querySelector('.e-fullrow') === null).toBe(false);
             expect(li[1].classList.contains('e-blur')).toBe(true);
@@ -1994,7 +1994,7 @@ describe('FileManager control Details view', () => {
                 let rect: any = li[2].querySelector('.e-fullrow').getClientRects();
                 let mousedown: any = getEventObject('MouseEvents', 'mousedown', li[2].querySelector('.e-fullrow'), li[2].querySelector('.e-fullrow'), rect[0].x + 4, rect[0].y + 4);
                 EventHandler.trigger(treeObj.element, 'mousedown', mousedown);
-                let mousemove: any = getEventObject('MouseEvents', 'mousemove', li[2].querySelector('.e-fullrow'), li[2].querySelector('.e-fullrow'), rect[0].x + 5, rect[0].y + 5);
+                let mousemove: any = getEventObject('MouseEvents', 'mousemove', li[2].querySelector('.e-fullrow'), li[2].querySelector('.e-fullrow'), rect[0].x + 10, rect[0].y + 5);
                 EventHandler.trigger(<any>(document), 'mousemove', mousemove);
                 expect(document.querySelector('.e-fullrow') === null).toBe(false);
                 expect(li[2].classList.contains('e-blur')).toBe(true);

@@ -17,6 +17,7 @@ import * as literals from '../base/string-literals';
 
 /**
  * Footer module is used to render grid content
+ *
  * @hidden
  */
 export class FooterRenderer extends ContentRender implements IRenderer {
@@ -39,16 +40,18 @@ export class FooterRenderer extends ContentRender implements IRenderer {
     }
 
     /**
-     * The function is used to render grid footer div    
+     * The function is used to render grid footer div
+     *
+     * @returns {void}
      */
     public renderPanel(): void {
-        let div: Element = this.parent.createElement('div', { className: literals.gridFooter });
-        let innerDiv: Element = this.parent.createElement('div', { className: 'e-summarycontent' });
+        const div: Element = this.parent.createElement('div', { className: literals.gridFooter });
+        const innerDiv: Element = this.parent.createElement('div', { className: 'e-summarycontent' });
         let movableContent: Element = innerDiv;
         if (this.parent.isFrozenGrid()) {
-            let fDiv: Element = this.parent.createElement('div', { className: 'e-frozenfootercontent e-frozen-left-footercontent' });
-            let mDiv: Element = this.parent.createElement('div', { className: 'e-movablefootercontent' });
-            let frDiv: Element = this.parent.createElement('div', { className: 'e-frozenfootercontent e-frozen-right-footercontent' });
+            const fDiv: Element = this.parent.createElement('div', { className: 'e-frozenfootercontent e-frozen-left-footercontent' });
+            const mDiv: Element = this.parent.createElement('div', { className: 'e-movablefootercontent' });
+            const frDiv: Element = this.parent.createElement('div', { className: 'e-frozenfootercontent e-frozen-right-footercontent' });
             if (this.parent.getFrozenColumns() || this.parent.getFrozenLeftColumnsCount()) {
                 innerDiv.appendChild(fDiv);
                 this.frozenContent = fDiv;
@@ -71,32 +74,34 @@ export class FooterRenderer extends ContentRender implements IRenderer {
         }
     }
     /**
-     * The function is used to render grid footer table    
+     * The function is used to render grid footer table
+     *
+     * @returns {void}
      */
     public renderTable(): void {
-        let frzCols: number = this.parent.getFrozenColumns() || this.parent.getFrozenLeftColumnsCount();
-        let innerDiv: Element = this.createContentTable('_footer_table');
-        let table: HTMLTableElement = <HTMLTableElement>innerDiv.querySelector('.' + literals.table);
-        let tFoot: HTMLTableSectionElement = <HTMLTableSectionElement>this.parent.createElement('tfoot');
+        const frzCols: number = this.parent.getFrozenColumns() || this.parent.getFrozenLeftColumnsCount();
+        const innerDiv: Element = this.createContentTable('_footer_table');
+        const table: HTMLTableElement = <HTMLTableElement>innerDiv.querySelector('.' + literals.table);
+        const tFoot: HTMLTableSectionElement = <HTMLTableSectionElement>this.parent.createElement('tfoot');
         table.appendChild(tFoot);
         if (this.parent.isFrozenGrid()) {
-            let freezeTable: HTMLTableElement = table.cloneNode(true) as HTMLTableElement;
-            let frTable: HTMLTableElement = table.cloneNode(true) as HTMLTableElement;
+            const freezeTable: HTMLTableElement = table.cloneNode(true) as HTMLTableElement;
+            const frTable: HTMLTableElement = table.cloneNode(true) as HTMLTableElement;
             if (frzCols) {
                 this.frozenContent.appendChild(freezeTable);
                 this.freezeTable = freezeTable;
             }
             if (this.parent.getFrozenRightColumnsCount()) {
                 remove(frTable.querySelector(literals.colGroup));
-                let hdr: Element = this.parent.getHeaderContent().querySelector('.e-frozen-right-header');
-                let frCol: Element = (hdr.querySelector(literals.colGroup).cloneNode(true)) as Element;
+                const hdr: Element = this.parent.getHeaderContent().querySelector('.e-frozen-right-header');
+                const frCol: Element = (hdr.querySelector(literals.colGroup).cloneNode(true)) as Element;
                 frTable.insertBefore(frCol, frTable.querySelector( literals.tbody));
                 this.frozenRightContent.appendChild(frTable);
                 this.frTable = frTable;
             }
             this.movableContent.appendChild(table);
             remove(table.querySelector(literals.colGroup));
-            let colGroup: Element
+            const colGroup: Element
                 = ((this.parent.getHeaderContent().querySelector('.' + literals.movableHeader).querySelector(literals.colGroup)).cloneNode(true)) as Element;
             table.insertBefore(colGroup, table.querySelector( literals.tbody));
             this.setColGroup(colGroup);
@@ -105,21 +110,22 @@ export class FooterRenderer extends ContentRender implements IRenderer {
     }
 
     private renderSummaryContent(e?: Object, table?: HTMLTableElement, cStart?: number, cEnd?: number): void {
-        let input: Object[] = this.parent.dataSource instanceof Array ? this.parent.dataSource : this.parent.currentViewData;
-        let summaries: AggregateRowModel[] = <AggregateRowModel[]>this.modelGenerator.getData();
-        let dummies: Column[] = isNullOrUndefined(cStart) ? this.modelGenerator.getColumns() :
-        this.modelGenerator.getColumns(cStart, cEnd);
-        let rows: Row<AggregateColumnModel>[] = isNullOrUndefined(cStart) ? this.modelGenerator.generateRows(input, e || this.aggregates) :
-        this.modelGenerator.generateRows(input, e || this.aggregates, cStart, cEnd);
-        let fragment: DocumentFragment = <DocumentFragment>document.createDocumentFragment();
+        const input: Object[] = this.parent.dataSource instanceof Array ? this.parent.dataSource : this.parent.currentViewData;
+        const summaries: AggregateRowModel[] = <AggregateRowModel[]>this.modelGenerator.getData();
+        const dummies: Column[] = isNullOrUndefined(cStart) ? this.modelGenerator.getColumns() :
+            this.modelGenerator.getColumns(cStart, cEnd);
+        // eslint-disable-next-line max-len
+        const rows: Row<AggregateColumnModel>[] = isNullOrUndefined(cStart) ? this.modelGenerator.generateRows(input, e || this.aggregates) :
+            this.modelGenerator.generateRows(input, e || this.aggregates, cStart, cEnd);
+        const fragment: DocumentFragment = <DocumentFragment>document.createDocumentFragment();
 
-        let rowrenderer: RowRenderer<AggregateColumnModel> = new RowRenderer<AggregateColumnModel>(this.locator, null, this.parent);
+        const rowrenderer: RowRenderer<AggregateColumnModel> = new RowRenderer<AggregateColumnModel>(this.locator, null, this.parent);
         rowrenderer.element = this.parent.createElement('TR', { className: 'e-summaryrow' });
 
         for (let srow: number = 0, len: number = summaries.length; srow < len; srow ++) {
-            let row: Row<AggregateColumnModel> = rows[srow];
+            const row: Row<AggregateColumnModel> = rows[srow];
             if (!row) { continue; }
-            let tr: Element = rowrenderer.render(row, dummies);
+            const tr: Element = rowrenderer.render(row, dummies);
             fragment.appendChild(tr);
         }
 
@@ -128,9 +134,9 @@ export class FooterRenderer extends ContentRender implements IRenderer {
     }
 
     public refresh(e?: { aggregates?: Object }): void {
-        let frzCols: number = this.parent.getFrozenColumns() || this.parent.getFrozenLeftColumnsCount();
-        let movable: number = this.parent.getMovableColumnsCount();
-        let right: number = this.parent.getFrozenRightColumnsCount();
+        const frzCols: number = this.parent.getFrozenColumns() || this.parent.getFrozenLeftColumnsCount();
+        const movable: number = this.parent.getMovableColumnsCount();
+        const right: number = this.parent.getFrozenRightColumnsCount();
         if (this.parent.isFrozenGrid()) {
             remove(this.getPanel());
             this.renderPanel();
@@ -145,7 +151,7 @@ export class FooterRenderer extends ContentRender implements IRenderer {
         if (this.parent.getFrozenRightColumnsCount()) {
             this.frTable.tFoot.innerHTML = '';
             this.renderSummaryContent(e, this.frTable, frzCols + movable, frzCols + movable + right);
-            let movableLastCell: Element[] = [].slice.call(this.getTable().getElementsByClassName('e-lastsummarycell'));
+            const movableLastCell: Element[] = [].slice.call(this.getTable().getElementsByClassName('e-lastsummarycell'));
             if (movableLastCell.length) {
                 for (let i: number = 0; i < movableLastCell.length; i++) {
                     (movableLastCell[i] as HTMLElement).style.borderRight = '0px';
@@ -154,26 +160,26 @@ export class FooterRenderer extends ContentRender implements IRenderer {
         }
         // check freeze content have no row case
         if (this.parent.isFrozenGrid()) {
-            let movableCnt: HTMLElement[] = [].slice.call(this.parent.element.querySelector('.e-movablefootercontent')
+            const movableCnt: HTMLElement[] = [].slice.call(this.parent.element.querySelector('.e-movablefootercontent')
                 .getElementsByClassName('e-summaryrow'));
             let frozenCnt: HTMLElement[];
             if (frzCols) {
                 frozenCnt = [].slice.call(this.parent.element.querySelector('.e-frozen-left-footercontent')
                     .getElementsByClassName('e-summaryrow'));
                 this.refreshHeight(frozenCnt, movableCnt);
-                let frozenDiv: HTMLElement = <HTMLElement>this.frozenContent;
+                const frozenDiv: HTMLElement = <HTMLElement>this.frozenContent;
                 if (!frozenDiv.offsetHeight) {
                     frozenDiv.style.height = (<HTMLElement>this.getTable()).offsetHeight + 'px';
                 }
             }
             if (right) {
-                let frCnt: HTMLElement[] = [].slice.call(this.parent.element.querySelector('.e-frozen-right-footercontent')
+                const frCnt: HTMLElement[] = [].slice.call(this.parent.element.querySelector('.e-frozen-right-footercontent')
                     .getElementsByClassName('e-summaryrow'));
                 this.refreshHeight(frCnt, movableCnt);
                 if (frozenCnt) {
                     this.refreshHeight(frCnt, frozenCnt);
                 }
-                let frDiv: HTMLElement = <HTMLElement>this.frTable;
+                const frDiv: HTMLElement = <HTMLElement>this.frTable;
                 if (!frDiv.offsetHeight) {
                     frDiv.style.height = (<HTMLElement>this.getTable()).offsetHeight + 'px';
                 }
@@ -185,8 +191,8 @@ export class FooterRenderer extends ContentRender implements IRenderer {
 
     private refreshHeight(frozenCnt: HTMLElement[], movableCnt: HTMLElement[]): void {
         for (let i: number = 0; i < frozenCnt.length; i++) {
-            let frozenHeight: number = frozenCnt[i].getBoundingClientRect().height;
-            let movableHeight: number = movableCnt[i].getBoundingClientRect().height;
+            const frozenHeight: number = frozenCnt[i].getBoundingClientRect().height;
+            const movableHeight: number = movableCnt[i].getBoundingClientRect().height;
             if (frozenHeight < movableHeight) {
                 frozenCnt[i].classList.remove('e-hide');
                 frozenCnt[i].style.height = movableHeight + 'px';
@@ -198,11 +204,12 @@ export class FooterRenderer extends ContentRender implements IRenderer {
     }
 
     public refreshCol(): void {
-        // frozen table 
+        // frozen table
         let mheaderCol: Node;
-        let fheaderCol: Node = mheaderCol = this.parent.element.querySelector('.' + literals.gridHeader).querySelector(literals.colGroup).cloneNode(true);
+        const fheaderCol: Node = mheaderCol = this.parent.element.querySelector('.' + literals.gridHeader).querySelector(literals.colGroup).cloneNode(true);
         if (this.parent.getFrozenColumns()) {
-            let isXaxis: boolean = this.parent.enableColumnVirtualization && (<{ isXaxis?: Function }>this.parent.contentModule).isXaxis();
+            // eslint-disable-next-line max-len
+            const isXaxis: boolean = this.parent.enableColumnVirtualization && (<{ isXaxis?: Function }>this.parent.contentModule).isXaxis();
             if (isXaxis) {
                 mheaderCol = this.parent.getMovableVirtualHeader().querySelector(literals.colGroup).cloneNode(true);
             } else {
@@ -220,20 +227,25 @@ export class FooterRenderer extends ContentRender implements IRenderer {
     }
 
     private onScroll(e: { left: number } =
-        {
-            left: this.parent.isFrozenGrid() ? (<HTMLElement>this.parent.getContent().querySelector('.' + literals.movableContent)).scrollLeft :
-                (<HTMLElement>this.parent.getContent().firstChild).scrollLeft
-        }): void {
+    {
+        left: this.parent.isFrozenGrid() ? (<HTMLElement>this.parent.getContent().querySelector('.' + literals.movableContent)).scrollLeft :
+            (<HTMLElement>this.parent.getContent().firstChild).scrollLeft
+    }): void {
         (<HTMLElement>this.getTable().parentElement).scrollLeft = e.left;
     }
 
     public getColFromIndex(index?: number): HTMLElement {
-        let fCol: number = this.parent.getFrozenColumns();
-        fCol = fCol && this.parent.isRowDragable() ? fCol + 1 : fCol;
-        if (fCol && fCol > index) {
+        const left: number = this.parent.getVisibleFrozenLeftCount() || this.parent.getFrozenColumns();
+        const movable: number = this.parent.getVisibleMovableCount();
+        const right: number = this.parent.getVisibleFrozenRightCount();
+        const isDrag: number = this.parent.isRowDragable() && !(this.parent.getFrozenMode() === 'Right') ? 1 : 0;
+        if (left && index < (left + isDrag)) {
             return this.freezeTable.querySelector(literals.colGroup).children[index] as HTMLElement;
+        } else if (right && (index >= (left + movable + isDrag))) {
+            return this.frTable.querySelector(literals.colGroup).children[index - (left ? (left + movable + isDrag) :
+                (left + movable))] as HTMLElement;
         }
-        return this.getColGroup().children[index - fCol] as HTMLElement;
+        return this.getColGroup().children[index - (left ? (left + isDrag) : left)] as HTMLElement;
     }
 
     private columnVisibilityChanged(): void {
@@ -246,24 +258,24 @@ export class FooterRenderer extends ContentRender implements IRenderer {
             {event: scroll, handler: this.onScroll},
             {event: columnVisibilityChanged, handler: this.columnVisibilityChanged},
             {event: refreshFooterRenderer, handler: this.refreshFooterRenderer}];
-            addRemoveEventListener(this.parent, this.evtHandlers, true, this);
+        addRemoveEventListener(this.parent, this.evtHandlers, true, this);
     }
 
     public removeEventListener(): void {
         addRemoveEventListener(this.parent, this.evtHandlers, false);
     }
     private updateFooterTableWidth(tFoot: HTMLElement): void {
-        let tHead: HTMLTableElement = this.parent.getHeaderTable() as HTMLTableElement;
+        const tHead: HTMLTableElement = this.parent.getHeaderTable() as HTMLTableElement;
         if (tHead && tFoot) {
             tFoot.style.width = tHead.style.width;
         }
     }
     public refreshFooterRenderer(editedData: Object[]): void {
-        let aggregates: Object = this.onAggregates(editedData);
+        const aggregates: Object = this.onAggregates(editedData);
         this.refresh(aggregates);
     }
     public getIndexByKey(data: object, ds: object[]): number {
-        let key: string = this.parent.getPrimaryKeyFieldNames()[0];
+        const key: string = this.parent.getPrimaryKeyFieldNames()[0];
         for (let i: number = 0; i < ds.length; i++) {
             if (ds[i][key] === data[key]) {
                 return i;
@@ -274,28 +286,31 @@ export class FooterRenderer extends ContentRender implements IRenderer {
 
     public onAggregates(editedData: Object[]): Object {
         editedData = editedData instanceof Array ? editedData : [];
-        let field: string = this.parent.getPrimaryKeyFieldNames()[0];
+        const field: string = this.parent.getPrimaryKeyFieldNames()[0];
         let dataSource: object[] = [];
         let isModified: boolean = false;
         let batchChanges: Object = {};
-        let gridData: string = 'dataSource';
+        const gridData: string = 'dataSource';
         let isFiltered: boolean = false;
         if (!this.parent.renderModule.data.isRemote() && this.parent.allowFiltering && this.parent.filterSettings.columns.length) {
             isFiltered = true;
         }
-        let currentViewData: Object[] = this.parent.dataSource instanceof Array ?
+        const currentViewData: Object[] = this.parent.dataSource instanceof Array ?
             (isFiltered ? this.parent.getFilteredRecords() : this.parent.dataSource) : (this.parent.dataSource[gridData].json.length ?
-            this.parent.dataSource[gridData].json : this.parent.getCurrentViewRecords());
+                this.parent.dataSource[gridData].json : this.parent.getCurrentViewRecords());
         if (this.parent.editModule) {
             batchChanges = this.parent.editModule.getBatchChanges();
         }
         if (Object.keys(batchChanges).length) {
             for (let i: number = 0; i < currentViewData.length; i++) {
                 isModified = false;
+                // eslint-disable-next-line max-len
                 if (batchChanges[literals.changedRecords].length && this.getIndexByKey(currentViewData[i], batchChanges[literals.changedRecords]) > -1) {
                     isModified = true;
+                    // eslint-disable-next-line max-len
                     dataSource.push(batchChanges[literals.changedRecords][this.getIndexByKey(currentViewData[i], batchChanges[literals.changedRecords])]);
                 }
+                // eslint-disable-next-line max-len
                 if (batchChanges[literals.deletedRecords].length && this.getIndexByKey(currentViewData[i], batchChanges[literals.deletedRecords]) > -1) {
                     isModified = true;
                 } else if (!isModified) {
@@ -309,11 +324,11 @@ export class FooterRenderer extends ContentRender implements IRenderer {
             }
         } else {
             if (editedData.length) {
-                let data: Object[] = iterateExtend(currentViewData);
+                const data: Object[] = iterateExtend(currentViewData);
                 dataSource = data.map((item: Object) => {
-                    let idVal: Object = DataUtil.getObject(field, item);
+                    const idVal: Object = DataUtil.getObject(field, item);
                     let value: Object;
-                    let hasVal: boolean = editedData.some((cItem: Object) => {
+                    const hasVal: boolean = editedData.some((cItem: Object) => {
                         value = cItem;
                         return idVal === DataUtil.getObject(field, cItem);
                     });
@@ -323,23 +338,23 @@ export class FooterRenderer extends ContentRender implements IRenderer {
                 dataSource = currentViewData;
             }
         }
-        let eData: Object = editedData;
+        const eData: Object = editedData;
         if (((<{ type: string }>eData).type && (<{ type: string }>eData).type === 'cancel')) {
             dataSource = currentViewData;
         }
-        let aggregate: Object = {};
+        const aggregate: Object = {};
         let agrVal: Object;
-        let aggregateRows: AggregateRow | Object[] = this.parent.aggregates;
+        const aggregateRows: AggregateRow | Object[] = this.parent.aggregates;
         for (let i: number = 0; i < aggregateRows.length; i++) {
             for (let j: number = 0; j < (aggregateRows[i] as AggregateRow).columns.length; j++) {
                 let data: Object[] = [];
-                let type: string = (aggregateRows[i] as AggregateRow).columns[j].type.toString();
+                const type: string = (aggregateRows[i] as AggregateRow).columns[j].type.toString();
                 data = dataSource;
                 agrVal = calculateAggregate(type, data, (aggregateRows[i] as AggregateRow).columns[j], this.parent);
                 aggregate[(aggregateRows[i] as AggregateRow).columns[j].field + ' - ' + type.toLowerCase()] = agrVal;
             }
         }
-        let result: Object = {
+        const result: Object = {
             result: dataSource,
             count: dataSource.length,
             aggregates: aggregate

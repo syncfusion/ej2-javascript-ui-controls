@@ -852,6 +852,77 @@ describe('Print and export', () => {
         });
     });
 
+        describe('Gradient not applied for the node in export functionality', () => {
+            let diagram: Diagram;
+            let ele: HTMLElement;
+            let scroller: DiagramScroller;
+            let pageSettings: PageSettingsModel = {};
+            let background: BackgroundModel = {};
+
+            beforeAll((): void => {
+                ele = createElement('div', { id: 'diagram' });
+                document.body.appendChild(ele);
+                let connector: ConnectorModel = {
+                    id: 'connector1', sourcePoint: { x: 300, y: 400 }, targetPoint: { x: 500, y: 500 }
+                };
+                let nodes: any = [
+                    {
+                        id: 'node1', width: 100, height: 100, offsetX: 100, offsetY: 100,
+                        style: {
+                            fill: 'red', opacity: 0.8, gradient: {
+                                x1: 0, y1: 0, x2: 0, y2: 100, stops: [{ color: 'red', offset: 0 }, { color: 'blue', offset: 1 }],
+                                type: 'Linear'
+                            }
+                        }
+                    },
+                    {
+                        id: 'node2', width: 100, height: 100, offsetX: 400, offsetY: 700,
+                        style: {
+                            fill: 'red', opacity: 0.8, gradient: {
+                                x1: 0, y1: 0, x2: 0, y2: 100, stops: [{ color: 'red', offset: 0 }, { color: 'blue', offset: 1 }],
+                                type: 'Linear'
+                            }
+                        }
+                    },
+                    {
+                        id: 'nodesss2', width: 100, height: 100, offsetX: 400, offsetY: 100,
+                        style: {
+                            fill: 'red', opacity: 0.8, gradient: {
+                                x1: 0, y1: 0, x2: 0, y2: 100, stops: [{ color: 'red', offset: 0 }, { color: 'blue', offset: 1 }],
+                                type: 'Linear'
+                            }
+                        }
+                    }
+                ]
+                diagram = new Diagram({
+                    width: '100%', height: '600px', nodes: nodes,
+                    mode: 'SVG',
+
+                    pageSettings: { width: 500, height: 200 }
+                });
+                diagram.appendTo('#diagram');
+
+            });
+
+            afterAll((): void => {
+                diagram.destroy();
+                ele.remove();
+            });
+
+            it('Gradient not applied for the node in export functionality', (done: Function) => {
+                var options: IExportOptions = {};
+                var base64Value = "data:image/jpeg;base64,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"
+                options.region = 'Content';
+                options.fileName = 'export';
+                options.mode = 'Data'
+                options.format = 'JPG';
+                var data;
+                var image = data = diagram.exportDiagram(options);
+                expect(image == base64Value).toBe(true);
+                done();
+            });
+        });
+
     describe('tesing the native node export and print with multiple page', () => {
         let diagram: Diagram;
         let ele: HTMLElement;

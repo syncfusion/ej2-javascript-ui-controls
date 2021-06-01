@@ -6,8 +6,8 @@ import { CellModel, ColumnModel } from './../base/index';
  * @param {string} text - Specify the text.
  * @returns {boolean} - Check whether the text is formula or not.
  */
-export function checkIsFormula(text: string): boolean {
-    return text && text[0] === '=' && text.length > 1;
+export function checkIsFormula(text: string, isEditing?: boolean): boolean {
+    return text && text[0] === '=' && (text.length > 1 || isEditing);
 }
 /**
  * Check whether the value is cell reference or not.

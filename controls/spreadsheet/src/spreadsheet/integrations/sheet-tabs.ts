@@ -96,15 +96,14 @@ export class SheetTabs {
                 this.parent.notify(removeDesignChart, {});
                 if (this.parent.isEdit) {
                     const selection: Selection = window.getSelection();
-                    const editorEle: Element = this.parent.element.getElementsByClassName('e-spreadsheet-edit')[0] as HTMLElement;
-                    let isFormula: boolean = editorEle ? checkIsFormula(editorEle.textContent) : false;
-                    if ( selection && selection.focusNode && (selection.focusNode as Element).classList &&
-                    (selection.focusNode as Element).classList.contains('e-formula-bar-panel')) {
-                        isFormula = checkIsFormula((this.parent.element.querySelector('.e-formula-bar') as HTMLTextAreaElement).value);
+                    const editArgs: { action: string, editedValue: string } = { action: 'getCurrentEditValue', editedValue: '' };
+                    this.parent.notify(editOperation, editArgs);
+                    let formula: boolean = editArgs.editedValue ? checkIsFormula(editArgs.editedValue, true) : false;
+                    if (!formula && selection && selection.focusNode && (selection.focusNode as Element).classList &&
+                        (selection.focusNode as Element).classList.contains('e-formula-bar-panel')) {
+                        formula = checkIsFormula((this.parent.element.querySelector('.e-formula-bar') as HTMLTextAreaElement).value, true);
                     }
-                    if (!isFormula) {
-                        this.parent.endEdit();
-                    }
+                    if (!formula) { this.parent.endEdit(); }
                 }
                 if (this.isSelectCancel) {
                     this.tabInstance.selectedItem = args.previousIndex; this.tabInstance.dataBind();
@@ -181,7 +180,7 @@ export class SheetTabs {
         const tabItems: TabItemModel[] = []; const ddbItems: ItemModel[] = []; let sheetName: string;
         this.parent.sheets.forEach((sheet: SheetModel, index: number) => {
             sheetName = getSheetName(this.parent as Workbook, index);
-            tabItems.push({ header: { 'text': sheetName }, cssClass: sheet.state === 'Visible' ? '' : 'e-hide' });
+            tabItems.push({ header: { 'text': sheetName }, visible: sheet.state === 'Visible' });
             ddbItems.push({ text: sheetName, iconCss: index === this.parent.activeSheetIndex ? 'e-selected-icon e-icons' : '' });
         });
         return { tabItems: tabItems, ddbItems: ddbItems };
@@ -233,8 +232,7 @@ export class SheetTabs {
                     return;
                 }
                 this.parent.setSheetPropertyOnMute(this.parent.sheets[args.idx], 'state', 'Visible');
-                this.tabInstance.items[args.idx].cssClass = '';
-                this.tabInstance.dataBind();
+                this.tabInstance.hideTab(args.idx, false);
             }
         }
         this.tabInstance.selectedItem = args.idx; this.tabInstance.dataBind();
@@ -376,12 +374,7 @@ export class SheetTabs {
 
     private hideSheet(): void {
         this.parent.setSheetPropertyOnMute(this.parent.getActiveSheet(), 'state', 'Hidden');
-        this.tabInstance.items[this.parent.activeSheetIndex].cssClass = 'e-hide';
-        this.tabInstance.dataBind();
-        this.tabInstance.selectedItem = this.parent.skipHiddenSheets(
-            this.parent.activeSheetIndex === this.parent.sheets.length - 1 ? this.parent.activeSheetIndex - 1 :
-                this.parent.activeSheetIndex + 1);
-        this.tabInstance.dataBind();
+        this.tabInstance.hideTab(this.parent.activeSheetIndex);
     }
 
     private removeRenameInput(target: HTMLInputElement): Element {

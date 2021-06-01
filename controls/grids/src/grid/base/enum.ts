@@ -1,4 +1,4 @@
-/** 
+/**
  * Defines Actions of the Grid. They are
  * * paging
  * * refresh
@@ -62,10 +62,10 @@ export type Action =
 
 
 
-/** 
+/**
  * Defines directions of Sorting. They are
  * * Ascending
- * * Descending 
+ * * Descending
  */
 export type SortDirection =
     /**  Defines SortDirection as Ascending */
@@ -73,10 +73,10 @@ export type SortDirection =
     /**  Defines SortDirection as Descending */
     'Descending';
 
-/** 
+/**
  * `columnQueryMode`provides options to retrive data from the datasource. They are
  * * All
- * * Schema 
+ * * Schema
  * * ExcludeHidden
  */
 export type ColumnQueryModeType =
@@ -88,10 +88,10 @@ export type ColumnQueryModeType =
     'ExcludeHidden';
 
 
-/** 
+/**
  * Defines types of Selection. They are
  * * Single - Allows user to select a row or cell.
- * * Multiple - Allows user to select multiple rows or cells. 
+ * * Multiple - Allows user to select multiple rows or cells.
  */
 export type SelectionType =
     /**  Defines Single selection in the Grid */
@@ -99,7 +99,7 @@ export type SelectionType =
     /**  Defines multiple selections in the Grid */
     'Multiple';
 
-/** 
+/**
  * Defines modes of checkbox Selection. They are
  * * Default
  * * ResetOnRowClick
@@ -110,12 +110,12 @@ export type CheckboxSelectionType =
     /**  Allows to reset the previously selected row when a row is clicked and multiple rows can be selected by using CTRL or SHIFT key */
     'ResetOnRowClick';
 
-/** 
+/**
  * Defines alignments of text, they are
  * * Left
  * * Right
  * * Center
- * * Justify 
+ * * Justify
  */
 export type TextAlign =
     /**  Defines Left alignment */
@@ -127,8 +127,9 @@ export type TextAlign =
     /**  Defines Justify alignment */
     'Justify';
 
-/** 
- * Defines types of Cell 
+/**
+ * Defines types of Cell
+ *
  * @hidden
  */
 export enum CellType {
@@ -170,12 +171,12 @@ export enum CellType {
     RowDragHIcon
 }
 
-/** 
- * Defines modes of GridLine, They are 
- * * Both - Displays both the horizontal and vertical grid lines. 
+/**
+ * Defines modes of GridLine, They are
+ * * Both - Displays both the horizontal and vertical grid lines.
  * * None - No grid lines are displayed.
- * * Horizontal - Displays the horizontal grid lines only. 
- * * Vertical - Displays the vertical grid lines only. 
+ * * Horizontal - Displays the horizontal grid lines only.
+ * * Vertical - Displays the vertical grid lines only.
  * * Default - Displays grid lines based on the theme.
  */
 export type GridLine =
@@ -190,8 +191,9 @@ export type GridLine =
     /** Shows the grid lines based on the theme  */
     'Default';
 
-/** 
- * Defines types of Render 
+/**
+ * Defines types of Render
+ *
  * @hidden
  */
 export enum RenderType {
@@ -203,11 +205,11 @@ export enum RenderType {
     Summary
 }
 
-/** 
- * Defines modes of Selection, They are 
- * * Row  
- * * Cell  
- * * Both 
+/**
+ * Defines modes of Selection, They are
+ * * Row
+ * * Cell
+ * * Both
  */
 export type SelectionMode =
     /**  Defines SelectionMode as Cell */
@@ -217,9 +219,9 @@ export type SelectionMode =
     /**  Defines SelectionMode as Both */
     'Both';
 
-/** 
+/**
  * Print mode options are
- * * AllPages - Print all pages records of the Grid. 
+ * * AllPages - Print all pages records of the Grid.
  * * CurrentPage - Print current page records of the Grid.
  */
 export type PrintMode =
@@ -228,7 +230,7 @@ export type PrintMode =
     /**  Defines PrintMode as CurrentPage */
     'CurrentPage';
 
-/** 
+/**
  * Hierarchy Grid Print modes are
  * * `Expanded` - Prints the master grid with expanded child grids.
  * * `All` - Prints the master grid with all the child grids.
@@ -242,12 +244,12 @@ export type HierarchyGridPrintMode =
     /** Defines Hierarchy PrintMode as None */
     'None';
 
-/** 
- * Defines types of Filter 
- * * Menu - Specifies the filter type as menu. 
- * * Excel - Specifies the filter type as excel. 
- * * FilterBar - Specifies the filter type as filter bar.  
- * * CheckBox - Specifies the filter type as check box. 
+/**
+ * Defines types of Filter
+ * * Menu - Specifies the filter type as menu.
+ * * Excel - Specifies the filter type as excel.
+ * * FilterBar - Specifies the filter type as filter bar.
+ * * CheckBox - Specifies the filter type as check box.
  */
 export type FilterType =
     /**  Defines FilterType as filterbar */
@@ -259,10 +261,10 @@ export type FilterType =
     /**  Defines FilterType as checkbox */
     'CheckBox';
 
-/** 
- * Filter bar mode options are 
- * * OnEnter - Initiate filter operation after Enter key is pressed. 
- * * Immediate -  Initiate filter operation after certain time interval. By default time interval is 1500 ms.    
+/**
+ * Filter bar mode options are
+ * * OnEnter - Initiate filter operation after Enter key is pressed.
+ * * Immediate -  Initiate filter operation after certain time interval. By default time interval is 1500 ms.
  */
 export type FilterBarMode =
     /**  Defines FilterBarMode as onenter */
@@ -271,7 +273,7 @@ export type FilterBarMode =
     'Immediate';
 
 /**
- * Defines the aggregate types. 
+ * Defines the aggregate types.
  */
 export type AggregateType =
     /** Defines sum aggregate type */
@@ -316,6 +318,7 @@ export type MultipleExportType =
 
 /**
  * Defines Predefined toolbar items.
+ *
  * @hidden
  */
 export type ToolbarItems =
@@ -344,11 +347,11 @@ export type ToolbarItems =
     /** Export the Grid to word fromat */
     'WordExport';
 
-/** 
- * Defines the cell content's overflow mode. The available modes are   
- * * `Clip` -  Truncates the cell content when it overflows its area. 
+/**
+ * Defines the cell content's overflow mode. The available modes are
+ * * `Clip` -  Truncates the cell content when it overflows its area.
  * * `Ellipsis` -  Displays ellipsis when the cell content overflows its area.
- * * `EllipsisWithTooltip` - Displays ellipsis when the cell content overflows its area 
+ * * `EllipsisWithTooltip` - Displays ellipsis when the cell content overflows its area
  * also it will display tooltip while hover on ellipsis applied cell.
  */
 export type ClipMode =
@@ -378,7 +381,7 @@ export type CommandButtonType =
     /**  Cancel the edited state */
     'Cancel';
 
-/** 
+/**
  * Defines the default items of context menu.
  */
 export type ContextMenuItem =
@@ -419,7 +422,7 @@ export type ContextMenuItem =
     /**  Go to the next page */
     'NextPage';
 
-/** 
+/**
  * Defines the default items of Column menu.
  */
 export type ColumnMenuItem =
@@ -442,6 +445,7 @@ export type ColumnMenuItem =
 
 /**
  * Defines Predefined toolbar items.
+ *
  * @hidden
  */
 export enum ToolbarItem {
@@ -585,10 +589,10 @@ export type BorderLineStyle =
 
 export type CheckState = 'Check' | 'Uncheck' | 'Intermediate' | 'None';
 
-/** 
+/**
  * Defines mode of cell selection.
  * * Flow
- * * Box 
+ * * Box
  */
 export type CellSelectionMode =
     /**  Defines CellSelectionMode as Flow */
@@ -599,10 +603,10 @@ export type CellSelectionMode =
     'BoxWithBorder';
 
 
-/** 
+/**
  * Defines modes of editing.
  * * Normal
- * * Dialog 
+ * * Dialog
  * * Batch
  */
 export type EditMode =
@@ -613,7 +617,7 @@ export type EditMode =
     /**  Defines EditMode as Batch */
     'Batch';
 
-/** 
+/**
  * Defines adding new row position.
  * * Top
  * * Bottom
@@ -624,12 +628,12 @@ export type NewRowPosition =
     /**  Defines row adding position as Top */
     'Bottom';
 
-/** 
+/**
  * Defines the Edit Type of the column
  * * DefaultEdit
- * * DropdownEdit 
+ * * DropdownEdit
  * * BooleanEdit
- * * DatepickerEdit 
+ * * DatepickerEdit
  * * DatetimepickerEdit
  * * NumericEdit
  */
@@ -650,9 +654,9 @@ export type EditType =
 /**
  * Defines the Column Type
  * * String
- * * Number 
+ * * Number
  * * Boolean
- * * Date 
+ * * Date
  * * DateTime
  * * checkBox
  */
@@ -675,7 +679,7 @@ export type ColumnType =
 /**
  * Defines the Aggregate Template Type
  * * groupCaptionTemplate
- * * groupFooterTemplate 
+ * * groupFooterTemplate
  * * footerTemplate
  */
 export type AggregateTemplateType =
@@ -683,7 +687,7 @@ export type AggregateTemplateType =
     'GroupFooter' |
     'Footer';
 
-/** 
+/**
  * Defines mode of resizing.
  * * Normal
  * * Auto
@@ -694,7 +698,7 @@ export type ResizeMode =
     /**  Resized column width will be adjusted by other columns automatically */
     'Auto';
 
-/** 
+/**
  * Defines freeze direction of the grid columns
  * * Left
  * * Right
@@ -705,8 +709,9 @@ export type freezeDirection =
     /**  freeze the columns at right */
     'Right';
 
-/** 
+/**
  * Defines rendered part of the grid column
+ *
  * @hidden
  */
 export type freezeTable =
@@ -717,7 +722,7 @@ export type freezeTable =
     /**  Defines rendered the columns at movable part */
     'movable';
 
-/** 
+/**
  * Defines name of the Grid frozen mode
  * * Left
  * * Right
@@ -731,8 +736,9 @@ export type freezeMode =
     /**  Left and right frozen mode */
     'Left-Right';
 
-/** 
+/**
  * Defines types of responsive dialogs
+ *
  * @hidden
  */
 export enum ResponsiveDialogAction {
@@ -746,8 +752,9 @@ export enum ResponsiveDialogAction {
     isFilter
 }
 
-/** 
- * Defines responsive toolbar actions 
+/**
+ * Defines responsive toolbar actions
+ *
  * @hidden
  */
 export enum ResponsiveToolbarAction {
@@ -757,7 +764,7 @@ export enum ResponsiveToolbarAction {
     isSearch
 }
 
-/** 
+/**
  * Defines mode of row rendering.
  * * Horizontal
  * * Vertical

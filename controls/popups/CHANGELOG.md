@@ -2,6 +2,22 @@
 
 ## [Unreleased]
 
+## 19.1.66 (2021-06-01)
+
+### Popup
+
+#### Bug Fixes
+
+- `#I326779` - The issue with "Image quicktoolbar not show second time when the dialog is opened second time" has been resolved.
+
+## 19.1.64 (2021-05-19)
+
+### Popup
+
+#### Bug Fixes
+
+- `#I317799` - The issue with "Script error is raised, when the `element` is not present" has been resolved.
+
 ## 19.1.63 (2021-05-13)
 
 ### Dialog

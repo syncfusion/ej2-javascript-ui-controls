@@ -1,4 +1,4 @@
-import { Spreadsheet, DialogBeforeOpenEventArgs } from '../index';
+import { Spreadsheet, DialogBeforeOpenEventArgs, ICellRenderer } from '../index';
 import { initiateHyperlink, locale, dialog, click, keyUp, createHyperlinkElement, getUpdateUsingRaf, focus } from '../common/index';
 import { editHyperlink, openHyperlink, editAlert } from '../common/index';
 import { L10n, isNullOrUndefined, closest } from '@syncfusion/ej2-base';
@@ -6,7 +6,7 @@ import { Dialog } from '../services';
 import { SheetModel } from '../../workbook/base/sheet-model';
 import { getRangeIndexes, getCellIndexes, getRangeAddress } from '../../workbook/common/address';
 import { CellModel, HyperlinkModel, BeforeHyperlinkArgs, AfterHyperlinkArgs, getTypeFromFormat, getCell } from '../../workbook/index';
-import { beforeHyperlinkClick, afterHyperlinkClick } from '../../workbook/common/event';
+import { beforeHyperlinkClick, afterHyperlinkClick, refreshRibbonIcons, deleteHyperlink } from '../../workbook/common/event';
 import { isCellReference, DefineNameModel } from '../../workbook/index';
 import { Tab, TreeView } from '@syncfusion/ej2-navigations';
 import { BeforeOpenEventArgs } from '@syncfusion/ej2-popups';
@@ -44,6 +44,7 @@ export class SpreadsheetHyperlink {
         this.parent.on(click, this.hyperlinkClickHandler, this);
         this.parent.on(createHyperlinkElement, this.createHyperlinkElementHandler, this);
         this.parent.on(keyUp, this.keyUpHandler, this);
+        this.parent.on(deleteHyperlink, this.removeHyperlink, this);
     }
 
     private removeEventListener(): void {
@@ -54,6 +55,7 @@ export class SpreadsheetHyperlink {
             this.parent.off(click, this.hyperlinkClickHandler);
             this.parent.off(createHyperlinkElement, this.createHyperlinkElementHandler);
             this.parent.off(keyUp, this.keyUpHandler);
+            this.parent.off(deleteHyperlink, this.removeHyperlink);
         }
     }
 
@@ -786,5 +788,25 @@ export class SpreadsheetHyperlink {
         treeObj.appendTo(refCont);
         docContElem.appendChild(sheetCont);
         return dialogElem;
+    }
+
+    private removeHyperlink(args: { sheet: SheetModel, rowIdx: number, colIdx: number, preventRefresh?: boolean }): void {
+        const cell: CellModel = getCell(args.rowIdx, args.colIdx, args.sheet);
+        if (cell && cell.hyperlink) {
+            if (typeof (cell.hyperlink) === 'string') {
+                cell.value = cell.value ? cell.value : cell.hyperlink;
+            } else {
+                cell.value = cell.value ? cell.value : cell.hyperlink.address;
+            }
+            delete (cell.hyperlink);
+            if (cell.style) { delete cell.style.textDecoration; delete cell.style.color; }
+            if (args.sheet === this.parent.getActiveSheet()) {
+                if (cell.style) { this.parent.notify(refreshRibbonIcons, null); }
+                if (!args.preventRefresh) {
+                    this.parent.serviceLocator.getService<ICellRenderer>('cell').refreshRange(
+                        [args.rowIdx, args.colIdx, args.rowIdx, args.colIdx]);
+                }
+            }
+        }
     }
 }

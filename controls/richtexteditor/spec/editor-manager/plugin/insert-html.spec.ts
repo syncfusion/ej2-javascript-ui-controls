@@ -3,6 +3,7 @@
  */
 import { detach } from '@syncfusion/ej2-base';
 import { InsertHtml } from '../../../src/editor-manager/plugin/inserthtml';
+import { NodeCutter } from '../../../src/editor-manager/plugin/nodecutter';
 import { NodeSelection } from '../../../src/selection/index';
 
 describe('Insert HTML', () => {
@@ -200,5 +201,42 @@ describe('Insert HTML', () => {
         InsertHtml.Insert(document, table1, editNode);
         expect(document.getElementById('divElement').children.length === 1).toBe(true);
         expect(document.getElementById('divElement').children[0].tagName === 'TABLE').toBe(true);
+    });
+});
+
+describe('EJ2-49169-InsertHtml for the pasted elements not inserted properly', function () {
+    let innervalue: string = '<p><span>Please click this link to download a calendar reminder for this date and time</span></p><p><a classname="e-rte-anchor" href="https://www.grouptechedge.com/Reminders/TechEdgeServiceMaintenanceWindow521.ics" title="https://www.grouptechedge.com/Reminders/TechEdgeServiceMaintenanceWindow521.ics" target="_blank">https://www.grouptechedge.com/Reminders/TechEdgeServiceMaintenanceWindow521.ics </a></p><p><br></p><p>This will affect both the US and DK production site.</p><p></p>';
+    let nonDOMvalue: string = '<br>';
+    let rangeNodes: Node[] = [];
+    let range: Range;
+    let nodeCutter: NodeCutter = new NodeCutter();
+    let divElement: HTMLElement = document.createElement('div');
+    let pasteElement: HTMLElement = document.createElement('div');
+    let pElement: HTMLElement = document.createElement('p');
+    divElement.id = 'divElement';
+    pElement.id='nonDOM';
+    pasteElement.classList.add('pasteContent');
+    pasteElement.style.display = 'inline';
+    divElement.contentEditable = 'true';
+    divElement.innerHTML = innervalue;
+    pasteElement.innerHTML = innervalue;
+    pElement.innerHTML = nonDOMvalue;
+    beforeAll(function () {
+        document.body.appendChild(divElement);
+    });
+    afterAll(function () {
+        detach(divElement);
+    });
+    it('Inserting pasted element in the empty node', function () {
+        range = document.createRange();
+        range.setStart(divElement.childNodes[0].childNodes[0].firstChild, 0);
+        range.setEnd(divElement.childNodes[4], 0);
+        rangeNodes.push(divElement.childNodes[0].childNodes[0].firstChild);
+        rangeNodes.push(divElement.childNodes[1].childNodes[0].firstChild);
+        rangeNodes.push(divElement.childNodes[2].firstChild);
+        rangeNodes.push(divElement.childNodes[3].firstChild);
+        rangeNodes.push(pElement.firstChild);
+        (InsertHtml as any).insertTempNode(range, pasteElement, rangeNodes, nodeCutter, divElement);
+        expect((divElement as any).childNodes[4].childNodes.length).toBe(5);
     });
 });

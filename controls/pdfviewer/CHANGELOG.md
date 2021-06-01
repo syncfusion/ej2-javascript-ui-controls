@@ -2,6 +2,22 @@
 
 ## [Unreleased]
 
+## 19.1.66 (2021-06-01)
+
+### PDF Viewer
+
+#### Bug Fixes
+
+- `#328030` - The dynamic stamp annotation size is maintained properly while importing and exporting the stamp annotation in XFDF format.
+
+## 19.1.65 (2021-05-25)
+
+### PDF Viewer
+
+#### New Features
+
+- `#326021` - hyperlinkClick event must be handled to cancel the navigation or change the URL.
+
 ## 19.1.64 (2021-05-19)
 
 ### PDF Viewer

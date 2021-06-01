@@ -13,7 +13,7 @@ import { Size } from './primitives/size';
 import { DiagramRegions, SnapConstraints, PageOrientation } from './enum/enum';
 import { setAttributeHtml, setAttributeSvg, createHtmlElement } from './utility/dom-util';
 import { Rect } from './primitives/rect';
-import { MarginModel } from './core/appearance-model';
+import { DiagramGradientModel, GradientModel, MarginModel } from './core/appearance-model';
 import { createSvgElement, getHTMLLayer } from './utility/dom-util';
 import { getDiagramLayerSvg } from './utility/dom-util';
 import { checkBrowserInfo } from './utility/diagram-util';
@@ -24,6 +24,7 @@ import { DiagramHtmlElement } from './core/elements/html-element';
 import { DiagramNativeElement } from './core/elements/native-element';
 import { DiagramElement } from './core/elements/diagram-element';
 import { Container } from './core/containers/container';
+import { LinearGradient } from './core/appearance';
 
 
 
@@ -519,10 +520,29 @@ export class PrintAndExport {
         }
     }
 
+    private scaleGradientValue(node: NodeModel, scaleValue: number, isExport: boolean) {
+        if (node.style.gradient.stops.length > 0) {
+            let gradients: DiagramGradientModel = node.style.gradient;
+            if (node.style.gradient instanceof LinearGradient) {
+
+                gradients.x1 = isExport ? gradients.x1 * scaleValue : gradients.x1 / scaleValue;
+                gradients.y1 = isExport ? gradients.y1 * scaleValue : gradients.y1 / scaleValue;
+                gradients.x2 = isExport ? gradients.x2 * scaleValue : gradients.x2 / scaleValue;
+                gradients.y2 = isExport ? gradients.y2 * scaleValue : gradients.y2 / scaleValue;
+            } else {
+                gradients.fx = isExport ? gradients.fx * scaleValue : gradients.fx / scaleValue;
+                gradients.fy = isExport ? gradients.fy * scaleValue : gradients.fy / scaleValue;
+                gradients.cx = isExport ? gradients.cx * scaleValue : gradients.cx / scaleValue;
+                gradients.cy = isExport ? gradients.cy * scaleValue : gradients.cy / scaleValue;
+                gradients.r = isExport ? gradients.r * scaleValue : gradients.r / scaleValue;
+            }
+        }
+    }
     private updateObjectValue(value: number, scaleOffsetX: number, scaleOffsetY: number, isExport: boolean): void {
         let wrapper: Container;
         for (let i: number = 0; i < this.diagram.nodes.length; i++) {
             wrapper = this.diagram.nodes[i].wrapper;
+            this.scaleGradientValue(this.diagram.nodes[i], value, isExport);
             this.updateWrapper(wrapper.children, value, scaleOffsetX, scaleOffsetY, isExport);
             wrapper.exportScaleValue.x = value;
             wrapper.exportScaleValue.y = value;
@@ -721,7 +741,11 @@ export class PrintAndExport {
                         '<html><head><style> body{margin:0px;}  @media print { .e-diagram-print-page' +
                         '{page-break-after: left; }.e-diagram-print-page:last-child {page-break-after: avoid;}}' +
                         '</style><title></title></head>');
-                    printWind.document.write('<BODY onload="setTimeout(function(){window.print();}, 100)">');
+                    printWind.addEventListener('load', (event) => {
+                        setTimeout(() => {
+                            printWind.window.print()
+                        }, 3000);
+                    });
                     printWind.document.write('<center>' + div.innerHTML + '</center>');
                     printWind.document.close();
                 }

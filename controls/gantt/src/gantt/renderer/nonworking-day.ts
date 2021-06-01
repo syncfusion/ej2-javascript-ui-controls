@@ -22,7 +22,7 @@ export class NonWorkingDay {
      * @returns {void} .
      */
     private createNonworkingContainer(): void {
-        if (!this.parent.ganttChartModule.chartBodyContent.contains(this.nonworkingContainer)) {
+        if (!this.parent.ganttChartModule.chartBodyContainer.contains(this.nonworkingContainer)) {
             this.nonworkingContainer = createElement('div', {
                 className: cls.nonworkingContainer, styles: 'top:' +
                 this.parent.ganttChartModule.chartTimelineContainer.offsetHeight + 'px;'

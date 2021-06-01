@@ -5,7 +5,8 @@ import { CellRenderer } from './cell-renderer';
 import { Column } from '../models/column';
 
 /**
- * DetailHeaderIndentCellRenderer class which responsible for building detail header indent cell. 
+ * DetailHeaderIndentCellRenderer class which responsible for building detail header indent cell.
+ *
  * @hidden
  */
 export class RowDragDropHeaderRenderer extends CellRenderer implements ICellRenderer<Column> {
@@ -14,11 +15,14 @@ export class RowDragDropHeaderRenderer extends CellRenderer implements ICellRend
 
     /**
      * Function to render the detail indent cell
-     * @param  {Cell} cell
-     * @param  {Object} data        
+     *
+     * @param  {Cell} cell - specifies the cell
+     * @param  {Object} data - specifies the data
+     * @returns {Element} returns the element
      */
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     public render(cell: Cell<Column>, data: Object): Element {
-        let node: Element = this.element.cloneNode() as Element;
+        const node: Element = this.element.cloneNode() as Element;
         node.appendChild(createElement('div', { className: 'e-emptycell' }));
         return node;
     }

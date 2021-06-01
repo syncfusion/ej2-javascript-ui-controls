@@ -5,7 +5,7 @@ import { Pager, IRender } from './pager';
  * `PagerMessage` module is used to display pager information.
  */
 export class PagerMessage implements IRender {
-    //Internal variables    
+    //Internal variables
     private pageNoMsgElem: HTMLElement;
     private pageCountMsgElem: HTMLElement;
 
@@ -15,6 +15,8 @@ export class PagerMessage implements IRender {
 
     /**
      * Constructor for externalMessage module
+     *
+     * @param {Pager} pagerModule - specifies the pager Module
      * @hidden
      */
     constructor(pagerModule?: Pager) {
@@ -23,10 +25,12 @@ export class PagerMessage implements IRender {
 
     /**
      * The function is used to render pager message
+     *
+     * @returns {void}
      * @hidden
      */
     public render(): void {
-        let div: Element = createElement('div', { className: 'e-parentmsgbar', attrs: { 'aria-label': 'Pager Information' } });
+        const div: Element = createElement('div', { className: 'e-parentmsgbar', attrs: { 'aria-label': 'Pager Information' } });
         this.pageNoMsgElem = createElement('span', { className: 'e-pagenomsg', styles: 'textalign:right' });
         this.pageCountMsgElem = createElement('span', { className: 'e-pagecountmsg', styles: 'textalign:right' });
         append([this.pageNoMsgElem, this.pageCountMsgElem], div);
@@ -35,10 +39,12 @@ export class PagerMessage implements IRender {
     }
 
     /**
-     * Refreshes the pager information. 
+     * Refreshes the pager information.
+     *
+     * @returns {void}
      */
     public refresh(): void {
-        let pagerObj: Pager = this.pagerModule;
+        const pagerObj: Pager = this.pagerModule;
         if (isBlazor()) {
             this.pageNoMsgElem.textContent = this.format(
                 pagerObj.getLocalizedLabel('CurrentPageInfo'), [pagerObj.totalRecordsCount === 0 ? 0 :
@@ -53,13 +59,15 @@ export class PagerMessage implements IRender {
                 pagerObj.getLocalizedLabel(pagerObj.totalRecordsCount <= 1 ? 'totalItemInfo' : 'totalItemsInfo'),
                 [pagerObj.totalRecordsCount || 0, pagerObj.totalRecordsCount ? (pagerObj.pageSize * (pagerObj.currentPage - 1)) + 1 : 0,
                     pagerObj.pageSize * pagerObj.currentPage > pagerObj.totalRecordsCount ? pagerObj.totalRecordsCount :
-                    pagerObj.pageSize * pagerObj.currentPage]);
+                        pagerObj.pageSize * pagerObj.currentPage]);
         }
         this.pageNoMsgElem.parentElement.setAttribute('aria-label', this.pageNoMsgElem.textContent + this.pageCountMsgElem.textContent);
     }
 
     /**
      * Hides the Pager information.
+     *
+     * @returns {void}
      */
     public hideMessage(): void {
         if (this.pageNoMsgElem) {
@@ -71,7 +79,9 @@ export class PagerMessage implements IRender {
     }
 
     /**
-     * Shows the Pager information. 
+     * Shows the Pager information.
+     *
+     * @returns {void}
      */
     public showMessage(): void {
         if (!this.pageNoMsgElem) {
@@ -84,8 +94,9 @@ export class PagerMessage implements IRender {
 
     /**
      * To destroy the PagerMessage
-     * @method destroy
-     * @return {void}  
+     *
+     * @function destroy
+     * @returns {void}
      * @hidden
      */
     public destroy(): void {

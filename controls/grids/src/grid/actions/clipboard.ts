@@ -1,4 +1,4 @@
-import { Browser, KeyboardEventArgs, remove, EventHandler, isUndefined, closest, classList, isBlazor } from '@syncfusion/ej2-base';
+import { Browser, KeyboardEventArgs, remove, EventHandler, isUndefined, closest, classList } from '@syncfusion/ej2-base';
 import { IGrid, IAction, BeforeCopyEventArgs, BeforePasteEventArgs } from '../base/interface';
 import { Column } from '../models/column';
 import { parentsUntil } from '../base/util';
@@ -10,7 +10,7 @@ import * as literals from '../base/string-literals';
  * The `Clipboard` module is used to handle clipboard copy action.
  */
 export class Clipboard implements IAction {
-    //Internal variables 
+    //Internal variables
     private activeElement: Element;
     protected clipBoardTextArea: HTMLInputElement;
     private copyContent: string = '';
@@ -20,6 +20,8 @@ export class Clipboard implements IAction {
 
     /**
      * Constructor for the Grid clipboard module
+     *
+     * @param {IGrid} parent - specifies the IGrid
      * @hidden
      */
     constructor(parent?: IGrid) {
@@ -28,6 +30,7 @@ export class Clipboard implements IAction {
     }
 
     /**
+     * @returns {void}
      * @hidden
      */
     public addEventListener(): void {
@@ -39,6 +42,7 @@ export class Clipboard implements IAction {
     }
 
     /**
+     * @returns {void}
      * @hidden
      */
     public removeEventListener(): void {
@@ -50,22 +54,24 @@ export class Clipboard implements IAction {
     }
 
     private clickHandler(e: MouseEvent): void {
-        let target: HTMLElement = parentsUntil(e.target as HTMLElement, literals.rowCell) as HTMLElement;
+        let target: HTMLElement = e.target as HTMLElement;
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        target = parentsUntil(target, 'e-rowcell') as HTMLElement;
     }
 
     private pasteHandler(e: KeyboardEvent): void {
-        let grid: IGrid = this.parent;
-        let isMacLike: boolean = /(Mac)/i.test(navigator.platform);
+        const grid: IGrid = this.parent;
+        const isMacLike: boolean = /(Mac)/i.test(navigator.platform);
         if (e.keyCode === 86 && (e.ctrlKey || (isMacLike && e.metaKey)) && !grid.isEdit) {
-            let target: HTMLElement = closest(document.activeElement, '.' + literals.rowCell) as HTMLElement;
+            const target: HTMLElement = closest(document.activeElement, '.' + literals.rowCell) as HTMLElement;
             if (!target || !grid.editSettings.allowEditing || grid.editSettings.mode !== 'Batch' ||
                 grid.selectionSettings.mode !== 'Cell' || grid.selectionSettings.cellSelectionMode === 'Flow') {
                 return;
             }
             this.activeElement = document.activeElement;
             this.clipBoardTextArea.value = '';
-            let x: number = window.scrollX;
-            let y: number = window.scrollY;
+            const x: number = window.scrollX;
+            const y: number = window.scrollY;
             this.clipBoardTextArea.focus();
             setTimeout(
                 () => {
@@ -75,7 +81,7 @@ export class Clipboard implements IAction {
                         this.clipBoardTextArea.value,
                         this.parent.getSelectedRowCellIndexes()[0].rowIndex,
                         this.parent.getSelectedRowCellIndexes()[0].cellIndexes[0]
-                        );
+                    );
                 },
                 10);
         }
@@ -83,12 +89,14 @@ export class Clipboard implements IAction {
 
     /**
      * Paste data from clipboard to selected cells.
+     *
      * @param {boolean} data - Specifies the date for paste.
      * @param {boolean} rowIndex - Specifies the row index.
      * @param {boolean} colIndex - Specifies the column index.
+     * @returns {void}
      */
     public paste(data: string, rowIndex: number, colIndex: number): void {
-        let grid: IGrid = this.parent;
+        const grid: IGrid = this.parent;
         let cIdx: number = colIndex;
         let rIdx: number = rowIndex;
         let col: Column;
@@ -98,12 +106,12 @@ export class Clipboard implements IAction {
             grid.selectionSettings.mode !== 'Cell' || grid.selectionSettings.cellSelectionMode === 'Flow') {
             return;
         }
-        let rows: string[] = data.split('\n');
+        const rows: string[] = data.split('\n');
         let cols: string[];
-        let dataRows: HTMLElement[] = grid.getDataRows() as HTMLElement[];
+        const dataRows: HTMLElement[] = grid.getDataRows() as HTMLElement[];
         let mRows: HTMLElement[];
         let frRows: HTMLElement[];
-        let isFrozen: boolean = this.parent.isFrozenGrid();
+        const isFrozen: boolean = this.parent.isFrozenGrid();
         if (isFrozen) {
             mRows = grid.getMovableDataRows() as HTMLElement[];
             if (grid.getFrozenRightColumnsCount()) {
@@ -121,12 +129,12 @@ export class Clipboard implements IAction {
             for (let c: number = 0; c < cols.length; c++) {
                 isAvail = grid.getCellFromIndex(rIdx, cIdx);
                 if (isFrozen) {
-                    let fTr: HTMLElement = dataRows[rIdx];
-                    let mTr: HTMLElement = mRows[rIdx];
+                    const fTr: HTMLElement = dataRows[rIdx];
+                    const mTr: HTMLElement = mRows[rIdx];
                     isAvail = !fTr.querySelector('[aria-colindex="' + cIdx + '"]') ?
                         mTr.querySelector('[aria-colindex="' + cIdx + '"]') : true;
                     if (frRows && !isAvail) {
-                        let frTr: HTMLElement = frRows[rIdx];
+                        const frTr: HTMLElement = frRows[rIdx];
                         isAvail = frTr.querySelector('[aria-colindex="' + cIdx + '"]');
                     }
                 }
@@ -137,7 +145,7 @@ export class Clipboard implements IAction {
                 col = grid.getColumnByIndex(cIdx);
                 value = col.getParser() ? col.getParser()(cols[c]) : cols[c];
                 if (col.allowEditing && !col.isPrimaryKey && !col.template) {
-                    let args: BeforePasteEventArgs = {
+                    const args: BeforePasteEventArgs = {
                         column: col,
                         data: value,
                         rowIndex: rIdx
@@ -160,7 +168,7 @@ export class Clipboard implements IAction {
         }
         grid.selectionModule.selectCellsByRange(
             { rowIndex: rowIndex, cellIndex: colIndex }, { rowIndex: rIdx - 1, cellIndex: cIdx - 1 });
-        let cell: Element = this.parent.getCellFromIndex(rIdx - 1, cIdx - 1);
+        const cell: Element = this.parent.getCellFromIndex(rIdx - 1, cIdx - 1);
         if (cell) {
             classList(cell, ['e-focus', 'e-focused'], []);
         }
@@ -186,11 +194,11 @@ export class Clipboard implements IAction {
 
     protected setCopyData(withHeader?: boolean): void {
         if (window.getSelection().toString() === '') {
-            let isFrozen: boolean = this.parent.isFrozenGrid();
+            const isFrozen: boolean = this.parent.isFrozenGrid();
             this.clipBoardTextArea.value = this.copyContent = '';
             let mRows: Element[];
             let frRows: Element[];
-            let rows: Element[] = this.parent.getRows();
+            const rows: Element[] = this.parent.getRows();
             if (isFrozen) {
                 mRows = this.parent.getMovableDataRows();
                 if (this.parent.getFrozenMode() === literals.leftRight) {
@@ -198,9 +206,9 @@ export class Clipboard implements IAction {
                 }
             }
             if (this.parent.selectionSettings.mode !== 'Cell') {
-                let selectedIndexes: Object[] = this.parent.getSelectedRowIndexes().sort((a: number, b: number) => { return a - b; });
+                const selectedIndexes: Object[] = this.parent.getSelectedRowIndexes().sort((a: number, b: number) => { return a - b; });
                 if (withHeader) {
-                    let headerTextArray: string[] = [];
+                    const headerTextArray: string[] = [];
                     for (let i: number = 0; i < this.parent.getVisibleColumns().length; i++) {
                         headerTextArray[i] = this.parent.getVisibleColumns()[i].headerText;
                     }
@@ -211,7 +219,7 @@ export class Clipboard implements IAction {
                     if (i > 0) {
                         this.copyContent += '\n';
                     }
-                    let cells: HTMLElement[] = [].slice.call(rows[selectedIndexes[i] as number].
+                    const cells: HTMLElement[] = [].slice.call(rows[selectedIndexes[i] as number].
                         querySelectorAll('.e-rowcell:not(.e-hide)'));
                     if (isFrozen) {
                         cells.push(...[].slice.call(mRows[selectedIndexes[i] as number].querySelectorAll('.e-rowcell:not(.e-hide)')));
@@ -222,10 +230,10 @@ export class Clipboard implements IAction {
                     this.getCopyData(cells, false, '\t', withHeader);
                 }
             } else {
-                let obj: { status: boolean, rowIndexes?: number[], colIndexes?: number[] } = this.checkBoxSelection();
+                const obj: { status: boolean, rowIndexes?: number[], colIndexes?: number[] } = this.checkBoxSelection();
                 if (obj.status) {
                     if (withHeader) {
-                        let headers: HTMLElement[] = [];
+                        const headers: HTMLElement[] = [];
                         for (let i: number = 0; i < obj.colIndexes.length; i++) {
                             headers.push(this.parent.getColumnHeaderByIndex(obj.colIndexes[i]) as HTMLElement);
                         }
@@ -236,7 +244,7 @@ export class Clipboard implements IAction {
                         if (i > 0) {
                             this.copyContent += '\n';
                         }
-                        let cells: HTMLElement[] = [].slice.call(rows[obj.rowIndexes[i] as number].
+                        const cells: HTMLElement[] = [].slice.call(rows[obj.rowIndexes[i] as number].
                             getElementsByClassName('e-cellselectionbackground'));
                         if (isFrozen) {
                             cells.push(...[].slice.call(mRows[obj.rowIndexes[i] as number]
@@ -254,9 +262,9 @@ export class Clipboard implements IAction {
                         true, '\n', withHeader);
                 }
             }
-            let args: BeforeCopyEventArgs = {
+            const args: BeforeCopyEventArgs = {
                 data: this.copyContent,
-                cancel: false,
+                cancel: false
             };
             this.parent.trigger(events.beforeCopy, args);
             if (args.cancel) {
@@ -273,11 +281,11 @@ export class Clipboard implements IAction {
     }
 
     private getCopyData(cells: HTMLElement[] | string[], isCell: boolean, splitKey: string, withHeader?: boolean): void {
-        let isElement: boolean = typeof cells[0] !== 'string';
+        const isElement: boolean = typeof cells[0] !== 'string';
         for (let j: number = 0; j < cells.length; j++) {
             if (withHeader && isCell) {
-                this.copyContent += (this.parent.getColumns() as Column[])
-                [parseInt((cells[j] as HTMLElement).getAttribute(literals.ariaColIndex), 10)].headerText + '\n';
+                const colIdx: number = parseInt((cells[j] as HTMLElement).getAttribute(literals.ariaColIndex), 10);
+                this.copyContent += (this.parent.getColumns() as Column[])[colIdx].headerText + '\n';
             }
             if (isElement) {
                 if (!(cells[j] as HTMLElement).classList.contains('e-hide')) {
@@ -294,6 +302,8 @@ export class Clipboard implements IAction {
 
     /**
      * Copy selected rows or cells data into clipboard.
+     *
+     * @returns {void}
      * @param {boolean} withHeader - Specifies whether the column header data need to be copied or not.
      */
     public copy(withHeader?: boolean): void {
@@ -310,6 +320,8 @@ export class Clipboard implements IAction {
 
     /**
      * For internal use only - Get the module name.
+     *
+     * @returns {string} returns the module name
      * @private
      */
     protected getModuleName(): string {
@@ -317,8 +329,9 @@ export class Clipboard implements IAction {
     }
 
     /**
-     * To destroy the clipboard 
-     * @return {void}
+     * To destroy the clipboard
+     *
+     * @returns {void}
      * @hidden
      */
     public destroy(): void {
@@ -327,12 +340,12 @@ export class Clipboard implements IAction {
     }
 
     private checkBoxSelection(): { status: boolean, rowIndexes?: number[], colIndexes?: number[] } {
-        let gridObj: IGrid = this.parent;
+        const gridObj: IGrid = this.parent;
         let obj: { status: boolean, rowIndexes?: number[], colIndexes?: number[] } = { status: false };
         if (gridObj.selectionSettings.mode === 'Cell') {
-            let rowCellIndxes: ISelectedCell[] = gridObj.getSelectedRowCellIndexes();
+            const rowCellIndxes: ISelectedCell[] = gridObj.getSelectedRowCellIndexes();
             let str: string;
-            let rowIndexes: number[] = [];
+            const rowIndexes: number[] = [];
             let i: number;
             for (i = 0; i < rowCellIndxes.length; i++) {
                 if (rowCellIndxes[i].cellIndexes.length) {

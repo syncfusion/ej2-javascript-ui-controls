@@ -1,6 +1,6 @@
 import { CellStyleModel, getRangeIndexes, setCellFormat, applyCellFormat, activeCellChanged, SetCellFormatArgs } from '../common/index';
-import { CellFormatArgs, getSwapRange, TextDecoration, textDecorationUpdate, BorderType, BeforeCellFormatArgs } from '../common/index';
-import { CellStyleExtendedModel, ClearOptions, clear, getIndexesFromAddress } from '../common/index';
+import { CellFormatArgs, getSwapRange, TextDecoration, textDecorationUpdate, ClearOptions, BeforeCellFormatArgs } from '../common/index';
+import { CellStyleExtendedModel, BorderType, clear, getIndexesFromAddress, activeCellMergedRange, deleteHyperlink } from '../common/index';
 import { SheetModel, Workbook, getSheetIndex, isHiddenRow, getSheet, getCell, CellModel, setCell } from '../base/index';
 
 
@@ -217,7 +217,7 @@ export class WorkbookCellFormat {
                 this.setCellBorder(sheet, { borderTop: border }, range[0], colIdx, actionUpdate, colIdx === range[3]);
                 this.checkAdjustantBorder(sheet, 'borderTop', range[2] + 1, colIdx);
                 this.checkFullBorder(sheet, 'borderTop', range[2] + 1, colIdx);
-                this.setCellBorder(sheet, { borderBottom: border }, range[2], colIdx, actionUpdate, colIdx === range[3]);
+                this.setCellBorder(sheet, { borderBottom: border }, range[2], colIdx, actionUpdate, colIdx === range[3], type);
                 this.setBottomBorderPriority(sheet, range[2], colIdx);
             }
             for (let rowIdx: number = range[0]; rowIdx <= range[2]; rowIdx++) {
@@ -226,7 +226,7 @@ export class WorkbookCellFormat {
                 this.setCellBorder(sheet, { borderLeft: border }, rowIdx, range[1], actionUpdate);
                 this.checkAdjustantBorder(sheet, 'borderLeft', rowIdx, range[3] + 1);
                 this.checkFullBorder(sheet, 'borderLeft', rowIdx, range[3] + 1);
-                this.setCellBorder(sheet, { borderRight: border }, rowIdx, range[3], actionUpdate);
+                this.setCellBorder(sheet, { borderRight: border }, rowIdx, range[3], actionUpdate, null, type);
             }
         } else if (type === 'Inner') {
             for (let i: number = range[0]; i <= range[2]; i++) {
@@ -282,9 +282,15 @@ export class WorkbookCellFormat {
         }
     }
     private setCellBorder(
-        sheet: SheetModel, style: CellStyleModel, rowIdx: number, colIdx: number, actionUpdate: boolean, lastCell?: boolean): void {
+        sheet: SheetModel, style: CellStyleModel, rowIdx: number, colIdx: number, actionUpdate: boolean, lastCell?: boolean, type?: string): void {
         this.setCellStyle(sheet, rowIdx, colIdx, style);
         if (this.parent.getActiveSheet().id === sheet.id) {
+            if (type === 'Outer' && (style.borderBottom || style.borderRight)) {
+                const mergeArgs: { range: number[] } = { range: [rowIdx, colIdx, rowIdx, colIdx] };
+                this.parent.notify(activeCellMergedRange, mergeArgs);
+                rowIdx = mergeArgs.range[0];
+                colIdx = mergeArgs.range[1];
+            }
             this.parent.notify(applyCellFormat, <CellFormatArgs>{
                 style: style, rowIdx: rowIdx, colIdx: colIdx, onActionUpdate: actionUpdate, first: '', lastCell: lastCell,
                 isHeightCheckNeeded: true, manualUpdate: true });
@@ -343,6 +349,9 @@ export class WorkbookCellFormat {
                         delete cell.wrap; delete cell.colSpan;
                         break;
                     case 'Clear Contents':
+                        if (cell.hyperlink) {
+                            this.parent.notify(deleteHyperlink, { sheet: sheet, rowIdx: sRowIdx, colIdx: sColIdx, preventRefresh: true });
+                        }
                         delete cell.value; delete cell.formula;
                         break;
                     case 'Clear Hyperlinks':

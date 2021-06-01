@@ -2,9 +2,21 @@
 
 ## [Unreleased]
 
+## 19.1.66 (2021-06-01)
+
+### Schedule
+
+#### Bug Fixes
+
+- `#F165550` - An issue with script error throws while dragging the scheduler events in IE11 has been fixed.
+
 ## 19.1.65 (2021-05-25)
 
 ### Schedule
+
+#### New Features
+
+- Provided public method to select the resources programmatically based on group index in mobile mode.
 
 #### Bug Fixes
 

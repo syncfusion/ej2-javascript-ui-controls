@@ -9,6 +9,7 @@ import { ColumnFreezeContentRenderer, ColumnFreezeHeaderRenderer } from '../rend
 
 /**
  * `Freeze` module is used to handle Frozen rows and columns.
+ *
  * @hidden
  */
 export class Freeze implements IAction {
@@ -31,20 +32,26 @@ export class Freeze implements IAction {
 
     private instantiateRenderer(): void {
         this.parent.log('limitation', this.getModuleName());
-        let renderer: RendererFactory = this.locator.getService<RendererFactory>('rendererFactory');
+        const renderer: RendererFactory = this.locator.getService<RendererFactory>('rendererFactory');
         if (this.parent.getFrozenColumns()) {
-            this.parent.enableColumnVirtualization ?
-                renderer.addRenderer(RenderType.Header, new VirtualFreezeHdrRenderer(this.parent, this.locator))
-                : renderer.addRenderer(RenderType.Header, new FreezeRender(this.parent, this.locator));
-            this.parent.enableVirtualization ?
-                renderer.addRenderer(RenderType.Content, new VirtualFreezeRenderer(this.parent, this.locator))
-                : renderer.addRenderer(RenderType.Content, new FreezeContentRender(this.parent, this.locator));
+            if ( this.parent.enableColumnVirtualization) {
+                renderer.addRenderer(RenderType.Header, new VirtualFreezeHdrRenderer(this.parent, this.locator));
+            } else {
+                renderer.addRenderer(RenderType.Header, new FreezeRender(this.parent, this.locator));
+            }
+            if (this.parent.enableVirtualization) {
+                renderer.addRenderer(RenderType.Content, new VirtualFreezeRenderer(this.parent, this.locator));
+            } else {
+                renderer.addRenderer(RenderType.Content, new FreezeContentRender(this.parent, this.locator));
+            }
         }
         if (this.parent.getFrozenLeftColumnsCount() || this.parent.getFrozenRightColumnsCount()) {
             renderer.addRenderer(RenderType.Header, new ColumnFreezeHeaderRenderer(this.parent, this.locator));
-            this.parent.enableVirtualization
-                ? renderer.addRenderer(RenderType.Content, new ColumnVirtualFreezeRenderer(this.parent, this.locator))
-                : renderer.addRenderer(RenderType.Content, new ColumnFreezeContentRenderer(this.parent, this.locator));
+            if (this.parent.enableVirtualization) {
+                renderer.addRenderer(RenderType.Content, new ColumnVirtualFreezeRenderer(this.parent, this.locator));
+            } else {
+                renderer.addRenderer(RenderType.Content, new ColumnFreezeContentRenderer(this.parent, this.locator));
+            }
         }
     }
 

@@ -463,10 +463,12 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
      * The template option which is used to render the customized work cells on the Schedule. Here, the template accepts either
      *  the string or HTMLElement as template design and then the parsed design is displayed onto the work cells.
      *  The fields accessible via template are as follows.
-     *  * date
-     *  * groupIndex
-     *  * type
+     * * date
+     * * groupIndex
+     * * type
      *
+     * Refer to the below code snippet
+     * 
      * {% codeBlock src='schedule/cellTemplate/index.md' %}{% endcodeBlock %}
      *
      * @default null
@@ -646,6 +648,9 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
      * The following can be accessible via template.
      * * resource - All the resource fields.
      * * resourceData - object collection of current resource.
+     * 
+     * Refer to the below code snippet
+     * 
      * {% codeBlock src='schedule/resourceHeaderTemplate/index.md' %}{% endcodeBlock %}
      *
      * @default null
@@ -3103,6 +3108,32 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
     }
 
     /**
+     * Select the resource based on group index in mobile mode.
+     *
+     * @param {number} groupIndex Defines the resource index based on last level.
+     * @returns {void}
+     */
+    public selectResourceByIndex(groupIndex: number): void {
+        if (this.resourceBase && this.uiStateValues.isGroupAdaptive) {
+            this.resourceBase.selectResourceByIndex(groupIndex);
+        }
+    }
+
+    /**
+    * Select the resources to the based on id.
+    *
+    * @param {string | number} id id of the resource defined in resources collection.
+    * @param {string} name Name of the resource defined in resources collection.
+    * @returns {number}
+    */
+    public getIndexFromResourceId(id: string | number, name?: string): number {
+        if (this.resourceBase) {
+            return this.resourceBase.getIndexFromResourceId(id, name);
+        }
+        return null;
+    }
+
+    /**
      * Adds the resources to the specified index.
      *
      * @param {Object | Object[]} resources Accepts the resource data in single or collection of data.
@@ -3165,7 +3196,6 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
         }
         if (this.printModule) {
             this.printModule.destroy();
-            this.printModule = null;
         }
         if (this.activeView) {
             this.resetTemplates();

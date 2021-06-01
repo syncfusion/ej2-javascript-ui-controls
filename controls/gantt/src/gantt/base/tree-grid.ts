@@ -169,6 +169,7 @@ export class GanttTreeGrid {
         this.parent.enableVirtualization) {
             this.parent.updateContentHeight(args);
         }
+        setValue('contentModule.objectEqualityChecker', this.objectEqualityChecker, this.parent.treeGrid.grid);
     }
     private dataBound(args: object): void {
         this.ensureScrollBar();
@@ -285,7 +286,25 @@ export class GanttTreeGrid {
         const eventArgs: object = { data: record, gridRow: gridRow, chartRow: chartRow, cancel: false };
         return eventArgs;
     }
-
+      
+    private objectEqualityChecker = (old: Object, current: Object) => {
+        if (old) {
+            const keys: string[] = Object.keys(old);
+            let isEqual: boolean = true;
+            const excludeKeys: string[] = ['Children', 'childRecords', 'taskData', 'uniqueID', 'parentItem', 'parentUniqueID', "ganttProperties"];
+            for (let i: number = 0; i < keys.length; i++) {
+                const oldKey: any = old[keys[i]] instanceof Date ? new Date(old[keys[i]]).getTime() : old[keys[i]];
+				const currentKey: any = current[keys[i]] instanceof Date ? new Date(current[keys[i]]).getTime() : current[keys[i]];
+                if (oldKey !== currentKey && excludeKeys.indexOf(keys[i]) === -1) {
+                    this.parent.modifiedRecords.push(current);
+                    isEqual = false; break;
+                }
+            }
+            return isEqual;
+        } else {
+            return false;
+        }
+    }
     private treeActionComplete(args: object): void {
         const updatedArgs: object = extend({}, args, true);
         if (getValue('requestType', args) === 'sorting') {

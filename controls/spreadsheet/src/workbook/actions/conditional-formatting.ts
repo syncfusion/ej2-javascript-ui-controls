@@ -43,7 +43,7 @@ export class WorkbookConditionalFormat {
         }
     }
 
-    private setCFrulHandler(args: { conditionalFormat: ConditionalFormatModel }): void {
+    private setCFrulHandler(args: { conditionalFormat: ConditionalFormatModel, isAction?: boolean }): void {
         const conditionalFormat: ConditionalFormatModel = args.conditionalFormat;
         let range: string = conditionalFormat.range;
         const sheetIndex: number = this.parent.getAddressInfo(range).sheetIndex;
@@ -62,7 +62,9 @@ export class WorkbookConditionalFormat {
                 if (!sheet.rows[rIdx].cells || !sheet.rows[rIdx].cells[cIdx]) { setCell(rIdx, cIdx, sheet, {}); }
                 if (sheetIndex === this.parent.activeSheetIndex) {
                     const cell: CellModel = sheet.rows[rIdx].cells[cIdx];
-                    this.parent.notify(cFInitialCheck, { rowIdx: rIdx, colIdx: cIdx, cell: cell, conditionalFormat: conditionalFormat });
+                    this.parent.notify(
+                        cFInitialCheck, { rowIdx: rIdx, colIdx: cIdx, cell: cell, conditionalFormat: conditionalFormat, isAction:
+                        args.isAction });
                 }
             }
         }
