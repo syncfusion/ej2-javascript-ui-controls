@@ -290,7 +290,7 @@ export class HelperMethods {
         return text;
     }
 
-    public static formatClippedString(base64ImageString: string): ImageInfo {
+    public static formatClippedString(base64ImageString: string): ImageFormatInfo {
         let extension: string = '';
         let formatClippedString: string = '';
         if (this.startsWith(base64ImageString, 'data:image/bmp;base64,')) {
@@ -901,7 +901,7 @@ export interface RtlInfo {
 /**
  * @private
  */
-export interface ImageInfo {
+export interface ImageFormatInfo {
     extension: string
     formatClippedString: string
 }

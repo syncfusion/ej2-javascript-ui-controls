@@ -935,6 +935,7 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
                                 }
                             }
                         }
+                        if (nestedFormula && libFormula && libFormula === 'IF') { args.push('nestedFormulaTrue'); }
                     }
                     formulatResult = isNullOrUndefined(this.getFunction(libFormula)) ? this.getErrorStrings()[CommonErrors.name] :
                         this.getFunction(libFormula)(...args);
@@ -1546,7 +1547,7 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
                                 s = 'Infinity';
                                 i += s.length;
                             } else {
-                                if (pFormula[i] === 'u' || uFound) {
+                                if (pFormula[i] === 'u' || uFound || pFormula[i] === '-') {
                                     s = '-';
                                     if (!uFound) {
                                         i = i + 1;

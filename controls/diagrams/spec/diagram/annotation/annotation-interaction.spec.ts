@@ -1651,3 +1651,54 @@ describe('Diagram Control', () => {
         });
     });
 });
+describe('Check annotation horizontalAlignment value ', () => {
+    let diagram: Diagram;
+    let ele: HTMLElement;
+    let savedata: string;
+
+    beforeAll((): void => {
+        const isDef = (o: any) => o !== undefined && o !== null;
+        if (!isDef(window.performance)) {
+            console.log("Unsupported environment, window.performance.memory is unavailable");
+            this.skip(); //Skips test (in Chai)
+            return;
+        }
+        ele = createElement('div', { id: 'CheckhorizontalAlignment' });
+        document.body.appendChild(ele);
+
+        let connector: ConnectorModel = {};
+        connector.id = "connector1";
+        connector.sourcePoint = { x: 350, y: 300 };
+        connector.targetPoint = { x: 550, y: 300 };
+        connector.annotations = [{ id: "con1", content: "connector", annotationType: "String", constraints: 4, visibility: true, rotateAngle: 0, horizontalAlignment: "Left", verticalAlignment: "Center", margin: { left: 0, right: 0, bottom: 0, top: 0 }, style: { strokeWidth: 0, strokeColor: "transparent", fill: "transparent", strokeDashArray: "", opacity: 1, gradient: { type: "None" }, fontSize: 12, fontFamily: "Arial", textOverflow: "Wrap", textDecoration: "None", whiteSpace: "CollapseSpace", textWrapping: "WrapWithOverflow", textAlign: "Center", color: "black", italic: false, bold: false }, offset: 0.5, alignment: "Center", segmentAngle: false }];
+
+        diagram = new Diagram({
+            width: 1000, height: 1000, connectors: [connector]
+        });
+        diagram.appendTo('#CheckhorizontalAlignment');
+    });
+
+    afterAll((): void => {
+        diagram.destroy();
+        ele.remove();
+    });
+    it('Checking connector with annotation horizontalAlignment at initial rendering', (done: Function) => {
+        expect(diagram.connectors[0].annotations[0].horizontalAlignment).toEqual('Left');
+        let diagramEle = (document.getElementById('CheckhorizontalAlignment') as any).ej2_instances[0];
+        let txtElement: Element = document.getElementById('connector1_con1');
+        expect((txtElement as any).x.animVal.value).toEqual(450.5);
+        expect((txtElement as any).y.animVal.value).toEqual(293.29998779296875);
+        done();
+    });
+    it('Checking connector annotation horizontalAlignment by save and load', (done: Function) => {
+        savedata = diagram.saveDiagram();
+        diagram.clear();
+        diagram.loadDiagram(savedata);
+        expect(diagram.connectors[0].annotations[0].horizontalAlignment).toEqual('Left');
+        let diagramEle = (document.getElementById('CheckhorizontalAlignment') as any).ej2_instances[0];
+        let txtElement: Element = document.getElementById('connector1_con1');
+        expect((txtElement as any).x.animVal.value).toEqual(450.5);
+        expect((txtElement as any).y.animVal.value).toEqual(293.29998779296875);
+        done();
+    });
+});

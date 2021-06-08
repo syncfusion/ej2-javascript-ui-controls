@@ -451,7 +451,7 @@ export class ActionBase {
             this.monthEvent.applyResourceColor(appointmentElement, event, 'backgroundColor', groupOrder);
             setStyleAttribute(appointmentElement, { 'width': appWidth + 'px', 'border': '0px', 'pointer-events': 'none' });
             const cellTd: Element = workCells[day];
-            if (cellTd) {
+            if (cellTd && isNullOrUndefined(this.parent.eventDragArea)) {
                 this.monthEvent.renderElement(cellTd, appointmentElement, true);
                 this.actionObj.cloneElement.push(appointmentElement);
             }

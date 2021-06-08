@@ -40,7 +40,8 @@ export class AgendaBase extends ViewBase {
                 listClass: this.parent.activeView.viewClass,
                 itemClass: this.parent.activeView.viewClass
             });
-            for (let li: number = 0, length: number = listData.length; li < length; li++) {
+            const listElements: HTMLElement[] = [].slice.call(listElement.children);
+            listElements.forEach((element: HTMLElement, li: number) => {
                 const appWrapper: HTMLElement = createElement('div', {
                     className: cls.APPOINTMENT_CLASS, attrs: {
                         'data-id': 'Appointment_' + listData[li][this.parent.eventFields.id],
@@ -73,18 +74,18 @@ export class AgendaBase extends ViewBase {
                     templateEle = this.createAppointment(listData[li]);
                 }
                 append([].slice.call(templateEle), appWrapper);
-                util.removeChildren(listElement.children[li]);
-                listElement.children[li].appendChild(appWrapper);
+                util.removeChildren(element);
+                element.appendChild(appWrapper);
                 const args: EventRenderedArgs = {
                     data: extend({}, listData[li], null, true) as Record<string, any>,
-                    element: listElement.children[li] as HTMLElement, cancel: false
+                    element: element as HTMLElement, cancel: false
                 };
                 this.parent.trigger(event.eventRendered, args, (eventArgs: EventRenderedArgs) => {
                     if (eventArgs.cancel) {
-                        remove(listElement.children[li]);
+                        remove(element);
                     }
                 });
-            }
+            });
         }
         aTd.appendChild(listElement);
         if ((this.parent.currentView === 'MonthAgenda' && this.parent.activeViewOptions.group.resources.length > 0)

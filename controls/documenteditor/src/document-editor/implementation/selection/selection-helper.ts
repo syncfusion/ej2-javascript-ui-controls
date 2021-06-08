@@ -2270,7 +2270,7 @@ export class Hyperlink {
 /**
  * @private
  */
-export class ImageFormat {
+export class ImageInfo {
     /**
      * @private
      */

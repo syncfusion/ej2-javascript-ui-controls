@@ -304,7 +304,7 @@ export class VerticalView extends ViewBase implements IRenderer {
             this.parent.activeViewOptions.timeScale.interval;
     }
     private getWorkCellHeight(): number {
-        return (this.element.querySelector('.' + cls.WORK_CELLS_CLASS) as HTMLElement).offsetHeight;
+        return parseFloat(this.element.querySelector('.' + cls.WORK_CELLS_CLASS).getBoundingClientRect().height.toFixed(2));
     }
     private getTdContent(date: Date, type: string, groupIndex?: number): HTMLElement[] {
         let cntEle: HTMLElement[];

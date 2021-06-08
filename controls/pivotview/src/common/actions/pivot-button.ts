@@ -191,7 +191,7 @@ export class PivotButton implements IAction {
                             buttonWrapper.appendChild(buttonElement);
                             buttonWrapper.appendChild(dropLastIndicatorElement);
                             element.appendChild(buttonWrapper);
-                            let pivotButton: Button = new Button({ enableRtl: this.parent.enableRtl });
+                            let pivotButton: Button = new Button({ enableRtl: this.parent.enableRtl, locale: this.parent.locale });
                             pivotButton.isStringTemplate = true;
                             pivotButton.appendTo(buttonElement);
                             this.unWireEvent(buttonWrapper, i === valuePos ? 'values' : axis, isMeasureAvail);
@@ -219,6 +219,7 @@ export class PivotButton implements IAction {
                                 this.valueFiedDropDownList = new DropDownList({
                                     dataSource: valueData,
                                     enableRtl: this.parent.enableRtl,
+                                    locale: this.parent.locale,
                                     value: !parent.chartSettings.enableMultipleAxis ?
                                         parent.chartModule.currentMeasure : valueData[0].value,
                                     width: 200,
@@ -297,6 +298,7 @@ export class PivotButton implements IAction {
                                 this.columnFieldDropDownList = new DropDownList({
                                     dataSource: columnData,
                                     enableRtl: this.parent.enableRtl,
+                                    locale: this.parent.locale,
                                     value: availColindex ? columnData[availColindex - 1].value : (columnData[0] ? columnData[0].value : ''),
                                     width: '200',
                                     fields: { value: 'value', text: 'text', htmlAttributes: 'title' },

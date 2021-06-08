@@ -192,7 +192,7 @@ export class MarkerExplode extends ChartData {
                 i ? borderColor : markerShadow,
                 (marker.opacity || seriesMarker.opacity), null, null
             );
-            const symbol: Element = drawSymbol(location, shape, size, seriesMarker.imageUrl, options, '',
+            const symbol: Element = drawSymbol(location, shape, size, marker.imageUrl, options, '',
                                                this.chart.svgRenderer, series.clipRect);
             // incident: 252450 point click selection not working while maker explode
             //symbol.setAttribute('style', 'pointer-events:none');

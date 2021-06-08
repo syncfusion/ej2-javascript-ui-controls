@@ -215,4 +215,8 @@ export const dataRefresh: string = 'dataRefresh';
 /** @hidden */
 export const updateFilter: string = 'updateFilter';
 /** @hidden */
+export const beforeInsert: string = 'beforeInsert';
+/** @hidden */
+export const beforeDelete: string = 'beforeDelete';
+/** @hidden */
 export const deleteHyperlink: string = 'deleteHyperlink';

@@ -214,6 +214,101 @@ describe('Dialog actions module', () => {
         });
     });
 
+    describe('EJ2CORE-561- Card data changed even when the editing is canceled in the dialog(card editing)', () => {
+        let kanbanObj: Kanban;
+        let element1: HTMLElement;
+        beforeAll((done: DoneFn) => {
+            const model: KanbanModel = {
+                dialogSettings: {
+                    fields: [
+                        { text: 'ID', key: 'Id', type: 'Numeric' },
+                        { key: 'Status', type: 'DropDown' },
+                        { key: 'Assignee', type: 'DropDown' },
+                        { key: 'Estimate', type: 'Numeric' },
+                        { key: 'Summary', type: 'TextArea' }
+                    ]
+                }
+            };
+            kanbanObj = util.createKanban(model, kanbanData, done);
+        });
+
+        afterAll(() => {
+            util.destroy(kanbanObj);
+            (document.querySelector('.e-kanban-dialog') as HTMLElement).parentElement.remove();
+        });
+        it('Checking the value prevented on cancel button click', (done: Function) => {
+            element1 = kanbanObj.element.querySelector('.e-card[data-id="5"]') as HTMLElement;
+            util.triggerMouseEvent(element1, 'dblclick');
+            (kanbanObj.dialogModule as any).element.querySelector('textarea').value = "Changed";
+            (kanbanObj.dialogModule as any).element.querySelector('.e-dialog-cancel').click();
+            util.triggerMouseEvent(element1, 'dblclick');
+            expect((kanbanObj.dialogModule as any).element.querySelector('textarea').value !== "Changed").toBe(true);
+            done();
+        });
+    });
+
+    describe('EJ2CORE-561- Card data changed even when the editing is canceled in the dialog(card editing)', () => {
+        let kanbanObj: Kanban;
+        let element1: HTMLElement;
+        beforeAll((done: DoneFn) => {
+            const model: KanbanModel = {
+                dialogSettings: {
+                    fields: [
+                        { text: 'ID', key: 'Id', type: 'Numeric' },
+                        { key: 'Status', type: 'DropDown' },
+                        { key: 'Assignee', type: 'DropDown' },
+                        { key: 'Estimate', type: 'Numeric' },
+                        { key: 'Summary', type: 'TextArea' }
+                    ]
+                }
+            };
+            kanbanObj = util.createKanban(model, kanbanData, done);
+        });
+
+        afterAll(() => {
+            util.destroy(kanbanObj);
+        });
+        it('Checking the value saved on save button click', (done: Function) => {
+            element1 = kanbanObj.element.querySelector('.e-card[data-id="5"]') as HTMLElement;
+            util.triggerMouseEvent(element1, 'dblclick');
+            (kanbanObj.dialogModule as any).element.querySelector('textarea').value = "Changed";
+            (kanbanObj.dialogModule as any).element.querySelector('.e-dialog-edit').click();            
+            expect((kanbanObj as any).element.querySelector('.e-card[data-id="5"]').querySelector('.e-card-content').innerText === "Changed").toBe(true);
+            done();
+        });
+    });
+
+    describe('EJ2CORE-561- Card data changed even when the editing is canceled in the dialog(card editing)', () => {
+        let kanbanObj: Kanban;
+        let element1: HTMLElement;
+        beforeAll((done: DoneFn) => {
+            const model: KanbanModel = {
+                dialogSettings: {
+                    fields: [
+                        { text: 'ID', key: 'Id', type: 'Numeric' },
+                        { key: 'Status', type: 'DropDown' },
+                        { key: 'Assignee', type: 'DropDown' },
+                        { key: 'Estimate', type: 'Numeric' },
+                        { key: 'Summary', type: 'TextArea' }
+                    ]
+                }
+            };
+            kanbanObj = util.createKanban(model, kanbanData, done);
+        });
+
+        afterAll(() => {
+            util.destroy(kanbanObj);
+        });
+        it('Checking the value not saved on esc icon click', (done: Function) => {
+            element1 = kanbanObj.element.querySelector('.e-card[data-id="5"]') as HTMLElement;
+            util.triggerMouseEvent(element1, 'dblclick');
+            (kanbanObj.dialogModule as any).element.querySelector('textarea').value = "Changed";
+            (kanbanObj.dialogModule as any).element.querySelector('.e-dlg-closeicon-btn').click();            
+            expect((kanbanObj as any).element.querySelector('.e-card[data-id="5"]').querySelector('.e-card-content').innerText !== "Changed").toBe(true);
+            done();
+        });
+    });
+
     // describe('Public method Editor', () => {
     //     let kanbanObj: Kanban;
     //     beforeAll((done: DoneFn) => {

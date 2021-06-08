@@ -1272,6 +1272,16 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
             borderWidth = parseInt(
                 document.defaultView.getComputedStyle(this.list.parentElement, null).getPropertyValue('border-width'), 10
             );
+            /*Shorthand property not working in Firefox for getComputedStyle method.
+            Refer bug report https://bugzilla.mozilla.org/show_bug.cgi?id=137688
+            Refer alternate solution https://stackoverflow.com/a/41696234/9133493*/
+            if (isNaN(borderWidth)) {
+                let borderTopWidth: number = parseInt(document.defaultView.getComputedStyle(this.list.parentElement, null).getPropertyValue('border-top-width'), 10);
+                let borderBottomWidth: number = parseInt(document.defaultView.getComputedStyle(this.list.parentElement, null).getPropertyValue('border-bottom-width'), 10);
+                let borderLeftWidth: number = parseInt(document.defaultView.getComputedStyle(this.list.parentElement, null).getPropertyValue('border-left-width'), 10);
+                let borderRightWidth: number = parseInt(document.defaultView.getComputedStyle(this.list.parentElement, null).getPropertyValue('border-right-width'), 10);
+                borderWidth = (borderTopWidth + borderBottomWidth + borderLeftWidth + borderRightWidth);
+            }
         }
         const liWidth: number = this.getValidLi().offsetWidth - borderWidth;
         this.fixedHeaderElement.style.width = liWidth.toString() + 'px';

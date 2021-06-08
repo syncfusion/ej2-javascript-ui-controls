@@ -454,6 +454,8 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
     public isScrolling: boolean = false;
     /** @hidden */
     public lastColumn: Object;  /* eslint-disable-line */
+    /** @hidden */
+    public minHeight: number;
 
     //Module Declarations
     public pivotView: PivotView;
@@ -1964,6 +1966,7 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
                     position: 'BottomRight',
                     mouseTrail: true,
                     enableRtl: this.enableRtl,
+                    locale: this.locale,
                     beforeRender: this.setToolTip.bind(this),
                     beforeOpen: this.onBeforeTooltipOpen
                 });
@@ -1974,6 +1977,7 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
                     position: 'BottomRight',
                     mouseTrail: true,
                     enableRtl: this.enableRtl,
+                    locale: this.locale,
                     beforeRender: this.setToolTip.bind(this),
                     beforeOpen: this.onBeforeTooltipOpen
                 });
@@ -2148,6 +2152,7 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
 
     private initProperties(): void {
         this.pivotRefresh = Component.prototype.refresh;
+        this.minHeight = isNullOrUndefined(this.minHeight) ? 300 : (this.minHeight < 10 ? 10 : this.minHeight);
         this.isScrolling = false;
         this.allowServerDataBinding = false;
         this.isStaticRefresh = false;
@@ -3374,8 +3379,8 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
                     let args: EnginePopulatingEventArgs = {
                         dataSourceSettings: PivotUtil.getClonedDataSourceSettings(this.dataSourceSettings)
                     };
-                    this.trigger(events.enginePopulating, args);
-                    pivot.dataSourceSettings = args.dataSourceSettings;
+                    pivot.trigger(events.enginePopulating, args);
+                    pivot.setProperties({ dataSourceSettings: args.dataSourceSettings }, true);
                     if (pivot.enableVirtualization) {
                         if (isBlazor()) {
                             /* eslint-disable */
@@ -3524,7 +3529,7 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
                         dataSourceSettings: PivotUtil.getClonedDataSourceSettings(this.dataSourceSettings)
                     };
                     this.trigger(events.enginePopulating, args);
-                    this.dataSourceSettings = args.dataSourceSettings;
+                    this.setProperties({ dataSourceSettings: args.dataSourceSettings }, true);
                     this.olapEngineModule.updateDrilledInfo(this.dataSourceSettings as IDataOptions);
                     this.allowServerDataBinding = false;
                     this.setProperties({ pivotValues: this.olapEngineModule.pivotValues }, true);
@@ -3608,7 +3613,7 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
                         dataSourceSettings: PivotUtil.getClonedDataSourceSettings(this.dataSourceSettings)
                     };
                     this.trigger(events.enginePopulating, args);
-                    this.dataSourceSettings = args.dataSourceSettings;
+                    this.setProperties({ dataSourceSettings: args.dataSourceSettings }, true);
                     this.setProperties({ dataSourceSettings: { drilledMembers: drilledMembers } }, true);
                     this.olapEngineModule.updateDrilledInfo(this.dataSourceSettings as IDataOptions);
                     this.allowServerDataBinding = false;
@@ -4230,8 +4235,8 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
         } else {
             height = Number(this.height);
         }
-        if (height < 300) {
-            height = 300;
+        if (height < this.minHeight) {
+            height = this.minHeight;
         }
         return height;
     }

@@ -200,6 +200,7 @@ export interface NotifyArgs {
     selectParent?: Node[]
     url?: string
     text?: string
+    isWordPaste?: boolean
     title?: string
     target?: string
     member?: string

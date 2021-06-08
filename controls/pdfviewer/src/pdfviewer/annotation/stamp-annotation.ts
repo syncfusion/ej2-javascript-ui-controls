@@ -455,6 +455,8 @@ export class StampAnnotation {
             let collectionData: any = processPathData(annotation.pathdata);
             // eslint-disable-next-line
             let csData: any = splitArrayCollection(collectionData);
+            // eslint:disable-next-line
+            let annotationAddMode: any = existingAnnotation ? existingAnnotation.annotationAddMode : 'UI Drawn Annotation';
             // eslint-disable-next-line max-len
             annotation.AnnotationSelectorSettings = annotation.AnnotationSelectorSettings ? annotation.AnnotationSelectorSettings : this.pdfViewer.annotationSelectorSettings;
             annot = {

@@ -59,5 +59,15 @@ describe('Range Navigator Issue fixes', () => {
             rangeControl.series = [{ dataSource: new DataManager(data), xName: 'x', yName: 'y' }];
             rangeControl.refresh();
         });
+        it('checking with background color', (done: Function) => {
+            rangeControl.loaded = (args: IRangeLoadedEventArgs) => {
+                rangeElement = document.getElementById('rangeContainer_ChartBorder');
+                expect(rangeElement.getAttribute("fill")).toEqual("red");
+                done();
+            };
+            rangeControl.background = 'red';
+            rangeControl.refresh();
+        });
+		
     });
 });

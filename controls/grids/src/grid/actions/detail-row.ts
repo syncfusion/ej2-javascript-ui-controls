@@ -1,4 +1,4 @@
-import { KeyboardEventArgs, removeClass, addClass } from '@syncfusion/ej2-base';
+import { KeyboardEventArgs, removeClass, addClass, extend } from '@syncfusion/ej2-base';
 import { closest, classList } from '@syncfusion/ej2-base';
 import { IGrid } from '../base/interface';
 import { Grid } from '../base/grid';
@@ -187,10 +187,8 @@ export class DetailRow {
         } else {
             if (gObj.isPrinting && gObj.childGrid.allowPaging) {
                 gObj.childGrid.allowPaging = printMode === 'CurrentPage';
-                gridModel = gObj.childGrid;
-            } else {
-                gridModel = gObj.childGrid;
             }
+            gridModel = extend({}, {}, gObj.childGrid, true);
         }
         return gridModel;
     }

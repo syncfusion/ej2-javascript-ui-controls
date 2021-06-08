@@ -354,7 +354,7 @@ export class CheckBoxFilterBase {
             if (filterTemplateCol.length && !isNullOrUndefined(registeredTemplate) && registeredTemplate.filterItemTemplate) {
                 this.parent.destroyTemplate(['filterItemTemplate']);
             }
-            if (this.parent.isReact) {
+            if (this.parent.isReact && this.parent.destroyTemplate !== undefined) {
                 this.parent.destroyTemplate(['filterItemTemplate']);
                 this.parent.renderTemplates();
             }

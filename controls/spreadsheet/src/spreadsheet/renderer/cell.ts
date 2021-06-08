@@ -4,7 +4,7 @@ import { hasTemplate, createHyperlinkElement, checkPrevMerge, createImageElement
 import { getColumnHeaderText, CellStyleModel, CellFormatArgs, getRangeIndexes, getRangeAddress } from '../../workbook/common/index';
 import { CellStyleExtendedModel, setChart, refreshChart, getCellAddress, ValidationModel, MergeArgs } from '../../workbook/common/index';
 import { CellModel, SheetModel, skipDefaultValue, isHiddenRow, RangeModel, isHiddenCol, ColumnModel, Workbook } from '../../workbook/base/index';
-import { getRowHeight, setRowHeight, getCell, getColumn, getColumnWidth, getSheet } from '../../workbook/base/index';
+import { getRowHeight, setRowHeight, getCell, getColumn, getColumnWidth, getSheet, setCell } from '../../workbook/base/index';
 import { addClass, attributes, getNumberDependable, extend, compile, isNullOrUndefined, detach } from '@syncfusion/ej2-base';
 import { getFormattedCellObject, applyCellFormat, workbookFormulaOperation, wrapEvent, cFRender } from '../../workbook/common/index';
 import { getTypeFromFormat, activeCellMergedRange, addHighlight, getCellIndexes } from '../../workbook/index';
@@ -101,6 +101,7 @@ export class CellRenderer implements ICellRenderer {
         if (cellValue.indexOf('\n') > -1 && !isWrap) {
             const splitVal: string[] = cellValue.split('\n');
             if (splitVal.length > 1) {
+                setCell(args.rowIdx, args.colIdx, sheet, { wrap: true }, true);
                 this.parent.notify(wrapEvent, {
                     range: [args.rowIdx, args.colIdx, args.rowIdx, args.colIdx], wrap: true, initial: true, sheet:
                         this.parent.getActiveSheet(), td: args.td, row: args.row, hRow: args.hRow

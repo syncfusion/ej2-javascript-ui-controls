@@ -86,6 +86,7 @@ export class Toolbar {
         this.toolbar = new tool({
             created: this.create.bind(this),
             enableRtl: this.parent.enableRtl,
+            locale: this.parent.locale,
             items: this.getItems(),
             allowKeyboard: false,
             width: !this.parent.gridSettings.allowAutoResizing ? (this.parent.grid ? (this.parent.getGridWidthAsNumber() - 2) : (this.parent.getWidthAsNumber() - 2)) : 'auto'
@@ -453,6 +454,7 @@ export class Toolbar {
             visible: false,
             showCloseIcon: true,
             enableRtl: this.parent.enableRtl,
+            locale: this.parent.locale,
             width: 'auto',
             height: 'auto',
             zIndex: 1000001,
@@ -489,6 +491,7 @@ export class Toolbar {
             visible: false,
             showCloseIcon: true,
             enableRtl: this.parent.enableRtl,
+            locale: this.parent.locale,
             width: 'auto',
             height: 'auto',
             zIndex: 1000001,
@@ -645,6 +648,7 @@ export class Toolbar {
             allowDragging: true,
             showCloseIcon: true,
             enableRtl: this.parent.enableRtl,
+            locale: this.parent.locale,
             header: title,
             content: description,
             isModal: true,
@@ -810,6 +814,7 @@ export class Toolbar {
             this.chartMenu = new Menu(
                 {
                     items: menu, enableRtl: this.parent.enableRtl,
+                    locale: this.parent.locale,
                     select: this.menuItemClick.bind(this),
                     beforeOpen: this.whitespaceRemove.bind(this),
                     onClose: (args: OpenCloseMenuEventArgs) => {    /* eslint-disable-line */
@@ -865,6 +870,7 @@ export class Toolbar {
             this.exportMenu = new Menu(
                 {
                     items: menu, enableRtl: this.parent.enableRtl,
+                    locale: this.parent.locale,
                     select: this.menuItemClick.bind(this), beforeOpen: this.updateExportMenu.bind(this),
                     onClose: (args: OpenCloseMenuEventArgs) => {
                         this.focusToolBar();
@@ -902,6 +908,7 @@ export class Toolbar {
             this.subTotalMenu = new Menu(
                 {
                     items: menu, enableRtl: this.parent.enableRtl,
+                    locale: this.parent.locale,
                     select: this.menuItemClick.bind(this), beforeOpen: this.updateSubtotalSelection.bind(this),
                     onClose: (args: OpenCloseMenuEventArgs) => {
                         this.focusToolBar();
@@ -939,6 +946,7 @@ export class Toolbar {
             this.grandTotalMenu = new Menu(
                 {
                     items: menu, enableRtl: this.parent.enableRtl,
+                    locale: this.parent.locale,
                     select: this.menuItemClick.bind(this), beforeOpen: this.updateGrandtotalSelection.bind(this),
                     onClose: (args: OpenCloseMenuEventArgs) => {
                         this.focusToolBar();
@@ -966,6 +974,7 @@ export class Toolbar {
             this.formattingMenu = new Menu(
                 {
                     items: menu, enableRtl: this.parent.enableRtl,
+                    locale: this.parent.locale,
                     select: this.menuItemClick.bind(this)
                 });
             this.formattingMenu.isStringTemplate = true;
@@ -990,6 +999,7 @@ export class Toolbar {
                 popupHeight: '200px',
                 placeholder: this.currentReport === '' ? this.parent.localeObj.getConstant('reportList') : '',
                 enableRtl: this.parent.enableRtl,
+                locale: this.parent.locale,
                 cssClass: cls.REPORT_LIST_DROP,
                 select: this.reportChange.bind(this),
                 value: this.currentReport
@@ -1030,7 +1040,8 @@ export class Toolbar {
                 label: this.parent.localeObj.getConstant('multipleAxes'),
                 cssClass: 'e-multipleAxes',
                 checked: this.parent.chartSettings.enableMultipleAxis,
-                enableRtl: this.parent.enableRtl
+                enableRtl: this.parent.enableRtl,
+                locale: this.parent.locale
             });
             args.element.innerText = '';
             checkbox.appendTo('#' + this.parent.element.id + '_' + 'checkBox');
@@ -1055,7 +1066,8 @@ export class Toolbar {
                 label: this.parent.localeObj.getConstant('showLegend'),
                 checked: this.getLableState(this.parent.chartSettings.chartSeries.type),
                 cssClass: 'e-showLegend',
-                enableRtl: this.parent.enableRtl
+                enableRtl: this.parent.enableRtl,
+                locale: this.parent.locale
             });
             args.element.innerText = '';
             checkbox.appendTo('#' + this.parent.element.id + '_' + 'showLegendCheckBox');
@@ -1416,6 +1428,7 @@ export class Toolbar {
             visible: true,
             showCloseIcon: true,
             enableRtl: this.parent.enableRtl,
+            locale: this.parent.locale,
             width: 'auto',
             height: 'auto',
             position: { X: 'center', Y: 'center' },
@@ -1499,6 +1512,7 @@ export class Toolbar {
         }
         let optionWrapper: DropDownList = new DropDownList({
             dataSource: chartTypeDatasource, enableRtl: this.parent.enableRtl,
+            locale: this.parent.locale,
             fields: { value: 'value', text: 'text' },
             value: this.parent.chartSettings.chartSeries.type ? this.parent.chartSettings.chartSeries.type : this.getValidChartType()[0],
             width: '100%',
@@ -1522,6 +1536,7 @@ export class Toolbar {
         mainWrapper.appendChild(axisModeWrapperDiv);
         let axisModeWrapper: DropDownList = new DropDownList({
             dataSource: multipleAxisModeDatasource, enableRtl: this.parent.enableRtl,
+            locale: this.parent.locale,
             fields: { value: 'value', text: 'text' },
             value: this.parent.chartSettings.multipleAxisMode ? this.parent.chartSettings.multipleAxisMode : 'Stacked',
             width: '100%',
@@ -1557,6 +1572,7 @@ export class Toolbar {
                 (getInstance('#' + this.parent.element.id + '_AxisModeOption', DropDownList) as DropDownList).enabled = args.checked;
             },
             enableRtl: this.parent.enableRtl,
+            locale: this.parent.locale
         });
         let checkbox1: CheckBox = new CheckBox({
             label: this.parent.localeObj.getConstant('showLegend'),
@@ -1564,6 +1580,7 @@ export class Toolbar {
             change: () => { this.chartLableState = true; },
             cssClass: 'e-dialog-show-legend',
             enableRtl: this.parent.enableRtl,
+            locale: this.parent.locale
         });
         checkbox1.appendTo(select('#' + this.parent.element.id + '_DialogShowLabel', this.chartTypesDialog.element) as HTMLElement);
         checkbox.appendTo(select('#' + this.parent.element.id + '_DialogMultipleAxis', this.chartTypesDialog.element) as HTMLElement);

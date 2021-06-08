@@ -100,6 +100,7 @@ export class DialogRenderer {
                 label: this.parent.localeObj.getConstant('deferLayoutUpdate'),
                 checked: true,
                 enableRtl: this.parent.enableRtl,
+                locale: this.parent.locale,
                 change: this.onCheckChange.bind(this)
             });
             this.deferUpdateCheckBox.isStringTemplate = true;
@@ -109,6 +110,7 @@ export class DialogRenderer {
                     (' ' + cls.BUTTON_FLAT_CLASS) : ''),
                 content: this.parent.localeObj.getConstant('apply'),
                 enableRtl: this.parent.enableRtl,
+                locale: this.parent.locale,
                 isPrimary: true
             });
             this.deferUpdateApplyButton.isStringTemplate = true;
@@ -121,7 +123,7 @@ export class DialogRenderer {
                 (' ' + cls.BUTTON_FLAT_CLASS) : ''),
             content: this.parent.allowDeferLayoutUpdate ? this.parent.localeObj.getConstant('cancel') :
                 this.parent.localeObj.getConstant('close'),
-            enableRtl: this.parent.enableRtl, isPrimary: !this.parent.allowDeferLayoutUpdate
+            enableRtl: this.parent.enableRtl, isPrimary: !this.parent.allowDeferLayoutUpdate, locale: this.parent.locale
         });
         this.deferUpdateCancelButton.isStringTemplate = true;
         this.deferUpdateCancelButton.appendTo('#' + this.parent.element.id + '_DeferUpdateButton2');
@@ -254,6 +256,7 @@ export class DialogRenderer {
                 allowDragging: false,
                 closeOnEscape: false,
                 enableRtl: this.parent.enableRtl,
+                locale: this.parent.locale,
                 width: '100%',
                 height: '100%',
                 position: { X: 'center', Y: 'center' }, /* eslint-disable-line */
@@ -287,6 +290,7 @@ export class DialogRenderer {
                 visible: false,
                 allowDragging: true,
                 enableRtl: this.parent.enableRtl,
+                locale: this.parent.locale,
                 width: this.parent.element.style.width,
                 position: { X: 'center', Y: this.parent.element.offsetTop },    /* eslint-disable-line */
                 footerTemplate: template,
@@ -371,6 +375,7 @@ export class DialogRenderer {
             items: items,
             height: '100%',
             enableRtl: this.parent.enableRtl,
+            locale: this.parent.locale,
             selected: this.tabSelect.bind(this)
         });
         if (this.parent.renderMode === 'Fixed') {
@@ -424,7 +429,7 @@ export class DialogRenderer {
         let calculateField: Button = new Button({
             cssClass: cls.CALCULATED_FIELD_CLASS + ' ' + cls.ICON_DISABLE,
             content: this.parent.localeObj.getConstant('CalculatedField'),
-            enableRtl: this.parent.enableRtl
+            enableRtl: this.parent.enableRtl, locale: this.parent.locale
         });
         calculateField.isStringTemplate = true;
         calculateField.appendTo(calculatedButton);
@@ -444,12 +449,12 @@ export class DialogRenderer {
             cssClass: cls.ADAPTIVE_CALCULATED_FIELD_BUTTON_CLASS +
                 ' ' + cls.BUTTON_SMALL_CLASS + ' ' + cls.BUTTON_ROUND_CLASS + ' ' + cls.ICON_DISABLE,
             iconCss: cls.ICON + ' ' + cls.ADD_ICON_CLASS,
-            enableRtl: this.parent.enableRtl
+            enableRtl: this.parent.enableRtl, locale: this.parent.locale
         });
         let fieldList: Button = new Button({
             cssClass: cls.ADAPTIVE_FIELD_LIST_BUTTON_CLASS + ' ' + cls.BUTTON_SMALL_CLASS + ' ' + cls.BUTTON_ROUND_CLASS,
             iconCss: cls.ICON + ' ' + cls.ADD_ICON_CLASS,
-            enableRtl: this.parent.enableRtl
+            enableRtl: this.parent.enableRtl, locale: this.parent.locale
         });
         fieldList.isStringTemplate = true;
         fieldList.appendTo(fieldListButton);

@@ -110,6 +110,7 @@ export class MsWordPaste {
         const imgSrc: string[] = [];
         const base64Src: string[] = [];
         const imgName: string[] = [];
+        const linkRegex = new RegExp(/([^\S]|^)(((https?\:\/\/)|(www\.))(\S+))/gi);
         if (imgElem.length > 0) {
             for (let i: number = 0; i < imgElem.length; i++) {
                 imgSrc.push(imgElem[i].getAttribute('src'));
@@ -120,7 +121,11 @@ export class MsWordPaste {
                 base64Src.push(this.convertToBase64(hexValue[i]));
             }
             for (let i: number = 0; i < imgElem.length; i++) {
-                imgElem[i].setAttribute('src', base64Src[i]);
+                if (imgSrc[i].match(linkRegex)) {
+                    imgElem[i].setAttribute('src', imgSrc[i]);
+                } else {
+                    imgElem[i].setAttribute('src', base64Src[i]);
+                }
                 imgElem[i].setAttribute('id', 'msWordImg-' + imgName[i]);
             }
         }

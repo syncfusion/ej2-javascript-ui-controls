@@ -42,6 +42,7 @@ export class PivotContextMenu {
             cssClass: cls.PIVOT_CONTEXT_MENU_CLASS,
             items: menuItems,
             enableRtl: this.parent.enableRtl,
+            locale: this.parent.locale,
             beforeOpen: this.onBeforeMenuOpen.bind(this),
             select: this.onSelectContextMenu.bind(this)
         };

@@ -216,8 +216,11 @@ export class GanttChart {
         this.chartBodyContainer = createElement('div', { className: cls.chartBodyContainer });
         this.chartElement.appendChild(this.chartBodyContainer);
         this.scrollElement = createElement('div', {
-            className: cls.chartScrollElement + ' ' + cls.scrollContent, styles: 'position:relative;z-index:2'
+            className: cls.chartScrollElement + ' ' + cls.scrollContent, styles: 'position:relative;'
         });
+        if (this.parent.enableVirtualization) {
+            this.scrollElement.style.zIndex = '2';
+        }
         this.chartBodyContainer.appendChild(this.scrollElement);
         this.chartBodyContent = createElement('div', { className: cls.chartBodyContent, styles: 'position:relative; ' });
         this.scrollElement.appendChild(this.chartBodyContent);

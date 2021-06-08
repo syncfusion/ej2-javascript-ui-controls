@@ -16,6 +16,7 @@ import { PdfAnnotationBase } from './pdf-annotation';
 import { cloneObject, isLineShapes } from './drawing-util';
 import { isNullOrUndefined } from '@syncfusion/ej2-base';
 import { updatePerimeterLabel } from './connector-util';
+import { Browser } from '@syncfusion/ej2-base';
 
 /**
  * Defines the interactive tools
@@ -442,6 +443,9 @@ export class SelectTool extends ToolBase {
                         this.commandHandler.viewerBase.isAnnotationMouseDown = true;
                     }
                     if (selectedObject.annotations.length === 0 && annotation && annotation.shapeAnnotationType !== 'Stamp') {
+                        if (Browser.isDevice && !this.commandHandler.enableDesktopMode) {
+                            this.commandHandler.toolbarModule.showToolbar(true);
+                        }
                         this.commandHandler.fireAnnotationUnSelect(annotation.annotName, annotation.pageIndex, annotation);
                     }
                 }

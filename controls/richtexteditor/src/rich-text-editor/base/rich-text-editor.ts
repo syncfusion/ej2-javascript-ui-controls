@@ -1709,8 +1709,10 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
                     // eslint-disable-next-line
                     const args: Object = { requestType: 'Paste', editorMode: this.editorMode, event: e };
                     let value: string = null;
+                    let htmlValue: boolean = false;
                     if (e && !isNOU((e as ClipboardEvent).clipboardData)) {
                         value = (e as ClipboardEvent).clipboardData.getData('text/plain');
+                        htmlValue = (e as ClipboardEvent).clipboardData.getData('text/html').indexOf('MsoNormal') > 0;
                     }
                     const file: File = e && (e as ClipboardEvent).clipboardData && (e as ClipboardEvent).clipboardData.items.length > 0 ?
                         (e as ClipboardEvent).clipboardData.items[0].getAsFile() : null;
@@ -1718,7 +1720,8 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
                         this.notify(events.paste, {
                             file: file,
                             args: e,
-                            text: value
+                            text: value,
+                            isWordPaste: htmlValue
                         });
                     }
                     setTimeout(() => {

@@ -120,7 +120,12 @@ export class RangeSeries extends NiceInterval {
             i++;
         }
     }
-    private processXAxis(control: RangeNavigator): void {
+    /**
+     * Process x axis for range navigator.
+     * 
+     * @private
+     */
+    public processXAxis(control: RangeNavigator): void {
         const axis: AxisModel = {
             minimum: control.minimum, maximum: control.maximum,
             interval: control.interval, valueType: control.valueType,
@@ -152,8 +157,9 @@ export class RangeSeries extends NiceInterval {
      * Process yAxis for range navigator
      *
      * @param {RangeNavigator} control RangeNavigator instance
+     * @private
      */
-    private processYAxis(control: RangeNavigator): void {
+    public processYAxis(control: RangeNavigator): void {
         const axis: AxisModel = {
             majorGridLines: { width: 0 }, rangePadding: 'None',
             majorTickLines: { width: 0 }, labelStyle: { size: '0' },
@@ -247,7 +253,12 @@ export class RangeSeries extends NiceInterval {
         series.seriesElement.appendChild(series.clipRectElement);
     }
 
-    private calculateGroupingBounds(control: RangeNavigator): void {
+    /**
+     * Calculate grouping bounds for x axis.
+     * 
+     * @private
+     */
+    public calculateGroupingBounds(control: RangeNavigator): void {
         const padding: number = control.margin.bottom;
         const labelHeight: number = measureText('string', control.labelStyle).height;
         this.calculateDateTimeNiceInterval(this.xAxis, new Size(control.bounds.width, control.bounds.height), this.xMin, this.xMax, false);

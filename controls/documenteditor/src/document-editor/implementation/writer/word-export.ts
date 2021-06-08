@@ -1,7 +1,7 @@
 import { ZipArchive, ZipArchiveItem } from '@syncfusion/ej2-compression';
 import { XmlWriter } from '@syncfusion/ej2-file-utils';
 import { isNullOrUndefined } from '@syncfusion/ej2-base';
-import { ImageInfo, HelperMethods } from '../index';
+import { ImageFormatInfo, HelperMethods } from '../index';
 import { Dictionary, TabJustification, TabLeader } from '../../index';
 import { WTabStop } from '../index';
 import { ProtectionType } from '../../base';
@@ -4502,8 +4502,10 @@ export class WordExport {
     private serializeShading(writer: XmlWriter, format: any): void {
         // if (format.textureStyle !== 'TextureNone') {
         writer.writeStartElement(undefined, 'shd', this.wNamespace);
-        if (format.backgroundColor) {
+        if (format.backgroundColor && format.backgroundColor !== 'empty') {
             writer.writeAttributeString(undefined, 'fill', this.wNamespace, this.getColor(format.backgroundColor));
+        } else {
+            writer.writeAttributeString(undefined, 'fill', this.wNamespace, 'auto');
         }
         if (format.foregroundColor === 'empty' || isNullOrUndefined(format.foregroundColor)) {
             writer.writeAttributeString(undefined, 'color', this.wNamespace, 'auto');
@@ -6169,7 +6171,7 @@ export class WordExport {
                     imagePath = this.imagePath + '/0.jpeg';
                     this.serializeRelationShip(writer, keys[i], this.imageRelType, imagePath.replace('word/', ''));
                 } else {
-                    let imageInfo: ImageInfo = HelperMethods.formatClippedString(base64ImageString);
+                    let imageInfo: ImageFormatInfo = HelperMethods.formatClippedString(base64ImageString);
                     let extension: string = imageInfo.extension;
                     let formatClippedString: string = imageInfo.formatClippedString;
                     imagePath = this.imagePath + keys[i] + extension;

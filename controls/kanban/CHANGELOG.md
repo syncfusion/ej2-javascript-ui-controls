@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 19.1.67 (2021-06-08)
+
+### Kanban
+
+#### Bug Fixes
+
+- `#F165595` - The issue with "Card data changed even when the editing is canceled in the `dialog(card editing)`" has been resolved.
+
 ## 19.1.66 (2021-06-01)
 
 ### Kanban

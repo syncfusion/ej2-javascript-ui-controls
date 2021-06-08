@@ -4,7 +4,7 @@
 import { EmitType, Browser, createElement, isNullOrUndefined, setCulture, L10n, extend } from '@syncfusion/ej2-base';
 import { DropDownBase, FilteringEventArgs, dropDownBaseClasses } from '../../src/drop-down-base/drop-down-base';
 import { DropDownList } from '../../src/drop-down-list/drop-down-list';
-import { DataManager, ODataV4Adaptor, ODataAdaptor, Query, WebApiAdaptor } from '@syncfusion/ej2-data';
+import { DataManager, ODataV4Adaptor, ODataAdaptor, Query, WebApiAdaptor, Predicate } from '@syncfusion/ej2-data';
 import { isCollide } from '@syncfusion/ej2-popups';
 import '../../node_modules/es6-promise/dist/es6-promise';
 
@@ -1429,6 +1429,58 @@ describe('DropDownList', () => {
                 expect(listObj.text).toBe('Empty');
                 done();
             }, 450);
+        });
+    });
+    describe("EJ2-48999- Improper data source values are loaded in the popup while modifying query property", () => {
+        let listObj: any;
+        let listObj1: any;
+        let element: any = <HTMLInputElement>createElement('input', { id: 'dropdownlist' });
+        let element1: any = <HTMLInputElement>createElement('input', { id: 'dropdownlist1' });
+        let pred:Predicate = new Predicate('CustomerID', 'notequal', null, true, false);
+        let query:Query = new Query().where(pred);
+        let dataSource = new DataManager({
+            url: 'https://services.odata.org/V4/Northwind/Northwind.svc/Customers',
+            adaptor: new ODataV4Adaptor,
+            crossDomain: true,
+        });
+        beforeAll(() => {
+            document.body.appendChild(element);
+            document.body.appendChild(element1);
+        });
+        afterAll(() => {
+            document.body.innerHTML = "";
+            listObj1.destroy();
+            listObj.destroy();
+        });
+        it('Checking li elements are rendered properly by updating same query', (done) => {
+            listObj = new DropDownList({
+                dataSource: dataSource,
+                query: query.select('CustomerID'),
+                fields: { text: 'CustomerID', value: 'CustomerID' },
+                placeholder: 'Select a name',
+                value: "VINET",
+                created: function() {
+                    listObj1 = new DropDownList({
+                        dataSource: dataSource,
+                        query: query.select('CustomerID'),
+                        fields: { text: 'CustomerID', value: 'CustomerID' },
+                        placeholder: 'Select a name',
+                        created:()=> {
+                            setTimeout(() => {
+                                listObj1.showPopup();
+                                done();
+                            }, 400);
+                        },
+                        open: (args) => {
+                            expect((listObj1 as any).liCollections.length == (listObj as any).liCollections.length).toBe(true);
+                            listObj1.hidePopup()
+                        }
+                    });
+                    listObj1.appendTo('#dropdownlist1');
+                },
+                width: '250px',
+            });
+            listObj.appendTo('#dropdownlist');
         });
     });
 });

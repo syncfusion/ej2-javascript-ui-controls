@@ -2080,3 +2080,53 @@ describe('Comments delete comment pane validation', () => {
         expect(editor.documentHelper.comments.length).toBe(0);
     });
 });
+
+describe('Comments delete validation', () => {
+    let editor: DocumentEditor;
+    let documentHelper: DocumentHelper;
+    beforeAll((): void => {
+        document.body.appendChild(createElement('div', { id: 'container' }));
+        DocumentEditor.Inject(Editor, Selection, WordExport, SfdtExport, EditorHistory);
+        editor = new DocumentEditor({ enableEditorHistory: true, enableWordExport: true, enableEditor: true, isReadOnly: false, enableSelection: true, enableSfdtExport: true, enableComment: true });
+        editor.acceptTab = true;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        editor.appendTo('#container');
+        documentHelper = editor.documentHelper;
+    });
+    afterAll((done): void => {
+        editor.destroy();
+        document.body.removeChild(document.getElementById('container'));
+        editor = undefined;
+        setTimeout(function () {
+            document.body.innerHTML = '';
+            done();
+        }, 1000);
+    });
+    it('Remove blocks with comments', () => {
+        editor.editor.insertText("Syncfusion Private");
+        editor.selection.movePreviousPosition();
+        editor.selection.movePreviousPosition();
+        editor.selection.selectCurrentWord();
+        editor.editor.insertComment("TestComent");        
+        editor.commentReviewPane.commentPane.comments.get(editor.documentHelper.currentSelectedComment).postComment();
+        editor.selection.moveDown();
+        editor.editor.onEnter();
+        editor.editor.insertText("Remove above line");
+        editor.selection.moveToLineStart();
+        editor.selection.handleShiftUpKey();
+        editor.editor.delete();
+        expect(editor.documentHelper.comments.length).toBe(0);
+        expect(editor.saveAsBlob("Docx")).not.toThrowError();
+    }); 
+    it('undo after on removing block contains comments', () => {
+        editor.editorHistory.undo();
+        expect(editor.commentReviewPane.commentPane.comments.keys.length).toBe(1);
+    });
+    it('redo after  on removing block contains comments', () => {
+        editor.editorHistory.redo();
+        expect(editor.commentReviewPane.commentPane.comments.keys.length).toBe(0);
+    });
+});

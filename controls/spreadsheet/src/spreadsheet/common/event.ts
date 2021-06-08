@@ -308,3 +308,5 @@ export const selectionStatus: string = 'selectionStatus';
 export const freeze: string = 'freeze';
 /** @hidden */
 export const overlayEleSize: string = 'overlayEleSize';
+/** @hidden */
+export const updateScroll: string = 'updateScroll';

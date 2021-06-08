@@ -3,7 +3,8 @@ import { Spreadsheet } from '../base/index';
 import { contentLoaded, spreadsheetDestroyed, onVerticalScroll, onHorizontalScroll, getScrollBarWidth, IScrollArgs } from '../common/index';
 import { IOffset, onContentScroll, deInitProperties, setScrollEvent, skipHiddenIdx, mouseDown, selectionStatus } from '../common/index';
 import { SheetModel, getRowHeight, getColumnWidth, getCellAddress } from '../../workbook/index';
-import { isFormulaBarEdit, FormulaBarEdit, virtualContentLoaded, colWidthChanged, getUpdateUsingRaf } from '../common/index';
+import { isFormulaBarEdit, FormulaBarEdit, virtualContentLoaded, colWidthChanged, getUpdateUsingRaf, beginAction } from '../common/index';
+import { updateScroll } from '../common/index';
 
 /**
  * The `Scroll` module is used to handle scrolling behavior.
@@ -113,15 +114,8 @@ export class Scroll {
         let temp: number = this.offset.top.size;
         const sheet: SheetModel = this.parent.getActiveSheet();
         let i: number = scrollDown ? this.offset.top.idx + 1 : (this.offset.top.idx ? this.offset.top.idx - 1 : 0);
-        let count: number; const frozenRow: number = this.parent.frozenRowCount(sheet);
-        if (this.parent.scrollSettings.isFinite) {
-            count = sheet.rowCount;
-            if (scrollDown && i + this.parent.viewport.rowCount + this.parent.getThreshold('row') >= count) {
-                return { idx: this.offset.top.idx, size: this.offset.top.size };
-            }
-        } else {
-            count = Infinity;
-        }
+        const frozenRow: number = this.parent.frozenRowCount(sheet);
+        const count: number = this.parent.scrollSettings.isFinite ? sheet.rowCount : Infinity;
         scrollTop = Math.round(scrollTop);
         while (i < count) {
             if (scrollDown) {
@@ -159,15 +153,8 @@ export class Scroll {
         let temp: number = this.offset.left.size;
         const sheet: SheetModel = this.parent.getActiveSheet();
         let i: number = increase ? this.offset.left.idx + 1 : this.offset.left.idx - 1;
-        let count: number; const frozenCol: number = this.parent.frozenColCount(sheet);
-        if (this.parent.scrollSettings.isFinite) {
-            count = sheet.colCount;
-            if (increase && i + this.parent.viewport.colCount + this.parent.getThreshold('col') >= count) {
-                return { idx: this.offset.left.idx, size: this.offset.left.size };
-            }
-        } else {
-            count = Infinity;
-        }
+        const frozenCol: number = this.parent.frozenColCount(sheet);
+        const count: number = this.parent.scrollSettings.isFinite ? sheet.colCount : Infinity;
         scrollLeft = Math.round(scrollLeft);
         while (i < count) {
             if (increase) {
@@ -229,6 +216,14 @@ export class Scroll {
 
     private scrollHandler(e: MouseEvent): void {
         this.onContentScroll({ scrollLeft: (e.target as Element).scrollLeft });
+    }
+
+    private updateScroll(args: { top?: number, left?: number }): void {
+        if (isNullOrUndefined(args.left)) {
+            this.parent.sheetModule.contentPanel.scrollTop = args.top;
+        } else {
+            this.parent.getScrollElement().scrollLeft = args.left;
+        }
     }
 
     private setScrollEvent(args: { set: boolean } = { set: true }): void {
@@ -313,6 +308,7 @@ export class Scroll {
     private addEventListener(): void {
         this.parent.on(contentLoaded, this.contentLoaded, this);
         this.parent.on(onContentScroll, this.onContentScroll, this);
+        this.parent.on(updateScroll, this.updateScroll, this);
         this.parent.on(deInitProperties, this.initProps, this);
         this.parent.on(spreadsheetDestroyed, this.destroy, this);
         this.parent.on(setScrollEvent, this.setScrollEvent, this);
@@ -331,6 +327,7 @@ export class Scroll {
     private removeEventListener(): void {
         this.parent.off(contentLoaded, this.contentLoaded);
         this.parent.off(onContentScroll, this.onContentScroll);
+        this.parent.off(updateScroll, this.updateScroll);
         this.parent.off(deInitProperties, this.initProps);
         this.parent.off(spreadsheetDestroyed, this.destroy);
         this.parent.off(setScrollEvent, this.setScrollEvent);

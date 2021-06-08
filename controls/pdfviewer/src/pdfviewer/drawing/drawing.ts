@@ -17,7 +17,7 @@ import { SelectorModel } from './selector-model';
 import { isLineShapes, setElementStype, findPointsLength, getBaseShapeAttributes, isLeader, Leader, cloneObject } from './drawing-util';
 // eslint-disable-next-line max-len
 import { getConnectorPoints, updateSegmentElement, getSegmentElement, updateDecoratorElement, getDecoratorElement, clipDecorators, initDistanceLabel, initLeaders, initLeader, getPolygonPath, initPerimeterLabel } from './connector-util';
-import { isNullOrUndefined, isBlazor } from '@syncfusion/ej2-base';
+import { isNullOrUndefined, isBlazor, Browser } from '@syncfusion/ej2-base';
 import { AnnotationResizerLocation, AnnotationSelectorSettingsModel } from '../index';
 
 /* eslint-disable */
@@ -386,26 +386,26 @@ export class Drawing {
                 basicElement.rotateAngle = obj.rotateAngle;
                 setElementStype(obj, basicElement);
                 canvas.children.push(basicElement);
-                textele = this.textElement(obj);
+                let radiusTextEle = this.textElement(obj);
                 if (obj.enableShapeLabel) {
-                    textele.style.color = obj.fontColor;
-                    textele.style.strokeColor = obj.labelBorderColor;
-                    textele.style.fill = obj.labelFillColor;
-                    textele.style.fontSize = obj.fontSize;
-                    textele.style.fontFamily = obj.fontFamily;
-                    textele.style.opacity = obj.labelOpacity;
+                    radiusTextEle.style.color = obj.fontColor;
+                    radiusTextEle.style.strokeColor = obj.labelBorderColor;
+                    radiusTextEle.style.fill = obj.labelFillColor;
+                    radiusTextEle.style.fontSize = obj.fontSize;
+                    radiusTextEle.style.fontFamily = obj.fontFamily;
+                    radiusTextEle.style.opacity = obj.labelOpacity;
                 }
                 let length: number = findPointsLength([
                     { x: obj.bounds.x, y: obj.bounds.y },
                     { x: obj.bounds.x + obj.bounds.width, y: obj.bounds.y + obj.bounds.height }]);
                 if (!this.pdfViewer.enableImportAnnotationMeasurement && obj.notes && obj.notes !== '') {
-                    textele.content = obj.notes;
+                    radiusTextEle.content = obj.notes;
                 } else {
                     // eslint-disable-next-line max-len
-                    textele.content = this.pdfViewer.annotation.measureAnnotationModule.setConversion((length / 2) * this.pdfViewer.annotation.measureAnnotationModule.pixelToPointFactor, obj);
+                    radiusTextEle.content = this.pdfViewer.annotation.measureAnnotationModule.setConversion((length / 2) * this.pdfViewer.annotation.measureAnnotationModule.pixelToPointFactor, obj);
                 }
-                textele.rotateValue = { y: -10, x: obj.bounds.width / 4, angle: obj.rotateAngle };
-                canvas.children.push(textele);
+                radiusTextEle.rotateValue = { y: -10, x: obj.bounds.width / 4, angle: obj.rotateAngle };
+                canvas.children.push(radiusTextEle);
                 break;
             case 'StickyNotes':
                 // eslint-disable-next-line
@@ -2593,7 +2593,7 @@ export class Drawing {
                             for (let index: number = 0; index < children[i].textNodes.length; index++) {
                                 var childHeight = children[i].textNodes[0].dy * (index + 1);
                                 childHeight = childHeight;
-                                if (childHeight > actualObject.bounds.height) {
+                                if (childHeight > actualObject.bounds.height && !Browser.isDevice) {
                                     break;
                                 }
                                 contString = contString + children[i].textNodes[index].text;

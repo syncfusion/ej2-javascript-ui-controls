@@ -1,4 +1,4 @@
-import { Property, ChildProperty, EmitType, Event, Complex, Collection } from '@syncfusion/ej2-base';import { BorderModel as PivotChartBorderModel, ErrorBarSettingsModel as PivotChartErrorBarSettingsModel, AccumulationLabelPosition } from '@syncfusion/ej2-charts';import { ChartDrawType, ChartShape, DataLabelSettingsModel as PivotChartDataLabelSettingsModel, ZoomMode } from '@syncfusion/ej2-charts';import { ErrorBarType, ErrorBarDirection, ErrorBarMode, TrendlineTypes, ToolbarItems, IScrollEventArgs } from '@syncfusion/ej2-charts';import { EmptyPointMode, TextOverflow, Alignment, ZIndex, Anchor, SizeType, BorderType, LineType } from '@syncfusion/ej2-charts';import { TrendlineModel as PivotChartTrendlineModel, LegendShape, SplineType, ILegendRenderEventArgs } from '@syncfusion/ej2-charts';import { AnimationModel as PivotChartAnimationModel, ChartSegmentModel as PivotChartSegmentModel } from '@syncfusion/ej2-charts';import { EdgeLabelPlacement, LabelPlacement, MajorTickLinesModel as PivotChartMajorTickLinesModel } from '@syncfusion/ej2-charts';import { MinorGridLinesModel as PivotChartMinorGridLinesModel, AxisLineModel as PivotChartAxisLineModel } from '@syncfusion/ej2-charts';import { ChartAreaModel as PivotChartAreaModel, IndexesModel as PivotChartIndexesModel, GroupModes } from '@syncfusion/ej2-charts';import { IResizeEventArgs, IPrintEventArgs, FontModel as PivotChartFontModel, LegendPosition } from '@syncfusion/ej2-charts';import { ITextRenderEventArgs, IPointRenderEventArgs, ISeriesRenderEventArgs, ITooltipRenderEventArgs } from '@syncfusion/ej2-charts';import { IMouseEventArgs, IPointEventArgs, EmptyPointSettingsModel as PivotChartEmptyPointSettingsModel } from '@syncfusion/ej2-charts';import { LabelIntersectAction, ErrorBarCapSettingsModel as PivotChartErrorBarCapSettingsModel, ChartTheme } from '@syncfusion/ej2-charts';import { CornerRadiusModel as PivotChartCornerRadiusModel, AccumulationSelectionMode } from '@syncfusion/ej2-charts';import { MajorGridLinesModel as PivotChartMajorGridLinesModel, ConnectorType, PyramidModes } from '@syncfusion/ej2-charts';import { IAnimationCompleteEventArgs, StripLineSettingsModel as PivotChartStripLineSettingsModel } from '@syncfusion/ej2-charts';import { CrosshairTooltipModel as PivotChartCrosshairTooltipModel, IZoomCompleteEventArgs } from '@syncfusion/ej2-charts';import { LocationModel as PivotChartLocationModel, AccEmptyPointMode, MarkerSettingsModel as PivotChartMarkerSettingsModel } from '@syncfusion/ej2-charts';import { CrosshairSettingsModel as PivotChartCrosshairSettingsModel, IDragCompleteEventArgs } from '@syncfusion/ej2-charts';import { LabelBorderModel as PivotChartLabelBorderModel, MarginModel as PivotChartMarginModel } from '@syncfusion/ej2-charts';import { MinorTickLinesModel as PivotChartMinorTickLinesModel, IAxisLabelRenderEventArgs } from '@syncfusion/ej2-charts';import { Segment, AxisPosition, LegendSettingsModel, ILoadedEventArgs, SelectionPattern } from '@syncfusion/ej2-charts';import { ChartSeriesType, ChartSelectionMode } from '../../common';import { Theme } from '../../common/base/themes';import { MultiLevelLabelClickEventArgs, OffsetModel as PivotChartOffsetModel } from '../../common/base/interface';import { LabelPosition, MultipleAxisMode } from '../../common/base/enum';
+import { Property, ChildProperty, EmitType, Event, Complex, Collection } from '@syncfusion/ej2-base';import { BorderModel as PivotChartBorderModel, ErrorBarSettingsModel as PivotChartErrorBarSettingsModel, AccumulationLabelPosition, IAxisMultiLabelRenderEventArgs } from '@syncfusion/ej2-charts';import { ChartDrawType, ChartShape, DataLabelSettingsModel as PivotChartDataLabelSettingsModel, ZoomMode } from '@syncfusion/ej2-charts';import { ErrorBarType, ErrorBarDirection, ErrorBarMode, TrendlineTypes, ToolbarItems, IScrollEventArgs } from '@syncfusion/ej2-charts';import { EmptyPointMode, TextOverflow, Alignment, ZIndex, Anchor, SizeType, BorderType, LineType } from '@syncfusion/ej2-charts';import { TrendlineModel as PivotChartTrendlineModel, LegendShape, SplineType, ILegendRenderEventArgs } from '@syncfusion/ej2-charts';import { AnimationModel as PivotChartAnimationModel, ChartSegmentModel as PivotChartSegmentModel } from '@syncfusion/ej2-charts';import { EdgeLabelPlacement, LabelPlacement, MajorTickLinesModel as PivotChartMajorTickLinesModel } from '@syncfusion/ej2-charts';import { MinorGridLinesModel as PivotChartMinorGridLinesModel, AxisLineModel as PivotChartAxisLineModel } from '@syncfusion/ej2-charts';import { ChartAreaModel as PivotChartAreaModel, IndexesModel as PivotChartIndexesModel, GroupModes } from '@syncfusion/ej2-charts';import { IResizeEventArgs, IPrintEventArgs, FontModel as PivotChartFontModel, LegendPosition } from '@syncfusion/ej2-charts';import { ITextRenderEventArgs, IPointRenderEventArgs, ISeriesRenderEventArgs, ITooltipRenderEventArgs } from '@syncfusion/ej2-charts';import { IMouseEventArgs, IPointEventArgs, EmptyPointSettingsModel as PivotChartEmptyPointSettingsModel } from '@syncfusion/ej2-charts';import { LabelIntersectAction, ErrorBarCapSettingsModel as PivotChartErrorBarCapSettingsModel, ChartTheme } from '@syncfusion/ej2-charts';import { CornerRadiusModel as PivotChartCornerRadiusModel, AccumulationSelectionMode } from '@syncfusion/ej2-charts';import { MajorGridLinesModel as PivotChartMajorGridLinesModel, ConnectorType, PyramidModes } from '@syncfusion/ej2-charts';import { IAnimationCompleteEventArgs, StripLineSettingsModel as PivotChartStripLineSettingsModel } from '@syncfusion/ej2-charts';import { CrosshairTooltipModel as PivotChartCrosshairTooltipModel, IZoomCompleteEventArgs } from '@syncfusion/ej2-charts';import { LocationModel as PivotChartLocationModel, AccEmptyPointMode, MarkerSettingsModel as PivotChartMarkerSettingsModel } from '@syncfusion/ej2-charts';import { CrosshairSettingsModel as PivotChartCrosshairSettingsModel, IDragCompleteEventArgs } from '@syncfusion/ej2-charts';import { LabelBorderModel as PivotChartLabelBorderModel, MarginModel as PivotChartMarginModel } from '@syncfusion/ej2-charts';import { MinorTickLinesModel as PivotChartMinorTickLinesModel, IAxisLabelRenderEventArgs } from '@syncfusion/ej2-charts';import { Segment, AxisPosition, LegendSettingsModel, ILoadedEventArgs, SelectionPattern } from '@syncfusion/ej2-charts';import { ChartSeriesType, ChartSelectionMode } from '../../common';import { Theme } from '../../common/base/themes';import { MultiLevelLabelClickEventArgs, OffsetModel as PivotChartOffsetModel } from '../../common/base/interface';import { LabelPosition, MultipleAxisMode } from '../../common/base/enum';
 
 /**
  * Interface for a class Animation
@@ -404,6 +404,16 @@ export interface PivotChartDataLabelModel {
      * @default true
      */
     visible?: boolean;
+
+    /**
+    * Allows to set the border to data labels.
+    */
+    border?: PivotChartBorderModel;
+
+    /**
+     * Allows to customize the font of data labels.
+     */
+    font?: PivotChartFontModel;
 
     /**
      * Allows to set the background color of the data label accepts value in hex and rgba as a valid CSS color string.
@@ -2518,6 +2528,12 @@ export interface PivotAxisModel {
     title?: string;
 
     /**
+     * Allows to scale the axis by this value. When zoomFactor is 0.5, the chart is scaled by 200% along this axis. Value ranges from 0 to 1.
+     * @default null
+     */
+    zoomFactor?: number;
+
+    /**
      * Allows options to customize the crosshair ToolTip.
      */
     crosshairTooltip?: PivotChartCrosshairTooltipModel;
@@ -3221,6 +3237,12 @@ export interface ChartSettingsModel {
      * @deprecated
      */
     seriesRender?: EmitType<ISeriesRenderEventArgs>;
+
+    /**
+     * It triggers while rendering the multi-level labels in the pivot chart.
+     * @event
+     */
+    axisMultiLabelRender?: EmitType<IAxisMultiLabelRenderEventArgs>;
 
     /**
      * It triggers before each points for the series is rendered.

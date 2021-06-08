@@ -398,7 +398,7 @@ describe('Menu', () => {
             menu.open();
             expect(menu.element.classList.contains('e-hide-menu')).toBeFalsy();
             menu.close();
-            expect(menu.element.classList.contains('e-hide-menu')).toBeFalsy();
+            expect(menu.element.classList.contains('e-hide-menu')).toBeTruthy();
         });
     });
 
@@ -745,5 +745,67 @@ describe('Menu', () => {
             menu = new Menu({ items: items, hoverDelay: 300}, '#menu');
             expect(menu.hoverDelay).toEqual(300);
         });
+        it('EJ2-49377 - Hamburger mode is not working when items are dynamically added', () => {
+            document.body.appendChild(ul);
+            let menuItems: MenuItemModel[] = [];
+             menu = new Menu({ items: menuItems , hamburgerMode: true, showItemOnClick: true}, '#menu');
+             menu.items = [
+                     {
+                     text: 'File',
+                     iconCss: 'em-icons e-file',
+                     items: [
+                       { text: 'Open', iconCss: 'em-icons e-open' },
+                       { text: 'Save', iconCss: 'em-icons e-save' },
+                       { separator: true },
+                       { text: 'Exit' }
+                     ]
+                     },
+                     {
+                     text: 'Edit',
+                     iconCss: 'em-icons e-edit',
+                     items: [
+                       { text: 'Cut', iconCss: 'em-icons e-cut' },
+                       { text: 'Copy', iconCss: 'em-icons e-copy' },
+                       { text: 'Paste', iconCss: 'em-icons e-paste' }
+                     ]
+                     },
+                     {
+                     text: 'View',
+                     items: [
+                       {
+                         text: 'Toolbars',
+                         items: [
+                           { text: 'Menu Bar' },
+                           { text: 'Bookmarks Toolbar' },
+                           { text: 'Customize' }
+                         ]
+                       },
+                       {
+                         text: 'Zoom',
+                         items: [{ text: 'Zoom In' }, { text: 'Zoom Out' }, { text: 'Reset' }]
+                       },
+                       { text: 'Full Screen' }
+                     ]
+                     },
+                     {
+                     text: 'Tools',
+                     items: [
+                       { text: 'Spelling & Grammar' },
+                       { text: 'Customize' },
+                       { separator: true },
+                       { text: 'Options' }
+                     ]
+                     },
+                     {
+                     text: 'Help'
+                     }
+             ];
+             menu.dataBind();
+             const wrap: HTMLElement = menu.getWrapper();
+             expect(wrap.classList.contains('e-menu-wrapper')).toBeTruthy();
+             expect(wrap.lastElementChild.classList.contains('e-menu')).toBeTruthy();
+             expect(wrap.lastElementChild.getAttribute('role')).toEqual('menubar');
+             expect(wrap.lastElementChild.childElementCount).toEqual(5);
+         });
     });
 });

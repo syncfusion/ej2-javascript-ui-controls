@@ -8,7 +8,7 @@
 /* eslint-disable no-case-declarations */
 // eslint-disable-next-line @typescript-eslint/triple-slash-reference
 /// <reference path='./node-base-model.d.ts'/>
-import { Property, Complex, Collection, ChildProperty, ComplexFactory, isBlazor } from '@syncfusion/ej2-base';
+import { Property, Complex, Collection, ChildProperty, ComplexFactory, isBlazor, extend, cloneNode, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { ShapeStyle, Margin, TextStyle, Shadow } from '../core/appearance';
 import { ShapeStyleModel, TextStyleModel, ShadowModel} from '../core/appearance-model';
 import { Point } from '../primitives/point';
@@ -45,7 +45,7 @@ import { LayoutModel } from '../layout/layout-base-model';
 import { checkPortRestriction, setUMLActivityDefaults, getUMLActivityShapes } from './../utility/diagram-util';
 import { updatePortEdges, initfixedUserHandlesSymbol } from './../utility/diagram-util';
 import { setSwimLaneDefaults, setPortsEdges } from './../utility/diagram-util';
-import { randomId, getFunction } from './../utility/base-util';
+import { randomId, getFunction, cloneObject } from './../utility/base-util';
 import { NodeBase } from './node-base';
 import { canShadow } from './../utility/constraints-util';
 import { NodeModel, BpmnTransactionSubProcessModel, SwimLaneModel, LaneModel, HeaderModel, PhaseModel } from '../objects/node-model';
@@ -2513,6 +2513,10 @@ export class Node extends NodeBase implements IElement {
     @Property('')
     public branch: BranchTypes;
 
+    // Used to maintain the old property of gradient value
+    /** @private */
+    public oldGradientValue: Object;
+
     /** @private */
     public isCanvasUpdate: boolean = false;
     /** @private */
@@ -2714,6 +2718,7 @@ export class Node extends NodeBase implements IElement {
                     (isBlazor() && (this.shape as DiagramShape).umlActivityShape !== 'FinalNode'))))) {
             if (this.shape.type !== 'Text') {
                 content.style = this.style;
+                this.oldGradientValue = (this.style.gradient) ? cloneObject(this.style.gradient) : null;
             }
         }
         if (!(this.wrapper.elementActions & ElementAction.ElementIsGroup) && this.flip === 'Horizontal' || this.flip === 'Vertical') {

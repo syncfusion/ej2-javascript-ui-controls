@@ -3371,8 +3371,8 @@ export class Layout {
             (viewer.clientArea.x - HelperMethods.convertPointToPixel(paragraph.paragraphFormat.leftIndent));
         let defaultTabWidth: number = HelperMethods.convertPointToPixel(this.documentHelper.defaultTabWidth);
         let breakInLeftIndent: boolean = false;
-        if (tabs.length === 0 && (position > 0 && defaultTabWidth > position && isList ||
-            defaultTabWidth === this.defaultTabWidthPixel && defaultTabWidth > position)) {
+        if (tabs.length === 0 && (position > 0 && defaultTabWidth > Math.round(position) && isList ||
+            defaultTabWidth === this.defaultTabWidthPixel && defaultTabWidth > Math.round(position))) {
             return defaultTabWidth - position;
         } else {
             if (tabs.length > 0) {
@@ -4792,7 +4792,11 @@ export class Layout {
         }
         if (cellWidget.childWidgets[0] instanceof ParagraphWidget) {
             const paraWidget: ParagraphWidget = cellWidget.childWidgets[0] as ParagraphWidget;
-            return this.isFirstLineFitForPara(bottom - cellWidget.margin.bottom, paraWidget);
+            let isLineFitForPara: boolean = this.isFirstLineFitForPara(bottom - cellWidget.margin.bottom, paraWidget);
+            if (isLineFitForPara && paraWidget == cellWidget.childWidgets[cellWidget.childWidgets.length -1] && cellWidget == cellWidget.containerWidget.lastChild) {
+                return cellWidget.y + cellWidget.height <= bottom;
+            }
+            return isLineFitForPara;
         } else {
             const tableWidget: TableWidget = cellWidget.childWidgets[0] as TableWidget;
             return this.isFirstLineFitForTable(bottom - cellWidget.margin.bottom, tableWidget);
@@ -7200,7 +7204,7 @@ export class Layout {
                                 //Re Update the x position to the page left when word version not equal to 2013 
                                 //and wrapping style not equal to infront of text and behind text. 
                                 if ((textWrapStyle === 'InFrontOfText' || textWrapStyle === 'Behind')) {
-                                    if (autoShape === 'StraightConnector') {
+                                    if (autoShape === 'StraightConnector' || autoShape === 'Rectangle') {
                                         indentX = horzPosition + HelperMethods.convertPointToPixel(sectionFormat.leftMargin);
                                     } else {
                                         indentX = paragraph.x + horzPosition;

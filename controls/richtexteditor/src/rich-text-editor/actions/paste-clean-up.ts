@@ -137,9 +137,6 @@ export class PasteCleanup {
           const currentDocument: Document = this.contentRenderer.getDocument();
           const range: Range = this.nodeSelectionObj.getRange(currentDocument);
           this.saveSelection = this.nodeSelectionObj.save(range, currentDocument);
-          this.parent.trigger(events.afterPasteCleanup, { value : value}, (updatedArgs: PasteCleanupArgs) => {
-            value = updatedArgs.value;
-          });
           if (this.parent.pasteCleanupSettings.prompt) {
               (e.args as ClipboardEvent).preventDefault();
               const tempDivElem: HTMLElement = this.parent.createElement('div') as HTMLElement;
@@ -587,6 +584,9 @@ export class PasteCleanup {
           allImg[i].classList.add('pasteContent_Img');
       }
       this.addTempClass(clipBoardElem);
+      this.parent.trigger(events.afterPasteCleanup,{ value : clipBoardElem.innerHTML}, (updatedArgs: PasteCleanupArgs) => {
+        clipBoardElem.innerHTML = updatedArgs.value;
+      });
       if (clipBoardElem.textContent !== '' || !isNOU(clipBoardElem.querySelector('img')) ||
       !isNOU(clipBoardElem.querySelector('table'))) {
           this.parent.formatter.editorManager.execCommand(
@@ -668,6 +668,9 @@ export class PasteCleanup {
           this.saveSelection.restore();
           clipBoardElem.innerHTML = this.sanitizeHelper(clipBoardElem.innerHTML);
           this.addTempClass(clipBoardElem);
+          this.parent.trigger(events.afterPasteCleanup,{ value : clipBoardElem.innerHTML}, (updatedArgs: PasteCleanupArgs) => {
+            clipBoardElem.innerHTML = updatedArgs.value;
+          });
           this.parent.formatter.editorManager.execCommand(
               'inserthtml',
               'pasteCleanup',

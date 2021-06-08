@@ -1,7 +1,7 @@
 ﻿import { initialLoad, ribbon, formulaBar, IRenderer, beforeVirtualContentLoaded, setAriaOptions, skipHiddenIdx } from '../common/index';
 import { SheetRender, RowRenderer, CellRenderer } from './index';
 import { Spreadsheet } from '../base/index';
-import { remove } from '@syncfusion/ej2-base';
+import { isNullOrUndefined, remove } from '@syncfusion/ej2-base';
 import { CellModel, SheetModel, getSheetName, getRowsHeight, getColumnsWidth, getData, Workbook } from '../../workbook/base/index';
 import { dataRefresh, getCellAddress, getCellIndexes, workbookFormulaOperation } from '../../workbook/common/index';
 import { RefreshArgs, sheetTabs, onContentScroll, deInitProperties, beforeDataBound, isReact } from '../common/index';
@@ -149,10 +149,22 @@ export class Render {
                     lastRow += (args.frozenIndexes[0] - frozenRow) ; lastCol += (args.frozenIndexes[1] - frozenCol);
                 }
                 lastRow += sheet.frozenRows; lastCol += sheet.frozenColumns;
-                let count: number = sheet.rowCount - 1;
-                if (this.parent.scrollSettings.isFinite && lastRow > count) { lastRow = count; }
-                count = sheet.colCount - 1;
-                if (this.parent.scrollSettings.isFinite && lastCol > count) { lastCol = count; }
+                let count: number = sheet.rowCount - 1; let diff: number = 0;
+                if (this.parent.scrollSettings.isFinite && lastRow > count) {
+                    diff = lastRow - count; lastRow = count;
+                    if (diff && !isNullOrUndefined(this.parent.viewport.topIndex)) {
+                        diff = this.parent.viewport.topIndex - diff > -1 ? this.parent.viewport.topIndex - diff : 0;
+                        this.parent.viewport.topIndex = args.rowIndex = this.skipHiddenIdx(diff, true);
+                    }
+                }
+                count = sheet.colCount - 1; diff = 0;
+                if (this.parent.scrollSettings.isFinite && lastCol > count) {
+                    diff = lastCol - count; lastCol = count;
+                    if (diff && !isNullOrUndefined(this.parent.viewport.leftIndex)) {
+                        diff = this.parent.viewport.leftIndex - diff > -1 ? this.parent.viewport.leftIndex - diff : 0;
+                        this.parent.viewport.leftIndex = args.colIndex = this.skipHiddenIdx(diff, true, 'columns');
+                    }
+                }
                 let indexes: number[] = this.parent.skipHidden(args.rowIndex, lastRow);
                 if (args.rowIndex !== indexes[0]) {
                     const topLeftCell: number[] = getCellIndexes(sheet.topLeftCell);
@@ -237,7 +249,16 @@ export class Render {
             }
             if (this.parent[isReact]) { this.parent[renderReactTemplates](); }
         });
-        this.parent.notify(beforeVirtualContentLoaded, { refresh: args.refresh });
+        this.parent.notify(beforeVirtualContentLoaded, { refresh: args.refresh, skipTranslate: args.skipTranslate });
+    } 
+
+    public skipHiddenIdx(
+        index: number, increase: boolean, layout: string = 'rows', sheet: SheetModel = this.parent.getActiveSheet()): number {
+        if ((sheet[layout])[index] && (sheet[layout])[index].hidden) {
+            index = increase ? ++index : --index;
+            index = this.skipHiddenIdx(index, increase, layout, sheet);
+        }
+        return index;
     }
 
     private removeSheet(): void {

@@ -2,13 +2,27 @@
 
 ## [Unreleased]
 
+## 19.1.67 (2021-06-08)
+
+### Document Editor
+
+#### Bug Fixes
+
+- `#FB25004` - Exported document with table is opened properly in Libre Office.
+- `#I325323` - Textbox shape is now rendered properly.
+- `#FB24917` - Document is now exporting properly after deleting comment.
+- `#F163116` - Hanging indent is now retrieved properly in paragraph dialog.
+- `#I327769` - Checkbox is now layout properly.
+- `#I326567` - Nested table with preferred width type percent now rendered properly.
+- `#I328479` - Resolved script error while deleting merged cells.
+
 ## 19.1.66 (2021-06-01)
 
 ### Document Editor
 
 - `#I326144` - Resolved the issue with multi line track changes.
 - `#I328063` - Document with checkbox form field applied with to character format is now opened properly.
-- `#I328067` - Resoved the navigation issue in inline form field editing.
+- `#I328067` - Resolved the navigation issue in inline form field editing.
 - `#F164875`, `#F163714` - Resolved the unsupported textbox border as square border.
 - `#I327817` - Resolved the script error in using insert footnote in custom toolbar.
 - `#I325320` - Page number is now updated properly.

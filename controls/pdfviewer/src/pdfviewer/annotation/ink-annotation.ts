@@ -5,6 +5,7 @@ import { PdfAnnotationBaseModel } from '../drawing/pdf-annotation-model';
 import { PdfAnnotationBase } from '../drawing/pdf-annotation';
 import { AnnotationSelectorSettingsModel } from '../pdfviewer-model';
 import { splitArrayCollection, processPathData, getPathString } from '@syncfusion/ej2-drawings';
+import { Browser } from '@syncfusion/ej2-base';
 
 export class InkAnnotation {
     private pdfViewer: PdfViewer;
@@ -55,6 +56,9 @@ export class InkAnnotation {
                 this.pdfViewer.select([currentAnnot.id], currentAnnot.annotationSelectorSettings);
                 if (this.pdfViewer.toolbar && this.pdfViewer.toolbar.annotationToolbarModule) {
                     this.pdfViewer.toolbar.annotationToolbarModule.enableSignaturePropertiesTools(true);
+                }
+                if (Browser.isDevice && !this.pdfViewer.enableDesktopMode) {
+                    this.pdfViewer.toolbarModule.annotationToolbarModule.createPropertyTools("Ink");
                 }
             } else {
                 this.outputString = '';

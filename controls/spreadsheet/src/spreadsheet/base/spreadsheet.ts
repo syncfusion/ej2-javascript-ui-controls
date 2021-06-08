@@ -48,6 +48,7 @@ import { WorkbookImage, WorkbookChart } from '../../workbook/integrations/index'
 import { WorkbookProtectSheet } from '../../workbook/actions/index';
 import { beginAction, contentLoaded, completeAction, freeze, getScrollBarWidth, ConditionalFormatEventArgs } from '../common/index';
 import { getFilteredCollection, deleteHyperlink } from './../../workbook/common/index';
+import { updateScroll } from '../common/index';
 /**
  * Represents the Spreadsheet component.
  *
@@ -2593,6 +2594,21 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
                                 });
                             }
                         });
+                    } else if (sheet.paneTopLeftCell && oldProp.sheets && oldProp.sheets[sheetIdx] &&
+                        oldProp.sheets[sheetIdx].paneTopLeftCell) {
+                        if (this.activeSheetIndex !== Number(sheetIdx)) { return; }
+                        const cIdx: number[] = getCellIndexes(sheet.paneTopLeftCell);
+                        const pIdx: number[] = getCellIndexes(oldProp.sheets[sheetIdx].paneTopLeftCell);
+                        if (cIdx[0] != pIdx[0]) {
+                            const frozenRow: number = this.frozenRowCount(this.getActiveSheet());
+                            const top: number = cIdx[0] > frozenRow ? getRowsHeight(this.getActiveSheet(), frozenRow, cIdx[0] - 1) : 0;
+                            this.notify(updateScroll, { top: top });
+                        }
+                        if (cIdx[1] != pIdx[1]) {
+                            const frozenCol: number = this.frozenColCount(this.getActiveSheet());
+                            const left: number = cIdx[1] > frozenCol ? getColumnsWidth(this.getActiveSheet(), frozenCol, cIdx[1] - 1) : 0;
+                            this.notify(updateScroll, { left: left });
+                        }
                     } else {
                         if (index === 0) {
                             this.renderModule.refreshSheet();

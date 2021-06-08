@@ -20,7 +20,7 @@ import { setCell } from './cell';
 export function getData(
     context: Workbook, address: string, columnWiseData?: boolean,
     valueOnly?: boolean, frozenIndexes?: number[],
-    filterDialog?: boolean, formulaCellRef?: string, idx?: number): Promise<Map<string, CellModel> | { [key: string]: CellModel }[]> {
+    filterDialog?: boolean, formulaCellRef?: string, idx?: number, skipHiddenRows: boolean = true): Promise<Map<string, CellModel> | { [key: string]: CellModel }[]> {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     return new Promise((resolve: Function, reject: Function) => {
         resolve((() => {
@@ -47,7 +47,7 @@ export function getData(
                     i = indexes[1];
                     while (i <= indexes[3]) {
                         if (columnWiseData) {
-                            if (isHiddenRow(sheet, sRow) && !filterDialog) { sRow++; continue; }
+                            if (skipHiddenRows && isHiddenRow(sheet, sRow) && !filterDialog) { sRow++; continue; }
                             if (data instanceof Map) { data = []; }
                             const key: string = getColumnHeaderText(i + 1);
                             const rowKey: string = '__rowIndex';

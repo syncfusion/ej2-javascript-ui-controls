@@ -120,6 +120,23 @@ export class NavigationPane {
     public initializeNavigationPane(): void {
         if (!Browser.isDevice || this.pdfViewer.enableDesktopMode) {
             this.createNavigationPane();
+        } else {
+            // eslint-disable-next-line max-len
+            this.commentPanelContainer = createElement('div', { id: this.pdfViewer.element.id + '_commantPanel', className: 'e-pv-mobile-comments-container' });
+            this.pdfViewerBase.mainContainer.appendChild(this.commentPanelContainer);
+            if (this.pdfViewer.enableRtl) {
+                this.commentPanelContainer.style.left = 0 + 'px';
+            } else {
+                this.commentPanelContainer.style.right = 0 + 'px';
+            }
+            this.commentPanelContainer.style.bottom = 0 + 'px';
+            this.createCommentPanelTitleContainer();
+            this.commentPanelContainer.style.display = 'none';
+            // eslint-disable-next-line max-len
+            this.commentsContentContainer = createElement('div', { id: this.pdfViewer.element.id + '_commentscontentcontainer', className: 'e-pv-comments-content-container' });
+            this.commentPanelContainer.appendChild(this.commentsContentContainer);
+            this.createFileElement(this.commentPanelContainer);
+            this.createXFdfFileElement(this.commentPanelContainer);
         }
     }
 
@@ -303,6 +320,20 @@ export class NavigationPane {
         // eslint-disable-next-line max-len
         const moreOptionButtonSpan: HTMLElement = createElement('span', { id: this.pdfViewer.element.id + '_annotation_more_icon', className: 'e-pv-more-icon e-pv-icon' });
         annotationButton.appendChild(moreOptionButtonSpan);
+        if (Browser.isDevice && !isBlazor()) {
+            let commentCloseIconDiv: HTMLElement = createElement('button');
+            commentCloseIconDiv.setAttribute('aria-label', 'annotation button');
+            commentCloseIconDiv.setAttribute('type', 'button');
+            commentCloseIconDiv.style.borderColor = 'transparent';
+            commentCloseIconDiv.style.paddingTop = '11px';
+            commentCloseIconDiv.style.paddingBottom = '11px';
+            commentCloseIconDiv.style.backgroundColor = '#fafafa';
+            commentCloseIconDiv.addEventListener('click', this.closeCommentPanelContainer.bind(this));
+            commentpanelTilte.style.left = '37px';
+            let commentCloseIcon: HTMLElement = createElement('span', { className: 'e-pv-annotation-tools-close-icon e-pv-icon' });
+            commentCloseIconDiv.appendChild(commentCloseIcon);
+            commentPanelTitleContainer.appendChild(commentCloseIconDiv);
+        }
         commentPanelTitleContainer.appendChild(commentpanelTilte);
         commentPanelTitleContainer.appendChild(annotationButton);
         this.commentPanelContainer.appendChild(commentPanelTitleContainer);
@@ -396,18 +427,10 @@ export class NavigationPane {
 
     private importAnnotationIconClick(args: ClickEventArgs): void {
         this.annotationInputElement.click();
-        if (Browser.isDevice && !this.pdfViewer.enableDesktopMode) {
-            (args.originalEvent.target as HTMLElement).blur();
-            this.pdfViewerBase.focusViewerContainer();
-        }
     }
 
     private importXFdfAnnotationIconClick(args: ClickEventArgs): void {
         this.annotationXFdfInputElement.click();
-        if (Browser.isDevice && !this.pdfViewer.enableDesktopMode) {
-            (args.originalEvent.target as HTMLElement).blur();
-            this.pdfViewerBase.focusViewerContainer();
-        }
     }
 
     // eslint-disable-next-line
@@ -468,7 +491,9 @@ export class NavigationPane {
         const commentPanel: HTMLElement = document.getElementById(this.pdfViewer.element.id + '_commantPanel');
         if (commentPanel) {
             commentPanel.style.display = 'none';
-            proxy.commentPanelResizer.style.display = 'none';
+            if (proxy.commentPanelResizer) {
+                proxy.commentPanelResizer.style.display = 'none';
+            }
             if (viewerContainer) {
                 if (this.pdfViewer.enableRtl) {
                     viewerContainer.style.left = proxy.getViewerContainerRight() + 'px';
@@ -484,6 +509,14 @@ export class NavigationPane {
             }
             if (this.pdfViewer.annotation && this.pdfViewer.annotation.textMarkupAnnotationModule) {
                 this.pdfViewer.annotation.textMarkupAnnotationModule.showHideDropletDiv(true);
+            }
+            if (Browser.isDevice && !isBlazor()) {
+                if (this.pdfViewer.toolbarModule.annotationToolbarModule.toolbar) {
+                    this.pdfViewer.toolbarModule.annotationToolbarModule.toolbar.element.style.display = 'block';
+                    if (this.pdfViewer.toolbarModule.annotationToolbarModule.propertyToolbar) {
+                        this.pdfViewer.toolbarModule.annotationToolbarModule.propertyToolbar.element.style.display = 'block';
+                    }
+                }
             }
         }
     }
@@ -579,6 +612,10 @@ export class NavigationPane {
     private initiateBookmarks(): void {
         if (Browser.isDevice && !this.pdfViewer.enableDesktopMode) {
             this.pdfViewerBase.mobileScrollerContainer.style.display = 'none';
+            let mobileTool: any = document.querySelectorAll('.e-pv-mobile-annotation-toolbar');
+            for (let i: number = 0; i < mobileTool.length; i++) {
+                mobileTool[i].style.display = 'none';
+            }
         }
         // eslint-disable-next-line max-len
         const bookmarkContainer: HTMLElement = createElement('div', { id: this.pdfViewer.element.id + '_bookmarks_container', className: 'e-pv-bookmark-container' });
@@ -627,7 +664,6 @@ export class NavigationPane {
             if (!isBlazor()) {
                 if (!this.pdfViewer.toolbar.annotationToolbarModule.isMobileAnnotEnabled) {
                     this.pdfViewer.toolbarModule.showToolbar(true);
-                    this.pdfViewerBase.onWindowResize();
                 }
             } else {
                 this.pdfViewerBase.onWindowResize();
@@ -827,7 +863,7 @@ export class NavigationPane {
      */
     public setCommentPanelResizeIconTop(): void {
         // eslint-disable-next-line max-len
-        if (this.commentPanelContainer && this.commentPanelContainer.clientHeight && this.commentPanelResizeIcon.style.top === '') {
+        if (this.commentPanelContainer && this.commentPanelContainer.clientHeight && this.commentPanelResizeIcon && this.commentPanelResizeIcon.style.top === '') {
             this.commentPanelResizeIcon.style.top = (this.commentPanelContainer.clientHeight) / 2 + 'px';
         }
     }
@@ -1029,13 +1065,21 @@ export class NavigationPane {
      * @private
      */
     public getViewerContainerLeft(): number {
-        return (this.sideToolbarWidth + this.sideBarContentContainerWidth);
+        if (this.sideToolbarWidth) {
+            return (this.sideToolbarWidth + this.sideBarContentContainerWidth);
+        } else {
+            return 0;
+        }
     }
     /**
      * @private
      */
     public getViewerContainerRight(): number {
-        return (this.commentPanelContainerWidth + this.commentPanelResizer.clientWidth);
+        if (this.commentPanelResizer) {
+            return (this.commentPanelContainerWidth + this.commentPanelResizer.clientWidth);
+        } else {
+            return 0;
+        }
     }
     /**
      * @private
@@ -1316,9 +1360,11 @@ export class NavigationPane {
      * @private
      */
     public clear(): void {
-        this.removeBookmarkSelectionIconTheme();
-        this.removeThumbnailSelectionIconTheme();
-        this.closeCommentPanelContainer();
+        if (!Browser.isDevice) {
+            this.removeBookmarkSelectionIconTheme();
+            this.removeThumbnailSelectionIconTheme();
+            this.closeCommentPanelContainer();
+        }
         if (this.commentsContentContainer) {
             this.commentsContentContainer.innerHTML = '';
         }

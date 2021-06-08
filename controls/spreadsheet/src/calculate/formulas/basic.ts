@@ -601,7 +601,8 @@ export class BasicFormulas {
         if (this.parent.getErrorStrings().indexOf(args[0]) > 0) {
             return args[0];
         }
-        const argArr: string[] = args;
+        const argArr: string[] = args; let skipTick: boolean;
+        if (argArr.length === 4 && argArr[3] === 'nestedFormulaTrue') { skipTick = true; argArr.pop(); }
         let condition: string;
         let result: string;
         if (argArr.length > 3 || argArr.length === 1) {
@@ -622,7 +623,7 @@ export class BasicFormulas {
                 return this.parent.formulaErrorStrings[FormulasErrorsStrings.requires_3_args];
             }
         }
-        if (result.indexOf(this.parent.tic) > -1) {
+        if (!skipTick && result.indexOf(this.parent.tic) > -1) {
             return result.split(this.parent.tic).join('');
         } else {
             return result;

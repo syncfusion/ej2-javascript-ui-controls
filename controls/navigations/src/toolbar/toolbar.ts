@@ -1269,6 +1269,11 @@ export class Toolbar extends Component<HTMLElement> implements INotifyPropertyCh
             setStyle(popObj.element, { maxHeight: (tbEleData.top + this.element.offsetHeight) + 'px', bottom: 0, visibility: '' });
         }
         if (popObj) {
+            const popupOffset: ClientRect = popupEle.getBoundingClientRect();
+            if ( popupOffset.right > document.documentElement.clientWidth && popupOffset.width > toolEle.getBoundingClientRect().width) {
+                popObj.collision = { Y: 'none'};
+                popObj.dataBind();
+            }
             popObj.refreshPosition();
         }
     }
@@ -2132,29 +2137,31 @@ export class Toolbar extends Component<HTMLElement> implements INotifyPropertyCh
                         const index: number = parseInt(Object.keys(newProp.items)[i], 10);
                         const property: Str = Object.keys(newProp.items[index])[0];
                         const newProperty: Str = Object(newProp.items[index])[property];
-                        if (this.tbarAlign || property === 'align') {
-                            this.refresh();
-                            this.trigger('created');
-                            break;
-                        }
-                        const popupPriCheck: boolean = property === 'showAlwaysInPopup' && !newProperty;
-                        const booleanCheck: boolean = property === 'overflow' && this.popupPriCount !== 0;
-                        if ((popupPriCheck) || (this.items[index].showAlwaysInPopup) && booleanCheck) {
-                            --this.popupPriCount;
-                        }
-                        if (isNOU(this.scrollModule)) {
-                            this.destroyMode();
-                        }
-                        const itemCol: HTEle[] = [].slice.call(selectAll('.' + CLS_ITEMS + ' .' + CLS_ITEM, tEle));
-                        if ((this as any).isReact) {
-                            this.clearTemplate();
-                        }
-                        detach(itemCol[index]);
-                        this.tbarEle.splice(index, 1);
-                        this.addItems([this.items[index]], index);
-                        this.items.splice(index, 1);
-                        if (this.items[index].template) {
-                            this.tbarEle.splice(this.items.length, 1);
+                        if (typeof newProperty !== 'function') {
+                            if (this.tbarAlign || property === 'align') {
+                                this.refresh();
+                                this.trigger('created');
+                                break;
+                            }
+                            const popupPriCheck: boolean = property === 'showAlwaysInPopup' && !newProperty;
+                            const booleanCheck: boolean = property === 'overflow' && this.popupPriCount !== 0;
+                            if ((popupPriCheck) || (this.items[index].showAlwaysInPopup) && booleanCheck) {
+                                --this.popupPriCount;
+                            }
+                            if (isNOU(this.scrollModule)) {
+                                this.destroyMode();
+                            }
+                            const itemCol: HTEle[] = [].slice.call(selectAll('.' + CLS_ITEMS + ' .' + CLS_ITEM, tEle));
+                            if ((this as any).isReact) {
+                                this.clearTemplate();
+                            }
+                            detach(itemCol[index]);
+                            this.tbarEle.splice(index, 1);
+                            this.addItems([this.items[index]], index);
+                            this.items.splice(index, 1);
+                            if (this.items[index].template) {
+                                this.tbarEle.splice(this.items.length, 1);
+                            }
                         }
                     }
                 } else {

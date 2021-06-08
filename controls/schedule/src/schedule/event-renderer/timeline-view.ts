@@ -306,14 +306,37 @@ export class TimelineEvent extends MonthEvent {
     public getEndTime(event: Record<string, any>, eventData: Record<string, any>): Date {
         let endTime: Date = event[this.fields.endTime] as Date;
         const schedule: { [key: string]: Date } = util.getStartEndHours(endTime, this.startHour, this.endHour);
-        if (schedule.endHour.getTime() <= eventData[this.fields.endTime]) {
-            endTime = schedule.endHour;
+        if (this.parent.currentView === 'TimelineMonth' || !this.parent.activeViewOptions.timeScale.enable ||
+            (this.parent.activeViewOptions.headerRows.length > 0 &&
+                this.parent.activeViewOptions.headerRows.slice(-1)[0].option !== 'Hour')) {
+            endTime = eventData[this.fields.endTime] as Date;
         } else {
             endTime = eventData[this.fields.endTime] as Date;
+            if (schedule.endHour.getTime() <= eventData[this.fields.endTime]) {
+                endTime = schedule.endHour;
+            }
+            if (schedule.startHour.getTime() >= eventData[this.fields.endTime].getTime() && !event.isAllDay) {
+                endTime = this.getPreviousDay(schedule.startHour, schedule.endHour, eventData);
+            }
         }
         // To overcome the overflow
         eventData.trimEndTime = (event[this.fields.isAllDay]) ? schedule.endHour : eventData[this.fields.endTime];
         return endTime;
+    }
+
+    private getPreviousDay(startTime: Date, endTime: Date, eventData: Record<string, any>): Date {
+        for (let i: number = 1; i <= this.dateRender.length; i++) {
+            let endDate: Date = util.addDays(endTime, -i);
+            if (this.parent.getIndexOfDate(this.dateRender, util.resetTime(new Date(startTime.getTime()))) !== -1) {
+                endDate = util.resetTime(new Date(endDate.getTime()));
+                endDate.setHours(endTime.getHours(), endTime.getMinutes(), endTime.getSeconds());
+                const count: number = eventData.count as number;
+                let actualEndTime: Date = eventData[this.fields.endTime] as Date;
+                eventData.count = actualEndTime.getHours() !== 0 || actualEndTime.getMinutes() !== 0 ? count - 1 : count;
+                return endDate;
+            }
+        }
+        return eventData[this.fields.endTime];
     }
 
     public getEventWidth(startDate: Date, endDate: Date, isAllDay: boolean, count: number): number {
@@ -347,7 +370,7 @@ export class TimelineEvent extends MonthEvent {
             endWidth = ((this.slotsPerDay * this.cellWidth) === endWidth) ? 0 : endWidth;
         }
         const spannedWidth: number = startWidth + endWidth;
-        return (width > spannedWidth) ? width - spannedWidth : endWidth - startWidth;
+        return (width > spannedWidth) ? width - spannedWidth : width - startWidth;
     }
 
     private isSameDay(startTime: Date, endTime: Date): boolean {

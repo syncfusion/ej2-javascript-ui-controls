@@ -1,6 +1,7 @@
 import { SpreadsheetHelper } from "../util/spreadsheethelper.spec";
 import { defaultData } from '../util/datasource.spec';
 import { Spreadsheet } from "../../../src";
+import { createElement } from "@syncfusion/ej2-base";
 
 describe('Filter ->', () => {
     const helper: SpreadsheetHelper = new SpreadsheetHelper('spreadsheet');
@@ -114,6 +115,130 @@ describe('Filter ->', () => {
             //         });
             //     });
             // });
+        });
+
+        describe('I307401 -> Fiter UI updating ->', () => {
+            beforeAll((done: Function) => {
+                helper.initializeSpreadsheet({
+                    sheets: [{ ranges: [{ dataSource: defaultData }] }, {}, { ranges: [{ dataSource: defaultData }] }],
+                    created: (): void => {
+                        const spreadsheet: any = helper.getInstance();
+                        spreadsheet.applyFilter([{ field: "F", operator: "contains", value: 200 }]);
+                        setTimeout(() => {
+                            spreadsheet.filterModule.selectSortItemHandler(createElement('div', { className: 'e-filter-sortdesc' }));
+                        });
+                    }
+                }, done);
+            });
+            afterAll(() => {
+                helper.invoke('destroy');
+            });
+
+            it('Insert sheet', (done: Function) => {
+                helper.invoke('insertSheet', [0]);
+                setTimeout(() => {
+                    helper.invoke('goTo', ['Sheet1!A1']);
+                    setTimeout(() => {
+                        let td: Element = helper.invoke('getCell', [0, 0]);
+                        expect(td.children[0].children[0].classList).toContain('e-sortdesc-filter');
+                        expect(helper.getContentTableElement().querySelector('tbody tr:nth-child(2) td').textContent).toBe('Running Shoes');
+                        expect((helper.getContentTableElement().querySelector('tbody tr:nth-child(3)') as any).ariaRowIndex).toBe('8');
+                        td = helper.invoke('getCell', [0, 5]);
+                        expect(td.children[0].children[0].classList).toContain('e-filtered');
+                        expect(helper.getInstance().filterCollection[0].sheetIndex).toBe(1);
+                        done();
+                    });
+                });
+            });
+
+            it('Delete sheet', (done: Function) => {
+                const spreadsheet: any = helper.getInstance();
+                spreadsheet.goTo('Sheet3!F2');
+                setTimeout(() => {
+                    spreadsheet.applyFilter([{ field: "D", operator: "contains", value: 20 }]);
+                    setTimeout(() => {
+                        spreadsheet.filterModule.selectSortItemHandler(createElement('div', { className: 'e-filter-sortdesc' }));
+                        setTimeout(() => {
+                            helper.invoke('goTo', ['Sheet4!A1']);
+                            setTimeout(() => {
+                                helper.getInstance().notify('removeSheetTab', {})
+                                setTimeout(() => {
+                                    let td: Element = helper.invoke('getCell', [0, 0]);
+                                    expect(td.children[0].children[0].classList).toContain('e-sortdesc-filter');
+                                    expect(helper.getContentTableElement().querySelector('tbody tr:nth-child(2) td').textContent).toBe('Running Shoes');
+                                    expect((helper.getContentTableElement().querySelector('tbody tr:nth-child(3)') as any).ariaRowIndex).toBe('8');
+                                    td = helper.invoke('getCell', [0, 5]);
+                                    expect(td.children[0].children[0].classList).toContain('e-filtered');
+                                    expect(helper.getInstance().filterCollection[0].sheetIndex).toBe(0);
+
+                                    helper.invoke('goTo', ['Sheet3!A1']);
+                                    setTimeout(() => {
+                                        td = helper.invoke('getCell', [0, 5]);
+                                        expect(td.children[0].children[0].classList).toContain('e-sortdesc-filter');
+                                        expect(helper.getContentTableElement().querySelector('tbody tr:nth-child(2) td').textContent).toBe('Sports Shoes');
+                                        expect((helper.getContentTableElement().querySelector('tbody tr:nth-child(3)') as any).ariaRowIndex).toBe('4');
+                                        td = helper.invoke('getCell', [0, 3]);
+                                        expect(td.children[0].children[0].classList).toContain('e-filtered');
+                                        expect(helper.getInstance().filterCollection[1].sheetIndex).toBe(2);
+                                        done();
+                                    });
+                                });
+                            });
+                        });
+                    });
+                });
+            });
+
+            it('Insert Column', (done: Function) => {
+                helper.invoke('insertColumn', [0, 1]);
+                setTimeout(() => {
+                    let td: Element = helper.invoke('getCell', [0, 7]);
+                    expect(td.children[0].children[0].classList).toContain('e-sortdesc-filter');
+                    expect(helper.getContentTableElement().querySelector('tbody tr:nth-child(2) td:nth-child(3)').textContent).toBe('Sports Shoes');
+                    expect((helper.getContentTableElement().querySelector('tbody tr:nth-child(3)') as any).ariaRowIndex).toBe('4');
+                    td = helper.invoke('getCell', [0, 5]);
+                    expect(td.children[0].children[0].classList).toContain('e-filtered');
+                    expect(helper.getInstance().filterCollection[1].filterRange).toBe('C1:J11');
+                    helper.invoke('insertColumn', [3, 4]);
+                    setTimeout(() => {
+                        td = helper.invoke('getCell', [0, 9]);
+                        expect(td.children[0].children[0].classList).toContain('e-sortdesc-filter');
+                        td = helper.invoke('getCell', [0, 7]);
+                        expect(td.children[0].children[0].classList).toContain('e-filtered');
+                        expect(helper.getInstance().filterCollection[1].filterRange).toBe('C1:L11');
+                        done();
+                    });
+                });
+            });
+
+            it('Delete Column', (done: Function) => {
+                helper.invoke('delete', [0, 1, 'Column']);
+                setTimeout(() => {
+                    let td: Element = helper.invoke('getCell', [0, 7]);
+                    expect(td.children[0].children[0].classList).toContain('e-sortdesc-filter');
+                    expect(helper.getContentTableElement().querySelector('tbody tr:nth-child(2) td').textContent).toBe('Sports Shoes');
+                    expect((helper.getContentTableElement().querySelector('tbody tr:nth-child(3)') as any).ariaRowIndex).toBe('4');
+                    td = helper.invoke('getCell', [0, 5]);
+                    expect(td.children[0].children[0].classList).toContain('e-filtered');
+                    expect(helper.getInstance().filterCollection[1].filterRange).toBe('A1:J11');
+                    helper.invoke('delete', [1, 3, 'Column']);
+                    setTimeout(() => {
+                        td = helper.invoke('getCell', [0, 4]);
+                        expect(td.children[0].children[0].classList).toContain('e-sortdesc-filter');
+                        td = helper.invoke('getCell', [0, 2]);
+                        expect(td.children[0].children[0].classList).toContain('e-filtered');
+                        expect(helper.getInstance().filterCollection[1].filterRange).toBe('A1:G11');
+                        helper.invoke('delete', [2, 2, 'Column']);
+                        setTimeout(() => {
+                            expect(helper.getContentTableElement().querySelector('tbody tr:nth-child(2) td').textContent).toBe('Casual Shoes');
+                            expect((helper.getContentTableElement().querySelector('tbody tr:nth-child(3)') as any).ariaRowIndex).toBe('3');
+                            expect(helper.getInstance().filterCollection[1].column.length).toBe(0);
+                            done();
+                        });
+                    });
+                });
+            });
+
         });
     });
 });

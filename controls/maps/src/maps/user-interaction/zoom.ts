@@ -650,7 +650,7 @@ export class Zoom {
                     }
                     if (markerTemplateElements.childElementCount === (markerDatas.length - markerCounts - nullCount) && getElementByID(this.maps.element.id + '_Secondary_Element')) {
                         getElementByID(this.maps.element.id + '_Secondary_Element').appendChild(markerTemplateElements);
-                        if (scale <= 1) {
+                        if (scale >= 1) {
                             if (currentLayers.markerClusterSettings.allowClustering) {
                                 clusterTemplate(currentLayers, markerTemplateElements, this.maps, layerIndex, markerSVGObject, layerElement, false, true) ;
                             }
@@ -921,6 +921,7 @@ export class Zoom {
         let x: number; let y: number;
         xDifference = !isNullOrUndefined(xDifference) ? xDifference : (down.x - move.x);
         yDifference = !isNullOrUndefined(yDifference) ? yDifference : (down.y - move.y);
+        this.maps.mergeCluster();
         if (!map.isTileMap) {
             x = translatePoint.x - xDifference / scale;
             y = translatePoint.y - yDifference / scale;

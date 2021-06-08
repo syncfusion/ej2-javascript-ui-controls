@@ -282,8 +282,6 @@ export class StickyNotesAnnotation {
                     // eslint-disable-next-line
                     let settings: any = { opacity: annot.opacity, author: author, modifiedDate: annot.modifiedDate, subject: annot.shapeAnnotationType };
                     this.pdfViewer.fireAnnotationAdd(annot.pageIndex, annot.annotName, 'StickyNotes', bounds, settings);
-                    // eslint-disable-next-line max-len
-                    proxy.pdfViewer.annotation.addAction(pageIndex, null, annot as PdfAnnotationBase, 'Addition', '', annot as PdfAnnotationBase, annot);
                 }
                 // eslint-disable-next-line max-len
                 const isLock: boolean = this.pdfViewer.stickyNotesSettings.isLock ? this.pdfViewer.stickyNotesSettings.isLock : this.pdfViewer.annotationSettings.isLock;
@@ -302,6 +300,8 @@ export class StickyNotesAnnotation {
                 };
             }
             if (!annotation) {
+                 // eslint-disable-next-line max-len
+                 proxy.pdfViewer.annotation.addAction(pageIndex, null, annot as PdfAnnotationBase, 'Addition', '', annot as PdfAnnotationBase, annot);
                 proxy.pdfViewer.add(annot as PdfAnnotationBase);
                 proxy.pdfViewer.annotationModule.storeAnnotations(pageIndex, annotationObject, '_annotations_sticky');
             }
@@ -688,20 +688,18 @@ export class StickyNotesAnnotation {
      * @private
      */
     public initializeAcccordionContainer(): void {
-        if (!Browser.isDevice || this.pdfViewer.enableDesktopMode) {
-            // eslint-disable-next-line max-len
-            const commentPanelText: HTMLElement = createElement('div', { id: this.pdfViewer.element.id + '_commentsPanelText', className: 'e-pv-comments-panel-text' });
-            commentPanelText.textContent = this.pdfViewer.localeObj.getConstant('No Comments Yet');
-            this.updateCommentPanelTextTop();
-            this.pdfViewerBase.navigationPane.commentsContentContainer.appendChild(commentPanelText);
-            // eslint-disable-next-line max-len
-            this.accordionContentContainer = createElement('div', { id: this.pdfViewer.element.id + '_accordionContentContainer', className: 'e-pv-accordion-content-container' });
-            this.pdfViewerBase.navigationPane.commentsContentContainer.appendChild(this.accordionContentContainer);
-            // eslint-disable-next-line max-len
-            this.pdfViewerBase.navigationPane.annotationMenuObj.enableItems([this.pdfViewer.localeObj.getConstant('Export Annotations')], false);
-            // eslint-disable-next-line max-len
-            this.pdfViewerBase.navigationPane.annotationMenuObj.enableItems([this.pdfViewer.localeObj.getConstant('Export XFDF')], false);
-        }
+        // eslint-disable-next-line max-len
+        const commentPanelText: HTMLElement = createElement('div', { id: this.pdfViewer.element.id + '_commentsPanelText', className: 'e-pv-comments-panel-text' });
+        commentPanelText.textContent = this.pdfViewer.localeObj.getConstant('No Comments Yet');
+        this.updateCommentPanelTextTop();
+        this.pdfViewerBase.navigationPane.commentsContentContainer.appendChild(commentPanelText);
+        // eslint-disable-next-line max-len
+        this.accordionContentContainer = createElement('div', { id: this.pdfViewer.element.id + '_accordionContentContainer', className: 'e-pv-accordion-content-container' });
+        this.pdfViewerBase.navigationPane.commentsContentContainer.appendChild(this.accordionContentContainer);
+        // eslint-disable-next-line max-len
+        this.pdfViewerBase.navigationPane.annotationMenuObj.enableItems([this.pdfViewer.localeObj.getConstant('Export Annotations')], false);
+        // eslint-disable-next-line max-len
+        this.pdfViewerBase.navigationPane.annotationMenuObj.enableItems([this.pdfViewer.localeObj.getConstant('Export XFDF')], false);
     }
 
     /**

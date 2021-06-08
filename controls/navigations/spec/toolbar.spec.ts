@@ -5659,6 +5659,40 @@ describe('Toolbar Control', () => {
             expect(toolbar.popObj.element.style.maxHeight === '').toEqual(false);
         });
     });
+    describe('Popup overflow testing', () => {
+        let toolbar: any;
+        document.body.innerHTML = '';
+        beforeEach((done: Function) => {
+            toolbar = undefined;
+            let ele: HTMLElement = createElement('div', { id: 'ej2Toolbar' });
+            setStyleAttribute(ele, { 'display': 'block', 'white-space': 'nowrap', 'position': 'relative' });
+            ele.style.display = 'block';
+            document.body.appendChild(ele);
+            toolbar = new Toolbar({
+                width: 800,
+                overflowMode: 'Popup',
+                items: [
+                    { type: 'Button', text: 'Hii2', }, { type: 'Button', text: 'Unterline22', }, { type: 'Button', text: 'Hii', }, { type: 'Button', text: 'Unterline', }, { type: 'Button', text: 'Hii', }, { type: 'Button', text: 'Hii', }, { type: 'Button', text: 'Unterline', }, { type: 'Button', text: 'Hii', }, { type: 'Button', text: 'Unterline', }, { type: 'Button', text: 'Hii', }, { type: 'Button', text: 'Unterline', }, { type: 'Button', text: 'Hii', }, { type: 'Button', text: 'Unterline', }, { type: 'Button', text: 'Bold', }, { type: 'Button', text: 'Hii', }, { type: 'Button', text: 'Unterline', }, { type: 'Button', text: 'Bold', }, { type: 'Button', text: 'Hii', }, { type: 'Button', text: 'Unterline', }, { type: 'Button', text: 'Bold', }, { type: 'Button', text: 'UnterlineUnterlineUnterlineUnterlineUnterlineUnterlineUnterlineUnterlineUnterlineUnterlineUnterlineUnterlineUnterlineUnterlineUnterlineUnterlineUnterline', },
+                ],
+            }); toolbar.appendTo('#ej2Toolbar');
+            let popupNav: HTMLElement = toolbar.element.querySelector('.e-hor-nav') as HTMLElement;
+            toolbar.element.style.marginLeft = "800px";
+            let win: any = window;
+            win.innerHeight = 40;
+            popupNav.click();
+            setTimeout(() => { done(); }, 450);
+        });
+        afterEach((): void => {
+            if (toolbar) {
+                toolbar.destroy();
+            }
+            document.body.innerHTML = '';
+        });
+        it('popup overflow testing with longer text', () => {
+            expect(toolbar.popObj.element.style.height === 'auto').toEqual(true);
+            expect(toolbar.popObj.element.style.maxHeight === '').toEqual(false);
+        });
+    });
     describe('Vertical - Popup with more content overflow testing', () => {
         let toolbar: any;
         let keyEventArgs: any;

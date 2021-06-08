@@ -25,7 +25,10 @@ export class Toolbar {
      * @private
      */
     public uploadedDocumentName: string;
-    private toolbarElement: HTMLElement;
+    /**
+    * @private
+    */
+    public toolbarElement: HTMLElement;
     private itemsContainer: HTMLElement;
     private openDocumentItem: HTMLElement;
     private firstPageItem: HTMLElement;
@@ -111,7 +114,9 @@ export class Toolbar {
             if (isBlazor()) {
                 this.pdfViewerBase.blazorUIAdaptor.totalPageElement.classList.add('e-pv-total-page-ms');
             } else {
-                this.totalPageItem.classList.add('e-pv-total-page-ms');
+                if (!Browser.isDevice) {
+                    this.totalPageItem.classList.add('e-pv-total-page-ms');
+                }
             }
         }
         this.createFileElement(toolbarDiv);
@@ -176,6 +181,14 @@ export class Toolbar {
             }
         } else {
             this.pdfViewerBase.toolbarHeight = 0;
+            if (Browser.isDevice && this.pdfViewer.toolbarModule.annotationToolbarModule.toolbar) {
+                this.annotationToolbarModule.toolbarCreated = false;
+                this.annotationToolbarModule.adjustMobileViewer();
+                this.pdfViewer.toolbarModule.annotationToolbarModule.toolbar.element.style.display = 'none';
+            }
+            if (this.annotationToolbarModule.propertyToolbar) {
+                this.annotationToolbarModule.propertyToolbar.element.style.display = 'none';
+            }
             toolbar.style.display = 'none';
         }
     }
@@ -494,7 +507,18 @@ export class Toolbar {
             this.updateToolbarItems();
             if (this.annotationToolbarModule) {
                 this.annotationToolbarModule.clear();
-            }
+            } else {
+                if (this.annotationToolbarModule) {
+                    if (this.annotationToolbarModule.propertyToolbar) {
+                        this.annotationToolbarModule.propertyToolbar.destroy();
+                    }
+                    // eslint:disable-next-line
+                    let commentsContainer: any = document.getElementById(this.pdfViewer.element.id + '_commentscontentcontainer');
+                    if (commentsContainer) {
+                        commentsContainer.innerHTML = '';
+                    }
+                }
+            }    
         }
     }
     /**
@@ -565,9 +589,11 @@ export class Toolbar {
             if (this.pdfViewerBase.pageCount === 0) {
                 this.toolbar.enableItems(this.textSearchItem.parentElement, false);
                 this.toolbar.enableItems(this.moreOptionItem.parentElement, false);
+                this.toolbar.enableItems(this.annotationItem.parentElement, false);
             } else if (this.pdfViewerBase.pageCount > 0) {
                 this.toolbar.enableItems(this.textSearchItem.parentElement, true);
                 this.toolbar.enableItems(this.moreOptionItem.parentElement, true);
+                this.toolbar.enableItems(this.annotationItem.parentElement, true);
                 this.updateUndoRedoButtons();
             }
         }
@@ -762,6 +788,7 @@ export class Toolbar {
             this.toolbarElement.addEventListener('keydown', this.onToolbarKeydown);
         } else {
             this.createToolbarItemsForMobile();
+            this.afterToolbarCreationInMobile();
             if (this.pdfViewer.enableRtl) {
                 this.toolbar.enableRtl = true;
             }
@@ -828,6 +855,14 @@ export class Toolbar {
         return items;
     }
 
+    private afterToolbarCreationInMobile(): void {
+        this.itemsContainer = this.toolbar.element.childNodes[0] as HTMLElement;
+        this.itemsContainer.id = this.pdfViewer.element.id + '_toolbarItemsContainer';
+        this.openDocumentItem = this.addClassToolbarItem('_open', 'e-pv-open-document', this.pdfViewer.localeObj.getConstant('Open'));
+        this.undoItem = this.addClassToolbarItem('_undo', 'e-pv-undo', this.pdfViewer.localeObj.getConstant('Undo'));
+        this.redoItem = this.addClassToolbarItem('_redo', 'e-pv-redo', this.pdfViewer.localeObj.getConstant('Redo'));
+        this.annotationItem = this.addClassToolbarItem('_annotation', 'e-pv-annotation', this.pdfViewer.localeObj.getConstant('Annotation'));
+    }
     private afterToolbarCreation(): void {
         this.itemsContainer = this.toolbar.element.childNodes[0] as HTMLElement;
         this.itemsContainer.id = this.pdfViewer.element.id + '_toolbarItemsContainer';
@@ -979,6 +1014,8 @@ export class Toolbar {
                 // eslint-disable-next-line max-len
                 { prefixIcon: 'e-pv-redo-icon e-pv-icon', tooltipText: this.pdfViewer.localeObj.getConstant('Redo'), id: this.pdfViewer.element.id + '_redo' },
                 // eslint-disable-next-line max-len
+                { prefixIcon: 'e-pv-annotation-icon e-pv-icon', cssClass: 'e-pv-annotation-container', tooltipText: this.pdfViewer.localeObj.getConstant('Annotation'), id: this.pdfViewer.element.id + '_annotation', align: 'Right' },
+                // eslint-disable-next-line max-len
                 { prefixIcon: 'e-pv-text-search-icon e-pv-icon', tooltipText: this.pdfViewer.localeObj.getConstant('Text Search'), id: this.pdfViewer.element.id + '_search', align: 'Right' },
                 { template: template, align: 'Right' }
             ], clicked: this.toolbarClickHandler, width: '', height: '', overflowMode: 'Popup'
@@ -988,6 +1025,9 @@ export class Toolbar {
         this.openDocumentItem = this.pdfViewerBase.getElement('_open');
         this.openDocumentItem.classList.add('e-pv-open-document');
         this.openDocumentItem.firstElementChild.id = this.pdfViewer.element.id + '_openIcon';
+        this.annotationItem = this.pdfViewerBase.getElement('_annotation');
+        this.annotationItem.classList.add('e-pv-annotation');
+        this.annotationItem.firstElementChild.id = this.pdfViewer.element.id + '_annotationIcon';
         this.textSearchItem = this.pdfViewerBase.getElement('_search');
         this.textSearchItem.classList.add('e-pv-text-search');
         this.textSearchItem.firstElementChild.id = this.pdfViewer.element.id + '_searchIcon';
@@ -1182,6 +1222,9 @@ export class Toolbar {
                     this.pdfViewerBase.focusViewerContainer();
                 }
             }
+        } else {
+            (args.originalEvent.target as HTMLElement).blur();
+            this.pdfViewerBase.focusViewerContainer();
         }
     };
 
@@ -1191,7 +1234,6 @@ export class Toolbar {
             if (!isBlazor()) {
                 (args.originalEvent.target as HTMLElement).blur();
             }
-            this.pdfViewerBase.focusViewerContainer();
         }
     }
 
@@ -1287,7 +1329,7 @@ export class Toolbar {
         case this.pdfViewer.element.id + '_annotation':
         case this.pdfViewer.element.id + '_annotationIcon':
         case this.pdfViewer.element.id + '_annotationText':
-            this.initiateAnnotationMode();
+            this.initiateAnnotationMode((args.originalEvent.target as HTMLElement).id);
             break;
         case this.pdfViewer.element.id + '_comment':
         case this.pdfViewer.element.id + '_commentIcon':
@@ -1311,8 +1353,11 @@ export class Toolbar {
         }
     }
 
+    /**
+    * @private
+    */
     // eslint-disable-next-line
-    private addComments(targetElement: any): void {
+    public addComments(targetElement: any): void {
         if (!isBlazor()) {
             // eslint-disable-next-line max-len
             if (targetElement.id === this.pdfViewer.element.id + '_comment' || targetElement.id === this.pdfViewer.element.id + '_commentIcon') {
@@ -1517,9 +1562,18 @@ export class Toolbar {
         }
     }
 
-    private initiateAnnotationMode(): void {
-        if (this.annotationToolbarModule && this.pdfViewer.enableAnnotationToolbar) {
-            this.annotationToolbarModule.showAnnotationToolbar(this.annotationItem);
+    private initiateAnnotationMode(id?: string): void {
+        if (!Browser.isDevice) {
+            if (this.annotationToolbarModule && this.pdfViewer.enableAnnotationToolbar) {
+                this.annotationToolbarModule.showAnnotationToolbar(this.annotationItem);
+            }
+        } else {
+            if (!isBlazor()) {
+                if (id === this.pdfViewer.element.id + '_annotation') {
+                    id = this.pdfViewer.element.id + '_annotationIcon';
+                }
+                this.annotationToolbarModule.createAnnotationToolbarForMobile(id);
+            }
         }
     }
     /**

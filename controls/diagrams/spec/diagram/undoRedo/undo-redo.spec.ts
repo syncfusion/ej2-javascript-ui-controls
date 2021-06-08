@@ -3069,4 +3069,106 @@ describe('Diagram Control', () => {
             done();
         });
     });
+
+    describe('Check redo and Undo functionalities continuously', () => {
+        let diagram: Diagram;
+        let ele: HTMLElement;
+
+        beforeAll((): void => {
+            ele = createElement('div', { id: 'diagram_undo_redo' });
+            document.body.appendChild(ele);
+            let nodes: NodeModel[] = [
+                {
+                    id: 'node1', width: 100, height: 100, offsetX: 250, offsetY: 250,
+                    style: {
+                        gradient:
+                        {
+                            x1: 0, y1: 0, x2: 50, y2: 50,
+                            stops: [{
+                                color: 'white',
+                                offset: 0,
+                                opacity: 1
+                            },
+                            {
+                                color: 'blue',
+                                offset: 100,
+                                opacity: 0
+                            }
+                            ],
+                            type: 'Linear'
+                        }
+                    }
+                },
+                {
+                    id: 'node2', width: 100, height: 100, offsetX: 100, offsetY: 100,
+                },
+            ];
+
+            diagram = new Diagram({
+                width: '600',
+                height: '530px',
+                nodes: nodes,
+            });
+            diagram.scrollSettings.canAutoScroll = true;
+            diagram.appendTo('#diagram_undo_redo');
+
+            diagram.nodes[0].style.gradient = {
+                x1: 0, y1: 0, x2: 50, y2: 50,
+                stops: [
+                    { color: 'white', offset: 0, opacity: 1 },
+                    { color: 'red', offset: 100, opacity: 0 }
+                ],
+                type: 'Linear'
+            }
+            diagram.dataBind();
+            diagram.nodes[0].style.gradient = {
+                x1: 0, y1: 0, x2: 50, y2: 50,
+                stops: [
+                    { color: 'white', offset: 0, opacity: 1 },
+                    { color: 'orange', offset: 100, opacity: 0 }
+                ],
+                type: 'Linear'
+            }
+            diagram.dataBind();
+            diagram.nodes[0].style.gradient = {
+                x1: 0, y1: 0, x2: 50, y2: 50,
+                stops: [
+                    { color: 'white', offset: 0, opacity: 1 },
+                    { color: 'yellow', offset: 100, opacity: 0 }
+                ],
+                type: 'Linear'
+            }
+            diagram.dataBind();
+        });
+
+        afterAll((): void => {
+            diagram.destroy();
+            ele.remove();
+        });
+
+        it('Checking Undo and redo functionalities', (done: Function) => {
+            let nodeEle: HTMLElement = document.getElementById('node1_content');
+            expect(diagram.nodes[0].style.gradient.stops[0].color).toBe('white');
+            expect(diagram.nodes[0].style.gradient.stops[1].color).toBe('yellow');
+            expect(nodeEle.getAttribute('fill') == 'url(#node1_content_linear)').toBe(true);
+            diagram.undo();
+            expect(diagram.nodes[0].style.gradient.stops[0].color).toBe('white');
+            expect(diagram.nodes[0].style.gradient.stops[1].color).toBe('orange');
+            expect(nodeEle.getAttribute('fill') == 'url(#node1_content_linear)').toBe(true);
+            diagram.undo();
+            expect(diagram.nodes[0].style.gradient.stops[0].color).toBe('white');
+            expect(diagram.nodes[0].style.gradient.stops[1].color).toBe('red');
+            expect(nodeEle.getAttribute('fill') == 'url(#node1_content_linear)').toBe(true);
+            diagram.redo();
+            expect(diagram.nodes[0].style.gradient.stops[0].color).toBe('white');
+            expect(diagram.nodes[0].style.gradient.stops[1].color).toBe('orange');
+            expect(nodeEle.getAttribute('fill') == 'url(#node1_content_linear)').toBe(true);
+            diagram.redo();
+            expect(diagram.nodes[0].style.gradient.stops[0].color).toBe('white');
+            expect(diagram.nodes[0].style.gradient.stops[1].color).toBe('yellow');
+            expect(nodeEle.getAttribute('fill') == 'url(#node1_content_linear)').toBe(true);
+            done();
+        });
+    });
+
 });

@@ -137,6 +137,9 @@ export class HtmlEditor {
         // eslint-disable-next-line
         const regex: RegExp = new RegExp(/([^\S]|^)(((https?\:\/\/)|(www\.))(\S+))/gi);
         if (e.text.match(regex)) {
+            if (e.isWordPaste) {
+                return;
+            }
             (e.args as KeyboardEvent).preventDefault();
             const range: Range = this.parent.formatter.editorManager.nodeSelection.getRange(this.parent.contentModule.getDocument());
             // eslint-disable-next-line

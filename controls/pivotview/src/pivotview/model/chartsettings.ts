@@ -1,5 +1,5 @@
 import { Property, ChildProperty, EmitType, Event, Complex, Collection } from '@syncfusion/ej2-base';
-import { BorderModel as PivotChartBorderModel, ErrorBarSettingsModel as PivotChartErrorBarSettingsModel, AccumulationLabelPosition } from '@syncfusion/ej2-charts';
+import { BorderModel as PivotChartBorderModel, ErrorBarSettingsModel as PivotChartErrorBarSettingsModel, AccumulationLabelPosition, IAxisMultiLabelRenderEventArgs } from '@syncfusion/ej2-charts';
 import { ChartDrawType, ChartShape, DataLabelSettingsModel as PivotChartDataLabelSettingsModel, ZoomMode } from '@syncfusion/ej2-charts';
 import { ErrorBarType, ErrorBarDirection, ErrorBarMode, TrendlineTypes, ToolbarItems, IScrollEventArgs } from '@syncfusion/ej2-charts';
 import { EmptyPointMode, TextOverflow, Alignment, ZIndex, Anchor, SizeType, BorderType, LineType } from '@syncfusion/ej2-charts';
@@ -491,6 +491,18 @@ export class PivotChartDataLabel extends ChildProperty<PivotChartDataLabel> {
      */
     @Property(true)
     public visible: boolean;
+
+    /**
+    * Allows to set the border to data labels.
+    */
+    @Complex<PivotChartBorderModel>({ width: null, color: null }, Border)
+    public border: PivotChartBorderModel;
+
+    /**
+     * Allows to customize the font of data labels.
+     */
+    @Complex<PivotChartFontModel>({ size: '11px', color: '', fontStyle: 'Normal', fontWeight: 'Normal', fontFamily: 'Segoe UI' }, Font)
+    public font: PivotChartFontModel;
 
     /**
      * Allows to set the background color of the data label accepts value in hex and rgba as a valid CSS color string.
@@ -2820,6 +2832,13 @@ export class PivotAxis extends ChildProperty<PivotAxis> {
     public title: string;
 
     /**
+     * Allows to scale the axis by this value. When zoomFactor is 0.5, the chart is scaled by 200% along this axis. Value ranges from 0 to 1.
+     * @default null
+     */
+    @Property(null)
+    public zoomFactor: number;
+
+    /**
      * Allows options to customize the crosshair ToolTip.
      */
     @Complex<PivotChartCrosshairTooltipModel>({}, CrosshairTooltip)
@@ -3672,6 +3691,13 @@ export class ChartSettings extends ChildProperty<ChartSettings> {
      */
     @Event()
     public seriesRender: EmitType<ISeriesRenderEventArgs>;
+
+    /**
+     * It triggers while rendering the multi-level labels in the pivot chart.
+     * @event
+     */
+    @Event()
+    public axisMultiLabelRender: EmitType<IAxisMultiLabelRenderEventArgs>;
 
     /**
      * It triggers before each points for the series is rendered.

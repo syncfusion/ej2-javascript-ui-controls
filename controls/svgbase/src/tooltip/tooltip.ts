@@ -609,8 +609,8 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
             }
             svgObject.appendChild(groupElement);
             const pathElement: Element = this.renderer.drawPath({
-                'id': this.element.id + '_path', 'stroke-width': this.theme === 'Bootstrap4' ? 0 : this.border.width,
-                'fill': this.fill || this.themeStyle.tooltipFill, 'opacity': this.theme === 'Bootstrap4' ? 0.9 : this.opacity,
+                'id': this.element.id + '_path', 'stroke-width': this.border.width,
+                'fill': this.fill || this.themeStyle.tooltipFill, 'opacity': this.opacity,
                 'stroke': this.border.color
             });
             groupElement.appendChild(pathElement);

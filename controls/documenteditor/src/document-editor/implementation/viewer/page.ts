@@ -770,7 +770,7 @@ export abstract class BlockWidget extends Widget {
 
     public getContainerWidth(): number {
         if (this.isInsideTable) {
-            return this.associatedCell.getCellWidth();
+            return this.associatedCell.getCellWidth(this);
         }
         if (this.containerWidget instanceof TextFrame) {
             let shape: ShapeElementBox = this.containerWidget.containerShape as ShapeElementBox;
@@ -886,9 +886,9 @@ export class ParagraphWidget extends BlockWidget {
                     containsShape = true;
                 }
             }
-        } 
+        }
         return containsShape ? true : false;
-    }    
+    }
     public isEmpty(): boolean {
         if (isNullOrUndefined(this.childWidgets) || this.childWidgets.length === 0) {
             return true;
@@ -2709,7 +2709,7 @@ export class TableCellWidget extends BlockWidget {
     /**
      * @private
      */
-    public getCellWidth(): number {
+    public getCellWidth(block: BlockWidget): number {
         let ownerTable: TableWidget = this.ownerTable;
         let containerWidth: number = ownerTable ? ownerTable.getTableClientWidth(ownerTable.getOwnerWidth(true)) : 0;
         let cellWidth: number = containerWidth;
@@ -2725,7 +2725,11 @@ export class TableCellWidget extends BlockWidget {
         } else if (this.cellFormat.preferredWidthType === 'Percent') {
             cellWidth = (this.cellFormat.preferredWidth * containerWidth) / 100 - leftMargin - rightMargin;
         } else if (this.cellFormat.preferredWidthType === 'Point') {
-            cellWidth = this.cellFormat.preferredWidth - leftMargin - rightMargin;
+            if (block instanceof TableWidget && block.tableFormat.preferredWidthType === 'Percent') {
+                cellWidth = this.cellFormat.cellWidth - leftMargin - rightMargin;
+            } else {
+                cellWidth = this.cellFormat.preferredWidth - leftMargin - rightMargin;
+            }
         }
         // For grid before and grid after with auto width, no need to calculate minimum preferred width.
         return cellWidth;

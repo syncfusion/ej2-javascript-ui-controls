@@ -1080,6 +1080,9 @@ export class TextMarkupAnnotation {
                     this.pdfViewer.fireAnnotationAdd(pageNumber, annotation.annotName, (type as AnnotationType), annotation.bounds, settings, textContent, startIndex, endIndex);
                 }
             }
+            if (Browser.isDevice && !this.pdfViewer.enableDesktopMode) {
+                this.pdfViewer.toolbarModule.annotationToolbarModule.createPropertyTools(type);
+            }
         }
     }
     // eslint-disable-next-line
@@ -1979,6 +1982,9 @@ export class TextMarkupAnnotation {
                     const topClickPosition: number = event.clientY - canvasParentPosition.top;
                     this.annotationClickPosition = { x: leftClickPosition, y: topClickPosition };
                     this.selectAnnotation(currentAnnot, canvas, pageNumber, event);
+                    if (Browser.isDevice && !this.pdfViewer.enableDesktopMode) {
+                        this.pdfViewer.toolbarModule.annotationToolbarModule.createPropertyTools(this.currentTextMarkupAnnotation.textMarkupAnnotationType);
+                    }
                     this.currentTextMarkupAnnotation = currentAnnot;
                     this.selectTextMarkupCurrentPage = pageNumber;
                     if (!isSelection) {
@@ -2051,6 +2057,9 @@ export class TextMarkupAnnotation {
                     const topClickPosition: number = event.touches[0].clientY - canvasParentPosition.top;
                     this.annotationClickPosition = { x: leftClickPosition, y: topClickPosition };
                     this.selectAnnotation(currentAnnot, touchCanvas, pageNumber, event);
+                    if (Browser.isDevice && !this.pdfViewer.enableDesktopMode) {
+                        this.pdfViewer.toolbarModule.annotationToolbarModule.createPropertyTools(this.currentTextMarkupAnnotation.textMarkupAnnotationType);
+                    }
                     this.currentTextMarkupAnnotation = currentAnnot;
                     this.selectTextMarkupCurrentPage = pageNumber;
                     this.enableAnnotationPropertiesTool(true);
@@ -2062,7 +2071,9 @@ export class TextMarkupAnnotation {
                     // eslint-disable-next-line
                     let comments: any = document.getElementById(currentAnnot.annotName);
                     if (comments) {
-                        comments.firstChild.click();
+                        if (!Browser.isDevice) {
+                            comments.firstChild.click();
+                        }
                     }
                 }
             } else {
@@ -2391,7 +2402,9 @@ export class TextMarkupAnnotation {
         }
         // eslint-disable-next-line max-len
         if (this.pdfViewer.toolbarModule && this.pdfViewer.toolbarModule.annotationToolbarModule) {
-            this.pdfViewer.toolbarModule.annotationToolbarModule.createMobileAnnotationToolbar(isEnable);
+            if (!Browser.isDevice) {
+                this.pdfViewer.toolbarModule.annotationToolbarModule.createMobileAnnotationToolbar(isEnable);
+            }
         }
         // eslint-disable-next-line max-len
         if (this.pdfViewer.toolbarModule && this.pdfViewer.toolbarModule.annotationToolbarModule && this.pdfViewer.toolbarModule.annotationToolbarModule.isMobileAnnotEnabled && this.pdfViewer.selectedItems.annotations.length === 0) {

@@ -936,6 +936,23 @@
                              maps.translatePoint : translate['location'];
                          const dataIndex: number = parseInt(markerTemplate.childNodes[o]['id'].split('_dataIndex_')[1].split('_')[0], 10);
                          const markerIndex: number = parseInt(markerTemplate.childNodes[o]['id'].split('_MarkerIndex_')[1].split('_')[0], 10);
+                         const markerSetting: MarkerSettingsModel = currentLayer.markerSettings[markerIndex];
+                         const markerData: any = markerSetting.dataSource[dataIndex];
+                         let factor: number; let location: Point;
+                         const longitude: number = (!isNullOrUndefined(markerSetting.longitudeValuePath)) ?
+                             Number(getValueFromObject(markerData, markerSetting.longitudeValuePath)) :
+                             !isNullOrUndefined(markerData['longitude']) ? parseFloat(markerData['longitude']) :
+                                 !isNullOrUndefined(markerData['Latitude']) ? parseFloat(markerData['Latitude']) : 0;
+                         const latitude: number = (!isNullOrUndefined(markerSetting.latitudeValuePath)) ?
+                             Number(getValueFromObject(markerData, markerSetting.latitudeValuePath)) :
+                             !isNullOrUndefined(markerData['latitude']) ? parseFloat(markerData['latitude']) :
+                                 !isNullOrUndefined(markerData['Latitude']) ? parseFloat(markerData['Latitude']) : 0;
+                         if (!maps.isTileMap) {
+                             factor = maps.mapLayerPanel.calculateFactor(currentLayer);
+                             location = convertGeoToPoint(latitude, longitude, factor, currentLayer, maps);
+                         } else if (maps.isTileMap && !maps.zoomSettings.enable) {
+                             location = convertTileLatLongToPoint(new Point(longitude, latitude), maps.tileZoomLevel, maps.tileTranslatePoint, true);
+                         }
                          markerTemplate.childNodes[o]['style']['visibility'] = 'hidden';
                          const clusters: MarkerClusterSettingsModel = currentLayer.markerClusterSettings;
                          if (eventArg.cancel) {
@@ -969,8 +986,12 @@
                              shapeCustom['borderWidth'] = eventArg.border.width;
                              shapeCustom['borderOpacity'] = isNullOrUndefined(eventArg.border.opacity) ? clusters.opacity : eventArg.border.opacity;
                          }
-                         tempX = (maps.isTileMap) ? tempX : (markerTemplate.id.indexOf('_Markers_Group') > -1) ? tempX : ((tempX + transPoint.x) * maps.mapScaleValue);
-                         tempY = (maps.isTileMap) ? tempY : (markerTemplate.id.indexOf('_Markers_Group') > -1) ? tempY : ((tempY + transPoint.y) * maps.mapScaleValue);
+                         tempX = (maps.isTileMap) ? tempX : (markerTemplate.id.indexOf('_Markers_Group') > -1) ? tempX : ((location.x + transPoint.x + eventArg.width) * maps.mapScaleValue);
+                         tempY = (maps.isTileMap) ? tempY : (markerTemplate.id.indexOf('_Markers_Group') > -1) ? tempY : ((location.y + transPoint.y + (eventArg.height / 2)) * maps.mapScaleValue);
+                         if (maps.isTileMap && !maps.zoomSettings.enable) {
+                             tempX = location.x;
+                             tempY = location.y;
+                         }
                          const clusterID: string = maps.element.id + '_LayerIndex_' + layerIndex + '_MarkerIndex_' + markerIndex + '_dataIndex_' + dataIndex + '_cluster_' + (m);
                          const labelID: string = maps.element.id + '_LayerIndex_' + layerIndex + '_MarkerIndex_' + markerIndex + '_dataIndex_' + dataIndex + '_cluster_' + (m) + '_datalabel_' + m;
                          m++;
@@ -1089,8 +1110,8 @@
      clusterEleLabel.setAttribute('visibility', 'hidden');
      const marker: MarkerSettingsModel = maps.layers[layerIndex].markerSettings[markerIndex];
      let markerEle: Element = getElementFunction(getQueryConnect + '' + markerId + '_dataIndex_' + dataIndex);
-     const height: number = marker.height;
-     const width: number = marker.width;
+     const height: number = markerEle.parentElement.id.indexOf('Template_Group') > -1 ? markerEle.getBoundingClientRect().height : marker.height;
+     const width: number = markerEle.parentElement.id.indexOf('Template_Group') > -1 ? markerEle.getBoundingClientRect().width : marker.width;
      const centerX: number = +clusterEle.getAttribute('transform').split('translate(')[1].trim().split(' ')[0];
      const centerY: number = +clusterEle.getAttribute('transform').split('translate(')[1].trim().split(' ')[1].split(')')[0].trim();
  
@@ -1126,7 +1147,14 @@
          const y1: number = centerY + radius * Math.cos((Math.PI * 2 * newAngle) / 360);
          path += start + 'L ' + (x1) + ' ' + y1 + ' ';
          markerEle = getElementFunction(getQueryConnect + '' + markerId + '_dataIndex_' + sameMarkerData[0].data[i]['index']);
-         markerEle.setAttribute('transform', 'translate( ' + x1 + ' ' + y1 + ')');
+         if (markerEle.parentElement.id.indexOf('Template_Group') > -1) {
+            markerEle['style']['transform'] = "";
+            markerEle['style']['left'] = maps.isTileMap ? x1 - (width / 2) + "px" : (x1 - (width / 2) - 10) + "px";
+            markerEle['style']['top'] = maps.isTileMap ? y1 - (height / 2) + "px" : (y1 - (height / 2) - 10) + "px";
+            markerEle.setAttribute('transform', 'translate( ' + x1 + ' ' + y1 + ')');
+        } else {
+            markerEle.setAttribute('transform', 'translate( ' + x1 + ' ' + y1 + ')');
+        }
          markerEle['style']['visibility'] = 'visible';
          newAngle += angle;
      }

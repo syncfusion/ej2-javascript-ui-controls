@@ -418,6 +418,7 @@ export class FreezeRender extends HeaderRender implements IRenderer {
         this.rfshMovable();
         this.getMovableHeader().querySelector(literals.tbody).innerHTML = tbody.innerHTML;
         this.updateColgroup();
+        this.widthService.setWidthToColumns();
         if (!this.parent.enableVirtualization) {
             this.widthService.setWidthToTable();
         }

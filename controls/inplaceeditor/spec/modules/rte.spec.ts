@@ -608,6 +608,78 @@ describe('Rte module', () => {
         });
     });
 
+    describe('EJ2-48274 - New `enableHtmlParse` API testing', () => {
+        let editorObj: any;
+        let ele: HTMLElement;
+        let valueEle: HTMLElement;
+        let changeArgs: any = {};
+        let valueWrapper: HTMLElement;
+        let buttonEle: HTMLElement;
+        afterEach((): void => {
+            destroy(editorObj);
+            changeArgs = {};
+        });
+        it('Editor DOM value testing', (done) => {
+            editorObj = renderEditor({
+                mode: 'Inline',
+                enableHtmlParse: false,
+                enableHtmlSanitizer: false,
+                type: 'RTE',
+                value: '<img src=x onerror=console.log("test")><script>alert("test")</script>'
+            });
+            ele = editorObj.element;
+            valueWrapper = <HTMLElement>select('.' + classes.VALUE_WRAPPER, ele);
+            valueEle = <HTMLElement>select('.' + classes.VALUE, ele);
+            expect(valueEle.innerText).toEqual('<img src=x onerror=console.log("test")><script>alert("test")</script>');
+            valueEle.click();
+            setTimeout(() => {
+                expect(valueWrapper.classList.contains(classes.OPEN)).toEqual(true);
+                buttonEle = <HTMLElement>select('.' + classes.BTN_SAVE, ele);
+                buttonEle.dispatchEvent(new MouseEvent('mousedown'));
+                setTimeout(() => {
+                    expect(valueEle.innerText).toEqual('<p><img src="x" class="e-rte-image e-imginline"></p>');
+                    done();
+                }, 1000);
+            }, 1500);
+        });
+    });
+
+    describe('Validation testing', () => {
+        let editorObj: any;
+        let ele: HTMLElement;
+        let valueEle: HTMLElement;
+        let valueWrapper: HTMLElement;
+        beforeAll((done: Function): void => {
+            editorObj = renderEditor({
+                type: 'RTE',
+                name: 'TextEditor',
+                value: 'test',
+                mode: 'Inline',
+                validationRules: {
+                    TextEditor: { required: [true, 'Enter valid comments'], minLength: 10, maxLength: 200 }
+                }
+            });
+            ele = editorObj.element;
+            done();
+        });
+        afterAll((): void => {
+            destroy(editorObj);
+        });
+        it('minLength testing', function () {
+            valueWrapper = select('.' + classes.VALUE_WRAPPER, ele);
+            valueEle = select('.' + classes.VALUE, valueWrapper);
+            valueEle.click();
+            expect(valueWrapper.classList.contains(classes.OPEN)).toEqual(true);
+            expect(selectAll('.e-richtexteditor', ele).length === 1).toEqual(true);
+            document.querySelector('.e-richtexteditor .e-content').innerHTML= '<p>t</p>';
+            editorObj.rteModule.compObj.value = '<p>t</p>';
+            var buttonEle = select('.' + classes.BTN_SAVE, ele);
+            buttonEle.dispatchEvent(new MouseEvent('mousedown'));
+            expect(document.querySelector('.e-editable-error')).not.toBe(null);
+            expect((document.querySelector('.e-editable-error') as HTMLElement).innerText).toBe('Please enter at least 10 characters.');
+        });
+    });
+
     it('memory leak', () => {
         profile.sample();
         let average: any = inMB(profile.averageChange)
@@ -616,42 +688,5 @@ describe('Rte module', () => {
         let memory: any = inMB(getMemoryProfile())
         //Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
         expect(memory).toBeLessThan(profile.samples[0] + 0.25);
-    });
-});
-
-
-describe('Validation testing', () => {
-    let editorObj: any;
-    let ele: HTMLElement;
-    let valueEle: HTMLElement;
-    let valueWrapper: HTMLElement;
-    beforeAll((done: Function): void => {
-        editorObj = renderEditor({
-            type: 'RTE',
-            name: 'TextEditor',
-            value: 'test',
-            mode: 'Inline',
-            validationRules: {
-                TextEditor: { required: [true, 'Enter valid comments'], minLength: 10, maxLength: 200 }
-            }
-        });
-        ele = editorObj.element;
-        done();
-    });
-    afterAll((): void => {
-        destroy(editorObj);
-    });
-    it('minLength testing', function () {
-        valueWrapper = select('.' + classes.VALUE_WRAPPER, ele);
-        valueEle = select('.' + classes.VALUE, valueWrapper);
-        valueEle.click();
-        expect(valueWrapper.classList.contains(classes.OPEN)).toEqual(true);
-        expect(selectAll('.e-richtexteditor', ele).length === 1).toEqual(true);
-        document.querySelector('.e-richtexteditor .e-content').innerHTML= '<p>t</p>';
-        editorObj.rteModule.compObj.value = '<p>t</p>';
-        var buttonEle = select('.' + classes.BTN_SAVE, ele);
-        buttonEle.dispatchEvent(new MouseEvent('mousedown'));
-        expect(document.querySelector('.e-editable-error')).not.toBe(null);
-        expect((document.querySelector('.e-editable-error') as HTMLElement).innerText).toBe('Please enter at least 10 characters.');
     });
 });

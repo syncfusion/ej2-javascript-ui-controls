@@ -1409,9 +1409,8 @@ export class Workbook extends Component<HTMLElement> implements INotifyPropertyC
     /**
      * Gets the formatted text of the cell.
      *
-     * {% codeBlock src='spreadsheet/getDisplayText/index.md' %}{% endcodeBlock %}
-     *
      * @param {CellModel} cell - Specifies the cell.
+     * {% codeBlock src='spreadsheet/getDisplayText/index.md' %}{% endcodeBlock %}
      * @returns {string} - To get Display Text.
      */
     public getDisplayText(cell: CellModel): string {

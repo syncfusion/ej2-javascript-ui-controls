@@ -14,7 +14,7 @@ import {
 import { Dictionary } from '../../base/dictionary';
 import { DocumentEditor } from '../../document-editor';
 import { Action } from '../../index';
-import { TextPosition, ImageFormat } from '../index';
+import { TextPosition, ImageInfo } from '../index';
 import { LayoutViewer } from '../index';
 import { isNullOrUndefined } from '@syncfusion/ej2-base';
 import { ElementBox } from '../viewer/page';
@@ -1008,8 +1008,8 @@ export class BaseHistoryInfo {
         } else if (this.action === 'RestartNumbering') {
             this.owner.editorModule.restartListAtInternal(this.owner.selection, <number>this.modifiedProperties[0]);
             return;
-        } else if (this.modifiedProperties[0] instanceof ImageFormat) {
-            this.owner.selection.updateImageSize(this.modifiedProperties[0] as ImageFormat);
+        } else if (this.modifiedProperties[0] instanceof ImageInfo) {
+            this.owner.selection.updateImageSize(this.modifiedProperties[0] as ImageInfo);
         } else if (this.modifiedProperties[0] instanceof ModifiedLevel) {
             let modified: Dictionary<number, ModifiedLevel> = new Dictionary<number, ModifiedLevel>();
             for (let i: number = 0; i < this.modifiedProperties.length; i++) {

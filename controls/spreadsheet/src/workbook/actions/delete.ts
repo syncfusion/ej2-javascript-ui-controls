@@ -1,6 +1,6 @@
 import { Workbook, RowModel, CellModel, getCell, setCell } from '../base/index';
 import { deleteModel, deleteAction, InsertDeleteModelArgs, updateUsedRange, ExtendedRange, MergeArgs } from '../../workbook/common/index';
-import { activeCellMergedRange, setMerge, workbookFormulaOperation, InsertDeleteEventArgs } from '../../workbook/common/index';
+import { activeCellMergedRange, setMerge, workbookFormulaOperation, InsertDeleteEventArgs, beforeDelete } from '../../workbook/common/index';
 import { SheetModel } from '../../workbook/base/index';
 
 /**
@@ -201,6 +201,7 @@ export class WorkbookDelete {
         //     }
         // };
         this.parent.notify(workbookFormulaOperation, insertArgs);
+        this.parent.notify(beforeDelete, args);
         if (args.modelType !== 'Sheet' && args.model !== this.parent.getActiveSheet()) { return; }
         this.parent.notify(deleteAction, {
             startIndex: args.start, endIndex: args.end, modelType: args.modelType,

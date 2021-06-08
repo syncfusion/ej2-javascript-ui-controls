@@ -109,6 +109,7 @@ export class AggregateMenu {
         menuOptions = {
             items: menuItems[isStringField],
             enableRtl: this.parent.enableRtl,
+            locale: this.parent.locale,
             beforeOpen: this.beforeMenuOpen.bind(this, isStringField),
             onClose: (args: OpenCloseMenuEventArgs) => {    /* eslint-disable-line */
                 (select('#' + this.buttonElement.id, this.parentElement) as HTMLElement).focus();
@@ -168,6 +169,7 @@ export class AggregateMenu {
             visible: true,
             showCloseIcon: true,
             enableRtl: this.parent.enableRtl,
+            locale: this.parent.locale,
             width: 'auto',
             height: 'auto',
             position: { X: 'center', Y: 'center' }, /* eslint-disable-line */
@@ -286,7 +288,7 @@ export class AggregateMenu {
         mainDiv.appendChild(filterWrapperDiv1);
         let popupInstance: AggregateMenu = this;
         let optionWrapper1: DropDownList = new DropDownList({
-            dataSource: summaryDataSource, enableRtl: this.parent.enableRtl,
+            dataSource: summaryDataSource, enableRtl: this.parent.enableRtl, locale: this.parent.locale,
             fields: { value: 'value', text: 'text' },
             value: summaryType,
             // popupWidth: 'auto',
@@ -303,7 +305,7 @@ export class AggregateMenu {
         optionWrapper1.isStringTemplate = true;
         optionWrapper1.appendTo(dropOptionDiv1);
         let optionWrapper2: DropDownList = new DropDownList({
-            dataSource: fieldDataSource, enableRtl: this.parent.enableRtl,
+            dataSource: fieldDataSource, enableRtl: this.parent.enableRtl, locale: this.parent.locale,
             fields: { value: 'value', text: 'text' },
             value: baseField,
             // popupWidth: 'auto',
@@ -320,7 +322,7 @@ export class AggregateMenu {
         optionWrapper2.isStringTemplate = true;
         optionWrapper2.appendTo(dropOptionDiv2);
         let optionWrapper3: DropDownList = new DropDownList({
-            dataSource: [fieldItemDataSource[0]], enableRtl: this.parent.enableRtl,
+            dataSource: [fieldItemDataSource[0]], enableRtl: this.parent.enableRtl, locale: this.parent.locale,
             value: baseItem,
             // popupWidth: 'auto',
             allowFiltering: true,
@@ -335,6 +337,7 @@ export class AggregateMenu {
             placeholder: 'Enter field caption',
             // floatLabelType: 'Auto',
             enableRtl: this.parent.enableRtl,
+            locale: this.parent.locale,
             value: fieldCaption, width: '100%'
         });
         inputObj1.isStringTemplate = true;

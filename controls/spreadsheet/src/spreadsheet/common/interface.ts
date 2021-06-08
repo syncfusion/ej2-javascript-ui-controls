@@ -147,6 +147,7 @@ export interface RefreshArgs {
     refresh: RefreshType;
     skipUpdateOnFirst?: boolean;
     frozenIndexes?: number[];
+    skipTranslate?: boolean
 }
 
 /**

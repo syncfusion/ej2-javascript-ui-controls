@@ -1507,3 +1507,8 @@ export type FootnoteRestartIndex = 'DoNotRestart' | 'RestartForEachSection' | 'R
  * Specifies the Footnote and Endnote number format
  */
 export type FootEndNoteNumberFormat = 'Arabic' | 'UpperCaseRoman' | 'LowerCaseRoman' | 'UpperCaseLetter' | 'LowerCaseLetter';
+
+/**
+ * Specifies the image format to export.
+ */
+export type ImageFormat = 'Png' | 'Jpeg';

@@ -8282,4 +8282,50 @@ describe('MultiSelect', () => {
             }, 450);
         });
     });
+    describe('EJ2-49608', () => {
+        let multiselectInstance: any;
+        let browserType: any;
+        let ele: HTMLInputElement = <HTMLInputElement>createElement('input', { id: 'multi' });
+        let datasource: { [key: string]: Object }[] = [
+            { vegetable: 'Cabbage', category: 'Leafy and Salad', id : 'theme1' }, { vegetable: 'Spinach', category: 'Leafy and Salad' , id : 'theme2'},
+            { vegetable: 'Chickpea', category: 'Beans' , id : 'theme3'}, { vegetable: 'Green bean', category: 'Beans' , id : 'theme4'},
+            { vegetable: 'Horse gram', category: 'Beans' , id : 'theme5'}, { vegetable: 'Garlic', category: 'Bulb and Stem' , id : 'theme6'},
+            { vegetable: 'Nopal', category: 'Bulb and Stem' , id : 'theme7'}, { vegetable: 'Onion', category: 'Bulb and Stem' , id : 'theme8'},
+          ];
+        beforeAll(() => {
+            browserType = Browser.userAgent;
+            Browser.userAgent = 'Mozilla/5.0 (Windows NT 10.0; WOW64; Trident/7.0; Touch; .NET4.0C; .NET4.0E; .NET CLR 2.0.50727; .NET CLR 3.0.30729; .NET CLR 3.5.30729; Tablet PC 2.0; rv:11.0) like Gecko';
+            document.body.appendChild(ele);
+        });
+        afterAll(() => {
+            ele.remove();
+            Browser.userAgent = browserType;
+        });
+        it('Fixed header width not applying in Firefox', (done) => {
+            multiselectInstance = new MultiSelect({
+                dataSource: datasource,
+                mode: 'Box',
+                fields: { groupBy: 'category', text: 'vegetable', value : 'id'},
+                popupHeight: '100px',
+                placeholder: 'Select a vegetable',
+            });
+            multiselectInstance.appendTo(ele);
+            multiselectInstance.showPopup();
+            expect(multiselectInstance.isPopupOpen()).toBe(true);
+            multiselectInstance.list.style.overflow = 'auto';
+            multiselectInstance.list.style.display = 'block';
+            keyboardEventArgs.keyCode = 40;
+            multiselectInstance.onKeyDown(keyboardEventArgs);
+            multiselectInstance.onKeyDown(keyboardEventArgs);
+            multiselectInstance.onKeyDown(keyboardEventArgs);
+            multiselectInstance.onKeyDown(keyboardEventArgs);
+            multiselectInstance.onKeyDown(keyboardEventArgs);
+            setTimeout(() => {
+                expect(!isNullOrUndefined(multiselectInstance.fixedHeaderElement)).toBe(true);
+                expect(!isNaN(parseInt(multiselectInstance.fixedHeaderElement.style.width))).toBe(true);
+                multiselectInstance.destroy();
+                done();
+            }, 100);
+        });
+    });
 });

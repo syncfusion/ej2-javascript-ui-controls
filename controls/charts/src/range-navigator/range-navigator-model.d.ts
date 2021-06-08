@@ -233,6 +233,13 @@ export interface RangeNavigatorModel extends ComponentModel{
     value?: number[] | Date[];
 
     /**
+     * The background color of the chart that accepts value in hex and rgba as a valid CSS color string.
+     *
+     * @default null
+     */
+    background?: string;
+
+    /**
      * Used to format the axis label that accepts any global string format like 'C', 'n1', 'P' etc.
      * It also accepts placeholder like '{value}°C' in which value represent the axis label, e.g, 20°C.
      *

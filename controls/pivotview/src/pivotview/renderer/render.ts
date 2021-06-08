@@ -1543,7 +1543,7 @@ export class Render {
         let gridHeight: number | string = this.parent.height;
         let parHeight: number = this.parent.getHeightAsNumber();
         if (isNaN(parHeight)) {
-            parHeight = parHeight > 300 ? parHeight : 300;
+            parHeight = parHeight > this.parent.minHeight ? parHeight : this.parent.minHeight;
         }
         if (this.parent.currentView !== 'Chart') {
             if (this.gridSettings.height === 'auto' && parHeight && this.parent.element.querySelector('.' + cls.GRID_HEADER)) {
@@ -1552,6 +1552,7 @@ export class Render {
                     (this.parent.element.querySelector('.' + cls.GROUPING_BAR_CLASS) as HTMLElement).offsetHeight : 0);
                 let toolBarHeight: number = this.parent.element.querySelector('.' + cls.GRID_TOOLBAR) ? 42 : 0;
                 gridHeight = parHeight - (gBarHeight + toolBarHeight) - 1;
+                gridHeight = gridHeight < 40 ? 40 : gridHeight;
                 if (elementCreated) {
                     let tableHeight: number =
                         (this.parent.element.querySelector('.' + cls.FROZENCONTENT_DIV + ' .' + cls.TABLE) as HTMLElement).offsetHeight;

@@ -121,6 +121,7 @@ export class Marker extends MarkerExplode {
             const markerHeight: number = argsData.point.marker.height || argsData.height;
             const markerOpacity: number = argsData.point.marker.opacity || marker.opacity;
             const markerShape: ChartShape = argsData.point.marker.shape || argsData.shape;
+            const imageURL : string = argsData.point.marker.imageUrl || marker.imageUrl;
             shapeOption = new PathOption(
                 symbolId, markerFill, markerBorder.width, markerBorder.color, markerOpacity, null
             );
@@ -136,7 +137,7 @@ export class Marker extends MarkerExplode {
                 markerElement = drawSymbol(
                     location, markerShape,
                     new Size(markerWidth, markerHeight),
-                    marker.imageUrl, shapeOption,
+                    imageURL, shapeOption,
                     point.x.toString() + ':' + y.toString(), this.chart.renderer, series.clipRect
                 );
                 appendChildElement(
@@ -146,7 +147,7 @@ export class Marker extends MarkerExplode {
             }
             point.marker = {
                 border: markerBorder, fill: markerFill, height: markerHeight,
-                visible: true, shape: markerShape, width: markerWidth
+                visible: true, shape: markerShape, width: markerWidth, imageUrl: imageURL
             };
         } else {
             location = null;

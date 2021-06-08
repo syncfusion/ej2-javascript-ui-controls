@@ -302,8 +302,23 @@ export class MonthEvent extends EventBase {
         const end: Date = this.parent.activeView.getEndHour();
         const startHour: Record<string, Date> = util.getStartEndHours(event[this.fields.startTime] as Date, start, end);
         const endHour: Record<string, Date> = util.getStartEndHours(event[this.fields.endTime] as Date, start, end);
-        cloneData.isLeft = cloneData.isLeft || (<Date>cloneData[this.fields.startTime]).getTime() < startHour.startHour.getTime();
-        cloneData.isRight = cloneData.isRight || (<Date>cloneData[this.fields.endTime]).getTime() > endHour.endHour.getTime();
+        const actualStartTime: Date = <Date>cloneData[this.fields.startTime];
+        const actualEndTime: Date = <Date>cloneData[this.fields.endTime];
+        cloneData.isLeft = cloneData.isLeft || actualStartTime.getTime() < startHour.startHour.getTime();
+        cloneData.isRight = cloneData.isRight || actualEndTime.getTime() > endHour.endHour.getTime();
+        if (util.resetTime(actualStartTime).getTime() !== util.resetTime(actualEndTime).getTime()) {
+            const actualStartHour: Date = startHour.startHour;
+            const actualEndHour: Date = endHour.endHour;
+            let startTime: Date = new Date(util.resetTime(actualStartTime));
+            startTime.setHours(actualEndHour.getHours(), actualEndHour.getMinutes(), actualEndHour.getSeconds());
+            cloneData.isLeft = cloneData.isLeft || actualStartTime.getTime() >= (actualStartHour.getDate() === startHour.endHour.getDate() ?
+            startTime.getTime() : util.addDays(startTime, 1).getTime());
+            if (actualEndTime.getTime() !== util.resetTime(actualEndTime).getTime()) {
+                let endTime: Date = new Date(util.resetTime(actualEndTime));
+                cloneData.isRight = cloneData.isRight || actualEndTime.getTime() <=
+                    endTime.setHours(actualStartHour.getHours(), actualStartHour.getMinutes(), actualStartHour.getSeconds());
+            }
+        }
     }
 
     public renderResourceEvents(): void {

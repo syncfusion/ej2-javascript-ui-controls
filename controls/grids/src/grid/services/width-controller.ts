@@ -127,7 +127,10 @@ export class ColumnWidthService {
         const freezeRight: number = this.parent.getFrozenRightColumnsCount();
         const movableCount: number = this.parent.getMovableColumnsCount();
         const isColFrozen: boolean = freezeLeft !== 0 || freezeRight !== 0;
-        if (frzCols && index >= frzCols && mHdr && mHdr.querySelector(literals.colGroup)) {
+        if (frzCols && index >= frzCols) {
+            if (!mHdr || !mHdr.querySelector(literals.colGroup)) {
+                return;
+            }
             headerCol = (<HTMLTableColElement>mHdr.querySelector(literals.colGroup).children[index - frzCols]);
         } else if (this.parent.enableColumnVirtualization && frzCols && (<{ isXaxis?: Function }>this.parent.contentModule).isXaxis()
             && mHdr.scrollLeft > 0) {

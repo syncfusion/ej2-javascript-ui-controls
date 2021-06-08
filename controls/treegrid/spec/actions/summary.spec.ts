@@ -1,6 +1,6 @@
 import { TreeGrid } from '../../src/treegrid/base/treegrid';
 import { createGrid, destroy } from '../base/treegridutil.spec';
-import { projectData, sampleData } from '../base/datasource.spec';
+import { projectData, sampleData, summaryRowData } from '../base/datasource.spec';
 import { CustomSummaryType, ActionEventArgs } from '@syncfusion/ej2-grids';
 import { DataManager, RemoteSaveAdaptor } from '@syncfusion/ej2-data';
 import { Filter } from '../../src/treegrid/actions/filter';
@@ -667,6 +667,58 @@ describe('Summary with Sorting', () => {
     let memory: any = inMB(getMemoryProfile())
     //Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
     expect(memory).toBeLessThan(profile.samples[0] + 0.25);
+});
+
+describe('Summary with child aggregate value and also with stacked header ', () => {
+  let TreegridObj: TreeGrid;
+  TreeGrid.Inject(Filter);
+  beforeAll((done: Function) => {
+    TreegridObj = createGrid(
+      {
+        dataSource: summaryRowData,
+        childMapping: 'children',
+        treeColumnIndex: 0,
+        height: 260,
+        columns: [
+            {
+                headerText: 'Order Details', textAlign: 'Center', columns: [
+            { field: 'FreightID', headerText: 'Freight ID', width: 130 },
+            { field: 'FreightName', width: 195, headerText: 'Freight Name' },
+        ]
+    },
+    {
+        headerText: 'Shipment Details', textAlign: 'Center', columns: [
+            { field: 'UnitWeight', headerText: 'Weight Per Unit', type: 'number', width: 130, textAlign: 'Right' },
+            { field: 'TotalUnits', headerText: 'Total Units', type: 'number', width: 125, textAlign: 'Right' }
+    ]
+    },
+        ],
+        aggregates: [{
+            showChildSummary: true,
+            columns: [
+                {
+                    type: 'Max',
+                    field: 'UnitWeight',
+                    columnName: 'UnitWeight',
+                    footerTemplate: 'Maximum: ${Max}'
+                },
+                {
+                type: 'Min',
+                field: 'TotalUnits',
+                columnName: 'TotalUnits',
+                footerTemplate: 'Minimum: ${Min}'
+            }]
+        }]
+      },done);
+  });
+
+  it('Summary Row Rendering', () => {
+    expect(TreegridObj.getFooterContent()).not.toBeNull();
+    expect((TreegridObj.getRows()[5].children[2] as HTMLElement).innerText === "Maximum: 87");
+  });
+  afterAll(() => {
+    destroy(TreegridObj);
+  });
 });
 });
 

@@ -115,7 +115,7 @@ import { findAnnotation, arrangeChild, getInOutConnectPorts, removeChildNodes, c
 import { randomId, cloneObject, extendObject, getFunction, getBounds } from './utility/base-util';
 import { Snapping } from './objects/snapping';
 import { DiagramTooltipModel } from './objects/tooltip-model';
-import { TextStyleModel, ShadowModel } from './core/appearance-model';
+import { TextStyleModel, ShadowModel, StopModel } from './core/appearance-model';
 import { TransformFactor } from './interaction/scroller';
 import { RadialTree } from './layout/radial-tree';
 import { HierarchicalTree } from './layout/hierarchical-tree';
@@ -157,6 +157,7 @@ import { StackPanel } from './core/containers/stack-panel';
 import { UserHandleModel } from './interaction/selector-model';
 import { ConnectorFixedUserHandle, NodeFixedUserHandle } from './objects/fixed-user-handle';
 import { NodeFixedUserHandleModel, ConnectorFixedUserHandleModel, FixedUserHandleModel } from './objects/fixed-user-handle-model';
+import { LinearGradient, RadialGradient } from './core/appearance';
 
 /**
  * Represents the Diagram control
@@ -1763,6 +1764,10 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                             for (const key of Object.keys(newProp.nodes)) {
                                 const index: number = Number(key);
                                 const actualObject: Node = this.nodes[index] as Node; const changedProp: Node = newProp.nodes[index] as Node;
+                                if (newProp.nodes[index].style && newProp.nodes[index].style.gradient) {
+                                    this.updateGradient(newProp.nodes[index], oldProp.nodes[index], (this.nodes[index] as Node));
+                                    (this.nodes[index] as Node).oldGradientValue = cloneObject(newProp.nodes[index].style.gradient);
+                                }
                                 refreshLayout = refreshLayout || changedProp.excludeFromLayout !== undefined;
                                 this.nodePropertyChange(actualObject, oldProp.nodes[index] as Node, changedProp, undefined, true, true);
                                 const args: IPropertyChangeEventArgs | IBlazorPropertyChangeEventArgs = {
@@ -1993,6 +1998,81 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                 this.snapSettings, getGridLayerSvg(this.element.id), this.scroller.transform,
                 this.rulerSettings, this.hRuler, this.vRuler
             );
+        }
+    }
+
+    // This private method has been specially provided to update only the node old gradient value in oldProperty.
+    // This issue belong to core team but we fixed in our end.
+    // https://syncfusion.atlassian.net/browse/EJ2-49232
+
+    private updateGradient(newProp: NodeModel, oldProp: NodeModel, nodeObj: Node): void {
+
+        if (nodeObj.oldGradientValue) {
+            let linearNode: LinearGradient = (nodeObj as NodeModel) as LinearGradient;
+            let radialNode: RadialGradient = (nodeObj as NodeModel) as RadialGradient;
+            let linearProp: LinearGradient = oldProp.style.gradient as LinearGradient;
+            let radialProp: RadialGradient = oldProp.style.gradient as RadialGradient;
+            for (const key of Object.keys(newProp.style.gradient)) {
+                switch (key) {
+                    case 'type':
+                        if (linearNode.type) {
+                            linearProp.type = linearNode.type;
+                        }
+                        break;
+                    case 'x1':
+                        if (linearNode.x1) {
+                            linearProp.x1 = linearNode.x1;
+                        }
+                        break;
+                    case 'x2':
+                        if (linearNode.x2) {
+                            linearProp.x2 = linearNode.x2;
+                        }
+                        break;
+                    case 'y1':
+                        if (linearNode.y1) {
+                            linearProp.y1 = linearNode.y1;
+                        }
+                        break;
+                    case 'y2':
+                        if (linearNode.y2) {
+                            linearProp.y2 = linearNode.y2;
+                        }
+                        break;
+                    case 'cx':
+                        if (radialNode.cx) {
+                            radialProp.cx = radialNode.cx;
+                        }
+                        break;
+                    case 'cy':
+                        if (radialNode.cy) {
+                            radialProp.cy = radialNode.cy;
+                        }
+                        break;
+                    case 'fx':
+                        if (radialNode.fx) {
+                            radialProp.fx = radialNode.fx;
+                        }
+                        break;
+                    case 'fy':
+                        if (radialNode.fy) {
+                            radialProp.fy = radialNode.fy;
+                        }
+                        break;
+                    case 'r':
+                        if (radialNode.r) {
+                            radialProp.r = radialNode.r;
+                        }
+                        break;
+                    case 'stops':
+                        if ((nodeObj.oldGradientValue as LinearGradient | RadialGradient).stops) {
+                            let stops: StopModel[] = ((Object as any).values(cloneObject((nodeObj.oldGradientValue as LinearGradient |
+                                RadialGradient).stops))); stops.pop();
+                            oldProp.style.gradient.stops = stops;
+                        }
+                        break;
+                }
+            }
         }
     }
 

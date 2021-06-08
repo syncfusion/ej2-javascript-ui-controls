@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 19.1.64 (2021-05-19)
+
+### Svg Base
+
+#### Bug Fixes
+
+- `#325994` - Tooltip header not visible when string within <> has been fixed.
+
 ## 19.1.57 (2021-04-20)
 
 ### Svg Base

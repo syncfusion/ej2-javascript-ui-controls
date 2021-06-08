@@ -2,6 +2,15 @@
 
 ## [Unreleased]
 
+## 19.1.67 (2021-06-08)
+
+### PDF Viewer
+
+#### Bug Fixes
+
+- `#328989` - Now, the clear and create button in the signature panel is enabled only on drawing the signature.
+- `#328499` - Now, the stamp annotations are downloaded correctly in the PDF document.
+
 ## 19.1.66 (2021-06-01)
 
 ### PDF Viewer

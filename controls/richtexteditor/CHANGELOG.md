@@ -2,9 +2,23 @@
 
 ## [Unreleased]
 
+## 19.1.67 (2021-06-08)
+
+### RichTextEditor
+
+#### Bug Fixes
+
+- `#I327536` - The issue with "Class name `MsoNormal` being removed when pasting content with link from outlook" has been resolved.
+
+- `#I329734` - The issue with "Image not pasted properly in the Rich Text Editor, when pasting content from outlook" has been resolved.
+
 ## 19.1.66 (2021-06-01)
 
 ### RichTextEditor
+
+#### New Features
+
+- `#I275771`, `#I275873` - Provided `beforePasteCleanUp` and `afterPasteCleanUp` events for customizing pasted content in the Rich Text Editor.
 
 #### Bug Fixes
 
@@ -13,6 +27,8 @@
 - `#I327676` - The issue with "Custom toolbar icons not disabled/enabled on various scenarios" has been resolved.
 
 - `#I327536` - The issue with "Pasting content from outlook doesn't work properly after the first time"  has been resolved.
+
+- `#I327087` - The issue with "Clicking backspace of the letter next to the image delete the image"  has been resolved.
 
 ## 19.1.65 (2021-05-25)
 
@@ -32,22 +48,6 @@
 
 ### RichTextEditor
 
-#### Bug Fixes
-
-- `#I326887`- The issue with "Bold and other formats not working inside the table when the cell in empty" has been resolved.
-
-- `#I324041`- The issue with "When strong is applied more than one time for an element, `un-bold` doesn't remove all the bold tags" has been resolved.
-
-## 19.1.63 (2021-05-13)
-
-### RichTextEditor
-
-#### New Features
-
-- `#I275771`, `#I275873` - Provided `beforePasteCleanUp` and `afterPasteCleanUp` events for customizing pasted content in the Rich Text Editor.
-
-### RichTextEditor
-
 #### Breaking Changes
 
 - The `toolbarStatusUpdate` event has been deprecated. Use `updatedToolbarStatus` new event to get the status of the updated toolbar.
@@ -59,6 +59,10 @@
 - `#I324985`- The issue with "Pasting the link in the Rich Text Editor doesn't add the `target=_blank` in the link" has been resolved.
 
 - `#I324430`- The issue with "Rich Text Editor not rendered properly when ID is given as a number"  has been resolved.
+
+- `#I326887`- The issue with "Bold and other formats not working inside the table when the cell in empty" has been resolved.
+
+- `#I324041`- The issue with "When strong is applied more than one time for an element, `un-bold` doesn't remove all the bold tags" has been resolved.
 
 ## 19.1.59 (2021-05-04)
 

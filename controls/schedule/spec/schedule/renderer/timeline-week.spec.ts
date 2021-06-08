@@ -284,6 +284,23 @@ describe('Schedule Timeline Week view', () => {
             const moreIndicatorList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-more-indicator'));
             expect(moreIndicatorList.length).toEqual(2);
         });
+
+        it ('Checking right indicator icon between dates', (done: DoneFn) => {
+            schObj.dataBound = () => {
+                const eventElementList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
+                expect(eventElementList[17].querySelectorAll('.e-appointment-details .e-indicator')[0].classList.contains('e-right-icon'))
+                    .toBeTruthy();
+                expect((eventElementList[17] as HTMLElement).offsetWidth).toEqual(200);
+                done();
+            };
+            const eventData: Record<string, any> = {
+                Id: 1,
+                Subject: 'Two days spanned',
+                StartTime: new Date(2018, 4, 2, 14, 0),
+                EndTime: new Date(2018, 4, 3, 6, 0)
+            };
+            schObj.addEvent(eventData);
+        });
     });
 
     describe('Show Weekend', () => {

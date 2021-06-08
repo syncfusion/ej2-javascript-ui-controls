@@ -7900,6 +7900,33 @@ describe('TreeView control', () => {
                 mouseup.type = 'mouseup';
                 EventHandler.trigger(<any>(document), 'mouseup', mouseup);
             });
+            it('template support testing with drag and drop', () => {
+                treeObj = new TreeView({
+                    fields: { dataSource: localData1, id: "nodeId", parentID: 'nodePid', text: "nodeText", hasChildren: "hasChild", expanded: 'nodeExpanded1' },
+                    nodeTemplate: '${if(hasChild == undefined)}<b>${nodeText}</b>${else}<i>${nodeText}</i>${/if}',
+                    allowDragAndDrop: true
+                }, '#tree1');
+                let li: Element[] = <Element[] & NodeListOf<Element>>treeObj.element.querySelectorAll('.e-text-content');
+                expect(li[0].querySelector('i')).not.toBe(null);
+                expect(li[0].querySelector('b')).toBe(null);
+                expect(li[1].querySelector('b')).not.toBe(null);
+                expect(li[1].querySelector('i')).toBe(null);
+                let mousedown: any = getEventObject('MouseEvents', 'mousedown', treeObj.element, li[2].querySelector('.e-list-text'), 15, 10);
+                EventHandler.trigger(treeObj.element, 'mousedown', mousedown);
+                let mousemove: any = getEventObject('MouseEvents', 'mousemove', treeObj.element, li[2].querySelector('.e-list-text'), 15, 70);
+                EventHandler.trigger(<any>(document), 'mousemove', mousemove);
+                mousemove.srcElement = mousemove.target = mousemove.toElement = li[1].querySelector('.e-list-text');
+                mousemove = setMouseCordinates(mousemove, 15, 75);
+                EventHandler.trigger(<any>(document), 'mousemove', mousemove);
+                let mouseup: any = getEventObject('MouseEvents', 'mouseup', treeObj.element, li[1].querySelector('.e-list-text'));
+                mouseup.type = 'mouseup';
+                EventHandler.trigger(<any>(document), 'mouseup', mouseup);
+                let nli: Element[] = <Element[] & NodeListOf<Element>>treeObj.element.querySelectorAll('li');
+                expect(nli[1].childElementCount).toBe(3);
+                expect(nli[1].children[1].childElementCount).toBe(2);
+                expect(nli[1].getAttribute('aria-expanded')).toBe('true');
+                expect(nli[2].getAttribute('aria-level')).toBe('3');
+            });
             it('destroyed event is triggered', () => {
                 treeObj = new TreeView({
                     fields: { dataSource: localData1, id: 'nodeId', text: 'nodeText', parentID: 'nodePid', hasChildren: 'hasChild' },
@@ -9142,35 +9169,40 @@ describe('TreeView control', () => {
                     }, 450);
                 }, 450);
             });
-            it('testing with target as text and template concepts', () => {
+            it('testing with target as text and template concepts', (done: Function) => {
                 let template: Element = createElement('div', { id: 'template' });
                 template.innerHTML = '${if(hasChild == undefined)}<b>${nodeText}</b>${else}<i>${nodeText}</i>${/if}';
-                treeObj.nodeTemplate = 'template';
+                document.body.appendChild(template);
+                treeObj.nodeTemplate = '#template';
                 treeObj.dataBind();
-                let li: Element[] = <Element[] & NodeListOf<Element>>treeObj.element.querySelectorAll('li');
-                let mousedown: any = getEventObject('MouseEvents', 'mousedown', treeObj.element, li[2].querySelector('.e-list-text'), 15, 10);
-                EventHandler.trigger(treeObj.element, 'mousedown', mousedown);
-                let mousemove: any = getEventObject('MouseEvents', 'mousemove', treeObj.element, li[2].querySelector('.e-list-text'), 15, 70);
-                EventHandler.trigger(<any>(document), 'mousemove', mousemove);
-                mousemove.srcElement = mousemove.target = mousemove.toElement = li[1].querySelector('.e-list-text');
-                mousemove = setMouseCordinates(mousemove, 15, 75);
-                EventHandler.trigger(<any>(document), 'mousemove', mousemove);
-                let mouseup: any = getEventObject('MouseEvents', 'mouseup', treeObj.element, li[1].querySelector('.e-list-text'));
-                mouseup.type = 'mouseup';
-                EventHandler.trigger(<any>(document), 'mouseup', mouseup);
-                expect(li[1].childElementCount).toBe(2);
-                expect(li[1].children[1].childElementCount).toBe(1);
-                expect(li[1].getAttribute('aria-expanded')).toBe('true');
-                expect(li[2].getAttribute('aria-level')).toBe('3');
-                treeObj.cssClass = "mytree";
-                treeObj.dataBind();
-                expect(document.getElementById('tree1').classList.contains('mytree')).toEqual(true);
-                treeObj.enableRtl = true;
-                treeObj.dataBind();
-                expect(document.getElementById('tree1').classList.contains('e-rtl')).toEqual(true);
-                treeObj.enableRtl = false;
-                treeObj.dataBind();
-                expect(document.getElementById('tree1').classList.contains('e-rtl')).toEqual(false);
+                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+                setTimeout(function () {
+                    let li: Element[] = <Element[] & NodeListOf<Element>>treeObj.element.querySelectorAll('li');
+                    let mousedown: any = getEventObject('MouseEvents', 'mousedown', treeObj.element, li[2].querySelector('.e-list-text'), 15, 10);
+                    EventHandler.trigger(treeObj.element, 'mousedown', mousedown);
+                    let mousemove: any = getEventObject('MouseEvents', 'mousemove', treeObj.element, li[2].querySelector('.e-list-text'), 15, 70);
+                    EventHandler.trigger(<any>(document), 'mousemove', mousemove);
+                    mousemove.srcElement = mousemove.target = mousemove.toElement = li[1].querySelector('.e-list-text');
+                    mousemove = setMouseCordinates(mousemove, 15, 75);
+                    EventHandler.trigger(<any>(document), 'mousemove', mousemove);
+                    let mouseup: any = getEventObject('MouseEvents', 'mouseup', treeObj.element, li[1].querySelector('.e-list-text'));
+                    mouseup.type = 'mouseup';
+                    EventHandler.trigger(<any>(document), 'mouseup', mouseup);
+                    expect(li[1].childElementCount).toBe(2);
+                    expect(li[1].children[1].childElementCount).toBe(1);
+                    expect(li[1].getAttribute('aria-expanded')).toBe('true');
+                    expect(li[2].getAttribute('aria-level')).toBe('3');
+                    treeObj.cssClass = "mytree";
+                    treeObj.dataBind();
+                    expect(document.getElementById('tree1').classList.contains('mytree')).toEqual(true);
+                    treeObj.enableRtl = true;
+                    treeObj.dataBind();
+                    expect(document.getElementById('tree1').classList.contains('e-rtl')).toEqual(true);
+                    treeObj.enableRtl = false;
+                    treeObj.dataBind();
+                    expect(document.getElementById('tree1').classList.contains('e-rtl')).toEqual(false);
+                    done();
+                }, 450);
             });
             it('code coverage', () => {
                 expect(document.body.style.cursor).toBe('');
@@ -13159,6 +13191,32 @@ describe('Drag and drop with different TreeView functionality testing with empty
                 expect(li[19].querySelector('.e-checkbox-wrapper').getAttribute('aria-checked')).toBe("true");
                 done();
             });
+            it('hasChildren attribute in getNode method testing when loadOnDemand disabled', (done: Function) => {
+                treeObj = new TreeView({ 
+                    fields: { dataSource: hierarchicalData },
+                    loadOnDemand: false
+                },'#tree1');
+                    let li: Element[] = <Element[] & NodeListOf<Element>>treeObj.element.querySelectorAll('li');
+                    expect(treeObj.getNode(li[0]).hasChildren).toBe(true);
+                    expect(treeObj.getNode('24').hasChildren).toBe(true);
+                    expect(treeObj.getNode('30').hasChildren).toBe(false);
+                    expect(li[28].querySelector('.e-icons')).toBe(null);
+                    done();
+            });
+            it('hasChildren attribute in getNode method testing when loadOnDemand enabled', (done: Function) => {
+                treeObj = new TreeView({ 
+                    fields: { dataSource: hierarchicalData },
+                    loadOnDemand: true
+                },'#tree1');
+                    let li: Element[] = <Element[] & NodeListOf<Element>>treeObj.element.querySelectorAll('li');
+                    expect(treeObj.getNode(li[0]).hasChildren).toBe(true);
+                    mouseEventArgs.target = li[0].querySelector('.e-icons');
+                    treeObj.touchClickObj.tap(tapEvent);
+                    expect(treeObj.getNode(li[0]).hasChildren).toBe(true);
+                    expect(treeObj.getNode('23').hasChildren).toBe(true);
+                    expect(treeObj.getNode('30').hasChildren).toBe(false);
+                    done();
+            });
         });
         describe('loadOnDemand for local data testing', () => {
             let treeObj: any;
@@ -13345,6 +13403,33 @@ describe('Drag and drop with different TreeView functionality testing with empty
                 expect(treeObj.getAllCheckedNodes().length).toBe(4);
                 done();
             });
+            it('hasChildren attribute in getNode method testing when loadOnDemand disabled', (done: Function) => {
+                treeObj = new TreeView({ 
+                    fields: { dataSource: localData },
+                    loadOnDemand: false
+                },'#tree1');
+                let li: Element[] = <Element[] & NodeListOf<Element>>treeObj.element.querySelectorAll('li');
+                expect(treeObj.getNode(li[0]).hasChildren).toBe(true);
+                expect(treeObj.getNode('24').hasChildren).toBe(true);
+                expect(treeObj.getNode('30').hasChildren).toBe(false);
+                expect(li[28].querySelector('.e-icons')).toBe(null);
+                done();
+            });
+            it('hasChildren attribute in getNode method testing when loadOnDemand enabled', (done: Function) => {
+                treeObj = new TreeView({ 
+                    fields: { dataSource: localData },
+                    loadOnDemand: true
+                },'#tree1');
+                let li: Element[] = <Element[] & NodeListOf<Element>>treeObj.element.querySelectorAll('li');
+                expect(treeObj.getNode(li[0]).hasChildren).toBe(true);
+                mouseEventArgs.target = li[0].querySelector('.e-icons');
+                treeObj.touchClickObj.tap(tapEvent);
+                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+                expect(treeObj.getNode(li[0]).hasChildren).toBe(true);
+                expect(treeObj.getNode('23').hasChildren).toBe(true);
+                expect(treeObj.getNode('30').hasChildren).toBe(false);
+                done();
+            });
         });
         describe('LoadOnDemand for remote data testing', () => {
         let mouseEventArgs: any = {
@@ -13482,6 +13567,14 @@ describe('Drag and drop with different TreeView functionality testing with empty
                 expect(treeObj.selectedNodes.length).toBe(2);
                 done();
             }, 450);
+        });
+        it('hasChildren attribute in getNode method testing', (done: Function) => {
+            let li: Element[] = <Element[] & NodeListOf<Element>>treeObj.element.querySelectorAll('li');
+                setTimeout(function() {
+                    let li: Element[] = <Element[] & NodeListOf<HTMLLIElement>>document.getElementById('tree1').querySelectorAll('li')
+                    expect(treeObj.getNode(li[0]).hasChildren).toBe(true);
+                    done();
+                }, 450);
         });
     });
     describe('loadOnDemand disabled for remote data source', () => {

@@ -2,6 +2,32 @@
 
 ## [Unreleased]
 
+## 19.1.67 (2021-06-08)
+
+### Toolbar
+
+#### Bug Fixes
+
+- `#F165830` -  An issue with Toolbar template when state of component changed in functional based components has been fixed.
+
+## 19.1.66 (2021-06-01)
+
+### Menu
+
+#### Bug Fixes
+
+- `#I326704` - Provided an option to close the menu.
+- `#I316367` - The issue with Menu Scroll bar using template in angular has been resolved.
+- `#I328143` - The issue with Hamburger mode when changing items dynamically has been resolved.
+
+### TreeView
+
+#### Bug Fixes
+
+- `#I328435` - Added the `!default` flag to the dark theme definition files.
+- `#I326667` - The issue with "The getNode method returns invalid hasChildren attribute value while disabling the loadOnDemand support" has been resolved.
+- `#FB24632` - Resolved the issue with "Unable to drop a node as child node while dropping it into the template node text" in the TreeView component.
+
 ## 19.1.63 (2021-05-13)
 
 ### Accordion

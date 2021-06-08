@@ -1638,15 +1638,11 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
             };
             this.trigger('click', eventArgs, (mouseArgs: IMouseEventArgs) => {
                 if (targetEle.id.indexOf('shapeIndex') > -1) {
-                    if (this.markerModule && this.markerModule.sameMarkerData.length > 0 &&
-                         (this.zoomModule ? this.zoomModule.isSingleClick : true)) {
-                            mergeSeparateCluster(this.markerModule.sameMarkerData, this, getElement(this.element.id + '_Markers_Group'));
-                            this.markerModule.sameMarkerData = [];
-                        }
-                        if (getElement(this.element.id + '_mapsTooltip') &&
-                            this.mapsTooltipModule.tooltipTargetID.indexOf('_MarkerIndex_') > -1) {
-                            removeElement(this.element.id + '_mapsTooltip');
-                        }
+                    this.mergeCluster();
+                    if (getElement(this.element.id + '_mapsTooltip') &&
+                        this.mapsTooltipModule.tooltipTargetID.indexOf('_MarkerIndex_') > -1) {
+                        removeElement(this.element.id + '_mapsTooltip');
+                    }
                 }
                 if (this.markerModule) {
                     this.markerModule.markerClick(e);
@@ -1789,11 +1785,7 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
         if (element.id.indexOf('_ToolBar') === -1) {
             const markerModule: Marker = this.markerModule;
             if (element.id.indexOf('shapeIndex') > -1 || element.id.indexOf('Tile') > -1) {
-                if (markerModule && (markerModule.sameMarkerData.length > 0) &&
-                    (this.zoomModule ? this.zoomModule.isSingleClick : true)) {
-                    mergeSeparateCluster(markerModule.sameMarkerData, this, getElement(this.element.id + '_Markers_Group'));
-                    markerModule.sameMarkerData = [];
-                }
+                this.mergeCluster();
             }
             if (markerModule) {
                 markerModule.markerClick(e);
@@ -1804,6 +1796,20 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
             }
         }
         this.notify(Browser.touchStartEvent, e);
+    }
+    
+    /**
+     * Merges the marker clusters.
+     *
+     * @returns {void}
+     * @private
+     */
+    public mergeCluster(): void {
+        if (this.markerModule && (this.markerModule.sameMarkerData.length > 0) &&
+            (this.zoomModule ? this.zoomModule.isSingleClick : true)) {
+            mergeSeparateCluster(this.markerModule.sameMarkerData, this, getElement(this.element.id + '_Markers_Group'));
+            this.markerModule.sameMarkerData = [];
+        }
     }
 
     /**

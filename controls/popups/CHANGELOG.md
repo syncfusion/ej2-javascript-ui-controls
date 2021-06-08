@@ -10,6 +10,12 @@
 
 - `#I326779` - The issue with "Image quicktoolbar not show second time when the dialog is opened second time" has been resolved.
 
+### Dialog
+
+#### Bug Fixes
+
+- `#F164806` - The issue with "Click event binding not working, when button is rendered as tags(`<e-buttons>`) in the dialog" has been resolved.
+
 ## 19.1.64 (2021-05-19)
 
 ### Popup

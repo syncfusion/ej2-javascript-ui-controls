@@ -90,7 +90,8 @@
   }
 
   .e-pv-toolbar,
-  .e-pv-annotation-toolbar {
+  .e-pv-annotation-toolbar,
+  .e-pv-mobile-annotation-toolbar {
     height: $pv-toolbar-height;
   }
 
@@ -253,7 +254,8 @@
   }
 
   .e-pv-toolbar.e-toolbar .e-toolbar-items .e-toolbar-item .e-pv-tbar-btn.e-btn,
-  .e-pv-annotation-toolbar.e-toolbar .e-toolbar-items .e-toolbar-item .e-pv-tbar-btn.e-btn {
+  .e-pv-annotation-toolbar.e-toolbar .e-toolbar-items .e-toolbar-item .e-pv-tbar-btn.e-btn,
+  .e-pv-mobile-annotation-toolbar.e-toolbar .e-toolbar-items .e-toolbar-item .e-pv-tbar-btn.e-btn {
     height: $pv-toolbar-btn-height;
     min-width: 20px;
     width: $pv-toolbar-btn-width;
@@ -1014,6 +1016,8 @@
 
   .e-pv-toolbar .e-pv-tbar-btn.e-pv-tbar-btn,
   .e-pv-annotation-toolbar .e-pv-tbar-btn.e-pv-tbar-btn,
+  .e-pv-mobile-annotation-toolbar .e-pv-tbar-btn.e-pv-tbar-btn,
+  .e-pv-mobile-annotation-toolbar .e-dropdown-btn.e-btn,
   .e-pv-annotation-toolbar .e-dropdown-btn.e-btn,
   .e-pv-shapes-toolbar .e-pv-tbar-btn,
   .e-pv-annotation-stamp-container .e-menu-wrapper ul .e-menu-item.e-focused,
@@ -1021,6 +1025,30 @@
   .e-pv-annotation-stamp-container .e-menu-wrapper ul .e-menu-item .e-caret,
   .e-pv-annotation-stamp-container .e-menu-wrapper ul .e-menu-item.e-focused .e-menu-icon,
   .e-pv-annotation-stamp-container .e-menu-wrapper ul .e-menu-item.e-focused .e-caret {
+    color: $pv-icon-color;
+  }
+
+  .e-pv-mobile-annotation-toolbar .e-tbar-btn:hover {
+    background: $pv-comment-panel-bg;
+    border-color: $pv-comment-panel-bg;
+  }
+
+  .e-pv-mobile-annotation-toolbar .e-tbar-btn:focus {
+    background: $pv-comment-panel-bg;
+    border-color: $pv-comment-panel-bg;
+  }
+
+  .e-pv-mobile-annotation-toolbar .e-hscroll.e-scroll-device .e-scroll-nav {
+    transform: skewX(-1deg) translateX(6px);
+    width: 56px;
+  }
+
+  .e-pv-mobile-annotation-toolbar .e-hscroll.e-scroll-device .e-scroll-nav .e-nav-arrow {
+    font-size: 14px;
+    transform: skewX(4deg);
+  }
+
+  .e-pv-mobile-annotation-toolbar .e-hscroll.e-scroll-device .e-scroll-nav.e-scroll-right-nav .e-nav-arrow {
     color: $pv-icon-color;
   }
 
@@ -1131,7 +1159,9 @@
   }
 
   .e-pv-toolbar .e-tbar-btn.e-pv-tbar-btn.e-pv-select,
-  .e-pv-annotation-toolbar .e-tbar-btn.e-pv-tbar-btn.e-pv-select {
+  .e-pv-annotation-toolbar .e-tbar-btn.e-pv-tbar-btn.e-pv-select,
+  .e-pv-mobile-toolbar .e-tbar-btn.e-pv-tbar-btn.e-pv-select,
+  .e-pv-mobile-annotation-toolbar .e-tbar-btn.e-pv-tbar-btn.e-pv-select {
     background: $pv-item-selection-background-color;
     border: $pv-item-selection-border;
     border-radius: $pv-item-selection-border-radius;

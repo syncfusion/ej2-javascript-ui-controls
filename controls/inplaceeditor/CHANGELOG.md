@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 19.1.57 (2021-04-20)
+
+### In-place Editor
+
+#### New Features
+
+- `#I320740` - The `enableHtmlParse` new property provided to enable or disable the parsing of HTML string content as DOM elements.
+
 ## 18.4.30 (2020-12-17)
 
 ### In-place Editor

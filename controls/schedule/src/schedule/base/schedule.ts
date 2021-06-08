@@ -1729,7 +1729,10 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
      * @private
      */
     public getDateFromElement(td: Element): Date {
-        const dateString: string = td.getAttribute('data-date');
+        let dateString: string;
+        if(!isNullOrUndefined(td)) {
+            dateString = td.getAttribute('data-date');
+        }
         if (!isNullOrUndefined(dateString)) {
             const dateInMS: number = parseInt(dateString, 10);
             const date: Date = new Date(dateInMS);
@@ -1962,6 +1965,9 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
         if (isNullOrUndefined(this.activeView) || ((this.isAdaptive || util.isMobile()) && document.activeElement
             && document.activeElement.classList.contains(cls.SUBJECT_CLASS))) {
             return;
+        }
+        if (this.activeViewOptions.timeScale.enable && this.activeView) {
+            this.activeView.highlightCurrentTime();
         }
         if (this.quickPopup) {
             this.quickPopup.onClosePopup();

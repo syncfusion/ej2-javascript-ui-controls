@@ -843,7 +843,6 @@ export class Signature {
             this.oldX = this.mouseX;
             this.oldY = this.mouseY;
             this.newObject = [];
-            this.enableCreateButton(false);
             this.drawMousePosition(e);
         }
     }
@@ -865,6 +864,7 @@ export class Signature {
     private signaturePanelMouseMove(e: MouseEvent | TouchEvent): void {
         if (this.mouseDetection) {
             this.findMousePosition(e);
+            this.enableCreateButton(false);
             this.drawMousePosition(e);
         }
     }

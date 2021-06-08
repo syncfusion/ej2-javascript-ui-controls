@@ -3,7 +3,7 @@
  * Schedule agenda view spec
  */
 import { closest } from '@syncfusion/ej2-base';
-import { Schedule, ScheduleModel, Day, Week, WorkWeek, Month, Agenda } from '../../../src/schedule/index';
+import { Schedule, ScheduleModel, Day, Week, WorkWeek, Month, Agenda, EventRenderedArgs } from '../../../src/schedule/index';
 import { triggerScrollEvent, createSchedule, destroy } from '../util.spec';
 import { resourceData, generateObject, defaultData, cloneDataSource } from '../base/datasource.spec';
 import * as util from '../../../src/schedule/base/util';
@@ -1025,6 +1025,93 @@ describe('Agenda View', () => {
             };
             expect(schObj.currentView).toEqual('Agenda');
             (schObj.element.querySelectorAll('.e-m-date')[0] as HTMLElement).click();
+        });
+    });
+
+    describe('EJ2-49632 Agenda view events not rendered when args cancel set true', () => {
+        let schObj: Schedule;
+        beforeAll((done: DoneFn) => {
+            const schOptions: ScheduleModel = {
+                width: '100%',
+                height: '650px',
+                views: [{ option: 'Month' }, { option: 'Agenda'}],
+                selectedDate: new Date(2018, 1, 15),
+                currentView: 'Agenda'
+            };
+            const scheduleDatas: Record<string, any>[] = [
+                {
+                    Id: 1,
+                    Subject: 'Story Time for Kids',
+                    StartTime: new Date(2018, 1, 11, 10, 0),
+                    EndTime: new Date(2018, 1, 11, 11, 30),
+                    CategoryColor: '#1aaa55'
+                }, {
+                    Id: 2,
+                    Subject: 'Camping with Turtles',
+                    StartTime: new Date(2018, 1, 12, 12, 0),
+                    EndTime: new Date(2018, 1, 12, 14, 0),
+                    CategoryColor: '#357cd2'
+                },
+                {
+                    Id: 5,
+                    Subject: 'Birds of Prey',
+                    StartTime: new Date(2018, 1, 15, 10, 0),
+                    EndTime: new Date(2018, 1, 15, 11, 30),
+                    CategoryColor: '#00bdae'
+                }, {
+                    Id: 6,
+                    Subject: 'Croco World',
+                    StartTime: new Date(2018, 1, 16, 12, 0),
+                    EndTime: new Date(2018, 1, 16, 14, 0),
+                    CategoryColor: '#f57f17'
+                }, {
+                    Id: 7,
+                    Subject: 'Venomous Snake Hunt',
+                    StartTime: new Date(2018, 1, 17, 10, 0),
+                    EndTime: new Date(2018, 1, 17, 11, 30),
+                    CategoryColor: '#1aaa55'
+                }, {
+                    Id: 8,
+                    Subject: 'Face Painting & Drawing events',
+                    StartTime: new Date(2018, 1, 19, 9, 30),
+                    EndTime: new Date(2018, 1, 19, 11, 0),
+                    CategoryColor: '#357cd2'
+                }, {
+                    Id: 9,
+                    Subject: 'Pony Rides',
+                    StartTime: new Date(2018, 1, 21, 11, 0),
+                    EndTime: new Date(2018, 1, 21, 13, 0),
+                    CategoryColor: '#7fa900'
+                },
+                {
+                    Id: 13,
+                    Subject: 'Black Cockatoos Playtime',
+                    StartTime: new Date(2018, 1, 5, 10, 0),
+                    EndTime: new Date(2018, 1, 5, 11, 30),
+                    CategoryColor: '#1aaa55'
+                }, 
+                {
+                    Id: 18,
+                    Subject: 'Black Cockatoos Playtime',
+                    StartTime: new Date(2018, 1, 15, 14, 30),
+                    EndTime: new Date(2018, 1, 15, 16, 0),
+                    CategoryColor: '#7fa900'
+                }
+           ];
+            schObj = createSchedule(schOptions, scheduleDatas, done);
+            schObj.eventRendered = (args: EventRenderedArgs) => {
+                if (args.data.Subject === 'Birds of Prey') {
+                    args.cancel = true;
+                }
+            };
+        });
+        afterAll(() => {
+            destroy(schObj);
+        });
+
+        it('Checking event rendered count in agenda view', () => {
+            const eventElements:  HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
+            expect(eventElements.length).toEqual(5);
         });
     });
 

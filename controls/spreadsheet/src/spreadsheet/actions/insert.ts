@@ -1,6 +1,6 @@
 import { Spreadsheet } from '../base/index';
 import { beginAction, completeAction, insertSheetTab, skipHiddenIdx, refreshImagePosition, focus } from '../common/index';
-import { insert, InsertDeleteEventArgs } from '../../workbook/common/index';
+import { beforeInsert, insert, InsertDeleteEventArgs } from '../../workbook/common/index';
 import { SheetModel, CellModel, getCell } from '../../workbook/index';
 
 /**
@@ -22,6 +22,7 @@ export class Insert {
         let isAction: boolean;
         if (args.isAction) { isAction = true; delete args.isAction; }
         if (isAction) { this.parent.notify(beginAction, { eventArgs: args, action: 'insert' }); }
+        this.parent.notify(beforeInsert, args);
         switch (args.modelType) {
         case 'Sheet':
             this.parent.notify(

@@ -139,7 +139,7 @@ export class Marker {
                     }
                     if (markerTemplateEle.childElementCount === (markerData.length - markerCount - nullCount) && getElementByID(this.maps.element.id + '_Secondary_Element')) {
                         getElementByID(this.maps.element.id + '_Secondary_Element').appendChild(markerTemplateEle);
-                        if (!this.maps.checkInitialRender) {
+                        if (this.maps.checkInitialRender) {
                             if (currentLayer.markerClusterSettings.allowClustering) {
                                 clusterTemplate(currentLayer, markerTemplateEle, this.maps,
                                                 layerIndex, this.markerSVGObject, layerElement, false, false);

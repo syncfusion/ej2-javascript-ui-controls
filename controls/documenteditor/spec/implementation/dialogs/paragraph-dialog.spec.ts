@@ -1074,3 +1074,67 @@ console.log('apply bidi true in non-empty selection- aligment justify');
     });
 
 });
+
+describe('Paragraph Format Apply Dialog Test Case Validation', function () {
+    let editor: DocumentEditor;
+    let dialog: ParagraphDialog;
+    let selectionParaFormat: SelectionParagraphFormat;
+    beforeAll((): void => {
+        let ele: HTMLElement = createElement('div', { id: 'container' });
+        document.body.appendChild(ele);
+        DocumentEditor.Inject(ParagraphDialog, Selection, Editor, EditorHistory);
+        editor = new DocumentEditor({ enableEditorHistory: true, enableEditor: true, enableSelection: true, isReadOnly: false });
+        editor.enableParagraphDialog = true;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        editor.appendTo('#container');
+        dialog = editor.paragraphDialogModule
+        dialog.show();
+    });
+    afterAll((done): void => {
+        editor.destroy();
+        editor = undefined;
+        dialog = undefined;
+        document.body.removeChild(document.getElementById('container'));
+        document.body.innerHTML = '';
+        setTimeout(function () {
+            done();
+        }, 2000);
+    });
+    it('Validate FirstLine indent', function () {
+        console.log('Validate FirstLine indent');
+                let changeEvent: any;
+                dialog.loadParagraphDialog();
+                selectionParaFormat = editor.documentHelper.selection.paragraphFormat;
+                selectionParaFormat.firstLineIndent = -10;
+                dialog.loadParagraphDialog();
+                dialog.changeByValue();
+                expect((dialog as any).special.index).toBe(2);
+    });
+
+    it('Validate Hanging indent', function () {
+        console.log('Validate Hanging indent');
+                let changeEvent: any;
+                dialog.loadParagraphDialog();
+                selectionParaFormat = editor.documentHelper.selection.paragraphFormat;
+                selectionParaFormat.firstLineIndent = 10;
+                dialog.loadParagraphDialog();
+                dialog.changeByValue();
+                expect((dialog as any).special.index).toBe(1);
+    });
+            
+    it('Validate Hanging indent', function () {
+        console.log('Validate Hanging indent');
+                let changeEvent: any;
+                dialog.loadParagraphDialog();
+                selectionParaFormat = editor.documentHelper.selection.paragraphFormat;
+                selectionParaFormat.firstLineIndent = 10;
+                (dialog as any).special.index = 2;
+                selectionParaFormat.leftIndent = 20;
+                dialog.loadParagraphDialog();
+                dialog.changeByValue();
+                expect((dialog as any).leftIndentIn.value).toBe(20);
+    });
+});

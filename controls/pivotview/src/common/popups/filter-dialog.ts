@@ -320,6 +320,7 @@ export class FilterDialog {
             cssClass: 'e-level-drop e-caret-hide',
             items: items, iconCss: 'e-icons e-dropdown-icon',
             disabled: (levelCount === levels.length),
+            enableRtl: this.parent.enableRtl,
             beforeOpen: (args: BeforeOpenCloseMenuEventArgs) => {
                 let items: HTMLLIElement[] = [].slice.call(args.element.querySelectorAll('li'));
                 let engineModule: OlapEngine = this.parent.engineModule as OlapEngine;

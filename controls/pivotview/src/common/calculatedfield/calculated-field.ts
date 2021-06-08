@@ -520,6 +520,7 @@ export class CalculatedField implements IAction {
             cssClass: this.parentID + 'calculatedmenu',
             items: menuItems,
             enableRtl: this.parent.enableRtl,
+            locale: this.parent.locale,
             // beforeOpen: this.beforeMenuOpen.bind(this),
             select: this.selectContextMenu.bind(this),
             onClose: () => {
@@ -1034,6 +1035,7 @@ export class CalculatedField implements IAction {
             isModal: false,
             closeOnEscape: true,
             enableRtl: this.parent.enableRtl,
+            locale: this.parent.locale,
             showCloseIcon: true,
             header: this.parent.localeObj.getConstant('createCalculatedField'),
             target: document.body
@@ -1164,6 +1166,8 @@ export class CalculatedField implements IAction {
                         position: (this.parent.enableRtl ? 'RightCenter' : 'LeftCenter'),
                         target: '.' + cls.CALC_INFO,
                         offsetY: (this.parent.enableRtl ? -10 : -10),
+                        locale: this.parent.locale,
+                        enableRtl: this.parent.enableRtl,
                         width: 220
                     });
                     tooltip.appendTo(headerWrapperDiv);
@@ -1385,7 +1389,7 @@ export class CalculatedField implements IAction {
             }
         }
         let memberTypeObj: DropDownList = new DropDownList({
-            dataSource: mData, enableRtl: this.parent.enableRtl,
+            dataSource: mData, enableRtl: this.parent.enableRtl, locale: this.parent.locale,
             fields: { value: 'value', text: 'text' },
             value: this.fieldType !== null ? this.fieldType : mData[0].value as string,
             readonly: this.isEdit,
@@ -1400,7 +1404,7 @@ export class CalculatedField implements IAction {
         memberTypeObj.isStringTemplate = true;
         memberTypeObj.appendTo(select('#' + this.parentID + 'Member_Type_Div', dialogElement) as HTMLElement);
         let hierarchyListObj: DropDownList = new DropDownList({
-            dataSource: fieldData, enableRtl: this.parent.enableRtl,
+            dataSource: fieldData, enableRtl: this.parent.enableRtl, locale: this.parent.locale,
             allowFiltering: true,
             enabled: memberTypeObj.value === 'Dimension' ? true : false,
             filterBarPlaceholder: this.parent.localeObj.getConstant('example') + ' ' + fieldData[0].text.toString(),
@@ -1416,7 +1420,7 @@ export class CalculatedField implements IAction {
         hierarchyListObj.isStringTemplate = true;
         hierarchyListObj.appendTo(select('#' + this.parentID + 'Hierarchy_List_Div', dialogElement) as HTMLElement);
         let formatStringObj: DropDownList = new DropDownList({
-            dataSource: fData, enableRtl: this.parent.enableRtl,
+            dataSource: fData, enableRtl: this.parent.enableRtl, locale: this.parent.locale,
             fields: { value: 'value', text: 'text' },
             value: this.formatType !== null ? this.formatType : fData[0].value as string,
             cssClass: cls.MEMBER_OPTIONS_CLASS, width: '100%',
@@ -1431,6 +1435,7 @@ export class CalculatedField implements IAction {
         formatStringObj.appendTo(select('#' + this.parentID + 'Format_Div', dialogElement) as HTMLElement);
         let customerFormatObj: MaskedTextBox = new MaskedTextBox({
             placeholder: this.parent.localeObj.getConstant('customFormat'),
+            locale: this.parent.locale, enableRtl: this.parent.enableRtl,
             value: this.formatText !== null && formatStringObj.value === 'Custom' ? this.formatText : null,
             enabled: formatStringObj.value === 'Custom' ? true : false,
             change: (args: MaskChangeEventArgs) => {
@@ -1451,6 +1456,7 @@ export class CalculatedField implements IAction {
                 fields: { dataSource: this.getFieldListData(this.parent), id: 'id', text: 'caption', parentID: 'pid', iconCss: 'spriteCssClass' },
                 allowDragAndDrop: true,
                 enableRtl: this.parent.enableRtl,
+                locale: this.parent.locale,
                 nodeDragStart: this.dragStart.bind(this),
                 nodeDragging: (e: DragAndDropEventArgs) => {
                     if (e.event.target && (e.event.target as HTMLElement).classList.contains(cls.FORMULA)) {
@@ -1484,6 +1490,7 @@ export class CalculatedField implements IAction {
                 fields: { dataSource: this.getFieldListData(this.parent), id: 'formula', text: 'name', iconCss: 'icon' },
                 allowDragAndDrop: true,
                 enableRtl: this.parent.enableRtl,
+                locale: this.parent.locale,
                 nodeCollapsing: this.nodeCollapsing.bind(this),
                 nodeDragStart: this.dragStart.bind(this),
                 nodeClicked: this.fieldClickHandler.bind(this),
@@ -1729,7 +1736,7 @@ export class CalculatedField implements IAction {
             dialogRenderer.parentElement.querySelector('.' + cls.FORMULA) !== null) {
             this.createOlapDropElements();
         }
-        let cancelBtn: Button = new Button({ cssClass: cls.FLAT, isPrimary: true });
+        let cancelBtn: Button = new Button({ cssClass: cls.FLAT, isPrimary: true, locale: this.parent.locale, enableRtl: this.parent.enableRtl });
         cancelBtn.isStringTemplate = true;
         cancelBtn.appendTo('#' + this.parentID + 'cancelBtn');
         if (cancelBtn.element) {
@@ -1737,11 +1744,12 @@ export class CalculatedField implements IAction {
         }
         if ((this.parent as PivotFieldList).
             dialogRenderer.parentElement.querySelector('.' + cls.FORMULA) !== null && this.parent.isAdaptive) {
-            let okBtn: Button = new Button({ cssClass: cls.FLAT + ' ' + cls.OUTLINE_CLASS, isPrimary: true });
+            let okBtn: Button = new Button({ cssClass: cls.FLAT + ' ' + cls.OUTLINE_CLASS, isPrimary: true, locale: this.parent.locale, enableRtl: this.parent.enableRtl });
             okBtn.isStringTemplate = true;
             okBtn.appendTo('#' + this.parentID + 'okBtn');
             this.inputObj = new MaskedTextBox({
                 placeholder: this.parent.localeObj.getConstant('fieldName'),
+                locale: this.parent.locale, enableRtl: this.parent.enableRtl,
                 change: (args: MaskChangeEventArgs) => {
                     this.fieldText = args.value;
                     this.formulaText = (select('#' + this.parentID + 'droppable', document) as HTMLTextAreaElement).value;
@@ -1751,6 +1759,7 @@ export class CalculatedField implements IAction {
             this.inputObj.appendTo('#' + this.parentID + 'ddlelement');
             if (this.parent.dataType === 'pivot') {
                 let formatInputObj: MaskedTextBox = new MaskedTextBox({
+                    locale: this.parent.locale, enableRtl: this.parent.enableRtl,
                     placeholder: this.parent.localeObj.getConstant('numberFormatString'),
                     change: (args: MaskChangeEventArgs) => {
                         this.formatText = args.value;
@@ -1780,7 +1789,7 @@ export class CalculatedField implements IAction {
                 okBtn.element.onclick = this.applyFormula.bind(this);
             }
         } else if (this.parent.isAdaptive) {
-            let addBtn: Button = new Button({ cssClass: cls.FLAT, isPrimary: true });
+            let addBtn: Button = new Button({ cssClass: cls.FLAT, isPrimary: true, locale: this.parent.locale, enableRtl: this.parent.enableRtl });
             addBtn.isStringTemplate = true;
             addBtn.appendTo('#' + this.parentID + 'addBtn');
             if (this.parent.dataType === 'olap') {
@@ -1790,6 +1799,7 @@ export class CalculatedField implements IAction {
                     autoCheck: false,
                     sortOrder: 'None',
                     enableRtl: this.parent.enableRtl,
+                    locale: this.parent.locale,
                     nodeClicked: this.fieldClickHandler.bind(this),
                     drawNode: this.drawTreeNode.bind(this),
                     nodeExpanding: this.updateNodeIcon.bind(this),
@@ -1805,6 +1815,7 @@ export class CalculatedField implements IAction {
                 this.accordion = new Accordion({
                     items: this.getAccordionData(this.parent),
                     enableRtl: this.parent.enableRtl,
+                    locale: this.parent.locale,
                     expanding: this.accordionExpand.bind(this),
                     clicked: this.accordionClickHandler.bind(this),
                     created: this.accordionCreated.bind(this)
@@ -1834,6 +1845,7 @@ export class CalculatedField implements IAction {
                             name: AGRTYPE + key,
                             checked: args.element.querySelector('[data-type').getAttribute('data-type') === type[i],
                             change: this.onChange.bind(this),
+                            locale: this.parent.locale, enableRtl: this.parent.enableRtl
                         });
                         radiobutton.isStringTemplate = true;
                         radiobutton.appendTo('#' + this.parentID + 'radio' + key + type[i]);
@@ -1871,7 +1883,8 @@ export class CalculatedField implements IAction {
                     this.parent.engineModule.fieldList[key].aggregateType : SUM;
             }
             let checkbox: CheckBox = new CheckBox({
-                label: this.parent.engineModule.fieldList[key].caption + ' (' + this.parent.localeObj.getConstant(type) + ')'
+                label: this.parent.engineModule.fieldList[key].caption + ' (' + this.parent.localeObj.getConstant(type) + ')',
+                locale: this.parent.locale, enableRtl: this.parent.enableRtl
             });
             checkbox.isStringTemplate = true;
             checkbox.appendTo('#' + this.parentID + '_' + index);
@@ -1965,13 +1978,15 @@ export class CalculatedField implements IAction {
         this.dialog.content = this.renderDialogElements();
         this.dialog.refresh();
         this.inputObj = new MaskedTextBox({
-            placeholder: this.parent.localeObj.getConstant('fieldName')
+            placeholder: this.parent.localeObj.getConstant('fieldName'),
+            locale: this.parent.locale, enableRtl: this.parent.enableRtl
         });
         this.inputObj.isStringTemplate = true;
         this.inputObj.appendTo('#' + this.parentID + 'ddlelement');
         if (this.parent.dataType === 'pivot') {
             let customerFormatObj: MaskedTextBox = new MaskedTextBox({
-                placeholder: this.parent.localeObj.getConstant('numberFormatString')
+                placeholder: this.parent.localeObj.getConstant('numberFormatString'),
+                locale: this.parent.locale, enableRtl: this.parent.enableRtl
             });
             customerFormatObj.isStringTemplate = true;
             customerFormatObj.appendTo('#' + this.parentID + 'Custom_Format_Element');
@@ -2005,6 +2020,7 @@ export class CalculatedField implements IAction {
             allowDragging: false,
             showCloseIcon: true,
             enableRtl: this.parent.enableRtl,
+            locale: this.parent.locale,
             width: 'auto',
             height: 'auto',
             position: { X: 'center', Y: 'center' },

@@ -32,7 +32,7 @@ import { PasteOptions } from './index';
 import { CommentReviewPane, CheckBoxFormFieldDialog, DropDownFormField, TextFormField, CheckBoxFormField, FieldElementBox, TextFormFieldInfo, CheckBoxFormFieldInfo, DropDownFormFieldInfo, ContextElementInfo, CollaborativeEditing, CollaborativeEditingEventArgs } from './implementation/index';
 import { TextFormFieldDialog } from './implementation/dialogs/form-field-text-dialog';
 import { DropDownFormFieldDialog } from './implementation/dialogs/form-field-drop-down-dialog';
-import { FormFillingMode, TrackChangeEventArgs, ServiceFailureArgs } from './base';
+import { FormFillingMode, TrackChangeEventArgs, ServiceFailureArgs, ImageFormat } from './base';
 import { TrackChangesPane } from './implementation/track-changes/track-changes-pane';
 import { RevisionCollection } from './implementation/track-changes/track-changes';
 import { NotesDialog } from './implementation/dialogs/notes-dialog';
@@ -2344,6 +2344,25 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
             this.viewer.pageFitType = pageFitType;
         }
     }
+
+    /**
+     * Export the specified page as Image.
+     *
+     * @param {number} pageNumber - Specifies the page number starts from index `1`.
+     * @param {number} format - Specifies the image format.
+     * @returns {HTMLImageElement} - Returns the html image element.
+     */
+    public exportAsImage(pageNumber: number, format: ImageFormat): HTMLImageElement {
+        if (isNullOrUndefined(this.viewer)) {
+            throw new Error('Invalid operation.');
+        }
+        if (this.printModule) {
+            let mimeType: string = format === 'Png' ? 'image/png': 'image/jpeg';
+            return this.printModule.exportAsImage(this.documentHelper, pageNumber, mimeType);
+        }
+        return undefined;
+    }
+
     /**
      * Prints the document.
      *

@@ -71,7 +71,7 @@ export class SheetRender implements IRenderer {
     }
 
     public setPanelWidth(sheet: SheetModel, rowHdr: HTMLElement): void {
-        const scrollSize: number = this.getScrollSize();
+        const scrollSize: number = this.getScrollSize(true);
         const width: number = this.getRowHeaderWidth(sheet); const offset: string = this.parent.enableRtl ? 'right' : 'left';
         if (sheet.frozenColumns) {
             const frozenCol: HTMLElement = document.getElementById(this.parent.element.id + '_sheet').getElementsByClassName(
@@ -89,7 +89,7 @@ export class SheetRender implements IRenderer {
             (this.contentPanel.nextElementSibling ? this.contentPanel.nextElementSibling : null) as HTMLElement;
         if (scroll) {
             if (scrollSize) {
-                scroll.style.height = scrollSize + 2 + 'px';
+                scroll.style.height = scrollSize + 1 + 'px';
             } else {
                 scroll.style.height = '1px';
                 scroll.style.borderTopWidth = '0px';
@@ -102,9 +102,9 @@ export class SheetRender implements IRenderer {
         }
     }
 
-    private getScrollSize(): number {
+    private getScrollSize(addOffset?: boolean): number {
         const prop: string = this.parent.enableRtl ? 'margin-left' : 'margin-right';
-        return parseInt(this.headerPanel.style[prop], 10) ? parseInt(this.headerPanel.style[prop], 10) : 0;
+        return parseInt(this.headerPanel.style[prop], 10) ? parseInt(this.headerPanel.style[prop], 10) + (addOffset ? 1 : 0) : 0;
     }
 
     private setHeaderPanelWidth(content: HTMLElement, width: number): void {
@@ -116,11 +116,9 @@ export class SheetRender implements IRenderer {
     }
 
     private setPanelHeight(sheet: SheetModel): void {
-        const scrollSize: number = this.getScrollSize();
+        const scrollSize: number = this.getScrollSize(true);
         if (sheet.frozenRows) {
-            const topIndex: number = getCellIndexes(sheet.topLeftCell)[0];
-            const frozenHeight: number = (sheet.showHeaders ? getDPRValue(31) : 0) +
-             getRowsHeight(sheet, topIndex, topIndex + sheet.frozenRows - 1, true);
+            const frozenHeight: number = this.getColHeaderHeight(sheet);
             if (!sheet.showHeaders && !sheet.frozenColumns) {
                 this.headerPanel.style.height = frozenHeight + 'px';
             } else {
@@ -133,7 +131,7 @@ export class SheetRender implements IRenderer {
                 `calc(100% - ${scrollSize}px)`;
             frozenRow.style.top = frozenHeight - 1 - (sheet.showHeaders ? 1 : 0) + 'px'; frozenRow.style.display = '';
         } else {
-            (this.contentPanel as HTMLElement).style.height = `calc(100% - ${(sheet.showHeaders ? 31 : 0) + scrollSize}px)`;
+            (this.contentPanel as HTMLElement).style.height = `calc(100% - ${(sheet.showHeaders ? getDPRValue(31) : 0) + scrollSize}px)`;
         }
     }
 
@@ -757,7 +755,8 @@ export class SheetRender implements IRenderer {
 
     public getColHeaderHeight(sheet: SheetModel, skipHeader?: boolean): number {
         const topIndex: number = getCellIndexes(sheet.topLeftCell)[0];
-        return (sheet.showHeaders && !skipHeader ? 31 : 0) + getRowsHeight(sheet, topIndex, topIndex + sheet.frozenRows - 1, true);
+        return (sheet.showHeaders && !skipHeader ? getDPRValue(31) : 0) +
+            getRowsHeight(sheet, topIndex, topIndex + sheet.frozenRows - 1, true);
     }
 
     /**

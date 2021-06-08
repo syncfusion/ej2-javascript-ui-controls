@@ -103,7 +103,7 @@ export class PivotChart {
                 if ((this.parent.chart as Chart).axes.length > 0) {
                     (this.parent.chart as Chart).axes[0].title = '';
                 }
-                (this.parent.chart as Chart).primaryXAxis.zoomFactor = 1;
+                (this.parent.chart as Chart).primaryXAxis.zoomFactor = isNullOrUndefined(this.parent.chartSettings.primaryXAxis.zoomFactor) ? 1 : this.parent.chartSettings.primaryXAxis.zoomFactor;
             } else if (this.parent.element.querySelector('.e-accumulationchart')) {
                 this.parent.chart.series[0].dataSource = [{}];
                 (this.parent.chart.series[0] as AccumulationSeriesModel).dataLabel = {};
@@ -544,6 +544,7 @@ export class PivotChart {
                         enableAnimation: this.chartSettings.enableAnimation,
                         useGroupingSeparator: this.chartSettings.useGroupingSeparator,
                         locale: this.parent.locale,
+                        enableRtl: this.parent.enableRtl,
                         beforePrint: this.chartSettings.beforePrint ? this.chartSettings.beforePrint.bind(this) : undefined,
                         animationComplete: this.chartSettings.animationComplete ? this.chartSettings.animationComplete.bind(this) : undefined,
                         legendRender: this.chartSettings.legendRender ? this.chartSettings.legendRender.bind(this) : undefined,
@@ -609,6 +610,7 @@ export class PivotChart {
                         description: this.chartSettings.description,
                         tabIndex: this.chartSettings.tabIndex,
                         locale: this.parent.locale,
+                        enableRtl: this.parent.enableRtl,
                         enableSideBySidePlacement: this.chartSettings.enableSideBySidePlacement,
                         beforePrint: this.chartSettings.beforePrint ? this.chartSettings.beforePrint.bind(this) : undefined,
                         animationComplete: this.chartSettings.animationComplete ? this.chartSettings.animationComplete.bind(this) : undefined,
@@ -616,6 +618,7 @@ export class PivotChart {
                         textRender: this.chartSettings.textRender ? this.chartSettings.textRender.bind(this) : undefined,
                         pointRender: this.chartSettings.pointRender ? this.chartSettings.pointRender.bind(this) : undefined,
                         seriesRender: this.chartSettings.seriesRender ? this.chartSettings.seriesRender.bind(this) : undefined,
+                        axisMultiLabelRender: this.chartSettings.axisMultiLabelRender ? this.chartSettings.axisMultiLabelRender.bind(this) : undefined,
                         chartMouseMove: this.chartSettings.chartMouseMove ? this.chartSettings.chartMouseMove.bind(this) : undefined,
                         chartMouseClick: this.chartSettings.chartMouseClick ? this.chartSettings.chartMouseClick.bind(this) : undefined,
                         pointMove: this.chartSettings.pointMove ? this.chartSettings.pointMove.bind(this) : undefined,
@@ -1031,7 +1034,7 @@ export class PivotChart {
             this.dataSourceSettings.rows.map((args: IFieldOptions) => {
                 return args.caption || args.name;
             }).join(' / ');
-        currentXAxis.zoomFactor = this.getZoomFactor();
+        currentXAxis.zoomFactor = isNullOrUndefined(this.parent.chartSettings.primaryXAxis.zoomFactor) ? this.getZoomFactor() : this.parent.chartSettings.primaryXAxis.zoomFactor;
         if (!this.parent.chartSettings.zoomSettings.enableScrollbar) {
             currentXAxis.zoomFactor = 1;
         }
@@ -1219,7 +1222,8 @@ export class PivotChart {
             items: option,
             enableRtl: this.parent.enableRtl,
             beforeOpen: this.drillMenuOpen.bind(this),
-            select: this.drillMenuSelect.bind(this)
+            select: this.drillMenuSelect.bind(this),
+            locale: this.parent.locale
         };
         this.accumulationMenu = new ContextMenu(menuOptions);
         let contextMenu: HTMLElement;
@@ -1460,7 +1464,7 @@ export class PivotChart {
             dataSourceSettings: PivotUtil.getClonedDataSourceSettings(this.parent.dataSourceSettings)
         };
         this.parent.trigger(events.enginePopulating, enginePopulatingEventArgs);
-        pivot.parent.dataSourceSettings = enginePopulatingEventArgs.dataSourceSettings;
+        this.parent.setProperties({ dataSourceSettings: enginePopulatingEventArgs.dataSourceSettings }, true);
         if (pivot.parent.enableVirtualization) {
             if (isBlazor()) {
                 /* eslint-disable */
@@ -1540,9 +1544,9 @@ export class PivotChart {
             args.chart = this.parent.chart;
         }
         if (this.accumulationType.indexOf(this.chartSettings.chartSeries.type) < 0) {
-            (args.chart as Chart).primaryXAxis.zoomFactor = this.getZoomFactor();
+            (args.chart as Chart).primaryXAxis.zoomFactor = isNullOrUndefined(this.parent.chartSettings.primaryXAxis.zoomFactor) ? this.getZoomFactor() : this.parent.chartSettings.primaryXAxis.zoomFactor;
             if (!this.parent.chartSettings.zoomSettings.enableScrollbar) {
-                (args.chart as Chart).primaryXAxis.zoomFactor = 1;
+                (args.chart as Chart).primaryXAxis.zoomFactor = isNullOrUndefined(this.parent.chartSettings.primaryXAxis.zoomFactor) ? 1 : this.parent.chartSettings.primaryXAxis.zoomFactor;
             }
         }
         this.parent.trigger(events.chartResized, args);

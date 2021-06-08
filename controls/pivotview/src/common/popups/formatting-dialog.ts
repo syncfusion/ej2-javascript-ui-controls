@@ -60,6 +60,7 @@ export class NumberFormatting implements IAction {
             visible: true,
             showCloseIcon: true,
             enableRtl: this.parent.enableRtl,
+            locale: this.parent.locale,
             width: 'auto',
             height: 'auto',
             position: { X: 'center', Y: 'center' }, /* eslint-disable-line */
@@ -214,7 +215,7 @@ export class NumberFormatting implements IAction {
                 });
             }
             this.valuesDropDown = new DropDownList({
-                dataSource: valueFields, fields: { text: 'name', value: 'field' }, enableRtl: this.parent.enableRtl,
+                dataSource: valueFields, fields: { text: 'name', value: 'field' }, enableRtl: this.parent.enableRtl, locale: this.parent.locale,
                 index: 0, cssClass: cls.FORMATTING_VALUE_DROP, change: this.valueChange.bind(this), width: '100%',
                 open: this.customUpdate.bind(this)
             });
@@ -230,7 +231,7 @@ export class NumberFormatting implements IAction {
             ];
             this.formatDropDown = new DropDownList({
                 dataSource: fields, fields: { text: 'name', value: 'name' },
-                index: 0, change: this.dropDownChange.bind(this), enableRtl: this.parent.enableRtl,
+                index: 0, change: this.dropDownChange.bind(this), enableRtl: this.parent.enableRtl, locale: this.parent.locale,
                 cssClass: cls.FORMATTING_FORMAT_DROP, width: '100%'
             });
             this.formatDropDown.isStringTemplate = true;
@@ -243,7 +244,7 @@ export class NumberFormatting implements IAction {
             ];
 
             this.groupingDropDown = new DropDownList({
-                dataSource: fields, fields: { text: 'name', value: 'name' }, enableRtl: this.parent.enableRtl,
+                dataSource: fields, fields: { text: 'name', value: 'name' }, enableRtl: this.parent.enableRtl, locale: this.parent.locale,
                 index: 0, cssClass: cls.FORMATTING_GROUPING_DROP, width: '100%', change: this.groupingChange.bind(this)
             });
             this.groupingDropDown.isStringTemplate = true;
@@ -264,7 +265,7 @@ export class NumberFormatting implements IAction {
                 { index: 10, name: 10 }
             ];
             this.decimalDropDown = new DropDownList({
-                dataSource: fields, fields: { text: 'name', value: 'name' }, enableRtl: this.parent.enableRtl,
+                dataSource: fields, fields: { text: 'name', value: 'name' }, enableRtl: this.parent.enableRtl, locale: this.parent.locale,
                 index: 0, cssClass: cls.FORMATTING_DECIMAL_DROP, popupHeight: 150, width: '100%', change: this.decimalChange.bind(this)
             });
             this.decimalDropDown.isStringTemplate = true;

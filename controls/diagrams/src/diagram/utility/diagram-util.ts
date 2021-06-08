@@ -1032,7 +1032,7 @@ export function alignLabelOnSegments(obj: PathAnnotation | ConnectorFixedUserHan
         } else { vAlign = 'top'; hAlign = obj.offset === 0.5 ? 'center' : 'left'; }
         break;
     case 'Center':
-        hAlign = 'center';
+        hAlign = !isNullOrUndefined((obj as PathAnnotation).horizontalAlignment) ? ((obj as PathAnnotation).horizontalAlignment as string).toLowerCase() : "center";;
         vAlign = !isNullOrUndefined((obj as PathAnnotation).verticalAlignment) ? ((obj as PathAnnotation).verticalAlignment as string).toLowerCase() : "center";
         break;
     }

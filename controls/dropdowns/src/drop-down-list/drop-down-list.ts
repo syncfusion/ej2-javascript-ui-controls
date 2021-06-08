@@ -1697,7 +1697,7 @@ export class DropDownList extends DropDownBase implements IInput {
                 filterQuery.where(fields, filterType, this.typedString, this.ignoreCase, this.ignoreAccent);
             }
         } else {
-            filterQuery = query ? query : this.query ? this.query : new Query();
+            filterQuery = query ? query.clone() : this.query ? this.query.clone() : new Query();
         }
         return filterQuery;
     }

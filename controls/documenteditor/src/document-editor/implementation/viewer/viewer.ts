@@ -3531,7 +3531,7 @@ export abstract class LayoutViewer {
                         let tableWidth: number = 0;
                         // If the grid is calculated, we can direclty get the width from the grid.
                         // Otherwise, calculate the width.
-                        tableWidth = block.getTableCellWidth();
+                        tableWidth = HelperMethods.convertPointToPixel(block.tableHolder.getTotalWidth(0));
                         tableWidth = tableWidth === 0 ? block.tableHolder.tableWidth === 0 ?
                             block.getTableClientWidth(block.getOwnerWidth(false)) : block.tableHolder.tableWidth : tableWidth;
                         // Fore resizing table, the tableholder table width taken for updated width. 
@@ -3541,7 +3541,7 @@ export abstract class LayoutViewer {
                             tableWidth = HelperMethods.convertPointToPixel(block.tableHolder.tableWidth);
                         }
                         if (tableAlignment === 'Center') {
-                            tableWidth = block.tableHolder.getTotalWidth(0);
+                            tableWidth = block.getTableCellWidth();
                             leftIndent = (this.clientArea.width - tableWidth) / 2;
                         } else {
                             leftIndent = this.clientArea.width - tableWidth;

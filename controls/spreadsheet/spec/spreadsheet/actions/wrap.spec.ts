@@ -130,5 +130,36 @@ describe('Wrap ->', () => {
                 });
             });
         });
+
+        describe('I328361 ->', ()=>{
+            beforeAll((done: Function) => {
+                helper.initializeSpreadsheet({ sheets: [{ ranges: [{ dataSource: [{
+                    "code": "SR-046605",
+                    "shortDesc": "Richiesta dell’autorizzazione di SH della parte passiva (antenne e cavi RF) verso TIM",
+                    "fkOperativeSite": 987044,
+                    "notes": "05/01/2018: inviato  assenso \n19/12/2017 Sblocco condivisioni siti A 2a tranche (mail Moretti-Maratea-Catenaro)\n05/07/2017: TIM OK  verifica disponibilità\n",
+                    "KeyField1": "Valore1",
+                    "KeyField2": "Valore6",
+                    "KeyField3": "Valore9",
+                    "KeyField4": "Valore13",
+                    "KeyField5": "Valore17",
+                    "KeyField6": "Valore21",
+                    "_rownum": 1,
+                    "_ID": 3936951
+                }] }] }] }, done);
+            });
+            afterAll(() => {
+                helper.invoke('destroy');
+            });
+    
+            it('Resize row issue when datasource contains \n', (done: Function) => {
+                expect(helper.getInstance().sheets[0].rows[1].cells[3].wrap).toBeTruthy();
+                helper.getInstance().resizeModule.setRowHeight(1,1, '170px', '147px');
+                expect(helper.invoke('getCell', [1,3]).children[0].classList).toContain('e-wrap-content');
+                expect(getComputedStyle(helper.invoke('getCell', [1,3]).children[0]).lineHeight).toBe('normal');
+                expect(helper.invoke('getCell', [1,1]).parentElement.offsetHeight).toBe(170);
+                done();
+            });
+        });
     });
 });

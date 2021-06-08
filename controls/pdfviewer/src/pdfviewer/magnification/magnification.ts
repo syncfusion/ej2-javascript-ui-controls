@@ -1004,8 +1004,8 @@ export class Magnification {
      * @private
      */
     public onDoubleTapMagnification(): void {
-        if (this.pdfViewer.toolbarModule) {
-            this.pdfViewer.toolbarModule.showToolbar(false);
+        if (this.pdfViewer.toolbarModule && isBlazor()) {
+            this.pdfViewer.toolbarModule.showToolbar(true);
         }
         const scrollValue: number = this.pdfViewerBase.viewerContainer.scrollTop;
         if (!this.pdfViewer.selectedItems.annotations[0]) {
@@ -1021,12 +1021,15 @@ export class Magnification {
             this.calculateScrollValues(scrollValue);
             this.isTapToFitZoom = !this.isTapToFitZoom;
         } else {
-            if (this.pdfViewer.selectedItems.annotations[0]) {
-                const elmtPosition: PointModel = {};
-                elmtPosition.x = this.pdfViewer.selectedItems.annotations[0].bounds.x;
-                elmtPosition.y = this.pdfViewer.selectedItems.annotations[0].bounds.y;
+            if (isBlazor()) {
                 // eslint-disable-next-line max-len
-                this.pdfViewer.annotation.freeTextAnnotationModule.addInuptElemet(elmtPosition, this.pdfViewer.selectedItems.annotations[0]);
+                if (this.pdfViewer.selectedItems.annotations[0] && this.pdfViewer.selectedItems.annotations[0].shapeAnnotationType === 'FreeText') {
+                    const elmtPosition: PointModel = {};
+                    elmtPosition.x = this.pdfViewer.selectedItems.annotations[0].bounds.x;
+                    elmtPosition.y = this.pdfViewer.selectedItems.annotations[0].bounds.y;
+                    // eslint-disable-next-line max-len
+                    this.pdfViewer.annotation.freeTextAnnotationModule.addInuptElemet(elmtPosition, this.pdfViewer.selectedItems.annotations[0]);
+                }
             }
         }
     }

@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 19.1.65 (2021-05-25)
+
+### DropDownList
+
+#### Bug Fixes
+
+- Issue with "Improper data source values are loaded in the popup while modifying query property" has been resolved.
+
 ## 19.1.59 (2021-05-04)
 
 ### ListBox

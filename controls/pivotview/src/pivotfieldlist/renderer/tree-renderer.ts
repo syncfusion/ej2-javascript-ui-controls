@@ -112,6 +112,7 @@ export class TreeViewRenderer implements IAction {
             autoCheck: false,
             loadOnDemand: this.parent.dataType === 'olap' ? false : true,
             enableRtl: this.parent.enableRtl,
+            locale: this.parent.locale,
             nodeDragStart: this.dragStart.bind(this),
             nodeDragStop: this.dragStop.bind(this),
             drawNode: this.updateTreeNode.bind(this),
@@ -227,6 +228,7 @@ export class TreeViewRenderer implements IAction {
             visible: true,
             showCloseIcon: false,
             enableRtl: this.parent.enableRtl,
+            locale: this.parent.locale,
             width: 'auto',
             height: '350px',
             position: { X: 'center', Y: 'center' }, /* eslint-disable-line */
@@ -277,6 +279,7 @@ export class TreeViewRenderer implements IAction {
             showClearButton: true,
             placeholder: this.parent.localeObj.getConstant('search'),
             enableRtl: this.parent.enableRtl,
+            locale: this.parent.locale,
             cssClass: cls.EDITOR_SEARCH_CLASS,
             change: this.textChange.bind(this)
         });
@@ -296,6 +299,7 @@ export class TreeViewRenderer implements IAction {
             loadOnDemand: this.parent.dataType === 'olap' ? false : true,
             sortOrder: this.parent.dataType === 'olap' ? 'None' : 'Ascending',
             enableRtl: this.parent.enableRtl,
+            locale: this.parent.locale,
             nodeChecked: this.addNode.bind(this),
             drawNode: this.updateTreeNode.bind(this),
             nodeExpanding: this.updateNodeIcon.bind(this),

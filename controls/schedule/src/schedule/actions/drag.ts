@@ -598,7 +598,6 @@ export class DragAndDrop extends ActionBase {
         if (this.multiData.length > 0) {
             if (this.isAllDayTarget && this.isAllDayDrag && !isNullOrUndefined(this.actionObj.isAllDay) && !this.actionObj.isAllDay) {
                 const targetCellTime: number = parseInt((closest((<HTMLElement>this.actionObj.target), 'td')).getAttribute('data-date'), 10);
-
                 this.multiData.forEach((data: Record<string, any>) => {
                     this.swagData.push(extend({}, data, null, true) as Record<string, any>);
                     if (data[this.parent.eventFields.isAllDay]) {
@@ -799,8 +798,10 @@ export class DragAndDrop extends ActionBase {
             (e.target && (<HTMLTableCellElement>e.target).tagName === 'DIV')) {
             return;
         }
-        this.removeCloneElement();
         const eventObj: Record<string, any> = extend({}, this.actionObj.event, null, true) as Record<string, any>;
+        if (isNullOrUndefined(this.parent.eventDragArea)) {
+            this.removeCloneElement();
+        }
         const eventDuration: number = (<Date>eventObj[this.parent.eventFields.endTime]).getTime() -
             (<Date>eventObj[this.parent.eventFields.startTime]).getTime();
         let td: HTMLTableCellElement = closest((<HTMLTableCellElement>this.actionObj.target), 'td') as HTMLTableCellElement;

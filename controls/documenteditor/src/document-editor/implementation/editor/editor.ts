@@ -1,6 +1,6 @@
 import { LayoutViewer } from '../index';
 import { Selection } from '../index';
-import { TextPosition, ImageFormat } from '../selection/selection-helper';
+import { TextPosition, ImageInfo } from '../selection/selection-helper';
 import {
     IWidget, ParagraphWidget, LineWidget, ElementBox, TextElementBox, Margin, Page, ImageElementBox,
     BlockWidget, BlockContainer, BodyWidget, TableWidget, TableCellWidget, TableRowWidget, Widget, ListTextElementBox,
@@ -5207,6 +5207,7 @@ export class Editor {
             selection.selectContent(selection.start, false);
         }
         this.insertBlockInternal(block);
+        this.addOrRemoveCommentsInBlock(block, true);
         if (this.checkInsertPosition(selection)) {
             let paragraph: BlockWidget = undefined;
             if (block instanceof ParagraphWidget) {
@@ -8222,7 +8223,7 @@ export class Editor {
      * @returns {void}
      */
     public onImageFormat(elementBox: ImageElementBox, width: number, height: number): void {
-        let modifiedFormat: ImageFormat = new ImageFormat(elementBox);
+        let modifiedFormat: ImageInfo = new ImageInfo(elementBox);
         if (this.editorHistory) {
             this.editorHistory.initializeHistory('ImageResizing');
             this.editorHistory.currentBaseHistoryInfo.modifiedProperties.push(modifiedFormat);
@@ -10340,6 +10341,47 @@ export class Editor {
         this.documentHelper.layout.layoutBodyWidgetCollection(blockIndex, paragraph.containerWidget as BodyWidget, paragraph, false);
         return paragraph;
     }
+
+    private addOrRemoveCommentsInBlock(block: BlockWidget, isAdd?: boolean): void {
+        if (block instanceof TableWidget) {
+            for (let i: number = 0; i < block.childWidgets.length; i++) {
+                let row: TableRowWidget = block.childWidgets[i] as TableRowWidget;
+                for (let j: number = 0; j < row.childWidgets.length; j++) {
+                    let cell: TableCellWidget = row.childWidgets[j] as TableCellWidget;
+                    for (let k: number = 0; k < cell.childWidgets.length; k++) {
+                        let block: BlockWidget = cell.childWidgets[k] as BlockWidget;
+                        this.addOrRemoveCommentsInBlock(block, isAdd);
+                    }
+                }
+            }
+        } else {
+            this.addOrRemoveCommentInPara(block as ParagraphWidget, isAdd);
+        }
+    }
+
+    private addOrRemoveCommentInPara(block: ParagraphWidget, isAdd?: boolean): void {
+        for (let i: number = 0; i < block.childWidgets.length; i++) {
+            let lineWidget: LineWidget = block.childWidgets[i] as LineWidget;
+            //Iterate through each line widgets.
+            for (let j: number = 0; j < lineWidget.children.length; j++) {
+                this.addOrRemoveCommentsInline(lineWidget.children[j] as ElementBox, isAdd);
+            }
+        }
+    }
+
+    private addOrRemoveCommentsInline(inline: ElementBox, isAdd?: boolean) {
+        if (inline instanceof CommentCharacterElementBox && inline.commentType === 0 && !isNullOrUndefined(inline.comment)) {
+            let comment = inline.comment.ownerComment ? (inline.comment.ownerComment) : inline.comment;
+            if (isAdd) {
+                this.addCommentWidget(comment, false, false, false);
+            } else {
+                if (inline.commentMark) {
+                    inline.removeCommentMark();
+                }
+                this.deleteCommentWidget(comment);
+            }
+        }
+    }
     /**
      * @private
      * @returns {void}
@@ -10351,6 +10393,7 @@ export class Editor {
         this.removeFieldInBlock(block);
         this.removeFieldInBlock(block, true);
         this.removeFieldInBlock(block, undefined, true);
+        this.addOrRemoveCommentsInBlock(block);
         if (block.isInsideTable) {
             containerWidget = block.associatedCell;
             index = block.associatedCell.childWidgets.indexOf(block);
@@ -10809,7 +10852,18 @@ export class Editor {
                 }
             }
             if (!canRemoveRow && row.childWidgets.length === 0) {
-                this.updateNextBlocksIndex(table.childWidgets[i] as TableRowWidget, false);
+                let rowToRemove: TableRowWidget = table.childWidgets[i] as TableRowWidget;
+                let prevRenderedRow: TableRowWidget = rowToRemove.previousRenderedWidget as TableRowWidget;
+                while (!isNullOrUndefined(prevRenderedRow)) {
+                    for (let k: number = 0; k < prevRenderedRow.childWidgets.length; k++) {
+                        let cell: TableCellWidget = prevRenderedRow.childWidgets[k] as TableCellWidget;
+                        if (rowToRemove.rowIndex < cell.ownerRow.rowIndex + cell.cellFormat.rowSpan) {
+                            cell.cellFormat.rowSpan--;
+                        }
+                    }
+                    prevRenderedRow = prevRenderedRow.previousRenderedWidget as TableRowWidget;
+                }
+                this.updateNextBlocksIndex(rowToRemove, false);
                 table.childWidgets.splice(i, 1);
                 i--;
                 endRowIndex--;
@@ -12109,11 +12163,13 @@ export class Editor {
             }
         } else if (block.containerWidget instanceof TableWidget) {
             for (let i: number = nextIndex; i < block.containerWidget.childWidgets.length; i++) {
-                let row: TableCellWidget = block.containerWidget.childWidgets[i] as TableCellWidget;
+                let row: TableRowWidget = block.containerWidget.childWidgets[i] as TableRowWidget;
                 this.updateIndex(row, increaseIndex);
                 for (let j: number = 0; j < row.childWidgets.length; j++) {
-                    (row.childWidgets[j] as TableCellWidget).rowIndex = row.index;
-                }
+                    let cell: TableCellWidget = row.childWidgets[j] as TableCellWidget;
+                    cell.rowIndex = row.index;
+                    cell.index = j;
+                }   
             }
             //update Row index of all the cell
         } else if (block.containerWidget instanceof HeaderFooterWidget || block.containerWidget instanceof TextFrame
@@ -13593,6 +13649,7 @@ export class Editor {
         }
         this.updateInsertPosition();
         this.insertInlineInternal(elementBox);
+        this.addOrRemoveCommentsInline(elementBox, true);
         if (this.checkEndPosition(selection)) {
             this.updateHistoryPosition(selection.start, false);
         }

@@ -6,6 +6,7 @@ import { findParentRecords } from '../utils';
 import { isNullOrUndefined, setValue, NumberFormatOptions, DateFormatOptions, createElement, extend } from '@syncfusion/ej2-base';
 import { AggregateColumn } from '../models/summary';
 import { AggregateRowModel } from '../models/summary-model';
+import { Column } from '../models';
 
 
 /**
@@ -65,9 +66,9 @@ export class Aggregate {
         }
         const parentRecords: Object = findParentRecords(parentData);
         const flatRecords: Object[] = (<Object[]>parentData).slice();
-        const columnLength: number = Object.keys(this.parent.columns).length;
         const summaryLength: number = Object.keys(this.parent.aggregates).length;
         const dataLength: number = Object.keys(parentRecords).length; let childRecordsLength: number;
+        const columns: Column[] = this.parent.getColumns();
         if (this.parent.aggregates.filter((x: AggregateRowModel) => x.showChildSummary).length) {
             for (let i: number = 0, len: number = dataLength; i < len; i++) {
                 parentRecord = parentRecords[i];
@@ -75,9 +76,9 @@ export class Aggregate {
                 if (childRecordsLength) {
                     for (let summaryRowIndex: number = 1, len: number = summaryLength; summaryRowIndex <= len; summaryRowIndex++) {
                         let item: Object; item = {};
-                        for (let columnIndex: number = 0, len: number = columnLength; columnIndex < len; columnIndex++) {
-                            const field: string = isNullOrUndefined(getObject('field', this.parent.columns[columnIndex])) ?
-                                this.parent.columns[columnIndex] : getObject('field', this.parent.columns[columnIndex]);
+                        for (let i: number = 0; i < columns.length; i++) {
+                            const  field: string = (isNullOrUndefined(getObject('field', columns[i]))) ?
+                            columns[i] : getObject('field', (columns[i]));
                             item[field] = null;
                         }
                         item = this.createSummaryItem(item,  this.parent.aggregates[summaryRowIndex - 1]);
@@ -110,9 +111,9 @@ export class Aggregate {
             }
         } else {
             const items: Object = {};
-            for (let columnIndex: number = 0, length: number = columnLength; columnIndex < length; columnIndex++) {
-                const fields: string = isNullOrUndefined(getObject('field', this.parent.columns[columnIndex])) ?
-                    this.parent.columns[columnIndex] : getObject('field', this.parent.columns[columnIndex]);
+            for (let columnIndex: number = 0, length: number = columns.length; columnIndex < length; columnIndex++) {
+                const fields: string = isNullOrUndefined(getObject('field', columns[columnIndex])) ?
+                    columns[columnIndex] : getObject('field', columns[columnIndex]);
                 items[fields] = null;
             }
             for (let summaryRowIndex: number = 1, length: number = summaryLength; summaryRowIndex <= length; summaryRowIndex++) {

@@ -2,12 +2,12 @@
 import { Spreadsheet, locale, dialog, mouseDown, renderFilterCell, initiateFilterUI, FilterInfoArgs, getStartEvent } from '../index';
 import { reapplyFilter, filterCellKeyDown, DialogBeforeOpenEventArgs } from '../index';
 import { getFilteredColumn, cMenuBeforeOpen, filterByCellValue, clearFilter, getFilterRange, applySort, getCellPosition } from '../index';
-import { filterRangeAlert, filterComplete, beforeFilter, clearAllFilter, getFilteredCollection, sortImport } from '../../workbook/common/event';
-import { FilterCollectionModel, getRangeIndexes, Workbook, getCellAddress, updateFilter } from '../../workbook/index';
+import { filterRangeAlert, filterComplete, beforeFilter, clearAllFilter, getFilteredCollection, sortImport, beforeDelete, sheetsDestroyed } from '../../workbook/common/event';
+import { FilterCollectionModel, getRangeIndexes, Workbook, getCellAddress, updateFilter, ColumnModel, beforeInsert, getColIndex, SortCollectionModel } from '../../workbook/index';
 import { getIndexesFromAddress, getSwapRange, SheetModel, getColumnHeaderText, CellModel } from '../../workbook/index';
 import { getData, getTypeFromFormat, getCell, getCellIndexes, getRangeAddress, getSheet } from '../../workbook/index';
 import { FilterOptions, BeforeFilterEventArgs, FilterEventArgs } from '../../workbook/common/interface';
-import { L10n, getComponent, EventHandler } from '@syncfusion/ej2-base';
+import { L10n, getComponent, EventHandler, isUndefined } from '@syncfusion/ej2-base';
 import { Dialog } from '../services';
 import { IFilterArgs, PredicateModel, ExcelFilterBase, beforeFltrcMenuOpen, CheckBoxFilterBase } from '@syncfusion/ej2-grids';
 import { beforeCustomFilterOpen, parentsUntil, filterCboxValue } from '@syncfusion/ej2-grids';
@@ -24,7 +24,6 @@ export class Filter {
     private parent: Spreadsheet;
     private filterRange: Map<number, number[]>;
     private filterCollection: Map<number, PredicateModel[]>;
-    private filterClassList: Map<number, { [key: string]: string }>;
 
     /**
      * Constructor for filter module.
@@ -34,7 +33,6 @@ export class Filter {
     constructor(parent: Spreadsheet) {
         this.parent = parent;
         this.filterCollection = new Map();
-        this.filterClassList = new Map();
         this.filterRange = new Map();
         this.addEventListener();
     }
@@ -48,7 +46,6 @@ export class Filter {
         this.removeEventListener();
         this.filterRange = null;
         this.filterCollection = null;
-        this.filterClassList = null;
         this.parent = null;
     }
 
@@ -71,6 +68,9 @@ export class Filter {
         this.parent.on(getFilteredCollection, this.getFilteredCollection, this);
         this.parent.on(contentLoaded, this.updateFilter, this);
         this.parent.on(updateFilter, this.updateFilter, this);
+        this.parent.on(beforeInsert, this.beforeInsertHandler, this);
+        this.parent.on(beforeDelete, this.beforeDeleteHandler, this);
+        this.parent.on(sheetsDestroyed, this.deleteSheetHandler, this);
     }
 
     private removeEventListener(): void {
@@ -93,6 +93,9 @@ export class Filter {
             this.parent.off(getFilteredCollection, this.getFilteredCollection);
             this.parent.off(contentLoaded, this.updateFilter);
             this.parent.off(updateFilter, this.updateFilter);
+            this.parent.off(beforeInsert, this.beforeInsertHandler);
+            this.parent.off(beforeDelete, this.beforeDeleteHandler);
+            this.parent.off(sheetsDestroyed, this.deleteSheetHandler);
         }
     }
 
@@ -230,12 +233,6 @@ export class Filter {
                         action: 'filtering',
                         filterCollection: predicates, field:  predicates[0] ? predicates[0].field : null, sIdx: args.sIdx
                     });
-                predicates.forEach((predicate: PredicateModel) => {
-                    if (this.filterClassList.get(sheetIdx)[predicate.field] &&
-                        this.filterClassList.get(sheetIdx)[predicate.field].indexOf(' e-filtered') < 0) {
-                        this.filterClassList.get(sheetIdx)[predicate.field] += ' e-filtered';
-                    }
-                });
                 this.refreshFilterRange(null, false, args.sIdx);
             });
         }
@@ -259,7 +256,6 @@ export class Filter {
         }
         this.filterRange.set(sheetIdx, range);
         this.filterCollection.set(sheetIdx, []);
-        this.filterClassList.set(sheetIdx, {});
         this.refreshFilterRange(range, false, sheetIdx);
     }
 
@@ -276,7 +272,6 @@ export class Filter {
         const range: number[] = this.filterRange.get(sheetIdx).slice();
         this.filterRange.delete(sheetIdx);
         this.filterCollection.delete(sheetIdx);
-        this.filterClassList.delete(sheetIdx);
         this.refreshFilterRange(range, true, sheetIdx);
     }
     /**
@@ -329,17 +324,14 @@ export class Filter {
         if (this.filterRange.has(sheetIdx) && this.isFilterCell(sheetIdx, args.rowIndex, args.colIndex)) {
             if (!args.td) { return; }
             const field: string = getColumnHeaderText(args.colIndex + 1);
-            if (this.filterClassList.has(sheetIdx) && !this.filterClassList.get(sheetIdx)[field]) {
-                this.filterClassList.get(sheetIdx)[field] = '';
-            }
             if (args.td.querySelector('.e-filter-btn')) {
                 const element: HTMLElement = args.td.querySelector('.e-filter-iconbtn');
                 const filterBtnObj: Button = getComponent(element, 'btn');
-                filterBtnObj.iconCss = 'e-icons e-filter-icon' + this.filterClassList.get(sheetIdx)[field];
+                filterBtnObj.iconCss = 'e-icons e-filter-icon' + this.getFilterSortClassName(args.colIndex, sheetIdx);
             } else {
                 const filterButton: HTMLElement = this.parent.createElement('div', { className: 'e-filter-btn' });
                 const filterBtnObj: Button = new Button(
-                    { iconCss: 'e-icons e-filter-icon' + this.filterClassList.get(sheetIdx)[field], cssClass: 'e-filter-iconbtn' });
+                    { iconCss: 'e-icons e-filter-icon' + this.getFilterSortClassName(args.colIndex, sheetIdx), cssClass: 'e-filter-iconbtn' });
                 args.td.insertBefore(filterButton, args.td.firstChild);
                 filterBtnObj.createElement = this.parent.createElement;
                 filterBtnObj.appendTo(filterButton);
@@ -348,6 +340,28 @@ export class Filter {
         if (this.parent.sortCollection) {
             this.parent.notify(sortImport, {sheetIdx : sheetIdx});
         }
+    }
+
+    private getFilterSortClassName(colIdx: number, sheetIdx: number): string {
+        const field: string = getColumnHeaderText(colIdx + 1);
+        let className: string = '';
+        const predicates: PredicateModel[] = this.filterCollection.get(sheetIdx);
+        const sortCollection: SortCollectionModel[] = this.parent.sortCollection;
+        for (let i: number = 0; i < predicates.length; i++) {
+            if (predicates[i].field === field) {
+                className = ' e-filtered';
+                break;
+            }
+        }
+        if (sortCollection) {
+            for (let i: number = 0; i < sortCollection.length; i++) {
+                if (sortCollection[i].sheetIndex === sheetIdx && sortCollection[i].columnIndex === colIdx) {
+                    className += sortCollection[i].order === 'Ascending' ? ' e-sortasc-filter' : ' e-sortdesc-filter';
+                    break;
+                }
+            }
+        }
+        return className;
     }
 
     /**
@@ -611,17 +625,7 @@ export class Filter {
         range[0] = range[0] + 1; // to skip first row.
         range[2] = sheet.usedRange.rowIndex; //filter range should be till used range.
         this.parent.notify(applySort, { sortOptions: { sortDescriptors: { order: sortOrder } }, range: getRangeAddress(range) });
-
         const cell: number[] = getIndexesFromAddress(sheet.activeCell);
-        const field: string = getColumnHeaderText(cell[1] + 1);
-        for (const key of Object.keys(this.filterClassList.get(sheetIdx))) {
-            let className: string = this.filterClassList.get(sheetIdx)[key].replace(/\se-sortasc-filter|\se-sortdesc-filter/gi, '');
-            if (key === field) {
-                className += sortOrder === 'Ascending' ? ' e-sortasc-filter' : ' e-sortdesc-filter';
-            }
-            this.filterClassList.get(sheetIdx)[key] = className;
-        }
-        this.refreshFilterRange();
         this.parent.sortCollection = this.parent.sortCollection ? this.parent.sortCollection : [];
         for (let i: number = 0; i < this.parent.sortCollection.length; i++) {
             if (this.parent.sortCollection[i] && this.parent.sortCollection[i].sheetIndex === sheetIdx) {
@@ -632,6 +636,7 @@ export class Filter {
             sortRange: getRangeAddress(range), columnIndex: cell[1], order: sortOrder,
             sheetIndex: sheetIdx
         });
+        this.refreshFilterRange();
         this.closeDialog();
     }
 
@@ -672,13 +677,10 @@ export class Filter {
             if (predicates.length) {
                 for (let i: number = 0; i < predicates.length; i++) {
                     args.field = predicates[i].field;
-                    if (predicates.length && this.filterClassList.get(sheetIdx)[args.field].indexOf(' e-filtered') < 0) {
-                        this.filterClassList.get(sheetIdx)[args.field] += ' e-filtered';
-                    }
+                   
                 }
             }
         } else {
-            this.filterClassList.get(sheetIdx)[args.field] = this.filterClassList.get(sheetIdx)[args.field].replace(' e-filtered', '');
         }
         this.filterCollection.set(sheetIdx, predicates);
         const filterOptions: FilterOptions = {
@@ -797,9 +799,6 @@ export class Filter {
                     filterColl.splice(i, 1);
                     break;
                 }
-            }
-            for (const key of Object.keys(this.filterClassList.get(this.parent.activeSheetIndex))) {
-                this.filterClassList.get(this.parent.activeSheetIndex)[key] = '';
             }
             this.refreshFilterRange();
         }
@@ -985,5 +984,142 @@ export class Filter {
                 break;
         }
         return value;
+    }
+
+    private beforeInsertHandler(args: { index: number, model: ColumnModel[], activeSheetIndex: number, modelType: string }): void {
+        if (args.modelType === 'Column') {
+            const sheetIdx: number = isUndefined(args.activeSheetIndex) ? this.parent.activeSheetIndex : args.activeSheetIndex;
+            if (this.filterRange.size && this.filterRange.has(sheetIdx)) {
+                let range: number[] = this.filterRange.get(sheetIdx);
+                if (this.isFilterCell(sheetIdx, range[0], args.index) || args.index < range[1]) {
+                    range[3] += args.model.length;
+                    if (args.index <= range[1]) {
+                        range[1] += args.model.length;
+                    }
+                    this.filterCollection.get(sheetIdx).forEach((predicate: PredicateModel) => {
+                        const colIdx: number = getColIndex(predicate.field);
+                        if (args.index <= colIdx) {
+                            predicate.field = getColumnHeaderText(colIdx + args.model.length + 1);
+                        }
+                    });
+                    if (this.parent.sortCollection) {
+                        this.parent.sortCollection.forEach((sortCollection: SortCollectionModel) => {
+                            if (sortCollection.sheetIndex === sheetIdx && args.index <= sortCollection.columnIndex) {
+                                sortCollection.columnIndex += args.model.length;
+                            }
+                        });
+                    }
+                    this.getFilteredCollection();
+                }
+            }
+        } else if (args.modelType === 'Sheet') {
+            let isChanged: boolean = false;
+            for (const key of Array.from(this.filterRange.keys()).sort().reverse()) {
+                if (args.index <= key) {
+                    isChanged = true;
+                    this.filterRange.set(key + args.model.length, this.filterRange.get(key));
+                    this.filterRange.delete(key);
+                    this.filterCollection.set(key + args.model.length, this.filterCollection.get(key));
+                    this.filterCollection.delete(key);
+                }
+            }
+            if (this.parent.sortCollection) {
+                this.parent.sortCollection.forEach((sortCollection: SortCollectionModel) => {
+                    if (args.index <= sortCollection.sheetIndex) {
+                        sortCollection.sheetIndex += args.model.length;
+                    }
+                });
+            }
+            if (isChanged) {
+                this.getFilteredCollection();
+            }
+        }
+    }
+
+    private beforeDeleteHandler(args: { start: number, end: number, modelType: string }): void {
+        if (args.modelType === 'Column') {
+            const sheetIdx: number = this.parent.activeSheetIndex;
+            if (this.filterRange.size && this.filterRange.has(sheetIdx)) {
+                let isChanged: boolean = true;
+                let range: number[] = this.filterRange.get(sheetIdx);
+                if (args.start >= range[1] && args.end <= range[3]) { // in between
+                    range[3] -= args.end - args.start + 1;
+                }
+                else if (args.start < range[1] && args.end < range[1]) { // before
+                    range[1] -= args.end - args.start + 1;
+                    range[3] -= args.end - args.start + 1;
+                } else if (args.start < range[1] && args.end > range[1] && args.end < range[3]) { // from before to inbetween
+                    range[1] = args.start;
+                    range[3] -= args.end - args.start + 1;
+                } else {
+                    isChanged = false;
+                }
+                if (isChanged) {
+                    const filterCollection: PredicateModel[] = this.filterCollection.get(sheetIdx);
+                    let isPredicateRemoved: boolean;
+                    for (let i: number = filterCollection.length - 1; i >= 0; i--) {
+                        const colIdx: number = getColIndex(filterCollection[i].field);
+                        if (args.end < colIdx) {
+                            filterCollection[i].field = getColumnHeaderText(colIdx - (args.end - args.start + 1) + 1);
+                        }
+                        else if (args.start <= colIdx && args.end >= colIdx) {
+                            isPredicateRemoved = true;
+                        }
+                    }
+                    let sortColl: SortCollectionModel[] = this.parent.sortCollection;
+                    if (sortColl) {
+                        for (let i: number = 0; i < sortColl.length; i++) {
+                            if (sortColl[i].sheetIndex === sheetIdx) {
+                                if (args.end < sortColl[i].columnIndex) {
+                                    sortColl[i].columnIndex = sortColl[i].columnIndex - (args.end - args.start + 1);
+                                    break;
+                                }
+                                else if (args.start <= sortColl[i].columnIndex && args.end >= sortColl[i].columnIndex) {
+                                    sortColl.splice(i, 1);
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                    if (isPredicateRemoved) {
+                        this.parent.clearFilter();
+                    }
+                    this.getFilteredCollection();
+                }
+            }
+        }
+    }
+
+    private deleteSheetHandler(args: { sheetIndex: number }): void {
+        if (!isUndefined(args.sheetIndex)) {
+            let isChanged: boolean;
+            for (const key of Array.from(this.filterRange.keys()).sort().reverse()) {
+                isChanged = true;
+                if (args.sheetIndex === key) {
+                    this.filterRange.delete(key);
+                    this.filterCollection.delete(key);
+                } else if (args.sheetIndex < key) {
+                    this.filterRange.set(key - 1, this.filterRange.get(key));
+                    this.filterRange.delete(key);
+                    this.filterCollection.set(key - 1, this.filterCollection.get(key));
+                    this.filterCollection.delete(key);
+                } else {
+                    isChanged = false;
+                }
+            }
+            let sortColl: SortCollectionModel[] = this.parent.sortCollection;
+            if (sortColl) {
+                for (let i: number = sortColl.length - 1; i >= 0; i--) {
+                    if (args.sheetIndex === sortColl[i].sheetIndex) {
+                        sortColl.splice(i, 1);
+                    } else if (args.sheetIndex < sortColl[i].sheetIndex) {
+                        sortColl[i].sheetIndex -= 1;
+                    }
+                }
+            }
+            if (isChanged) {
+                this.getFilteredCollection();
+            }
+        }
     }
 }

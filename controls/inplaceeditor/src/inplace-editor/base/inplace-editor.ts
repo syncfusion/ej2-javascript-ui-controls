@@ -34,7 +34,7 @@ import { PopupSettingsModel } from './models-model';
 import { ActionBeginEventArgs, ActionEventArgs, FormEventArgs, ValidateEventArgs, IButton, BeginEditEventArgs } from './interface';
 import { ChangeEventArgs } from './interface';
 /* Interface */
-import { parseValue, getCompValue } from './util';
+import { parseValue, getCompValue, encode } from './util';
 
 /**
  * Provides information about a SanitizeSelectors.
@@ -231,6 +231,14 @@ export class InPlaceEditor extends Component<HTMLElement> implements INotifyProp
      */
     @Property(true)
     public enableHtmlSanitizer: boolean;
+    /**
+     * It enables or disables the parsing of HTML string content into HTML DOM elements for In-place Editor. 
+     * If the value of the property is set to false, the In-place Editor value will be displayed as HTML string instead of HTML DOM elements.
+     *
+     * @default true
+     */
+    @Property(true)
+    public enableHtmlParse: boolean;
     /**
      * Defines single/multiple classes (separated by space) to be used for customization of In-place editor.
      * 
@@ -654,7 +662,7 @@ export class InPlaceEditor extends Component<HTMLElement> implements INotifyProp
     private renderValue(val: string): void {
         // eslint-disable-next-line
         this.enableHtmlSanitizer && this.type !== 'RTE' && this.type !== 'MultiSelect' ? this.valueEle.innerText = val :
-            this.valueEle.innerHTML = val;
+            (this.valueEle.innerHTML = this.enableHtmlParse ? val : encode(val));
         if (this.type === 'Color') {
             setStyleAttribute(this.valueEle, { 'color': val });
         }

@@ -91,7 +91,7 @@ export class ConditionalFormatting {
         if (this.parent.isAdaptive) {
             this.dialog = new Dialog({
                 animationSettings: { effect: 'Zoom' }, isModal: true, width: '100%', height: '100%',
-                showCloseIcon: false, closeOnEscape: false, enableRtl: this.parent.enableRtl,
+                showCloseIcon: false, closeOnEscape: false, enableRtl: this.parent.enableRtl, locale: this.parent.locale,
                 position: { X: 'center', Y: 'center' }, allowDragging: true, buttons: buttonModel,  /* eslint-disable-line */
                 beforeOpen: this.beforeOpen.bind(this), close: this.removeDialog.bind(this),
                 cssClass: cls.FORMAT_DIALOG, header: this.parent.localeObj.getConstant('conditionalFormating'), target: document.body
@@ -100,7 +100,7 @@ export class ConditionalFormatting {
             this.dialog = new Dialog({
                 allowDragging: true, position: { X: 'center', Y: this.parent.element.offsetTop }, buttons: buttonModel, /* eslint-disable-line */
                 beforeOpen: this.beforeOpen.bind(this), close: this.removeDialog.bind(this),
-                cssClass: cls.FORMAT_DIALOG, isModal: false, closeOnEscape: true, enableRtl: this.parent.enableRtl,
+                cssClass: cls.FORMAT_DIALOG, isModal: false, closeOnEscape: true, enableRtl: this.parent.enableRtl, locale: this.parent.locale,
                 showCloseIcon: true, header: this.parent.localeObj.getConstant('conditionalFormating'), target: this.parent.element
             });
         }
@@ -306,7 +306,7 @@ export class ConditionalFormatting {
         this.fieldsDropDown[i] = new DropDownList({
             dataSource: fields, fields: { text: 'name', value: 'field' },
             value: value, width: this.parent.isAdaptive ? '100%' : '120px',
-            popupHeight: '200px', popupWidth: 'auto',
+            popupHeight: '200px', popupWidth: 'auto', locale: this.parent.locale, enableRtl: this.parent.enableRtl,
             change: this.measureChange.bind(this, i)
         });
         this.fieldsDropDown[i].isStringTemplate = true;
@@ -325,7 +325,7 @@ export class ConditionalFormatting {
         this.conditionsDropDown[i] = new DropDownList({
             dataSource: conditions, fields: { value: 'value', text: 'name' },
             value: value, width: this.parent.isAdaptive ? '100%' : '120px',
-            popupHeight: '200px', popupWidth: 'auto',
+            popupHeight: '200px', popupWidth: 'auto', locale: this.parent.locale, enableRtl: this.parent.enableRtl,
             change: this.conditionChange.bind(this, i)
         });
         this.conditionsDropDown[i].isStringTemplate = true;
@@ -340,7 +340,7 @@ export class ConditionalFormatting {
         this.fontNameDropDown[i] = new DropDownList({
             dataSource: fontNames, fields: { text: 'name' },
             value: value, width: this.parent.isAdaptive ? '100%' : '120px',
-            popupWidth: '150px', popupHeight: '200px',
+            popupWidth: '150px', popupHeight: '200px', locale: this.parent.locale, enableRtl: this.parent.enableRtl,
             change: this.fontNameChange.bind(this, i)
         });
         this.fontNameDropDown[i].isStringTemplate = true;
@@ -353,7 +353,8 @@ export class ConditionalFormatting {
         this.fontSizeDropDown[i] = new DropDownList({
             dataSource: fontSize, fields: { text: 'name' }, popupHeight: '200px',
             value: value, width: this.parent.isAdaptive ? '100%' : '120px',
-            change: this.fontSizeChange.bind(this, i)
+            change: this.fontSizeChange.bind(this, i),
+            locale: this.parent.locale, enableRtl: this.parent.enableRtl
         });
         this.fontSizeDropDown[i].isStringTemplate = true;
         this.fontSizeDropDown[i].appendTo('#' + this.parentID + 'fontsizeinput' + i);
@@ -402,7 +403,7 @@ export class ConditionalFormatting {
             cssClass: cls.FORMAT_COLOR_PICKER + ' ' + cls.FORMAT_FONT_COLOR_PICKER,
             value: color, mode: 'Palette',
             change: this.fontColorChange.bind(this, i),
-            locale: this.parent.locale
+            locale: this.parent.locale, enableRtl: this.parent.enableRtl
         });
         this.fontColor[i].isStringTemplate = true;
         this.fontColor[i].appendTo('#' + this.parentID + 'fontcolor' + i);
@@ -415,14 +416,14 @@ export class ConditionalFormatting {
         this.backgroundColor[i] = new ColorPicker({
             cssClass: cls.FORMAT_COLOR_PICKER, value: color, mode: 'Palette',
             change: this.backColorChange.bind(this, i),
-            locale: this.parent.locale
+            locale: this.parent.locale, enableRtl: this.parent.enableRtl
         });
         this.backgroundColor[i].isStringTemplate = true;
         this.backgroundColor[i].appendTo('#' + this.parentID + 'backgroundcolor' + i);
         addClass([this.backgroundColor[i].element.nextElementSibling.querySelector('.e-selected-color')], cls.ICON);
         let toggleBtn: Button = new Button({
             iconCss: cls.ICON + ' ' + cls.FORMAT_DELETE_ICON,
-            cssClass: cls.FLAT
+            cssClass: cls.FLAT, locale: this.parent.locale, enableRtl: this.parent.enableRtl
         });
         toggleBtn.isStringTemplate = true;
         toggleBtn.appendTo('#' + this.parentID + 'removeButton' + i);

@@ -501,6 +501,12 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
         }
         this.wireEvents();
         this.renderComplete();
+        const wrapper: HTMLElement = this.getWrapper() as HTMLElement;
+        if (this.template && this.enableScrolling && ((this as any).isReact || (this as any).isAngular)) {
+            requestAnimationFrame(() => {
+                addScrolling(this.createElement, wrapper, this.element, 'hscroll', this.enableRtl);
+            })
+        }
     }
 
     protected initialize(): void {
@@ -1104,17 +1110,15 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
     }
 
     protected closeHamburgerMenu(e?: MouseEvent | KeyboardEvent) : void {
-        if (this.hamburgerMode) {
-            const beforeCloseArgs: BeforeOpenCloseMenuEventArgs = { element: this.element, parentItem: null, event: e,
-                items: this.items, cancel: false };
-            this.trigger('beforeClose', beforeCloseArgs, (observedHamburgerCloseArgs: BeforeOpenCloseMenuEventArgs) => {
-                if (!observedHamburgerCloseArgs.cancel) {
-                    this.closeMenu(null, e);
-                    this.element.classList.add('e-hide-menu');
-                    this.trigger('onClose', { element: this.element, parentItem: null, items: this.items });
-                }
-            });
-        }
+        const beforeCloseArgs: BeforeOpenCloseMenuEventArgs = { element: this.element, parentItem: null, event: e,
+            items: this.items, cancel: false };
+        this.trigger('beforeClose', beforeCloseArgs, (observedHamburgerCloseArgs: BeforeOpenCloseMenuEventArgs) => {
+            if (!observedHamburgerCloseArgs.cancel) {
+                this.closeMenu(null, e);
+                this.element.classList.add('e-hide-menu');
+                this.trigger('onClose', { element: this.element, parentItem: null, items: this.items });
+            }
+        });
     }
 
     private callFit(element: HTMLElement, x: boolean, y: boolean, top: number, left: number): OffsetPosition {
@@ -1834,8 +1838,10 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
                 let item: MenuItemModel[];
                 if (!Object.keys(oldProp.items).length) {
                     this.updateItem(this.element, this.items);
-                    for (let i: number = 1, count: number = wrapper.childElementCount; i < count; i++) {
-                        detach(wrapper.lastElementChild);
+                    if (!this.hamburgerMode) {
+                        for (let i: number = 1, count: number = wrapper.childElementCount; i < count; i++) {
+                            detach(wrapper.lastElementChild);
+                        }
                     }
                     if (this.isMenu && isBlazor()) {
                         this.updateItemsByNavIdx();

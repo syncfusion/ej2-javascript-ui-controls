@@ -77,7 +77,7 @@ export class WorkbookFilter {
             range[2] = sheet.usedRange.rowIndex; //filter range should be till used range.
             range[0] = range[0] + 1; //ignore first row
             const address: string = getRangeAddress(range);
-            getData(this.parent, `${sheet.name}!${address}`, true, true).then((jsonData: {[key: string]: CellModel}[]) => {
+            getData(this.parent, `${sheet.name}!${address}`, true, true, null, null, null, null, false).then((jsonData: {[key: string]: CellModel}[]) => {
                 const dataManager: DataManager = new DataManager(jsonData);
                 this.setFilter(dataManager, filterOptions.predicates);
                 const filterEventArgs: FilterEventArgs = { range: address, filterOptions: filterOptions };

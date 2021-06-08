@@ -349,6 +349,14 @@ export class RangeNavigator extends Component<HTMLElement> {
     public value: number[] | Date[];
 
     /**
+     * The background color of the chart that accepts value in hex and rgba as a valid CSS color string.
+     *
+     * @default null
+     */
+    @Property(null)
+    public background: string;
+
+    /**
      * Used to format the axis label that accepts any global string format like 'C', 'n1', 'P' etc.
      * It also accepts placeholder like '{value}°C' in which value represent the axis label, e.g, 20°C.
      *
@@ -808,7 +816,10 @@ export class RangeNavigator extends Component<HTMLElement> {
                 arg.currentSize = this.availableSize;
                 this.trigger('resized', arg);
                 this.calculateBounds();
-                this.chartSeries.renderChart(this);
+                this.chartSeries.processXAxis(this);
+                this.chartSeries.calculateGroupingBounds(this);
+                this.chartSeries.processYAxis(this);
+                this.renderChart();
             },
             500);
         return false;
@@ -891,7 +902,7 @@ export class RangeNavigator extends Component<HTMLElement> {
      */
     private renderChartBackground(): void {
         const rect: RectOption = new RectOption(
-            this.element.id + '_ChartBorder', this.themeStyle.background, { width: 0, color: 'transparent' }, 1,
+            this.element.id + '_ChartBorder', this.background || this.themeStyle.background, { width: 0, color: 'transparent' }, 1,
             new Rect(0, 0, this.availableSize.width, this.availableSize.height));
         this.svgObject.appendChild(this.renderer.drawRectangle(rect) as HTMLElement);
     }
@@ -989,6 +1000,7 @@ export class RangeNavigator extends Component<HTMLElement> {
             case 'skeleton':
             case 'skeletonType':
             case 'secondaryLabelAlignment':
+            case "background":
                 renderer = true;
                 break;
             case 'dataSource':

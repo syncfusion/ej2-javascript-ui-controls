@@ -26,7 +26,7 @@ export class Grouping implements IAction {
     private dateGroup: RegExp = /_date_group_years|_date_group_quarters|_date_group_quarterYear|_date_group_months|_date_group_days|_date_group_hours|_date_group_minutes|_date_group_seconds/g;
 
     private handlers: {
-        load: Function; /* eslint-disable-line */  
+        load: Function; /* eslint-disable-line */
     };
 
     /* eslint-disable-next-line */
@@ -276,6 +276,7 @@ export class Grouping implements IAction {
             visible: true,
             showCloseIcon: true,
             enableRtl: this.parent.enableRtl,
+            locale: this.parent.locale,
             width: 300,
             height: 'auto',
             position: { X: 'center', Y: 'center' }, /* eslint-disable-line */
@@ -354,6 +355,7 @@ export class Grouping implements IAction {
                     let captionInputObj1: MaskedTextBox = new MaskedTextBox({
                         placeholder: this.parent.localeObj.getConstant('captionName'),
                         enableRtl: this.parent.enableRtl,
+                        locale: this.parent.locale,
                         value: caption, width: '100%'
                     });
                     captionInputObj1.isStringTemplate = true;
@@ -361,6 +363,7 @@ export class Grouping implements IAction {
                     let inputObj1: MaskedTextBox = new MaskedTextBox({
                         placeholder: this.parent.localeObj.getConstant('groupName'),
                         enableRtl: this.parent.enableRtl,
+                        locale: this.parent.locale,
                         width: '100%'
                     });
                     inputObj1.isStringTemplate = true;
@@ -440,6 +443,7 @@ export class Grouping implements IAction {
                         let startAtInputObj: DateTimePicker = new DateTimePicker({
                             placeholder: this.parent.localeObj.getConstant('chooseDate'),
                             enableRtl: this.parent.enableRtl,
+                            locale: this.parent.locale,
                             format: 'dd/MM/yyyy hh:mm:ss a',
                             enabled: !(startAt === undefined),
                             width: '100%'
@@ -449,6 +453,7 @@ export class Grouping implements IAction {
                         let endAtInputObj: DateTimePicker = new DateTimePicker({
                             placeholder: this.parent.localeObj.getConstant('chooseDate'),
                             enableRtl: this.parent.enableRtl,
+                            locale: this.parent.locale,
                             format: 'dd/MM/yyyy hh:mm:ss a',
                             enabled: !(endAt === undefined),
                             width: '100%'
@@ -467,6 +472,7 @@ export class Grouping implements IAction {
                             placeholder: this.parent.localeObj.getConstant('selectGroup'),
                             filterBarPlaceholder: this.parent.localeObj.getConstant('example') + ' ' + this.parent.localeObj.getConstant('Months'),
                             enableRtl: this.parent.enableRtl,
+                            locale: this.parent.locale,
                             select: () => {
                                 groupInstance.groupDialog.element.querySelector('.' + cls.OK_BUTTON_CLASS).removeAttribute('disabled');
                             },
@@ -495,6 +501,7 @@ export class Grouping implements IAction {
                         let startAtInputObj: NumericTextBox = new NumericTextBox({
                             placeholder: this.parent.localeObj.getConstant('enterValue'),
                             enableRtl: this.parent.enableRtl,
+                            locale: this.parent.locale,
                             showClearButton: true,
                             format: '###',
                             value: startAt === undefined ? undefined : parseInt(startAt, 10),
@@ -506,6 +513,7 @@ export class Grouping implements IAction {
                         let endAtInputObj: NumericTextBox = new NumericTextBox({
                             placeholder: this.parent.localeObj.getConstant('enterValue'),
                             enableRtl: this.parent.enableRtl,
+                            locale: this.parent.locale,
                             showClearButton: true,
                             format: '###',
                             value: endAt === undefined ? undefined : parseInt(endAt, 10),
@@ -517,6 +525,7 @@ export class Grouping implements IAction {
                         let intervalObj: NumericTextBox = new NumericTextBox({
                             placeholder: this.parent.localeObj.getConstant('enterValue'),
                             enableRtl: this.parent.enableRtl,
+                            locale: this.parent.locale,
                             showClearButton: true,
                             format: '###',
                             min: 1,
@@ -530,6 +539,7 @@ export class Grouping implements IAction {
                         label: this.parent.localeObj.getConstant('startAt'),
                         checked: !(startAt === undefined),
                         enableRtl: this.parent.enableRtl,
+                        locale: this.parent.locale,
                         change: (args: ChangeEventArgs) => {
                             let startAtObj: DateTimePicker | NumericTextBox = (type === 'date' ?
                                 getInstance('#' + this.parentElement.id + 'group_start_input', DateTimePicker) as DateTimePicker :
@@ -544,6 +554,7 @@ export class Grouping implements IAction {
                         label: this.parent.localeObj.getConstant('endAt'),
                         checked: !(endAt === undefined),
                         enableRtl: this.parent.enableRtl,
+                        locale: this.parent.locale,
                         change: (args: ChangeEventArgs) => {
                             let endAtObj: DateTimePicker | NumericTextBox = (type === 'date' ?
                                 getInstance('#' + this.parentElement.id + 'group_end_input', DateTimePicker) as DateTimePicker :

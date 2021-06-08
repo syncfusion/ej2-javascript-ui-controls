@@ -681,6 +681,7 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
     private isBlazorExpandedNodes: string[] = [];
     private isOffline: boolean;
     private firstTap : Element;
+    private hasTemplate: boolean = false;
     /**
      * Indicates whether the TreeView allows drag and drop of nodes. To drag and drop a node in
      * desktop, hold the mouse on the node, drag it to the target node and drop the node by releasing
@@ -1283,6 +1284,7 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
     // eslint-disable-next-line
     private templateComplier(template: string): Function {
         if (template) {
+            this.hasTemplate = true;
             // eslint-disable-next-line
             let e: Object;
             this.element.classList.add(INTERACTION);
@@ -3533,10 +3535,7 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
             let pid: string = pNode ? pNode.getAttribute('data-uid') : null;
             let selected: boolean = currLi.classList.contains(ACTIVE);
             let expanded: boolean = (currLi.getAttribute('aria-expanded') === 'true') ? true : false;
-            let hasChildren: boolean = (currLi.getAttribute('aria-expanded') === null) ? false : true;
-            if (this.isBlazorPlatform) {
-                hasChildren = currLi.getAttribute('aria-expanded') === 'true' ? true : (currLi.querySelector('.e-icon-expandable') || currLi.querySelector('.e-icon-collapsible')) != null ? true : false;
-            }
+            let hasChildren: boolean = currLi.getAttribute('aria-expanded') !== null ? true : (select('.'+ EXPANDABLE, currLi) || select('.'+ COLLAPSIBLE, currLi)) != null ? true : false;
             let checked: string = null;
             if (this.showCheckBox) {
                 checked = select('.' + CHECKBOXWRAP, currLi).getAttribute('aria-checked');
@@ -3926,18 +3925,27 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
             let expand: Element = closest(e.target, '.' + EXPANDABLE);
             if (!dropRoot.classList.contains(ROOT) || (dropWrap &&
                 (!dropLi.isSameNode(this.dragLi) && !this.isDescendant(this.dragLi, dropLi)))) {
-                    if ((dropLi && e && (!expand && !collapse) && (e.event.offsetY < 7) && !checkWrapper) || (((expand && e.event.offsetY < 5) || (collapse && e.event.offsetX <3)))) {
-                        addClass([icon], DROPNEXT);
-                        let virEle: Element = this.createElement('div', { className: SIBLING });
-                        let index: number = this.fullRowSelect ? (1) : (0);
-                        dropLi.insertBefore(virEle, dropLi.children[index]);
-                    } else if ((dropLi && e && (!expand && !collapse) && (e.target.offsetHeight > 0 && e.event.offsetY > (e.target.offsetHeight - 10)) && !checkWrapper) || (((expand && e.event.offsetY > 19) || (collapse && e.event.offsetX > 19) ))) {
-                        addClass([icon], DROPNEXT);
-                        let virEle: Element = this.createElement('div', { className: SIBLING });
-                        let index: number = this.fullRowSelect ? (2) : (1);
-                        dropLi.insertBefore(virEle, dropLi.children[index]);
+                    if (this.hasTemplate && dropLi) {
+                        let templateTarget: HTMLElement = select(this.fullRowSelect ? '.' + FULLROW :  '.' + TEXTWRAP, dropLi) as HTMLElement;
+                        if ((e && (!expand && !collapse) && e.event.offsetY < 7 && !checkWrapper) || (((expand && e.event.offsetY < 5) || (collapse && e.event.offsetX <3)))) {
+                            let index: number = this.fullRowSelect ? (1) : (0);
+                            this.appendIndicator(dropLi, icon, index);
+                        }   else if ((e && (!expand && !collapse) && !checkWrapper && templateTarget && e.event.offsetY > templateTarget.offsetHeight - 10) || ((expand && e.event.offsetY > 19) || (collapse && e.event.offsetX > 19))) {
+                            let index: number = this.fullRowSelect ? (2) : (1);
+                            this.appendIndicator(dropLi, icon, index);
+                        } else {
+                            addClass([icon], DROPIN);
+                        }
                     } else {
-                        addClass([icon], DROPIN);
+                        if ((dropLi && e && (!expand && !collapse) && (e.event.offsetY < 7) && !checkWrapper) || (((expand && e.event.offsetY < 5) || (collapse && e.event.offsetX <3)))) {
+                            let index: number = this.fullRowSelect ? (1) : (0);
+                            this.appendIndicator(dropLi, icon, index);
+                        } else if ((dropLi && e && (!expand && !collapse) && (e.target.offsetHeight > 0 && e.event.offsetY > (e.target.offsetHeight - 10)) && !checkWrapper) || (((expand && e.event.offsetY > 19) || (collapse && e.event.offsetX > 19) ))) {
+                            let index: number = this.fullRowSelect ? (2) : (1);
+                            this.appendIndicator(dropLi, icon, index);
+                        } else {
+                            addClass([icon], DROPIN);
+                        }
                     }
             } else if (e.target.nodeName === 'LI' && (!dropLi.isSameNode(this.dragLi) && !this.isDescendant(this.dragLi, dropLi))) {
                 addClass([icon], DROPNEXT);
@@ -3964,6 +3972,11 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
         if (eventArgs.dropIndicator) {
             addClass([icon], eventArgs.dropIndicator);
         }
+    }
+    private appendIndicator(dropLi: Element, icon: Element, index: number): void {
+        addClass([icon], DROPNEXT);
+        let virEle: Element = this.createElement('div', { className: SIBLING });
+        dropLi.insertBefore(virEle, dropLi.children[index]);
     }
     /* eslint-disable */
     private dropAction(e: any,  isBlazorDrop ?: boolean): void {
@@ -4105,10 +4118,17 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
         let dragParentUl: Element = closest(dragLi, '.' + PARENTITEM);
         let dragParentLi: Element = closest(dragParentUl, '.' + LISTITEM);
         let dropParentUl: Element  = closest(dropLi, '.' + PARENTITEM);
+        let templateTarget: HTMLElement;
+        if (e && e.target) {
+            templateTarget = select(this.fullRowSelect ? '.' + FULLROW :  '.' + TEXTWRAP, dropLi) as HTMLElement;
+        }
         if (e && (pos < 7) && !isCheck) {
             dropParentUl.insertBefore(dragLi, dropLi);
             this.moveData(dragLi, dropLi, dropParentUl, true, dragObj);
-        } else if (e && (e.target.offsetHeight > 0 && pos > (e.target.offsetHeight - 10)) && !isCheck) {
+        } else if (e && (e.target.offsetHeight > 0 && pos > (e.target.offsetHeight - 10)) && !isCheck && !this.hasTemplate) {
+            dropParentUl.insertBefore(dragLi, dropLi.nextElementSibling);
+            this.moveData(dragLi, dropLi, dropParentUl, false, dragObj);
+        } else if (this.hasTemplate &&  templateTarget && pos > templateTarget.offsetHeight - 10 && !isCheck) {
             dropParentUl.insertBefore(dragLi, dropLi.nextElementSibling);
             this.moveData(dragLi, dropLi, dropParentUl, false, dragObj);
         } else {
@@ -5438,6 +5458,7 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
                     }
                     break;
                 case 'nodeTemplate':
+                    this.hasTemplate = false;
                     this.nodeTemplateFn = this.templateComplier(this.nodeTemplate);
                     this.reRenderNodes();
                     break;

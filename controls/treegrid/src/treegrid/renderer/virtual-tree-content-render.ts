@@ -1,4 +1,4 @@
-import { Column, NotifyArgs, SentinelType } from '@syncfusion/ej2-grids';
+import { Cell, CellType, Column, ICell, NotifyArgs, Row, SentinelType } from '@syncfusion/ej2-grids';
 import { Offsets, VirtualInfo, ServiceLocator, IGrid, IModelGenerator } from '@syncfusion/ej2-grids';
 import { VirtualContentRenderer } from '@syncfusion/ej2-grids';
 import { RowPosition } from '../enum';
@@ -99,6 +99,7 @@ export class VirtualTreeContentRenderer extends VirtualContentRenderer {
             this.parent[action]('get-virtual-data', this.getData, this);
             this.parent[action]('virtual-scroll-edit-cancel', this.cancelEdit, this);
             this.parent[action]('select-row-on-context-open', this.toSelectRowOnContextOpen, this);
+            this.parent[action]('refresh-virtual-editform-cells', this.refreshCell, this);
         } else {
             super.eventListener('on');
         }
@@ -145,7 +146,8 @@ export class VirtualTreeContentRenderer extends VirtualContentRenderer {
     private dataBoundEvent(): void {
         const dataBoundEve: string = 'dataBound'; const initialRowTop: string = 'initialRowTop';
         if (this.parent.getRows().length && !this[initialRowTop]){
-            this[initialRowTop] = this.parent.getRowByIndex(0).getBoundingClientRect().top;
+            const gridTop: number = this.parent.element.getBoundingClientRect().top;
+            this[initialRowTop] = this.parent.getRowByIndex(0).getBoundingClientRect().top - gridTop;
         }
         super[dataBoundEve]();
     }
@@ -159,6 +161,41 @@ export class VirtualTreeContentRenderer extends VirtualContentRenderer {
         if (this.parent.isEdit) { return; }
         const selectVirtualRow: string = 'selectVirtualRow';
         super[selectVirtualRow](args);
+    }
+
+    private refreshCell(rowObj: Row<Column>): void {
+        rowObj.cells = this.generateCells();
+    }
+
+    public generateCells(): Cell<Column>[] {
+        const cells: Cell<Column>[] = [];
+        for (let i: number = 0; i < this.parent.columns.length; i++) {
+            cells.push(this.generateCell(this.parent.columns[i] as Column));
+        }
+        return cells;
+    }
+
+    public generateCell(
+        column: Column, rowId?: string, cellType?: CellType, colSpan?: number,
+        oIndex?: number, foreignKeyData?: Object): Cell<Column> {
+        const opt: ICell<Column> = {
+            'visible': column.visible,
+            'isDataCell': !isNullOrUndefined(column.field || column.template),
+            'isTemplate': !isNullOrUndefined(column.template),
+            'rowID': rowId,
+            'column': column,
+            'cellType': !isNullOrUndefined(cellType) ? cellType : CellType.Data,
+            'colSpan': colSpan,
+            'commands': column.commands,
+            'isForeignKey': column.isForeignColumn && column.isForeignColumn(),
+            'foreignKeyData': column.isForeignColumn && column.isForeignColumn() && getValue(column.field, foreignKeyData)
+        };
+
+        if (opt.isDataCell || opt.column.type === 'checkbox' || opt.commands) {
+            opt.index = oIndex;
+        }
+
+        return new Cell<Column>(<{ [x: string]: Object }>opt);
     }
 
     private beginEdit(e: { data: Object, index: number }): void {
@@ -254,6 +291,7 @@ export class VirtualTreeContentRenderer extends VirtualContentRenderer {
         const scrollHeight: number = outBuffer * this.parent.getRowHeight();
         const upScroll: boolean = (scrollArgs.offset.top - this.translateY) < 0;
         const downScroll: boolean = (scrollArgs.offset.top - this.translateY) > scrollHeight;
+        const selectedRowIndex: string = 'selectedRowIndex';
         if (upScroll) {
             const vHeight: number = +(this.parent.height.toString().indexOf('%') < 0 ? this.parent.height :
                 this.parent.element.getBoundingClientRect().height);
@@ -261,6 +299,9 @@ export class VirtualTreeContentRenderer extends VirtualContentRenderer {
           + Math.ceil(vHeight / this.parent.getRowHeight()))
             - this.parent.getRows().length;
             index = (index > 0) ? index : 0;
+            if (!isNullOrUndefined(this[selectedRowIndex]) && this[selectedRowIndex] != -1 && index != this[selectedRowIndex]) {
+                index = this[selectedRowIndex];
+            }
             this.startIndex = index;
             this.endIndex = index + this.parent.getRows().length;
             if (this.endIndex > this.totalRecords) {
@@ -286,13 +327,18 @@ export class VirtualTreeContentRenderer extends VirtualContentRenderer {
                     scrollArgs.offset.top - (outBuffer * height) + 10 : 0;
             }
         } else if (downScroll) {
-            const nextSetResIndex: number = ~~(content.scrollTop / this.parent.getRowHeight());
+            let nextSetResIndex: number = ~~(content.scrollTop / this.parent.getRowHeight());
+            let isLastBlock: boolean = (this[selectedRowIndex] + this.parent.pageSettings.pageSize) < this.totalRecords ? false : true;
+            if (!isNullOrUndefined(this[selectedRowIndex]) && this[selectedRowIndex] != -1 &&
+             nextSetResIndex != this[selectedRowIndex] && !isLastBlock) {
+                nextSetResIndex = this[selectedRowIndex];
+            }
             let lastIndex: number = nextSetResIndex + this.parent.getRows().length;
             if (lastIndex > this.totalRecords) {
                 lastIndex = nextSetResIndex +
           (this.totalRecords - nextSetResIndex);
             }
-            this.startIndex = lastIndex - this.parent.getRows().length;
+            this.startIndex =  !isLastBlock ? lastIndex - this.parent.getRows().length : nextSetResIndex;
             this.endIndex = lastIndex;
             if (scrollArgs.offset.top > (this.parent.getRowHeight() * this.totalRecords)) {
                 this.translateY = this.getTranslateY(scrollArgs.offset.top, content.getBoundingClientRect().height);
@@ -368,6 +414,7 @@ export class VirtualTreeContentRenderer extends VirtualContentRenderer {
         this.parent.off('get-virtual-data', this.getData);
         this.parent.off('virtual-scroll-edit-cancel', this.cancelEdit);
         this.parent.off('select-row-on-context-open', this.toSelectRowOnContextOpen);
+        this.parent.off('refresh-virtual-editform-cells', this.refreshCell);
     }
 
 }

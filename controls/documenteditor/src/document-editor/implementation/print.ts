@@ -66,6 +66,30 @@ export class Print {
             },
             500);
     }
+
+    /**
+     * Generate Document Image.
+     * @private
+     */
+    public exportAsImage(documentHelper: DocumentHelper, pageNumber: number, imageType: string): HTMLImageElement {
+        let image: HTMLImageElement;
+        if (!isNullOrUndefined(pageNumber) && pageNumber <= documentHelper.pages.length && pageNumber >= 1) {
+            let printPage: Page = documentHelper.pages[(pageNumber - 1)];
+            let pageHeight: number = printPage.boundingRectangle.height;
+            let pageWidth: number = printPage.boundingRectangle.width;
+            documentHelper.render.isPrinting = true;
+            documentHelper.render.renderWidgets(printPage, 0, 0, 0, 0);
+            //get the image data from the canvas
+            let imageData: string = documentHelper.render.pageCanvas.toDataURL(imageType, 1);
+            documentHelper.render.isPrinting = false;
+            image = new Image();
+            image.src = imageData;
+            // tslint:disable-next-line:max-line-length
+            image.setAttribute('style', 'margin:0px;display:block;width:' + pageWidth.toString() + 'px;height:' + pageHeight.toString() + 'px;');
+        }
+        return image;
+    }
+
     /**
      * Generate Document Image.
      * @private
@@ -78,7 +102,7 @@ export class Print {
             let pageWidth: number = printPage.boundingRectangle.width;
             documentHelper.render.isPrinting = true;
             documentHelper.render.renderWidgets(printPage, 0, 0, 0, 0);
-            let canvasURL: string = documentHelper.render.pageCanvas.toDataURL();
+            let canvasURL: string = documentHelper.render.pageCanvas.toDataURL('image/jpeg')
             documentHelper.render.isPrinting = false;
             image = new Image();
             image.src = canvasURL;

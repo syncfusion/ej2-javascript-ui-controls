@@ -22,6 +22,7 @@ export class KanbanDialog {
     private action: CurrentAction;
     private storeElement: HTMLElement;
     private cardData: Record<string, any>;
+    private preventUpdate: boolean = false;
 
     /**
      * Constructor for dialog module
@@ -222,16 +223,23 @@ export class KanbanDialog {
     private onBeforeDialogClose(args: BeforeCloseEventArgs): void {
         const formInputs: HTMLInputElement[] = this.getFormElements();
         let cardObj: Record<string, any> = {};
-        for (const input of formInputs) {
-            const columnName: string = input.name || this.getColumnName(input);
-            if (!isNullOrUndefined(columnName) && columnName !== '') {
-                let value: string | number | boolean | Date | string[] | number[] = this.getValueFromElement(input as HTMLElement);
-                if (columnName === this.parent.cardSettings.headerField) {
-                    value = this.getIDType() === 'string' ? value : parseInt(value as string, 10);
+        if (args.isInteracted) {
+            /* close icon preventing data update */
+            this.preventUpdate = true;
+        }
+        if (!this.preventUpdate) {
+            for (const input of formInputs) {
+                const columnName: string = input.name || this.getColumnName(input);
+                if (!isNullOrUndefined(columnName) && columnName !== '') {
+                    let value: string | number | boolean | Date | string[] | number[] = this.getValueFromElement(input as HTMLElement);
+                    if (columnName === this.parent.cardSettings.headerField) {
+                        value = this.getIDType() === 'string' ? value : parseInt(value as string, 10);
+                    }
+                    cardObj[columnName] = value;
                 }
-                cardObj[columnName] = value;
             }
         }
+        this.preventUpdate = false;
         cardObj = extend(this.parent.activeCardData.data, cardObj) as Record<string, any>;
         const eventProp: DialogEventArgs = { data: cardObj, cancel: false, element: this.element, requestType: this.action };
         this.parent.trigger(events.dialogClose, eventProp, (closeArgs: DialogEventArgs) => {
@@ -333,6 +341,9 @@ export class KanbanDialog {
             this.cardData = null;
         }
         if (!target.classList.contains('e-dialog-edit') && !target.classList.contains('e-dialog-add')) {
+            if (target.classList.contains('e-dialog-cancel')) {
+                this.preventUpdate = true;
+            }
             this.dialogObj.hide();
             if (target.classList.contains('e-dialog-yes')) {
                 this.parent.crudModule.deleteCard(this.parent.activeCardData.data);

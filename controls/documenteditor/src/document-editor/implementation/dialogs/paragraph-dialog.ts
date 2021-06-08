@@ -330,7 +330,7 @@ export class ParagraphDialog {
         this.firstLineIndent = event.value as number;
         if (this.special.index === 2) {
             this.firstLineIndent = -(this.firstLineIndent);
-            this.leftIndent = event.value as number;
+            this.leftIndent = this.leftIndentIn.value + event.value as number;
         }
     }
     /**
@@ -391,6 +391,7 @@ export class ParagraphDialog {
             case 0:
                 if (paragraphFormat.firstLineIndent !== 0) {
                     this.byIn.value = 0;
+                    this.leftIndent = this.leftIndentIn.value;
                 }
                 break;
             case 1:
@@ -398,13 +399,21 @@ export class ParagraphDialog {
                     this.byIn.value = 0.1;
                 } else if (paragraphFormat.firstLineIndent < 0) {
                     this.byIn.value = -(paragraphFormat.firstLineIndent);
+                    if (Math.abs(paragraphFormat.firstLineIndent) <= this.leftIndent) {
+                    this.leftIndent = paragraphFormat.firstLineIndent + this.leftIndent;
+                    }
                 }
                 break;
             case 2:
                 if (paragraphFormat.firstLineIndent === 0 || isNullOrUndefined(paragraphFormat.firstLineIndent)) {
                     paragraphFormat.firstLineIndent = -0.1;
                 } else if (paragraphFormat.firstLineIndent > 0) {
-                    this.byIn.value = -(paragraphFormat.firstLineIndent);
+                    this.byIn.value = (paragraphFormat.firstLineIndent);
+                    if (!isNullOrUndefined(this.leftIndent)) {
+                        this.leftIndent = this.leftIndent + paragraphFormat.firstLineIndent;
+                    } else {
+                        this.leftIndent = paragraphFormat.firstLineIndent;
+                    }
                 }
                 break;
         }
@@ -455,8 +464,14 @@ export class ParagraphDialog {
         this.afterSpacingIn.value = selectionFormat.afterSpacing;
         this.leftIndentIn.value = selectionFormat.leftIndent;
         this.rightIndentIn.value = selectionFormat.rightIndent;
-        this.byIn.value = selectionFormat.firstLineIndent;
+        this.byIn.value = Math.abs(selectionFormat.firstLineIndent);
         let lineSpaceValue: number = this.lineSpacing.index;
+        if (selectionFormat.firstLineIndent > 0) {
+            this.special.index = 1;
+        } else if (selectionFormat.firstLineIndent < 0) {
+            this.special.index = 2;
+            this.leftIndentIn.value = selectionFormat.leftIndent - this.byIn.value;
+        }
         if (selectionFormat.lineSpacingType === 'AtLeast') {
             lineSpaceValue = 0;
         } else if (selectionFormat.lineSpacingType === 'Exactly') {
@@ -526,7 +541,10 @@ export class ParagraphDialog {
             paraFormat.lineSpacing = this.lineSpacingIn;
         }
         if (!isNullOrUndefined(this.firstLineIndent)) {
-            paraFormat.firstLineIndent = this.firstLineIndent;
+            paraFormat.firstLineIndent = Math.abs(this.firstLineIndent);
+            if (this.special.index === 2) {
+                paraFormat.firstLineIndent = -paraFormat.firstLineIndent;
+            }
         }
         if (!isNullOrUndefined(this.bidi)) {
             paraFormat.bidi = this.bidi;
@@ -646,6 +664,10 @@ export class ParagraphDialog {
         if (this.byIn) {
             this.byIn.destroy();
             this.byIn = undefined;
+        }
+        if (this.special) {
+            this.special.destroy();
+            this.special = undefined;
         }
         if (this.atIn) {
             this.atIn.destroy();

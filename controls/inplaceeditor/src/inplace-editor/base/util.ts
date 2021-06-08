@@ -91,3 +91,16 @@ export function getCompValue(type: string, val: valueType): valueType {
     }
     return val;
 }
+
+/**
+ * @param {string} value - specifies the string value
+ * @returns {string} - returns the string
+ * @hidden
+ */
+ export function encode(value: string): string {
+    var data = [];
+    for (var i = value.length - 1; i >= 0; i--) {
+        data.unshift(["&#", value[i].charCodeAt(0), ";"].join(""));
+    }
+    return data.join("");
+}

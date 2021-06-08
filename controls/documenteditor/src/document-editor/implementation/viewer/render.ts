@@ -123,7 +123,6 @@ export class Renderer {
     private setPageSize(page: Page): void {
         this.pageContext.clearRect(0, 0, this.pageCanvas.width, this.pageCanvas.height);
         this.selectionContext.clearRect(0, 0, this.selectionCanvas.width, this.selectionCanvas.height);
-
         this.pageContext.restore();
         this.selectionContext.restore();
         const width: number = page.boundingRectangle.width;
@@ -137,6 +136,9 @@ export class Renderer {
             this.pageContext.globalAlpha = 1;
             this.pageContext.scale(dpr, dpr);
         }
+        this.pageContext.fillStyle = '#FFFFFF';
+        this.pageContext.fillRect(0, 0, this.pageCanvas.width, this.pageCanvas.height);
+        this.pageContext.fillStyle = '#000000';
     }
     private renderHFWidgets(page: Page, widget: HeaderFooterWidget, width: number, isHeader: boolean): void {
         if (!this.isPrinting) {
@@ -326,7 +328,7 @@ export class Renderer {
                         this.pageContext.fillRect(shapeLeft, shapeTop, this.getScaledValue(shape.width), this.getScaledValue(shape.height));
                     }
                     if (!isNullOrUndefined(shapeType)) {
-                        if ((shapeType === 'StraightConnector' && shape.lineFormat.line && shape.lineFormat.lineFormatType !== 'None') || (!isNullOrUndefined(shape.lineFormat.lineFormatType) && shape.lineFormat.lineFormatType !== 'None')) {
+                        if ((shape.lineFormat.line && shape.lineFormat.lineFormatType !== 'None') || (!isNullOrUndefined(shape.lineFormat.lineFormatType) && shape.lineFormat.lineFormatType !== 'None')) {
                             this.pageContext.lineWidth = shape.lineFormat.weight;
                             this.pageContext.strokeStyle = HelperMethods.getColor(shape.lineFormat.color);
                             this.pageContext.strokeRect(shapeLeft, shapeTop, this.getScaledValue(shape.width), this.getScaledValue(shape.height));
@@ -1306,7 +1308,16 @@ export class Renderer {
         } else {
             isLastCell = tableCell.cellIndex === 0;
         }
-        if ((tableCell.ownerTable.tableFormat.cellSpacing > 0 || isLastCell) && (isBidiTable || tableCell.columnIndex + tableCell.cellFormat.columnSpan === tableCell.ownerTable.tableHolder.columns.length)) {
+        let prevRowSpannedCells: TableCellWidget[] = (tableCell.containerWidget as TableRowWidget).getPreviousRowSpannedCells();
+        let isAffectedByRowSpan: boolean = false;
+        for (let k: number = 0; k < prevRowSpannedCells.length; k++) {
+            let spannedCell: TableCellWidget = prevRowSpannedCells[k];
+            if (tableCell.rowIndex < spannedCell.rowIndex + spannedCell.cellFormat.rowSpan && tableCell.columnIndex < spannedCell.columnIndex) {
+                isAffectedByRowSpan = true;
+                break;
+            }
+        }
+        if ((tableCell.ownerTable.tableFormat.cellSpacing > 0 || isLastCell) && (isBidiTable || tableCell.columnIndex + tableCell.cellFormat.columnSpan === tableCell.ownerTable.tableHolder.columns.length || !isAffectedByRowSpan)) {
             border = isBidiTable ? TableCellWidget.getCellLeftBorder(tableCell) : TableCellWidget.getCellRightBorder(tableCell);
             // if (!isNullOrUndefined(border )) { //Renders the cell right border.           
             lineWidth = HelperMethods.convertPointToPixel(border.getLineWidth());

@@ -281,7 +281,7 @@ export class ShowHide {
                                 sheet, 0, true, 'columns'), rowIndex: this.parent.viewport.topIndex, colIndex:
                                 this.parent.viewport.leftIndex, refresh: 'Column' });
                         } else {
-                            this.parent.notify(updateTableWidth, { refresh: 'Column' });
+                            this.parent.notify(updateTableWidth, { refresh: 'Column', isUpdate: true });
                         }
                         this.parent.selectRange(sheet.selectedRange);
                         return;

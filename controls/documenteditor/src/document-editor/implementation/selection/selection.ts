@@ -28,7 +28,7 @@ import { WCharacterFormat, WParagraphFormat, WStyle, WParagraphStyle, WSectionFo
 import { HtmlExport } from '../writer/html-export';
 import { Popup } from '@syncfusion/ej2-popups';
 import { ContextType, RequestNavigateEventArgs } from '../../index';
-import { TextPosition, SelectionWidgetInfo, Hyperlink, ImageFormat } from './selection-helper';
+import { TextPosition, SelectionWidgetInfo, Hyperlink, ImageInfo } from './selection-helper';
 import { ItemModel, MenuEventArgs, DropDownButton } from '@syncfusion/ej2-splitbuttons';
 import { Revision } from '../track-changes/track-changes';
 /* eslint-disable */
@@ -8742,7 +8742,7 @@ export class Selection {
     /**
      * @private
      */
-    public updateImageSize(imageFormat: ImageFormat): void {
+    public updateImageSize(imageFormat: ImageInfo): void {
         this.owner.isShiftingEnabled = true;
         let startPosition: TextPosition = this.start;
         let endPosition: TextPosition = this.end;

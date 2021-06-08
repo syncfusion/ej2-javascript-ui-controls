@@ -279,6 +279,9 @@ export interface DialogModel extends ComponentModel{
      * The position can be represented with pre-configured positions or specific X and Y values.
      * * `X value`: left, center, right, or offset value.
      * * `Y value`: top, center, bottom, or offset value.
+     * 
+     * > More information on the positioning in dialog can be found on this [documentation](../../dialog/getting-started/#positioning)  section.
+     * 
      * {% codeBlock src='dialog/position/index.md' %}{% endcodeBlock %}
      *
      * @default { X: 'center', Y: 'center' }

@@ -478,6 +478,42 @@ describe('ColorPicker module', () => {
         });
     });
 
+    describe('EJ2-48274 - New `enableHtmlParse` API testing', () => {
+        let editorObj: any;
+        let ele: HTMLElement;
+        let valueEle: HTMLElement;
+        let changeArgs: any = {};
+        let valueWrapper: HTMLElement;
+        let buttonEle: HTMLElement;
+        afterEach((): void => {
+            destroy(editorObj);
+            changeArgs = {};
+        });
+        it('Editor DOM value testing', (done) => {
+            editorObj = renderEditor({
+                mode: 'Inline',
+                enableHtmlParse: false,
+                enableHtmlSanitizer: false,
+                type: 'Color',
+                value: '<img src=x onerror=console.log("test")><script>alert("test")</script>'
+            });
+            ele = editorObj.element;
+            valueWrapper = <HTMLElement>select('.' + classes.VALUE_WRAPPER, ele);
+            valueEle = <HTMLElement>select('.' + classes.VALUE, ele);
+            expect(valueEle.innerText).toEqual('<img src=x onerror=console.log("test")><script>alert("test")</scrip');
+            valueEle.click();
+            setTimeout(() => {
+                expect(valueWrapper.classList.contains(classes.OPEN)).toEqual(true);
+                buttonEle = <HTMLElement>select('.' + classes.BTN_SAVE, ele);
+                buttonEle.dispatchEvent(new MouseEvent('mousedown'));
+                setTimeout(() => {
+                    expect(valueEle.innerText).toEqual('#<img src=x onerror=console.log("test")><script>alert("test")</scrip');
+                    done();
+                }, 1000);
+            }, 1500);
+        });
+    });
+
     it('memory leak', () => {
         profile.sample();
         let average: any = inMB(profile.averageChange)
