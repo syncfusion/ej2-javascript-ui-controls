@@ -8,6 +8,14 @@
 
 ## [Unreleased]
 
+## 19.1.69 (2021-06-15)
+
+### Maps
+
+#### Bug Fixes
+
+- `#328767` - Clusters will now be created for the template markers in the Maps.
+
 ## 19.1.66 (2021-06-01)
 
 ### Maps

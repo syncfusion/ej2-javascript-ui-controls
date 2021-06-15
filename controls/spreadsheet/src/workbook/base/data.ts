@@ -1,6 +1,6 @@
 import { Workbook, Cell, getSheetNameFromAddress, getSheetIndex, getSheet } from '../base/index';
 import { getCellAddress, getIndexesFromAddress, getColumnHeaderText, updateSheetFromDataSource, checkDateFormat } from '../common/index';
-import { queryCellInfo, CellInfoEventArgs, CellStyleModel, cFDelete } from '../common/index';
+import { queryCellInfo, CellInfoEventArgs, CellStyleModel, cFDelete, workbookFormulaOperation } from '../common/index';
 import { SheetModel, RowModel, CellModel, getRow, getCell, isHiddenRow, isHiddenCol, getMaxSheetId, getSheetNameCount } from './index';
 import { isUndefined, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { setCell } from './cell';
@@ -244,13 +244,14 @@ export function clearRange(context: Workbook, address: string, sheetIdx: number,
     let sRIdx: number = range[0];
     const eRIdx: number = range[2];
     let sCIdx: number;
-    let eCIdx: number;
+    let eCIdx: number; let cellValue: string;
     for (sRIdx; sRIdx <= eRIdx; sRIdx++) {
         sCIdx = range[1];
         eCIdx = range[3];
         for (sCIdx; sCIdx <= eCIdx; sCIdx++) {
             const cell: CellModel = getCell(sRIdx, sCIdx, sheet);
-            context.notify( cFDelete, { rowIdx: sRIdx, colIdx: sCIdx } );
+            cellValue = cell.value;
+            context.notify(cFDelete, { rowIdx: sRIdx, colIdx: sCIdx } );
             if (!isNullOrUndefined(cell) && valueOnly) {
                 delete cell.value;
                 if (!isNullOrUndefined(cell.formula)) {
@@ -259,6 +260,9 @@ export function clearRange(context: Workbook, address: string, sheetIdx: number,
                 if (!isNullOrUndefined(cell.hyperlink)) {
                     delete cell.hyperlink;
                 }
+            }
+            if (!isNullOrUndefined(cellValue) && cellValue !== '') {
+                context.notify(workbookFormulaOperation, { action: 'refreshCalculate', rowIndex: sRIdx, colIndex: sCIdx });
             }
         }
     }

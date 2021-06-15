@@ -212,7 +212,7 @@ export class KeyboardInteraction {
         });
     }
     private processEnter(e: Event): void {
-        if (this.parent.activeViewOptions.readonly || this.isPreventAction(e)) {
+        if ((this.parent.activeViewOptions.readonly && !(e.target as Element).classList.contains(cls.APPOINTMENT_CLASS)) || this.isPreventAction(e)) {
             return;
         }
         const target: HTMLTableCellElement = e.target as HTMLTableCellElement;

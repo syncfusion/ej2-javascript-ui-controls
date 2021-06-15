@@ -11,6 +11,7 @@ import { Filter } from '../../../src/grid/actions/filter';
 import { Page } from '../../../src/grid/actions/page';
 import { Group } from '../../../src/grid/actions/group';
 import { Reorder } from '../../../src/grid/actions/reorder';
+import { getComplexFieldID } from '../../../src/grid/base/util';
 import { filterData } from '../base/datasource.spec';
 import { createGrid, destroy, getClickObj, getKeyActionObj } from '../base/specutil.spec';
 import { VirtualScroll } from '../../../src/grid/actions/virtual-scroll';
@@ -1632,6 +1633,44 @@ describe('EJ2-49314- Error hiding/showing columns => ', () => {
     });
     it('Checking initial Grouping sorting columns', () => {
         expect(Object.keys(gridObj.currentViewData).length).toBe(40);
+    });
+    
+    afterAll(() => {
+        destroy(gridObj);
+        gridObj = null;
+    });
+});
+
+describe('EJ2-49647- Column grouping with complex binding is broken when allowReordering is set => ', () => {
+    let gridObj: Grid;
+    let complexData: Object[] = [
+        { OrderID: { ID: { ordID: 10248 } }, CustomerID: "VINET", Freight: 32.38, ShipCountry: "France" },
+        { OrderID: { ID: { ordID: 10249 } }, CustomerID: "TOMSP", Freight: 11.61, ShipCountry: "Germany" },
+        { OrderID: { ID: { ordID: 10250 } }, CustomerID: "HANAR", Freight: 65.83, ShipCountry: "Brazil" },
+        { OrderID: { ID: { ordID: 10251 } }, CustomerID: "VICTE", Freight: 41.34, ShipCountry: "France" }];
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: complexData,
+                allowPaging: true,
+                allowGrouping: true,
+                groupSettings: { allowReordering: true },
+                columns: [
+                    { headerText: 'OrderID', field: 'OrderID.ID.ordID', isPrimaryKey: true },
+                    { headerText: 'CustomerID', field: 'CustomerID' },
+                    { headerText: 'Freight', field: 'Freight',  },
+                    { headerText: 'ShipCountry', field: 'ShipCountry' },
+                ],
+
+            }, done);
+    });
+    it('Check the grouping complex field', (done: Function) => {
+        let actionComplete: any = (args: any) => {
+            expect(gridObj.element.querySelector('.e-groupdroparea div[ej-complexname=' + getComplexFieldID(args.columnName) + ']') ).toBeDefined();
+            done();
+        };
+        gridObj.actionComplete = actionComplete;
+        gridObj.groupModule.groupColumn('OrderID.ID.ordID');
     });
     
     afterAll(() => {

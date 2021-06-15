@@ -641,6 +641,7 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
                     ele.appendChild(noDataCompTemp[i]);
                 }
             }
+            this.renderReactTemplates();
             this.DropDownBaseupdateBlazorTemplates(false, false, !actionFailure, actionFailure, false, false, false, false);
         } else {
             const l10nLocale: Object = { noRecordsTemplate: 'No records found', actionFailureTemplate: 'Request failed'};

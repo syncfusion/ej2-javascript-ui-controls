@@ -199,7 +199,7 @@ export class QuickPopups {
         const form: HTMLFormElement = this.quickPopup.element.querySelector('.' + cls.FORM_CLASS) as HTMLFormElement;
         const rules: Record<string, any> = {};
         rules[this.parent.eventSettings.fields.subject.name] = this.parent.eventSettings.fields.subject.validation;
-        this.fieldValidator.renderFormValidator(form, rules, this.quickPopup.element);
+        this.fieldValidator.renderFormValidator(form, rules, this.quickPopup.element, this.parent.locale);
     }
 
     public openRecurrenceAlert(): void {

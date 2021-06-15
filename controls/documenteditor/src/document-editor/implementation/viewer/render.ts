@@ -285,6 +285,7 @@ export class Renderer {
         for (let i: number = 0; i < bodyWidget.childWidgets.length; i++) {
             const widget: Widget = bodyWidget.childWidgets[i] as ParagraphWidget;
             if (i === 0 && bodyWidget.childWidgets[0] instanceof TableWidget &&
+                ((bodyWidget.childWidgets[0] as TableWidget).childWidgets.length > 0) &&
                 (((bodyWidget.childWidgets[0] as TableWidget).childWidgets[0] as TableRowWidget).rowFormat.isHeader ||
                     page.repeatHeaderRowTableWidget)) {
                 // eslint-disable-next-line max-len

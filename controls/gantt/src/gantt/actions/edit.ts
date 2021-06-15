@@ -1893,7 +1893,6 @@ export class Edit {
                         this.updatePredecessorOnUpdateId(currentGanttRecord, cId, nId);
                     }
                 }
-                this.updatePredecessorOnUpdateId(thisRecord, cId, nId);
                 this.parent.treeGrid.parentData = [];
                 this.parent.treeGrid.refresh();
             }

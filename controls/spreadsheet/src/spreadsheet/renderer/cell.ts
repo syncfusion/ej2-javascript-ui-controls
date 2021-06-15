@@ -532,8 +532,8 @@ export class CellRenderer implements ICellRenderer {
             const bottomBorder: string = cellStyle.borderTop || cellStyle.border;
             if (rightBorder || bottomBorder) {
                 [].slice.call(element.style).forEach((style: string) => {
-                    if ((rightBorder && !(style.indexOf('border-right') > -1) && !bottomBorder) ||
-                        (bottomBorder && !(style.indexOf('border-bottom') > -1) && !rightBorder)) {
+                    if ((rightBorder && !(style.indexOf('border-right') > -1) && (!bottomBorder || bottomBorder === 'none')) ||
+                        (bottomBorder && !(style.indexOf('border-bottom') > -1) && (!rightBorder || rightBorder === 'none'))) {
                         element.style.removeProperty(style);
                     }
                 });

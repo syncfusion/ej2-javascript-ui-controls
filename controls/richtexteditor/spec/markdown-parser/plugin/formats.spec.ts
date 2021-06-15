@@ -18,6 +18,102 @@ They even auto continue as you type
 A double enter will end them
 Tabs and shift-tabs work too`;
 
+    describe('EJ2-49605 - Quotation and Headings not applied where there is no content in the Rich Text Editor markdown mode', () => {
+        let editorObj: MarkdownParser;
+        let textArea: HTMLTextAreaElement = <HTMLTextAreaElement>createElement('textarea', {
+            id: 'markdown-editor',
+            styles: 'width:200px;height:200px'
+        });
+        beforeAll(() => {
+            document.body.appendChild(textArea);
+            editorObj = new MarkdownParser({ element: textArea });
+            textArea.focus();
+        });
+
+        it(' - Apply Heading testing with empty textarea', () => {
+            editorObj.markdownSelection.save(0, 0);
+            editorObj.markdownSelection.restore(textArea);
+            let isCallBack: boolean = false;
+            editorObj.execCommand("Formats", 'h1', null, () => {
+                isCallBack = true;
+            });
+            expect(isCallBack).toBe(true);
+            let line: string = editorObj.markdownSelection.getSelectedLine(textArea);
+            expect(new RegExp('^(# )', 'gim').test(line)).toBe(true);
+        });
+
+        afterAll(() => {
+            detach(textArea);
+        });
+    });
+
+    describe('EJ2-49605 - Quotation and Headings not applied where there is no content in the Rich Text Editor markdown mode', () => {
+        let editorObj: MarkdownParser;
+        let textArea: HTMLTextAreaElement = <HTMLTextAreaElement>createElement('textarea', {
+            id: 'markdown-editor',
+            styles: 'width:200px;height:200px'
+        });
+        beforeAll(() => {
+            document.body.appendChild(textArea);
+            editorObj = new MarkdownParser({ element: textArea });
+            textArea.focus();
+        });
+
+        it(' - Applying BlockQuote testing with empty textarea', () => {
+            editorObj.markdownSelection.save(0, 0);
+            editorObj.markdownSelection.restore(textArea);
+            let isCallBack: boolean = false;
+            editorObj.execCommand("Formats", 'BlockQuote', null, () => {
+                isCallBack = true;
+            });
+            expect(isCallBack).toBe(true);
+            let line: string = editorObj.markdownSelection.getSelectedLine(textArea);
+            expect(new RegExp('^(> )', 'gim').test(line)).toBe(true);
+        });
+
+        afterAll(() => {
+            detach(textArea);
+        });
+    });
+
+    describe('EJ2-49605 - Quotation and Headings not applied where there is no content in the Rich Text Editor markdown mode', () => {
+        let editorObj: MarkdownParser;
+        let textArea: HTMLTextAreaElement = <HTMLTextAreaElement>createElement('textarea', {
+            id: 'markdown-editor',
+            styles: 'width:200px;height:200px'
+        });
+        beforeAll(() => {
+            document.body.appendChild(textArea);
+            editorObj = new MarkdownParser({ element: textArea });
+            textArea.focus();
+        });
+
+        it(' - Apply Heading and BlockQuote together', () => {
+            editorObj.markdownSelection.save(0, 0);
+            editorObj.markdownSelection.restore(textArea);
+            let isCallBack: boolean = false;
+            editorObj.execCommand("Formats", 'h1', null, () => {
+                isCallBack = true;
+            });
+            expect(isCallBack).toBe(true);
+            let line: string = editorObj.markdownSelection.getSelectedLine(textArea);
+            expect(new RegExp('^(# )', 'gim').test(line)).toBe(true);
+            editorObj.markdownSelection.save(2, 2);
+            editorObj.markdownSelection.restore(textArea);
+            isCallBack = false;
+            editorObj.execCommand("Formats", 'BlockQuote', null, () => {
+                isCallBack = true;
+            });
+            expect(isCallBack).toBe(true);
+            line = editorObj.markdownSelection.getSelectedLine(textArea);
+            expect(new RegExp('^(> )', 'gim').test(line)).toBe(true);
+        });
+
+        afterAll(() => {
+            detach(textArea);
+        });
+    });
+
     describe(' Paragraph Formats testing', () => {
         let editorObj: MarkdownParser;
         let textArea: HTMLTextAreaElement = <HTMLTextAreaElement>createElement('textarea', {

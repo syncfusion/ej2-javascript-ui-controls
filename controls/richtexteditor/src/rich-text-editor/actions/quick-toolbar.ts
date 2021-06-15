@@ -205,7 +205,7 @@ export class QuickToolbar {
 
     private mouseUpHandler(e: NotifyArgs): void {
         if (this.parent.inlineMode.enable && (!Browser.isDevice || isIDevice())) {
-            const coordinates: Touch | MouseEvent = (e.args as TouchEvent).touches ?
+            const args: Touch | MouseEvent = (e.args as TouchEvent).touches ?
                 (e.args as TouchEvent).changedTouches[0] : e.args as MouseEvent;
             const range: Range = this.parent.getRange();
             let target: HTMLElement = (e.args as MouseEvent).target as HTMLElement;
@@ -215,8 +215,9 @@ export class QuickToolbar {
                     return;
                 }
                 this.hideInlineQTBar();
-                this.offsetX = coordinates.pageX;
-                this.offsetY = pageYOffset(coordinates, this.parent.element, this.parent.iframeSettings.enable);
+                const parentLeft: number = this.parent.element.getBoundingClientRect().left;
+                this.offsetX = this.parent.iframeSettings.enable ? window.pageXOffset + parentLeft + args.clientX : args.pageX;
+                this.offsetY = pageYOffset(args, this.parent.element, this.parent.iframeSettings.enable);
                 if (target.nodeName === 'TEXTAREA') {
                     this.showInlineQTBar(this.offsetX, this.offsetY, target);
                 } else {

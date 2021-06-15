@@ -844,3 +844,74 @@ describe('caret height validation', () => {
         expect(editor.selection.caret.style.height).not.toBe('0px');
     });
 });
+describe('RTL selection validation', () => {
+    let editor: DocumentEditor = undefined;
+    let documentHelper: DocumentHelper;
+    beforeAll(() => {
+        let ele: HTMLElement = createElement('div', { id: 'container' });
+        document.body.appendChild(ele);
+        DocumentEditor.Inject(Editor, Selection);
+        editor = new DocumentEditor({ enableEditor: true, enableSelection: true, isReadOnly: false });
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        editor.appendTo('#container');
+        documentHelper = editor.documentHelper;
+    });
+    afterAll((done) => {
+        document.body.removeChild(document.getElementById('container'));
+        editor.destroy();
+        editor = undefined;
+        documentHelper = undefined;
+        document.body.innerHTML = '';
+        setTimeout(function () {
+            done();
+        }, 1000);
+    });
+    it('RTL selection validation', () => {
+        let event: any = { offsetX: 139, offsetY: 126 };
+        editor.openBlank();
+        editor.editor.insertText('الشروع');
+        editor.documentHelper.onDoubleTap(event);
+        expect(editor.selection.isEmpty).toBe(false);
+        expect(editor.selection.start).not.toBe(editor.selection.end);
+        editor.selection.characterFormat.bold = true;
+        expect((editor.selection.start.currentWidget as LineWidget).children[0].characterFormat.bold).toBe(true);
+    });
+});
+describe('selection character format validation on enter', () => {
+    let editor: DocumentEditor = undefined;
+    let documentHelper: DocumentHelper;
+    beforeAll(() => {
+        let ele: HTMLElement = createElement('div', { id: 'container' });
+        document.body.appendChild(ele);
+        DocumentEditor.Inject(Editor, Selection);
+        editor = new DocumentEditor({ enableEditor: true, enableSelection: true, isReadOnly: false });
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        editor.appendTo('#container');
+        documentHelper = editor.documentHelper;
+    });
+    afterAll((done) => {
+        document.body.removeChild(document.getElementById('container'));
+        editor.destroy();
+        editor = undefined;
+        documentHelper = undefined;
+        document.body.innerHTML = '';
+        setTimeout(function () {
+            done();
+        }, 1000);
+    });
+    it('selection character format validation on enter', () => {
+        editor.editor.insertText('Hello');
+        editor.selection.handleControlShiftRightKey();
+        editor.selection.characterFormat.fontSize = 16;
+        expect(editor.selection.characterFormat.fontSize).toBe(16);
+        editor.selection.handleLeftKey();
+        editor.editor.onEnter();
+        expect(editor.selection.characterFormat.fontSize).toBe(11);
+    });
+});

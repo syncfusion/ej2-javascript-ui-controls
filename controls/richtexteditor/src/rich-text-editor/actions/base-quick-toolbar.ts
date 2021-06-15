@@ -162,7 +162,7 @@ export class BaseQuickToolbar {
                 break; }
             case 'right':
                 if (type === 'inline') {
-                    x = e.windowWidth - (e.popWidth + e.bodyRightSpace + 10);
+                    x = window.pageXOffset + (e.windowWidth - (e.popWidth + e.bodyRightSpace + 10));
                 } else {
                     x = e.x - e.popWidth;
                 }
@@ -228,7 +228,7 @@ export class BaseQuickToolbar {
                 }
                 append([this.element], document.body);
                 this.popupObj.position.X = x + 20;
-                this.popupObj.position.Y = y + ((this.parent.iframeSettings.enable) ? 35 : 20);
+                this.popupObj.position.Y = y + 20;
                 this.popupObj.dataBind();
                 this.popupObj.element.classList.add('e-popup-open');
                 this.dropDownButtons.renderDropDowns({
@@ -268,7 +268,7 @@ export class BaseQuickToolbar {
                 removeClass([this.element], [classes.CLS_HIDE]);
                 this.popupObj.show({ name: 'ZoomIn', duration: (Browser.isIE ? 250 : 400) });
                 setStyleAttribute(this.element, {
-                    maxWidth: this.parent.element.offsetWidth + 'px'
+                    maxWidth: window.outerWidth + 'px'
                 });
                 addClass([this.element], [classes.CLS_POP]);
                 this.isDOMElement = true;

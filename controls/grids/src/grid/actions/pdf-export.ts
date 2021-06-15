@@ -519,9 +519,12 @@ export class PdfExport {
                     colIndex = cidx;
                     spanCnt = 0;
                 }
+                if (!isRoot && !cols[i].visible) {
+                    colIndex = colIndex - 1;
+                }
                 if ((cols[i] as Column).columns && (cols[i] as Column).columns.length) {
                     const newSpanCnt: number = recuHeader((cols[i] as Column).columns, depth - 1, 0, i + colIndex, rowIndex + 1, false);
-                    applyTextAndSpan(rowIndex, i + colIndex, cols[i] as Column, 0, newSpanCnt);
+                    applyTextAndSpan(rowIndex, i + colIndex + index, cols[i] as Column, 0, newSpanCnt);
                     spanCnt = spanCnt + newSpanCnt;
                     colIndex = colIndex + newSpanCnt - 1;
                 } else if (cols[i].visible || this.hideColumnInclude) {

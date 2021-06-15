@@ -943,6 +943,8 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     public commandDelIndex: number = undefined;
     /** @hidden */
     public asyncTimeOut: number = 50;
+    /** @hidden */
+    public isExportGrid: boolean = false;
 
     //Module Declarations
     /**
@@ -2902,7 +2904,9 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
      * @returns {void}
      */
     public showSpinner(): void {
-        showSpinner(this.element);
+        if (!this.isExportGrid) {
+            showSpinner(this.element);
+        }
     }
     /**
      * By default, grid shows the spinner for all its actions. You can use this method to show spinner at your needed time.
@@ -2910,7 +2914,9 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
      * @returns {void}
      */
     public hideSpinner(): void {
-        hideSpinner(this.element);
+        if (!this.isExportGrid) {
+            hideSpinner(this.element);
+        }
     }
 
     private updateStackedFilter(): void {

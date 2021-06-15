@@ -236,7 +236,7 @@ export class Year extends ViewBase implements IRenderer {
         const endDate: Date = util.addDays(new Date(startDate.getTime()), 1);
         const filteredEvents: Record<string, any>[] = this.parent.eventBase.filterEvents(startDate, endDate);
         const moreEventArgs: EventClickArgs = { date: startDate, event: filteredEvents, element: e.target } as EventClickArgs;
-        this.parent.quickPopup.moreEventClick(moreEventArgs, new Date());
+        this.parent.quickPopup.moreEventClick(moreEventArgs, endDate);
     }
 
     public onContentScroll(e: Event): void {

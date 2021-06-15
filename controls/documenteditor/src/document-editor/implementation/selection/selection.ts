@@ -6602,7 +6602,7 @@ export class Selection {
             if (elementBox instanceof ShapeBase && !isNullOrUndefined(elementBox.nextElement)) {
                 left += (elementBox.nextElement.margin.left + elementBox.nextElement.padding.left)
             }
-            if ((isRtlText && !isParaBidi) || (this.documentHelper.moveCaretPosition === 1 && !isRtlText && isParaBidi)) {
+            if (isRtlText || (this.documentHelper.moveCaretPosition === 1 && !isRtlText && isParaBidi)) {
                 left += elementBox.width;
             }
         }
@@ -6620,20 +6620,16 @@ export class Selection {
                 left += elementBox.width;
             } else if (index > (elementBox as TextElementBox).length) {
                 width = this.documentHelper.textHelper.getParagraphMarkWidth(elementBox.line.paragraph.characterFormat);
-                if (isRtlText && isParaBidi) {
-                    left = left;
-                } else if (isRtlText) {
+                if (isRtlText) {
                     left -= elementBox.width + width;
                 } else {
                     left += elementBox.width + width;
                 }
-            } else {
+            } else {       
 
                 width = this.documentHelper.textHelper.getWidth((elementBox as TextElementBox).text.substr(0, index), (elementBox as TextElementBox).characterFormat);
                 (elementBox as TextElementBox).trimEndWidth = width;
-                if (isRtlText && isParaBidi) {
-                    left = left;
-                } else if (isRtlText) {
+                if (isRtlText) {
                     left -= width;
                 } else {
                     left += width;
@@ -10190,7 +10186,14 @@ export class Selection {
                         let bookmarkStart: ElementBox = this.documentHelper.bookmarks.get(bookmarkId);
                         let bookmarkEnd: ElementBox = (bookmarkStart as BookmarkElementBox).reference;
                         let previousNode: ElementBox = bookmarkStart.previousNode;
-                        if (previousNode instanceof FieldElementBox && previousNode.fieldType === 0
+                        if ((isNullOrUndefined(previousNode) || !(previousNode instanceof FieldElementBox))
+                            && bookmarkEnd.previousNode instanceof FieldElementBox
+                            && bookmarkEnd.previousNode.fieldType === 1
+                            && !isNullOrUndefined(bookmarkEnd.previousNode.fieldBegin)
+                            && !isNullOrUndefined(bookmarkEnd.previousNode.fieldBegin.formFieldData)) {
+                            bookmarkStart = bookmarkEnd.previousNode.fieldBegin.fieldSeparator;
+                            bookmarkEnd = bookmarkEnd.previousNode.fieldBegin.fieldEnd;
+                        } else if (previousNode instanceof FieldElementBox && previousNode.fieldType === 0
                             && !isNullOrUndefined(previousNode.formFieldData)) {
                             bookmarkStart = previousNode.fieldSeparator;
                             bookmarkEnd = previousNode.fieldEnd;

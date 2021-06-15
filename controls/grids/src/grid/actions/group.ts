@@ -3,7 +3,7 @@ import { createElement, closest, remove, classList, addClass, removeClass, Blazo
 import { isNullOrUndefined, extend } from '@syncfusion/ej2-base';
 import { Column } from '../models/column';
 import { GroupSettingsModel, SortDescriptorModel } from '../base/grid-model';
-import { parentsUntil, isActionPrevent, isGroupAdaptive, updatecloneRow } from '../base/util';
+import { parentsUntil, isActionPrevent, isGroupAdaptive, updatecloneRow, getComplexFieldID, isComplexField } from '../base/util';
 import { ReturnType } from '../base/type';
 import { AggregateType } from '../base/enum';
 import { ServiceLocator } from '../services/service-locator';
@@ -737,6 +737,9 @@ export class Group implements IAction {
         const animator: Element = this.parent.createElement('div', { className: 'e-grid-icon e-group-animator' });
         let groupedColumn: Element = this.parent.createElement('div', { className: 'e-grid-icon e-groupheadercell' });
         const childDiv: Element = this.parent.createElement('div', { attrs: { 'ej-mappingname': field } });
+        if (isComplexField(field)) {
+            childDiv.setAttribute('ej-complexname', getComplexFieldID(field));
+        }
 
         const column: Column = this.parent.getColumnByField(field);
         //Todo headerTemplateID for grouped column, disableHtmlEncode
@@ -797,8 +800,9 @@ export class Group implements IAction {
     }
 
     private addColToGroupDrop(field: string): void {
-        if (this.groupSettings.allowReordering
-            && this.parent.element.querySelector('.e-groupdroparea div[ej-mappingname=' + field + ']')) {
+        const groupElem: Element = isComplexField(field) ? this.parent.element.querySelector('.e-groupdroparea div[ej-complexname=' +
+            getComplexFieldID(field) + ']') : this.parent.element.querySelector('.e-groupdroparea div[ej-mappingname=' + field + ']');
+        if (this.groupSettings.allowReordering && groupElem) {
             return;
         }
         const column: Column = this.parent.getColumnByField(field);

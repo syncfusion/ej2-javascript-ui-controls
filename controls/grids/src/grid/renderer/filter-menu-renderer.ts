@@ -288,8 +288,9 @@ export class FilterMenuRenderer {
                 fltrValue = (<HTMLInputElement>element.children[0]).value;
             } else {
                 if (!isBlazor() && !isNullOrUndefined((<EJ2Intance>(element.children[0] as Element)).ej2_instances)) {
-                    fltrValue = ((<EJ2Intance>(element.querySelector('input') as Element)).ej2_instances[0] as
-                        { value?: string | boolean | Date }).value;
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                    fltrValue = ((<EJ2Intance>(((this.parent as any).isAngular ? element.children[0] :
+                        element.querySelector('input')) as Element)).ej2_instances[0] as { value?: string | boolean | Date }).value;
                 } else {
                     const eControl: EJ2Intance = ((element.querySelector('.e-control') as Element) as EJ2Intance);
                     fltrValue = col.type === 'boolean' ? (eControl as { checked?: boolean }).checked :

@@ -2938,7 +2938,7 @@ export class Selection implements IAction {
                     || ((this.parent.enableVirtualization || this.parent.enableInfiniteScrolling)
                         && !this.parent.allowPaging && !this.parent.getDataModule().isRemote()
                         && !(isBlazor() && this.parent.isServerRendered)
-                        && checkedLen === this.getData().length)) {
+                        && (this.getData().length && checkedLen === this.getData().length))) {
                     addClass([spanEle], ['e-check']);
                     setChecked(input, true);
                     if (isInteraction) {

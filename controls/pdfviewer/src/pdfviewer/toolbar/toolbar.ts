@@ -808,7 +808,7 @@ export class Toolbar {
         const submitButton : string = '<button id="' + this.pdfViewer.element.id + '_submitForm" class="e-tbar-btn"> Submit Form</button>';
         // eslint-disable-next-line max-len
         items.push({ prefixIcon: 'e-pv-open-document-icon e-pv-icon', cssClass: 'e-pv-open-document-container', id: this.pdfViewer.element.id + '_open', text: this.pdfViewer.localeObj.getConstant('Open text'), align: 'Left' });
-        items.push({ type: 'Separator', align: 'Left' });
+        items.push({ type: 'Separator', align: 'Left', cssClass: 'e-pv-open-separator-container' });
         if (!this.pdfViewer.enableRtl) {
             // eslint-disable-next-line max-len
             items.push({ prefixIcon: 'e-pv-first-page-navigation-icon e-pv-icon', cssClass: 'e-pv-first-page-navigation-container', id: this.pdfViewer.element.id + '_firstPage', text: this.pdfViewer.localeObj.getConstant('First text'), align: 'Left' });
@@ -816,8 +816,8 @@ export class Toolbar {
             // eslint-disable-next-line max-len
             items.push({ prefixIcon: 'e-pv-next-page-navigation-icon e-pv-icon', cssClass: 'e-pv-next-page-navigation-container', id: this.pdfViewer.element.id + '_nextPage', text: this.pdfViewer.localeObj.getConstant('Next text'), align: 'Left' });
             items.push({ prefixIcon: 'e-pv-last-page-navigation-icon e-pv-icon', cssClass: 'e-pv-last-page-navigation-container', id: this.pdfViewer.element.id + '_lastPage', text: this.pdfViewer.localeObj.getConstant('Last text'), align: 'Left' });
-            items.push({ template: currentPageInputTemplate, align: 'Left' });
-            items.push({ template: totalPageTemplate, align: 'Left' });
+            items.push({ template: currentPageInputTemplate, align: 'Left', cssClass: 'e-pv-current-page-container' });
+            items.push({ template: totalPageTemplate, align: 'Left', cssClass: 'e-pv-total-page-container' });
         } else {
             // eslint-disable-next-line max-len
             items.push({ prefixIcon: 'e-pv-last-page-navigation-icon e-pv-icon', cssClass: 'e-pv-last-page-navigation-container', id: this.pdfViewer.element.id + '_firstPage', text: this.pdfViewer.localeObj.getConstant('First text'), align: 'Left' });
@@ -825,26 +825,26 @@ export class Toolbar {
             // eslint-disable-next-line max-len
             items.push({ prefixIcon: 'e-pv-previous-page-navigation-icon e-pv-icon', cssClass: 'e-pv-previous-page-navigation-container', id: this.pdfViewer.element.id + '_nextPage', text: this.pdfViewer.localeObj.getConstant('Next text'), align: 'Left' });
             items.push({ prefixIcon: 'e-pv-first-page-navigation-icon e-pv-icon', cssClass: 'e-pv-first-page-navigation-container', id: this.pdfViewer.element.id + '_lastPage', text: this.pdfViewer.localeObj.getConstant('Last text'), align: 'Left' });
-            items.push({ template: totalPageTemplate, align: 'Left' });
-            items.push({ template: currentPageInputTemplate, align: 'Left' });
+            items.push({ template: totalPageTemplate, align: 'Left', cssClass: 'e-pv-total-page-container' });
+            items.push({ template: currentPageInputTemplate, align: 'Left', cssClass: 'e-pv-current-page-container' });
         }
-        items.push({ type: 'Separator', align: 'Left' });
+        items.push({ type: 'Separator', align: 'Left', cssClass: 'e-pv-navigation-separator-container' });
         // eslint-disable-next-line max-len
         items.push({ prefixIcon: 'e-pv-zoom-out-icon e-pv-icon', cssClass: 'e-pv-zoom-out-container', id: this.pdfViewer.element.id + '_zoomOut', text: this.pdfViewer.localeObj.getConstant('Zoom out text'), align: 'Left' });
         items.push({ prefixIcon: 'e-pv-zoom-in-icon e-pv-icon', cssClass: 'e-pv-zoom-in-container', id: this.pdfViewer.element.id + '_zoomIn', text: this.pdfViewer.localeObj.getConstant('Zoom in text'), align: 'Left' });
         items.push({ template: zoomDropDownTemplateString, cssClass: 'e-pv-zoom-drop-down-container', align: 'Left' });
-        items.push({ type: 'Separator', align: 'Left' });
+        items.push({ type: 'Separator', align: 'Left', cssClass: 'e-pv-magnification-separator-container' });
         // eslint-disable-next-line max-len
         items.push({ prefixIcon: 'e-pv-text-select-tool-icon e-pv-icon', cssClass: 'e-pv-text-select-tool-container', id: this.pdfViewer.element.id + '_selectTool', text: this.pdfViewer.localeObj.getConstant('Selection text') });
         items.push({ prefixIcon: 'e-pv-pan-tool-icon e-pv-icon', cssClass: 'e-pv-pan-tool-container', id: this.pdfViewer.element.id + '_handTool', text: this.pdfViewer.localeObj.getConstant('Pan text') });
-        items.push({ type: 'Separator', align: 'Left' });
+        items.push({ type: 'Separator', align: 'Left', cssClass: 'e-pv-pan-separator-container' });
         // eslint-disable-next-line max-len
         items.push({ prefixIcon: 'e-pv-undo-icon e-pv-icon', cssClass: 'e-pv-undo-container', id: this.pdfViewer.element.id + '_undo', text: this.pdfViewer.localeObj.getConstant('Undo'), align: 'Left' });
         items.push({ prefixIcon: 'e-pv-redo-icon e-pv-icon', cssClass: 'e-pv-redo-container', id: this.pdfViewer.element.id + '_redo', text: this.pdfViewer.localeObj.getConstant('Redo'), align: 'Left' });
-        items.push({ type: 'Separator', align: 'Left' });
+        items.push({ type: 'Separator', align: 'Left', cssClass: 'e-pv-undo-separator-container' });
         // eslint-disable-next-line max-len
         items.push({ prefixIcon: 'e-pv-comment-icon e-pv-icon', cssClass: 'e-pv-comment-container', id: this.pdfViewer.element.id + '_comment', text: this.pdfViewer.localeObj.getConstant('Add Comments'), align: 'Left' });
-        items.push({ type: 'Separator', align: 'Left' });
+        items.push({ type: 'Separator', align: 'Left', cssClass: 'e-pv-comment-separator-container' });
         items.push({template: submitButton, cssClass: 'e-pv-submit' , align:  'Left' });
         // eslint-disable-next-line max-len
         items.push({ prefixIcon: 'e-pv-text-search-icon e-pv-icon', cssClass: 'e-pv-text-search-container', id: this.pdfViewer.element.id + '_search', text: this.pdfViewer.localeObj.getConstant('Search text'), align: 'Right' });
@@ -972,7 +972,12 @@ export class Toolbar {
             { percent: '150%', id: '6' }, { percent: '200%', id: '7' }, { percent: '400%', id: '8' }, { percent: this.pdfViewer.localeObj.getConstant('Fit Page'), id: '9' }, { percent: this.pdfViewer.localeObj.getConstant('Fit Width'), id: '10' }, { percent: this.pdfViewer.localeObj.getConstant('Automatic'), id: '11' }
         ];
         // eslint-disable-next-line max-len
-        this.zoomDropDown = new ComboBox({ dataSource: items, text: '100%', fields: { text: 'percent', value: 'id' }, readonly: true, cssClass: 'e-pv-zoom-drop-down', popupHeight: '450px', showClearButton: false });
+        this.zoomDropDown = new ComboBox({ dataSource: items, text: '100%', fields: { text: 'percent', value: 'id' }, readonly: true, cssClass: 'e-pv-zoom-drop-down', popupHeight: '450px', showClearButton: false, select: function(args){
+            if (args.e.type == 'keydown' && args.itemData.text !== this.zoomDropDown.element.value) {
+                args.cancel = true;
+              }
+            } 
+        });
         this.zoomDropDown.appendTo(this.pdfViewerBase.getElement('_zoomDropDown'));
     }
 
@@ -1192,7 +1197,18 @@ export class Toolbar {
     private applyHideToToolbar(show: boolean, startIndex: number, endIndex: number): void {
         const isHide: boolean = !show;
         for (let index: number = startIndex; index <= endIndex; index++) {
-            this.toolbar.hideItem(index, isHide);
+            if (this.toolbar.items[index]) {
+                let className = this.toolbar.items[index].cssClass;
+                if (className && className !== '') {
+                    // Querying the toolbar item
+                    let element = this.toolbar.element.querySelector('.' + className);
+                    if (element) {
+                        this.toolbar.hideItem(element, isHide);
+                    }
+                } else {
+                    this.toolbar.hideItem(index, isHide);
+                }
+            }
         }
     }
 
@@ -1653,9 +1669,8 @@ export class Toolbar {
     }
 
     private showSeparator(toolbarItems: ToolbarItem[]): void {
-        if (!this.isOpenBtnVisible || (this.isOpenBtnVisible && toolbarItems.length === 1) ||
-            // eslint-disable-next-line max-len
-            (!this.isNavigationToolVisible && !this.isMagnificationToolVisible && !this.isSelectionBtnVisible && !this.isScrollingBtnVisible && !this.isUndoRedoBtnsVisible)) {
+        // eslint-disable-next-line max-len
+        if (!this.isOpenBtnVisible || (!this.isNavigationToolVisible && !this.isMagnificationToolVisible && !this.isSelectionBtnVisible && !this.isScrollingBtnVisible && !this.isUndoRedoBtnsVisible)) {
             this.applyHideToToolbar(false, 1, 1);
         }
         if (((!this.isNavigationToolVisible && !this.isMagnificationToolVisible) && !this.isOpenBtnVisible) ||

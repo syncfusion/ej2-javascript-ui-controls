@@ -198,8 +198,7 @@ export class WorkbookNumberFormat {
                 options.cell.value = options.args.value.toString();
                 options.isRightAlign = true;
             } else if (res.indexOf(options.currencySymbol) > -1 && res.split(options.currencySymbol)[1] !== '' &&
-                Number(res.split(options.currencySymbol)[1].split(this.groupSep).join('')).toString() !== 'NaN' &&
-                !this.parent.isEdit) {
+                Number(res.split(options.currencySymbol)[1].split(this.groupSep).join('')).toString() !== 'NaN') {
                 options.args.value = Number(res.split(options.currencySymbol)[1].split(this.groupSep).join(''));
                 options.cell.format = options.args.format = getFormatFromType('Currency');
                 options.fResult = this.currencyFormat(options.args, options.intl, options.curCode);
@@ -431,7 +430,7 @@ export class WorkbookNumberFormat {
         if (value && (value.indexOf('/') > -1 || value.indexOf('-') > 0 || value.indexOf(':') > -1) && checkedDate !== 'Invalid') {
             value = checkedDate;
             if (value && value.indexOf('/') > -1 || value.indexOf('-') > 0 || value.indexOf(':') > -1) {
-                dateObj = toDate(value, intl, cell && cell.format);
+                dateObj = toDate(value, intl, this.parent.locale, cell && cell.format);
                 if (!isNullOrUndefined(dateObj.dateObj) && dateObj.dateObj.toString() !== 'Invalid Date') {
                     cell = cell ? cell : {};
                     value = dateToInt(dateObj.dateObj, value.indexOf(':') > -1, dateObj.type && dateObj.type === 'time').toString();

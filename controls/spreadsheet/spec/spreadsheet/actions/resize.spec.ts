@@ -29,11 +29,6 @@ describe('Resize ->', () => {
             done();
         });
     });
-
-    describe('UI Interaction ->', () => {
-        
-    });
-
     describe('CR-Issues ->', () => {
         describe('I274109 ->', () => {
             beforeEach((done: Function) => {

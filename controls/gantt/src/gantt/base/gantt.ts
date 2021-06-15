@@ -2048,7 +2048,7 @@ export class Gantt extends Component<HTMLElement>
     }
     private displayHalfValue(date: Date): string {
         const month: number = date.getMonth();
-        if (month >= 0 && month <= 6) {
+        if (month >= 0 && month <= 5) {
             return 'H1';
         } else {
             return 'H2';

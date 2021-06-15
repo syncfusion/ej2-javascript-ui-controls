@@ -1157,9 +1157,11 @@ export class SfdtReader {
                 shape.verticalPosition = HelperMethods.convertPointToPixel(inline.verticalPosition);
                 shape.verticalOrigin = inline.verticalOrigin;
                 shape.verticalAlignment = inline.verticalAlignment;
+                shape.verticalRelativePercent = inline.verticalRelativePercent;
                 shape.horizontalPosition = HelperMethods.convertPointToPixel(inline.horizontalPosition);
                 shape.horizontalOrigin = inline.horizontalOrigin;
                 shape.horizontalAlignment = inline.horizontalAlignment;
+                shape.horizontalRelativePercent = inline.horizontalRelativePercent;
                 shape.zOrderPosition = inline.zOrderPosition;
                 shape.allowOverlap = inline.allowOverlap;
                 shape.textWrappingStyle = isNullOrUndefined(inline.textWrappingStyle) ? 'InFrontOfText' : inline.textWrappingStyle;

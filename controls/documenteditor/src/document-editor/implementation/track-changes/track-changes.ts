@@ -403,7 +403,9 @@ export class RevisionCollection {
      * @returns {void}
      */
     public acceptAll(): void {
-        this.handleRevisionCollection(true);
+        if (!this.owner.isReadOnly) {
+            this.handleRevisionCollection(true);
+        }
     }
     /**
      * Method which rejects all the revision in the revision collection
@@ -411,7 +413,9 @@ export class RevisionCollection {
      * @returns {void}
      */
     public rejectAll(): void {
-        this.handleRevisionCollection(false);
+        if (!this.owner.isReadOnly) {
+            this.handleRevisionCollection(false);
+        }
     }
 
     /**

@@ -134,7 +134,8 @@ export class Lists {
                 }
             }
         } else if (!isNOU(startNode.firstChild) && startNode.firstChild.nodeName === 'BR' &&
-        (startNode.childNodes[1].nodeName === 'UL' || startNode.childNodes[1].nodeName === 'OL')) {
+        (!isNullOrUndefined(startNode.childNodes[1]) && (startNode.childNodes[1].nodeName === 'UL' ||
+        startNode.childNodes[1].nodeName === 'OL'))) {
             const parentList: HTMLElement = !isNOU(startNode.closest('ul')) ? startNode.closest('ul') : startNode.closest('ol');
             if (parentList.tagName === startNode.childNodes[1].nodeName) {
                 while (startNode.childNodes[1].lastChild) {

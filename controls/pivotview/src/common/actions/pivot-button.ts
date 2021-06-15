@@ -1269,6 +1269,13 @@ export class PivotButton implements IAction {
         if (this.parent.dataType === 'olap') {
             this.removeDataSourceSettings(fieldName);
         }
+        if (this.parent.allowDeferLayoutUpdate) {
+            this.parent.engineModule.fieldList[filterItem.name].filterType = filterItem.type.toLowerCase();
+            this.parent.engineModule.fieldList[filterItem.name].filter = [];
+            for (let i: number = 0; i < filterItem.items.length; i++) {
+                this.parent.engineModule.fieldList[filterItem.name].filter.push(filterItem.items[i] as string);
+            }
+        }
         let filterEventArgs: MemberFilteringEventArgs = {
             filterSettings: filterItem,
             dataSourceSettings: PivotUtil.getClonedDataSourceSettings(this.parent.dataSourceSettings),

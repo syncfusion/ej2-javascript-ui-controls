@@ -271,7 +271,9 @@ export class MeasureAnnotation {
                             if (annotation.VertexPoints) {
                                 vertexPoints = [];
                                 for (let j: number = 0; j < annotation.VertexPoints.length; j++) {
-                                    const point: IPoint = { x: annotation.VertexPoints[j].X, y: annotation.VertexPoints[j].Y };
+                                    let x: number = annotation.VertexPoints[j].X ? annotation.VertexPoints[j].X : annotation.VertexPoints[j].x;
+                                    let y: number = annotation.VertexPoints[j].Y ? annotation.VertexPoints[j].Y : annotation.VertexPoints[j].y;
+                                    const point: IPoint = { x: x, y: y};
                                     vertexPoints.push(point);
                                 }
                             }
@@ -298,6 +300,10 @@ export class MeasureAnnotation {
                             if (annotation.Calibrate.Depth) {
                                 measureObject.depth = annotation.Calibrate.Depth;
                             }
+                            let left: number = annotation.Bounds.X ? annotation.Bounds.X : annotation.Bounds.x;
+                            let top: number = annotation.Bounds.Y ? annotation.Bounds.Y : annotation.Bounds.y;
+                            let width: number = annotation.Bounds.Width ? annotation.Bounds.Width : annotation.Bounds.width;
+                            let height: number = annotation.Bounds.Height ? annotation.Bounds.Height : annotation.Bounds.height;
                             annotationObject = {
                             // eslint-disable-next-line max-len
                                 id: 'measure' + this.measureShapeCount, shapeAnnotationType: annotation.ShapeAnnotationType, author: annotation.Author, allowedInteractions: annotation.allowedInteractions, modifiedDate: annotation.ModifiedDate, subject: annotation.Subject,
@@ -306,7 +312,7 @@ export class MeasureAnnotation {
                                 borderStyle: annotation.BorderStyle, borderDashArray: annotation.BorderDashArray, rotateAngle: annotation.RotateAngle, isCloudShape: annotation.IsCloudShape,
                                 cloudIntensity: annotation.CloudIntensity, vertexPoints: vertexPoints, lineHeadStart: annotation.LineHeadStart, lineHeadEnd: annotation.LineHeadEnd, isLocked: annotation.IsLocked,
                                 // eslint-disable-next-line max-len
-                                bounds: { left: annotation.Bounds.X, top: annotation.Bounds.Y, width: annotation.Bounds.Width, height: annotation.Bounds.Height, right: annotation.Bounds.Right, bottom: annotation.Bounds.Bottom },
+                                bounds: { left: left, top: top, width: width, height: height, right: annotation.Bounds.Right, bottom: annotation.Bounds.Bottom },
                                 caption: annotation.Caption, captionPosition: annotation.CaptionPosition, calibrate: measureObject, leaderLength: annotation.LeaderLength, leaderLineExtension: annotation.LeaderLineExtension,
                                 // eslint-disable-next-line max-len
                                 leaderLineOffset: annotation.LeaderLineOffset, indent: annotation.Indent, annotName: annotation.AnnotName, comments: this.pdfViewer.annotationModule.getAnnotationComments(annotation.Comments, annotation, annotation.Author),

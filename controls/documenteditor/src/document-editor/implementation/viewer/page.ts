@@ -3816,7 +3816,7 @@ export class LineWidget implements IWidget {
                         inlineElement = !isNullOrUndefined(currentElement) ? currentElement : inlineElement;
                         indexInInline = isNullOrUndefined(currentElement) ? (offset - count) : 0;
                         return { 'element': inlineElement, 'index': indexInInline };
-                    } else if (offset === inlineElement.length && this.children[i + 1] instanceof FootnoteElementBox) {
+                    } else if (offset === count + inlineElement.length && this.children[i + 1] instanceof FootnoteElementBox) {
                         return { 'element': this.children[i + 1], 'index': indexInInline };
                     } else {
                         indexInInline = (offset - count);
@@ -5431,6 +5431,10 @@ export class ShapeBase extends ShapeCommon {
     /**
      * @private
      */
+    public verticalRelativePercent: number;
+    /**
+     * @private
+     */
     public horizontalPosition: number = 0;
     /**
      * @private
@@ -5440,6 +5444,10 @@ export class ShapeBase extends ShapeCommon {
      * @private
      */
     public horizontalAlignment: HorizontalAlignment;
+    /**
+     * @private
+     */
+    public horizontalRelativePercent: number;
     /**
      * @private
      */
@@ -5513,9 +5521,11 @@ export class ShapeElementBox extends ShapeBase {
         shape.verticalPosition = this.verticalPosition;
         shape.verticalAlignment = this.verticalAlignment;
         shape.verticalOrigin = this.verticalOrigin;
+        shape.verticalRelativePercent = this.verticalRelativePercent;
         shape.horizontalPosition = this.horizontalPosition;
         shape.horizontalAlignment = this.horizontalAlignment;
         shape.horizontalOrigin = this.horizontalOrigin;
+        shape.horizontalRelativePercent = this.horizontalRelativePercent;
         shape.zOrderPosition = this.zOrderPosition;
         shape.allowOverlap = this.allowOverlap;
         shape.textWrappingStyle = this.textWrappingStyle;

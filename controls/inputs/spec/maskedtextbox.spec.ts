@@ -3241,9 +3241,36 @@ describe('EJ2-41360- Masked Textbox focus behavior checking', function () {
         input.dispatchEvent(clickEvent);
         clickEvent.initEvent('mouseup', true, true);
         input.dispatchEvent(clickEvent);
+        maskBox.isClicked = true;
         focusEvent.initEvent('focus', true, true)
         input.dispatchEvent(focusEvent);
         expect(isFocus).toBe(true);
+    });
+    it('focus the control without value', function (done) {
+        maskBox = new MaskedTextBox({
+            mask: "000-0000-000",
+            placeholder: "Enter a value",
+            created: () => {
+                isFocus = false;
+            },
+            focus: (args) => {
+                isFocus = true;
+            }
+        });
+        maskBox.appendTo('#mask1');
+        let input: HTMLInputElement = <HTMLInputElement>document.getElementById('mask1');
+        let clickEvent: MouseEvent = document.createEvent('MouseEvents');
+        clickEvent.initEvent('mousedown', true, true);
+        input.dispatchEvent(clickEvent);
+        clickEvent.initEvent('mouseup', true, true);
+        input.dispatchEvent(clickEvent);
+        maskBox.isClicked = true;
+        focusEvent.initEvent('focus', true, true)
+        input.dispatchEvent(focusEvent);
+        setTimeout(() => {
+            expect(isFocus).toBe(true);
+            done();    
+        }, 100);
     });
 });
 describe('EJ2-48023', function () {

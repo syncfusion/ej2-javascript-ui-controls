@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 19.1.69 (2021-06-15)
+
+### PDF Viewer
+
+#### Bug Fixes
+
+- `#329356` - Now, Add comment option icon is shown properly in the toolbar while restricting some toolbar items when the PDF Viewer has the minimum width.
+
 ## 19.1.67 (2021-06-08)
 
 ### PDF Viewer

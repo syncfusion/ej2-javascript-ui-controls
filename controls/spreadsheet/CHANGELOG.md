@@ -2,6 +2,15 @@
 
 ## [Unreleased]
 
+## 19.1.69 (2021-06-15)
+
+### Spreadsheet
+
+#### Bug Fixes
+
+- `#24686` - Undo for styles on externally pasted table is not working properly issue has been fixed.
+- `#F164024` - External pasting for date with applied locale culture is not working issue has been fixed.
+
 ## 19.1.67 (2021-06-08)
 
 ### Spreadsheet

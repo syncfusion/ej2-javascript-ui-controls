@@ -98,7 +98,7 @@ export class AccumulationLegend extends BaseLegend {
                 name: 'legendRender', cancel: false };
             this.chart.trigger('legendRender', legendEventArgs);
             legendOption.render = !legendEventArgs.cancel;
-            legendOption.text = legendEventArgs.text;
+            legendOption.text = ((legendEventArgs.text.indexOf('&') > -1) ? this.convertHtmlEntities(legendEventArgs.text) : legendEventArgs.text);
             legendOption.fill = legendEventArgs.fill;
             legendOption.shape = legendEventArgs.shape;
             legendOption.textSize = measureText(legendOption.text, legend.textStyle);
@@ -162,6 +162,17 @@ export class AccumulationLegend extends BaseLegend {
             this.setBounds(0, 0, legend, legendBounds);
         }
     }
+    /**
+     * To find html entities value for legend
+     *
+     * @returns {string} converts the entities to normal string.
+     */
+    public convertHtmlEntities(legendText: string) {
+        let text = String(legendText).replace('&amp;', '&').replace('&lt;', '<').replace('&gt;', '>').replace('&quot;', '"').replace('&nbsp;', ' ').replace('&cent;', '¢').replace('&pound;', '£').replace('&yen;','¥').replace('&euro;', '€').replace('&copy;','©').replace('&reg;','®'); 
+        text = String(text).replace('&#38;', '&').replace('&#60;', '<').replace('&#62;', '>').replace('&#34;', '"').replace('&#160;', ' ').replace('&#162;', '¢').replace('&#163;', '£').replace('&#165;','¥').replace('&#8364;', '€').replace('&#169;','©').replace('&#174;','®'); 
+        return text;
+    }
+
     /**
      * To find maximum column size for legend
      *

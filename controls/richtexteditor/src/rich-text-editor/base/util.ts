@@ -275,8 +275,10 @@ export function getTBarItemsIndex(items: string[], toolbarItems: IToolbarItemMod
                 } else if (items[i] === 'FileManager' && toolbarItems[j].subCommand === 'File') {
                     itemsIndex.push(j);
                     break;
-                } else if (items[i] === toolbarItems[j].subCommand ||
-                    typeof(items[i]) === 'object' && toolbarItems[j].command === 'Custom') {
+                } else if (typeof (items[i]) === 'object' && (items[i] as IToolbarItems).command === 'Custom') {
+                    itemsIndex.push(i);
+                    break;
+                } else if (items[i] === toolbarItems[j].subCommand) {
                     itemsIndex.push(j);
                     break;
                 }

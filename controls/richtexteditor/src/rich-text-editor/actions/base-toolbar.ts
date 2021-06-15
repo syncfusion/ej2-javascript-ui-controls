@@ -51,6 +51,23 @@ export class BaseToolbar {
         }
     }
 
+    private getClass(item: string): string {
+        let classes: string;
+        switch (item) {
+            case 'fontsize':
+                classes = 'e-rte-inline-size-template';
+                break;
+            case 'fontcolor':
+            case 'backgroundcolor':
+                classes = 'e-rte-inline-color-template';
+                break;
+            default:
+                classes = 'e-rte-inline-template';
+                break;
+        }
+        return classes;
+    }
+
     private getTemplateObject(itemStr: string, container: string): IToolbarItemModel {
         let tagName: string;
         switch (itemStr) {
@@ -69,6 +86,7 @@ export class BaseToolbar {
                 id: this.parent.getID() + '_' + container
                     + '_' + this.tools[itemStr.toLocaleLowerCase() as ToolbarItems].id
             }).outerHTML,
+            cssClass: this.parent.inlineMode.enable ? this.getClass(itemStr) : '',
             tooltipText: getTooltipText(itemStr, this.locator)
         };
     }

@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 19.1.69 (2021-06-15)
+
+### Chart
+
+#### Bug Fixes
+
+- `#329311` - Legend text is now rendering properly with ampersand symbol.
+
 ## 19.1.67 (2021-06-08)
 
 ### Chart

@@ -1423,7 +1423,7 @@ export class Workbook extends Component<HTMLElement> implements INotifyPropertyC
             return eventArgs.formattedText as string;
         } else if (!cell.value && cell.hyperlink) {
             return typeof cell.hyperlink === 'string' ? cell.hyperlink : cell.hyperlink.address;
-        } else { return cell.value ? cell.value.toString() : ''; }
+        } else { return cell.value || typeof cell.value === 'number' ? cell.value.toString() : ''; }
     }
 
     /**

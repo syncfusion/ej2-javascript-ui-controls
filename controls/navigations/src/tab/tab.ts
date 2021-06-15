@@ -1468,6 +1468,7 @@ export class Tab extends Component<HTMLElement> implements INotifyPropertyChange
         const id: Str = trg.id;
         this.removeActiveClass();
         trg.classList.add(CLS_ACTIVE);
+        this.tbItem[this.prevIndex].setAttribute('aria-selected', 'false');
         trg.setAttribute('aria-selected', 'true');
         const no: number = Number(this.extIndex(id));
         if (isNOU(this.prevActiveEle)) {
@@ -1776,6 +1777,9 @@ export class Tab extends Component<HTMLElement> implements INotifyPropertyChange
                     } else if (newVal === '' && oldVal[0] === '#') {
                         (<HTEle>document.body.appendChild(this.element.querySelector(oldVal))).style.display = 'none';
                         cntItem.innerHTML = <Str>newVal;
+                    } else if ((this as any).isReact && typeof newVal === 'object') {
+                        cntItem.innerHTML = '';
+                        this.templateCompile(cntItem, <Str>newVal, index);
                     } else if (typeof newVal !== 'function') {
                         cntItem.innerHTML = <Str>newVal;
                     }

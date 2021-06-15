@@ -2418,6 +2418,9 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
             case 'allowAdding':
             case 'allowEditing':
             case 'allowDeleting':
+                if (this.showHeaderBar && this.headerModule) {
+                    this.headerModule.updateAddIcon();
+                }
                 if (this.eventWindow) { this.eventWindow.refresh(); }
                 break;
             case 'enableMaxHeight':

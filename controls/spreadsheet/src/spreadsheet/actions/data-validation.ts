@@ -215,7 +215,8 @@ export class DataValidation {
                     if (!sheet.rows[rowIdx].cells) { setCell(rowIdx, colIdx, sheet, {}); }
                     count += 1;
                     cell = sheet.rows[rowIdx].cells[colIdx];
-                    const data: string = this.parent.getDisplayText(cell) ? this.parent.getDisplayText(cell) : '';
+                    const data: string = this.parent.getDisplayText(cell) || '';
+                    if (validation.ignoreBlank && data === '') { continue; }
                     this.data.push({ text: data, id: 'list-' + count });
                 }
             }

@@ -316,6 +316,17 @@ export class Layout {
                     element.fieldBegin !== (element.previousElement as FieldElementBox).fieldBegin) {
                     element.fieldBegin = (element.previousElement as FieldElementBox).fieldBegin;
                 }
+                if (element instanceof ShapeElementBox) {
+                    let firstBlock: BlockWidget = element.textFrame.firstChild as BlockWidget;
+                    do {
+                        if (firstBlock instanceof ParagraphWidget) {
+                            this.linkFieldInParagraph(firstBlock);
+                        } else {
+                            this.linkFieldInTable(firstBlock as TableWidget);
+                        }
+                        /* eslint-disable no-cond-assign */
+                    } while (firstBlock = firstBlock.nextWidget as BlockWidget);
+                }
             }
         }
     }
@@ -1677,8 +1688,10 @@ export class Layout {
             this.isFootNoteLayoutStart = false;
             isFitted = false;
             if (height <= clientActiveArea.height) {
-                footnote.childWidgets.splice(insertIndex, 0, element.blocks[0]);
-                insertIndex++;
+                element.blocks.forEach(element => {
+                    footnote.childWidgets.splice(insertIndex, 0, element);
+                    insertIndex++;
+                });
                 if (isCreated) {
                     bodyWidget.page.footnoteWidget = footnote;
                 }
@@ -4494,13 +4507,13 @@ export class Layout {
                         cellWidget.cellFormat.rowSpan;
                     if (rowSpan > 1) {
                         //if (!isNullOrUndefined(currentRow.childWidgets[index])) {
-                            const emptyCellWidget: TableCellWidget = this.createCellWidget(cellWidget);
-                            //if (emptyCellWidget.x < (currentRow.childWidgets[index] as TableCellWidget).x) {
-                                currentRow.childWidgets.splice(index, 0, emptyCellWidget);
-                                emptyCellWidget.containerWidget = currentRow;
-                                this.updateChildLocationForRow(currentRow.y, currentRow);
-                                return;
-                            //}
+                        const emptyCellWidget: TableCellWidget = this.createCellWidget(cellWidget);
+                        //if (emptyCellWidget.x < (currentRow.childWidgets[index] as TableCellWidget).x) {
+                        currentRow.childWidgets.splice(index, 0, emptyCellWidget);
+                        emptyCellWidget.containerWidget = currentRow;
+                        this.updateChildLocationForRow(currentRow.y, currentRow);
+                        return;
+                        //}
                         //}
                     }
                 }
@@ -4793,7 +4806,7 @@ export class Layout {
         if (cellWidget.childWidgets[0] instanceof ParagraphWidget) {
             const paraWidget: ParagraphWidget = cellWidget.childWidgets[0] as ParagraphWidget;
             let isLineFitForPara: boolean = this.isFirstLineFitForPara(bottom - cellWidget.margin.bottom, paraWidget);
-            if (isLineFitForPara && paraWidget == cellWidget.childWidgets[cellWidget.childWidgets.length -1] && cellWidget == cellWidget.containerWidget.lastChild) {
+            if (isLineFitForPara && paraWidget == cellWidget.childWidgets[cellWidget.childWidgets.length - 1] && cellWidget == cellWidget.containerWidget.lastChild) {
                 return cellWidget.y + cellWidget.height <= bottom;
             }
             return isLineFitForPara;
@@ -5777,7 +5790,7 @@ export class Layout {
             if (!cellTopBorder.isBorderDefined || (cellTopBorder.isBorderDefined
                 && cellTopBorder.lineStyle === 'None' && cellTopBorder.lineWidth === 0 &&
                 cellTopBorder.hasValue('color'))) {
-                    cellTopBorder = cell.ownerRow.rowFormat.borders.horizontal;
+                cellTopBorder = cell.ownerRow.rowFormat.borders.horizontal;
             }
             if (!cellTopBorder.isBorderDefined) {
                 cellTopBorder = cell.ownerRow.ownerTable.tableFormat.borders.horizontal;
@@ -6068,6 +6081,16 @@ export class Layout {
                 }
             }
         }
+        if ((!isNullOrUndefined(widget.previousRenderedWidget) && (widget.previousRenderedWidget as ParagraphWidget).bodyWidget.page.footnoteWidget)) {
+            for (let i: number = 0; i < (widget.previousRenderedWidget as ParagraphWidget).bodyWidget.page.footnoteWidget.childWidgets.length; i++) {
+                // eslint-disable-next-line max-len
+                for (let j: number = 0; j < footnoteElements.length; j++) {
+                    if (((widget.previousRenderedWidget as ParagraphWidget).bodyWidget.page.footnoteWidget.childWidgets[i] as BlockWidget).footNoteReference === footnoteElements[j]) {
+                        footWidgets.push((widget.previousRenderedWidget as ParagraphWidget).bodyWidget.page.footnoteWidget.childWidgets[i] as BlockWidget);
+                    }
+                }
+            }
+        }
         return footWidgets;
     }
     /**
@@ -6237,8 +6260,11 @@ export class Layout {
             }
             if (previousBodyWidget !== paragraphWidget.containerWidget) {
                 let fromBodyWidget: BodyWidget = paragraphWidget.containerWidget as BodyWidget;
-                this.updateContainerWidget(paragraphWidget, previousBodyWidget, index, true);
-                this.moveFootNotesToPage(footWidget, fromBodyWidget, previousBodyWidget);
+                this.documentHelper.selection.start.currentWidget;
+                if (paragraphWidget.childWidgets.indexOf(this.documentHelper.selection.start.currentWidget) !== -1 || paragraphWidget.childWidgets.indexOf(this.documentHelper.selection.end.currentWidget) !== -1) {
+                    this.updateContainerWidget(paragraphWidget, previousBodyWidget, index, true);
+                    this.moveFootNotesToPage(footWidget, fromBodyWidget, previousBodyWidget);
+                }
             }
             for (let i: number = paragraphWidget.childWidgets.length - 1; i > 0; i--) {
                 if (this.isFitInClientArea(paragraphWidget, viewer, undefined)) {
@@ -6664,7 +6690,19 @@ export class Layout {
             this.viewer.updateClientAreaForBlock(paragraph, false);
         }
         this.layoutNextItemsBlock(paragraph, this.viewer);
-
+        const prevWidget: BodyWidget = paragraph.getSplitWidgets()[0].previousRenderedWidget as BodyWidget;
+        if (!isNullOrUndefined(prevWidget) &&  (!(prevWidget instanceof ParagraphWidget) ||
+            (prevWidget instanceof ParagraphWidget) && !prevWidget.isEndsWithPageBreak)) {
+            this.viewer.cutFromTop(paragraph.y + paragraph.height);
+            if (paragraph.containerWidget !== prevWidget.containerWidget && !isNullOrUndefined(prevWidget.containerWidget)) {
+                // eslint-disable-next-line max-len
+                let prevBodyWidget: BodyWidget = paragraph.containerWidget as BodyWidget;
+                let newBodyWidget: BodyWidget = prevWidget.containerWidget as BodyWidget;
+                const footWidgets: BlockWidget[] = this.getFootNoteWidgetsOf(paragraph);
+                //this.updateContainerWidget(paragraph as Widget, newBodyWidget, prevWidget.indexInOwner + 1, false);
+                this.moveFootNotesToPage(footWidgets,newBodyWidget, prevBodyWidget);
+            }
+        }
         let page: number = this.documentHelper.pages.length;
         let foot: FootNoteWidget;
         let newBodyWidget: BlockContainer = this.documentHelper.pages[page - 1].bodyWidgets[0];
@@ -6891,6 +6929,8 @@ export class Layout {
             let horzOrigin: HorizontalOrigin = floatElement.horizontalOrigin;
             let horzAlignment: HorizontalAlignment = floatElement.horizontalAlignment;
             let vertAlignment: VerticalAlignment = floatElement.verticalAlignment;
+            let verticalPercent: number = floatElement.verticalRelativePercent;
+            let horizontalPercent: number = floatElement.horizontalRelativePercent;
             let shapeHeight: number = floatElement.height;
             //Need to update size width for Horizontal Line when width exceeds client width.
             // if(shape !== null && shape.IsHorizontalRule && size.Width > m_layoutArea.ClientActiveArea.Width)
@@ -6956,7 +6996,11 @@ export class Layout {
                                     }
                                     break;
                                 case 'None':
-                                    // Special case for Shape and Textbox.
+                                    if (Math.abs(verticalPercent) <= 1000) {
+                                        indentY = pageHeight * (verticalPercent / 100);
+                                    } else {
+                                        indentY = vertPosition;
+                                    }
                                     break;
                             }
                             break;
@@ -7369,9 +7413,9 @@ export class Layout {
             case 'Line':
             case 'Paragraph':
                 let space: number = 0;
-                if (shape) {
-                    space = paragraph.paragraphFormat.afterSpacing;
-                }
+                // if (shape) {
+                //     space = paragraph.paragraphFormat.afterSpacing;
+                // }
                 indentY = paragraph.y + vertPosition + space;
                 break;
             default:

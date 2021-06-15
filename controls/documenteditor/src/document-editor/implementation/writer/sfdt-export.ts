@@ -858,9 +858,11 @@ export class SfdtExport {
         inline.verticalPosition = HelperMethods.convertPixelToPoint(element.verticalPosition);
         inline.verticalOrigin = element.verticalOrigin;
         inline.verticalAlignment = element.verticalAlignment;
+        inline.verticalRelativePercent = element.verticalRelativePercent;
         inline.horizontalPosition = HelperMethods.convertPixelToPoint(element.horizontalPosition);
         inline.horizontalOrigin = element.horizontalOrigin;
         inline.horizontalAlignment = element.horizontalAlignment;
+        inline.horizontalRelativePercent = element.horizontalRelativePercent;
         inline.zOrderPosition = element.zOrderPosition;
         inline.allowOverlap = element.allowOverlap;
         inline.textWrappingStyle = element.textWrappingStyle;

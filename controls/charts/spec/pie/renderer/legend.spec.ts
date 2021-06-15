@@ -666,6 +666,9 @@ describe('Legend checking for the pie series', () => {
         let chartContainer: HTMLElement;
         let titleElement: Element;
         let legendGroup: Element;
+        let id: string = 'container';
+        let legendEle: Element;
+        let legendId: string = id + '_chart_legend';
         let backArrow: Element; let fontArrow: Element;
         let opacity: string; let path: string;
         let xValue: string; let yValue: string;
@@ -964,6 +967,24 @@ describe('Legend checking for the pie series', () => {
             pieObj.legendSettings.title = 'Countries';
             pieObj.legendSettings.titlePosition = 'Top';
             pieObj.legendSettings.position = 'Left';
+            pieObj.refresh();
+        });
+        it('11.legend with html entities', (done: Function) => {
+            pieObj.loaded = (args: IAccLoadedEventArgs) => {
+                legendEle = getElement(legendId + '_text_1');
+                expect(legendEle.textContent === '<Serations').toBe(true);
+                legendEle = getElement(legendId + '_text_4');
+                expect(legendEle.textContent === 'Prepaid&Assets').toBe(true);
+                done();
+            };
+            pieObj.legendSettings.position = 'Bottom';
+            pieObj.series[0].dataSource = [{ x: 'Net-s', y: 21, text: '21%' },
+            { x: '&#60;Serations', y: 21, text: '21%' },
+            { x: 'Privts', y: 8, text: '8%' },
+            { x: 'Aler&gt;', y: 8, text: '8%' },
+            { x: 'Prepaid&amp;Assets', y: 4, text: '4%' },
+            { x: 'St', y: 21, text: '21%' },
+            { x: 'Fedeue', y: 16, text: '16%' }];
             pieObj.refresh();
         });
     });

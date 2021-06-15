@@ -72,8 +72,4 @@ describe('Hide & Show ->', () => {
             });
         });
     });
-
-    describe('UI Interaction ->', () => {
-
-    });
 });

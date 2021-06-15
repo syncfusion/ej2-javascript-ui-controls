@@ -611,10 +611,10 @@ export class FreeTextAnnotation {
             const pageDiv: HTMLElement = this.pdfViewerBase.getElement('_pageDiv_' + (pageIndex));
             let inputEleHeight: number = parseFloat(this.inputBoxElement.style.height);
             let inputEleWidth: number = parseFloat(this.inputBoxElement.style.width);
-            const inputEleLeft: number = parseFloat(this.inputBoxElement.style.left);
+            let inputEleLeft: number = parseFloat(this.inputBoxElement.style.left);
             if (this.pdfViewerBase.isMixedSizeDocument) {
                 const canvas: HTMLElement = document.getElementById(this.pdfViewer.element.id + '_annotationCanvas_' + pageIndex);
-                this.inputBoxElement.style.left = inputEleLeft - canvas.offsetLeft;
+                inputEleLeft = inputEleLeft - canvas.offsetLeft;
             }
             const inputEleTop: number = parseFloat(this.inputBoxElement.style.top);
             const zoomFactor: number = this.pdfViewerBase.getZoomFactor();

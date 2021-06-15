@@ -11385,7 +11385,7 @@ export class Editor {
                     }
                 }
                 if (inline instanceof CommentCharacterElementBox && inline.commentType === 0) {
-                    (inline.comment.ownerComment) ? this.deleteCommentWidget(inline.comment.ownerComment): this.deleteCommentWidget(inline.comment);
+                    (inline.comment.ownerComment) ? this.deleteCommentWidget(inline.comment.ownerComment) : this.deleteCommentWidget(inline.comment);
                 }
                 if (inline instanceof BookmarkElementBox) {
                     if (this.documentHelper.bookmarks.containsKey(inline.name)) {
@@ -11847,6 +11847,8 @@ export class Editor {
      */
     public onEnter(isInsertPageBreak?: boolean): void {
         let selection: Selection = this.documentHelper.selection;
+        var format: SelectionCharacterFormat = new SelectionCharacterFormat(this.selection);
+        format.cloneFormat(this.selection.characterFormat);
         if (this.isXmlMapped) {
             return;
         }
@@ -11930,6 +11932,9 @@ export class Editor {
                 (paragraph.lastChild as LineWidget).children[(paragraph.lastChild as LineWidget).children.length - 1] instanceof TextElementBox) {
                 this.checkAndConvertToHyperlink(selection, true, paragraph);
             }
+        }
+        if (!isNullOrUndefined(selection.start.paragraph) && selection.start.paragraph.isEmpty()) {
+            this.selection.characterFormat.cloneFormat(format);
         }
     }
     private splitParagraphInternal(selection: Selection, paragraphAdv: ParagraphWidget, currentLine: LineWidget, offset: number): void {
@@ -12169,7 +12174,7 @@ export class Editor {
                     let cell: TableCellWidget = row.childWidgets[j] as TableCellWidget;
                     cell.rowIndex = row.index;
                     cell.index = j;
-                }   
+                }
             }
             //update Row index of all the cell
         } else if (block.containerWidget instanceof HeaderFooterWidget || block.containerWidget instanceof TextFrame
@@ -14669,18 +14674,18 @@ export class Editor {
     }
     private getSelectedCellsNextWidgets(selectedCell: TableCellWidget, table: TableWidget): TableCellWidget[] {
         let cells: TableCellWidget[] = [];
-        if (selectedCell.nextWidget) {
+        if (!isNullOrUndefined(selectedCell.nextWidget)) {
             cells.push(selectedCell.nextWidget as TableCellWidget);
-        }
-        if (selectedCell.cellFormat.rowSpan > 1) {
-            let nextRowIndex: number = selectedCell.ownerRow.rowIndex + selectedCell.cellFormat.rowSpan;
-            for (let i: number = selectedCell.ownerRow.rowIndex + 1; i < nextRowIndex; i++) {
-                let nextRow: TableRowWidget = table.childWidgets[i] as TableRowWidget;
-                if (nextRow) {
-                    for (let j: number = 0; j < nextRow.childWidgets.length; j++) {
-                        if ((nextRow.childWidgets[j] as TableCellWidget).columnIndex ===
-                            (selectedCell.nextWidget as TableCellWidget).columnIndex) {
-                            cells.push(nextRow.childWidgets[j] as TableCellWidget);
+            if (selectedCell.cellFormat.rowSpan > 1) {
+                let nextRowIndex: number = selectedCell.ownerRow.rowIndex + selectedCell.cellFormat.rowSpan;
+                for (let i: number = selectedCell.ownerRow.rowIndex + 1; i < nextRowIndex; i++) {
+                    let nextRow: TableRowWidget = table.childWidgets[i] as TableRowWidget;
+                    if (nextRow) {
+                        for (let j: number = 0; j < nextRow.childWidgets.length; j++) {
+                            if ((nextRow.childWidgets[j] as TableCellWidget).columnIndex ===
+                                (selectedCell.nextWidget as TableCellWidget).columnIndex) {
+                                cells.push(nextRow.childWidgets[j] as TableCellWidget);
+                            }
                         }
                     }
                 }

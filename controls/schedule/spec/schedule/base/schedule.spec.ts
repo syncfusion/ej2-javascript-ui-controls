@@ -11,7 +11,7 @@ import {
 import * as util from '../util.spec';
 import * as cls from '../../../src/schedule/base/css-constant';
 import { profile, inMB, getMemoryProfile } from '../../common.spec';
-import { readonlyEventsData } from './datasource.spec';
+import { readonlyEventsData, defaultData } from './datasource.spec';
 import { EJ2Instance } from '../../../src/schedule/base/interface';
 import { DropDownList } from '@syncfusion/ej2-dropdowns';
 import { DateTimePicker } from '@syncfusion/ej2-calendars';
@@ -1775,6 +1775,57 @@ describe('Schedule base module', () => {
             expect((schObj.element.querySelector('.e-header-cells') as HTMLElement).innerText).toEqual('Janv. 1');
             expect(schObj.element.querySelector('.e-schedule-toolbar .e-date-range .e-tbar-btn-text').innerHTML).
                 toEqual('Janvier 2019');
+        });
+    });
+
+    describe('EJ2-50031 - Form validator locale not working', () => {
+        let schObj: Schedule;
+        L10n.load({
+            'zh': {
+                'schedule': {
+                    'day': '天',
+                    'week': '周',
+                    'workWeek': '工作周',
+                    'month': '月',
+                    'agenda': '议程',
+                    'today': '今天',
+                    'noEvents': '没有事件'
+                },
+                'formValidator': {
+                    'required': '此字段是必需的。'
+                }
+            }
+        });
+        util.loadCultureFiles('zh');
+        beforeAll((done: DoneFn) => {
+            const schOptions: ScheduleModel = { height: '500px', currentView: 'Agenda', locale: 'zh',
+            eventSettings: {
+                fields: {
+                    id: 'Id',
+                    subject: { name: 'Subject', validation: { required: true } },
+                    location: { name: 'Location', validation: { required: true } },
+                    description: {
+                        name: 'Description', validation: {
+                            required: true
+                        }
+                    },
+                    startTime: { name: 'StartTime', validation: { required: true } },
+                    endTime: { name: 'EndTime', validation: { required: true } }
+                }
+            }, selectedDate: new Date(2017, 10, 1) };
+            schObj = util.createSchedule(schOptions, defaultData, done);
+        });
+        afterEach((): void => {
+            util.destroy(schObj);
+        });
+
+        it('Testing chinese locale form validator', () => {
+        util.triggerMouseEvent(schObj.element.querySelector('[data-id="Appointment_6"]') as HTMLElement, 'click');
+        util.triggerMouseEvent(schObj.element.querySelector('[data-id="Appointment_6"]') as HTMLElement, 'dblclick');
+        const dialogElement: HTMLElement = document.querySelector('.' + cls.EVENT_WINDOW_DIALOG_CLASS) as HTMLElement;
+        const saveButton: HTMLInputElement = <HTMLInputElement>dialogElement.querySelector('.' + cls.EVENT_WINDOW_SAVE_BUTTON_CLASS);
+        saveButton.click();
+        expect((document.querySelector('.e-tip-content') as HTMLElement).innerText).toEqual('此字段是必需的。'); 
         });
     });
 

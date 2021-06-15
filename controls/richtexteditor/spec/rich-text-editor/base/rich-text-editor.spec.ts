@@ -715,6 +715,54 @@ describe('RTE base module', () => {
         });
     });
 
+    describe('EJ2-49452- Disable multiple toolbar when quicktoolbar is opened', () => {
+        let rteObj: RichTextEditor;
+        let QTBarModule: IRenderer;
+        let trg: HTMLElement;
+        beforeAll(() => {
+            rteObj = renderRTE({
+                toolbarSettings: {
+                    items: [ 'Bold', 'Italic', 'Underline', {
+                        tooltipText: 'Custom tool 1',
+                        command: 'Custom',
+                        template:
+                          '<button class="e-tbar-btn e-btn" id="custom_tbar" style="width:100%"><div class="e-tbar-btn-text" style="font-weight: 500;"> &#937;</div>custom tool</button>'
+                      }, 'FontColor', 'BackgroundColor', '|',
+                    'SubScript', {
+                        tooltipText: 'Custom tool 2',
+                        command: 'Custom',
+                        template:
+                          '<button class="e-tbar-btn e-btn" id="custom_tbar" style="width:100%"><div class="e-tbar-btn-text" style="font-weight: 500;"> &#937;</div>custom tool</button>'
+                      }, 'SuperScript', '|',
+                    'LowerCase', {
+                        tooltipText: 'Custom tool 3',
+                        command: 'Custom',
+                        template:
+                          '<button class="e-tbar-btn e-btn" id="custom_tbar" style="width:100%"><div class="e-tbar-btn-text" style="font-weight: 500;"> &#937;</div>custom tool</button>'
+                      }, 'UpperCase'
+                ]
+                },
+                value: '<p><img src="https://media.sproutsocial.com/uploads/2017/02/10x-featured-social-media-image-size.png" class="e-resize e-rte-image e-imginline"></p>'
+            });
+            trg = (rteObj as any).element.querySelectorAll(".e-content")[0];
+            let clickEvent: MouseEvent = document.createEvent("MouseEvents");
+            clickEvent.initEvent("mousedown", true, true);
+            trg.dispatchEvent(clickEvent);
+            QTBarModule = getQTBarModule(rteObj);
+            QTBarModule.imageQTBar.showPopup(0, 0, trg);
+        });
+
+        it('When the custom command is configured for multiple toolbars', () => {            
+            expect((rteObj as any).element.querySelectorAll('.e-template')[0].classList.contains('e-overlay')).toBe(true);
+            expect((rteObj as any).element.querySelectorAll('.e-template')[3].classList.contains('e-overlay')).toBe(true);
+            expect((rteObj as any).element.querySelectorAll('.e-template')[4].classList.contains('e-overlay')).toBe(true);
+        });
+
+        afterAll(() => {
+            destroy(rteObj);
+        });
+    });
+
     describe('RTE Events', () => {
         let rteObj: RichTextEditor;
         let actionBeginTiggered: boolean = false;

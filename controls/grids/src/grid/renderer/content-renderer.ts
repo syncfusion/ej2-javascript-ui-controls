@@ -1094,13 +1094,13 @@ export class ContentRender implements IRenderer {
                 if (!isNullOrUndefined(oldIndex)) {
                     let isEqual: boolean = false;
                     if (this.mutableData) {
-                        isEqual = this.objectEqualityChecker(this.prevCurrentView[i], dataSource[i]);
+                        isEqual = this.objectEqualityChecker(this.prevCurrentView[oldIndex], dataSource[i]);
                     }
                     const tr: HTMLTableRowElement = oldRowElements[oldRowObjs[oldIndex].uid] as HTMLTableRowElement;
                     newRowObjs.push(oldRowObjs[oldIndex]);
-                    if (this.rowElements[i] && this.rowElements[i].getAttribute('data-uid') === newRowObjs[i].uid
+                    if (this.rowElements[oldIndex] && this.rowElements[oldIndex].getAttribute('data-uid') === newRowObjs[i].uid
                         && ((hasBatch && isNullOrUndefined(batchChangeKeys[newIndexes[i]]))
-                            || (!hasBatch && (isEqual || this.prevCurrentView[i] === dataSource[i])))) {
+                            || (!hasBatch && (isEqual || this.prevCurrentView[oldIndex] === dataSource[i])))) {
                         if (oldIndex !== i) {
                             this.refreshImmutableContent(i, tr, newRowObjs[i]);
                         }
@@ -1144,7 +1144,10 @@ export class ContentRender implements IRenderer {
         let isEqual: boolean = true;
         for (let i: number = 0; i < keys.length; i++) {
             if (old[keys[i]] !== next[keys[i]]) {
-                isEqual = false; break;
+                const isDate: boolean = old[keys[i]] instanceof Date && next[keys[i]] instanceof Date;
+                if (!isDate || ((old[keys[i]] as Date).getTime() !== (next[keys[i]] as Date).getTime())) {
+                    isEqual = false; break;
+                }
             }
         }
         return isEqual;

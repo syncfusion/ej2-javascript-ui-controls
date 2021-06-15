@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 19.1.67 (2021-06-08)
+
+### Dialog
+
+#### Bug Fixes
+
+- `#I324425`, `#I329144` - Resolved the issue "API docs not accessible for dialog after `Position` API".
+
 ## 19.1.66 (2021-06-01)
 
 ### Popup

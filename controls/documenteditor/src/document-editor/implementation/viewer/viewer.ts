@@ -3403,6 +3403,14 @@ export abstract class LayoutViewer {
             if (!isNullOrUndefined(page.footerWidget)) {
                 isEmptyWidget = page.footerWidget.isEmpty;
                 let footnoteHeight: number = !isNullOrUndefined(page.footnoteWidget) ? page.footnoteWidget.height : 0;
+                if (footnoteHeight === 0) {
+                    let num: number = this.owner.documentHelper.pages.indexOf(page);
+                    if (num > 0) {
+                        let footNote: FootNoteWidget = this.owner.documentHelper.pages[num - 1].footnoteWidget;
+                        footnoteHeight = !isNullOrUndefined(footNote) ? footNote.height : 0
+                        this.clientArea.height -= footnoteHeight;
+                    }
+                }
                 if (!isEmptyWidget || isEmptyWidget && this.owner.enableHeaderAndFooter) {
                     // eslint-disable-next-line max-len
                     bottom = 0.667 + Math.min(pageHeight / 100 * 40, Math.max(footerDistance + page.footerWidget.height + footnoteHeight, bottomMargin));

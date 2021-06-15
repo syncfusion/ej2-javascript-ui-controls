@@ -299,7 +299,7 @@ export function maskInputFocusHandler(event: MouseEvent | FocusEvent | TouchEven
         selectionEnd: inputElement.selectionEnd
     };
     if (!this.isClicked) {
-        this.trigger('focus', eventArgs);
+        triggerFocus.call(this, eventArgs, inputElement);
     }
     if (this.mask) {
         if (!(!(modelValue === null || modelValue === '') || this.floatLabelType === 'Always' ||
@@ -361,14 +361,32 @@ export function maskInputFocusHandler(event: MouseEvent | FocusEvent | TouchEven
                             container: this.inputObj.container,
                             selectionEnd: inputElement.selectionEnd
                         };
-                        this.trigger('focus', eventArgs);
+                        triggerFocus.call(this, eventArgs, inputElement);
                     });
                     break;
                 }
             }
+            if (isNullOrUndefined(inputElement.value.match(this.promptChar))) {
+                eventArgs = {
+                    selectionStart: inputElement.selectionStart,
+                    event: event,
+                    value: this.value,
+                    maskedValue: inputElement.value,
+                    container: this.inputObj.container,
+                    selectionEnd: inputElement.selectionEnd
+                };
+                triggerFocus.call(this, eventArgs, inputElement);
+            }
             this.isClicked = false;
         }
     }
+}
+
+export function triggerFocus(eventArgs: MaskFocusEventArgs, inputElement:HTMLInputElement):void {
+    this.trigger('focus', eventArgs, (eventArgs: MaskFocusEventArgs) => {
+        inputElement.selectionStart = eventArgs.selectionStart;
+        inputElement.selectionEnd = eventArgs.selectionEnd;
+    });
 }
 
 export function maskInputBlurHandler(event: MouseEvent | FocusEvent | TouchEvent | KeyboardEvent): void {

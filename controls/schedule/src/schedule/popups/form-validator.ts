@@ -11,9 +11,10 @@ export class FieldValidator {
     private element: HTMLElement;
     private ignoreError: boolean;
 
-    public renderFormValidator(form: HTMLFormElement, rules: Record<string, any>, element: HTMLElement): void {
+    public renderFormValidator(form: HTMLFormElement, rules: Record<string, any>, element: HTMLElement, locale: string): void {
         this.element = element;
         this.formObj = new FormValidator(form, {
+            locale: locale,
             customPlacement: (inputElement: HTMLElement, error: HTMLElement) => {
                 this.errorPlacement(inputElement, error);
             },

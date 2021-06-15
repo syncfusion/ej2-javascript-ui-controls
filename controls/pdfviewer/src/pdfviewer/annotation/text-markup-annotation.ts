@@ -1107,10 +1107,12 @@ export class TextMarkupAnnotation {
             // eslint-disable-next-line
             let bound: any = bounds[i];
             context.beginPath();
-            const x: number = bound.X ? bound.X : bound.left;
-            const y: number = bound.Y ? bound.Y : bound.top;
+            let x: number = bound.X ? bound.X : bound.left;
+            let y: number = bound.Y ? bound.Y : bound.top;
             const width: number = bound.Width ? bound.Width : bound.width;
             let height: number = bound.Height ? bound.Height : bound.height;
+            x = x ? x : bound.x;
+            y = y ? y : bound.y;
             // The highlighted position is slightly increased. So Subtract -1 from the height. 
             height = height - 1;
             if (context.canvas.id === this.pdfViewer.element.id + '_print_annotation_layer_' + pageIndex) {
@@ -1191,10 +1193,12 @@ export class TextMarkupAnnotation {
 
     // eslint-disable-next-line
     private getProperBounds(bound: any): any {
-        const x: number = bound.X ? bound.X : bound.left;
-        const y: number = bound.Y ? bound.Y : bound.top;
+        let x: number = bound.X ? bound.X : bound.left;
+        let y: number = bound.Y ? bound.Y : bound.top;
         const width: number = bound.Width ? bound.Width : bound.width;
         const height: number = bound.Height ? bound.Height : bound.height;
+        x = x ? x : bound.x;
+        y = y ? y : bound.y;
         return { x: x, y: y, width: width, height: height };
     }
 
@@ -1672,10 +1676,12 @@ export class TextMarkupAnnotation {
 
     // eslint-disable-next-line
     private getAnnotationBounds(bounds: any, pageIndex: number): any {
-        const left: number = bounds.left ? bounds.left : bounds.Left;
-        const top: number = bounds.top ? bounds.top : bounds.Top;
+        let left: number = bounds.left ? bounds.left : bounds.Left;
+        let top: number = bounds.top ? bounds.top : bounds.Top;
         const height: number = bounds.height ? bounds.height : bounds.Height;
         const width: number = bounds.width ? bounds.width : bounds.Width;
+        left = left ? left : bounds.x;
+        top = top ? top : bounds.y;
         const pageDetails: ISize = this.pdfViewerBase.pageSize[pageIndex];
         if (pageDetails) {
             if (pageDetails.rotation === 1) {

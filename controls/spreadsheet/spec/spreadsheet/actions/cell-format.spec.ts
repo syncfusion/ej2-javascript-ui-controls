@@ -64,10 +64,6 @@ describe('Cell Format ->', () => {
         });
     });
 
-    describe('UI Interaction ->', () => {
-        
-    });
-
     describe('CR-Issues ->', () => {
         describe('fb22572 ->', () => {
             beforeEach((done: Function) => {

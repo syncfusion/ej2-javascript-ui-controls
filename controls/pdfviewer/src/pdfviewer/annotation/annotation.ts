@@ -2803,7 +2803,7 @@ export class Annotation {
                     setting.lineHeadEndStyle = this.getArrowString(pdfAnnotationBase.taregetDecoraterShapes);
                     setting.borderDashArray = pdfAnnotationBase.borderDashArray;
                 }
-                if (!this.pdfViewerBase.isAnnotationAdded) {
+                if (!this.pdfViewerBase.isAnnotationAdded || pdfAnnotationBase.measureType === 'Distance') {
                     if (pdfAnnotationBase.measureType === '' || isNullOrUndefined(pdfAnnotationBase.measureType)) {
                         // eslint-disable-next-line max-len
                         this.shapeAnnotationModule.renderShapeAnnotations(pdfAnnotationBase, this.pdfViewer.annotation.getEventPageNumber(event));
@@ -3394,6 +3394,30 @@ export class Annotation {
                 return { left: pageDetails.width - bound.left - bound.width, top: pageDetails.height - bound.top - bound.height, width: bound.width, height: bound.height };
             } else if (pageDetails.rotation === 3) {
                 return { left: pageDetails.height - bound.top - bound.height, top: bound.left, width: bound.height, height: bound.width };
+            } else {
+                return bound;
+            }
+        } else {
+            return bound;
+        }
+    }
+
+    /**
+     * @param bound
+     * @param pageIndex
+     * @private
+     */
+    // eslint-disable-next-line
+    public getInkBounds(bound: any, pageIndex: number): any {
+        const pageDetails: ISize = this.pdfViewerBase.pageSize[pageIndex];
+        if (pageDetails) {
+            if (pageDetails.rotation === 1) {
+                return { x: bound.y, y: pageDetails.width - (bound.x + bound.width), width: bound.height, height: bound.width };
+            } else if (pageDetails.rotation === 2) {
+                // eslint-disable-next-line max-len
+                return { x: pageDetails.width - bound.x - bound.width, y: pageDetails.height - bound.y - bound.height, width: bound.width, height: bound.height };
+            } else if (pageDetails.rotation === 3) {
+                return { x: pageDetails.height - bound.y - bound.height, y: bound.x, width: bound.height, height: bound.width };
             } else {
                 return bound;
             }

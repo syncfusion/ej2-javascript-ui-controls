@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 19.1.69 (2021-06-15)
+
+### Tab
+
+#### Bug Fixes
+
+- `#I330332` - An issue with the tab `aria-selected` attribute not properly updated has been fixed.
+
 ## 19.1.67 (2021-06-08)
 
 ### Toolbar

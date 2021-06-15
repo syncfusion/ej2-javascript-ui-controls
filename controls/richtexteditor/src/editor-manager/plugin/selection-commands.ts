@@ -281,7 +281,7 @@ export class SelectionCommands {
                 curParentElem.parentElement.insertBefore(currentNodeElem, curParentElem);
                 detach(curParentElem);
             }
-            if (format === 'fontsize') {
+            if (format === 'fontsize' || format === 'fontcolor') {
                 let liElement: HTMLElement = nodes[index].parentElement;
                 let parentElement: HTMLElement = nodes[index].parentElement;
                 while (!isNOU(parentElement) && parentElement.tagName.toLowerCase() !== 'li') {
@@ -290,7 +290,12 @@ export class SelectionCommands {
                 }
                 if (!isNOU(liElement) && liElement.tagName.toLowerCase() === 'li' &&
                     liElement.textContent.trim() === nodes[index].textContent.trim()) {
-                    liElement.style.fontSize = value;
+                    if (format === 'fontsize') {
+                        liElement.style.fontSize = value;
+                    } else {
+                        liElement.style.color = value;
+                        liElement.style.textDecoration = 'inherit';
+                    }
                 }
             }
         }
@@ -320,7 +325,7 @@ export class SelectionCommands {
                         : nodes[index].textContent.toLocaleLowerCase();
                 } else if (!(isFontStyle === true && value === '')) {
                     const element: HTMLElement = this.GetFormatNode(format, value);
-                    if (format === 'fontsize') {
+                    if (format === 'fontsize' || format === 'fontcolor') {
                         let liElement: HTMLElement = nodes[index].parentElement;
                         let parentElement: HTMLElement = nodes[index].parentElement;
                         while (!isNOU(parentElement) && parentElement.tagName.toLowerCase() !== 'li') {
@@ -329,12 +334,19 @@ export class SelectionCommands {
                         }
                         if (!isNOU(liElement) && liElement.tagName.toLowerCase() === 'li' &&
                             liElement.textContent.trim() === nodes[index].textContent.trim()) {
-                            liElement.style.fontSize = value;
+                            if (format === 'fontsize') {
+                                liElement.style.fontSize = value;
+                            } else {
+                                liElement.style.color = value;
+                                liElement.style.textDecoration = 'inherit';
+                            }
                         }
                         nodes[index] = this.applyStyles(nodes, index, element);
-                        const bg: Element = closest(nodes[index].parentElement, 'span[style*=' + 'background-color' + ']');
-                        if (!isNOU(bg)) {
-                            nodes[index].parentElement.style.backgroundColor = (bg as HTMLElement).style.backgroundColor;
+                        if (format === 'fontsize') {
+                            const bg: Element = closest(nodes[index].parentElement, 'span[style*=' + 'background-color' + ']');
+                            if (!isNOU(bg)) {
+                                nodes[index].parentElement.style.backgroundColor = (bg as HTMLElement).style.backgroundColor;
+                            }
                         }
                     } else {
                         nodes[index] = this.applyStyles(nodes, index, element);

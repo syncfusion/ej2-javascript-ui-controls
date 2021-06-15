@@ -411,7 +411,7 @@ export class ExcelFilterBase extends CheckBoxFilterBase {
      */
     public removeDialog(): void {
         this.parent.notify(events.customFilterClose, {});
-        if (this.parent.isReact) {
+        if (this.parent.isReact && this.parent.destroyTemplate !== undefined) {
             this.parent.destroyTemplate(['filterTemplate']);
             this.parent.renderTemplates();
         }
@@ -746,7 +746,9 @@ export class ExcelFilterBase extends CheckBoxFilterBase {
                 const element: Element[] = (this.options.column as Column).getFilterTemplate()(data, this.parent, 'filterTemplate', tempID);
                 appendChildren(valueDiv, element);
             }
-            valueDiv.querySelector('input').id = isComplex ? complexFieldName + elementId : column + elementId;
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            ((this.parent as any).isAngular ? valueDiv.children[0] : valueDiv.querySelector('input')).id = isComplex ?
+                complexFieldName + elementId : column + elementId;
             value.appendChild(valueDiv);
         } else {
             const valueInput: Element = this.parent

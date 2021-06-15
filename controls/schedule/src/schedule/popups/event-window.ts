@@ -857,7 +857,7 @@ export class EventWindow {
         rules[this.parent.eventSettings.fields.description.name] =
             getValidationRule(this.parent.eventSettings.fields.description.validation);
         this.fieldValidator = new FieldValidator();
-        this.fieldValidator.renderFormValidator(form, rules, this.element);
+        this.fieldValidator.renderFormValidator(form, rules, this.element, this.parent.locale);
     }
 
     private showDetails(eventData: Record<string, any>): void {

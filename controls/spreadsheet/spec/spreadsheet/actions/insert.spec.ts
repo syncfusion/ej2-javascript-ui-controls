@@ -61,10 +61,6 @@ describe('Insert & Delete ->', () => {
             });
         });
     });
-
-    describe('UI Interaction ->', () => {
-
-    });
     describe('CR-Issues ->', () => {
         describe('I289560 ->', () => {
             beforeEach((done: Function) => {

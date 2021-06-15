@@ -522,6 +522,62 @@ describe('Adaptive renderer', () => {
         });
     });
 
+    describe('EJ2-49530 - Grid’s adaptive view filter function is not working properly ', () => {
+        let gridObj: any;
+        beforeAll((done: Function) => {
+            const isDef = (o: any) => o !== undefined && o !== null;
+            if (!isDef(window.performance)) {
+                console.log("Unsupported environment, window.performance.memory is unavailable");
+                this.skip(); //Skips test (in Chai)
+            }
+            gridObj = createGrid(
+                {
+                    dataSource: data,
+                    enableAdaptiveUI: true,
+                    rowRenderingMode: 'Vertical',
+                    allowFiltering: true,
+                    allowPaging: true,
+                    filterSettings: { type: 'Excel' },
+                    height: 400,
+                    columns: [
+                        { headerText: 'OrderID', field: 'OrderID', isPrimaryKey: true, width: 120 },
+                        { headerText: 'CustomerID', field: 'CustomerID', width: 120, visible: false },
+                        { headerText: 'EmployeeID', field: 'EmployeeID', width: 120, allowFiltering: false },
+                        { headerText: 'ShipCountry', field: 'ShipCountry', width: 120, allowSorting: false },
+                        { headerText: 'ShipCity', field: 'ShipCity', width: 120 },
+                    ]
+                }, done);
+        });
+
+        it('Open the Adaptive dialog ', (done: Function) => {
+            let beforeOpenAdaptiveDialog = (args: AdaptiveDialogEventArgs) => {
+                gridObj.beforeOpenAdaptiveDialog = null;
+                done();
+            }
+            gridObj.beforeOpenAdaptiveDialog = beforeOpenAdaptiveDialog;
+            gridObj.element.querySelector('.e-grid .e-toolbar .e-resfilter-icon').click();
+        });
+
+        it('Ensure custom filter dialog ', (done: Function) => {
+            let actionComplete = (args?: any): void => {
+                if (args.requestType === 'filterchoicerequest') {
+                    expect((document.querySelector('.e-resfilterdiv').querySelector('.e-dlg-custom-header') as HTMLElement).innerText).toBe(args.filterModel.options.column.headerText);
+                    gridObj.actionComplete = null;
+                    done();
+                }
+            };
+            gridObj.actionComplete = actionComplete;
+            let customDlgCnt: HTMLElement = document.querySelector('.e-customfilterdiv > .e-dlg-content');
+            (customDlgCnt.querySelector('.e-res-header-text') as HTMLElement).click();
+        });
+
+
+        afterAll(() => {
+            destroy(gridObj);
+            gridObj = null;
+        });
+    });
+
     describe('Ensure adaptive filter and sort dialog events', () => {
         let gridObj: any;
         beforeAll((done: Function) => {

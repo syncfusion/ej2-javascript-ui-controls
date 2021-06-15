@@ -52,10 +52,10 @@ Following list of components are available in the package.
   * [View Online Demos](https://ej2.syncfusion.com/demos/?utm_source=npm&utm_campaign=slider#/material/slider/default.html)
   * [Product Page](https://www.syncfusion.com/javascript-ui-controls/slider/?utm_source=npm&utm_campaign=slider)
 
-* **Uploader** - The uploader component is an extended version of the HTML5 upload control which is used to upload images, documents, and other files to a server.
-  * [Getting Started](https://ej2.syncfusion.com/documentation/uploader/getting-started?lang=typescript&utm_source=npm&utm_campaign=upload)
-  * [View Online Demos](https://ej2.syncfusion.com/demos/?utm_source=npm&utm_campaign=uploader#/material/uploader/default.html)
-  * [Product Page](https://www.syncfusion.com/javascript-ui-controls/uploader/?utm_source=npm&utm_campaign=uploader)
+* **Uploader** - The [JavaScript File Upload](https://www.syncfusion.com/javascript-ui-controls/js-file-upload?utm_source=npm&utm_medium=listing&utm_campaign=javascript-file-upload-npm) component is an extended version of the HTML5 upload control which is used to upload images, documents, and other files to a server.
+  * [Product Page](https://www.syncfusion.com/javascript-ui-controls/js-file-upload?utm_source=npm&utm_medium=listing&utm_campaign=javascript-file-upload-npm)
+  * [Getting Started](https://ej2.syncfusion.com/documentation/uploader/getting-started?l?utm_source=npm&utm_medium=listing&utm_campaign=javascript-file-upload-npm)
+  * [View Online Demos](https://ej2.syncfusion.com/demos/?utm_source=npm&utm_campaign=uploader#/material/uploader/default.html?utm_source=npm&utm_medium=listing&utm_campaign=javascript-file-upload-npm)
 
 ## Supported frameworks
 
@@ -116,12 +116,12 @@ Input component is also offered in following list of frameworks.
 - [**Keyboard Interaction**](https://ej2.syncfusion.com/demos/?utm_source=npm&utm_campaign=slider#/material/slider/api.html) - The Slider can be intractable through the keyboard.
 
 ### 6. Upload
-- [**Chunk Upload**](https://ej2.syncfusion.com/demos/?utm_source=npm&utm_campaign=uploader#/material/uploader/chunk-upload.html) – used to upload large files as chunks
-- [**Drag-and-drop**](https://ej2.syncfusion.com/demos/?utm_source=npm&utm_campaign=uploader/#/material/uploader/custom-drop-area.html) – drag the files and drop into component to upload them.
-- [**Template**](https://ej2.syncfusion.com/demos/?utm_source=npm&utm_campaign=uploader/#/material/uploader/custom-file-list.html) – the file list and buttons can be customize using template
-- [**Validation**](https://ej2.syncfusion.com/demos/?utm_source=npm&utm_campaign=uploader/#/material/uploader/file-validation.html) – validate extension and size of upload file
-- [**Auto Upload**](https://ej2.syncfusion.com/demos/?utm_source=npm&utm_campaign=uploader#/material/uploader/default.html) – Process the file to upload without interaction.
-- [**Preload Files**](https://ej2.syncfusion.com/demos/?utm_source=npm&utm_campaign=uploader/#/material/uploader/preload-files.html) – View and manipulate previously uploaded files
+- [**Chunk Upload**](https://ej2.syncfusion.com/demos/?utm_source=npm&utm_medium=listing&utm_campaign=javascript-file-upload-npm#/material/uploader/chunk-upload.html) – used to upload large files as chunks
+- [**Drag-and-drop**](https://ej2.syncfusion.com/demos/?utm_source=npm&utm_medium=listing&utm_campaign=javascript-file-upload-npm/#/material/uploader/custom-drop-area.html) – drag the files and drop into component to upload them.
+- [**Template**](https://ej2.syncfusion.com/demos/?utm_source=npm&utm_medium=listing&utm_campaign=javascript-file-upload-npm/#/material/uploader/custom-file-list.html) – the file list and buttons can be customize using template
+- [**Validation**](https://ej2.syncfusion.com/demos/?utm_source=npm&utm_medium=listing&utm_campaign=javascript-file-upload-npm/#/material/uploader/file-validation.html) – validate extension and size of upload file
+- [**Auto Upload**](https://ej2.syncfusion.com/demos/?utm_source=npm&utm_medium=listing&utm_campaign=javascript-file-upload-npm#/material/uploader/default.html) – Process the file to upload without interaction.
+- [**Preload Files**](https://ej2.syncfusion.com/demos/?utm_source=npm&utm_medium=listing&utm_campaign=javascript-file-upload-npm/#/material/uploader/preload-files.html) – View and manipulate previously uploaded files
 
 ## Support
 

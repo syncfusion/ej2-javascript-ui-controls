@@ -44,8 +44,4 @@ describe('Image ->', () => {
             done();
         });
     });
-
-    describe('UI Interaction ->', () => {
-        
-    });
 });

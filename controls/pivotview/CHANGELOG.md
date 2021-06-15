@@ -2,6 +2,19 @@
 
 ## [Unreleased]
 
+## 19.1.69 (2021-06-15)
+
+### Pivot Table
+ 
+#### Bug Fixes
+ 
+- `#328394` - Unwanted post request won't be called in server side engine.
+- Filter status of the pivot buttons is now properly updated when defer layout update.
+ 
+#### New Features
+ 
+- `#326739` - Zoom factor can now be set in the pivot chart programmatically.
+
 ## 19.1.67 (2021-06-08)
 
 ### Pivot Table

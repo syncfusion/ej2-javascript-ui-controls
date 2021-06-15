@@ -258,6 +258,7 @@ export class ExportHelper {
         document.body.appendChild(element);
         childGridObj.id = exportId;
         gridPool[exportId] = false;
+        (<Grid>childGridObj).isExportGrid = true;
         return {childGrid: childGridObj, element};
     }
 

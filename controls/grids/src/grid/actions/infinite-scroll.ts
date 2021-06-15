@@ -1,6 +1,6 @@
 import { isNullOrUndefined, remove, extend } from '@syncfusion/ej2-base';
 import { Query } from '@syncfusion/ej2-data';
-import { IGrid, IAction, NotifyArgs, InfiniteScrollArgs, CellFocusArgs, KeyboardEventArgs, IModelGenerator } from '../base/interface';
+import { IGrid, IAction, NotifyArgs, InfiniteScrollArgs, CellFocusArgs, KeyboardEventArgs, IModelGenerator, SaveEventArgs } from '../base/interface';
 import { RowModelGenerator } from '../services/row-model-generator';
 import { FreezeRowModelGenerator } from '../services/freeze-row-model-generator';
 import { RowRenderer } from '../renderer/row-renderer';
@@ -478,6 +478,8 @@ export class InfiniteScroll implements IAction {
     private actionBegin(args: NotifyArgs): void {
         if (args.requestType === 'add' || args.requestType === 'delete') {
             this.requestType = args.requestType;
+        } else if ((args as SaveEventArgs).action === 'add' && args.requestType === 'save') {
+            this.requestType = (args as SaveEventArgs).action as Action;
         }
         if (this.parent.isFrozenGrid() && !args.cancel && args.requestType === 'searching'
             || args.requestType === 'sorting' || args.requestType === 'filtering') {

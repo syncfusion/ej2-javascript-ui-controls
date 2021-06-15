@@ -61,7 +61,7 @@ export class InsertHtml {
             const preNode: Node = nodeCutter.GetSpliceNode(range, closestParentNode as HTMLElement);
             const sibNode: Node = preNode.previousSibling;
             let parentNode: Node = preNode.parentNode;
-            if (nodes.length === 1) {
+            if (nodes.length === 1 || (node.nodeName.toLowerCase() === 'table' && (preNode as HTMLElement).childElementCount === 0)) {
                 nodeSelection.setSelectionContents(docElement, preNode);
                 range = nodeSelection.getRange(docElement);
             } else {
@@ -286,7 +286,7 @@ export class InsertHtml {
             range.startContainer.insertBefore(node, range.startContainer.childNodes[range.endOffset]);
         } else {
             let blockNode: Node = this.getImmediateBlockNode(nodes[nodes.length - 1], editNode);
-            if (isNOU(blockNode.parentElement) && range.endContainer.nodeType !== 3) {
+            if ((isNOU(blockNode) || isNOU(blockNode.parentElement)) && range.endContainer.nodeType !== 3) {
                 blockNode = range.endContainer;
                 range.setEnd(blockNode, range.endContainer.textContent.length);
             }
@@ -324,7 +324,7 @@ export class InsertHtml {
     private static getImmediateBlockNode(node: Node, editNode: Node): Node {
         do {
             node = node.parentNode;
-        } while (CONSTANT.BLOCK_TAGS.indexOf(node.nodeName.toLocaleLowerCase()) < 0);
+        } while (node && CONSTANT.BLOCK_TAGS.indexOf(node.nodeName.toLocaleLowerCase()) < 0);
         return node;
     }
 

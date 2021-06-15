@@ -31,6 +31,7 @@ export class Edit {
     private batchEditModule: BatchEdit;
     private isTabLastRow: boolean;
     private prevAriaRowIndex: string = '-1';
+    private isAddedRowByMethod: boolean = false;
     /**
      * Constructor for Edit module
      *
@@ -675,7 +676,7 @@ export class Edit {
                 args.data = [...data, ...childs];
             }
         }
-        if (args.requestType === 'add') {
+        if (args.requestType === 'add' || (this.isAddedRowByMethod && this.parent.enableVirtualization)) {
             this.selectedIndex = this.parent.grid.selectedRowIndex;
             if (this.parent.enableVirtualization) {
                 let selector: string = '.e-row[aria-rowindex="' + this.selectedIndex + '"]';
@@ -698,6 +699,7 @@ export class Edit {
                 this.addRowIndex = this.parent.grid.selectedRowIndex > -1 ? this.parent.grid.selectedRowIndex : 0;
             }
             this.addRowRecord = this.parent.getSelectedRecords()[0];
+            this.isAddedRowByMethod = false;
         }
         args = this.beginAddEdit(args);
         // if (args.requestType === 'save' &&

@@ -276,6 +276,67 @@ describe('Schedule year view', () => {
         });
     });
 
+    describe('EJ2-49947 - scheduler more popup is not updated when deleting the event in year view', () => {
+        let schObj: Schedule;
+        beforeAll((done: DoneFn) => {
+            const yearData: Record<string, any>[] = [{
+                Id: 1,
+                Subject: 'Test event-1',
+                StartTime: new Date(2017, 1, 2, 8),
+                EndTime: new Date(2017, 1, 2, 9)
+            }, {
+                Id: 2,
+                Subject: 'Test event-2',
+                StartTime: new Date(2017, 1, 1, 8),
+                EndTime: new Date(2017, 1, 1, 13)
+            }, {
+                Id: 3,
+                Subject: 'Test event-3',
+                StartTime: new Date(2017, 1, 2, 12),
+                EndTime: new Date(2017, 1, 2, 13)
+            }, {
+                Id: 4,
+                Subject: 'Test event-4',
+                StartTime: new Date(2017, 1, 3, 8),
+                EndTime: new Date(2017, 1, 3, 10)
+            }, {
+                Id: 5,
+                Subject: 'Test event-5',
+                StartTime: new Date(2017, 1, 3, 11),
+                EndTime: new Date(2017, 1, 3, 13)
+            }];    
+            const model: ScheduleModel = {
+                views: [
+                    { option: 'Year' },
+                ],
+                selectedDate: new Date(2017, 10, 2),
+            };
+            schObj = util.createSchedule(model, yearData, done);
+        });
+        afterAll(() => {
+            util.destroy(schObj);
+        });
+        
+        it('Checking the more popup event list after deleting an event', (done: DoneFn) => {
+            schObj.dataBound = () => {
+                const morePopup: HTMLElement = schObj.element.querySelector('.e-more-popup-wrapper');
+                expect(morePopup.querySelectorAll('.e-appointment').length).toEqual(1);
+                expect(schObj.eventsData.length).toEqual(4);
+                expect(schObj.element.querySelectorAll('.e-appointment').length).toEqual(7);
+                done();
+            };
+            (<HTMLElement>schObj.element.querySelectorAll('.e-work-cells')[46]).click();
+            const morePopup: HTMLElement = schObj.element.querySelector('.e-more-popup-wrapper');
+            expect(morePopup.firstElementChild.classList.contains('e-more-event-popup')).toBeTruthy();
+            expect(morePopup.querySelectorAll('.e-appointment').length).toEqual(2);
+            (<HTMLElement>morePopup.querySelector('.e-appointment')).click()
+            const eventPopup: HTMLElement = schObj.element.querySelector('.e-quick-popup-wrapper') as HTMLElement;
+            expect(eventPopup).toBeTruthy();
+            (<HTMLElement>eventPopup.querySelector('.e-event-delete')).click();
+            (<HTMLElement>document.body.querySelector('.e-quick-dialog-delete')).click();
+        });
+    });
+
     it('memory leak', () => {
         profile.sample();
         const average: number = inMB(profile.averageChange);

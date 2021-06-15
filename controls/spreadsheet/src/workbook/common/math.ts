@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/explicit-module-boundary-types */
-import { isNullOrUndefined, getDefaultDateObject, Internationalization } from '@syncfusion/ej2-base';
+import { isNullOrUndefined, Internationalization, IntlBase, cldrData } from '@syncfusion/ej2-base';
 
 /**
  * @hidden
@@ -94,8 +94,8 @@ export function isNumber(val: string | number): boolean {
  * @param {string} format - Specifies the string.
  * @returns {ToDateArgs} - Returns Date format.
  */
-export function toDate(text: Date | string | number, intl: Internationalization, format?: string): ToDateArgs {
-    const defaultDateFormats: Object = getDefaultDateObject();
+export function toDate(text: Date | string | number, intl: Internationalization, locale: string, format?: string): ToDateArgs {
+    const defaultDateFormats: Object = IntlBase.getDependables(cldrData, locale, null).dateObject;
     const availabelDateTimeFormat: Object = (defaultDateFormats as any).dateTimeFormats.availableFormats;
     const dObj: ToDateArgs = { dateObj: null, isCustom: false, type: '' };
     if (typeof text === 'string') {

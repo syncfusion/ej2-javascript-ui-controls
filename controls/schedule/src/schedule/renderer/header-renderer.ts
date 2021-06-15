@@ -97,6 +97,7 @@ export class HeaderRenderer {
             if (nextNavEle) {
                 (nextNavEle.firstElementChild as Element).setAttribute('title', this.l10n.getConstant('next'));
             }
+            this.updateAddIcon();
             this.updateActiveView();
             this.parent.trigger(events.actionComplete, { requestType: 'toolBarItemRendered', items: this.toolbarObj.items });
         });
@@ -175,6 +176,17 @@ export class HeaderRenderer {
             selEle.setAttribute('aria-label', text);
             selEle.querySelector('.e-tbar-btn-text').innerHTML = text;
             this.toolbarObj.refreshOverflow();
+        }
+    }
+
+    public updateAddIcon(): void {
+        const addEle: HTMLElement = this.toolbarObj.element.querySelector('.e-add') as HTMLElement;
+        if (addEle) {
+            if (!this.parent.eventSettings.allowAdding) {
+                addClass([addEle], cls.HIDDEN_CLASS);
+            } else {
+                removeClass([addEle], cls.HIDDEN_CLASS);
+            }
         }
     }
 

@@ -2825,6 +2825,8 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
      */
     public addRecord(data?: Object, index?: number,  position?: RowPosition): void {
         if (this.editModule) {
+            let isAddedRowByMethod: string = 'isAddedRowByMethod';
+            this.editModule[isAddedRowByMethod] = true;
             this.editModule.addRecord(data, index, position);
         }
     }

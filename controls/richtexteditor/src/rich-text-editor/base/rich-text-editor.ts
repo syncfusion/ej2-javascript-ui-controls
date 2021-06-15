@@ -2516,7 +2516,7 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
      */
     public getXhtml(): string {
         let currentValue: string = this.value;
-        if (this.enableXhtml) {
+        if (!isNOU(currentValue) && this.enableXhtml) {
             currentValue = this.htmlEditorModule.xhtmlValidation.selfEncloseValidation(currentValue);
         }
         return currentValue;

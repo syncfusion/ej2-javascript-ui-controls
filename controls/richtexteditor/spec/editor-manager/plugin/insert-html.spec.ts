@@ -240,3 +240,62 @@ describe('EJ2-49169-InsertHtml for the pasted elements not inserted properly', f
         expect((divElement as any).childNodes[4].childNodes.length).toBe(5);
     });
 });
+
+describe('BLAZ-13456-Pasting on the content by selecting "ctrl+a" throws console errors', function () {
+    let innervalue: string = '<p>testing 1</p><p><br></p>';
+    let nonDOMvalue: string = '<br>';
+    let rangeNodes: Node[] = [];
+    let range: Range;
+    let nodeCutter: NodeCutter = new NodeCutter();
+    let divElement: HTMLElement = document.createElement('div');
+    let nonElement: HTMLElement = document.createElement('br');
+    let pasteElement: HTMLElement = document.createElement('div');
+    let pElement: HTMLElement = document.createElement('p');
+    divElement.id = 'divElement';
+    pElement.id='nonDOM';
+    pasteElement.classList.add('pasteContent');
+    pasteElement.style.display = 'inline';
+    divElement.contentEditable = 'true';
+    divElement.innerHTML = innervalue;
+    pasteElement.innerHTML = innervalue;
+    pElement.innerHTML = nonDOMvalue;
+    beforeAll(function () {
+        document.body.appendChild(divElement);
+    });
+    afterAll(function () {
+        detach(divElement);
+    });
+    it('Inserting pasted element for empty blocknodes', function () {
+        range = document.createRange();
+        range.setStart(divElement.childNodes[0].firstChild, 0);
+        range.setEnd(divElement.childNodes[1], 0);
+        rangeNodes.push(divElement.childNodes[0].firstChild);
+        rangeNodes.push(nonElement);
+        (InsertHtml as any).insertTempNode(range, pasteElement, rangeNodes, nodeCutter, divElement);
+        expect((divElement as any).childNodes[1].childNodes.length).toBe(2);
+    });
+});
+
+describe('Testing the insert method for html content paste', function () {
+    let innervalue: string = '<p>Values</p><p>Testing 1</p><p>Testing 2</p>';
+    let range: Range;
+    let divElement: HTMLElement = document.createElement('div');
+    divElement.id = 'divElement';
+    divElement.contentEditable = 'true';
+    divElement.innerHTML = innervalue;
+    let domSelection: NodeSelection = new NodeSelection();
+    beforeAll(function () {
+        document.body.appendChild(divElement);
+    });
+    afterAll(function () {
+        detach(divElement);
+    });
+    it('Pasting html string content', function () {
+        range = document.createRange();
+        range.setStart(divElement.childNodes[0].firstChild, 0);
+        range.setEnd(divElement.childNodes[2].firstChild, 0);
+        domSelection.setSelectionText(document, divElement.childNodes[0].firstChild, divElement.childNodes[2], 0, 0);
+        (InsertHtml as any).Insert(document, innervalue, divElement ,true);
+        expect((divElement as any).childElementCount).toBe(4);
+    });
+});

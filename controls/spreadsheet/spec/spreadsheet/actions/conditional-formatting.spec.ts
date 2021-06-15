@@ -127,10 +127,6 @@ describe('Conditional formatting ->', () => {
             done();
         });
     });
-
-    describe('UI Interaction ->', () => {
-        
-    });
     describe('CR-Issues ->', () => {
         describe('fb22057, FB24222, FB23945 ->', () => {
             beforeAll((done: Function) => {

@@ -79,6 +79,12 @@ describe('Selection commands', () => {
         '<ol>'+
         '<li><p id="paragraph27">paragraph27&nbsp;</p></li>'+
         '<li><p id="paragraph28">paragraph28</p></li>'+
+        '<li><p id="paragraph30">paragraph30</p></li>'+
+        '<li><p id="paragraph31">paragraph31</p></li>'+
+        '<li><p id="paragraph32">paragraph32</p></li>'+
+        '<li><p id="paragraph33">paragraph33</p></li>'+
+        '<li><p id="paragraph34">paragraph34</p></li>'+
+        '<li><p id="paragraph35">paragraph35</p></li>'+
         '</ol>'+
         '<p id="paragraph29"><strong>paragraph29</strong></p>'+
         '</div>';
@@ -506,6 +512,20 @@ describe('Selection commands', () => {
         expect(document.getElementById('paragraph24').parentElement.style.fontSize).toEqual('36px');
         expect(document.getElementById('paragraph25').parentElement.style.fontSize).toEqual('36px');
         expect(document.getElementById('paragraph26').parentElement.style.fontSize).toEqual('36px');
+    });
+    it('Apply fontcolor tag for list elements', () => {
+        let node1: Node = document.getElementById('paragraph30');
+        let listNode1: Text = node1.childNodes[0] as Text;
+        let node2: Node = document.getElementById('paragraph35');
+        let listNode2: Text = node2.childNodes[0] as Text;
+        domSelection.setSelectionText(document, listNode1, listNode2, 0, 11);
+        SelectionCommands.applyFormat(document, 'fontcolor', parentDiv, 'rgb(83, 129, 53)');
+        expect(document.getElementById('paragraph30').parentElement.style.color).toEqual('rgb(83, 129, 53)');
+        expect(document.getElementById('paragraph31').parentElement.style.color).toEqual('rgb(83, 129, 53)');
+        expect(document.getElementById('paragraph32').parentElement.style.color).toEqual('rgb(83, 129, 53)');
+        expect(document.getElementById('paragraph33').parentElement.style.color).toEqual('rgb(83, 129, 53)');
+        expect(document.getElementById('paragraph34').parentElement.style.color).toEqual('rgb(83, 129, 53)');
+        expect(document.getElementById('paragraph35').parentElement.style.color).toEqual('rgb(83, 129, 53)');
     });
 
     it('Apply fontsize tag for list elements', () => {

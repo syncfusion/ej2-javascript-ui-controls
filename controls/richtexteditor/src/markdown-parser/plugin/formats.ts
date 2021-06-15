@@ -87,6 +87,13 @@ export class MDFormats {
                 }
             } else if (parents[i].text === '' && i === 0) {
                 this.selection.save(start, end);
+                if (this.selection.getSelectedText(textArea).length === 0) {
+                    parents[i].text = this.syntax[e.subCommand];
+                    textArea.value = textArea.value.substr(0, (parents[i].start as number)) + this.syntax[e.subCommand] +
+                        textArea.value.substr((parents[i].end as number), textArea.value.length);
+                    start = i === 0 ? start + this.syntax[e.subCommand].length : start;
+                    addedLength += this.syntax[e.subCommand].length;
+                }
                 if (parents.length !== 1) {
                     for (let j: number = i; j < parents.length; j++) {
                         parents[j].start = j !== 0 ? 1 + (parents[j].start as number) : parents[j].start;

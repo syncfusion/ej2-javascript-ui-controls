@@ -30,10 +30,6 @@ describe('Chart ->', () => {
         });
     });
 
-    describe('UI Interaction ->', () => {
-        
-    });
-
     describe('CR-Issues ->', () => {
         describe('I315401, I281820 ->', () => {
             beforeEach((done: Function) => {
@@ -67,20 +63,20 @@ describe('Chart ->', () => {
                     'mousedown', { x: chart.getBoundingClientRect().left + 1, y: chart.getBoundingClientRect().top + 1 },
                     chart, chart);
                 helper.triggerMouseAction(
-                    'mousemove', { x: chart.getBoundingClientRect().left + 200, y: chart.getBoundingClientRect().top + 124 },
+                    'mousemove', { x: chart.getBoundingClientRect().left + 200, y: chart.getBoundingClientRect().top + 100 },
                     chart, chart);
                 helper.triggerMouseAction(
                     'mouseup', { x: chart.getBoundingClientRect().left + 200, y: chart.getBoundingClientRect().top + 100 },
                     document, chart);
                 (inst.serviceLocator.getService('shape') as Overlay).destroy();// Need to remove once destory of overlay service handled in chart.
                 expect(inst.sheets[0].rows[1].cells[6].chart.length).toBe(0);
-                expect(inst.sheets[0].rows[7].cells[9].chart.length).toBe(1);
-                expect(chart.style.top).toEqual('143px');
+                expect(inst.sheets[0].rows[11].cells[9].chart.length).toBe(1);
+                expect(chart.style.top).toEqual('233px');
                 expect(chart.style.left).toEqual('643px');
-                expect(inst.sheets[0].rows[7].cells[9].chart[0].top).toBe(143);
-                expect(inst.sheets[0].rows[7].cells[9].chart[0].left).toBe(643);
+                expect(inst.sheets[0].rows[11].cells[9].chart[0].top).toBe(233);
+                expect(inst.sheets[0].rows[11].cells[9].chart[0].left).toBe(643);
                 helper.triggerKeyNativeEvent(46);
-                expect(inst.sheets[0].rows[7].cells[9].chart.length).toBe(0);
+                expect(inst.sheets[0].rows[11].cells[9].chart.length).toBe(0);
                 done();
             });
         });

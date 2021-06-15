@@ -45,10 +45,6 @@ describe('Editing ->', () => {
         });
     });
 
-    describe('Public method ->', () => {
-
-    });
-
     describe('UI interaction ->', () => {
         beforeAll((done: Function) => {
             helper.initializeSpreadsheet({

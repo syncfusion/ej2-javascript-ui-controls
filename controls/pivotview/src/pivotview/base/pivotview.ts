@@ -2289,7 +2289,6 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
                     this.renderEmptyGrid();
                 }
                 this.showWaitingPopup();
-                this.getEngine('initialRender', null, null, null, null, null, null);
             } else {
                 this.request.open("GET", this.dataSourceSettings.url, true);
                 this.request.withCredentials = false;

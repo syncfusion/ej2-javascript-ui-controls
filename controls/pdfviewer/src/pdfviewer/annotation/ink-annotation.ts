@@ -225,7 +225,7 @@ export class InkAnnotation {
                         // eslint-disable-next-line max-len
                         const strokeColorString: string = pageAnnotationObject.annotations[z].strokeColor;
                         pageAnnotationObject.annotations[z].strokeColor = JSON.stringify(this.pdfViewerBase.signatureModule.getRgbCode(strokeColorString));
-                        pageAnnotationObject.annotations[z].bounds = JSON.stringify(pageAnnotationObject.annotations[z].bounds);
+                        pageAnnotationObject.annotations[z].bounds = JSON.stringify(this.pdfViewer.annotation.getInkBounds(pageAnnotationObject.annotations[z].bounds, pageAnnotationObject.pageIndex));
                         // eslint-disable-next-line
                         let collectionData: any = processPathData(pageAnnotationObject.annotations[z].data);
                         // eslint-disable-next-line
@@ -332,10 +332,10 @@ export class InkAnnotation {
                 if (currentAnnotation) {
                     // eslint-disable-next-line
                     let bounds: any = currentAnnotation.Bounds;
-                    const currentLeft: number = (bounds.X);
-                    const currentTop: number = (bounds.Y);
-                    const currentWidth: number = (bounds.Width);
-                    const currentHeight: number = (bounds.Height);
+                    const currentLeft: number = bounds.X ? bounds.X : bounds.x;
+                    const currentTop: number = bounds.Y ? bounds.Y : bounds.y;
+                    const currentWidth: number = bounds.Width ? bounds.Width : bounds.width;
+                    const currentHeight: number = bounds.Height ? bounds.Height : bounds.height;
                     // eslint-disable-next-line
                     let data: any = currentAnnotation.PathData;
                     if (isImport) {

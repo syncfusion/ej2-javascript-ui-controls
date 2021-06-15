@@ -746,33 +746,33 @@ export class AnnotationToolbar {
         items.push({ prefixIcon: 'e-pv-underline-icon e-pv-icon', className: 'e-pv-underline-container', id: this.pdfViewer.element.id + '_underline', align: 'Left' });
         // eslint-disable-next-line max-len
         items.push({ prefixIcon: 'e-pv-strikethrough-icon e-pv-icon', className: 'e-pv-strikethrough-container', id: this.pdfViewer.element.id + '_strikethrough', align: 'Left' });
-        items.push({ type: 'Separator', align: 'Left' });
-        items.push({ template: shapesTemplate, align: 'Left' });
-        items.push({ type: 'Separator', align: 'Left' });
-        items.push({ template: calibrateTemplate, align: 'Left' });
-        items.push({ type: 'Separator', align: 'Left' });
+        items.push({ type: 'Separator', align: 'Left', cssClass: 'e-pv-hightlight-separator-container' });
+        items.push({ template: shapesTemplate, align: 'Left', cssClass: 'e-pv-shape-template-container' });
+        items.push({ type: 'Separator', align: 'Left', cssClass: 'e-pv-shape-separator-container' });
+        items.push({ template: calibrateTemplate, align: 'Left', cssClass: 'e-pv-calibrate-template-container' });
+        items.push({ type: 'Separator', align: 'Left', cssClass: 'e-pv-calibrate-separator-container' });
         // eslint-disable-next-line max-len
         items.push({ prefixIcon: 'e-pv-freetext-icon e-pv-icon', className: 'e-pv-annotation-freetextedit-container', id: this.pdfViewer.element.id + '_annotation_freeTextEdit', align: 'Left' });
-        items.push({ type: 'Separator', align: 'Left' });
-        items.push({ template: stampTemplate, align: 'Left' });
-        items.push({ type: 'Separator', align: 'Left' });
+        items.push({ type: 'Separator', align: 'Left', cssClass: 'e-pv-freetext-separator-container' });
+        items.push({ template: stampTemplate, align: 'Left', cssClass: 'e-pv-stamp-template-container' });
+        items.push({ type: 'Separator', align: 'Left', cssClass: 'e-pv-stamp-separator-container' });
         // eslint-disable-next-line max-len
-        items.push({ template: signTemplate, align: 'Left' });
-        items.push({ type: 'Separator', align: 'Left' });
+        items.push({ template: signTemplate, align: 'Left', cssClass: 'e-pv-sign-template-container' });
+        items.push({ type: 'Separator', align: 'Left', cssClass: 'e-pv-sign-separator-container' });
         // eslint-disable-next-line max-len
         items.push({ prefixIcon: 'e-pv-inkannotation-icon e-pv-icon', className: 'e-pv-annotation-ink-container', id: this.pdfViewer.element.id + '_annotation_ink', align: 'Left' });
-        items.push({ type: 'Separator', align: 'Left' });
+        items.push({ type: 'Separator', align: 'Left', cssClass: 'e-pv-ink-separator-container' });
         items.push({ template: fontFamilyTemplate, align: 'Left', cssClass: 'e-pv-fontfamily-container' });
         items.push({ template: fontSizeTemplate, align: 'Left', cssClass: 'e-pv-fontsize-container' });
-        items.push({ template: textColorTemplate, align: 'Left' });
-        items.push({ template: alignmentTemplate, align: 'Left' });
-        items.push({ template: textPropertiesTemplate, align: 'Left' });
-        items.push({ type: 'Separator', align: 'Left' });
-        items.push({ template: colorTemplate, align: 'Left' });
-        items.push({ template: strokeTemplate, align: 'Left' });
-        items.push({ template: thicknessTemplate, align: 'Left' });
-        items.push({ template: opacityTemplate, align: 'Left' });
-        items.push({ type: 'Separator', align: 'Left' });
+        items.push({ template: textColorTemplate, align: 'Left', cssClass: 'e-pv-text-color-container' });
+        items.push({ template: alignmentTemplate, align: 'Left', cssClass: 'e-pv-alignment-container' });
+        items.push({ template: textPropertiesTemplate, align: 'Left', cssClass: 'e-pv-text-properties-container' });
+        items.push({ type: 'Separator', align: 'Left', cssClass: 'e-pv-text-separator-container' });
+        items.push({ template: colorTemplate, align: 'Left', cssClass: 'e-pv-color-template-container' });
+        items.push({ template: strokeTemplate, align: 'Left', cssClass: 'e-pv-stroke-template-container' });
+        items.push({ template: thicknessTemplate, align: 'Left', cssClass: 'e-pv-thickness-template-container' });
+        items.push({ template: opacityTemplate, align: 'Left', cssClass: 'e-pv-opacity-template-container' });
+        items.push({ type: 'Separator', align: 'Left', cssClass: 'e-pv-opacity-separator-container' });
         // eslint-disable-next-line max-len
         items.push({ prefixIcon: 'e-pv-annotation-delete-icon e-pv-icon', className: 'e-pv-annotation-delete-container', id: this.pdfViewer.element.id + '_annotation_delete', align: 'Left' });
         // eslint-disable-next-line max-len
@@ -3374,7 +3374,18 @@ export class AnnotationToolbar {
     private applyHideToToolbar(show: boolean, startIndex: number, endIndex: number): void {
         const isHide: boolean = !show;
         for (let index: number = startIndex; index <= endIndex; index++) {
-            this.toolbar.hideItem(index, isHide);
+            if (this.toolbar.items[index]) {
+                let className = this.toolbar.items[index].cssClass;
+                if (className && className !== '') {
+                    // Querying the toolbar item
+                    let element = this.toolbar.element.querySelector('.' + className);
+                    if (element) {
+                        this.toolbar.hideItem(element, isHide);
+                    }
+                } else {
+                    this.toolbar.hideItem(index, isHide);
+                }
+            }
         }
     }
 

@@ -1886,6 +1886,34 @@ describe('Tab Control', () => {
             expect(element.children.item(0).classList.contains('e-vertical')).toEqual(true);
             expect(element.children.item(0).classList.contains('e-vertical-right')).toEqual(true);
         });
+        it('EJ2-49949 - The aria-selected attribute of each tab stays true', () => {
+            tab = new Tab({
+                headerPlacement: 'Top',
+                items: [
+                    { header: { "text": "item1" }, content: "Content1" },
+                    { header: { "text": "item2" }, content: "Content2" },
+                    { header: { "text": "item3" }, content: "Content3" }
+                ]
+            });
+            tab.appendTo('#ej2Tab');
+            let element: HTMLElement = document.getElementById('ej2Tab');
+            expect(element.children.item(0).classList.contains('e-tab-header')).toEqual(true);
+            expect(element.children.item(0).classList.contains('e-toolbar')).toEqual(true);
+            const toolbarElement: HTMLElement[] = [].slice.call(element.querySelectorAll('.e-toolbar-item'));
+            expect(toolbarElement[0].getAttribute('aria-selected')).toEqual('true');
+            expect(toolbarElement[1].getAttribute('aria-selected')).toEqual('false');
+            expect(toolbarElement[2].getAttribute('aria-selected')).toEqual('false');
+            tab.selectedItem = 1;
+            tab.dataBind();
+            expect(toolbarElement[0].getAttribute('aria-selected')).toEqual('false');
+            expect(toolbarElement[1].getAttribute('aria-selected')).toEqual('true');
+            expect(toolbarElement[2].getAttribute('aria-selected')).toEqual('false');
+            tab.selectedItem = 2;
+            tab.dataBind();
+            expect(toolbarElement[0].getAttribute('aria-selected')).toEqual('false');
+            expect(toolbarElement[1].getAttribute('aria-selected')).toEqual('false');
+            expect(toolbarElement[2].getAttribute('aria-selected')).toEqual('true');
+        });
     });
     describe('enableRTL property testing', () => {
         let tab: Tab;

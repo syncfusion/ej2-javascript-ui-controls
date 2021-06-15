@@ -217,4 +217,50 @@ describe(' Inline Quick Toolbar - ', () => {
             destroy(rteObj);
         });
     });
+
+    describe('EJ2-49293 - Inline toolbar goes outside of window', () => {
+        let rteObj: RichTextEditor;
+        let rteEle: HTMLElement;
+        let controlId: string;
+        beforeAll((done: Function) => {
+            rteObj = renderRTE({
+                inlineMode: {
+                    enable: true
+                },
+                toolbarSettings: {
+                    items: ['FontName', 'FontSize', 'Formats', 'Alignments', 'FontColor', 'BackgroundColor']
+                },
+                value: `<p id="spanSize">The Rich Text Editor (RTE) control is an easy to render in client side.
+                Customer easy to edit the contents and get the HTML content for the displayed content.<br></p>`
+            });
+            rteEle = rteObj.element;
+            controlId = rteEle.id;
+            done();
+        });
+
+        it('Template class availability testing', (done: Function) => {
+            let pEle: HTMLElement = rteObj.element.querySelector('#spanSize');
+            rteObj.formatter.editorManager.nodeSelection.setSelectionText(document, pEle.childNodes[0], pEle.childNodes[0], 0, 3);
+            dispatchEvent(pEle, 'mouseup');
+            setTimeout(() => {
+                let fontNameItem: HTMLElement = document.querySelector('#' + controlId + '_quick_FontName').parentElement;
+                expect(fontNameItem.classList.contains('e-rte-inline-template')).toBe(true);
+                let formatsItem: HTMLElement = document.querySelector('#' + controlId + '_quick_Formats').parentElement;
+                expect(formatsItem.classList.contains('e-rte-inline-template')).toBe(true);
+                let alignmentsItem: HTMLElement = document.querySelector('#' + controlId + '_quick_Alignments').parentElement;
+                expect(alignmentsItem.classList.contains('e-rte-inline-template')).toBe(true);
+                let fontSizeItem: HTMLElement = document.querySelector('#' + controlId + '_quick_FontSize').parentElement;
+                expect(fontSizeItem.classList.contains('e-rte-inline-size-template')).toBe(true);
+                let fontColorItem: HTMLElement = document.querySelector('#' + controlId + '_quick_FontColor').parentElement;
+                expect(fontColorItem.classList.contains('e-rte-inline-color-template')).toBe(true);
+                let bgColorItem: HTMLElement = document.querySelector('#' + controlId + '_quick_BackgroundColor').parentElement;
+                expect(bgColorItem.classList.contains('e-rte-inline-color-template')).toBe(true);
+                done();
+            }, 200);
+        });
+
+        afterAll(() => {
+            destroy(rteObj);
+        });
+    });
 });

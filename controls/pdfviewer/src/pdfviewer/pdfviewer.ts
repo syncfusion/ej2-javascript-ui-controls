@@ -4437,13 +4437,14 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
     public importAnnotation(importData: any, annotationDataFormat?: AnnotationDataFormat): void {
         if (this.annotationModule) {
             if (typeof (importData) === 'string') {
+                let isXfdfFile: boolean = (importData.indexOf('.xfdf') > -1) ? true : false;
                 if (annotationDataFormat) {
-                    this.viewerBase.importAnnotations(importData, annotationDataFormat);
+                    this.viewerBase.importAnnotations(importData, annotationDataFormat,isXfdfFile);
                 } else {
                     if (importData.split('.')[1] === 'json') {
                         this.viewerBase.importAnnotations(importData, AnnotationDataFormat.Json);
                     } else {
-                        this.viewerBase.importAnnotations(importData, AnnotationDataFormat.Xfdf);
+                        this.viewerBase.importAnnotations(importData, AnnotationDataFormat.Xfdf,isXfdfFile);
                     }
                 }
             } else {

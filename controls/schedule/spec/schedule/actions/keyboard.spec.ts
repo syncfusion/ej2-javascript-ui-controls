@@ -3138,6 +3138,36 @@ describe('Keyboard interaction', () => {
         });
     });
 
+    describe('EJ2-49958 - Enter key with enabled readonly property', () => {
+        let schObj: Schedule;
+        let keyModule: any;
+        beforeAll((done: DoneFn) => {
+            const elem: HTMLElement = createElement('div', { id: 'Schedule', attrs: { tabIndex: '1' } });
+            const schOptions: ScheduleModel = { width: '100%', height: '500px', currentView: 'Week', readonly: true, selectedDate: new Date(2017, 10, 2) };
+            schObj = util.createSchedule(schOptions, defaultData, done, elem);
+            keyModule = schObj.keyboardInteractionModule;
+        });
+        afterAll(() => {
+            util.destroy(schObj);
+        });
+        
+        it('checking Enter key with enabled readonly property', () => {
+            util.triggerMouseEvent(schObj.element.querySelector('.e-appointment'), 'click');
+            keyModule.keyActionHandler({ action: 'escape' });
+            const firstWorkCell: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment-border'));
+            expect(firstWorkCell[0].classList).toContain('e-appointment-border');
+            expect(firstWorkCell[0].getAttribute('aria-selected')).toEqual('true');
+            expect(firstWorkCell[0].getAttribute('aria-readonly')).toEqual('true');
+            keyModule.keyActionHandler({ action: 'enter', target: firstWorkCell[0] });
+            const popup: HTMLElement = schObj.element.querySelector('.e-quick-popup-wrapper') as HTMLElement;
+            expect(popup.classList).toContain('e-popup-open');
+            keyModule.keyActionHandler({ action: 'escape' });
+            expect(popup.classList).toContain('e-popup-close');
+            keyModule.keyActionHandler({ action: 'enter', target: schObj.element.querySelector('.e-work-cells') });
+            expect(popup.classList).toContain('e-popup-close');
+        });
+    });
+
     it('memory leak', () => {
         profile.sample();
         const average: number = inMB(profile.averageChange);
