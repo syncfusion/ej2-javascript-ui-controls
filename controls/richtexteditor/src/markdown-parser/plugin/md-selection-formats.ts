@@ -7,7 +7,7 @@ import { extend } from '@syncfusion/ej2-base';
 import * as EVENTS from './../../common/constant';
 /**
  * SelectionCommands internal component
- * 
+ *
  * @hidden
  * @deprecated
  */
@@ -91,7 +91,6 @@ export class MDSelectionFormats {
         let isFormat: boolean = false;
         const textArea: HTMLTextAreaElement = this.parent.element as HTMLTextAreaElement;
         const start: number = textArea.selectionStart;
-        // eslint-disable-next-line
         const splitAt: Function = (index: number) => (x: string) => [x.slice(0, index), x.slice(index)];
         const splitText: string[] = splitAt(start)(textArea.value);
         const cmdB: string = this.syntax.Bold.substr(0, 1);
@@ -183,8 +182,8 @@ export class MDSelectionFormats {
             const startCmd: string = this.syntax[e.subCommand];
             const endCmd: string = e.subCommand === 'SubScript' ? '</sub>' :
                 e.subCommand === 'SuperScript' ? '</sup>' : this.syntax[e.subCommand];
-            let startLength: number = (e.subCommand === 'UpperCase' || e.subCommand === 'LowerCase') ? 0 : startCmd.length;
-            let startNo: number = textArea.value.substr(0, selection.start as number).lastIndexOf(startCmd);
+            const startLength: number = (e.subCommand === 'UpperCase' || e.subCommand === 'LowerCase') ? 0 : startCmd.length;
+            const startNo: number = textArea.value.substr(0, selection.start as number).lastIndexOf(startCmd);
             let endNo: number = textArea.value.substr(selection.end as number, textArea.value.length).indexOf(endCmd);
             endNo = endNo + (selection.end as number);
             const repStartText: string = this.replaceAt(
@@ -282,10 +281,10 @@ export class MDSelectionFormats {
             if (!this.isBold(text, this.syntax[command].substr(0, 1))) {
                 text = text.replace(regx, '');
             } else {
-                let regxB: RegExp = this.multiCharRegx(this.syntax[command].substr(0, 1));
+                const regxB: RegExp = this.multiCharRegx(this.syntax[command].substr(0, 1));
                 let repText: string = text;
                 repText = repText.replace(regxB, '$%@').replace(regx, '');
-                let regxTemp: RegExp = new RegExp('\\$%@', 'g');
+                const regxTemp: RegExp = new RegExp('\\$%@', 'g');
                 text = repText.replace(regxTemp, this.syntax[command].substr(0, 1) + this.syntax[command].substr(0, 1));
             }
             break;
@@ -319,9 +318,9 @@ export class MDSelectionFormats {
         case 'LowerCase':
             regx = new RegExp('^[' + this.syntax[command] + ']*$', 'g');
             return regx.test(line.text as string);
-        case 'Italic':
+        case 'Italic': {
             let regTest: boolean;
-            let regxB: RegExp = this.multiCharRegx(this.syntax[command].substr(0, 1));
+            const regxB: RegExp = this.multiCharRegx(this.syntax[command].substr(0, 1));
             if (regxB.test(line.text as string)) {
                 let repText: string = line.text as string;
                 repText = repText.replace(regxB, '$%#');
@@ -329,7 +328,7 @@ export class MDSelectionFormats {
             } else {
                 regTest = regx.test(line.text as string);
             }
-            return regTest;
+            return regTest; }
         case 'InlineCode':
             return regx.test(line.text as string);
         }

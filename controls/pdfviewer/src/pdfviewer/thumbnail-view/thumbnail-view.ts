@@ -117,6 +117,7 @@ export class ThumbnailView {
                     }
                 }
                 if (data && data.uniqueId === proxy.pdfViewerBase.documentId) {
+                    proxy.pdfViewer.fireAjaxRequestSuccess(proxy.pdfViewer.serverActionSettings.renderThumbnail, data);
                     proxy.renderThumbnailImage(data);
                     if (!proxy.isThumbnailCompleted) {
                         const index: number = (data && isNaN(data.endPage)) ? data.endPage : proxy.thumbnailLimit;

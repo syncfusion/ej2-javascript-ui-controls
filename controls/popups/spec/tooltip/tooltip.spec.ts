@@ -1352,6 +1352,26 @@ describe('Tooltip Control', () => {
             triggerMouseEvent(target1, 'mouseleave');
             expect(document.querySelector('.e-tooltip-wrap')).toBeNull();
         });
+
+        it("mousetrail with open delay", function (done) {
+            tooltip = new Tooltip({ width: '100px', height: '40px', openDelay: 600, mouseTrail: true, animation: { open: { effect: 'None' } } });
+            tooltip.appendTo('#tstooltip');
+            tooltip.open(document.getElementById('tstooltip')); // Open the tooltip based on target element specified in optional parameter
+            let tooltipEle: HTMLElement = document.querySelector('.e-tooltip-wrap') as HTMLElement;
+                expect(isVisible(tooltipEle)).toBe(false);
+            setTimeout(function () {
+                let target1: HTMLElement = document.getElementById('tstooltip');
+                triggerMouseEvent(target1, 'mouseover');
+                triggerMouseEvent(target1, "mousemove", 200, 120);
+                let tooltipEle: HTMLElement = document.querySelector('.e-tooltip-wrap') as HTMLElement;
+                expect(isVisible(tooltipEle)).toBe(true);
+                expect(tooltipEle.querySelector('.e-arrow-tip').classList.contains('e-tip-bottom')).toEqual(true);
+                triggerMouseEvent(target1, "mousemove", 200, 20);
+                expect(tooltipEle.querySelector('.e-arrow-tip').classList.contains('e-tip-top')).toEqual(true);
+                triggerMouseEvent(target1, 'mouseleave');
+                done();
+            }, 900);
+        });
     });
     describe('Keyboard event', () => {
         let tooltip: any;

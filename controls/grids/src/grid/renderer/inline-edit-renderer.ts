@@ -150,24 +150,26 @@ export class InlineEditRender {
         return row;
     }
 
-    public update(elements: Object, args: { row?: Element, rowData?: Object, isScroll?: boolean }): void {
+    public update(elements: Object, args: { row?: Element, rowData?: Object }): void {
         this.isEdit = true;
-        if (!args.isScroll && (closest(args.row, '.' + literals.movableContent) || closest(args.row, '.' + literals.movableHeader))) {
+        const isCustomFormValidation: boolean = (<{ isCustomFormValidation?: boolean }>args).isCustomFormValidation;
+        const isScroll: boolean = (<{ isScroll?: boolean }>args).isScroll;
+        if (!isScroll && (closest(args.row, '.' + literals.movableContent) || closest(args.row, '.' + literals.movableHeader))) {
             args.row = this.getFreezeRow(args.row);
         }
         if (closest(args.row, '.e-frozen-right-content') || closest(args.row, '.e-frozen-right-header')) {
             args.row = this.getFreezeRightRow(args.row);
         }
-        const isVirtualFrozen: boolean = this.parent.isFrozenGrid() && this.parent.enableColumnVirtualization && args.isScroll;
+        const isVirtualFrozen: boolean = this.parent.isFrozenGrid() && this.parent.enableColumnVirtualization && isScroll;
         let tdElement: HTMLElement[] = [].slice.call(args.row.querySelectorAll('td.e-rowcell'));
         args.row.innerHTML = '';
-        if (!isVirtualFrozen) {
+        if (!isVirtualFrozen && !isCustomFormValidation) {
             tdElement = this.updateFreezeEdit(args.row, tdElement);
         }
         args.row.appendChild(this.getEditElement(elements, true, tdElement, args, true));
         args.row.classList.add(literals.editedRow);
         this.parent.editModule.checkLastRow(args.row, args);
-        if (!isVirtualFrozen) {
+        if (!isVirtualFrozen && !isCustomFormValidation) {
             this.refreshFreezeEdit(args.row, args);
         }
     }
@@ -328,11 +330,12 @@ export class InlineEditRender {
         let m: number = 0;
         i = 0;
         const isVirtualFrozen: boolean = gObj.isFrozenGrid() && gObj.enableColumnVirtualization && args.isScroll;
-        const cols: Column[] = args.isCustomFormValidation ? this.parent.columns as Column[] : gObj.getColumns();
+        const cols: Column[] = args.isCustomFormValidation ? (<{ columnModel?: Column[] }>this.parent).columnModel : gObj.getColumns();
         while ((isEdit && m < tdElement.length && i < cols.length) || i < cols.length) {
             const span: string = isEdit ? tdElement[m].getAttribute('colspan') : null;
             const col: Column = cols[i] as Column;
-            if (isVirtualFrozen && col.getFreezeTableName() !== 'movable') {
+            if ((isVirtualFrozen && col.getFreezeTableName() !== 'movable')
+                || (args.isCustomFormValidation && (col.commands || col.commandsTemplate || !col.field))) {
                 i++;
                 continue;
             }

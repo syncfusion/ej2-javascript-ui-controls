@@ -1,5 +1,5 @@
 /* eslint-disable */
-import { PointModel, randomId, Point } from '@syncfusion/ej2-drawings';
+import { PointModel, randomId, Point, cornersPointsBeforeRotation, TextAlign } from '@syncfusion/ej2-drawings';
 import { IElement } from '@syncfusion/ej2-drawings';
 import { rotatePoint } from '@syncfusion/ej2-drawings';
 import { Rect } from '@syncfusion/ej2-drawings';
@@ -11,12 +11,16 @@ import { DrawingElement } from '@syncfusion/ej2-drawings';
 import { findActiveElement } from './action';
 // eslint-disable-next-line max-len
 import { PdfViewer, PdfViewerBase, MeasureAnnotation, AnnotationSelectorSettingsModel } from '../index';
-import { PdfAnnotationBaseModel } from './pdf-annotation-model';
+import { PdfAnnotationBaseModel, PdfFormFieldBaseModel } from './pdf-annotation-model';
 import { PdfAnnotationBase } from './pdf-annotation';
 import { cloneObject, isLineShapes } from './drawing-util';
-import { isNullOrUndefined } from '@syncfusion/ej2-base';
+import { createElement, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { updatePerimeterLabel } from './connector-util';
 import { Browser } from '@syncfusion/ej2-base';
+import { DiagramHtmlElement } from './html-element';
+import { IFormField, IFormFieldBound } from '../form-designer';
+import { FormFieldModel } from '../pdfviewer-model';
+import { FontStyle, FormFieldType } from '../base';
 
 /**
  * Defines the interactive tools
@@ -191,14 +195,16 @@ export class ToolBase {
         const height: number = (shape instanceof TextElement) ? shape.actualSize.height : shape.wrapper.bounds.height;
         // eslint-disable-next-line
         let obj: any = shape;
+        if(!shape.formFieldAnnotationType) {
         if (!shape.annotName && !shape.shapeAnnotationType) {
             if (shape as SelectorModel) {
                 // eslint-disable-next-line
                 obj = (shape as any).annotations[0];
             }
         }
+    }
         // eslint-disable-next-line
-        let annotationSettings: any = this.commandHandler.annotationModule.findAnnotationSettings(obj);
+        let annotationSettings: any = this.commandHandler.annotationModule ? this.commandHandler.annotationModule.findAnnotationSettings(obj): {};
         let annotationMaxHeight: number = 0;
         let annotationMaxWidth: number  = 0;
         let annotationMinHeight: number = 0;
@@ -404,6 +410,7 @@ export class SelectTool extends ToolBase {
         }
         // eslint-disable-next-line
         let object: IElement = findActiveElement(args as any, this.pdfViewerBase, this.commandHandler);
+       // if (!isNullOrUndefined(object) && (object as any).shapeAnnotationType != 'Path'){
         let isLock: boolean = false;
         // eslint-disable-next-line
         if (object && (object as any).shapeAnnotationType === 'StickyNotes') {
@@ -428,7 +435,8 @@ export class SelectTool extends ToolBase {
                 const selectedObject: SelectorModel = this.commandHandler.selectedItems;
                 if (selectedObject) {
                     // eslint-disable-next-line
-                    let annotation: any = this.commandHandler.selectedItems.annotations[0];
+                    let annotation: any = selectedObject.annotations[0];
+                    let formField : any =  selectedObject.formFields[0];
                     const currentSource: PdfAnnotationBaseModel = args.source as PdfAnnotationBaseModel;
                     if ((selectedObject.annotations.length) && args.info && !args.info.ctrlKey
                         // eslint-disable-next-line
@@ -437,20 +445,34 @@ export class SelectTool extends ToolBase {
                         // eslint-disable-next-line max-len
                     } else if (args.info && args.info.ctrlKey && ((currentSource && currentSource.shapeAnnotationType === 'FreeText') || (this.commandHandler.selectedItems.annotations[0] && this.commandHandler.selectedItems.annotations[0].shapeAnnotationType === 'FreeText'))) {
                         this.commandHandler.clearSelection(this.pdfViewerBase.activeElements.activePageID);
+                    } else if( isNullOrUndefined(object) && this.commandHandler.formDesignerModule) {
+                        this.commandHandler.clearSelection(this.pdfViewerBase.activeElements.activePageID);
                     }
                     if (object) {
                         this.commandHandler.select([(object as PdfAnnotationBaseModel).id], currentSelctor);
                         this.commandHandler.viewerBase.isAnnotationMouseDown = true;
+                        this.commandHandler.viewerBase.isFormFieldMouseDown = true;
                     }
-                    if (selectedObject.annotations.length === 0 && annotation && annotation.shapeAnnotationType !== 'Stamp') {
+                    if (selectedObject.annotations.length === 0 && annotation && annotation.shapeAnnotationType !== 'Stamp' && !annotation.formFieldAnnotationType) {
                         if (Browser.isDevice && !this.commandHandler.enableDesktopMode) {
                             this.commandHandler.toolbarModule.showToolbar(true);
                         }
                         this.commandHandler.fireAnnotationUnSelect(annotation.annotName, annotation.pageIndex, annotation);
                     }
+                    if(selectedObject.formFields.length === 0 && this.commandHandler.formDesignerModule && formField && formField.formFieldAnnotationType) {
+                        let field: IFormField = { value: (formField as any).value, fontFamily: formField.fontFamily, fontSize: formField.fontSize, fontStyle: (formField as any).fontStyle,
+                            color: (formField as PdfFormFieldBaseModel).color, backgroundColor: (formField as PdfFormFieldBaseModel).backgroundColor, alignment: (formField as PdfFormFieldBaseModel).alignment, isReadonly: (formField as any).isReadOnly, visibility: (formField as any).visibility,
+                            maxLength: (formField as any).maxLength,  isRequired: (formField as any).isRequired, isPrint: formField.isPrint, rotation: (formField as any).rotation, tooltip: (formField as any).tooltip, 
+                            options: (formField as any).options, isChecked: (formField as any).isChecked, isSelected: (formField as any).isSelected };
+                        this.commandHandler.fireFormFieldUnselectEvent("formFieldUnselect", field, formField.pageIndex);
+                    }
                 }
             }
         }
+        // } else {
+        //     if (!isNullOrUndefined(this.commandHandler))
+        //         this.commandHandler.clearSelection(this.pdfViewerBase.activeElements.activePageID);
+        // }
     }
 
     /**
@@ -540,20 +562,34 @@ export class MoveTool extends ToolBase {
     /* eslint-disable */
     public mouseUp(args: any): void {
         let object: SelectorModel;
-        if (this.commandHandler) {
-            if (this.commandHandler.selectedItems && this.commandHandler.selectedItems.annotations) {
+        if (this.commandHandler && args.source) {
+            if (this.commandHandler.selectedItems && this.commandHandler.selectedItems.annotations && this.commandHandler.selectedItems.annotations.length > 0) {
                 if (this.commandHandler.selectedItems.annotations[0].annotName === args.source.annotName) {
                     this.commandHandler.viewerBase.isAnnotationMouseMove = true;
                 }
             } else {
                 this.commandHandler.viewerBase.isAnnotationMouseMove = false;
             }
+            if (this.commandHandler.selectedItems && this.commandHandler.selectedItems.formFields && this.commandHandler.selectedItems.formFields.length > 0) {
+                if (this.commandHandler.selectedItems.formFields[0].name === args.source.name) {
+                    this.commandHandler.viewerBase.isFormFieldMouseMove = true;
+                }
+            } else {
+                this.commandHandler.viewerBase.isFormFieldMouseMove = false;
+            }
             let currentSelctor:AnnotationSelectorSettingsModel=(args.source as PdfAnnotationBaseModel).annotationSelectorSettings;
             this.commandHandler.clearSelection(this.pdfViewerBase.activeElements.activePageID);
             this.commandHandler.select([(args.source as PdfAnnotationBaseModel).id], currentSelctor);
             this.commandHandler.dragSelectedObjects(this.calculateMouseActionXDiff(args), this.calculateMouseActionYDiff(args), this.pdfViewerBase.activeElements.activePageID, currentSelctor , null);
+            if(args.source && (args.source.formFieldAnnotationType === "Textbox" || args.source.formFieldAnnotationType === "Checkbox" 
+            || args.source.formFieldAnnotationType === "RadioButton" || args.source.formFieldAnnotationType === "ListBox"
+            || args.source.formFieldAnnotationType === "SignatureField" || args.source.formFieldAnnotationType === "InitialField" || args.source.formFieldAnnotationType === "DropdownList"
+            || args.source.formFieldAnnotationType === "PasswordField")) {
+             this.commandHandler.formDesignerModule.updateHTMLElement(args.source as PdfAnnotationBaseModel);
+            }
             this.commandHandler.renderSelector(this.pdfViewerBase.activeElements.activePageID, currentSelctor);
             this.commandHandler.viewerBase.isAnnotationMouseMove = false;
+            this.commandHandler.viewerBase.isFormFieldMouseMove = false;
             // eslint-disable-next-line
             let newShapeObject: any = {
                 bounds: {
@@ -564,12 +600,26 @@ export class MoveTool extends ToolBase {
             if (isLineShapes(args.source)) {
                 newShapeObject.vertexPoints = (args.source as PdfAnnotationBaseModel).vertexPoints;
                 newShapeObject.leaderHeight = (args.source as PdfAnnotationBaseModel).leaderHeight;
-
             }
+            if (args.target && (args.target as PdfAnnotationBaseModel).formFieldAnnotationType) { 
+                let node: PdfAnnotationBaseModel = args.target;
+                let field: IFormField = {
+                    value: (node as any).value, fontFamily: node.fontFamily, fontSize: node.fontSize, fontStyle: (node as any).fontStyle,
+                    color: (node as PdfFormFieldBaseModel).color, backgroundColor: (node as PdfFormFieldBaseModel).backgroundColor, borderColor: (node as PdfFormFieldBaseModel).borderColor,
+                    thickness: (node as PdfFormFieldBaseModel).thickness, alignment: (node as PdfFormFieldBaseModel).alignment, isReadonly: (node as any).isReadonly, visibility: (node as any).visibility,
+                    maxLength: (node as any).maxLength, isRequired: (node as any).isRequired, isPrint: node.isPrint, rotation: (node as any).rotateAngle, tooltip: (node as any).tooltip, options: (node as any).options,
+                    isChecked: (node as any).isChecked, isSelected: (node as any).isSelected
+                };
+                let currentPosition: IFormFieldBound = { X: args.source.wrapper.offsetX, Y: args.source.wrapper.offsetY, Width: args.source.wrapper.actualSize.width, Height: args.source.wrapper.actualSize.height };
+                let previousPosition: IFormFieldBound = { X: this.offset.x, Y: this.offset.y, Width: args.source.wrapper.actualSize.width, Height: args.source.wrapper.actualSize.height };
+                this.commandHandler.fireFormFieldMoveEvent("formFieldMove", field, node.pageIndex, previousPosition, currentPosition);
+            }
+            if (this.commandHandler.annotation) {
             // eslint-disable-next-line
             this.commandHandler.annotation.addAction((this as any).pageIndex, null, args.source, 'Drag', '', this.redoElement as any, newShapeObject);
             this.commandHandler.annotation.stampAnnotationModule.updateSessionStorage(args.source, null, 'Drag');
             this.commandHandler.annotation.stickyNotesAnnotationModule.updateStickyNotes(args.source, null);
+            }
         }
         super.mouseUp(args);
     }
@@ -631,11 +681,13 @@ export class MoveTool extends ToolBase {
             if (!this.helper) {
                 let selectedItem: PdfAnnotationBaseModel = this.commandHandler.selectedItems.annotations[0];
                 // eslint-disable-next-line
-                let cobject: any = cloneObject(this.commandHandler.selectedItems.annotations[0]) as PdfAnnotationBaseModel;
+                let cobject: any = this.commandHandler.selectedItems.annotations.length > 0 ? cloneObject(this.commandHandler.selectedItems.annotations[0]) as PdfAnnotationBaseModel: 
+                cloneObject(this.commandHandler.selectedItems.formFields[0]) as PdfFormFieldBaseModel;
                 if (cobject.wrapper) {
                     diffX = requiredX - cobject.wrapper.offsetX;
                     diffY = requiredY - cobject.wrapper.offsetY;
-                    cobject.bounds = this.commandHandler.selectedItems.annotations[0].wrapper.bounds;
+                    cobject.bounds = this.commandHandler.selectedItems.annotations.length > 0 ? this.commandHandler.selectedItems.annotations[0].wrapper.bounds:
+                    this.commandHandler.selectedItems.formFields[0].wrapper.bounds;
                 }
                 cobject.wrapper = undefined;
                 cobject.id = 'diagram_helper';
@@ -666,7 +718,11 @@ export class MoveTool extends ToolBase {
                 } else {
                     cobject = this.helper = args.source;
                 }
+                if(this.commandHandler.selectedItems.annotations.length > 0) {
                 this.commandHandler.selectedItems.annotations = [cobject];
+                } else {
+                    this.commandHandler.selectedItems.formFields = [cobject];
+                }
             } else {
                 diffX = requiredX - this.helper.wrapper.offsetX;
                 diffY = requiredY - this.helper.wrapper.offsetY;
@@ -727,7 +783,7 @@ export class StampTool extends MoveTool {
             args.sourceWrapper = args.source.wrapper; this.inAction = true;
             // eslint-disable-next-line
             let currentSource: any = args.source;
-            if (currentSource && currentSource.shapeAnnotationType === 'HandWrittenSignature') {
+            if (currentSource && (currentSource.shapeAnnotationType === 'HandWrittenSignature' ||currentSource.shapeAnnotationType === 'SignatureText' ||currentSource.shapeAnnotationType === 'SignatureImage')) {
                 // eslint-disable-next-line max-len
                 // eslint-disable-next-line
                 this['offset'] = { x: args.source.wrapper.offsetX - (args.source.wrapper.bounds.width / 2), y: args.source.wrapper.offsetY - (args.source.wrapper.bounds.height / 2) };
@@ -1059,17 +1115,18 @@ export class ResizeTool extends ToolBase {
         if (node.measureType === 'Radius') {
             this.redoElement.notes = (node as PdfAnnotationBaseModel).notes;
         }
-        this.prevSource = this.commandHandler.selectedItems.annotations[0];
-
+        this.prevSource = this.commandHandler.selectedItems.annotations.length >0 ? this.commandHandler.selectedItems.annotations[0]:
+        this.commandHandler.selectedItems.formFields[0];
     }
 
     /**   @private  */
     public mouseUp(args: MouseEventArgs, isPreventHistory?: boolean): boolean {
         let object: PdfAnnotationBaseModel | SelectorModel;
         object = args.source as PdfAnnotationBaseModel | Selector;
-        if (this.commandHandler) {
+        if (this.commandHandler && this.prevSource) {
             this.commandHandler.clearSelection(this.pdfViewerBase.activeElements.activePageID);
             this.commandHandler.viewerBase.isAnnotationSelect = true;
+            this.commandHandler.viewerBase.isFormFieldSelect = true;
             this.commandHandler.select([this.prevSource.id], this.prevSource.annotationSelectorSettings);
             // eslint-disable-next-line max-len
             let deltaValues: Rect = this.updateSize(this.prevSource, this.currentPosition, this.initialPosition, this.corner, this.initialBounds, null, true);
@@ -1081,6 +1138,11 @@ export class ResizeTool extends ToolBase {
                 if (this.commandHandler.stampSettings.minHeight || this.commandHandler.stampSettings.minWidth) {
                     this.commandHandler.select([this.prevSource.id], this.prevSource.annotationSelectorSettings);
                 }
+            }
+            if(this.commandHandler.selectedItems.formFields.length > 0 && (this.commandHandler.selectedItems.formFields[0].formFieldAnnotationType === 'Textbox' || this.commandHandler.selectedItems.formFields[0].formFieldAnnotationType === 'Checkbox'
+              || this.commandHandler.selectedItems.formFields[0].formFieldAnnotationType === 'RadioButton' || this.commandHandler.selectedItems.formFields[0].formFieldAnnotationType === "InitialField" || this.commandHandler.selectedItems.formFields[0].formFieldAnnotationType === "SignatureField"
+              || this.commandHandler.selectedItems.formFields[0].formFieldAnnotationType === 'DropdownList' || this.commandHandler.selectedItems.formFields[0].formFieldAnnotationType === 'ListBox' || this.commandHandler.selectedItems.formFields[0].formFieldAnnotationType === 'PasswordField')) {
+                this.commandHandler.formDesignerModule.updateHTMLElement(this.commandHandler.selectedItems.formFields[0]); 
             }
             this.commandHandler.renderSelector(this.prevPageId, this.prevSource.annotationSelectorSettings);
             if (this.commandHandler.annotation && args.source.wrapper) {
@@ -1099,14 +1161,42 @@ export class ResizeTool extends ToolBase {
                     newObject.notes = (args.source as PdfAnnotationBaseModel).notes;
                     this.commandHandler.annotation.updateCalibrateValues(this.prevSource);
                 }
-                // eslint-disable-next-line
-                if (this.prevSource.shapeAnnotationType === 'FreeText' && this.commandHandler.selectedItems.annotations && this.commandHandler.selectedItems.annotations.length > 0) {
-                    this.commandHandler.nodePropertyChange(this.commandHandler.selectedItems.annotations[0], {});
+                if (this.prevSource.shapeAnnotationType === 'SignatureText') {
+                    newObject.fontSize = newObject.bounds.height / 2;
+                    if (args.target != null) {
+                        (args.target as PdfAnnotationBaseModel).fontSize = newObject.bounds.height / 2;
+                        ((args.target as PdfAnnotationBaseModel).wrapper.children[1] as any).style.fontSize = newObject.fontSize;
+                        (args.target as PdfAnnotationBaseModel).wrapper.children[1].horizontalAlignment = 'Center';
+                        (args.target as PdfAnnotationBaseModel).wrapper.children[1].verticalAlignment = 'Center';
+                        (args.target as PdfAnnotationBaseModel).wrapper.children[1].setOffsetWithRespectToBounds(0, 0, 'Absolute');
+                        (this.commandHandler.selectedItems.annotations[0].wrapper.children[1] as any).style.fontSize = newObject.fontSize;
+                        this.commandHandler.selectedItems.annotations[0].wrapper.children[1].horizontalAlignment = 'Center';
+                        this.commandHandler.selectedItems.annotations[0].wrapper.children[1].verticalAlignment = 'Center';
+                        this.commandHandler.selectedItems.annotations[0].wrapper.children[1].setOffsetWithRespectToBounds(0, 0, 'Absolute');
+                        this.commandHandler.selectedItems.annotations[0].fontSize = newObject.bounds.height / 2;
+                    }
                 }
+                // eslint-disable-next-line
+                if ((this.prevSource.shapeAnnotationType === 'FreeText' || this.prevSource.shapeAnnotationType === 'SignatureText') && this.commandHandler.selectedItems.annotations && this.commandHandler.selectedItems.annotations.length > 0) {
+                    this.commandHandler.nodePropertyChange(this.commandHandler.selectedItems.annotations[0], {fontSize:newObject.bounds.height / 2});
+                }
+
                 // eslint-disable-next-line
                 this.commandHandler.annotation.addAction((this as any).pageIndex, null, this.prevSource, 'Resize', '', this.redoElement as any, newObject);
             }
-            this.commandHandler.annotation.stampAnnotationModule.updateSessionStorage(args.source, this.prevSource.id, 'Resize');
+            if(args.target && (args.target as PdfAnnotationBaseModel).formFieldAnnotationType) { 
+                let node: PdfAnnotationBaseModel = args.target;
+                let field: IFormField = { value: (node as any).value, fontFamily: node.fontFamily, fontSize: node.fontSize, fontStyle: (node as any).fontStyle,
+                    color: (node as PdfFormFieldBaseModel).color, backgroundColor: (node as PdfFormFieldBaseModel).backgroundColor, alignment: (node as PdfFormFieldBaseModel).alignment, isReadonly: (node as any).isReadonly, visibility: (node as any).visibility,
+                    maxLength: (node as any).maxLength,  isRequired: (node as any).isRequired, isPrint: node.isPrint, rotation: (node as any).rotateAngle, tooltip: (node as any).tooltip, 
+                    options: (node as any).options, isChecked: (node as any).isChecked, isSelected: (node as any).isSelected }; 
+                let currentPosition: IFormFieldBound = { X: args.source.wrapper.offsetX, Y: args.source.wrapper.offsetY, Width: args.source.wrapper.actualSize.width, Height: args.source.wrapper.actualSize.height };
+                let previousPosition: IFormFieldBound = { X: this.initialBounds.x, Y: this.initialBounds.y, Width: this.initialBounds.width, Height: this.initialBounds.height };
+                this.commandHandler.fireFormFieldResizeEvent("formFieldResize", field, node.pageIndex, previousPosition, currentPosition);
+            }
+            if (this.commandHandler.annotation && this.commandHandler.annotation.stampAnnotationModule) {
+              this.commandHandler.annotation.stampAnnotationModule.updateSessionStorage(args.source, this.prevSource.id, 'Resize');
+            }
         }
         super.mouseUp(args);
         return !this.blocked;
@@ -1135,7 +1225,7 @@ export class ResizeTool extends ToolBase {
             obj = (object as any).annotations[0];
         }
         // eslint-disable-next-line
-        let annotationSettings: any = this.commandHandler.annotationModule.findAnnotationSettings(obj);
+        let annotationSettings: any = this.commandHandler.annotationModule ? this.commandHandler.annotationModule.findAnnotationSettings(obj): {};
         let annotationMaxHeight: number = 0;
         let annotationMaxWidth: number  = 0;
         let annotationMinHeight: number = 0;
@@ -1177,7 +1267,8 @@ export class ResizeTool extends ToolBase {
         changes = this.getChanges(changes);
         if (!this.helper) {
             // eslint-disable-next-line
-            let cobject: any = cloneObject(this.commandHandler.selectedItems.annotations[0]) as PdfAnnotationBaseModel;
+            let cobject: any = this.commandHandler.selectedItems.annotations.length > 0 ? cloneObject(this.commandHandler.selectedItems.annotations[0]) as PdfAnnotationBaseModel:
+            cloneObject(this.commandHandler.selectedItems.formFields[0]) as PdfFormFieldBaseModel;
             cobject.id = 'diagram_helper';
             if (cobject.shapeAnnotationType === 'Stamp') {
                 cobject.strokeColor = '';
@@ -1192,7 +1283,8 @@ export class ResizeTool extends ToolBase {
                 cobject.opacity = 1;
                 cobject.dynamicText = '';
             } else {
-                cobject.bounds = this.commandHandler.selectedItems.annotations[0].wrapper.bounds;
+                cobject.bounds = this.commandHandler.selectedItems.annotations.length > 0 ?this.commandHandler.selectedItems.annotations[0].wrapper.bounds:
+                    this.commandHandler.selectedItems.formFields[0].wrapper.bounds;
                 cobject.strokeColor = 'red';
                 cobject.borderDashArray = '5,5';
                 cobject.fillColor = 'transparent';
@@ -1202,8 +1294,15 @@ export class ResizeTool extends ToolBase {
             if (cobject.enableShapeLabel === true) {
                 cobject.labelContent = '';
             }
+            if (cobject.shapeAnnotationType === 'SignatureText') {
+                cobject.fontSize = cobject.bounds.height / 2;
+            }
             this.helper = cobject = this.commandHandler.add(cobject as PdfAnnotationBase);
+            if(this.commandHandler.selectedItems.annotations.length > 0) {
             this.commandHandler.selectedItems.annotations = [cobject];
+            } else {
+                this.commandHandler.selectedItems.formFields = [cobject];
+            }
         }
         let deltaValues: Rect = this.updateSize(this.helper, this.startPosition, this.currentPosition, this.corner, this.initialBounds);
         this.blocked = !(this.scaleObjects(
@@ -1274,7 +1373,7 @@ export class ResizeTool extends ToolBase {
         source?: SelectorModel | PdfAnnotationBaseModel)
         : boolean {
         // eslint-disable-next-line
-        let annotationSettings: any = this.commandHandler.annotationModule.findAnnotationSettings(source);
+        let annotationSettings: any = this.commandHandler.annotationModule? this.commandHandler.annotationModule.findAnnotationSettings(source): {};
         let annotationMaxHeight: number = 0;
         let annotationMaxWidth: number = 0;
         let annotationMinHeight: number = 0;
@@ -1306,7 +1405,7 @@ export class ResizeTool extends ToolBase {
                 deltaHeight = deltaWidth = 0;
             }
             // eslint-disable-next-line max-len
-        } else if ((source as PdfAnnotationBaseModel).shapeAnnotationType === 'Image' || (source as PdfAnnotationBaseModel).shapeAnnotationType === 'HandWrittenSignature') {
+        } else if ((source as PdfAnnotationBaseModel).shapeAnnotationType === 'Image' || ((source as PdfAnnotationBaseModel).shapeAnnotationType === 'HandWrittenSignature'||(source as PdfAnnotationBaseModel).shapeAnnotationType === 'SignatureText'||(source as PdfAnnotationBaseModel).shapeAnnotationType === 'SignatureImage')) {
             if (!(deltaHeight === 1 && deltaWidth === 1)) {
                 if (width >= annotationMaxWidth && height < annotationMaxHeight) {
                     deltaHeight = Math.max(deltaHeight, deltaWidth);
@@ -1349,6 +1448,8 @@ export class NodeDrawingTool extends ToolBase {
     public sourceObject: PdfAnnotationBaseModel;
     /** @private */
     public dragging: boolean;
+    /** @private */
+    public isFormDesign:boolean;
 
     constructor(commandHandler: PdfViewer, base: PdfViewerBase, sourceObject: PdfAnnotationBaseModel) {
         super(commandHandler, base);
@@ -1366,8 +1467,59 @@ export class NodeDrawingTool extends ToolBase {
         this.sourceObject.pageIndex = node.pageIndex = this.pdfViewerBase.activeElements.activePageID || 0;
         this.sourceObject.enableShapeLabel = this.commandHandler.enableShapeLabel;
         this.pdfViewerBase.updateFreeTextProperties(this.sourceObject);
+        this.isFormDesign=false;
+        let formFieldElement = document.getElementById("FormField_helper_html_element");
+        if(formFieldElement) {
+            formFieldElement.remove();
+        }
         // eslint-disable-next-line
         this.commandHandler.drawingObject = this.drawingObject = this.commandHandler.add(this.sourceObject || node as any) as PdfAnnotationBaseModel;
+        if (this.drawingObject.formFieldAnnotationType === "Textbox" || this.drawingObject.formFieldAnnotationType === "SignatureField" || this.drawingObject.formFieldAnnotationType === "InitialField" ||
+        this.drawingObject.formFieldAnnotationType === "Checkbox" || this.drawingObject.formFieldAnnotationType === "ListBox" || this.drawingObject.formFieldAnnotationType === "RadioButton" ||
+        this.drawingObject.formFieldAnnotationType === "DropdownList" || this.drawingObject.formFieldAnnotationType === "PasswordField") {
+        this.inAction = false;
+        (this.drawingObject as any).pageNumber = this.pdfViewerBase.currentPageNumber;
+        let bounds =this.commandHandler.formDesignerModule.updateFormFieldInitialSize(this.drawingObject.wrapper.children[0], this.drawingObject.formFieldAnnotationType);
+        let pageWidth = this.pdfViewerBase.pageContainer.firstElementChild.clientWidth - bounds.width;
+        let pageHeight = this.pdfViewerBase.pageContainer.firstElementChild.clientHeight - bounds.height;
+        let left =  (this.pdfViewerBase.pageContainer.firstElementChild as any).offsetLeft;
+        let offsetX: number; 
+        if (this.currentPosition.y >= pageHeight && event.target && (event.target as any).parentElement && (event.target as any).parentElement.classList.contains("foreign-object")) {
+            var targetParentRect = (event as any).path[3].getBoundingClientRect();
+            offsetX = (event as any).clientX - targetParentRect.left; 
+        } else {
+            offsetX = this.currentPosition.x - left; 
+        }
+        let rect: any;
+        if(this.currentPosition.x >= pageWidth && this.currentPosition.y >= pageHeight) {
+            rect = { x: pageWidth, y: pageHeight, width: this.drawingObject.wrapper.children[0].width, height: this.drawingObject.wrapper.children[0].height }; 
+        } else if (this.currentPosition.x >= pageWidth) {
+            rect = { x: pageWidth, y: this.currentPosition.y, width: this.drawingObject.wrapper.children[0].width, height: this.drawingObject.wrapper.children[0].height };
+        } else if(this.currentPosition.y >= pageHeight) {
+            rect = { x: offsetX, y: pageHeight, width: this.drawingObject.wrapper.children[0].width, height: this.drawingObject.wrapper.children[0].height }; 
+        } else {
+            rect = { x: this.currentPosition.x, y: this.currentPosition.y, width: this.drawingObject.wrapper.children[0].width, height: this.drawingObject.wrapper.children[0].height };
+        }
+        this.updateNodeDimension(this.drawingObject, rect);
+        this.commandHandler.formDesignerModule.drawHTMLContent(this.drawingObject.formFieldAnnotationType, this.drawingObject.wrapper.children[0] as DiagramHtmlElement, this.drawingObject, this.drawingObject.pageIndex, this.commandHandler);
+        this.commandHandler.select([this.commandHandler.drawingObject.id], this.commandHandler.annotationSelectorSettings);
+        this.commandHandler.formFieldCollection.push(this.drawingObject);
+        let formField: FormFieldModel = {id: this.drawingObject.id, name: (this.drawingObject as PdfFormFieldBaseModel).name, value: (this.drawingObject as PdfFormFieldBaseModel).value,
+            type: this.drawingObject.formFieldAnnotationType as FormFieldType, isReadOnly: this.drawingObject.isReadonly, fontFamily: this.drawingObject.fontFamily,
+            fontSize: this.drawingObject.fontSize, fontStyle: this.drawingObject.fontStyle as unknown as FontStyle, color: (this.drawingObject as PdfFormFieldBaseModel).color, backgroundColor: (this.drawingObject as PdfFormFieldBaseModel).backgroundColor,
+            alignment: (this.drawingObject as PdfFormFieldBaseModel).alignment as TextAlign, visibility: (this.drawingObject as PdfFormFieldBaseModel).visibility, maxLength: (this.drawingObject as PdfFormFieldBaseModel).maxLength, isRequired: (this.drawingObject as PdfFormFieldBaseModel).isRequired,
+            isPrint: this.drawingObject.isPrint, tooltip:  (this.drawingObject as PdfFormFieldBaseModel).tooltip, bounds: this.drawingObject.bounds as IFormFieldBound, thickness: this.drawingObject.thickness, borderColor: (this.drawingObject as PdfFormFieldBaseModel).borderColor,
+            signatureIndicatorSettings: (this.drawingObject as PdfFormFieldBaseModel).signatureIndicatorSettings };
+        this.commandHandler.formFieldCollections.push(formField);
+        this.commandHandler.annotation.addAction(this.pdfViewerBase.currentPageNumber, null, this.drawingObject, 'Addition', '', this.drawingObject, this.drawingObject);
+        this.endAction();
+        this.pdfViewerBase.tool = null;
+        this.pdfViewerBase.action = "Select";
+        this.drawingObject = null;
+        this.pdfViewerBase.isMouseDown = false;
+        this.pdfViewerBase.pdfViewer.drawingObject = null;
+        this.isFormDesign=true;
+      }
     }
     /**   @private  */
     public mouseMove(args: MouseEventArgs): boolean {
@@ -1382,13 +1534,14 @@ export class NodeDrawingTool extends ToolBase {
         }
         return true;
     }
+    
     /**   @private  */
     public mouseUp(args: MouseEventArgs): void {
         if (this.drawingObject && this.dragging) {
             this.commandHandler.clearSelection(this.pdfViewerBase.activeElements.activePageID);
             this.commandHandler.select([this.drawingObject.id], this.commandHandler.annotationSelectorSettings);
             this.commandHandler.annotation.updateCalibrateValues(this.drawingObject, true);
-            if (this.commandHandler) {
+            if (this.commandHandler &&!this.isFormDesign) {
                 // eslint-disable-next-line
                 this.commandHandler.annotation.addAction((this as any).pageIndex, null, this.drawingObject, 'Addition', '', this.drawingObject as any, this.drawingObject);
             }
@@ -1396,8 +1549,9 @@ export class NodeDrawingTool extends ToolBase {
             this.dragging = false;
             super.mouseUp(args);
             this.inAction = false;
+        } else  { 
+            super.mouseUp(args); 
         }
-
     }
     /**   @private  */
     public endAction(): void {
@@ -1411,7 +1565,7 @@ export class NodeDrawingTool extends ToolBase {
         obj.bounds.width = rect.width / zoom;
         obj.bounds.height = rect.height / zoom;
         // eslint-disable-next-line
-        let annotationSettings: any = this.commandHandler.annotationModule.findAnnotationSettings(obj);
+        let annotationSettings: any = this.commandHandler.annotationModule? this.commandHandler.annotationModule.findAnnotationSettings(obj): {};
         let annotationMaxHeight: number = 0;
         let annotationMaxWidth: number  = 0;
         if (annotationSettings.maxWidth || annotationSettings.maxHeight) {

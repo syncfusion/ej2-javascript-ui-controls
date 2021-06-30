@@ -139,10 +139,11 @@ export class TreeMapTooltip {
                 palette: [markerFill],
                 areaBounds: this.treemap.areaRect,
                 textStyle: args['textStyle'],
+				fill:this.treemap.tooltipSettings.fill ? this.treemap.tooltipSettings.fill : this.treemap.themeStyle.tooltipFillColor,
                 blazorTemplate: { name: 'TooltipTemplate', parent: this.treemap.tooltipSettings }
             });
             this.svgTooltip.opacity = this.treemap.themeStyle.tooltipFillOpacity || this.svgTooltip.opacity;
-            this.svgTooltip.appendTo(tooltipEle);
+			this.svgTooltip.appendTo(tooltipEle);
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             (this.treemap as any).renderReactTemplates();
         } else {

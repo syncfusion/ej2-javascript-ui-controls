@@ -284,7 +284,7 @@ describe('Schedule Timeline Week view', () => {
             const moreIndicatorList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-more-indicator'));
             expect(moreIndicatorList.length).toEqual(2);
         });
-
+        
         it ('Checking right indicator icon between dates', (done: DoneFn) => {
             schObj.dataBound = () => {
                 const eventElementList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));

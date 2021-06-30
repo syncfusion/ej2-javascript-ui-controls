@@ -112,16 +112,6 @@
 
     .e-split-bar {
 
-      &.e-split-bar-active .e-navigate-arrow {
-        visibility: hidden;
-      }
-
-      &.e-split-bar-hover {
-        &.e-split-bar-active .e-navigate-arrow {
-          visibility: hidden;
-        }
-      }
-
       &.e-split-bar-horizontal {
         align-items: center;
         display: flex;

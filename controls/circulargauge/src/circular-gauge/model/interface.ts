@@ -350,6 +350,8 @@ export interface IThemeStyle {
     tooltipFillOpacity?: number;
     /** Specifies the opacity for the text in tooltip in circular gauge. */
     tooltipTextOpacity?: number;
+    /** Specifies the font weight for the text in title in circular gauge. */
+    titleFontWeight?: string;
 
 }
 

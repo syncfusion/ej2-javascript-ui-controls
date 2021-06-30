@@ -1,14 +1,14 @@
 /**
  * Defines util methods used by Rich Text Editor.
  */
-import { isNullOrUndefined as isNOU, addClass, removeClass, L10n, selectAll, createElement,  } from '@syncfusion/ej2-base';
+import { isNullOrUndefined as isNOU, addClass, removeClass, L10n, selectAll, createElement } from '@syncfusion/ej2-base';
 import { Browser, detach, SanitizeHtmlHelper, extend } from '@syncfusion/ej2-base';
 import * as classes from '../base/classes';
 import * as model from '../models/items';
 import { BaseToolbar } from '../actions/base-toolbar';
 import { DropDownButtons } from '../actions/dropdown-buttons';
 import { ServiceLocator } from '../services/service-locator';
-import { toolsLocale, fontNameLocale, formatsLocale } from '../models/default-locale';
+import { toolsLocale, fontNameLocale, formatsLocale, numberFormatListLocale, bulletFormatListLocale } from '../models/default-locale';
 import { IToolsItemConfigs, IRichTextEditor, BeforeSanitizeHtmlArgs } from '../base/interface';
 import { IToolbarItems, IDropDownItemModel, ISetToolbarStatusArgs, IToolbarItemModel } from './interface';
 
@@ -146,6 +146,7 @@ export function getTooltipText(item: string, serviceLocator: ServiceLocator): st
 /**
  * @param {ISetToolbarStatusArgs} e - specifies the e element
  * @param {boolean} isPopToolbar - specifies the boolean value
+ * @param {IRichTextEditor} self - specifies the parent element
  * @returns {void}
  * @hidden
  */
@@ -504,8 +505,8 @@ export function convertToBlob(dataUrl: string): Blob {
  * @hidden
  */
 export function getLocaleFontFormat(self: IRichTextEditor, localeItems: { [ket: string]: string }[], item: IDropDownItemModel): string {
-    for(let i: number = 0; localeItems.length > i; i++) {
-        if(localeItems[i].value === item.value || localeItems[i].value === item.subCommand) {
+    for (let i: number = 0; localeItems.length > i; i++) {
+        if (localeItems[i].value === item.value || localeItems[i].value === item.subCommand) {
             return self.localeObj.getConstant(localeItems[i].locale);
         }
     }
@@ -523,5 +524,11 @@ export function updateDropDownFontFormatLocale(self: IRichTextEditor): void {
     });
     model.formatItems.forEach((item: IDropDownItemModel, i: number) => {
         model.formatItems[i].text = getLocaleFontFormat(self, formatsLocale, model.formatItems[i]);
+    });
+    model.numberFormatList.forEach((item: IDropDownItemModel, i: number) => {
+        model.numberFormatList[i].text = getLocaleFontFormat(self, numberFormatListLocale, model.numberFormatList[i]);
+    });
+    model.bulletFormatList.forEach((item: IDropDownItemModel, i: number) => {
+        model.bulletFormatList[i].text = getLocaleFontFormat(self, bulletFormatListLocale, model.bulletFormatList[i]);
     });
 }

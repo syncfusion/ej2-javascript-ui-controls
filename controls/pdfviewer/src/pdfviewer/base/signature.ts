@@ -11,6 +11,7 @@ import { cloneObject } from '../drawing/drawing-util';
 import { CheckBox } from '@syncfusion/ej2-buttons';
 import { Tab, SelectEventArgs } from '@syncfusion/ej2-navigations';
 import { Button } from '@syncfusion/ej2-buttons';
+import { PdfAnnotationType } from '../drawing';
 
 /**
  * @hidden
@@ -26,6 +27,7 @@ export interface ISignAnnotation {
     data: string
     signatureName: string
     fontFamily?: string
+    fontSize?: string
 }
 /**
  * @hidden
@@ -92,6 +94,13 @@ export class Signature {
     public saveImageString: string = '';
     private signatureImageString: string = '';
     /**
+    * @private
+    */
+    // eslint-disable-next-line
+    public maxSaveLimit: number = 5;
+
+
+    /**
      * @param pdfViewer
      * @param pdfViewerBase
      * @param pdfViewer
@@ -112,12 +121,18 @@ export class Signature {
             dialogDiv.style.display = 'block';
             this.pdfViewerBase.pageContainer.appendChild(dialogDiv);
             const appearanceTab: HTMLElement = this.createSignatureCanvas();
+            let signaturePanelHeader: string;
+            if (this.pdfViewerBase.isToolbarSignClicked && !this.pdfViewerBase.isInitialField) {
+                signaturePanelHeader = this.pdfViewer.localeObj.getConstant('Draw Signature');
+            } else {
+                signaturePanelHeader = this.pdfViewerBase.isInitialField ? this.pdfViewer.localeObj.getConstant('Draw Initial') : this.pdfViewer.localeObj.getConstant('Draw Signature');
+            }
             if (this.signatureDialog) {
                 this.signatureDialog.content = appearanceTab;
             } else {
                 this.signatureDialog = new Dialog({
                     // eslint-disable-next-line max-len
-                    showCloseIcon: true, closeOnEscape: false, isModal: true, header: this.pdfViewer.localeObj.getConstant('Draw Signature'),
+                    showCloseIcon: true, closeOnEscape: false, isModal: true, header: signaturePanelHeader,
                     target: this.pdfViewer.element, content: appearanceTab, width: '750px', visible: true, allowDragging: true,
                     beforeClose: (): void => {
                         this.clearSignatureCanvas();
@@ -131,13 +146,15 @@ export class Signature {
                         if (signatureWindow) {
                             signatureWindow.remove();
                         }
-                        if (!this.pdfViewerBase.isToolbarSignClicked) {
-                            this.pdfViewer.fireFocusOutFormField(this.pdfViewer.formFieldsModule.currentTarget.name, '');
+                        if (!this.pdfViewerBase.isToolbarSignClicked && !this.pdfViewerBase.drawSignatureWithTool) {
+                            if (!isNullOrUndefined(this.pdfViewer.formFieldsModule.currentTarget))
+                                this.pdfViewer.fireFocusOutFormField(this.pdfViewer.formFieldsModule.currentTarget.name, '');
                         }
                         this.pdfViewerBase.isToolbarSignClicked = false;
                         this.pdfViewer.formFieldsModule.setFocus();
                     }
                 });
+
                 this.signatureDialog.buttons = [
                     // eslint-disable-next-line max-len
                     { buttonModel: { content: this.pdfViewer.localeObj.getConstant('Clear'), disabled: true, cssClass: 'e-pv-clearbtn' }, click: this.clearSignatureCanvas.bind(this) },
@@ -148,6 +165,9 @@ export class Signature {
                 ];
                 this.signatureDialog.appendTo(dialogDiv);
                 this.signaturetype = 'Draw';
+            }
+            if(this.pdfViewer.enableRtl){
+                this.signatureDialog.enableRtl = this.pdfViewer.enableRtl;
             }
         } else {
             // eslint-disable-next-line
@@ -246,6 +266,7 @@ export class Signature {
                 id: 'sign' + this.pdfViewerBase.signatureCount, bounds: signatureBounds, pageIndex: pageIndex, data: this.outputString,
                 shapeAnnotationType: 'HandWrittenSignature', opacity: opacity, strokeColor: strokeColor, thickness: thickness, signatureName: annotationName
             };
+            this.pdfViewerBase.currentSignatureAnnot = annot;
             // eslint-disable-next-line
             let checkbox: any;
             if (isBlazor()) {
@@ -257,7 +278,7 @@ export class Signature {
                 this.addSignatureCollection();
             }
             this.hideSignaturePanel();
-            this.pdfViewerBase.currentSignatureAnnot = annot;
+
             this.pdfViewerBase.isToolbarSignClicked = false;
         } else {
             // eslint-disable-next-line
@@ -289,7 +310,7 @@ export class Signature {
                     this.saveSignatureString = '';
                 }
                 this.signatureImageString = this.saveImageString;
-                this.pdfViewer.formFieldsModule.drawSignature();
+                this.pdfViewer.formFieldsModule.drawSignature(null, null, this.pdfViewerBase.currentTarget, null);
                 isSignatureAdded = true;
             }
         }
@@ -315,8 +336,8 @@ export class Signature {
             const pageDiv: HTMLElement = document.getElementById(this.pdfViewer.element.id + '_pageDiv_' + pageIndex);
             let currentLeft: number = 0;
             let currentTop: number = 0;
-            const currentHeight: number = parseFloat(this.signHeight);
-            const currentWidth: number = parseFloat(this.signWidth);
+            const currentHeight: number = 65;
+            const currentWidth: number = 200;
             currentLeft = ((parseFloat(pageDiv.style.width) / 2) - (currentWidth / 2)) / zoomvalue;
             currentTop = ((parseFloat(pageDiv.style.height) / 2) - (currentHeight / 2)) / zoomvalue;
             const zoomFactor: number = this.pdfViewerBase.getZoomFactor();
@@ -327,20 +348,72 @@ export class Signature {
                     left: currentLeft / zoomFactor, top: currentTop / zoomFactor, x: currentLeft / zoomFactor,
                     // eslint-disable-next-line max-len
                     y: currentTop / zoomFactor, width: currentWidth, height: currentHeight
-                }, pageIndex: pageIndex, dynamicText: inputValue, shapeAnnotationType: 'TypeText',
-                fontFamily: this.signfont, signatureName: annotationName
+                }, pageIndex: pageIndex, dynamicText: inputValue, data: this.pdfViewerBase.signatureModule.outputString, shapeAnnotationType: 'SignatureText',
+                fontFamily: this.fontName, signatureName: annotationName
             };
             this.pdfViewerBase.currentSignatureAnnot = annot;
+            //   // eslint-disable-next-line
+            let checkbox: any;
+            if (isBlazor()) {
+                checkbox = document.getElementById(this.pdfViewer.element.id + '_signatureCheckBox');
+            } else {
+                checkbox = document.getElementById('checkbox1');
+            }
+            if (checkbox && checkbox.checked) {
+                this.addSignatureCollection();
+            }
+
             this.hideSignaturePanel();
             this.pdfViewerBase.isToolbarSignClicked = false;
         } else {
-            this.pdfViewer.formFieldsModule.drawSignature('Type');
+            this.pdfViewer.formFieldsModule.drawSignature('Type', "", this.pdfViewerBase.currentTarget);
             this.hideSignaturePanel();
         }
     }
     private imageAddSignature(): void {
-        this.pdfViewer.formFieldsModule.drawSignature('Image');
-        this.hideSignaturePanel();
+        if (this.pdfViewerBase.isToolbarSignClicked) {
+            const zoomvalue: number = this.pdfViewerBase.getZoomFactor();
+            // eslint-disable-next-line
+            let annot: any;
+            const annotationName: string = this.pdfViewer.annotation.createGUID();
+            this.pdfViewerBase.currentSignatureAnnot = null;
+            this.pdfViewerBase.isSignatureAdded = true;
+            const pageIndex: number = this.pdfViewerBase.currentPageNumber - 1;
+            const pageDiv: HTMLElement = document.getElementById(this.pdfViewer.element.id + '_pageDiv_' + pageIndex);
+            let currentLeft: number = 0;
+            let currentTop: number = 0;
+            const currentHeight: number = 65;//15arseFloat(this.signHeight);
+            const currentWidth: number = 200;//parseFloat(this.signWidth);
+            currentLeft = ((parseFloat(pageDiv.style.width) / 2) - (currentWidth / 2)) / zoomvalue;
+            currentTop = ((parseFloat(pageDiv.style.height) / 2) - (currentHeight / 2)) / zoomvalue;
+            const zoomFactor: number = this.pdfViewerBase.getZoomFactor();
+            const inputValue: string = this.signtypevalue;
+            annot = {
+                // eslint-disable-next-line max-len
+                id: 'Typesign' + this.pdfViewerBase.signatureCount, bounds: {
+                    left: currentLeft / zoomFactor, top: currentTop / zoomFactor, x: currentLeft / zoomFactor,
+                    // eslint-disable-next-line max-len
+                    y: currentTop / zoomFactor, width: currentWidth, height: currentHeight
+                }, pageIndex: pageIndex, dynamicText: inputValue, data: this.pdfViewerBase.signatureModule.outputString, shapeAnnotationType: 'SignatureImage',
+                fontFamily: this.fontName, signatureName: annotationName
+            };
+            this.pdfViewerBase.currentSignatureAnnot = annot;
+            // eslint-disable-next-line
+            let checkbox: any;
+            if (isBlazor()) {
+                checkbox = document.getElementById(this.pdfViewer.element.id + '_signatureCheckBox');
+            } else {
+                checkbox = document.getElementById('checkbox2');
+            }
+            if (checkbox && checkbox.checked) {
+                this.addSignatureCollection();
+            }
+            this.hideSignaturePanel();
+            this.pdfViewerBase.isToolbarSignClicked = false;
+        } else {
+            this.pdfViewer.formFieldsModule.drawSignature('Image', "", this.pdfViewerBase.currentTarget);
+            this.hideSignaturePanel();
+        }
     }
 
     /**
@@ -356,7 +429,7 @@ export class Signature {
         if (isBlazor()) {
             for (let i: number = 0; i < 4; i++) {
                 // eslint-disable-next-line
-                let fontElement: any = document.querySelector('#' + this.pdfViewer.element.id + '_font_signature'+ i);
+                let fontElement: any = document.querySelector('#' + this.pdfViewer.element.id + '_font_signature' + i);
                 if (fontElement) {
                     fontElement.addEventListener('click', this.typeSignatureclicked.bind(this));
                 }
@@ -384,14 +457,18 @@ export class Signature {
         if (eventTarget) {
             for (let i: number = 0; i < 4; i++) {
                 // eslint-disable-next-line
-                let fontElement: any = document.querySelector('#' + this.pdfViewer.element.id + '_font_signature'+ i);
+                let fontElement: any = document.querySelector('#' + this.pdfViewer.element.id + '_font_signature' + i);
                 if (fontElement) {
                     fontElement.style.borderColor = '';
                 }
             }
             eventTarget.style.borderColor = 'red';
             this.outputString = eventTarget.textContent;
-            this.fontName = eventTarget.style.fontFamily;
+            try {
+                this.fontName = JSON.parse(eventTarget.style.fontFamily);
+            } catch (e) {
+                this.fontName = eventTarget.style.fontFamily;
+            }
             this.enableCreateButton(false);
         }
     }
@@ -423,6 +500,8 @@ export class Signature {
         canvas.style.height = '335px';
         canvas.style.border = '1px dotted #bdbdbd';
         canvas.style.backgroundColor = 'white';
+        canvas.style.boxSizing = 'border-box';
+        canvas.style.borderRadius= '2px';
         canvas.addEventListener('mousedown', this.signaturePanelMouseDown.bind(this));
         canvas.addEventListener('mousemove', this.signaturePanelMouseMove.bind(this));
         canvas.addEventListener('mouseup', this.signaturePanelMouseUp.bind(this));
@@ -433,108 +512,139 @@ export class Signature {
         appearanceDiv.appendChild(canvas);
         // eslint-disable-next-line
         let checkBoxObj: any;
+        let input: any;
+        let saveCheckBoxContent: string;
+        if (this.pdfViewerBase.isToolbarSignClicked && !this.pdfViewerBase.isInitialField) {
+            saveCheckBoxContent = this.pdfViewer.localeObj.getConstant('Save Signature');
+        } else {
+            saveCheckBoxContent = this.pdfViewerBase.isInitialField ? this.pdfViewer.localeObj.getConstant('Save Initial') : this.pdfViewer.localeObj.getConstant('Save Signature');
+        }
         if (!this.pdfViewer.hideSaveSignature) {
             // eslint-disable-next-line
-            let input: any = document.createElement('input');
+            input = document.createElement('input');
             input.type = 'checkbox';
             input.id = 'checkbox';
             appearanceDiv.appendChild(input);
-            checkBoxObj = new CheckBox({ label: this.pdfViewer.localeObj.getConstant('Save Signature'), disabled: false, checked: false });
+            checkBoxObj = new CheckBox({ label: saveCheckBoxContent, disabled: false, checked: false });
             checkBoxObj.appendTo(input);
         }
         if (this.isSaveSignature) {
             checkBoxObj.checked = true;
         }
-        if (!this.pdfViewerBase.isToolbarSignClicked) {
-            // eslint-disable-next-line
-            let typeDiv: HTMLElement = createElement('div', { id: this.pdfViewer.element.id + 'type_appearance', className: 'e-pv-signature-apperance' });
-            // eslint-disable-next-line
-            let inputText: any = document.createElement('input');
-            inputText.type = 'text';
-            inputText.id = this.pdfViewer.element.id + '_e-pv-Signtext-box';
-            typeDiv.appendChild(inputText);
-            // eslint-disable-next-line
-            let inputobj: any = new TextBox({
-                placeholder: this.pdfViewer.localeObj.getConstant('Enter Signature as Name'),
-                floatLabelType: 'Auto'
-            });
-            inputobj.appendTo(inputText);
-            // eslint-disable-next-line
-            let fontDiv: HTMLElement = createElement('div', { id: this.pdfViewer.element.id + '_font_appearance' });
-            fontDiv.style.width = '715px';
-            fontDiv.style.height = '270px';
-            fontDiv.style.border = '1px dotted #bdbdbd';
-            fontDiv.style.backgroundColor = 'white';
-            typeDiv.appendChild(fontDiv);
-            // eslint-disable-next-line
-            let tab: HTMLElement = createElement('div', { id: this.pdfViewer.element.id + 'Signature_tab' });
-            const uploadDiv: HTMLElement = createElement('div', { id: this.pdfViewer.element.id + 'upload_appearance' });
-            uploadDiv.style.width = '715px';
-            uploadDiv.style.height = '335px';
-            uploadDiv.style.border = '1px dotted #bdbdbd';
-            uploadDiv.style.backgroundColor = 'white';
-            // eslint-disable-next-line
-            let button: any = document.createElement('div');
-            button.id = this.pdfViewer.element.id + '_e-pv-upload-button';
-            uploadDiv.appendChild(button);
-            // eslint-disable-next-line
-            let uploadButton: any = new Button({ cssClass: 'e-pv-sign-upload', content: this.pdfViewer.localeObj.getConstant('Browse Signature Image') });
-            uploadButton.appendTo(button);
-            uploadButton.element.style.position = 'absolute';
-            uploadButton.element.style.left = ((parseFloat(uploadDiv.style.width) / 2) - 50) + 'px';
-            uploadButton.element.style.top = parseFloat(uploadDiv.style.height) / 2 + 'px';
-            // eslint-disable-next-line max-len
-            const uploadCanvas: HTMLCanvasElement = createElement('canvas', { id: this.pdfViewer.element.id + '_signatureuploadCanvas_', className: 'e-pv-signature-uploadcanvas' }) as HTMLCanvasElement;
-            if (this.pdfViewer.element.offsetWidth > 750) {
-                uploadCanvas.width = 715;
-                uploadCanvas.style.width = '715px';
-            } else {
-                uploadCanvas.width = this.pdfViewer.element.offsetWidth - 35;
-                uploadCanvas.style.width = canvas.width + 'px';
-            }
-            uploadCanvas.height = 335;
-            uploadCanvas.style.height = '335px';
-            uploadCanvas.style.border = '1px dotted #bdbdbd';
-            uploadCanvas.style.backgroundColor = 'white';
-            uploadCanvas.style.zIndex = '0';
-            uploadDiv.appendChild(uploadCanvas);
-            // eslint-disable-next-line max-len
-            this.signfontStyle = [{FontName: 'Helvetica'}, { FontName: 'Times New Roman' }, { FontName: 'Courier' }, { FontName: 'Symbol' }];
-            // eslint-disable-next-line
-            let fontSignature: any = [];
-            for (let i: number = 0; i < this.signfontStyle.length; i++) {
-                fontSignature[i] = document.createElement('div');
-                fontSignature[i].id = '_font_signature' + i + '';
-                fontSignature[i].classList.add('e-pv-font-sign');
-            }
-            this.fontsign = fontSignature;
-            // eslint-disable-next-line
-            let proxy: any = this;
-            // eslint-disable-next-line
-            this.tabObj = new Tab({
-                selected: (args: SelectEventArgs): void => {
-                    proxy.handleSelectEvent(args);
-                },
-                items: [
-                    {
-                        header: { 'text': this.pdfViewer.localeObj.getConstant('Draw-hand Signature') },
-                        content: appearanceDiv
-                    },
-                    {
-                        header: { 'text': this.pdfViewer.localeObj.getConstant('Type Signature') },
-                        content: typeDiv
-                    },
-                    {
-                        header: { 'text': this.pdfViewer.localeObj.getConstant('Upload Signature') },
-                        content: uploadDiv
-                    }
-                ]
-            });
-            this.tabObj.appendTo(tab);
-            return tab;
+        //if (!this.pdfViewerBase.isToolbarSignClicked) {
+        // eslint-disable-next-line
+        let typeDiv: HTMLElement = createElement('div', { id: this.pdfViewer.element.id + 'type_appearance', className: 'e-pv-signature-apperance' });
+        // eslint-disable-next-line
+        let inputText: any = document.createElement('input');
+        inputText.type = 'text';
+        inputText.id = this.pdfViewer.element.id + '_e-pv-Signtext-box';
+        typeDiv.appendChild(inputText);
+        // eslint-disable-next-line
+        let inputobj: any = new TextBox({
+            placeholder: this.pdfViewer.localeObj.getConstant('Enter Signature as Name'),
+            floatLabelType: 'Auto'
+        });
+        inputobj.appendTo(inputText);
+        // eslint-disable-next-line
+        let fontDiv: HTMLElement = createElement('div', { id: this.pdfViewer.element.id + '_font_appearance' });
+        fontDiv.style.width = '715px';
+        fontDiv.style.height = '270px';
+        fontDiv.style.border = '1px dotted #bdbdbd';
+        fontDiv.style.boxSizing = 'border-box';
+        fontDiv.style.borderRadius= '2px';
+        fontDiv.style.backgroundColor = 'white';
+        typeDiv.appendChild(fontDiv);
+        input = document.createElement('input');
+        input.type = 'checkbox';
+        input.id = 'checkbox1';
+        typeDiv.appendChild(input);
+        checkBoxObj = new CheckBox({ label: saveCheckBoxContent, disabled: false, checked: false });
+        checkBoxObj.appendTo(input);
+
+        // eslint-disable-next-line
+        let tab: HTMLElement = createElement('div', { id: this.pdfViewer.element.id + 'Signature_tab' });
+        const uploadDiv: HTMLElement = createElement('div', { id: this.pdfViewer.element.id + 'upload_appearance', className: 'e-pv-signature-apperance' });
+
+        uploadDiv.style.backgroundColor = 'white';
+        // eslint-disable-next-line
+        let button: any = document.createElement('div');
+        button.id = this.pdfViewer.element.id + '_e-pv-upload-button';
+        uploadDiv.appendChild(button);
+        // eslint-disable-next-line
+        let uploadButton: any = new Button({ cssClass: 'e-pv-sign-upload', content: this.pdfViewer.localeObj.getConstant('Browse Signature Image') });
+        uploadButton.appendTo(button);
+        uploadButton.element.style.position = 'absolute';
+      
+        // eslint-disable-next-line max-len
+        const uploadCanvas: HTMLCanvasElement = createElement('canvas', { id: this.pdfViewer.element.id + '_signatureuploadCanvas_', className: 'e-pv-signature-uploadcanvas' }) as HTMLCanvasElement;
+        if (this.pdfViewer.element.offsetWidth > 750) {
+            uploadCanvas.width = 715;
+            uploadCanvas.style.width = '715px';
         } else {
-            return appearanceDiv;
+            uploadCanvas.width = this.pdfViewer.element.offsetWidth - 35;
+            uploadCanvas.style.width = canvas.width + 'px';
         }
+        uploadCanvas.height = 335;
+        uploadCanvas.style.height = '335px';
+        uploadButton.element.style.left = ((parseFloat(uploadCanvas.style.width) / 2) - 50) + 'px';
+        uploadButton.element.style.top = ((parseFloat(uploadCanvas.style.height) / 2) - 10) + 'px';
+        uploadCanvas.style.border = '1px dotted #bdbdbd';
+        uploadCanvas.style.backgroundColor = 'white';
+        uploadCanvas.style.boxSizing = 'border-box';
+        uploadCanvas.style.borderRadius= '2px';
+        uploadCanvas.style.zIndex = '0';
+        uploadDiv.appendChild(uploadCanvas);
+        input = document.createElement('input');
+        input.type = 'checkbox';
+        input.id = 'checkbox2';
+        uploadDiv.appendChild(input);
+        checkBoxObj = new CheckBox({ label: saveCheckBoxContent, disabled: false, checked: false });
+        checkBoxObj.appendTo(input);
+
+        // eslint-disable-next-line max-len
+        this.signfontStyle = [{ FontName: 'Helvetica' }, { FontName: 'Times New Roman' }, { FontName: 'Courier' }, { FontName: 'Symbol' }];
+        // eslint-disable-next-line
+        let fontSignature: any = [];
+        if (!isNullOrUndefined(this.pdfViewer.handWrittenSignatureSettings.typeSignatureFonts)) {
+            for (let j: number = 0; j < 4; j++) {
+                if (!isNullOrUndefined(this.pdfViewer.handWrittenSignatureSettings.typeSignatureFonts[j])) {
+                    this.signfontStyle[j].FontName = this.pdfViewer.handWrittenSignatureSettings.typeSignatureFonts[j];
+                }
+            }
+        }
+        for (let i: number = 0; i < this.signfontStyle.length; i++) {
+            fontSignature[i] = document.createElement('div');
+            fontSignature[i].id = '_font_signature' + i + '';
+            fontSignature[i].classList.add('e-pv-font-sign');
+        }
+        this.fontsign = fontSignature;
+        // eslint-disable-next-line
+        let proxy: any = this;
+        // eslint-disable-next-line
+        this.tabObj = new Tab({
+            selected: (args: SelectEventArgs): void => {
+                proxy.handleSelectEvent(args);
+            },
+            items: [
+                {
+                    header: { 'text': this.pdfViewer.localeObj.getConstant('Draw-hand Signature') },
+                    content: appearanceDiv
+                },
+                {
+                    header: { 'text': this.pdfViewer.localeObj.getConstant('Type Signature') },
+                    content: typeDiv
+                },
+                {
+                    header: { 'text': this.pdfViewer.localeObj.getConstant('Upload Signature') },
+                    content: uploadDiv
+                }
+            ]
+        });
+        this.tabObj.appendTo(tab);
+        return tab;
+        // } else {
+        //     return appearanceDiv;
+        // }
     }
     private handleSelectEvent(e: SelectEventArgs): void {
         // eslint-disable-next-line
@@ -654,9 +764,20 @@ export class Signature {
         // eslint-disable-next-line
         let createButton: any = document.getElementsByClassName('e-pv-createbtn')[0];
         createButton.disabled = false;
+        for (let i: number = 0; i < 4; i++) {
+            // eslint-disable-next-line
+            let fontElement: any = document.getElementById('_font_signature' + i + '');
+            if (fontElement) {
+                fontElement.style.borderColor = '';
+            }
+        }
         eventTarget.style.borderColor = 'red';
         this.outputString = eventTarget.textContent;
-        this.fontName = eventTarget.style.fontFamily;
+        try {
+            this.fontName = JSON.parse(eventTarget.style.fontFamily);
+        } catch (e) {
+            this.fontName = eventTarget.style.fontFamily;
+        }
     }
     /**
      * @param bounds
@@ -672,78 +793,93 @@ export class Signature {
         // eslint-disable-next-line
         let collectionData: any = processPathData(this.outputString);
         // eslint-disable-next-line
-        for (let k = 0; k < collectionData.length; k++) {
-            // eslint-disable-next-line
-            let val = collectionData[k];
-            if (minimumX === -1) {
-                // eslint-disable-next-line
-                minimumX = (val['x']);
-                // eslint-disable-next-line
-                maximumX = (val['x']);
-                // eslint-disable-next-line
-                minimumY = (val['y']);
-                // eslint-disable-next-line
-                maximumY = (val['y']);
-            } else {
-                // eslint-disable-next-line
-                let point1 = (val['x']);
-                // eslint-disable-next-line
-                let point2 = (val['y']);
-                if (minimumX >= point1) {
-                    minimumX = point1;
-                }
-                if (minimumY >= point2) {
-                    minimumY = point2;
-                }
-                if (maximumX <= point1) {
-                    maximumX = point1;
-                }
-                if (maximumY <= point2) {
-                    maximumY = point2;
-                }
-            }
-        }
-        const newdifferenceX: number = maximumX - minimumX;
-        const newdifferenceY: number = maximumY - minimumY;
-        // eslint-disable-next-line
         let newCanvas: any = document.createElement('canvas');
-        let differenceX: number = newdifferenceX / 100;
-        let differenceY: number = newdifferenceY / 100;
-        let left: number = 0;
-        let top: number = 0;
-        if (bounds) {
-            newCanvas.width = position.currentWidth;
-            newCanvas.height = position.currentHeight;
-            differenceX = newdifferenceX / (bounds.width);
-            differenceY = newdifferenceY / (bounds.height);
-            left = bounds.x - position.currentLeft;
-            top = bounds.y - position.currentTop;
-        } else {
-            newCanvas.width = 100;
-            newCanvas.height = 100;
-        }
         // eslint-disable-next-line
         let context: any = newCanvas.getContext('2d');
-        context.beginPath();
-        for (let n: number = 0; n < collectionData.length; n++) {
-            // eslint-disable-next-line
-            let val: any = collectionData[n];
-            // eslint-disable-next-line
-            let point1: number = ((val['x'] - minimumX) / differenceX) + left;
-            // eslint-disable-next-line
-            let point2: number = ((val['y'] - minimumY) / differenceY) + top;
-            // eslint-disable-next-line
-            if (val['command'] === 'M') {
-                context.moveTo(point1, point2);
+        // eslint-disable-next-line
+        let imageString: any;
+        let signatureType: string = this.pdfViewerBase.currentSignatureAnnot.shapeAnnotationType;
+        if (signatureType === 'HandWrittenSignature') {
+            if (collectionData.length !== 0) {
                 // eslint-disable-next-line
-            } else if (val['command'] === 'L') {
-                context.lineTo(point1, point2);
+                for (let k = 0; k < collectionData.length; k++) {
+                    // eslint-disable-next-line
+                    let val = collectionData[k];
+                    if (minimumX === -1) {
+                        // eslint-disable-next-line
+                        minimumX = (val['x']);
+                        // eslint-disable-next-line
+                        maximumX = (val['x']);
+                        // eslint-disable-next-line
+                        minimumY = (val['y']);
+                        // eslint-disable-next-line
+                        maximumY = (val['y']);
+                    } else {
+                        // eslint-disable-next-line
+                        let point1 = (val['x']);
+                        // eslint-disable-next-line
+                        let point2 = (val['y']);
+                        if (minimumX >= point1) {
+                            minimumX = point1;
+                        }
+                        if (minimumY >= point2) {
+                            minimumY = point2;
+                        }
+                        if (maximumX <= point1) {
+                            maximumX = point1;
+                        }
+                        if (maximumY <= point2) {
+                            maximumY = point2;
+                        }
+                    }
+                }
+                const newdifferenceX: number = maximumX - minimumX;
+                const newdifferenceY: number = maximumY - minimumY;
+
+                let differenceX: number = newdifferenceX / 100;
+                let differenceY: number = newdifferenceY / 100;
+                let left: number = 0;
+                let top: number = 0;
+                if (bounds) {
+                    newCanvas.width = position.currentWidth;
+                    newCanvas.height = position.currentHeight;
+                    differenceX = newdifferenceX / (bounds.width);
+                    differenceY = newdifferenceY / (bounds.height);
+                    left = bounds.x - position.currentLeft;
+                    top = bounds.y - position.currentTop;
+                } else {
+                    newCanvas.width = 100;
+                    newCanvas.height = 100;
+                }
+
+                context.beginPath();
+                for (let n: number = 0; n < collectionData.length; n++) {
+                    // eslint-disable-next-line
+                    let val: any = collectionData[n];
+                    // eslint-disable-next-line
+                    let point1: number = ((val['x'] - minimumX) / differenceX) + left;
+                    // eslint-disable-next-line
+                    let point2: number = ((val['y'] - minimumY) / differenceY) + top;
+                    // eslint-disable-next-line
+                    if (val['command'] === 'M') {
+                        context.moveTo(point1, point2);
+                        // eslint-disable-next-line
+                    } else if (val['command'] === 'L') {
+                        context.lineTo(point1, point2);
+                    }
+                }
+                context.stroke();
+                context.closePath();
+                imageString = newCanvas.toDataURL();
             }
         }
-        context.stroke();
-        context.closePath();
-        // eslint-disable-next-line
-        let imageString: any = newCanvas.toDataURL();
+        else if (signatureType === 'SignatureText') {
+            imageString = this.outputString;
+        } else {
+            imageString = this.outputString
+        }
+
+
         if (bounds) {
             this.saveImageString = imageString;
         } else {
@@ -752,13 +888,24 @@ export class Signature {
             signCollection['sign_' + this.pdfViewerBase.imageCount] = this.outputString;
             this.outputcollection.push(signCollection);
             // eslint-disable-next-line
-            let signature: any = {};
-            signature['sign_' + this.pdfViewerBase.imageCount] = imageString;
-            this.signaturecollection.push(signature);
+            let signature: any = [];
+            signature.push({ id: 'sign_' + this.pdfViewerBase.imageCount, imageData: imageString, signatureType: signatureType, fontFamily: this.pdfViewerBase.currentSignatureAnnot.fontFamily });
+            this.signaturecollection.push({ image: signature, isInitial: this.pdfViewerBase.isInitialField });
             this.pdfViewerBase.imageCount++;
         }
     }
 
+    /**
+     * @private
+     */
+    public getSaveLimit(limit: number) {
+        if (limit > this.maxSaveLimit) {
+            limit = this.maxSaveLimit;
+        } else if (limit < 1) {
+            limit = 1;
+        }
+        return limit;
+    }
     /**
      * @private
      */
@@ -788,6 +935,8 @@ export class Signature {
             // eslint-disable-next-line max-len
             currentTop = ((parseFloat(pageDiv.style.height) / 2) - (currentHeight / 2)) / zoomvalue;
             let keyString: string = '';
+            let signatureType: PdfAnnotationType;
+            let signatureFontFamily: string;
             for (let collection: number = 0; collection < this.outputcollection.length; collection++) {
                 // eslint-disable-next-line
                 let collectionAddedsign: any = this.outputcollection[collection];
@@ -799,16 +948,31 @@ export class Signature {
                     break;
                 }
             }
-            let signatureBounds: any = this.pdfViewer.formFieldsModule.updateSignatureAspectRatio(keyString, true);
-            // eslint-disable-next-line max-len
-            currentWidth = signatureBounds.width ? signatureBounds.width : currentWidth;
-            // eslint-disable-next-line max-len
-            currentHeight = signatureBounds.height ? signatureBounds.height : currentHeight;
+            for (let signatureIndex: number = 0; signatureIndex < this.signaturecollection.length; signatureIndex++) {
+                let eventTarget: HTMLElement = event.target as HTMLElement;
+                let signatureId:string= this.signaturecollection[signatureIndex].image[0].id.split('_')[1];
+                if (eventTarget && eventTarget.id === 'sign_' + signatureId || eventTarget && eventTarget.id === 'sign_border' + signatureId) {
+                    signatureType = this.signaturecollection[signatureIndex].image[0].signatureType;
+                    signatureFontFamily = this.signaturecollection[signatureIndex].image[0].fontFamily;
+                    break;
+                }
+            }
+            if (signatureType === 'HandWrittenSignature') {
+                let signatureBounds: any = this.pdfViewer.formFieldsModule.updateSignatureAspectRatio(keyString, true);
+                // eslint-disable-next-line max-len
+                currentWidth = signatureBounds.width ? signatureBounds.width : currentWidth;
+                // eslint-disable-next-line max-len
+                currentHeight = signatureBounds.height ? signatureBounds.height : currentHeight;
+            } else {
+                currentWidth = currentWidth === 150 ? 200 : this.pdfViewer.handWrittenSignatureSettings.width;
+                // eslint-disable-next-line max-len
+                currentHeight = currentHeight === 100 ? 65 : this.pdfViewer.handWrittenSignatureSettings.height;
+            }
             annot = {
                 // eslint-disable-next-line max-len
                 id: 'sign' + this.pdfViewerBase.signatureCount, bounds: { x: currentLeft, y: currentTop, width: currentWidth, height: currentHeight }, pageIndex: pageIndex, data: keyString,
                 // eslint-disable-next-line max-len
-                shapeAnnotationType: 'HandWrittenSignature', opacity: opacity, strokeColor: strokeColor, thickness: thickness, signatureName: annotationName
+                shapeAnnotationType: signatureType, opacity: opacity, fontFamily: signatureFontFamily, strokeColor: strokeColor, thickness: thickness, signatureName: annotationName
             };
 
             this.pdfViewerBase.currentSignatureAnnot = annot;
@@ -967,11 +1131,14 @@ export class Signature {
      * @private
      */
     public closeSignaturePanel(): void {
+        if (this.pdfViewerBase.currentTarget)
+            this.pdfViewerBase.drawSignatureWithTool = true;
         this.clearSignatureCanvas();
         if (!isBlazor()) {
             this.signatureDialog.hide();
         }
         this.pdfViewerBase.isToolbarSignClicked = false;
+        this.pdfViewerBase.drawSignatureWithTool = false;
     }
     /**
      * @private
@@ -996,11 +1163,29 @@ export class Signature {
                         pageAnnotationObject.annotations[z].strokeColor = JSON.stringify(this.getRgbCode(strokeColorString));
                         // eslint-disable-next-line max-len
                         pageAnnotationObject.annotations[z].bounds = JSON.stringify(this.pdfViewer.annotation.getBounds(pageAnnotationObject.annotations[z].bounds, pageAnnotationObject.pageIndex));
-                        // eslint-disable-next-line
-                        let collectionData: any = processPathData(pageAnnotationObject.annotations[z].data);
-                        // eslint-disable-next-line
-                        let csData: any = splitArrayCollection(collectionData);
-                        pageAnnotationObject.annotations[z].data = JSON.stringify(csData);
+                        if (pageAnnotationObject.annotations[z].shapeAnnotationType === "HandWrittenSignature") {
+                            // eslint-disable-next-line
+                            let collectionData: any = processPathData(pageAnnotationObject.annotations[z].data);
+                            // eslint-disable-next-line
+                            let csData: any = splitArrayCollection(collectionData);
+                            pageAnnotationObject.annotations[z].data = JSON.stringify(csData);
+                        } else {
+                            if (pageAnnotationObject.annotations[z].shapeAnnotationType === "SignatureText" && !this.checkDefaultFont(pageAnnotationObject.annotations[z].fontFamily)) {
+                                let signTypeCanvas:HTMLCanvasElement = createElement('canvas') as HTMLCanvasElement;
+                                signTypeCanvas.width=150;
+                                signTypeCanvas.height=pageAnnotationObject.annotations[z].fontSize * 2;
+                                let canvasContext:any =signTypeCanvas.getContext('2d');
+                                var x = signTypeCanvas.width / 2;
+                                var y = (signTypeCanvas.height / 2) - 10;
+                                canvasContext.textAlign = 'center';
+                                canvasContext.font=pageAnnotationObject.annotations[z].fontSize+'px '+pageAnnotationObject.annotations[z].fontFamily;
+                                canvasContext.fillText(pageAnnotationObject.annotations[z].data, x, y);
+                                pageAnnotationObject.annotations[z].data = JSON.stringify(signTypeCanvas.toDataURL("image/png"));
+                                pageAnnotationObject.annotations[z].shapeAnnotationType = 'SignatureImage';
+                            } else{
+                            pageAnnotationObject.annotations[z].data = JSON.stringify(pageAnnotationObject.annotations[z].data);
+                        }
+                    }
                     }
                     newArray = pageAnnotationObject.annotations;
                 }
@@ -1010,6 +1195,13 @@ export class Signature {
         return JSON.stringify(annotations);
     }
 
+    private checkDefaultFont(fontName: string): boolean {
+        [{ FontName: 'Helvetica' }, { FontName: 'Times New Roman' }, { FontName: 'Courier' }, { FontName: 'Symbol' }];
+        if (fontName === 'Helvetica' || fontName === 'Times New Roman' || fontName === 'Courier' || fontName === 'Symbol') {
+            return true;
+        }
+        return false;
+    }
     /**
      * @param colorString
      * @private
@@ -1097,6 +1289,8 @@ export class Signature {
                 if (isImport) {
                     if (currentAnnotation.IsSignature) {
                         data = currentAnnotation.PathData;
+                    } else if (currentAnnotation.AnnotationType === 'SignatureImage' || currentAnnotation.AnnotationType === 'SignatureText' ) {
+                        data = JSON.parse(currentAnnotation.PathData);
                     } else {
                         if (data.includes('command')) {
                             data = getPathString(JSON.parse(currentAnnotation.PathData));
@@ -1105,11 +1299,25 @@ export class Signature {
                         }
                     }
                 }
-                annot = {
-                    // eslint-disable-next-line max-len
-                    id: 'sign' + this.pdfViewerBase.signatureCount, bounds: { x: currentLeft, y: currentTop, width: currentWidth, height: currentHeight }, pageIndex: pageIndex, data: data,
-                    shapeAnnotationType: 'HandWrittenSignature', opacity: currentAnnotation.Opacity, strokeColor: currentAnnotation.StrokeColor, thickness: currentAnnotation.Thickness, signatureName: currentAnnotation.SignatureName
-                };
+                if (currentAnnotation.AnnotationType === 'SignatureText') {
+                    annot = {
+                        // eslint-disable-next-line max-len
+                        id: 'sign' + this.pdfViewerBase.signatureCount, bounds: { x: currentLeft, y: currentTop, width: currentWidth, height: currentHeight }, pageIndex: pageIndex, data: data, fontFamily: currentAnnotation.FontFamily, fontSize: currentAnnotation.FontSize,
+                        shapeAnnotationType: 'SignatureText', opacity: currentAnnotation.Opacity, strokeColor: currentAnnotation.StrokeColor, thickness: currentAnnotation.Thickness, signatureName: currentAnnotation.SignatureName
+                    };
+                } else if (currentAnnotation.AnnotationType === 'SignatureImage') {
+                    annot = {
+                        // eslint-disable-next-line max-len
+                        id: 'sign' + this.pdfViewerBase.signatureCount, bounds: { x: currentLeft, y: currentTop, width: currentWidth, height: currentHeight }, pageIndex: pageIndex, data: data,
+                        shapeAnnotationType: 'SignatureImage', opacity: currentAnnotation.Opacity, strokeColor: currentAnnotation.StrokeColor, thickness: currentAnnotation.Thickness, signatureName: currentAnnotation.SignatureName
+                    };
+                } else {
+                    annot = {
+                        // eslint-disable-next-line max-len
+                        id: 'sign' + this.pdfViewerBase.signatureCount, bounds: { x: currentLeft, y: currentTop, width: currentWidth, height: currentHeight }, pageIndex: pageIndex, data: data,
+                        shapeAnnotationType: 'HandWrittenSignature', opacity: currentAnnotation.Opacity, strokeColor: currentAnnotation.StrokeColor, thickness: currentAnnotation.Thickness, signatureName: currentAnnotation.SignatureName
+                    };
+            }
                 this.pdfViewer.add(annot as PdfAnnotationBase);
                 // eslint-disable-next-line
                 let canvass: any = document.getElementById(this.pdfViewer.element.id + '_annotationCanvas_' + currentAnnotation.pageIndex);
@@ -1149,7 +1357,7 @@ export class Signature {
         }
         annotation = {
             // eslint-disable-next-line max-len
-            id: annotations.id, bounds: { left: left, top: top, width: annotations.bounds.width, height: annotations.bounds.height }, shapeAnnotationType: 'Signature', opacity: annotations.opacity, thickness: annotations.thickness, strokeColor: annotations.strokeColor, pageIndex: annotations.pageIndex, data: annotations.data, signatureName: annotations.signatureName
+            id: annotations.id, bounds: { left: left, top: top, width: annotations.bounds.width, height: annotations.bounds.height }, shapeAnnotationType: annotations.shapeAnnotationType, opacity: annotations.opacity, thickness: annotations.thickness, strokeColor: annotations.strokeColor, pageIndex: annotations.pageIndex, data: annotations.data, fontSize: annotations.fontSize, fontFamily: annotations.fontFamily, signatureName: annotations.signatureName
         };
         // eslint-disable-next-line
         let storeObject: any = window.sessionStorage.getItem(this.pdfViewerBase.documentId + '_annotations_sign');
@@ -1208,6 +1416,7 @@ export class Signature {
                     if (property === 'bounds') {
                         // eslint-disable-next-line max-len
                         pageAnnotations[i].bounds = { left: annotationBase.wrapper.bounds.left, top: annotationBase.wrapper.bounds.top, width: annotationBase.bounds.width, height: annotationBase.bounds.height };
+                        pageAnnotations[i].fontSize = annotationBase.fontSize;
                     } else if (property === 'stroke') {
                         pageAnnotations[i].strokeColor = annotationBase.wrapper.children[0].style.strokeColor;
                     } else if (property === 'opacity') {
@@ -1364,6 +1573,15 @@ export class Signature {
      */
     public setAnnotationMode(): void {
         this.pdfViewerBase.isToolbarSignClicked = true;
+        this.showSignatureDialog(true);
+    }
+
+    /**
+     * @private
+     */
+    public setInitialMode(): void {
+        this.pdfViewerBase.isToolbarSignClicked = true;
+        this.pdfViewerBase.isInitialField = true;
         this.showSignatureDialog(true);
     }
 

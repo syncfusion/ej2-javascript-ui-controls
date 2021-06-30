@@ -2,13 +2,12 @@ import { isNullOrUndefined } from '@syncfusion/ej2-base';
 
 /**
  * ServiceLocator
- * 
+ *
  * @hidden
  * @deprecated
  */
 export class ServiceLocator {
 
-    // eslint-disable-next-line
     private services: { [x: string]: Object } = {};
 
     /* eslint-disable */

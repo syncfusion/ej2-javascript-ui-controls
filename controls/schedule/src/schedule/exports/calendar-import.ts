@@ -35,7 +35,7 @@ export class ICalendarImport {
         const calArray: string[] = iCalString.replace(new RegExp('\\r', 'g'), '').split('\n');
         let isEvent: boolean = false;
         let curEvent: Record<string, any>;
-        const id: number | string = this.parent.eventBase.getEventMaxID();
+        let id: number | string = this.parent.eventBase.getEventMaxID();
         calArray.forEach((element: string) => {
             let index: number;
             let type: string;
@@ -71,12 +71,13 @@ export class ICalendarImport {
                     curEvent[fields.recurrenceException] = value;
                     curEvent[fields.recurrenceID] = value;
                 } else {
+                    id = (id as number)++;
                     switch (type) {
                     case 'BEGIN':
                         break;
                     case 'UID':
                         curEvent[uId] = value;
-                        curEvent[fields.id] = (id as number)++;
+                        curEvent[fields.id] = id;
                         break;
                     case 'SUMMARY':
                         curEvent[fields.subject] = value;
@@ -87,11 +88,20 @@ export class ICalendarImport {
                     case 'DESCRIPTION':
                         curEvent[fields.description] = value;
                         break;
+                    case 'ISREADONLY':
+                        curEvent[fields.isReadonly] = (value.indexOf('true') > -1);
+                        break;
                     case 'RRULE':
                         curEvent[fields.recurrenceRule] = value;
                         break;
                     default:
-                        curEvent[type] = value;
+                        if (this.parent.resourceCollection.length > 0) {
+                            const resData: Record<string, any>[] =
+                                this.parent.resourceCollection.filter((data: Record<string, any>) => data.field === type);
+                            curEvent[type] = (resData.length > 0 && (typeof (resData[0].dataSource[0][resData[0].idField]) == 'number')) ? parseInt(value, 10) : value;
+                        } else {
+                            curEvent[type] = value;
+                        }
                     }
                 }
             }

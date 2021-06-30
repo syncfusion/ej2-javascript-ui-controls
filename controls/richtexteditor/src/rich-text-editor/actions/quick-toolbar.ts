@@ -254,7 +254,7 @@ export class QuickToolbar {
             if (this.parent.inlineMode.onSelection) {
                 return;
             }
-            let args: KeyboardEvent = e.args as KeyboardEvent;
+            const args: KeyboardEvent = e.args as KeyboardEvent;
             this.deBounce(this.offsetX, this.offsetY, args.target as HTMLElement);
         }
     }
@@ -390,7 +390,6 @@ export class QuickToolbar {
         this.hideQuickToolbars();
         this.hideInlineQTBar();
     }
-    // eslint-disable-next-line
     private setRtl(args: { [key: string]: Object }): void {
         if (this.inlineQTBar) {
             this.inlineQTBar.quickTBarObj.toolbarObj.setProperties({ enableRtl: args.enableRtl });

@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/explicit-member-accessibility */
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import { createElement, isNullOrUndefined} from '@syncfusion/ej2-base';
 import { Maps } from '../../index';
 import { ExportType } from '../utils/enum';
@@ -46,10 +46,17 @@ export class PdfExport {
             orientation = isNullOrUndefined(orientation) ? PdfPageOrientation.Landscape : orientation;
             const svgParent: HTMLElement = document.getElementById(this.control.element.id + '_Tile_SVG_Parent');
             let svgData: string;
+            const exportElement: HTMLElement = this.control.svgObject.cloneNode(true) as HTMLElement;
+            const backgroundElement: HTMLElement = exportElement.childNodes[0] as HTMLElement;
+            const backgroundColor: string = backgroundElement.getAttribute('fill');
+            if ((this.control.theme === 'Tailwind' || this.control.theme === 'TailwindDark')
+                && (backgroundColor === 'rgba(255,255,255, 0.0)' || backgroundColor === 'transparent')) {
+                (exportElement.childNodes[0] as HTMLElement).setAttribute('fill', 'rgba(255,255,255, 1)');
+            }
             const url: string = window.URL.createObjectURL(
                 new Blob(
                     type === 'SVG' ? [svgData] :
-                        [(new XMLSerializer()).serializeToString(this.control.svgObject)],
+                        [(new XMLSerializer()).serializeToString(exportElement)],
                     { type: 'image/svg+xml' }
                 )
             );

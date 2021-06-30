@@ -4,7 +4,7 @@ import { KeyboardEventArgs } from '@syncfusion/ej2-base';
 
 /**
  * Specifies IMDFormats interfaces.
- * 
+ *
  * @hidden
  * @deprecated
  */
@@ -21,7 +21,7 @@ export interface IMDFormats {
 
 /**
  * Specifies IMTable interfaces.
- * 
+ *
  * @hidden
  * @deprecated
  */
@@ -36,14 +36,14 @@ export interface IMDTable {
 
 /**
  * Defines types to be used to customize the markdown syntax.
- * 
+ *
  * @deprecated
  */
 export type MarkdownTableFormat = 'Formats' | 'List';
 
 /**
  * Specifies ISelectedLines interfaces.
- * 
+ *
  * @hidden
  * @deprecated
  */
@@ -64,7 +64,7 @@ export interface ISelectedLines {
 
 /**
  * Specifies MarkdownParserModel interfaces.
- * 
+ *
  * @hidden
  * @deprecated
  */
@@ -93,7 +93,7 @@ export interface IMarkdownParserModel {
 
 /**
  * Specifies ISubCommands interfaces.
- * 
+ *
  * @hidden
  * @deprecated
  */
@@ -147,7 +147,7 @@ export interface IMarkdownItemArgs {
 }
 /**
  * Specifies IMDKeyboardEvent interfaces.
- * 
+ *
  * @hidden
  * @deprecated
  */

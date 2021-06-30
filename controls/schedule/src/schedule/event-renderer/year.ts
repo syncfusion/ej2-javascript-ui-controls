@@ -460,7 +460,8 @@ export class YearEvent extends TimelineEvent {
 
     private getMonths(): number[] {
         // eslint-disable-next-line prefer-spread
-        return Array.apply(null, { length: 12 }).map((value: number, index: number) => this.parent.firstMonthOfYear + index);
+        return Array.apply(null, { length: this.parent.monthsCount }).map((value: number, index: number) =>
+            this.parent.firstMonthOfYear + index);
     }
 
     private removeCellHeight(): void {

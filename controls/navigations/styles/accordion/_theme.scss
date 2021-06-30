@@ -27,7 +27,7 @@
         border-top: 1px solid $acrdn-item-border-color;
       }
 
-      @if $acrdn-skin == 'bootstrap4' {
+      @if $acrdn-skin == 'bootstrap4' or $acrdn-skin == 'tailwind' or $acrdn-skin == 'tailwind-dark' {
         border-bottom: $acrdn-border-size $acrdn-border-type $acrdn-default-border;
         border-radius: 4px 4px 0 0;
 
@@ -119,6 +119,21 @@
             }
           }
         }
+
+        @if $acrdn-skin == 'tailwind' or $acrdn-skin == 'tailwind-dark' {
+          &.e-overlay.e-select.e-expand-state {
+            .e-acrdn-header {
+
+              .e-icons {
+                color: $acrdn-icon-disable-color;
+              }
+
+              .e-acrdn-header-content {
+                color: $content-text-color-disabled;
+              }
+            }
+          }
+        }
       }
 
       &.e-selected.e-select.e-expand-state > .e-acrdn-header {
@@ -138,7 +153,7 @@
 
       .e-acrdn-panel.e-nested {
 
-        @if $acrdn-skin == 'bootstrap4' {
+        @if $acrdn-skin == 'bootstrap4' or $acrdn-skin == 'tailwind' or $acrdn-skin == 'tailwind-dark' {
           .e-acrdn-content .e-acrdn-item:last-child {
             border-bottom: $acrdn-border-size $acrdn-selected-border-type $acrdn-default-border;
           }
@@ -376,7 +391,7 @@
             border-bottom: $acrdn-selected-border-size $acrdn-selected-border-type  $acrdn-selected-border-color;
             border-top: $acrdn-selected-border-size $acrdn-selected-border-type  $acrdn-selected-border-color;
 
-            @if $acrdn-skin == 'bootstrap4' {
+            @if $acrdn-skin == 'bootstrap4' or $acrdn-skin == 'tailwind' or $acrdn-skin == 'tailwind-dark' {
               border-bottom: $acrdn-border-size $acrdn-border-type $acrdn-default-border;
 
               &.e-select:last-child {

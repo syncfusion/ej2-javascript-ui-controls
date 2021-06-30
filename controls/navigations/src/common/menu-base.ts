@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/ban-types */
 import { Component, Property, ChildProperty, NotifyPropertyChanges, INotifyPropertyChanged, AnimationModel } from '@syncfusion/ej2-base';
 import { Event, EventHandler, EmitType, BaseEventArgs, KeyboardEvents, KeyboardEventArgs, Touch, TapEventArgs } from '@syncfusion/ej2-base';
 import { Animation, AnimationOptions, TouchEventArgs, MouseEventArgs } from '@syncfusion/ej2-base';
@@ -218,15 +217,19 @@ export class MenuAnimationSettings extends ChildProperty<MenuAnimationSettings> 
 }
 
 /**
- * @private
  * Base class for Menu and ContextMenu components.
+ *
+ *  @private
  */
 @NotifyPropertyChanges
 export abstract class MenuBase extends Component<HTMLUListElement> implements INotifyPropertyChanged {
     private clonedElement: HTMLElement;
     private targetElement: HTMLElement;
+    // eslint-disable-next-line @typescript-eslint/ban-types
     private delegateClickHandler: Function;
+    // eslint-disable-next-line @typescript-eslint/ban-types
     private delegateMoverHandler: Function;
+    // eslint-disable-next-line @typescript-eslint/ban-types
     private delegateMouseDownHandler: Function;
     private navIdx: number[] = [];
     private animation: Animation = new Animation({});
@@ -234,6 +237,7 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
     protected isMenu: boolean;
     protected hamburgerMode: boolean;
     protected title: string;
+    // eslint-disable-next-line @typescript-eslint/ban-types
     private rippleFn: Function;
     private uList: HTMLElement;
     private lItem: Element;
@@ -401,7 +405,7 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
      * children: "items" }
      * @private
      */
-    // tslint:disable-next-line
+    // eslint:disable-next-line
     @Complex<FieldSettingsModel>({ itemId: 'id', text: 'text', parentId: 'parentId', iconCss: 'iconCss', url: 'url', separator: 'separator', children: 'items' }, FieldSettings)
     public fields: FieldSettingsModel;
 
@@ -809,7 +813,7 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
         }
     }
 
-    // tslint:disable-next-line:max-func-body-length
+    // eslint:disable-next-line:max-func-body-length
     protected closeMenu(ulIndex: number = 0, e: MouseEvent | KeyboardEvent = null, isIterated?: boolean): void {
         if (this.isMenuVisible()) {
             let sli: Element; let item: MenuItemModel; const wrapper: Element = this.getWrapper();
@@ -922,14 +926,11 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
         }
     }
     private updateReactTemplate(): void {
-        // eslint:disable
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         if ((this as any).isReact && this.template && this.navIdx.length === 0) {
-            // tslint:disable
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             const portals: any = (this as any).portals.splice(0, this.items.length);
             this.clearTemplate(['template']);
-            // tslint:disable
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             (this as any).portals = portals; this.renderReactTemplates();
         }
@@ -957,11 +958,11 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
     }
 
     private canOpen(target: Element): boolean {
-        let canOpen = true;
+        let canOpen: boolean = true;
         if (this.filter) {
             canOpen = false;
             const filter: string[] = this.filter.split(' ');
-            for (let i = 0, len: number = filter.length; i < len; i++) {
+            for (let i: number = 0, len: number = filter.length; i < len; i++) {
                 if (closest(target, '.' + filter[i])) {
                     canOpen = true;
                     break;
@@ -972,7 +973,7 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
     }
 
     protected openMenu(
-        li: Element, item: MenuItemModel | { [key: string]: Object }, top = 0, left = 0,
+        li: Element, item: MenuItemModel | { [key: string]: Object }, top: number = 0, left: number = 0,
         e: MouseEvent | KeyboardEvent = null, target: HTMLElement = this.targetElement): void {
         const wrapper: Element = this.getWrapper();
         this.lItem = li; const elemId: string = this.element.id !== '' ? this.element.id : 'menu';
@@ -1058,7 +1059,7 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
             const menuIconElem: HTMLElement = ul.querySelector('.e-menu-icon');
             const menuIconElemStyle: CSSStyleDeclaration = getComputedStyle(menuIconElem);
             const blankIconIndent: number = (parseInt(menuIconElemStyle.marginRight, 10) + menuIconElem.offsetWidth + liIndent);
-            for (let i = 0; i < blankIconElem.length; i++) {
+            for (let i: number = 0; i < blankIconElem.length; i++) {
                 (blankIconElem[i] as HTMLElement).style.textIndent = blankIconIndent + 'px';
             }
         }
@@ -1133,7 +1134,7 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
             element: ul, items: items, parentItem: this.isMenu && isBlazor() ? this.getMenuItemModel(<obj>item, this.navIdx.length - 1) :
                 item, event: e, cancel: false, top: top, left: left, showSubMenuOn: 'Auto'
         };
-        const menuType: string = type; let collide: string[];
+        const menuType: string = type;
         this.trigger('beforeOpen', eventArgs, (observedOpenArgs: BeforeOpenCloseMenuEventArgs) => {
             switch (menuType) {
             case 'menu':
@@ -1159,21 +1160,14 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
                         this.isNestedOrVertical ? this.left - this.popupWrapper.offsetWidth - this.lItem.parentElement.offsetWidth + 2
                             : this.left - this.popupWrapper.offsetWidth + (this.lItem as HTMLElement).offsetWidth;
                     }
-                    collide = isCollide(this.popupWrapper, null, this.left, this.top);
-                    if ((this.isNestedOrVertical || this.enableRtl) && (collide.indexOf('right') > -1
-                    || collide.indexOf('left') > -1)) {
-                        this.popupObj.collision.X = 'none';
-                        const offWidth: number =
-                        (closest(this.lItem, '.e-' + this.getModuleName() + '-wrapper') as HTMLElement).offsetWidth;
-                        this.left =
-                        this.enableRtl ? calculatePosition(this.lItem, this.isNestedOrVertical ? 'right' : 'left', 'top').left
-                            : this.left - this.popupWrapper.offsetWidth - offWidth + 2;
+                    if (this.template && ((this as any).isReact || (this as any).isAngular)) {
+                        requestAnimationFrame(() => {
+                            this.collision();
+                        })
+                    } else {
+                        this.collision();
                     }
-                    collide = isCollide(this.popupWrapper, null, this.left, this.top);
-                    if (collide.indexOf('left') > -1 || collide.indexOf('right') > -1) {
-                        this.left = this.callFit(this.popupWrapper, true, false, this.top, this.left).left;
-                    }
-                    this.popupWrapper.style.left = this.left + 'px';
+                    
                 } else {
                     this.popupObj.collision = { X: 'none', Y: 'none' };
                 }
@@ -1232,6 +1226,25 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
         });
     }
 
+    private collision(): void {
+        let collide: string[];
+        collide = isCollide(this.popupWrapper, null, this.left, this.top);
+        if ((this.isNestedOrVertical || this.enableRtl) && (collide.indexOf('right') > -1
+        || collide.indexOf('left') > -1)) {
+            this.popupObj.collision.X = 'none';
+            const offWidth: number =
+            (closest(this.lItem, '.e-' + this.getModuleName() + '-wrapper') as HTMLElement).offsetWidth;
+            this.left =
+            this.enableRtl ? calculatePosition(this.lItem, this.isNestedOrVertical ? 'right' : 'left', 'top').left
+                : this.left - this.popupWrapper.offsetWidth - offWidth + 2;
+        }
+        collide = isCollide(this.popupWrapper, null, this.left, this.top);
+        if (collide.indexOf('left') > -1 || collide.indexOf('right') > -1) {
+            this.left = this.callFit(this.popupWrapper, true, false, this.top, this.left).left;
+        }
+        this.popupWrapper.style.left = this.left + 'px';
+    }
+    
     protected setBlankIconStyle(menu: HTMLElement): void {
         const blankIconList: HTMLElement[] = [].slice.call(menu.getElementsByClassName('e-blankicon'));
         if (!blankIconList.length) { return; }
@@ -1246,14 +1259,14 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
             iconSize = parseInt(iconCssProps.width, 10);
         }
         // eslint:disable
-        const size = `${iconSize + parseInt(
+        const size: string = `${iconSize + parseInt(
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             (iconCssProps as any)[cssProp.margin], 10) + parseInt((getComputedStyle(iconLi) as any)[cssProp.padding], 10)}px`;
         blankIconList.forEach((li: HTMLElement): void => {
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             (li.style as any)[cssProp.padding] = size;
         });
-        // tslint:enable
+        // eslint:enable
     }
 
     private checkScrollOffset(e: MouseEvent | KeyboardEvent): void {

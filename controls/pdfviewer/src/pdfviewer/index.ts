@@ -15,3 +15,4 @@ export * from './text-selection/index';
 export * from './text-search/index';
 export * from './print/index';
 export * from './form-fields/index';
+export * from './form-designer/index';

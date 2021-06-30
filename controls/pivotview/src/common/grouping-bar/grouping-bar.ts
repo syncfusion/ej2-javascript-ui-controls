@@ -8,6 +8,7 @@ import * as cls from '../../common/base/css-constant';
 import { AxisFields } from './axis-field-renderer';
 import { OffsetPosition } from '@syncfusion/ej2-popups';
 import { Column, ColumnModel } from '@syncfusion/ej2-grids';
+import { Toolbar } from '@syncfusion/ej2-navigations';
 
 /**
  * Module for GroupingBar rendering
@@ -31,6 +32,7 @@ export class GroupingBar implements IAction {
     private filterAxisPanel: HTMLElement;
     private touchObj: Touch;
     private resColWidth: number;
+    public toolbar: Toolbar;
     /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
     private timeOutObj: any;
 
@@ -98,8 +100,12 @@ export class GroupingBar implements IAction {
         this.leftAxisPanel.appendChild(rowAxisPanel);
         this.rightAxisPanel.appendChild(filterAxisPanel);
         this.rightAxisPanel.appendChild(columnAxisPanel);
-        this.groupingTable.appendChild(this.leftAxisPanel);
-        this.groupingTable.appendChild(this.rightAxisPanel);
+        this.groupingTable.appendChild(createElement('div', { styles: 'display:flex;' }));
+        this.groupingTable.firstElementChild.appendChild(this.leftAxisPanel);
+        this.groupingTable.firstElementChild.appendChild(this.rightAxisPanel);
+        if (this.parent.dataType === 'pivot' && this.parent.groupingBarSettings != null && this.parent.groupingBarSettings.showFieldsPanel) {
+            this.createToolbarUI(this.groupingTable);
+        }
         this.groupingTable.classList.add(cls.GRID_GROUPING_BAR_CLASS);
         this.groupingTable.querySelector('.' + cls.GROUP_ROW_CLASS).classList.add(cls.GROUP_PIVOT_ROW);
         let axisPanels: HTMLElement[] = [this.rowPanel, this.columnPanel, this.valuePanel, this.filterPanel];
@@ -122,12 +128,10 @@ export class GroupingBar implements IAction {
                 this.groupingChartTable.querySelector('.' + cls.GROUP_VALUE_CLASS).classList.add(cls.GROUP_CHART_MULTI_VALUE);
             } else {
                 this.groupingChartTable.querySelector('.' + cls.GROUP_VALUE_CLASS).classList.add(cls.GROUP_CHART_VALUE);
-                this.groupingChartTable.querySelector('.' + cls.GROUP_VALUE_CLASS).classList.remove(cls.DROPPABLE_CLASS);
             }
             if (this.parent.chartSettings.chartSeries &&
                 ['Pie', 'Pyramid', 'Doughnut', 'Funnel'].indexOf(this.parent.chartSettings.chartSeries.type) > -1) {
                 this.groupingChartTable.querySelector('.' + cls.GROUP_COLUMN_CLASS).classList.add(cls.GROUP_CHART_COLUMN);
-                this.groupingChartTable.querySelector('.' + cls.GROUP_COLUMN_CLASS).classList.remove(cls.DROPPABLE_CLASS);
             } else {
                 this.groupingChartTable.querySelector('.' + cls.GROUP_COLUMN_CLASS).classList.add(cls.GROUP_CHART_ACCUMULATION_COLUMN);
             }
@@ -155,6 +159,9 @@ export class GroupingBar implements IAction {
                         });
                         this.parent.element.insertBefore(
                             this.groupingChartTable, select('#' + this.parent.element.id + '_chart', this.parent.element));
+                        if (this.groupingChartTable.querySelector('.' + cls.ALL_FIELDS_PANEL_CLASS) && this.toolbar != null && !this.toolbar.isDestroyed) {
+                            this.toolbar.width = this.parent.grid ? (this.parent.getGridWidthAsNumber() - 2) : (this.parent.getWidthAsNumber() - 2);
+                        }
                     } else {
                         this.groupingChartTable = undefined;
                     }
@@ -193,6 +200,10 @@ export class GroupingBar implements IAction {
                     setStyleAttribute(this.groupingTable, {
                         width: formatUnit(this.parent.grid ? this.parent.getGridWidthAsNumber() : this.parent.getWidthAsNumber())
                     });
+                    if (this.groupingTable.querySelector('.' + cls.ALL_FIELDS_PANEL_CLASS) && this.toolbar != null && !this.toolbar.isDestroyed) {
+                        this.toolbar.width = this.parent.grid ? (this.parent.getGridWidthAsNumber() - 2) : (this.parent.getWidthAsNumber() - 2);
+                        this.toolbar.element.style.minWidth = '400px';
+                    }
                     this.groupingTable.style.minWidth = '400px';
                     this.parent.axisFieldModule.render();
                     this.setGridRowWidth();
@@ -252,11 +263,18 @@ export class GroupingBar implements IAction {
             setStyleAttribute(this.groupingChartTable, {
                 width: formatUnit(this.parent.grid ? this.parent.getGridWidthAsNumber() : this.parent.getWidthAsNumber())
             });
+            if (this.groupingChartTable.querySelector('.' + cls.ALL_FIELDS_PANEL_CLASS) && this.toolbar != null && !this.toolbar.isDestroyed) {
+                this.toolbar.width = this.parent.grid ? (this.parent.getGridWidthAsNumber() - 2) : (this.parent.getWidthAsNumber() - 2);
+            }
         }
         if (this.groupingTable) {
             setStyleAttribute(this.groupingTable, {
                 width: formatUnit(this.parent.grid ? this.parent.getGridWidthAsNumber() : this.parent.getWidthAsNumber())
             });
+            if (this.groupingTable.querySelector('.' + cls.ALL_FIELDS_PANEL_CLASS) && this.toolbar != null && !this.toolbar.isDestroyed) {
+                this.toolbar.width = this.parent.grid ? (this.parent.getGridWidthAsNumber() - 2) : (this.parent.getWidthAsNumber() - 2);
+                this.toolbar.element.style.minWidth = '400px';
+            }
             this.groupingTable.style.minWidth = '400px';
             let colGroupElement: HTMLElement =
                 this.parent.element.querySelector('.e-frozenheader').querySelector('colgroup').children[0] as HTMLElement;
@@ -452,6 +470,36 @@ export class GroupingBar implements IAction {
             return;
         }
     }
+    public RefreshFieldsPanel(): void {
+        if (this.parent.dataType === 'pivot' && this.parent.groupingBarSettings != null) {
+            if (this.parent.element.querySelector('#' + this.parent.element.id + '_AllFields')) {
+                this.parent.element.querySelector('#' + this.parent.element.id + '_AllFields').remove();
+            }
+            if (this.parent.groupingBarSettings.showFieldsPanel) {
+                if (this.groupingChartTable && this.parent.displayOption.view !== 'Table' && this.parent.groupingBarSettings.displayMode !== 'Table') {
+                    this.createToolbarUI(this.groupingChartTable);
+                }
+                if (this.groupingTable) {
+                    this.createToolbarUI(this.groupingTable);
+                }
+                this.parent.axisFieldModule.render();
+                this.refreshUI();
+            }
+        }
+    }
+    private createToolbarUI(element: HTMLElement): void {
+        if (element.querySelector('#' + this.parent.element.id + '_AllFields')) {
+            element.querySelector('#' + this.parent.element.id + '_AllFields').remove();
+        }
+        element.prepend(createElement('div', { id: this.parent.element.id + '_AllFields' }));
+        this.toolbar = new Toolbar({
+            cssClass: cls.ALL_FIELDS_PANEL_CLASS,
+            enableRtl: this.parent.enableRtl,
+            items: [{ template: '<div class=' + cls.GROUP_ALL_FIELDS_CLASS + '></div>' }],
+            allowKeyboard: false
+        });
+        this.toolbar.appendTo(element.querySelector('#' + this.parent.element.id + '_AllFields') as HTMLElement);
+    }
     /**
      * @hidden
      */
@@ -483,6 +531,10 @@ export class GroupingBar implements IAction {
         this.removeEventListener();
         if (this.parent.pivotButtonModule) {
             this.parent.pivotButtonModule.destroy();
+        }
+        if (this.toolbar && !this.toolbar.isDestroyed) {
+            this.toolbar.destroy();
+            this.toolbar = null;
         }
         if (this.touchObj && !this.touchObj.isDestroyed) { this.touchObj.destroy(); }
         if (this.parent.element.querySelector('.' + cls.GROUPING_BAR_CLASS)) {

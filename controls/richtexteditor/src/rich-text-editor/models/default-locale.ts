@@ -146,8 +146,18 @@ export let defaultLocale: { [key: string]: string } = {
     'fontNameImpact': 'Impact',
     'fontNameTahoma': 'Tahoma',
     'fontNameTimesNewRoman': 'Times New Roman',
-    'fontNameVerdana': 'Verdana'
-
+    'fontNameVerdana': 'Verdana',
+    'numberFormatListNumber': 'Number',
+    'numberFormatListLowerAlpha': 'LowerAlpha',
+    'numberFormatListUpperAlpha': 'UpperAlpha',
+    'numberFormatListLowerRoman': 'LowerRoman',
+    'numberFormatListUpperRoman': 'UpperRoman',
+    'numberFormatListLowerGreek': 'LowerGreek',
+    'bulletFormatListDisc': 'Disc',
+    'bulletFormatListCircle': 'Circle',
+    'bulletFormatListSquare': 'Square',
+    'numberFormatListNone': 'None',
+    'bulletFormatListNone':'None'
 };
 
 export let toolsLocale: { [key: string]: string } = {
@@ -245,3 +255,21 @@ export let formatsLocale : { [ket: string]: string }[] = [
     { locale: 'formatsDropDownHeading3', value: 'H3' },
     { locale: 'formatsDropDownHeading4', value: 'H4' }
 ];
+
+export let numberFormatListLocale: { [ket: string]: string }[] = [
+    { locale: 'numberFormatListNone', value: 'none' },
+    { locale: 'numberFormatListNumber', value: 'decimal' },
+    { locale: 'numberFormatListLowerAlpha', value: 'lower-alpha' },
+    { locale: 'numberFormatListUpperAlpha', value: 'upper-alpha' },
+    { locale: 'numberFormatListLowerRoman', value: 'lower-roman' },
+    { locale: 'numberFormatListUpperRoman', value: 'upper-roman' },
+    { locale: 'numberFormatListLowerGreek', value: 'lower-greek' }
+];
+
+export let bulletFormatListLocale: { [ket: string]: string }[] = [
+    { locale: 'bulletFormatListNone', value: 'none' },
+    { locale: 'bulletFormatListDisc', value: 'disc' },
+    { locale: 'bulletFormatListCircle', value: 'circle' },
+    { locale: 'bulletFormatListSquare', value: 'square' },
+]; 
+

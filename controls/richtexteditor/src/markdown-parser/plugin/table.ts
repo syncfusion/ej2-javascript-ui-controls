@@ -7,7 +7,7 @@ import { extend, KeyboardEventArgs } from '@syncfusion/ej2-base';
 import * as EVENTS from './../../common/constant';
 /**
  * Link internal component
- * 
+ *
  * @hidden
  * @deprecated
  */

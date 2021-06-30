@@ -413,6 +413,7 @@ export class Slider extends Component<HTMLElement> implements INotifyPropertyCha
     private isMaterial: boolean;
     private isBootstrap: boolean;
     private isBootstrap4: boolean;
+    private isTailwind: boolean;
     private zIndex: number;
     private l10n: L10n;
     private internationalization: Internationalization;
@@ -652,7 +653,8 @@ export class Slider extends Component<HTMLElement> implements INotifyPropertyCha
     }
 
     protected preRender(): void {
-        let localeText: object = { incrementTitle: 'Increase', decrementTitle: 'Decrease' };
+        // eslint-disable-next-line
+        const localeText: object = { incrementTitle: 'Increase', decrementTitle: 'Decrease' };
         this.l10n = new L10n('slider', localeText, this.locale);
         this.isElementFocused = false;
         this.tickElementCollection = [];
@@ -699,30 +701,30 @@ export class Slider extends Component<HTMLElement> implements INotifyPropertyCha
         let formatString: string = null;
         if ((value || value === 0)) {
             formatValue = this.formatNumber(value);
-            let numberOfDecimals: number = this.numberOfDecimals(value);
+            const numberOfDecimals: number = this.numberOfDecimals(value);
             formatString = this.internationalization.getNumberFormat(formatInfo)(this.makeRoundNumber(value, numberOfDecimals));
         }
         return { elementVal: formatValue, formatString: formatString };
-    };
+    }
 
     private formatNumber(value: number): string {
-        let numberOfDecimals: number = this.numberOfDecimals(value);
+        const numberOfDecimals: number = this.numberOfDecimals(value);
         return this.internationalization.getNumberFormat({
             maximumFractionDigits: numberOfDecimals,
             minimumFractionDigits: numberOfDecimals, useGrouping: false
         })(value);
-    };
+    }
 
     private numberOfDecimals(value: number | string): number {
-        let decimalPart: string = value.toString().split('.')[1];
-        let numberOfDecimals: number = !decimalPart || !decimalPart.length ? 0 : decimalPart.length;
+        const decimalPart: string = value.toString().split('.')[1];
+        const numberOfDecimals: number = !decimalPart || !decimalPart.length ? 0 : decimalPart.length;
         return numberOfDecimals;
     }
 
     private makeRoundNumber(value: number, precision: number): number {
-        let decimals: number = precision || 0;
+        const decimals: number = precision || 0;
         return Number(value.toFixed(decimals));
-    };
+    }
 
     private fractionalToInteger(value: number | string): number {
         value = (this.numberOfDecimals(value) === 0) ? Number(value).toFixed(this.noOfDecimals) : value;
@@ -787,7 +789,7 @@ export class Slider extends Component<HTMLElement> implements INotifyPropertyCha
     }
 
     private getTheme(container: HTMLElement): string {
-        let theme: string = window.getComputedStyle(container as Element, ':after').getPropertyValue('content');
+        const theme: string = window.getComputedStyle(container as Element, ':after').getPropertyValue('content');
         return theme.replace(/['"]+/g, '');
     }
 
@@ -871,6 +873,7 @@ export class Slider extends Component<HTMLElement> implements INotifyPropertyCha
         this.isBootstrap = this.getTheme(this.sliderContainer) === 'bootstrap'
             || this.getTheme(this.sliderContainer) === 'bootstrap-dark';
         this.isBootstrap4 = this.getTheme(this.sliderContainer) === 'bootstrap4';
+        this.isTailwind = this.getTheme(this.sliderContainer) === 'tailwind' || this.getTheme(this.sliderContainer) === 'tailwind-dark';
         this.isMaterialTooltip = this.isMaterial && this.type !== 'Range' && this.tooltip.isVisible;
     }
 
@@ -932,7 +935,7 @@ export class Slider extends Component<HTMLElement> implements INotifyPropertyCha
         }
     }
 
-    private setAriaAttributes(element: Element, ): void {
+    private setAriaAttributes(element: Element): void {
         let min: string | number = this.min; let max: string | number = this.max;
         if (!isNullOrUndefined(this.customValues) && this.customValues.length > 0) {
             min = this.customValues[0];
@@ -943,12 +946,12 @@ export class Slider extends Component<HTMLElement> implements INotifyPropertyCha
                 'aria-valuemin': min.toString(), 'aria-valuemax': max.toString()
             });
         } else {
-            let range: string[][] = !isNullOrUndefined(this.customValues) && this.customValues.length > 0 ?
+            const range: string[][] = !isNullOrUndefined(this.customValues) && this.customValues.length > 0 ?
                 [[min.toString(), (this.customValues[(this.value as number[])[1]]).toString()],
                 [(this.customValues[(this.value as number[])[0]]).toString(), max.toString()]] :
                 [[min.toString(), (this.value as number[])[1].toString()], [(this.value as number[])[0].toString(), max.toString()]];
             range.forEach((range: string[], index: number) => {
-                let element: Element = index === 0 ? this.firstHandle : this.secondHandle;
+                const element: Element = index === 0 ? this.firstHandle : this.secondHandle;
                 if (element) {
                     attributes(element, {
                         'aria-valuemin': range[0], 'aria-valuemax': range[1]
@@ -1123,7 +1126,7 @@ export class Slider extends Component<HTMLElement> implements INotifyPropertyCha
 
     private tooltipValue(): void {
         let text: string;
-        let args: SliderTooltipEventArgs = {
+        const args: SliderTooltipEventArgs = {
             value: this.value,
             text: ''
         };
@@ -1393,7 +1396,7 @@ export class Slider extends Component<HTMLElement> implements INotifyPropertyCha
 
     private renderTooltip(): void {
         this.tooltipObj = new Tooltip({
-            showTipPointer: this.isBootstrap || this.isMaterial || this.isBootstrap4,
+            showTipPointer: this.isBootstrap || this.isMaterial || this.isBootstrap4 || this.isTailwind,
             cssClass: classNames.sliderTooltip,
             height: this.isMaterial ? 30 : 'auto',
             animation: { open: { effect: 'None' }, close: { effect: 'FadeOut', duration: 500 } },
@@ -1439,9 +1442,15 @@ export class Slider extends Component<HTMLElement> implements INotifyPropertyCha
         } else {
             this.firstBtn = this.createElement('div', { className: classNames.sliderButton + ' ' + classNames.firstButton });
             this.firstBtn.appendChild(this.createElement('span', { className: classNames.sliderButtonIcon }));
+            if (this.isTailwind) {
+                this.firstBtn.querySelector('span').classList.add('e-icons');
+            }
             this.firstBtn.tabIndex = -1;
             this.secondBtn = this.createElement('div', { className: classNames.sliderButton + ' ' + classNames.secondButton });
             this.secondBtn.appendChild(this.createElement('span', { className: classNames.sliderButtonIcon }));
+            if (this.isTailwind) {
+                this.secondBtn.querySelector('span').classList.add('e-icons');
+            }
             this.secondBtn.tabIndex = -1;
             this.sliderContainer.classList.add(classNames.sliderButtonClass);
             this.sliderContainer.appendChild(this.firstBtn);
@@ -1868,10 +1877,10 @@ export class Slider extends Component<HTMLElement> implements INotifyPropertyCha
 
     private setAriaAttrValue(element: Element): void {
         let ariaValueText: string[];
-        let isTickFormatted: boolean = ((!isNullOrUndefined(this.ticks) && !isNullOrUndefined(this.ticks.format))) ? true : false;
+        const isTickFormatted: boolean = ((!isNullOrUndefined(this.ticks) && !isNullOrUndefined(this.ticks.format))) ? true : false;
         let text: string = !isTickFormatted ?
             this.formatContent(this.ticksFormatInfo, false) : this.formatContent(this.tooltipFormatInfo, false);
-        let valuenow: string = isTickFormatted ? this.formatContent(this.ticksFormatInfo, true) :
+        const valuenow: string = isTickFormatted ? this.formatContent(this.ticksFormatInfo, true) :
             this.formatContent(this.tooltipFormatInfo, true);
         text = (!this.customAriaText) ? (text) : (this.customAriaText);
         if (text.split(' - ').length === 2) {
@@ -1883,6 +1892,7 @@ export class Slider extends Component<HTMLElement> implements INotifyPropertyCha
         if (this.type !== 'Range') {
             attributes(element, { 'aria-valuenow': valuenow, 'aria-valuetext': text });
         } else {
+            // eslint-disable-next-line
             (!this.enableRtl) ? ((element === this.firstHandle) ?
                 attributes(element, { 'aria-valuenow': valuenow.split(' - ')[0], 'aria-valuetext': ariaValueText[0] }) :
                 attributes(element, { 'aria-valuenow': valuenow.split(' - ')[1], 'aria-valuetext': ariaValueText[1] })) :
@@ -1929,22 +1939,26 @@ export class Slider extends Component<HTMLElement> implements INotifyPropertyCha
     private buttonClick(args: KeyboardEvent | MouseEvent): void {
         this.focusSliderElement();
         let value: number;
-        let enabledRTL: boolean = this.enableRtl && this.orientation !== 'Vertical';
-        let hVal: number = this.handleValueUpdate();
+        const enabledRTL: boolean = this.enableRtl && this.orientation !== 'Vertical';
+        const hVal: number = this.handleValueUpdate();
         if (((<KeyboardEvent>args).keyCode === 40) || ((<KeyboardEvent>args).keyCode === 37)
             || (args.currentTarget as HTMLElement).classList.contains(classNames.firstButton)) {
+            // eslint-disable-next-line
             enabledRTL ? (value = this.add(hVal, parseFloat(this.step.toString()), true)) :
                 (value = this.add(hVal, parseFloat(this.step.toString()), false));
         } else if (((<KeyboardEvent>args).keyCode === 38) || ((<KeyboardEvent>args).keyCode === 39) ||
             (args.currentTarget as HTMLElement).classList.contains(classNames.secondButton)) {
+            // eslint-disable-next-line
             enabledRTL ? (value = this.add(hVal, parseFloat(this.step.toString()), false)) :
                 (value = this.add(hVal, parseFloat(this.step.toString()), true));
         } else if (((<KeyboardEvent>args).keyCode === 33
             || (args.currentTarget as HTMLElement).classList.contains(classNames.firstButton))) {
+            // eslint-disable-next-line
             enabledRTL ? (value = this.add(hVal, parseFloat(this.ticks.largeStep.toString()), false)) :
                 (value = this.add(hVal, parseFloat(this.ticks.largeStep.toString()), true));
         } else if (((<KeyboardEvent>args).keyCode === 34) ||
             (args.currentTarget as HTMLElement).classList.contains(classNames.secondButton)) {
+            // eslint-disable-next-line
             enabledRTL ? (value = this.add(hVal, parseFloat(this.ticks.largeStep.toString()), true)) :
                 (value = this.add(hVal, parseFloat(this.ticks.largeStep.toString()), false));
         } else if (((<KeyboardEvent>args).keyCode === 36)) {
@@ -1973,9 +1987,11 @@ export class Slider extends Component<HTMLElement> implements INotifyPropertyCha
 
     private tooltipToggle(target?: HTMLElement): void {
         if (this.isMaterialTooltip) {
+            // eslint-disable-next-line
             !this.tooltipElement.classList.contains(classNames.materialTooltipOpen) ?
                 this.openMaterialTooltip() : this.refreshTooltip(this.firstHandle);
         } else {
+            // eslint-disable-next-line
             !this.tooltipElement ? this.openTooltip(target) : this.refreshTooltip(target);
         }
 
@@ -1993,9 +2009,11 @@ export class Slider extends Component<HTMLElement> implements INotifyPropertyCha
     private setRangeBar(): void {
         if (this.orientation === 'Horizontal') {
             if (this.type === 'MinRange') {
+                // eslint-disable-next-line
                 this.enableRtl ? (this.rangeBar.style.right = '0px') : (this.rangeBar.style.left = '0px');
                 setStyleAttribute(this.rangeBar, { 'width': isNullOrUndefined(this.handlePos1) ? 0 : this.handlePos1 + 'px' });
             } else {
+                // eslint-disable-next-line
                 this.enableRtl ? (this.rangeBar.style.right =
                     this.handlePos1 + 'px') : (this.rangeBar.style.left = this.handlePos1 + 'px');
                 setStyleAttribute(this.rangeBar, { 'width': this.handlePos2 - this.handlePos1 + 'px' });
@@ -2105,11 +2123,13 @@ export class Slider extends Component<HTMLElement> implements INotifyPropertyCha
             this.checkHandleValue(parseFloat(this.value.toString()));
         this.handlePos1 = this.checkHandlePosition(this.handleVal1);
         this.preHandlePos1 = this.handlePos1;
+        // eslint-disable-next-line
         isNullOrUndefined(this.activeHandle) ? (this.type === 'Range' ? this.activeHandle = 2 : this.activeHandle = 1) :
+            // eslint-disable-next-line no-self-assign
             this.activeHandle = this.activeHandle;
         if (this.type === 'Default' || this.type === 'MinRange') {
             if (this.limits.enabled) {
-                let values: number[] = this.getLimitValueAndPosition(this.handleVal1, this.limits.minStart, this.limits.minEnd);
+                const values: number[] = this.getLimitValueAndPosition(this.handleVal1, this.limits.minStart, this.limits.minEnd);
                 this.handleVal1 = values[0];
                 this.handlePos1 = values[1];
                 this.preHandlePos1 = this.handlePos1;
@@ -2157,7 +2177,7 @@ export class Slider extends Component<HTMLElement> implements INotifyPropertyCha
 
     private setHandlePosition(event: MouseEvent | TouchEvent): void {
         let handle: HTMLElement[];
-        let pos: number = (this.activeHandle === 1) ? this.handlePos1 : this.handlePos2;
+        const pos: number = (this.activeHandle === 1) ? this.handlePos1 : this.handlePos2;
         if (this.isMaterialTooltip) {
             handle = [this.firstHandle, this.materialHandle];
         } else {
@@ -2166,6 +2186,7 @@ export class Slider extends Component<HTMLElement> implements INotifyPropertyCha
         this.handleStart();
         handle.forEach((handle: HTMLElement) => {
             if (this.orientation === 'Horizontal') {
+                // eslint-disable-next-line
                 this.enableRtl ? (handle.style.right =
                     `${pos}px`) : (handle.style.left = `${pos}px`);
             } else {
@@ -2251,7 +2272,7 @@ export class Slider extends Component<HTMLElement> implements INotifyPropertyCha
     }
 
     private updateRangeValue(): void {
-        let values: number[] = this.value.toString().split(',').map(Number);
+        const values: number[] = this.value.toString().split(',').map(Number);
         if ((this.enableRtl && this.orientation !== 'Vertical') || this.rtl) {
             this.value = [values[1], values[0]];
         } else {
@@ -2341,18 +2362,23 @@ export class Slider extends Component<HTMLElement> implements INotifyPropertyCha
             this.handlePos2 = this.checkHandlePosition(this.handleVal2);
         }
         if (this.orientation === 'Horizontal') {
+            // eslint-disable-next-line
             this.enableRtl ? this.firstHandle.style.right =
                 `${this.handlePos1}px` : this.firstHandle.style.left = `${this.handlePos1}px`;
             if (this.isMaterialTooltip) {
+                // eslint-disable-next-line
                 this.enableRtl ? this.materialHandle.style.right =
                     `${this.handlePos1}px` : this.materialHandle.style.left = `${this.handlePos1}px`;
             }
             if (this.type === 'MinRange') {
+                // eslint-disable-next-line
                 this.enableRtl ? (this.rangeBar.style.right = '0px') : (this.rangeBar.style.left = '0px');
                 setStyleAttribute(this.rangeBar, { 'width': isNullOrUndefined(this.handlePos1) ? 0 : this.handlePos1 + 'px' });
             } else if (this.type === 'Range') {
+                // eslint-disable-next-line
                 this.enableRtl ? this.secondHandle.style.right =
                     `${this.handlePos2}px` : this.secondHandle.style.left = `${this.handlePos2}px`;
+                // eslint-disable-next-line
                 this.enableRtl ? (this.rangeBar.style.right =
                     this.handlePos1 + 'px') : (this.rangeBar.style.left = this.handlePos1 + 'px');
                 setStyleAttribute(this.rangeBar, { 'width': this.handlePos2 - this.handlePos1 + 'px' });
@@ -2439,6 +2465,7 @@ export class Slider extends Component<HTMLElement> implements INotifyPropertyCha
         }
     }
 
+    // eslint-disable-next-line
     private tempStartEnd(): Object {
         if (this.min > this.max) {
             return {
@@ -2453,6 +2480,7 @@ export class Slider extends Component<HTMLElement> implements INotifyPropertyCha
         }
     }
 
+    // eslint-disable-next-line
     private xyToPosition(position: { [key: string]: Object }): number {
         let pos: number;
         if (this.min === this.max) {
@@ -2527,6 +2555,7 @@ export class Slider extends Component<HTMLElement> implements INotifyPropertyCha
 
     private sliderBarClick(evt: MouseEvent & TouchEvent): void {
         evt.preventDefault();
+        // eslint-disable-next-line
         let pos: { [key: string]: Object };
         if (evt.type === 'mousedown' || evt.type === 'mouseup' || evt.type === 'click') {
             pos = { x: evt.clientX, y: evt.clientY };
@@ -3434,9 +3463,9 @@ export class Slider extends Component<HTMLElement> implements INotifyPropertyCha
                     if (this.colorRange[i].end > this.max) {
                         this.colorRange[i].end = this.max;
                     }
-                    let startingPosition: number = this.checkHandlePosition(this.colorRange[i].start);
-                    let endPosition: number = this.checkHandlePosition(this.colorRange[i].end);
-                    let trackContainer: HTMLElement = this.createElement('div');
+                    const startingPosition: number = this.checkHandlePosition(this.colorRange[i].start);
+                    const endPosition: number = this.checkHandlePosition(this.colorRange[i].end);
+                    const trackContainer: HTMLElement = this.createElement('div');
                     trackContainer.style.backgroundColor = this.colorRange[i].color;
                     trackContainer.style.border = '1px solid ' + this.colorRange[i].color;
                     if (this.orientation === 'Horizontal') {

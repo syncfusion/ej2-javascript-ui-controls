@@ -1,17 +1,17 @@
 // sass-lint:disable no-vendor-prefixes
 @mixin sibling-theme($left, $right) {
-  @if $treeview-skin-name == 'material' {
+  @if $skin-name == 'material' {
     background: $treeview-drag-line-bg;
   }
   @else {
-    border-#{$right}-color: transparent;
     border-#{$left}-color: $treeview-drag-line-bg;
+    border-#{$right}-color: transparent;
   }
 }
 @mixin active-hover-theme {
   background-color: $treeview-item-active-hover-bg;
   border-color: $treeview-item-active-hover-border-color;
-  @if $treeview-skin-name == 'bootstrap' or $treeview-skin-name == 'highcontrast' {
+  @if $skin-name == 'bootstrap' or $skin-name == 'highcontrast' {
     -webkit-box-shadow: $treeview-border-shadow;
     box-shadow: $treeview-border-shadow;
   }
@@ -19,13 +19,13 @@
 @mixin active-editing-theme {
   background-color: $treeview-item-border-color;
   border-color: $treeview-item-border-color;
-  @if $treeview-skin-name == 'bootstrap' {
+  @if $skin-name == 'bootstrap' {
     -webkit-box-shadow: none;
     box-shadow: none;
   }
 }
 @mixin active-font-weight {
-  @if $treeview-skin-name == 'highcontrast' {
+  @if $skin-name == 'highcontrast' {
     font-weight: $treeview-active-font-weight;
   }
 }
@@ -36,7 +36,7 @@
     .e-list-text {
       font-size: $treeview-big-font-size;
 
-      @if $treeview-skin-name == 'bootstrap4' {
+      @if $skin-name == 'bootstrap4' {
         color: $treeview-big-text-color;
       }
     }
@@ -50,13 +50,13 @@
     &.e-drag-item {
       .e-icon-collapsible,
       .e-icon-expandable {
-        @if $treeview-skin-name == 'bootstrap4' {
+        @if $skin-name == 'bootstrap4' {
           padding: $treeview-big-drag-icon-padding;
     }
   }
 
       .e-list-text {
-        @if $treeview-skin-name == 'bootstrap4' {
+        @if $skin-name == 'bootstrap4' {
           padding: $treeview-big-drag-text-padding;
       }
     }
@@ -127,12 +127,12 @@
       }
 
       .e-check {
-        @if $treeview-skin-name == 'highcontrast' {
+        @if $skin-name == 'highcontrast' {
           background-color: $treeview-checkmark-bgcolor;
           border-color: $treeview-checkmark-border-color;
           color: $treeview-checkmark-color;
         }
-        @else if $treeview-skin-name == 'bootstrap4' {
+        @else if $skin-name == 'bootstrap4' {
           background-color: $treeview-bootstrap4-checkmark-bgcolor;
           border-color: $treeview-bootstrap4-checkmark-border-color;
           color: $treeview-bootstrap4-checkmark-color;
@@ -212,19 +212,24 @@
         color: $treeview-text-disable-color;
       }
 
-      .e-icon-collapsible,
-      .e-icon-expandable {
+      > .e-text-content > .e-icon-collapsible,
+      > .e-text-content > .e-icon-expandable {
         color: $treeview-icon-disable-color;
       }
     }
 
     .e-sibling {
-      @include sibling-theme(left, right);
+      @if ($skin-name != 'tailwind' and $skin-name != 'tailwind-dark') {
+        @include sibling-theme(left, right);
+      }
+      @else {
+        border: 1px solid $treeview-drag-line-bg;
+      }
     }
 
     .e-sibling::before {
       background: $treeview-drag-line-color;
-      @if $treeview-skin-name == 'bootstrap4' {
+      @if $skin-name == 'bootstrap4' {
         border: 1px;
       }
     }
@@ -296,13 +301,13 @@
       .e-list-text {
         @include active-font-weight;
         color: $treeview-drag-item-color;
-        @if $treeview-skin-name == 'bootstrap4' {
+        @if $skin-name == 'bootstrap4' {
           padding: $treeview-drag-text-padding;
       }
     }
 
       .e-text-content {
-        @if $treeview-skin-name == 'bootstrap4' {
+        @if $skin-name == 'bootstrap4' {
           -webkit-box-shadow: $treeview-drag-item-box-shadow;
           border-radius: .5em;
           box-shadow:  $treeview-drag-item-box-shadow;
@@ -322,7 +327,12 @@
       &.e-rtl {
 
         .e-sibling {
-          @include sibling-theme(right, left);
+          @if ($skin-name != 'tailwind' and $skin-name != 'tailwind-dark') {
+            @include sibling-theme(right, left);
+          }
+          @else {
+            border: 1px solid $treeview-drag-line-bg;
+          }
         }
       }
   }

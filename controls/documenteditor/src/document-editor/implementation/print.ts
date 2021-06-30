@@ -102,7 +102,7 @@ export class Print {
             let pageWidth: number = printPage.boundingRectangle.width;
             documentHelper.render.isPrinting = true;
             documentHelper.render.renderWidgets(printPage, 0, 0, 0, 0);
-            let canvasURL: string = documentHelper.render.pageCanvas.toDataURL('image/jpeg')
+            let canvasURL: string = documentHelper.render.pageCanvas.toDataURL('image/jpeg');
             documentHelper.render.isPrinting = false;
             image = new Image();
             image.src = canvasURL;

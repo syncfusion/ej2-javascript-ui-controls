@@ -2,7 +2,7 @@ import { Gantt } from '../base/gantt';
 import { RowSelectEventArgs, RowSelectingEventArgs, RowDeselectEventArgs, parentsUntil, getActualProperties } from '@syncfusion/ej2-grids';
 import { CellDeselectEventArgs, ISelectedCell, setCssInGridPopUp, Grid } from '@syncfusion/ej2-grids';
 import { CellSelectingEventArgs, CellSelectEventArgs, IIndex } from '@syncfusion/ej2-grids';
-import { isNullOrUndefined, removeClass, getValue, addClass, closest, setValue, extend, isBlazor } from '@syncfusion/ej2-base';
+import { isNullOrUndefined, removeClass, getValue, addClass, closest, setValue, extend } from '@syncfusion/ej2-base';
 import { IGanttData } from '../base/interface';
 import { Deferred } from '@syncfusion/ej2-data';
 import { TaskbarEdit } from './taskbar-edit';
@@ -122,9 +122,6 @@ export class Selection {
     private rowDeselecting(args: RowDeselectEventArgs): void {
         args.target = this.actualTarget as Element;
         args.isInteracted = this.isInteracted;
-        if (isBlazor() && this.parent.selectionSettings.type === 'Multiple') {
-            this.multipleIndexes = extend([], args.rowIndex, [], true) as number[];
-        }
         this.parent.trigger('rowDeselecting', args);
     }
     private rowDeselected(args: RowDeselectEventArgs): void {
@@ -276,11 +273,7 @@ export class Selection {
      * @returns {Object[]} .
      */
     public getSelectedRecords(): Object[] {
-        if (isBlazor()) {
-            return this.parent.getRecordFromFlatdata(this.parent.treeGrid.getSelectedRecords());
-        } else {
-            return this.parent.treeGrid.getSelectedRecords();
-        }
+        return this.parent.treeGrid.getSelectedRecords();
     }
 
     /**
@@ -294,11 +287,7 @@ export class Selection {
         for (let i: number = 0; i < cellDetails.length; i++) {
             cellSelectedRecords.push(this.parent.currentViewData[cellDetails[i].rowIndex]);
         }
-        if (isBlazor()) {
-            return this.parent.getRecordFromFlatdata(cellSelectedRecords);
-        } else {
-            return cellSelectedRecords;
-        }
+        return cellSelectedRecords;
     }
 
     /**

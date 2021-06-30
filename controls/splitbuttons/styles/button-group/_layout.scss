@@ -12,7 +12,9 @@
     input:focus+label.e-btn,
     .e-btn:focus,
     .e-btn:hover {
-      z-index: 2;
+      @if $skin-name != 'tailwind' and $skin-name != 'tailwind-dark' {
+        z-index: 2;
+      }
     }
 
     input + label.e-btn {

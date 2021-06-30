@@ -5,7 +5,7 @@ import { extend } from '@syncfusion/ej2-base';
 import { markdownKeyConfig, markdownListsTags, markdownFormatTags, markdownSelectionTags } from './../../common/config';
 /**
  * Markdown adapter
- * 
+ *
  * @hidden
  * @deprecated
  */

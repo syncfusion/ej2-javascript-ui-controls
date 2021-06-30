@@ -21,7 +21,6 @@ export function wrapperInitialize(
     role: string): HTMLInputElement {
     let input: HTMLInputElement = element;
     if (element.tagName === tag) {
-        // eslint-disable-next-line
         const ejInstance: Object = getValue('ej2_instances', element);
         input = createElement('input', { attrs: { 'type': type } }) as HTMLInputElement;
         const props: string[] = ['change', 'cssClass', 'label', 'labelPosition', 'id'];

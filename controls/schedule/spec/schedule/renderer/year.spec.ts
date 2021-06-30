@@ -50,7 +50,7 @@ describe('Schedule year view', () => {
         it('check header elements', () => {
             expect(schObj.element.querySelectorAll('.e-month-calendar').length).toEqual(12);
             expect((schObj.element.querySelectorAll('.e-header')[0] as HTMLElement).innerHTML)
-                .toEqual('<div class="e-day e-title">January</div>');
+                .toEqual('<div class="e-day e-title">January 2021</div>');
             expect(schObj.element.querySelectorAll('.e-week-header').length).toEqual(12);
         });
 
@@ -167,8 +167,8 @@ describe('Schedule year view', () => {
 
             it('Horizontal without template checking', () => {
                 expect(schObj.firstMonthOfYear).toEqual(4);
-                expect(schObj.element.querySelectorAll('.e-month-header')[0].innerHTML).toBe('<span>May</span>');
-                expect(schObj.element.querySelectorAll('.e-month-header')[11].innerHTML).toBe('<span>April</span>');
+                expect(schObj.element.querySelectorAll('.e-month-header')[0].innerHTML).toBe('<span>May 2018</span>');
+                expect(schObj.element.querySelectorAll('.e-month-header')[11].innerHTML).toBe('<span>April 2019</span>');
                 expect(schObj.element.querySelectorAll('.e-resource-cells')[1].innerHTML).toBe('<div class="e-text-ellipsis">ROOM 1</div>');
                 expect(schObj.element.querySelectorAll('.e-resource-cells')[2].innerHTML).toBe('<div class="e-text-ellipsis">ROOM 2</div>');
                 const verticalViewBtn: HTMLElement = (schObj.element.querySelectorAll('.e-toolbar-item.e-views.e-timeline-year')[1] as HTMLElement);
@@ -178,8 +178,8 @@ describe('Schedule year view', () => {
                 expect(schObj.firstMonthOfYear).toEqual(4);
                 expect(schObj.element.querySelectorAll('.e-resource-cells')[1].innerHTML).toBe('<div class="e-resource-text" style="margin-left: 0px;">ROOM 2</div>');
                 expect(schObj.element.querySelectorAll('.e-resource-cells')[0].innerHTML).toBe('<div class="e-resource-text" style="margin-left: 0px;">ROOM 1</div>');
-                expect(schObj.element.querySelectorAll('.e-header-cells')[0].innerHTML).toBe('<span>May</span>');
-                expect(schObj.element.querySelectorAll('.e-header-cells')[11].innerHTML).toBe('<span>April</span>');
+                expect(schObj.element.querySelectorAll('.e-header-cells')[0].innerHTML).toBe('<span>May 2018</span>');
+                expect(schObj.element.querySelectorAll('.e-header-cells')[11].innerHTML).toBe('<span>April 2019</span>');
             });
         });
 
@@ -244,8 +244,8 @@ describe('Schedule year view', () => {
                 expect(schObj.firstMonthOfYear).toEqual(4);
                 expect(schObj.element.querySelectorAll('.e-header-cells')[1].innerHTML).toBe('<span>Sun</span>');
                 expect(schObj.element.querySelectorAll('.e-header-cells')[2].innerHTML).toBe('<span>Mon</span>');
-                expect(schObj.element.querySelectorAll('.e-month-header')[0].innerHTML).toBe('<span>May</span>');
-                expect(schObj.element.querySelectorAll('.e-month-header')[11].innerHTML).toBe('<span>April</span>');
+                expect(schObj.element.querySelectorAll('.e-month-header')[0].innerHTML).toBe('<span>May 2021</span>');
+                expect(schObj.element.querySelectorAll('.e-month-header')[11].innerHTML).toBe('<span>April 2022</span>');
                 schObj.firstMonthOfYear = 5;
             });
             it('Horizontal setMode change checking', () => {
@@ -253,25 +253,25 @@ describe('Schedule year view', () => {
                 expect(schObj.firstMonthOfYear).toEqual(5);
                 expect(schObj.element.querySelectorAll('.e-header-cells')[1].innerHTML).toBe('<span>Sun</span>');
                 expect(schObj.element.querySelectorAll('.e-header-cells')[2].innerHTML).toBe('<span>Mon</span>');
-                expect(schObj.element.querySelectorAll('.e-month-header')[0].innerHTML).toBe('<span>June</span>');
-                expect(schObj.element.querySelectorAll('.e-month-header')[11].innerHTML).toBe('<span>May</span>');
+                expect(schObj.element.querySelectorAll('.e-month-header')[0].innerHTML).toBe('<span>June 2021</span>');
+                expect(schObj.element.querySelectorAll('.e-month-header')[11].innerHTML).toBe('<span>May 2022</span>');
                 const verticalViewBtn: HTMLElement = (schObj.element.querySelectorAll('.e-toolbar-item.e-views.e-timeline-year')[1] as HTMLElement);
                 verticalViewBtn.click();
             });
             it('Vertical view functionalities checking', () => {
                 expect(schObj.element.querySelector('.e-active-view').classList).toContain('e-timeline-year');
                 expect(schObj.firstMonthOfYear).toEqual(5);
-                expect(schObj.element.querySelectorAll('.e-header-cells')[1].innerHTML).toBe('<span>June</span>');
-                expect(schObj.element.querySelectorAll('.e-header-cells')[12].innerHTML).toBe('<span>May</span>');
+                expect(schObj.element.querySelectorAll('.e-header-cells')[1].innerHTML).toBe('<span>June 2021</span>');
+                expect(schObj.element.querySelectorAll('.e-header-cells')[12].innerHTML).toBe('<span>May 2022</span>');
                 expect(schObj.element.querySelectorAll('.e-month-header')[0].innerHTML).toBe('<span>Sun</span>');
                 expect(schObj.element.querySelectorAll('.e-month-header')[1].innerHTML).toBe('<span>Mon</span>');
                 const yearViewBtn: HTMLElement = schObj.element.querySelector('.e-toolbar-item.e-views.e-year');
                 yearViewBtn.click();
             });
             it('Year layout rendering', () => {
-                expect(schObj.element.querySelectorAll('.e-day.e-title')[0].innerHTML).toBe('June');
-                expect(schObj.element.querySelectorAll('.e-day.e-title')[6].innerHTML).toBe('December');
-                expect(schObj.element.querySelectorAll('.e-day.e-title')[11].innerHTML).toBe('May');
+                expect(schObj.element.querySelectorAll('.e-day.e-title')[0].innerHTML).toBe('June 2021');
+                expect(schObj.element.querySelectorAll('.e-day.e-title')[6].innerHTML).toBe('December 2021');
+                expect(schObj.element.querySelectorAll('.e-day.e-title')[11].innerHTML).toBe('May 2022');
             });
         });
     });

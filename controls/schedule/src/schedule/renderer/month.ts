@@ -555,14 +555,14 @@ export class Month extends ViewBase implements IRenderer {
                     const monthNames: string = (this.parent.globalize.formatDate(
                         this.parent.selectedDate, { format: 'MMMM', calendar: this.parent.getCalendarMode() })) + ' - ' +
                         (this.parent.globalize.formatDate(endDate, { format: 'MMMM ', calendar: this.parent.getCalendarMode() })) +
-                        this.parent.globalize.formatDate(endDate, { skeleton:'y' , calendar: this.parent.getCalendarMode() });
+                        this.parent.globalize.formatDate(endDate, { skeleton: 'y', calendar: this.parent.getCalendarMode() });
                     return util.capitalizeFirstWord(monthNames, 'single');
                 }
                 const text: string = (this.parent.globalize.formatDate(
                     this.parent.selectedDate, { format: 'MMMM', calendar: this.parent.getCalendarMode() })) + ' ' +
                     this.parent.selectedDate.getFullYear() + ' - ' +
                     this.parent.globalize.formatDate(endDate, { format: 'MMMM ', calendar: this.parent.getCalendarMode() }) +
-                    this.parent.globalize.formatDate(endDate, { skeleton:'y' , calendar: this.parent.getCalendarMode() });
+                    this.parent.globalize.formatDate(endDate, { skeleton: 'y', calendar: this.parent.getCalendarMode() });
                 return util.capitalizeFirstWord(text, 'single');
             }
             const format: string = (this.parent.activeViewOptions.dateFormat) ? this.parent.activeViewOptions.dateFormat : 'MMMM y';

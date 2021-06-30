@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/ban-types */
 // eslint-disable-next-line @typescript-eslint/triple-slash-reference
 /// <reference path='../drop-down-button/drop-down-button-model.d.ts'/>
 import { Event, EmitType, remove, addClass, removeClass, detach, getValue, setValue } from '@syncfusion/ej2-base';

@@ -760,7 +760,13 @@ export class DiagramEventHandler {
                     } else {
                         this.tool.mouseUp(this.eventArgs);
                         if (this.diagram.checkMenu && (window.navigator.userAgent.indexOf('Linux') !== -1 || window.navigator.userAgent.indexOf('X11') !== -1)) {
-                            this.diagram.contextMenuModule.contextMenu.open(evt.pageY, evt.pageX, this.diagram.element);
+                            if (!evt.pageY && (evt instanceof TouchEvent) && evt.changedTouches) {
+                                window.getSelection().removeAllRanges();
+                                this.diagram.contextMenuModule.contextMenu.open(evt.changedTouches[0].pageY, evt.changedTouches[0].pageX, this.diagram.element);
+                                evt.preventDefault();
+                            } else {
+                                this.diagram.contextMenuModule.contextMenu.open(evt.pageY, evt.pageX, this.diagram.element);
+                            }
                             this.diagram.checkMenu = false;
                         }
                     }

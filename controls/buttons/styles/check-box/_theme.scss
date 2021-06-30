@@ -86,6 +86,10 @@
               background-color: $cbox-checkmark-hover-bgcolor;
               border-color: $cbox-checkmark-hover-border-color;
             }
+            @else if $skin-name == 'tailwind' or $skin-name == 'tailwind-dark' {
+              background-color: $cbox-checkmark-hover-bgcolor;
+              border-color: $cbox-checkmark-hover-border-color;
+            }
             @else {
               color: $cbox-indeterminate-hover-color;
             }

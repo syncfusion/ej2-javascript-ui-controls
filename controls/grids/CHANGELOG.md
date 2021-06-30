@@ -2,6 +2,18 @@
 
 ## [Unreleased]
 
+## 19.2.44 (2021-06-30)
+
+### Grid
+
+#### Bug Fixes
+
+- `#25509` - Column grouping is not working properly while `allowReordering` is set true, has been fixed.
+
+#### New Features
+
+- Provided support for row reorder with virtual scrolling.
+
 ## 19.1.69 (2021-06-15)
 
 ### Grid

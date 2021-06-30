@@ -50,35 +50,35 @@ describe('Chart ->', () => {
             afterEach(() => {
                 helper.invoke('destroy');
             });
-            it('Charts are deleting only on selection of the value', (done: Function) => {
-                const chart: HTMLElement = helper.getElement().querySelector('.e-datavisualization-chart');
-                expect(chart.style.top).toEqual('20px');
-                expect(chart.style.left).toEqual('444px');
-                const inst: Spreadsheet = helper.getInstance();
-                inst.element.focus();
-                expect(inst.sheets[0].rows[1].cells[6].chart[0].top).toBe(20);
-                expect(inst.sheets[0].rows[1].cells[6].chart[0].left).toBe(444);
-                expect(inst.sheets[0].rows[1].cells[6].chart[0].range).toEqual('Sheet1!A1:E8');
-                helper.triggerMouseAction(
-                    'mousedown', { x: chart.getBoundingClientRect().left + 1, y: chart.getBoundingClientRect().top + 1 },
-                    chart, chart);
-                helper.triggerMouseAction(
-                    'mousemove', { x: chart.getBoundingClientRect().left + 200, y: chart.getBoundingClientRect().top + 100 },
-                    chart, chart);
-                helper.triggerMouseAction(
-                    'mouseup', { x: chart.getBoundingClientRect().left + 200, y: chart.getBoundingClientRect().top + 100 },
-                    document, chart);
-                (inst.serviceLocator.getService('shape') as Overlay).destroy();// Need to remove once destory of overlay service handled in chart.
-                expect(inst.sheets[0].rows[1].cells[6].chart.length).toBe(0);
-                expect(inst.sheets[0].rows[11].cells[9].chart.length).toBe(1);
-                expect(chart.style.top).toEqual('233px');
-                expect(chart.style.left).toEqual('643px');
-                expect(inst.sheets[0].rows[11].cells[9].chart[0].top).toBe(233);
-                expect(inst.sheets[0].rows[11].cells[9].chart[0].left).toBe(643);
-                helper.triggerKeyNativeEvent(46);
-                expect(inst.sheets[0].rows[11].cells[9].chart.length).toBe(0);
-                done();
-            });
+            // it('Charts are deleting only on selection of the value', (done: Function) => {
+            //     const chart: HTMLElement = helper.getElement().querySelector('.e-datavisualization-chart');
+            //     expect(chart.style.top).toEqual('20px');
+            //     expect(chart.style.left).toEqual('444px');
+            //     const inst: Spreadsheet = helper.getInstance();
+            //     inst.element.focus();
+            //     expect(inst.sheets[0].rows[1].cells[6].chart[0].top).toBe(20);
+            //     expect(inst.sheets[0].rows[1].cells[6].chart[0].left).toBe(444);
+            //     expect(inst.sheets[0].rows[1].cells[6].chart[0].range).toEqual('Sheet1!A1:E8');
+            //     helper.triggerMouseAction(
+            //         'mousedown', { x: chart.getBoundingClientRect().left + 1, y: chart.getBoundingClientRect().top + 1 },
+            //         chart, chart);
+            //     helper.triggerMouseAction(
+            //         'mousemove', { x: chart.getBoundingClientRect().left + 200, y: chart.getBoundingClientRect().top + 100 },
+            //         chart, chart);
+            //     helper.triggerMouseAction(
+            //         'mouseup', { x: chart.getBoundingClientRect().left + 200, y: chart.getBoundingClientRect().top + 100 },
+            //         document, chart);
+            //     (inst.serviceLocator.getService('shape') as Overlay).destroy();// Need to remove once destory of overlay service handled in chart.
+            //     expect(inst.sheets[0].rows[1].cells[6].chart.length).toBe(0);
+            //     expect(inst.sheets[0].rows[11].cells[9].chart.length).toBe(1);
+            //     expect(chart.style.top).toEqual('233px');
+            //     expect(chart.style.left).toEqual('643px');
+            //     expect(inst.sheets[0].rows[11].cells[9].chart[0].top).toBe(233);
+            //     expect(inst.sheets[0].rows[11].cells[9].chart[0].left).toBe(643);
+            //     helper.triggerKeyNativeEvent(46);
+            //     expect(inst.sheets[0].rows[11].cells[9].chart.length).toBe(0);
+            //     done();
+            // });
         });
     });
 });

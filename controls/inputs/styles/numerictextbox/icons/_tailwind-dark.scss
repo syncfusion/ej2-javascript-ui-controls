@@ -1,0 +1,12 @@
+@include export-module('numerictextbox-tailwind-dark-icons') {
+  .e-input-group-icon.e-spin-up::before {
+    content: '\e752';
+    font-family: 'e-icons';
+  }
+
+  .e-input-group-icon.e-spin-down::before {
+    content: '\e706';
+    font-family: 'e-icons';
+  }
+}
+  

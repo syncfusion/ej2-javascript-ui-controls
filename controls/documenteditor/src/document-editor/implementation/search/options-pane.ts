@@ -564,6 +564,7 @@ export class OptionsPane {
                 this.scrollToPosition(element);
             }
         } else if (event.keyCode === 13) {
+            this.hideMatchDiv();
             if (event.target !== this.searchInput && event.target !== this.closeButton) {
                 event.preventDefault();
                 let index: number = this.focusedElement.indexOf(event.target as HTMLElement);
@@ -693,6 +694,10 @@ export class OptionsPane {
             this.occurrenceDiv.innerHTML = this.localeValue.getConstant('We replaced all') + ' ' + count + ' ' + this.localeValue.getConstant('instances') + ' ' + this.localeValue.getConstant('of') + ' "' + findText + '" ' + this.localeValue.getConstant('with') + ' "' + replaceText + '" ';
         }
     }
+    private hideMatchDiv(): void {
+        this.matchDiv.style.display = 'none';
+        this.occurrenceDiv.style.display = 'none';
+    }
     /**
      * Fires on search icon.
      * 
@@ -707,6 +712,7 @@ export class OptionsPane {
         if (text === '') {
             return;
         }
+        this.hideMatchDiv();
         if (this.searchIcon.classList.contains('e-de-op-search-close-icon')) {
             this.searchIcon.classList.add('e-de-op-search-icon');
             this.searchIcon.classList.remove('e-de-op-search-close-icon');

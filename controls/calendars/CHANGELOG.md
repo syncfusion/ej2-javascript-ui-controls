@@ -2,6 +2,26 @@
 
 ## [Unreleased]
 
+## 19.2.44 (2021-06-30)
+
+### DatePicker
+
+#### New Features
+
+- `#245933` , `#F147808` -  Now, you can enable the masked input using `enableMask` property
+
+### DateTimePicker
+
+#### New Features
+
+- `#299471` -  Now, you can enable the masked input using `enableMask` property
+
+### TimePicker
+
+#### New Features
+
+- Now, you can enable the masked input using `enableMask` property
+
 ## 18.4.34 (2021-01-12)
 
 ### DateTimePicker

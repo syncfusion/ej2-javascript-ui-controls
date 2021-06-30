@@ -196,10 +196,6 @@ describe('Internationalization', () => {
             let result: Date = dParseIntl.parseDate('12/dec/20',{format:'dd/MMM/yy'});
             expect(dParseIntl.formatDate(result)).toBe('12/12/20');
         });
-        it('Case insensitive datetime picker degignator', () => {
-            let result: Date = dParseIntl.parseDate('5/28/2019 2:00 pM', {format:'M/d/y h:mm a'});
-            expect(dParseIntl.formatDate(result, {format: 'M/d/y h:mm a'})).toBe('5/28/2019 2:00 PM');
-        });
     });
     describe('Number  Parser', () => {
         let nParseIntl: Internationalization = new Internationalization();

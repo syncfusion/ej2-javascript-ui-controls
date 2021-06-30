@@ -3,7 +3,7 @@ $imported-modules: () !default;
 .e-lib {
     @at-root
     {
-        @import "../bootstrap4.scss";
+        @import url("../bootstrap4.scss");
     }
 
     & .e-js [class^='e-'], & .e-js [class*=' e-'] {

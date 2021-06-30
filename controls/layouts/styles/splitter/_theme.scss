@@ -45,7 +45,8 @@
           }
         }
 
-        &.e-split-bar-hover {
+        &.e-split-bar-hover,
+        &.e-split-bar-active {
           background: $splitbar-hover-border-color;
 
           .e-resize-handler {
@@ -113,7 +114,8 @@
           color: $splitbar-icon-color;
         }
 
-        &.e-split-bar-hover {
+        &.e-split-bar-hover,
+        &.e-split-bar-active {
           background: $splitbar-hover-border-color;
 
           .e-navigate-arrow {

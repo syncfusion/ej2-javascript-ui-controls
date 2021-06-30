@@ -8,7 +8,7 @@ import * as EVENTS from './../../common/constant';
 import { isIDevice, setEditFrameFocus } from '../../common/util';
 /**
  * Formats internal component
- * 
+ *
  * @hidden
  * @deprecated
  */
@@ -58,7 +58,7 @@ export class Alignments {
     }
     private getTableNode(range: Range): Node[] {
         const startNode: Node = range.startContainer.nodeType === Node.ELEMENT_NODE
-        ? range.startContainer : range.startContainer.parentNode;
+            ? range.startContainer : range.startContainer.parentNode;
         const cellNode: Node = closest(startNode, 'td,th');
         return [cellNode];
     }

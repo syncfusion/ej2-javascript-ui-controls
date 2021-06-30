@@ -1378,6 +1378,12 @@ export class DropDownList extends DropDownBase implements IInput {
             detach(this.valueTempElement);
             this.inputElement.style.display = 'block';
         }
+        let clearIcon: string = dropDownListClasses.clearIcon;
+        let isFilterElement: boolean = this.isFiltering() && this.filterInput && (this.getModuleName() === 'combobox');
+        let clearElement: HTMLElement = isFilterElement && this.filterInput.parentElement.querySelector('.' + clearIcon);
+        if (this.isFiltering() && clearElement) {
+            clearElement.style.removeProperty('visibility');
+        }
         if (this.previousValue === dataItem.value) {
             this.isSelected = false;
             return true;

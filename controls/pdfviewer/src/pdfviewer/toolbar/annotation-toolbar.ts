@@ -1,5 +1,5 @@
 /* eslint-disable */
-import { createElement, Browser, isBlazor } from '@syncfusion/ej2-base';
+import { createElement, Browser, isBlazor, isNullOrUndefined, closest } from '@syncfusion/ej2-base';
 import {
     Toolbar as Tool, ClickEventArgs, MenuItemModel, Menu, MenuModel,
     BeforeOpenCloseMenuEventArgs as Menuopen, MenuEventArgs
@@ -14,7 +14,7 @@ import { cloneObject } from '../drawing/drawing-util';
 import { FreeTextAnnotation } from '../annotation/free-text-annotation';
 import { ComboBox } from '@syncfusion/ej2-dropdowns';
 import { Query } from '@syncfusion/ej2-data';
-import { DynamicStampItem, SignStampItem, StandardBusinessStampItem } from '../base/types';
+import { DynamicStampItem, SignStampItem, StandardBusinessStampItem, SignatureItem } from '../base/types';
 
 /**
  * @hidden
@@ -34,6 +34,7 @@ export class AnnotationToolbar {
     private underlineItem: HTMLElement;
     private strikethroughItem: HTMLElement;
     private deleteItem: HTMLElement;
+    private isSignatureIteam: boolean;
     /**
      * @private
      */
@@ -166,6 +167,9 @@ export class AnnotationToolbar {
      * @private
      */
     public openSignaturePopup: boolean = false;
+    private isSavedSignatureClicked: boolean = false;
+    private saveSignatureCount: number = 0;
+    private saveInitialCount: number = 0;
     private shapesItem: HTMLElement;
     private calibrateItem: HTMLElement;
     /**
@@ -787,62 +791,215 @@ export class AnnotationToolbar {
         this.primaryToolbar.createTooltip(this.pdfViewerBase.getElement('_annotation_signature'), this.pdfViewer.localeObj.getConstant('Draw Signature'));
         // eslint-disable-next-line
         let proxy: any = this;
-        const items: ItemModel[] = [
+        let items: ItemModel[] =[];
+        if(this.pdfViewer.handWrittenSignatureSettings.signatureItem.length===0||this.pdfViewer.handWrittenSignatureSettings.signatureItem.length==2){
+        items=[
+            {
+                text: 'ADD SIGNATURE'
+            },
             {
                 separator: true
             },
             {
-                text: 'ADD SIGNATURE'
+                text: 'ADD INITIAL'
             }];
+        } else{
+            if(this.pdfViewer.handWrittenSignatureSettings.signatureItem[0]==='Signature'){
+                items=[
+                    {
+                        text: 'ADD SIGNATURE'
+                    }];
+            } else{
+                items=[
+                    {
+                        text: 'ADD INITIAL'
+                    }];
+            }
+        }
+        
         const saveOptions: DropDownButtonModel = {
             items: items,
             iconCss: 'e-pv-handwritten-icon e-pv-icon',
             cssClass: 'e-pv-handwritten-popup',
-            beforeOpen: (args: BeforeOpenCloseMenuEventArgs): void => {
-                proxy.updateSignatureCount();
-                if (this.openSignaturePopup) {
-                    args.cancel = true;
-                }
-            },
             open: (args: OpenCloseMenuEventArgs): void => {
                 proxy.openSignature();
             },
             beforeItemRender: (args: MenuEventArgs): void => {
-                if (args.item.text === '') {
-                    // eslint-disable-next-line max-len
-                    for (let collection: number = 0; collection < this.pdfViewerBase.signatureModule.signaturecollection.length; collection++) {
-                        args.element.style.display = 'block';
-                        // eslint-disable-next-line
-                        let signatureCollection: any = this.pdfViewerBase.signatureModule.signaturecollection[collection];
-                        // eslint-disable-next-line
-                        let collectionKey: any = signatureCollection["sign_" + collection];
-                        if (collectionKey !== '') {
-                            // eslint-disable-next-line max-len
-                            args.element.innerHTML += '<div id="s' + collection + '"><span class="e-pv-align-border" id="sign_border' + collection + '"><img id="sign_' + collection + '" src="' + collectionKey + '" width="50" height="50" style="display: block;margin-left: auto;margin-right: auto;"/></span><span class="e-pv-delete e-pv-align" id="delete' + collection + '"> </span><br></br></div>';
-                            args.element.style.pointerEvents = 'auto';
-                            args.element.style.background = 'none';
-                            this.pdfViewerBase.getElement('_annotation_signature-popup').style.width = '240px';
+                this.pdfViewer.clearSelection(this.pdfViewerBase.currentPageNumber - 1);
+                if (args.item.text === 'ADD SIGNATURE') {
+                    args.element.innerHTML = '';
+                    this.saveSignatureCount = 0;
+                    for (let collection: number = this.pdfViewerBase.signatureModule.signaturecollection.length; collection > 0; collection--) {
+                        if (this.saveSignatureCount < this.pdfViewerBase.signatureModule.getSaveLimit(this.pdfViewer.handWrittenSignatureSettings.saveSignatureLimit)) {
+                            args.element.style.display = 'block';
+                            // eslint-disable-next-line
+                            let signatureCollection: any = this.pdfViewerBase.signatureModule.signaturecollection[collection - 1];
+                            // eslint-disable-next-line
+                            let collectionKey: any = signatureCollection.image[0].imageData;
+                            let signatureID: string = signatureCollection.image[0].id.split('_')[1];
+                            if (!signatureCollection.isInitial && collectionKey !== '') {
+                                // eslint-disable-next-line max-len
+                                let signatureContainer: HTMLElement = createElement('div');
+                                signatureContainer.id = 's' + signatureID;
+                                signatureContainer.style.display = 'block';
+                                signatureContainer.style.paddingBottom = '10px';
+                                let signatureSpan: HTMLElement = createElement('span');
+                                signatureSpan.id = 'sign_border_' + signatureID;
+                                signatureSpan.classList.add('e-pv-align-border');
+                                let signatureImage: any;
+                                if (signatureCollection.image[0].signatureType === 'SignatureText') {
+                                    signatureImage = createElement('div');
+                                    (signatureImage as HTMLElement).innerText = collectionKey;
+                                    (signatureImage as HTMLElement).style.fontFamily = signatureCollection.image[0].fontFamily;
+                                    (signatureImage as HTMLElement).style.fontSize = '15px';
+                                    (signatureImage as HTMLElement).style.display = 'inline-block';
+                                    (signatureImage as HTMLElement).style.top = '8px';
+                                    (signatureImage as HTMLElement).style.position = 'relative';
+                                    (signatureImage as HTMLElement).id = 'sign_' + signatureID;
+                                    (signatureImage as HTMLElement).style.width = '80px';
+                                    (signatureImage as HTMLElement).style.height = '53px';
+                                    (signatureImage as HTMLElement).style.overflow = 'hidden';
+                                    (signatureImage as HTMLElement).style.textOverflow = 'ellipsis';
+                                    (signatureImage as HTMLElement).style.paddingLeft = '11px';
+                                } else {
+                                    signatureImage = createElement('img') as HTMLImageElement;
+                                    signatureImage.id = 'sign_' + signatureID;
+                                    signatureImage.src = collectionKey;
+                                    signatureImage.width = 80;
+                                    signatureImage.height = 32; 
+                                    (signatureImage as HTMLImageElement).style.paddingLeft= '20px';
+                                    (signatureImage as HTMLImageElement).style.paddingRight= '18px';
+                                    (signatureImage as HTMLImageElement).style.paddingTop= '12px';
+                                    (signatureImage as HTMLImageElement).style.paddingBottom= '12px';
+                                    (signatureImage as HTMLImageElement).style.boxSizing= 'content-box';
+                                }
+                                signatureImage.addEventListener('mouseover', this.hoverSignatureImage.bind(this));
+                                signatureImage.addEventListener('mouseleave', this.leaveSignatureImage.bind(this));
+                                let signatureDeleteSpan: HTMLElement = createElement('span');
+                                signatureDeleteSpan.id = 'delete_' + signatureID;
+                                signatureDeleteSpan.classList.add('e-pv-delete');
+                                signatureDeleteSpan.classList.add('e-pv-align');
+                                signatureSpan.append(signatureImage);
+                                signatureSpan.append(signatureDeleteSpan);
+                                signatureContainer.append(signatureSpan);
+                                args.element.appendChild(signatureContainer);
+                                args.element.style.pointerEvents = 'auto';
+                                args.element.style.background = 'none';
+                                this.pdfViewerBase.getElement('_annotation_signature-popup').style.width = '206px';
+                                this.saveSignatureCount++;
+                            }
                         }
                     }
+                    let addInitialSpan: HTMLElement = createElement('span');
+                    addInitialSpan.classList.add('e-pv-align-sign');
+                    addInitialSpan.textContent = 'ADD SIGNATURE';
+                    addInitialSpan.style.fontFamily = 'Roboto';
+                    addInitialSpan.style.fontSize = '14px';
+                    addInitialSpan.style.width = 'fit-content';
+                    addInitialSpan.addEventListener('mouseover', this.hoverSignature.bind(this));
+                    addInitialSpan.addEventListener('mouseleave', this.leaveSignature.bind(this));
+                    addInitialSpan.addEventListener('click', this.clickSignature.bind(this));
+                    args.element.appendChild(addInitialSpan);
+                    args.element.addEventListener('mouseover', this.hoverInitialBtn.bind(this));
+                    args.element.style.width = '206px';
+                    args.element.style.display = 'flex';
+                    args.element.style.flexDirection = 'column';
+                    args.element.style.height = 'auto';
                 }
-                if (args.item.text === 'ADD SIGNATURE') {
-                    args.element.innerHTML = '<span class="e-pv-add-signature">ADD SIGNATURE</span>';
-                    args.element.style.width = '240';
-                    const span: Element = args.element.children[0];
-                    span.setAttribute('class', 'e-pv-align-sign');
+
+                if (args.item.text === 'ADD INITIAL') {
+                    this.saveInitialCount = 0;
+                    args.element.innerHTML = '';
+                    for (let collection: number = this.pdfViewerBase.signatureModule.signaturecollection.length; collection > 0; collection--) {
+                        if (this.saveInitialCount < this.pdfViewerBase.signatureModule.getSaveLimit(this.pdfViewer.handWrittenSignatureSettings.saveInitialLimit)) {
+                            // eslint-disable-next-line
+                            let signatureCollection: any = this.pdfViewerBase.signatureModule.signaturecollection[collection - 1];
+                            // eslint-disable-next-line
+                            let collectionKey: any = signatureCollection.image[0].imageData;
+                            let signatureID: string = signatureCollection.image[0].id.split('_')[1];
+                            if (signatureCollection.isInitial && collectionKey !== '') {
+                                let signatureContainer: HTMLElement = createElement('div');
+                                signatureContainer.id = 's' + signatureID;
+                                signatureContainer.style.display = 'block';
+                                signatureContainer.style.paddingBottom = '10px';
+                                let signatureSpan: HTMLElement = createElement('span');
+                                signatureSpan.id = 'sign_border_' + signatureID;
+                                signatureSpan.classList.add('e-pv-align-border');
+                                let signatureImage: any;
+                                if (signatureCollection.image[0].signatureType === 'SignatureText') {
+                                    signatureImage = createElement('div');
+                                    (signatureImage as HTMLElement).innerText = collectionKey;
+                                    (signatureImage as HTMLElement).style.fontFamily = signatureCollection.image[0].fontFamily;
+                                    (signatureImage as HTMLElement).style.fontSize = '25px';
+                                    (signatureImage as HTMLElement).style.display='inline';
+                                    (signatureImage as HTMLElement).style.top= '8px';
+                                    (signatureImage as HTMLElement).style.position= 'relative';
+                                    (signatureImage as HTMLElement).id = 'sign_' + signatureID;
+                                    (signatureImage as HTMLElement).style.width = '80px';
+                                    (signatureImage as HTMLElement).style.height = '32px'; 
+                                    (signatureImage as HTMLElement).style.paddingLeft= '20px';
+                                    (signatureImage as HTMLElement).style.paddingRight= '18px';
+                                    (signatureImage as HTMLElement).style.paddingTop= '10px';
+                                    (signatureImage as HTMLElement).style.paddingBottom= '10px';
+                                } else {
+                                    signatureImage = createElement('img') as HTMLImageElement;
+                                    signatureImage.id = 'sign_' + signatureID;
+                                    signatureImage.src = collectionKey;
+                                    signatureImage.width = 80;
+                                    signatureImage.height = 32; 
+                                    (signatureImage as HTMLImageElement).style.paddingLeft= '20px';
+                                    (signatureImage as HTMLImageElement).style.paddingRight= '18px';
+                                    (signatureImage as HTMLImageElement).style.paddingTop= '12px';
+                                    (signatureImage as HTMLImageElement).style.paddingBottom= '12px';
+                                    (signatureImage as HTMLImageElement).style.boxSizing= 'content-box';
+                                }
+                                signatureImage.addEventListener('mouseover', this.hoverSignatureImage.bind(this));
+                                signatureImage.addEventListener('mouseleave', this.leaveSignatureImage.bind(this));
+                                signatureImage.width = 80;
+                                signatureImage.height = 32;
+                                let signatureDeleteSpan: HTMLElement = createElement('span');
+                                signatureDeleteSpan.id = 'delete_' + signatureID;
+                                signatureDeleteSpan.classList.add('e-pv-delete');
+                                signatureDeleteSpan.classList.add('e-pv-align');
+                                signatureSpan.append(signatureImage);
+                                signatureSpan.append(signatureDeleteSpan);
+                                signatureContainer.append(signatureSpan);
+                                args.element.appendChild(signatureContainer);
+                                // eslint-disable-next-line max-len
+                                args.element.style.pointerEvents = 'auto';
+                                args.element.style.background = 'none';
+                                this.pdfViewerBase.getElement('_annotation_signature-popup').style.width = '206px';
+                                this.saveInitialCount++;
+                            }
+                        }
+                    }
+                    this.isSignatureIteam = false;
+                    let addInitialSpan: HTMLElement = createElement('span');
+                    addInitialSpan.classList.add('e-pv-align-sign');
+                    addInitialSpan.textContent = 'ADD INITIAL';
+                    addInitialSpan.style.width = 'fit-content';
+                    addInitialSpan.style.fontFamily = 'Roboto';
+                    addInitialSpan.style.left= '40px';
+                    addInitialSpan.addEventListener('mouseover', this.hoverSignature.bind(this));
+                    addInitialSpan.addEventListener('mouseleave', this.leaveSignature.bind(this));
+                    addInitialSpan.addEventListener('click', this.clickInitial.bind(this));
+                    args.element.appendChild(addInitialSpan);
+                    args.element.addEventListener('mouseover', this.hoverInitialBtn.bind(this));
+                    args.element.style.width = '206px';
+                    args.element.style.display = 'flex';
+                    args.element.style.flexDirection = 'column';
+                    args.element.style.height = 'auto';
                 }
             },
             select: (args: MenuEventArgs): void => {
-                if (args.item.text === 'ADD SIGNATURE') {
-                    this.addSignature();
-                    if (Browser.isDevice) {
-                        proxy.signatureInkForMobile();
-                    }
-                }
+                this.pdfViewer.clearSelection(this.pdfViewerBase.currentPageNumber - 1);
+
             }
         };
         const drpDownBtn: DropDownButton = new DropDownButton(saveOptions);
+
         drpDownBtn.appendTo(this.handWrittenSignatureItem);
+
     }
     private updateSignatureCount(): void {
         let count: number = 0;
@@ -852,43 +1009,139 @@ export class AnnotationToolbar {
         for (let collection: number = 0; collection < signatureCollection.length; collection++) {
             // eslint-disable-next-line
             let colletionList: any = signatureCollection[collection];
-            if (colletionList['sign_' + collection] === '') {
+            if (colletionList.image[0].imageData === '') {
                 count++;
             }
         }
-        if (count === signatureCollection.length || signatureCollection.length === 0) {
-            this.openSignaturePopup = true;
-            this.addSignature();
-        }
     }
     private openSignature(): void {
-        for (let collection: number = 0; collection < this.pdfViewerBase.signatureModule.signaturecollection.length; collection++) {
-            // eslint-disable-next-line
-            let signatureCollection: any = this.pdfViewerBase.signatureModule.signaturecollection[collection];
-            if (signatureCollection['sign_' + collection] !== '') {
+        this.saveInitialCount = 0;
+        this.saveSignatureCount = 0;
+        for (let collection: number = this.pdfViewerBase.signatureModule.signaturecollection.length; collection > 0; collection--) {
+            if (this.saveSignatureCount < this.pdfViewerBase.signatureModule.getSaveLimit(this.pdfViewer.handWrittenSignatureSettings.saveSignatureLimit)) {
                 // eslint-disable-next-line
-                let addedSignature: any = document.getElementById('sign_border' + collection + '');
+                let signatureCollection: any = this.pdfViewerBase.signatureModule.signaturecollection[collection - 1];
+                if (signatureCollection.image[0].imageData !== '') {
+                    if (!signatureCollection.isInitial) {
+                        this.saveSignatureCount++;
+                        // eslint-disable-next-line
+                        let addedSignature: any = document.getElementById('sign_border_' + signatureCollection.image[0].id.split('_')[1] + '');
+                        // eslint-disable-next-line
+                        let deleteSignature: any = document.getElementById('delete_' + signatureCollection.image[0].id.split('_')[1] + '');
+                        deleteSignature.style.backgroundClip = 'content-box';
+                        addedSignature.addEventListener('click', this.renderAddedSignature.bind(this));
+                        deleteSignature.addEventListener('click', this.deleteSavedSign.bind(this));
+                        deleteSignature.addEventListener('mouseover', this.hoverSignatureDelete.bind(this));
+                        deleteSignature.addEventListener('mouseleave', this.leaveSignatureDelete.bind(this));
+                        addedSignature.addEventListener('mouseover', this.hoverSignatureDelete.bind(this));
+                        addedSignature.addEventListener('mouseleave', this.leaveSignatureDelete.bind(this));
+                    }
+                }
+            }
+        }
+        for (let collection: number = this.pdfViewerBase.signatureModule.signaturecollection.length; collection > 0; collection--) {
+            if (this.saveInitialCount < this.pdfViewerBase.signatureModule.getSaveLimit(this.pdfViewer.handWrittenSignatureSettings.saveInitialLimit)) {
                 // eslint-disable-next-line
-                let deleteSignature: any = document.getElementById('delete' + collection + '');
-                deleteSignature.style.backgroundClip = 'content-box';
-                addedSignature.addEventListener('click', this.renderAddedSignature.bind(this));
-                deleteSignature.addEventListener('click', this.deleteSavedSign.bind(this));
-                deleteSignature.addEventListener('mouseover', this.hoverSignatureDelete.bind(this));
-                deleteSignature.addEventListener('mouseleave', this.leaveSignatureDelete.bind(this));
-                addedSignature.addEventListener('mouseover', this.hoverSignatureDelete.bind(this));
-                addedSignature.addEventListener('mouseleave', this.leaveSignatureDelete.bind(this));
+                let signatureCollection: any = this.pdfViewerBase.signatureModule.signaturecollection[collection - 1];
+                if (signatureCollection.image[0].imageData !== '') {
+                    if (signatureCollection.isInitial) {
+                        this.saveInitialCount++;
+                        // eslint-disable-next-line
+                        let addedSignature: any = document.getElementById('sign_border_' + signatureCollection.image[0].id.split('_')[1] + '');
+                        // eslint-disable-next-line
+                        let deleteSignature: any = document.getElementById('delete_' + signatureCollection.image[0].id.split('_')[1] + '');
+                        deleteSignature.style.backgroundClip = 'content-box';
+                        addedSignature.addEventListener('click', this.renderAddedSignature.bind(this));
+                        deleteSignature.addEventListener('click', this.deleteSavedSign.bind(this));
+                        deleteSignature.addEventListener('mouseover', this.hoverSignatureDelete.bind(this));
+                        deleteSignature.addEventListener('mouseleave', this.leaveSignatureDelete.bind(this));
+                        addedSignature.addEventListener('mouseover', this.hoverSignatureDelete.bind(this));
+                        addedSignature.addEventListener('mouseleave', this.leaveSignatureDelete.bind(this));
+                    }
+                }
             }
         }
     }
     private hoverSignatureDelete(): void {
         const eventTarget: HTMLElement = event.target as HTMLElement;
-        eventTarget.classList.add('e-pv-signaturehover');
+        if (eventTarget.id==='sign_'+eventTarget.id.split('_')[1] || eventTarget.classList.contains('e-pv-delete')){
+            eventTarget.classList.add('e-pv-signaturehover');
+            eventTarget.style.cursor='pointer';
+        }
+    }
+    private hoverSignature(): void {
+        const eventTarget: HTMLElement = event.target as HTMLElement;
+        if (eventTarget.classList.contains('e-pv-align-sign')){
+            eventTarget.classList.add('e-pv-signaturehover');
+            eventTarget.style.cursor='pointer';
+        }
+    }
+    private hoverInitialBtn(event:any): void {
+        const eventTarget: HTMLElement = event.target as HTMLElement;
+        let currentFieldID: string = isNullOrUndefined(event.path) ? event.composedPath()[0].id : event.path[0].id;
+        if(currentFieldID!=='sign_'+currentFieldID.split("_")[1] && currentFieldID!=='delete_'+currentFieldID.split("_")[1]){
+        let liElement: HTMLElement = document.getElementById(eventTarget.id);
+        if (isNullOrUndefined(liElement)) {
+            liElement = document.getElementById(eventTarget.parentElement.id);
+        }
+        if ((liElement as HTMLLIElement) != null && (eventTarget.id !== 'sign_' + eventTarget.id.split('_')[1] || eventTarget.id !== 'sign_border_' + eventTarget.id.split('_')[2])) {
+            liElement.style.background = 'transparent';
+            liElement.style.cursor = 'default';
+        } else if ((liElement.parentElement as HTMLLIElement) != null && (eventTarget.id !== 'sign_' + eventTarget.id.split('_')[1] || eventTarget.id !== 'sign_border_' + eventTarget.id.split('_')[2])) {
+            liElement.parentElement.style.background = 'transparent';
+            liElement.parentElement.style.cursor='default';
+        }
+    }
+    }
+    private hoverSignatureImage(): void {
+        const eventTarget: HTMLElement = event.target as HTMLElement;
+        if (eventTarget.id === 'sign_' + eventTarget.id.split('_')[1] || eventTarget.classList.contains('e-pv-delete')) {
+            eventTarget.classList.add('e-pv-signaturehover');
+            eventTarget.style.cursor='pointer';
+        }
     }
     private leaveSignatureDelete(): void {
         const eventTarget: HTMLElement = event.target as HTMLElement;
-        eventTarget.classList.remove('e-pv-signaturehover');
-        if (eventTarget.children[0] && eventTarget.children[0].tagName === 'IMG') {
-            eventTarget.children[0].classList.remove('e-pv-signaturehover');
+        if (eventTarget.id==='sign_'+eventTarget.id.split('_')[1] || eventTarget.classList.contains('e-pv-delete')) {
+            eventTarget.classList.remove('e-pv-signaturehover');
+            if (eventTarget.children[0] && eventTarget.children[0].tagName === 'IMG') {
+                eventTarget.children[0].classList.remove('e-pv-signaturehover');
+            }
+            eventTarget.style.cursor='default';
+        }
+    }
+    private leaveSignature(): void {
+        const eventTarget: HTMLElement = event.target as HTMLElement;
+        if (eventTarget.classList.contains('e-pv-align-sign')){
+            eventTarget.classList.remove('e-pv-signaturehover');
+            eventTarget.style.cursor='default';
+        }
+
+    }
+    private clickSignature(): void {
+        const eventTarget: HTMLElement = event.target as HTMLElement;
+        if (eventTarget.classList.contains('e-pv-align-sign')){
+           this.pdfViewerBase.isInitialField=false;
+           this.addSignature();
+        }
+
+    }
+    private clickInitial(): void {
+        const eventTarget: HTMLElement = event.target as HTMLElement;
+        if (eventTarget.classList.contains('e-pv-align-sign')){
+           this.pdfViewerBase.isInitialField=true;
+           this.addSignature();
+        }
+
+    }
+    private leaveSignatureImage(): void {
+        const eventTarget: HTMLElement = event.target as HTMLElement;
+        if (eventTarget.id==='sign_'+eventTarget.id.split('_')[1] || eventTarget.classList.contains('e-pv-delete')) {
+            eventTarget.classList.remove('e-pv-signaturehover');
+            if (eventTarget.children[0] && eventTarget.children[0].tagName === 'IMG') {
+                eventTarget.children[0].classList.remove('e-pv-signaturehover');
+            }
+            eventTarget.style.cursor='default';
         }
     }
 
@@ -898,6 +1151,7 @@ export class AnnotationToolbar {
     }
     public renderAddedSignature(): void {
         this.pdfViewerBase.isAddedSignClicked = true;
+        this.isSavedSignatureClicked = true;
         this.pdfViewerBase.signatureModule.RenderSavedSignature();
     }
     // eslint-disable-next-line
@@ -905,11 +1159,12 @@ export class AnnotationToolbar {
         event.stopPropagation();
         // eslint-disable-next-line
         let signaturecollection: any = this.pdfViewerBase.signatureModule.signaturecollection;
-        for (let collection: number = 0; collection < signaturecollection.length; collection++) {
-            if (event.target.parentElement.children[0].children[0].id === 'sign_' + collection) {
+        for (let collection: number = signaturecollection.length; collection > 0; collection--) {
+            if (event.target.parentElement.children[0].id === 'sign_' + signaturecollection[collection - 1].image[0].id.split('_')[1]) {
                 // eslint-disable-next-line
-                let RemoveSignature: any = signaturecollection[collection];
-                RemoveSignature['sign_' + collection] = '';
+                let RemoveSignature: any = signaturecollection[collection - 1];
+                RemoveSignature.image[0].imageData = '';
+                this.pdfViewerBase.signatureModule.signaturecollection.splice(collection - 1, 1);
                 break;
             }
         }
@@ -937,9 +1192,9 @@ export class AnnotationToolbar {
             this.pdfViewer.stampSettings.dynamicStamps.forEach((stampItem: DynamicStampItem, index: number) => {
                 let name: string = DynamicStampItem[stampItem];
                 switch (name) {
-                case 'NotApproved':
-                    name = 'Not Approved';
-                    break;
+                    case 'NotApproved':
+                        name = 'Not Approved';
+                        break;
                 }
                 dynamicStamps.push({ text: name });
             });
@@ -951,12 +1206,12 @@ export class AnnotationToolbar {
             this.pdfViewer.stampSettings.signStamps.forEach((stampItem: SignStampItem, index: number) => {
                 let name: string = SignStampItem[stampItem];
                 switch (name) {
-                case 'InitialHere':
-                    name = 'Initial Here';
-                    break;
-                case 'SignHere':
-                    name = 'Sign Here';
-                    break;
+                    case 'InitialHere':
+                        name = 'Initial Here';
+                        break;
+                    case 'SignHere':
+                        name = 'Sign Here';
+                        break;
                 }
                 signStamps.push({ text: name });
             });
@@ -967,24 +1222,24 @@ export class AnnotationToolbar {
             this.pdfViewer.stampSettings.standardBusinessStamps.forEach((stampItem: StandardBusinessStampItem, index: number) => {
                 let name: string = StandardBusinessStampItem[stampItem];
                 switch (name) {
-                case 'NotApproved':
-                    name = 'Not Approved';
-                    break;
-                case 'ForPublicRelease':
-                    name = 'For Public Release';
-                    break;
-                case 'NotForPublicRelease':
-                    name = 'Not For Public Release';
-                    break;
-                case 'ForComment':
-                    name = 'For Comment';
-                    break;
-                case 'PreliminaryResults':
-                    name = 'Preliminary Results';
-                    break;
-                case 'InformationOnly':
-                    name = 'Information Only';
-                    break;
+                    case 'NotApproved':
+                        name = 'Not Approved';
+                        break;
+                    case 'ForPublicRelease':
+                        name = 'For Public Release';
+                        break;
+                    case 'NotForPublicRelease':
+                        name = 'Not For Public Release';
+                        break;
+                    case 'ForComment':
+                        name = 'For Comment';
+                        break;
+                    case 'PreliminaryResults':
+                        name = 'Preliminary Results';
+                        break;
+                    case 'InformationOnly':
+                        name = 'Information Only';
+                        break;
                 }
                 standardsBusinessStamps.push({ text: name });
             });
@@ -1044,6 +1299,13 @@ export class AnnotationToolbar {
                                 }
                             }
                         }
+                    }
+                }
+				if (args.parentItem.text === this.pdfViewer.localeObj.getConstant('Custom Stamp')) {
+                    // eslint-disable-next-line
+                    let stampElements: any = this.pdfViewer.customStampSettings.customStamps;
+                    if (stampElements && stampElements.length > 10) {
+                        (closest(args.element, '.e-menu-wrapper') as HTMLElement).style.height = '350px';
                     }
                 }
                 this.stampParentID = args.parentItem.text;
@@ -1363,42 +1625,42 @@ export class AnnotationToolbar {
         if (!isBlazor()) {
             if (this.pdfViewer.annotationModule.textMarkupAnnotationModule) {
                 switch (this.pdfViewer.annotationModule.textMarkupAnnotationModule.currentTextMarkupAddMode) {
-                case 'Highlight':
-                    // eslint-disable-next-line max-len
-                    this.setColorInPicker(this.colorPalette, this.pdfViewer.annotationModule.textMarkupAnnotationModule.highlightColor);
-                    break;
-                case 'Underline':
-                    // eslint-disable-next-line max-len
-                    this.setColorInPicker(this.colorPalette, this.pdfViewer.annotationModule.textMarkupAnnotationModule.underlineColor);
-                    break;
-                case 'Strikethrough':
-                    // eslint-disable-next-line max-len
-                    this.setColorInPicker(this.colorPalette, this.pdfViewer.annotationModule.textMarkupAnnotationModule.strikethroughColor);
-                    break;
+                    case 'Highlight':
+                        // eslint-disable-next-line max-len
+                        this.setColorInPicker(this.colorPalette, this.pdfViewer.annotationModule.textMarkupAnnotationModule.highlightColor);
+                        break;
+                    case 'Underline':
+                        // eslint-disable-next-line max-len
+                        this.setColorInPicker(this.colorPalette, this.pdfViewer.annotationModule.textMarkupAnnotationModule.underlineColor);
+                        break;
+                    case 'Strikethrough':
+                        // eslint-disable-next-line max-len
+                        this.setColorInPicker(this.colorPalette, this.pdfViewer.annotationModule.textMarkupAnnotationModule.strikethroughColor);
+                        break;
                 }
             }
             if (this.pdfViewer.annotation.shapeAnnotationModule) {
                 switch (this.pdfViewer.annotationModule.shapeAnnotationModule.currentAnnotationMode) {
-                case 'Line':
-                    // eslint-disable-next-line max-len
-                    this.setColorInPicker(this.colorPalette, this.pdfViewer.annotationModule.shapeAnnotationModule.lineFillColor);
-                    break;
-                case 'Arrow':
-                    // eslint-disable-next-line max-len
-                    this.setColorInPicker(this.colorPalette, this.pdfViewer.annotationModule.shapeAnnotationModule.arrowFillColor);
-                    break;
-                case 'Rectangle':
-                    // eslint-disable-next-line max-len
-                    this.setColorInPicker(this.colorPalette, this.pdfViewer.annotationModule.shapeAnnotationModule.rectangleFillColor);
-                    break;
-                case 'Circle':
-                    // eslint-disable-next-line max-len
-                    this.setColorInPicker(this.colorPalette, this.pdfViewer.annotationModule.shapeAnnotationModule.circleFillColor);
-                    break;
-                case 'Polygon':
-                    // eslint-disable-next-line max-len
-                    this.setColorInPicker(this.colorPalette, this.pdfViewer.annotationModule.shapeAnnotationModule.polygonFillColor);
-                    break;
+                    case 'Line':
+                        // eslint-disable-next-line max-len
+                        this.setColorInPicker(this.colorPalette, this.pdfViewer.annotationModule.shapeAnnotationModule.lineFillColor);
+                        break;
+                    case 'Arrow':
+                        // eslint-disable-next-line max-len
+                        this.setColorInPicker(this.colorPalette, this.pdfViewer.annotationModule.shapeAnnotationModule.arrowFillColor);
+                        break;
+                    case 'Rectangle':
+                        // eslint-disable-next-line max-len
+                        this.setColorInPicker(this.colorPalette, this.pdfViewer.annotationModule.shapeAnnotationModule.rectangleFillColor);
+                        break;
+                    case 'Circle':
+                        // eslint-disable-next-line max-len
+                        this.setColorInPicker(this.colorPalette, this.pdfViewer.annotationModule.shapeAnnotationModule.circleFillColor);
+                        break;
+                    case 'Polygon':
+                        // eslint-disable-next-line max-len
+                        this.setColorInPicker(this.colorPalette, this.pdfViewer.annotationModule.shapeAnnotationModule.polygonFillColor);
+                        break;
                 }
             }
             if (this.colorDropDownElement) {
@@ -1430,26 +1692,26 @@ export class AnnotationToolbar {
         if (!isBlazor()) {
             if (this.pdfViewer.annotation.shapeAnnotationModule) {
                 switch (this.pdfViewer.annotationModule.shapeAnnotationModule.currentAnnotationMode) {
-                case 'Line':
-                    // eslint-disable-next-line max-len
-                    this.setColorInPicker(this.strokeColorPicker, this.pdfViewer.annotationModule.shapeAnnotationModule.lineStrokeColor);
-                    break;
-                case 'Arrow':
-                    // eslint-disable-next-line max-len
-                    this.setColorInPicker(this.strokeColorPicker, this.pdfViewer.annotationModule.shapeAnnotationModule.arrowStrokeColor);
-                    break;
-                case 'Rectangle':
-                    // eslint-disable-next-line max-len
-                    this.setColorInPicker(this.strokeColorPicker, this.pdfViewer.annotationModule.shapeAnnotationModule.rectangleStrokeColor);
-                    break;
-                case 'Circle':
-                    // eslint-disable-next-line max-len
-                    this.setColorInPicker(this.strokeColorPicker, this.pdfViewer.annotationModule.shapeAnnotationModule.circleStrokeColor);
-                    break;
-                case 'Polygon':
-                    // eslint-disable-next-line max-len
-                    this.setColorInPicker(this.strokeColorPicker, this.pdfViewer.annotationModule.shapeAnnotationModule.polygonStrokeColor);
-                    break;
+                    case 'Line':
+                        // eslint-disable-next-line max-len
+                        this.setColorInPicker(this.strokeColorPicker, this.pdfViewer.annotationModule.shapeAnnotationModule.lineStrokeColor);
+                        break;
+                    case 'Arrow':
+                        // eslint-disable-next-line max-len
+                        this.setColorInPicker(this.strokeColorPicker, this.pdfViewer.annotationModule.shapeAnnotationModule.arrowStrokeColor);
+                        break;
+                    case 'Rectangle':
+                        // eslint-disable-next-line max-len
+                        this.setColorInPicker(this.strokeColorPicker, this.pdfViewer.annotationModule.shapeAnnotationModule.rectangleStrokeColor);
+                        break;
+                    case 'Circle':
+                        // eslint-disable-next-line max-len
+                        this.setColorInPicker(this.strokeColorPicker, this.pdfViewer.annotationModule.shapeAnnotationModule.circleStrokeColor);
+                        break;
+                    case 'Polygon':
+                        // eslint-disable-next-line max-len
+                        this.setColorInPicker(this.strokeColorPicker, this.pdfViewer.annotationModule.shapeAnnotationModule.polygonStrokeColor);
+                        break;
                 }
             }
         }
@@ -1674,15 +1936,15 @@ export class AnnotationToolbar {
                 }
             } else {
                 switch (this.pdfViewer.annotationModule.textMarkupAnnotationModule.currentTextMarkupAddMode) {
-                case 'Highlight':
-                    this.pdfViewer.annotationModule.textMarkupAnnotationModule.highlightOpacity = opacityValue / 100;
-                    break;
-                case 'Underline':
-                    this.pdfViewer.annotationModule.textMarkupAnnotationModule.underlineOpacity = opacityValue / 100;
-                    break;
-                case 'Strikethrough':
-                    this.pdfViewer.annotationModule.textMarkupAnnotationModule.strikethroughOpacity = opacityValue / 100;
-                    break;
+                    case 'Highlight':
+                        this.pdfViewer.annotationModule.textMarkupAnnotationModule.highlightOpacity = opacityValue / 100;
+                        break;
+                    case 'Underline':
+                        this.pdfViewer.annotationModule.textMarkupAnnotationModule.underlineOpacity = opacityValue / 100;
+                        break;
+                    case 'Strikethrough':
+                        this.pdfViewer.annotationModule.textMarkupAnnotationModule.strikethroughOpacity = opacityValue / 100;
+                        break;
                 }
             }
         }
@@ -1714,21 +1976,21 @@ export class AnnotationToolbar {
         } else {
             if (this.pdfViewer.annotation.shapeAnnotationModule) {
                 switch (this.pdfViewer.annotation.shapeAnnotationModule.currentAnnotationMode) {
-                case 'Line':
-                    this.pdfViewer.annotation.shapeAnnotationModule.lineOpacity = opacityValue / 100;
-                    break;
-                case 'Arrow':
-                    this.pdfViewer.annotation.shapeAnnotationModule.arrowOpacity = opacityValue / 100;
-                    break;
-                case 'Rectangle':
-                    this.pdfViewer.annotation.shapeAnnotationModule.rectangleOpacity = opacityValue / 100;
-                    break;
-                case 'Circle':
-                    this.pdfViewer.annotation.shapeAnnotationModule.circleOpacity = opacityValue / 100;
-                    break;
-                case 'Polygon':
-                    this.pdfViewer.annotation.shapeAnnotationModule.polygonOpacity = opacityValue / 100;
-                    break;
+                    case 'Line':
+                        this.pdfViewer.annotation.shapeAnnotationModule.lineOpacity = opacityValue / 100;
+                        break;
+                    case 'Arrow':
+                        this.pdfViewer.annotation.shapeAnnotationModule.arrowOpacity = opacityValue / 100;
+                        break;
+                    case 'Rectangle':
+                        this.pdfViewer.annotation.shapeAnnotationModule.rectangleOpacity = opacityValue / 100;
+                        break;
+                    case 'Circle':
+                        this.pdfViewer.annotation.shapeAnnotationModule.circleOpacity = opacityValue / 100;
+                        break;
+                    case 'Polygon':
+                        this.pdfViewer.annotation.shapeAnnotationModule.polygonOpacity = opacityValue / 100;
+                        break;
                 }
             }
             // eslint-disable-next-line
@@ -1757,15 +2019,15 @@ export class AnnotationToolbar {
                 this.opacitySlider.value = this.pdfViewer.annotationModule.textMarkupAnnotationModule.currentTextMarkupAnnotation.opacity * 100;
             } else {
                 switch (this.pdfViewer.annotationModule.textMarkupAnnotationModule.currentTextMarkupAddMode) {
-                case 'Highlight':
-                    this.opacitySlider.value = this.pdfViewer.annotationModule.textMarkupAnnotationModule.highlightOpacity * 100;
-                    break;
-                case 'Underline':
-                    this.opacitySlider.value = this.pdfViewer.annotationModule.textMarkupAnnotationModule.underlineOpacity * 100;
-                    break;
-                case 'Strikethrough':
-                    this.opacitySlider.value = this.pdfViewer.annotationModule.textMarkupAnnotationModule.strikethroughOpacity * 100;
-                    break;
+                    case 'Highlight':
+                        this.opacitySlider.value = this.pdfViewer.annotationModule.textMarkupAnnotationModule.highlightOpacity * 100;
+                        break;
+                    case 'Underline':
+                        this.opacitySlider.value = this.pdfViewer.annotationModule.textMarkupAnnotationModule.underlineOpacity * 100;
+                        break;
+                    case 'Strikethrough':
+                        this.opacitySlider.value = this.pdfViewer.annotationModule.textMarkupAnnotationModule.strikethroughOpacity * 100;
+                        break;
                 }
             }
         }
@@ -1774,21 +2036,21 @@ export class AnnotationToolbar {
         } else {
             if (this.pdfViewer.annotation.shapeAnnotationModule) {
                 switch (this.pdfViewer.annotation.shapeAnnotationModule.currentAnnotationMode) {
-                case 'Line':
-                    this.opacitySlider.value = this.pdfViewer.annotation.shapeAnnotationModule.lineOpacity * 100;
-                    break;
-                case 'Arrow':
-                    this.opacitySlider.value = this.pdfViewer.annotation.shapeAnnotationModule.arrowOpacity * 100;
-                    break;
-                case 'Rectangle':
-                    this.opacitySlider.value = this.pdfViewer.annotation.shapeAnnotationModule.rectangleOpacity * 100;
-                    break;
-                case 'Circle':
-                    this.opacitySlider.value = this.pdfViewer.annotation.shapeAnnotationModule.circleOpacity * 100;
-                    break;
-                case 'Polygon':
-                    this.opacitySlider.value = this.pdfViewer.annotation.shapeAnnotationModule.polygonOpacity * 100;
-                    break;
+                    case 'Line':
+                        this.opacitySlider.value = this.pdfViewer.annotation.shapeAnnotationModule.lineOpacity * 100;
+                        break;
+                    case 'Arrow':
+                        this.opacitySlider.value = this.pdfViewer.annotation.shapeAnnotationModule.arrowOpacity * 100;
+                        break;
+                    case 'Rectangle':
+                        this.opacitySlider.value = this.pdfViewer.annotation.shapeAnnotationModule.rectangleOpacity * 100;
+                        break;
+                    case 'Circle':
+                        this.opacitySlider.value = this.pdfViewer.annotation.shapeAnnotationModule.circleOpacity * 100;
+                        break;
+                    case 'Polygon':
+                        this.opacitySlider.value = this.pdfViewer.annotation.shapeAnnotationModule.polygonOpacity * 100;
+                        break;
                 }
             }
         }
@@ -1802,21 +2064,21 @@ export class AnnotationToolbar {
         } else {
             if (this.pdfViewer.annotation.shapeAnnotationModule) {
                 switch (this.pdfViewer.annotation.shapeAnnotationModule.currentAnnotationMode) {
-                case 'Line':
-                    this.thicknessSlider.value = this.pdfViewer.annotation.shapeAnnotationModule.lineThickness;
-                    break;
-                case 'Arrow':
-                    this.thicknessSlider.value = this.pdfViewer.annotation.shapeAnnotationModule.arrowThickness;
-                    break;
-                case 'Rectangle':
-                    this.thicknessSlider.value = this.pdfViewer.annotation.shapeAnnotationModule.rectangleThickness;
-                    break;
-                case 'Circle':
-                    this.thicknessSlider.value = this.pdfViewer.annotation.shapeAnnotationModule.circleThickness;
-                    break;
-                case 'Polygon':
-                    this.thicknessSlider.value = this.pdfViewer.annotation.shapeAnnotationModule.polygonThickness;
-                    break;
+                    case 'Line':
+                        this.thicknessSlider.value = this.pdfViewer.annotation.shapeAnnotationModule.lineThickness;
+                        break;
+                    case 'Arrow':
+                        this.thicknessSlider.value = this.pdfViewer.annotation.shapeAnnotationModule.arrowThickness;
+                        break;
+                    case 'Rectangle':
+                        this.thicknessSlider.value = this.pdfViewer.annotation.shapeAnnotationModule.rectangleThickness;
+                        break;
+                    case 'Circle':
+                        this.thicknessSlider.value = this.pdfViewer.annotation.shapeAnnotationModule.circleThickness;
+                        break;
+                    case 'Polygon':
+                        this.thicknessSlider.value = this.pdfViewer.annotation.shapeAnnotationModule.polygonThickness;
+                        break;
                 }
             }
         }
@@ -1866,21 +2128,21 @@ export class AnnotationToolbar {
     private ShapeThickness(args: any) {
         if (this.pdfViewer.annotation.shapeAnnotationModule) {
             switch (this.pdfViewer.annotation.shapeAnnotationModule.currentAnnotationMode) {
-            case 'Line':
-                this.pdfViewer.annotation.shapeAnnotationModule.lineThickness = args;
-                break;
-            case 'Arrow':
-                this.pdfViewer.annotation.shapeAnnotationModule.arrowThickness = args;
-                break;
-            case 'Rectangle':
-                this.pdfViewer.annotation.shapeAnnotationModule.rectangleThickness = args;
-                break;
-            case 'Circle':
-                this.pdfViewer.annotation.shapeAnnotationModule.circleThickness = args;
-                break;
-            case 'Polygon':
-                this.pdfViewer.annotation.shapeAnnotationModule.polygonThickness = args;
-                break;
+                case 'Line':
+                    this.pdfViewer.annotation.shapeAnnotationModule.lineThickness = args;
+                    break;
+                case 'Arrow':
+                    this.pdfViewer.annotation.shapeAnnotationModule.arrowThickness = args;
+                    break;
+                case 'Rectangle':
+                    this.pdfViewer.annotation.shapeAnnotationModule.rectangleThickness = args;
+                    break;
+                case 'Circle':
+                    this.pdfViewer.annotation.shapeAnnotationModule.circleThickness = args;
+                    break;
+                case 'Polygon':
+                    this.pdfViewer.annotation.shapeAnnotationModule.polygonThickness = args;
+                    break;
             }
             // eslint-disable-next-line
             let annotationModule: any = this.pdfViewer.annotation;
@@ -2216,10 +2478,10 @@ export class AnnotationToolbar {
 
     private createDropDownListForFamily(fontSelectElement: HTMLElement): void {
         const fontStyle: { [key: string]: Object }[] = [{ FontName: 'Algerian' }, { FontName: 'Arial' },
-            { FontName: 'Calibri' }, { FontName: 'Cambria' }, { FontName: 'Cambria Math' }, { FontName: 'Candara' },
-            { FontName: 'Courier New' }, { FontName: 'Georgia' }, { FontName: 'Impact' }, { FontName: 'Segoe Print' },
-            { FontName: 'Segoe Script' }, { FontName: 'Segoe UI' }, { FontName: 'Symbol' },
-            { FontName: 'Times New Roman' }, { FontName: 'Verdana' }, { FontName: 'Windings' }, { FontName: 'Helvetica' }
+        { FontName: 'Calibri' }, { FontName: 'Cambria' }, { FontName: 'Cambria Math' }, { FontName: 'Candara' },
+        { FontName: 'Courier New' }, { FontName: 'Georgia' }, { FontName: 'Impact' }, { FontName: 'Segoe Print' },
+        { FontName: 'Segoe Script' }, { FontName: 'Segoe UI' }, { FontName: 'Symbol' },
+        { FontName: 'Times New Roman' }, { FontName: 'Verdana' }, { FontName: 'Windings' }, { FontName: 'Helvetica' }
         ];
         this.fontFamily = new ComboBox({
             dataSource: fontStyle,
@@ -3916,7 +4178,7 @@ export class AnnotationToolbar {
                 this.pdfViewer.toolbar.annotationToolbarModule.updateColorInIcon(this.strokeDropDownElementInBlazor, this.getColorHexValue(this.pdfViewer.selectedItems.annotations[0].wrapper.children[0].style.strokeColor, 'strokeColor'));
                 if (this.pdfViewer.selectedItems.annotations[0].shapeAnnotationType === 'FreeText') {
                     // eslint-disable-next-line
-                    this.pdfViewer.toolbar.annotationToolbarModule.updateColorInIcon(this.fontColorElementInBlazor, this.getColorHexValue(this.pdfViewer.selectedItems.annotations[0].fontColor, 'fontColor'));                   
+                    this.pdfViewer.toolbar.annotationToolbarModule.updateColorInIcon(this.fontColorElementInBlazor, this.getColorHexValue(this.pdfViewer.selectedItems.annotations[0].fontColor, 'fontColor'));
                     //this.pdfViewer._dotnetInstance.invokeMethodAsync('UpdateFontFamilyInIcon', this.pdfViewer.selectedItems.annotations[0].fontFamily);
                     // eslint-disable-next-line max-len
                     this.pdfViewerBase.blazorUIAdaptor.updateFontFamilyInIcon(this.pdfViewer.selectedItems.annotations[0].fontFamily);
@@ -4060,7 +4322,7 @@ export class AnnotationToolbar {
         this.StrikethroughElement = this.addClassToToolbarInBlazor(this.StrikethroughElement, 'e-pv-strikethrough', '_strikethrough');
     }
     // eslint-disable-next-line
-    private addClassToToolbarInBlazor(element: any, className: string, idString: string): void {  
+    private addClassToToolbarInBlazor(element: any, className: string, idString: string): void {
         element.classList.add(className);
         element.classList.add('e-pv-tbar-btn');
         if (element.childNodes.length > 0) {

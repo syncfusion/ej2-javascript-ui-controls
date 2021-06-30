@@ -1166,6 +1166,49 @@ describe('Batch Edit module', () => {
     });
   });
 
+  describe('EJ2-49066 - Random Add and delete check', () => {
+    let gridObj: TreeGrid;
+    let actionComplete: () => void;
+    beforeAll((done: Function) => {
+      gridObj = createGrid(
+        {
+          dataSource: sampleData,
+          childMapping: 'subtasks',
+          allowPaging: true,
+          editSettings: { allowEditing: true, allowDeleting: true, allowAdding: true, mode: "Batch", newRowPosition: "Below" },
+          allowSorting: true,
+          allowFiltering: true,
+          treeColumnIndex: 1,
+          toolbar: ['Add', 'Update', 'Delete', 'Cancel'],
+          columns: [{ field: 'taskID', headerText: 'Task ID', isPrimaryKey: true },
+          { field: 'taskName', headerText: 'Task Name' },
+          { field: 'progress', headerText: 'Progress' },
+          { field: 'startDate', headerText: 'Start Date' }
+          ]
+        },
+        done
+      );
+    });
+    it('Add - Batch Editing', (done: Function) => {
+      actionComplete = (args?: Object): void => {
+        if (args['requestType'] == "batchSave" ) {
+          expect(gridObj.dataSource[0].taskID === 41).toBe(true);
+          expect(gridObj.dataSource[1].taskID === 6).toBe(true);
+        }
+         done();
+      }
+      gridObj.grid.actionComplete = actionComplete;
+      (<any>gridObj.grid.toolbarModule).toolbarClickHandler({ item: { id: gridObj.grid.element.id + '_add' } });      
+      (gridObj.element.querySelector('.e-editedbatchcell').querySelector('input') as any).value = 41;
+      gridObj.selectRow(1);
+      (<any>gridObj.grid.toolbarModule).toolbarClickHandler({ item: { id: gridObj.grid.element.id + '_delete' } });
+      (<any>gridObj.grid.toolbarModule).toolbarClickHandler({ item: { id: gridObj.grid.element.id + '_update' } });
+      select('#' + gridObj.element.id + '_gridcontrol' + 'EditConfirm', gridObj.element).querySelectorAll('button')[0].click();
+    });
+    afterAll(() => {
+      destroy(gridObj);
+    });
+  });
 
   it('memory leak', () => {
     profile.sample();

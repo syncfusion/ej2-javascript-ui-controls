@@ -95,7 +95,7 @@
       }#{if(&, '&', '*')} .e-separator {
         background-color: $range-separator-color;
       }#{if(&, '&', '*')} .e-footer {
-        background-color: $range-background;
+        background-color: $range-footer-background;
       }
     }
   }

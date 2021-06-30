@@ -4,7 +4,7 @@ import * as CONSTANT from './../base/constant';
 import { IMarkdownItem } from '../index';
 /**
  * Link internal component
- * 
+ *
  * @hidden
  * @deprecated
  */

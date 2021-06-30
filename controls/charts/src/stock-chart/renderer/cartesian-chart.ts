@@ -16,13 +16,25 @@ import { StockSeries } from '../model/base';
 import { onZooming } from '../../common/model/constants';
 import { getElement } from '../../common/utils/helper';
 import { MarginModel } from '../../common/model/base-model';
+import { BaseLegend } from '../../common/legend/legend';
+import { StockLegend } from '../legend/legend';
 
 interface Range {
     start: number;
     end: number;
 }
+
 /** @private */
 export class CartesianChart {
+
+    //Module Declaration of Chart.
+    /**
+     * `legendModule` is used to manipulate and add legend to the chart.
+     */
+    public stockLegendModule: StockLegend;
+
+    /** @private */
+    public legend: BaseLegend;
     private stockChart: StockChart;
     public cartesianChartSize: Size;
     constructor(chart: StockChart) {
@@ -117,9 +129,10 @@ export class CartesianChart {
         stockChart[isProtect] = false;
     }
 
-    private findMargin(stockChart: StockChart) : MarginModel {
-        const margin : MarginModel = {};
-        margin.top = stockChart.margin.top * 2;
+    private findMargin(stockChart: StockChart): MarginModel {
+        const margin: MarginModel = {};
+        margin.top = stockChart.stockLegendModule && stockChart.legendSettings.visible && stockChart.legendSettings.position === "Top" ?
+            stockChart.margin.top : stockChart.margin.top * 2;
         margin.left = stockChart.margin.left;
         margin.right = stockChart.margin.right;
         margin.bottom = stockChart.margin.bottom;
@@ -140,6 +153,7 @@ export class CartesianChart {
             if ((series[i] as StockSeries).localData) {
                 chartSeries[i].dataSource = (series[i] as StockSeries).localData;
             }
+            chartSeries[i].yName = series[i].yName === '' ? series[i].close :  series[i].yName;
         }
         return chartSeries;
     }

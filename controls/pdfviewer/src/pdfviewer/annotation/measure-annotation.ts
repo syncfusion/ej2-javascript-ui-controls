@@ -1,6 +1,7 @@
 /* eslint-disable */
 import { PdfViewer, PdfViewerBase, IRectangle, IPageAnnotations, IPoint, AnnotationType as AnnotType,
-    ShapeLabelSettingsModel } from '../../index';
+    ShapeLabelSettingsModel, 
+    AnnotationType} from '../../index';
 import { NumericTextBox } from '@syncfusion/ej2-inputs';
 import { PdfAnnotationBase } from '../drawing/pdf-annotation';
 import { PdfAnnotationBaseModel } from '../drawing/pdf-annotation-model';
@@ -222,6 +223,10 @@ export class MeasureAnnotation {
      * @private
      */
     public volumeDepth: number;
+    /**
+     * @private
+     */
+    public isAddAnnotationProgramatically: boolean = false;
     private ratio: number;
     private scaleRatioString: string;
     private scaleRatioDialog: Dialog;
@@ -273,7 +278,7 @@ export class MeasureAnnotation {
                                 for (let j: number = 0; j < annotation.VertexPoints.length; j++) {
                                     let x: number = annotation.VertexPoints[j].X ? annotation.VertexPoints[j].X : annotation.VertexPoints[j].x;
                                     let y: number = annotation.VertexPoints[j].Y ? annotation.VertexPoints[j].Y : annotation.VertexPoints[j].y;
-                                    const point: IPoint = { x: x, y: y};
+                                    const point: IPoint = { x: x, y: y };
                                     vertexPoints.push(point);
                                 }
                             }
@@ -353,6 +358,14 @@ export class MeasureAnnotation {
                                 isPrint: isPrint, isCommentLock: annotationObject.isCommentLock
                             };
                             this.pdfViewer.annotation.storeAnnotations(pageNumber, annotationObject, '_annotations_shape_measure');
+                            if(this.isAddAnnotationProgramatically)
+                            {
+                                let settings: any = {
+                                    opacity: annot.opacity, strokeColor: annot.strokeColor, thickness: annot.thickness, modifiedDate: annot.modifiedDate,
+                                    width: annot.bounds.width, height: annot.bounds.height
+                                };
+                                this.pdfViewer.fireAnnotationAdd(annot.pageIndex, annot.annotName, annotation.ShapeAnnotationType, annot.bounds, settings);
+                            }
                             this.pdfViewer.add(annot as PdfAnnotationBase);
                         }
                     }
@@ -1532,6 +1545,9 @@ export class MeasureAnnotation {
         annotation.AnnotationSelectorSettings = annotation.AnnotationSelectorSettings ? annotation.AnnotationSelectorSettings : this.pdfViewer.annotationSelectorSettings;
         // eslint-disable-next-line max-len
         annotation.AnnotationSettings = annotation.AnnotationSettings ? annotation.AnnotationSettings : this.pdfViewer.annotationModule.updateAnnotationSettings(annotation);
+        if (annotation.IsLocked) {
+            annotation.AnnotationSettings.isLock = annotation.IsLocked;
+        }
         annotationObject = {
             // eslint-disable-next-line max-len
             id: 'measure', shapeAnnotationType: annotation.ShapeAnnotationType, author: annotation.Author, modifiedDate: annotation.ModifiedDate, subject: annotation.Subject,
@@ -1552,5 +1568,249 @@ export class MeasureAnnotation {
             customData: this.pdfViewer.annotation.getCustomData(annotation), isPrint: annotation.IsPrint
         };
         return annotationObject;
+    }
+
+    /** 
+    * This method used to add annotations with using program.
+    * 
+    * @param annotationType - It describes the annotation type 
+    * @param annotationObject - It describes type of annotation object
+    * @param offset - It describes about the annotation bounds or location
+    * @returns Object
+    * @private
+    */
+    public updateAddAnnotationDetails(annotationType: AnnotationType, annotationObject: any, offset: IPoint): Object 
+    {
+        //Creating new object if annotationObject is null
+        if(!annotationObject)
+        {
+         annotationObject = { offset: { x: 10, y: 10}, pageNumber: 0, width: undefined, height: undefined};
+         offset = annotationObject.offset;
+        }
+        else if(!annotationObject.offset)
+         offset = { x: 10, y: 10};
+        else
+         offset = annotationObject.offset;
+
+        //Initialize the annotation settings
+        let annotationSelectorSettings: any = null;
+        let allowedInteractions: any = null;
+        let annotationSettings: any = null;
+        let measureAnnotationType: string =''; 
+        let shapeAnnotationType: string =''; 
+        let subject: string =''; 
+        let isArrow: boolean = false;
+        let vertexPoints: any = [];
+
+        //Creating the CurrentDate and Annotation name
+        let currentDateString: string = this.pdfViewer.annotation.stickyNotesAnnotationModule.getDateAndTime();
+        let annotationName: string = this.pdfViewer.annotation.createGUID();
+        if(annotationType == 'Distance')
+        {
+            //Creating annotation settings
+            annotationSelectorSettings = this.pdfViewer.lineSettings.annotationSelectorSettings ? this.pdfViewer.lineSettings.annotationSelectorSettings : this.pdfViewer.annotationSelectorSettings;          
+            annotationSettings = this.pdfViewer.annotationModule.updateSettings(this.pdfViewer.lineSettings);
+            allowedInteractions = this.pdfViewer.lineSettings.allowedInteractions ? this.pdfViewer.lineSettings.allowedInteractions : this.pdfViewer.annotationSettings.allowedInteractions;
+            measureAnnotationType = 'LineDimension';
+            shapeAnnotationType = 'Line';
+            subject = 'Distance calculation';
+            isArrow=true;
+            if(annotationObject.vertexPoints)
+                vertexPoints = annotationObject.vertexPoints;
+            else
+                vertexPoints =[{x: offset.x, y: offset.y},{x: offset.x + 100, y: offset.y}]
+            annotationObject.width =annotationObject.width?annotationObject.width : 1;
+            annotationObject.height = annotationObject.height?annotationObject.height : 1;
+        }
+        else if(annotationType == 'Perimeter')
+        {
+            //Creating annotation settings
+            annotationSelectorSettings = this.pdfViewer.arrowSettings.annotationSelectorSettings ? this.pdfViewer.arrowSettings.annotationSelectorSettings : this.pdfViewer.annotationSelectorSettings;          
+            annotationSettings = this.pdfViewer.annotationModule.updateSettings(this.pdfViewer.arrowSettings);
+            allowedInteractions = this.pdfViewer.arrowSettings.allowedInteractions ? this.pdfViewer.arrowSettings.allowedInteractions : this.pdfViewer.annotationSettings.allowedInteractions;
+            measureAnnotationType = 'PolyLineDimension';
+            shapeAnnotationType = 'Polyline';
+            subject ='Perimeter calculation';
+            isArrow=true;
+            if(annotationObject.vertexPoints)
+                vertexPoints = annotationObject.vertexPoints;
+            else
+                vertexPoints =[{ x: offset.x, y: offset.y},
+                    { x: offset.x + 85, y: offset.y},
+                    { x: offset.x + 86, y: offset.y + 62}]
+            annotationObject.width =annotationObject.width?annotationObject.width : 1;
+            annotationObject.height = annotationObject.height?annotationObject.height : 1;
+        }
+        else if(annotationType == 'Area')
+        {              
+            //Creating annotation settings
+            annotationSelectorSettings = this.pdfViewer.rectangleSettings.annotationSelectorSettings ? this.pdfViewer.rectangleSettings.annotationSelectorSettings : this.pdfViewer.annotationSelectorSettings;          
+            annotationSettings = this.pdfViewer.annotationModule.updateSettings(this.pdfViewer.rectangleSettings);
+            allowedInteractions = this.pdfViewer.rectangleSettings.allowedInteractions ? this.pdfViewer.rectangleSettings.allowedInteractions : this.pdfViewer.annotationSettings.allowedInteractions;               
+            measureAnnotationType = 'PolygonDimension';
+            shapeAnnotationType = 'Polygon';
+            subject ='Area calculation';
+            if(annotationObject.vertexPoints)
+                vertexPoints = annotationObject.vertexPoints;
+            else            
+                vertexPoints = [{x: offset.x, y: offset.y},
+                    { x: offset.x + 88, y: offset.y - 1},
+                    { x: offset.x + 89, y: offset.y + 53},
+                    { x: offset.x, y: offset.y}];
+            annotationObject.width =annotationObject.width?annotationObject.width : 1;
+            annotationObject.height = annotationObject.height?annotationObject.height : 1;
+        }
+        else if(annotationType == 'Radius')
+        {              
+            //Creating annotation settings
+            annotationSelectorSettings = this.pdfViewer.circleSettings.annotationSelectorSettings ? this.pdfViewer.circleSettings.annotationSelectorSettings : this.pdfViewer.annotationSelectorSettings;          
+            annotationSettings = this.pdfViewer.annotationModule.updateSettings(this.pdfViewer.circleSettings);
+            allowedInteractions = this.pdfViewer.circleSettings.allowedInteractions ? this.pdfViewer.circleSettings.allowedInteractions : this.pdfViewer.annotationSettings.allowedInteractions;               
+            measureAnnotationType = 'PolygonRadius';
+            shapeAnnotationType = 'Circle';
+            subject ='Radius calculation';
+            annotationObject.width =annotationObject.width?annotationObject.width :100;
+            annotationObject.height = annotationObject.height?annotationObject.height :100;
+            vertexPoints = null;
+        }
+        else if(annotationType == 'Volume')
+        {              
+            //Creating annotation settings
+            annotationSelectorSettings = this.pdfViewer.polygonSettings.annotationSelectorSettings ? this.pdfViewer.polygonSettings.annotationSelectorSettings : this.pdfViewer.annotationSelectorSettings;          
+            annotationSettings = this.pdfViewer.annotationModule.updateSettings(this.pdfViewer.polygonSettings);
+            allowedInteractions = this.pdfViewer.polygonSettings.allowedInteractions ? this.pdfViewer.polygonSettings.allowedInteractions : this.pdfViewer.annotationSettings.allowedInteractions;               
+            measureAnnotationType = 'PolygonVolume';
+            shapeAnnotationType = 'Polygon';
+            subject ='Volume calculation';
+            if(annotationObject.vertexPoints)
+                vertexPoints = annotationObject.vertexPoints;
+            else                   
+                vertexPoints =[
+                    { x: offset.x, y: offset.y},
+                    { x: offset.x, y: offset.y+109},
+                    { x: offset.x+120, y: offset.y+109},
+                    { x: offset.x+120, y: offset.y-1},
+                    { x: offset.x, y: offset.y}];
+            annotationObject.width =annotationObject.width?annotationObject.width : 1;
+            annotationObject.height = annotationObject.height?annotationObject.height : 1;
+        }
+        annotationSettings.isLock = annotationObject.isLock?annotationObject.isLock:false;
+        annotationSettings.minHeight = annotationObject.minHeight?annotationObject.minHeight:0;
+        annotationSettings.minWidth = annotationObject.minWidth?annotationObject.minWidth:0;
+        annotationSettings.maxWidth = annotationObject.maxWidth?annotationObject.maxWidth:0;
+        annotationSettings.maxHeight = annotationObject.maxHeight?annotationObject.maxHeight:0;    
+
+        //Calculating area for all the measurements
+        let values: any = {depth: 96,
+            factor: 0.013888888888888888,
+            ratio: 1,
+            unit: 'in'};
+        let notes: string = '';
+        if(vertexPoints || annotationType=='Radius' || annotationType == 'Volume')
+        {
+            if(annotationType == 'Distance' || annotationType=='Perimeter' || annotationType=='Radius')
+            {
+                let length: number = 0;
+                if(annotationType=='Radius')
+                {
+                    length = (annotationObject.width / 2) * this.pixelToPointFactor
+                }
+                else
+                {
+                    for (let i: number = 0; i < vertexPoints.length - 1; i++) {
+                        length += Math.sqrt(Math.pow((vertexPoints[i].x - vertexPoints[i+1].x), 2) + Math.pow((vertexPoints[i].y - vertexPoints[i+1].y), 2));
+                    }
+                    length = length * this.pixelToPointFactor;
+                }
+                let scaledValue: number = length * values.ratio;
+                notes = this.convertPointToUnits(values.factor, scaledValue, values.unit);
+            }
+            else if(annotationType == 'Area' || annotationType == 'Volume' )
+            {
+                let area: number = 0;
+                var j = vertexPoints.length - 1;
+                for (var i = 0; i < vertexPoints.length; i++) {
+                    area += (vertexPoints[j].x * this.pixelToPointFactor * values.factor + vertexPoints[i].x * this.pixelToPointFactor * values.factor) * (vertexPoints[j].y * this.pixelToPointFactor * values.factor - vertexPoints[i].y * this.pixelToPointFactor * values.factor);
+                    j = i;
+                }
+                area = (Math.abs((area) / 2.0));
+                if(annotationType == 'Volume')
+                {
+                    area = area * ((values.depth * this.convertUnitToPoint(values.unit)) * values.factor) * values.ratio;
+                    notes = Math.round(area * 100) / 100 + 'cu '+ values.unit;
+                }
+                else
+                    notes = Math.round(area * 100) / 100 + 'sq '+ values.unit;
+            }
+        }       
+
+        //Converting points model into vertex property
+        if(vertexPoints)
+            vertexPoints = this.pdfViewer.annotation.getVertexPointsXY(vertexPoints);
+
+        //Creating Annotation objects with it's proper properties
+        let measureShapeAnnotation: any = [];
+        let shape: any = {
+            AllowedInteractions: annotationObject.allowedInteractions?annotationObject.allowedInteractions : allowedInteractions,
+            AnnotName: annotationName,
+            AnnotType: 'shape_measure',
+            AnnotationSelectorSettings: annotationObject.annotationSelectorSettings?annotationObject.annotationSelectorSettings: annotationSelectorSettings,       
+            AnnotationSettings: annotationSettings,
+            Author: annotationObject.author ? annotationObject.author : 'Guest',
+            BorderDashArray: annotationObject.borderDashArray? annotationObject.borderDashArray:0,
+            BorderStyle: 'Solid',
+            Bounds: {X: offset.x, Y: offset.y, Width: annotationObject.width, Height: annotationObject.height, Left: offset.x, Top: offset.y, Location:{X: offset.x,Y: offset.y}, Size:{Height: annotationObject.height,IsEmpty: false,Width: annotationObject.width}},
+            Calibrate: {
+                Area: [{ConversionFactor: 1,Denominator: 100,FormatDenominator: false,FractionalType: 'D',Unit: 'sq in'}],
+                Depth: annotationObject.depth?annotationObject.depth:0,
+                Distance: [{ConversionFactor: 1,Denominator: 100,FormatDenominator: false,FractionalType: 'D',Unit: 'in'}],
+                Ratio: '1 in = 1 in',
+                TargetUnitConversion: 0,
+                Volume: null,
+                X :[{ConversionFactor: 0.013888889, Denominator: 100, FormatDenominator: false, FractionalType: 'D',Unit: 'in'}]
+            },
+            Caption: true,
+            CaptionPosition: 'Top',
+            CloudIntensity: 0,
+            Comments: null,
+            CustomData: annotationObject.customData?annotationObject.customData:null,
+            CreatedDate: currentDateString,
+            EnableShapeLabel: false,
+            ExistingCustomData: null,
+            FillColor: annotationObject.fillColor?annotationObject.fillColor:'#ffffff00',
+            FontColor: null,
+            FontSize: 0,
+            Indent: measureAnnotationType,
+            IsCloudShape: false,
+            IsCommentLock: false,
+            IsLocked : annotationObject.isLock?annotationObject.isLock:false,
+            IsPrint: annotationObject.isPrint?annotationObject.isPrint:true,
+            LabelBorderColor: null,
+            LabelBounds: {X: 0, Y: 0, Width: 0, Height: 0},
+            LabelContent: null,
+            LabelFillColor: null,
+            LabelSettings: null,
+            LeaderLength: 0,
+            LeaderLineExtension: 0,
+            LeaderLineOffset :0,
+            LineHeadEnd: annotationObject.lineHeadStartStyle?annotationObject.lineHeadStartStyle: isArrow?'ClosedArrow':'None',
+            LineHeadStart: annotationObject.lineHeadEndStyle?annotationObject.lineHeadEndStyle: isArrow?'ClosedArrow':'None',
+            ModifiedDate: '',
+            Note: notes,
+            Opacity: annotationObject.opacity?annotationObject.opacity:1,
+            RectangleDifference: null,
+            RotateAngle: 'RotateAngle0',
+            ShapeAnnotationType: shapeAnnotationType,
+            State: '',
+            StateModel: '',
+            StrokeColor: annotationObject.strokeColor?annotationObject.strokeColor:'#ff0000',
+            Subject: subject,
+            Thickness: annotationObject.thickness?annotationObject.thickness:1,
+            VertexPoints : vertexPoints
+        }
+
+        //Adding the annotation object to an array and return it
+        measureShapeAnnotation[0] = shape;
+        return {measureShapeAnnotation};
     }
 }

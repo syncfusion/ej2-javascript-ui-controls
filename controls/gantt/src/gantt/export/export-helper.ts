@@ -95,8 +95,8 @@ export class ExportHelper {
         cell.value = column.headerText;
         cell.isHeaderCell = true;
         const treeGridHeaderHeight: number = this.parent.timelineModule.isSingleTier ? 45 : 60;
-        this.row.height = pixelToPoint(treeGridHeaderHeight);
         this.copyStyles(this.ganttStyle.columnHeader, cell, false);
+        this.row.height = pixelToPoint(treeGridHeaderHeight);
         if (column.headerTextAlign) {
             cell.style.format.alignment = PdfTextAlignment[column.headerTextAlign];
         }

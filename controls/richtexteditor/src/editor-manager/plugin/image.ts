@@ -6,7 +6,7 @@ import { IHtmlItem } from './../base/interface';
 import { InsertHtml } from './inserthtml';
 /**
  * Link internal component
- * 
+ *
  * @hidden
  * @deprecated
  */
@@ -96,7 +96,7 @@ export class ImageCommand {
                 e.item.selection.restore();
             }
             if (!isNOU(e.selector) && e.selector === 'pasteCleanupModule') {
-                e.callBack({ requestType: 'Image',
+                e.callBack({ requestType: 'Images',
                     editorMode: 'HTML',
                     event: e.event,
                     range: this.parent.nodeSelection.getRange(this.parent.currentDocument),
@@ -112,7 +112,7 @@ export class ImageCommand {
                 (Browser.isIE ? (selectedNode.previousSibling as Element) : (selectedNode as Element).previousElementSibling);
             imgElm.addEventListener('load', () => {
                 e.callBack({
-                    requestType: 'Image',
+                    requestType: 'Images',
                     editorMode: 'HTML',
                     event: e.event,
                     range: this.parent.nodeSelection.getRange(this.parent.currentDocument),
@@ -251,6 +251,7 @@ export class ImageCommand {
         if (selectNode.parentElement.nodeName === 'A') {
             removeClass([selectNode.parentElement], classes.CLASS_IMAGE_RIGHT);
             addClass([selectNode.parentElement], classes.CLASS_IMAGE_LEFT);
+            addClass([selectNode], classes.CLASS_IMAGE_LEFT);
         } else {
             addClass([selectNode], classes.CLASS_IMAGE_LEFT);
         }
@@ -286,6 +287,7 @@ export class ImageCommand {
         if (selectNode.parentElement.nodeName === 'A') {
             removeClass([selectNode.parentElement], classes.CLASS_IMAGE_LEFT);
             addClass([selectNode.parentElement], classes.CLASS_IMAGE_RIGHT);
+            addClass([selectNode], classes.CLASS_IMAGE_RIGHT);
         } else {
             addClass([selectNode], classes.CLASS_IMAGE_RIGHT);
         }

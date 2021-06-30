@@ -410,7 +410,9 @@ export class ContextMenu {
                 break;
             case id + CONTEXTMENU_ADD_COMMENT:
                 if (!this.documentHelper.owner.isReadOnlyMode) {
+                    this.documentHelper.owner.editor.isUserInsert = true;
                     this.documentHelper.owner.editorModule.insertComment();
+                    this.documentHelper.owner.editor.isUserInsert = false;
                 }
                 break;
             case id + CONTEXTMENU_UPDATE_FIELD:
@@ -538,9 +540,9 @@ export class ContextMenu {
      * @param {string} content 
      */
     private callSelectedOption(content: string): void {
-        if (content === 'Add To Dictionary') {
+        if (content === this.locale.getConstant('Add To Dictionary')) {
             this.spellChecker.handleAddToDictionary();
-        } else if (content === 'Ignore All') {
+        } else if (content === this.locale.getConstant('Ignore All')) {
             this.spellChecker.handleIgnoreAllItems();
         } else {
             this.spellChecker.manageReplace(content);
@@ -690,7 +692,7 @@ export class ContextMenu {
         let contextMenuItems: any[] = this.customItems.length > 0 ? this.customItems.slice() : [];
         // classList(this.noSuggestion,['e-disabled'],[]);
         if (isNullOrUndefined(allSuggestion) || allSuggestion.length === 0) {
-            contextMenuItems.push({ text: 'no suggestions', id: CONTEXTMENU_NO_SUGGESTION, classList: ['e-focused'], iconCss: '' });
+            contextMenuItems.push({ text: this.locale.getConstant('no suggestions'), id: CONTEXTMENU_NO_SUGGESTION, classList: ['e-focused'], iconCss: '' });
         } else {
             for (let i: number = 0; i < allSuggestion.length; i++) {
                 contextMenuItems.push({ text: allSuggestion[i], id: CONTEXTMENU_SPELLCHECK_OTHERSUGGESTIONS + allSuggestion[i], iconCss: '' });
@@ -698,13 +700,13 @@ export class ContextMenu {
         }
         contextMenuItems.push({ separator: true, id: '_contextmenu_suggestion_separator' });
         if (!isNullOrUndefined(splittedSuggestion) && splittedSuggestion.length > 1) {
-            contextMenuItems.push({ text: 'More Suggestion', items: splittedSuggestion });
+            contextMenuItems.push({ text: this.locale.getConstant('More Suggestion'), items: splittedSuggestion });
             contextMenuItems.push({ separator: true, id: '_contextmenu_moreSuggestion_separator' });
         } else {
-            contextMenuItems.push({ text: 'Add To Dictionary ', id: '_contextmenu_otherSuggestions_spellcheck_Add To Dictionary', iconCss: '' });
+            contextMenuItems.push({ text: this.locale.getConstant('Add To Dictionary'), id: '_contextmenu_otherSuggestions_spellcheck_Add To Dictionary', iconCss: '' });
         }
-        contextMenuItems.push({ text: 'Ignore Once', id: '_contextmenu_otherSuggestions_spellcheck_Ignore Once', iconCss: '' });
-        contextMenuItems.push({ text: 'Ignore All', id: '_contextmenu_otherSuggestions_spellcheck_Ignore All', iconCss: '' });
+        contextMenuItems.push({ text: this.locale.getConstant('Ignore Once'), id: '_contextmenu_otherSuggestions_spellcheck_Ignore Once', iconCss: '' });
+        contextMenuItems.push({ text: this.locale.getConstant('Ignore All'), id: '_contextmenu_otherSuggestions_spellcheck_Ignore All', iconCss: '' });
         contextMenuItems.push({ separator: true, id: '_contextmenu_change_separator' });
         contextMenuItems.push({ text: this.locale.getConstant('Spelling'), id: CONTEXTMENU_SPELLING_DIALOG, iconCss: 'e-icons e-de-spellcheck', items: [] });
         contextMenuItems.push({ separator: true, id: '_contextmenu_spelling_separator' });
@@ -903,6 +905,7 @@ export class ContextMenu {
         if (selection.contextType === 'Image') {
             font.style.display = 'none';
             paragraph.style.display = 'none';
+            (font.previousSibling as HTMLElement).style.display = 'none';
             (removeHyperlink.nextSibling as HTMLElement).style.display = 'none';
         }
         if (this.documentHelper.selection.hasRevisions()) {

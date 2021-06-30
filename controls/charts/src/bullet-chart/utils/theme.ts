@@ -207,6 +207,55 @@ export function getBulletThemeColor(theme: ChartTheme): IBulletStyle {
             rangeStrokes: [{ color: '#959595' }, { color: '#BDBDBD' }, { color: '#E3E2E2' }]
         };
         break;
+	case 'Tailwind':
+		style = {
+            majorTickLineColor: '#D1D5DB',
+            minorTickLineColor: '#D1D5DB',
+            background: 'transparent',
+            labelFontColor: '#6B7280',
+            categoryFontColor: '#6B7280',
+            labelFontFamily: 'Inter',
+            tooltipFill: '#111827',
+            legendLabel: '#374151',
+            tooltipBoldLabel: '#F9FAFB',
+            featuredMeasureColor: '#1F2937',
+            comparativeMeasureColor: '#1F2937',
+            titleFontColor: '#374151',
+            dataLabelFontColor: '#F9FAFB',
+            titleFontFamily: 'Inter',
+            subTitleFontColor: '#374151',
+            subTitleFontFamily: 'Inter',
+            firstRangeColor: '#9CA3AF',
+            secondRangeColor: '#D1D5DB',
+            thirdRangeColor: '#E5E7EB',
+            rangeStrokes: [{ color: '#9CA3AF' }, { color: '#D1D5DB' }, { color: '#E5E7EB' }]
+        };
+        break;
+	case 'TailwindDark':
+		style = {
+            majorTickLineColor: '#4B5563',
+            minorTickLineColor: '#4B5563',
+            background: 'transparent',
+            labelFontColor: '#9CA3AF',
+            categoryFontColor: '#9CA3AF',
+            labelFontFamily: 'Inter',
+            tooltipFill: '#F9FAFB',
+            legendLabel: '#D1D5DB',
+            tooltipBoldLabel: '#1F2937',
+            featuredMeasureColor: '#1F2937',
+            comparativeMeasureColor: '#1F2937',
+            titleFontColor: '#D1D5DB',
+            dataLabelFontColor: '#D1D5DB',
+            titleFontFamily: 'Inter',
+            subTitleFontColor: '#D1D5DB',
+            subTitleFontFamily: 'Inter',
+            firstRangeColor: '#6B7280',
+            secondRangeColor: '#4B5563',
+            thirdRangeColor: '#374151',
+            rangeStrokes: [{ color: '#6B7280' }, { color: '#4B5563' }, { color: '#374151' }]
+        };
+        break;
+	
     default:
         // eslint-disable-next-line no-self-assign
         style = style;

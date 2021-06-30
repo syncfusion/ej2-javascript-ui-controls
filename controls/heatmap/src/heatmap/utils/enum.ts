@@ -49,7 +49,11 @@ export type HeatMapTheme =
     /**  Render a HeatMap with HighContrast theme. */
     'HighContrast'|
     /**  Render a HeatMap with Bootstrap Dark theme. */
-    'BootstrapDark';
+    'BootstrapDark'|
+    /**  Render a HeatMap with TailwindDark theme. */
+    'TailwindDark'|
+    /**  Render a HeatMap with Tailwind theme. */
+    'Tailwind';
 
 export type Orientation =
     /**  Horizontal Axis. */

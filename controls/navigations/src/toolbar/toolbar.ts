@@ -1,6 +1,6 @@
 ﻿import { Component, EventHandler, Property, Event, EmitType, BaseEventArgs } from '@syncfusion/ej2-base';
 import { addClass, removeClass, isVisible, closest, attributes, detach, classList, KeyboardEvents } from '@syncfusion/ej2-base';
-import { selectAll, setStyleAttribute as setStyle, KeyboardEventArgs } from '@syncfusion/ej2-base';
+import { selectAll, setStyleAttribute as setStyle, KeyboardEventArgs, select } from '@syncfusion/ej2-base';
 import { isNullOrUndefined as isNOU, getUniqueID, formatUnit, Collection, compile as templateCompiler } from '@syncfusion/ej2-base';
 import { INotifyPropertyChanged, NotifyPropertyChanges, ChildProperty, Browser, SanitizeHtmlHelper } from '@syncfusion/ej2-base';
 import { Popup } from '@syncfusion/ej2-popups';
@@ -1170,9 +1170,8 @@ export class Toolbar extends Component<HTMLElement> implements INotifyPropertyCh
             (element.style.height === 'auto' || element.style.height === '') ? null : (eleItem && (eleItem as HTEle).offsetHeight);
         let ele: HTEle;
         const popupPri: Element[] = [];
-        const popupEle: HTMLElement = document.getElementById(element.id + '_popup');
-        if (popupEle && popupEle.classList.contains(CLS_POPUPCLASS)) {
-            ele = popupEle;
+        if (select('#' + element.id + '_popup.' + CLS_POPUPCLASS, element)) {
+            ele = <HTEle>select('#' + element.id + '_popup.' + CLS_POPUPCLASS, element);
         } else {
             const extendEle: HTEle = this.createElement('div', {
                 id: element.id + '_popup', className: CLS_POPUPCLASS + ' ' + CLS_EXTENDABLECLASS

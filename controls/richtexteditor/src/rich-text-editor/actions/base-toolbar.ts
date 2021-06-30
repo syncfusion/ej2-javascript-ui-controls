@@ -44,7 +44,6 @@ export class BaseToolbar {
         this.parent.off(events.destroy, this.removeEventListener);
     }
 
-    // eslint-disable-next-line
     private setRtl(args: { [key: string]: Object }): void {
         if (!isNullOrUndefined(this.toolbarObj)) {
             this.toolbarObj.setProperties({ enableRtl: args.enableRtl });
@@ -73,6 +72,8 @@ export class BaseToolbar {
         switch (itemStr) {
         case 'fontcolor':
         case 'backgroundcolor':
+        case 'numberformatlist':
+        case 'bulletformatlist':
             tagName = 'span';
             break;
         default:
@@ -93,7 +94,7 @@ export class BaseToolbar {
 
     /**
      * getObject method
-      *
+     *
      * @param {string} item - specifies the string value
      * @param {string} container - specifies the value of string
      * @returns {IToolbarItemModel} - returns the model element

@@ -1,4 +1,6 @@
 /* eslint-disable */
+import { FontStyle } from './../base/types';
+import { FreeTextSettings } from './../pdfviewer';
 import {
     // eslint-disable-next-line
     PdfViewer, PdfViewerBase, IPageAnnotations, IPoint, AnnotationType as AnnotType, ICommentsCollection, IReviewCollection, AllowedInteraction
@@ -112,6 +114,10 @@ export class FreeTextAnnotation {
      * @private
      */
     public isFreeTextValueChange: boolean = false;
+    /**
+     * @private
+     */
+    public isAddAnnotationProgramatically: boolean = false;
     /**
      * @private
      */
@@ -356,6 +362,16 @@ export class FreeTextAnnotation {
                         }
                         const addedAnnot: PdfAnnotationBaseModel = this.pdfViewer.add(annot as PdfAnnotationBase);
                         this.pdfViewer.annotationModule.storeAnnotations(pageNumber, annot, '_annotations_freetext');
+                        if(this.isAddAnnotationProgramatically)
+                        {
+                            // eslint-disable-next-line
+                            let settings: any = {
+                                opacity: annot.opacity, borderColor: annot.strokeColor, borderWidth: annot.thickness, author: annotation.author, subject: annotation.subject, modifiedDate: annotation.modifiedDate,
+                                // eslint-disable-next-line
+                                fillColor: annot.fillColor, fontSize: annot.fontSize, width: annot.bounds.width, height: annot.bounds.height, fontColor: annot.fontColor, fontFamily: annot.fontFamily, defaultText: annot.dynamicText, fontStyle: annot.font, textAlignment: annot.textAlign
+                            };
+                            this.pdfViewer.fireAnnotationAdd(annot.pageIndex, annot.annotName, 'FreeText', annot.bounds, settings);
+                        }
                         this.inputBoxCount += 1;
                         this.pdfViewer.annotation.freeTextAnnotationModule.isFreeTextValueChange = true;
                         this.pdfViewer.nodePropertyChange(addedAnnot, {});
@@ -1068,6 +1084,9 @@ export class FreeTextAnnotation {
             }
             // eslint-disable-next-line max-len
             annotation.AnnotationSettings = annotation.AnnotationSettings ? annotation.AnnotationSettings : this.pdfViewer.annotationModule.updateSettings(this.pdfViewer.freeTextSettings);
+            if (annotation.IsLocked) {
+                annotation.AnnotationSettings.isLock = annotation.IsLocked;
+            }
             // eslint-disable-next-line max-len
             annotation.allowedInteractions = this.pdfViewer.annotationModule.updateAnnotationAllowedInteractions(annotation);
             let annotationBoundsX: number = annotation.Bounds.X ? annotation.Bounds.X : annotation.Bounds.x;
@@ -1095,5 +1114,103 @@ export class FreeTextAnnotation {
             };
             return annot;
         }
+    }
+
+    /**
+     * This method used to add annotations with using program.
+     *
+     * @param annotationType - It describes type of annotation
+     * @param offset - It describes about the annotation bounds
+     * @returns Object
+     * @private
+     */
+    public updateAddAnnotationDetails(annotationObject: FreeTextSettings, offset: IPoint): Object 
+    {
+
+       //Creating new object if annotationObject is null
+       if(!annotationObject)
+       {
+        annotationObject = { offset: { x: 1, y: 1}, pageNumber: 0, width: undefined, height: undefined} as FreeTextSettings;
+        offset = annotationObject.offset;
+       }
+       else if(!annotationObject.offset)
+        offset = { x: 1, y: 1};
+       else
+        offset = annotationObject.offset;
+
+       //Creating the CurrentDate and Annotation name
+       let currentDateString: string = this.pdfViewer.annotation.stickyNotesAnnotationModule.getDateAndTime();
+       let annotationName: string = this.pdfViewer.annotation.createGUID();
+       let fontStyle: FontStyle = annotationObject.fontStyle?annotationObject.fontStyle:FontStyle.None;
+       
+       //Creating annotation settings
+       let annotationSelectorSettings: any = this.pdfViewer.freeTextSettings.annotationSelectorSettings ? this.pdfViewer.freeTextSettings.annotationSelectorSettings : this.pdfViewer.annotationSelectorSettings;
+       let annotationSettings: any = this.pdfViewer.annotationModule.updateSettings(this.pdfViewer.freeTextSettings);
+       let allowedInteractions: any = this.pdfViewer.freeTextSettings.allowedInteractions ? this.pdfViewer.freeTextSettings.allowedInteractions : this.pdfViewer.annotationSettings.allowedInteractions;
+       annotationSettings.isLock = annotationObject.isLock?annotationObject.isLock:false;
+       annotationSettings.minHeight = annotationObject.minHeight?annotationObject.minHeight:0;
+       annotationSettings.minWidth = annotationObject.minWidth?annotationObject.minWidth:0;
+       annotationSettings.maxWidth = annotationObject.maxWidth?annotationObject.maxWidth:0;
+       annotationSettings.maxHeight = annotationObject.maxHeight?annotationObject.maxHeight:0;
+       annotationObject.width = annotationObject.width?annotationObject.width :150;
+       annotationObject.height = annotationObject.height?annotationObject.height :24.6;
+
+       //Creating Annotation objects with it's proper properties
+       let freeTextAnnotation: any = [];
+       let freeText :any = {
+           AllowedInteractions: annotationObject.allowedInteractions?annotationObject.allowedInteractions:allowedInteractions,
+           AnnotName: annotationName,
+           AnnotType: 'freeText',
+           AnnotationFlags: 'Default',
+           AnnotationIntent: null,
+           AnnotationSelectorSettings: annotationObject.annotationSelectorSettings?annotationObject.annotationSelectorSettings: annotationSelectorSettings,
+           AnnotationSettings: annotationSettings,
+           Author: annotationObject.author ? annotationObject.author : 'Guest',
+           Border: {HorizontalRadius: 0, VerticalRadius: 0, Width: annotationObject.borderWidth?annotationObject.borderWidth:1},
+           BorderColor: {IsEmpty: true, B: 255, Blue: 1, C: 0, G: 255},
+           Bounds: {X: offset.x, Y: offset.y, Width: annotationObject.width, Height: annotationObject.height, Left: offset.x, Top: offset.y, Right:offset.x+annotationObject.width , Bottom:offset.y+annotationObject.height},
+           CalloutLines: null,
+           Color: {IsEmpty: false, B: 51, Blue: 0.2, C: 0, G: 255},
+           Comments: null,
+           CreatedDate: currentDateString,
+           CustomData: annotationObject.customData?annotationObject.customData:null,
+           ExistingCustomData: null,
+           FillColor: annotationObject.fillColor?annotationObject.fillColor:'#ffffff00',
+           Flatten: false,
+           FlattenPopups: false,
+           Font: { Bold: fontStyle == FontStyle.Bold?true:false, Italic: fontStyle == FontStyle.Italic?true:false, Strikeout: fontStyle == FontStyle.Strikethrough?true:false, Underline: fontStyle == FontStyle.Underline?true:false },
+           FontColor: annotationObject.fontColor?annotationObject.fontColor:'#000',
+           FontFamily: annotationObject.fontFamily?annotationObject.fontFamily:'Helvetica',
+           FontSize: annotationObject.fontSize?annotationObject.fontSize:16,
+           FreeTextAnnotationType: 'Text Box',
+           InnerColor: null,
+           IsCommentLock: false,
+           IsLock: annotationObject.isLock?annotationObject.isLock:false,
+           IsPrint: annotationObject.isPrint?annotationObject.isPrint:true,
+           Layer: null,
+           LineEndingStyle: 'OpenArrow',
+           Location: null,
+           MarkupText: annotationObject.defaultText?annotationObject.defaultText:'Type Here',
+           ModifiedDate: currentDateString,
+           Name: annotationName,
+           Opacity: annotationObject.opacity?annotationObject.opacity:1,
+           Page: null,
+           PageTags: null,
+           ReviewHistory: null,
+           Rotate: 0,
+           IsReadonly: annotationObject.isReadonly?annotationObject.isReadonly:false,
+           State: 'Unmarked',
+           StateModel: 'None',
+           StrokeColor: annotationObject.borderColor?annotationObject.borderColor:'#ffffff00',
+           Subject: 'Text Box',
+           Text: annotationObject.defaultText?annotationObject.defaultText:'Type Here',
+           TextAlign: annotationObject.textAlignment?annotationObject.textAlignment:'Left',
+           TextMarkupColor: null,
+           Thickness: annotationObject.borderWidth?annotationObject.borderWidth:1
+        };     
+
+        //Adding the annotation object to an array and return it
+        freeTextAnnotation[0] = freeText;
+        return {freeTextAnnotation};
     }
 }

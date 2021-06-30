@@ -279,12 +279,14 @@ export class BatchEdit {
         const primarykey: string = this.parent.grid.getPrimaryKeyFieldNames()[0];
         const data: ITreeData = this.parent.grid.getSelectedRecords()[this.parent.grid.getSelectedRecords().length - 1];
         const childs: ITreeData[] = findChildrenRecords(data);
-        if (childs.length) {
-            for (let i: number = 0; i < childs.length; i++) {
-                const index: number = this.parent.grid.getRowIndexByPrimaryKey(childs[i][primarykey]);
-                row.push(this.parent.grid.getRows()[index] as Element);
+        const uid: string = this.parent.getSelectedRows()[0].getAttribute('data-uid');
+        const parentRowIndex: number = parseInt(this.parent.grid.getRowElementByUID(uid).getAttribute('aria-rowindex'), 10);
+        if (childs.length){
+            const totalCount: number = parentRowIndex + childs.length; const firstChildIndex: number = parentRowIndex + 1;
+            for (let i: number = firstChildIndex; i <= totalCount; i++){
+                row.push(this.parent.grid.getDataRows()[i] as Element);
                 if (this.parent.frozenRows || this.parent.frozenColumns || this.parent.getFrozenColumns()) {
-                    row.push(this.parent.grid.getMovableRows()[index] as Element);
+                    row.push(this.parent.grid.getMovableRows()[i] as Element);
                 }
             }
         }
@@ -434,16 +436,18 @@ export class BatchEdit {
             }
             if (this.parent.editSettings.newRowPosition !== 'Bottom' && !Object.hasOwnProperty.call(args, 'updatedRecords')) {
                 data.splice(data.length - addRecords.length, addRecords.length);
-                if (!this.parent.allowPaging ) {
+                if (!this.parent.allowPaging && data.length !== currentViewRecords.length) {
                     if (currentViewRecords.length > addRecords.length) {
                         currentViewRecords.splice(currentViewRecords.length - addRecords.length, addRecords.length);
                     }
                 } else {
                     const totalRecords: Object[] = extendArray(data);
-                    const startIndex: number = totalRecords.map((e: Object) => { return e[primarykey]; })
-                        .indexOf(currentViewRecords[0][primarykey]);
-                    const endIndex: number = startIndex + this.parent.grid.pageSettings.pageSize;
-                    currentViewRecords = totalRecords.splice(startIndex, endIndex);
+                    if (totalRecords.length) {
+                        const startIndex: number = totalRecords.map((e: Object) => { return e[primarykey]; })
+                            .indexOf(currentViewRecords[0][primarykey]);
+                        const endIndex: number = startIndex + this.parent.grid.pageSettings.pageSize;
+                        currentViewRecords = totalRecords.splice(startIndex, endIndex);
+                    }
                 }
             }
             if (this.batchAddRowRecord.length === 0) { this.batchAddRowRecord.push(this.parent.flatData[args.index]); }

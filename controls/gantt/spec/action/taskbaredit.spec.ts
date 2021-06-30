@@ -2,7 +2,7 @@
  * Gantt taskbaredit spec
  */
 import { Gantt, ITaskbarEditedEventArgs, Edit } from '../../src/index';
-import { baselineData, scheduleModeData } from '../base/data-source.spec';
+import { baselineData, scheduleModeData, splitTasksData } from '../base/data-source.spec';
 import { createGantt, destroyGantt, triggerMouseEvent } from '../base/gantt-util.spec';
 describe('Gantt taskbar editing', () => {
     describe('Gantt taskbar edit action', () => {
@@ -639,5 +639,52 @@ describe('Gantt taskbar editing', () => {
             triggerMouseEvent(dragElement, 'mousemove', dragElement.offsetLeft + 180, 0);
             triggerMouseEvent(dragElement, 'mouseup');
         });
-    })
+    });
+    describe('Split task -', () => {
+        let ganttObj: Gantt;
+        beforeAll((done: Function) => {
+            ganttObj = createGantt(
+                {
+                    dataSource: splitTasksData,
+                    taskFields: {
+                        id: 'TaskID',
+                        name: 'TaskName',
+                        startDate: 'StartDate',
+                        endDate: 'EndDate',
+                        duration: 'Duration',
+                        progress: 'Progress',
+                        dependency: 'Predecessor',
+                        child: 'subtasks',
+                        segments: 'Segments'
+                    },
+                    editSettings: {
+                        allowAdding: true,
+                        allowEditing: true,
+                        allowDeleting: true,
+                        allowTaskbarEditing: true,
+                        showDeleteConfirmDialog: true
+                    },
+                    
+                    allowSelection: true,
+                    height: '450px',
+                }, done);
+        });
+        it('Merging tasks', () => {
+            ganttObj.taskbarEdited = (args: ITaskbarEditedEventArgs) => {
+                expect(args.data.taskData['Segments'].length).toBe(2);
+            };
+            ganttObj.dataBind();
+            expect(ganttObj.currentViewData[2].taskData['Segments'].length).toBe(3);
+            let dragElement: HTMLElement = ganttObj.element.querySelector('#' + ganttObj.element.id + 'GanttTaskTableBody > tr:nth-child(3) > td > div.e-taskbar-main-container > div.e-gantt-child-taskbar-inner-div.e-segment-first.e-gantt-child-taskbar.e-segmented-taskbar > div.e-taskbar-right-resizer.e-icon') as HTMLElement;
+            triggerMouseEvent(dragElement, 'mousedown', dragElement.offsetLeft, dragElement.offsetTop);
+            triggerMouseEvent(dragElement, 'mousemove', (dragElement.offsetLeft + 500), dragElement.offsetTop);
+            triggerMouseEvent(dragElement, 'mouseup');
+        });
+        afterAll(() => {
+            destroyGantt(ganttObj);
+        });
+        beforeEach((done: Function) => {
+            setTimeout(done, 2000);
+        });
+    });
 });

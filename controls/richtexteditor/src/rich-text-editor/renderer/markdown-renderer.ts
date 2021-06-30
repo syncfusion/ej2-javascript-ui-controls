@@ -2,7 +2,7 @@ import { IRenderer, IRichTextEditor } from '../base/interface';
 
 /**
  * Markdown module is used to render Rich Text Editor as Markdown editor content
- * 
+ *
  * @hidden
  * @deprecated
  */
@@ -79,7 +79,7 @@ export class MarkdownRender implements IRenderer {
     }
     /**
      * Get the document of RichTextEditor
-      *
+     *
      * @returns {void}
      * @hidden
      * @deprecated

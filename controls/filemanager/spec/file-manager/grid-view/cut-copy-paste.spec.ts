@@ -1433,6 +1433,10 @@ describe('FileManager control Details view', () => {
             mousemove.srcElement = mousemove.target = mousemove.toElement = li[3].querySelector('.e-fullrow');
             mousemove = setMouseCordinates(mousemove, rect[0].x + 5, rect[0].y + 5);
             EventHandler.trigger(<any>(document), 'mousemove', mousemove);
+            rect = li[3].querySelector('.e-fullrow').getClientRects();
+            mousemove.srcElement = mousemove.target = mousemove.toElement = li[3].querySelector('.e-fullrow');
+            mousemove = setMouseCordinates(mousemove, rect[0].x + 5, rect[0].y + 5);
+            EventHandler.trigger(<any>(document), 'mousemove', mousemove);
             let mouseup: any = getEventObject('MouseEvents', 'mouseup', li[3].querySelector('.e-fullrow'), li[3].querySelector('.e-fullrow'), rect[0].x + 5, rect[0].y + 5);
             mouseup.type = 'mouseup'; mouseup.currentTarget = document;
             EventHandler.trigger(<any>(document), 'mouseup', mouseup);

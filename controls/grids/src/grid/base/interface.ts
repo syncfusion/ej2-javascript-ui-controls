@@ -528,6 +528,8 @@ export interface IGrid extends Component<HTMLElement> {
 
     localeObj?: L10n;
 
+    isManualRefresh?: boolean;
+
     prevPageMoving?: boolean;
 
     renderModule?: Render;
@@ -1957,7 +1959,7 @@ export interface CustomEditEventArgs extends EditEventArgs {
 
 /** @hidden */
 export interface CustomAddEventArgs extends AddEventArgs {
-    /** Defines the virtual scroll action */
+    /** Defines the virtual scroll x axis */
     isScroll?: boolean;
 }
 

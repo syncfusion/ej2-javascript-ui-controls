@@ -509,12 +509,21 @@ export class Resize extends ActionBase {
     private resizeValidation(e: MouseEvent & TouchEvent): boolean {
         const pages: (MouseEvent & TouchEvent) | Touch = this.getPageCoordinates(e);
         const viewDimension: Record<string, any> = this.getContentAreaDimension();
+        const isTimeScale: boolean = this.parent.activeView.isTimelineView() && this.parent.activeViewOptions.timeScale.enable;
+        let cellWidth: number = this.actionObj.cellWidth;
         let resizeValidation: boolean = false;
         if (this.resizeEdges.left) {
-            resizeValidation = (pages.pageX - this.actionObj.cellWidth) >= viewDimension.left;
+            if (pages.pageX < viewDimension.leftOffset && pages.pageX >= viewDimension.left && isTimeScale) {
+                cellWidth = 0;
+            }
+            resizeValidation = (pages.pageX - cellWidth) >= viewDimension.left;
+
         }
         if (this.resizeEdges.right) {
-            resizeValidation = (pages.pageX + this.actionObj.cellWidth) <= viewDimension.right;
+            if (pages.pageX > viewDimension.rightOffset && pages.pageX <= viewDimension.right && isTimeScale) {
+                cellWidth = 0;
+            }
+            resizeValidation = (pages.pageX + cellWidth) <= viewDimension.right;
         }
         if (this.resizeEdges.top) {
             resizeValidation = this.actionObj.clone.offsetTop >= viewDimension.top;

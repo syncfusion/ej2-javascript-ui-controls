@@ -5,9 +5,8 @@ import { cldrData, loadCldr, Touch, SwipeEventArgs, L10n, Browser } from '@syncf
 import { createElement, removeClass, remove, addClass, setStyleAttribute } from '@syncfusion/ej2-base';
 import { isNullOrUndefined, merge, getEnumValue, getValue, getUniqueID } from '@syncfusion/ej2-base';
 import '../../node_modules/es6-promise/dist/es6-promise';
-import { Calendar, ChangedEventArgs, Islamic } from '../../src/index';
+import { Calendar, ChangedEventArgs, Islamic , MaskedDateTime } from '../../src/index';
 import  {profile , inMB, getMemoryProfile} from '../common/common.spec';
-
 
 /**
  * Datepicker spec document
@@ -4232,4 +4231,761 @@ describe('Datepicker', () => {
             datePicker.hide();
         });
     });
+});
+
+
+
+
+
+
+function loadCultureFiles_mask(name: string, base?: boolean): void {
+    let files: string[] = !base ?
+        ['ca-gregorian.json', 'numbers.json', 'timeZoneNames.json', 'currencies.json'] : ['numberingSystems.json'];
+    files.push('weekData.json');
+    for (let prop of files) {
+        let val: Object;
+        let ajax: Ajax;
+        if (base || prop === 'weekData.json') {
+            ajax = new Ajax('base/spec/cldr/supplemental/' + prop, 'GET', false);
+        } else {
+            ajax = new Ajax('base/spec/cldr/main/' + name + '/' + prop, 'GET', false);
+        }
+        ajax.onSuccess = (value: JSON) => {
+            val = value;
+        };
+        ajax.send();
+        loadCldr(JSON.parse(<string>val));
+    }
+}
+
+L10n.load({
+    'en': {
+        'MaskedDateTime': { day: 'day' , month: 'month', year: 'year' }
+    },
+    'de': {
+        'MaskedDateTime': { day: 'Tag' , month: 'Monat', year: 'Jahr' }
+    },
+    'zh': {
+        'MaskedDateTime': { day: '日' , month: '月', year: '年' }
+    },
+    'ja': {
+        'MaskedDateTime': { day: '日' , month: '月', year: '年'}
+    },
+});
+
+DatePicker.Inject(MaskedDateTime);
+
+describe('Masked DatePicker', () => {
+    beforeAll(() => {
+       
+        const isDef = (o: any) => o !== undefined && o !== null;
+        if (!isDef(window.performance)) {
+            console.log("Unsupported environment, window.performance.memory is unavailable");
+            this.skip(); //Skips test (in Chai)
+            return;
+        }
+        
+    });
+    describe('property', () => {
+        let datepicker: any;
+        let maskedDateTime: any;
+        let keyEventArgs: any = {
+            preventDefault: (): void => { /** NO Code */ },
+            stopPropagation:(): void=>{},
+            action: 'ArrowLeft',
+            code: 'ArrowLeft',
+            key: 'ArrowLeft'
+        };
+        let mouseEventArgs: any = { preventDefault: function () { }, target: null };
+        beforeAll(() => {
+            let ele: HTMLElement = createElement('input', { id: 'date' });
+            document.body.appendChild(ele);
+        });
+        afterAll(() => {
+            if (datepicker) {
+                datepicker.destroy();
+            }
+            document.body.innerHTML = '';
+            maskedDateTime = new MaskedDateTime();
+            maskedDateTime.destroy();
+        });
+        it('default rendering without enableMask property ', () => { 
+            let inputEle: HTMLElement = createElement('input', { id: 'datepicker' });
+            document.body.appendChild(inputEle);
+            datepicker = new DatePicker();
+            datepicker.appendTo('#datepicker');
+            expect(datepicker.element.value).toBe('');
+            
+            expect(datepicker.value).toBe(null);
+        });
+        it('default rendering with enableMask property ', () => { 
+            let inputEle: HTMLElement = createElement('input', { id: 'datepicker' });
+            document.body.appendChild(inputEle);
+            datepicker = new DatePicker({enableMask: true});
+            datepicker.appendTo('#datepicker');
+            expect(datepicker.element.value).toBe('day/month/year');
+            expect(datepicker.value).toBe(null);
+        });
+        it('Rendering with maskPlaceholder as custom type ', () => { 
+            let inputEle: HTMLElement = createElement('input', { id: 'datepicker' });
+            document.body.appendChild(inputEle);
+            datepicker = new DatePicker({enableMask: true , maskPlaceholder: {day: 'd.',month: 'M.' ,year: 'y.'}});
+            datepicker.appendTo('#datepicker');
+            expect(datepicker.element.value).toBe('d./M./y.');
+            expect(datepicker.value).toBe(null);
+        });
+        it('With format property -1 ', () => { 
+            let inputEle: HTMLElement = createElement('input', { id: 'datepicker' });
+            document.body.appendChild(inputEle);
+            datepicker = new DatePicker({enableMask: true , format: 'MM yyyy'});
+            datepicker.appendTo('#datepicker');
+            expect(datepicker.element.value).toBe('month year');
+            expect(datepicker.value).toBe(null);
+        });
+        it('with format property -2', () => { 
+            let inputEle: HTMLElement = createElement('input', { id: 'datepicker' });
+            document.body.appendChild(inputEle);
+            datepicker = new DatePicker({enableMask: true , format: 'MM/dd/yyyy'});
+            datepicker.appendTo('#datepicker');
+            expect(datepicker.element.value).toBe('month/day/year');
+            expect(datepicker.value).toBe(null);
+        });
+        it('with format property -3', () => { 
+            let inputEle: HTMLElement = createElement('input', { id: 'datepicker' });
+            document.body.appendChild(inputEle);
+            datepicker = new DatePicker({enableMask: true , format: 'MMM yy'});
+            datepicker.appendTo('#datepicker');
+            expect(datepicker.element.value).toBe('month year');
+            expect(datepicker.value).toBe(null);
+        });
+        it('with format property -4', () => { 
+            let inputEle: HTMLElement = createElement('input', { id: 'datepicker' });
+            document.body.appendChild(inputEle);
+            datepicker = new DatePicker({enableMask: true , format: 'dd/MM/yy hh:mm:ss'});
+            datepicker.appendTo('#datepicker');
+            expect(datepicker.element.value).toBe('day/month/year hour:minute:second');
+            expect(datepicker.value).toBe(null);
+        });
+        it('with format property -5', () => { 
+            let inputEle: HTMLElement = createElement('input', { id: 'datepicker' });
+            document.body.appendChild(inputEle);
+            datepicker = new DatePicker({enableMask: true , format: 'dd/MM/yy ddd'});
+            datepicker.appendTo('#datepicker');
+            expect(datepicker.element.value).toBe('day/month/year day of the week');
+            expect(datepicker.value).toBe(null);
+        });
+        it('Focusing the component', () => { 
+            let inputEle: HTMLElement = createElement('input', { id: 'datepicker' });
+            document.body.appendChild(inputEle);
+            datepicker = new DatePicker({enableMask: true , format: 'dd/MM/yyyy'});
+            datepicker.appendTo('#datepicker');
+            datepicker.focusIn();
+            datepicker.mouseUpHandler(mouseEventArgs);
+            expect(datepicker.element.value).toBe('day/month/year');
+            expect(datepicker.element.selectionStart).toBe(10);
+            expect(datepicker.element.selectionEnd).toBe(14);
+            expect(datepicker.value).toBe(null);
+        });
+        it('Selection navigation using keyboard action', () => { 
+            let inputEle: HTMLElement = createElement('input', { id: 'datepicker' });
+            document.body.appendChild(inputEle);
+            datepicker = new DatePicker({enableMask: true , format: 'dd/MM/yy'});
+            datepicker.appendTo('#datepicker');
+            datepicker.focusIn();
+            datepicker.mouseUpHandler(mouseEventArgs);
+            expect(datepicker.element.value).toBe('day/month/year');
+            expect(datepicker.element.selectionStart).toBe(10);
+            expect(datepicker.element.selectionEnd).toBe(14);
+            expect(datepicker.value).toBe(null);
+            datepicker.keydownHandler(keyEventArgs);
+            expect(datepicker.element.selectionStart).toBe(4);
+            expect(datepicker.element.selectionEnd).toBe(9);
+            datepicker.keydownHandler(keyEventArgs);
+            expect(datepicker.element.selectionStart).toBe(0);
+            expect(datepicker.element.selectionEnd).toBe(3);
+            keyEventArgs.action = keyEventArgs.key = keyEventArgs.code =  'ArrowRight';
+            datepicker.keydownHandler(keyEventArgs);
+            expect(datepicker.element.selectionStart).toBe(4);
+            expect(datepicker.element.selectionEnd).toBe(9);
+            datepicker.keydownHandler(keyEventArgs);
+            expect(datepicker.element.selectionStart).toBe(10);
+            expect(datepicker.element.selectionEnd).toBe(14);
+        });
+        it('Selection navigation using tab and shiftTab ', () => { 
+            let inputEle: HTMLElement = createElement('input', { id: 'datepicker' });
+            document.body.appendChild(inputEle);
+            datepicker = new DatePicker({enableMask: true , format: 'dd/MM/yy'});
+            datepicker.appendTo('#datepicker');
+            expect(datepicker.element.value).toBe('day/month/year');
+            datepicker.focusIn();
+            expect(datepicker.element.selectionStart).toBe(10);
+            expect(datepicker.element.selectionEnd).toBe(14);
+            expect(datepicker.value).toBe(null);
+            keyEventArgs.action = keyEventArgs.key = keyEventArgs.code = 'shiftTab'
+            datepicker.inputKeyActionHandle(keyEventArgs);
+            expect(datepicker.element.selectionStart).toBe(4);
+            expect(datepicker.element.selectionEnd).toBe(9);
+            datepicker.inputKeyActionHandle(keyEventArgs);
+            expect(datepicker.element.selectionStart).toBe(0);
+            expect(datepicker.element.selectionEnd).toBe(3);
+             keyEventArgs.key = keyEventArgs.code  = 'Tab';
+             keyEventArgs.action = 'tab';
+            datepicker.inputKeyActionHandle(keyEventArgs);
+            expect(datepicker.element.selectionStart).toBe(4);
+            expect(datepicker.element.selectionEnd).toBe(9);
+            datepicker.inputKeyActionHandle(keyEventArgs);
+            expect(datepicker.element.selectionStart).toBe(10);
+            expect(datepicker.element.selectionEnd).toBe(14);
+        });
+        it('Increment and decrement of date using arrow keys', () => { 
+            let inputEle: HTMLElement = createElement('input', { id: 'datepicker' });
+            document.body.appendChild(inputEle);
+            datepicker = new DatePicker({enableMask: true , format: 'dd/MM/yyyy'});
+            datepicker.appendTo('#datepicker');
+            datepicker.focusIn();
+            expect(datepicker.element.value).toBe('day/month/year');
+            datepicker.element.selectionStart = 0;
+            datepicker.element.selectionEnd = 3;
+            keyEventArgs.key = keyEventArgs.key = keyEventArgs.code  =  'ArrowUp';
+            let date: Date = new Date();
+            datepicker.keydownHandler(keyEventArgs);
+            expect(datepicker.element.value).toBe((date.getDate() + 1).toString() + '/month/year');
+            expect(datepicker.value).toBe(null);
+            datepicker.element.selectionStart = 0;
+            datepicker.element.selectionEnd = 2;
+            keyEventArgs.key = keyEventArgs.key = keyEventArgs.code  = 'ArrowDown';
+            datepicker.keydownHandler(keyEventArgs);
+            expect(datepicker.element.value).toBe((date.getDate()).toString() + '/month/year');
+            expect(datepicker.value).toBe(null);
+            datepicker.element.selectionStart = 3;
+            datepicker.element.selectionEnd = 8;
+            keyEventArgs.key = keyEventArgs.key = keyEventArgs.code  =  'ArrowUp';
+            datepicker.keydownHandler(keyEventArgs);
+            expect(datepicker.element.value).toBe((date.getDate()).toString()+ '/02' + '/year');
+            datepicker.element.selectionStart = 6;
+            datepicker.element.selectionEnd = 10;
+            keyEventArgs.key = keyEventArgs.key = keyEventArgs.code  =  'ArrowUp';
+            datepicker.keydownHandler(keyEventArgs);
+            expect(datepicker.element.value).toBe((date.getDate()).toString()+ '/02' + '/' + (date.getFullYear() + 1).toString());
+        });
+        it('Validation', () => { 
+            let inputEle: HTMLElement = createElement('input', { id: 'datepicker' });
+            document.body.appendChild(inputEle);
+            datepicker = new DatePicker({enableMask: true , format: 'dd/MM/yy'});
+            datepicker.appendTo('#datepicker');
+            datepicker.focusIn();
+            expect(datepicker.element.value).toBe('day/month/year');
+            datepicker.element.selectionStart = 0;
+            datepicker.element.selectionEnd = 3;
+            datepicker.element.value = '3/month/year';
+            datepicker.element.selectionStart = 1;
+            datepicker.inputHandler();
+            expect(datepicker.element.value).toBe('03/month/year');
+            datepicker.element.selectionStart = 0;
+            datepicker.element.selectionEnd = 2;
+            datepicker.element.value = '1/month/year';
+            datepicker.element.selectionStart = 1;
+            datepicker.inputHandler();
+            expect(datepicker.element.value).toBe('31/month/year');
+            datepicker.element.selectionStart = 3;
+            datepicker.element.selectionEnd = 8;
+            datepicker.element.value = '31/2/year';
+            datepicker.element.selectionStart = 4;
+            datepicker.inputHandler();
+            let date: Date = new Date();
+            expect(datepicker.element.value).toBe(new Date(date.getFullYear(), 1 + 1, 0).getDate().toString() +'/02/year');
+            expect(datepicker.value).toBe(null);
+            datepicker.element.value = 'a/2/year';
+            datepicker.element.selectionStart = 1;
+            datepicker.inputHandler();
+            expect(datepicker.element.value).toBe(new Date(date.getFullYear(), 1 + 1, 0).getDate().toString() +'/02/year');
+            expect(datepicker.value).toBe(null);
+        });
+        it('Value property', () => { 
+            let inputEle: HTMLElement = createElement('input', { id: 'datepicker' });
+            document.body.appendChild(inputEle);
+            datepicker = new DatePicker({enableMask: true , format: 'dd/MM/yyyy'});
+            datepicker.appendTo('#datepicker');
+            datepicker.focusIn();
+            datepicker.mouseUpHandler(mouseEventArgs);
+            expect(datepicker.element.value).toBe('day/month/year');
+            expect(datepicker.element.selectionStart).toBe(10);
+            expect(datepicker.element.selectionEnd).toBe(14);
+            expect(datepicker.value).toBe(null);
+            datepicker.element.value = '1/month/year';
+            datepicker.element.selectionStart = 1;
+            datepicker.inputHandler();
+            expect(datepicker.element.value).toBe('01/month/year');
+            expect(datepicker.value).toBe(null);
+            datepicker.element.value = '01/1/year';
+            datepicker.element.selectionStart = 4;
+            datepicker.inputHandler();
+            expect(datepicker.element.value).toBe('01/01/year');
+            expect(datepicker.value).toBe(null);
+            datepicker.element.value = '01/01/2';
+            datepicker.element.selectionStart = 7;
+            datepicker.inputHandler();
+            expect(datepicker.element.value).toBe('01/01/0002');
+            expect(datepicker.value).toBe(null);
+            datepicker.element.value = '01/01/0';
+            datepicker.element.selectionStart = 7;
+            datepicker.inputHandler();
+            expect(datepicker.element.value).toBe('01/01/0020');
+            expect(datepicker.value).toBe(null);
+            datepicker.element.value = '01/01/1';
+            datepicker.element.selectionStart = 7;
+            datepicker.inputHandler();
+            expect(datepicker.element.value).toBe('01/01/0201');
+            expect(datepicker.value).toBe(null);
+            datepicker.element.value = '01/01/2';
+            datepicker.element.selectionStart = 7;
+            datepicker.inputHandler();
+            expect(datepicker.element.value).toBe('01/01/2012');
+            expect(datepicker.value).toBe(null);
+            datepicker.inputBlurHandler();
+            expect(+datepicker.value).toBe(+new Date('01/01/2012'));
+        });
+
+        it('Deletion', () => { 
+            let inputEle: HTMLElement = createElement('input', { id: 'datepicker' });
+            document.body.appendChild(inputEle);
+            datepicker = new DatePicker({enableMask: true , format: 'dd/MM/yyyy'});
+            datepicker.appendTo('#datepicker');
+            datepicker.focusIn();
+            datepicker.mouseUpHandler(mouseEventArgs);
+            expect(datepicker.element.value).toBe('day/month/year');
+            expect(datepicker.element.selectionStart).toBe(10);
+            expect(datepicker.element.selectionEnd).toBe(14);
+            expect(datepicker.value).toBe(null);
+            datepicker.element.value = '1/month/year';
+            datepicker.element.selectionStart = 1;
+            datepicker.inputHandler();
+            expect(datepicker.element.value).toBe('01/month/year');
+            expect(datepicker.value).toBe(null);
+            datepicker.element.value = '01/1/year';
+            datepicker.element.selectionStart = 4;
+            datepicker.inputHandler();
+            expect(datepicker.element.value).toBe('01/01/year');
+            expect(datepicker.value).toBe(null);
+            datepicker.element.value = '01/01/2';
+            datepicker.element.selectionStart = 7;
+            datepicker.inputHandler();
+            expect(datepicker.element.value).toBe('01/01/0002');
+            expect(datepicker.value).toBe(null);
+            datepicker.element.value = '01/01/0';
+            datepicker.element.selectionStart = 7;
+            datepicker.inputHandler();
+            expect(datepicker.element.value).toBe('01/01/0020');
+            expect(datepicker.value).toBe(null);
+            datepicker.element.value = '01/01/1';
+            datepicker.element.selectionStart = 7;
+            datepicker.inputHandler();
+            expect(datepicker.element.value).toBe('01/01/0201');
+            expect(datepicker.value).toBe(null);
+            datepicker.element.value = '01/01/2';
+            datepicker.element.selectionStart = 7;
+            datepicker.inputHandler();
+            expect(datepicker.element.value).toBe('01/01/2012');
+            expect(datepicker.value).toBe(null);
+            datepicker.inputBlurHandler();
+            expect(+datepicker.value).toBe(+new Date('01/01/2012'));
+            datepicker.focusIn();
+            datepicker.mouseUpHandler(mouseEventArgs);
+            expect(datepicker.element.value).toBe('01/01/2012');
+            expect(datepicker.element.selectionStart).toBe(6);
+            expect(datepicker.element.selectionEnd).toBe(10);
+            datepicker.element.value = '01/01/';
+            datepicker.element.selectionStart = 6;
+            datepicker.inputHandler();
+            expect(datepicker.element.value).toBe('01/01/year');
+            expect(datepicker.element.selectionStart).toBe(3);
+            expect(datepicker.element.selectionEnd).toBe(5);
+            datepicker.element.value = '01//year';
+            datepicker.element.selectionStart = 3;
+            datepicker.inputHandler();
+            expect(datepicker.element.value).toBe('01/month/year');
+            expect(datepicker.element.selectionStart).toBe(0);
+            expect(datepicker.element.selectionEnd).toBe(2);
+            datepicker.element.value = '/month/year';
+            datepicker.element.selectionStart = 0;
+            datepicker.inputHandler();
+            expect(datepicker.element.value).toBe('day/month/year');
+            expect(datepicker.element.selectionStart).toBe(0);
+            expect(datepicker.element.selectionEnd).toBe(3);
+            datepicker.inputBlurHandler();
+            expect(datepicker.value).toBe(null);
+        });
+
+        it('Alphabetical input for month format -1 ', () => { 
+            let inputEle: HTMLElement = createElement('input', { id: 'datepicker' });
+            document.body.appendChild(inputEle);
+            datepicker = new DatePicker({enableMask: true , format: 'MMM'});
+            datepicker.appendTo('#datepicker');
+            expect(datepicker.element.value).toBe('month');
+            expect(datepicker.value).toBe(null);
+            datepicker.element.value = 'j';
+            datepicker.element.selectionStart = 1;
+            datepicker.inputHandler();
+            expect(datepicker.element.value).toBe('Jan');
+            datepicker.element.value = 'u';
+            datepicker.element.selectionStart = 1;
+            datepicker.inputHandler();
+            expect(datepicker.element.value).toBe('Jun');
+            datepicker.element.value = 'f';
+            datepicker.element.selectionStart = 1;
+            datepicker.inputHandler();
+            expect(datepicker.element.value).toBe('Feb');
+        });
+
+        it('Alphabetical input for month format -2 ', () => { 
+            let inputEle: HTMLElement = createElement('input', { id: 'datepicker' });
+            document.body.appendChild(inputEle);
+            datepicker = new DatePicker({enableMask: true , format: 'MMMM'});
+            datepicker.appendTo('#datepicker');
+            expect(datepicker.element.value).toBe('month');
+            expect(datepicker.value).toBe(null);
+            datepicker.element.value = 'j';
+            datepicker.element.selectionStart = 1;
+            datepicker.inputHandler();
+            expect(datepicker.element.value).toBe('January');
+            datepicker.element.value = 'u';
+            datepicker.element.selectionStart = 1;
+            datepicker.inputHandler();
+            expect(datepicker.element.value).toBe('June');
+            datepicker.element.value = 'f';
+            datepicker.element.selectionStart = 1;
+            datepicker.inputHandler();
+            expect(datepicker.element.value).toBe('February');
+        });
+        
+        it('strict mode ', () => { 
+            let inputEle: HTMLElement = createElement('input', { id: 'datepicker' });
+            document.body.appendChild(inputEle);
+            datepicker = new DatePicker({enableMask: true , format: 'dd/MM/yyyy' ,
+            strictMode: true
+            });
+            datepicker.appendTo('#datepicker');
+            datepicker.focusIn();
+            datepicker.element.selectionStart = 14;
+            datepicker.mouseUpHandler(mouseEventArgs);
+            expect(datepicker.element.value).toBe('day/month/year');
+            expect(datepicker.element.selectionStart).toBe(10);
+            expect(datepicker.element.selectionEnd).toBe(14);
+            expect(datepicker.value).toBe(null);
+            datepicker.element.value = '1/month/year';
+            datepicker.element.selectionStart = 1;
+            datepicker.inputHandler();
+            expect(datepicker.element.value).toBe('01/month/year');
+            expect(datepicker.value).toBe(null);
+            datepicker.element.value = '01/1/year';
+            datepicker.element.selectionStart = 4;
+            datepicker.inputHandler();
+            expect(datepicker.element.value).toBe('01/01/year');
+            datepicker.inputBlurHandler();
+            expect(datepicker.element.value).toBe('day/month/year');
+            expect(datepicker.value).toBe(null);
+            datepicker.focusIn();
+            datepicker.mouseUpHandler(mouseEventArgs);
+            expect(datepicker.element.value).toBe('day/month/year');
+            expect(datepicker.element.selectionStart).toBe(10);
+            expect(datepicker.element.selectionEnd).toBe(14);
+            expect(datepicker.value).toBe(null);
+            datepicker.element.value = '1/month/year';
+            datepicker.element.selectionStart = 1;
+            datepicker.inputHandler();
+            expect(datepicker.element.value).toBe('01/month/year');
+            expect(datepicker.value).toBe(null);
+            datepicker.element.value = '01/1/year';
+            datepicker.element.selectionStart = 4;
+            datepicker.inputHandler();
+            expect(datepicker.element.value).toBe('01/01/year');
+            datepicker.element.value = '01/01/2';
+            datepicker.element.selectionStart = 7;
+            datepicker.inputHandler();
+            expect(datepicker.element.value).toBe('01/01/0002');
+            expect(datepicker.value).toBe(null);
+            datepicker.element.value = '01/01/1';
+            datepicker.element.selectionStart = 7;
+            datepicker.inputHandler();
+            expect(datepicker.element.value).toBe('01/01/0021');
+            expect(datepicker.value).toBe(null);
+            datepicker.element.value = '01/01/0';
+            datepicker.element.selectionStart = 7;
+            datepicker.inputHandler();
+            expect(datepicker.element.value).toBe('01/01/0210');
+            expect(datepicker.value).toBe(null);
+            datepicker.element.value = '01/01/0';
+            datepicker.element.selectionStart = 7;
+            datepicker.inputHandler();
+            expect(datepicker.element.value).toBe('01/01/2100');
+            expect(datepicker.value).toBe(null);
+            datepicker.inputBlurHandler();
+            expect(datepicker.element.value).toBe('31/12/2099');
+            expect(+datepicker.value).toBe(+new Date('12/31/2099'));
+        });
+        it('strict mode with min and max property', () => { 
+            let inputEle: HTMLElement = createElement('input', { id: 'datepicker' });
+            document.body.appendChild(inputEle);
+            datepicker = new DatePicker({enableMask: true , format: 'dd/MM/yyyy' ,
+            strictMode: true,
+            min: new Date(2021,0,1),
+            max: new Date(2021,0,31)
+            });
+            datepicker.appendTo('#datepicker');
+            expect(datepicker.element.value).toBe('day/month/year');
+            expect(datepicker.value).toBe(null);
+            datepicker.element.value = '1/month/year';
+            datepicker.element.selectionStart = 1;
+            datepicker.inputHandler();
+            expect(datepicker.element.value).toBe('01/month/year');
+            expect(datepicker.value).toBe(null);
+            datepicker.element.value = '01/2/year';
+            datepicker.element.selectionStart = 4;
+            datepicker.inputHandler();
+            expect(datepicker.element.value).toBe('01/02/year');
+            datepicker.element.value = '01/02/2';
+            datepicker.element.selectionStart = 7;
+            datepicker.inputHandler();
+            expect(datepicker.element.value).toBe('01/02/0002');
+            expect(datepicker.value).toBe(null);
+            datepicker.element.value = '01/02/0';
+            datepicker.element.selectionStart = 7;
+            datepicker.inputHandler();
+            expect(datepicker.element.value).toBe('01/02/0020');
+            expect(datepicker.value).toBe(null);
+            datepicker.element.value = '01/02/2';
+            datepicker.element.selectionStart = 7;
+            datepicker.inputHandler();
+            expect(datepicker.element.value).toBe('01/02/0202');
+            expect(datepicker.value).toBe(null);
+            datepicker.element.value = '01/02/1';
+            datepicker.element.selectionStart = 7;
+            datepicker.inputHandler();
+            expect(datepicker.element.value).toBe('01/02/2021');
+            expect(datepicker.value).toBe(null);
+            datepicker.inputBlurHandler();
+            expect(datepicker.element.value).toBe('31/01/2021');
+            expect(+datepicker.value).toBe(+new Date('01/31/2021'));
+        });
+        it('RTL mode with maskedDatepicker ', () => { 
+            let inputEle: HTMLElement = createElement('input', { id: 'datepicker' });
+            document.body.appendChild(inputEle);
+            datepicker = new DatePicker({enableMask: true , format: 'dd/MM/yyyy', enableRtl: true});
+            datepicker.appendTo('#datepicker');
+            datepicker.focusIn();
+            datepicker.mouseUpHandler(mouseEventArgs);
+            expect(datepicker.element.value).toBe('day/month/year');
+            expect(datepicker.element.selectionStart).toBe(10);
+            expect(datepicker.element.selectionEnd).toBe(14);
+            expect(datepicker.value).toBe(null);
+            datepicker.element.value = '1/month/year';
+            datepicker.element.selectionStart = 1;
+            datepicker.inputHandler();
+            expect(datepicker.element.value).toBe('01/month/year');
+            expect(datepicker.value).toBe(null);
+            datepicker.element.value = '01/1/year';
+            datepicker.element.selectionStart = 4;
+            datepicker.inputHandler();
+            expect(datepicker.element.value).toBe('01/01/year');
+            expect(datepicker.value).toBe(null);
+            datepicker.element.value = '01/01/2';
+            datepicker.element.selectionStart = 7;
+            datepicker.inputHandler();
+            expect(datepicker.element.value).toBe('01/01/0002');
+            expect(datepicker.value).toBe(null);
+            datepicker.element.value = '01/01/0';
+            datepicker.element.selectionStart = 7;
+            datepicker.inputHandler();
+            expect(datepicker.element.value).toBe('01/01/0020');
+            expect(datepicker.value).toBe(null);
+            datepicker.element.value = '01/01/1';
+            datepicker.element.selectionStart = 7;
+            datepicker.inputHandler();
+            expect(datepicker.element.value).toBe('01/01/0201');
+            expect(datepicker.value).toBe(null);
+            datepicker.element.value = '01/01/2';
+            datepicker.element.selectionStart = 7;
+            datepicker.inputHandler();
+            expect(datepicker.element.value).toBe('01/01/2012');
+            expect(datepicker.value).toBe(null);
+            datepicker.inputBlurHandler();
+            expect(+datepicker.value).toBe(+new Date('01/01/2012'));
+        });
+        // it('Enable mask with placeholder', () => { 
+        //     let inputEle: HTMLElement = createElement('input', { id: 'datepicker' });
+        //     document.body.appendChild(inputEle);
+        //     datepicker = new DatePicker({enableMask: true , format: 'dd/MM/yy ddd' , placeholder: 'Enter the date'});
+        //     datepicker.appendTo('#datepicker');
+        //     expect(datepicker.element.value).toBe('');
+        //     expect(datepicker.value).toBe(null);
+        //     datepicker.focusIn();
+        //     expect(datepicker.element.value).toBe('day/month/year');
+        //     expect(datepicker.value).toBe(null);
+        //     datepicker.focusOut();
+        //     expect(datepicker.element.value).toBe('');
+        //     expect(datepicker.value).toBe(null);
+        //     datepicker.focusIn();
+        //     datepicker.element.value = '1/month/year';
+        //     datepicker.element.selectionStart = 1;
+        //     datepicker.inputHandler();
+        //     expect(datepicker.element.value).toBe('01/month/year');
+        //     datepicker.focusOut();
+        //     expect(datepicker.element.value).toBe('01/month/year');
+        //     expect(datepicker.value).toBe(null);
+        // });
+        // it('FloatLabel type as auto', () => { 
+        //     let inputEle: HTMLElement = createElement('input', { id: 'datepicker' });
+        //     document.body.appendChild(inputEle);
+        //     datepicker = new DatePicker({enableMask: true , format: 'dd/MM/yy ddd' , placeholder: 'Enter the date' , floatLabelType: 'Auto'});
+        //     datepicker.appendTo('#datepicker');
+        //     expect(document.querySelector('.e-float-text').innerHTML).toBe('Enter the date');
+        //     expect(document.getElementsByClassName('e-float-text')[0].classList.contains('e-label-bottom')).toBe(true);
+        //     expect(datepicker.element.value).toBe('');
+        //     expect(datepicker.value).toBe(null);
+        //     datepicker.focusIn();
+        //     expect(datepicker.element.value).toBe('day/month/year');
+        //     expect(document.getElementsByClassName('e-float-text')[0].classList.contains('e-label-top')).toBe(true);
+        //     expect(datepicker.value).toBe(null);
+        //     datepicker.focusOut();
+        //     expect(datepicker.element.value).toBe('');
+        //     expect(document.getElementsByClassName('e-float-text')[0].classList.contains('e-label-bottom')).toBe(true);
+        //     expect(datepicker.value).toBe(null);
+        //     datepicker.focusIn();
+        //     datepicker.element.value = '1/month/year';
+        //     datepicker.element.selectionStart = 1;
+        //     datepicker.inputHandler();
+        //     expect(datepicker.element.value).toBe('01/month/year');
+        //     datepicker.focusOut();
+        //     expect(datepicker.element.value).toBe('01/month/year');
+        //     expect(document.getElementsByClassName('e-float-text')[0].classList.contains('e-label-top')).toBe(true);
+        //     expect(datepicker.value).toBe(null);
+        // });
+        // it('FloatLabel type as always', () => { 
+        //     let inputEle: HTMLElement = createElement('input', { id: 'datepicker' });
+        //     document.body.appendChild(inputEle);
+        //     datepicker = new DatePicker({enableMask: true , format: 'dd/MM/yy ddd' , placeholder: 'Enter the date' , floatLabelType: 'Always'});
+        //     datepicker.appendTo('#datepicker');
+        //     expect(document.querySelector('.e-float-text').innerHTML).toBe('Enter the date');
+        //     expect(document.getElementsByClassName('e-float-text')[0].classList.contains('e-label-top')).toBe(true);
+        //     expect(datepicker.element.value).toBe('day/month/year day of the week');
+        //     expect(datepicker.value).toBe(null);
+        //     datepicker.focusIn();
+        //     expect(datepicker.element.value).toBe('day/month/year day of the week');
+        //     expect(document.getElementsByClassName('e-float-text')[0].classList.contains('e-label-top')).toBe(true);
+        //     expect(datepicker.value).toBe(null);
+        //     datepicker.focusOut();
+        //     expect(datepicker.element.value).toBe('');
+        //     expect(document.getElementsByClassName('e-float-text')[0].classList.contains('e-label-top')).toBe(true);
+        //     expect(datepicker.value).toBe(null);
+        //     datepicker.focusIn();
+        //     datepicker.element.value = '1/month/year day of the week';
+        //     datepicker.element.selectionStart = 1;
+        //     datepicker.inputHandler();
+        //     expect(datepicker.element.value).toBe('01/month/year day of the week');
+        //     datepicker.focusOut();
+        //     expect(datepicker.element.value).toBe('01/month/year day of the week');
+        //     expect(document.getElementsByClassName('e-float-text')[0].classList.contains('e-label-top')).toBe(true);
+        //     expect(datepicker.value).toBe(null);
+        // });
+        it('culture(ja) test case - mask', () => {
+            loadCultureFiles_mask('ja');
+            datepicker = new DatePicker({
+                locale: 'ja',
+                format: 'dd/MMM/yyyy',
+                enableMask: true
+            });
+            datepicker.appendTo('#date');
+            expect(datepicker.locale).toBe('ja');
+            datepicker.focusIn();
+            expect(datepicker.element.value).toBe('日/月/年');
+        });
+        // it('culture(de) test case', () => {
+        //     loadCultureFiles_mask('ja');
+        //     datepicker = new DatePicker({
+        //         locale: 'de',
+        //         format: 'dd/MMM/yyyy',
+        //         enableMask: true
+        //     });
+        //     datepicker.appendTo('#date');
+        //     expect(datepicker.locale).toBe('de');
+        //     expect(datepicker.element.value).toBe('Tag/Monat/Jahr');
+        // });
+        // it('culture(zh) test case - mask', () => {
+        //     loadCultureFiles_mask('zh');
+        //     datepicker = new DatePicker({
+        //         locale: 'zh',
+        //         format: 'dd/MMM/yyyy',
+        //         enableMask: true
+        //     });
+        //     datepicker.appendTo('#date');
+        //     expect(datepicker.locale).toBe('zh');
+        //     datepicker.focusIn();
+        //     setTimeout(() => {
+        //         expect(datepicker.element.value).toBe('日/月/年');
+        //         },100);
+        // });
+        // it('dynamic mask module ', () => { 
+        //     let inputEle: HTMLElement = createElement('input', { id: 'datepicker' });
+        //     document.body.appendChild(inputEle);
+        //     datepicker = new DatePicker();
+        //     datepicker.appendTo('#datepicker');
+        //     expect(datepicker.element.value).toBe('');
+        //     expect(datepicker.value).toBe(null);
+        //     datepicker.enableMask = true;
+        //     datepicker.dataBind();
+        //     expect(datepicker.element.value).toBe('day/month/year');
+        //     expect(datepicker.value).toBe(null);
+        // });
+        // it('ChangeEvent ', () => { 
+        //     let inputEle: HTMLElement = createElement('input', { id: 'datepicker' });
+        //     document.body.appendChild(inputEle);
+        //     datepicker = new DatePicker({enableMask: true , format: 'dd/MM/yyyy' ,
+        //  change: function(args) {
+        //     expect(+args.value).toBe(+new Date('01/01/2012'));
+        //   }
+        // });
+        //     datepicker.appendTo('#datepicker');
+        //     datepicker.focusIn();
+        //     datepicker.mouseUpHandler(mouseEventArgs);
+        //     expect(datepicker.element.value).toBe('day/month/year');
+        //     expect(datepicker.element.selectionStart).toBe(10);
+        //     expect(datepicker.element.selectionEnd).toBe(14);
+        //     expect(datepicker.value).toBe(null);
+        //     datepicker.element.value = '1/month/year';
+        //     datepicker.element.selectionStart = 1;
+        //     datepicker.inputHandler();
+        //     expect(datepicker.element.value).toBe('01/month/year');
+        //     expect(datepicker.value).toBe(null);
+        //     datepicker.element.value = '01/1/year';
+        //     datepicker.element.selectionStart = 4;
+        //     datepicker.inputHandler();
+        //     expect(datepicker.element.value).toBe('01/01/year');
+        //     expect(datepicker.value).toBe(null);
+        //     datepicker.element.value = '01/01/2';
+        //     datepicker.element.selectionStart = 7;
+        //     datepicker.inputHandler();
+        //     expect(datepicker.element.value).toBe('01/01/0002');
+        //     expect(datepicker.value).toBe(null);
+        //     datepicker.element.value = '01/01/0';
+        //     datepicker.element.selectionStart = 7;
+        //     datepicker.inputHandler();
+        //     expect(datepicker.element.value).toBe('01/01/0020');
+        //     expect(datepicker.value).toBe(null);
+        //     datepicker.element.value = '01/01/1';
+        //     datepicker.element.selectionStart = 7;
+        //     datepicker.inputHandler();
+        //     expect(datepicker.element.value).toBe('01/01/0201');
+        //     expect(datepicker.value).toBe(null);
+        //     datepicker.element.value = '01/01/2';
+        //     datepicker.element.selectionStart = 7;
+        //     datepicker.inputHandler();
+        //     expect(datepicker.element.value).toBe('01/01/2012');
+        //     expect(datepicker.value).toBe(null);
+        //     datepicker.inputBlurHandler();
+        //     expect(+datepicker.value).toBe(+new Date('01/01/2012'));
+        // });
+        
+
+});
+
 });

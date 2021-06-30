@@ -1515,6 +1515,93 @@ describe('Kanban base module', () => {
         });
     });
 
+    describe('Check frozen row', () => {
+        let kanbanObj: Kanban;
+        beforeAll((done: DoneFn) => {
+            const model: KanbanModel = {
+                keyField: 'Status',
+                height: 500,
+                columns: [
+                    { headerText: 'Backlog', keyField: 'Open', showAddButton: true, isExpanded: false },
+                    { headerText: 'In Progress', keyField: 'InProgress' },
+                    { headerText: 'Testing', keyField: 'Testing' },
+                    { headerText: 'Done', keyField: 'Close' }
+                ],
+                cardSettings: {
+                    contentField: 'Summary',
+                    headerField: 'Id'
+                },
+                swimlaneSettings: {
+                    keyField: 'Assignee',
+                    enableFrozenRows: true
+                }
+            };
+            kanbanObj = util.createKanban(model, kanbanData, done);
+        });
+
+        afterAll(() => {
+            util.destroy(kanbanObj);
+        });
+
+        it('Check freeze row', () => {
+            const contentArea: HTMLElement = document.querySelector('.e-kanban-content');
+            expect(kanbanObj.scrollPosition.content.left).toEqual(0);
+            expect(kanbanObj.scrollPosition.content.top).toEqual(0);
+            util.triggerScrollEvent(contentArea, 300);
+        });
+        it('Check freeze swimlane row with root element', () => {
+            const kanban: HTMLElement = document.querySelector('.e-kanban');
+            expect(kanban.firstElementChild.classList.contains('e-frozen-swimlane-row')).toEqual(true);
+            expect(kanban.children[1].classList.contains('e-spinner-pane')).toEqual(true);
+            expect(kanban.children[2].classList.contains('e-kanban-header')).toEqual(true);
+            expect(kanban.children[3].classList.contains('e-kanban-content')).toEqual(true);
+        });
+        it('Render the freeze swimlane row', () => {
+            const frozenSwimlaneRow: HTMLElement = document.querySelector('.e-frozen-swimlane-row');
+            expect(frozenSwimlaneRow.firstElementChild.classList.contains('e-frozen-row')).toEqual(true);
+            expect(frozenSwimlaneRow.querySelector('.e-frozen-row').firstElementChild.classList.contains('e-swimlane-header')).toEqual(true);
+            expect(frozenSwimlaneRow.querySelector('.e-swimlane-header').childElementCount).toEqual(3);
+            expect(frozenSwimlaneRow.querySelector('.e-swimlane-header').firstElementChild.classList.contains('e-icons')).toEqual(true);
+            expect(frozenSwimlaneRow.querySelector('.e-swimlane-header').firstElementChild.classList.contains('e-swimlane-row-expand')).toEqual(true);
+            expect(frozenSwimlaneRow.querySelector('.e-header-wrap').firstElementChild.classList.contains('e-swimlane-text')).toEqual(true);
+            expect(frozenSwimlaneRow.querySelector('.e-header-wrap').firstElementChild.getAttribute('data-role')).toEqual('Andrew Fuller');
+            expect(frozenSwimlaneRow.querySelector('.e-item-count').innerHTML).toEqual('- 10 items');
+        });
+        it('Dynamically changed the freeze swimlane row content', () => {
+            const contentArea: HTMLElement = document.querySelector('.e-kanban-content');
+            expect(kanbanObj.scrollPosition.content.left).toEqual(0);
+            expect(kanbanObj.scrollPosition.content.top).toEqual(300);
+            util.triggerScrollEvent(contentArea, 600);
+        });
+        it('Check dynamically changed the freeze swimlane row content', () => {
+            const frozenSwimlaneRow: HTMLElement = document.querySelector('.e-frozen-swimlane-row');
+            expect(frozenSwimlaneRow.firstElementChild.classList.contains('e-frozen-row')).toEqual(true);
+            expect(frozenSwimlaneRow.querySelector('.e-frozen-row').firstElementChild.classList.contains('e-swimlane-header')).toEqual(true);
+            expect(frozenSwimlaneRow.querySelector('.e-swimlane-header').childElementCount).toEqual(3);
+            expect(frozenSwimlaneRow.querySelector('.e-swimlane-header').firstElementChild.classList.contains('e-icons')).toEqual(true);
+            expect(frozenSwimlaneRow.querySelector('.e-swimlane-header').firstElementChild.classList.contains('e-swimlane-row-expand')).toEqual(true);
+            expect(frozenSwimlaneRow.querySelector('.e-header-wrap').firstElementChild.classList.contains('e-swimlane-text')).toEqual(true);
+            expect(frozenSwimlaneRow.querySelector('.e-header-wrap').firstElementChild.getAttribute('data-role')).toEqual('Janet Leverling');
+            expect(frozenSwimlaneRow.querySelector('.e-item-count').innerHTML).toEqual('- 12 items');
+        });
+        it('Dynamically disabled the freeze swimlane row property', () => {
+            const contentArea: HTMLElement = document.querySelector('.e-kanban-content');
+            expect(kanbanObj.swimlaneSettings.enableFrozenRows).toEqual(true);
+            kanbanObj.swimlaneSettings.enableFrozenRows = false;
+            kanbanObj.dataBind();
+            expect(kanbanObj.swimlaneSettings.enableFrozenRows).toEqual(false);
+            const kanban: HTMLElement = document.querySelector('.e-kanban');
+            expect(kanban.firstElementChild.classList.contains('e-frozen-swimlane-row')).toEqual(false);
+        });
+        it('Disabled freeze swimlane row property', () => {
+            const kanban: HTMLElement = document.querySelector('.e-kanban');
+            expect(kanban.firstElementChild.classList.contains('e-frozen-swimlane-row')).toEqual(false);
+            const contentArea: HTMLElement = document.querySelector('.e-kanban-content');
+            expect(kanbanObj.scrollPosition.content.left).toEqual(0);
+            expect(kanbanObj.scrollPosition.content.top).toEqual(0);
+        });
+    });
+
     it('memory leak', () => {
         profile.sample();
         const average: number = inMB(profile.averageChange);

@@ -549,6 +549,26 @@
     content: '\e688';
   }
 
+  .e-item .e-de-paste-column::before {
+    content: '\e91b';
+  }
+
+  .e-item .e-de-paste-row::before {
+    content: '\e91c';
+  }
+
+  .e-item .e-de-paste-overwrite-cells::before {
+    content: '\e91d';
+  }
+
+  .e-item .e-de-paste-nested-table::before {
+    content: '\e91e';
+  }
+
+  .e-item .e-de-paste-merge-table::before {
+    content: '\e91f';
+  }
+  
   .e-menu-item .e-de-open-properties::before {
     content: '\e605';
   }

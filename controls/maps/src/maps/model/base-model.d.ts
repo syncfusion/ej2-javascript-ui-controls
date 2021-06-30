@@ -1251,7 +1251,7 @@ export interface ShapeSettingsModel {
     /**
      * Sets and gets the color of the shapes in maps.
      *
-     * @default '#A6A6A6'
+     * @default null
      */
     fill?: string;
 

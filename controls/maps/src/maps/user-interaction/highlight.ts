@@ -1,4 +1,6 @@
-/* eslint-disable @typescript-eslint/dot-notation */
+/* eslint-disable @typescript-eslint/no-unused-vars */
+/* eslint-disable jsdoc/require-param */
+/* eslint-disable max-len */
 import { Maps } from '../../index';
 import { HighlightSettingsModel, ISelectionEventArgs, itemHighlight } from '../index';
 import { Browser, isNullOrUndefined } from '@syncfusion/ej2-base';
@@ -11,7 +13,6 @@ import { BorderModel } from '../model/base-model';
 export class Highlight {
     private maps: Maps;
     private highlightSettings: HighlightSettingsModel;
-    // eslint-disable-next-line @typescript-eslint/explicit-member-accessibility
     constructor(maps: Maps) {
         this.maps = maps;
         this.addEventListener();

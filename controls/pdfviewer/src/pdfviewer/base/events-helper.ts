@@ -1,7 +1,8 @@
 /* eslint-disable */
 import { BaseEventArgs } from '@syncfusion/ej2-base';
 import { AnnotationType, CommentStatus } from './index';
-import { ShapeLabelSettingsModel, DocumentTextCollectionSettingsModel, RectangleBoundsModel, FormFieldModel } from '../pdfviewer-model';
+import { ShapeLabelSettingsModel, DocumentTextCollectionSettingsModel, RectangleBoundsModel, FormFieldModel } from '../pdfviewer-model'; 
+import { IFormField, IFormFieldBound } from '../form-designer';
 /**
  * Exports types used by PDF viewer.
  */
@@ -133,6 +134,28 @@ export interface AjaxRequestFailureEventArgs extends BaseEventArgs {
      * Specifies the retry request for the failed requests.
      */
     retryCount?: boolean
+}
+
+/**
+ * This class describes ajaxRequestSuccess event arguments.
+ */
+ export interface AjaxRequestSuccessEventArgs extends BaseEventArgs {
+    /**
+     * Get the name of the Event.
+     */
+    name: string
+    /**
+    * Get the loaded PDF document name in the PDF viewer
+    */
+    documentName: string
+    /**
+     * Get the action name of the request.
+     */
+    action: string
+    /**
+     * Get the data as a JSON object from the request.
+     */
+    data: any
 }
 
 /**
@@ -1146,4 +1169,270 @@ export interface TextSearchCompleteEventArgs extends BaseEventArgs {
      * Specifies the match case of the searched text.
      */
     matchCase: boolean
+}
+
+/**
+ * This event arguments provides the necessary information about form field add event.
+ */
+export interface FormFieldAddArgs extends BaseEventArgs {
+    /**
+     * Get the name of the event.
+     */
+    name: string
+    /**
+     * Event arguments for the form field add event.
+     */
+    field: IFormField
+    /**
+     * Get the page number.
+     */
+    pageIndex: number
+}
+
+/**
+ * This event arguments provides the necessary information about form field remove event.
+ */
+export interface FormFieldRemoveArgs extends BaseEventArgs {
+    /**
+     * Get the name of the event.
+     */
+    name: string
+    /**
+     * Event arguments for the form field remove event.
+     */
+    field: IFormField
+    /**
+     * Get the page number.
+     */
+    pageIndex: number
+}
+
+/**
+ * This event arguments provides the necessary information about form field properties change event.
+ */
+export interface FormFieldPropertiesChangeArgs extends BaseEventArgs {
+    /**
+     * Get the name of the event.
+     */
+    name: string
+    /**
+     * Event arguments for the form field properties change event.
+     */
+    field: IFormField
+    /**
+     * Get the page number.
+     */
+    pageIndex: number
+    /**
+     * Specifies whether the form field value is changed or not.
+     */
+    isValueChanged?: boolean
+    /**
+     * Specifies whether the font family of the form field is changed or not.
+     */
+    isFontFamilyChanged?: boolean
+    /**
+     * Specifies whether the font size of the form field is changed or not.
+     */
+    isFontSizeChanged?: boolean
+    /**
+     * Specifies whether the font style of the form field is changed or not.
+     */
+    isFontStyleChanged?: boolean
+    /**
+     * Specifies whether the font color of the form field is changed or not.
+     */
+    isColorChanged?: boolean
+    /**
+     * Specifies whether the background color of the form field is changed or not.
+     */
+    isBackgroundColorChanged?: boolean
+    /**
+     * Specifies whether the border color of the form field is changed or not.
+     */
+    isBorderColorChanged?: boolean
+    /**
+     * Specifies whether the border width of the form field is changed or not.
+     */
+    isBorderWidthChanged?: boolean
+    /**
+     * Specifies whether the text alignment of the form field is changed or not.
+     */
+    isAlignmentChanged?: boolean
+    /**
+     * Specifies the Read Only of Form field is changed or not.
+     */
+    isReadOnlyChanged?: boolean
+    /**
+     * Specifies whether the form field visibility is changed or not.
+     */
+    isVisibilityChanged?: boolean
+    /**
+     * Specifies whether the max length of the form field is changed or not.
+     */
+    isMaxLengthChanged?: boolean
+    /**
+     * Specifies whether the is required option of the form field is changed or not.
+     */
+    isRequiredChanged?: boolean
+    /**
+     * Specifies whether the print option of the form field is changed or not.
+     */
+    isPrintChanged?: boolean
+    /**
+     * Specifies whether the tool tip property is changed or not.
+     */
+    isToolTipChanged?: boolean
+    /**
+     * Specifies the old value of the form field.
+     */
+    oldValue?: any;
+    /**
+     * Specifies the new value of the form field.
+     */
+    newValue?: any;
+}
+
+/**
+ * This event arguments provides the necessary information about form field mouse leave event.
+ */
+export interface FormFieldMouseLeaveArgs extends BaseEventArgs {
+    /**
+     * Get the name of the event.
+     */
+     name: string
+     /**
+      * Event arguments for the form field mouse leave event.
+      */
+     field: IFormField
+     /**
+      * Get the page number.
+      */
+     pageIndex: number
+}
+
+/**
+ * This event arguments provides the necessary information about form field mouse over event.
+ */
+export interface FormFieldMouseoverArgs extends BaseEventArgs {
+    /**
+     * Get the name of the event.
+     */
+    name: string
+    /**
+     * Event arguments for the form field mouse over event.
+     */
+    field: IFormField
+    /**
+     * Get the page number.
+     */
+    pageIndex: number
+    /**
+     * Get the mouse over x position with respect to the page container.
+     */
+    pageX: number
+    /**
+     * Get the mouse over y position with respect to the page container.
+     */
+    pageY: number
+    /**
+     * Specifies the mouse over x position with respect to the viewer container.
+     */
+    X: number
+    /**
+     * Specifies the mouse over y position with respect to the viewer container.
+     */
+    Y: number
+}
+
+/**
+ * This event arguments provides the necessary information about form field move event.
+ */
+export interface FormFieldMoveArgs extends BaseEventArgs {
+     /**
+     * Get the name of the event.
+     */
+      name: string
+      /**
+       * Event arguments for the form field move event.
+       */
+      field: IFormField
+      /**
+       * Get the page number.
+       */
+      pageIndex: number
+      /**
+       * Get the previous position of the form field in the page.
+       */
+     previousPosition: IFormFieldBound
+      /**
+       * Current position of form field in the page.
+       */
+     currentPosition: IFormFieldBound
+}
+
+/**
+ * This event arguments provides the necessary information about form field resize event.
+ */
+export interface FormFieldResizeArgs extends BaseEventArgs {
+     /**
+     * Get the name of the event.
+     */
+     name: string
+     /**
+      * Event arguments for the form field resize event.
+      */
+     field: IFormField
+     /**
+      * Get the page number.
+      */
+     pageIndex: number
+     /**
+      * Get the previous position of the form field in the page.
+      */
+    previousPosition: IFormFieldBound
+     /**
+      * Current position of form field in the page.
+      */
+    currentPosition: IFormFieldBound
+}
+
+/**
+ * This event arguments provides the necessary information about form field select event.
+ */
+export interface FormFieldSelectArgs extends BaseEventArgs {
+    /**
+     * Get the name of the event.
+     */
+     name: string
+     /**
+      * Event arguments for the form field select event.
+      */
+     field: IFormField
+     /**
+      * Get the page number.
+      */
+     pageIndex: number
+     /**
+      * Specifies whether the the form field is selected programmatically or by UI.
+      */
+    isProgrammaticSelection: boolean
+}
+
+/**
+ * This event arguments provides the necessary information about form field un select event.
+ */
+export interface FormFieldUnselectArgs extends BaseEventArgs {
+    /**
+     * Get the name of the event.
+     */
+     name: string
+     /**
+      * Event arguments for the form field unselect event.
+      */
+     field: IFormField
+     /**
+      * Get the page number.
+      */
+     pageIndex: number
 }

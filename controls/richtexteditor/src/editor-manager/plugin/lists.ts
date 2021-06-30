@@ -9,10 +9,11 @@ import * as EVENTS from './../../common/constant';
 import { setStyleAttribute } from '@syncfusion/ej2-base';
 import { isIDevice, setEditFrameFocus } from '../../common/util';
 import { isNullOrUndefined, isNullOrUndefined as isNOU, closest } from '@syncfusion/ej2-base';
+import { IAdvanceListItem } from '../../common';
 
 /**
  * Lists internal component
- * 
+ *
  * @hidden
  * @deprecated
  */
@@ -373,6 +374,7 @@ export class Lists {
         const range: Range = this.parent.nodeSelection.getRange(this.parent.currentDocument);
         this.saveSelection = this.parent.nodeSelection.save(range, this.parent.currentDocument);
         this.currentAction = e.subCommand;
+        this.currentAction = e.subCommand = this.currentAction === 'NumberFormatList' ? 'OL' : this.currentAction === 'BulletFormatList' ? 'UL' : this.currentAction;
         this.domNode.setMarker(this.saveSelection);
         const listsNodes: Node[] = this.domNode.blockNodes();
         for (let i: number = 0; i < listsNodes.length; i++) {
@@ -384,7 +386,7 @@ export class Lists {
                 listsNodes[i] = listsNodes[i].parentNode;
             }
         }
-        this.applyLists(listsNodes as HTMLElement[], this.currentAction, e.selector);
+        this.applyLists(listsNodes as HTMLElement[], this.currentAction, e.selector, e.item);
         if (e.callBack) {
             e.callBack({
                 requestType: this.currentAction,
@@ -396,26 +398,47 @@ export class Lists {
         }
     }
 
-    private applyLists(elements: HTMLElement[], type: string, selector?: string): void {
+    private applyLists(elements: HTMLElement[], type: string, selector?: string, item?: IAdvanceListItem): void {
         let isReverse: boolean = true;
-        if (this.isRevert(elements, type)) {
+        if (this.isRevert(elements, type) && isNOU(item)) {
             this.revertList(elements);
             this.removeEmptyListElements();
         } else {
-            this.checkLists(elements, type);
+            this.checkLists(elements, type, item);
             for (let i: number = 0; i < elements.length; i++) {
+                if (!isNOU(item) && !isNOU(item.listStyle)) {
+                    if (item.listStyle === 'listImage') {
+                        setStyleAttribute(elements[i], { 'list-style-image': item.listImage });
+                    }
+                    else {
+                        setStyleAttribute(elements[i], { 'list-style-image': 'none' });
+                        setStyleAttribute(elements[i], { 'list-style-type': item.listStyle.replace( /([a-z])([A-Z])/g, '$1-$2' ).toLowerCase() });
+                    }
+                }
                 if (elements[i].getAttribute('contenteditable') === 'true'
                     && elements[i].childNodes.length === 1 && elements[i].childNodes[0].nodeName === 'TABLE') {
                     const listEle: Element = document.createElement(type);
                     listEle.innerHTML = '<li><br/></li>';
                     elements[i].appendChild(listEle);
-                } else if ('LI' !== elements[i].tagName) {
-                    // eslint-disable-next-line
+                } else if ('LI' !== elements[i].tagName && isNOU(item)) {
                     isReverse = false;
                     const elemAtt: string = elements[i].tagName === 'IMG' ? '' : this.domNode.attributes(elements[i]);
                     const openTag: string = '<' + type + '>';
                     const closeTag: string = '</' + type + '>';
                     const newTag: string = 'li' + elemAtt;
+                    const replaceHTML: string = (elements[i].tagName.toLowerCase() === CONSTANT.DEFAULT_TAG ? elements[i].innerHTML :
+                        elements[i].outerHTML);
+                    const innerHTML: string = this.domNode.createTagString(newTag, null, replaceHTML);
+                    const collectionString: string = openTag + innerHTML + closeTag;
+                    this.domNode.replaceWith(elements[i], collectionString);
+                }
+                else if (!isNOU(item) && 'LI' !== elements[i].tagName) {
+                    // eslint-disable-next-line
+                    isReverse = false;
+                    const elemAtt: string = elements[i].tagName === 'IMG' ? '' : this.domNode.attributes(elements[i]);
+                    const openTag: string = '<' + type + elemAtt + '>';
+                    const closeTag: string = '</' + type + '>';
+                    const newTag: string = 'li';
                     const replaceHTML: string = (elements[i].tagName.toLowerCase() === CONSTANT.DEFAULT_TAG ? elements[i].innerHTML :
                         elements[i].outerHTML);
                     const innerHTML: string = this.domNode.createTagString(newTag, null, replaceHTML);
@@ -453,11 +476,21 @@ export class Lists {
         return isRevert;
     }
 
-    private checkLists(nodes: Element[], tagName: string): void {
+    private checkLists(nodes: Element[], tagName: string, item?: IAdvanceListItem): void {
         const nodesTemp: Element[] = [];
         for (let i: number = 0; i < nodes.length; i++) {
             const node: Element = nodes[i].parentNode as Element;
-            if (nodes[i].tagName === 'LI' && node.tagName !== tagName && nodesTemp.indexOf(node) < 0) {
+            if (!isNOU(item) && 'LI' === nodes[i].tagName && !isNOU(item.listStyle)) {
+                if (item.listStyle === 'listImage') {
+                    setStyleAttribute(node as HTMLElement, { 'list-style-image': item.listImage });
+                }
+                else {
+                    setStyleAttribute(node as HTMLElement, { 'list-style-image': 'none' });
+                    setStyleAttribute(node as HTMLElement, { 'list-style-type': item.listStyle.replace( /([a-z])([A-Z])/g, '$1-$2' ).toLowerCase() });
+                }
+            }
+            if ((nodes[i].tagName === 'LI' && node.tagName !== tagName && nodesTemp.indexOf(node) < 0) ||
+             (nodes[i].tagName === 'LI' && node.tagName === tagName && nodesTemp.indexOf(node) < 0 && item !== null)) {
                 nodesTemp.push(node);
             }
         }

@@ -159,6 +159,8 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
     private contentTargetValue: HTMLElement = null;
     private contentEvent: Event = null;
     private contentAnimation: TooltipAnimationSettings = null;
+    private mouseMoveEvent: MouseEvent & TouchEvent = null;
+    private mouseMoveTarget: HTMLElement = null;
 
     // Tooltip Options
     /**
@@ -750,9 +752,24 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
         }
         this.showTooltip(target, this.animation.open, e);
     }
+
+    private mouseMoveBeforeOpen(e: MouseEvent & TouchEvent): void {
+        this.mouseMoveEvent = e;
+    }
+    private mouseMoveBeforeRemove(): void {
+        if (this.mouseMoveTarget) {
+            EventHandler.remove(this.mouseMoveTarget, "mousemove touchstart", this.mouseMoveBeforeOpen);
+        }
+    }
+
     private showTooltip(target: HTMLElement, showAnimation: TooltipAnimationSettings, e?: Event): void {
         clearTimeout(this.showTimer);
         clearTimeout(this.hideTimer);
+        if (this.openDelay && this.mouseTrail) {
+            this.mouseMoveBeforeRemove();
+            this.mouseMoveTarget = target;
+            EventHandler.add(this.mouseMoveTarget, "mousemove touchstart", this.mouseMoveBeforeOpen, this);
+        }
         this.tooltipEventArgs = {
             type: e ? e.type : null, cancel: false, target: target, event: e ? e : null,
             element: this.tooltipEle, isInteracted: !isNullOrUndefined(e)
@@ -773,6 +790,7 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
         if (beforeRenderArgs.cancel) {
             this.isHidden = true;
             this.clear();
+            this.mouseMoveBeforeRemove();
         } else {
             this.isHidden = false;
             if (isNullOrUndefined(this.tooltipEle)) {
@@ -889,6 +907,7 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
         if (observedArgs.cancel) {
             this.isHidden = true;
             this.clear();
+            this.mouseMoveBeforeRemove();
             this.restoreElement(target);
         } else {
             // eslint-disable-next-line
@@ -909,6 +928,7 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
                     }
                     if (this.popupObj) {
                         this.popupObj.show(openAnimation, target);
+                        if (this.mouseMoveEvent && this.mouseTrail) { this.onMouseMove(this.mouseMoveEvent);}
                     }
                 };
                 this.showTimer = setTimeout(show, this.openDelay);
@@ -1035,6 +1055,7 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
                 if (this.isServerRender()) {
                     this.blazorHide(hideAnimation, target);
                 } else {
+                    this.mouseMoveBeforeRemove();
                     this.popupHide(hideAnimation, target);
                 }
             } else {

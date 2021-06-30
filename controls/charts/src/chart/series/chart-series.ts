@@ -1064,8 +1064,9 @@ export class SeriesBase extends ChildProperty<SeriesBase> {
         if (this instanceof Series) {
             if (this.type.indexOf('Spline') > -1 || (this.drawType.indexOf('Spline') > -1 && this.chart.chartAreaType === 'PolarRadar')) {
                 const isArea: boolean = (this.type.indexOf('Area') > -1 || this.drawType.indexOf('Area') > -1);
+                const isRange: boolean = this.type.indexOf('Range') > -1;
                 this.chart[
-                    'spline' + (isArea ? 'Area' : '') + 'SeriesModule'
+                    'spline' + (isArea ? isRange ? 'RangeArea' : 'Area' : '') + 'SeriesModule'
                 ].findSplinePoint(this);
             } else if(this.type.indexOf('Histogram') > -1 && (this.xAxis.maximum || this.xAxis.minimum)) {
                 this.chart['histogramSeriesModule'].calculateBinValues(this);
@@ -1266,6 +1267,7 @@ export class SeriesBase extends ChildProperty<SeriesBase> {
                 switch (seriesType) {
                 case 'RangeColumn':
                 case 'RangeArea':
+                case 'SplineRangeArea':
                 case 'Hilo':
                     type = 'HighLow';
                     break;
@@ -1589,6 +1591,7 @@ export class Series extends SeriesBase {
      * * HiloOpenClose
      * * Waterfall
      * * RangeArea
+     * * SplineRangeArea
      * * Bubble
      * * Candle
      * * Polar
@@ -1858,6 +1861,8 @@ export class Series extends SeriesBase {
     public histogramValues: IHistogramValues;
     /** @private */
     public drawPoints: ControlPoints[] = [];
+    /** @private */
+    public lowDrawPoints: ControlPoints[] = [];
     /** @private */
     public delayedAnimation: boolean = false;
     // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types

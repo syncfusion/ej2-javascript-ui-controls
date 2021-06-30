@@ -24,7 +24,7 @@ import { RowModelGenerator } from '../../../src/grid/services/row-model-generato
 import '../../../node_modules/es6-promise/dist/es6-promise';
 import  {profile , inMB, getMemoryProfile} from '../base/common.spec';
 import { largeDataset } from '../base/datasource.spec';
-import { EditEventArgs } from '../../../src';
+import { EditEventArgs, NotifyArgs } from '../../../src';
 
 Grid.Inject(VirtualScroll, Sort, Filter, Selection, Group, Aggregate, Edit, Toolbar, Freeze);
 
@@ -88,6 +88,7 @@ let largeDatasetColumns: Function = (count: number): Object[] => {
     let columns: any = [];
     for (let i: number = 0; i < count; i++) {
         columns.push({ field: 'FIELD' + i });
+        columns[i].width = 120;
         columns[i].isPrimaryKey = columns[i].field === 'FIELD1';
     }
     return columns;
@@ -597,6 +598,7 @@ describe('Column virtualization', () => {
             contentModule.ensureBlocks({ block: 0, blockIndexes: [124, 125], page: 63, direction: 'up' });
         });
         afterAll(() => {
+            window['browserDetails']['isDevice'] = false;
             destroy(grid);
             grid = null;
         });
@@ -959,4 +961,207 @@ describe('Column virtualization', () => {
         });
     });
 
+    describe("column virtualization with inline editing validation check", () => {
+        let gObj: Grid;
+        let columns: Column[] = largeDatasetColumns(30);
+        columns[0].validationRules = { required: true };
+        columns[columns.length - 1].validationRules = { required: true };
+        beforeAll((done: Function) => {
+            gObj = createGrid(
+                {
+                    dataSource: largeDataset,
+                    columns: columns,
+                    enableVirtualization: true,
+                    enableColumnVirtualization: true,
+                    editSettings: {
+                        allowEditing: true,
+                        allowAdding: true,
+                        allowDeleting: true
+                    },
+                    toolbar: ['Add', 'Edit', 'Delete', 'Update', 'Cancel'],
+                    height: 300,
+                    width: 400
+                }, done);
+        });
+
+        it('add record to check horizontal scroll action', (done: Function) => {
+            gObj.dataBound = null;
+            let actionComplete = (args?: any): void => {
+                if (args.requestType === 'add') {
+                    expect(gObj.editModule.virtualFormObj.isDestroyed).toBeFalsy();
+                    expect(gObj.editModule.virtualFormObj.element.getElementsByClassName('e-field').length).toBe(gObj.columns.length);
+                    gObj.element.focus();
+                    (<any>gObj.toolbarModule).toolbarClickHandler({ item: { id: gObj.element.id + '_update' } });
+                    expect(gObj.editModule.virtualFormObj.element.querySelector('.e-griderror:not([style*="display: none"])')).toBeNull();
+                    gObj.actionComplete = undefined;
+                    done();
+                }
+            };
+            gObj.actionComplete = actionComplete;
+            (<any>gObj.toolbarModule).toolbarClickHandler({ item: { id: gObj.element.id + '_add' } });
+        });
+
+        it('check column virtualization horizontal scroll move', (done: Function) => {
+            expect(gObj.element.querySelectorAll('.e-griderror:not([style*="display: none"])').length).toBe(1);
+            (gObj.element.querySelector('#' + gObj.element.id + columns[0].field) as HTMLInputElement).value = '567843212345674';
+            let actionComplete = (args: NotifyArgs) => {
+                if (args.requestType === 'save') {
+                    expect(gObj.editModule.virtualFormObj.isDestroyed).toBeTruthy();
+                    expect(gObj.getContent().querySelector('.e-addedrow')).toBeNull();
+                    gObj.actionComplete = null;
+                    done();
+                }
+            };
+            let dataBound = () => {
+                expect(gObj.element.querySelectorAll('.e-griderror:not([style*="display: none"])').length).toBe(1);
+                expect(gObj.editModule.virtualFormObj.element.querySelectorAll('.e-griderror:not([style*="display: none"])').length).toBe(1);
+                expect(gObj.getContent().firstElementChild.scrollLeft).not.toBe(0);
+                (gObj.element.querySelector('#' + gObj.element.id + columns[columns.length - 1].field) as HTMLInputElement).value = 'updated';
+                gObj.actionComplete = actionComplete;
+                gObj.dataBound = null;
+                (<any>gObj.toolbarModule).toolbarClickHandler({ item: { id: gObj.element.id + '_update' } });
+            };
+            gObj.dataBound = dataBound;
+            (<any>gObj.toolbarModule).toolbarClickHandler({ item: { id: gObj.element.id + '_update' } });
+        });
+
+        it('add record to check vertical scroll action', (done: Function) => {
+            let dataBound = () => {
+                gObj.dataBound = null;
+                done();
+            };
+            let actionComplete = (args: NotifyArgs) => {
+                if (args.requestType === 'add') {
+                    gObj.dataBound = dataBound;
+                    gObj.actionComplete = null;
+                    gObj.getContent().firstElementChild.scrollTop = 5000;
+                }
+            };
+            gObj.actionComplete = actionComplete;
+            (<any>gObj.toolbarModule).toolbarClickHandler({ item: { id: gObj.element.id + '_add' } });
+        });
+
+        it('Check auto vertical scroll action', (done: Function) => {
+            let dataBound = () => {
+                expect(gObj.getContent().firstElementChild.scrollTop).toBe(0);
+                expect(gObj.editModule.virtualFormObj.element.querySelector('.e-griderror:not([style*="display: none"])')).toBeNull();
+                gObj.editModule.editFormValidate();
+                expect(gObj.editModule.formObj.element.querySelectorAll('.e-griderror:not([style*="display: none"])').length).toBe(1);
+                gObj.dataBound = null;
+                done();
+            };
+            gObj.dataBound = dataBound;
+            (<any>gObj.toolbarModule).toolbarClickHandler({ item: { id: gObj.element.id + '_update' } });
+        });
+
+        afterAll(() => {
+            destroy(gObj);
+            gObj = null;
+        });
+    });
+
+    describe("Row virtualization with inline editing validation check", () => {
+        let gObj: Grid;
+        let columns: Column[] = largeDatasetColumns(30);
+        columns[0].validationRules = { required: true };
+        columns[columns.length - 1].validationRules = { required: true };
+        beforeAll((done: Function) => {
+            gObj = createGrid(
+                {
+                    dataSource: largeDataset,
+                    columns: columns,
+                    enableVirtualization: true,
+                    enableColumnVirtualization: false,
+                    editSettings: {
+                        allowEditing: true,
+                        allowAdding: true,
+                        allowDeleting: true
+                    },
+                    toolbar: ['Add', 'Edit', 'Delete', 'Update', 'Cancel'],
+                    height: 300,
+                    width: 400
+                }, done);
+        });
+
+        it('check row virtualization horizontal scroll move', (done: Function) => {
+            gObj.dataBound = null;
+            let actionComplete = (args?: any): void => {
+                if (args.requestType === 'add') {
+                    gObj.element.focus();
+                    expect(gObj.editModule.virtualFormObj.element.getElementsByClassName('e-field').length).toBe(gObj.columns.length);
+                    (gObj.element.querySelector('#' + gObj.element.id + columns[0].field) as HTMLInputElement).value = '567843212345674';
+                    (<any>gObj.toolbarModule).toolbarClickHandler({ item: { id: gObj.element.id + '_update' } });
+                    (gObj.element.querySelector('#' + gObj.element.id + columns[columns.length - 1].field) as HTMLInputElement).value = 'updated';
+                    (<any>gObj.toolbarModule).toolbarClickHandler({ item: { id: gObj.element.id + '_update' } });
+                }
+                if (args.requestType === 'save') {
+                    expect(gObj.getContent().querySelector('.e-addedrow')).toBeNull();
+                    gObj.actionComplete = null;
+                    done();
+                }
+            };
+            gObj.actionComplete = actionComplete;
+            (<any>gObj.toolbarModule).toolbarClickHandler({ item: { id: gObj.element.id + '_add' } });
+        });
+
+        afterAll(() => {
+            destroy(gObj);
+            gObj = null;
+        });
+    });
+
+    describe("Inline editing validation check in Frozen with column virtualization", () => {
+        let gObj: Grid;
+        let columns: Column[] = largeDatasetColumns(30);
+        columns[columns.length - 1].validationRules = { required: true };
+        beforeAll((done: Function) => {
+            gObj = createGrid(
+                {
+                    dataSource: largeDataset,
+                    columns: columns,
+                    enableVirtualization: true,
+                    enableColumnVirtualization: true,
+                    frozenColumns: 2,
+                    editSettings: {
+                        allowEditing: true,
+                        allowAdding: true,
+                        allowDeleting: true
+                    },
+                    toolbar: ['Add', 'Edit', 'Delete', 'Update', 'Cancel'],
+                    height: 300
+                }, done);
+        });
+
+        it('add record to check horizontal scroll action', (done: Function) => {
+            gObj.dataBound = null;
+            let dataBound = () => {
+                expect(gObj.editModule.formObj.element.querySelectorAll('.e-griderror:not([style*="display: none"])').length).toBe(0);
+                expect(gObj.editModule.mFormObj.element.querySelectorAll('.e-griderror:not([style*="display: none"])').length).toBe(1);
+                expect(gObj.editModule.virtualFormObj.element.querySelectorAll('.e-griderror:not([style*="display: none"])').length).toBe(1);
+                expect(gObj.getMovableVirtualContent().scrollLeft).not.toBe(0);
+                (gObj.element.querySelector('#' + gObj.element.id + columns[columns.length - 1].field) as HTMLInputElement).value = '567843212345674';
+                gObj.dataBound = null;
+                done();
+            };
+            let actionComplete = (args?: any): void => {
+                if (args.requestType === 'add') {
+                    expect(gObj.editModule.formObj.element.getElementsByClassName('e-field').length).toBe(gObj.getFrozenColumns());
+                    expect(gObj.editModule.mFormObj.element.getElementsByClassName('e-field').length).toBe(gObj.getColumns().length - gObj.getFrozenColumns());
+                    expect(gObj.editModule.virtualFormObj.element.getElementsByClassName('e-field').length).toBe(gObj.columns.length);
+                    gObj.element.focus();
+                    (gObj.element.querySelector('#' + gObj.element.id + columns[0].field) as HTMLInputElement).value = '567843212345674';
+                    gObj.dataBound = dataBound;
+                    gObj.actionComplete = null;
+                    (<any>gObj.toolbarModule).toolbarClickHandler({ item: { id: gObj.element.id + '_update' } });
+                }
+            };
+            gObj.actionComplete = actionComplete;
+            (<any>gObj.toolbarModule).toolbarClickHandler({ item: { id: gObj.element.id + '_add' } });
+        });
+
+        afterAll(() => {
+            destroy(gObj);
+            gObj = null;
+        });
+    });
 });

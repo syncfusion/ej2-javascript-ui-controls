@@ -564,6 +564,9 @@ export class Magnification {
         // eslint-disable-next-line max-len
         this.pdfViewerBase.pageContainer.style.height = this.topValue + this.pdfViewerBase.pageSize[this.pdfViewerBase.pageSize.length - 1].height * this.zoomFactor + 'px';
         this.resizeCanvas(this.pdfViewerBase.currentPageNumber);
+        if (this.pdfViewerBase.textLayer) {
+            this.pdfViewerBase.textLayer.clearTextLayers(true);
+        }
         if (this.isPinchZoomed) {
             this.calculateScrollValues(scrollValue);
         }
@@ -695,6 +698,9 @@ export class Magnification {
             }
             if (this.pdfViewerBase.isTextMarkupAnnotationModule()) {
                 this.pdfViewer.annotationModule.textMarkupAnnotationModule.rerenderAnnotations(i);
+            } else if(this.pdfViewer.formDesignerModule) {
+                this.rerenderAnnotations(i);
+                this.pdfViewer.renderDrawing(undefined, currentPageIndex);
             }
             if (pageDiv) {
                 pageDiv.style.visibility = 'visible';
@@ -709,6 +715,24 @@ export class Magnification {
             this.rerenderInterval = null;
         }
         this.imageObjects = [];
+    }
+
+    /**
+     * @param pageNumber
+     * @private
+     */
+    public rerenderAnnotations(pageNumber: number): void {
+            // eslint-disable-next-line
+            let oldCanvasCollection: any = document.querySelectorAll('#' + this.pdfViewer.element.id + '_old_annotationCanvas_' + pageNumber);
+            for (let i: number = 0; i < oldCanvasCollection.length; i++) {
+                if (oldCanvasCollection[i]) {
+                    oldCanvasCollection[i].parentElement.removeChild(oldCanvasCollection[i]);
+                }
+            }
+            const newCanvas: HTMLElement = this.pdfViewerBase.getElement('_annotationCanvas_' + pageNumber);
+            if (newCanvas) {
+                newCanvas.style.display = 'block';
+            }
     }
 
     private designNewCanvas(currentPageIndex: number): void {
@@ -728,7 +752,7 @@ export class Magnification {
             if (canvas && !this.pdfViewer.restrictZoomRequest) {
                 canvas.id = this.pdfViewer.element.id + '_oldCanvas_' + i;
                 canvas.style.backgroundColor = '#fff';
-                if (this.pdfViewerBase.isTextMarkupAnnotationModule()) {
+                if (this.pdfViewerBase.isTextMarkupAnnotationModule() || this.pdfViewer.formDesignerModule) {
                     const annotationCanvas: HTMLElement = this.pdfViewerBase.getElement('_annotationCanvas_' + i);
                     annotationCanvas.id = this.pdfViewer.element.id + '_old_annotationCanvas_' + i;
                 }
@@ -825,6 +849,8 @@ export class Magnification {
                             canvas.style.height = height + 'px';
                             if (this.pdfViewer.annotation) {
                                 this.pdfViewer.annotationModule.resizeAnnotations(width, height, i);
+                            } else {
+                                this.pdfViewer.formDesignerModule.resizeAnnotations(width, height, i);
                             }
                         }
                         if (textLayer) {

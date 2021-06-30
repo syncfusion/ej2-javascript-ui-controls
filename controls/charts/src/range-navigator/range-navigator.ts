@@ -634,9 +634,18 @@ export class RangeNavigator extends Component<HTMLElement> {
         }
         const periodSelectorY: number = this.periodSelectorSettings.position === 'Top' && selector ?
             selector.periodSelectorSize.y + selector.periodSelectorSize.height : 0;
+        let left: number = 0;
+        let top: number = 0;
+        if (this.stockChart && this.stockChart.stockLegendModule && this.stockChart.legendSettings.visible) {
+            if (this.stockChart.legendSettings.position === "Left") {
+                left += this.stockChart.stockLegendModule.legendBounds.width;
+            } else if (this.stockChart.legendSettings.position === "Top") {
+                top += this.stockChart.stockLegendModule.legendBounds.height;
+            }
+        }
         this.bounds = new Rect(
-            (this.themeStyle.thumbWidth / 2 + thumb.border.width + margin.left),
-            margin.top + tooltipSpace + periodSelectorY,
+            (this.themeStyle.thumbWidth / 2 + thumb.border.width + margin.left + left),
+            margin.top + tooltipSpace + periodSelectorY + top,
             this.availableSize.width - this.themeStyle.thumbWidth - (thumb.border.width * 2) - margin.left - margin.right,
             this.availableSize.height - margin.top - margin.bottom - tooltipSpace - (selector ? selector.periodSelectorSize.height : 0)
         );
@@ -862,6 +871,11 @@ export class RangeNavigator extends Component<HTMLElement> {
     public mouseLeave(e: PointerEvent): boolean {
         const rangeSlider: RangeSlider = this.rangeSlider;
         if (rangeSlider.isDrag) {
+            const enabledTooltip: boolean = rangeSlider.control.tooltip.enable;
+            if (rangeSlider.control.allowSnapping) {
+                rangeSlider.isDrag = false;
+                rangeSlider.setAllowSnapping(rangeSlider.control, rangeSlider.currentStart, rangeSlider.currentEnd, false, enabledTooltip);
+            }
             rangeSlider.triggerEvent(this.chartSeries.xAxis.actualRange);
         }
         const cancelEvent: string = Browser.isPointer ? 'pointerleave' : 'mouseleave';
@@ -901,6 +915,9 @@ export class RangeNavigator extends Component<HTMLElement> {
      * Creating a background element to the svg object
      */
     private renderChartBackground(): void {
+        if(this.stockChart) {
+            return;
+        }
         const rect: RectOption = new RectOption(
             this.element.id + '_ChartBorder', this.background || this.themeStyle.background, { width: 0, color: 'transparent' }, 1,
             new Rect(0, 0, this.availableSize.width, this.availableSize.height));

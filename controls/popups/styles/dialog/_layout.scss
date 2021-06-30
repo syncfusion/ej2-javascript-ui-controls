@@ -216,6 +216,7 @@
     max-height: 98%;
     max-width: 100%;
     min-width: 240px;
+    position: absolute;
   }
 
   .e-rtl .e-footer-content .e-btn {
@@ -232,6 +233,8 @@
 
   .e-dialog.e-rtl .e-dlg-header-content .e-btn.e-dlg-closeicon-btn {
     float: left;
+    left: 0;
+    right: $dialog-close-button-left;
   }
 
   .e-dialog .e-dlg-header-content .e-btn.e-dlg-closeicon-btn {
@@ -252,9 +255,11 @@
 
       .e-resize-handle {
         &.e-south-west {
-          bottom: $resize-hanlder-bottom-rtl;
+          bottom: $dialog-resize-handler-position;
           cursor: sw-resize;
-          left: 2px;
+          direction: ltr;
+          left: $dialog-resize-handler-position;
+          text-align: initial;
           transform: rotate(90deg);
         }
       }
@@ -412,4 +417,8 @@
 
 .e-dlg-ref-element {
   display: none;
+}
+
+.e-dialog .e-footer-content {
+  box-sizing: border-box;
 }

@@ -78,6 +78,7 @@ $list-items-height: 100px !default;
 $list-item-status-font-size: 12px !default;
 $list-line-height: normal !default;
 $drop-text-color: rgba($grey-light-font, .87) !default;
+$file-drop-text-color: $drop-text-color !default;
 $drag-hover-border: 2px dashed $grey-500 !default;
 $file-size-color: rgba($grey-light-font, .54) !default;
 $progress-bar-height: 3px !default;

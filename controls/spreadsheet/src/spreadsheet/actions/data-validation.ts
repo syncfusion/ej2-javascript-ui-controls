@@ -1,9 +1,9 @@
-import { Spreadsheet, DialogBeforeOpenEventArgs, editAlert } from '../index';
+import { Spreadsheet, DialogBeforeOpenEventArgs, editAlert, IOffset, IViewport } from '../index';
 import { isValidation, checkDateFormat, applyCellFormat, workbookEditOperation, activeCellChanged, validationHighlight } from '../../workbook/common/event';
 import { getCell, setCell } from '../../workbook/base/cell';
 import { CellModel } from '../../workbook/base/cell-model';
 import { FormValidatorModel, FormValidator, NumericTextBox } from '@syncfusion/ej2-inputs';
-import { L10n, EventHandler, remove, closest, isNullOrUndefined, select } from '@syncfusion/ej2-base';
+import { L10n, EventHandler, remove, closest, isNullOrUndefined, select, Browser } from '@syncfusion/ej2-base';
 import { Dialog } from '../services/dialog';
 import { dialog, locale, initiateDataValidation, invalidData, ICellRenderer, editOperation, keyUp, focus } from '../common/index';
 import { formulaBarOperation, removeDataValidation } from '../common/index';
@@ -15,7 +15,7 @@ import { CellFormatArgs } from '../../workbook/common/interface';
 import { DropDownList, PopupEventArgs } from '@syncfusion/ej2-dropdowns';
 import { DialogModel, BeforeOpenEventArgs } from '@syncfusion/ej2-popups';
 import { ValidationModel, ValidationType, ValidationOperator, CellStyleModel, getSheet, getSheetIndex, ColumnModel, Workbook } from '../../workbook/index';
-import { getColumn, isLocked } from '../../workbook/index';
+import { getColumn, isLocked, getRowsHeight, getColumnsWidth } from '../../workbook/index';
 
 /**
  * Represents Data Validation support for Spreadsheet.
@@ -166,6 +166,16 @@ export class DataValidation {
                         open: (args: PopupEventArgs) => {
                             args.popup.offsetX = - (tdEle.offsetWidth - 20) + 4;
                             args.popup.offsetY = -13;
+                            // Positioning popup in mobile device based on transform css applied on virtual element as suggested by dropdown team
+                            if (Browser.isDevice && this.parent.scrollModule) {
+                                const offset: { left: IOffset, top: IOffset } = this.parent.scrollModule.offset;
+                                const viewport: IViewport = this.parent.viewport;
+                                args.popup.offsetY += viewport.topIndex ? offset.top.size -
+                                    getRowsHeight(sheet, viewport.topIndex + 1, offset.top.idx, true) : 0;
+                                args.popup.offsetX += viewport.leftIndex ? offset.left.size -
+                                    getColumnsWidth(sheet, viewport.leftIndex + 1, offset.left.idx, true) : 0;
+                                args.popup.refresh();
+                            }
                         }
                     });
                     this.listObj.appendTo('#' + this.parent.element.id + 'listValid');
@@ -742,6 +752,7 @@ export class DataValidation {
             if (isValidate) {
                 isValidate = false;
                 if (type === 'Date' || type === 'Time') {
+                    args.value = args.value.slice(args.value.indexOf(' ')+1, args.value.length);
                     for (let idx: number = 0; idx <= 3; idx++) {
                         args.value = idx === 0 ? args.value : idx === 1 ? validation.value1 : validation.value2;
                         const dateEventArgs: { [key: string]: string | number } = {
@@ -755,12 +766,14 @@ export class DataValidation {
                             this.parent.notify(checkDateFormat, dateEventArgs);
                         }
                         const updatedVal: string = dateEventArgs.updatedVal as string;
-                        if (idx === 0) {
-                            value = type === 'Date' ? args.value : updatedVal.slice(updatedVal.indexOf('.') + 1, updatedVal.length);
-                        } else if (idx === 1) {
-                            value1 = type === 'Date' ? updatedVal : updatedVal.slice(updatedVal.indexOf('.') + 1, updatedVal.length);
+                        if (idx == 0 && updatedVal == '') {
+                            value = args.value;
+                        } else if (idx == 0) {
+                            value = updatedVal;
+                        } else if (idx == 1) {
+                            value1 = updatedVal;
                         } else {
-                            value2 = type === 'Date' ? updatedVal : updatedVal.slice(updatedVal.indexOf('.') + 1, updatedVal.length);
+                            value2 = updatedVal;
                         }
                     }
                 } else if (validation.type === 'TextLength') {
@@ -782,7 +795,7 @@ export class DataValidation {
                         }
                     }
                 } else {
-                    if (type === 'Decimal') {
+                    if (type === 'Decimal' || type === 'Time') {
                         value = parseFloat(value.toString());
                         value1 = parseFloat(value1.toString());
                         value2 = value2 ? parseFloat(value2.toString()) : null;

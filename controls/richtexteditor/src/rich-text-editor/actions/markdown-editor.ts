@@ -101,7 +101,6 @@ export class MarkdownEditor {
             this.parent.notify(events.insertImage, { member: 'image', args: args, text: text, module: 'Markdown' });
             break;
         case 'CreateTable': {
-            // eslint-disable-next-line
             const tableConstant: {} = {
                 'headingText': this.parent.localeObj.getConstant('TableHeadingText'),
                 'colText': this.parent.localeObj.getConstant('TableColText')

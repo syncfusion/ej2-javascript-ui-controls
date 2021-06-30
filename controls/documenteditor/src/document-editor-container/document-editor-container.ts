@@ -558,7 +558,8 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
         'Track Changes': 'Keep track of the changes made in the document',
         'TrackChanges': 'Track Changes',
         'AllCaps': 'AllCaps',
-        'Change case Tooltip': 'Change case'
+        'Change case Tooltip': 'Change case',
+        "UPPERCASE": 'UPPERCASE'
     };
     /* eslint-enable @typescript-eslint/naming-convention */
 
@@ -1161,11 +1162,11 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
     public destroy(): void {
         super.destroy();
         if (this.element) {
-            this.element.classList.remove('e-documenteditorcontainer');
             this.element.innerHTML = '';
         }
         if (!this.refreshing) {
-            this.element = undefined;
+            this.element.classList.remove('e-documenteditorcontainer');
+            this.element = undefined;            
         }
         if (this.toolbarContainer && this.toolbarContainer.parentElement) {
             this.toolbarContainer.innerHTML = '';

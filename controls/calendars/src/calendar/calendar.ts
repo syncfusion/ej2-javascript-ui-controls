@@ -18,6 +18,7 @@ export type CalendarType = 'Islamic' | 'Gregorian';
 
 export type DayHeaderFormats = 'Short' | 'Narrow' | 'Abbreviated' | 'Wide';
 
+
 /**
  * Specifies the rule for defining the first week of the year.
  */

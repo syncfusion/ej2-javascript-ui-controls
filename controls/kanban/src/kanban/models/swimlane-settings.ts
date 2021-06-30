@@ -83,4 +83,11 @@ export class SwimlaneSettings extends ChildProperty<SwimlaneSettings> {
     @Property(true)
     public showUnassignedRow: boolean;
 
+    /**
+     * Enables or disables the freeze the swimlane rows
+     *
+     * @default false
+     */
+    @Property(false)
+    public enableFrozenRows: boolean;
 }

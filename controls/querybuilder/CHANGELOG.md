@@ -2,7 +2,15 @@
 
 ## [Unreleased]
 
-## 19.1.69 (2021-06-15)
+## 19.1.57 (2021-04-20)
+
+### QueryBuilder
+
+#### Bug Fixes
+
+- `#F163698` - The issue with 'getRulesFromSql' method for date is fixed.
+
+## 19.1.55 (2021-04-06)
 
 ### QueryBuilder
 

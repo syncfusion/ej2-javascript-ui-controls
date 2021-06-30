@@ -309,12 +309,12 @@ export class MonthEvent extends EventBase {
         if (util.resetTime(actualStartTime).getTime() !== util.resetTime(actualEndTime).getTime()) {
             const actualStartHour: Date = startHour.startHour;
             const actualEndHour: Date = endHour.endHour;
-            let startTime: Date = new Date(util.resetTime(actualStartTime));
+            const startTime: Date = new Date(util.resetTime(actualStartTime));
             startTime.setHours(actualEndHour.getHours(), actualEndHour.getMinutes(), actualEndHour.getSeconds());
             cloneData.isLeft = cloneData.isLeft || actualStartTime.getTime() >= (actualStartHour.getDate() === startHour.endHour.getDate() ?
-            startTime.getTime() : util.addDays(startTime, 1).getTime());
+                startTime.getTime() : util.addDays(startTime, 1).getTime());
             if (actualEndTime.getTime() !== util.resetTime(actualEndTime).getTime()) {
-                let endTime: Date = new Date(util.resetTime(actualEndTime));
+                const endTime: Date = new Date(util.resetTime(actualEndTime));
                 cloneData.isRight = cloneData.isRight || actualEndTime.getTime() <=
                     endTime.setHours(actualStartHour.getHours(), actualStartHour.getMinutes(), actualStartHour.getSeconds());
             }

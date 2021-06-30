@@ -1,6 +1,6 @@
 import { Gantt } from '../base/gantt';
 import {
-    createElement, formatUnit, EventHandler, Browser, KeyboardEvents, isBlazor, getElement,
+    createElement, formatUnit, EventHandler, Browser, KeyboardEvents, getElement,
     KeyboardEventArgs
 } from '@syncfusion/ej2-base';
 import { isNullOrUndefined, closest, addClass, removeClass, getValue, setValue } from '@syncfusion/ej2-base';
@@ -100,7 +100,7 @@ export class GanttChart {
             rangeContainer.innerHTML = '';
         }
         if (this.parent.treeGrid.grid.filterSettings.columns.length === 0) {
-            this.renderRangeContainer(this.parent.flatData);
+            this.renderRangeContainer(this.parent.currentViewData);
         }
     }
     private renderChartElements(): void {
@@ -122,14 +122,9 @@ export class GanttChart {
             }
         }
         this.updateWidthAndHeight();
-        this.setOverflowStyle();
         this.parent.notify('selectRowByIndex', {});
     }
 
-    private setOverflowStyle(): void {
-        const content: HTMLElement = this.chartBodyContent;
-        content.style.overflow = this.scrollElement.offsetHeight > content.offsetHeight ? 'hidden' : 'visible';
-    }
     /**
      * @param {IGanttData[]} records .
      * @returns {void} .
@@ -222,8 +217,13 @@ export class GanttChart {
             this.scrollElement.style.zIndex = '2';
         }
         this.chartBodyContainer.appendChild(this.scrollElement);
-        this.chartBodyContent = createElement('div', { className: cls.chartBodyContent, styles: 'position:relative; ' });
-        this.scrollElement.appendChild(this.chartBodyContent);
+        this.chartBodyContent = createElement('div', { className: cls.chartBodyContent, styles: 'position:relative; overflow:hidden ' });
+        if (this.parent.virtualScrollModule && this.parent.enableVirtualization) {
+            this.parent.ganttChartModule.virtualRender.renderWrapper();
+        } else {
+            this.scrollElement.appendChild(this.chartBodyContent);
+        }
+        
         // this.parent.chartRowsModule.createChartTable();
         this.scrollObject = new ChartScroll(this.parent);
         //this.scrollObject.setWidth(this.chartProperties.width);
@@ -240,16 +240,23 @@ export class GanttChart {
      */
     public updateWidthAndHeight(): void {
         //empty row height
-        const emptydivHeight: number = isBlazor() ? 39 : 36;
+        const emptydivHeight: number = 36;
         const emptyHeight: number = this.parent.contentHeight === 0 ? emptydivHeight : this.parent.contentHeight;
         this.chartBodyContent.style.height = formatUnit(emptyHeight);
         //let element: HTMLElement = this.chartTimelineContainer.querySelector('.' + cls.timelineHeaderTableContainer);
         this.chartBodyContent.style.width = formatUnit(this.parent.timelineModule.totalTimelineWidth);
+        this.setVirtualHeight();
         this.parent.notify('updateHeight', {});
         this.parent.updateGridLineContainerHeight();
         this.updateLastRowBottomWidth();
     }
 
+    private setVirtualHeight(): void {
+        if (this.parent.virtualScrollModule && this.parent.enableVirtualization) {
+            const wrapper: HTMLElement = getValue('virtualTrack', this.parent.ganttChartModule.virtualRender);
+            wrapper.style.height = this.parent.updatedRecords.length * this.parent.rowHeight + 'px';
+        }
+    }
     /**
      * Method to update bottom border for chart rows
      *
@@ -654,10 +661,6 @@ export class GanttChart {
         } else {
             this.parent.trigger('collapsing', args, (arg: object) => {
                 if (this.isExpandCollapseFromChart && !getValue('cancel', arg)) {
-                    if (isBlazor()) {
-                        setValue('chartRow', getElement(getValue('chartRow', arg)), arg);
-                        setValue('gridRow', getElement(getValue('gridRow', arg)), arg);
-                    }
                     this.collapsedGanttRow(arg);
                 }
                 this.isExpandCollapseFromChart = false;
@@ -705,10 +708,6 @@ export class GanttChart {
             this.expandedGanttRow(args);
         } else {
             this.parent.trigger('expanding', args, (arg: object) => {
-                if (isBlazor()) {
-                    setValue('chartRow', getElement(getValue('chartRow', arg)), arg);
-                    setValue('gridRow', getElement(getValue('gridRow', arg)), arg);
-                }
                 if (this.isExpandCollapseFromChart && !getValue('cancel', arg)) {
                     this.expandedGanttRow(arg);
                 }

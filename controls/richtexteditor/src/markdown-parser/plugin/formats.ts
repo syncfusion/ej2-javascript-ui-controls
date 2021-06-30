@@ -6,7 +6,7 @@ import * as EVENTS from './../../common/constant';
 import * as CONSTANT from './../../markdown-parser/base/constant';
 /**
  * MDFormats internal plugin
- * 
+ *
  * @hidden
  * @deprecated
  */
@@ -215,11 +215,11 @@ export class MDFormats {
 
     private isAppliedFormat(lines: { [key: string]: string | number }[], documentNode?: Node): string {
         let format: string = 'p';
-         // eslint-disable-next-line
-         const configKey: string[] = Object.keys(this.syntax);
-         const keys: string[] = Object.keys(this.syntax);
-         const direction: string = (this.parent.element as HTMLTextAreaElement).selectionDirection;
-         const checkLine: string = direction === 'backward' ? lines[0].text as string : lines[lines.length - 1].text as string; 
+        // eslint-disable-next-line
+        const configKey: string[] = Object.keys(this.syntax);
+        const keys: string[] = Object.keys(this.syntax);
+        const direction: string = (this.parent.element as HTMLTextAreaElement).selectionDirection;
+        const checkLine: string = direction === 'backward' ? lines[0].text as string : lines[lines.length - 1].text as string;
         for (let i: number = 0; !documentNode && i < keys.length; i++) {
             if (keys[i] !== 'pre' && this.selection.isStartWith(checkLine, this.syntax[keys[i]])) {
                 format = keys[i];

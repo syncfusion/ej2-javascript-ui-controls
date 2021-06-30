@@ -2,6 +2,8 @@ $rte-border-size: 1px !default;
 $rte-2px-border-size: 2px !default;
 $rte-border-type: solid !default;
 
+$rte-list-btn-flex: column !default;
+$rte-list-btn-line-height: 1 !default;
 $skin-name: 'bootstrap' !default;
 $rte-border-color: $grey-dd !default;
 $rte-full-screen-bg: $grey-white !default;
@@ -24,6 +26,8 @@ $rte-quick-item-active-font-color: $base-font !default;
 $rte-quick-item-border: $rte-border-size solid transparent !default;
 $rte-quick-item-hover-border-color: $grey-8c !default;
 $rte-quick-item-active-border-color: $grey-8c !default;
+$rte-content-padding: 16px !default;
+$rte-table-popup-padding: 10px !default;
 
 $rte-big-quick-drop-btn-line-height: 33px !default;
 $rte-quick-drop-btn-line-height: 24px !default;
@@ -39,7 +43,7 @@ $rte-big-quick-drop-btn-caret-font-size: 11px !default;
 $rte-quick-drop-btn-caret-font-size: 10px !default;
 $rte-quick-drop-btn-border-color: $grey-white !default;
 $rte-quick-drop-btn-hover-border-color: $grey-8c !default;
-
+$font-weight: 500 !default;
 $rte-quick-pop-border: 0 !default;
 $rte-quick-tb-border: 0 !default;
 $rte-quick-pop-bg: $grey-white !default;
@@ -48,6 +52,7 @@ $rte-quick-pop-shadow: 0 2px 6px rgba($grey-base, .26) !default;
 $rte-quick-pop-item-focus-bg: rgba($grey-base, .12) !default;
 $rte-quick-tb-btn-hover: rgba($grey-base, .12) !default;
 $rte-mob-drop-down-pop-shadow: rgba($grey-base, .12) !default;
+$rte-table-popup-bdr-radius: 0 !default;
 
 $rte-big-tb-items-margin-left: 3px !default;
 $rte-tb-items-margin-left: 6px !default;
@@ -144,6 +149,8 @@ $rte-big-quick-tbar-item-min-width: 39px !default;
 $rte-content-font-size: 14px !default;
 $rte-dropdown-caret-icon-size: 12px !default;
 $rte-big-dropdown-caret-icon-size: 12px !default;
+$rte-toolbar-icon-size: 16px !default;
+$rte-toolbar-big-icon-size: 18px !default;
 
 $rte-big-inline-tmp-min-width: 56px;
 $rte-inline-tmp-min-width: 61px;
@@ -155,6 +162,8 @@ $rte-inline-tmp-color-min-width: 57px;
 $rte-resize-handler-width: 15px;
 $rte-resize-handler-height: 15px;
 $rte-resize-handler-position: 0;
+
+$rte-big-color-list-span-common-padding-left-right: 0;
 
 @include export-module('richtexteditor-bootstrap') {
   .e-richtexteditor {
@@ -180,12 +189,54 @@ $rte-resize-handler-position: 0;
       }
 
       & .e-toolbar-items .e-toolbar-item {
-        & .e-tbar-btn.e-btn,
-        & .e-tbar-btn.e-btn.e-control {
+        & .e-tbar-btn.e-btn.e-rte-dropdown-btn,
+        & .e-tbar-btn.e-btn.e-control.e-rte-dropdown-btn {
           padding-bottom: 0;
           padding-top: 0;
         }
       }
     }
   }
+
+  .e-bigger .e-rte-toolbar .e-toolbar-item .e-tbar-btn.e-btn.e-control.e-dropdown-btn {
+    &.e-rte-backgroundcolor-dropdown,
+    &.e-rte-fontcolor-dropdown,
+    &.e-rte-numberformatlist-dropdown,
+    &.e-rte-bulletformatlist-dropdown {
+      padding-left: 1px;
+      padding-right: 1px;
+
+      &.e-active:hover {
+        padding-left: 1px;
+        padding-right: 1px;
+      }
+    }
+  }
+
+  .e-rte-toolbar,
+  .e-rte-toolbar.e-extended-toolbar {
+    .e-toolbar-items,
+    .e-toolbar-popup,
+    .e-toolbar-extended {
+      .e-rte-backgroundcolor-dropdown,
+      .e-rte-fontcolor-dropdown,
+      .e-rte-numberformatlist-dropdown,
+      .e-rte-bulletformatlist-dropdown {
+        padding-bottom: 0;
+        padding-top: 0;
+
+        &.e-tbar-btn.e-btn:hover,
+        &.e-tbar-btn.e-btn.e-active,
+        &.e-tbar-btn.e-btn.e-active:hover {
+          padding-bottom: 0;
+          padding-top: 0;
+        }
+
+        &.e-active {
+          border-radius: 4px;
+        }
+      }
+    }
+  }
 }
+

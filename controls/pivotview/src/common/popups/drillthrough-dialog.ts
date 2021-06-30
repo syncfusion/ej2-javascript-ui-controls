@@ -444,7 +444,8 @@ export class DrillThroughDialog {
             for (let key of keys) {
                 if (this.engine.fieldList[key].aggregateType !== 'CalculatedField') {
                     let editType: string = '';
-                    let isDateField: boolean = ((this.engine.fieldList[key].type === 'date' || this.engine.fieldList[key].type === 'datetime') && (this.isDateFieldExist(key) || (rawData[0] && rawData[0][key] && rawData[0][key].toString().indexOf(' ') === -1))) ? true : false;
+                    let isDateField: boolean = ((this.engine.fieldList[key].type === 'date' || this.engine.fieldList[key].type === 'datetime')
+                        && (this.isDateFieldExist(key) || (rawData[0] && rawData[0][key] && rawData[0][key].toString().indexOf(' ') === -1))) ? true : false;
                     if (this.engine.fieldList[key].type === 'number') {
                         editType = 'numericedit';
                     } else if (this.engine.fieldList[key].type === 'date' && isDateField) {
@@ -461,7 +462,7 @@ export class DrillThroughDialog {
                         visible: this.engine.fieldList[key].isSelected,
                         validationRules: { required: true },
                         editType: editType,
-                        format: !isNullOrUndefined(this.formatList[key]) ? this.formatList[key] : null,
+                        format: !isNullOrUndefined(this.formatList[key]) ? this.formatList[key] : undefined,
                         type: !isNullOrUndefined(this.formatList[key]) ? null : 'string'
                     });
                 }
@@ -472,12 +473,14 @@ export class DrillThroughDialog {
 
     private isDateFieldExist(key: string): boolean {
         for (let len: number = 0; len < this.parent.dataSourceSettings.formatSettings.length; len++) {
-            if (this.parent.dataSourceSettings.formatSettings[len].name === key && this.parent.dataSourceSettings.formatSettings[len].type.indexOf('date') > -1) {
+            if (this.parent.dataSourceSettings.formatSettings[len].name === key &&
+                this.parent.dataSourceSettings.formatSettings[len].type.indexOf('date') > -1) {
                 return true;
             }
         }
         for (let len: number = 0; len < this.parent.dataSourceSettings.fieldMapping.length; len++) {
-            if (this.parent.dataSourceSettings.fieldMapping[len].name === key && this.parent.dataSourceSettings.fieldMapping[len].dataType.indexOf('date') > -1) {
+            if (this.parent.dataSourceSettings.fieldMapping[len].name === key &&
+                this.parent.dataSourceSettings.fieldMapping[len].dataType.indexOf('date') > -1) {
                 return true;
             }
         }

@@ -43,7 +43,7 @@
     }
 
     &.e-sfcontextmenu {
-      position: fixed;
+      position: absolute;
 
       & ul {
         white-space: nowrap;
@@ -90,6 +90,9 @@
 
     & .e-menu-item  {
       @include bigger-li-size;
+      @if $skin-name == 'tailwind' or $skin-name == 'tailwind-dark' {
+        padding: $cmenu-bigger-li-padding;
+      }
 
       & .e-caret {
         font-size: $cmenu-bigger-caret-font-size;

@@ -7,6 +7,7 @@ import { PdfViewer, PdfViewerBase, AnnotationToolbar } from '../index';
 import { Tooltip, TooltipEventArgs } from '@syncfusion/ej2-popups';
 import { DropDownButton, ItemModel, OpenCloseMenuEventArgs, MenuEventArgs } from '@syncfusion/ej2-splitbuttons';
 import { ToolbarItem } from '../base/types';
+import { FormDesignerToolbar } from './formdesigner-toolbar';
 
 /**
  * Toolbar module
@@ -56,11 +57,19 @@ export class Toolbar {
      * @private
      */
     public annotationItem: HTMLElement;
+    /**
+     * @private
+     */
+    public formDesignerItem: HTMLElement;
     private moreOptionItem: HTMLElement;
     /**
      * @private
      */
     public annotationToolbarModule: AnnotationToolbar;
+    /**
+     * @private
+    */
+    public formDesignerToolbarModule: FormDesignerToolbar;
     /**
      * @private
      */
@@ -80,6 +89,7 @@ export class Toolbar {
     private isTextSearchBoxDisplayed: boolean = false;
     private isUndoRedoBtnsVisible: boolean = true;
     private isAnnotationEditBtnVisible: boolean = true;
+    private isFormDesignerEditBtnVisible: boolean = true;
     private isCommentBtnVisible: boolean = true;
     private isSubmitbtnvisible: boolean = true;
     /**
@@ -136,6 +146,12 @@ export class Toolbar {
                     this.annotationToolbarModule.initializeAnnotationToolbar();
                 }
             }
+            if(this.pdfViewer.formDesignerModule) {
+                this.formDesignerToolbarModule = new FormDesignerToolbar(this.pdfViewer, this.pdfViewerBase, this);
+                if (!Browser.isDevice || this.pdfViewer.enableDesktopMode) {
+                    this.formDesignerToolbarModule.initializeFormDesignerToolbar();
+                }
+            }
         } else {
             if (!Browser.isDevice || this.pdfViewer.enableDesktopMode) {
                 this.initialEnableItems();
@@ -186,7 +202,7 @@ export class Toolbar {
                 this.annotationToolbarModule.adjustMobileViewer();
                 this.pdfViewer.toolbarModule.annotationToolbarModule.toolbar.element.style.display = 'none';
             }
-            if (this.annotationToolbarModule.propertyToolbar) {
+            if (Browser.isDevice && this.annotationToolbarModule.propertyToolbar) {
                 this.annotationToolbarModule.propertyToolbar.element.style.display = 'none';
             }
             toolbar.style.display = 'none';
@@ -331,6 +347,9 @@ export class Toolbar {
             case 'AnnotationEditTool':
                 this.enableAnnotationEditTool(isEnable);
                 break;
+            case 'FormDesignerEditTool':
+                this.enableFormDesignerEditTool(isEnable);
+                break;
             case 'CommentTool':
                 this.enableCommentsTool(isEnable);
                 break;
@@ -394,7 +413,7 @@ export class Toolbar {
     private showDownloadOption(enableDownloadOption: boolean): void {
         this.isDownloadBtnVisible = enableDownloadOption;
         if (!Browser.isDevice || this.pdfViewer.enableDesktopMode) {
-            this.applyHideToToolbar(enableDownloadOption, 25, 25);
+            this.applyHideToToolbar(enableDownloadOption, 26, 26);
         }else {
             this.applyHideToToolbar(enableDownloadOption, 5, 5);
         }
@@ -402,7 +421,7 @@ export class Toolbar {
 
     private showPrintOption(enablePrintOption: boolean): void {
         this.isPrintBtnVisible = enablePrintOption;
-        this.applyHideToToolbar(enablePrintOption, 24, 24);
+        this.applyHideToToolbar(enablePrintOption, 25, 25);
     }
 
     private showSearchOption(enableSearchOption: boolean): void {
@@ -436,6 +455,11 @@ export class Toolbar {
     private showAnnotationEditTool(isEnable: boolean): void {
         this.isAnnotationEditBtnVisible = isEnable;
         this.applyHideToToolbar(isEnable, 23, 23);
+    }
+
+    private showFormDesignerEditTool(isEnable: boolean): void {
+        this.isFormDesignerEditBtnVisible = isEnable;
+        this.applyHideToToolbar(isEnable, 24, 24);
     }
 
     private showSubmitForm(isEnable : boolean): void  {
@@ -488,6 +512,10 @@ export class Toolbar {
 
     private enableAnnotationEditTool(isEnable: boolean): void {
         this.toolbar.enableItems(this.annotationItem.parentElement, isEnable);
+    }
+
+    private enableFormDesignerEditTool(isEnable: boolean): void {
+        this.toolbar.enableItems(this.formDesignerItem.parentElement, isEnable);
     }
 
     private enableCommentsTool(isEnable: boolean): void {
@@ -543,12 +571,14 @@ export class Toolbar {
                     this.toolbar.enableItems(this.pdfViewerBase.getElement('_zoomDropDownContainer'), false);
                     this.toolbar.enableItems(this.textSelectItem.parentElement, false);
                     this.toolbar.enableItems(this.annotationItem.parentElement, false);
+                    this.toolbar.enableItems(this.formDesignerItem.parentElement, false);
                     this.toolbar.enableItems(this.panItem.parentElement, false);
                     this.toolbar.enableItems(this.textSearchItem.parentElement, false);
                     this.deSelectItem(this.annotationItem);
                     if (this.annotationToolbarModule) {
                         this.annotationToolbarModule.resetToolbar();
                     }
+                    this.deSelectItem(this.formDesignerItem);
                 } else if (this.pdfViewerBase.pageCount > 0) {
                     this.toolbar.enableItems(this.downloadItem.parentElement, true);
                     this.toolbar.enableItems(this.printItem.parentElement, true);
@@ -565,6 +595,9 @@ export class Toolbar {
                     if (this.pdfViewer.annotationModule && this.pdfViewer.enableAnnotation) {
                         this.toolbar.enableItems(this.annotationItem.parentElement, true);
                     }
+                    if (this.pdfViewer.formDesignerModule && this.pdfViewer.enableFormDesigner) {
+                        this.toolbar.enableItems(this.formDesignerItem.parentElement, true);
+                    }
                     if (this.pdfViewer.textSearchModule && this.pdfViewer.enableTextSearch) {
                         this.toolbar.enableItems(this.textSearchItem.parentElement, true);
                     }
@@ -576,6 +609,12 @@ export class Toolbar {
                     // eslint-disable-next-line max-len
                     if (this.pdfViewer.toolbarSettings.annotationToolbarItems.length === 0 || !this.pdfViewer.annotationModule || !this.pdfViewer.enableAnnotationToolbar) {
                         this.enableToolbarItem(['AnnotationEditTool'], false);
+                    }
+                }
+                if (this.pdfViewer.toolbarSettings.formDesignerToolbarItems) {
+                    // eslint-disable-next-line max-len
+                    if (this.pdfViewer.toolbarSettings.formDesignerToolbarItems.length === 0 || !this.pdfViewer.formDesignerModule || !this.pdfViewer.enableFormDesignerToolbar) {
+                        this.enableToolbarItem(['FormDesignerEditTool'], false);
                     }
                 }
                 if (!this.pdfViewer.enableDownload) {
@@ -849,6 +888,7 @@ export class Toolbar {
         // eslint-disable-next-line max-len
         items.push({ prefixIcon: 'e-pv-text-search-icon e-pv-icon', cssClass: 'e-pv-text-search-container', id: this.pdfViewer.element.id + '_search', text: this.pdfViewer.localeObj.getConstant('Search text'), align: 'Right' });
         items.push({ prefixIcon: 'e-pv-annotation-icon e-pv-icon', cssClass: 'e-pv-annotation-container', id: this.pdfViewer.element.id + '_annotation', text: this.pdfViewer.localeObj.getConstant('Annotation Edit text'), align: 'Right' });
+        items.push({ prefixIcon: 'e-pv-formdesigner-icon e-pv-icon', cssClass: 'e-pv-formdesigner-container', id: this.pdfViewer.element.id + '_formdesigner', text: this.pdfViewer.localeObj.getConstant('FormDesigner Edit text'), align: 'Right' });
         // eslint-disable-next-line max-len
         items.push({ prefixIcon: 'e-pv-print-document-icon e-pv-icon', cssClass: 'e-pv-print-document-container', id: this.pdfViewer.element.id + '_print', text: this.pdfViewer.localeObj.getConstant('Print text'), align: 'Right' });
         items.push({ prefixIcon: 'e-pv-download-document-icon e-pv-icon', cssClass: 'e-pv-download-document-container', id: this.pdfViewer.element.id + '_download', text: this.pdfViewer.localeObj.getConstant('Download'), align: 'Right' });
@@ -893,6 +933,7 @@ export class Toolbar {
         // eslint-disable-next-line max-len
         this.textSearchItem = this.addClassToolbarItem('_search', 'e-pv-text-search', this.pdfViewer.localeObj.getConstant('Text Search'));
         this.annotationItem = this.addClassToolbarItem('_annotation', 'e-pv-annotation', this.pdfViewer.localeObj.getConstant('Annotation'));
+        this.formDesignerItem = this.addClassToolbarItem('_formdesigner', 'e-pv-formdesigner', this.pdfViewer.localeObj.getConstant('FormDesigner'));
         // eslint-disable-next-line max-len
         this.printItem = this.addClassToolbarItem('_print', 'e-pv-print-document', this.pdfViewer.localeObj.getConstant('Print'));
         this.downloadItem = this.addClassToolbarItem('_download', 'e-pv-download-document', this.pdfViewer.localeObj.getConstant('Download file'));
@@ -1250,6 +1291,7 @@ export class Toolbar {
             if (!isBlazor()) {
                 (args.originalEvent.target as HTMLElement).blur();
             }
+            this.pdfViewerBase.focusViewerContainer();
         }
     }
 
@@ -1346,6 +1388,12 @@ export class Toolbar {
         case this.pdfViewer.element.id + '_annotationIcon':
         case this.pdfViewer.element.id + '_annotationText':
             this.initiateAnnotationMode((args.originalEvent.target as HTMLElement).id);
+            break;
+        case this.pdfViewer.element.id + '_formdesigner':
+        case this.pdfViewer.element.id + '_formdesignerIcon':
+        case this.pdfViewer.element.id + '_formdesignerText':
+            this.initiateFormDesignerMode();
+            this.formDesignerToolbarModule.showHideDeleteIcon(false);
             break;
         case this.pdfViewer.element.id + '_comment':
         case this.pdfViewer.element.id + '_commentIcon':
@@ -1579,16 +1627,36 @@ export class Toolbar {
     }
 
     private initiateAnnotationMode(id?: string): void {
-        if (!Browser.isDevice) {
-            if (this.annotationToolbarModule && this.pdfViewer.enableAnnotationToolbar) {
-                this.annotationToolbarModule.showAnnotationToolbar(this.annotationItem);
+ if (!Browser.isDevice) {
+        if (this.annotationToolbarModule && this.pdfViewer.enableAnnotationToolbar) {
+            this.annotationToolbarModule.showAnnotationToolbar(this.annotationItem);
+            if (this.pdfViewer.isAnnotationToolbarVisible && this.pdfViewer.isFormDesignerToolbarVisible) {
+            let formDesignerMainDiv: HTMLElement = document.getElementById(this.pdfViewer.element.id + "_formdesigner_toolbar");
+            formDesignerMainDiv.style.display = "none"; 
+            this.formDesignerToolbarModule.isToolbarHidden = false;
+            this.formDesignerToolbarModule.showFormDesignerToolbar(this.formDesignerItem);
+            this.annotationToolbarModule.adjustViewer(true);
             }
-        } else {
+        }
+} else {
             if (!isBlazor()) {
                 if (id === this.pdfViewer.element.id + '_annotation') {
                     id = this.pdfViewer.element.id + '_annotationIcon';
                 }
                 this.annotationToolbarModule.createAnnotationToolbarForMobile(id);
+}
+}
+    }
+
+    private initiateFormDesignerMode(): void {
+        if (this.formDesignerToolbarModule && this.pdfViewer.enableFormDesignerToolbar) {
+            this.formDesignerToolbarModule.showFormDesignerToolbar(this.formDesignerItem);
+            if (this.pdfViewer.isAnnotationToolbarVisible && this.pdfViewer.isFormDesignerToolbarVisible) {
+            let annotationMainDiv: HTMLElement = document.getElementById(this.pdfViewer.element.id + "_annotation_toolbar");
+            annotationMainDiv.style.display = "none"; 
+            this.annotationToolbarModule.isToolbarHidden = false;
+            this.annotationToolbarModule.showAnnotationToolbar(this.annotationItem);
+            this.formDesignerToolbarModule.adjustViewer(true);
             }
         }
     }
@@ -1743,6 +1811,11 @@ export class Toolbar {
                 this.showAnnotationEditTool(true);
             } else {
                 this.showAnnotationEditTool(false);
+            }
+            if (toolbarSettingsItems.indexOf('FormDesignerEditTool') !== -1) {
+                this.showFormDesignerEditTool(true);
+            } else {
+                this.showFormDesignerEditTool(false);
             }
             if (toolbarSettingsItems.indexOf('CommentTool') !== -1) {
                 this.showCommentOption(true);

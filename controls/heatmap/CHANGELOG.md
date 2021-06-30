@@ -2,13 +2,19 @@
 
 ## [Unreleased]
 
-## 19.1.54 (2021-03-30)
+## 18.4.30 (2020-12-17)
 
 ### Heatmap
 
 #### Bug Fixes
 
 - `#287830` - The issue with using setState in the HeatMap has been resolved.
+
+## 18.4.39 (2021-01-28)
+
+### Heatmap
+
+#### Bug Fixes
 
 - `#299279` - The issue "API level styles was not taken as important for HeatMap" has been resolved.
 

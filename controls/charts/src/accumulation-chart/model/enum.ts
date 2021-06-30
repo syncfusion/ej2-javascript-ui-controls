@@ -67,7 +67,12 @@ export type AccumulationTheme =
     /**  Render a accumulation chart with BootstrapDark theme. */
     'BootstrapDark'|
     /**  Render a accumulation chart with BootstrapDark theme. */
-    'Bootstrap4';
+    'Bootstrap4'|
+    /**  Render a accumulation chart with Tailwind theme. */
+    'Tailwind' |
+    /**  Render a accumulation chart with TailwindDark theme. */
+    'TailwindDark';
+
 /**
  * Defines the empty point mode of the chart.
  * * Zero - Used to display empty points as zero.

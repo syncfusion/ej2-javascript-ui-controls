@@ -137,9 +137,15 @@ export class TimelineYear extends Year {
         const contentTBody: HTMLTableSectionElement = contentTable.querySelector('tbody');
         if (this.parent.activeViewOptions.group.resources.length > 0 && !this.parent.uiStateValues.isGroupAdaptive) {
             if (this.parent.rowAutoHeight) {
-                addClass([contentTable], cls.AUTO_HEIGHT);
+                const addClassTable : HTMLElement[] = [contentTable];
+                const monthHeader: HTMLElement = 
+                    this.parent.element.querySelector('.' + cls.MONTH_HEADER_WRAPPER + ' .' + cls.SCHEDULE_TABLE_CLASS);
+                if(monthHeader){
+                    addClassTable.push(monthHeader);
+                }
+                addClass(addClassTable, cls.AUTO_HEIGHT);
             }
-            const colCount: number = this.parent.activeViewOptions.orientation === 'Horizontal' ? this.colLevels.slice(-1)[0].length : 12;
+            const colCount: number = this.parent.activeViewOptions.orientation === 'Horizontal' ? this.colLevels.slice(-1)[0].length : this.columnCount;
             contentTable.appendChild(this.createTableColGroup(colCount));
             this.renderResourceContent(eventWrapper, monthTBody, contentTBody);
         } else {
@@ -315,7 +321,7 @@ export class TimelineYear extends Year {
     }
 
     private renderCellTemplate(data: Record<string, any>, td: HTMLElement): void {
-        if (!this.parent.activeViewOptions.cellTemplate) {
+        if (!this.parent.activeViewOptions.cellTemplate || td.classList.contains(cls.OTHERMONTH_CLASS)) {
             return;
         }
         const args: CellTemplateArgs = { date: data.date as Date, type: data.type as string };

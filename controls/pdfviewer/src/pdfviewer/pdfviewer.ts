@@ -3,17 +3,17 @@
 import { Component, INotifyPropertyChanged, NotifyPropertyChanges, ChildProperty, L10n, Collection, Complex, isBlazor } from '@syncfusion/ej2-base';
 import { ModuleDeclaration, isNullOrUndefined, Property, Event, EmitType } from '@syncfusion/ej2-base';
 // eslint-disable-next-line max-len
-import { PdfViewerModel, HighlightSettingsModel, UnderlineSettingsModel, StrikethroughSettingsModel, LineSettingsModel, ArrowSettingsModel, RectangleSettingsModel, CircleSettingsModel, PolygonSettingsModel, StampSettingsModel, StickyNotesSettingsModel, CustomStampSettingsModel, VolumeSettingsModel, RadiusSettingsModel, AreaSettingsModel, PerimeterSettingsModel, DistanceSettingsModel, MeasurementSettingsModel, FreeTextSettingsModel, AnnotationSelectorSettingsModel, TextSearchColorSettingsModel, DocumentTextCollectionSettingsModel, TextDataSettingsModel, RectangleBoundsModel, SignatureFieldSettingsModel, SignatureIndicatorSettingsModel } from './pdfviewer-model';
+import { PdfViewerModel, HighlightSettingsModel, UnderlineSettingsModel, StrikethroughSettingsModel, LineSettingsModel, ArrowSettingsModel, RectangleSettingsModel, CircleSettingsModel, PolygonSettingsModel, StampSettingsModel, StickyNotesSettingsModel, CustomStampSettingsModel, VolumeSettingsModel, RadiusSettingsModel, AreaSettingsModel, PerimeterSettingsModel, DistanceSettingsModel, MeasurementSettingsModel, FreeTextSettingsModel, AnnotationSelectorSettingsModel, TextSearchColorSettingsModel, DocumentTextCollectionSettingsModel, TextDataSettingsModel, RectangleBoundsModel, SignatureFieldSettingsModel, InitialFieldSettingsModel, SignatureIndicatorSettingsModel, TextFieldSettingsModel, PasswordFieldSettingsModel, CheckBoxFieldSettingsModel, RadioButtonFieldSettingsModel, DropdownFieldSettingsModel, ListBoxFieldSettingsModel, ItemModel } from './pdfviewer-model';
 import { ToolbarSettingsModel, ShapeLabelSettingsModel } from './pdfviewer-model';
 // eslint-disable-next-line max-len
-import { ServerActionSettingsModel, AjaxRequestSettingsModel, CustomStampModel, HandWrittenSignatureSettingsModel, AnnotationSettingsModel, TileRenderingSettingsModel, ScrollSettingsModel, FormFieldModel , InkAnnotationSettingsModel } from './pdfviewer-model';
-import { PdfViewerBase } from './index';
+import { ServerActionSettingsModel, AjaxRequestSettingsModel, CustomStampModel, HandWrittenSignatureSettingsModel, AnnotationSettingsModel, TileRenderingSettingsModel, ScrollSettingsModel, FormFieldModel, InkAnnotationSettingsModel } from './pdfviewer-model';
+import { IAnnotationPoint, IPoint, PdfViewerBase } from './index';
 import { Navigation } from './index';
 import { Magnification } from './index';
 import { Toolbar } from './index';
 import { ToolbarItem } from './index';
 // eslint-disable-next-line max-len
-import { LinkTarget, InteractionMode, SignatureFitMode, AnnotationType, AnnotationToolbarItem, LineHeadStyle, ContextMenuAction, FontStyle, TextAlignment, AnnotationResizerShape, AnnotationResizerLocation, ZoomMode, PrintMode, CursorType, ContextMenuItem, DynamicStampItem, SignStampItem, StandardBusinessStampItem, FormFieldType, AllowedInteraction, AnnotationDataFormat, SignatureType, CommentStatus } from './base/types';
+import { LinkTarget, InteractionMode, SignatureFitMode, AnnotationType, AnnotationToolbarItem, LineHeadStyle, ContextMenuAction, FontStyle, TextAlignment, AnnotationResizerShape, AnnotationResizerLocation, ZoomMode, PrintMode, CursorType, ContextMenuItem, DynamicStampItem, SignStampItem, StandardBusinessStampItem, FormFieldType, AllowedInteraction, AnnotationDataFormat, SignatureType, CommentStatus, SignatureItem, FormDesignerToolbarItem } from './base/types';
 import { Annotation } from './index';
 import { LinkAnnotation } from './index';
 import { ThumbnailView } from './index';
@@ -21,27 +21,30 @@ import { BookmarkView } from './index';
 import { TextSelection } from './index';
 import { TextSearch } from './index';
 import { FormFields } from './index';
+import { FormDesigner } from './index';
 import { Print, CalibrationUnit } from './index';
 // eslint-disable-next-line max-len
-import { UnloadEventArgs, LoadEventArgs, LoadFailedEventArgs, AjaxRequestFailureEventArgs, PageChangeEventArgs, PageClickEventArgs, ZoomChangeEventArgs, HyperlinkClickEventArgs, HyperlinkMouseOverArgs, ImportStartEventArgs, ImportSuccessEventArgs, ImportFailureEventArgs, ExportStartEventArgs, ExportSuccessEventArgs, ExportFailureEventArgs, AjaxRequestInitiateEventArgs } from './index';
+import { UnloadEventArgs, LoadEventArgs, LoadFailedEventArgs, AjaxRequestFailureEventArgs, PageChangeEventArgs, PageClickEventArgs, ZoomChangeEventArgs, HyperlinkClickEventArgs, HyperlinkMouseOverArgs, ImportStartEventArgs, ImportSuccessEventArgs, ImportFailureEventArgs, ExportStartEventArgs, ExportSuccessEventArgs, ExportFailureEventArgs, AjaxRequestInitiateEventArgs, AjaxRequestSuccessEventArgs } from './index';
 import { AnnotationAddEventArgs, AnnotationRemoveEventArgs, AnnotationPropertiesChangeEventArgs, AnnotationResizeEventArgs, AnnotationSelectEventArgs, AnnotationMoveEventArgs, AnnotationDoubleClickEventArgs, AnnotationMouseoverEventArgs, PageMouseoverEventArgs, AnnotationMouseLeaveEventArgs , ButtonFieldClickEventArgs} from './index';
 // eslint-disable-next-line max-len
 import { TextSelectionStartEventArgs, TextSelectionEndEventArgs, DownloadStartEventArgs, DownloadEndEventArgs, ExtractTextCompletedEventArgs, PrintStartEventArgs, PrintEndEventArgs } from './index';
 // eslint-disable-next-line max-len
 import { TextSearchStartEventArgs, TextSearchCompleteEventArgs, TextSearchHighlightEventArgs } from './index';
-import { PdfAnnotationBase, ZOrderPageTable } from './drawing/pdf-annotation';
-import { PdfAnnotationBaseModel } from './drawing/pdf-annotation-model';
+import { PdfAnnotationBase, PdfFormFieldBase, ZOrderPageTable } from './drawing/pdf-annotation';
+import { PdfAnnotationBaseModel, PdfFormFieldBaseModel } from './drawing/pdf-annotation-model';
 import { Drawing, ClipBoardObject } from './drawing/drawing';
 import { Selector } from './drawing/selector';
 import { SelectorModel } from './drawing/selector-model';
-import { PointModel, IElement, Rect } from '@syncfusion/ej2-drawings';
+import { PointModel, IElement, Rect, cornersPointsBeforeRotation } from '@syncfusion/ej2-drawings';
 import { renderAdornerLayer } from './drawing/dom-util';
 import { ThumbnailClickEventArgs } from './index';
 // eslint-disable-next-line max-len
-import { ValidateFormFieldsArgs, BookmarkClickEventArgs, AnnotationUnSelectEventArgs, BeforeAddFreeTextEventArgs, FormFieldFocusOutEventArgs, CommentEventArgs, FormFieldClickArgs } from './base';
+import { ValidateFormFieldsArgs, BookmarkClickEventArgs, AnnotationUnSelectEventArgs, BeforeAddFreeTextEventArgs, FormFieldFocusOutEventArgs, CommentEventArgs, FormFieldClickArgs, FormFieldAddArgs, FormFieldRemoveArgs, FormFieldPropertiesChangeArgs, FormFieldMouseLeaveArgs, FormFieldMouseoverArgs, FormFieldMoveArgs, FormFieldResizeArgs, FormFieldSelectArgs, FormFieldUnselectArgs } from './base';
 // eslint-disable-next-line max-len
 import { AddSignatureEventArgs, RemoveSignatureEventArgs, MoveSignatureEventArgs, SignaturePropertiesChangeEventArgs, ResizeSignatureEventArgs, SignatureSelectEventArgs } from './base';
 import { ContextMenuSettingsModel } from './pdfviewer-model';
+import { IFormField, IFormFieldBound } from './form-designer/form-designer';
+import { PdfPageRotateAngle } from '@syncfusion/ej2-pdf-export';
 
 
 /**
@@ -65,6 +68,12 @@ export class ToolbarSettings extends ChildProperty<ToolbarSettings> {
      */
     @Property()
     public annotationToolbarItems: AnnotationToolbarItem[];
+
+    /**
+     * Customize the tools to be exposed in the form designer toolbar.
+     */
+    @Property()
+    public formDesignerToolbarItems: FormDesignerToolbarItem[];
 }
 
 /**
@@ -97,7 +106,9 @@ export interface IAjaxHeaders {
      */
     headerValue: string
 }
-
+/**
+ * The `CustomStamp` module is used to provide the custom stamp added in stamp menu of the PDF Viewer toolbar.
+ */
 export class CustomStamp extends ChildProperty<CustomStamp> {
     /**
      * Defines the custom stamp name to be added in stamp menu of the PDF Viewer toolbar.
@@ -130,15 +141,146 @@ export class AnnotationToolbarSettings extends ChildProperty<AnnotationToolbarSe
 }
 
 /**
+ * The `FormDesignerToolbarSettings` module is used to provide the Form designer toolbar settings of the PDF viewer.
+ */
+ export class FormDesignerToolbarSettings extends ChildProperty<FormDesignerToolbarSettings> {
+    /**
+     * Enable or disables the tooltip of the toolbar.
+     */
+    @Property(true)
+    public showTooltip: boolean;
+
+    /**
+     * shows only the defined options in the PdfViewer.
+     */
+    @Property()
+    public formDesignerToolbarItem: FormDesignerToolbarItem[];
+}
+
+/**
  * The `SignatureFieldSettings` module is used to set the properties of signature field in PDF Viewer
  */
 export class SignatureFieldSettings extends ChildProperty<SignatureFieldSettings> {
+
+    /**
+     * Get or set the form field bounds.
+     */
+    @Property({ x: 0, y: 0, width: 0, height: 0 })
+    public bounds: IFormFieldBound;
+
+    /**
+     * Get or set the name of the form field element.
+     */
+    @Property('')
+    public name: string;
+     
+    /**
+     * Specifies whether the signature field is in read-only or read-write mode. FALSE by default.
+     */
+    @Property(false)
+    public isReadOnly: boolean;
+     
+    /**
+     * Gets or set the visibility of the form field.
+     */
+    @Property('visible')
+    public visibility: VisibilityState;
+     
+    /**
+     * If it is set as true, consider as mandatory field in the PDF document. By default it is false.
+     */
+    @Property(false)
+    public isRequired: boolean;
+    
+    /**
+     * Get or set the boolean value to print the signature field. TRUE by default.
+     */
+    @Property(false)
+    public isPrint: boolean;
+     
+    /**
+     * Get or set the text to be displayed as tooltip. By default it is empty.
+     */
+    @Property('')
+    public tooltip: string;
+
+    /**
+     * specifies the page number of the form field.
+     */
+    @Property(0)
+    public pageNumber: number;
 
     /**
      * Specifies the properties of the signature indicator in the signature field.
      */
     @Property()
     public signatureIndicatorSettings: SignatureIndicatorSettingsModel;
+}
+
+/**
+ * The `InitialFieldSettings` module is used to set the properties of initial field in PDF Viewer
+ */
+export class InitialFieldSettings extends ChildProperty<InitialFieldSettings> {
+
+    /**
+     * Get or set the form field bounds.
+     */
+    @Property({ x: 0, y: 0, width: 0, height: 0 })
+    public bounds: IFormFieldBound;
+
+    /**
+     * Get or set the name of the form field element.
+     */
+    @Property('')
+    public name: string;
+
+    /**
+     * Specifies whether the initial field is in read-only or read-write mode. FALSE by default.
+     */
+    @Property(false)
+    public isReadOnly: boolean;
+
+    /**
+     * Gets or set the visibility of the form field.
+     */
+    @Property('visible')
+    public visibility: VisibilityState;
+
+    /**
+     * If it is set as true, consider as mandatory field in the PDF document. By default it is false.
+     */
+    @Property(false)
+    public isRequired: boolean;
+
+    /**
+     * Get or set the boolean value to print the initial field. TRUE by default.
+     */
+    @Property(false)
+    public isPrint: boolean;
+
+    /**
+     * Get or set the text to be displayed as tooltip. By default it is empty.
+     */
+    @Property('')
+    public tooltip: string;
+
+    /**
+     * specifies the page number of the form field.
+     */
+    @Property(0)
+    public pageNumber: number;
+
+    /**
+     * Gets or sets the initial field type of the signature field.
+     */
+    @Property(false)
+    public isInitialField: boolean;
+
+    /**
+     * Specifies the properties of the signature indicator in the initial field.
+     */
+    @Property()
+    public initialIndicatorSettings: SignatureIndicatorSettingsModel;
 }
 
 /**
@@ -181,7 +323,7 @@ export class SignatureIndicatorSettings extends ChildProperty<SignatureIndicator
     /**
      * Specifies the text of the signature Indicator.
      */
-    @Property('Sign')
+    @Property(null)
     public text: string;
 
     /**
@@ -274,6 +416,20 @@ export class ServerActionSettings extends ChildProperty<ServerActionSettings> {
  * The `StrikethroughSettings` module is used to provide the properties to Strikethrough annotation.
  */
 export class StrikethroughSettings extends ChildProperty<StrikethroughSettings> {
+
+     /**
+     * Get or set page number of the annotation.
+     */
+     @Property(1)
+     public pageNumber: number;
+    
+    /**
+     * Get or set bounds of the annotation.
+     *
+     * @default []
+     */
+    public bounds: IAnnotationPoint[];
+
     /**
      * specifies the opacity of the annotation.
      */
@@ -346,6 +502,20 @@ export class StrikethroughSettings extends ChildProperty<StrikethroughSettings> 
  * The `UnderlineSettings` module is used to provide the properties to Underline annotation.
  */
 export class UnderlineSettings extends ChildProperty<UnderlineSettings> {
+
+     /**
+     * Get or set page number of the annotation.
+     */
+     @Property(1)
+     public pageNumber: number;
+
+    /**
+     * Get or set bounds of the annotation.
+     *
+     * @default []
+     */
+     public bounds: IAnnotationPoint[];
+    
     /**
      * specifies the opacity of the annotation.
      */
@@ -418,6 +588,20 @@ export class UnderlineSettings extends ChildProperty<UnderlineSettings> {
  * The `HighlightSettings` module is used to provide the properties to Highlight annotation.
  */
 export class HighlightSettings extends ChildProperty<HighlightSettings> {
+
+     /**
+     * Get or set page number of the annotation.
+     */
+     @Property(1)
+     public pageNumber: number;
+
+    /**
+     * Get or set bounds of the annotation.
+     *
+     * @default []
+     */
+     public bounds: IAnnotationPoint[];
+
     /**
      * specifies the opacity of the annotation.
      */
@@ -490,6 +674,25 @@ export class HighlightSettings extends ChildProperty<HighlightSettings> {
  * The `LineSettings` module is used to provide the properties to line annotation.
  */
 export class LineSettings extends ChildProperty<LineSettings> {
+    /**
+     * Get or set offset of the annotation.
+     */
+    @Property({ x: 0, y: 0})
+    public offset: IPoint;
+
+    /**
+     * Get or set page number of the annotation.
+     */
+    @Property(1)
+    public pageNumber: number;
+
+    /**
+     * Get or set vertex points of the annotation.
+     *
+     * @default []
+     */
+    public vertexPoints?: PointModel[];
+
     /**
      * specifies the opacity of the annotation.
      */
@@ -601,6 +804,25 @@ export class LineSettings extends ChildProperty<LineSettings> {
  */
 export class ArrowSettings extends ChildProperty<ArrowSettings> {
     /**
+     * Get or set offset of the annotation.
+     */
+    @Property({ x: 0, y: 0})
+    public offset: IPoint;
+ 
+    /**
+      * Get or set page number of the annotation.
+      */
+    @Property(1)
+    public pageNumber: number;
+
+    /**
+     * Get or set vertex points of the annotation.
+     *
+     * @default []
+     */
+    public vertexPoints?: PointModel[];
+
+    /**
      * specifies the opacity of the annotation.
      */
     @Property(1)
@@ -711,6 +933,30 @@ export class ArrowSettings extends ChildProperty<ArrowSettings> {
  */
 export class RectangleSettings extends ChildProperty<RectangleSettings> {
     /**
+     * Get or set offset of the annotation.
+     */
+     @Property({ x: 0, y: 0})
+     public offset: IPoint;
+ 
+     /**
+      * Get or set page number of the annotation.
+      */
+     @Property(1)
+     public pageNumber: number;
+ 
+     /**
+      * specifies the width of the annotation.
+      */
+     @Property(100)
+     public width: number;
+  
+     /**
+      * specifies the height of the annotation.
+      */
+     @Property(50)
+     public height: number;
+
+    /**
      * specifies the opacity of the annotation.
      */
     @Property(1)
@@ -802,6 +1048,30 @@ export class RectangleSettings extends ChildProperty<RectangleSettings> {
  * The `CircleSettings` module is used to provide the properties to circle annotation.
  */
 export class CircleSettings extends ChildProperty<CircleSettings> {
+    /**
+     * Get or set offset of the annotation.
+     */
+     @Property({ x: 0, y: 0})
+     public offset: IPoint;
+ 
+     /**
+      * Get or set page number of the annotation.
+      */
+     @Property(1)
+     public pageNumber: number;
+ 
+     /**
+      * specifies the width of the annotation.
+      */
+     @Property(100)
+     public width: number;
+  
+     /**
+      * specifies the height of the annotation.
+      */
+     @Property(100)
+     public height: number;
+
     /**
      * specifies the opacity of the annotation.
      */
@@ -938,6 +1208,25 @@ export class ShapeLabelSettings extends ChildProperty<ShapeLabelSettings> {
  */
 export class PolygonSettings extends ChildProperty<PolygonSettings> {
     /**
+     * Get or set offset of the annotation.
+     */
+     @Property({ x: 0, y: 0})
+     public offset: IPoint;
+ 
+     /**
+      * Get or set page number of the annotation.
+      */
+     @Property(1)
+     public pageNumber: number;
+
+    /**
+     * Get or set vertex points of the annotation.
+     *
+     * @default []
+     */
+    public vertexPoints?: PointModel[];
+
+    /**
      * specifies the opacity of the annotation.
      */
     @Property(1)
@@ -1030,6 +1319,30 @@ export class PolygonSettings extends ChildProperty<PolygonSettings> {
  */
 export class StampSettings extends ChildProperty<StampSettings> {
     /**
+    * Get or set offset of the annotation.
+    */
+    @Property({ x: 0, y: 0})
+    public offset: IPoint;
+
+    /**
+     * Get or set page number of the annotation.
+     */
+    @Property(1)
+    public pageNumber: number;
+
+    /**
+     * specifies the width of the annotation.
+     */
+    @Property(150)
+    public width: number;
+ 
+    /**
+     * specifies the height of the annotation.
+     */
+    @Property(50)
+    public height: number;
+     
+    /**
      * specifies the opacity of the annotation.
      */
     @Property(1)
@@ -1121,6 +1434,18 @@ export class StampSettings extends ChildProperty<StampSettings> {
  * The `CustomStampSettings` module is used to provide the properties to customstamp annotation.
  */
 export class CustomStampSettings extends ChildProperty<CustomStampSettings> {
+    /**
+    * Get or set offset of the annotation.
+    */
+    @Property({ x: 0, y: 0})
+    public offset: IPoint;
+
+    /**
+     * Get or set page number of the annotation.
+     */
+    @Property(1)
+    public pageNumber: number;
+
     /**
      * specifies the opacity of the annotation.
      */
@@ -1223,6 +1548,25 @@ export class CustomStampSettings extends ChildProperty<CustomStampSettings> {
  * The `DistanceSettings` module is used to provide the properties to distance calibrate annotation.
  */
 export class DistanceSettings extends ChildProperty<DistanceSettings> {
+    /**
+    * Get or set offset of the annotation.
+    */
+    @Property({ x: 0, y: 0})
+    public offset: IPoint;
+
+     /**
+     * Get or set page number of the annotation.
+     */
+     @Property(1)
+     public pageNumber: number;
+
+    /**
+     * Get or set vertex points of the annotation.
+     *
+     * @default []
+     */
+    public vertexPoints?: PointModel[];
+
     /**
      * specifies the opacity of the annotation.
      */
@@ -1346,6 +1690,25 @@ export class DistanceSettings extends ChildProperty<DistanceSettings> {
  */
 export class PerimeterSettings extends ChildProperty<PerimeterSettings> {
     /**
+    * Get or set offset of the annotation.
+    */
+    @Property({ x: 0, y: 0})
+    public offset: IPoint;
+
+     /**
+     * Get or set page number of the annotation.
+     */
+     @Property(1)
+     public pageNumber: number;
+
+    /**
+     * Get or set vertex points of the annotation.
+     *
+     * @default []
+     */
+    public vertexPoints?: PointModel[];
+
+    /**
      * specifies the opacity of the annotation.
      */
     @Property(1)
@@ -1450,6 +1813,25 @@ export class PerimeterSettings extends ChildProperty<PerimeterSettings> {
  */
 export class AreaSettings extends ChildProperty<AreaSettings> {
     /**
+    * Get or set offset of the annotation.
+    */
+    @Property({ x: 0, y: 0})
+    public offset: IPoint;
+
+     /**
+     * Get or set page number of the annotation.
+     */
+     @Property(1)
+     public pageNumber: number;
+
+    /**
+     * Get or set vertex points of the annotation.
+     *
+     * @default []
+     */
+    public vertexPoints?: PointModel[];
+
+    /**
      * specifies the opacity of the annotation.
      */
     @Property(1)
@@ -1535,6 +1917,30 @@ export class AreaSettings extends ChildProperty<AreaSettings> {
  * The `RadiusSettings` module is used to provide the properties to radius calibrate annotation.
  */
 export class RadiusSettings extends ChildProperty<RadiusSettings> {
+    /**
+    * Get or set offset of the annotation.
+    */
+    @Property({ x: 0, y: 0})
+    public offset: IPoint;
+
+     /**
+     * Get or set page number of the annotation.
+     */
+     @Property(1)
+     public pageNumber: number;
+
+    /**
+     * specifies the width of the annotation.
+     */
+     @Property(100)
+     public width: number;
+ 
+     /**
+      * specifies the height of the annotation.
+      */
+     @Property(90)
+     public height: number;
+
     /**
      * specifies the opacity of the annotation.
      */
@@ -1628,6 +2034,25 @@ export class RadiusSettings extends ChildProperty<RadiusSettings> {
  */
 export class VolumeSettings extends ChildProperty<VolumeSettings> {
     /**
+    * Get or set offset of the annotation.
+    */
+    @Property({ x: 0, y: 0})
+    public offset: IPoint;
+
+     /**
+     * Get or set page number of the annotation.
+     */
+     @Property(1)
+     public pageNumber: number;
+    
+    /**
+     * Get or set vertex points of the annotation.
+     *
+     * @default []
+     */
+    public vertexPoints?: PointModel[];
+
+    /**
      * specifies the opacity of the annotation.
      */
     @Property(1)
@@ -1713,6 +2138,36 @@ export class VolumeSettings extends ChildProperty<VolumeSettings> {
  */
 export class InkAnnotationSettings extends ChildProperty<InkAnnotationSettings> {
     /**
+    * Get or set offset of the annotation.
+    */
+    @Property({ x: 0, y: 0})
+    public offset: IPoint;
+
+     /**
+     * Get or set page number of the annotation.
+     */
+     @Property(1)
+     public pageNumber: number;
+
+    /**
+     * specifies the width of the annotation.
+     */
+     @Property(0)
+     public width: number;
+ 
+     /**
+      * specifies the height of the annotation.
+      */
+     @Property(0)
+     public height: number;
+
+    /**
+      * Gets or sets the path of the ink annotation.
+      */
+     @Property(0)
+     public path: string;
+
+    /**
      * Sets the opacity value for ink annotation.By default value is 1. It range varies from 0 to 1.
      */
     @Property(1)
@@ -1773,6 +2228,18 @@ export class InkAnnotationSettings extends ChildProperty<InkAnnotationSettings> 
  * The `stickyNotesSettings` module is used to provide the properties to sticky notes annotation.
  */
 export class StickyNotesSettings extends ChildProperty<StickyNotesSettings> {
+
+    /**
+    * Get or set offset of the annotation.
+    */
+    @Property({ x: 0, y: 0})
+    public offset: IPoint;
+
+     /**
+     * Get or set page number of the annotation.
+     */
+     @Property(1)
+     public pageNumber: number;
 
     /**
      * specifies the author of the annotation.
@@ -1853,6 +2320,18 @@ export class MeasurementSettings extends ChildProperty<MeasurementSettings> {
  * The `FreeTextSettings` module is used to provide the properties to free text annotation.
  */
 export class FreeTextSettings extends ChildProperty<FreeTextSettings> {
+    /**
+    * Get or set offset of the annotation.
+    */
+    @Property({ x: 0, y: 0})
+    public offset: IPoint;
+
+     /**
+     * Get or set page number of the annotation.
+     */
+     @Property(1)
+     public pageNumber: number;
+
     /**
      * specifies the opacity of the annotation.
      */
@@ -2124,6 +2603,30 @@ export class HandWrittenSignatureSettings extends ChildProperty<HandWrittenSigna
     public height: number;
 
     /**
+     * Gets or sets the save signature limit of the signature. By default value is 1 and maximum limit is 5.
+     */
+    @Property(1)
+    public saveSignatureLimit: number;
+
+    /**
+     * Gets or sets the save initial limit of the initial. By default value is 1 and maximum limit is 5.
+     */
+    @Property(1)
+    public saveInitialLimit: number;
+
+    /** 
+     * Provide option to define the required signature items to be displayed in signature menu.
+     */
+    @Property([])
+    public signatureItem: SignatureItem[];
+
+    /** 
+     * Options to set the type signature font name with respective index and maximum font name limit is 4 so key value should be 0 to 3.
+     */
+    @Property()
+    public typeSignatureFonts: { [key: number]: string };
+
+    /**
      * specifies the annotation selector settings of the annotation.
      */
     @Property('')
@@ -2372,6 +2875,101 @@ export class FormField extends ChildProperty<FormField> {
     @Property('')
     public fontName: string;
 
+    /**
+     * Get or set the form field bounds.
+     */
+    @Property({ x: 0, y: 0, width: 0, height: 0 })
+    public bounds: IFormFieldBound;
+
+    /**
+     * Get or set the font family of the form field.
+     */
+    @Property('Helvetica')
+    public fontFamily: string;
+
+    /**
+     * Get or set the font size of the form field.
+     */
+    @Property(10)
+    public fontSize: number;
+   
+    /**
+     * Get or set the font Style of form field.
+     */
+    @Property('None')
+    public fontStyle: FontStyle;
+
+    /**
+     * Get or set the font color of the form field in hexadecimal string format.
+     */
+    @Property('black')
+    public color: string;
+
+    /**
+     * Get or set the background color of the form field in hexadecimal string format.
+     */
+    @Property('white')
+    public backgroundColor: string;
+
+    /**
+     * Get or set the text alignment of the form field.
+     */
+    @Property('Left')
+    public alignment: TextAlignment;
+
+    /**
+     * Gets or set the visibility of the form field.
+     */
+    @Property('visible')
+    public visibility: VisibilityState;
+
+    /**
+     * Get or set the maximum character length.
+     */
+    @Property(0)
+    public maxLength: number;
+
+    /**
+     * Gets or set the is Required of form field.
+     */
+    @Property(false)
+    public isRequired: boolean;
+
+    /**
+     * Get or set the boolean value to print the form field. TRUE by default.
+     */
+    @Property(false)
+    public isPrint: boolean;
+
+    /**
+     * Get or set the text to be displayed as tooltip. By default it is empty.
+     */
+    @Property('')
+    public tooltip: string;
+
+    /**
+     * Get or set the form field items. This can be Dropdown items or Listbox items.
+     */
+    @Property('')
+    public options: ItemModel[];
+
+    /**
+     * Specifies the properties of the signature indicator in the signature field.
+     */
+    @Property()
+    public signatureIndicatorSettings: SignatureIndicatorSettingsModel;
+
+    /**
+     * Get or set the thickness of the form field.
+     */
+    @Property(1)
+    public thickness: number;
+     
+    /**
+     * Get or set the border color of the form field.
+     */
+    @Property('#303030')
+    public borderColor: string;
 }
 /**
  * The `ContextMenuSettings` is used to show the context menu of PDF document.
@@ -2393,6 +2991,633 @@ export class ContextMenuSettings extends ChildProperty<ContextMenuSettings> {
     @Property([])
     public contextMenuItems: ContextMenuItem[];
 }
+
+/**
+ * The `TextFieldSettings` is used to to show and customize the appearance of text box HTML element.
+ */
+export class TextFieldSettings extends ChildProperty<TextFieldSettings> {
+
+    /**
+     * Get or set the form field bounds.
+     */
+    @Property({ x: 0, y: 0, width: 0, height: 0 })
+    public bounds: IFormFieldBound;
+
+    /**
+     * Get or set the name of the form field element.
+     */
+    @Property('')
+    public name: string;
+
+    /**
+     * Get or set the value of the form field.
+     */
+    @Property('')
+    public value: string;
+
+    /**
+     * Get or set the font family of the textbox field.
+     */
+    @Property('Helvetica')
+    public fontFamily: string;
+
+    /**
+     * Get or set the font size of the textbox field.
+     */
+    @Property(10)
+    public fontSize: number;
+    
+    /**
+     * specifies the page number of the form field.
+     */
+    @Property(0)
+    public pageNumber: number;
+
+    /**
+     * Get or set the font Style of textbox field.
+     */
+    @Property('None')
+    public fontStyle: FontStyle;
+
+    /**
+     * Get or set the font color of the textbox in hexadecimal string format.
+     */
+    @Property('black')
+    public color: string;
+
+    /**
+     * Get or set the background color of the textbox in hexadecimal string format.
+     */
+    @Property('white')
+    public backgroundColor: string;
+
+    /**
+     * Get or set the alignment of the text.
+     */
+    @Property('Left')
+    public alignment: TextAlignment;
+
+    /**
+     * Specifies whether the textbox field is in read-only or read-write mode. FALSE by default.
+     */
+    @Property(false)
+    public isReadOnly: boolean;
+
+    /**
+     * Gets or set the visibility of the form field.
+     */
+    @Property('visible')
+    public visibility: VisibilityState;
+
+    /**
+     * Get or set the maximum character length.
+     */
+    @Property(0)
+    public maxLength: number;
+
+    /**
+     * If it is set as true, consider as mandatory field in the PDF document. By default it is false.
+     */
+    @Property(false)
+    public isRequired: boolean;
+
+    /**
+     * Get or set the boolean value to print the textbox field. TRUE by default.
+     */
+    @Property(false)
+    public isPrint: boolean;
+
+    /**
+     * Get or set the text to be displayed as tooltip. By default it is empty.
+     */
+    @Property('')
+    public tooltip: string;
+
+    /**
+     * Get or set the thickness of the textbox field.
+     */
+    @Property(1)
+    public thickness: number;
+
+    /**
+     * Get or set the border color of the textbox field.
+     */
+    @Property('#303030')
+    public borderColor: string;
+}
+
+/**
+ * The `PasswordFieldSettings` is used to to show and customize the appearance of password input HTML element.
+ */
+ export class PasswordFieldSettings extends ChildProperty<PasswordFieldSettings> {
+
+    /**
+     * Get or set the form field bounds.
+     */
+     @Property({ x: 0, y: 0, width: 0, height: 0 })
+     public bounds: IFormFieldBound;
+
+    /**
+     * Get or set the name of the form field element.
+     */
+    @Property('')
+    public name: string;
+
+    /**
+     * Get or set the value of the form field.
+     */
+    @Property('')
+    public value: string;
+
+    /**
+     * specifies the page number of the form field.
+     */
+    @Property(0)
+    public pageNumber: number;
+
+    /**
+     * Get or set the font family of the password field.
+     */
+    @Property('Helvetica')
+    public fontFamily: string;
+
+    /**
+     * Get or set the font size of the password field.
+     */
+    @Property(10)
+    public fontSize: number;
+
+    /**
+     * Get or set the font Style of password field.
+     */
+    @Property('None')
+    public fontStyle: FontStyle;
+
+    /**
+     * Get or set the font color of the password field in hexadecimal string format.
+     */
+    @Property('black')
+    public color: string;
+
+    /**
+     * Get or set the background color of the password field in hexadecimal string format.
+     */
+    @Property('white')
+    public backgroundColor: string;
+
+    /**
+     * Get or set the alignment of the text.
+     */
+    @Property('Left')
+    public alignment: TextAlignment;
+
+    /**
+     * Specifies whether the password field is in read-only or read-write mode. FALSE by default.
+     */
+    @Property(false)
+    public isReadOnly: boolean;
+
+    /**
+     * Gets or set the visibility of the form field.
+     */
+    @Property('visible')
+    public visibility: VisibilityState;
+
+    /**
+     * Get or set the maximum character length.
+     */
+    @Property(0)
+    public maxLength: number;
+
+    /**
+     * If it is set as true, consider as mandatory field in the PDF document. By default it is false.
+     */
+    @Property(false)
+    public isRequired: boolean;
+
+    /**
+     * Get or set the boolean value to print the password field. TRUE by default.
+     */
+    @Property(false)
+    public isPrint: boolean;
+
+    /**
+     * Get or set the text to be displayed as tooltip. By default it is empty.
+     */
+    @Property('')
+    public tooltip: string;
+
+    /**
+     * Get or set the thickness of the password field.
+     */
+    @Property(1)
+    public thickness: number;
+
+    /**
+     * Get or set the border color of the password field.
+     */
+    @Property('#303030')
+    public borderColor: string;
+}
+
+/**
+ * The `CheckBoxFieldSettings` is used to to show and customize the appearance of check box element.
+ */
+ export class CheckBoxFieldSettings extends ChildProperty<CheckBoxFieldSettings> {
+    
+    /**
+     * Get or set the form field bounds.
+     */
+    @Property({ x: 0, y: 0, width: 0, height: 0 })
+    public bounds: IFormFieldBound;
+
+    /**
+     * Get or set the name of the check box.
+     */
+    @Property('')
+    public name: string;
+
+    /**
+     * Specifies whether the check box is in checked state or not.
+     */
+    @Property(false)
+    public isChecked: boolean;
+
+    /**
+     * Get or set the background color of the check box in hexadecimal string format.
+     */
+    @Property('white')
+    public backgroundColor: string;
+
+    /**
+     * Specifies whether the check box field is in read-only or read-write mode. FALSE by default.
+     */
+    @Property(false)
+    public isReadOnly: boolean;
+
+    /**
+     * Gets or set the visibility of the form field.
+     */
+    @Property('visible')
+    public visibility: VisibilityState;
+
+    /**
+     * Get or set the boolean value to print the check box field. TRUE by default.
+     */
+    @Property(false)
+    public isPrint: boolean;
+
+    /**
+     * specifies the page number of the form field.
+     */
+    @Property(0)
+    public pageNumber: number;
+
+    /**
+     * Get or set the text to be displayed as tooltip. By default it is empty.
+     */
+    @Property('')
+    public tooltip: string;
+
+    /**
+     * If it is set as true, consider as mandatory field in the PDF document. By default it is false.
+     */
+    @Property(false)
+    public isRequired: boolean;
+
+    /**
+     * Get or set the thickness of the check box field.
+     */
+    @Property(1)
+    public thickness: number;
+
+    /**
+     * Get or set the border color of the check box field.
+     */
+    @Property('#303030')
+    public borderColor: string;
+}
+
+/**
+ * The `RadioButtonFieldSettings` is used to to show and customize the appearance of radio button element.
+ */
+ export class RadioButtonFieldSettings extends ChildProperty<RadioButtonFieldSettings> {
+
+    /**
+     * Get or set the form field bounds.
+     */
+     @Property({ x: 0, y: 0, width: 0, height: 0 })
+     public bounds: IFormFieldBound;
+
+    /**
+     * Get or set the name of the form field element.
+     */
+    @Property('')
+    public name: string;
+
+    /**
+     * Specifies whether the radio button is in checked state or not.
+     */
+    @Property(false)
+    public isSelected: boolean;
+
+    /**
+     * Get or set the background color of the radio button in hexadecimal string format.
+     */
+    @Property('white')
+    public backgroundColor: string;
+
+    /**
+     * Specifies whether the radio button field is in read-only or read-write mode. FALSE by default.
+     */
+    @Property(false)
+    public isReadOnly: boolean;
+
+    /**
+     * If it is set as true, consider as mandatory field in the PDF document. By default it is false.
+     */
+    @Property(false)
+    public isRequired: boolean;
+
+    /**
+     * specifies the page number of the form field.
+     */
+    @Property(0)
+    public pageNumber: number;
+
+    /**
+     * Gets or set the visibility of the form field.
+     */
+    @Property('visible')
+    public visibility: VisibilityState;
+
+    /**
+     * Get or set the boolean value to print the radio button field. TRUE by default.
+     */
+    @Property(false)
+    public isPrint: boolean;
+
+    /**
+     * Get or set the text to be displayed as tooltip. By default it is empty.
+     */
+    @Property('')
+    public tooltip: string;
+
+    /**
+     * Get or set the thickness of the radio button field.
+     */
+    @Property(1)
+    public thickness: number;
+
+    /**
+     * Get or set the border color of the radio button field.
+     */
+    @Property('#303030')
+    public borderColor: string;
+}
+
+/**
+ * The `DropdownFieldSettings` is used to to show and customize the appearance of drop down element.
+ */
+ export class DropdownFieldSettings extends ChildProperty<DropdownFieldSettings> {
+
+    /**
+     * Get or set the form field bounds.
+     */
+     @Property({ x: 0, y: 0, width: 0, height: 0 })
+     public bounds: IFormFieldBound;
+
+    /**
+     * Get or set the name of the dropdown.
+     */
+    @Property('')
+    public name: string;
+
+    /**
+     * Get or set the value of the form field.
+     */
+    @Property('')
+    public value: string;
+
+    /**
+     * Get or set the font family of the dropdown field.
+     */
+    @Property('Helvetica')
+    public fontFamily: string;
+
+    /**
+     * Get or set the font size of the dropdown field.
+     */
+    @Property(10)
+    public fontSize: number;
+
+    /**
+     * specifies the page number of the form field.
+     */
+    @Property(0)
+    public pageNumber: number;
+
+    /**
+     * Get or set the font style of dropdown field.
+     */
+    @Property('None')
+    public fontStyle: FontStyle;
+
+    /**
+     * Get or set the font color of the dropdown in hexadecimal string format..
+     */
+    @Property('black')
+    public color: string;
+
+    /**
+     * Get or set the background color of the dropdown in hexadecimal string format.
+     */
+    @Property('white')
+    public backgroundColor: string;
+
+    /**
+     * Get or set the alignment of the text.
+     */
+    @Property('Left')
+    public alignment: TextAlignment;
+
+    /**
+     * Specifies whether the dropdown field is in read-only or read-write mode. FALSE by default.
+     */
+    @Property(false)
+    public isReadOnly: boolean;
+
+    /**
+     * Gets or set the visibility of the form field.
+     */
+    @Property('visible')
+    public visibility: VisibilityState;
+
+    /**
+     * If it is set as true, consider as mandatory field in the PDF document. By default it is false.
+     */
+    @Property(false)
+    public isRequired: boolean;
+
+    /**
+     * Get or set the boolean value to print the dropdown field. TRUE by default.
+     */
+    @Property(false)
+    public isPrint: boolean;
+
+    /**
+     * Get or set the text to be displayed as tooltip. By default it is empty.
+     */
+    @Property('')
+    public tooltip: string;
+
+    /**
+     * Get or set the dropdown items.
+     */
+    @Property('')
+    public options: ItemModel[];
+
+    /**
+     * Get or set the thickness of the drop down field.
+     */
+    @Property(1)
+    public thickness: number;
+
+    /**
+     * Get or set the border color of the drop down field.
+     */
+    @Property('#303030')
+    public borderColor: string;
+}
+
+/**
+ * The `ListBoxFieldSettings` is used to to show and customize the appearance of list box element.
+ */
+export class ListBoxFieldSettings extends ChildProperty<ListBoxFieldSettings> {
+
+    /**
+     * Get or set the form field bounds.
+     */
+     @Property({ x: 0, y: 0, width: 0, height: 0 })
+     public bounds: IFormFieldBound;
+
+    /**
+     * Get or set the name of the form field element.
+     */
+    @Property('')
+    public name: string;
+
+    /**
+     * Get or set the value of the form field.
+     */
+    @Property('')
+    public value: string;
+
+    /**
+     * Get or set the font family of the listbox field.
+     */
+    @Property('Helvetica')
+    public fontFamily: string;
+
+    /**
+     * Get or set the font size of the listbox field.
+     */
+    @Property(10)
+    public fontSize: number;
+
+    /**
+     * specifies the page number of the form field.
+     */
+    @Property(0)
+    public pageNumber: number;
+
+    /**
+     * Get or set the font Style of listbox field.
+     */
+    @Property('None')
+    public fontStyle: FontStyle;
+
+    /**
+     * Get or set the font color of the listbox in hexadecimal string format.
+     */
+    @Property('black')
+    public color: string;
+
+    /**
+     * Get or set the background color of the listbox in hexadecimal string format.
+     */
+    @Property('white')
+    public backgroundColor: string;
+
+    /**
+     * Get or set the alignment of the text.
+     */
+    @Property('Left')
+    public alignment: TextAlignment;
+
+    /**
+     * Specifies whether the listbox field is in read-only or read-write mode. FALSE by default.
+     */
+    @Property(false)
+    public isReadOnly: boolean;
+
+    /**
+     * Gets or set the visibility of the form field.
+     */
+    @Property('visible')
+    public visibility: VisibilityState;
+
+    /**
+     * If it is set as true, consider as mandatory field in the PDF document. By default it is false.
+     */
+    @Property(false)
+    public isRequired: boolean;
+
+    /**
+     * Get or set the boolean value to print the listbox field. TRUE by default.
+     */
+    @Property(false)
+    public isPrint: boolean;
+
+    /**
+     * Get or set the text to be displayed as tool tip. By default it is empty.
+     */
+    @Property('')
+    public tooltip: string;
+
+    /**
+     * Get or set the listbox items.
+     */
+    @Property([])
+    public options: ItemModel[];
+
+    /**
+     * Get or set the thickness of the list box field.
+     */
+    @Property(1)
+    public thickness: number;
+
+    /**
+     * Get or set the border color of the list box field.
+     */
+    @Property('#303030')
+    public borderColor: string;
+}
+
+export class Item extends ChildProperty<Item> {
+    /**
+     * Get or set the name.
+     */
+     @Property('')
+     public itemName: string;
+
+    /**
+     * Get or set the value.
+     */
+      @Property('')
+      public itemValue: string;
+}
+
 /**
  * Represents the PDF viewer component.
  * ```html
@@ -2459,6 +3684,15 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
      */
     // eslint-disable-next-line
     public annotationCollection: any[];
+
+    /**
+     * Get the Loaded document formField Collections in the PdfViewer control.
+     * 
+     * @private
+     */
+    // eslint-disable-next-line
+    public formFieldCollection: any[];
+
 
     /**
      * Get the Loaded document signature Collections in the PdfViewer control.
@@ -2590,6 +3824,16 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
     public isAnnotationToolbarVisible: boolean;
 
     /**
+     * Opens the annotation toolbar when the PDF document is loaded in the PDF Viewer control initially
+     * and get the annotation Toolbar Visible status.
+     *
+     * @private
+     * @default false
+     */
+    @Property(false)
+    public isFormDesignerToolbarVisible: boolean;
+
+    /**
      * Enables or disables the multi-page text markup annotation selection in UI.
      *
      * @default false
@@ -2710,7 +3954,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
      * Gets the form fields present in the loaded PDF document. It used to get the form fields id, name, type and it's values.
      */
     // eslint-disable-next-line max-len
-    @Property({ name: '', id: '', type: '', isReadOnly: false, value: '', signatureType: [''], fontName: '' })
+    @Property({ name: '', id: '', type: '', isReadOnly: false, value: '', signatureType: [''], fontName: '', fontFamily: 'Helvetica', fontSize: 10, fontStyle: 'None', color: 'black', backgroundColor: 'white', alignment: 'Left',  visibility: 'visible', maxLength: 0, isRequired: false, isPrint: false, tooltip: '', options:[], signatureIndicatorSettings: { opacity: 1, backgroundColor: 'orange', width: 19, height: 10, fontSize: 10, text: null, color: 'black' }  })
     public formFieldCollections: FormFieldModel[];
 
     /**
@@ -2792,6 +4036,22 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
      */
     @Property(true)
     public enableFormFields: boolean;
+
+    /**
+     * Get or set a boolean value to enable or disable the form designer. TRUE by default.
+     *
+     * @default true
+     */
+    @Property(true)
+    public enableFormDesigner: boolean;
+
+    /**
+     * Enable or disable the interaction of form fields in the Pdfviewer.
+     *
+     * @default false
+     */
+    @Property(false)
+    public designerMode: boolean;
 
     /**
      * Enable or disable the form fields validation.
@@ -2883,12 +4143,29 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
     public enableAnnotationToolbar: boolean;
 
     /**
+     * Opens the form designer toolbar when the PDF document is loaded in the PDF Viewer control initially.
+     *
+     * @default true
+     */
+    @Property(true)
+    public enableFormDesignerToolbar: boolean;
+
+    /**
      * Gets or sets a boolean value to show or hide the bookmark panel while loading a document. FALSE by default.
      *
      * @default false
      */
     @Property(false)
     public isBookmarkPanelOpen: boolean;
+
+    /**
+     * Gets or sets a boolean value if initial field selected in form designer toolbar.
+     *
+     * @private
+     * @default false
+     */
+    @Property(false)
+    public isInitialFieldToolbarSelection: boolean;
 
     /**
      * Sets the interaction mode of the PdfViewer
@@ -2964,7 +4241,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
      * Defines the settings of the PdfViewer toolbar.
      */
     // eslint-disable-next-line max-len
-    @Property({ showTooltip: true, toolbarItems: ['OpenOption', 'UndoRedoTool', 'PageNavigationTool', 'MagnificationTool', 'PanTool', 'SelectionTool', 'CommentTool', 'SubmitForm', 'AnnotationEditTool', 'FreeTextAnnotationOption', 'InkAnnotationOption', 'ShapeAnnotationOption', 'StampAnnotation', 'SignatureOption', 'SearchOption', 'PrintOption', 'DownloadOption'], annotationToolbarItems: ['HighlightTool', 'UnderlineTool', 'StrikethroughTool', 'ColorEditTool', 'OpacityEditTool', 'AnnotationDeleteTool', 'StampAnnotationTool', 'HandWrittenSignatureTool', 'InkAnnotationTool', 'ShapeTool', 'CalibrateTool', 'StrokeColorEditTool', 'ThicknessEditTool', 'FreeTextAnnotationTool', 'FontFamilyAnnotationTool', 'FontSizeAnnotationTool', 'FontStylesAnnotationTool', 'FontAlignAnnotationTool', 'FontColorAnnotationTool', 'CommentPanelTool'] })
+    @Property({ showTooltip: true, toolbarItems: ['OpenOption', 'UndoRedoTool', 'PageNavigationTool', 'MagnificationTool', 'PanTool', 'SelectionTool', 'CommentTool', 'SubmitForm', 'AnnotationEditTool', 'FormDesignerEditTool', 'FreeTextAnnotationOption', 'InkAnnotationOption', 'ShapeAnnotationOption', 'StampAnnotation', 'SignatureOption', 'SearchOption', 'PrintOption', 'DownloadOption'], annotationToolbarItems: ['HighlightTool', 'UnderlineTool', 'StrikethroughTool', 'ColorEditTool', 'OpacityEditTool', 'AnnotationDeleteTool', 'StampAnnotationTool', 'HandWrittenSignatureTool', 'InkAnnotationTool', 'ShapeTool', 'CalibrateTool', 'StrokeColorEditTool', 'ThicknessEditTool', 'FreeTextAnnotationTool', 'FontFamilyAnnotationTool', 'FontSizeAnnotationTool', 'FontStylesAnnotationTool', 'FontAlignAnnotationTool', 'FontColorAnnotationTool', 'CommentPanelTool'], formDesignerToolbarItems: ['TextboxTool', 'PasswordTool', 'CheckBoxTool', 'RadioButtonTool', 'DropdownTool', 'ListboxTool', 'DrawSignatureTool', 'DeleteTool'] })
     public toolbarSettings: ToolbarSettingsModel;
 
     /**
@@ -2990,11 +4267,18 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
     public serverActionSettings: ServerActionSettingsModel;
 
     /**
-     * Defines the  properties of signature field
+     * Get or set the signature field settings.
      */
     // eslint-disable-next-line max-len
-    @Property({ signatureIndicatorSettings: { opacity: 1, backgroundColor: 'orange', width: 19, height: 10, fontSize: 10, text: 'Sign', color: 'black'}})
+    @Property({ signatureIndicatorSettings: { opacity: 1, backgroundColor: 'orange', width: 19, height: 10, fontSize: 10, text: null, color: 'black' } })
     public signatureFieldSettings: SignatureFieldSettingsModel;
+
+    /**
+     * Get or set the initial field settings.
+     */
+    // eslint-disable-next-line max-len
+    @Property({ signatureIndicatorSettings: { opacity: 1, backgroundColor: 'orange', width: 19, height: 10, fontSize: 10, text: null, color: 'black' } })
+    public initialFieldSettings: InitialFieldSettingsModel;
 
     /**
      * Defines the settings of highlight annotation.
@@ -3144,7 +4428,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
      * Defines the settings of handWrittenSignature.
      */
     // eslint-disable-next-line max-len
-    @Property({ opacity: 1, strokeColor: '#000000', width: 150, height: 100, thickness: 1, annotationSelectorSettings: { selectionBorderColor: '', resizerBorderColor: 'black', resizerFillColor: '#FF4081', resizerSize: 8, selectionBorderThickness: 1, resizerShape: 'Square', selectorLineDashArray: [], resizerLocation: AnnotationResizerLocation.Corners | AnnotationResizerLocation.Edges, resizerCursorType: null }, allowedInteractions: ['None'] })
+    @Property({ signatureItem: ['Signature', 'Initial'], saveSignatureLimit: 1, saveInitialLimit: 1, opacity: 1, strokeColor: '#000000', width: 150, height: 100, thickness: 1, annotationSelectorSettings: { selectionBorderColor: '', resizerBorderColor: 'black', resizerFillColor: '#FF4081', resizerSize: 8, selectionBorderThickness: 1, resizerShape: 'Square', selectorLineDashArray: [], resizerLocation: AnnotationResizerLocation.Corners | AnnotationResizerLocation.Edges, resizerCursorType: null }, allowedInteractions: ['None'] })
     public handWrittenSignatureSettings: HandWrittenSignatureSettingsModel;
 
     /**
@@ -3174,10 +4458,46 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
     public scrollSettings: ScrollSettingsModel;
 
     /**
+     * Get or set the text field settings.
+     */
+    @Property({ name: '', value: '', fontFamily: 'Helvetica', fontSize: 10, fontStyle: 'None', color: 'black', backgroundColor: 'white', alignment: 'Left', isReadOnly: false,  visibility: 'visible', maxLength: 0, isRequired: false, isPrint: false, tooltip: '' })
+    public textFieldSettings: TextFieldSettingsModel;
+
+    /**
+     * Get or set the password field settings.
+     */
+    @Property({ name: '', value: '', fontFamily: 'Helvetica', fontSize: 10, fontStyle: 'None', color: 'black', backgroundColor: 'white', alignment: 'Left', isReadOnly: false,  visibility: 'visible', maxLength: 0, isRequired: false, isPrint: false, tooltip: '' })
+    public passwordFieldSettings: PasswordFieldSettingsModel;
+
+    /**
+     * Get or set the check box field settings.
+     */
+    @Property({ name: '', isChecked: false, backgroundColor: 'white', isReadOnly: false,  visibility: 'visible', isPrint: false, tooltip: '' })
+    public checkBoxFieldSettings: CheckBoxFieldSettingsModel;
+
+    /**
+     * Get or set the radio button field settings.
+     */
+    @Property({ name: '', isSelected: false, backgroundColor: 'white', isReadOnly: false,  visibility: 'visible', isPrint: false, tooltip: '' })
+    public radioButtonFieldSettings: RadioButtonFieldSettingsModel;
+
+    /**
+     * Get or set the dropdown field settings.
+     */
+    @Property({ name: '', value: '', fontFamily: 'Helvetica', fontSize: 10, fontStyle: 'None', color: 'black', backgroundColor: 'white', alignment: 'Left', isReadOnly: false, visibility: 'visible', isRequired: false, isPrint: false, tooltip: '', options: [] })
+    public DropdownFieldSettings: DropdownFieldSettingsModel;
+
+    /**
+     * Get or set the listbox field settings.
+     */
+    @Property({ name: '', value: '', fontFamily: 'Helvetica', fontSize: 10, fontStyle: 'None', color: 'black', backgroundColor: 'white', alignment: 'Left', isReadOnly: false, visibility: 'visible', isRequired: false, isPrint: false, tooltip: '', options: [] })
+    public listBoxFieldSettings: ListBoxFieldSettingsModel;
+
+    /**
      * Defines the context menu settings.
      */
     // eslint-disable-next-line max-len
-    @Property({ contextMenuAction: 'RightClick', contextMenuItems: [ ContextMenuItem.Comment, ContextMenuItem.Copy, ContextMenuItem.Cut, ContextMenuItem.Delete, ContextMenuItem.Highlight, ContextMenuItem.Paste, ContextMenuItem.Properties, ContextMenuItem.ScaleRatio, ContextMenuItem.Strikethrough, ContextMenuItem.Underline] })
+    @Property({ contextMenuAction: 'RightClick', contextMenuItems: [ContextMenuItem.Comment, ContextMenuItem.Copy, ContextMenuItem.Cut, ContextMenuItem.Delete, ContextMenuItem.Highlight, ContextMenuItem.Paste, ContextMenuItem.Properties, ContextMenuItem.ScaleRatio, ContextMenuItem.Strikethrough, ContextMenuItem.Underline] })
     public contextMenuSettings: ContextMenuSettingsModel;
 
     /**
@@ -3265,6 +4585,10 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
      * @private
      */
     public formFieldsModule: FormFields;
+    /**
+     * @private
+     */
+    public formDesignerModule: FormDesigner;
     private isTextSelectionStarted: boolean = false;
     /**
      * @private
@@ -3357,6 +4681,16 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
     public get annotation(): Annotation {
         return this.annotationModule;
     }
+    /**
+     * Gets the FormDesigner object of the pdf viewer.
+     *
+     * @asptype FormDesigner
+     * @blazorType FormDesigner
+     * @returns { FormDesigner }
+     */
+    public get formDesigner(): FormDesigner {
+        return this.formDesignerModule;
+    }
 
     /**
      * Gets the TextSelection object of the pdf viewer.
@@ -3414,6 +4748,14 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
     @Event()
     public ajaxRequestFailed: EmitType<AjaxRequestFailureEventArgs>;
 
+    /**
+     * Event triggers on successful AJAX request 
+     * 
+     * @event
+     */
+     @Event()
+     public ajaxRequestSuccess: EmitType<AjaxRequestSuccessEventArgs>;
+     
     /**
      * Triggers when validation is failed.
      *
@@ -3797,7 +5139,6 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
      * Triggers before the data send in to the server.
      *
      * @event
-     * @deprecated
      */
     @Event()
     public ajaxRequestInitiate: EmitType<AjaxRequestInitiateEventArgs>;
@@ -3866,6 +5207,87 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
     public formFieldFocusOut: EmitType<FormFieldFocusOutEventArgs>;
 
     /**
+     * The event is triggered when a form field is added.
+     *
+     * @event
+     * @blazorProperty 'formFieldAdd'
+     */
+    @Event()
+    public formFieldAdd: EmitType<FormFieldAddArgs>;
+
+    /**
+     * The event is triggered when a form field is removed.
+     *
+     * @event
+     * @blazorProperty 'formFieldRemove'
+     */
+     @Event()
+     public formFieldRemove: EmitType<FormFieldRemoveArgs>;
+
+    /**
+     * The event is triggered when a property of form field is changed.
+     *
+     * @event
+     * @blazorProperty 'formFieldPropertiesChange'
+     */
+    @Event()
+    public formFieldPropertiesChange: EmitType<FormFieldPropertiesChangeArgs>;
+
+    /**
+     * The event is triggered when a mouse cursor leaves form field.
+     *
+     * @event
+     * @blazorProperty 'formFieldMouseLeave'
+     */
+    @Event()
+    public formFieldMouseLeave: EmitType<FormFieldMouseLeaveArgs>;
+
+    /**
+     * The event is triggered when a mouse cursor is over a form field.
+     *
+     * @event
+     * @blazorProperty 'formFieldMouseover'
+     */
+     @Event()
+     public formFieldMouseover: EmitType<FormFieldMouseoverArgs>;
+
+    /**
+     * The event is triggered when a form field is moved.
+     *
+     * @event
+     * @blazorProperty 'formFieldMove'
+     */
+     @Event()
+     public formFieldMove: EmitType<FormFieldMoveArgs>;
+
+    /**
+     * The event is triggered when a form field is resized.
+     *
+     * @event
+     * @blazorProperty 'formFieldResize'
+     */
+     @Event()
+     public formFieldResize: EmitType<FormFieldResizeArgs>;
+
+    /**
+     * The event is triggered when a form field is selected.
+     *
+     * @event
+     * @blazorProperty 'formFieldSelect'
+     */
+     @Event()
+     public formFieldSelect: EmitType<FormFieldSelectArgs>;
+
+    /**
+     * The event is triggered when a form field is unselected.
+     *
+     * @event
+     * @blazorProperty 'formFieldUnselect'
+     */
+    @Event()
+    public formFieldUnselect: EmitType<FormFieldUnselectArgs>;
+
+    /**
      * PDF document annotation collection.
      *
      * @private
@@ -3873,6 +5295,15 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
      */
     @Collection<PdfAnnotationBaseModel>([], PdfAnnotationBase)
     public annotations: PdfAnnotationBaseModel[];
+
+    /**
+     * PDF document form fields collection.
+     * 
+     * @private
+     * @deprecated
+     */
+    @Collection<PdfFormFieldBaseModel>([], PdfFormFieldBase)
+    public formFields: PdfFormFieldBaseModel[];
 
     /**
      * @private
@@ -3927,7 +5358,6 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
      *
      * @param jsonData
      * @returns void
-     * @deprecated
      */
     // eslint-disable-next-line
     public setJsonData(jsonData: any): void {
@@ -4026,6 +5456,13 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
                     this.formFieldsModule.formFieldsReadOnly(this.enableFormFields);
                 }
                 break;
+            case 'designerMode':
+                if(this.designerMode) {
+                    this.formDesignerModule.setMode('designer');
+                } else {
+                    this.formDesignerModule.setMode('edit');
+                }
+                break;
             case 'highlightSettings':
             case 'underlineSettings':
             case 'strikethroughSettings':
@@ -4108,6 +5545,11 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
                 member: 'FormFields', args: [this, this.viewerBase]
             });
         }
+        if (this.enableFormDesigner) {
+            modules.push({
+                member: 'FormDesigner', args: [this, this.viewerBase]
+            });
+        }
         return modules;
     }
     /** @hidden */
@@ -4151,6 +5593,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
         'Undo': 'Undo',
         'Redo': 'Redo',
         'Annotation': 'Add or Edit annotations',
+        'FormDesigner': 'Add and Edit Form Fields',
         'Highlight': 'Highlight Text',
         'Underline': 'Underline Text',
         'Strikethrough': 'Strikethrough Text',
@@ -4177,6 +5620,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
         'Print text': 'Print',
         'Search text': 'Search',
         'Annotation Edit text': 'Edit Annotation',
+        'FormDesigner Edit text': 'Add and Edit Form Fields',
         'Line Thickness': 'Line Thickness',
         'Line Properties': 'Line Properties',
         'Start Arrow': 'Start Arrow',
@@ -4253,6 +5697,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
         'Text Align': 'Text Align',
         'Text Properties': 'Font Style',
         'Draw Signature': 'Draw Signature',
+        'Draw Initial': 'Draw Initial',
         'Draw Ink': 'Draw Ink',
         'Create': 'Create',
         'Font family': 'Font Family',
@@ -4271,7 +5716,41 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
         'Type Signature': 'TYPE',
         'Upload Signature': 'UPLOAD',
         'Browse Signature Image': 'BROWSE',
-        'Save Signature': 'Save Signature'
+        'Save Signature': 'Save Signature',
+        'Save Initial': 'Save Initial',
+        'Textbox': 'Textbox',
+        'Password': 'Password',
+        'Check Box': 'Checkbox',
+        'Radio Button': 'Radio Button',
+        'Dropdown': 'Drop Down',
+        'List Box': 'List Box',
+        'Signature': 'Signature',
+        'Delete FormField': 'Delete Form Field',
+        'Textbox Properties': 'Textbox Properties',
+        'Name': 'Name',
+        'Tooltip': 'Tooltip',
+        'Value': 'Value',
+        'Form Field Visibility': 'Form Field Visibility',
+        'Read Only': 'Read Only',
+        'Required': 'Required',
+        'Checked': 'Checked',
+        'Show Printing': 'Show Printing',
+        'Formatting': 'Format',
+        'Fill': 'Fill',
+        'Border': 'Border',
+        'Border Color': 'Border Color',
+        'Thickness': 'Thickness',
+        'Max Length': 'Max Length',
+        'List Item': 'Item Name',
+        'Export Value': 'Item Value',
+        'Dropdown Item List': 'Dropdown Item List',
+        'List Box Item List': 'List Box Item List',
+        'General': 'GENERAL',
+        'Appearance': 'APPEARANCE',
+        'Options': 'OPTIONS',
+        'Delete Item': 'Delete',
+        'Up': 'Up',
+        'Down': 'Down'
     };
 
     /**
@@ -4439,12 +5918,12 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
             if (typeof (importData) === 'string') {
                 let isXfdfFile: boolean = (importData.indexOf('.xfdf') > -1) ? true : false;
                 if (annotationDataFormat) {
-                    this.viewerBase.importAnnotations(importData, annotationDataFormat,isXfdfFile);
+                    this.viewerBase.importAnnotations(importData, annotationDataFormat, isXfdfFile);
                 } else {
                     if (importData.split('.')[1] === 'json') {
                         this.viewerBase.importAnnotations(importData, AnnotationDataFormat.Json);
                     } else {
-                        this.viewerBase.importAnnotations(importData, AnnotationDataFormat.Xfdf,isXfdfFile);
+                        this.viewerBase.importAnnotations(importData, AnnotationDataFormat.Xfdf, isXfdfFile);
                     }
                 }
             } else {
@@ -4636,6 +6115,150 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
     }
 
     /**
+     * @param name - Get the name of the event.
+     * @param field - Event arguments for the form field add event.
+     * @param pageIndex - Get the page number.
+     * @private
+     */
+    // eslint-disable-next-line
+    public fireFormFieldAddEvent(name: string, field: IFormField, pageIndex: number): void {
+        const eventArgs: FormFieldAddArgs = { name: name, field: field, pageIndex: pageIndex };
+        this.viewerBase.isFormFieldSelect = false;
+        this.trigger('formFieldAdd', eventArgs);
+    }
+
+    /**
+     * @param name - Get the name of the event.
+     * @param field - Event arguments for the form field remove event.
+     * @param pageIndex - Get the page number.
+     * @private
+     */
+    // eslint-disable-next-line
+    public fireFormFieldRemoveEvent(name: string, field: IFormField, pageIndex: number): void {
+        const eventArgs: FormFieldRemoveArgs = { name: name, field: field, pageIndex: pageIndex };
+        this.trigger('formFieldRemove', eventArgs);
+    }
+
+    /**
+     * @param name - Get the name of the event.
+     * @param field - Event arguments for the form field properties change event.
+     * @param pageIndex - Get the page number.
+     * @param isAlignmentChanged - Specifies whether the text alignment of the form field is changed or not.
+     * @param isBackgroundColorChanged - Specifies whether the background color of the form field is changed or not.
+     * @param isBorderColorChanged - Specifies whether the border color of the form field is changed or not.
+     * @param isBorderWidthChanged - Specifies whether the border width of the form field is changed or not.
+     * @param isColorChanged - Specifies whether the font color of the form field is changed or not.
+     * @param isFontFamilyChanged - Specifies whether the font family of the form field is changed or not.
+     * @param isFontSizeChanged - Specifies whether the font size of the form field is changed or not.
+     * @param isFontStyleChanged - Specifies whether the font style of the form field is changed or not.
+     * @param isMaxLengthChanged - Specifies whether the max length of the form field is changed or not.
+     * @param isPrintChanged - Specifies whether the print option of the form field is changed or not.
+     * @param isReadOnlyChanged - Specifies the Read Only of Form field is changed or not.
+     * @param isRequiredChanged - Specifies whether the is required option of the form field is changed or not.
+     * @param isToolTipChanged - Specifies whether the tool tip property is changed or not.
+     * @param isValueChanged - Specifies whether the form field value is changed or not.
+     * @param isVisibilityChanged - Specifies whether the form field visibility is changed or not.
+     * @param newValue - Specifies the new value of the form field.
+     * @param oldValue - Specifies the old value of the form field.
+     * @private
+     */
+    // eslint-disable-next-line
+    public fireFormFieldPropertiesChangeEvent(name: string, field: IFormField, pageIndex: number, isValueChanged: boolean, isFontFamilyChanged: boolean,
+        isFontSizeChanged: boolean, isFontStyleChanged: boolean, isColorChanged: boolean, isBackgroundColorChanged: boolean, isBorderColorChanged: boolean, 
+        isBorderWidthChanged: boolean, isAlignmentChanged: boolean, isReadOnlyChanged: boolean, isVisibilityChanged: boolean, isMaxLengthChanged: boolean, 
+        isRequiredChanged: boolean, isPrintChanged: boolean, isToolTipChanged: boolean, oldValue?: any, newValue?: any): void {
+        const eventArgs: FormFieldPropertiesChangeArgs = {
+            name: name, field: field, pageIndex: pageIndex, isValueChanged: isValueChanged, isFontFamilyChanged: isFontFamilyChanged, isFontSizeChanged: isFontSizeChanged,
+            isFontStyleChanged: isFontStyleChanged, isColorChanged: isColorChanged, isBackgroundColorChanged: isBackgroundColorChanged, isBorderColorChanged: isBorderColorChanged, 
+            isBorderWidthChanged: isBorderWidthChanged, isAlignmentChanged: isAlignmentChanged, isReadOnlyChanged: isReadOnlyChanged, isVisibilityChanged: isVisibilityChanged, 
+            isMaxLengthChanged: isMaxLengthChanged, isRequiredChanged: isRequiredChanged, isPrintChanged: isPrintChanged,
+            isToolTipChanged: isToolTipChanged, oldValue: oldValue, newValue: newValue
+        };
+        this.trigger('formFieldPropertiesChange', eventArgs);
+    }
+
+    /**
+     * @param name - Get the name of the event.
+     * @param field - Event arguments for the form field mouse leave event.
+     * @param pageIndex - Get the page number.
+     * @private
+     */
+    // eslint-disable-next-line
+    public fireFormFieldMouseLeaveEvent(name: string, field: IFormField, pageIndex: number): void {
+        const eventArgs: FormFieldMouseLeaveArgs = { name: name, field: field, pageIndex: pageIndex };
+        this.trigger('formFieldMouseLeave', eventArgs);
+    }
+
+    /**
+     * @param name - Get the name of the event.
+     * @param field - Event arguments for the form field mouse over event.
+     * @param pageIndex - Get the page number.
+     * @param pageX - Get the mouse over x position with respect to the page container.
+     * @param pageY - Get the mouse over y position with respect to the page container.
+     * @param X - Specifies the mouse over x position with respect to the viewer container.
+     * @param Y - Specifies the mouse over y position with respect to the viewer container.
+     * @private
+     */
+    // eslint-disable-next-line
+    public fireFormFieldMouseoverEvent(name: string, field: IFormField, pageIndex: number, pageX: number, pageY: number, X: number, Y: number): void {
+        const eventArgs: FormFieldMouseoverArgs = { name: name, field: field, pageIndex: pageIndex, pageX: pageX, pageY: pageY, X: X, Y: Y };
+        this.trigger('formFieldMouseover', eventArgs);
+    }
+
+    /**
+     * @param name - Get the name of the event.
+     * @param field - Event arguments for the form field move event.
+     * @param pageIndex - Get the page number.
+     * @param previousPosition - Get the previous position of the form field in the page.
+     * @param currentPosition - Current position of form field in the page.
+     * @private
+     */
+    // eslint-disable-next-line
+    public fireFormFieldMoveEvent(name: string, field: IFormField, pageIndex: number, previousPosition: IFormFieldBound, currentPosition: IFormFieldBound): void {
+        const eventArgs: FormFieldMoveArgs = { name: name, field: field, pageIndex: pageIndex, previousPosition: previousPosition, currentPosition: currentPosition };
+        this.trigger('formFieldMove', eventArgs);
+    }
+
+    /**
+     * @param name - Get the name of the event.
+     * @param field - Event arguments for the form field resize event.
+     * @param pageIndex - Get the page number.
+     * @param previousPosition - Get the previous position of the form field in the page.
+     * @param currentPosition - Current position of form field in the page.
+     * @private
+     */
+    // eslint-disable-next-line
+    public fireFormFieldResizeEvent(name: string, field: IFormField, pageIndex: number, previousPosition: IFormFieldBound, currentPosition: IFormFieldBound): void {
+        const eventArgs: FormFieldResizeArgs = { name: name, field: field, pageIndex: pageIndex, previousPosition: previousPosition, currentPosition: currentPosition };
+        this.trigger('formFieldResize', eventArgs);
+    }
+
+    /**
+     * @param name - Get the name of the event.
+     * @param field - Event arguments for the form field select event.
+     * @param pageIndex - Get the page number.
+     * @param isProgrammaticSelection - Specifies whether the the form field is selected programmatically or by UI.
+     * @private
+     */
+    // eslint-disable-next-line
+    public fireFormFieldSelectEvent(name: string, field: IFormField, pageIndex: number, isProgrammaticSelection: boolean): void {
+        const eventArgs: FormFieldSelectArgs = { name: name, field: field, pageIndex: pageIndex, isProgrammaticSelection: isProgrammaticSelection };
+        this.trigger('formFieldSelect', eventArgs);
+    }
+
+    /**
+     * @param name - Get the name of the event.
+     * @param field - Event arguments for the form field unselect event.
+     * @param pageIndex - Get the page number.
+     * @private
+     */
+    // eslint-disable-next-line
+    public fireFormFieldUnselectEvent(name: string, field: IFormField, pageIndex: number): void {
+        const eventArgs: FormFieldUnselectArgs = { name: name, field: field, pageIndex: pageIndex };
+        this.trigger('formFieldUnselect', eventArgs);
+    }
+
+    /**
      * @param pageData
      * @private
      */
@@ -4696,20 +6319,29 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
     }
 
     /**
+     * @action
+     * @data
+     * @private
+     */
+    public fireAjaxRequestSuccess(action: string, data: any): void {
+        const eventArgs: AjaxRequestSuccessEventArgs = { name: 'ajaxRequestSuccess', documentName: this.fileName, action: action, data: data };
+        this.trigger('ajaxRequestSuccess', eventArgs);
+    }
+    /**
      * @param action
      * @private
      */
     public fireValidatedFailed(action: string): void {
         if (!isBlazor()) {
             // eslint-disable-next-line max-len
-            const eventArgs: ValidateFormFieldsArgs = { formField: this.viewerBase.createFormfieldsJsonData(), documentName: this.fileName, nonFillableFields: this.formFieldsModule.nonFillableFields };
+            const eventArgs: ValidateFormFieldsArgs = { formField: this.formFieldCollections, documentName: this.fileName, nonFillableFields: this.viewerBase.nonFillableFields };
             this.trigger('validateFormFields', eventArgs);
         }   else {
             // eslint-disable-next-line
             let eventArgs: any = {};
             eventArgs.documentName = this.fileName;
             eventArgs.formFields = this.formFieldCollections;
-            eventArgs.nonFillableFields = this.formFieldsModule.nonFillableFields;
+            eventArgs.nonFillableFields = this.viewerBase.nonFillableFields;
             this.trigger('validateFormFields', eventArgs);
         }
     }
@@ -5412,11 +7044,13 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
      * @private
      */
     public renderDrawing(canvas?: HTMLCanvasElement, index?: number): void {
-        if (!index && this.viewerBase.activeElements.activePageID) {
+        if (!index && this.viewerBase.activeElements.activePageID && !this.viewerBase.isPrint) {
             index = this.viewerBase.activeElements.activePageID;
         }
         if (this.annotation) {
             this.annotation.renderAnnotations(index, null, null, null, canvas);
+        } else {
+            this.formDesignerModule.updateCanvas(index, canvas);
         }
     }
     /**
@@ -5931,21 +7565,38 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
      */
     // eslint-disable-next-line max-len
     public select(objArray: string[], currentSelector?: AnnotationSelectorSettingsModel, multipleSelection?: boolean, preventUpdate?: boolean): void {
-        const annotationSelect: number = this.annotationModule.textMarkupAnnotationModule.selectTextMarkupCurrentPage;
-        // eslint-disable-next-line
-        let annotation: any = this.selectedItems.annotations[0];
-        if (annotationSelect) {
+        if (this.annotationModule) {
+            const annotationSelect: number = this.annotationModule.textMarkupAnnotationModule.selectTextMarkupCurrentPage;
             // eslint-disable-next-line
-            let currentAnnot: any = this.annotationModule.textMarkupAnnotationModule.currentTextMarkupAnnotation;
-            this.annotationModule.textMarkupAnnotationModule.clearCurrentAnnotationSelection(annotationSelect, true);
-            this.fireAnnotationUnSelect(currentAnnot.annotName, currentAnnot.pageNumber, currentAnnot);
-        }
-        if (!multipleSelection) {
-            if (this.viewerBase.activeElements && this.viewerBase.activeElements.activePageID >= 0) {
-                if (annotation) {
-                    this.fireAnnotationUnSelect(annotation.annotName, annotation.pageIndex, annotation);
+            let annotation: any = this.selectedItems.annotations[0];
+            if (annotationSelect) {
+                // eslint-disable-next-line
+                let currentAnnot: any = this.annotationModule.textMarkupAnnotationModule.currentTextMarkupAnnotation;
+                this.annotationModule.textMarkupAnnotationModule.clearCurrentAnnotationSelection(annotationSelect, true);
+                this.fireAnnotationUnSelect(currentAnnot.annotName, currentAnnot.pageNumber, currentAnnot);
+            }
+            if (!multipleSelection) {
+                if (this.viewerBase.activeElements && this.viewerBase.activeElements.activePageID >= 0) {
+                    if (annotation) {
+                        this.fireAnnotationUnSelect(annotation.annotName, annotation.pageIndex, annotation);
+                    }
+                    this.clearSelection(this.viewerBase.activeElements.activePageID);
                 }
-                this.clearSelection(this.viewerBase.activeElements.activePageID);
+            }
+        }
+        if(this.formDesignerModule){
+            let formField: any = this.selectedItems.formFields[0];
+            if (formField) {
+                if (this.formDesignerModule && formField && formField.formFieldAnnotationType) {
+                    let field: IFormField = {
+                        value: (formField as any).value, fontFamily: formField.fontFamily, fontSize: formField.fontSize, fontStyle: (formField as any).fontStyle,
+                        color: (formField as PdfFormFieldBaseModel).color, backgroundColor: (formField as PdfFormFieldBaseModel).backgroundColor, borderColor: (formField as PdfFormFieldBaseModel).borderColor, 
+                        thickness: (formField as PdfFormFieldBaseModel).thickness, alignment: (formField as PdfFormFieldBaseModel).alignment, isReadonly: (formField as any).isReadonly, visibility: (formField as any).visibility,
+                        maxLength: (formField as any).maxLength, isRequired: (formField as any).isRequired, isPrint: formField.isPrint, rotation: (formField as any).rotateAngle, tooltip: (formField as any).tooltip, options: (formField as any).options, 
+                        isChecked: (formField as any).isChecked, isSelected: (formField as any).isSelected
+                    };
+                    this.fireFormFieldUnselectEvent("formFieldUnselect", field, formField.pageIndex);
+                }
             }
         }
         this.drawing.select(objArray, currentSelector, multipleSelection, preventUpdate);
@@ -6029,6 +7680,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
      */
     public clearSelection(pageId: number): void {
         const selectormodel: SelectorModel = this.selectedItems;
+        const node: PdfAnnotationBaseModel | PdfFormFieldBaseModel = selectormodel.annotations.length > 0 ? this.selectedItems.annotations[0]: this.selectedItems.formFields[0];
         if (selectormodel.annotations.length > 0) {
             selectormodel.offsetX = 0;
             selectormodel.offsetY = 0;
@@ -6037,10 +7689,20 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
             selectormodel.rotateAngle = 0;
             selectormodel.annotations = [];
             selectormodel.wrapper = null;
+        } else if(selectormodel.formFields.length > 0) {
+            selectormodel.offsetX = 0;
+            selectormodel.offsetY = 0;
+            selectormodel.width = 0;
+            selectormodel.height = 0;
+            selectormodel.rotateAngle = 0;
+            selectormodel.formFields = [];
+            selectormodel.wrapper = null;
         }
         this.drawing.clearSelectorLayer(pageId);
         this.viewerBase.isAnnotationSelect = false;
+        this.viewerBase.isFormFieldSelect = false;
     }
+
     /**
      * @param obj
      * @private
@@ -6059,7 +7721,10 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
      * @private
      */
     public copy(): Object {
-        this.annotation.isShapeCopied = true;
+        if(this.annotation)
+          this.annotation.isShapeCopied = true;
+        else if(this.formDesigner && this.designerMode)
+          this.formDesigner.isShapeCopied = true;
         return this.drawing.copy();
     }
     /**
@@ -6120,7 +7785,10 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
         if (this.viewerBase.activeElements.activePageID) {
             index = this.viewerBase.activeElements.activePageID;
         }
-        this.annotation.isShapeCopied = true;
+        if(this.annotation)
+          this.annotation.isShapeCopied = true;
+        else if(this.formDesigner && this.designerMode)
+          this.formDesigner.isShapeCopied = true;
         return this.drawing.cut(index || 0);
     }
     /**

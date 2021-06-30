@@ -280,12 +280,22 @@ export class PointerRenderer {
                     ));
                 }
             } else {
-                element.setAttribute(
-                    'transform', 'rotate(' + getAngleFromValue(
-                        value, axis.visibleRange.max, axis.visibleRange.min,
-                        axis.startAngle, axis.endAngle, isClockWise
-                    ) + ',' + location.x + ',' + location.y + ')'
-                );
+                if (pointer.type === 'Marker' && pointer.markerShape === 'Text') {
+                    const textangle: number = getAngleFromValue(pointer.value, axis.visibleRange.max, axis.visibleRange.min, axis.startAngle, axis.endAngle, axis.direction === 'ClockWise');
+                    const textlocation: GaugeLocation = getLocationFromAngle((pointer.markerShape === 'Text') ? textangle : 0, pointer.currentRadius, this.gauge.midPoint);
+                    element.setAttribute(
+                        'transform', 'rotate(' + (textangle + 90) + ',' + textlocation.x + ',' + textlocation.y + ')'
+                    );
+                    element.setAttribute('x', String(textlocation.x));
+                    element.setAttribute('y', String(textlocation.y));
+                } else {
+                    element.setAttribute(
+                        'transform', 'rotate(' + getAngleFromValue(
+                            value, axis.visibleRange.max, axis.visibleRange.min,
+                            axis.startAngle, axis.endAngle, isClockWise
+                        ) + ',' + location.x + ',' + location.y + ')'
+                    );
+                }
             }
             element.setAttribute('aria-label', pointer.description || 'Pointer:' + value.toString());
         });

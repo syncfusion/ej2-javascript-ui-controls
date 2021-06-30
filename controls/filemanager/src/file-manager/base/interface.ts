@@ -623,6 +623,7 @@ export interface IFileManager extends Component<HTMLElement> {
     treeExpandTimer: number;
     dragCursorPosition: PositionModel;
     isDropEnd: boolean;
+    dragCount: number;
     // eslint-disable-next-line
     droppedObjects: Object[];
     uploadEventArgs: BeforeSendEventArgs;

@@ -1,0 +1,10 @@
+@include export-module('datetimepicker-tailwind-dark-icons') {
+  /*! component icons */
+  .e-datetime-wrapper {
+
+    #{if(&, '&', '*')} .e-time-icon.e-icons::before {
+      content: '\e730';
+      font-family: 'e-icons';
+    }
+  }
+}

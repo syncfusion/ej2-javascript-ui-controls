@@ -1955,7 +1955,7 @@ export class DocumentHelper {
             const endPosition: TextPosition = this.selection.end.clone();
             const inlineObj: ElementInfo = startPosition.currentWidget.getInline(startPosition.offset, 0);
             const inline: ElementBox = inlineObj.element;
-            if (this.owner.layoutType == "Pages") {
+            if (this.owner.layoutType === 'Pages') {
                 if (inline instanceof FootnoteElementBox) {
                     if (inline.footnoteType === 'Footnote') {
                         const footnotes: FootNoteWidget = this.currentPage.footnoteWidget;
@@ -3478,7 +3478,12 @@ export abstract class LayoutViewer {
             this.clientActiveArea = new Rect(this.clientActiveArea.x, this.clientActiveArea.y, this.clientActiveArea.width, this.clientActiveArea.height);
         }
     }
+
     public updateClientAreaForTextBoxShape(textBox: ShapeElementBox, beforeLayout: boolean): void {
+        if (textBox.textWrappingStyle === 'Inline') {
+            textBox.y = this.clientActiveArea.y;
+            textBox.x = this.clientActiveArea.x;
+        }
         if (beforeLayout) {
             let marginLeft: number = HelperMethods.convertPointToPixel(textBox.textFrame.marginLeft);
             let marginRight: number = HelperMethods.convertPointToPixel(textBox.textFrame.marginRight);
@@ -3490,6 +3495,7 @@ export abstract class LayoutViewer {
             this.clientActiveArea = new Rect(this.clientArea.x, this.clientArea.y, this.clientArea.width, this.clientArea.height);
         }
     }
+
     public updateClientAreaByWidgetFootNote(widget: FootNoteWidget): void {
         this.clientArea.x = widget.x;
         this.clientArea.y = widget.y;

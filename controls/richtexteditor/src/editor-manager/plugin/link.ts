@@ -1,4 +1,4 @@
-﻿import { EditorManager } from './../base/editor-manager';
+import { EditorManager } from './../base/editor-manager';
 import * as CONSTANT from './../base/constant';
 import { IHtmlItem } from './../base/interface';
 import { NodeSelection } from '../../selection/selection';
@@ -8,7 +8,7 @@ import { createElement, isNullOrUndefined as isNOU, closest } from '@syncfusion/
 
 /**
  * Link internal component
- * 
+ *
  * @hidden
  * @deprecated
  */
@@ -285,6 +285,7 @@ export class LinkCommand {
         e.item.selection.restore();
         this.callBack(e);
     }
+
     private callBack(e: IHtmlItem): void {
         if (e.callBack) {
             e.callBack({

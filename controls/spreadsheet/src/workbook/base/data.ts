@@ -250,7 +250,7 @@ export function clearRange(context: Workbook, address: string, sheetIdx: number,
         eCIdx = range[3];
         for (sCIdx; sCIdx <= eCIdx; sCIdx++) {
             const cell: CellModel = getCell(sRIdx, sCIdx, sheet);
-            cellValue = cell.value;
+            cellValue = cell && cell.value;
             context.notify(cFDelete, { rowIdx: sRIdx, colIdx: sCIdx } );
             if (!isNullOrUndefined(cell) && valueOnly) {
                 delete cell.value;

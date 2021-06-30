@@ -99,7 +99,9 @@ export class VerticalView extends ViewBase implements IRenderer {
         (header.firstElementChild as HTMLElement).style[<any>args.cssProperties.rtlBorder] = '';
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         header.style[<any>args.cssProperties.rtlPadding] = '';
-        if (content.offsetWidth - content.clientWidth > 0 && (dateHeader.offsetWidth - dateHeader.clientWidth <= 1)) {
+        const isDateHeaderScroll: boolean = this.parent.enableAllDayScroll ?
+            (dateHeader.offsetWidth - dateHeader.clientWidth <= 1) : true;
+        if (content.offsetWidth - content.clientWidth > 0 && isDateHeaderScroll) {
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             (header.firstElementChild as HTMLElement).style[<any>args.cssProperties.border] = scrollBarWidth > 0 ? '1px' : '0px';
             // eslint-disable-next-line @typescript-eslint/no-explicit-any

@@ -535,11 +535,18 @@ export class ColumnMenu implements IAction {
     private setPosition(li: Element, ul: HTMLElement): void {
         const gridPos: ClientRect = this.parent.element.getBoundingClientRect();
         const liPos: ClientRect = li.getBoundingClientRect();
-        const gridTop: number =  this.parent.element.offsetTop;
-        let left: number = liPos.left;
-        let top: number = gridTop;
-        if (window.innerHeight < ul.offsetHeight + gridPos.top) {
-            top = gridTop - ((ul.offsetHeight + gridPos.top) - window.innerHeight);
+        let left: number = liPos.left - gridPos.left;
+        let top: number = liPos.top - gridPos.top;
+        if (gridPos.height < top) {
+            top = top - ul.offsetHeight + liPos.height;
+        } else if (gridPos.height < top + ul.offsetHeight) {
+            top = gridPos.height - ul.offsetHeight;
+        }
+        if (window.innerHeight < ul.offsetHeight + top + gridPos.top) {
+            top = window.innerHeight - ul.offsetHeight - gridPos.top;
+        }
+        if (top + gridPos.top < 0) {
+            top = 0;
         }
         left += (this.parent.enableRtl ? - ul.offsetWidth : liPos.width);
         if (gridPos.width <= left + ul.offsetWidth) {
@@ -599,7 +606,7 @@ export class ColumnMenu implements IAction {
         if (Browser.isDevice && this.targetColumn !== null && this.parent.filterSettings.type === 'Menu') {
             return document.getElementById(this.targetColumn.uid + '-flmdlg');
         }
-        return document.querySelector('.' + this.POP) as HTMLElement;
+        return this.parent.element.querySelector('.' + this.POP) as HTMLElement;
     }
 
     private isFilterItemAdded(): boolean {

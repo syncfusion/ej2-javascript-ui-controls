@@ -14,32 +14,45 @@ import { HScroll } from './h-scroll';
  * @returns {HTMLElement} - Element
  * @hidden
  */
- export function addScrolling(
-    createElem: createElementType, container: HTMLElement, content: HTMLElement, scrollType: string, enableRtl: boolean,
+export function addScrolling(
+    createElement: createElementType, container: HTMLElement, content: HTMLElement, scrollType: string, enableRtl: boolean,
     offset?: number): HTMLElement {
     let containerOffset: number; let contentOffset: number;
-    let parentElem: Element = container.parentElement;
+    const parentElem: Element = container.parentElement;
     if (scrollType === 'vscroll') {
         containerOffset = offset || container.getBoundingClientRect().height; contentOffset = content.getBoundingClientRect().height;
     } else {
         containerOffset = container.getBoundingClientRect().width; contentOffset = content.getBoundingClientRect().width;
     }
     if (containerOffset < contentOffset) {
-        return createScrollbar(createElem, container, content, scrollType, enableRtl, offset);
+        return createScrollbar(createElement, container, content, scrollType, enableRtl, offset);
     } else if (parentElem) {
-        let width: number = parentElem.getBoundingClientRect().width;
-        if (width < containerOffset) {
+        const width: number = parentElem.getBoundingClientRect().width;
+        if (width < containerOffset && scrollType === 'hscroll') {
             contentOffset = width;
-            container.style.maxWidth= width + "px";
-            return createScrollbar(createElem, container, content, scrollType, enableRtl, offset);
+            container.style.maxWidth = width + 'px';
+            return createScrollbar(createElement, container, content, scrollType, enableRtl, offset);
         }
         return content;
     } else {
         return content;
     }
 }
-function createScrollbar (createElement: createElementType, container: HTMLElement, content: HTMLElement, scrollType: string, enableRtl: boolean,
-    offset?: number): HTMLElement {
+
+/**
+ * Used to create scroll bar in menu.
+ *
+ * @param {createElementType} createElement - Specifies the create element model
+ * @param {HTMLElement} container - Specifies the element container
+ * @param {HTMLElement} content - Specifies the content element
+ * @param {string} scrollType - Specifies the scroll type
+ * @param {boolean} enableRtl - Specifies the enable RTL property
+ * @param {boolean} offset - Specifies the offset value
+ * @returns {HTMLElement} - Element
+ * @hidden
+ */
+function createScrollbar (createElement: createElementType, container: HTMLElement, content: HTMLElement, scrollType: string,
+                          enableRtl: boolean, offset?: number): HTMLElement {
     const scrollEle: HTMLElement = createElement('div', { className: 'e-menu-' + scrollType });
     container.appendChild(scrollEle);
     scrollEle.appendChild(content);

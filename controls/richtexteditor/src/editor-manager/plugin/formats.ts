@@ -8,7 +8,7 @@ import { markerClassName } from './dom-node';
 import { NodeCutter } from './nodecutter';
 /**
  * Formats internal component
- * 
+ *
  * @hidden
  * @deprecated
  */
@@ -230,7 +230,6 @@ export class Formats {
                 (e.subCommand.toLowerCase() !== 'pre' ||
                 (!isNOU(e.exeValue) && e.exeValue.name === 'dropDownSelect'))) ||
                 isNOU(parentNode.parentNode) ||
-                (parentNode.tagName === 'LI' && e.subCommand.toLowerCase() !== 'pre') ||
                 (parentNode.tagName === 'TABLE' && e.subCommand.toLowerCase() === 'pre')) {
                 continue;
             }

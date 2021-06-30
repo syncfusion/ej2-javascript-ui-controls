@@ -11,6 +11,11 @@
       border-left: $listview-border-left solid $listview-border-left-color;
       border-right: $listview-border-right solid $listview-border-right-color;
       border-top: $listview-border-top solid $listview-border-top-color;
+      @if ($skin-name == 'tailwind' or $skin-name == 'tailwind-dark') {
+        .e-text-content .e-list-text {
+          font-size: $listview-touch-item-font-size;
+        }
+      }
     }
 
     &:not(.e-list-template) .e-list-item {
@@ -19,6 +24,9 @@
       position: relative;
       @if ($skin-name == 'bootstrap4') {
         padding: 12px 20px;
+      }
+      @if ($skin-name == 'tailwind' or $skin-name == 'tailwind-dark') {
+        padding: $listview-touch-item-padding;
       }
     }
 
@@ -33,6 +41,16 @@
         font-size: 16px;
         padding: 12px 20px;
       }
+      @if ($skin-name == 'tailwind' or $skin-name == 'tailwind-dark') {
+        padding: $listview-template-padding;
+      }
+
+      .e-text-content {
+        @if ($skin-name == 'tailwind' or $skin-name == 'tailwind-dark') {
+          font-size: $listview-touch-header-font-size;
+          line-height: $listview-touch-groupheader-line-height;
+        }
+      }
     }
 
     .e-list-header {
@@ -44,6 +62,11 @@
         font-size: 20px;
         line-height: 1.2;
         padding: 0 0 0 20px;
+      }
+      @if ($skin-name == 'tailwind' or $skin-name == 'tailwind-dark') {
+        font-size: $text-sm;
+        line-height: $listview-item-line-height;
+        padding: $listview-template-padding;
       }
     }
 
@@ -64,17 +87,30 @@
         margin-top: -3px;
         padding-right: 12px;
       }
+      @if ($skin-name == 'tailwind' or $skin-name == 'tailwind-dark') {
+        margin-right: $listview-touch-icon-margin-right;
+      }
     }
 
     .e-list-icon {
       @if ($skin-name == 'bootstrap4') {
         margin-right: 12px;
       }
+      @if ($skin-name == 'tailwind' or $skin-name == 'tailwind-dark') {
+        height: $listview-touch-item-size;
+        margin-right: $listview-touch-icon-margin-right;
+        width: $listview-touch-item-size;
+      }
     }
 
     .e-icon-collapsible {
       @if ($skin-name == 'bootstrap4') {
         font-size: 12px;
+      }
+      @if ($skin-name == 'tailwind' or $skin-name == 'tailwind-dark') {
+        font-size: $listview-touch-item-size;
+        height: $listview-touch-item-size;
+        width: $listview-touch-item-size;
       }
     }
 
@@ -83,26 +119,127 @@
         @if ($skin-name == 'bootstrap4') {
           margin: 0 12px 0 0;
         }
+        @if ($skin-name == 'tailwind' or $skin-name == 'tailwind-dark') {
+          margin: $listview-touch-checkbox-left-margin;
+        }
       }
 
       &.e-checkbox-right {
         @if ($skin-name == 'bootstrap4') {
           margin: 0 0 0 12px;
         }
+        @if ($skin-name == 'tailwind' or $skin-name == 'tailwind-dark') {
+          margin: $listview-touch-checkbox-right-margin;
+        }
       }
     }
 
     &.e-rtl {
+      @if ($skin-name == 'tailwind' or $skin-name == 'tailwind-dark') {
+        &:not(.e-list-template) .e-list-item {
+          padding: $listview-rtl-touch-item-padding;
+        }
+
+        & .e-list-icon {
+          margin-left: 12px;
+        }
+
+        & .e-but-back {
+          margin-left: 12px;
+          margin-right: 0;
+        }
+      }
+
       .e-listview-checkbox {
         &.e-checkbox-right {
           @if ($skin-name == 'bootstrap4') {
             margin: 0 12px 0 0;
+          }
+          @if ($skin-name == 'tailwind' or $skin-name == 'tailwind-dark') {
+            margin: $listview-touch-rtl-checkbox-right-margin;
           }
         }
 
         &.e-checkbox-left {
           @if ($skin-name == 'bootstrap4') {
             margin: 0 0 0 12px;
+          }
+          @if ($skin-name == 'tailwind' or $skin-name == 'tailwind-dark') {
+            margin: $listview-touch-rtl-checkbox-left-margin;
+          }
+        }
+      }
+
+      @if ($skin-name == 'tailwind' or $skin-name == 'tailwind-dark') {
+        &.e-list-template {
+          .e-list-wrapper {
+            &.e-list-avatar {
+              .e-avatar {
+                margin: 8px 16px 8px 24px;
+              }
+            }
+
+            &.e-list-avatar:not(.e-list-badge) {
+              padding-right: $listview-touch-template-avatar-padding-left;
+            }
+
+            &.e-list-badge.e-list-avatar {
+              padding-right: $listview-touch-template-avatar-padding-left;
+            }
+          }
+        }
+      }
+    }
+
+    @if ($skin-name == 'tailwind' or $skin-name == 'tailwind-dark') {
+      &.e-list-template {
+        .e-list-header {
+          padding: 8px 16px;
+        }
+
+        .e-list-wrapper {
+          &.e-list-multi-line {
+            padding: $listview-touch-template-multiline-padding;
+
+            .e-list-item-header,
+            .e-list-content {
+              font-size: $listview-touch-template-multiline-header-font-size;
+              font-weight: $font-weight-normal;
+              line-height: $listview-touch-template-multiline-header-line-height;
+            }
+          }
+
+          &:not(.e-list-multi-line) {
+            &.e-list-badge:not(.e-list-avatar) {
+              padding: 0 12px 0 16px;
+
+              .e-list-content {
+                padding: 14px 0;
+              }
+            }
+          }
+
+          &.e-list-avatar {
+            .e-avatar {
+              height: $listview-touch-template-avatar-size;
+              margin: $listview-touch-template-avatar-margin;
+              width: $listview-touch-template-avatar-size;
+            }
+          }
+
+          &.e-list-avatar:not(.e-list-badge) {
+            padding-left: $listview-touch-template-avatar-padding-left;
+          }
+
+          &.e-list-badge.e-list-avatar {
+            padding-left: $listview-touch-template-avatar-padding-left;
+          }
+
+          &:not(.e-list-multi-line) {
+            .e-list-content {
+              font-size: 16px;
+              padding: 12px 0;
+            }
           }
         }
       }
@@ -129,6 +266,11 @@
       & .e-list-item {
         border-bottom: $listview-border-size solid;
         cursor: pointer;
+        @if ($skin-name == 'tailwind' or $skin-name == 'tailwind-dark') {
+          .e-text-content .e-list-text {
+            font-size: $listview-font-size;
+          }
+        }
       }
 
       & .e-list-parent {
@@ -141,7 +283,13 @@
       }
 
       & .e-icon-back {
-        margin-top: $listview-icon-back-margin;
+        @if ($skin-name == 'tailwind' or $skin-name == 'tailwind-dark') {
+          height: $listview-back-icon-size;
+          width: $listview-back-icon-size;
+        }
+        @else {
+          margin-top: $listview-icon-back-margin;
+        }
       }
 
       & .e-list-header .e-headertemplate-text.nested-header {
@@ -150,11 +298,20 @@
 
       & .e-list-header {
         align-items: center;
-        border-bottom: 1px solid;
         display: flex;
         font-weight: $listview-header-font-weight;
         height: $listview-header-height;
-        padding: 0 $listview-header-text-padding;
+        @if ($skin-name == 'tailwind' or $skin-name == 'tailwind-dark') {
+          padding: 6px $listview-header-text-padding;
+
+          .e-headertext {
+            text-transform: uppercase;
+          }
+        }
+        @else {
+          border-bottom: 1px solid;
+          padding: 0 $listview-header-text-padding;
+        }
       }
 
       & .e-has-header > .e-view {
@@ -163,7 +320,12 @@
 
       & .e-but-back {
         cursor: pointer;
-        padding-right: $listview-back-padding-right;
+        @if ($skin-name == 'tailwind' or $skin-name == 'tailwind-dark') {
+          margin-right: $listview-back-padding-right;
+        }
+        @else {
+          padding-right: $listview-back-padding-right;
+        }
       }
 
       & .e-list-group-item:first-child {
@@ -174,10 +336,21 @@
       & .e-list-group-item {
         border-bottom: $listview-group-border-bottom solid $listview-border-bottom-color;
         border-top: $listview-group-border-top solid;
-        font-weight: 600;
         height: $listview-groupheader-item-height;
         line-height: $listview-groupheader-item-line-height;
-        padding: $listview-item-padding;
+        @if ($skin-name == 'tailwind' or $skin-name == 'tailwind-dark') {
+          box-sizing: border-box;
+          font-weight: $font-weight-medium;
+          padding: $listview-header-padding;
+
+          .e-list-text {
+            text-transform: uppercase;
+          }
+        }
+        @else {
+          font-weight: 600;
+          padding: $listview-item-padding;
+        }
       }
 
       & .e-icon-collapsible {
@@ -187,6 +360,10 @@
         right: 0%;
         top: 50%;
         transform: translateY(-50%);
+        @if ($skin-name == 'tailwind' or $skin-name == 'tailwind-dark') {
+          height: $listview-icon-size;
+          width: $listview-icon-size;
+        }
       }
 
       & .e-text-content {
@@ -251,9 +428,15 @@
       }
 
       & .e-list-icon {
-        height: 30px;
         margin-right: $listview-icon-margin-right;
-        width: 30px;
+        @if ($skin-name == 'tailwind' or $skin-name == 'tailwind-dark') {
+          height: $listview-icon-size;
+          width: $listview-icon-size;
+        }
+        @else {
+          height: 30px;
+          width: 30px;
+        }
       }
 
       & .e-content {
@@ -274,8 +457,19 @@
       &.e-rtl {
         direction: rtl;
 
+        &:not(.e-list-template) .e-list-item {
+          @if ($skin-name == 'tailwind' or $skin-name == 'tailwind-dark') {
+            padding: $listview-rtl-item-padding;
+          }
+        }
+
         & .e-list-icon {
-          margin-left: 16px;
+          @if ($skin-name == 'tailwind' or $skin-name == 'tailwind-dark') {
+            margin-left: 8px;
+          }
+          @else {
+            margin-left: 16px;
+          }
           margin-right: 0;
         }
 
@@ -292,10 +486,16 @@
 
         & .e-but-back {
           transform: rotate(180deg);
+          @if ($skin-name == 'tailwind' or $skin-name == 'tailwind-dark') {
+            margin-left: 8px;
+            margin-right: 0;
+          }
         }
 
         & .e-icon-back {
-          margin-top: $listview-rtl-icon-back-margin;
+          @if ($skin-name != 'tailwind' and $skin-name != 'tailwind-dark') {
+            margin-top: $listview-rtl-icon-back-margin;
+          }
         }
 
         & .e-checkbox .e-checkbox-left {

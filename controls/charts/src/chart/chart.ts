@@ -56,6 +56,7 @@ import { HiloOpenCloseSeries } from './series/hilo-open-close-series';
 import { WaterfallSeries } from './series/waterfall-series';
 import { BubbleSeries } from './series/bubble-series';
 import { RangeAreaSeries } from './series/range-area-series';
+import { SplineRangeAreaSeries } from './series/spline-range-area-series';
 import { Tooltip } from './user-interaction/tooltip';
 import { Crosshair } from './user-interaction/crosshair';
 import { DataEditing } from './user-interaction/data-editing';
@@ -419,6 +420,10 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
      * `rangeAreaSeriesModule` is used to add rangeArea series in chart.
      */
     public rangeAreaSeriesModule: RangeAreaSeries;
+    /**
+     * `splineRangeAreaSeriesModule` is used to add splineRangeArea series in chart.
+     */
+     public splineRangeAreaSeriesModule: SplineRangeAreaSeries;
     /**
      * `tooltipModule` is used to manipulate and add tooltip to the series.
      */
@@ -2123,7 +2128,7 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
         let subTitleHeight: number = 0;
         let titleWidth: number = 0;
         const padding: number = 15;
-        const left: number = margin.left;
+        let left: number = margin.left;
         const width: number = this.availableSize.width - left - margin.right - this.border.width;
         this.titleCollection = [];
         this.subTitleCollection = [];
@@ -2141,8 +2146,15 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
                     padding;
             }
         }
-        const top: number = margin.top + subTitleHeight + titleHeight + this.chartArea.border.width * 0.5;
+        let top: number = margin.top + subTitleHeight + titleHeight + this.chartArea.border.width * 0.5;
         const height: number = this.availableSize.height - top - this.border.width - margin.bottom;
+        if (this.stockChart && this.stockChart.legendSettings.visible && this.stockChart.stockLegendModule) {
+            if (this.stockChart.legendSettings.position === "Top") {
+                top += this.stockChart.stockLegendModule.legendBounds.height;
+            } else if (this.stockChart.legendSettings.position === "Left") {
+                left += this.stockChart.stockLegendModule.legendBounds.width;
+            }
+        }
         this.initialClipRect = new Rect(left, top, width, height);
         if (this.legendModule && this.legendSettings.visible) {
             this.legendModule.calculateLegendBounds(this.initialClipRect, this.availableSize, null);
@@ -2400,6 +2412,9 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
         }
     }
     private renderBorder(): void {
+        if(this.stockChart) {
+            return;
+        }
         const width: number = this.border.width;
         const backGroundImage: string = this.backgroundImage;
         const fillColor: string = backGroundImage ? 'transparent' : (this.background || this.themeStyle.background);
@@ -3367,6 +3382,12 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
                     args: [this]
                 });
             }
+            if (bandEnable) {
+                modules.push({
+                    member: 'SplineRangeAreaSeries',
+                    args: [this]
+                });
+            }
             for (let indicator of this.indicators) {
                 modules.push({
                     member: indicator.type + 'Indicator',
@@ -3685,7 +3706,7 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
                         if (this.selectionModule && newProp.selectionMode && newProp.selectionMode.indexOf('Drag') === -1) {
                             this.selectionModule.currentMode = this.selectionMode;
                             this.selectionModule.styleId = this.element.id + '_ej2_chart_selection';
-                            this.selectionModule.redrawSelection(this, oldProp.selectionMode);
+                            this.selectionModule.redrawSelection(this, oldProp.selectionMode, true);
                         }
                         break;
                     case 'isMultiSelect':

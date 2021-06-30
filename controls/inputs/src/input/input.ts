@@ -37,6 +37,7 @@ export namespace Input {
         clearButton: null
     };
     let floatType: string;
+    let isBindClearAction: boolean = true;
 
     /**
      * Create a wrapper to input element with multiple span elements and set the basic properties to input based components.
@@ -49,6 +50,7 @@ export namespace Input {
         const makeElement: createElementParams = !isNullOrUndefined(internalCreateElement) ? internalCreateElement : createElement;
         let inputObject: InputObject = { container: null, buttons: [], clearButton: null };
         floatType = args.floatLabelType;
+        isBindClearAction = args.bindClearAction;
         if (isNullOrUndefined(args.floatLabelType ) || args.floatLabelType === 'Never' ) {
             inputObject.container = createInputContainer(args, CLASSNAMES.INPUTGROUP, CLASSNAMES.INPUTCUSTOMTAG, 'span', makeElement);
             args.element.parentNode.insertBefore(inputObject.container, args.element);
@@ -295,16 +297,19 @@ export namespace Input {
 
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     export function wireClearBtnEvents(element: HTMLInputElement | HTMLTextAreaElement, button: HTMLElement, container: HTMLElement): void {
-        button.addEventListener('click', (event: MouseEvent) => {
-            if (!(element.classList.contains(CLASSNAMES.DISABLE) || element.readOnly)) {
-                event.preventDefault();
-                if (element !== document.activeElement) {
-                    element.focus();
+        if (isBindClearAction == undefined || isBindClearAction)
+        {
+            button.addEventListener('click', (event: MouseEvent) => {
+                if (!(element.classList.contains(CLASSNAMES.DISABLE) || element.readOnly)) {
+                    event.preventDefault();
+                    if (element !== document.activeElement) {
+                        element.focus();
+                    }
+                    element.value = '';
+                    addClass([button], CLASSNAMES.CLEARICONHIDE);
                 }
-                element.value = '';
-                addClass([button], CLASSNAMES.CLEARICONHIDE);
-            }
-        });
+            });
+        }
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
         element.addEventListener('input', (event: KeyboardEvent ) => {
             updateIconState(element.value, button);
@@ -875,6 +880,13 @@ export interface InputArgs {
      * * Auto - The floating label will float above the input after focusing or entering a value in the input.
      */
     floatLabelType ?: FloatLabelType | string
+    /**
+     * ```
+     * E.g : Input.createInput({ element: element, customTag: 'ej2-custom-input' ,bindClearAction: false });
+     * ```
+     * Specifies whether to bind the clear button action in input base or not.
+     */
+    bindClearAction?: boolean
     /**
      * ```
      * E.g : Input.createInput({ element: element, properties: { readonly: true, placeholder: 'Search here' } });

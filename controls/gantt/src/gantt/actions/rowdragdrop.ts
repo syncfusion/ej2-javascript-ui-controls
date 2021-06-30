@@ -6,7 +6,6 @@ import { DataManager } from '@syncfusion/ej2-data';
 import { IGanttData, RowPosition, isCountRequired } from '../base/common';
 import { RowDropEventArgs, IParent } from '../base/interface';
 import { ITreeData } from '@syncfusion/ej2-treegrid';
-import { updateDates } from '../base/utils';
 
 
 /**
@@ -235,9 +234,9 @@ export class RowDD {
                                         this.parent.getTaskIds().splice(recordIndex1 + count + 1, 0, spliceId);
                                     }
                                 }
-                                draggedRecord.parentItem = this.treeGridData[recordIndex1].parentItem;
-                                draggedRecord.parentUniqueID = this.treeGridData[recordIndex1].parentUniqueID;
-                                draggedRecord.level = this.treeGridData[recordIndex1].level;
+                                this.parent.setRecordValue('parentItem', this.treeGridData[recordIndex1].parentItem, draggedRecord);
+                                this.parent.setRecordValue('parentUniqueID', this.treeGridData[recordIndex1].parentUniqueID, draggedRecord);
+                                this.parent.setRecordValue('level', this.treeGridData[recordIndex1].level, draggedRecord);
                                 if (draggedRecord.hasChildRecords) {
                                     const level: number = 1;
                                     this.updateChildRecordLevel(draggedRecord, level);
@@ -319,17 +318,9 @@ export class RowDD {
                 this.updateParentRecords = [];
                 this.parent.isOnEdit = false;
             }
-            this.parent.treeGrid.parentData = [];
-            this.parent.treeGrid.refresh();
-            args.requestType = 'rowDropped';
-            args.modifiedRecords = this.parent.editedRecords;
-            if (this.parent.timezone) {
-                for (let j: number = 0; j < args.modifiedRecords.length; j++) {
-                    updateDates(args.modifiedRecords[j], this.parent);
-                }
+            if (!isNullOrUndefined(this.parent.editModule)) {
+                this.parent.editModule.refreshRecord(args, true);
             }
-            this.parent.trigger('actionComplete', args);
-            this.parent.editedRecords = [];
         }
     }
     private updateCurrentTask(currentTask: IGanttData): void {
@@ -516,8 +507,8 @@ export class RowDD {
                 index: parentItem.index,
                 taskId: parentItem.ganttProperties.rowUniqueID
             };
-            draggedRecord.parentItem = createParentItem;
-            draggedRecord.parentUniqueID = droppedRecord.uniqueID;
+            this.parent.setRecordValue('parentItem', createParentItem, draggedRecord);
+            this.parent.setRecordValue('parentUniqueID', droppedRecord.uniqueID, draggedRecord);
             droppedRecord.childRecords.splice(droppedRecord.childRecords.length, 0, draggedRecord);
             if (!isNullOrUndefined(draggedRecord) && !gObj.taskFields.parentID && !isNullOrUndefined(droppedRecord.taskData[childItem])) {
                 droppedRecord.taskData[gObj.taskFields.child].splice(droppedRecord.childRecords.length, 0, draggedRecord.taskData);
@@ -568,11 +559,11 @@ export class RowDD {
             if (gObj.taskFields.parentID && this.ganttData.length > 0) {
                 this.ganttData.splice(recordIndex1, 0, this.draggedRecord.taskData);
             }
-            this.draggedRecord.parentItem = this.treeGridData[recordIndex1].parentItem;
-            this.draggedRecord.parentUniqueID = this.treeGridData[recordIndex1].parentUniqueID;
-            this.draggedRecord.level = this.treeGridData[recordIndex1].level;
             this.treeGridData.splice(recordIndex1, 0, this.draggedRecord);
             this.parent.ids.splice(recordIndex1, 0, this.draggedRecord.ganttProperties.rowUniqueID.toString());
+            this.parent.setRecordValue('parentItem', this.droppedRecord.parentItem, this.draggedRecord);
+            this.parent.setRecordValue('parentUniqueID', this.droppedRecord.parentUniqueID, this.draggedRecord);
+            this.parent.setRecordValue('level', this.droppedRecord.level, this.draggedRecord);                 
             if (this.parent.viewType === 'ResourceView') {
                 const id: string = this.draggedRecord.level === 0 ? 'R' + this.draggedRecord.ganttProperties.taskId : 'T' + this.draggedRecord.ganttProperties.taskId;
                 this.parent.getTaskIds().splice(recordIndex1, 0, id);

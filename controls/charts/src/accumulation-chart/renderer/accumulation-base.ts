@@ -29,7 +29,7 @@ export class AccumulationBase {
      */
     public get center(): ChartLocation {
         return this.pieCenter || (this.accumulation.visibleSeries[0].type === 'Pie' ?
-            this.accumulation.pieSeriesModule.center : null);
+            this.accumulation.pieSeriesModule.pieBaseCenter : null);
     }
 
     /**
@@ -49,7 +49,7 @@ export class AccumulationBase {
      */
     public get radius(): number {
         return this.pieRadius !== undefined ? this.pieRadius :
-            this.accumulation.pieSeriesModule.radius;
+            this.accumulation.pieSeriesModule.pieBaseRadius;
     }
 
     /**
@@ -69,7 +69,7 @@ export class AccumulationBase {
      */
     public get labelRadius(): number {
         return this.pieLabelRadius !== undefined ? this.pieLabelRadius :
-            this.accumulation.pieSeriesModule.labelRadius;
+            this.accumulation.pieSeriesModule.pieBaseLabelRadius;
     }
 
     /**

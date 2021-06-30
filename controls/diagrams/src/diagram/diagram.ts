@@ -7801,7 +7801,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                     connector.getSegmentElement(
                         connector, pathSegment,
                         this.layout.type === 'ComplexHierarchicalTree' || this.layout.type === 'HierarchicalTree' ?
-                            this.layout.orientation : undefined);
+                            this.layout.orientation : undefined, undefined, false);
                     if (pathSegment.data !== data) {
                         canvas.measure(new Size());
                         canvas.arrange(canvas.desiredSize);

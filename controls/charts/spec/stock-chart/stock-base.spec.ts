@@ -35,6 +35,7 @@ describe('default stock chart', () => {
                 xName: 'x', high: 'high', low: 'low', open: 'open', close: 'close',
                 dataSource: chartData, type: 'Candle', yName: 'close'
             }],
+            legendSettings: {visible : false},
         });
     });
     afterAll((): void => {

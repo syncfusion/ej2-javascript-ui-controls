@@ -3,6 +3,8 @@ $rte-border-size: 1px !default;
 $rte-2px-border-size: 2px !default;
 $rte-border-type: solid !default;
 
+$rte-list-btn-flex: column !default;
+$rte-list-btn-line-height: 1 !default;
 $skin-name: 'fabric' !default;
 $rte-border-color: $neutral-light !default;
 $rte-full-screen-bg: $neutral-white !default;
@@ -25,6 +27,8 @@ $rte-quick-item-active-font-color: $neutral-light-fontalt !default;
 $rte-quick-item-border: 0 !default;
 $rte-quick-item-hover-border-color: transparent !default;
 $rte-quick-item-active-border-color: transparent !default;
+$rte-content-padding: 16px !default;
+$rte-table-popup-padding: 10px !default;
 
 $rte-big-quick-drop-btn-line-height: 33px !default;
 $rte-quick-drop-btn-line-height: 24px !default;
@@ -49,7 +53,7 @@ $rte-quick-pop-shadow: 0 2px 6px rgba($shadow, .26) !default;
 $rte-quick-pop-item-focus-bg: $neutral-light !default;
 $rte-quick-tb-btn-hover: $neutral-light !default;
 $rte-mob-drop-down-pop-shadow: rgba($shadow, .12) !default;
-
+$font-weight: 500 !default;
 $rte-big-tb-items-margin-left: 0 !default;
 $rte-tb-items-margin-left: 4px !default;
 $rte-big-tb-items-padding-left: 0 !default;
@@ -65,6 +69,7 @@ $rte-drop-btn-active-bg: $neutral-quintenary !default;
 $rte-drop-btn-active-color: $neutral-light-fontalt !default;
 $rte-drop-btn-active-border-color: inherit !default;
 $rte-split-btn-active-hover-font-color: $neutral-light-fontalt !default;
+$rte-table-popup-bdr-radius: 0 !default;
 
 $rte-split-btn-color: $neutral-light-fontalt !default;
 $rte-split-btn-active-color: $neutral-light-fontalt !default;
@@ -77,8 +82,8 @@ $rte-split-btn-bar-bg: $neutral-tertiary !default;
 $rte-split-btn-active-bar-bg: $neutral-tertiary !default;
 $rte-split-btn-bar-size: 1px !default;
 $rte-split-btn-active-border: 0 !default;
-$rte-split-btn-active-color-icon-line-height: 25px !default;
-$rte-big-split-btn-active-color-icon-line-height: 35px !default;
+$rte-split-btn-active-color-icon-line-height: 38px !default;
+$rte-big-split-btn-active-color-icon-line-height: 48px !default;
 
 $rte-link-valid-color: transparent !default;
 $rte-img-popup-color: #000 !default;
@@ -143,6 +148,8 @@ $rte-big-quick-tbar-item-min-width: 39px !default;
 $rte-content-font-size: 14px !default;
 $rte-dropdown-caret-icon-size: 12px !default;
 $rte-big-dropdown-caret-icon-size: 12px !default;
+$rte-toolbar-icon-size: 16px !default;
+$rte-toolbar-big-icon-size: 18px !default;
 
 $rte-big-inline-tmp-min-width: 40px;
 $rte-inline-tmp-min-width: 42px;
@@ -154,4 +161,6 @@ $rte-inline-tmp-color-min-width: 50px;
 $rte-resize-handler-width: 15px;
 $rte-resize-handler-height: 15px;
 $rte-resize-handler-position: 0;
+
+$rte-big-color-list-span-common-padding-left-right: 0;
 //enddefault

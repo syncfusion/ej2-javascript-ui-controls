@@ -6,7 +6,7 @@
   user-select: none;
 }
 @mixin sibling-style {
-  @if $treeview-skin-name == 'material' {
+  @if $skin-name == 'material' {
     border-radius: 10px;
   }
   @else {
@@ -14,7 +14,7 @@
   }
 }
 @mixin sibling-before($position) {
-  @if $treeview-skin-name == 'material' {
+  @if $skin-name == 'material' {
     @if $position == 'rtl' {
       right: 6px;
       top: 3px;
@@ -57,10 +57,69 @@
   .e-bigger .e-treeview,
   .e-treeview.e-bigger {
 
-    @if $treeview-skin-name == 'bootstrap4' {
+    @if $skin-name == 'bootstrap4' {
       .e-ul,
       .e-list-item .e-ul {
         padding-left: 16px;
+      }
+    }
+
+    @if $skin-name == 'tailwind' or $skin-name == 'tailwind-dark' {
+      .e-ul {
+        padding: $treeview-big-root-ul-padding;
+      }
+
+      .e-list-item {
+        .e-ul {
+          padding: $treeview-big-child-ul-padding;
+        }
+
+        .e-text-content {
+          padding: $treeview-big-text-wrap-padding;
+        }
+
+        .e-list-icon,
+        .e-list-img {
+          height: $treeview-big-icon-font-size;
+          width: $treeview-big-icon-font-size;
+        }
+
+        .e-small.e-css.e-checkbox-wrapper {
+          & .e-frame {
+            height: 18px;
+            line-height: 17px;
+            width: 18px;
+          }
+
+          & .e-check {
+            font-size: 12px;
+          }
+
+          & .e-stop {
+            font-size: 12px;
+            line-height: 17px;
+          }
+        }
+
+        .e-checkbox-wrapper {
+          & + .e-list-text {
+            padding: $treeview-big-check-text-padding;
+          }
+        }
+      }
+
+      .e-icon-collapsible,
+      .e-icon-expandable {
+        height: $treeview-big-icon-font-size;
+        margin: $treeview-big-icon-margin;
+        width: $treeview-big-icon-font-size;
+      }
+
+      &.e-drag-item {
+
+        .e-drop-count {
+          padding: 3px 5px 4px;
+        }
       }
     }
 
@@ -82,7 +141,7 @@
 
       .e-checkbox-wrapper + .e-list-url .e-anchor-wrap {
 
-        @if $treeview-skin-name == 'bootstrap4' {
+        @if $skin-name == 'bootstrap4' {
           padding: $treeview-check-image-margin;
         }
 
@@ -93,7 +152,7 @@
       }
 
       .e-anchor-wrap {
-        @if $treeview-skin-name == 'bootstrap4' {
+        @if $skin-name == 'bootstrap4' {
           padding: $treeview-navigable-check-margin-bigger;
         }
         @else {
@@ -105,7 +164,7 @@
       .e-list-img,
       .e-list-icon + .e-list-img {
 
-        @if $treeview-skin-name == 'bootstrap4' {
+        @if $skin-name == 'bootstrap4' {
           margin: $treeview-rtl-check-image-margin;
         }
         @else {
@@ -120,10 +179,10 @@
 
     .e-list-text {
       line-height: $treeview-big-text-height;
-      @if $treeview-skin-name != 'bootstrap4' {
+      @if $skin-name != 'bootstrap4' {
         min-height: $treeview-big-text-height;
       }
-      @else if $treeview-skin-name == 'bootstrap4' {
+      @else if $skin-name == 'bootstrap4' {
         min-height: 38px;
       }
       padding: $treeview-big-text-padding;
@@ -131,7 +190,7 @@
       .e-input-group {
         height: $treeview-big-input-height;
 
-        @if $treeview-skin-name != 'material' {
+        @if $skin-name != 'material' {
           .e-input {
             height: 36px;
           }
@@ -141,7 +200,7 @@
 
     .e-checkbox-wrapper {
       margin: $treeview-big-check-margin;
-      @if $treeview-skin-name == 'bootstrap4' {
+      @if ($skin-name == 'bootstrap4' or $skin-name == 'tailwind' or $skin-name == 'tailwind-dark') {
         & + .e-list-text {
           padding: $treeview-big-check-text-padding;
         }
@@ -156,10 +215,10 @@
     .e-list-icon,
     .e-list-img {
       margin: $treeview-big-image-margin;
-      @if $treeview-skin-name == 'bootstrap4' {
+      @if $skin-name == 'bootstrap4' {
         font-size: $treeview-big-image-font-size;
         }
-      @if $treeview-skin-name == 'bootstrap4' {
+      @if ($skin-name == 'bootstrap4' or $skin-name == 'tailwind' or $skin-name == 'tailwind-dark') {
         & + .e-list-text {
           padding: $treeview-big-image-text-padding;
         }
@@ -173,7 +232,7 @@
 
     .e-icon-collapsible,
     .e-icon-expandable {
-      @if $treeview-skin-name == 'bootstrap4' {
+      @if $skin-name == 'bootstrap4' {
         height: $treeview-big-icon-size;
         margin: $treeview-big-icon-margin;
         width: $treeview-big-icon-size;
@@ -187,7 +246,7 @@
 
     &.e-drag-item {
 
-      @if $treeview-skin-name == 'bootstrap4' {
+      @if ($skin-name == 'bootstrap4' or $skin-name == 'tailwind' or $skin-name == 'tailwind-dark') {
 
         .e-text-content {
           padding-left:  $treeview-big-drag-item-text-padding-left;
@@ -204,19 +263,42 @@
           padding: $treeview-big-drag-before-icon-padding;
         }
 
-        .e-drop-count {
-          border: $treeview-big-drop-count-border-size solid;
+        @if $skin-name == 'bootstrap4' {
+          .e-drop-count {
+            border: $treeview-big-drop-count-border-size solid;
+          }
         }
       }
     }
 
     &.e-rtl {
 
+      @if $skin-name == 'tailwind' or $skin-name == 'tailwind-dark' {
+        .e-ul {
+          padding: $treeview-big-rtl-root-ul-padding;
+        }
+
+        .e-list-item {
+          .e-ul {
+            padding: $treeview-big-rtl-child-ul-padding;
+          }
+
+          .e-text-content {
+            padding: $treeview-big-rtl-text-wrap-padding;
+          }
+        }
+
+        .e-icon-collapsible,
+        .e-icon-expandable {
+          margin: $treeview-big-rtl-icon-margin;
+        }
+      }
+
       .e-navigable {
 
         .e-checkbox-wrapper + .e-list-url .e-anchor-wrap {
 
-          @if $treeview-skin-name == 'bootstrap4' {
+          @if $skin-name == 'bootstrap4' {
             padding: $treeview-navigable-rtl-margin-reverse;
           }
 
@@ -227,7 +309,7 @@
         }
 
         .e-anchor-wrap {
-          @if $treeview-skin-name == 'bootstrap4' {
+          @if $skin-name == 'bootstrap4' {
             padding: $treeview-navigable-check-margin-bigger-reverse;
           }
           @else {
@@ -238,7 +320,7 @@
         .e-list-icon,
         .e-list-img,
         .e-list-icon + .e-list-img {
-          @if $treeview-skin-name == 'bootstrap4' {
+          @if $skin-name == 'bootstrap4' {
             margin: $treeview-check-image-margin;
           }
           @else {
@@ -246,7 +328,7 @@
           }
         }
     }
-      @if $treeview-skin-name == 'bootstrap4' {
+      @if $skin-name == 'bootstrap4' {
         .e-icon-collapsible,
         .e-icon-expandable {
           margin: $treeview-big-rtl-icon-margin;
@@ -285,6 +367,13 @@
       overflow: auto;
     }
 
+    &.e-text-wrap {
+      .e-list-text {
+        white-space: normal;
+        word-break: break-all;
+      }
+    }
+
     .e-ul {
       margin: 0;
       padding: $treeview-root-ul-padding;
@@ -296,6 +385,39 @@
 
     .e-display-none {
       display: none;
+    }
+
+    .e-list-item {
+
+      div.e-icons.interaction {
+        -webkit-transition: -webkit-transform .3s ease-in-out;
+        border-radius: 15px;
+        transition: -webkit-transform .3s ease-in-out;
+        transition: transform .3s ease-in-out;
+        transition: transform .3s ease-in-out, -webkit-transform .3s ease-in-out;
+      }
+
+      .e-icons.e-icon-collapsible {
+
+        -webkit-transform: rotate(90deg);
+        transform: rotate(90deg);
+      }
+    }
+
+    &.e-drag-item {
+      &.e-rtl {
+
+        .e-icons.e-drop-next {
+          transform: rotate(180deg);
+        }
+      }
+    }
+
+    &.e-rtl {
+
+      div.e-icons {
+        transform: rotate(180deg);
+      }
     }
 
     .e-list-item {
@@ -377,10 +499,10 @@
       display: inline-block;
       line-height: $treeview-text-height;
       margin: $treeview-text-margin;
-      @if $treeview-skin-name != 'bootstrap4' {
+      @if $skin-name != 'bootstrap4' {
         min-height: $treeview-text-height;
       }
-      @else if $treeview-skin-name == 'bootstrap4' {
+      @else if $skin-name == 'bootstrap4' {
         min-height: 30px;
       }
       padding: $treeview-text-padding;
@@ -389,11 +511,16 @@
 
       .e-input-group {
         height: $treeview-input-height;
-        margin-bottom: 0;
+        @if($skin-name == 'tailwind' or $skin-name == 'tailwind-dark') {
+          margin-top: 3px;
+        }
+        @else {
+          margin-bottom: 0;
+        }
         min-width: 150px;
         vertical-align: bottom;
 
-        @if $treeview-skin-name != 'material' {
+        @if $skin-name != 'material' {
           .e-input {
             height: 28px;
           }
@@ -440,23 +567,39 @@
     }
 
     .e-sibling {
-      @include sibling-style;
-      height: 6px;
-      margin-top: -5px;
+      @if ($skin-name == 'tailwind' or $skin-name == 'tailwind-dark') {
+        width: 100%;
+      }
+      @else {
+        @include sibling-style;
+        height: 6px;
+        margin-top: -5px;
+        width: 6px;
+      }
       position: absolute;
-      width: 6px;
       z-index: 2;
     }
 
     .e-text-content + .e-sibling {
-      margin-top: -1px;
+      @if ($skin-name == 'tailwind' or $skin-name == 'tailwind-dark') {
+        margin-top: -2px;
+      }
+      @else {
+        margin-top: -1px;
+      }
     }
 
     .e-sibling::before {
       @include sibling-before(ltr);
-      height: 1px;
+      @if ($skin-name == 'tailwind' or $skin-name == 'tailwind-dark') {
+        height: 2px;
+        top: -1.5px;
+      }
+      @else {
+        height: 1px;
+        width: 144px;
+      }
       position: absolute;
-      width: 144px;
       z-index: 2;
     }
 
@@ -527,7 +670,7 @@
       }
 
       .e-checkbox-wrapper + .e-list-url .e-anchor-wrap {
-        @if $treeview-skin-name == 'bootstrap4' {
+        @if $skin-name == 'bootstrap4' {
           padding: $treeview-navigable-icon-image-margin-reverse;
         }
         @else {
@@ -550,7 +693,7 @@
 
       .e-list-icon,
       .e-list-img {
-        @if $treeview-skin-name == 'bootstrap4' {
+        @if $skin-name == 'bootstrap4' {
           margin: $treeview-navigable-icon-image-margin;
         }
         @else {
@@ -566,7 +709,7 @@
       .e-text-content {
         float: left;
       }
-      @if $treeview-skin-name == 'bootstrap4' {
+      @if ($skin-name == 'bootstrap4' or $skin-name == 'tailwind' or $skin-name == 'tailwind-dark') {
         .e-icon-collapsible,
         .e-icon-expandable {
           margin:  $treeview-drag-icon-margin;
@@ -577,7 +720,7 @@
       .e-icon-expandable::before {
         font-size: $treeview-drag-icon-font-size;
         padding: $treeview-drag-icon-padding;
-        @if $treeview-skin-name == 'bootstrap4' {
+        @if ($skin-name == 'bootstrap4' or $skin-name == 'tailwind' or $skin-name == 'tailwind-dark') {
           padding-right: $treeview-drag-icon-padding-right;
         }
       }
@@ -587,7 +730,7 @@
         border-radius: 15px;
         box-sizing: content-box;
         font-size: $treeview-drop-count-font-size;
-        @if $treeview-skin-name == 'bootstrap4' {
+        @if $skin-name == 'bootstrap4' {
           line-height: 1.5;
           min-width: 10px;
           padding: 0 5px;
@@ -595,7 +738,12 @@
         @else {
           line-height: normal;
           min-width: 12px;
-          padding: 3px 5px 4px;
+          @if ($skin-name == 'tailwind' or $skin-name == 'tailwind-dark') {
+            padding: 1px 3px 2px;
+          }
+          @else {
+            padding: 3px 5px 4px;
+          }
         }
         margin-left: -12px;
         position: absolute;
@@ -618,7 +766,7 @@
 
         .e-checkbox-wrapper + .e-list-url .e-anchor-wrap {
 
-          @if $treeview-skin-name == 'bootstrap4' {
+          @if $skin-name == 'bootstrap4' {
             padding: $treeview-navigable-icon-image-margin;
           }
           @else {
@@ -642,7 +790,7 @@
         .e-list-icon,
         .e-list-img,
         .e-list-icon + .e-list-img {
-          @if $treeview-skin-name == 'bootstrap4' {
+          @if $skin-name == 'bootstrap4' {
             margin: $treeview-navigable-icon-image-margin-reverse;
           }
           @else {
@@ -702,7 +850,7 @@
 
         .e-icon-collapsible,
         .e-icon-expandable {
-          @if $treeview-skin-name == 'bootstrap4' {
+          @if ($skin-name == 'bootstrap4' or $skin-name == 'tailwind' or $skin-name == 'tailwind-dark') {
             margin: $treeview-rtl-drag-margin;
           }
         }

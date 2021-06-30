@@ -13,6 +13,13 @@
 
       & .e-icons {
         color: $listview-icon-color;
+
+        @if ($skin-name == 'tailwind' or $skin-name == 'tailwind-dark') {
+          &.e-but-back:hover,
+          &.e-icon-collapsible:hover {
+            color: $icon-color-hover;
+          }
+        }
       }
 
       & .e-list-item {
@@ -49,9 +56,11 @@
 
       & .e-list-item.e-focused .e-checkbox-wrapper .e-frame.e-check,
       & .e-list-item.e-focused .e-css.e-checkbox-wrapper .e-frame.e-check {
-        background-color: $checkmark-bgcolor;
-        border-color: $checkmark-border-color;
-        color: $checkmark-color;
+        @if ($skin-name != 'tailwind' and $skin-name != 'tailwind-dark') {
+          background-color: $checkmark-bgcolor;
+          border-color: $checkmark-border-color;
+          color: $checkmark-color;
+        }
       }
 
       & .e-list-group-item {
@@ -75,6 +84,12 @@
 
         &:not(.e-list-multi-line) {
           padding: $listview-template-padding;
+
+          @if ($skin-name == 'tailwind' or $skin-name == 'tailwind-dark') {
+            &.e-list-badge:not(.e-list-avatar) {
+              padding: 0 10px 0 16px;
+            }
+          }
         }
 
         &.e-list-multi-line {
@@ -84,7 +99,13 @@
             color: $listview-template-multiline-header-color;
             display: block;
             font-size: $listview-template-multiline-header-font-size;
-            font-weight: 500;
+            @if ($skin-name == 'tailwind' or $skin-name == 'tailwind-dark') {
+              font-weight: $font-weight-normal;
+              line-height: 22px;
+            }
+            @else {
+              font-weight: 500;
+            }
             margin: 0;
             overflow: hidden;
             padding: $listview-template-multiline-header-padding;
@@ -96,6 +117,10 @@
             color: $listview-template-multiline-content-color;
             display: block;
             font-size: $listview-template-multiline-content-font-size;
+            @if ($skin-name == 'tailwind' or $skin-name == 'tailwind-dark') {
+              font-weight: $font-weight-normal;
+              line-height: 22px;
+            }
             margin: 0;
             padding: $listview-template-multiline-content-padding;
             word-wrap: break-word;
@@ -115,6 +140,9 @@
             position: absolute;
             top: $listview-template-avatar-top;
             width: $listview-template-avatar-size;
+            @if ($skin-name == 'tailwind' or $skin-name == 'tailwind-dark') {
+              margin: $listview-template-avatar-margin;
+            }
           }
         }
 
@@ -159,6 +187,9 @@
             top: 50%;
             transform: translateY(-50%);
             width: $listview-template-badge-width;
+            @if ($skin-name == 'tailwind' or $skin-name == 'tailwind-dark') {
+              border-radius: 10px;
+            }
           }
         }
 
@@ -180,6 +211,10 @@
             padding: $listview-template-item-padding;
             text-overflow: ellipsis;
             white-space: nowrap;
+            @if ($skin-name == 'tailwind' or $skin-name == 'tailwind-dark') {
+              font-size: $listview-font-size;
+              line-height: $listview-item-line-height;
+            }
           }
         }
       }
@@ -208,6 +243,9 @@
         &.e-list-avatar {
           .e-avatar {
             left: inherit;
+            @if ($skin-name == 'tailwind' or $skin-name == 'tailwind-dark') {
+              margin: 7px 12px 7px 16px;
+            }
             right: $listview-template-avatar-left;
           }
         }

@@ -5,7 +5,11 @@
 
   .e-de-toolbar .e-toolbar-items .e-toolbar-item .e-tbar-btn-text .e-de-text-wrap {
     height: 0;
-    line-height: 0;
+    @if $skin-name == 'tailwind' or $skin-name == 'tailwind-dark' {
+      line-height: 1;
+    } @else {
+      line-height: 0;
+    }
   }
 
   .e-de-ctnr-file-picker {
@@ -22,11 +26,13 @@
     height: 25px;
     margin: 3px;
     width: 25px;
+    border: 0.5px solid transparent;
   }
 
   .e-color-selected,
   .e-de-ctnr-hglt-btn:hover {
-    border: $de-hover-clr;
+    outline: #000 0.5px solid;
+    border-color: #fff;
   }
 
   .e-hglt-no-color {

@@ -72,4 +72,11 @@ export interface SwimlaneSettingsModel {
      */
     showUnassignedRow?: boolean;
 
+    /**
+     * Enables or disables the freeze the swimlane rows
+     *
+     * @default false
+     */
+    enableFrozenRows?: boolean;
+
 }

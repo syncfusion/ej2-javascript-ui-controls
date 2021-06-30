@@ -2,21 +2,12 @@
 
 ## [Unreleased]
 
-## 19.1.69 (2021-06-15)
+## 19.2.44 (2021-06-30)
 
 ### Kanban
 
 #### Bug Fixes
 
-- `#F165595` - The issue with "Card data changed even when the editing is canceled in the `dialog(card editing)`" has been resolved.
-
-## 19.1.66 (2021-06-01)
-
-### Kanban
-
-#### Bug Fixes
-
-- `#F165617`, `#F165618` - The issue with "Kanban edit dialog element not removed when `args.cancel` is set to true on `dialogOpen` event" has been resolved.
 - `#I328517` - The issue with the "Swimlane template did not render properly when loaded on mobile device" has been resolved.
 - `#I326559` - The issue with "Descending order of cards in the column is not maintained when adding a new card" has been resolved.
 
@@ -38,7 +29,7 @@
 
 #### Bug Fixes
 
-- `#I324923` - The issue with "Kanban content color not changed, when using the material-dark theme" has been resolved.
+- `#I324923` - The issue with "Kanban content colour not changed, when using the material-dark theme" has been resolved.
 - `#F160742` - The issue with "Script error thrown when drag and drop operation performed when swimlane `keyField` as non-existing field" has been resolved.
 - `#322742` - The issue with "Unable to drag and drop the card when `WebApiAdaptor` used on Kanban" has been resolved.
 

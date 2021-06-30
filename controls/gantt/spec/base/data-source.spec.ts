@@ -1661,3 +1661,222 @@ export let dragSelfReferenceData: Object[] = [
         parentID: 7,
     }
 ];
+export let virtualResourceData: Object[] = [
+    {
+        TaskID: 1,
+        TaskName: 'Task 1',
+        StartDate: new Date('03/29/2019'),
+        EndDate: new Date('04/21/2019'),
+        subtasks: [
+            {
+                TaskID: 2, TaskName: 'Task 2', StartDate: new Date('03/29/2019'), Duration: 2,
+                Progress: 30, work: 16, resources: [{ resourceId: 1, unit: 70 }, 6]
+            },
+            {
+                TaskID: 3, TaskName: 'Task 3', StartDate: new Date('03/29/2019'), Duration: 4,
+                resources: [2, 3, 5], work: 96
+            },
+            {
+                TaskID: 4, TaskName: 'Task 4', StartDate: new Date('03/29/2019'), Duration: 1,
+                work: 16, resources: [8, { resourceId: 9, unit: 50 }], Progress: 30
+            },
+        ]
+    },
+    {
+        TaskID: 5,
+        TaskName: 'Task 5', StartDate: new Date('03/29/2019'), EndDate: new Date('04/21/2019'),
+        subtasks: [
+            {
+                TaskID: 6, TaskName: 'Task 6', StartDate: new Date('03/29/2019'),
+                Duration: 3, Progress: 30, resources: [{ resourceId: 4, unit: 50 }], work: 30
+            },
+            {
+                TaskID: 7, TaskName: 'Task 7', StartDate: new Date('04/01/2019'), Duration: 3,
+                work: 48, resources: [4, 8]
+            },
+            {
+                TaskID: 8, TaskName: 'Task 8', StartDate: new Date('04/01/2019'),
+                Duration: 2, work: 60, resources: [12, { resourceId: 5, unit: 70 }]
+            }
+        ]
+    },
+    {
+        TaskID: 9, TaskName: 'Task 9', StartDate: new Date('04/01/2019'), Duration: 1,
+        Progress: 30, resources: [12], work: 24
+    },
+    {
+        TaskID: 10, TaskName: 'Task 10', StartDate: new Date('04/01/2019'), Duration: 1,
+        Progress: 30, resources: [12], work: 24
+    },
+    {
+        TaskID: 11,
+        TaskName: 'Task 11',
+        StartDate: new Date('03/29/2019'),
+        EndDate: new Date('04/21/2019'),
+        subtasks: [
+            {
+                TaskID: 12, TaskName: 'Task 12', StartDate: new Date('03/29/2019'), Duration: 2,
+                Progress: 30, work: 16, resources: [{ resourceId: 1, unit: 70 }, 6]
+            },
+            {
+                TaskID: 13, TaskName: 'Task 13', StartDate: new Date('03/29/2019'), Duration: 4,
+                resources: [2, 3, 5], work: 96
+            },
+            {
+                TaskID: 14, TaskName: 'Task 14', StartDate: new Date('03/29/2019'), Duration: 1,
+                work: 16, resources: [8, { resourceId: 9, unit: 50 }], Progress: 30
+            },
+        ]
+    },
+    {
+        TaskID: 15,
+        TaskName: 'Task 15', StartDate: new Date('03/29/2019'), EndDate: new Date('04/21/2019'),
+        subtasks: [
+            {
+                TaskID: 16, TaskName: 'Task 16', StartDate: new Date('03/29/2019'),
+                Duration: 3, Progress: 30, resources: [{ resourceId: 4, unit: 50 }], work: 30
+            },
+            {
+                TaskID: 17, TaskName: 'Task 17', StartDate: new Date('04/01/2019'), Duration: 3,
+                work: 48, resources: [4, 8]
+            },
+            {
+                TaskID: 18, TaskName: 'Task 18', StartDate: new Date('04/01/2019'),
+                Duration: 2, work: 60, resources: [12, { resourceId: 5, unit: 70 }]
+            }
+        ]
+    },
+    {
+        TaskID: 19, TaskName: 'Task 19', StartDate: new Date('04/01/2019'), Duration: 1,
+        Progress: 30, resources: [12], work: 24
+    },
+    {
+        TaskID: 20, TaskName: 'Task 20', StartDate: new Date('04/01/2019'), Duration: 1,
+        Progress: 30, resources: [12], work: 24
+    },
+    {
+        TaskID: 21,
+        TaskName: 'Task 21',
+        StartDate: new Date('03/29/2019'),
+        EndDate: new Date('04/21/2019'),
+        subtasks: [
+            {
+                TaskID: 22, TaskName: 'Task 22', StartDate: new Date('03/29/2019'), Duration: 2,
+                Progress: 30, work: 16, resources: [{ resourceId: 1, unit: 70 }, 6]
+            },
+            {
+                TaskID: 23, TaskName: 'Task 23', StartDate: new Date('03/29/2019'), Duration: 4,
+                resources: [2, 3, 5], work: 96
+            },
+            {
+                TaskID: 24, TaskName: 'Task 24', StartDate: new Date('03/29/2019'), Duration: 1,
+                work: 16, resources: [8, { resourceId: 9, unit: 50 }], Progress: 30
+            },
+        ]
+    },
+    {
+        TaskID: 25,
+        TaskName: 'Task 25', StartDate: new Date('03/29/2019'), EndDate: new Date('04/21/2019'),
+        subtasks: [
+            {
+                TaskID: 26, TaskName: 'Task 26', StartDate: new Date('03/29/2019'),
+                Duration: 3, Progress: 30, resources: [{ resourceId: 4, unit: 50 }], work: 30
+            },
+            {
+                TaskID: 27, TaskName: 'Task 27', StartDate: new Date('04/01/2019'), Duration: 3,
+                work: 48, resources: [4, 8]
+            },
+            {
+                TaskID: 28, TaskName: 'Task 28', StartDate: new Date('04/01/2019'),
+                Duration: 2, work: 60, resources: [12, { resourceId: 5, unit: 70 }]
+            }
+        ]
+    },
+    {
+        TaskID: 29, TaskName: 'Task 29', StartDate: new Date('04/01/2019'), Duration: 1,
+        Progress: 30, resources: [12], work: 24
+    }
+];
+export let editingResources= [
+    { resourceId: 1, resourceName: 'Martin Tamer' },
+    { resourceId: 2, resourceName: 'Rose Fuller' },
+    { resourceId: 3, resourceName: 'Margaret Buchanan' },
+    { resourceId: 4, resourceName: 'Fuller King' },
+    { resourceId: 5, resourceName: 'Davolio Fuller' },
+    { resourceId: 6, resourceName: 'Van Jack' },
+    { resourceId: 7, resourceName: 'Fuller Buchanan' },
+    { resourceId: 8, resourceName: 'Jack Davolio' },
+    { resourceId: 9, resourceName: 'Tamer Vinet' },
+    { resourceId: 10, resourceName: 'Vinet Fuller' },
+    { resourceId: 11, resourceName: 'Bergs Anton' },
+    { resourceId: 12, resourceName: 'Construction Supervisor' }
+];
+export let splitTasksData: object[] = [
+    {
+        TaskID: 1,
+        TaskName: 'Project Schedule',
+        StartDate: new Date('02/04/2019'),
+        EndDate: new Date('03/10/2019'),
+        subtasks: [
+            {
+                TaskID: 2,
+                TaskName: 'Planning',
+                StartDate: new Date('02/04/2019'),
+                subtasks: [
+                    {
+                        TaskID: 3, TaskName: 'Plan timeline', StartDate: new Date('02/04/2019'), EndDate: new Date('02/10/2019'),
+                        Duration: 10, Progress: '60',
+                        Segments: [
+                            { StartDate: new Date('02/04/2019'), Duration: 2 },
+                            { StartDate: new Date('02/05/2019'), Duration: 5 },
+                            { StartDate: new Date('02/08/2019'), Duration: 3 }
+                        ]
+                    },
+                    {
+                        TaskID: 4, TaskName: 'Plan budget', StartDate: new Date('02/04/2019'), EndDate: new Date('02/10/2019'),
+                        Duration: 10, Progress: '90'
+                    },
+                    {
+                        TaskID: 5, TaskName: 'Allocate resources', StartDate: new Date('02/04/2019'), EndDate: new Date('02/10/2019'),
+                        Duration: 10, Progress: '75',
+                        Segments: [
+                            { StartDate: new Date('02/04/2019'), Duration: 4 },
+                            { StartDate: new Date('02/08/2019'), Duration: 2 }
+                        ]
+                    },
+                    {
+                        TaskID: 6, TaskName: 'Planning complete', StartDate: new Date('02/21/2019'), EndDate: new Date('02/21/2019'),
+                        Duration: 0, Predecessor: '3FS,5FS'
+                    },
+                ]
+            },
+            {
+                TaskID: 7,
+                TaskName: 'Design',
+                StartDate: new Date('02/25/2019'),
+                subtasks: [
+                    {
+                        TaskID: 8, TaskName: 'Software Specification', StartDate: new Date('02/25/2019'), EndDate: new Date('03/02/2019'),
+                        Duration: 5, Progress: '60', Predecessor: '6FS'
+                    },
+                    {
+                        TaskID: 9, TaskName: 'Develop prototype', StartDate: new Date('02/25/2019'), EndDate: new Date('03/02/2019'),
+                        Duration: 5, Progress: '100', Predecessor: '6FS',
+                        Segments: [
+                            { StartDate: new Date('02/25/2019'), Duration: 2 },
+                            { StartDate: new Date('02/28/2019'), Duration: 3 }
+                        ]
+                    },
+                    {
+                        TaskID: 10, TaskName: 'Get approval from customer', StartDate: new Date('02/25/2019'),
+                        EndDate: new Date('03/01/2019'), Duration: 4, Progress: '100', Predecessor: '9FS'
+                    },
+                    {
+                        TaskID: 11, TaskName: 'Design complete', StartDate: new Date('02/25/2019'), EndDate: new Date('02/25/2019'),
+                        Duration: 0, Predecessor: '10FS'
+                    }
+                ]
+            }
+        ]
+    }
+];

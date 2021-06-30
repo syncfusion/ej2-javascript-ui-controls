@@ -1,6 +1,6 @@
 import { Workbook, SheetModel, CellModel, getCell, setCell, getData } from '../base/index';
 import { DataManager, Query, ReturnOption, DataUtil, Deferred } from '@syncfusion/ej2-data';
-import { getCellIndexes, getIndexesFromAddress, getColumnHeaderText, getRangeAddress, workbookLocale, isNumber } from '../common/index';
+import { getCellIndexes, getIndexesFromAddress, getColumnHeaderText, getRangeAddress, workbookLocale, isNumber, getUpdatedFormula } from '../common/index';
 import { SortDescriptor, SortOptions, BeforeSortEventArgs, SortEventArgs, getSwapRange, CellStyleModel } from '../common/index';
 import { parseIntValue } from '../common/index';
 import { initiateSort } from '../common/event';
@@ -131,6 +131,10 @@ export class WorkbookSort {
                     for (sCIdx; sCIdx <= eCIdx; sCIdx++) {
                         colName = getColumnHeaderText(sCIdx + 1);
                         cell = data[colName] as CellModel;
+                        if (cell && cell.formula) {
+                            cell.formula =
+                            getUpdatedFormula([sRIdx, sCIdx], [parseInt(data[rowKey] as string, 10) - 1, sCIdx], sheet, cell);
+                        }
                         setCell(sRIdx, sCIdx, sheet, cell);
                     }
                 });

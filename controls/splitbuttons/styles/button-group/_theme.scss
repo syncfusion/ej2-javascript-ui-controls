@@ -342,7 +342,7 @@
     // RTL
     &.e-rtl {
       .e-btn {
-        @if $skin-name != 'bootstrap' {
+        @if $skin-name != 'bootstrap' and $skin-name != 'tailwind' and $skin-name !='tailwind-dark' {
           &:not(:first-of-type):not(:last-of-type) {
             border-left: transparent;
             border-right: transparent;

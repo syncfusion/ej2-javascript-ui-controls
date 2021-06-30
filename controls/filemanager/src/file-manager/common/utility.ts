@@ -1077,9 +1077,10 @@ export function dragStopHandler(parent: IFileManager, args: DragEventArgs): void
     removeBlur(parent, 'hover');
     dragArgs.fileDetails = parent.dragData;
     parent.trigger('fileDragStop', dragArgs, (dragArgs: FileDragEventArgs) => {
-        if (!dragArgs.cancel && !isNOU(parent.targetModule) && parent.targetModule !== '') {
+        if (!dragArgs.cancel && !isNOU(parent.targetModule) && parent.targetModule !== '' && parent.dragCount > 2) {
             dropHandler(parent);
         }
+        parent.dragCount = 0;
     });
 }
 
@@ -1096,6 +1097,7 @@ export function dragStartHandler(parent: IFileManager, args: DragEventArgs & Bla
     const dragArgs: FileDragEventArgs = args;
     dragArgs.cancel = false;
     dragArgs.fileDetails = parent.dragData;
+    parent.dragCount = 0;
     parent.droppedObjects = [];
     if (!parent.allowDragAndDrop || ((parent.activeModule === 'navigationpane') &&
         (closest(args.element, 'li').getAttribute('data-uid') === parent.pathId[0]))) {
@@ -1217,6 +1219,7 @@ export function draggingHandler(parent: IFileManager, args: DragEventArgs): void
     }
     parent.element.classList.remove('e-fe-drop', 'e-no-drop');
     parent.element.classList.add(canDrop ? 'e-fe-drop' : 'e-no-drop');
+    parent.dragCount = parent.dragCount + 1;
     parent.trigger('fileDragging', dragArgs);
 }
 

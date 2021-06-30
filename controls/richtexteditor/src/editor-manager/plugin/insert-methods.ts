@@ -1,6 +1,6 @@
 /**
  * Node appending methods.
- * 
+ *
  * @hidden
  */
 export class InsertMethods {

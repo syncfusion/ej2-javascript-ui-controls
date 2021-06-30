@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { Component, ModuleDeclaration, NotifyPropertyChanges, Property, Complex, Collection, detach } from '@syncfusion/ej2-base';
+import { Component, ModuleDeclaration, NotifyPropertyChanges, Property, Complex, Collection, detach, remove } from '@syncfusion/ej2-base';
 import { addClass, classList, removeClass, compile, formatUnit, L10n, Browser, Event, EmitType } from '@syncfusion/ej2-base';
 import { DataManager, Query } from '@syncfusion/ej2-data';
 import { createSpinner, hideSpinner, showSpinner } from '@syncfusion/ej2-popups';
@@ -554,6 +554,11 @@ export class Kanban extends Component<HTMLElement> {
             case 'template':
             case 'sortDirection':
                 this.notify(events.dataReady, { processedData: this.kanbanData });
+                break;
+            case 'enableFrozenRows':
+                if (this.layoutModule.frozenSwimlaneRow && !this.swimlaneSettings.enableFrozenRows) {
+                    this.layoutModule.removeFrozenRows();
+                }
                 break;
             }
         }

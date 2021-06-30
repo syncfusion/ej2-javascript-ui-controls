@@ -2,14 +2,6 @@
 
 ## [Unreleased]
 
-## 19.1.69 (2021-06-15)
-
-### DropDownButton
-
-#### Bug Fixes
-
-- `#325735` - Issue with dynamic update of disable button has been fixed.
-
 ## 18.4.41 (2021-02-02)
 
 ### SplitButton

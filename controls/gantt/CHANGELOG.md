@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 19.2.44 (2021-06-30)
+
+### Gantt
+
+#### New Features
+
+- `#290125` - Provided support to add multiple tasks in Gantt.
+
 ## 19.1.69 (2021-06-15)
 
 ### Gantt

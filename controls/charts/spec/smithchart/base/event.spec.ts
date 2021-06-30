@@ -1,11 +1,13 @@
 import {
     Smithchart, ISmithchartLoadedEventArgs, ISmithchartLoadEventArgs, ITitleRenderEventArgs,
     ISubTitleRenderEventArgs, ISmithchartAxisLabelRenderEventArgs, ISmithchartLegendRenderEventArgs,
-    ISmithchartSeriesRenderEventArgs, ISmithchartTextRenderEventArgs
+    ISmithchartSeriesRenderEventArgs, ISmithchartTextRenderEventArgs, SmithchartLegend
 } from '../../../src/smithchart/index';
 import { EmitType } from '@syncfusion/ej2-base';
 import { createElement, remove } from '@syncfusion/ej2-base';
 import { profile, inMB, getMemoryProfile } from '../../common.spec';
+
+Smithchart.Inject(SmithchartLegend);
 
 
 export function getElementByID(id: string): Element {
@@ -37,6 +39,9 @@ describe('Smithchart tooltip spec', () => {
                     visible: false,
                     labelIntersectAction: 'Hide',
                 },
+                legendSettings: {
+                    visible: false
+                },
                 series: [{
                     points: [
                         { resistance: 10, reactance: 25 }, { resistance: 8, reactance: 6 },
@@ -64,9 +69,6 @@ describe('Smithchart tooltip spec', () => {
             smithchart.destroy();
         });
         it('Checking Load Event', (done: Function) => {
-            smithchart.load = (args: ISmithchartLoadEventArgs) => {
-                args.smithchart.export('PNG', 'Smith chart');
-            };
             smithchart.loaded = (args: ISmithchartLoadedEventArgs): void => {
                 svg = document.getElementById('container_svg_horizontalAxisMajorGridLines');
                 expect(svg !== null).toBe(true);
@@ -138,13 +140,13 @@ describe('Smithchart tooltip spec', () => {
         });
         it('Checking legend event cancel', (done: Function) => {
             smithchart.legendRender = (args: ISmithchartLegendRenderEventArgs): void => {
-                args.cancel = false;
+                args.cancel = true;
             };
             smithchart.loaded = (args: ISmithchartLoadedEventArgs): void => {
                 svg = document.getElementById('container_svg_Legend0');
-                expect(svg.childElementCount).toBe(2);
+                expect(svg === null).toBe(true);
                 svg = document.getElementById('container_svg_LegendItemShape0');
-                expect(svg.getAttribute('fill')).toBe("#00bdae");
+                expect(svg === null).toBe(true);
                 done();
             };
             smithchart.series[0].name = "Transmission2";

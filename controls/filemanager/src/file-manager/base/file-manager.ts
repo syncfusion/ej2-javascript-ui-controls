@@ -163,6 +163,7 @@ export class FileManager extends Component<HTMLElement> implements INotifyProper
     public treeExpandTimer: number = null;
     public dragCursorPosition: PositionModel = { left: 44, top: 18 };
     public isDropEnd: boolean = false;
+    public dragCount: number = 0;
     // eslint-disable-next-line
     public droppedObjects: Object[] = [];
     public destinationPath: string;

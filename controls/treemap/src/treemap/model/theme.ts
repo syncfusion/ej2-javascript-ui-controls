@@ -83,7 +83,41 @@ export function getThemeStyle(theme: TreeMapTheme): IThemeStyle {
             labelFontFamily: 'HelveticaNeue'
         };
         break;
-    default:
+	case 'tailwind':
+		style = {
+            backgroundColor: 'transparent',
+            titleFontColor: '#374151',
+            subTitleFontColor: '#374151',
+            tooltipFillColor: '#111827',
+            tooltipFontColor: '#F9FAFB',
+            tooltipFillOpacity: 1,
+            tooltipTextOpacity: 1,
+            legendTitleColor: '#374151',
+            legendTextColor: '#374151',
+            fontFamily: 'Inter',
+            fontSize: '14px',
+            legendFontSize: '12px',
+            labelFontFamily: 'Inter'
+        };
+        break;
+	case 'tailwinddark':
+		style = {
+            backgroundColor: 'transparent',
+            titleFontColor: '#D1D5DB',
+            subTitleFontColor: '#D1D5DB',
+            tooltipFillColor: '#F9FAFB',
+            tooltipFontColor: '#1F2937',
+            tooltipFillOpacity: 1,
+            tooltipTextOpacity: 1,
+            legendTitleColor: '#D1D5DB',
+            legendTextColor: '#D1D5DB',
+            fontFamily: 'Inter',
+            fontSize: '14px',
+            legendFontSize: '12px',
+            labelFontFamily: 'Inter'  
+        };
+        break;
+	default:
         style = {
             backgroundColor: '#FFFFFF',
             titleFontColor: '#424242',

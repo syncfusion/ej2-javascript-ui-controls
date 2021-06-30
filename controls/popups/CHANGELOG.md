@@ -2,13 +2,13 @@
 
 ## [Unreleased]
 
-## 19.1.67 (2021-06-08)
+## 19.2.44 (2021-06-30)
 
-### Dialog
+### Tooltip
 
 #### Bug Fixes
 
-- `#I324425`, `#I329144` - Resolved the issue "API docs not accessible for dialog after `Position` API".
+- `#I328768` - The issue with "The Tooltip is not opened in the current cursor position while enabling the `mouseTrail` and `openDelay` support" has been resolved.
 
 ## 19.1.66 (2021-06-01)
 

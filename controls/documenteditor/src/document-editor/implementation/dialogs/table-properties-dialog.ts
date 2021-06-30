@@ -411,7 +411,7 @@ export class TablePropertiesDialog {
         const container: HTMLDivElement = <HTMLDivElement>createElement('div', { id: element.id + '_table_TabContainer' });
         const sizeHeader: HTMLDivElement = <HTMLDivElement>createElement('div', {
             id: container.id + '_sizeLabel', innerHTML: localValue.getConstant('Size'),
-            styles: 'width:100%;margin:0px;', className: 'e-de-table-dialog-options-label'
+            styles: 'width:100%;margin:0px;', className: 'e-de-table-dialog-options-label e-de-table-dialog-size-label'
         });
         const parentContainer: HTMLDivElement = <HTMLDivElement>createElement('div', { styles: 'display: inline-flex;' });
         const childContainer1: HTMLDivElement = <HTMLDivElement>createElement('div', {
@@ -440,13 +440,14 @@ export class TablePropertiesDialog {
                 '</option><option value="Percent">' + localValue.getConstant('Percent') + '</option>', id: element.id + '_width_dropdown'
         }) as HTMLSelectElement;
         const labeltext: HTMLInputElement = <HTMLInputElement>createElement('label', {
-            innerHTML: localValue.getConstant('Measure in'), styles: 'width: 60px;font-size: 11px; font-weight: normal;'
+            innerHTML: localValue.getConstant('Measure in'), styles: 'width: 60px;',
+            className: 'e-de-table-measure-lbl'
         });
         const alignmentHeader: HTMLDivElement = createElement('div', {
             innerHTML: localValue.getConstant('Alignment'), className: 'e-de-table-dialog-options-label',
             styles: 'width: 100%;margin: 0px;'
         }) as HTMLDivElement;
-        const alignmentContainer: HTMLDivElement = <HTMLDivElement>createElement('div', { styles: 'height:85px;display:inline-flex' });
+        const alignmentContainer: HTMLDivElement = <HTMLDivElement>createElement('div', { styles: 'height:85px;display:inline-flex', className: 'e-de-tbl-prop-sub-cntr' });
         const classDivName: string = element.id + 'e-de-table-alignment';
         const leftAlignDiv: HTMLDivElement = <HTMLDivElement>createElement('div', { className: 'e-de-table-dia-align-div' });
         this.left = createElement('div', {
@@ -489,7 +490,8 @@ export class TablePropertiesDialog {
         }
         this.indentingLabel = createElement('label', {
             innerHTML: localValue.getConstant('Indent from left'),
-            styles: 'font-weight: normal;font-size: 11px;position:relative;display:block;margin-bottom:18px;top:10px;' + leftIndentLabelMargin
+            styles: leftIndentLabelMargin,
+            className: 'e-de-tbl-indent-lbl'
         }) as HTMLLabelElement;
         const leftIndentBox: HTMLDivElement = <HTMLDivElement>createElement('div', {
             styles: 'margin-top: 15px;position: relative;' + leftIndentBoxMargin
@@ -790,7 +792,7 @@ export class TablePropertiesDialog {
         const sizeLabeldiv: HTMLDivElement = <HTMLDivElement>createElement('div', {
             innerHTML: localValue.getConstant('Size'),
             styles: 'width: 100%;',
-            className: 'e-de-table-dialog-options-label'
+            className: 'e-de-table-dialog-options-label e-de-table-dialog-size-label'
         });
         const parentDiv: HTMLDivElement = <HTMLDivElement>createElement('div', { styles: 'display: inline-flex;width: 100%;' });
         // let childDiv1Float: string;
@@ -827,7 +829,8 @@ export class TablePropertiesDialog {
             id: element.id + '_height_type'
         }) as HTMLSelectElement;
         const labeltext: HTMLLabelElement = <HTMLLabelElement>createElement('label', {
-            innerHTML: localValue.getConstant('Row height is'), styles: 'font-size: 11px;font-weight: normal;width: 75px;display:block;margin-bottom:8px'
+            innerHTML: localValue.getConstant('Row height is'),
+            className: 'e-de-table-measure-lbl'
         });
         rowDiv.appendChild(sizeLabeldiv); element.appendChild(rowDiv); childDiv1.appendChild(rowHeightCheckBox);
         parentDiv.appendChild(childDiv1); childdiv2.appendChild(this.rowHeight); parentDiv.appendChild(childdiv2);
@@ -980,7 +983,7 @@ export class TablePropertiesDialog {
     private initTableCellProperties(element: HTMLDivElement, localValue: L10n, isRtl?: boolean): void {
         const sizeDiv: HTMLDivElement = <HTMLDivElement>createElement('div', { styles: 'width: 100%;' });
         const div: HTMLDivElement = createElement('div', {
-            innerHTML: localValue.getConstant('Size'), className: 'e-de-table-dialog-options-label',
+            innerHTML: localValue.getConstant('Size'), className: 'e-de-table-dialog-options-label e-de-table-dialog-size-label',
             styles: 'width: 100%;'
         }) as HTMLDivElement;
         const parentdiv: HTMLDivElement = <HTMLDivElement>createElement('div', { styles: 'width: 100%;display: inline-flex;' });
@@ -997,7 +1000,7 @@ export class TablePropertiesDialog {
             attrs: { 'type': 'checkbox' }, id: element.id + '_Prefer_Width_CheckBox_cell'
         });
         const childdiv2: HTMLDivElement = <HTMLDivElement>createElement('div', {
-            styles: 'padding:0px 20px'
+            className: 'e-de-cell-ht-top'
         });
         this.preferredCellWidth = <HTMLInputElement>createElement('input', {
             id: element.id + 'tablecell_Width_textBox', attrs: { 'type': 'text' }
@@ -1026,7 +1029,7 @@ export class TablePropertiesDialog {
         }) as HTMLSelectElement;
         const labeltext: HTMLLabelElement = createElement('label', {
             innerHTML: localValue.getConstant('Measure in'),
-            styles: 'font-size: 11px;font-weight: normal;display:block;margin-bottom:8px'
+            className: 'e-de-table-measure-lbl'
         }) as HTMLLabelElement;
         sizeDiv.appendChild(div); element.appendChild(sizeDiv); childdiv1.appendChild(preferredCellWidthCheckBox);
         parentdiv.appendChild(childdiv1); childdiv2.appendChild(this.preferredCellWidth);

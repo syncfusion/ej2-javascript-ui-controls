@@ -4,7 +4,7 @@ import * as CONSTANT from './../base/constant';
 import { IMarkdownSubCommands } from './../base/interface';
 /**
  * Link internal component
- * 
+ *
  * @hidden
  * @deprecated
  */
@@ -36,7 +36,7 @@ export class ClearFormat {
             .replace(/\|/ig, '\\|').replace(/\?/ig, '\\?')
             .replace(/\+/ig, '\\+').replace(/\-/ig, '\\-')
             .replace(/\&/ig, '\\&'); 
-            /* eslint-enable */   
+            /* eslint-enable */
     }
 
     private clearSelectionTags(text: string): string {

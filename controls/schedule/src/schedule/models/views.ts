@@ -202,6 +202,16 @@ export class Views extends ChildProperty<Views> {
     public firstMonthOfYear: number;
 
     /**
+     * This option allows the user to set the number of months count to be displayed on the Schedule.
+     * {% codeBlock src='schedule/monthsCount/index.md' %}{% endcodeBlock %}
+     *
+     * @default 12
+     * @aspType int
+     */
+    @Property(12)
+    public monthsCount: number;
+
+    /**
      * It is used to set the working days on schedule. The only days that are defined in this collection will be rendered on the
      *  `workWeek` view whereas on other views, it will display all the usual days and simply highlights the working days with different
      *  shade.

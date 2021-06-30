@@ -103,7 +103,8 @@ export class DropDownFormFieldDialog {
         moveUpButtonEle.addEventListener('click', this.moveUpItem.bind(this));
         let moveDownButtonDiv: HTMLElement = createElement('div', { className: 'e-bookmark-addbutton' });
         let moveDownButtonEle: HTMLElement = createElement('button', {
-            attrs: { type: 'button', style: 'height:36px;width:36px' }
+            attrs: { type: 'button', style: 'height:36px;width:36px' },
+            className: 'e-de-ff-drpdwn-mvdn'
         });
         this.moveDownButton = new Button({ cssClass: 'e-button-custom', iconCss: 'e-de-arrow-down' });
         moveDownButtonEle.addEventListener('click', this.moveDownItem.bind(this));

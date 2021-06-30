@@ -922,6 +922,8 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     public filterOperators: IFilterOperator;
     /** @hidden */
     public localeObj: L10n;
+    /** @hidden */
+    public isManualRefresh: boolean = false;
     public isSelectedRowIndexUpdating: boolean;
     private defaultLocale: Object;
     private keyConfigs: { [key: string]: string };
@@ -4528,6 +4530,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
      */
     public refresh(): void {
         if (!this.isDestroyed) {
+            this.isManualRefresh = true;
             this.headerModule.refreshUI();
             this.updateStackedFilter();
             this.renderModule.refresh();
@@ -6891,7 +6894,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
         const header: Element = this.getColumnHeaderByField(field);
         if (header) {
             const target: Element = header.querySelector('.e-filtermenudiv');
-            const filterDlg: HTMLElement = document.querySelector('.e-filter-popup');
+            const filterDlg: HTMLElement = this.element.querySelector('.e-filter-popup');
             if (target && filterDlg) {
                 const gClient: ClientRect = this.element.getBoundingClientRect();
                 const fClient: ClientRect = target.getBoundingClientRect();

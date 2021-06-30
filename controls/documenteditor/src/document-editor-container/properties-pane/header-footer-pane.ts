@@ -103,7 +103,8 @@ export class HeaderFooterProperties {
         optionsLabel.innerHTML = localObj.getConstant('Options');
         optionsLabelDiv.appendChild(optionsLabel);
         const optionsDiv: HTMLElement = this.createDivTemplate(elementId + '_optionsDiv', optionsLabelDiv);
-        const firstPageDiv: HTMLElement = this.createDivTemplate(elementId + '_firstPageDiv', optionsDiv, 'margin-bottom:10px;');
+        const firstPageDiv: HTMLElement = this.createDivTemplate(elementId + '_firstPageDiv', optionsDiv);
+        classList(firstPageDiv, ['e-de-hdr-ftr-frst-div'], []);
         const firstPage: HTMLInputElement = createElement('input', { id: 'firstPage', className: 'e-de-prop-sub-label' }) as HTMLInputElement;
         firstPageDiv.appendChild(firstPage);
         this.firstPage = new CheckBox({ label: localObj.getConstant('Different First Page'), change: this.changeFirstPageOptions.bind(this), cssClass: 'e-de-prop-sub-label', enableRtl: this.isRtl });
@@ -149,7 +150,8 @@ export class HeaderFooterProperties {
         //width = 'width: 150px;';
         //headerFooterDivMargin = 'margin-left:8px;';
         //}
-        const headerTopDiv: HTMLElement = this.createDivTemplate(elementId + '_headerTopDiv', positionDiv, 'margin-bottom:14px;');
+        const headerTopDiv: HTMLElement = this.createDivTemplate(elementId + '_headerTopDiv', positionDiv);
+        classList(headerTopDiv, ['e-de-hdr-ftr-top-div'], []);
         const headerTopLabel: HTMLElement = createElement('label', { className: 'e-de-prop-sub-label', styles: 'display:block' });
         headerTopLabel.innerHTML = localObj.getConstant('Header from Top');
         headerTopDiv.appendChild(headerTopLabel);

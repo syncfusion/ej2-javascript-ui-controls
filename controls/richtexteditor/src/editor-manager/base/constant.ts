@@ -4,7 +4,7 @@
 
 /**
  * Image plugin events
- * 
+ *
  * @hidden
  */
 export const IMAGE: string = 'INSERT-IMAGE';
@@ -37,21 +37,21 @@ export const TABLE_MOVE: string = 'TABLE_MOVE';
 
 /**
  * Alignments plugin events
- * 
+ *
  * @hidden
  */
 export const ALIGNMENT_TYPE: string = 'alignment-type';
 
 /**
  * Indents plugin events
- * 
+ *
  * @hidden
  */
 export const INDENT_TYPE: string = 'indent-type';
 
-/** 
+/**
  * Constant tag names
- * 
+ *
  * @hidden
  */
 export const DEFAULT_TAG: string = 'p';
@@ -63,7 +63,7 @@ export const BLOCK_TAGS: string[] = ['address', 'article', 'aside', 'audio', 'bl
     'canvas', 'details', 'dd', 'div', 'dl', 'dt', 'fieldset', 'figcaption', 'figure', 'footer',
     'form', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'header', 'hgroup', 'hr', 'li', 'main', 'nav',
     'noscript', 'ol', 'output', 'p', 'pre', 'section', 'table', 'tbody', 'td', 'tfoot', 'th',
-    'thead', 'tr', 'ul', 'video'];
+    'thead', 'tr', 'ul', 'video', 'body'];
 
 /**
  * @hidden
@@ -74,31 +74,32 @@ export const IGNORE_BLOCK_TAGS: string[] = ['td', 'th'];
  * @hidden
  */
 export const TABLE_BLOCK_TAGS: string[] = ['table', 'tbody', 'td', 'tfoot', 'th',
-'thead', 'tr'];
+    'thead', 'tr'];
 
 /**
  * Selection plugin events
- * 
+ *
  * @hidden
  */
 export const SELECTION_TYPE: string = 'selection-type';
 
 /**
  * Insert HTML plugin events
+ *
  * @hidden
  */
 export const INSERTHTML_TYPE: string = 'inserthtml-type';
 
 /**
  * Insert Text plugin events
- * 
+ *
  * @hidden
  */
 export const INSERT_TEXT_TYPE: string = 'insert-text-type';
 
 /**
  * Clear Format HTML plugin events
- * 
+ *
  * @hidden
  */
 export const CLEAR_TYPE: string = 'clear-type';

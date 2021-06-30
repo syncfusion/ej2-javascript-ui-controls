@@ -1,4 +1,4 @@
-import { ChildProperty, Property, Complex, Collection } from '@syncfusion/ej2-base';import { DataManager, Query} from '@syncfusion/ej2-data';import { MarkerSettings, Trendline } from '../../chart/series/chart-series';import { MarkerSettingsModel, TrendlineModel } from '../../chart/series/chart-series-model';import { StockChart } from '../stock-chart';import { ChartSeriesType, EmptyPointMode, TechnicalIndicators, MacdType, FinancialDataFields, ChartTheme } from '../../chart/utils/enum';import { Anchor, ZIndex, SizeType, LabelIntersectAction, LabelPlacement, AxisPosition, IntervalType } from '../../chart/utils/enum';import { SkeletonType, ChartRangePadding, EdgeLabelPlacement, ValueType, LegendShape, TrendlineTypes } from '../../chart/utils/enum';import { MajorGridLinesModel, MajorTickLinesModel, CrosshairTooltipModel, AxisLineModel } from '../../chart/axis/axis-model';import { MinorGridLinesModel, MinorTickLinesModel } from '../../chart/axis/axis-model';import { MajorGridLines, MajorTickLines, MinorTickLines, MinorGridLines, CrosshairTooltip, AxisLine } from '../../chart/axis/axis';import { ConnectorType } from '../../accumulation-chart/model/enum';import { TextOverflow, Alignment, Regions, Units, Position, FlagType } from '../../common/utils/enum';import { Theme } from '../../common/model/theme';import { AnimationModel, CornerRadiusModel, EmptyPointSettingsModel, ConnectorModel } from '../../chart/index';
+import { ChildProperty, Property, Complex, Collection } from '@syncfusion/ej2-base';import { DataManager, Query} from '@syncfusion/ej2-data';import { MarkerSettings, Series, Trendline } from '../../chart/series/chart-series';import { MarkerSettingsModel, TrendlineModel } from '../../chart/series/chart-series-model';import { StockChart } from '../stock-chart';import { ChartSeriesType, EmptyPointMode, TechnicalIndicators, MacdType, FinancialDataFields, ChartTheme, ChartShape } from '../../chart/utils/enum';import { Anchor, ZIndex, SizeType, LabelIntersectAction, LabelPlacement, AxisPosition, IntervalType } from '../../chart/utils/enum';import { SkeletonType, ChartRangePadding, EdgeLabelPlacement, ValueType, LegendShape, TrendlineTypes } from '../../chart/utils/enum';import { MajorGridLinesModel, MajorTickLinesModel, CrosshairTooltipModel, AxisLineModel } from '../../chart/axis/axis-model';import { MinorGridLinesModel, MinorTickLinesModel } from '../../chart/axis/axis-model';import { MajorGridLines, MajorTickLines, MinorTickLines, MinorGridLines, CrosshairTooltip, AxisLine } from '../../chart/axis/axis';import { ConnectorType } from '../../accumulation-chart/model/enum';import { TextOverflow, Alignment, Regions, Units, Position, FlagType } from '../../common/utils/enum';import { Theme } from '../../common/model/theme';import { AnimationModel, CornerRadiusModel, EmptyPointSettingsModel, ConnectorModel, IChartEventArgs } from '../../chart/index';
 
 /**
  * Interface for a class StockChartFont
@@ -498,6 +498,31 @@ export interface StockSeriesModel {
      */
 
     pointColorMapping?: string;
+
+    /**
+     * The shape of the legend. Each series has its own legend shape. They are
+     * * Circle - Renders a circle.
+     * * Rectangle - Renders a rectangle.
+     * * Triangle - Renders a triangle.
+     * * Diamond - Renders a diamond.
+     * * Cross - Renders a cross.
+     * * HorizontalLine - Renders a horizontalLine.
+     * * VerticalLine - Renders a verticalLine.
+     * * Pentagon - Renders a pentagon.
+     * * InvertedTriangle - Renders a invertedTriangle.
+     * * SeriesType -Render a legend shape based on series type.
+     * * Image -Render a image.     * 
+     * @default 'SeriesType'
+     */
+
+    legendShape?: LegendShape;
+
+    /**
+     * The URL for the Image that is to be displayed as a Legend icon.  It requires  `legendShape` value to be an `Image`.
+     * @default ''
+     */
+ 
+    legendImageUrl?: string;
 
     /**
      * Options to customizing animation for the series.

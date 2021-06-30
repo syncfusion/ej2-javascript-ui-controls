@@ -1781,11 +1781,13 @@ export class Connector extends NodeBase implements IElement {
     }
     /** @private */
     public getSegmentElement(
-        connector: Connector, segmentElement: PathElement, layoutOrientation?: LayoutOrientation, diagramActions?: DiagramAction
+        connector: Connector, segmentElement: PathElement, layoutOrientation?: LayoutOrientation, diagramActions?: DiagramAction,isFlip: boolean = true
     ): PathElement {
         //let bounds: Rect; let segmentPath: string;
         let points: PointModel[] = [];
-        flipConnector(connector);
+        if (isFlip) {
+            flipConnector(connector);
+        }
         points = this.getConnectorPoints(connector.type, undefined, layoutOrientation);
         this.intermediatePoints = points;
         segmentElement.staticSize = true;

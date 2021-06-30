@@ -739,6 +739,26 @@ describe('ProgressBar Control', () => {
             progress.loaded = loaded;
             progress.refresh();
         });
+		it('checking with tailwind theme style for progress', ()=> {
+            loaded = (args: Object): void => {
+                path = document.getElementById('container_Circularprogress');
+                stroke = path.getAttribute('stroke');
+                expect(stroke === '#4F46E5' ).toBe(true);
+            };
+            progress.theme = 'Tailwind';
+            progress.loaded = loaded;
+            progress.refresh();
+        });
+		it('checking with tailwind dark theme style for progress', ()=> {
+            loaded = (args: Object): void => {
+                path = document.getElementById('container_Circularprogress');
+                stroke = path.getAttribute('stroke');
+                expect(stroke === '#22D3EE' ).toBe(true);
+            };
+            progress.theme = 'TailwindDark';
+            progress.loaded = loaded;
+            progress.refresh();
+        });
     });
     describe('linear progress bar themestyle', () => {
         let progress: ProgressBar;

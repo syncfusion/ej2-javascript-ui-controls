@@ -2,6 +2,135 @@
 
 ## [Unreleased]
 
+## 19.2.44 (2021-06-30)
+
+### Document Editor
+
+#### New Features
+
+- `#I278021`, `#I301809` – Added table paste options.
+- `#I165071`, `#I226674`, `#I229069`, `#I231373`, `#I241445`, `#I251719`, `#I251720`, `#I267474`, `#I284190`, `#I287633`, `#I291766`, `#I295055`, `#I295549`, `#I298036`, `#I297705`, `#I301313`, `#I291964`, `#I306274`, `#I305349`, `#I308409`, `#I310463`, `#I311260`, `#I312302`, `#I313526`, `#I314192`, `#I317340`, `#I319563` – Added support to preserve image position with square, in-front of text, behind text, top and bottom wrapping styles.
+- `#I165071`, `#I226674`, `#I229069`, `#I231373`, `#I241445`, `#I251719`, `#I251720`, `#I267474`, `#I284190`, `#I287633`, `#I291766`, `#I295055`, `#I295549`, `#I298036`, `#I297705`, `#I301313`, `#I291964`, `#I306274`, `#I305349`, `#I308409`, `#I310463`, `#I311260`, `#I312302`, `#I313526`, `#I314192`, `#I317340`, `#I319563` - Textbox shape with square, in-front of text, behind text, top and bottom wrapping styles.
+- `#I307321` - Added support to preserve table positioning properties.
+
+#### Bug Fixes
+
+- `#I318381` - Resolved the script error while adding comments across two pages.
+- `#I318283` - Handled the "Different First Page" in Headers and Footers after section breaks.
+- `#I319182` - Selection issue after editing header is resolved.
+- `#I315240` - The script error while parsing shape is resolved.
+- `#I319182` - Resolved the script error while editing the header/footer.
+- `#F163188` - Highlight color is now working properly.
+- `#I320821` - Resolved the script error while opening document with table.
+- `#I319403`, `#I317463` - Resolved file corruption issue while exporting the document with shapes.
+- `#I319185` - Resolved left border rendering issue in merged cells.
+- `#I313943` - Tab character is now displayed properly.
+- `#I318786` - The document with footnote is now opened properly.
+- `#I318786` - Table column width is now updated properly.
+- `#I319991` - Inline form filling is now working properly in Internet Explorer.
+- `#I319782` - Resolved script error while deleting the content.
+- `#I320821`, `#I320991` - Table is now displayed with proper line width.
+- `#I319987` - Table with merged cells is now displayed properly.
+- `#I320513` - Header content is now displayed properly.
+- `#I321397` - Table with merged cells is now preserved properly in the exported document.
+- `#I317683` - Exported document with footnote is no longer corrupted.
+- `#I313465` - Image inserted using API is now displayed properly.
+- `#I308899` - Track changes is now listed properly in revision pane.
+- `#I320270` - Table changes are now tracked during paste operation.
+- `#I319403`, `#I317463` - Resolved file corruption issue while exporting the document with shapes.
+- `#I313821` - Table with preferred width type as auto is now displayed properly.
+- `#F162726` - Line spacing is now updated properly.
+- `#I319819` - Undo/Redo for multilevel list is now working properly.
+- `#I318381` - Comment is now added properly.
+- `#I317743` - Script error on accept track changes is now resolved.
+- `#I307321` - Checkbox with tab width is rendered properly.
+- `#FB23691` – Resolved changes pane visibility issue in read only mode.
+- `#I319397` - Spell checker now works properly for words ending with ‘ies’.
+- `#F164367` - Resolved the script error in npm run sass.
+- `#I319824` - Resolved the extra page rendering issue.
+- `#I319824` - Border displayed properly in the exported word document.
+- `#I319421`, `#F163236` - Resolved the copy/paste issue for content copied from Document editor.
+- `#I307321` - Line shape is now preserved properly in the exported document.
+- `#I307321` - Exported document is now displayed properly.
+- `#I321190` - Resolved the icon issue in material-dark, bootstrap-dark, fabric-dark themes.
+- `#I319808` - Document with tab is now displayed properly.
+- `#I317303` - Spacing after the numbered list is preserved properly.
+- `#I324052` - Added the footnote and endnote locale strings.
+- `#I307321` - Table border is now preserved properly in exported word document.
+- `#I307321` - List with hanging indent is displayed properly.
+- `#I321108` - Script error on tracking the changes is now resolved.
+- `#I321923` - Script error on pasting image URL in track change mode is now resolved.
+- `#I317358` - Image copy/paste issue in ASP.NET MVC framework is now resolved.
+- `#I318843` - Resolved the list formatting issue in copy pasted content.
+- `#I319868` - Exported document with image in header is now opened properly in Libre Office.
+- `#I324025` - Resolved the font dialog option value in localized mode.
+- `#I324223`, `#I324023` - Resolved the underline issue while exporting word document.
+- `#I322402` - Before pane switch event triggering twice issue is resolved.
+- `#F163664` - Document editor now opens large size text file properly.
+- `#I322548` - Resolved the issue with track changes.
+- `#I322561` - Bookmark delete and undo/redo operation is now working properly.
+- `#I324028` - Resolved the issue with applying properties in font dialog.
+- `#I323597` - Textbox in RTF documents are now displayed properly.
+- `#I323603` - Resolved the footnote issue when switching to web layout.
+- `#I321745` - Comment is now selected properly.
+- `#I322561` - Resolved the script error with bookmark undo/redo operation.
+- `#I323670` - Resolved the font size and font family issue during copy paste.
+- `#I325291` - Document with alternate chunks is now displayed properly.
+- `#I323401`, `#I323423` - Resolved the page wise footnote content display issue.
+- `#I326150` - Resolved issue in updating cross reference field.
+- `#F160804` - Styles are now considered properly while deleting the content.
+- `#I312306` - Hyperlink content is now retrieved properly.
+- `#I325681` - Resolved the Textbox border displaying issue.
+- `#I323059` - Resolved the script error when ignore action in spelling dialog.
+- `#I323423` - Resolved the issue when moving footnote to next page.
+- `#I324169` - Resolved opacity issue in toolbar item.
+- `#I322560`, `#I323516` - Script error in the top and bottom layout is resolved.
+- `#I323824` - Resolved the document corruption issue when opening the document in MS Office 2007.
+- `#I325554` - Resolved the script error when multiple documents pasted as SFDT.
+- `#I327626` - Footnote is now displayed properly.
+- `#I326000` - Document content is now displayed properly.
+- `#I327097` - Resolved the script error related to square wrapping style.
+- `#I327458` - Text overlapping issue is resolved.
+- `#I327647` - Issue with removing comment is resolved.
+- `#I322560` - Resolved the issue with duplication of page content.
+- `#I322560` - Font size is now parsed properly.
+- `#I323423` - Footnote is now displayed properly.
+- `#I325920` - Selection behavior is now working properly when mouse pointer goes outside the control.
+- `#I323608` - Textbox with fill color is now displayed properly.
+- `#I326144` - Resolved the issue with multi-line track changes.
+- `#I328063` - Document with checkbox form field applied is now displayed properly.
+- `#I328067` - Resolved the navigation issue when form filling mode is inline.
+- `#F164875, `#F163714` - Resolved the border issue when textbox has square border.
+- `#I327817` - Resolved the script error when using insert footnote in custom toolbar.
+- `#I325320` - Page number is now updated properly.
+- `#FB25004` - Exported document with table is opened properly in Libre Office.
+- `#I325323` - Textbox shape is now displayed properly.
+- `#FB24917` - Document is now exported properly after deleting comment.
+- `#F163116` - Hanging indent is now retrieved properly in paragraph dialog.
+- `#I327769` - Checkbox is now displayed properly.
+- `#I326567` - Nested table with preferred width type percentage is now displayed properly.
+- `#I328479` - Resolved script error while deleting merged cells.
+- `#I329173`, `#I330233` - Resolve script error while updating cross reference field.
+- `#F165501` - Resolve script error while applying border.
+- `#I328310` - Shape is now rendered properly in header and footer.
+- `#I325741` - Footnote content is now displayed properly.
+- `#I329564` - Accept and reject changes are now disabled properly in read only mode.
+- `#F164814` - Character format is now applied properly for RTL text.
+- `#I328063` - Resolved script error while scrolling.
+- `#I327450` – Resolved the overlapping issue in footnote section when working with text.
+- `#I327606` – Font size is now updated properly for the cursor position.
+- `#I329354` – Resolved the exception while exporting documents in server-side.
+- `#I330375` – Updated the constants for locale constants.
+- `#I330047` – Resolved the script error with refresh API.
+- `#I329637` – Resoled the issue with deleting comment.
+- `#I330918`, `#I331136 – Resolved the issue with updating cursor.
+- `#I329954` – Resolved the overlapping issue in options pane.
+- `#I327635`, `#I330160 – Resolved the text overlapping when editing the footnote.
+Resolved the issue with displaying document footer.
+Resolved the script error related to Jest framework.
+Resolved the script error with showRestrictEditingPane API.
+Resolved the issue with document zooming.
+
 ## 19.1.69 (2021-06-15)
 
 ### Document Editor
@@ -68,7 +197,7 @@
 - `#I325681` - Resolved the textbox border rendering issue.
 - `#I323059` - Resolved the script error when ignore action in spelling dialog.
 - `#I323423` - Resolved the footnote moving issue to next page.
-- `#I324169` - Resolved opacity issue in toolbar item. 
+- `#I324169` - Resolved opacity issue in toolbar item.
 - `#I322560`, `#I323516` - Script error in the top and bottom layout is resolved.
 - `#I323824` - Resolved the document corruption issue in MS Office 2007.
 - Resolved the document rendering issue document footer.

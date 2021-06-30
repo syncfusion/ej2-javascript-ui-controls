@@ -1,10 +1,19 @@
 /**
  * Specifies  common models interfaces.
- * 
+ *
  * @hidden
  * @deprecated
  */
 import { EditorMode } from './types';
+
+/**
+ * @deprecated
+ */
+export interface IAdvanceListItem {
+    listStyle? : string
+    listImage?: string
+    type?: string
+}
 
 /**
  * @deprecated
@@ -43,9 +52,7 @@ export interface IMarkdownToolbarStatus {
  * @deprecated
  */
 export interface IUndoCallBack {
-    // eslint-disable-next-line
     callBack?: Function
-    // eslint-disable-next-line
     event?: Object
 }
 
@@ -72,4 +79,6 @@ export interface IToolbarStatus {
     lowercase?: boolean
     createlink?: boolean
     insertcode?: boolean
+    numberFormatList?: string
+    bulletFormatList?: string
 }

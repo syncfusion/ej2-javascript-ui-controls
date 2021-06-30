@@ -1,5 +1,5 @@
 import { Spreadsheet } from '../base/index';
-import { ICellRenderer, CellRenderEventArgs, inView, CellRenderArgs, renderFilterCell, checkConditionalFormat } from '../common/index';
+import { ICellRenderer, CellRenderEventArgs, inView, CellRenderArgs, renderFilterCell, checkConditionalFormat, removeAllChildren } from '../common/index';
 import { hasTemplate, createHyperlinkElement, checkPrevMerge, createImageElement, IRenderer, getDPRValue } from '../common/index';
 import { getColumnHeaderText, CellStyleModel, CellFormatArgs, getRangeIndexes, getRangeAddress } from '../../workbook/common/index';
 import { CellStyleExtendedModel, setChart, refreshChart, getCellAddress, ValidationModel, MergeArgs } from '../../workbook/common/index';
@@ -61,12 +61,6 @@ export class CellRenderer implements ICellRenderer {
         if (this.checkMerged(args)) {
             return args.td;
         }
-        const compiledTemplate: string = this.processTemplates(args.cell, args.rowIdx, args.colIdx);
-        if (typeof compiledTemplate === 'string') {
-            args.td.innerHTML = compiledTemplate;
-        } else {
-            args.td.appendChild(compiledTemplate);
-        }
         args.isRefresh = false;
         this.update(args);
         if (args.cell && args.td) {
@@ -113,6 +107,15 @@ export class CellRenderer implements ICellRenderer {
 
     private update(args: CellRenderArgs): void {
         const sheet: SheetModel = this.parent.getActiveSheet();
+        const compiledTemplate: string = this.processTemplates(args.cell, args.rowIdx, args.colIdx);
+        if (compiledTemplate) {
+            if (typeof compiledTemplate === 'string') {
+                args.td.innerHTML = compiledTemplate;
+            } else {
+                removeAllChildren(args.td);
+                args.td.appendChild(compiledTemplate);
+            }
+        }
         if (args.isRefresh) {
             if (args.td.rowSpan) {
                 this.mergeFreezeRow(sheet, args.rowIdx, args.colIdx, args.td.rowSpan, args.row, true);
@@ -462,10 +465,10 @@ export class CellRenderer implements ICellRenderer {
                 range = getRangeIndexes(ranges[j].address.length ? ranges[j].address : ranges[j].startCell);
                 if (range[0] <= rowIdx && range[1] <= colIdx && range[2] >= rowIdx && range[3] >= colIdx) {
                     if (cell) {
-                        return this.compileCellTemplate(ranges[j].template);
+                        return this.compileCellTemplate(ranges[j].template, cell);
                     } else {
                         if (!getCell(rowIdx, colIdx, sheet, true)) {
-                            return this.compileCellTemplate(ranges[j].template);
+                            return this.compileCellTemplate(ranges[j].template, getCell(rowIdx, colIdx, sheet, null, true));
                         }
                     }
                 }
@@ -474,7 +477,7 @@ export class CellRenderer implements ICellRenderer {
         return '';
     }
 
-    private compileCellTemplate(template: string): string {
+    private compileCellTemplate(template: string, cell: CellModel): string {
         let compiledStr: Function;
         if (typeof template === 'string') {
             let templateString: string;
@@ -484,10 +487,10 @@ export class CellRenderer implements ICellRenderer {
                 templateString = template;
             }
             compiledStr = compile(templateString);
-            return (compiledStr({}, null, null, '', true)[0] as HTMLElement).outerHTML;
+            return (compiledStr(cell, null, null, '', true)[0] as HTMLElement).outerHTML;
         } else {
             compiledStr = compile(template);
-            return compiledStr({}, this.parent, 'ranges', '')[0];
+            return compiledStr(cell, this.parent, 'ranges', '')[0];
         }
     }
 

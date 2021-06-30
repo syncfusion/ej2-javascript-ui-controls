@@ -132,7 +132,9 @@
 
       & > .e-ul {
         overflow: initial;
-        padding-left: 8px;
+        @if $fm-skin-name != 'tailwind' and $fm-skin-name != 'tailwind-dark' {
+          padding-left: 8px;
+        }
       }
 
       .e-list-parent {
@@ -153,7 +155,12 @@
           }
 
           &.e-fe-drop-folder > .e-fullrow {
-            border: 1px solid;
+            @if $fm-skin-name == 'tailwind' or $fm-skin-name == 'tailwind-dark' {
+              border: 1px dashed;
+            }
+            @else {
+              border: 1px solid;
+            }
             box-sizing: border-box;
           }
         }
@@ -224,7 +231,13 @@
       .e-fe-search {
         font-size: 14px;
         margin: $fe-search-icon-margin;
-        padding: 5px;
+        @if $fm-skin-name == 'tailwind' or $fm-skin-name == 'tailwind-dark' {
+          margin-right: 4px;
+          padding: 3px;
+        }
+        @else {
+          padding: 5px;
+        }
         position: absolute;
         z-index: 1;
 
@@ -257,7 +270,12 @@
         cursor: pointer;
         font-size: $fe-bc-font-size;
         line-height: $fe-bc-text-size;
-        padding: $fe-bc-text-padding;
+        @if $fm-skin-name == 'tailwind' or $fm-skin-name == 'tailwind-dark' {
+          font-weight: $font-weight-medium;
+        }
+        @else {
+          padding: $fe-bc-text-padding;
+        }
         text-decoration: none;
 
         &:hover {
@@ -267,7 +285,9 @@
 
       .e-address-list-item {
         display: inline-block;
-        height: $fe-bc-li-item-height;
+        @if $fm-skin-name != 'tailwind' and $fm-skin-name != 'tailwind-dark' {
+          height: $fe-bc-li-item-height;
+        }
 
         &:last-child {
 
@@ -283,9 +303,14 @@
         .e-icons {
           font-size: $fe-bc-icon-font-size;
           margin: $fe-bc-icon-margin;
+          @if $fm-skin-name == 'tailwind' or $fm-skin-name == 'tailwind-dark' {
+            vertical-align: middle;
+          }
 
           &::before {
-            padding: $fe-bc-icon-padding;
+            @if $fm-skin-name != 'tailwind' and $fm-skin-name != 'tailwind-dark' {
+              padding: $fe-bc-icon-padding;
+            }
           }
         }
       }
@@ -363,15 +388,35 @@
         }
 
         tr.e-row.e-fe-drop-folder .e-rowcell:first-child {
-          box-shadow: 1px 0 0 1px $fe-drop-folder-bg-color inset;
+          @if $fm-skin-name == 'tailwind' or $fm-skin-name == 'tailwind-dark' {
+            border-bottom: 1px dashed $fe-drop-folder-bg-color;
+            border-left: 1px dashed $fe-drop-folder-bg-color;
+            border-top: 1px dashed $fe-drop-folder-bg-color;
+          }
+          @else {
+            box-shadow: 1px 0 0 1px $fe-drop-folder-bg-color inset;
+          }
         }
 
         tr.e-row.e-fe-drop-folder .e-rowcell:last-child {
-          box-shadow: -1px 0 0 1px $fe-drop-folder-bg-color inset;
+          @if $fm-skin-name == 'tailwind' or $fm-skin-name == 'tailwind-dark' {
+            border-bottom: 1px dashed $fe-drop-folder-bg-color;
+            border-right: 1px dashed $fe-drop-folder-bg-color;
+            border-top: 1px dashed $fe-drop-folder-bg-color;
+          }
+          @else {
+            box-shadow: -1px 0 0 1px $fe-drop-folder-bg-color inset;
+          }
         }
 
         tr.e-row.e-fe-drop-folder .e-rowcell {
-          box-shadow: 0 2px 0 -1px $fe-drop-folder-bg-color inset, 0 -2px 0 -1px $fe-drop-folder-bg-color inset;
+          @if $fm-skin-name == 'tailwind' or $fm-skin-name == 'tailwind-dark' {
+            border-bottom: 1px dashed $fe-drop-folder-bg-color;
+            border-top: 1px dashed $fe-drop-folder-bg-color;
+          }
+          @else {
+            box-shadow: 0 2px 0 -1px $fe-drop-folder-bg-color inset, 0 -2px 0 -1px $fe-drop-folder-bg-color inset;
+          }
         }
       }
 
@@ -418,7 +463,9 @@
         }
 
         .e-fe-grid-icon {
-          padding: 0 0 0 12px;
+          @if $fm-skin-name != 'tailwind' and $fm-skin-name != 'tailwind-dark' {
+            padding: 0 0 0 12px;
+          }
 
           .e-headercelldiv {
             text-overflow: unset;
@@ -440,17 +487,18 @@
 
         &.e-focused {
           box-shadow: none;
+          @if $fm-skin-name != 'tailwind' and $fm-skin-name != 'tailwind-dark' {
+            td {
+              box-shadow: $fe-grid-row-ie-box-shadow;
+            }
 
-          td {
-            box-shadow: $fe-grid-row-ie-box-shadow;
-          }
+            td:first-child {
+              box-shadow: $fe-grid-row-fc-ie-box-shadow;
+            }
 
-          td:first-child {
-            box-shadow: $fe-grid-row-fc-ie-box-shadow;
-          }
-
-          td:last-child {
-            box-shadow: $fe-grid-row-lc-ie-box-shadow;
+            td:last-child {
+              box-shadow: $fe-grid-row-lc-ie-box-shadow;
+            }
           }
         }
 
@@ -491,6 +539,14 @@
       }
     }
 
+    &.e-rtl .e-view-container {
+      .e-grid {
+        .e-gridheader {
+          padding-left: 0 !important; // sass-lint:disable-line no-important
+        }
+      }
+    }
+
     .e-large-icons {
       @include checkbox($fe-cb-line-height);
       float: left;
@@ -506,6 +562,9 @@
         margin: $fe-lg-icon-empty-content-margin;
         padding: $fe-lg-icon-empty-content-padding;
         text-align: $fe-lg-icon-empty-content-text-align;
+        @if $fm-skin-name == 'tailwind' or $fm-skin-name == 'tailwind-dark' {
+          line-height: 24px;
+        }
       }
 
       .e-empty-icon {
@@ -517,7 +576,9 @@
       .e-empty-inner-content {
         font-size: $fe-lg-icon-empty-inner-content-font-size;
         margin: $fe-lg-icon-empty-inner-content-margin;
-        opacity: $fe-lg-icon-empty-inner-content-opacity;
+        @if $fm-skin-name != 'tailwind' and $fm-skin-name != 'tailwind-dark' {
+          opacity: $fe-lg-icon-empty-inner-content-opacity;
+        }
         padding: $fe-lg-icon-empty-inner-content-padding;
         text-align: $fe-lg-icon-empty-inner-content-text-align;
       }
@@ -535,6 +596,9 @@
         position: absolute;
         top: 0;
         visibility: hidden;
+        @if $fm-skin-name == 'tailwind' or $fm-skin-name == 'tailwind-dark' {
+          margin: 2px;
+        }
       }
 
       .e-list-item {
@@ -545,8 +609,12 @@
         overflow: hidden;
         padding: $fe-lg-item-padding;
         width: $fe-lg-item-width;
-
-        @if $fm-skin-name == 'bootstrap4' or $fm-skin-name == 'bootstrap-dark' {
+        @if $fm-skin-name == 'tailwind' or $fm-skin-name == 'tailwind-dark' {
+          &.e-fe-drop-folder {
+            border: 1px dashed $fe-drop-folder-bg-color;
+          }
+        }
+        @if $fm-skin-name == 'bootstrap4' or $fm-skin-name == 'bootstrap-dark' or $fm-skin-name == 'tailwind' or $fm-skin-name == 'tailwind-dark' {
           border-radius: 4px;
         }
 
@@ -574,7 +642,9 @@
 
       .e-list-img {
         border: 2px solid;
-        box-shadow: $fe-img-box-shadow;
+        @if $fm-skin-name != 'tailwind' and $fm-skin-name != 'tailwind-dark' {
+          box-shadow: $fe-img-box-shadow;
+        }
         display: block;
         margin: 0 auto;
         max-height: $fe-lg-img-height;
@@ -598,17 +668,28 @@
         border: $fe-clone-border;
         box-shadow: $fe-clone-box-shadow;
         display: inline-flex;
-        height: 36px;
-        padding: 4px 8px;
-
+        @if $fm-skin-name == 'tailwind' or $fm-skin-name == 'tailwind-dark' {
+          height: 38px;
+        }
+        @else {
+          height: 36px;
+          padding: 4px 8px;
+        }
         @if $fm-skin-name == 'bootstrap4' or $fm-skin-name == 'bootstrap-dark' or $fm-skin-name == 'bootstrap' {
           border-radius: 4px;
         }
 
         .e-fe-name {
           display: inline-block;
-          font-size: 13px;
-          margin: auto 8px;
+          @if $fm-skin-name == 'tailwind' or $fm-skin-name == 'tailwind-dark' {
+            font-size: 14px;
+            line-height: 22px;
+            margin: 8px 8px 8px 0;
+          }
+          @else {
+            font-size: 13px;
+            margin: auto 8px;
+          }
           max-width: 70px;
           overflow: hidden;
           text-overflow: ellipsis;
@@ -617,9 +698,16 @@
 
         .e-fe-icon {
           display: inline-block;
-          height: 18px;
-          margin: auto 8px;
-          width: 18px;
+          @if $fm-skin-name == 'tailwind' or $fm-skin-name == 'tailwind-dark' {
+            height: 20px;
+            margin: 9px 8px;
+            width: 20px;
+          }
+          @else {
+            height: 18px;
+            margin: auto 8px;
+            width: 18px;
+          }
         }
       }
 
@@ -627,13 +715,21 @@
         border: 1px solid;
         border-radius: 50%;
         font-size: 12px;
-        height: 22px;
-        line-height: 22px;
-        margin-left: -12px;
+        @if $fm-skin-name == 'tailwind' or $fm-skin-name == 'tailwind-dark' {
+          height: 20px;
+          line-height: 18px;
+          margin: -10px 0 0 -10px;
+          width: 20px;
+        }
+        @else {
+          height: 22px;
+          line-height: 22px;
+          margin-left: -12px;
+          width: 22px;
+        }
         position: absolute;
         text-align: center;
         top: 0;
-        width: 22px;
       }
     }
 
@@ -642,7 +738,9 @@
       .e-treeview {
 
         & > .e-ul {
-          padding: 0 8px 0 0;
+          @if $fm-skin-name != 'tailwind' and $fm-skin-name != 'tailwind-dark' {
+            padding: 0 8px 0 0;
+          }
         }
       }
 
@@ -665,11 +763,19 @@
           float: left;
           left: 0;
           right: auto;
+          @if $fm-skin-name == 'tailwind' or $fm-skin-name == 'tailwind-dark' {
+            padding-left: 12px;
+          }
 
           .e-input-group {
 
             .e-input {
-              margin: 0 24px 0 0;
+              @if $fm-skin-name == 'tailwind' or $fm-skin-name == 'tailwind-dark' {
+                margin: 0 29px 0 0;
+              }
+              @else {
+                margin: 0 24px 0 0;
+              }
               padding: 0;
             }
           }
@@ -677,6 +783,10 @@
 
         .e-addressbar-ul {
           display: flex;
+
+          @if $fm-skin-name == 'tailwind' or $fm-skin-name == 'tailwind-dark' {
+            padding: $fe-rtl-bc-padding;
+          }
 
           .e-icons::before {
             display: inline-block;
@@ -688,13 +798,28 @@
       .e-grid.e-rtl {
 
         .e-row.e-focused {
+          @if $fm-skin-name != 'tailwind' and $fm-skin-name != 'tailwind-dark' {
+            td:first-child {
+              box-shadow: $fe-grid-row-lc-ie-box-shadow;
+            }
 
-          td:first-child {
-            box-shadow: $fe-grid-row-lc-ie-box-shadow;
+            td:last-child {
+              box-shadow: $fe-grid-row-fc-ie-box-shadow;
+            }
           }
+        }
+        @if $fm-skin-name == 'tailwind' or $fm-skin-name == 'tailwind-dark' {
+          .e-content {
 
-          td:last-child {
-            box-shadow: $fe-grid-row-fc-ie-box-shadow;
+            tr.e-row.e-fe-drop-folder .e-rowcell:first-child {
+              border-left: 0;
+              border-right: 1px dashed $fe-drop-folder-bg-color;
+            }
+
+            tr.e-row.e-fe-drop-folder .e-rowcell:last-child {
+              border-left: 1px dashed $fe-drop-folder-bg-color;
+              border-right: 0;
+            }
           }
         }
 
@@ -737,6 +862,12 @@
       .e-fe-clone .e-fe-count {
         margin-left: 0;
         margin-right: -12px;
+      }
+
+      @if $fm-skin-name == 'tailwind' or $fm-skin-name == 'tailwind-dark' {
+        .e-fe-clone .e-fe-name {
+          margin: 8px 0 8px 8px;
+        }
       }
     }
 
@@ -800,6 +931,14 @@
         max-width: 211px;
         min-width: 51px;
         padding: $fe-dg-td-padding;
+        @if $fm-skin-name == 'tailwind' or $fm-skin-name == 'tailwind-dark' {
+          line-height: 22px;
+
+          &:first-child {
+            font-size: $text-xs;
+            line-height: 18px;
+          }
+        }
       }
 
       td.e-fe-value {
@@ -832,6 +971,12 @@
         width: 100%;
       }
 
+      @if $fm-skin-name == 'tailwind' or $fm-skin-name == 'tailwind-dark' {
+        .e-dlg-content {
+          padding-top: 16px;
+        }
+      }
+
       &.e-rtl {
 
         td {
@@ -850,8 +995,14 @@
     }
 
     .e-fe-error {
-      font-size: 12px;
-      line-height: 1.5;
+      @if $fm-skin-name == 'tailwind' or $fm-skin-name == 'tailwind-dark' {
+        line-height: 18px;
+        padding-top: 4px;
+      }
+      @else {
+        font-size: 12px;
+        line-height: 1.5;
+      }
     }
 
     .e-upload {
@@ -1017,6 +1168,9 @@
         .e-fe-grid-icon .e-fe-icon {
           height: $fe-mobile-grid-icon-size;
           width: $fe-mobile-grid-icon-size;
+          @if $fm-skin-name == 'tailwind' or $fm-skin-name == 'tailwind-dark' {
+            margin: 0 8px 0 0;
+          }
         }
 
         .e-gridheader {
@@ -1125,7 +1279,12 @@
           .e-fe-search {
             left: 0;
             margin-left: 8px;
-            margin-top: 3px;
+            @if $fm-skin-name == 'tailwind' or $fm-skin-name == 'tailwind-dark' {
+              margin-top: 7px;
+            }
+            @else {
+              margin-top: 3px;
+            }
             width: 30px;
           }
         }
@@ -1170,6 +1329,13 @@
 
   .e-fe-popup.e-bigger,
   .e-bigger .e-fe-popup {
+
+    .e-fe-error {
+      @if $fm-skin-name == 'tailwind' or $fm-skin-name == 'tailwind-dark' {
+        font-size: $text-sm;
+        line-height: 22px;
+      }
+    }
 
     &.e-dialog {
 
@@ -1227,11 +1393,37 @@
         font-size: $fe-mobile-icon-font-size;
       }
     }
+    @if $fm-skin-name == 'tailwind' or $fm-skin-name == 'tailwind-dark' {
+      .e-fe-clone {
+        .e-fe-content {
+          .e-fe-name {
+            font-size: $text-base;
+            line-height: 24px;
+            margin: 7px 12px 7px 0;
+          }
+
+          .e-fe-icon {
+            height: 24px;
+            margin: 7px 12px;
+            width: 24px;
+          }
+        }
+
+        .e-fe-count {
+          font-size: $text-sm;
+          height: 24px;
+          line-height: 22px;
+          width: 24px;
+        }
+     }
+   }
 
     .e-treeview {
 
       & > .e-ul {
-        padding-left: 12px;
+        @if $fm-skin-name != 'tailwind' and $fm-skin-name != 'tailwind-dark' {
+          padding-left: 12px;
+        }
       }
 
       .e-list-parent .e-list-item {
@@ -1289,19 +1481,28 @@
       }
 
       .e-fe-search {
-        margin: 7px 0;
+        @if $fm-skin-name == 'tailwind' or $fm-skin-name == 'tailwind-dark' {
+          font-size: 18px;
+          margin: 6px 4px;
+        }
+        @else {
+          margin: 7px 0;
+        }
       }
     }
 
     .e-grid {
       @include checkbox($fe-big-cb-line-height);
 
-      .e-headercell {
-        height: $fe-big-grid-header-height;
-      }
+      .e-gridheader {
 
-      .e-headertext {
-        font-size: $fe-big-grid-header-font-size;
+        .e-headercell {
+          height: $fe-big-grid-header-height;
+        }
+
+        .e-headertext {
+          font-size: $fe-big-grid-header-font-size;
+        }
       }
 
       .e-gridheader,
@@ -1325,7 +1526,13 @@
       }
 
       .e-fe-icon {
-        margin: $fe-big-grid-icon-margin;
+        @if $fm-skin-name == 'tailwind' or $fm-skin-name == 'tailwind-dark' {
+          height: 24px;
+          width: 24px;
+        }
+        @else {
+          margin: $fe-big-grid-icon-margin;
+        }
       }
 
       .e-empty {
@@ -1419,7 +1626,15 @@
       .e-treeview {
 
         & > .e-ul {
-          padding: 0 12px 0 0;
+          @if $fm-skin-name != 'tailwind' and $fm-skin-name != 'tailwind-dark' {
+            padding: 0 12px 0 0;
+          }
+        }
+      }
+
+      @if $fm-skin-name == 'tailwind' or $fm-skin-name == 'tailwind-dark' {
+        .e-fe-clone .e-fe-name {
+          margin: 7px 0 7px 12px;
         }
       }
 

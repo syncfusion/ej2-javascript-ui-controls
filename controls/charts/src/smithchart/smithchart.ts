@@ -542,7 +542,7 @@ export class Smithchart extends Component<HTMLElement> implements INotifyPropert
         if (isNullOrUndefined(document.getElementById(this.element.id + '_Secondary_Element'))) {
             const secondaryElement: HTMLElement = createElement('div', {
                 id: this.element.id + '_Secondary_Element',
-                styles: 'position: absolute;z-index:1;'
+                styles: 'z-index:1;'
             });
             this.element.appendChild(secondaryElement);
             const rect: ClientRect = this.element.getBoundingClientRect();
@@ -564,9 +564,13 @@ export class Smithchart extends Component<HTMLElement> implements INotifyPropert
      */
 
     public destroy(): void {
-        this.unWireEVents();
-        super.destroy();
-        this.element.classList.remove('e-smithchart');
+        if (this.element) {
+            this.unWireEVents();
+            super.destroy();
+            this.element.classList.remove('e-smithchart');
+            this.removeSvg();
+            this.svgObject = null;
+        }
     }
     /**
      * To bind event handlers for smithchart.

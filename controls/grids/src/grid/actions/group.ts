@@ -186,8 +186,8 @@ export class Group implements IAction {
         this.groupGenerator = new GroupModelGenerator(this.parent);
     }
 
-    private columnDrag(e: { target: Element }): void {
-        if (this.groupSettings.allowReordering) {
+    private columnDrag(e: { target: Element, column: Column }): void {
+        if (this.groupSettings.allowReordering && e.column.allowGrouping) {
             this.animateDropper(e);
         }
         const cloneElement: HTMLElement = this.parent.element.querySelector('.e-cloneproperties') as HTMLElement;

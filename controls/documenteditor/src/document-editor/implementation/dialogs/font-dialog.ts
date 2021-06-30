@@ -116,7 +116,7 @@ export class FontDialog {
         this.target.appendChild(fontDiv);
         const sizeDiv: HTMLElement = this.getFontSizeDiv(locale, isRtl);
         this.target.appendChild(sizeDiv);
-        const colorDiv: HTMLElement = createElement('div', { id: id + '_fontColor', styles: 'margin-top:14px;' });
+        const colorDiv: HTMLElement = createElement('div', { id: id + '_fontColor', className: 'e-de-font-clr-div' });
         this.fontColorDiv = createElement('div', { id: id + '_fontColorDiv', className: 'e-de-font-dlg-display' });
         const fontColorLabel: HTMLElement = createElement('label', {
             className: 'e-de-font-dlg-header-font-color e-de-font-color-margin',
@@ -196,6 +196,7 @@ export class FontDialog {
         this.allcaps.appendTo(allCapsElement);
         if (isRtl) {
             fontEffectSubDiv2.classList.add('e-de-rtl');
+            fontEffectSubDiv3.classList.add('e-de-rtl');
             this.doublestrikethrough.cssClass = 'e-de-font-content-checkbox-label-rtl';
         }
     }

@@ -1,5 +1,5 @@
 import { Component, Property, NotifyPropertyChanges, INotifyPropertyChanged, Collection, Complex, EmitType } from '@syncfusion/ej2-base';
-import { initSheet, getSheet, getSheetIndexFromId, getSheetIndexByName, getSheetIndex, Sheet } from './sheet';
+import { initSheet, getSheet, getSheetIndexFromId, getSheetIndexByName, getSheetIndex, Sheet, moveSheet, duplicateSheet } from './sheet';
 import { Event, ModuleDeclaration, merge, L10n, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { WorkbookModel } from './workbook-model';
 import { getWorkbookRequiredModules } from '../common/module';
@@ -826,6 +826,31 @@ export class Workbook extends Component<HTMLElement> implements INotifyPropertyC
         this.notify(deleteModel, <InsertDeleteModelArgs>{
             model: sheetModel, start: startIndex, end: isNullOrUndefined(endIndex) ? startIndex : endIndex, modelType: model || 'Sheet'
         });
+    }
+
+    /**
+     * Used to move the sheets to the specified position in the list of sheets.
+     *
+     * {% codeBlock src='spreadsheet/moveSheet/index.md' %}{% endcodeBlock %}
+     *
+     * @param {number} position - Specifies the position to move a sheet in the list of sheets.
+     * @param {number[]} sheetIndexes - Specifies the indexes of the sheet to be moved. By default, the active sheet will be moved.
+     * @returns {void}
+     */
+    public moveSheet(position: number, sheetIndexes?: number[]): void {
+        moveSheet(this, position, sheetIndexes);
+    }
+
+    /**
+     * Used to make a duplicate/copy of the sheet in the spreadsheet.
+     *
+     * {% codeBlock src='spreadsheet/duplicateSheet/index.md' %}{% endcodeBlock %}
+     *
+     * @param {number} sheetIndex - Specifies the index of the sheet to be duplicated. By default, the active sheet will be duplicated.
+     * @returns {void}
+     */
+    public duplicateSheet(sheetIndex?: number): void {
+        duplicateSheet(this, sheetIndex);
     }
 
     private getSheetModel(sheet: number | string): SheetModel {

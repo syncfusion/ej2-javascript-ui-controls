@@ -56,6 +56,7 @@
       #{if(&, '&', '*')} button {
         background: transparent;
         border: 0;
+        margin-right: $calendar-icon-button-margin;
         padding: 0;
         text-decoration: $calendar-none-style;
         }#{if(&, '&', '*')} span {
@@ -176,6 +177,7 @@
 }#{if(&, '&', '*')} .e-header .e-icon-container {
       display: $calendar-inline-block-style;
       float: $calendar-float-right-style;
+      padding-top: $calendar-icon-padding-top;
 }#{if(&, '&', '*')} .e-footer-container {
       text-transform: uppercase;
 }
@@ -218,6 +220,7 @@
 }#{if(&, '&', '*')} th {
       font-weight: $calendar-normal-day-header-font-weight;
       height: $calendar-normal-day-header-height;
+      text-transform: $calendar-normal-day-header-text;
 }#{if(&, '&', '*')} .e-content {
       #{if(&, '&', '*')} .e-selected ,
       #{if(&, '&', '*')} .e-state-hover {
@@ -257,6 +260,7 @@
         width: $calendar-normal-icon-size;
     }
 }#{if(&, '&', '*')} .e-footer-container {
+      background-color: $calendar-footer-background;
       border-top: $calendar-footer-border;
       cursor: $calendar-cursor-default-style;
       display: $calendar-display-style;
@@ -307,10 +311,14 @@
       height: $calendar-bigger-header-height;
       padding: $calendar-bigger-header-padding;
 
-      #{if(&, '&', '*')} span {
-        font-size: $calendar-bigger-icon-font-size;
-        padding: $calendar-bigger-icon-padding;
+      #{if(&, '&', '*')} button {
+        margin-right: $calendar-bigger-icon-margin;
+
+        #{if(&, '&', '*')} span {
+          font-size: $calendar-bigger-icon-font-size;
+          padding: $calendar-bigger-icon-padding;
 	   }
+    }
 
       #{if(&, '&', '*')}.e-year,
       #{if(&, '&', '*')}.e-decade {
@@ -320,6 +328,7 @@
   }#{if(&, '&', '*')} th {
       font-size: $calendar-bigger-week-header-font-size;
       height: $calendar-bigger-day-header-height;
+      text-transform: $calendar-normal-day-header-text;
   }#{if(&, '&', '*')} .e-content {
       #{if(&, '&', '*')}.e-year span.e-day {
         font-size: $calendar-bigger-yeardecade-font-size;
@@ -371,8 +380,8 @@
   // Mouse small style
   .e-small#{&}.e-calendar,
   .e-small #{&}.e-calendar {
-    max-width: $calendar-normal-max-width;
-    min-width:  $calendar-normal-min-width;
+    max-width: $calendar-small-max-width;
+    min-width:  $calendar-small-min-width;
     padding: $calendar-small-popup-padding;
 
     #{if(&, '&', '*')}.e-calendar-day-header-lg {

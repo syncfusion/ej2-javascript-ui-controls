@@ -227,7 +227,7 @@ export class Container extends ChildProperty<Container> {
     /**
      * Sets and gets the options to customize the border of container.
      */
-    @Complex<BorderModel>({ width: 1, color: '#bfbfbf' }, Border)
+    @Complex<BorderModel>({ width: 1, color: null }, Border)
     public border: BorderModel;
 
     /**

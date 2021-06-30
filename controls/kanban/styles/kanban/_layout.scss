@@ -19,6 +19,61 @@
       }
     }
 
+    .e-frozen-swimlane-row {
+      position: relative;
+      z-index: 10001;
+
+      .e-frozen-row {
+        padding-left: 10px;
+        padding-top: 13px;
+
+        .e-swimlane-header {
+          display: flex;
+
+          .e-swimlane-text {
+            font-size: 14px;
+            font-weight: 400;
+            line-height: 20px;
+            padding: 2px;
+          }
+
+          .e-item-count {
+            font-size: 12px;
+            line-height: 20px;
+            opacity: .57;
+            padding: 2px;
+          }
+
+          .e-swimlane-row-expand,
+          .e-swimlane-row-collapse {
+            border: 1px solid transparent;
+            color: $kanban-icons-color;
+            cursor: pointer;
+            height: 24px;
+            margin-left: 8px;
+            padding: 6px;
+
+            &.e-frozen-icons {
+              pointer-events: none;
+            }
+
+            &:hover,
+            &:focus {
+              background: $kanban-icons-toggle-bg-color;
+              border-radius: $kanban-icons-border-radius;
+              margin-left: 8px;
+              padding: 6px;
+
+              @if ($kanban-skin == 'highcontrast' or $kanban-skin == 'bootstrap4') {
+                border: 1px solid $kanban-border-hover-color;
+                color: $kanban-icons-toggle-color;
+              }
+            }
+          }
+        }
+      }
+    }
+
     .e-kanban-header {
       > div {
         overflow: hidden;

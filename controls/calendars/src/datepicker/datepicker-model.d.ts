@@ -1,4 +1,4 @@
-import { EventHandler, Property, Internationalization, NotifyPropertyChanges, DateFormatOptions, isBlazor } from '@syncfusion/ej2-base';import { KeyboardEvents, KeyboardEventArgs, Animation, EmitType, Event, extend, L10n, Browser, formatUnit } from '@syncfusion/ej2-base';import { detach, addClass, removeClass, closest, attributes, select } from '@syncfusion/ej2-base';import { isNullOrUndefined, setValue, getUniqueID, ModuleDeclaration } from '@syncfusion/ej2-base';import { Popup } from '@syncfusion/ej2-popups';import { Input, InputObject, IInput, FloatLabelType } from '@syncfusion/ej2-inputs';import { ChangedEventArgs, CalendarView, Calendar, BlurEventArgs, FocusEventArgs, ClearedEventArgs } from '../calendar/calendar';
+import { EventHandler, Property, Internationalization, NotifyPropertyChanges, DateFormatOptions, isBlazor } from '@syncfusion/ej2-base';import { KeyboardEvents, KeyboardEventArgs, Animation, EmitType, Event, extend, L10n, Browser, formatUnit } from '@syncfusion/ej2-base';import { detach, addClass, removeClass, closest, attributes, select } from '@syncfusion/ej2-base';import { isNullOrUndefined, setValue, getUniqueID, ModuleDeclaration } from '@syncfusion/ej2-base';import { Popup } from '@syncfusion/ej2-popups';import { Input, InputObject, IInput, FloatLabelType } from '@syncfusion/ej2-inputs';import { ChangedEventArgs, CalendarView, Calendar, BlurEventArgs, FocusEventArgs, ClearedEventArgs, DayHeaderFormats} from '../calendar/calendar';
 import {FormatObject,PopupObjectArgs,PreventableEventArgs} from "./datepicker";
 import {CalendarModel} from "../calendar/calendar-model";
 
@@ -284,6 +284,28 @@ export interface DatePickerModel extends CalendarModel{
      * @default false
      */
     openOnFocus?: boolean;
+
+    /**
+     * Specifies whether it is a masked datepicker or not.
+     * By default the datepicker component render without masked input.
+     * If you need masked datepicker input then specify it as true.
+     * 
+     * @default false
+     */
+    enableMask?: boolean;
+
+    /**
+     * Specifies the mask placeholder to be displayed on masked datepicker.
+     * By default it works based on narrow format .
+     * Possible values are:
+     * Narrow: Displays the full name  like day/month/year hour:minute:second.
+     * Short: Displays the single character like dd/mm/yyyy hh:mm:ss.
+     * 
+     * @default {}
+     * @asptype object
+     * @aspjsonconverterignore
+     */
+    maskPlaceholder?: {[key: string]: string };
 
     /**
      * Triggers when the popup is opened.

@@ -486,13 +486,7 @@ export class UrlAdaptor extends Adaptor {
         }
         // Filters
         for (let i: number = 0; i < queries.filters.length; i++) {
-            let res: Object = DataUtil.callAdaptorFunction(this, 'onEachWhere', (<Predicate>queries.filters[i].e).toJson(), query);
-            if (((<{ getModuleName?: Function }>this).getModuleName &&
-                (<{ getModuleName?: Function }>this).getModuleName() === 'ODataV4Adaptor') &&
-                !isNullOrUndefined(queries.filters[i].e.key) && queries.filters.length > 1) {
-                res = "(" + res + ")";
-            }
-            request.filters.push(res);
+            request.filters.push(DataUtil.callAdaptorFunction(this, 'onEachWhere', (<Predicate>queries.filters[i].e).toJson(), query));
             let keys: string[] = typeof request.filters[i] === 'object' ? Object.keys(request.filters[i]) : [];
             for (let prop of keys) {
                 if (DataUtil.isNull((request)[prop])) {
@@ -2022,8 +2016,7 @@ export class RemoteSaveAdaptor extends JsonAdaptor {
         data: CrudOptions, ds?: DataOptions, query?: Query, xhr?: XMLHttpRequest, request?: Ajax, changes?: CrudOptions, e?: RemoteArgs):
         Object {
         let i: number;
-        let newData: CrudOptions = request ? JSON.parse((<{ data?: string }>request).data) : data;
-        data = newData.action === 'batch' ? newData : newData.action === 'insert' ? newData['value'] : data;
+        data = request ? JSON.parse((<{ data?: string }>request).data) : data;
         if (this.updateType === 'add') {
             super.insert(ds as DataManager, data, null, null, this.pvt.position);
         }

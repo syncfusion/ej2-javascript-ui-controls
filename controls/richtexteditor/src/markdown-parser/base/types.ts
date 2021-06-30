@@ -1,6 +1,6 @@
 /**
  * Types type for Markdown parser
- * 
+ *
  * @hidden
  * @deprecated
  */

@@ -497,16 +497,18 @@ export class PivotUtil {
         return new DataManager({ json: fields }).executeLocal(new Query().where('name', 'equal', fieldName))[0];
     }
 
-    public static getFieldInfo(fieldName: string, control: PivotView | PivotFieldList): FieldItemInfo {
-        let rows: IFieldOptions[] = this.cloneFieldSettings(control.dataSourceSettings.rows);
-        let columns: IFieldOptions[] = this.cloneFieldSettings(control.dataSourceSettings.columns);
-        let values: IFieldOptions[] = this.cloneFieldSettings(control.dataSourceSettings.values);
-        let filters: IFieldOptions[] = this.cloneFieldSettings(control.dataSourceSettings.filters);
-        let fields: IFieldOptions[][] = [rows, columns, values, filters];
-        for (let i: number = 0, len: number = fields.length; i < len; i++) {
-            for (let j: number = 0, cnt: number = (fields[i] ? fields[i].length : 0); j < cnt; j++) {
-                if (fields[i][j] && fields[i][j].name === fieldName) {
-                    return { fieldName: fieldName, fieldItem: fields[i][j], axis: i === 0 ? 'rows' : i === 1 ? 'columns' : i === 2 ? 'values' : 'filters', position: j };
+    public static getFieldInfo(fieldName: string, control: PivotView | PivotFieldList, hasAllField?: boolean): FieldItemInfo {
+        if (!hasAllField) {
+            let rows: IFieldOptions[] = this.cloneFieldSettings(control.dataSourceSettings.rows);
+            let columns: IFieldOptions[] = this.cloneFieldSettings(control.dataSourceSettings.columns);
+            let values: IFieldOptions[] = this.cloneFieldSettings(control.dataSourceSettings.values);
+            let filters: IFieldOptions[] = this.cloneFieldSettings(control.dataSourceSettings.filters);
+            let fields: IFieldOptions[][] = [rows, columns, values, filters];
+            for (let i: number = 0, len: number = fields.length; i < len; i++) {
+                for (let j: number = 0, cnt: number = (fields[i] ? fields[i].length : 0); j < cnt; j++) {
+                    if (fields[i][j] && fields[i][j].name === fieldName) {
+                        return { fieldName: fieldName, fieldItem: fields[i][j], axis: i === 0 ? 'rows' : i === 1 ? 'columns' : i === 2 ? 'values' : 'filters', position: j };
+                    }
                 }
             }
         }

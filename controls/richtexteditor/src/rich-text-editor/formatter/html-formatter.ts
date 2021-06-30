@@ -7,7 +7,7 @@ import { HtmlToolbarStatus } from '../actions/html-toolbar-status';
 
 /**
  * HTML adapter
- * 
+ *
  * @hidden
  * @deprecated
  */

@@ -83,7 +83,7 @@ export interface DateRangePickerModel extends CalendarBaseModel{
      * Determines whether the week number of the Calendar is to be displayed or not.
      * The week number is displayed in every week row.
      * > For more details about weekNumber refer to
-     * [`Calendar with week number`](../../calendar/how-to/week-number#render-the-calendar-with-week-numbers)documentation.
+     * [`Calendar with week number`](../../calendar/how-to/render-the-calendar-with-week-numbers)documentation.
      *
      * @default false
      */

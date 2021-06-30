@@ -165,7 +165,21 @@ export class KanbanDialog {
         switch (field.type) {
         case 'DropDown':
             if (field.key === this.parent.keyField) {
-                dropDownOptions = { dataSource: this.parent.layoutModule.columnKeys, value: fieldValue ? fieldValue.toString() : fieldValue };
+                let currentKeys: string[] = this.parent.layoutModule.columnKeys;
+                if (this.parent.actionModule.hideColumnKeys.length > 0) {
+                    currentKeys = [];
+                    for (let i: number = 0; i < this.parent.columns.length; i++) {
+                        if (this.parent.layoutModule.isColumnVisible(this.parent.columns[i])) {
+                            const isNumeric: boolean = typeof this.parent.columns[i].keyField === 'number';
+                            if (isNumeric) {
+                                currentKeys = currentKeys.concat(this.parent.columns[i].keyField.toString());
+                            } else {
+                                currentKeys = currentKeys.concat((this.parent.columns[i].keyField as string).split(',').map((e: string) => e.trim()));
+                            }
+                        }
+                    }
+                }
+                dropDownOptions = { dataSource: currentKeys, value: fieldValue ? fieldValue.toString() : fieldValue };
             } else if (field.key === this.parent.swimlaneSettings.keyField) {
                 dropDownOptions = {
                     dataSource: [].slice.call(this.parent.layoutModule.kanbanRows),

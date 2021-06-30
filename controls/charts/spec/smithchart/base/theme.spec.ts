@@ -580,4 +580,250 @@ describe('Smithchart legend properties tesing', () => {
         // });
         
     });
+	describe('Tailwind themes testing', () => {
+        let id: string = 'smithchart';
+        let smithchart: Smithchart;
+        let ele: HTMLDivElement;
+        let targetElement: HTMLElement;
+        let tooltipElement: HTMLElement;
+        let trigger: MouseEvents = new MouseEvents();
+        let spec: Element;
+        beforeAll(() => {
+            ele = <HTMLDivElement>createElement('div', { id: id, styles: 'height: 512px; width: 512px;' });
+            document.body.appendChild(ele);
+            smithchart = new Smithchart({
+                theme :'Tailwind',
+                title:{
+                    text:'Impedance Transmission'
+                },
+                horizontalAxis: {
+                    minorGridLines: {
+                        visible: true
+                    },
+                    majorGridLines:{
+                        visible: true
+                    }
+                },
+            series: [{
+                points: [
+                    { resistance: 0, reactance: 0.05 }, { resistance: 0, reactance: 0.05 },
+                    { resistance: 0, reactance: 0.05 }, { resistance: 0, reactance: 0.05 },
+                    { resistance: 0, reactance: 0.05 }, { resistance: 0, reactance: 0.05 },
+                    { resistance: 0, reactance: 0.05 }, { resistance: 0, reactance: 0.05 },
+                    { resistance: 0, reactance: 0.05 }, { resistance: 0.3, reactance: 0.1 },
+                    { resistance: 0.3, reactance: 0.1 }, { resistance: 0.3, reactance: 0.1 },
+                    { resistance: 0.3, reactance: 0.1 }, { resistance: 0.5, reactance: 0.2 },
+                    { resistance: 1.0, reactance: 0.4 },
+                    { resistance: 1.5, reactance: 0.5 }, { resistance: 2.0, reactance: 0.5 },
+                    { resistance: 2.5, reactance: 0.4 }, { resistance: 3.5, reactance: 0.0 },
+                    { resistance: 4.5, reactance: -0.5 }, { resistance: 5.0, reactance: -1.0 }
+                ],
+                name: 'Transmission1',
+                tooltip: { visible: true },
+                marker: {
+                    visible: true,
+                   dataLabel:{
+                       visible: true
+                   }
+                }
+            }],
+            legendSettings: {
+                visible: true,
+            }
+            }, '#' + id);
+        });
+        afterAll(() => {
+            remove(ele);
+            smithchart.destroy();
+        });
+
+        it('Checking with axis Label', () => {
+            smithchart.loaded = (args: ISmithchartLoadedEventArgs) => {
+                let element: Element = document.getElementById(smithchart.element.id + '_RLabel_0');
+                expect(element.getAttribute('fill')).toEqual('#6B7280');
+            };
+            smithchart.refresh();
+        });
+        it('Checking with major GridLine', () => {
+            smithchart.loaded = (args: ISmithchartLoadedEventArgs) => {
+                let element: Element = document.getElementById(smithchart.element.id + '_horizontalAxisMajorGridLines');
+                expect(element.getAttribute('stroke')).toEqual('#E5E7EB');
+            };
+            smithchart.refresh();
+        });
+        it('Checking with minor GridLine', () => {
+            smithchart.loaded = (args: ISmithchartLoadedEventArgs) => {
+                let element: Element = document.getElementById(smithchart.element.id + '_horizontalAxisMinorGridLines');
+                expect(element.getAttribute('stroke')).toEqual('#D1D5DB');
+            };
+            smithchart.refresh();
+        });
+        it('Checking with chartTitle', () => {
+            smithchart.loaded = (args: ISmithchartLoadedEventArgs) => {
+                let element: Element = document.getElementById(smithchart.element.id + '_Smithchart_title');
+                expect(element.getAttribute('fill')).toEqual('#374151');
+            };
+            smithchart.refresh();
+        });
+        it('Checking with legend label', () => {
+            smithchart.loaded = (args: ISmithchartLoadedEventArgs) => {
+                let element: Element = document.getElementById(smithchart.element.id + '_LegendItemText0');
+                expect(element.getAttribute('fill')).toEqual('#374151');
+            };
+            smithchart.refresh();
+        });
+        it('Checking with background', () => {
+            smithchart.loaded = (args: ISmithchartLoadedEventArgs) => {
+                let element: Element = document.getElementById(smithchart.element.id + '_SmithchartBorder');
+                expect(element.getAttribute('fill')).toEqual('#FFFFFF');
+            };
+            smithchart.refresh();
+        });
+        it('Checking with data label', () => {
+            smithchart.loaded = (args: ISmithchartLoadedEventArgs) => {
+                let element: Element = document.getElementById(smithchart.element.id + '_Series0_Points0_dataLabel_symbol0');
+                expect(element.getAttribute('fill')).toEqual('#5A61F6');
+            };
+            smithchart.refresh();
+        });
+        it('Checking with data label font family', () => {
+            smithchart.loaded = (args: ISmithchartLoadedEventArgs) => {
+                let element: Element = document.getElementById(smithchart.element.id + '_Series0_Points0_dataLabel_displayText0');
+                expect(element.getAttribute('font-family')).toEqual('Roboto, Segoe UI, Noto, Sans-serif');
+            };
+            smithchart.refresh();
+        });
+        it('Checking with data label font size', () => {
+            smithchart.loaded = (args: ISmithchartLoadedEventArgs) => {
+                let element: Element = document.getElementById(smithchart.element.id + '_Series0_Points0_dataLabel_displayText0');
+                expect(element.getAttribute('font-size')).toEqual('12px');
+            };
+            smithchart.refresh();
+        });
+        
+        
+    });
+	describe('TailwindDark themes testing', () => {
+        let id: string = 'smithchart';
+        let smithchart: Smithchart;
+        let ele: HTMLDivElement;
+        let targetElement: HTMLElement;
+        let tooltipElement: HTMLElement;
+        let trigger: MouseEvents = new MouseEvents();
+        let spec: Element;
+        beforeAll(() => {
+            ele = <HTMLDivElement>createElement('div', { id: id, styles: 'height: 512px; width: 512px;' });
+            document.body.appendChild(ele);
+            smithchart = new Smithchart({
+                theme :'TailwindDark',
+                title:{
+                    text:'Impedance Transmission'
+                },
+                horizontalAxis: {
+                    minorGridLines: {
+                        visible: true
+                    },
+                    majorGridLines:{
+                        visible: true
+                    }
+                },
+            series: [{
+                points: [
+                    { resistance: 0, reactance: 0.05 }, { resistance: 0, reactance: 0.05 },
+                    { resistance: 0, reactance: 0.05 }, { resistance: 0, reactance: 0.05 },
+                    { resistance: 0, reactance: 0.05 }, { resistance: 0, reactance: 0.05 },
+                    { resistance: 0, reactance: 0.05 }, { resistance: 0, reactance: 0.05 },
+                    { resistance: 0, reactance: 0.05 }, { resistance: 0.3, reactance: 0.1 },
+                    { resistance: 0.3, reactance: 0.1 }, { resistance: 0.3, reactance: 0.1 },
+                    { resistance: 0.3, reactance: 0.1 }, { resistance: 0.5, reactance: 0.2 },
+                    { resistance: 1.0, reactance: 0.4 },
+                    { resistance: 1.5, reactance: 0.5 }, { resistance: 2.0, reactance: 0.5 },
+                    { resistance: 2.5, reactance: 0.4 }, { resistance: 3.5, reactance: 0.0 },
+                    { resistance: 4.5, reactance: -0.5 }, { resistance: 5.0, reactance: -1.0 }
+                ],
+                name: 'Transmission1',
+                tooltip: { visible: true },
+                marker: {
+                    visible: true,
+                   dataLabel:{
+                       visible: true
+                   }
+                }
+            }],
+            legendSettings: {
+                visible: true,
+            }
+            }, '#' + id);
+        });
+        afterAll(() => {
+            remove(ele);
+            smithchart.destroy();
+        });
+
+        it('Checking with axis Label', () => {
+            smithchart.loaded = (args: ISmithchartLoadedEventArgs) => {
+                let element: Element = document.getElementById(smithchart.element.id + '_RLabel_0');
+                expect(element.getAttribute('fill')).toEqual('#9CA3AF');
+            };
+            smithchart.refresh();
+        });
+        it('Checking with major GridLine', () => {
+            smithchart.loaded = (args: ISmithchartLoadedEventArgs) => {
+                let element: Element = document.getElementById(smithchart.element.id + '_horizontalAxisMajorGridLines');
+                expect(element.getAttribute('stroke')).toEqual('#374151');
+            };
+            smithchart.refresh();
+        });
+        it('Checking with minor GridLine', () => {
+            smithchart.loaded = (args: ISmithchartLoadedEventArgs) => {
+                let element: Element = document.getElementById(smithchart.element.id + '_horizontalAxisMinorGridLines');
+                expect(element.getAttribute('stroke')).toEqual('#4B5563');
+            };
+            smithchart.refresh();
+        });
+        it('Checking with chartTitle', () => {
+            smithchart.loaded = (args: ISmithchartLoadedEventArgs) => {
+                let element: Element = document.getElementById(smithchart.element.id + '_Smithchart_title');
+                expect(element.getAttribute('fill')).toEqual('#D1D5DB');
+            };
+            smithchart.refresh();
+        });
+        it('Checking with legend label', () => {
+            smithchart.loaded = (args: ISmithchartLoadedEventArgs) => {
+                let element: Element = document.getElementById(smithchart.element.id + '_LegendItemText0');
+                expect(element.getAttribute('fill')).toEqual('#D1D5DB');
+            };
+            smithchart.refresh();
+        });
+        it('Checking with background', () => {
+            smithchart.loaded = (args: ISmithchartLoadedEventArgs) => {
+                let element: Element = document.getElementById(smithchart.element.id + '_SmithchartBorder');
+                expect(element.getAttribute('fill')).toEqual('transprent');
+            };
+            smithchart.refresh();
+        });
+        it('Checking with data label', () => {
+            smithchart.loaded = (args: ISmithchartLoadedEventArgs) => {
+                let element: Element = document.getElementById(smithchart.element.id + '_Series0_Points0_dataLabel_symbol0');
+                expect(element.getAttribute('fill')).toEqual('#8B5CF6');
+            };
+            smithchart.refresh();
+        });
+        it('Checking with data label font family', () => {
+            smithchart.loaded = (args: ISmithchartLoadedEventArgs) => {
+                let element: Element = document.getElementById(smithchart.element.id + '_Series0_Points0_dataLabel_displayText0');
+                expect(element.getAttribute('font-family')).toEqual('Roboto, Segoe UI, Noto, Sans-serif');
+            };
+            smithchart.refresh();
+        });
+        it('Checking with data label font size', () => {
+            smithchart.loaded = (args: ISmithchartLoadedEventArgs) => {
+                let element: Element = document.getElementById(smithchart.element.id + '_Series0_Points0_dataLabel_displayText0');
+                expect(element.getAttribute('font-size')).toEqual('12px');
+            };
+            smithchart.refresh();
+        });
+        
+        
+    });
 });

@@ -1,6 +1,6 @@
 /**
  * MarkdownSelection internal module
- * 
+ *
  * @hidden
  * @deprecated
  */

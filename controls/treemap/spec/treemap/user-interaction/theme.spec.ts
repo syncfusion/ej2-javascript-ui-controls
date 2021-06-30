@@ -115,7 +115,7 @@ describe('TreeMap Component Base Spec', () => {
                 element = document.getElementById('container_Level_Index_1_Item_Index_10_RectPath');
                 trigger.mousemoveEvent(element, 15,166,100,159);
                 tooltipElement = document.getElementById('container_TreeMapTooltip_path');
-                expect(tooltipElement.getAttribute('fill')).toBe('rgba(0, 8, 22, 0.75)');
+                expect(tooltipElement.getAttribute('fill')).toBe('#363F4C');
             };
             
             treemap.refresh();
@@ -227,7 +227,7 @@ describe('TreeMap Component Base Spec', () => {
                 element = document.getElementById('container_Level_Index_1_Item_Index_10_RectPath');
                 trigger.mousemoveEvent(element, 15,166,100,159);
                 tooltipElement = document.getElementById('container_TreeMapTooltip_path');
-                expect(tooltipElement.getAttribute('fill')).toBe('rgba(0, 8, 22, 0.75)');
+                expect(tooltipElement.getAttribute('fill')).toBe('#363F4C');
             };
             
             treemap.refresh();
@@ -339,7 +339,7 @@ describe('TreeMap Component Base Spec', () => {
                 element = document.getElementById('container_Level_Index_1_Item_Index_10_RectPath');
                 trigger.mousemoveEvent(element, 15,166,100,159);
                 tooltipElement = document.getElementById('container_TreeMapTooltip_path');
-                expect(tooltipElement.getAttribute('fill')).toBe('rgba(0, 8, 22, 0.75)');
+                expect(tooltipElement.getAttribute('fill')).toBe('#363F4C');
             };
             
             treemap.refresh();
@@ -458,7 +458,7 @@ describe('TreeMap Component Base Spec', () => {
                 element = document.getElementById('container_Level_Index_1_Item_Index_10_RectPath');
                 trigger.mousemoveEvent(element, 15,166,100,159);
                 tooltipElement = document.getElementById('container_TreeMapTooltip_path');
-                expect(tooltipElement.getAttribute('fill')).toBe('rgba(0, 8, 22, 0.75)');
+                expect(tooltipElement.getAttribute('fill')).toBe('#000000');
             };            
             treemap.refresh();
         });
@@ -488,6 +488,260 @@ describe('TreeMap Component Base Spec', () => {
                 trigger.mousemoveEvent(element, 15,166,100,159);
                 tooltipElement = document.getElementById('container_TreeMapTooltip_text');
                 expect(tooltipElement.querySelector('tspan').getAttribute('fill')).toBe('#FFFFFF');
+            };
+            treemap.refresh();
+        });
+        
+    });
+	describe('Checking the theme in', () => {
+        let element: Element;
+        let treemap: TreeMap;
+        let id: string = 'container';
+        let tooltipElement: HTMLElement;
+        let trigger: MouseEvents = new MouseEvents();
+        beforeAll(() => {
+            element = createElement('div', { id: id });
+            (element as HTMLDivElement).style.width = '600px';
+            (element as HTMLDivElement).style.height = '400px';
+            document.body.appendChild(element);
+            treemap = new TreeMap({
+                titleSettings: {
+                    text: 'Car Sales by Country - 2017',
+                    subtitleSettings:{
+                        text: '- 2017'
+                    }
+                },
+                theme: 'Tailwind',
+                dataSource: CarSales,
+                highlightSettings: {
+                    enable: false
+                },
+                selectionSettings: {
+                    enable: false
+                },
+                legendSettings: {
+                    visible: true,
+                    title: {
+                        text: 'Legend'
+                    },
+                    position: 'Top',
+                    shape: 'Rectangle',
+                },
+                palette: ['#C33764', '#AB3566', '#993367', '#853169', '#742F6A', '#632D6C', '#532C6D', '#412A6F', '#312870', '#1D2671'],
+                tooltipSettings: {
+                    visible: true
+                },
+                weightValuePath: 'Sales',
+                leafItemSettings: {
+                    labelPath: 'Company',
+                    border: { color: 'white', width: 0.5 }
+                },
+                levels: [
+                    {
+                        groupPath: 'Continent', border: { color: 'white', width: 0.5 },
+                    }
+                ]
+            }, '#' + id);
+        });
+        afterAll(() => {
+            treemap.destroy();
+            document.getElementById(id).remove();
+        });
+
+        it('legend text Tailwind theme ', () => {
+            treemap.loaded = (args: ILoadedEventArgs) => {
+                element = document.getElementById('container_Legend_Text_Index_0');
+                expect(element.getAttribute('fill')).toBe('#374151');
+            };
+            treemap.refresh();
+        });
+        it('legend title Tailwind theme ', () => {
+            treemap.loaded = (args: ILoadedEventArgs) => {
+                element = document.getElementById('container_LegendTitle');
+                expect(element.getAttribute('fill')).toBe('#374151');
+            };
+            treemap.refresh();
+        });
+        it('title text Tailwind theme ', () => {
+            treemap.loaded = (args: ILoadedEventArgs) => {
+                element = document.getElementById('container_TreeMap_title');
+                expect(element.getAttribute('fill')).toBe('#374151');
+            };
+            treemap.refresh();
+        });
+        it('subtitle text Tailwind theme ', () => {
+            treemap.loaded = (args: ILoadedEventArgs) => {
+                element = document.getElementById('container_TreeMap_subtitle');
+                expect(element.getAttribute('fill')).toBe('#374151');
+            };
+            treemap.refresh();
+        });
+        it('Background Tailwind theme ', () => {
+            treemap.loaded = (args: ILoadedEventArgs) => {
+                element = document.getElementById('container_TreeMap_Border');
+                expect(element.getAttribute('fill')).toBe('transparent');
+            };
+            treemap.refresh();
+        });
+        it('legend font Tailwind theme ', () => {
+            treemap.loaded = (args: ILoadedEventArgs) => {
+                element = document.getElementById('container_Level_Index_1_Item_Index_10_Text');
+                expect(element.getAttribute('font-family')).toBe('Inter');
+            };
+            treemap.refresh();
+        });
+        it('Tailwind Tooltip fill color', () => {
+            treemap.loaded = (args: ILoadedEventArgs): void => {
+                element = document.getElementById('container_Level_Index_1_Item_Index_10_RectPath');
+                trigger.mousemoveEvent(element, 15,166,100,159);
+                tooltipElement = document.getElementById('container_TreeMapTooltip_path');
+                expect(tooltipElement.getAttribute('fill')).toBe('#111827');
+            };            
+            treemap.refresh();
+        });
+        it('default Tailwind Tooltip opacity ', () => {
+            treemap.loaded = (args: ILoadedEventArgs): void => {
+                element = document.getElementById('container_Level_Index_1_Item_Index_10_RectPath');
+                trigger.mousemoveEvent(element, 15,166,100,159);
+                tooltipElement = document.getElementById('container_TreeMapTooltip_path');
+                expect(tooltipElement.getAttribute('opacity')).toBe('1');
+            };            
+            treemap.refresh();
+        });
+        it(' Tailwind theme Tooltip font', () => {
+            treemap.loaded = (args: ILoadedEventArgs): void => {
+                element = document.getElementById('container_Level_Index_1_Item_Index_10_RectPath');
+                debugger;
+                trigger.mousemoveEvent(element, 15,166,100,159);
+                tooltipElement = document.getElementById('container_TreeMapTooltip_text');
+                expect(tooltipElement.querySelector('tspan').getAttribute('fill')).toBe('#F9FAFB');
+            };
+            treemap.refresh();
+        });
+        
+    });
+	describe('Checking the theme in', () => {
+        let element: Element;
+        let treemap: TreeMap;
+        let id: string = 'container';
+        let tooltipElement: HTMLElement;
+        let trigger: MouseEvents = new MouseEvents();
+        beforeAll(() => {
+            element = createElement('div', { id: id });
+            (element as HTMLDivElement).style.width = '600px';
+            (element as HTMLDivElement).style.height = '400px';
+            document.body.appendChild(element);
+            treemap = new TreeMap({
+                titleSettings: {
+                    text: 'Car Sales by Country - 2017',
+                    subtitleSettings:{
+                        text: '- 2017'
+                    }
+                },
+                theme: 'TailwindDark',
+                dataSource: CarSales,
+                highlightSettings: {
+                    enable: false
+                },
+                selectionSettings: {
+                    enable: false
+                },
+                legendSettings: {
+                    visible: true,
+                    title: {
+                        text: 'Legend'
+                    },
+                    position: 'Top',
+                    shape: 'Rectangle',
+                },
+                palette: ['#C33764', '#AB3566', '#993367', '#853169', '#742F6A', '#632D6C', '#532C6D', '#412A6F', '#312870', '#1D2671'],
+                tooltipSettings: {
+                    visible: true
+                },
+                weightValuePath: 'Sales',
+                leafItemSettings: {
+                    labelPath: 'Company',
+                    border: { color: 'white', width: 0.5 }
+                },
+                levels: [
+                    {
+                        groupPath: 'Continent', border: { color: 'white', width: 0.5 },
+                    }
+                ]
+            }, '#' + id);
+        });
+        afterAll(() => {
+            treemap.destroy();
+            document.getElementById(id).remove();
+        });
+
+        it('legend text TailwindDark theme ', () => {
+            treemap.loaded = (args: ILoadedEventArgs) => {
+                element = document.getElementById('container_Legend_Text_Index_0');
+                expect(element.getAttribute('fill')).toBe('#D1D5DB');
+            };
+            treemap.refresh();
+        });
+        it('legend title TailwindDark theme ', () => {
+            treemap.loaded = (args: ILoadedEventArgs) => {
+                element = document.getElementById('container_LegendTitle');
+                expect(element.getAttribute('fill')).toBe('#D1D5DB');
+            };
+            treemap.refresh();
+        });
+        it('title text TailwindDark theme ', () => {
+            treemap.loaded = (args: ILoadedEventArgs) => {
+                element = document.getElementById('container_TreeMap_title');
+                expect(element.getAttribute('fill')).toBe('#D1D5DB');
+            };
+            treemap.refresh();
+        });
+        it('subtitle text TailwindDark theme ', () => {
+            treemap.loaded = (args: ILoadedEventArgs) => {
+                element = document.getElementById('container_TreeMap_subtitle');
+                expect(element.getAttribute('fill')).toBe('#D1D5DB');
+            };
+            treemap.refresh();
+        });
+        it('Background TailwindDark theme ', () => {
+            treemap.loaded = (args: ILoadedEventArgs) => {
+                element = document.getElementById('container_TreeMap_Border');
+                expect(element.getAttribute('fill')).toBe('transparent');
+            };
+            treemap.refresh();
+        });
+        it('legend font TailwindDark theme ', () => {
+            treemap.loaded = (args: ILoadedEventArgs) => {
+                element = document.getElementById('container_Level_Index_1_Item_Index_10_Text');
+                expect(element.getAttribute('font-family')).toBe('Inter');
+            };
+            treemap.refresh();
+        });
+        it('TailwindDark Tooltip fill color', () => {
+            treemap.loaded = (args: ILoadedEventArgs): void => {
+                element = document.getElementById('container_Level_Index_1_Item_Index_10_RectPath');
+                trigger.mousemoveEvent(element, 15,166,100,159);
+                tooltipElement = document.getElementById('container_TreeMapTooltip_path');
+                expect(tooltipElement.getAttribute('fill')).toBe('#F9FAFB');
+            };            
+            treemap.refresh();
+        });
+        it('default TailwindDark Tooltip opacity ', () => {
+            treemap.loaded = (args: ILoadedEventArgs): void => {
+                element = document.getElementById('container_Level_Index_1_Item_Index_10_RectPath');
+                trigger.mousemoveEvent(element, 15,166,100,159);
+                tooltipElement = document.getElementById('container_TreeMapTooltip_path');
+                expect(tooltipElement.getAttribute('opacity')).toBe('1');
+            };            
+            treemap.refresh();
+        });
+        it(' TailwindDark theme Tooltip font', () => {
+            treemap.loaded = (args: ILoadedEventArgs): void => {
+                element = document.getElementById('container_Level_Index_1_Item_Index_10_RectPath');
+                debugger;
+                trigger.mousemoveEvent(element, 15,166,100,159);
+                tooltipElement = document.getElementById('container_TreeMapTooltip_text');
+                expect(tooltipElement.querySelector('tspan').getAttribute('fill')).toBe('#1F2937');
             };
             treemap.refresh();
         });

@@ -1,9 +1,9 @@
-﻿import { initialLoad, ribbon, formulaBar, IRenderer, beforeVirtualContentLoaded, setAriaOptions, skipHiddenIdx } from '../common/index';
+﻿import { initialLoad, ribbon, formulaBar, IRenderer, beforeVirtualContentLoaded, setAriaOptions, skipHiddenIdx, refreshSheetTabs } from '../common/index';
 import { SheetRender, RowRenderer, CellRenderer } from './index';
 import { Spreadsheet } from '../base/index';
 import { isNullOrUndefined, remove } from '@syncfusion/ej2-base';
 import { CellModel, SheetModel, getSheetName, getRowsHeight, getColumnsWidth, getData, Workbook } from '../../workbook/base/index';
-import { dataRefresh, getCellAddress, getCellIndexes, workbookFormulaOperation } from '../../workbook/common/index';
+import { dataRefresh, getCellAddress, getCellIndexes, workbookFormulaOperation, moveOrDuplicateSheet } from '../../workbook/common/index';
 import { RefreshArgs, sheetTabs, onContentScroll, deInitProperties, beforeDataBound, isReact } from '../common/index';
 import { spreadsheetDestroyed, isFormulaBarEdit, editOperation, FormulaBarEdit, renderReactTemplates } from '../common/index';
 import { getSiblingsHeight } from '../common/index';
@@ -192,9 +192,26 @@ export class Render {
                 this.parent.viewport.leftIndex = args.colIndex; this.parent.viewport.rightIndex = lastCol;
                 address = `${getCellAddress(startRow, startCol)}:${getCellAddress(lastRow, lastCol)}`;
             } else {
+                if (args.refresh === 'All') {
+                    const topLeftCell: number[] = getCellIndexes(sheet.topLeftCell);
+                    const paneTopLeftCell: number[] = getCellIndexes(sheet.paneTopLeftCell);
+                    if (sheet.frozenRows) {
+                        const frozenRow: number = this.parent.frozenRowCount(sheet);
+                        if (paneTopLeftCell[0] > frozenRow) { args.top = getRowsHeight(sheet, frozenRow, paneTopLeftCell[0] - 1); }
+                    } else {
+                        args.rowIndex = 0;
+                        if (topLeftCell[0] !== 0) { args.top = getRowsHeight(sheet, 0, topLeftCell[0] - 1); }
+                    }
+                    if (sheet.frozenColumns) {
+                        const frozenCol: number = this.parent.frozenRowCount(sheet);
+                        if (paneTopLeftCell[1] > frozenCol) { args.left = getColumnsWidth(sheet, frozenCol, paneTopLeftCell[1] - 1); }
+                    } else {
+                        args.colIndex = 0;
+                        if (topLeftCell[1] !== 0) { args.left = getColumnsWidth(sheet, 0, topLeftCell[1] - 1); }
+                    }
+                }
                 this.parent.viewport.bottomIndex = sheet.rowCount - 1; this.parent.viewport.rightIndex = sheet.colCount - 1;
-                address = `${getCellAddress(sheet.frozenRows ? getCellIndexes(sheet.topLeftCell)[0] : 0, sheet.frozenColumns ?
-                    getCellIndexes(sheet.topLeftCell)[1] : 0)}:${getCellAddress(
+                address = `${getCellAddress(args.rowIndex, args.colIndex)}:${getCellAddress(
                     this.parent.viewport.bottomIndex, this.parent.viewport.rightIndex)}`;
             }
         }
@@ -305,6 +322,13 @@ export class Render {
         return Math.abs(value - roundedValue) < 0.5 ? roundedValue : roundedValue - 1;
     }
 
+    private moveOrDuplicateSheetHandler(args: { refresh: boolean, isDuplicate: boolean }): void {
+        this.parent.notify(refreshSheetTabs, null);
+        if (args.refresh) {
+            this.refreshSheet(args.isDuplicate);
+        }
+    }
+
     /**
      * Registing the renderer related services.
      *
@@ -329,11 +353,13 @@ export class Render {
         this.parent.on(initialLoad, this.instantiateRenderer, this);
         this.parent.on(dataRefresh, this.refreshSheet, this);
         this.parent.on(spreadsheetDestroyed, this.destroy, this);
+        this.parent.on(moveOrDuplicateSheet, this.moveOrDuplicateSheetHandler, this);
     }
 
     private removeEventListener(): void {
         this.parent.off(initialLoad, this.instantiateRenderer);
         this.parent.off(dataRefresh, this.refreshSheet);
         this.parent.off(spreadsheetDestroyed, this.destroy);
+        this.parent.off(moveOrDuplicateSheet, this.moveOrDuplicateSheetHandler);
     }
 }

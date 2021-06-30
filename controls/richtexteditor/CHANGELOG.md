@@ -2,115 +2,25 @@
 
 ## [Unreleased]
 
-## 19.1.69 (2021-06-15)
-
-### RichTextEditor
-
-#### Bug Fixes
-
-- `#I328089`, `#I328738` - The issue with "The inline toolbar is not properly positioned and is partially visible" has been resolved.
-
-- `#I328323` - The issue with "`Quotation` and `Headings` not applied where there is no content in the Rich Text Editor markdown mode" has been resolved.
-
-- `#I330397` - Resolved the exception raised, when `enableXhtml` property is enabled and pressing backspace key in the Rich Text Editor.
-
-## 19.1.67 (2021-06-08)
-
-### RichTextEditor
-
-#### Bug Fixes
-
-- `#I327536` - The issue with "Class name `MsoNormal` being removed when pasting content with link from outlook" has been resolved.
-
-- `#I329734` - The issue with "Image not pasted properly in the Rich Text Editor, when pasting content from outlook" has been resolved.
-
-## 19.1.66 (2021-06-01)
+## 19.2.44 (2021-06-30)
 
 ### RichTextEditor
 
 #### New Features
 
-- `#I275771`, `#I275873` - Provided `beforePasteCleanUp` and `afterPasteCleanUp` events for customizing pasted content in the Rich Text Editor.
+- `#I304121` - Improvements with the `backSpaceKey` action in the Rich Text Editor.
+
+- `#I292778`, `#I308312`, `#I309446`, `#I313298` - Provided the List style type and List style image support for the Numbered and Bulleted lists.
 
 #### Bug Fixes
+
+- `#I327676` - The issue with "Custom toolbar icons not disabled/enabled, when multiple custom toolbar is configured" has been resolved.
+
+- `#I330909` - The issue with "Inserting table after pressing `shit+enter` deletes all the content below in the Rich Text Editor" has been resolved.
+
+- `#F165931` - The issue with "Ordered list number color not changing, when font color is applied to the list in the Rich Text Editor" has been resolved.
 
 - `#I327566` - The issue with "Image resizing is not working properly when `resizeByPercent` is set true" has been resolved.
-
-- `#I327676` - The issue with "Custom toolbar icons not disabled/enabled on various scenarios" has been resolved.
-
-- `#I327536` - The issue with "Pasting content from outlook doesn't work properly after the first time"  has been resolved.
-
-- `#I327087` - The issue with "Clicking backspace of the letter next to the image delete the image"  has been resolved.
-
-## 19.1.65 (2021-05-25)
-
-### RichTextEditor
-
-#### Bug Fixes
-
-- `#I326410` - The issue with "`beforeDialogOpen` event is not triggered after the `args.cancel` is set to true in the Rich Text Editor" has been resolved.
-
-- `#I327590` - The issue with "Align center in the toolbar option, deletes the image in the Rich Text Editor" has been resolved.
-
-- `#I327087` - The issue with "Cursor is not displayed after inserting the image in the Rich Text Editor" has been resolved.
-
-- `#I328008` - The issue with "Two scrollbars are enabled when the source view is enabled" has been resolved.
-
-## 19.1.64 (2021-05-19)
-
-### RichTextEditor
-
-#### Breaking Changes
-
-- The `toolbarStatusUpdate` event has been deprecated. Use `updatedToolbarStatus` new event to get the status of the updated toolbar.
-
-#### Bug Fixes
-
-- The issue with "Pasting the table elements from `MSword` to the editor, removes the empty cells in table" has been resolved.
-
-- `#I324985`- The issue with "Pasting the link in the Rich Text Editor doesn't add the `target=_blank` in the link" has been resolved.
-
-- `#I324430`- The issue with "Rich Text Editor not rendered properly when ID is given as a number"  has been resolved.
-
-- `#I326887`- The issue with "Bold and other formats not working inside the table when the cell in empty" has been resolved.
-
-- `#I324041`- The issue with "When strong is applied more than one time for an element, `un-bold` doesn't remove all the bold tags" has been resolved.
-
-## 19.1.59 (2021-05-04)
-
-### RichTextEditor
-
-#### New Features
-
-- `#I324616`- Provided support to generate bulleted list when hyphen(-) and space is pressed.
-
-#### Bug Fixes
-
-- `#I324988`- The issue with "Console error occurs when up arrow is pressed, from the table cell when there is space between `tr` elements" has been resolved.
-
-## 19.1.57 (2021-04-20)
-
-### RichTextEditor
-
-#### New Features
-
-- `#I262768`, `#I284171`, `#I285060`, `#I303859`, `#I312806`, `#I322378`, `#I292004` - The Rich Text Editor Base64 image handling performance has been improved.
-
-#### Bug Fixes
-
-- `#I318379`- The issue with "Applying heading to the content in the Rich Text Editor, applies heading to the next element" has been resolved.
-
-## 19.1.56 (2021-04-13)
-
-### RichTextEditor
-
-#### Bug Fixes
-
-- `#I320430` - Resolved the exception raised when inserting the table, with toolbarSettings disabled initially.
-
-- `#I320606` - The issue with "Pasting list with 'outline level' style in the MS Word not working properly in the Rich Text Editor" has been resolved.
-
-- `#I322143`- The issue with "Console error occurs when deleting the last row of the table" has been resolved.
 
 ## 19.1.54 (2021-03-30)
 

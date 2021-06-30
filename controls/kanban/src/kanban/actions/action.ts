@@ -43,7 +43,7 @@ export class Action {
 
     public clickHandler(e: KeyboardEvent): void {
         const elementSelector: string = '.' + cls.CARD_CLASS + ',.' + cls.HEADER_ICON_CLASS + ',.' + cls.CONTENT_ROW_CLASS + '.' +
-            cls.SWIMLANE_ROW_CLASS + ',.' + cls.SHOW_ADD_BUTTON + ',.' + cls.CONTENT_ROW_CLASS +
+            cls.SWIMLANE_ROW_CLASS + ',.' + cls.SHOW_ADD_BUTTON + ',.' + cls.FROZEN_SWIMLANE_ROW_CLASS + ',.' + cls.CONTENT_ROW_CLASS +
             ':not(.' + cls.SWIMLANE_ROW_CLASS + ') .' + cls.CONTENT_CELLS_CLASS;
         const target: Element = closest(e.target as Element, elementSelector);
         if (!target) { return; }
@@ -58,6 +58,16 @@ export class Action {
             this.rowExpandCollapse(e);
         } else if (target.classList.contains(cls.SHOW_ADD_BUTTON)) {
             this.addButtonClick(target);
+        } else if (target.classList.contains(cls.FROZEN_SWIMLANE_ROW_CLASS)) {
+            const swimlaneRows: HTMLElement[] = [].slice.call(this.parent.element.querySelectorAll('.' + cls.SWIMLANE_ROW_CLASS));
+            let targetIcon: HTMLElement = this.parent.layoutModule.frozenSwimlaneRow.querySelector('.' + cls.ICON_CLASS);
+            this.rowExpandCollapse(swimlaneRows[this.parent.layoutModule.frozenOrder]);
+            const isCollapsed: boolean = targetIcon.classList.contains(cls.SWIMLANE_ROW_COLLAPSE_CLASS) ? true : false;
+            if (isCollapsed) {
+                classList(targetIcon, [cls.SWIMLANE_ROW_EXPAND_CLASS], [cls.SWIMLANE_ROW_COLLAPSE_CLASS]);
+            } else {
+                classList(targetIcon, [cls.SWIMLANE_ROW_COLLAPSE_CLASS], [cls.SWIMLANE_ROW_EXPAND_CLASS]);
+            }
         }
     }
 

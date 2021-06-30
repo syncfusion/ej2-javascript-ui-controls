@@ -70,7 +70,7 @@ export class BulletsAndNumberingDialog {
                 }
             ],
             heightAdjustMode: 'None',
-            width: 272,
+            width: "auto",
             selecting: this.onTabSelect.bind(this)
         });
         this.tabObj.isStringTemplate = true;
@@ -86,7 +86,6 @@ export class BulletsAndNumberingDialog {
     private createNumberList(id: string): void {
         this.numberListDiv = createElement('div', { className: 'e-de-style-numbered-list', id: id + '_Number' });
         const numberListDiv: HTMLElement = this.numberListDiv;
-        numberListDiv.style.height = '270px';
         const ulTag: HTMLElement = createElement('ul', {
             styles: 'display: block; outline: 0px;',
             id: 'listMenu',
@@ -158,7 +157,6 @@ export class BulletsAndNumberingDialog {
     private createBulletList(id: string): void {
         this.bulletListDiv = createElement('div', { className: 'e-de-ui-bullet-list-header-presetmenu', id: id + '_Bullet' });
         const bulletListDiv: HTMLElement = this.bulletListDiv;
-        bulletListDiv.style.height = '270px';
         bulletListDiv.style.display = 'none';
         const ulTag: HTMLElement = createElement('ul', {
             styles: 'display: block; outline: 0px;', id: 'listMenu',

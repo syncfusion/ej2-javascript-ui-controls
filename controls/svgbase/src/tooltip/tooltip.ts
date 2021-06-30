@@ -487,7 +487,7 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
     public loaded: EmitType<ITooltipLoadedEventArgs>;
 
     /**
-     * Triggers after chart load.
+     * Triggers after animation complete.
      *
      * @event animationComplete
      * @private
@@ -610,7 +610,9 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
             svgObject.appendChild(groupElement);
             const pathElement: Element = this.renderer.drawPath({
                 'id': this.element.id + '_path', 'stroke-width': this.border.width,
-                'fill': this.fill || this.themeStyle.tooltipFill, 'opacity': this.opacity,
+                'fill': this.fill || this.themeStyle.tooltipFill, 'opacity': 
+                    ((this.theme === 'TailwindDark' || this.theme === 'Tailwind') && this.opacity === 0.75) ?
+                    1 : this.opacity,
                 'stroke': this.border.color
             });
             groupElement.appendChild(pathElement);
@@ -710,7 +712,11 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
         if (this.enableShadow && this.theme !== 'Bootstrap4') {
             // To fix next chart initial tooltip opacity issue in tab control
             const shadowId: string = this.element.id + '_shadow';
-            pathElement.setAttribute('filter', Browser.isIE ? '' : 'url(#' + shadowId + ')');
+            if (this.theme === 'Tailwind' || this.theme === 'TailwindDark') {
+                pathElement.setAttribute('box-shadow', '0px 1px 2px rgba(0, 0, 0, 0.06), 0px 1px 3px rgba(0, 0, 0, 0.1)');    
+            } else {
+                pathElement.setAttribute('filter', Browser.isIE ? '' : 'url(#' + shadowId + ')');
+            }
             let shadow: string = '<filter id="' + shadowId + '" height="130%"><feGaussianBlur in="SourceAlpha" stdDeviation="3"/>';
             shadow += '<feOffset dx="3" dy="3" result="offsetblur"/><feComponentTransfer><feFuncA type="linear" slope="0.5"/>';
             shadow += '</feComponentTransfer><feMerge><feMergeNode/><feMergeNode in="SourceGraphic"/></feMerge></filter>';
@@ -856,7 +862,7 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
                             fontWeight = 'Normal'; labelColor = this.themeStyle.tooltipLightLabel;
                         }
                         // eslint-disable-next-line no-useless-escape
-                        (tspanElement).textContent = line = this.getTextContent(line);
+                        (tspanElement).textContent = line = this.getTooltipTextContent(line);
                         subWidth += measureText(line, font).width;
                         if (tspanStyle !== '') {
                             tspanElement.style.fontWeight = tspanStyle.split('font-weight:')[1];
@@ -883,18 +889,18 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
         }
     }
 
-    private getTextContent(text: string): string {
-        let texts: string[] = text.match(/<[a-zA-Z\/](.|\n)*?>/g);
-        if(isNullOrUndefined(texts)){
-            return text;
+    private getTooltipTextContent(tooltipText: string): string {
+        let characterCollection: string[] = tooltipText.match(/<[a-zA-Z\/](.|\n)*?>/g);
+        if(isNullOrUndefined(characterCollection)){
+            return tooltipText;
         }
-        const isRtlText: boolean = /[\u0590-\u07FF\u200F\u202B\u202E\uFB1D-\uFDFD\uFE70-\uFEFC]/.test(text);
-        for (let i: number = 0; i < texts.length; i++) {
-            if (this.isValidHTMLElement(texts[i].replace('<', '').replace('/', '').replace('>', '').trim())) {
-                text = text.replace(texts[i], isRtlText ? '\u200E' : '');
+        const isRtlText: boolean = /[\u0590-\u07FF\u200F\u202B\u202E\uFB1D-\uFDFD\uFE70-\uFEFC]/.test(tooltipText);
+        for (let i: number = 0; i < characterCollection.length; i++) {
+            if (this.isValidHTMLElement(characterCollection[i].replace('<', '').replace('/', '').replace('>', '').trim())) {
+                tooltipText = tooltipText.replace(characterCollection[i], isRtlText ? '\u200E' : '');
             }
         }
-        return text;
+        return tooltipText;
     }
 
     private isValidHTMLElement(element: string): boolean {
@@ -962,26 +968,9 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
         const width: number = this.elementSize.width + (2 * this.marginX);
         const height: number = this.elementSize.height + (2 * this.marginY);
         const tooltipRect: Rect = new Rect(x + 2 * this.padding, y - height - this.padding, width, height);
-        const tooltipDivEndValue: number = tooltipRect.y + tooltipRect.height;
-        const boundsEndValue: number = bounds.y + bounds.height;
-        let isStockChart: boolean = false;
-        let heightDifference: number;
-        if (this.controlInstance) {
-            const containerDivID: string = this.controlInstance["element"]["id"];
-            isStockChart = containerDivID.indexOf("stockChart") !== -1;
-        }
-        // To check whether the tooltip crop at bottom
-        if (boundsEndValue < tooltipDivEndValue) {
-            heightDifference = tooltipDivEndValue - boundsEndValue;
-            tooltipRect.y -= (heightDifference + 2 * this.padding);
-        }
-
-        // To check whether the tooltip crop at top
         if (tooltipRect.y < bounds.y) {
-            heightDifference = bounds.y - tooltipRect.y;
-            tooltipRect.y += isStockChart ? (tooltipRect.height + 2 * this.padding) : (heightDifference + 2 * this.padding);
+            tooltipRect.y += (tooltipRect.height + 2 * this.padding);
         }
-
         if (tooltipRect.x + tooltipRect.width > bounds.x + bounds.width) {
             tooltipRect.x -= (tooltipRect.width + 4 * this.padding);
         }

@@ -1,10 +1,11 @@
 /**
  * Gantt resource view spec
  */
-import { Gantt, Selection, Toolbar, DayMarkers, Edit, Filter } from '../../src/index';
-import { resourceCollection, resourceSelefReferenceData, normalResourceData, multiTaskbarData, multiResources } from '../base/data-source.spec';
+import { Gantt, Selection, Toolbar, DayMarkers, Edit, Filter, VirtualScroll } from '../../src/index';
+import { resourceCollection, resourceSelefReferenceData, normalResourceData, multiTaskbarData, multiResources,
+     virtualResourceData, editingResources } from '../base/data-source.spec';
 import { createGantt, destroyGantt, triggerMouseEvent } from './gantt-util.spec';
-Gantt.Inject(Edit, Selection, Toolbar, Filter, DayMarkers);
+Gantt.Inject(Edit, Selection, Toolbar, Filter, DayMarkers, VirtualScroll);
 interface EJ2Instance extends HTMLElement {
     ej2_instances: Object[];
 }
@@ -709,6 +710,9 @@ describe('Self reference data', () => {
             allowDeleting: true,
             allowTaskbarEditing: true,
           },
+          addDialogFields: [
+              { type: 'Resources' }
+          ],
           toolbar: [ "Add", "Edit", "Update", "Delete", "Cancel", "ExpandAll", "CollapseAll"],
           height: "450px",
         },
@@ -721,13 +725,10 @@ describe('Self reference data', () => {
       }
     });
     beforeEach((done) => {
-        setTimeout(done, 1000);
-        ganttObj.openAddDialog();
-        let resourceTab: any = (<EJ2Instance>(document.getElementById(ganttObj.element.id + "_Tab"))).ej2_instances[0];
-        resourceTab.selectedItem = 1;
+        setTimeout(done, 1500);
     });
   
-    it("EJ2-48512-Add resources using add dialog", () => {
+    it("EJ2-48512-Add resources using add dialog", (done: Function) => {
       ganttObj.actionComplete = (args: any): void => {
         if (args.requestType === 'refresh') {
             ganttObj.viewType = 'ProjectView';
@@ -740,6 +741,8 @@ describe('Self reference data', () => {
         }
       };
       ganttObj.dataBind();
+      ganttObj.openAddDialog();
+      setTimeout(done, 1500);
       let resourceCheckbox1: HTMLElement = ganttObj.element.querySelector("#" +
           ganttObj.element.id + "ResourcesTabContainer_gridcontrol_content_table > tbody > tr:nth-child(3) > td.e-rowcell.e-gridchkbox > div > span.e-frame.e-icons.e-uncheck") as HTMLElement;
       triggerMouseEvent(resourceCheckbox1, "click");
@@ -755,6 +758,53 @@ describe('Self reference data', () => {
         let element: HTMLElement = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol_content_table > tbody > tr:nth-child(3) > td:nth-child(2)') as HTMLElement;
         triggerMouseEvent(element, 'click');
         expect(ganttObj.currentViewData[1].ganttProperties.taskName).toBe('TaskName updated');
+      });
+  });
+  describe("Virtualization in resource view", () => {
+    let ganttObj: Gantt;
+    beforeAll((done: Function) => {
+      ganttObj = createGantt(
+        {
+            dataSource: virtualResourceData,
+            resources: editingResources,
+            viewType: 'ResourceView',
+            showOverAllocation: true,
+            taskFields: {
+                id: 'TaskID',
+                name: 'TaskName',
+                startDate: 'StartDate',
+                endDate: 'EndDate',
+                duration: 'Duration',
+                progress: 'Progress',
+                dependency: 'Predecessor',
+                resourceInfo: 'resources',
+                work: 'work',
+                child: 'subtasks'
+            },
+            enableVirtualization: true,
+            resourceFields: {
+                id: 'resourceId',
+                name: 'resourceName',
+                unit: 'resourceUnit',
+                group: 'resourceGroup'
+            },
+            height:'450px'
+        },
+        done
+      );
+    });
+    afterAll(() => {
+      if (ganttObj) {
+        destroyGantt(ganttObj);
+      }
+    });
+    beforeEach((done) => {
+        setTimeout(done, 1000);
+    });
+  
+
+    it("EJ2-49641-Ensuring over-allocation lines are rendered only for current view records", () => {
+        expect(ganttObj.element.getElementsByClassName('e-rangecontainer')[0].children.length).toBe(5);
       });
   });
 });

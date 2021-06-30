@@ -483,26 +483,26 @@ describe('Immutable action', () => {
   });
   
     describe('EJ2-49301 - Immutable dataSource change refresh check', () => {
-    let gridObj: TreeGrid;
-    beforeAll((done: Function) => {
-      gridObj = createGrid(
-        {
-          dataSource: projectData.slice(0, 7),
-          idMapping: 'TaskID',
-          parentIdMapping: 'parentID',
-          treeColumnIndex: 1,
-          created: function(){
-            this.grid.contentModule.mutableData = true;
-          },
-          enableImmutableMode: true,
-          editSettings: { allowEditing: true, allowDeleting: true, allowAdding: true, mode: "Cell", newRowPosition: "Below" },
-          toolbar: ['Add', 'Delete', 'Update', 'Cancel'],
-          columns: [
-            { field: "TaskID", headerText: "Task ID", width: 90, isPrimaryKey: true },
-            { field: 'TaskName', headerText: 'Task Name', width: 60 },
-            { field: 'Progress', headerText: 'Progress', textAlign: 'Right', width: 90 },
-          ]
-        },
+        let gridObj: TreeGrid;
+        beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: projectData.slice(0, 7),
+                idMapping: 'TaskID',
+                parentIdMapping: 'parentID',
+                treeColumnIndex: 1,
+                created: function(){
+                    this.grid.contentModule.mutableData = true;
+                },
+                enableImmutableMode: true,
+                editSettings: { allowEditing: true, allowDeleting: true, allowAdding: true, mode: "Cell", newRowPosition: "Below" },
+                toolbar: ['Add', 'Delete', 'Update', 'Cancel'],
+                columns: [
+                    { field: "TaskID", headerText: "Task ID", width: 90, isPrimaryKey: true },
+                    { field: 'TaskName', headerText: 'Task Name', width: 60 },
+                    { field: 'Progress', headerText: 'Progress', textAlign: 'Right', width: 90 },
+                ]
+            },
         done
       );
     });
@@ -519,6 +519,128 @@ describe('Immutable action', () => {
     });
   });
 
+  describe('EJ2-50343 - MutableData doesn’t work for date values in the dataSource', () => {
+    let gridObj: TreeGrid;
+    let sampleData1: Object[] = [
+        { taskID: 1, taskName: 'Planning', progress: 100, duration: 5, priority: 'Normal', approved: false, OrderDate: new Date('02/27/2017') },
+        {
+          taskID: 2,
+          taskName: "Plan timeline",
+          startDate: new Date("02/03/2017"),
+          parentId: 1,
+          endDate: new Date("02/07/2017"),
+          duration: 5,
+          progress: 100,
+          priority: "Normal",
+          approved: false,
+        }
+    ];
+    let sampleData2: Object[] = [
+        { taskID: 1, taskName: 'Planning', progress: 100, duration: 5, priority: 'Normal', approved: false, OrderDate: new Date('02/27/2017') },
+        {
+          taskID: 2,taskName: "Plan timeline",
+          startDate: new Date("02/03/2017"),
+          parentId: 1,
+          endDate: new Date("02/07/2017"),
+          duration: 5,
+          progress: 100,
+          priority: "Normal",
+          approved: false,
+        }
+    ];
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: sampleData1,
+                enableImmutableMode: true,
+                idMapping: 'taskID',
+                parentIdMapping: 'parentId',
+                treeColumnIndex: 1,
+                columns: [
+                    { headerText: 'taskID', field: 'taskID', isPrimaryKey: true },
+                    { headerText: 'taskName', field: 'taskName' },
+                    { headerText: 'progress', field: 'progress' },
+                    { headerText: 'priority', field: 'priority' }
+                ]
+            }, done);
+    });
+
+    it('reassign same data to grid', (done: Function) => {
+        let count: number = 0;
+        gridObj.dataBound = null;
+        let dataBound = () => {
+            expect(count).toBe(0);
+            gridObj.rowDataBound = null;
+            gridObj.dataBound = null;
+            done();
+        };
+        let rowDataBound = () => {
+            count++;
+        };
+        gridObj.dataBound = dataBound;
+        gridObj.rowDataBound = rowDataBound;
+        (gridObj.grid.contentModule as any).mutableData = true;
+        gridObj.dataSource = sampleData2;
+    });
+    
+    afterAll(() => {
+        destroy(gridObj);
+        gridObj = null;
+    });
+
+});
+
+describe('EJ2-49853 - Update the reordered data in immutable mode re-renders multiple rows', () => {
+  let gridObj: TreeGrid;
+  let sampleData1: Object[] = [
+      { taskID: 1, taskName: 'Planning', progress: 100, duration: 5, priority: 'Normal', approved: false },
+      { taskID: 2, taskName: 'Plan timeline', parentId: 1, duration: 5, progress: 100, priority: 'Normal', approved: false },
+      { taskID: 3, parentId: 1, taskName: 'Plan budget', duration: 5, progress: 100, priority: 'Low', approved: true }
+  ];
+  let sampleData2: Object[] = [
+      { taskID: 1, taskName: 'Planning', progress: 100, duration: 5, priority: 'Normal', approved: false },
+      { taskID: 3, parentId: 1, taskName: 'Plan budget', duration: 5, progress: 100, priority: 'Low', approved: true },
+      { taskID: 2, taskName: 'Plan timeline', parentId: 1, duration: 5, progress: 100, priority: 'Normal', approved: false }
+  ];
+  beforeAll((done: Function) => {
+      gridObj = createGrid(
+          {
+              dataSource: sampleData1,
+              enableImmutableMode: true,
+              idMapping: 'taskID',
+              parentIdMapping: 'parentId',
+              treeColumnIndex: 1,
+              columns: [
+                  { headerText: 'taskID', field: 'taskID', isPrimaryKey: true },
+                  { headerText: 'taskName', field: 'taskName' },
+                  { headerText: 'progress', field: 'progress' },
+                  { headerText: 'priority', field: 'priority' }
+              ]
+          }, done);
+  });
+
+  it('update redordered data', (done: Function) => {
+      let count: number = 0;
+      gridObj.dataBound = null;
+      let dataBound = () => {
+          expect(count).toBe(0);
+          gridObj.rowDataBound = null;
+          gridObj.dataBound = null;
+          done();
+      };
+      let rowDataBound = () => {
+          count++;
+      };
+      gridObj.dataBound = dataBound;
+      gridObj.rowDataBound = rowDataBound;
+      (gridObj.grid.contentModule as any).mutableData = true;
+      gridObj.dataSource = sampleData2;
+  });
+  afterAll(() => {
+      destroy(gridObj);
+      gridObj = null;
+  });
+});
 
   it('memory leak', () => {
     profile.sample();

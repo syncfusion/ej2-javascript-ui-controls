@@ -65,6 +65,8 @@ export const LEFT_AXIS_PANEL_CLASS: string = 'e-left-axis-fields';
 /** @hidden */
 export const RIGHT_AXIS_PANEL_CLASS: string = 'e-right-axis-fields';
 /** @hidden */
+export const ALL_FIELDS_PANEL_CLASS: string = 'e-all-fields-axis';
+/** @hidden */
 export const AXIS_HEADER_CLASS: string = 'e-axis-header';
 /** @hidden */
 export const AXIS_CONTENT_CLASS: string = 'e-axis-content';
@@ -150,6 +152,8 @@ export const FILTER_AXIS_CLASS: string = 'e-filters';
 export const GROUPING_BAR_CLASS: string = 'e-grouping-bar';
 /** @hidden */
 export const VALUE_COLUMN_CLASS: string = 'e-value-column';
+/** @hidden */
+export const GROUP_ALL_FIELDS_CLASS: string = 'e-group-all-fields';
 /** @hidden */
 export const GROUP_ROW_CLASS: string = 'e-group-rows';
 /** @hidden */

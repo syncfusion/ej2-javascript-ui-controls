@@ -102,6 +102,7 @@
           @else if $tab-skin == 'highcontrast' {
             height: $tab-big-height - 4;
           }
+
         }
 
         .e-tab-text {
@@ -1408,6 +1409,14 @@
         }
       }
     }
+
+    .e-content {
+      .e-item {
+        @if $tab-skin == 'tailwind' or $tab-skin == 'tailwind-dark' {
+          padding: 16px 0;
+        }
+      }
+    }
   }
 
   .e-tab {
@@ -1514,6 +1523,10 @@
             border-radius: 4px;
             width: 32px;
           }
+
+          @if $tab-skin == 'tailwind' or $tab-skin == 'tailwind-dark' {
+            width: 24px;
+          }
         }
 
         &:not(.e-tbar-pos) .e-toolbar-item:last-child {
@@ -1548,6 +1561,13 @@
         left: 0;
         right: 0;
         transition: left .125s cubic-bezier(.35, 0, .25, 1), right .25s cubic-bezier(.35, 0, .25, 1);
+
+        @if $tab-skin == 'tailwind' or $tab-skin == 'tailwind-dark' {
+          border-radius: 2px;
+          bottom: -1px;
+          height: 2px;
+          transition: all .4s cubic-bezier(.25,.46,.45,.94); // sass-lint:disable-line no-transition-all space-after-comma
+        }
       }
 
       .e-toolbar-item {
@@ -1578,6 +1598,7 @@
             height: $tab-big-height;
             padding: $tab-mob-wrap-padding;
           }
+
         }
 
         .e-text-wrap {
@@ -1596,6 +1617,7 @@
           @else if $tab-skin == 'highcontrast' {
             height: $tab-nrml-height - 4;
           }
+
         }
 
         .e-tab-text {
@@ -1875,6 +1897,9 @@
 
           &:not(.e-separator) {
             margin: $tab-pop-item-margin;
+            @if $tab-skin == 'tailwind' or $tab-skin == 'tailwind-dark' {
+              padding: 0;
+            }
           }
 
           .e-tab-wrap {

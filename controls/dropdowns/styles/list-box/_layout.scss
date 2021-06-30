@@ -389,6 +389,15 @@
     }
 
     &:not(.e-list-template) .e-list-item,
+    .e-selectall-parent,
+    .e-list-group-item,
+    .e-list-header {
+      @if ($skin-name == 'tailwind' or $skin-name == 'tailwind-dark') {
+        padding: $listview-bigger-item-padding;
+      }
+    }
+
+    &:not(.e-list-template) .e-list-item,
     .e-selectall-parent {
       height: $listview-touch-item-height;
       line-height: $listview-touch-item-line-height;

@@ -367,6 +367,7 @@ export class SheetTabs {
             this.tabInstance.setProperties({ 'items': this.tabInstance.items }, true);
             args.items.querySelector('.e-toolbar-item.e-active .e-tab-text').textContent = args.value;
         } else {
+            args.items.querySelector('.e-toolbar-item.e-active .e-tab-text').textContent = args.value;
             this.tabInstance.dataBind();
         }
 
@@ -548,7 +549,11 @@ export class SheetTabs {
                 this.aggregateDropDown = new DropDownButton({
                     content: content,
                     items: this.getAggregateItems(eventArgs),
-                    select: (args: MenuEventArgs): void => this.updateAggregateContent(args.item.text, eventArgs, true),
+                    select: (args: MenuEventArgs): void => {
+                        this.parent.notify(aggregateComputation, eventArgs);
+                        this.updateAggregateContent(args.item.text,
+                            { Count: eventArgs.Count, Sum: eventArgs.Sum, Avg: eventArgs.Avg, Min: eventArgs.Min, Max: eventArgs.Max }, true);
+                    },
                     beforeOpen: (args: BeforeOpenCloseMenuEventArgs): void =>
                         this.beforeOpenHandler(this.aggregateDropDown, args.element),
                     open: (args: OpenCloseMenuEventArgs): void => this.openHandler(this.aggregateDropDown, args.element, 'right'),

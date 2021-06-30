@@ -409,7 +409,7 @@ export interface TooltipModel extends ComponentModel{
     loaded?: EmitType<ITooltipLoadedEventArgs>;
 
     /**
-     * Triggers after chart load.
+     * Triggers after animation complete.
      *
      * @event animationComplete
      * @private

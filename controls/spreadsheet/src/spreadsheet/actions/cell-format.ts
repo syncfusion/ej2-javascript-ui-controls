@@ -77,7 +77,8 @@ export class CellFormat {
                         if (args.lastCell) {
                             const height: number = getMaxHgt(sheet, args.rowIdx);
                             if (height > 20 && height > getRowHeight(sheet, args.rowIdx)) {
-                                setRowEleHeight(this.parent, sheet, height, args.rowIdx, args.row, args.hRow, false);
+                                setRowEleHeight(
+                                    this.parent, sheet, height, args.rowIdx, args.row, args.hRow, this.parent.scrollSettings.isFinite);
                             }
                         }
                     } else {
@@ -141,7 +142,7 @@ export class CellFormat {
                     maxHgt = getMaxHgt(sheet, rowIdx);
                     const heightChanged: boolean = onActionUpdate ? maxHgt !== prevHeight : maxHgt > prevHeight;
                     if (heightChanged) {
-                        setRowEleHeight(this.parent, sheet, maxHgt, rowIdx, row);
+                        setRowEleHeight(this.parent, sheet, maxHgt, rowIdx, row, null, true);
                     }
                 }
             }

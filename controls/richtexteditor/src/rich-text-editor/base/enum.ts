@@ -1,6 +1,6 @@
 /**
  * Defines types of Render
- * 
+ *
  * @hidden
  * @deprecated
  */

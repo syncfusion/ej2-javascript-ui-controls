@@ -12,7 +12,7 @@ import { ClickEventArgs } from '@syncfusion/ej2-navigations';
 
 /**
  * Content module is used to render Rich Text Editor content
- * 
+ *
  * @hidden
  * @deprecated
  */

@@ -1,7 +1,7 @@
 /* eslint-disable */
 import {
     PdfViewer, PdfViewerBase, IRectangle, IPageAnnotations, IPoint, ICommentsCollection, IReviewCollection,
-    AnnotationType as AnnotType, LineHeadStyle, ShapeLabelSettingsModel, AllowedInteraction
+    AnnotationType as AnnotType, LineHeadStyle, ShapeLabelSettingsModel, AllowedInteraction, AnnotationType
 } from '../../index';
 import { isNullOrUndefined } from '@syncfusion/ej2-base';
 import { PointModel } from '@syncfusion/ej2-drawings';
@@ -175,6 +175,10 @@ export class ShapeAnnotation {
      * @private
      */
     public shapeCount: number = 0;
+    /**
+     * @private
+     */
+    public isAddAnnotationProgramatically: boolean = false;
 
     constructor(pdfviewer: PdfViewer, pdfViewerBase: PdfViewerBase) {
         this.pdfViewer = pdfviewer;
@@ -207,7 +211,7 @@ export class ShapeAnnotation {
                                 for (let j: number = 0; j < annotation.VertexPoints.length; j++) {
                                     let x: number = annotation.VertexPoints[j].X ? annotation.VertexPoints[j].X : annotation.VertexPoints[j].x;
                                     let y: number = annotation.VertexPoints[j].Y ? annotation.VertexPoints[j].Y : annotation.VertexPoints[j].y;
-                                    const point: IPoint = { x: x, y: y};
+                                    const point: IPoint = { x: x, y: y };
                                     vertexPoints.push(point);
                                 }
                             }
@@ -285,11 +289,23 @@ export class ShapeAnnotation {
                             };
                             const addedAnnot: PdfAnnotationBaseModel = this.pdfViewer.add(annot as PdfAnnotationBase);
                             this.pdfViewer.annotationModule.storeAnnotations(pageNumber, annotationObject, '_annotations_shape');
+                            if(this.isAddAnnotationProgramatically)
+                            {
+                                let settings: any = {
+                                    opacity: annot.opacity, strokeColor: annot.strokeColor, thickness: annot.thickness, modifiedDate: annot.modifiedDate,
+                                    width: annot.bounds.width, height: annot.bounds.height
+                                };
+                                this.pdfViewer.fireAnnotationAdd(annot.pageIndex, annot.annotName, annotation.ShapeAnnotationType, annot.bounds, settings);
+                            }
                         }
                     }
                 }
             } else if (shapeAnnotations.shapeAnnotationType) {
                 const annotationObject: IShapeAnnotation = this.createAnnotationObject(shapeAnnotations);
+                if (!isNullOrUndefined(shapeAnnotations.formFieldAnnotationType) && shapeAnnotations.formFieldAnnotationType !== "")
+                    this.pdfViewer.annotationModule.isFormFieldShape = true;
+                else
+                    this.pdfViewer.annotationModule.isFormFieldShape = false;
                 this.pdfViewer.annotationModule.storeAnnotations(pageNumber, annotationObject, '_annotations_shape');
                 this.pdfViewer.annotationModule.triggerAnnotationAdd(shapeAnnotations);
             }
@@ -507,6 +523,10 @@ export class ShapeAnnotation {
      */
     // eslint-disable-next-line
     public modifyInCollection(property: string, pageNumber: number, annotationBase: any): IShapeAnnotation {
+        if (!isNullOrUndefined(annotationBase.formFieldAnnotationType) && annotationBase.formFieldAnnotationType !== "")
+            this.pdfViewer.annotationModule.isFormFieldShape = true;
+        else
+            this.pdfViewer.annotationModule.isFormFieldShape = false;
         this.pdfViewer.isDocumentEdited = true;
         let currentAnnotObject: IShapeAnnotation = null;
         if (annotationBase) {
@@ -629,6 +649,7 @@ export class ShapeAnnotation {
                 const pageAnnotationObject: IPageAnnotations = annotationCollection[i];
                 if (pageAnnotationObject) {
                     for (let z: number = 0; pageAnnotationObject.annotations.length > z; z++) {
+                        if(!this.pdfViewerBase.checkFormFieldCollection(pageAnnotationObject.annotations[z].id)) {
                         this.pdfViewer.annotationModule.updateModifiedDate(pageAnnotationObject.annotations[z]);
                         // eslint-disable-next-line max-len
                         pageAnnotationObject.annotations[z].bounds = JSON.stringify(this.pdfViewer.annotation.getBounds(pageAnnotationObject.annotations[z].bounds, pageAnnotationObject.pageIndex));
@@ -652,7 +673,11 @@ export class ShapeAnnotation {
                             const fontColorString: string = pageAnnotationObject.annotations[z].fontColor;
                             pageAnnotationObject.annotations[z].fontColor = JSON.stringify(this.getRgbCode(fontColorString));
                         }
+                    } else{
+                        pageAnnotationObject.annotations[z]="";
                     }
+                    }
+                    pageAnnotationObject.annotations=pageAnnotationObject.annotations.filter(item => item);
                     newArray = pageAnnotationObject.annotations;
                 }
                 annotations[pageAnnotationObject.pageIndex] = newArray;
@@ -689,11 +714,13 @@ export class ShapeAnnotation {
         let bound: IRectangle;
         let labelBound: IRectangle;
         const annotationName: string = this.pdfViewer.annotation.createGUID();
-        // eslint-disable-next-line max-len
-        const commentsDivid: string = this.pdfViewer.annotation.stickyNotesAnnotationModule.addComments('shape', (annotationModel.pageIndex + 1), annotationModel.shapeAnnotationType);
-        if (commentsDivid) {
-            document.getElementById(commentsDivid).id = annotationName;
-        }
+        if(!annotationModel.formFieldAnnotationType) {
+            // eslint-disable-next-line max-len
+            const commentsDivid: string = this.pdfViewer.annotation.stickyNotesAnnotationModule.addComments('shape', (annotationModel.pageIndex + 1), annotationModel.shapeAnnotationType);
+            if (commentsDivid) {
+                document.getElementById(commentsDivid).id = annotationName;
+            }
+        }  
         annotationModel.annotName = annotationName;
         if (annotationModel.wrapper.bounds) {
             bound = {
@@ -880,6 +907,9 @@ export class ShapeAnnotation {
         }
         // eslint-disable-next-line max-len
         annotation.AnnotationSettings = annotation.AnnotationSettings ? annotation.AnnotationSettings : this.pdfViewer.annotationModule.updateAnnotationSettings(annotation);
+        if (annotation.IsLocked) {
+            annotation.AnnotationSettings.isLock = annotation.IsLocked;
+        }
         // eslint-disable-next-line max-len
         annotation.allowedInteractions = annotation.AllowedInteractions ? annotation.AllowedInteractions : this.pdfViewer.annotationModule.updateAnnotationAllowedInteractions(annotation);
         // eslint-disable-next-line max-len
@@ -898,5 +928,162 @@ export class ShapeAnnotation {
             customData: this.pdfViewer.annotation.getCustomData(annotation), isPrint: annotation.IsPrint
         };
         return annotationObject;
+    }
+
+    /** 
+     * This method used to add annotations with using program.
+     * 
+     * @param annotationType - It describes the annotation type 
+     * @param annotationObject - It describes type of annotation object
+     * @param offset - It describes about the annotation bounds or location
+     * @returns Object
+     * @private
+     */
+    public updateAddAnnotationDetails(annotationType: AnnotationType, annotationObject: any, offset: IPoint): Object 
+    {
+        //Creating new object if annotationObject is null
+        if(!annotationObject)
+        {
+         annotationObject = { offset: { x: 10, y: 10}, pageNumber: 0, width: undefined, height: undefined};
+         offset = annotationObject.offset;
+        }
+        else if(!annotationObject.offset)
+         offset = { x: 10, y: 10};
+        else
+        offset = annotationObject.offset;
+
+        //Initialize the annotation settings
+        let annotationSelectorSettings: any = null;
+        let allowedInteractions: any = null;
+        let annotationSettings: any = null;
+        let shapeAnnotationType: string =''; 
+        let isArrow: boolean = false;
+        let vertexPoints: any = null;
+
+        //Creating the CurrentDate and Annotation name
+        let currentDateString: string = this.pdfViewer.annotation.stickyNotesAnnotationModule.getDateAndTime();
+        let annotationName: string = this.pdfViewer.annotation.createGUID();
+        if(annotationType == 'Line')
+        {
+            //Creating annotation settings
+            annotationSelectorSettings = this.pdfViewer.lineSettings.annotationSelectorSettings ? this.pdfViewer.lineSettings.annotationSelectorSettings : this.pdfViewer.annotationSelectorSettings;          
+            annotationSettings = this.pdfViewer.annotationModule.updateSettings(this.pdfViewer.lineSettings);
+            allowedInteractions = this.pdfViewer.lineSettings.allowedInteractions ? this.pdfViewer.lineSettings.allowedInteractions : this.pdfViewer.annotationSettings.allowedInteractions;
+            shapeAnnotationType = 'Line';
+            if(annotationObject.vertexPoints)
+                vertexPoints = annotationObject.vertexPoints;
+            else    
+                vertexPoints =[{x: offset.x, y: offset.y},{x: offset.x + 100, y: offset.y}]
+            annotationObject.width = annotationObject.width?annotationObject.width : 1;
+            annotationObject.height = annotationObject.height?annotationObject.height : 1;
+        }
+        else if(annotationType == 'Arrow')
+        {
+            //Creating annotation settings
+            annotationSelectorSettings = this.pdfViewer.arrowSettings.annotationSelectorSettings ? this.pdfViewer.arrowSettings.annotationSelectorSettings : this.pdfViewer.annotationSelectorSettings;          
+            annotationSettings = this.pdfViewer.annotationModule.updateSettings(this.pdfViewer.arrowSettings);
+            allowedInteractions = this.pdfViewer.arrowSettings.allowedInteractions ? this.pdfViewer.arrowSettings.allowedInteractions : this.pdfViewer.annotationSettings.allowedInteractions;
+            shapeAnnotationType = 'Line';
+            isArrow=true;
+            if(annotationObject.vertexPoints)
+                vertexPoints = annotationObject.vertexPoints;
+            else    
+                vertexPoints =[{x: offset.x, y: offset.y},{x: offset.x + 100, y: offset.y}]
+            annotationObject.width = annotationObject.width?annotationObject.width : 1;
+            annotationObject.height = annotationObject.height?annotationObject.height : 1;                
+        }
+        else if(annotationType == 'Rectangle')
+        {              
+            //Creating annotation settings
+            annotationSelectorSettings = this.pdfViewer.rectangleSettings.annotationSelectorSettings ? this.pdfViewer.rectangleSettings.annotationSelectorSettings : this.pdfViewer.annotationSelectorSettings;          
+            annotationSettings = this.pdfViewer.annotationModule.updateSettings(this.pdfViewer.rectangleSettings);
+            allowedInteractions = this.pdfViewer.rectangleSettings.allowedInteractions ? this.pdfViewer.rectangleSettings.allowedInteractions : this.pdfViewer.annotationSettings.allowedInteractions;               
+            shapeAnnotationType = 'Square';
+            annotationObject.width = annotationObject.width?annotationObject.width : 150;
+            annotationObject.height = annotationObject.height?annotationObject.height : 75;
+        }
+        else if(annotationType == 'Circle')
+        {              
+            //Creating annotation settings
+            annotationSelectorSettings = this.pdfViewer.circleSettings.annotationSelectorSettings ? this.pdfViewer.circleSettings.annotationSelectorSettings : this.pdfViewer.annotationSelectorSettings;          
+            annotationSettings = this.pdfViewer.annotationModule.updateSettings(this.pdfViewer.circleSettings);
+            allowedInteractions = this.pdfViewer.circleSettings.allowedInteractions ? this.pdfViewer.circleSettings.allowedInteractions : this.pdfViewer.annotationSettings.allowedInteractions;               
+            shapeAnnotationType = 'Circle';
+            annotationObject.width = annotationObject.width?annotationObject.width : 100;
+            annotationObject.height = annotationObject.height?annotationObject.height : 90;
+        }
+        else if(annotationType == 'Polygon')
+        {              
+            //Creating annotation settings
+            annotationSelectorSettings = this.pdfViewer.polygonSettings.annotationSelectorSettings ? this.pdfViewer.polygonSettings.annotationSelectorSettings : this.pdfViewer.annotationSelectorSettings;          
+            annotationSettings = this.pdfViewer.annotationModule.updateSettings(this.pdfViewer.polygonSettings);
+            allowedInteractions = this.pdfViewer.polygonSettings.allowedInteractions ? this.pdfViewer.polygonSettings.allowedInteractions : this.pdfViewer.annotationSettings.allowedInteractions;               
+            shapeAnnotationType = 'Polygon';
+            if(annotationObject.vertexPoints)
+                vertexPoints = annotationObject.vertexPoints;
+            else    
+                vertexPoints =[ {x:offset.x, y:offset.y}, {x:offset.x+42, y:offset.y -29}, {x:offset.x+89, y:offset.y - 1}, {x:offset.x+78, y:offset.y +42}, {x:offset.x+11, y:offset.y +42}, {x:offset.x, y:offset.y}];
+            annotationObject.width = annotationObject.width?annotationObject.width : 1;
+            annotationObject.height = annotationObject.height?annotationObject.height : 1;
+        }
+        annotationSettings.isLock = annotationObject.isLock?annotationObject.isLock:false;
+        annotationSettings.minHeight = annotationObject.minHeight?annotationObject.minHeight: 0;
+        annotationSettings.minWidth = annotationObject.minWidth?annotationObject.minWidth: 0;
+        annotationSettings.maxWidth = annotationObject.maxWidth?annotationObject.maxWidth: 0;
+        annotationSettings.maxHeight = annotationObject.maxHeight?annotationObject.maxHeight: 0;
+
+        //Converting points model into vertex property
+        if(vertexPoints)
+            vertexPoints = this.pdfViewer.annotation.getVertexPointsXY(vertexPoints);
+
+        //Creating Annotation objects with it's proper properties
+        let shapeAnnotation: any = [];
+        let shape: any = {
+            AllowedInteractions: annotationObject.allowedInteractions?annotationObject.allowedInteractions : allowedInteractions,
+            AnnotName: annotationName,
+            AnnotType: 'shape',
+            AnnotationSelectorSettings: annotationObject.annotationSelectorSettings?annotationObject.annotationSelectorSettings: annotationSelectorSettings,       
+            AnnotationSettings: annotationSettings,
+            Author: annotationObject.author ? annotationObject.author : 'Guest',
+            BorderDashArray: annotationObject.borderDashArray? annotationObject.borderDashArray:0,
+            BorderStyle: 'Solid',
+            Bounds: {X: offset.x, Y: offset.y, Width: annotationObject.width, Height: annotationObject.height, Left: offset.x, Top: offset.y, Location:{X: offset.x,Y: offset.y}, Size:{Height: annotationObject.height,IsEmpty: false,Width: annotationObject.width}},
+            CloudIntensity: 0,
+            Comments: null,
+            CustomData: annotationObject.customData?annotationObject.customData:null,
+            CreatedDate: currentDateString,
+            EnableShapeLabel: false,
+            ExistingCustomData: null,
+            FillColor: annotationObject.fillColor?annotationObject.fillColor:'#ffffff00',
+            FontColor: null,
+            FontSize: 0,
+            IsCloudShape: false,
+            IsCommentLock: false,
+            IsLocked : annotationObject.isLock?annotationObject.isLock:false,
+            IsPrint: annotationObject.isPrint?annotationObject.isPrint:true,
+            LabelBorderColor: null,
+            LabelBounds: {X: 0, Y: 0, Width: 0, Height: 0},
+            LabelContent: null,
+            LabelFillColor: null,
+            LabelSettings: null,
+            LineHeadEnd: annotationObject.lineHeadStartStyle?annotationObject.lineHeadStartStyle:isArrow?'ClosedArrow':'None',
+            LineHeadStart: annotationObject.lineHeadEndStyle?annotationObject.lineHeadEndStyle:isArrow?'ClosedArrow':'None',
+            ModifiedDate: '',
+            Note: '',
+            Opacity: annotationObject.opacity?annotationObject.opacity:1,
+            RectangleDifference: null,
+            RotateAngle: 'RotateAngle0',
+            ShapeAnnotationType: shapeAnnotationType,
+            State: '',
+            StateModel: '',
+            StrokeColor: annotationObject.strokeColor?annotationObject.strokeColor:'#ff0000',
+            Subject: annotationType.toString(),
+            Thickness: annotationObject.thickness?annotationObject.thickness:1,
+            VertexPoints : vertexPoints
+        }
+
+        //Adding the annotation object to an array and return it
+        shapeAnnotation[0] = shape;
+        return {shapeAnnotation};
     }
 }

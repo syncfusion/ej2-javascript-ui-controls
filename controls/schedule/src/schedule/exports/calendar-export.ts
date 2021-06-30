@@ -43,12 +43,14 @@ export class ICalendarExport {
             }
             const startZone: string = (eventObj[fields.startTimezone] || timeZone) as string;
             const endZone: string = (eventObj[fields.endTimezone] || timeZone) as string;
+            const readonly: boolean = (eventObj[fields.isReadonly]) ? (eventObj[fields.isReadonly]) : false;
             const calendarEvent: string[] = [
                 'BEGIN:VEVENT',
                 'LOCATION:' + (eventObj[fields.location] || ''),
                 'SUMMARY:' + (eventObj[fields.subject] || ''),
                 'UID:' + uId,
                 'DESCRIPTION:' + (eventObj[fields.description] || ''),
+                'ISREADONLY:' + readonly,
                 'END:VEVENT'
             ];
             if (eventObj[fields.isAllDay]) {

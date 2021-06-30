@@ -6,7 +6,7 @@ import { detach, addClass, removeClass, closest, attributes, select } from '@syn
 import { isNullOrUndefined, setValue, getUniqueID, ModuleDeclaration } from '@syncfusion/ej2-base';
 import { Popup } from '@syncfusion/ej2-popups';
 import { Input, InputObject, IInput, FloatLabelType } from '@syncfusion/ej2-inputs';
-import { ChangedEventArgs, CalendarView, Calendar, BlurEventArgs, FocusEventArgs, ClearedEventArgs } from '../calendar/calendar';
+import { ChangedEventArgs, CalendarView, Calendar, BlurEventArgs, FocusEventArgs, ClearedEventArgs, DayHeaderFormats} from '../calendar/calendar';
 import { DatePickerModel } from './datepicker-model';
 
 
@@ -81,6 +81,7 @@ export class DatePicker extends Calendar implements IInput {
     private checkPreviousValue: Date = null;
     protected formatString: string;
     protected tabIndex: string;
+    protected maskedDateValue: string = '';
     private datepickerOptions: DatePickerModel;
     protected defaultKeyConfigs: { [key: string]: string };
     protected mobilePopupWrapper: HTMLElement;
@@ -370,6 +371,31 @@ export class DatePicker extends Calendar implements IInput {
     public openOnFocus : boolean;
 
     /**
+     * Specifies whether it is a masked datepicker or not.
+     * By default the datepicker component render without masked input.
+     * If you need masked datepicker input then specify it as true.
+     * 
+     * @default false
+     */
+    @Property(false)
+    public enableMask: boolean;
+
+    /**
+     * Specifies the mask placeholder to be displayed on masked datepicker.
+     * By default it works based on narrow format .
+     * Possible values are:
+     * Narrow: Displays the full name  like day/month/year hour:minute:second.
+     * Short: Displays the single character like dd/mm/yyyy hh:mm:ss.
+     * 
+     * @default {}
+     * @asptype object
+     * @aspjsonconverterignore
+     */
+    @Property({})
+    public maskPlaceholder: {[key: string]: string };
+
+
+    /**
      * Triggers when the popup is opened.
      *
      * @event open
@@ -490,11 +516,19 @@ export class DatePicker extends Calendar implements IInput {
     }
     private initialize(): void {
         if (!this.isBlazorServer) {
+            if (this.enableMask) {
+              this.notify("createMask", {
+                module: "MaskedDateTime",
+              });
+            }
             this.checkInvalidValue(this.value);
             this.createInput();
             this.updateHtmlAttributeToWrapper();
             this.setAllowEdit();
             this.updateInput();
+            if(this.enableMask && !this.value && this.maskedDateValue && (this.floatLabelType == 'Always' || !this.floatLabelType || !this.placeholder)){
+                this.updateInputValue(this.maskedDateValue);
+            }
         } else {
             const parentElement: HTMLElement = this.element.parentElement as HTMLElement;
             this.inputWrapper = {
@@ -514,6 +548,7 @@ export class DatePicker extends Calendar implements IInput {
         this.previousElementValue = this.inputElement.value;
         this.previousDate = !isNullOrUndefined(this.value) ? new Date(+this.value) : null;
         this.inputElement.setAttribute('value', this.inputElement.value);
+        
         this.inputValueCopy = this.value;
     }
 
@@ -534,10 +569,12 @@ export class DatePicker extends Calendar implements IInput {
         if (!isNullOrUndefined(this.cssClass) && this.cssClass !== '') {
             updatedCssClassValues = (this.cssClass.replace(/\s+/g, ' ')).trim();
         }
+        let isBindClearAction: boolean = this.enableMask ? false : true;
         this.inputWrapper = Input.createInput(
             {
                 element: this.inputElement,
                 floatLabelType: this.floatLabelType,
+                bindClearAction: isBindClearAction,
                 properties: {
                     readonly: this.readonly,
                     placeholder: this.placeholder,
@@ -615,7 +652,17 @@ export class DatePicker extends Calendar implements IInput {
             }
         }
         if (isNullOrUndefined(this.value) && this.strictMode) {
+            if(!this.enableMask)
+            {
             this.updateInputValue('');
+            }
+            else
+            {
+                this.updateInputValue(this.maskedDateValue);
+                this.notify("createMask", {
+                  module: "MaskedDateTime",
+                });
+            }
         }
         if (!this.strictMode && isNullOrUndefined(this.value) && this.invalidValueString) {
             this.updateInputValue(this.invalidValueString);
@@ -723,8 +770,8 @@ export class DatePicker extends Calendar implements IInput {
         }
     }
     private bindInputEvent(): void {
-        if (!isNullOrUndefined(this.formatString)) {
-            if (this.formatString.indexOf('y') === -1) {
+        if (!isNullOrUndefined(this.formatString) || this.enableMask) {
+            if (this.enableMask || this.formatString.indexOf('y') === -1) {
                 EventHandler.add(this.inputElement, 'input', this.inputHandler, this);
             } else {
                 EventHandler.remove(this.inputElement, 'input', this.inputHandler);
@@ -738,8 +785,12 @@ export class DatePicker extends Calendar implements IInput {
             (this.isBlazorServer ? this.preventEventBubbling : this.dateIconHandler),
             this
         );
+        EventHandler.add(this.inputElement, 'mouseup', this.mouseUpHandler,this);
         EventHandler.add(this.inputElement, 'focus', this.inputFocusHandler, this);
         EventHandler.add(this.inputElement, 'blur', this.inputBlurHandler, this);
+        if(this.enableMask){
+        EventHandler.add(this.inputElement, 'keydown',this.keydownHandler,this);
+        }
         this.bindInputEvent();
         // To prevent the twice triggering.
         EventHandler.add(this.inputElement, 'change', this.inputChangeHandler, this);
@@ -759,15 +810,43 @@ export class DatePicker extends Calendar implements IInput {
         });
     }
 
+    private keydownHandler(e: KeyboardEventArgs): void{
+        switch(e.code)
+        {
+        case 'ArrowLeft':
+        case 'ArrowRight' :
+        case 'ArrowUp':
+        case 'ArrowDown':
+        case 'Home':
+        case 'End':
+            if(this.enableMask && !this.popupObj && !this.readonly)
+            {
+            e.preventDefault();
+            this.notify("keyDownHandler", {
+                module: "MaskedDateTime" ,
+                e: e
+              });
+            }
+            break;
+        
+        default:
+            break;
+        }
+    }
+
     protected unBindEvents() : void {
         EventHandler.remove(
             this.inputWrapper.buttons[0],
             'mousedown touchstart',
             (this.isBlazorServer ? this.preventEventBubbling : this.dateIconHandler)
         );
+        EventHandler.remove(this.inputElement, 'mouseup', this.mouseUpHandler);
         EventHandler.remove(this.inputElement, 'focus', this.inputFocusHandler);
         EventHandler.remove(this.inputElement, 'blur', this.inputBlurHandler);
         EventHandler.remove(this.inputElement, 'change', this.inputChangeHandler);
+        if(this.enableMask){
+            EventHandler.remove(this.inputElement, 'keydown',this.keydownHandler);
+            }
         if (this.showClearButton && (this.inputWrapper.clearButton || (this.isBlazorServer))) {
             EventHandler.remove(this.inputWrapper.clearButton, 'mousedown touchstart', this.resetHandler);
         }
@@ -814,7 +893,7 @@ export class DatePicker extends Calendar implements IInput {
         if (this.showClearButton && this.inputWrapper.clearButton) {
             EventHandler.add(this.inputWrapper.clearButton, 'mousedown touchstart', this.resetHandler, this);
         }
-    }
+        }
     protected resetHandler(e?: MouseEvent): void {
         if (!this.enabled) {
             return;
@@ -822,11 +901,23 @@ export class DatePicker extends Calendar implements IInput {
         e.preventDefault();
         this.clear(e);
     }
+    private mouseUpHandler(e? : MouseEvent): void{
+        if(this.enableMask)
+        {
+            e.preventDefault();
+            this.notify("setMaskSelection", {
+                module: "MaskedDateTime"
+              });
+        }
+    }
     private clear(event: MouseEvent): void {
         if (!this.isBlazorServer) {
             this.setProperties({ value: null }, true);
         }
+        if(!this.enableMask)
+        {
         this.updateInputValue('');
+        }
         const clearedArgs: ClearedEventArgs = {
             event: event
         };
@@ -836,12 +927,19 @@ export class DatePicker extends Calendar implements IInput {
             this.updateInput();
             this.popupUpdate();
             this.changeEvent(event);
+            if(this.enableMask)
+            {
+                this.notify("clearHandler", {
+                    module: "MaskedDateTime"
+                });
+            }
         }
         if (this.isBlazorServer) {
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             (this as any).interopAdaptor.invokeMethodAsync('OnValueCleared');
         }
     }
+
 
     private preventEventBubbling(e?: MouseEvent): void {
         e.preventDefault();
@@ -964,6 +1062,14 @@ export class DatePicker extends Calendar implements IInput {
         if (!this.enabled) {
             return;
         }
+        if(this.enableMask && !this.inputElement.value && this.placeholder)
+        {
+            if(this.maskedDateValue && !this.value && (this.floatLabelType == 'Auto' || this.floatLabelType == 'Never' || this.placeholder))
+            {
+                this.updateInputValue(this.maskedDateValue);
+                this.inputElement.selectionStart = this.inputElement.selectionEnd = 0;
+            }
+        }
         const focusArguments: BlurEventArgs = {
             model: isBlazor() && this.isServerRendered ? null : this
         };
@@ -976,6 +1082,12 @@ export class DatePicker extends Calendar implements IInput {
     }
     private inputHandler(): void {
         this.isPopupClicked = false;
+        if(this.enableMask)
+        {
+            this.notify("inputHandler", {
+                module: "MaskedDateTime"
+              });
+        }
     }
     private inputBlurHandler(e: MouseEvent): void {
         if (!this.enabled) {
@@ -990,6 +1102,13 @@ export class DatePicker extends Calendar implements IInput {
             this.updateInput();
             this.popupUpdate();
             this.changeTrigger(e);
+            if(this.enableMask && this.maskedDateValue && this.placeholder)
+           {
+            if(this.inputElement.value == this.maskedDateValue && !this.value && (this.floatLabelType == 'Auto' || this.floatLabelType == 'Never' || this.placeholder))
+            {
+                this.updateInputValue('');
+            }
+         }
             this.errorClass();
         } else {
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -1093,6 +1212,22 @@ export class DatePicker extends Calendar implements IInput {
             break;
         case 'tab':
         case 'shiftTab':
+            let start: number = this.inputElement.selectionStart;
+            let end: number = this.inputElement.selectionEnd;
+            if (this.enableMask && !this.popupObj && !this.readonly)
+            {
+                let length: number = this.inputElement.value.length;
+                if((start == 0 && end == length) || (end !== length && e.action == 'tab') || (start !== 0 && e.action == 'shiftTab'))
+                {
+                e.preventDefault();
+                }
+                this.notify("keyDownHandler", {
+                module: "MaskedDateTime" ,
+                e: e
+              });
+              start = this.inputElement.selectionStart;
+              end = this.inputElement.selectionEnd;
+            }
             if (!this.isBlazorServer) {
                 this.strictModeUpdate();
                 this.updateInput();
@@ -1102,6 +1237,11 @@ export class DatePicker extends Calendar implements IInput {
             } else {
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 (this as any).interopAdaptor.invokeMethodAsync('OnStrictModeUpdate', this.inputElement.value);
+            }
+            if(this.enableMask)
+            {
+                this.inputElement.selectionStart = start ;
+               this.inputElement.selectionEnd = end;
             }
             this.hide(e);
             break;
@@ -1117,7 +1257,7 @@ export class DatePicker extends Calendar implements IInput {
         this.previousDate = ((!isNullOrUndefined(this.value) && new Date(+this.value)) || null);
         if (this.isCalendar()) {
             super.keyActionHandle(e);
-            if (!this.isBlazorServer) {
+            if (!this.isBlazorServer && this.isCalendar()) {
                 attributes(this.inputElement, {
                     'aria-activedescendant': '' + this.setActiveDescendant()
                 });
@@ -1394,7 +1534,10 @@ export class DatePicker extends Calendar implements IInput {
         if (this) {
             modules.push({ args: [this], member: 'islamic' });
         }
-
+        if(this.enableMask)
+        {
+            modules.push({args: [this], member: 'MaskedDateTime'});
+        }
         return modules;
     }
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -1423,9 +1566,20 @@ export class DatePicker extends Calendar implements IInput {
                 }
                 date = this.globalize.formatDate(this.changedArgs.value, formatOptions);
             }
+            if (this.enableMask) {
+                this.notify("createMask", {
+                  module: "MaskedDateTime",
+                });
+              }
         }
         if (!isNullOrUndefined(date)) {
             this.updateInputValue(date);
+            if(this.enableMask)
+            {
+            this.notify("setMaskSelection", {
+                module: "MaskedDateTime"
+              });
+            }
         }
     }
     protected isCalendar(): boolean {
@@ -1986,6 +2140,13 @@ export class DatePicker extends Calendar implements IInput {
         }
         if (!this.popupObj) {
             this.updateInputValue(inputVal);
+            if(this.enableMask)
+            {
+            this.updateInputValue(this.maskedDateValue);
+                this.notify("createMask", {
+                  module: "MaskedDateTime",
+                });
+            }
         }
     }
     private setAriaAttributes(): void {
@@ -2015,7 +2176,7 @@ export class DatePicker extends Calendar implements IInput {
             this.calendarElement.querySelectorAll(dateIdString)[0].classList.contains('e-disabled');
         if ((!isNullOrUndefined(this.value) && !(+new Date(+this.value).setMilliseconds(0) >= +this.min
             && +new Date(+this.value).setMilliseconds(0) <= +this.max))
-            || (!this.strictMode && this.inputElement.value !== '' && isNullOrUndefined(this.value) || isDisabledDate)) {
+            || (!this.strictMode && this.inputElement.value !== '' && this.inputElement.value !== this.maskedDateValue && isNullOrUndefined(this.value) || isDisabledDate)) {
             addClass([this.inputWrapper.container], ERROR);
             attributes(this.inputElement, { 'aria-invalid': 'true' });
         } else {
@@ -2055,6 +2216,11 @@ export class DatePicker extends Calendar implements IInput {
                 }
                 this.isInteracted = true;
                 this.preventChange = this.isAngular && this.preventChange ? !this.preventChange : this.preventChange;
+                if (this.enableMask) {
+                    this.notify("createMask", {
+                      module: "MaskedDateTime",
+                    });
+                  }
                 break;
             case 'format':
                 this.checkFormat();

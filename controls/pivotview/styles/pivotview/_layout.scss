@@ -54,6 +54,14 @@
         font-size: 13px;
         font-weight: 500;
         width: 100%;
+
+        @if ($pivotgrid-skin == 'tailwind') {
+          padding-bottom: 4px;
+        }
+
+        @if ($pivotgrid-skin == 'tailwind-dark') {
+          padding-bottom: 4px;
+        }
       }
 
       .e-caption-input-text {
@@ -66,7 +74,11 @@
       .e-input-option-text,
       .e-group-inerval-option-text,
       .e-checkbox-wrapper {
-        margin-bottom: 10px; 
+        padding-bottom: $pivotgrid-grouping-padding-bottom; 
+      }
+
+      .e-group-start-option-wrapper .e-checkbox-wrapper{
+        padding-top: $pivotgrid-grouping-padding-top;
       }
 
       .e-caption-option-text,
@@ -220,6 +232,14 @@
       .e-excelfilter {
         padding-top: 20px;
 
+        @if ($pivotgrid-skin == 'tailwind') {
+          padding-top: 12px;
+        }
+
+        @if ($pivotgrid-skin == 'tailwind-dark') {
+          padding-top: 12px;
+        }
+
         .e-member-editor-container-outer-div {
           height: $pivotgrid-excel-member-filter-height;
         }
@@ -258,6 +278,14 @@
 
         .e-disable {
           display: none;
+        }
+
+        @if ($pivotgrid-skin == 'tailwind') {
+          padding-top: 0;
+        }
+
+        @if ($pivotgrid-skin == 'tailwind-dark') {
+          padding-top: 0;
         }
       }
 
@@ -499,6 +527,14 @@
 
       .e-dlg-content {
         overflow: auto;
+
+        @if ($pivotgrid-skin == 'tailwind') {
+          padding-top: 12px;
+        }
+
+        @if ($pivotgrid-skin == 'tailwind-dark') {
+          padding-top: 12px;
+        }
       }
     }
 
@@ -517,7 +553,8 @@
         }
       }
 
-      .e-multiple-axes-mode-wrapper {
+      .e-multiple-axes-mode-wrapper,
+      .e-multiple-axes-mode-container {
         padding-top: 20px;
 
         .e-multiple-axes-mode-text {
@@ -549,6 +586,13 @@
         .e-pivot-format-grouping-lable,
         .e-pivot-format-decimal-lable {
           font-weight: 500;
+          @if ($pivotgrid-skin == 'tailwind') {
+            padding-bottom: 4px;
+          }
+  
+          @if ($pivotgrid-skin == 'tailwind-dark') {
+            padding-bottom: 4px;
+          }
         }
 
         .e-pivot-format-value-drop,
@@ -557,6 +601,13 @@
         .e-pivot-format-grouping-drop,
         .e-pivot-format-decimal-drop {
           margin-bottom: 20px;
+          @if ($pivotgrid-skin == 'tailwind') {
+            margin-bottom: 12px;
+          }
+  
+          @if ($pivotgrid-skin == 'tailwind-dark') {
+            margin-bottom: 12px;
+          }
         }
       }
     }
@@ -829,6 +880,12 @@
         .e-member-editor-container-outer-div {
           height: $pivotgrid-excel-member-filter-bigger-height;
         }
+        @if ($pivotgrid-skin == 'tailwind') {
+          padding-top: 16px;
+        }
+        @if ($pivotgrid-skin == 'tailwind-dark') {
+          padding-top: 16px;
+        }
       }
 
       .e-label-filter,
@@ -903,6 +960,10 @@
       .e-checkbox-wrapper .e-label,
       .e-group-inerval-option-text {
         font-size: 14px;
+      }
+
+      .e-group-start-option-wrapper .e-checkbox-wrapper{
+        padding-top: $pivotgrid-grouping-bigger-padding-top;
       }
     }
 

@@ -1,18 +1,18 @@
 {
 	"name": "@syncfusion/ej2-charts",
-	"version": "19.1.67",
+	"version": "19.1.65",
 	"description": "Feature-rich chart control with built-in support for over 25 chart types, technical indictors, trendline, zooming, tooltip, selection, crosshair and trackball.",
 	"author": "Syncfusion Inc.",
 	"license": "SEE LICENSE IN license",
 	"dependencies": {
 		"@syncfusion/ej2-base": "*",
-		"@syncfusion/ej2-data": "*",
-		"@syncfusion/ej2-svg-base": "*",
-		"@syncfusion/ej2-pdf-export": "*",
-		"@syncfusion/ej2-file-utils": "*",
+		"@syncfusion/ej2-calendars": "*",
 		"@syncfusion/ej2-compression": "*",
+		"@syncfusion/ej2-data": "*",
+		"@syncfusion/ej2-file-utils": "*",
 		"@syncfusion/ej2-navigations": "*",
-		"@syncfusion/ej2-calendars": "*"
+		"@syncfusion/ej2-pdf-export": "*",
+		"@syncfusion/ej2-svg-base": "*"
 	},
 	"devDependencies": {
 		"@types/chai": "^3.4.28",

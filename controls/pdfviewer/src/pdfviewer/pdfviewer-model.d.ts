@@ -1,4 +1,4 @@
-import { Component, INotifyPropertyChanged, NotifyPropertyChanges, ChildProperty, L10n, Collection, Complex, isBlazor } from '@syncfusion/ej2-base';import { ModuleDeclaration, isNullOrUndefined, Property, Event, EmitType } from '@syncfusion/ej2-base';import { PdfViewerBase } from './index';import { Navigation } from './index';import { Magnification } from './index';import { Toolbar } from './index';import { ToolbarItem } from './index';import { LinkTarget, InteractionMode, SignatureFitMode, AnnotationType, AnnotationToolbarItem, LineHeadStyle, ContextMenuAction, FontStyle, TextAlignment, AnnotationResizerShape, AnnotationResizerLocation, ZoomMode, PrintMode, CursorType, ContextMenuItem, DynamicStampItem, SignStampItem, StandardBusinessStampItem, FormFieldType, AllowedInteraction, AnnotationDataFormat, SignatureType, CommentStatus } from './base/types';import { Annotation } from './index';import { LinkAnnotation } from './index';import { ThumbnailView } from './index';import { BookmarkView } from './index';import { TextSelection } from './index';import { TextSearch } from './index';import { FormFields } from './index';import { Print, CalibrationUnit } from './index';import { UnloadEventArgs, LoadEventArgs, LoadFailedEventArgs, AjaxRequestFailureEventArgs, PageChangeEventArgs, PageClickEventArgs, ZoomChangeEventArgs, HyperlinkClickEventArgs, HyperlinkMouseOverArgs, ImportStartEventArgs, ImportSuccessEventArgs, ImportFailureEventArgs, ExportStartEventArgs, ExportSuccessEventArgs, ExportFailureEventArgs, AjaxRequestInitiateEventArgs } from './index';import { AnnotationAddEventArgs, AnnotationRemoveEventArgs, AnnotationPropertiesChangeEventArgs, AnnotationResizeEventArgs, AnnotationSelectEventArgs, AnnotationMoveEventArgs, AnnotationDoubleClickEventArgs, AnnotationMouseoverEventArgs, PageMouseoverEventArgs, AnnotationMouseLeaveEventArgs , ButtonFieldClickEventArgs} from './index';import { TextSelectionStartEventArgs, TextSelectionEndEventArgs, DownloadStartEventArgs, DownloadEndEventArgs, ExtractTextCompletedEventArgs, PrintStartEventArgs, PrintEndEventArgs } from './index';import { TextSearchStartEventArgs, TextSearchCompleteEventArgs, TextSearchHighlightEventArgs } from './index';import { PdfAnnotationBase, ZOrderPageTable } from './drawing/pdf-annotation';import { PdfAnnotationBaseModel } from './drawing/pdf-annotation-model';import { Drawing, ClipBoardObject } from './drawing/drawing';import { Selector } from './drawing/selector';import { SelectorModel } from './drawing/selector-model';import { PointModel, IElement, Rect } from '@syncfusion/ej2-drawings';import { renderAdornerLayer } from './drawing/dom-util';import { ThumbnailClickEventArgs } from './index';import { ValidateFormFieldsArgs, BookmarkClickEventArgs, AnnotationUnSelectEventArgs, BeforeAddFreeTextEventArgs, FormFieldFocusOutEventArgs, CommentEventArgs, FormFieldClickArgs } from './base';import { AddSignatureEventArgs, RemoveSignatureEventArgs, MoveSignatureEventArgs, SignaturePropertiesChangeEventArgs, ResizeSignatureEventArgs, SignatureSelectEventArgs } from './base';
+import { Component, INotifyPropertyChanged, NotifyPropertyChanges, ChildProperty, L10n, Collection, Complex, isBlazor } from '@syncfusion/ej2-base';import { ModuleDeclaration, isNullOrUndefined, Property, Event, EmitType } from '@syncfusion/ej2-base';import { IAnnotationPoint, IPoint, PdfViewerBase } from './index';import { Navigation } from './index';import { Magnification } from './index';import { Toolbar } from './index';import { ToolbarItem } from './index';import { LinkTarget, InteractionMode, SignatureFitMode, AnnotationType, AnnotationToolbarItem, LineHeadStyle, ContextMenuAction, FontStyle, TextAlignment, AnnotationResizerShape, AnnotationResizerLocation, ZoomMode, PrintMode, CursorType, ContextMenuItem, DynamicStampItem, SignStampItem, StandardBusinessStampItem, FormFieldType, AllowedInteraction, AnnotationDataFormat, SignatureType, CommentStatus, SignatureItem, FormDesignerToolbarItem } from './base/types';import { Annotation } from './index';import { LinkAnnotation } from './index';import { ThumbnailView } from './index';import { BookmarkView } from './index';import { TextSelection } from './index';import { TextSearch } from './index';import { FormFields } from './index';import { FormDesigner } from './index';import { Print, CalibrationUnit } from './index';import { UnloadEventArgs, LoadEventArgs, LoadFailedEventArgs, AjaxRequestFailureEventArgs, PageChangeEventArgs, PageClickEventArgs, ZoomChangeEventArgs, HyperlinkClickEventArgs, HyperlinkMouseOverArgs, ImportStartEventArgs, ImportSuccessEventArgs, ImportFailureEventArgs, ExportStartEventArgs, ExportSuccessEventArgs, ExportFailureEventArgs, AjaxRequestInitiateEventArgs, AjaxRequestSuccessEventArgs } from './index';import { AnnotationAddEventArgs, AnnotationRemoveEventArgs, AnnotationPropertiesChangeEventArgs, AnnotationResizeEventArgs, AnnotationSelectEventArgs, AnnotationMoveEventArgs, AnnotationDoubleClickEventArgs, AnnotationMouseoverEventArgs, PageMouseoverEventArgs, AnnotationMouseLeaveEventArgs , ButtonFieldClickEventArgs} from './index';import { TextSelectionStartEventArgs, TextSelectionEndEventArgs, DownloadStartEventArgs, DownloadEndEventArgs, ExtractTextCompletedEventArgs, PrintStartEventArgs, PrintEndEventArgs } from './index';import { TextSearchStartEventArgs, TextSearchCompleteEventArgs, TextSearchHighlightEventArgs } from './index';import { PdfAnnotationBase, PdfFormFieldBase, ZOrderPageTable } from './drawing/pdf-annotation';import { PdfAnnotationBaseModel, PdfFormFieldBaseModel } from './drawing/pdf-annotation-model';import { Drawing, ClipBoardObject } from './drawing/drawing';import { Selector } from './drawing/selector';import { SelectorModel } from './drawing/selector-model';import { PointModel, IElement, Rect, cornersPointsBeforeRotation } from '@syncfusion/ej2-drawings';import { renderAdornerLayer } from './drawing/dom-util';import { ThumbnailClickEventArgs } from './index';import { ValidateFormFieldsArgs, BookmarkClickEventArgs, AnnotationUnSelectEventArgs, BeforeAddFreeTextEventArgs, FormFieldFocusOutEventArgs, CommentEventArgs, FormFieldClickArgs, FormFieldAddArgs, FormFieldRemoveArgs, FormFieldPropertiesChangeArgs, FormFieldMouseLeaveArgs, FormFieldMouseoverArgs, FormFieldMoveArgs, FormFieldResizeArgs, FormFieldSelectArgs, FormFieldUnselectArgs } from './base';import { AddSignatureEventArgs, RemoveSignatureEventArgs, MoveSignatureEventArgs, SignaturePropertiesChangeEventArgs, ResizeSignatureEventArgs, SignatureSelectEventArgs } from './base';import { IFormField, IFormFieldBound } from './form-designer/form-designer';import { PdfPageRotateAngle } from '@syncfusion/ej2-pdf-export';
 import {IAjaxHeaders} from "./pdfviewer";
 import {ComponentModel} from '@syncfusion/ej2-base';
 
@@ -21,6 +21,11 @@ export interface ToolbarSettingsModel {
      * Provide option to customize the annotation toolbar of the PDF Viewer.
      */
     annotationToolbarItems?: AnnotationToolbarItem[];
+
+    /**
+     * Customize the tools to be exposed in the form designer toolbar.
+     */
+    formDesignerToolbarItems?: FormDesignerToolbarItem[];
 
 }
 
@@ -76,14 +81,128 @@ export interface AnnotationToolbarSettingsModel {
 }
 
 /**
+ * Interface for a class FormDesignerToolbarSettings
+ */
+export interface FormDesignerToolbarSettingsModel {
+
+    /**
+     * Enable or disables the tooltip of the toolbar.
+     */
+    showTooltip?: boolean;
+
+    /**
+     * shows only the defined options in the PdfViewer.
+     */
+    formDesignerToolbarItem?: FormDesignerToolbarItem[];
+
+}
+
+/**
  * Interface for a class SignatureFieldSettings
  */
 export interface SignatureFieldSettingsModel {
 
     /**
+     * Get or set the form field bounds.
+     */
+    bounds?: IFormFieldBound;
+
+    /**
+     * Get or set the name of the form field element.
+     */
+    name?: string;
+
+    /**
+     * Specifies whether the signature field is in read-only or read-write mode. FALSE by default.
+     */
+    isReadOnly?: boolean;
+
+    /**
+     * Gets or set the visibility of the form field.
+     */
+    visibility?: VisibilityState;
+
+    /**
+     * If it is set as true, consider as mandatory field in the PDF document. By default it is false.
+     */
+    isRequired?: boolean;
+
+    /**
+     * Get or set the boolean value to print the signature field. TRUE by default.
+     */
+    isPrint?: boolean;
+
+    /**
+     * Get or set the text to be displayed as tooltip. By default it is empty.
+     */
+    tooltip?: string;
+
+    /**
+     * specifies the page number of the form field.
+     */
+    pageNumber?: number;
+
+    /**
      * Specifies the properties of the signature indicator in the signature field.
      */
     signatureIndicatorSettings?: SignatureIndicatorSettingsModel;
+
+}
+
+/**
+ * Interface for a class InitialFieldSettings
+ */
+export interface InitialFieldSettingsModel {
+
+    /**
+     * Get or set the form field bounds.
+     */
+    bounds?: IFormFieldBound;
+
+    /**
+     * Get or set the name of the form field element.
+     */
+    name?: string;
+
+    /**
+     * Specifies whether the initial field is in read-only or read-write mode. FALSE by default.
+     */
+    isReadOnly?: boolean;
+
+    /**
+     * Gets or set the visibility of the form field.
+     */
+    visibility?: VisibilityState;
+
+    /**
+     * If it is set as true, consider as mandatory field in the PDF document. By default it is false.
+     */
+    isRequired?: boolean;
+
+    /**
+     * Get or set the boolean value to print the initial field. TRUE by default.
+     */
+    isPrint?: boolean;
+
+    /**
+     * Get or set the text to be displayed as tooltip. By default it is empty.
+     */
+    tooltip?: string;
+
+    /**
+     * specifies the page number of the form field.
+     */
+    pageNumber?: number;
+
+    /**
+     * Gets or sets the initial field type of the signature field.
+     */
+    isInitialField?: boolean;
+
+    /**
+     * Specifies the properties of the signature indicator in the initial field.
+     */
+    initialIndicatorSettings?: SignatureIndicatorSettingsModel;
 
 }
 
@@ -204,6 +323,11 @@ export interface ServerActionSettingsModel {
 export interface StrikethroughSettingsModel {
 
     /**
+     * Get or set page number of the annotation.
+     */
+    pageNumber?: number;
+
+    /**
      * specifies the opacity of the annotation.
      */
     opacity?: number;
@@ -266,6 +390,11 @@ export interface StrikethroughSettingsModel {
  * Interface for a class UnderlineSettings
  */
 export interface UnderlineSettingsModel {
+
+    /**
+     * Get or set page number of the annotation.
+     */
+    pageNumber?: number;
 
     /**
      * specifies the opacity of the annotation.
@@ -332,6 +461,11 @@ export interface UnderlineSettingsModel {
 export interface HighlightSettingsModel {
 
     /**
+     * Get or set page number of the annotation.
+     */
+    pageNumber?: number;
+
+    /**
      * specifies the opacity of the annotation.
      */
     opacity?: number;
@@ -394,6 +528,16 @@ export interface HighlightSettingsModel {
  * Interface for a class LineSettings
  */
 export interface LineSettingsModel {
+
+    /**
+     * Get or set offset of the annotation.
+     */
+    offset?: IPoint;
+
+    /**
+     * Get or set page number of the annotation.
+     */
+    pageNumber?: number;
 
     /**
      * specifies the opacity of the annotation.
@@ -491,6 +635,16 @@ export interface LineSettingsModel {
 export interface ArrowSettingsModel {
 
     /**
+     * Get or set offset of the annotation.
+     */
+    offset?: IPoint;
+
+    /**
+      * Get or set page number of the annotation.
+      */
+    pageNumber?: number;
+
+    /**
      * specifies the opacity of the annotation.
      */
     opacity?: number;
@@ -586,6 +740,26 @@ export interface ArrowSettingsModel {
 export interface RectangleSettingsModel {
 
     /**
+     * Get or set offset of the annotation.
+     */
+    offset?: IPoint;
+
+    /**
+      * Get or set page number of the annotation.
+      */
+    pageNumber?: number;
+
+    /**
+      * specifies the width of the annotation.
+      */
+    width?: number;
+
+    /**
+      * specifies the height of the annotation.
+      */
+    height?: number;
+
+    /**
      * specifies the opacity of the annotation.
      */
     opacity?: number;
@@ -664,6 +838,26 @@ export interface RectangleSettingsModel {
  * Interface for a class CircleSettings
  */
 export interface CircleSettingsModel {
+
+    /**
+     * Get or set offset of the annotation.
+     */
+    offset?: IPoint;
+
+    /**
+      * Get or set page number of the annotation.
+      */
+    pageNumber?: number;
+
+    /**
+      * specifies the width of the annotation.
+      */
+    width?: number;
+
+    /**
+      * specifies the height of the annotation.
+      */
+    height?: number;
 
     /**
      * specifies the opacity of the annotation.
@@ -788,6 +982,16 @@ export interface ShapeLabelSettingsModel {
 export interface PolygonSettingsModel {
 
     /**
+     * Get or set offset of the annotation.
+     */
+    offset?: IPoint;
+
+    /**
+      * Get or set page number of the annotation.
+      */
+    pageNumber?: number;
+
+    /**
      * specifies the opacity of the annotation.
      */
     opacity?: number;
@@ -868,6 +1072,26 @@ export interface PolygonSettingsModel {
 export interface StampSettingsModel {
 
     /**
+    * Get or set offset of the annotation.
+    */
+    offset?: IPoint;
+
+    /**
+     * Get or set page number of the annotation.
+     */
+    pageNumber?: number;
+
+    /**
+     * specifies the width of the annotation.
+     */
+    width?: number;
+
+    /**
+     * specifies the height of the annotation.
+     */
+    height?: number;
+
+    /**
      * specifies the opacity of the annotation.
      */
     opacity?: number;
@@ -946,6 +1170,16 @@ export interface StampSettingsModel {
  * Interface for a class CustomStampSettings
  */
 export interface CustomStampSettingsModel {
+
+    /**
+    * Get or set offset of the annotation.
+    */
+    offset?: IPoint;
+
+    /**
+     * Get or set page number of the annotation.
+     */
+    pageNumber?: number;
 
     /**
      * specifies the opacity of the annotation.
@@ -1036,6 +1270,16 @@ export interface CustomStampSettingsModel {
  * Interface for a class DistanceSettings
  */
 export interface DistanceSettingsModel {
+
+    /**
+    * Get or set offset of the annotation.
+    */
+    offset?: IPoint;
+
+    /**
+     * Get or set page number of the annotation.
+     */
+    pageNumber?: number;
 
     /**
      * specifies the opacity of the annotation.
@@ -1143,6 +1387,16 @@ export interface DistanceSettingsModel {
 export interface PerimeterSettingsModel {
 
     /**
+    * Get or set offset of the annotation.
+    */
+    offset?: IPoint;
+
+    /**
+     * Get or set page number of the annotation.
+     */
+    pageNumber?: number;
+
+    /**
      * specifies the opacity of the annotation.
      */
     opacity?: number;
@@ -1233,6 +1487,16 @@ export interface PerimeterSettingsModel {
 export interface AreaSettingsModel {
 
     /**
+    * Get or set offset of the annotation.
+    */
+    offset?: IPoint;
+
+    /**
+     * Get or set page number of the annotation.
+     */
+    pageNumber?: number;
+
+    /**
      * specifies the opacity of the annotation.
      */
     opacity?: number;
@@ -1306,6 +1570,26 @@ export interface AreaSettingsModel {
  * Interface for a class RadiusSettings
  */
 export interface RadiusSettingsModel {
+
+    /**
+    * Get or set offset of the annotation.
+    */
+    offset?: IPoint;
+
+    /**
+     * Get or set page number of the annotation.
+     */
+    pageNumber?: number;
+
+    /**
+     * specifies the width of the annotation.
+     */
+    width?: number;
+
+    /**
+      * specifies the height of the annotation.
+      */
+    height?: number;
 
     /**
      * specifies the opacity of the annotation.
@@ -1388,6 +1672,16 @@ export interface RadiusSettingsModel {
 export interface VolumeSettingsModel {
 
     /**
+    * Get or set offset of the annotation.
+    */
+    offset?: IPoint;
+
+    /**
+     * Get or set page number of the annotation.
+     */
+    pageNumber?: number;
+
+    /**
      * specifies the opacity of the annotation.
      */
     opacity?: number;
@@ -1463,6 +1757,31 @@ export interface VolumeSettingsModel {
 export interface InkAnnotationSettingsModel {
 
     /**
+    * Get or set offset of the annotation.
+    */
+    offset?: IPoint;
+
+    /**
+     * Get or set page number of the annotation.
+     */
+    pageNumber?: number;
+
+    /**
+     * specifies the width of the annotation.
+     */
+    width?: number;
+
+    /**
+      * specifies the height of the annotation.
+      */
+    height?: number;
+
+    /**
+      * Gets or sets the path of the ink annotation.
+      */
+    path?: string;
+
+    /**
      * Sets the opacity value for ink annotation.By default value is 1. It range varies from 0 to 1.
      */
     opacity?: number;
@@ -1516,6 +1835,16 @@ export interface InkAnnotationSettingsModel {
  * Interface for a class StickyNotesSettings
  */
 export interface StickyNotesSettingsModel {
+
+    /**
+    * Get or set offset of the annotation.
+    */
+    offset?: IPoint;
+
+    /**
+     * Get or set page number of the annotation.
+     */
+    pageNumber?: number;
 
     /**
      * specifies the author of the annotation.
@@ -1588,6 +1917,16 @@ export interface MeasurementSettingsModel {
  * Interface for a class FreeTextSettings
  */
 export interface FreeTextSettingsModel {
+
+    /**
+    * Get or set offset of the annotation.
+    */
+    offset?: IPoint;
+
+    /**
+     * Get or set page number of the annotation.
+     */
+    pageNumber?: number;
 
     /**
      * specifies the opacity of the annotation.
@@ -1823,6 +2162,26 @@ export interface HandWrittenSignatureSettingsModel {
      * specified the height of the annotation.
      */
     height?: number;
+
+    /**
+     * Gets or sets the save signature limit of the signature. By default value is 1 and maximum limit is 5.
+     */
+    saveSignatureLimit?: number;
+
+    /**
+     * Gets or sets the save initial limit of the initial. By default value is 1 and maximum limit is 5.
+     */
+    saveInitialLimit?: number;
+
+    /**
+     * Provide option to define the required signature items to be displayed in signature menu.
+     */
+    signatureItem?: SignatureItem[];
+
+    /**
+     * Options to set the type signature font name with respective index and maximum font name limit is 4 so key value should be 0 to 3.
+     */
+    typeSignatureFonts?: { [key: number]: string };
 
     /**
      * specifies the annotation selector settings of the annotation.
@@ -2063,6 +2422,86 @@ export interface FormFieldModel {
      */
     fontName?: string;
 
+    /**
+     * Get or set the form field bounds.
+     */
+    bounds?: IFormFieldBound;
+
+    /**
+     * Get or set the font family of the form field.
+     */
+    fontFamily?: string;
+
+    /**
+     * Get or set the font size of the form field.
+     */
+    fontSize?: number;
+
+    /**
+     * Get or set the font Style of form field.
+     */
+    fontStyle?: FontStyle;
+
+    /**
+     * Get or set the font color of the form field in hexadecimal string format.
+     */
+    color?: string;
+
+    /**
+     * Get or set the background color of the form field in hexadecimal string format.
+     */
+    backgroundColor?: string;
+
+    /**
+     * Get or set the text alignment of the form field.
+     */
+    alignment?: TextAlignment;
+
+    /**
+     * Gets or set the visibility of the form field.
+     */
+    visibility?: VisibilityState;
+
+    /**
+     * Get or set the maximum character length.
+     */
+    maxLength?: number;
+
+    /**
+     * Gets or set the is Required of form field.
+     */
+    isRequired?: boolean;
+
+    /**
+     * Get or set the boolean value to print the form field. TRUE by default.
+     */
+    isPrint?: boolean;
+
+    /**
+     * Get or set the text to be displayed as tooltip. By default it is empty.
+     */
+    tooltip?: string;
+
+    /**
+     * Get or set the form field items. This can be Dropdown items or Listbox items.
+     */
+    options?: ItemModel[];
+
+    /**
+     * Specifies the properties of the signature indicator in the signature field.
+     */
+    signatureIndicatorSettings?: SignatureIndicatorSettingsModel;
+
+    /**
+     * Get or set the thickness of the form field.
+     */
+    thickness?: number;
+
+    /**
+     * Get or set the border color of the form field.
+     */
+    borderColor?: string;
+
 }
 
 /**
@@ -2083,6 +2522,545 @@ export interface ContextMenuSettingsModel {
      *  @default []
      */
     contextMenuItems?: ContextMenuItem[];
+
+}
+
+/**
+ * Interface for a class TextFieldSettings
+ */
+export interface TextFieldSettingsModel {
+
+    /**
+     * Get or set the form field bounds.
+     */
+    bounds?: IFormFieldBound;
+
+    /**
+     * Get or set the name of the form field element.
+     */
+    name?: string;
+
+    /**
+     * Get or set the value of the form field.
+     */
+    value?: string;
+
+    /**
+     * Get or set the font family of the textbox field.
+     */
+    fontFamily?: string;
+
+    /**
+     * Get or set the font size of the textbox field.
+     */
+    fontSize?: number;
+
+    /**
+     * specifies the page number of the form field.
+     */
+    pageNumber?: number;
+
+    /**
+     * Get or set the font Style of textbox field.
+     */
+    fontStyle?: FontStyle;
+
+    /**
+     * Get or set the font color of the textbox in hexadecimal string format.
+     */
+    color?: string;
+
+    /**
+     * Get or set the background color of the textbox in hexadecimal string format.
+     */
+    backgroundColor?: string;
+
+    /**
+     * Get or set the alignment of the text.
+     */
+    alignment?: TextAlignment;
+
+    /**
+     * Specifies whether the textbox field is in read-only or read-write mode. FALSE by default.
+     */
+    isReadOnly?: boolean;
+
+    /**
+     * Gets or set the visibility of the form field.
+     */
+    visibility?: VisibilityState;
+
+    /**
+     * Get or set the maximum character length.
+     */
+    maxLength?: number;
+
+    /**
+     * If it is set as true, consider as mandatory field in the PDF document. By default it is false.
+     */
+    isRequired?: boolean;
+
+    /**
+     * Get or set the boolean value to print the textbox field. TRUE by default.
+     */
+    isPrint?: boolean;
+
+    /**
+     * Get or set the text to be displayed as tooltip. By default it is empty.
+     */
+    tooltip?: string;
+
+    /**
+     * Get or set the thickness of the textbox field.
+     */
+    thickness?: number;
+
+    /**
+     * Get or set the border color of the textbox field.
+     */
+    borderColor?: string;
+
+}
+
+/**
+ * Interface for a class PasswordFieldSettings
+ */
+export interface PasswordFieldSettingsModel {
+
+    /**
+     * Get or set the form field bounds.
+     */
+    bounds?: IFormFieldBound;
+
+    /**
+     * Get or set the name of the form field element.
+     */
+    name?: string;
+
+    /**
+     * Get or set the value of the form field.
+     */
+    value?: string;
+
+    /**
+     * specifies the page number of the form field.
+     */
+    pageNumber?: number;
+
+    /**
+     * Get or set the font family of the password field.
+     */
+    fontFamily?: string;
+
+    /**
+     * Get or set the font size of the password field.
+     */
+    fontSize?: number;
+
+    /**
+     * Get or set the font Style of password field.
+     */
+    fontStyle?: FontStyle;
+
+    /**
+     * Get or set the font color of the password field in hexadecimal string format.
+     */
+    color?: string;
+
+    /**
+     * Get or set the background color of the password field in hexadecimal string format.
+     */
+    backgroundColor?: string;
+
+    /**
+     * Get or set the alignment of the text.
+     */
+    alignment?: TextAlignment;
+
+    /**
+     * Specifies whether the password field is in read-only or read-write mode. FALSE by default.
+     */
+    isReadOnly?: boolean;
+
+    /**
+     * Gets or set the visibility of the form field.
+     */
+    visibility?: VisibilityState;
+
+    /**
+     * Get or set the maximum character length.
+     */
+    maxLength?: number;
+
+    /**
+     * If it is set as true, consider as mandatory field in the PDF document. By default it is false.
+     */
+    isRequired?: boolean;
+
+    /**
+     * Get or set the boolean value to print the password field. TRUE by default.
+     */
+    isPrint?: boolean;
+
+    /**
+     * Get or set the text to be displayed as tooltip. By default it is empty.
+     */
+    tooltip?: string;
+
+    /**
+     * Get or set the thickness of the password field.
+     */
+    thickness?: number;
+
+    /**
+     * Get or set the border color of the password field.
+     */
+    borderColor?: string;
+
+}
+
+/**
+ * Interface for a class CheckBoxFieldSettings
+ */
+export interface CheckBoxFieldSettingsModel {
+
+    /**
+     * Get or set the form field bounds.
+     */
+    bounds?: IFormFieldBound;
+
+    /**
+     * Get or set the name of the check box.
+     */
+    name?: string;
+
+    /**
+     * Specifies whether the check box is in checked state or not.
+     */
+    isChecked?: boolean;
+
+    /**
+     * Get or set the background color of the check box in hexadecimal string format.
+     */
+    backgroundColor?: string;
+
+    /**
+     * Specifies whether the check box field is in read-only or read-write mode. FALSE by default.
+     */
+    isReadOnly?: boolean;
+
+    /**
+     * Gets or set the visibility of the form field.
+     */
+    visibility?: VisibilityState;
+
+    /**
+     * Get or set the boolean value to print the check box field. TRUE by default.
+     */
+    isPrint?: boolean;
+
+    /**
+     * specifies the page number of the form field.
+     */
+    pageNumber?: number;
+
+    /**
+     * Get or set the text to be displayed as tooltip. By default it is empty.
+     */
+    tooltip?: string;
+
+    /**
+     * If it is set as true, consider as mandatory field in the PDF document. By default it is false.
+     */
+    isRequired?: boolean;
+
+    /**
+     * Get or set the thickness of the check box field.
+     */
+    thickness?: number;
+
+    /**
+     * Get or set the border color of the check box field.
+     */
+    borderColor?: string;
+
+}
+
+/**
+ * Interface for a class RadioButtonFieldSettings
+ */
+export interface RadioButtonFieldSettingsModel {
+
+    /**
+     * Get or set the form field bounds.
+     */
+    bounds?: IFormFieldBound;
+
+    /**
+     * Get or set the name of the form field element.
+     */
+    name?: string;
+
+    /**
+     * Specifies whether the radio button is in checked state or not.
+     */
+    isSelected?: boolean;
+
+    /**
+     * Get or set the background color of the radio button in hexadecimal string format.
+     */
+    backgroundColor?: string;
+
+    /**
+     * Specifies whether the radio button field is in read-only or read-write mode. FALSE by default.
+     */
+    isReadOnly?: boolean;
+
+    /**
+     * If it is set as true, consider as mandatory field in the PDF document. By default it is false.
+     */
+    isRequired?: boolean;
+
+    /**
+     * specifies the page number of the form field.
+     */
+    pageNumber?: number;
+
+    /**
+     * Gets or set the visibility of the form field.
+     */
+    visibility?: VisibilityState;
+
+    /**
+     * Get or set the boolean value to print the radio button field. TRUE by default.
+     */
+    isPrint?: boolean;
+
+    /**
+     * Get or set the text to be displayed as tooltip. By default it is empty.
+     */
+    tooltip?: string;
+
+    /**
+     * Get or set the thickness of the radio button field.
+     */
+    thickness?: number;
+
+    /**
+     * Get or set the border color of the radio button field.
+     */
+    borderColor?: string;
+
+}
+
+/**
+ * Interface for a class DropdownFieldSettings
+ */
+export interface DropdownFieldSettingsModel {
+
+    /**
+     * Get or set the form field bounds.
+     */
+    bounds?: IFormFieldBound;
+
+    /**
+     * Get or set the name of the dropdown.
+     */
+    name?: string;
+
+    /**
+     * Get or set the value of the form field.
+     */
+    value?: string;
+
+    /**
+     * Get or set the font family of the dropdown field.
+     */
+    fontFamily?: string;
+
+    /**
+     * Get or set the font size of the dropdown field.
+     */
+    fontSize?: number;
+
+    /**
+     * specifies the page number of the form field.
+     */
+    pageNumber?: number;
+
+    /**
+     * Get or set the font style of dropdown field.
+     */
+    fontStyle?: FontStyle;
+
+    /**
+     * Get or set the font color of the dropdown in hexadecimal string format..
+     */
+    color?: string;
+
+    /**
+     * Get or set the background color of the dropdown in hexadecimal string format.
+     */
+    backgroundColor?: string;
+
+    /**
+     * Get or set the alignment of the text.
+     */
+    alignment?: TextAlignment;
+
+    /**
+     * Specifies whether the dropdown field is in read-only or read-write mode. FALSE by default.
+     */
+    isReadOnly?: boolean;
+
+    /**
+     * Gets or set the visibility of the form field.
+     */
+    visibility?: VisibilityState;
+
+    /**
+     * If it is set as true, consider as mandatory field in the PDF document. By default it is false.
+     */
+    isRequired?: boolean;
+
+    /**
+     * Get or set the boolean value to print the dropdown field. TRUE by default.
+     */
+    isPrint?: boolean;
+
+    /**
+     * Get or set the text to be displayed as tooltip. By default it is empty.
+     */
+    tooltip?: string;
+
+    /**
+     * Get or set the dropdown items.
+     */
+    options?: ItemModel[];
+
+    /**
+     * Get or set the thickness of the drop down field.
+     */
+    thickness?: number;
+
+    /**
+     * Get or set the border color of the drop down field.
+     */
+    borderColor?: string;
+
+}
+
+/**
+ * Interface for a class ListBoxFieldSettings
+ */
+export interface ListBoxFieldSettingsModel {
+
+    /**
+     * Get or set the form field bounds.
+     */
+    bounds?: IFormFieldBound;
+
+    /**
+     * Get or set the name of the form field element.
+     */
+    name?: string;
+
+    /**
+     * Get or set the value of the form field.
+     */
+    value?: string;
+
+    /**
+     * Get or set the font family of the listbox field.
+     */
+    fontFamily?: string;
+
+    /**
+     * Get or set the font size of the listbox field.
+     */
+    fontSize?: number;
+
+    /**
+     * specifies the page number of the form field.
+     */
+    pageNumber?: number;
+
+    /**
+     * Get or set the font Style of listbox field.
+     */
+    fontStyle?: FontStyle;
+
+    /**
+     * Get or set the font color of the listbox in hexadecimal string format.
+     */
+    color?: string;
+
+    /**
+     * Get or set the background color of the listbox in hexadecimal string format.
+     */
+    backgroundColor?: string;
+
+    /**
+     * Get or set the alignment of the text.
+     */
+    alignment?: TextAlignment;
+
+    /**
+     * Specifies whether the listbox field is in read-only or read-write mode. FALSE by default.
+     */
+    isReadOnly?: boolean;
+
+    /**
+     * Gets or set the visibility of the form field.
+     */
+    visibility?: VisibilityState;
+
+    /**
+     * If it is set as true, consider as mandatory field in the PDF document. By default it is false.
+     */
+    isRequired?: boolean;
+
+    /**
+     * Get or set the boolean value to print the listbox field. TRUE by default.
+     */
+    isPrint?: boolean;
+
+    /**
+     * Get or set the text to be displayed as tool tip. By default it is empty.
+     */
+    tooltip?: string;
+
+    /**
+     * Get or set the listbox items.
+     */
+    options?: ItemModel[];
+
+    /**
+     * Get or set the thickness of the list box field.
+     */
+    thickness?: number;
+
+    /**
+     * Get or set the border color of the list box field.
+     */
+    borderColor?: string;
+
+}
+
+/**
+ * Interface for a class Item
+ */
+export interface ItemModel {
+
+    /**
+     * Get or set the name.
+     */
+    itemName?: string;
+
+    /**
+     * Get or set the value.
+     */
+    itemValue?: string;
 
 }
 
@@ -2225,6 +3203,15 @@ export interface PdfViewerModel extends ComponentModel{
      * @default false
      */
     isAnnotationToolbarVisible?: boolean;
+
+    /**
+     * Opens the annotation toolbar when the PDF document is loaded in the PDF Viewer control initially
+     * and get the annotation Toolbar Visible status.
+     *
+     * @private
+     * @default false
+     */
+    isFormDesignerToolbarVisible?: boolean;
 
     /**
      * Enables or disables the multi-page text markup annotation selection in UI.
@@ -2408,6 +3395,20 @@ export interface PdfViewerModel extends ComponentModel{
     enableFormFields?: boolean;
 
     /**
+     * Get or set a boolean value to enable or disable the form designer. TRUE by default.
+     *
+     * @default true
+     */
+    enableFormDesigner?: boolean;
+
+    /**
+     * Enable or disable the interaction of form fields in the Pdfviewer.
+     *
+     * @default false
+     */
+    designerMode?: boolean;
+
+    /**
      * Enable or disable the form fields validation.
      *
      * @default false
@@ -2486,11 +3487,26 @@ export interface PdfViewerModel extends ComponentModel{
     enableAnnotationToolbar?: boolean;
 
     /**
+     * Opens the form designer toolbar when the PDF document is loaded in the PDF Viewer control initially.
+     *
+     * @default true
+     */
+    enableFormDesignerToolbar?: boolean;
+
+    /**
      * Gets or sets a boolean value to show or hide the bookmark panel while loading a document. FALSE by default.
      *
      * @default false
      */
     isBookmarkPanelOpen?: boolean;
+
+    /**
+     * Gets or sets a boolean value if initial field selected in form designer toolbar.
+     *
+     * @private
+     * @default false
+     */
+    isInitialFieldToolbarSelection?: boolean;
 
     /**
      * Sets the interaction mode of the PdfViewer
@@ -2579,10 +3595,16 @@ export interface PdfViewerModel extends ComponentModel{
     serverActionSettings?: ServerActionSettingsModel;
 
     /**
-     * Defines the  properties of signature field
+     * Get or set the signature field settings.
      */
     // eslint-disable-next-line max-len
     signatureFieldSettings?: SignatureFieldSettingsModel;
+
+    /**
+     * Get or set the initial field settings.
+     */
+    // eslint-disable-next-line max-len
+    initialFieldSettings?: InitialFieldSettingsModel;
 
     /**
      * Defines the settings of highlight annotation.
@@ -2737,6 +3759,36 @@ export interface PdfViewerModel extends ComponentModel{
     scrollSettings?: ScrollSettingsModel;
 
     /**
+     * Get or set the text field settings.
+     */
+    textFieldSettings?: TextFieldSettingsModel;
+
+    /**
+     * Get or set the password field settings.
+     */
+    passwordFieldSettings?: PasswordFieldSettingsModel;
+
+    /**
+     * Get or set the check box field settings.
+     */
+    checkBoxFieldSettings?: CheckBoxFieldSettingsModel;
+
+    /**
+     * Get or set the radio button field settings.
+     */
+    radioButtonFieldSettings?: RadioButtonFieldSettingsModel;
+
+    /**
+     * Get or set the dropdown field settings.
+     */
+    DropdownFieldSettings?: DropdownFieldSettingsModel;
+
+    /**
+     * Get or set the listbox field settings.
+     */
+    listBoxFieldSettings?: ListBoxFieldSettingsModel;
+
+    /**
      * Defines the context menu settings.
      */
     // eslint-disable-next-line max-len
@@ -2788,6 +3840,13 @@ export interface PdfViewerModel extends ComponentModel{
      * @blazorProperty 'AjaxRequestFailed'
      */
     ajaxRequestFailed?: EmitType<AjaxRequestFailureEventArgs>;
+
+    /**
+     * Event triggers on successful AJAX request 
+     * 
+     * @event
+     */
+    ajaxRequestSuccess?: EmitType<AjaxRequestSuccessEventArgs>;
 
     /**
      * Triggers when validation is failed.
@@ -3129,7 +4188,6 @@ export interface PdfViewerModel extends ComponentModel{
      * Triggers before the data send in to the server.
      *
      * @event
-     * @deprecated
      */
     ajaxRequestInitiate?: EmitType<AjaxRequestInitiateEventArgs>;
 
@@ -3190,12 +4248,92 @@ export interface PdfViewerModel extends ComponentModel{
     formFieldFocusOut?: EmitType<FormFieldFocusOutEventArgs>;
 
     /**
+     * The event is triggered when a form field is added.
+     *
+     * @event
+     * @blazorProperty 'formFieldAdd'
+     */
+    formFieldAdd?: EmitType<FormFieldAddArgs>;
+
+    /**
+     * The event is triggered when a form field is removed.
+     *
+     * @event
+     * @blazorProperty 'formFieldRemove'
+     */
+    formFieldRemove?: EmitType<FormFieldRemoveArgs>;
+
+    /**
+     * The event is triggered when a property of form field is changed.
+     *
+     * @event
+     * @blazorProperty 'formFieldPropertiesChange'
+     */
+    formFieldPropertiesChange?: EmitType<FormFieldPropertiesChangeArgs>;
+
+    /**
+     * The event is triggered when a mouse cursor leaves form field.
+     *
+     * @event
+     * @blazorProperty 'formFieldMouseLeave'
+     */
+    formFieldMouseLeave?: EmitType<FormFieldMouseLeaveArgs>;
+
+    /**
+     * The event is triggered when a mouse cursor is over a form field.
+     *
+     * @event
+     * @blazorProperty 'formFieldMouseover'
+     */
+    formFieldMouseover?: EmitType<FormFieldMouseoverArgs>;
+
+    /**
+     * The event is triggered when a form field is moved.
+     *
+     * @event
+     * @blazorProperty 'formFieldMove'
+     */
+    formFieldMove?: EmitType<FormFieldMoveArgs>;
+
+    /**
+     * The event is triggered when a form field is resized.
+     *
+     * @event
+     * @blazorProperty 'formFieldResize'
+     */
+    formFieldResize?: EmitType<FormFieldResizeArgs>;
+
+    /**
+     * The event is triggered when a form field is selected.
+     *
+     * @event
+     * @blazorProperty 'formFieldSelect'
+     */
+    formFieldSelect?: EmitType<FormFieldSelectArgs>;
+
+    /**
+     * The event is triggered when a form field is unselected.
+     *
+     * @event
+     * @blazorProperty 'formFieldUnselect'
+     */
+    formFieldUnselect?: EmitType<FormFieldUnselectArgs>;
+
+    /**
      * PDF document annotation collection.
      *
      * @private
      * @deprecated
      */
     annotations?: PdfAnnotationBaseModel[];
+
+    /**
+     * PDF document form fields collection.
+     * 
+     * @private
+     * @deprecated
+     */
+    formFields?: PdfFormFieldBaseModel[];
 
     /**
      * store the drawing objects.

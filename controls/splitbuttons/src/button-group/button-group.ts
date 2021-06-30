@@ -34,7 +34,6 @@ import { ButtonModel, Button } from '@syncfusion/ej2-buttons';
  * @param {Function} createElement - Specifies the element.
  * @returns {HTMLElement} - Button group element.
  */
-// eslint-disable-next-line @typescript-eslint/ban-types
 export function createButtonGroup(selector: string, options: CreateButtonGroupModel = {}, createElement?: Function): HTMLElement {
     let child: Element;
     let btnElem: Element;

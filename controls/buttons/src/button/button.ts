@@ -30,7 +30,6 @@ const cssClassName: CssClassNameT = {
  */
 @NotifyPropertyChanges
 export class Button extends Component<HTMLButtonElement> implements INotifyPropertyChanged {
-    // eslint-disable-next-line
     private removeRippleEffect: Function;
 
     /**

@@ -123,7 +123,7 @@ export class DataLabel {
     }
 
     private isRectSeries(series: Series): boolean {
-        return series.isRectSeries || series.type === 'RangeArea';
+        return series.isRectSeries || series.type === 'RangeArea' || series.type === 'SplineRangeArea';
     }
 
     /**
@@ -629,7 +629,7 @@ export class DataLabel {
         point: Points, size: Size, labelIndex: number
     ): number {
         const padding: number = 5;
-        if ((series.type.indexOf('Area') > -1 && series.type !== 'RangeArea')
+        if ((series.type.indexOf('Area') > -1 && series.type !== 'RangeArea' && series.type !== 'SplineRangeArea')
             && this.yAxisInversed && series.marker.dataLabel.position !== 'Auto') {
             position = position === 'Top' ? 'Bottom' : position === 'Bottom' ? 'Top' : position;
         }
@@ -715,6 +715,7 @@ export class DataLabel {
         switch (series.type) {
         case 'RangeColumn':
         case 'RangeArea':
+        case 'SplineRangeArea':
         case 'Hilo':
             top = (index === 0 && !this.yAxisInversed) || (index === 1 && this.yAxisInversed);
             location = this.updateLabelLocation(position, location, extraSpace, margin, rect, top);

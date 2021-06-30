@@ -31,7 +31,7 @@ export class SelectionCommands {
             }
             let preventRestore: boolean = false;
             let domSelection: NodeSelection = new NodeSelection();
-            let domNode: DOMNode = new DOMNode((endNode as HTMLElement), docElement);
+            const domNode: DOMNode = new DOMNode((endNode as HTMLElement), docElement);
             const nodeCutter: NodeCutter = new NodeCutter();
             const isFormatted: IsFormatted = new IsFormatted();
             let range: Range = domSelection.getRange(docElement);
@@ -132,9 +132,9 @@ export class SelectionCommands {
         endNode: Node): Node {
         const cursorNodes: Node[] = domSelection.getNodeCollection(range);
         const cursorFormat: Node = (cursorNodes.length > 0) ?
-        (cursorNodes.length > 1 && range.startContainer === range.endContainer) ?
-        this.getCursorFormat(isFormatted, cursorNodes, format, endNode) :
-        isFormatted.getFormattedNode(cursorNodes[0], format, endNode) : null;
+            (cursorNodes.length > 1 && range.startContainer === range.endContainer) ?
+                this.getCursorFormat(isFormatted, cursorNodes, format, endNode) :
+                isFormatted.getFormattedNode(cursorNodes[0], format, endNode) : null;
         let cursorNode: Node = null;
         if (cursorFormat) {
             cursorNode = cursorNodes[0];
@@ -153,7 +153,7 @@ export class SelectionCommands {
         let currentNode: Node;
         for (let index: number = 0; index < cursorNodes.length; index++) {
             currentNode = (cursorNodes[index] as HTMLElement).lastElementChild ?
-            (cursorNodes[index] as HTMLElement).lastElementChild : cursorNodes[index];
+                (cursorNodes[index] as HTMLElement).lastElementChild : cursorNodes[index];
         }
         return isFormatted.getFormattedNode(currentNode, format, endNode);
     }
@@ -231,10 +231,11 @@ export class SelectionCommands {
         const formatNodeStyles: string = (formatNode as HTMLElement).getAttribute('style');
         const formatNodeTagName: string = (formatNode as HTMLElement).tagName;
         const child: Node[] = InsertMethods.unwrap(formatNode);
-        if(child[0] && !isFontStyle) {
+        if (child[0] && !isFontStyle) {
             let nodeTraverse: Node = child[index] ? child[index] : child[0];
-            let textNode: Node = nodeTraverse;
+            const textNode: Node = nodeTraverse;
             for ( ; nodeTraverse && nodeTraverse.parentElement && nodeTraverse.parentElement !== endNode;
+                // eslint-disable-next-line
                 nodeTraverse = nodeTraverse ) {
                 if (nodeTraverse.parentElement && nodeTraverse.parentElement.tagName.toLocaleLowerCase()
                     === (formatNode as HTMLElement).tagName.toLocaleLowerCase() &&
@@ -250,7 +251,7 @@ export class SelectionCommands {
                     }
                     InsertMethods.unwrap(nodeTraverse.parentElement);
                     nodeTraverse = !isNOU(nodeTraverse.parentElement) && !domNode.isBlockNode(nodeTraverse.parentElement) ? textNode :
-                    nodeTraverse.parentElement;
+                        nodeTraverse.parentElement;
                 } else {
                     nodeTraverse = nodeTraverse.parentElement;
                 }

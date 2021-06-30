@@ -523,4 +523,3 @@ describe('stacked header with template tree column- EJ2-48776', () => {
     destroy(gridObj);
   });
 }); 
-

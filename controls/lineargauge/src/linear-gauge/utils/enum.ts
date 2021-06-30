@@ -32,24 +32,28 @@ export type Point =
  * @private
  */
 export type LinearGaugeTheme =
-    /** Defines the linear gauge with material theme. */
+    /** Renders the linear gauge with material theme. */
     'Material' |
-    /** Defines the linear gauge with bootstrap theme. */
+    /** Renders the linear gauge with bootstrap theme. */
     'Bootstrap' |
-    /** Defines the linear gauge with highcontrast light theme. */
+    /** Renders the linear gauge with highcontrast light theme. */
     'HighContrastLight'|
-    /** Defines the linear gauge with with fabric theme. */
+    /** Renders the linear gauge with fabric theme. */
     'Fabric'|
-    /** Defines the linear gauge with with material dark theme. */
+    /** Renders the linear gauge with material dark theme. */
     'MaterialDark' |
-    /** Defines the linear gauge with with fabric dark theme. */
+    /** Renders the linear gauge with fabric dark theme. */
     'FabricDark' |
-    /** Defines the linear gauge with with highcontrast dark theme. */
+    /** Renders the linear gauge with highcontrast dark theme. */
     'HighContrast'|
-    /** Defines the linear gauge with with bootstrap dark theme. */
+    /** Renders the linear gauge with bootstrap dark theme. */
     'BootstrapDark'|
-    /** Defines the linear gauge with with bootstrap4 theme. */
-    'Bootstrap4';
+    /** Renders the linear gauge with bootstrap4 theme. */
+    'Bootstrap4' |
+    /** Renders the linear gauge with Tailwind theme. */
+    'Tailwind' |
+    /** Renders the linear gauge with TailwindDark theme. */
+    'TailwindDark';
 
 /**
  * Defines the type of marker.

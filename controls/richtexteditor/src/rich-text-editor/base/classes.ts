@@ -83,7 +83,7 @@ export const CLS_QUICK_TB: string = 'e-rte-quick-toolbar';
  */
 export const CLS_POP: string = 'e-rte-pop';
 
-/** 
+/**
  * @hidden
  * @deprecated
  */
@@ -293,6 +293,22 @@ export const CLS_HR_SEPARATOR: string = 'e-rte-horizontal-separator';
  * @deprecated
  */
 export const CLS_TB_IOS_FIX: string = 'e-tbar-ios-fixed';
+
+/**
+ * @hidden
+ * @deprecated
+ */
+export const CLS_LIST_PRIMARY_CONTENT: string = 'e-rte-list-primary-content';
+/**
+ * @hidden
+ * @deprecated
+ */
+export const CLS_NUMBERFORMATLIST_TB_BTN: string = 'e-rte-numberformatlist-dropdown';
+/**
+ * @hidden
+ * @deprecated
+ */
+export const CLS_BULLETFORMATLIST_TB_BTN: string = 'e-rte-bulletformatlist-dropdown';
 /**
  * @hidden
  * @deprecated

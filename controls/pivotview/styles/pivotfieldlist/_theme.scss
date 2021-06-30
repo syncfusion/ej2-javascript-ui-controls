@@ -97,6 +97,16 @@
     .e-checkbox-layout {
       float: left;
       margin-top: 6px;
+
+      @if ($field-list-skin == 'tailwind') {
+        margin: 0;
+        padding: 5px;
+      }
+
+      @if ($field-list-skin == 'tailwind-dark') {
+        margin: 0;
+        padding: 5px;
+      }
     }
 
     &.e-rtl {
@@ -155,6 +165,8 @@
       width: 100%;
 
       .e-title-content {
+        font-size: $field-list-title-font-size;
+        line-height: $field-list-title-line-height;
         flex: auto;
       }
     }
@@ -194,6 +206,8 @@
           text-align: left;
           text-overflow: ellipsis;
           word-break: break-all;
+          line-height: $field-list-header-content-line-height;
+          text-transform: $field-list-header-text-transform;
 
           @if ($field-list-skin == 'bootstrap4') {
             padding-left: 12px;
@@ -379,6 +393,14 @@
             height: $field-list-header-height;
             padding: 2px $field-list-header-padding 5px;
 
+            @if ($field-list-skin == 'tailwind') {
+              padding: 5px $field-list-header-padding 5px;
+            }
+
+            @if ($field-list-skin == 'tailwind-dark') {
+              padding: 5px $field-list-header-padding 5px;
+            }
+
             .e-axis-icon-wrapper {
               height: 20px;
               padding-top: $field-list-header-icon-wrapper-padding;
@@ -403,6 +425,7 @@
             padding: 0 8px;
             text-overflow: ellipsis;
             width: 100%;
+            text-transform: $field-list-text-transform;
 
             @if ($field-list-skin == 'bootstrap4') {
               margin-top: 3px;
@@ -428,6 +451,13 @@
                 &.e-drop-hover {
                   border-top: 2px dashed $field-list-drop-hover-color;
                   margin-top: -2px;
+                  @if ($field-list-skin == 'tailwind') {
+                    border-top: 2px solid $field-list-drop-hover-color;
+                  }
+
+                  @if ($field-list-skin == 'tailwind-dark') {
+                    border-top: 2px solid $field-list-drop-hover-color;
+                  }
                 }
               }
 
@@ -950,6 +980,16 @@
                   &.e-disable {
                     display: none;
                   }
+
+                  @if ($field-list-skin == 'tailwind') {
+                    padding-left: 0;
+                    margin-left: 8px;
+                  }
+
+                  @if ($field-list-skin == 'tailwind-dark') {
+                    padding-left: 0;
+                    margin-left: 8px;
+                  }
                 }
 
                 // sass-lint:enable-all
@@ -981,6 +1021,16 @@
                   .e-edit {
                     padding-left: 0;
                     padding-right: 10px;
+
+                    @if ($field-list-skin == 'tailwind') {
+                      padding-right: 0;
+                      margin-right: 8px;
+                    }
+  
+                    @if ($field-list-skin == 'tailwind-dark') {
+                      padding-right: 0;
+                      margin-right: 8px;
+                    }
                   }
                 }
               }
@@ -1085,7 +1135,7 @@
 
               .e-label {
                 color: $pivot-text-area-background;
-                font-family: Roboto-Reguar;
+                font-family: $field-list-font-family;
                 font-size: 14px;
                 opacity: .87;
               }
@@ -1334,6 +1384,16 @@
     .e-checkbox-layout {
       float: left;
       margin-top: 6px;
+
+      @if ($field-list-skin == 'tailwind') {
+        margin: 0;
+        padding: 5px;
+      }
+
+      @if ($field-list-skin == 'tailwind-dark') {
+        margin: 0;
+        padding: 5px;
+      }
     }
 
     &.e-rtl {
@@ -1616,6 +1676,14 @@
             height: $field-list-header-height;
             padding: 2px $field-list-header-padding 5px;
 
+            @if ($field-list-skin == 'tailwind') {
+              padding: 5px $field-list-header-padding 5px;
+            }
+
+            @if ($field-list-skin == 'tailwind-dark') {
+              padding: 5px $field-list-header-padding 5px;
+            }
+
             .e-axis-icon-container {
               height: 20px;
               padding-top: $field-list-header-icon-wrapper-padding;
@@ -1640,6 +1708,7 @@
             padding: 0 8px;
             text-overflow: ellipsis;
             width: 100%;
+            text-transform: $field-list-text-transform;
 
             @if ($field-list-skin == 'bootstrap4') {
               margin-top: 3px;
@@ -1665,6 +1734,12 @@
                 &.e-drop-hover {
                   border-top: 2px dashed $field-list-drop-hover-color;
                   margin-top: -2px;
+                  @if ($field-list-skin == 'tailwind') {
+                    border-top: 2px solid $field-list-drop-hover-color;
+                  }
+                  @if ($field-list-skin == 'tailwind-dark') {
+                    border-top: 2px solid $field-list-drop-hover-color;
+                  }
                 }
               }
 
@@ -2218,6 +2293,16 @@
                   .e-edit {
                     padding-left: 0;
                     padding-right: 10px;
+
+                    @if ($field-list-skin == 'tailwind') {
+                      padding-right: 0;
+                      margin-right: 8px;
+                    }
+  
+                    @if ($field-list-skin == 'tailwind-dark') {
+                      padding-right: 0;
+                      margin-right: 8px;
+                    }
                   }
                 }
               }
@@ -2322,7 +2407,7 @@
 
               .e-label {
                 color: $pivot-text-area-background;
-                font-family: Roboto-Reguar;
+                font-family: $field-list-font-family;
                 font-size: 14px;
                 opacity: .87;
               }

@@ -1008,3 +1008,18 @@ export interface FootNoteWidgetsInfo {
     toBodyWidget: BodyWidget;
     fromBodyWidget: BodyWidget;
 }
+
+/**
+ * @private
+ */
+export class WrapPosition {
+    x: number = 0;
+    width: number = 0;
+    get right(): number {
+        return this.x + this.width;
+    }
+    constructor(x: number, width: number) {
+        this.x = x;
+        this.width = width;
+    }
+}

@@ -1,4 +1,4 @@
-import { Property, ChildProperty, Collection, Complex } from '@syncfusion/ej2-base';import { IElement, ThumbsConstraints } from '@syncfusion/ej2-drawings';import { Container } from '@syncfusion/ej2-drawings';import { PointModel } from '@syncfusion/ej2-drawings';import { Point } from '@syncfusion/ej2-drawings';import { Size } from '@syncfusion/ej2-drawings';import { PdfAnnotationBaseModel } from './pdf-annotation-model';import { PdfAnnotationBase } from './pdf-annotation';
+import { Property, ChildProperty, Collection, Complex,isNullOrUndefined } from '@syncfusion/ej2-base';import { IElement, ThumbsConstraints } from '@syncfusion/ej2-drawings';import { Container } from '@syncfusion/ej2-drawings';import { PointModel } from '@syncfusion/ej2-drawings';import { Point } from '@syncfusion/ej2-drawings';import { Size } from '@syncfusion/ej2-drawings';import { PdfAnnotationBaseModel, PdfFormFieldBaseModel } from './pdf-annotation-model';import { PdfAnnotationBase, PdfFormFieldBase } from './pdf-annotation';
 
 /**
  * Interface for a class Selector
@@ -17,6 +17,11 @@ export interface SelectorModel {
      */
 
     annotations?: PdfAnnotationBaseModel[];
+
+    /**
+     * Defines the collection of selected form Fields
+     */
+    formFields?: PdfFormFieldBaseModel[];
 
     /**
      * Sets/Gets the width of the container

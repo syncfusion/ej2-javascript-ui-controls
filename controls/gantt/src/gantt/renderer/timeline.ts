@@ -1248,6 +1248,8 @@ export class Timeline {
                 }
                 if (isChanged) {
                     this.performTimeSpanAction(isChanged, action, minStartDate, maxEndDate);
+                } else if (!isNullOrUndefined(temp[0].ganttProperties.segments)) {
+                    this.parent.dataOperation.updateWidthLeft(temp[0]);
                 }
                 break;
             }

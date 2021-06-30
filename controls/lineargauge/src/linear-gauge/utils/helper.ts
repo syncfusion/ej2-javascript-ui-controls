@@ -6,7 +6,7 @@ import { FontModel, BorderModel } from '../model/base-model';
 import { AxisModel } from '../axes/axis-model';
 import { IVisiblePointer } from '../model/interface';
 import { Axis, Pointer, Range } from '../axes/axis';
-import { Orientation, MarkerType } from './enum';
+import { Orientation, MarkerType, LinearGaugeTheme } from './enum';
 import { LinearGauge } from '../../linear-gauge';
 import { ExportType } from '../utils/enum';
 
@@ -332,6 +332,9 @@ export class PathOption extends CustomizeOption {
     public ['stroke-dasharray']: string;
     public d: string;
     public transform: string;
+    public cx: number;
+    public cy: number;
+    public r: number;
     constructor(
         id: string, fill: string, width: number, color: string,
         opacity?: number, dashArray?: string, d?: string, transform: string = '') {
@@ -508,8 +511,21 @@ export function getMousePosition(pageX: number, pageY: number, element: Element)
 }
 
 /** @private */
-export function getRangePalette(): string[] {
-    const palette: string[] = ['#ff5985', '#ffb133', '#fcde0b', '#27d5ff', '#50c917'];
+export function getRangePalette(theme: LinearGaugeTheme): string[] {
+    let palette: string[];
+    switch (theme.toLowerCase()) {
+        case 'tailwind':
+            palette = ['#0369A1', '#14B8A6', '#15803D', '#334155', '#5A61F6',
+            '#65A30D', '#8B5CF6', '#9333EA', '#F59E0B', '#F97316'];
+            break;
+        case 'tailwinddark':
+            palette = ['#10B981', '#22D3EE', '#2DD4BF', '#4ADE80', '#8B5CF6',
+            '#E879F9', '#F472B6', '#F87171', '#F97316', '#FCD34D'];
+            break;
+        default:
+            palette = ['#ff5985', '#ffb133', '#fcde0b', '#27d5ff', '#50c917'];
+            break;
+    }
     return palette;
 }
 

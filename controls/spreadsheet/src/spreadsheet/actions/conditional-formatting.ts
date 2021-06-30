@@ -5,7 +5,7 @@ import { CellModel, SheetModel, getCell, setRow, setCell } from '../../workbook/
 import { getRangeIndexes, checkDateFormat, cFInitialCheck, isNumber, cFRender, cFDelete, DataBar } from '../../workbook/common/index';
 import { CellFormatArgs, isDateTime, dateToInt, CellStyleModel, applyCellFormat, clearCF } from '../../workbook/common/index';
 import { setCFRule, clearCells, getCellAddress } from '../../workbook/common/index';
-import { extend, isNullOrUndefined, L10n } from '@syncfusion/ej2-base';
+import { extend, getNumberDependable, isNullOrUndefined, L10n } from '@syncfusion/ej2-base';
 import { Dialog } from '../services';
 import { DropDownList } from '@syncfusion/ej2-dropdowns';
 import { ColorScale, IconSet, HighlightCell, TopBottom, CFColor, ConditionalFormatModel } from '../../workbook/common/index';
@@ -225,6 +225,9 @@ export class ConditionalFormatting {
             }
             value2 = mainCont.getElementsByTagName('input')[1] ?
                 dlgCont.querySelector('.e-cfmain').getElementsByTagName('input')[1].value : '';
+            const currencySymbol: string = getNumberDependable(this.parent.locale, '');
+            value1 = value1.split(currencySymbol).join('').split(',').join('');
+            value2 = value2.split(currencySymbol).join('').split(',').join('');
         }
         const cFColor: string = this.getCFColor(dlgCont.querySelector('.e-cfsub').getElementsByTagName('input')[0].value);
         const cFType: string = action === 'Duplicate Values...' ?

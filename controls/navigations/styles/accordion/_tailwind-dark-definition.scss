@@ -1,0 +1,77 @@
+//default
+/*! component's theme wise override tailwind-dark-definitions and variables */
+$acrdn-skin: 'tailwind-dark' !default;
+$acrdn-slct-header-font-weight: $font-weight-medium;
+
+$acrdn-nrml-header-minheight: 38px !default;
+$acrdn-bgr-header-minheight: 48px !default;
+$acrdn-nrml-header-lineheight: 22px !default;
+$acrdn-bgr-header-lineheight: 24px !default;
+$acrdn-nrml-header-paddingpix: 16px !default;
+$acrdn-bgr-header-paddingpix: 16px !default;
+$acrdn-icon-font-size: $text-lg !default;
+$acrdn-content-line-height: 1.5 !default;
+$acrdn-tab-highlight-color:  rgba(0, 0, 0, 0) !default;
+
+// Header, Nested header and RTL mode Padding
+$acrdn-nest-nrml-header-padding: 8px 0 8px 26px !default;
+$acrdn-nest-bgr-header-padding: 12px 0 12px 28px !default;
+$acrdn-nest-second-nrml-header-padding: 8px 0 8px 38px !default;
+$acrdn-nest-second-bgr-header-padding: 12px 0 12px 40px !default;
+$acrdn-nrml-header-padding: 7px 12px !default;
+$acrdn-bgr-header-padding: 11px 17px !default;
+$acrdn-rtl-nrml-header-padding: 7px 12px !default;
+$acrdn-rtl-bgr-header-padding: 11px 17px !default;
+$acrdn-rtl-nest-nrml-header-padding: 8px 26px 8px 0 !default;
+$acrdn-rtl-nest-bgr-header-padding: 12px 28px 12px 0 !default;
+$acrdn-rtl-nest-second-nrml-header-padding: 8px 38px 8px 0 !default;
+$acrdn-rtl-nest-second-bgr-header-padding: 12px 40px 12px 0 !default;
+
+// Content, Nested content and RTL mode Padding
+$acrdn-nrml-content-padding: 12px !default;
+$acrdn-bgr-content-padding: 16px !default;
+$acrdn-nest-nrml-content-padding: 16px !default;
+$acrdn-nest-bgr-content-padding: 20px !default;
+$acrdn-nest-second-nrml-content-padding: 20px !default;
+$acrdn-nest-second-bgr-content-padding: 24px !default;
+$acrdn-rtl-nest-nrml-content-padding: 16px !default;
+$acrdn-rtl-nest-bgr-content-padding: 20px !default;
+$acrdn-rtl-nest-second-nrml-content-padding: 20px !default;
+$acrdn-rtl-nest-second-bgr-content-padding: 24px !default;
+
+$acrdn-nrml-header-icon-padding: 8px !default;
+$acrdn-bgr-header-icon-padding: 12px !default;
+$acrdn-nrml-icn-minwidth: 22px !default;
+$acrdn-bgr-icn-minwidth: 24px !default;
+$acrdn-active-bg: $content-bg-color !default;
+$acrdn-bg-color: $content-bg-color-alt1 !default;
+$acrdn-selected-header-font-color: $primary !default;
+$acrdn-selected-header-color: $content-bg-color !default;
+$acrdn-icon-color: $icon-color !default;
+$acrdn-selected-icon-color: $primary !default;
+$acrdn-content-color: $content-text-color !default;
+$acrdn-header-font: $content-text-color !default;
+$acrdn-nested-header-font: $content-text-color !default;
+$acrdn-header-font-weight: $font-weight-medium !default;
+$acrdn-header-font-size: $text-sm !default;
+$acrdn-nest-header-font-size: $text-sm !default;
+$acrdn-content-font-size: $text-sm !default;
+$acrdn-header-font-bgr-size: $text-base !default;
+$acrdn-content-font-bgr-size: $text-base !default;
+$acrdn-selected-border-size: 1px !default;
+$acrdn-item-padding-size: 0 !default;
+$acrdn-selected-border-type: none !default;
+$acrdn-selected-border-color: $border-light !default;
+$acrdn-default-border: $acrdn-selected-border-color !default;
+$acrdn-header-focus-bg: $content-bg-color-focus !default;
+$acrdn-header-hover-bg: $content-bg-color-hover !default;
+$acrdn-header-active-bg: $content-bg-color-pressed !default;
+
+$acrdn-border-type: solid !default;
+$acrdn-border-size: 1px !default;
+$acrdn-bgr-arrow-icon-font-size: 22px;
+$acrdn-bgr-icon-font-size: 20px !default;
+$acrdn-icon-font-size: 18px !default;
+$acrdn-icon-disable-color: $icon-color-disabled;
+$acrdn-text-disable-color: $content-text-color-disabled;
+//enddefault

@@ -1,6 +1,6 @@
 {
 	"name": "@syncfusion/ej2-buttons",
-	"version": "19.1.54",
+	"version": "19.1.63",
 	"description": "A package of feature-rich Essential JS 2 components such as Button, CheckBox, RadioButton and Switch.",
 	"author": "Syncfusion Inc.",
 	"license": "SEE LICENSE IN license",
@@ -68,5 +68,6 @@
 	"repository": {
 		"type": "git",
 		"url": "https://github.com/syncfusion/ej2-javascript-ui-controls.git"
-	}
+	},
+	"typings": "index.d.ts"
 }

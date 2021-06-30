@@ -120,7 +120,9 @@ export class ActionBase {
             bottom: viewElement.scrollHeight - 5,
             left: this.parent.enableRtl ? rightOffset.left : leftOffset.left,
             right: this.parent.enableRtl ? leftOffset.right : rightOffset.right,
-            top: 0
+            top: 0,
+            leftOffset: this.parent.enableRtl ? rightOffset.right : leftOffset.right,
+            rightOffset: this.parent.enableRtl ? leftOffset.left : rightOffset.left
         };
         return viewDimension;
     }

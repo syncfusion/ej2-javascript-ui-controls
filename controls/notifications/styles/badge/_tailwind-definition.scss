@@ -1,0 +1,107 @@
+// Base Badge
+$badge-base-border-radius: 2px !default;
+$badge-base-font-size: $text-xxs !default;
+$badge-base-line-height: $leading-none !default;
+$badge-base-height: 18px !default;
+$badge-base-font-weight: $font-weight-medium !default;
+$badge-base-text-indent: 0 !default;
+$badge-base-text-color: $content-text-color-alt1 !default;
+$badge-base-background-color: $content-bg-color-alt1 !default;
+
+// Pill Badge
+$badge-pill-border-radius: 10px !default;
+$badge-pill-padding: 4px 10px 4px 10px !default;
+
+// Notification Badge
+$badge-notification-top: -10px !default;
+$badge-notification-left: 100% !default;
+$badge-notification-font-size: $text-xxs !default;
+$badge-notification-border-radius: 10px !default;
+$badge-notification-min-width: 32px !default;
+$badge-notification-height: 18px !default;
+
+// Circle Badge
+$badge-circle-width: 18px !default;
+$badge-circle-height: 18px !default;
+$badge-circle-border-radius: 10px !default;
+$badge-circle-padding: 4px 3px 4px 3px !default;
+$badge-circle-min-width: 0 !default;
+$badge-circle-ghost-line-height: $leading-none !default;
+$badge-circle-ghost-padding: 3px !default;
+
+// Overlap Badge
+$badge-overlap-top: -10px !default;
+$badge-overlap-transform-left: translateX(-50%) !default;
+
+// Button Badge
+$badge-button-line-height: $leading-none !default;
+$badge-button-circle-width: 18px !default;
+$badge-button-circle-height: 18px !default;
+$badge-button-circle-line-height: $leading-none !default;
+$badge-ghost-circle-line-height: $leading-none !default;
+$badge-button-top: -2px !default;
+
+// Dot Badge
+$badge-dot-top: -3px !default;
+$badge-dot-width: 10px !default;
+$badge-dot-height: 10px !default;
+$badge-dot-line-height: $leading-none !default;
+$badge-dot-border-radius: 10px !default;
+$badge-dot-padding: 0 !default;
+$badge-dot-min-width: 0 !default;
+$badge-dot-left: 100% !default;
+$badge-dot-box-shadow: $shadow-sm !default;
+
+$badge-padding: 4px !default;
+$badge-notification-line-height: $leading-none !default;
+$badge-notification-ghost-line-height: $leading-none !default;
+$badge-notification-padding: 4px 10px 4px 10px !default;
+$badge-circle-line-height: $leading-none !default;
+$badge-ghost-line-height: $leading-none !default;
+$badge-ghost-padding: 3px 10px 3px 10px !default;
+
+$badge-primary-bg-color: $primary !default;
+$badge-secondary-bg-color: $content-bg-color-alt1 !default;
+$badge-success-bg-color: $success-light !default;
+$badge-danger-bg-color: $danger-light !default;
+$badge-warning-bg-color: $warning-light !default;
+$badge-info-bg-color: $info-light !default;
+$badge-light-bg-color: $content-bg-color-alt2 !default;
+$badge-dark-bg-color: $content-text-color-alt2 !default;
+
+$badge-primary-font-color: $primary-text-color !default;
+$badge-secondary-font-color: $content-text-color-alt1 !default;
+$badge-success-font-color: $success !default;
+$badge-danger-font-color: $danger !default;
+$badge-info-font-color: $info !default;
+$badge-light-font-color: $content-text-color-alt1 !default;
+$badge-dark-font-color: $content-bg-color-alt2 !default;
+$badge-warning-font-color: $warning !default;
+
+//bigger styles
+// Base Badge
+$badge-touch-base-border-radius: 4px !default;
+$badge-touch-base-font-size: $text-xs !default;
+$badge-touch-base-line-height: 18px !default;
+$badge-touch-base-height: 20px !default;
+$badge-touch-base-font-weight: $font-weight-normal !default;
+$badge-touch-padding: 1px 6px !default;
+
+// Pill Badge
+$badge-touch-pill-padding: 1px 10px !default;
+
+//ghost badge
+$badge-touch-ghost-padding: 0 10px !default;
+$badge-touch-ghost-notification-padding: 3px 10px !default;
+$badge-touch-ghost-circle-padding: 3px !default;
+
+// Notification Badge
+$badge-touch-notification-min-width: 34px !default;
+
+// Circle Badge
+$badge-touch-circle-width: 20px !default;
+$badge-touch-circle-padding: 1px 3px !default;
+
+// Dot Badge
+$badge-touch-dot-width: 12px !default;
+$badge-touch-dot-height: 12px !default;

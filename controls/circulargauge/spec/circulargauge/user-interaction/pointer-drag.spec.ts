@@ -54,6 +54,7 @@ describe('Circular-Gauge Control', () => {
             gauge.destroy();
             ele.remove();
         });
+
         // it('Checking with default pointer angle', (done: Function) => {
         //     gauge.loaded = (args: ILoadedEventArgs): void => {
         //         svg = document.getElementById('container_Axis_0_Pointer_0');
@@ -335,6 +336,7 @@ describe('Circular-Gauge Control', () => {
             gauge.destroy();
             ele.remove();
         });
+        
     //     it('Checking with default pointer angle', (done: Function) => {
     //         gauge.loaded = (args: ILoadedEventArgs): void => {
     //             svg = document.getElementById('container_Axis_0_Pointer_Marker_0');

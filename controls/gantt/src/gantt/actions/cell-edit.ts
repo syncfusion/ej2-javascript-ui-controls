@@ -1,4 +1,4 @@
-import { isNullOrUndefined as isNOU, getValue, isBlazor, getElement, extend, isNullOrUndefined } from '@syncfusion/ej2-base';
+import { isNullOrUndefined as isNOU, getValue, getElement, extend, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { Gantt } from '../base/gantt';
 import { ITaskData, ITaskbarEditedEventArgs, IGanttData, CellEditArgs, ITaskSegment } from '../base/interface';
 import { ColumnModel } from '../models/column';
@@ -61,10 +61,6 @@ export class CellEdit {
         } else {
             const callBackPromise: Deferred = new Deferred();
             this.parent.trigger('cellEdit', args, (arg: CellEditArgs) => {
-                if (isBlazor()) {
-                    arg.cell = getElement(arg.cell);
-                    arg.row = getElement(arg.row);
-                }
                 if (data.level === 0 && this.parent.viewType === 'ResourceView') {
                     arg.cancel = true;
                 }

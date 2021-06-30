@@ -3,6 +3,8 @@ $rte-border-size: 1px !default;
 $rte-2px-border-size: 2px !default;
 $rte-border-type: solid !default;
 
+$rte-list-btn-flex: column !default;
+$rte-list-btn-line-height: 1 !default;
 $skin-name: 'bootstrap' !default;
 $rte-border-color: $grey-99 !default;
 $rte-full-screen-bg: $grey-white !default;
@@ -40,6 +42,8 @@ $rte-big-quick-drop-btn-caret-font-size: 11px !default;
 $rte-quick-drop-btn-caret-font-size: 10px !default;
 $rte-quick-drop-btn-border-color: $grey-white !default;
 $rte-quick-drop-btn-hover-border-color: $grey-8c !default;
+$rte-content-padding: 16px !default;
+$rte-table-popup-padding: 10px !default;
 
 $rte-quick-pop-border: 0 !default;
 $rte-quick-tb-border: 1px solid $grey-99 !default;
@@ -65,6 +69,8 @@ $rte-drop-btn-active-bg: $grey-8c !default;
 $rte-drop-btn-active-color: $grey-dark-font !default;
 $rte-drop-btn-active-border-color: $grey-8c !default;
 $rte-split-btn-active-hover-font-color: $grey-dark-font !default;
+$font-weight: 500 !default;
+$rte-table-popup-bdr-radius: 0 !default;
 
 $rte-split-btn-color: $grey-dark-font !default;
 $rte-split-btn-active-color: $grey-dark-font !default;
@@ -141,6 +147,8 @@ $rte-insert-dialog-label-padding-bottom: 20px !default;
 $rte-big-quick-tbar-item-min-height: 34px !default;
 $rte-big-quick-tbar-item-min-width: 39px !default;
 $rte-content-font-size: 14px !default;
+$rte-toolbar-icon-size: 16px !default;
+$rte-toolbar-big-icon-size: 18px !default;
 
 $rte-dropdown-caret-icon-size: 12px !default;
 $rte-big-dropdown-caret-icon-size: 12px !default;
@@ -155,4 +163,23 @@ $rte-inline-tmp-color-min-width: 57px;
 $rte-resize-handler-width: 15px;
 $rte-resize-handler-height: 15px;
 $rte-resize-handler-position: 0;
+
+$rte-big-color-list-span-common-padding-left-right: 0;
 //enddefault
+
+@include export-module('richtexteditor-bootstrap') {
+  .e-rte-toolbar,
+  .e-rte-toolbar.e-extended-toolbar {
+    .e-toolbar-popup {
+      .e-rte-backgroundcolor-dropdown,
+      .e-rte-fontcolor-dropdown,
+      .e-rte-numberformatlist-dropdown,
+      .e-rte-bulletformatlist-dropdown {
+
+        &.e-active {
+          border-radius: 4px;
+        }
+      }
+    }
+  }
+}

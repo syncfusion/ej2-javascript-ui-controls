@@ -36,6 +36,19 @@
         }
       }
 
+      @if $skin-name == 'tailwind' or $skin-name == 'tailwind-dark'  {
+        .e-spin-tailwind {
+
+          .e-path-circle {
+            stroke: $spin-tailwind-stroke-color;
+          }
+
+          .e-path-arc {
+            stroke: $spin-tailwind-arc-color;
+        }
+      }
+    }
+
       .e-spin-high-contrast {
 
         .e-path-circle {

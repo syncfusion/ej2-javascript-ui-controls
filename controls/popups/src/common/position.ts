@@ -179,7 +179,9 @@ function getElementLeft(): number {
  * @returns {number} - specifies the number value
  */
 function getElementRight(): number {
-    return elementRect.right + getBodyScrollLeft() - (popupRect && (elementRect.width >= popupRect.width) ? popupRect.width : 0);
+    const popupWidth: number = (element && element.classList.contains('e-date-range-wrapper')) ? (popupRect ? popupRect.width : 0) :
+        (popupRect && (elementRect.width >= popupRect.width) ? popupRect.width : 0);
+    return elementRect.right + getBodyScrollLeft() - popupWidth;
 }
 /**
  * @returns {number} - specifies the number value

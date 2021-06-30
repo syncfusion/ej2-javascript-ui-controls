@@ -1610,7 +1610,8 @@ export class SfdtReader {
                         sourceFormat.fontSize = Math.round(sourceFormat.fontSize);
                     }
                 }
-                characterFormat.fontSize = parseFloat(sourceFormat.fontSize);
+                let fontSize: number = parseFloat(sourceFormat.fontSize);
+                characterFormat.fontSize = fontSize < 0 ? 0 : fontSize;
             }
             if (!isNullOrUndefined(sourceFormat.fontFamily)) {
                 if (sourceFormat.fontFamily.indexOf('"') !== -1) {
@@ -1637,7 +1638,7 @@ export class SfdtReader {
                 characterFormat.bdo = sourceFormat.bdo;
             }
             if (!isNullOrUndefined(sourceFormat.fontSizeBidi)) {
-                characterFormat.fontSizeBidi = sourceFormat.fontSizeBidi;
+                characterFormat.fontSizeBidi = sourceFormat.fontSizeBidi < 0 ? 0 : sourceFormat.fontSizeBidi;
             }
             if (!isNullOrUndefined(sourceFormat.fontFamilyBidi)) {
                 characterFormat.fontFamilyBidi = sourceFormat.fontFamilyBidi;

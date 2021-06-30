@@ -182,7 +182,8 @@ export class Selection extends BaseSelection {
         elementId = (!series.isRectSeries && series.type !== 'Scatter' && series.type !== 'Bubble' &&
         series.marker.visible) ? (elementId + '_Symbol' + suffix) : elementId;
 
-        return [getElement(elementId), (series.type === 'RangeArea' && series.marker.visible) ? getElement(elementId + '1') : null];
+        return [getElement(elementId), ((series.type === 'RangeArea' || series.type === 'SplineRangeArea') && series.marker.visible) ? 
+        getElement(elementId + '1') : null];
     }
 
     /**
@@ -383,7 +384,7 @@ export class Selection extends BaseSelection {
                         seriesIndex = series.index;
                         points = (<Series>series).points;
                         if (!isNaN(pointIndex)) {
-                            yValue = series.type !== 'RangeArea' ? points[pointIndex].yValue :
+                            yValue = (series.type !== 'RangeArea' || 'SplineRangeArea') ? points[pointIndex].yValue :
                                 points[pointIndex].regions[0].y;
                             selectedPointX = points[pointIndex].xValue;
                             if (chart.primaryXAxis.valueType === 'Category') {
@@ -397,7 +398,7 @@ export class Selection extends BaseSelection {
                                     pointIndex: pointIndex
                                 });
                             }
-                            if (series.type === 'RangeArea') {
+                            if (series.type === 'RangeArea' || series.type === 'SplineRangeArea') {
                                 selectedPointValues.push({
                                     x: selectedPointX, y: points[pointIndex].regions[0].y,
                                     seriesIndex: seriesIndex, pointIndex: pointIndex
@@ -429,7 +430,7 @@ export class Selection extends BaseSelection {
                 points = (<Series>series).points;
                 if (!isNaN(pointIndex)) {
                     selectedPointX = points[pointIndex].xValue;
-                    yValue = series.type !== 'RangeArea' ? points[pointIndex].yValue :
+                    yValue = (series.type !== 'RangeArea' || 'SplineRangeArea') ? points[pointIndex].yValue :
                         points[pointIndex].regions[0].y;
                     if (chart.primaryXAxis.valueType === 'Category') {
                         selectedPointX = points[pointIndex].x.toLocaleString();
@@ -669,10 +670,10 @@ export class Selection extends BaseSelection {
      * @returns {void}
      * @private
      */
-    public redrawSelection(chart: Chart, oldMode: SelectionMode | HighlightMode): void {
+    public redrawSelection(chart: Chart, oldMode: SelectionMode | HighlightMode, chartRedraw?: boolean): void {
         this.isSeriesMode = oldMode === 'Series';
         if (!isNullOrUndefined(oldMode)) {
-            if (oldMode.indexOf('Drag') !== -1 || oldMode === 'Lasso') {
+            if (oldMode.indexOf('Drag') !== -1 || oldMode === 'Lasso' || chartRedraw) {
                 chart.isRedrawSelection = false;
             } else {
                 chart.isRedrawSelection = true;
@@ -830,7 +831,7 @@ export class Selection extends BaseSelection {
                     yAxisOffset = series.yAxis.rect.y - axisOffset.y;
                 }
                 for (let j: number = 0; j < points.length; j++) {
-                    const yValue: number = series.type !== 'RangeArea' ? points[j].yValue :
+                    const yValue: number = (series.type !== 'RangeArea' || 'SplineRangeArea') ? points[j].yValue :
                         points[j].regions[0].y;
                     let isCurrentPoint: boolean;
                     let selectedPointX: string | number | Date = points[j].xValue;
@@ -862,7 +863,7 @@ export class Selection extends BaseSelection {
                         this.selection(chart, index, this.findElements(chart, series, index));
                         selectedPointValues.push({ x: selectedPointX, y: yValue });
                     }
-                    if (isCurrentPoint && series.type === 'RangeArea') {
+                    if (isCurrentPoint && (series.type === 'RangeArea' || series.type === 'SplineRangeArea')) {
                         selectedPointValues.push({ x: selectedPointX, y: points[j].regions[0].y });
                     }
                 }

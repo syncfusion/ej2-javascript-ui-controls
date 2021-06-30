@@ -577,7 +577,7 @@ export class Sidebar extends Component<HTMLElement> implements INotifyPropertyCh
      *
      * @returns {void}
      */
-    public toggle(e?: Event): void {
+    public toggle(): void {
         if (this.element.classList.contains(OPEN)) {
             this.hide();
         } else {
@@ -603,7 +603,7 @@ export class Sidebar extends Component<HTMLElement> implements INotifyPropertyCh
             }
         }
     }
-    protected resize(e: Event): void {
+    protected resize(): void {
         if (this.type === 'Auto') {
             if (Browser.isDevice) {
                 addClass([this.element], OVER);

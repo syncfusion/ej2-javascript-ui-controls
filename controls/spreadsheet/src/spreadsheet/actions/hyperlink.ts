@@ -722,17 +722,19 @@ export class SpreadsheetHyperlink {
         const sheets: SheetModel[] = this.parent.sheets;
         for (idx; idx < this.parent.sheets.length; idx++) {
             const sheetName: string = this.parent.sheets[idx].name;
-            if (sheets[idx] === this.parent.getActiveSheet()) {
-                cellRef.push({
-                    nodeId: 'sheet',
-                    nodeText: sheetName.indexOf(' ') !== -1 ? '\'' + sheetName + '\'' : sheetName,
-                    selected: true
-                });
-            } else {
-                cellRef.push({
-                    nodeId: 'sheet',
-                    nodeText: sheetName.indexOf(' ') !== -1 ? '\'' + sheetName + '\'' : sheetName
-                });
+            if (this.parent.sheets[idx].state === 'Visible') {
+                if (sheets[idx] === this.parent.getActiveSheet()) {
+                    cellRef.push({
+                        nodeId: 'sheet',
+                        nodeText: sheetName.indexOf(' ') !== -1 ? '\'' + sheetName + '\'' : sheetName,
+                        selected: true
+                    });
+                } else {
+                    cellRef.push({
+                        nodeId: 'sheet',
+                        nodeText: sheetName.indexOf(' ') !== -1 ? '\'' + sheetName + '\'' : sheetName
+                    });
+                }
             }
         }
         for (idx = 0; idx < this.parent.definedNames.length; idx++) {

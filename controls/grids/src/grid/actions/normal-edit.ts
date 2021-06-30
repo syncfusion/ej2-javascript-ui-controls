@@ -12,7 +12,7 @@ import { ReturnType } from '../base/type';
 import { FormValidator } from '@syncfusion/ej2-inputs';
 import { DataUtil } from '@syncfusion/ej2-data';
 import { freezeTable } from '../base/enum';
-import { addRemoveEventListener, setValidationRuels } from '../base/util';
+import { addRemoveEventListener } from '../base/util';
 import * as literals from '../base/string-literals';
 
 /**
@@ -140,6 +140,10 @@ export class NormalEdit {
         const args: CustomEditEventArgs = this.getEditArgs(editedData, rowObj, e.isScroll);
         args.row = tr;
         if (!args.isScroll) {
+            this.parent.notify(
+                events.createVirtualValidationForm,
+                { uid: this.uid, prevData: this.previousData, argsCreator: this.getEditArgs.bind(this), renderer: this.renderer }
+            );
             gObj.trigger(events.beginEdit, args, (begineditargs: EditEventArgs) => {
                 begineditargs.type = 'actionBegin';
                 gObj.trigger(events.actionBegin, begineditargs, (editargs: EditEventArgs) => {
@@ -194,63 +198,12 @@ export class NormalEdit {
 
     private editFormValidate(): boolean {
         const gObj: IGrid = this.parent;
-        let virtualFormValidation: boolean = true;
-        const form1: boolean = gObj.editModule.formObj.validate();
-        const form2: boolean = gObj.editModule.mFormObj ? gObj.editModule.mFormObj.validate() : true;
-        const form3: boolean = gObj.editModule.frFormObj ? gObj.editModule.frFormObj.validate() : true;
-        if (this.parent.enableVirtualization) {
-            virtualFormValidation = this.virtualEditFormValidation();
-        }
-        return (form1 && form2 && form3 && virtualFormValidation);
-    }
-
-    private virtualEditFormValidation(): boolean {
-        const gObj: IGrid = this.parent;
-        let isValid: boolean = true;
-        const error: HTMLElement = this.parent.element.querySelector('.e-griderror:not([style*="display: none"])');
-        if (gObj.enableVirtualization && !gObj.isFrozenGrid() && gObj.editSettings.mode === 'Normal' && (!error || error.style.display === 'none')) {
-            const cols: Column[] = gObj.columns as Column[];
-            const rowRenderer: RowRenderer<Column> = new RowRenderer<Column>(this.serviceLocator, null, this.parent);
-            const data: { virtualData: Object, isAdd: boolean, isScroll: boolean, endEdit?: boolean } = {
-                virtualData: extend({}, {}, this.previousData, true), isAdd: false, isScroll: false, endEdit: true
-            };
-            const rowObj: Row<Column> = extend({}, {}, gObj.getRowObjectFromUID(this.uid), true) as Row<Column>;
-            this.parent.notify(events.refreshVirtualEditFormCells, rowObj);
-            this.parent.notify(events.getVirtualData, data);
-            const args: CustomEditEventArgs = this.getEditArgs(data.virtualData, {} as Row<Column>, false);
-            args.isCustomFormValidation = true;
-            args.row = rowRenderer.render(rowObj, cols);
-            this.renderer.update(args);
-            const rules: Object = {};
-            for (let i: number = 0; i < cols.length; i++) {
-                if (!cols[i].visible) {
-                    continue;
-                }
-                if (cols[i].validationRules) {
-                    setValidationRuels(cols[i], 0, rules, {}, {}, cols.length, true);
-                }
-            }
-            args.form.classList.add('e-virtual-validation');
-            this.parent.editModule.virtualFormObj = gObj.editModule.createFormObj(args.form, rules);
-            isValid = this.parent.editModule.virtualFormObj.validate();
-            if (!isValid) {
-                const field: string = args.form.querySelector('.e-tooltip-wrap').id.split('_')[0];
-                const col: Column = gObj.getColumnByField(field);
-                const scrollTop: number = this.parent.getContent().firstElementChild.scrollTop;
-                const row: Element = gObj.getRowByIndex(this.editRowIndex);
-                if (!col || (!isNullOrUndefined(this.addedRowIndex) && scrollTop > 0) || (!isNullOrUndefined(this.editRowIndex) && !row)) {
-                    let validationCol: Column;
-                    for (let i: number = 0; i < cols.length && !col; i++) {
-                        if (cols[i].field === field) {
-                            validationCol = cols[i] as Column;
-                            break;
-                        }
-                    }
-                    this.parent.notify(events.scrollToEdit, validationCol);
-                }
-            }
-        }
-        return isValid;
+        const isValid: boolean = gObj.editModule.editFormValidate();
+        const validationArgs: { prevData: object, isValid: boolean, editIdx: number, addIdx: number } = {
+            prevData: this.previousData, isValid: true, editIdx: this.editRowIndex, addIdx: this.addedRowIndex
+        };
+        gObj.notify(events.validateVirtualForm, validationArgs);
+        return (isValid && validationArgs.isValid);
     }
 
     protected endEdit(): void {
@@ -537,6 +490,10 @@ export class NormalEdit {
             args.data = args.rowData = rowData.virtualData;
         }
         if (!args.isScroll) {
+            this.parent.notify(
+                events.createVirtualValidationForm,
+                { uid: this.uid, prevData: this.previousData, argsCreator: this.getEditArgs.bind(this), renderer: this.renderer }
+            );
             gObj.trigger(events.actionBegin, args, (addArgs: AddEventArgs) => {
                 if (addArgs.cancel) {
                     return;

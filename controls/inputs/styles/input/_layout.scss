@@ -100,6 +100,14 @@
     border-radius: $input-box-border-radius;
   }
 
+  .e-input.e-small,
+  .e-input-group.e-small,
+  .e-input-group.e-control-wrapper.e-small {
+    @if ($input-skin-name == 'tailwind' or $input-skin-name == 'tailwind-dark') {
+      border-radius: $input-small-border-radius;
+    }
+  }
+
   .e-input#{$css}:focus {
     border-width: $input-focus-border-width;
     padding-bottom: $input-padding-bottom;
@@ -155,6 +163,11 @@
     padding: $input-padding;
   }
 
+  .e-input-group textarea.e-input:focus,
+  .e-input-group.e-control-wrapper textarea.e-input:focus {
+    padding: $textarea-padding;
+  }
+
   input.e-input.e-bigger#{$css},
   textarea.e-input.e-bigger#{$css},
   .e-bigger input.e-input#{$css},
@@ -167,7 +180,27 @@
   .e-bigger .e-input-group.e-disabled,
   .e-input-group.e-control-wrapper.e-bigger.e-disabled,
   .e-bigger .e-input-group.e-control-wrapper.e-disabled {
+    @if ($input-skin-name == 'tailwind' or $input-skin-name == 'tailwind-dark') {
+      border-radius: $input-bigger-border-radius;
+    }
     font-size: $input-bigger-font-size;
+  }
+
+  input.e-input.e-bigger.e-small#{$css},
+  textarea.e-input.e-bigger.e-small#{$css},
+  .e-bigger.e-small input.e-input#{$css},
+  .e-bigger.e-small textarea.e-input#{$css},
+  .e-input-group.e-bigger.e-small,
+  .e-bigger.e-small .e-input-group,
+  .e-input-group.e-control-wrapper.e-biggere-small,
+  .e-bigger.e-small .e-input-group.e-control-wrapper,
+  .e-input-group.e-bigger.e-small.e-disabled,
+  .e-bigger.e-small .e-input-group.e-disabled,
+  .e-input-group.e-control-wrapper.e-bigger.e-small.e-disabled,
+  .e-bigger.e-small .e-input-group.e-control-wrapper.e-disabled {
+    @if ($input-skin-name == 'tailwind' or $input-skin-name == 'tailwind-dark') {
+      border-radius: $input-bigger-small-border-radius;
+    }
   }
 
   .e-input-group.e-bigger .e-input,
@@ -274,7 +307,7 @@
 
   .e-input-group .e-input-group-icon:first-child,
   .e-input-group.e-control-wrapper .e-input-group-icon:first-child {
-    @if ($input-skin-name == 'bootstrap' or $input-skin-name == 'bootstrap4') {
+    @if ($input-skin-name == 'bootstrap' or $input-skin-name == 'bootstrap4' or $input-skin-name == 'tailwind' or $input-skin-name == 'tailwind-dark') {
       border-left-width: $zero-value;
     }
   }
@@ -581,7 +614,7 @@
 
   .e-input-group .e-input-group-icon:first-child,
   .e-input-group.e-control-wrapper .e-input-group-icon:first-child {
-    @if ($input-skin-name != 'bootstrap' and $input-skin-name != 'bootstrap4') {
+    @if ($input-skin-name != 'bootstrap' and $input-skin-name != 'bootstrap4' and $input-skin-name != 'tailwind' and $input-skin-name != 'tailwind-dark') {
       border-left-width: $input-border-left-width;
     }
   }
@@ -665,7 +698,7 @@
 
   .e-input-group.e-rtl .e-input-group-icon:last-child,
   .e-input-group.e-control-wrapper.e-rtl .e-input-group-icon:last-child {
-    @if ($input-skin-name != 'bootstrap' and $input-skin-name != 'bootstrap4') or $input-skin-name == 'highcontrast' {
+    @if ($input-skin-name != 'bootstrap' and $input-skin-name != 'bootstrap4' and $input-skin-name != 'tailwind' and $input-skin-name != 'tailwind-dark') or $input-skin-name == 'highcontrast' {
       border-left-width: $input-border-left-width;
       border-right-width: $zero-value;
     }
@@ -684,7 +717,7 @@
 
   .e-input-group.e-rtl .e-input-group-icon:not(:last-child),
   .e-input-group.e-control-wrapper.e-rtl .e-input-group-icon:not(:last-child) {
-    @if ($input-skin-name != 'bootstrap' and $input-skin-name != 'bootstrap4') {
+    @if ($input-skin-name != 'bootstrap' and $input-skin-name != 'bootstrap4' and $input-skin-name != 'tailwind' and $input-skin-name != 'tailwind-dark') {
       border-left-width: $input-border-left-width;
     }
   }
@@ -1068,6 +1101,60 @@
       padding-right: 0;
       transform: translate3d(-10px, -39px, 0) scale(1);
     }
+    @else if ($input-skin-name == 'tailwind' or $input-skin-name == 'tailwind-dark') {
+      font-weight: 500;
+      padding-right: 0;
+      transform: translate3d(-10px, -33px, 0) scale(1);
+    }
+  }
+
+  .e-float-input.e-small input:focus ~ label.e-float-text,
+  .e-float-input.e-small input:valid ~ label.e-float-text,
+  .e-float-input.e-small input ~ label.e-label-top.e-float-text,
+  .e-float-input.e-small input[readonly] ~ label.e-label-top.e-float-text,
+  .e-float-input.e-small input[disabled] ~ label.e-label-top.e-float-text,
+  .e-float-input.e-small input label.e-float-text.e-label-top,
+  .e-small .e-float-input input:focus ~ label.e-float-text,
+  .e-small .e-float-input input:valid ~ label.e-float-text,
+  .e-small .e-float-input input ~ label.e-label-top.e-float-text,
+  .e-small .e-float-input input[readonly] ~ label.e-label-top.e-float-text,
+  .e-small .e-float-input input[disabled] ~ label.e-label-top.e-float-text,
+  .e-small .e-float-input input label.e-float-text.e-label-top,
+  .e-float-input.e-control-wrapper.e-small input:focus ~ label.e-float-text,
+  .e-float-input.e-control-wrapper.e-small input:valid ~ label.e-float-text,
+  .e-float-input.e-control-wrapper.e-small input ~ label.e-label-top.e-float-text,
+  .e-float-input.e-control-wrapper.e-small input[readonly] ~ label.e-label-top.e-float-text,
+  .e-float-input.e-control-wrapper.e-small input[disabled] ~ label.e-label-top.e-float-text,
+  .e-float-input.e-control-wrapper.e-small input label.e-float-text.e-label-top,
+  .e-small .e-float-input.e-control-wrapper input:focus ~ label.e-float-text,
+  .e-small .e-float-input.e-control-wrapper input:valid ~ label.e-float-text,
+  .e-small .e-float-input.e-control-wrapper input ~ label.e-label-top.e-float-text,
+  .e-small .e-float-input.e-control-wrapper input[readonly] ~ label.e-label-top.e-float-text,
+  .e-small .e-float-input.e-control-wrapper input[disabled] ~ label.e-label-top.e-float-text,
+  .e-small .e-float-input.e-control-wrapper input label.e-float-text.e-label-top,
+  .e-float-input.e-bigger.e-input-focus input ~ label.e-float-text,
+  .e-bigger .e-float-input.e-input-focus input ~ label.e-float-text,
+  .e-float-input.e-control-wrapper.e-bigger.e-input-focus input ~ label.e-float-text,
+  .e-bigger .e-float-input.e-control-wrapper.e-input-focus input ~ label.e-float-text {
+    font-size: $float-label-font-size;
+    @if $input-skin-name == 'material' {
+      top: -9px;
+      transform: translate3d(0, -6px, 0) scale(.92);
+    }
+    @else if $input-skin-name == 'fabric' or $input-skin-name == 'highcontrast' {
+      font-style: $input-font-normal;
+      padding-right: 0;
+      transform: translate3d(-10px, -43px, 0) scale(1);
+    }
+    @else if ($input-skin-name == 'bootstrap' or $input-skin-name == 'bootstrap4') {
+      padding-right: 0;
+      transform: translate3d(-10px, -39px, 0) scale(1);
+    }
+    @else if ($input-skin-name == 'tailwind' or $input-skin-name == 'tailwind-dark') {
+      font-weight: 500;
+      padding-right: 0;
+      transform: translate3d(-10px, -32px, 0) scale(1);
+    }
   }
 
   .e-float-input.e-bigger input:focus ~ label.e-float-text,
@@ -1113,6 +1200,11 @@
     @else if $input-skin-name == 'bootstrap4' {
       padding-right: 0;
       transform: translate3d(-10px, -42px, 0) scale(1);
+    }
+    @else if ($input-skin-name == 'tailwind' or $input-skin-name == 'tailwind-dark') {
+      font-weight: 500;
+      padding-right: 0;
+      transform: translate3d(-10px, -35px, 0) scale(1);
     }
   }
 
@@ -1171,6 +1263,11 @@
       padding-right: 0;
       transform: translate3d(-10px, -39px, 0) scale(1);
     }
+    @else if ($input-skin-name == 'tailwind' or $input-skin-name == 'tailwind-dark') {
+      font-weight: 500;
+      padding-right: 0;
+      transform: translate3d(-10px, -34px, 0) scale(1);
+    }
   }
 
   .e-float-input .e-input-in-wrap input:focus ~ label.e-float-text,
@@ -1218,7 +1315,7 @@
     @if $input-skin-name == 'material' {
       top: -9px;
     }
-    @else if $input-skin-name == 'fabric' or $input-skin-name == 'bootstrap' or $input-skin-name == 'bootstrap4' or $input-skin-name == 'highcontrast' {
+    @else if $input-skin-name == 'fabric' or $input-skin-name == 'bootstrap' or $input-skin-name == 'bootstrap4' or $input-skin-name == 'highcontrast' or $input-skin-name == 'tailwind' or $input-skin-name == 'tailwind-dark' {
       padding-right: 0;
       top: 14px;
     }
@@ -1267,7 +1364,7 @@
     @if $input-skin-name == 'material' {
       top: -8px;
     }
-    @else if $input-skin-name == 'fabric' or $input-skin-name == 'bootstrap' or $input-skin-name == 'bootstrap4' or $input-skin-name == 'highcontrast' {
+    @else if $input-skin-name == 'fabric' or $input-skin-name == 'bootstrap' or $input-skin-name == 'bootstrap4' or $input-skin-name == 'highcontrast' or $input-skin-name == 'tailwind' or $input-skin-name == 'tailwind-dark' {
       padding-right: 0;
       top: 17px;
     }
@@ -1323,7 +1420,7 @@
     @if $input-skin-name == 'material' {
       top: -7px;
     }
-    @else if $input-skin-name == 'fabric' or $input-skin-name == 'bootstrap' or $input-skin-name == 'bootstrap4' or $input-skin-name == 'highcontrast' {
+    @else if $input-skin-name == 'fabric' or $input-skin-name == 'bootstrap' or $input-skin-name == 'bootstrap4' or $input-skin-name == 'highcontrast' or $input-skin-name == 'tailwind' or $input-skin-name == 'tailwind-dark' {
       padding-right: 0;
       top: 16px;
     }
@@ -2333,6 +2430,16 @@
     border: $zero-value;
   }
 
+  .e-float-input.e-input-group input:focus,
+  .e-input-group input:focus,
+  .e-float-input.e-input-group textarea:focus,
+  .e-float-input.e-input-group.e-control-wrapper input:focus,
+  .e-float-input.e-input-group.e-control-wrapper textarea {
+    @if $input-skin-name == 'tailwind' or $input-skin-name == 'tailwind-dark' {
+      box-shadow: none;
+    }
+  }
+
   .e-float-input.e-input-group .e-float-line,
   .e-float-input.e-input-group .e-float-text,
   .e-float-input.e-input-group.e-control-wrapper .e-float-line,
@@ -3340,6 +3447,26 @@
     text-indent: 0;
   }
 
+  .e-bigger .e-input-group.e-small textarea.e-input:focus,
+  .e-bigger .e-input-group.e-control-wrapper.e-small textarea.e-input:focus,
+  .e-bigger .e-float-input.e-control-wrapper.e-small textarea:focus,
+  .e-bigger .e-float-input.e-small textarea:focus,
+  .e-small .e-input-group.e-bigger textarea.e-input:focus,
+  .e-small .e-input-group.e-control-wrapper.e-bigger textarea.e-input:focus,
+  .e-small .e-float-input.e-control-wrapper.e-bigger textarea:focus,
+  .e-small .e-float-input.e-bigger textarea:focus,
+  .e-input-group.e-bigger.e-small textarea.e-input:focus,
+  .e-input-group.e-bigger textarea.e-input:focus,
+  .e-input-group.e-small textarea.e-input:focus,
+  .e-input-group textarea.e-input:focus,
+  .e-input-group.e-control-wrapper.e-bigger.e-small textarea.e-input:focus,
+  .e-float-input.e-control-wrapper.e-bigger.e-small textarea:focus,
+  .e-float-input.e-bigger.e-small textarea:focus {
+    @if $input-skin-name == 'tailwind' or $input-skin-name == 'tailwind-dark' {
+      box-shadow: $imput-group-focus-box-shadow;
+    }
+  }
+
   .e-bigger textarea.e-input.e-small.e-rtl#{$css},
   .e-input-group:not(.e-outline).e-small.e-bigger.e-rtl textarea.e-input,
   .e-input-group:not(.e-outline).e-control-wrapper.e-small.e-bigger.e-rtl textarea.e-input,
@@ -3534,7 +3661,7 @@
     min-height: $input-clear-icon-min-height;
     min-width: $input-clear-icon-min-width;
     padding-bottom: $input-clear-icon-padding-bottom;
-    padding-left: $input-clear-icon-padding-right;
+    padding-left: $input-clear-icon-padding-left;
     padding-right: $input-clear-icon-padding-right;
     padding-top: $input-clear-icon-padding-top;
   }
@@ -3654,7 +3781,7 @@
   .e-float-input .e-input-in-wrap,
   .e-float-input.e-control-wrapper .e-input-in-wrap {
     width: 100%;
-    @if $input-skin-name == 'fabric' or $input-skin-name == 'bootstrap' or $input-skin-name == 'bootstrap4' or $input-skin-name == 'highcontrast' {
+    @if $input-skin-name == 'fabric' or $input-skin-name == 'bootstrap' or $input-skin-name == 'bootstrap4' or $input-skin-name == 'highcontrast' or $input-skin-name == 'tailwind' or $input-skin-name == 'tailwind-dark' {
       display: flex;
       position: relative;
     }
@@ -3697,7 +3824,7 @@
   .e-float-input .e-input-in-wrap label.e-float-text,
   .e-float-input.e-control-wrapper .e-input-in-wrap label.e-float-text {
     right: 0;
-    @if $input-skin-name == 'fabric' or $input-skin-name == 'bootstrap' or $input-skin-name == 'bootstrap4' or $input-skin-name == 'highcontrast' {
+    @if $input-skin-name == 'fabric' or $input-skin-name == 'bootstrap' or $input-skin-name == 'bootstrap4' or $input-skin-name == 'highcontrast' or $input-skin-name == 'tailwind' or $input-skin-name == 'tailwind-dark' {
       overflow: hidden;
       text-overflow: ellipsis;
       vertical-align: middle;
@@ -3788,6 +3915,11 @@
       padding-right: 0;
       transform: translate3d(-10px, -37px, 0) scale(1);
     }
+    @else if ($input-skin-name == 'tailwind' or $input-skin-name == 'tailwind-dark') {
+      font-weight: 500;
+      padding-right: 0;
+      transform: translate3d(-10px, -33px, 0) scale(1);
+    }
   }
 
   .e-float-input.e-bigger textarea:focus ~ label.e-float-text,
@@ -3806,7 +3938,7 @@
     @if $input-skin-name == 'material' {
       top: -20px;
     }
-    @else if $input-skin-name == 'fabric' or $input-skin-name == 'bootstrap' or $input-skin-name == 'bootstrap4' or $input-skin-name == 'highcontrast' {
+    @else if $input-skin-name == 'fabric' or $input-skin-name == 'bootstrap' or $input-skin-name == 'bootstrap4' or $input-skin-name == 'highcontrast' or $input-skin-name == 'tailwind' or $input-skin-name == 'tailwind-dark' {
       top: 14px;
     }
   }
@@ -3823,7 +3955,7 @@
     @if $input-skin-name == 'material' {
       top: -21px;
     }
-    @else if $input-skin-name == 'fabric' or $input-skin-name == 'bootstrap' or $input-skin-name == 'bootstrap4' or $input-skin-name == 'highcontrast' {
+    @else if $input-skin-name == 'fabric' or $input-skin-name == 'bootstrap' or $input-skin-name == 'bootstrap4' or $input-skin-name == 'highcontrast' or $input-skin-name == 'tailwind' or $input-skin-name == 'tailwind-dark' {
       top: 16px;
     }
   }
@@ -3844,7 +3976,7 @@
     @if $input-skin-name == 'material' {
       top: -20px;
     }
-    @else if $input-skin-name == 'fabric' or $input-skin-name == 'bootstrap' or $input-skin-name == 'bootstrap4' or $input-skin-name == 'highcontrast' {
+    @else if $input-skin-name == 'fabric' or $input-skin-name == 'bootstrap' or $input-skin-name == 'bootstrap4' or $input-skin-name == 'highcontrast' or $input-skin-name == 'tailwind' or $input-skin-name == 'tailwind-dark' {
       top: 16px;
     }
   }
@@ -3855,7 +3987,7 @@
     @if $input-skin-name == 'material' {
       top: -11px;
     }
-    @else if $input-skin-name == 'fabric' or $input-skin-name == 'bootstrap' or $input-skin-name == 'bootstrap4' or $input-skin-name == 'highcontrast' {
+    @else if $input-skin-name == 'fabric' or $input-skin-name == 'bootstrap' or $input-skin-name == 'bootstrap4' or $input-skin-name == 'highcontrast' or $input-skin-name == 'tailwind' or $input-skin-name == 'tailwind-dark' {
       top: 15px;
     }
   }
@@ -3886,7 +4018,7 @@
     @if $input-skin-name == 'material' {
       top: -8px;
     }
-    @else if $input-skin-name == 'fabric' or $input-skin-name == 'bootstrap' or $input-skin-name == 'bootstrap4' or $input-skin-name == 'highcontrast' {
+    @else if $input-skin-name == 'fabric' or $input-skin-name == 'bootstrap' or $input-skin-name == 'bootstrap4' or $input-skin-name == 'highcontrast' or $input-skin-name == 'tailwind' or $input-skin-name == 'tailwind-dark' {
       top: 18px;
     }
   }
@@ -3903,7 +4035,7 @@
     @if $input-skin-name == 'material' {
       top: -11px;
     }
-    @else if $input-skin-name == 'fabric' or $input-skin-name == 'bootstrap' or $input-skin-name == 'bootstrap4' or $input-skin-name == 'highcontrast' {
+    @else if $input-skin-name == 'fabric' or $input-skin-name == 'bootstrap' or $input-skin-name == 'bootstrap4' or $input-skin-name == 'highcontrast' or $input-skin-name == 'tailwind' or $input-skin-name == 'tailwind-dark' {
       top: 15px;
     }
   }
@@ -4127,6 +4259,11 @@
       padding-right: 0;
       top: 14px;
       transform: translate3d(-10px, -39px, 0) scale(1);
+    }
+    @else if ($input-skin-name == 'tailwind' or $input-skin-name == 'tailwind-dark') {
+      font-weight: 500;
+      padding-right: 0;
+      transform: translate3d(-10px, -40px, 0) scale(1);
     }
     user-select: text;
   }
@@ -4382,6 +4519,11 @@
       padding-right: 0;
       transform: translate3d(-10px, -39px, 0) scale(1);
     }
+    @else if ($input-skin-name == 'tailwind' or $input-skin-name == 'tailwind-dark') {
+      font-weight: 500;
+      padding-right: 0;
+      transform: translate3d(-10px, -40px, 0) scale(1);
+    }
     user-select: text;
   }
 
@@ -4503,6 +4645,97 @@
     @else if $input-skin-name == 'bootstrap' or $input-skin-name == 'bootstrap4' {
       padding-right: 0;
       transform: translate3d(-10px, -39px, 0) scale(1);
+    }
+    @else if ($input-skin-name == 'tailwind' or $input-skin-name == 'tailwind-dark') {
+      font-weight: 500;
+      padding-right: 0;
+      transform: translate3d(-10px, -35px, 0) scale(1);
+    }
+  }
+
+  .e-float-input.e-small.e-bigger textarea:focus ~ label.e-float-text,
+  .e-float-input.e-small.e-bigger textarea:valid ~ label.e-float-text,
+  .e-float-input.e-small.e-bigger textarea ~ label.e-label-top.e-float-text,
+  .e-float-input.e-small.e-bigger textarea[readonly] ~ label.e-label-top.e-float-text,
+  .e-float-input.e-small.e-bigger textarea[disabled] ~ label.e-label-top.e-float-text,
+  .e-float-input.e-small.e-bigger textarea label.e-float-text.e-label-top,
+  .e-bigger.e-small .e-float-input textarea:focus ~ label.e-float-text,
+  .e-bigger.e-small .e-float-input textarea:valid ~ label.e-float-text,
+  .e-bigger.e-small .e-float-input textarea ~ label.e-label-top.e-float-text,
+  .e-bigger.e-small .e-float-input textarea[readonly] ~ label.e-label-top.e-float-text,
+  .e-bigger.e-small .e-float-input textarea[disabled] ~ label.e-label-top.e-float-text,
+  .e-bigger.e-small .e-float-input textarea label.e-float-text.e-label-top,
+  .e-float-input.e-control-wrapper.e-bigger.e-small textarea:focus ~ label.e-float-text,
+  .e-float-input.e-control-wrapper.e-bigger.e-small textarea:valid ~ label.e-float-text,
+  .e-float-input.e-control-wrapper.e-bigger.e-small textarea ~ label.e-label-top.e-float-text,
+  .e-float-input.e-control-wrapper.e-bigger.e-small textarea[readonly] ~ label.e-label-top.e-float-text,
+  .e-float-input.e-control-wrapper.e-bigger.e-small textarea[disabled] ~ label.e-label-top.e-float-text,
+  .e-float-input.e-control-wrapper.e-bigger.e-small textarea label.e-float-text.e-label-top,
+  .e-small.e-bigger .e-float-input.e-control-wrapper textarea:focus ~ label.e-float-text,
+  .e-small.e-bigger .e-float-input.e-control-wrapper textarea:valid ~ label.e-float-text,
+  .e-small.e-bigger .e-float-input.e-control-wrapper textarea ~ label.e-label-top.e-float-text,
+  .e-small.e-bigger .e-float-input.e-control-wrapper textarea[readonly] ~ label.e-label-top.e-float-text,
+  .e-small.e-bigger .e-float-input.e-control-wrapper textarea[disabled] ~ label.e-label-top.e-float-text,
+  .e-small.e-bigger .e-float-input.e-control-wrapper textarea label.e-float-text.e-label-top {
+    @if $input-skin-name == 'material' {
+      transform: translate3d(0, 6px, 0) scale(.86);
+    }
+    @else if $input-skin-name == 'fabric' or $input-skin-name == 'highcontrast' {
+      font-style: $input-font-normal;
+      padding-right: 0;
+      transform: translate3d(-10px, -43px, 0) scale(1);
+    }
+    @else if $input-skin-name == 'bootstrap' or $input-skin-name == 'bootstrap4' {
+      padding-right: 0;
+      transform: translate3d(-10px, -39px, 0) scale(1);
+    }
+    @else if ($input-skin-name == 'tailwind' or $input-skin-name == 'tailwind-dark') {
+      font-weight: 500;
+      padding-right: 0;
+      transform: translate3d(-10px, -33px, 0) scale(1);
+    }
+  }
+
+  .e-float-input.e-small textarea:focus ~ label.e-float-text,
+  .e-float-input.e-small textarea:valid ~ label.e-float-text,
+  .e-float-input.e-small textarea ~ label.e-label-top.e-float-text,
+  .e-float-input.e-small textarea[readonly] ~ label.e-label-top.e-float-text,
+  .e-float-input.e-small textarea[disabled] ~ label.e-label-top.e-float-text,
+  .e-float-input.e-small textarea label.e-float-text.e-label-top,
+  .e-small .e-float-input textarea:focus ~ label.e-float-text,
+  .e-small .e-float-input textarea:valid ~ label.e-float-text,
+  .e-small .e-float-input textarea ~ label.e-label-top.e-float-text,
+  .e-small .e-float-input textarea[readonly] ~ label.e-label-top.e-float-text,
+  .e-small .e-float-input textarea[disabled] ~ label.e-label-top.e-float-text,
+  .e-small .e-float-input textarea label.e-float-text.e-label-top,
+  .e-float-input.e-control-wrapper.e-small textarea:focus ~ label.e-float-text,
+  .e-float-input.e-control-wrapper.e-small textarea:valid ~ label.e-float-text,
+  .e-float-input.e-control-wrapper.e-small textarea ~ label.e-label-top.e-float-text,
+  .e-float-input.e-control-wrapper.e-small textarea[readonly] ~ label.e-label-top.e-float-text,
+  .e-float-input.e-control-wrapper.e-small textarea[disabled] ~ label.e-label-top.e-float-text,
+  .e-float-input.e-control-wrapper.e-small textarea label.e-float-text.e-label-top,
+  .e-small .e-float-input.e-control-wrapper textarea:focus ~ label.e-float-text,
+  .e-small .e-float-input.e-control-wrapper textarea:valid ~ label.e-float-text,
+  .e-small .e-float-input.e-control-wrapper textarea ~ label.e-label-top.e-float-text,
+  .e-small .e-float-input.e-control-wrapper textarea[readonly] ~ label.e-label-top.e-float-text,
+  .e-small .e-float-input.e-control-wrapper textarea[disabled] ~ label.e-label-top.e-float-text,
+  .e-small .e-float-input.e-control-wrapper textarea label.e-float-text.e-label-top {
+    @if $input-skin-name == 'material' {
+      transform: translate3d(0, 6px, 0) scale(.86);
+    }
+    @else if $input-skin-name == 'fabric' or $input-skin-name == 'highcontrast' {
+      font-style: $input-font-normal;
+      padding-right: 0;
+      transform: translate3d(-10px, -43px, 0) scale(1);
+    }
+    @else if $input-skin-name == 'bootstrap' or $input-skin-name == 'bootstrap4' {
+      padding-right: 0;
+      transform: translate3d(-10px, -39px, 0) scale(1);
+    }
+    @else if ($input-skin-name == 'tailwind' or $input-skin-name == 'tailwind-dark') {
+      font-weight: 500;
+      padding-right: 0;
+      transform: translate3d(-10px, -31px, 0) scale(1);
     }
   }
 
@@ -4629,7 +4862,6 @@
   .e-small .e-float-input textarea,
   .e-small .e-float-input.e-control-wrapper textarea {
     font: inherit;
-    line-height: 1.5;
     min-height: $textarea-small-min-height;
     padding: $textarea-small-padding;
   }
@@ -4647,8 +4879,29 @@
   .e-small .e-input-group.e-input-focus textarea.e-input,
   .e-bigger .e-input-group.e-control-wrapper.e-input-focus textarea.e-input {
     font: inherit;
-    line-height: 1.5;
     min-height: $textarea-small-min-height;
+    padding: $textarea-small-padding;
+  }
+
+  .e-input-group.e-small textarea:focus,
+  .e-input-group.e-small textarea.e-input:focus,
+  .e-input-group textarea.e-small:focus,
+  .e-input-group textarea.e-input.e-small:focus,
+  .e-input-group.e-control-wrapper.e-small textarea:focus,
+  .e-input-group.e-control-wrapper.e-small textarea.e-input:focus,
+  .e-input-group.e-control-wrapper textarea.e-bigger:focus,
+  .e-input-group.e-control-wrapper textarea.e-input.e-bigger:focus,
+  .e-small .e-input-group textarea:focus,
+  .e-small .e-input-group textarea.e-input:focus,
+  .e-bigger .e-input-group.e-control-wrapper textarea:focus,
+  .e-bigger .e-input-group.e-control-wrapper.e-input-focus textarea:focus,
+  .e-bigger .e-input-group.e-control-wrapper textarea.e-input:focus,
+  .e-float-input.e-small textarea:focus,
+  .e-float-input textarea.e-small:focus,
+  .e-float-input.e-control-wrapper.e-small textarea:focus,
+  .e-float-input.e-control-wrapper textarea.e-small:focus,
+  .e-small .e-float-input textarea:focus,
+  .e-small .e-float-input.e-control-wrapper textarea:focus {
     padding: $textarea-small-padding;
   }
 
@@ -4727,6 +4980,9 @@
   textarea.e-input.e-bigger {
     @if $input-skin-name == 'material' {
       min-height: $input-bigger-min-height;
+    }
+    @if $input-skin-name == 'tailwind' or $input-skin-name == 'tailwind-dark' {
+      min-height: $input-bigger-height;
     }
   }
 

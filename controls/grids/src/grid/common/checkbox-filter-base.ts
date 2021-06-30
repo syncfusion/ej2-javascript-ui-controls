@@ -281,7 +281,7 @@ export class CheckBoxFilterBase {
             enableRtl: this.parent.enableRtl,
             width: (!isNullOrUndefined(parentsUntil(options.target, 'e-bigger')))
                 || this.parent.element.classList.contains('e-device') ? 260 : 255,
-            target: document.body, animationSettings:
+            target: this.parent.element, animationSettings:
                 { effect: 'None' },
             buttons: [{
                 click: this.btnClick.bind(this),

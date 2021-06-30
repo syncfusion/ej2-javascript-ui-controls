@@ -148,6 +148,7 @@ export class BaseTooltip extends ChartData {
         }
     }
 
+    // tslint:disable-next-line:max-func-body-length
     public createTooltip(
         chart: Chart | AccumulationChart, isFirst: boolean, location: ChartLocation, clipLocation: ChartLocation,
         point: Points | AccPoints, shapes: ChartShape[], offset: number, bounds: Rect, extraPoints: PointData[] = null,
@@ -162,9 +163,25 @@ export class BaseTooltip extends ChartData {
         let inverted: boolean = this.chart.requireInvertedAxis && series.isRectSeries;
         let position: TooltipPlacement = null;
         if (this.text.length <= 1) {
-            const contentSize: Size = measureText(this.text[0], chart.tooltip.textStyle);
-            const headerSize: Size = (!(this.header === '' || this.header === '<b></b>')) ? measureText(this.header, this.textStyle) :
-                new Size(0, 0);
+            let contentSize: Size; let headerSize: Size;
+            if (chart.tooltip.template && chart.getModuleName() === 'chart' && chart.tooltip.template[0] !== '#' && typeof chart.tooltip.template === 'string') {
+                const templateDiv: HTMLDivElement = document.createElement('div');
+                templateDiv.id = 'testing_template'; templateDiv.className = 'ejSVGTooltip';
+                templateDiv.setAttribute('style', 'pointer-events:none; position:absolute;z-index: 1');
+                document.getElementById(this.chart.element.id + '_Secondary_Element').appendChild(templateDiv);
+                const template: string =
+                    ((chart.tooltip.template as any).replaceAll('${x}', point.x as string) as any).replaceAll('${y}', point.y as string);
+                templateDiv.innerHTML = template;
+                contentSize = new Size(
+                    (templateDiv.firstElementChild as HTMLElement).offsetWidth,
+                    (templateDiv.firstElementChild as HTMLElement).offsetHeight);
+                headerSize = new Size(0, 0);
+                templateDiv.remove();
+            } else {
+                contentSize = measureText(this.text[0], chart.tooltip.textStyle);
+                headerSize = (!(this.header === '' || this.header === '<b></b>')) ? measureText(this.header, this.textStyle) :
+                    new Size(0, 0);
+            }
             // marker size + arrowpadding + 2 * padding + markerpadding
             const markerSize: number = 10 + 12 + (2 * 10) + 5;
             contentSize.width = Math.max(contentSize.width, headerSize.width) + ((shapes.length > 0) ? markerSize : 0);

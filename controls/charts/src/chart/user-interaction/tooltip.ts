@@ -238,6 +238,7 @@ export class Tooltip extends BaseTooltip {
         case 'Waterfall':
             return this.getWaterfallRegion(data, location);
         case 'RangeArea':
+        case 'SplineRangeArea':   
             return this.getRangeArea(data, location);
         default:
             return location;

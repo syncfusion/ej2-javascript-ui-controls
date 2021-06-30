@@ -126,6 +126,64 @@ export function getProgressThemeColor(theme: ProgressTheme): IProgressStyle {
             info: '#66b0ff'
         };
         break;
+	case 'Tailwind':
+		style = {
+            linearTrackColor: '#E5E7EB',
+            linearProgressColor: '#4F46E5',
+            circularTrackColor: '#E5E7EB',
+            circularProgressColor: '#4F46E5',
+            backgroundColor: 'transparent',
+            fontColor: '#FFFFFF',
+            linearFontFamily: 'Inter',
+            linearFontSize: '12',
+            linearFontStyle: 'Regular',
+            circularFontFamily: 'Inter',
+            circularFontStyle: 'Normal',
+            circularFontSize: '14',
+            progressOpacity: 1,
+            trackOpacity: 1,
+            bufferOpacity: 0.35,
+            linearGapWidth: 2,
+            circularGapWidth: 4,
+            linearTrackThickness: 2,
+            linearProgressThickness: 2,
+            circularTrackThickness: 4,
+            circularProgressThickness: 4,
+            success: '#15803D',
+            danger: '#DC2626',
+            warning: '#C2410C',
+            info: '#0E7490'
+        };
+        break;
+	case 'TailwindDark':
+		style = {
+            linearTrackColor: '#4B5563',
+            linearProgressColor: '#22D3EE',
+            circularTrackColor: '#4B5563',
+            circularProgressColor: '#22D3EE',
+            backgroundColor: 'transparent',
+            fontColor: '#D1D5DB',
+            linearFontFamily: 'Inter',
+            linearFontSize: '12',
+            linearFontStyle: 'Regular',
+            circularFontFamily: 'Interr',
+            circularFontStyle: 'Normal',
+            circularFontSize: '14',
+            progressOpacity: 1,
+            trackOpacity: 1,
+            bufferOpacity: 0.45,
+            linearGapWidth: 2,
+            circularGapWidth: 4,
+            linearTrackThickness: 2,
+            linearProgressThickness: 2,
+            circularTrackThickness: 4,
+            circularProgressThickness: 4,
+            success: '#22C55E',
+            danger: '#F87171',
+            warning: '#F87171',
+            info: '#06B6D4'
+        };
+        break;
     default:
         style = {
             linearTrackColor: '#EAEAEA',

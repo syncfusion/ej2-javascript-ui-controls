@@ -22,6 +22,8 @@ $editor-value-hover-bg: darken($gray-100, 2%) !default;
 $editor-value-text-color: $gray-700 !default;
 $editor-overlay-icon-color: $gray-700 !default;
 $editor-value-text-border: 1px dashed $gray-700 !default;
+$editable-overlay-icon-height: inherit !default;
+$editable-overlay-icon: 0 !default;
 
 /*! Tooltip styles */
 $editor-tip-border: 1px solid rgba($black, .2) !default;

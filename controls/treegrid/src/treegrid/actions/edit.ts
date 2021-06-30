@@ -241,6 +241,9 @@ export class Edit {
         if (isNullOrUndefined(target.closest('td.e-rowcell'))) {
             return;
         }
+        if (!(this.parent.grid.editSettings.allowEditing) || this.parent.grid.isEdit) {
+            return;
+        }
         const column: Column = this.parent.grid.getColumnByIndex(+target.closest('td.e-rowcell').getAttribute('aria-colindex'));
         if (this.parent.editSettings.mode === 'Cell' && !this.isOnBatch && column && !column.isPrimaryKey &&
         this.parent.editSettings.allowEditing && column.allowEditing && !(target.classList.contains('e-treegridexpand') ||
@@ -470,7 +473,7 @@ export class Edit {
     }
 
     private updateCell(args: CellSaveArgs, rowIndex: number): void {
-        this.parent.grid.editModule.updateRow(rowIndex, args.rowData);
+        this.parent.grid.editModule.updateCell(rowIndex, args.columnName, args.rowData[args.columnName]);
         this.parent.grid.getRowsObject()[rowIndex].data = args.rowData;
     }
     private crudAction(details: { value: ITreeData, action: string }, columnName?: string): void {
@@ -700,6 +703,10 @@ export class Edit {
             }
             this.addRowRecord = this.parent.getSelectedRecords()[0];
             this.isAddedRowByMethod = false;
+        }
+        if (this.parent.editSettings.newRowPosition === 'Child' && isNullOrUndefined(this.addRowRecord)
+        && !isNullOrUndefined(this.parent.getSelectedRecords()[0])) {
+            this.addRowRecord = this.parent.getSelectedRecords()[0];
         }
         args = this.beginAddEdit(args);
         // if (args.requestType === 'save' &&

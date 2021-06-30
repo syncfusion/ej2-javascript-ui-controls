@@ -195,6 +195,9 @@
       box-shadow: $cmenu-sub-ul-box-shadow;
       overflow: hidden;
       position: absolute;
+      @if $skin-name == 'tailwind' or $skin-name == 'tailwind-dark' {
+        margin-top: 4px;
+      }
     }
 
     & .e-menu-vscroll.e-vscroll {
@@ -347,6 +350,9 @@
       & .e-menu-item  {
         @include bigger-li-size;
         padding: $cmenu-li-padding;
+        @if $skin-name == 'tailwind' or $skin-name == 'tailwind-dark' {
+          padding: $menu-bigger-li-padding;
+        }
 
         & .e-caret {
           font-size: $submenu-bigger-caret-font-size;
@@ -397,6 +403,9 @@
 
     &.e-menu-popup {
       box-shadow: $cmenu-parent-ul-box-shadow;
+      @if $skin-name == 'tailwind' or $skin-name == 'tailwind-dark' {
+        margin-top: 8px;
+      }
     }
 
     & .e-scroll-nav .e-icons {

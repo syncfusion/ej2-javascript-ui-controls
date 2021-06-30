@@ -8,6 +8,12 @@
     & .e-protect-dlg {
       height: $protect-dlg-height;
       width: $protect-dlg-width;
+
+      @if $sheet-skin == 'tailwind' or $sheet-skin == 'tailwind-dark' {
+        & .e-dlg-header-content {
+          padding: 18px;
+        }
+      }
     }
 
     & .e-goto-dlg {
@@ -32,6 +38,9 @@
 
       & .e-dlg-content {
         padding: 0%;
+        @if $sheet-skin == 'tailwind' or $sheet-skin == 'tailwind-dark' {
+          border-radius: 5px;
+        }
 
         & .e-input-group {
           width: 170px;
@@ -52,6 +61,10 @@
       cursor: default;
       margin-top: 6px;
       overflow-y: auto;
+
+      @if $sheet-skin == 'tailwind' or $sheet-skin == 'tailwind-dark' {
+        margin-top: 10px;
+      }
     }
 
     & .e-protect-checkbox {
@@ -135,6 +148,10 @@
         &.e-input-group.e-control-wrapper.e-name-box .e-input-group-icon {
           border-left-width: 0;
           min-height: 15px;
+
+          @if $skin-name == 'tailwind' or $skin-name == 'tailwind-dark' {
+            font-size: 18px;
+          }
         }
       }
 
@@ -165,6 +182,11 @@
 
         @if $skin-name != 'bootstrap4' {
           font-size: 10px;
+        }
+
+        @if $skin-name == 'tailwind' or $skin-name == 'tailwind-dark' {
+          font-size: 18px;
+          line-height: 25px;
         }
       }
     }
@@ -687,6 +709,9 @@
       height: 100%;
       top: 0;
       width: 1px;
+      @if $sheet-skin == 'tailwind' or $sheet-skin == 'tailwind-dark' {
+        width: 3px;
+      }
     }
 
     & .e-sheet-tab-panel {
@@ -700,6 +725,10 @@
     & .e-sheet-tab {
       display: inline-block;
       line-height: 0;
+
+      @if $skin-name == 'tailwind' or $skin-name == 'tailwind-dark' {
+        background-color: $content-bg-color-alt2;
+      }
 
       &> div {
         display: inline-block;
@@ -745,6 +774,10 @@
           @else {
             & .e-toolbar-items .e-toolbar-item {
               border-right: $spreadsheet-border;
+
+              @if $skin-name == 'tailwind' or $skin-name == 'tailwind-dark' {
+                padding: 0;
+              }
             }
           }
 
@@ -1277,10 +1310,22 @@
         height: 360px !important; // sass-lint:disable-line no-important
       }
 
+      @if $sheet-skin == 'tailwind' or $sheet-skin == 'tailwind-dark' {
+        & .e-dlg-header-content {
+          padding: 18px;
+        }
+      }
+
       & .e-dlg-content {
         padding-bottom: 0;
         padding-left: 0;
         padding-right: 0;
+
+        @if $sheet-skin == 'tailwind' or $sheet-skin == 'tailwind-dark' {
+          & .e-sort-dialog {
+            padding-top: 15px;
+          }
+        }
 
         & .e-sort-listsection {
           padding-top: $dlg-content-padding;
@@ -1321,6 +1366,12 @@
       & .e-top-header {
         font-weight: 500;
       }
+
+      @if $sheet-skin == 'tailwind' or $sheet-skin == 'tailwind-dark' {
+        & .e-cf-dlg {
+          padding-top: 10px;
+        }
+      }
     }
 
     & .e-title-dlg {
@@ -1339,6 +1390,12 @@
 
 
     & .e-datavalidation-dlg {
+      @if $sheet-skin == 'tailwind' or $sheet-skin == 'tailwind-dark' {
+        & .e-dlg-header-content {
+          padding: 18px;
+        }
+      }
+
       & .e-validation-dlg {
         margin-top: 14px;
 
@@ -1353,6 +1410,7 @@
           & .e-input {
             font-size: 14px;
             height: 32px;
+            margin-top: 5px;
             }
           }
 
@@ -1408,6 +1466,7 @@
             & .e-input {
               font-size: 14px;
               height: 32px;
+              margin-top: 5px;
               }
             }
 
@@ -1424,6 +1483,7 @@
             & .e-input {
               font-size: 14px;
               height: 32px;
+              margin-top: 5px;
               }
             }
 
@@ -1560,8 +1620,8 @@
 
       & p.e-header {
         margin: 0;
-        padding-bottom: 13px;
-        padding-top: 13px;
+        padding-bottom: 8px;
+        padding-top: 12px;
       }
 
       & .e-footer-content {
@@ -1577,23 +1637,23 @@
           font-size: 18px;
           line-height: 31px;
         }
-    }
+      }
 
       & .e-dlg-content {
         & .e-pwd-alert-span {
           color: $dlg-error-color;
           font-size: 12px;
-          padding-top: 7px;
+          padding-top: 12px;
         }
 
         & .e-password-content {
-          padding-top: 10px;
+          padding-top: 12px;
 
           & .e-header {
-            font-size: 14px;
-            line-height: 16px;
-            padding-bottom: 9px;
-            }
+            font-size: 12px;
+            line-height: 24px;
+            margin-bottom: 4px;
+          }
         }
     }
 }
@@ -1660,6 +1720,9 @@
 
     & .e-filter-icon {
       margin-bottom: $filter-icon-margin-bottom;
+      @if $sheet-skin == 'tailwind' or $sheet-skin == 'tailwind-dark' {
+        font-size: 14px;
+      }
 
       &::before {
         font-size: 20px;
@@ -1677,6 +1740,9 @@
       right: 0;
       width: 20px;
       z-index: 2;
+      @if $sheet-skin == 'tailwind' or $sheet-skin == 'tailwind-dark' {
+        bottom: 1px;
+      }
     }
   }
 
@@ -1816,7 +1882,7 @@
       & .e-menu-item,
       & .e-menu-item.e-focused {
         background-color: $ele-color;
-        @if $sheet-skin != 'bootstrap-dark' and $sheet-skin != 'fabric-dark' and $sheet-skin != 'material-dark' {
+        @if $sheet-skin != 'bootstrap-dark' and $sheet-skin != 'fabric-dark' and $sheet-skin != 'material-dark' or $sheet-skin != 'tailwind-dark' {
           background-color: $cell-background;
         }
         height: auto;
@@ -1842,11 +1908,9 @@
             float: left;
           }
 
-          & .e-db1 {
-            height: 40px;
-          }
-
+          & .e-db1,
           & .e-db2 {
+            display: flex;
             height: 40px;
           }
         }
@@ -1861,7 +1925,7 @@
       & .e-menu-item,
       & .e-menu-item.e-focused {
         background-color: $ele-color;
-        @if $sheet-skin != 'bootstrap-dark' and $sheet-skin != 'fabric-dark' and $sheet-skin != 'material-dark' {
+        @if $sheet-skin != 'bootstrap-dark' and $sheet-skin != 'fabric-dark' and $sheet-skin != 'material-dark' or $sheet-skin != 'tailwind-dark' {
           background-color: $cell-background;
         }
         height: auto;
@@ -1893,15 +1957,10 @@
             float: left;
           }
 
-          & .e-cs1 {
-            height: 40px;
-            }
-
-          & .e-cs2 {
-            height: 40px;
-            }
-
+          & .e-cs1,
+          & .e-cs2,
           & .e-cs3 {
+            display: flex;
             height: 40px;
             }
           }
@@ -2215,6 +2274,11 @@
         font-size: 12px;
         font-weight: 500;
         margin-bottom: $dlg-category-margin-bottom;
+
+        @if $sheet-skin == 'tailwind' or $sheet-skin == 'tailwind-dark' {
+          font-weight: 600;
+          padding: 10px 0;
+        }
       }
 
       & .e-formula-description {
@@ -2234,6 +2298,14 @@
         cursor: default;
         margin-top: 6px;
         overflow-y: auto;
+      }
+    }
+  }
+
+  .e-xlflmenu {
+    @if $sheet-skin == 'tailwind' or $sheet-skin == 'tailwind-dark' {
+      & .e-xlfl-maindiv {
+        padding-top: 10px;
       }
     }
   }
@@ -2369,7 +2441,7 @@
 
     & .e-formula-bar-panel {
       & .e-input-group.e-control-wrapper.e-ddl.e-name-box .e-input-group-icon {
-        font-size: 10px;
+        font-size: 20px;
         margin: 0;
       }
 
@@ -2423,6 +2495,11 @@
 
       & .e-drop-icon {
         line-height: 29px;
+
+        @if $skin-name == 'tailwind' or $skin-name == 'tailwind-dark' {
+          font-size: 18px;
+          line-height: 38px;
+        }
       }
 
       & .e-separator {
@@ -2459,6 +2536,10 @@
 
     & .e-filter-icon {
       margin-bottom: $filter-icon-bigger-margin-bottom;
+      @if $sheet-skin == 'tailwind' or $sheet-skin == 'tailwind-dark' {
+        font-size: 21px;
+        margin-top: -3px;
+      }
     }
 
     & .e-find-dlg {
@@ -2479,6 +2560,26 @@
 
       & .e-btn {
         font-size: 12px;
+      }
+    }
+
+    & .e-protectworkbook-dlg {
+      & .e-dlg-content {
+        & .e-pwd-alert-span {
+          color: $dlg-error-color;
+          font-size: 14px;
+          padding-top: 16px;
+        }
+
+        & .e-password-content {
+          padding-top: 16px;
+
+          & .e-header {
+            font-size: 14px;
+            line-height: 28px;
+            margin-bottom: 4px;
+          }
+        }
       }
     }
   }

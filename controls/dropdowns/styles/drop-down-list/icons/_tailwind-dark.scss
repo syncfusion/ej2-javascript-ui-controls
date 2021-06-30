@@ -1,0 +1,15 @@
+@include export-module('dropdownlist-tailwind-dark-icons') {
+  .e-ddl .e-search-icon::before {
+    content: '\e737';
+  }
+
+  .e-ddl .e-back-icon::before {
+    content: '\e7a5';
+  }
+
+  .e-ddl.e-input-group.e-control-wrapper .e-ddl-icon::before {
+    content: '\e706';
+    font-family: 'e-icons';
+  }
+}
+    

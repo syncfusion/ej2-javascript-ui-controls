@@ -1,0 +1,4897 @@
+/* eslint-disable */
+import { Browser, createElement, select } from "@syncfusion/ej2-base";
+import { cornersPointsBeforeRotation, DrawingElement, PointModel, Rect, TextAlign } from "@syncfusion/ej2-drawings";
+import { FormFieldAnnotationType, PdfAnnotationBase, PdfFormFieldBaseModel, PdfFontModel } from "../drawing";
+import { DiagramHtmlElement } from "../drawing/html-element";
+import { PdfAnnotationBaseModel, PdfViewer, PdfViewerBase, IPageAnnotations } from "../index";
+import { CheckBoxFieldSettings, DropdownFieldSettings, PasswordFieldSettings, Item, ListBoxFieldSettings, RadioButtonFieldSettings, SignatureFieldSettings, TextFieldSettings, InitialFieldSettings, SignatureIndicatorSettings } from "../pdfviewer";
+import { isNullOrUndefined } from '@syncfusion/ej2-base';
+import { FormFieldModel, ItemModel } from "../pdfviewer-model";
+import { Dialog, Tooltip } from "@syncfusion/ej2-popups";
+import { Tab } from "@syncfusion/ej2-navigations";
+import { DropDownButton, MenuEventArgs } from '@syncfusion/ej2-splitbuttons';
+import { ColorPicker, Slider, TextBox, NumericTextBox } from "@syncfusion/ej2-inputs";
+import { DropDownList } from "@syncfusion/ej2-dropdowns";
+import { Button, ChangeEventArgs, CheckBox } from "@syncfusion/ej2-buttons";
+import { FontStyle, FormFieldType } from '../base/types';
+import { cloneObject } from '../drawing/drawing-util';
+
+/* eslint-disable */
+/**
+ * The `FormDesigner` module is used to handle form designer actions of PDF viewer.
+ */
+export class FormDesigner {
+    private pdfViewer: PdfViewer;
+    private pdfViewerBase: PdfViewerBase;
+    private isFormFieldExistingInCollection: boolean = false;
+
+    private propertiesDialog: Dialog;
+    private tabControl: Tab;
+    private formFieldName: TextBox;
+    private formFieldTooltip: TextBox;
+    private formFieldValue: TextBox;
+    private formFieldVisibility: DropDownList;
+    private formFieldReadOnly: CheckBox;
+    private formFieldChecked: CheckBox;
+    private formFieldRequired: CheckBox;
+    private formFieldPrinting: CheckBox;
+    private formFieldFontFamily: DropDownList;
+    private formFieldFontSize: DropDownList;
+    private maxLengthItem: NumericTextBox;
+    private fontColorDropDown: DropDownButton;
+    private fontColorPalette: ColorPicker;
+    private fontColorElement: HTMLElement;
+    private colorDropDownElement: HTMLElement;
+    private colorPalette: ColorPicker;
+    private colorDropDown: DropDownButton;
+    private strokeDropDownElement: HTMLElement;
+    private strokeColorPicker: ColorPicker;
+    private strokeDropDown: DropDownButton;
+    private thicknessElement: HTMLElement;
+    private thicknessDropDown: DropDownButton;
+    private thicknessSlider: Slider;
+    private thicknessIndicator: HTMLElement;
+    private formFieldListItem: TextBox;
+    private formFieldAddButton: Button;
+    private formFieldDeleteButton: Button;
+    private formFieldUpButton: Button;
+    private formFieldDownButton: Button;
+    private isBold: boolean;
+    private isItalic: boolean;
+    private isUnderline: boolean;
+    private isStrikeThrough: boolean;
+    private formFieldBold: string;
+    private formFieldItalic: string;
+    private formFieldUnderline: string;
+    private formFieldStrikeOut: string;
+    private formFieldAlign: string;
+    private fontColorValue: string;
+    private backgroundColorValue: string;
+    private borderColorValue: string;
+    private formFieldBorderWidth: string;
+    private checkboxCheckedState: boolean;
+    private formFieldListItemCollection: string[] = [];
+    private formFieldListItemDataSource: object[] = [];
+    private isInitialField: boolean = false;
+
+    /**
+     * @private
+     */
+    public disableSignatureClickEvent: boolean = false;
+    /**
+     * @private
+     */
+    public formFieldIndex: number = 0;
+    /**
+     * @private
+     */
+    public formFieldIdIndex: number = 0;
+    /**
+     * @private
+     */
+    public isProgrammaticSelection: boolean = false;
+
+    /**
+     * @private
+    */
+    public isShapeCopied: boolean = false;
+    private isDrawHelper: boolean = false;
+
+    /**
+    * @param viewer
+    * @param base
+    * @private
+    */
+    constructor(viewer: PdfViewer, base: PdfViewerBase) {
+        this.pdfViewer = viewer;
+        this.pdfViewerBase = base;
+    }
+    /**
+     * @private
+     */
+    public drawHelper(formFieldAnnotationType: string, obj: PdfFormFieldBaseModel, event: Event): void {
+        const textLayer: HTMLElement = document.getElementById(this.pdfViewer.element.id + '_textLayer_' + this.pdfViewerBase.activeElements.activePageID);
+        const canvasElement: HTMLElement = document.getElementById(this.pdfViewer.element.id + '_pageCanvas_' + this.pdfViewerBase.activeElements.activePageID);
+        if (canvasElement !== null && textLayer !== null) {
+            let zoomValue: number = this.pdfViewerBase.getZoomFactor();
+            let htmlElement: HTMLElement;
+            const HtmlElementAttribute: Object = {
+                'id': 'FormField_helper_html_element',
+                'class': 'foreign-object'
+            };
+            let bounds = this.updateFormFieldInitialSize(obj as DrawingElement, formFieldAnnotationType);
+            htmlElement = this.createHtmlElement('div', HtmlElementAttribute);
+            this.isDrawHelper = true;
+            if (formFieldAnnotationType === "SignatureField" || formFieldAnnotationType === "InitialField") {
+                htmlElement.appendChild(this.createSignatureDialog(this.pdfViewer, obj, bounds));
+            } else if (formFieldAnnotationType === "DropdownList") {
+                let element: any = { id: "dropdown_helper" };
+                htmlElement.appendChild(this.createDropDownList(element, obj));
+            } else if (formFieldAnnotationType === "ListBox") {
+                let element: any = { id: "listbox_helper" };
+                htmlElement.appendChild(this.createListBox(element, obj));
+            } else {
+                htmlElement.appendChild(this.createInputElement(formFieldAnnotationType, obj, bounds));
+            }
+            textLayer.appendChild(htmlElement);
+            let point = this.pdfViewerBase.getMousePosition(event as any);
+            htmlElement.setAttribute(
+                'style', 'height:' + bounds.height * zoomValue + 'px; width:' + bounds.width * zoomValue + 'px;left:' + point.x * zoomValue + 'px; top:' + point.y * zoomValue + 'px;' +
+                'position:absolute;opacity: 0.5;'
+            );
+        }
+    }
+    /**
+     * @private
+     */
+    public drawHTMLContent(formFieldAnnotationType: string, element: DiagramHtmlElement, drawingObject: PdfFormFieldBaseModel, pageIndex?: number, commandHandler?: PdfViewer): HTMLElement {
+        const textLayer: HTMLElement = document.getElementById(this.pdfViewer.element.id + '_textLayer_' + pageIndex);
+        const canvasElement: HTMLElement = document.getElementById(this.pdfViewer.element.id + '_pageCanvas_' + pageIndex);
+        if (element !== null && canvasElement !== null && textLayer !== null) {
+            let zoomValue: number = this.pdfViewerBase.getZoomFactor();
+            let htmlElement: HTMLElement; let parentHtmlElement: HTMLElement;
+            const parentHtmlElementAttribute: Object = {
+                'id': "form_field_" + element.id + '_html_element',
+                'class': 'foreign-object'
+            };
+            parentHtmlElement = this.createHtmlElement('div', parentHtmlElementAttribute);
+            const HtmlElementAttribute: Object = {
+                'id': element.id + '_html_element',
+                'class': 'foreign-object'
+            };
+            htmlElement = this.createHtmlElement('div', HtmlElementAttribute);
+            if (formFieldAnnotationType === "SignatureField" || formFieldAnnotationType === "InitialField") {
+                element.template = htmlElement.appendChild(this.createSignatureDialog(commandHandler, drawingObject));
+            } else if (formFieldAnnotationType === "DropdownList") {
+                element.template = htmlElement.appendChild(this.createDropDownList(element, drawingObject));
+            } else if (formFieldAnnotationType === "ListBox") {
+                element.template = htmlElement.appendChild(this.createListBox(element, drawingObject));
+            } else {
+                element.template = htmlElement.appendChild(this.createInputElement(formFieldAnnotationType, drawingObject));
+            }
+            let divElement = document.createElement("div");
+            divElement.id = drawingObject.id + '_designer_name';
+            divElement.className = "e-pv-show-designer-name";
+            if (this.pdfViewer.designerMode) {
+                divElement.innerHTML = drawingObject.name;
+                divElement.style.position = 'absolute';
+            } else {
+                divElement.innerHTML = "";
+                divElement.style.position = 'initial';
+            }
+            htmlElement.appendChild(divElement);
+            parentHtmlElement.appendChild(htmlElement);
+            textLayer.appendChild(parentHtmlElement);
+            if (formFieldAnnotationType === "RadioButton") {
+                if (document.getElementsByClassName("e-pv-radiobtn-span").length > 0) {
+                    let spanElement = document.getElementsByClassName("e-pv-radiobtn-span");
+                    for (let i: number = 0; i < spanElement.length; i++) {
+                        (spanElement as any)[i].style.width = ((drawingObject.bounds.width * zoomValue) - 10) + "px";
+                        (spanElement as any)[i].style.height = ((drawingObject.bounds.height * zoomValue) - 10) + "px";
+                        if (parseInt((spanElement as any)[i].style.width, 10) === 0 || parseInt((spanElement as any)[i].style.height, 10) === 0) {
+                            (spanElement as any)[i].style.width = "2px";
+                            (spanElement as any)[i].style.height = "2px";
+                        }
+                    }
+                }
+            }
+            const point: PointModel = cornersPointsBeforeRotation(element).topLeft;
+            htmlElement.setAttribute(
+                'style', 'height:' + (element.actualSize.height * zoomValue) + 'px; width:' + (element.actualSize.width * zoomValue) +
+                'px;left:' + point.x * zoomValue + 'px; top:' + point.y * zoomValue + 'px;' +
+                'position:absolute;transform:rotate(' + (element.rotateAngle + element.parentTransform) + 'deg);' +
+                'pointer-events:' + ((this.pdfViewer.designerMode) ? 'none' : 'all')
+                + ';visibility:' + ((element.visible) ? 'visible' : 'hidden') + ';opacity:' + element.style.opacity + ';'
+            );
+            this.updateFormDesignerFieldInSessionStorage(point, element, formFieldAnnotationType, drawingObject);
+            let field: IFormField = {
+                value: drawingObject.value, fontFamily: drawingObject.fontFamily, fontSize: drawingObject.fontSize, fontStyle: drawingObject.fontStyle,
+                color: drawingObject.color, backgroundColor: drawingObject.backgroundColor, alignment: drawingObject.alignment, isReadonly: drawingObject.isReadonly, visibility: drawingObject.visibility,
+                maxLength: drawingObject.maxLength, isRequired: drawingObject.isRequired, isPrint: drawingObject.isPrint, rotation: drawingObject.rotateAngle, tooltip: drawingObject.tooltip,
+                borderColor: drawingObject.borderColor, thickness: drawingObject.thickness, options: drawingObject.options, pageNumber: drawingObject.pageNumber, isChecked: drawingObject.isChecked, isSelected: drawingObject.isSelected
+            };
+            this.pdfViewer.fireFormFieldAddEvent("formFieldAdd", field, this.pdfViewerBase.activeElements.activePageID);
+        } else {
+            const point: PointModel = cornersPointsBeforeRotation(element).topLeft;
+            this.updateFormDesignerFieldInSessionStorage(point, element, formFieldAnnotationType, drawingObject);
+        }
+        return element.template;
+    }
+    /**
+     * @private
+    */
+    public updateFormDesignerFieldInSessionStorage(point: PointModel, element: DiagramHtmlElement, formFieldType: string, drawingObject?: PdfFormFieldBaseModel): void {
+        let zoomValue: number = this.pdfViewerBase.getZoomFactor();
+        let formDesignObj: IFormField = {
+            id: element.id, lineBound: { X: point.x * zoomValue, Y: point.y * zoomValue, Width: element.actualSize.width * zoomValue, Height: element.actualSize.height * zoomValue },
+            name: drawingObject.name, zoomValue: zoomValue, pageNumber: drawingObject.pageNumber, value: drawingObject.value, formFieldAnnotationType: formFieldType,
+            fontFamily: drawingObject.fontFamily, fontSize: drawingObject.fontSize, fontStyle: drawingObject.fontStyle, fontColor: this.getRgbCode(drawingObject.color) as unknown as string,
+            borderColor: this.getRgbCode(drawingObject.borderColor), thickness: drawingObject.thickness, backgroundColor: this.getRgbCode(drawingObject.backgroundColor) as unknown as string,
+            textAlign: drawingObject.alignment, isChecked: drawingObject.isChecked, isSelected: drawingObject.isSelected, isReadonly: drawingObject.isReadonly, font: {
+                isBold: drawingObject.font.isBold, isItalic: drawingObject.font.isItalic, isStrikeout: drawingObject.font.isStrikeout, isUnderline: drawingObject.font.isUnderline
+            }, selectedIndex: [], radiobuttonItem: null, option: drawingObject.options ? drawingObject.options : [], visibility: drawingObject.visibility, maxLength: drawingObject.maxLength, isRequired: drawingObject.isRequired, isPrint: drawingObject.isPrint, rotation: 0, tooltip: drawingObject.tooltip
+        };
+        if (formDesignObj.formFieldAnnotationType === "RadioButton") {
+            formDesignObj.radiobuttonItem = [];
+            formDesignObj.radiobuttonItem.push({
+                id: element.id, lineBound: { X: point.x * zoomValue, Y: point.y * zoomValue, Width: element.actualSize.width * zoomValue, Height: element.actualSize.height * zoomValue },
+                name: drawingObject.name, zoomValue: zoomValue, pageNumber: drawingObject.pageNumber, value: drawingObject.value, formFieldAnnotationType: formFieldType,
+                fontFamily: drawingObject.fontFamily, fontSize: drawingObject.fontSize, fontStyle: drawingObject.fontStyle, fontColor: this.getRgbCode(drawingObject.color) as unknown as string,
+                borderColor: this.getRgbCode(drawingObject.borderColor), thickness: drawingObject.thickness, backgroundColor: this.getRgbCode(drawingObject.backgroundColor) as unknown as string,
+                textAlign: drawingObject.alignment, isChecked: drawingObject.isChecked, isSelected: drawingObject.isSelected, isReadonly: drawingObject.isReadonly, visibility: drawingObject.visibility,
+                maxLength: drawingObject.maxLength, isRequired: drawingObject.isRequired, isPrint: drawingObject.isPrint, rotation: 0, tooltip: drawingObject.tooltip
+            });
+        }
+        let isItemAdd: boolean = this.getRadioButtonItem(formDesignObj, drawingObject);
+        if (!isItemAdd) {
+            for (var i = 0; i < this.pdfViewerBase.formFieldCollection.length; i++) {
+                let formFieldElement: any = this.pdfViewerBase.formFieldCollection[i];
+                if (formFieldElement["Key"] === formDesignObj.id) {
+                    this.pdfViewerBase.formFieldCollection.splice(i, 1);
+                    this.pdfViewerBase.formFieldCollection.push({ Key: element.id, FormField: formDesignObj });
+                    this.isFormFieldExistingInCollection = true;
+                }
+            }
+            if (!this.isFormFieldExistingInCollection) {
+                this.pdfViewerBase.formFieldCollection.push({ Key: element.id, FormField: formDesignObj });
+            }
+            const annotationStringified: string = JSON.stringify(this.pdfViewerBase.formFieldCollection);
+            window.sessionStorage.setItem(this.pdfViewerBase.documentId + '_formDesigner', (annotationStringified));
+            this.isFormFieldExistingInCollection = false;
+            if (this.pdfViewerBase.formFieldCollection.length > 0) {
+                this.pdfViewerBase.enableFormFieldButton(true);
+            } else {
+                this.pdfViewerBase.enableFormFieldButton(false);
+            }
+        }
+    }
+
+    private getRadioButtonItem(radiobutton: any, formFieldProperty: any): boolean {
+        var data = window.sessionStorage.getItem(this.pdfViewerBase.documentId + '_formDesigner');
+        var formFieldsData = JSON.parse(data);
+        var isItemAdd: boolean = false;
+        if (formFieldsData != null) {
+            for (let i: number = 0; i < formFieldsData.length; i++) {
+                let currentData: any = formFieldsData[i];
+                let radiobuttonItem: IRadiobuttonItem;
+                if (radiobutton.formFieldAnnotationType === "RadioButton") {
+                    if (radiobutton.radiobuttonItem && currentData.FormField.radiobuttonItem) {
+                        for (let m: number = 0; m < currentData.FormField.radiobuttonItem.length; m++) {
+                            if (currentData.FormField.radiobuttonItem[m].id === radiobutton.id) {
+                                radiobuttonItem = {
+                                    lineBound: radiobutton.lineBound, id: radiobutton.id,
+                                    name: radiobutton.name, zoomValue: radiobutton.zoomValue, pageNumber: radiobutton.pageNumber, value: radiobutton.value, formFieldAnnotationType: radiobutton.formFieldAnnotationType,
+                                    fontFamily: radiobutton.fontFamily, fontSize: radiobutton.fontSize, fontStyle: radiobutton.fontStyle, fontColor: this.getRgbCode(formFieldProperty.color),
+                                    borderColor: this.getRgbCode(formFieldProperty.borderColor), thickness: formFieldProperty.thickness, backgroundColor: this.getRgbCode(formFieldProperty.backgroundColor), textAlign: radiobutton.textAlign, isChecked: radiobutton.isChecked, isSelected: radiobutton.isSelected,
+                                    isReadonly: radiobutton.isReadonly, visibility: radiobutton.visibility, maxLength: radiobutton.maxLength, isRequired: radiobutton.isRequired, isPrint: radiobutton.isPrint, rotation: 0, tooltip: radiobutton.tooltip
+                                }
+                                currentData.FormField.radiobuttonItem.splice(m, 1);
+                                currentData.FormField.radiobuttonItem.push(radiobuttonItem);
+                                if (!isNullOrUndefined(this.pdfViewerBase.formFieldCollection[i])) {
+                                    this.pdfViewerBase.formFieldCollection[i].FormField.radiobuttonItem = currentData.FormField.radiobuttonItem;
+                                    isItemAdd = true;
+                                }
+                                break;
+                            }
+                            else {
+                                if (radiobutton.formFieldAnnotationType === currentData.FormField.formFieldAnnotationType && radiobutton.name === currentData.FormField.name) {
+                                    radiobuttonItem = {
+                                        lineBound: radiobutton.lineBound, id: radiobutton.id,
+                                        name: radiobutton.name, zoomValue: radiobutton.zoomValue, pageNumber: radiobutton.pageNumber, value: radiobutton.value, formFieldAnnotationType: radiobutton.formFieldAnnotationType,
+                                        fontFamily: radiobutton.fontFamily, fontSize: radiobutton.fontSize, fontStyle: radiobutton.fontStyle, fontColor: this.getRgbCode(formFieldProperty.color),
+                                        borderColor: this.getRgbCode(formFieldProperty.borderColor), thickness: formFieldProperty.thickness, backgroundColor: this.getRgbCode(formFieldProperty.backgroundColor), textAlign: radiobutton.textAlign, isChecked: radiobutton.isChecked, isSelected: radiobutton.isSelected,
+                                        isReadonly: radiobutton.isReadonly, visibility: radiobutton.visibility, maxLength: radiobutton.maxLength, isRequired: radiobutton.isRequired, isPrint: radiobutton.isPrint, rotation: 0, tooltip: radiobutton.tooltip
+                                    }
+
+                                    let isContainsRadiobuttonItem : boolean = false;
+                                    for (let i: number = 0; i < currentData.FormField.radiobuttonItem.length; i++) {
+                                        if (currentData.FormField.radiobuttonItem[i].id === radiobuttonItem.id) {
+                                            currentData.FormField.radiobuttonItem[i] = radiobuttonItem;
+                                            isContainsRadiobuttonItem = true;
+                                            break;
+                                        }
+                                    }
+                                    if (!isContainsRadiobuttonItem) {
+                                        currentData.FormField.radiobuttonItem.push(radiobuttonItem);
+                                    }
+                                    if (!isNullOrUndefined(this.pdfViewerBase.formFieldCollection[i])) {
+                                        this.pdfViewerBase.formFieldCollection[i].FormField.radiobuttonItem = currentData.FormField.radiobuttonItem;
+                                        isItemAdd = true;
+                                        for (let l: number = 0; l < this.pdfViewerBase.formFieldCollection.length; l++) {
+                                            var formFieldElement = this.pdfViewerBase.formFieldCollection[l];
+                                            if (formFieldElement["Key"] === radiobuttonItem.id) {
+                                                this.pdfViewerBase.formFieldCollection.splice(l, 1);
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+                }
+            }
+            if (isItemAdd) {
+                const annotationStringified: string = JSON.stringify(this.pdfViewerBase.formFieldCollection);
+                window.sessionStorage.setItem(this.pdfViewerBase.documentId + '_formDesigner', (annotationStringified));
+            }
+        }
+        return isItemAdd;
+    }
+
+    // eslint-disable-next-line
+    private getRgbCode(colorString: string): object {
+        if (!colorString.match(/#([a-z0-9]+)/gi) && !colorString.match(/^rgba?\((\d+),\s*(\d+),\s*(\d+)(?:,\s*(\d+(?:\.\d+)?))?\)$/)) {
+            let colorCode: string = this.nameToHash(colorString);
+            if (colorCode != "")
+                colorString = colorCode;
+        }
+        let stringArray: string[] = colorString.split(',');
+        if (isNullOrUndefined(stringArray[1])) {
+            colorString = this.getValue(colorString, 'rgba');
+            stringArray = colorString.split(',');
+        }
+        // eslint-disable-next-line radix
+        const r: number = parseInt(stringArray[0].split('(')[1]);
+        // eslint-disable-next-line radix
+        const g: number = parseInt(stringArray[1]);
+        // eslint-disable-next-line radix
+        const b: number = parseInt(stringArray[2]);
+        // eslint-disable-next-line radix
+        const a: number = parseFloat(stringArray[3]) * 100;
+        return { r: r, g: g, b: b, a: a };
+    }
+
+    /**
+     * @param colour
+     * @private
+     */
+    // eslint-disable-next-line
+    public nameToHash(colour: string): string {
+        // eslint-disable-next-line
+        let colours: any = {
+            'aliceblue': '#f0f8ff', 'antiquewhite': '#faebd7', 'aqua': '#00ffff', 'aquamarine': '#7fffd4', 'azure': '#f0ffff',
+            'beige': '#f5f5dc', 'bisque': '#ffe4c4', 'black': '#000000', 'blanchedalmond': '#ffebcd', 'blue': '#0000ff',
+            'blueviolet': '#8a2be2', 'brown': '#a52a2a', 'burlywood': '#deb887', 'yellow': '#ffff00', 'yellowgreen': '#9acd32',
+            'cadetblue': '#5f9ea0', 'chartreuse': '#7fff00', 'chocolate': '#d2691e', 'coral': '#ff7f50',
+            'cornflowerblue': '#6495ed', 'cornsilk': '#fff8dc', 'crimson': '#dc143c',
+            'cyan': '#00ffff', 'darkblue': '#00008b', 'darkcyan': '#008b8b', 'darkgoldenrod': '#b8860b', 'darkgray': '#a9a9a9',
+            'darkred': '#8b0000', 'darksalmon': '#e9967a', 'darkgreen': '#006400', 'darkkhaki': '#bdb76b',
+            'darkmagenta': '#8b008b', 'darkolivegreen': '#556b2f', 'darkorange': '#ff8c00', 'darkorchid': '#9932cc',
+            'darkseagreen': '#8fbc8f', 'darkslateblue': '#483d8b', 'darkslategray': '#2f4f4f', 'darkturquoise': '#00ced1',
+            'darkviolet': '#9400d3', 'deeppink': '#ff1493', 'deepskyblue': '#00bfff', 'dimgray': '#696969',
+            'dodgerblue': '#1e90ff', 'firebrick': '#b22222', 'floralwhite': '#fffaf0',
+            'forestgreen': '#228b22', 'fuchsia': '#ff00ff', 'gainsboro': '#dcdcdc', 'ghostwhite': '#f8f8ff',
+            'gold': '#ffd700', 'goldenrod': '#daa520', 'gray': '#808080', 'green': '#008000',
+            'greenyellow': '#adff2f', 'honeydew': '#f0fff0', 'hotpink': '#ff69b4', 'indianred ': '#cd5c5c',
+            'mediumorchid': '#ba55d3', 'mediumpurple': '#9370d8', 'indigo': '#4b0082', 'ivory': '#fffff0',
+            'navy': '#000080', 'oldlace': '#fdf5e6', 'olive': '#808000', 'khaki': '#f0e68c',
+            'lavender': '#e6e6fa', 'lavenderblush': '#fff0f5', 'lawngreen': '#7cfc00', 'lemonchiffon': '#fffacd',
+            'lightblue': '#add8e6', 'lightcoral': '#f08080', 'lightcyan': '#e0ffff',
+            'lightgoldenrodyellow': '#fafad2', 'lightgrey': '#d3d3d3', 'lightgreen': '#90ee90',
+            'lightpink': '#ffb6c1', 'lightsalmon': '#ffa07a', 'lightseagreen': '#20b2aa',
+            'lightskyblue': '#87cefa', 'lightslategray': '#778899', 'lightsteelblue': '#b0c4de',
+            'lightyellow': '#ffffe0', 'lime': '#00ff00', 'limegreen': '#32cd32', 'linen': '#faf0e6',
+            'magenta': '#ff00ff', 'maroon': '#800000', 'mediumaquamarine': '#66cdaa', 'mediumblue': '#0000cd',
+            'mediumseagreen': '#3cb371', 'mediumslateblue': '#7b68ee', 'mediumspringgreen': '#00fa9a',
+            'mediumturquoise': '#48d1cc', 'mediumvioletred': '#c71585', 'midnightblue': '#191970',
+            'mintcream': '#f5fffa', 'mistyrose': '#ffe4e1', 'moccasin': '#ffe4b5', 'navajowhite': '#ffdead',
+            'rebeccapurple': '#663399', 'red': '#ff0000', 'rosybrown': '#bc8f8f', 'royalblue': '#4169e1',
+            'olivedrab': '#6b8e23', 'orange': '#ffa500', 'orangered': '#ff4500', 'orchid': '#da70d6',
+            'palegoldenrod': '#eee8aa', 'palegreen': '#98fb98', 'paleturquoise': '#afeeee',
+            'palevioletred': '#d87093', 'papayawhip': '#ffefd5', 'peachpuff': '#ffdab9', 'peru': '#cd853f',
+            'wheat': '#f5deb3', 'white': '#ffffff', 'whitesmoke': '#f5f5f5', 'pink': '#ffc0cb', 'plum': '#dda0dd',
+            'steelblue': '#4682b4', 'violet': '#ee82ee', 'powderblue': '#b0e0e6', 'purple': '#800080',
+            'saddlebrown': '#8b4513', 'salmon': '#fa8072', 'sandybrown': '#f4a460', 'seagreen': '#2e8b57',
+            'seashell': '#fff5ee', 'sienna': '#a0522d', 'silver': '#c0c0c0', 'skyblue': '#87ceeb',
+            'slateblue': '#6a5acd', 'slategray': '#708090', 'snow': '#fffafa', 'springgreen': '#00ff7f',
+            'tan': '#d2b48c', 'teal': '#008080', 'thistle': '#d8bfd8', 'tomato': '#ff6347', 'turquoise': '#40e0d0'
+        };
+
+        if (typeof colours[colour.toLowerCase()] !== 'undefined') {
+            return colours[colour.toLowerCase()];
+        }
+        return '';
+    }
+
+
+    /**
+     * @param value
+     * @param type
+     * @param value
+     * @param type
+     * @private
+     */
+    public getValue(value?: string, type?: string): string {
+        type = !type ? 'hex' : type.toLowerCase();
+        if (value[0] === 'r') {
+            const cValue: number[] = this.convertRgbToNumberArray(value);
+            if (type === 'hex' || type === 'hexa') {
+                const hex: string = this.rgbToHex(cValue);
+                return type === 'hex' ? hex.slice(0, 7) : hex;
+            } else {
+                if (type === 'hsv') {
+                    return this.convertToHsvString(this.rgbToHsv.apply(this, cValue.slice(0, 3)));
+                } else {
+                    if (type === 'hsva') {
+                        return this.convertToHsvString(this.rgbToHsv.apply(this, cValue));
+                    } else {
+                        return 'null';
+                    }
+                }
+            }
+        } else {
+            if (value[0] === 'h') {
+                const cValue: number[] = this.hsvToRgb.apply(this, this.convertRgbToNumberArray(value));
+                if (type === 'rgba') {
+                    return this.convertToRgbString(cValue);
+                } else {
+                    if (type === 'hex' || type === 'hexa') {
+                        const hex: string = this.rgbToHex(cValue);
+                        return type === 'hex' ? hex.slice(0, 7) : hex;
+                    } else {
+                        if (type === 'rgb') {
+                            return this.convertToRgbString(cValue.slice(0, 3));
+                        } else {
+                            return 'null';
+                        }
+                    }
+                }
+            } else {
+                value = this.roundValue(value);
+                let rgb: number[] = this.hexToRgb(value);
+                if (type === 'rgb' || type === 'hsv') {
+                    rgb = rgb.slice(0, 3);
+                }
+                if (type === 'rgba' || type === 'rgb') {
+                    return this.convertToRgbString(rgb);
+                } else {
+                    if (type === 'hsva' || type === 'hsv') {
+                        return this.convertToHsvString(this.rgbToHsv.apply(this, rgb));
+                    } else {
+                        if (type === 'hex') {
+                            return value.slice(0, 7);
+                        } else {
+                            if (type === 'a') {
+                                return rgb[3].toString();
+                            } else {
+                                return 'null';
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    private convertRgbToNumberArray(value: string): number[] {
+        // eslint-disable-next-line max-len
+        return (value.slice(value.indexOf('(') + 1, value.indexOf(')'))).split(',').map(
+            (n: string, i: number) => {
+                return (i !== 3) ? parseInt(n, 10) : parseFloat(n);
+            });
+    }
+
+    private convertToRgbString(rgb: number[]): string {
+        return rgb.length ? rgb.length === 4 ? 'rgba(' + rgb.join() + ')' : 'rgb(' + rgb.join() + ')' : '';
+    }
+
+    private convertToHsvString(hsv: number[]): string {
+        return hsv.length === 4 ? 'hsva(' + hsv.join() + ')' : 'hsv(' + hsv.join() + ')';
+    }
+
+    private roundValue(value: string): string {
+        if (!value) {
+            return '';
+        }
+        if (value[0] !== '#') {
+            value = '#' + value;
+        }
+        let len: number = value.length;
+        if (len === 4) {
+            value += 'f';
+            len = 5;
+        }
+        if (len === 5) {
+            let tempValue: string = '';
+            for (let i: number = 1, len: number = value.length; i < len; i++) {
+                tempValue += (value.charAt(i) + value.charAt(i));
+            }
+            value = '#' + tempValue;
+            len = 9;
+        }
+        if (len === 7) {
+            value += 'ff';
+        }
+        return value;
+    }
+
+    private hexToRgb(hex: string): number[] {
+        if (!hex) {
+            return [];
+        }
+        hex = hex.trim();
+        if (hex.length !== 9) {
+            hex = this.roundValue(hex);
+        }
+        const opacity: number = Number((parseInt(hex.slice(-2), 16) / 255).toFixed(2));
+        hex = hex.slice(1, 7);
+        const bigInt: number = parseInt(hex, 16); const h: number[] = [];
+        h.push((bigInt >> 16) & 255);
+        h.push((bigInt >> 8) & 255);
+        h.push(bigInt & 255);
+        h.push(opacity);
+        return h;
+    }
+
+    private rgbToHsv(r: number, g: number, b: number, opacity?: number): number[] {
+        r /= 255; g /= 255; b /= 255;
+        const max: number = Math.max(r, g, b); const min: number = Math.min(r, g, b);
+        let h: number; let s: number; const v: number = max;
+
+        const d: number = max - min;
+        s = max === 0 ? 0 : d / max;
+
+        if (max === min) {
+            h = 0;
+        } else {
+            switch (max) {
+                case r: h = (g - b) / d + (g < b ? 6 : 0); break;
+                case g: h = (b - r) / d + 2; break;
+                case b: h = (r - g) / d + 4; break;
+            }
+            h /= 6;
+        }
+        const hsv: number[] = [Math.round(h * 360), Math.round(s * 1000) / 10, Math.round(v * 1000) / 10];
+        if (!isNullOrUndefined(opacity)) {
+            hsv.push(opacity);
+        }
+        return hsv;
+    }
+
+    private hsvToRgb(h: number, s: number, v: number, opacity?: number): number[] {
+        let r: number; let g: number; let b: number;
+        let i: number;
+        let f: number; let p: number; let q: number; let t: number;
+        s /= 100; v /= 100;
+        if (s === 0) {
+            r = g = b = v;
+            return [Math.round(r * 255), Math.round(g * 255), Math.round(b * 255), opacity];
+        }
+        h /= 60;
+        i = Math.floor(h);
+        f = h - i;
+        p = v * (1 - s);
+        q = v * (1 - s * f);
+        t = v * (1 - s * (1 - f));
+        switch (i) {
+            case 0: r = v; g = t; b = p; break;
+            case 1: r = q; g = v; b = p; break;
+            case 2: r = p; g = v; b = t; break;
+            case 3: r = p; g = q; b = v; break;
+            case 4: r = t; g = p; b = v; break;
+            default: r = v; g = p; b = q;
+        }
+        const rgb: number[] = [Math.round(r * 255), Math.round(g * 255), Math.round(b * 255)];
+        if (!isNullOrUndefined(opacity)) {
+            rgb.push(opacity);
+        }
+        return rgb;
+    }
+
+    private rgbToHex(rgb: number[]): string {
+        // eslint-disable-next-line max-len
+        return rgb.length ? ('#' + this.hex(rgb[0]) + this.hex(rgb[1]) + this.hex(rgb[2]) +
+            (!isNullOrUndefined(rgb[3]) ? (rgb[3] !== 0 ? (Math.round(rgb[3] * 255) + 0x10000).toString(16).substr(-2) : '00') : '')) : '';
+    }
+
+    /**
+     * @private
+     */
+    public updateCanvas(pageNumber: number, canvas?: HTMLElement) {
+        if (canvas !== null && canvas !== undefined) {
+            canvas = canvas;
+        }
+        else {
+            canvas = this.pdfViewerBase.getElement('_annotationCanvas_' + pageNumber);
+        }
+        this.pdfViewer.drawing.refreshCanvasDiagramLayer(canvas as HTMLCanvasElement, pageNumber);
+    }
+
+    /**
+     * @private
+    */
+    public rerenderFormFields(pageIndex: number): void {
+        let zoomValue: number = this.pdfViewerBase.getZoomFactor();
+        var data = window.sessionStorage.getItem(this.pdfViewerBase.documentId + '_formDesigner');
+        if (data !== null) {
+            var formFieldsData = JSON.parse(data);
+            const textLayer: HTMLElement = document.getElementById(this.pdfViewer.element.id + '_textLayer_' + pageIndex);
+            const canvasElement: HTMLElement = document.getElementById(this.pdfViewer.element.id + '_pageCanvas_' + pageIndex);
+            if (formFieldsData !== null && canvasElement !== null && textLayer !== null) {
+                for (let i: number = 0; i < formFieldsData.length; i++) {
+                    // eslint-disable-next-line
+                    let currentData: any = formFieldsData[i].FormField;
+
+                    if (currentData.pageNumber === pageIndex + 1) {
+                        let signatureField: PdfFormFieldBaseModel = (this.pdfViewer.nameTable as any)[formFieldsData[i].Key.split("_")[0]];
+                        let element: DiagramHtmlElement = signatureField.wrapper.children[0] as DiagramHtmlElement;
+                        if (element) {
+                            if (currentData.formFieldAnnotationType === "RadioButton") {
+                                for (let j: number = 0; j < currentData.radiobuttonItem.length; j++) {
+                                    signatureField = (this.pdfViewer.nameTable as any)[currentData.radiobuttonItem[j].id.split("_")[0]];
+                                    element = signatureField.wrapper.children[0] as DiagramHtmlElement;
+                                    currentData.radiobuttonItem[j] = this.renderFormFieldsInZooming(element, currentData.radiobuttonItem[j], signatureField, zoomValue);
+                                    this.pdfViewerBase.formFieldCollection[i].FormField.radiobuttonItem[j].lineBound = currentData.radiobuttonItem[j].lineBound;
+                                    this.pdfViewerBase.formFieldCollection[i].FormField.radiobuttonItem[j].zoomValue = zoomValue;
+                                }
+                            } else {
+                                currentData.lineBound = this.renderFormFieldsInZooming(element, currentData, signatureField, zoomValue).lineBound;
+                                this.pdfViewerBase.formFieldCollection[i].FormField.lineBound = currentData.lineBound;
+                                this.pdfViewerBase.formFieldCollection[i].FormField.zoomValue = zoomValue;
+                            }
+                            window.sessionStorage.setItem(this.pdfViewerBase.documentId + '_formDesigner', JSON.stringify(this.pdfViewerBase.formFieldCollection));
+                        }
+                    }
+                }
+            }
+        }
+    }
+    private renderFormFieldsInZooming(element: DiagramHtmlElement, currentData: any, signatureField: PdfFormFieldBaseModel, zoomValue: number): any {
+        if (element) {
+            let htmlElement: HTMLElement; let parentHtmlElement: HTMLElement;
+            const parentHtmlElementAttribute: Object = {
+                'id': "form_field_" + element.id + '_html_element',
+                'class': 'foreign-object'
+            };
+            parentHtmlElement = this.createHtmlElement('div', parentHtmlElementAttribute);
+            const HtmlElementAttribute: Object = {
+                'id': element.id + '_html_element',
+                'class': 'foreign-object'
+            };
+            htmlElement = this.createHtmlElement('div', HtmlElementAttribute);
+            if (currentData.formFieldAnnotationType === "SignatureField" || currentData.formFieldAnnotationType === "InitialField") {
+                this.disableSignatureClickEvent = true;
+                signatureField.value = currentData.value;
+                (signatureField as any).signatureType = currentData.signatureType;
+                (signatureField as any).signatureBound = currentData.signatureBound;
+                element.template = htmlElement.appendChild(this.createSignatureDialog(this.pdfViewer, signatureField));
+                this.disableSignatureClickEvent = false;
+            } else if (currentData.formFieldAnnotationType === "DropdownList") {
+                element.template = htmlElement.appendChild(this.createDropDownList(element, signatureField));
+            } else if (currentData.formFieldAnnotationType === "ListBox") {
+                element.template = htmlElement.appendChild(this.createListBox(element, signatureField));
+            } else {
+                element.template = htmlElement.appendChild(this.createInputElement(currentData.formFieldAnnotationType, signatureField));
+            }
+            let divElement = document.createElement("div");
+            divElement.id = signatureField.id + '_designer_name';
+            divElement.className = "e-pv-show-designer-name";
+            if (this.pdfViewer.designerMode) {
+                divElement.innerHTML = signatureField.name;
+                divElement.style.position = 'absolute';
+            } else {
+                divElement.innerHTML = "";
+                divElement.style.position = 'initial';
+            }
+            htmlElement.appendChild(divElement);
+            parentHtmlElement.appendChild(htmlElement);
+            const textLayer: HTMLElement = document.getElementById(this.pdfViewer.element.id + '_textLayer_' + (currentData.pageNumber - 1));
+            textLayer.appendChild(parentHtmlElement);
+            if (signatureField.formFieldAnnotationType === "RadioButton") {
+                if (document.getElementsByClassName("e-pv-radiobtn-span").length > 0) {
+                    let spanElement = document.getElementsByClassName("e-pv-radiobtn-span");
+                    for (let i: number = 0; i < spanElement.length; i++) {
+                        (spanElement as any)[i].style.width = ((signatureField.bounds.width * zoomValue) - 10) + "px";
+                        (spanElement as any)[i].style.height = ((signatureField.bounds.height * zoomValue) - 10) + "px";
+                        if (parseInt((spanElement as any)[i].style.width, 10) === 0 || parseInt((spanElement as any)[i].style.height, 10) === 0) {
+                            (spanElement as any)[i].style.width = "2px";
+                            (spanElement as any)[i].style.height = "2px";
+                        }
+                    }
+                }
+            }
+            const point: PointModel = cornersPointsBeforeRotation(signatureField.wrapper.children[0]).topLeft;
+            htmlElement.setAttribute(
+                'style', 'height:' + (element.actualSize.height * zoomValue) + 'px; width:' + (element.actualSize.width * zoomValue) +
+                'px;left:' + point.x * zoomValue + 'px; top:' + point.y * zoomValue + 'px;' +
+                'position:absolute;transform:rotate(' + (element.rotateAngle + element.parentTransform) + 'deg);' +
+                'pointer-events:' + ((this.pdfViewer.designerMode) ? 'none' : 'all')
+                + ';visibility:' + ((element.visible) ? 'visible' : 'hidden') + ';opacity:' + element.style.opacity + ';'
+            );
+            currentData.lineBound = { X: point.x * zoomValue, Y: point.y * zoomValue, Width: element.actualSize.width * zoomValue, Height: element.actualSize.height * zoomValue };
+        }
+        return currentData;
+    }
+    /**
+     * @private
+     */
+    public updateFormFieldInitialSize(obj: DrawingElement, formFieldAnnotationType: string): any {
+        let zoomValue: number = this.pdfViewerBase.getZoomFactor();
+        switch (formFieldAnnotationType) {
+            case 'Textbox':
+                obj.width = 200 * zoomValue;
+                obj.height = 24 * zoomValue;
+                break;
+            case 'PasswordField':
+                obj.width = 200 * zoomValue;
+                obj.height = 24 * zoomValue;
+                break;
+            case 'SignatureField':
+            case 'InitialField':
+                obj.width = 200 * zoomValue;
+                obj.height = 63 * zoomValue;
+                break;
+            case 'Checkbox':
+                obj.width = 20 * zoomValue;
+                obj.height = 20 * zoomValue;
+                break;
+            case 'RadioButton':
+                obj.width = 20 * zoomValue;
+                obj.height = 20 * zoomValue;
+                break;
+            case 'DropdownList':
+                obj.width = 200 * zoomValue;
+                obj.height = 24 * zoomValue;
+                break;
+            case 'ListBox':
+                obj.width = 198 * zoomValue;
+                obj.height = 66 * zoomValue;
+                break;
+        }
+        return { width: obj.width, height: obj.height };
+    }
+
+    /**
+     * @private
+    */
+    public updateHTMLElement(actualObject: PdfAnnotationBaseModel) {
+        let element = actualObject.wrapper.children[0];
+        let zoomValue: number = this.pdfViewerBase.getZoomFactor();
+        if (element) {
+            let htmlElement = document.getElementById(element.id + "_html_element");
+            if (!isNullOrUndefined(htmlElement)) {
+                const point: PointModel = cornersPointsBeforeRotation(actualObject.wrapper.children[0]).topLeft;
+                htmlElement.setAttribute(
+                    'style', 'height:' + (element.actualSize.height * zoomValue) + 'px; width:' + (element.actualSize.width * zoomValue) +
+                    'px;left:' + point.x * zoomValue + 'px; top:' + point.y * zoomValue + 'px;' +
+                    'position:absolute;transform:rotate(' + (element.rotateAngle + element.parentTransform) + 'deg);' +
+                    'pointer-events:' + ((this.pdfViewer.designerMode) ? 'none' : 'all')
+                    + ';visibility:' + ((element.visible) ? 'visible' : 'hidden') + ';opacity:' + element.style.opacity + ';'
+                );
+                var data = window.sessionStorage.getItem(this.pdfViewerBase.documentId + '_formDesigner');
+                if (actualObject.formFieldAnnotationType === "RadioButton") {
+                    let labelContainer: Element = htmlElement.firstElementChild.firstElementChild;
+                    let spanElement: Element = htmlElement.firstElementChild.firstElementChild.lastElementChild;
+                    if (element.actualSize.width > element.actualSize.height) {
+                        (htmlElement.firstElementChild as any).style.display = "inherit";
+                        (labelContainer as any).style.width = (labelContainer as any).style.height = (element.actualSize.height * zoomValue) + "px";
+                        (spanElement as any).style.width = (spanElement as any).style.height = (element.actualSize.height - 10) + "px";
+                    } else {
+                        (htmlElement.firstElementChild as any).style.display = "flex";
+                        (labelContainer as any).style.width = (labelContainer as any).style.height = (element.actualSize.width * zoomValue) + "px";
+                        (spanElement as any).style.width = (spanElement as any).style.height = (element.actualSize.width - 10) + "px";
+                    }
+                }
+                if (actualObject.formFieldAnnotationType === "Checkbox") {
+                    let labelContainer: Element = htmlElement.firstElementChild.firstElementChild;
+                    let spanElement: Element = htmlElement.firstElementChild.firstElementChild.lastElementChild.firstElementChild;
+                    if (element.actualSize.width > element.actualSize.height) {
+                        (htmlElement.firstElementChild as any).style.display = "inherit";
+                        (labelContainer as any).style.width = (labelContainer as any).style.height = (element.actualSize.height * zoomValue) + "px";
+                        (spanElement as any).style.width = ((element.actualSize.height / 5) * zoomValue) + "px";
+                        (spanElement as any).style.height = ((element.actualSize.height / 2.5) * zoomValue) + "px";
+                        (spanElement as any).style.left = ((element.actualSize.height / 2.5) * zoomValue) + "px";
+                        (spanElement as any).style.top = ((element.actualSize.height / 5) * zoomValue) + "px";
+                    } else {
+                        (htmlElement.firstElementChild as any).style.display = "flex";
+                        (labelContainer as any).style.width = (labelContainer as any).style.height = (element.actualSize.width * zoomValue) + "px";
+                        (spanElement as any).style.width = ((element.actualSize.width / 5) * zoomValue) + "px";
+                        (spanElement as any).style.height = ((element.actualSize.width / 2.5) * zoomValue) + "px";
+                        (spanElement as any).style.left = ((element.actualSize.width / 2.5) * zoomValue) + "px";
+                        (spanElement as any).style.top = ((element.actualSize.width / 5) * zoomValue) + "px";
+                    }
+                }
+                var formFieldsData = JSON.parse(data);
+                for (let i: number = 0; i < formFieldsData.length; i++) {
+                    if (formFieldsData[i].FormField.formFieldAnnotationType === "RadioButton") {
+                        for (let j: number = 0; j < formFieldsData[i].FormField.radiobuttonItem.length; j++) {
+                            if (element.id === formFieldsData[i].FormField.radiobuttonItem[j].id) {
+                                this.pdfViewerBase.formFieldCollection[i].FormField.radiobuttonItem[j].lineBound = { X: point.x * zoomValue, Y: point.y * zoomValue, Width: element.actualSize.width * zoomValue, Height: element.actualSize.height * zoomValue };
+                                this.pdfViewerBase.formFieldCollection[i].FormField.radiobuttonItem[j].zoomValue = zoomValue;
+                                break;
+                            }
+                        }
+                    } else {
+                        if (formFieldsData[i].Key === element.id) {
+                            formFieldsData[i].FormField.lineBound = { X: point.x * zoomValue, Y: point.y * zoomValue, Width: element.actualSize.width * zoomValue, Height: element.actualSize.height * zoomValue };
+                            this.pdfViewerBase.formFieldCollection[i].FormField.lineBound = formFieldsData[i].FormField.lineBound;
+                        }
+
+                    }
+                }
+                window.sessionStorage.setItem(this.pdfViewerBase.documentId + '_formDesigner', JSON.stringify(this.pdfViewerBase.formFieldCollection));
+            }
+        }
+    }
+
+    private updateSessionFormFieldProperties(updatedFormFields: PdfFormFieldBaseModel): void {
+        let zoomValue: number = this.pdfViewerBase.getZoomFactor();
+        let element: DiagramHtmlElement = updatedFormFields.wrapper.children[0] as DiagramHtmlElement;
+        var data = window.sessionStorage.getItem(this.pdfViewerBase.documentId + '_formDesigner');
+        var formFieldsData = JSON.parse(data);
+        for (let i: number = 0; i < formFieldsData.length; i++) {
+            if (formFieldsData[i].FormField.formFieldAnnotationType === "RadioButton") {
+                for (var j = 0; j < formFieldsData[i].FormField.radiobuttonItem.length; j++) {
+                    if (element.id === formFieldsData[i].FormField.radiobuttonItem[j].id) {
+                        let radioButtonItemUpdate: IRadiobuttonItem = {
+                            id: element.id, lineBound: { X: element.bounds.x * zoomValue, Y: element.bounds.y * zoomValue, Width: element.bounds.width * zoomValue, Height: element.bounds.height * zoomValue },
+                            name: updatedFormFields.name, zoomValue: zoomValue, pageNumber: updatedFormFields.pageNumber, value: updatedFormFields.value, formFieldAnnotationType: updatedFormFields.formFieldAnnotationType,
+                            fontFamily: updatedFormFields.fontFamily, fontSize: updatedFormFields.fontSize, fontStyle: updatedFormFields.fontStyle, fontColor: this.getRgbCode(updatedFormFields.color) as unknown as string,
+                            backgroundColor: this.getRgbCode(updatedFormFields.backgroundColor) as unknown as string, borderColor: this.getRgbCode(updatedFormFields.borderColor) as unknown as string, thickness: updatedFormFields.thickness, textAlign: updatedFormFields.alignment, isChecked: updatedFormFields.isChecked, isSelected: updatedFormFields.isSelected,
+                            isReadonly: updatedFormFields.isReadonly, visibility: updatedFormFields.visibility, maxLength: updatedFormFields.maxLength, isRequired: updatedFormFields.isRequired, isPrint: updatedFormFields.isPrint, rotation: 0, tooltip: updatedFormFields.tooltip
+                        };
+                        formFieldsData[i].FormField.radiobuttonItem[j] = radioButtonItemUpdate;
+                        break;
+                    }
+                }
+            } else if (formFieldsData[i].Key === element.id) {
+                let formDesignObj: IFormField = {
+                    id: element.id, lineBound: { X: element.bounds.x * zoomValue, Y: element.bounds.y * zoomValue, Width: element.bounds.width * zoomValue, Height: element.bounds.height * zoomValue },
+                    name: updatedFormFields.name, zoomValue: zoomValue, pageNumber: updatedFormFields.pageNumber, value: updatedFormFields.value, formFieldAnnotationType: updatedFormFields.formFieldAnnotationType,
+                    fontFamily: updatedFormFields.fontFamily, fontSize: updatedFormFields.fontSize, fontStyle: updatedFormFields.fontStyle, fontColor: this.getRgbCode(updatedFormFields.color) as unknown as string,
+                    backgroundColor: this.getRgbCode(updatedFormFields.backgroundColor) as unknown as string,  borderColor: this.getRgbCode(updatedFormFields.borderColor) as unknown as string, thickness: updatedFormFields.thickness, textAlign: updatedFormFields.alignment, isChecked: updatedFormFields.isChecked, isSelected: updatedFormFields.isSelected,
+                    isReadonly: updatedFormFields.isReadonly, font: { isBold: updatedFormFields.font.isBold, isItalic: updatedFormFields.font.isItalic, isStrikeout: updatedFormFields.font.isStrikeout, isUnderline: updatedFormFields.font.isUnderline }, selectedIndex: [], radiobuttonItem: null, option: updatedFormFields.options ? updatedFormFields.options : [], visibility: updatedFormFields.visibility, maxLength: updatedFormFields.maxLength, isRequired: updatedFormFields.isRequired, isPrint: updatedFormFields.isPrint, rotation: 0, tooltip: updatedFormFields.tooltip
+                };
+                formFieldsData[i].FormField = formDesignObj
+                this.pdfViewerBase.formFieldCollection[i].FormField = formDesignObj;
+                break;
+            }
+        }
+        if (this.pdfViewerBase.formFieldCollection.length > 0) {
+            this.pdfViewerBase.enableFormFieldButton(true);
+        } else {
+            this.pdfViewerBase.enableFormFieldButton(false);
+        }
+        window.sessionStorage.setItem(this.pdfViewerBase.documentId + '_formDesigner', JSON.stringify(this.pdfViewerBase.formFieldCollection));
+    }
+
+    /**
+     * @private
+     */
+    public createSignatureDialog(commandHandler: any, signatureField: any, bounds?: any, isPrint?: boolean): HTMLElement {
+        this.isInitialField = isNullOrUndefined(signatureField.isInitialField) ? false : signatureField.isInitialField;
+        this.pdfViewerBase.isInitialField = this.isInitialField;
+        this.pdfViewerBase.isInitialField = signatureField.isInitialField;
+        const element: HTMLElement = createElement("div");
+        element.className = "foreign-object";
+        element.style.position = "absolute";
+        element.style.width = "100%";
+        element.style.height = "100%";
+        const divElement: HTMLElement = createElement("div");
+        divElement.style.width = "100%";
+        divElement.style.height = "100%";
+        divElement.style.position = "absolute";
+        divElement.style.backgroundColor = "transparent";
+        divElement.style.border = "1px solid #303030";
+        if(!isNullOrUndefined(signatureField.value)&& signatureField.value!==''){
+            divElement.className = 'e-pdfviewer-signatureformfields-signature';
+            divElement.style.pointerEvents = 'none';
+        } else{
+            divElement.className = 'e-pdfviewer-signatureformfields';
+            divElement.style.pointerEvents = '';
+        }
+        divElement.addEventListener('click', this.openSignatureDialog.bind(this, commandHandler));
+        element.appendChild(divElement);
+        //check whether the width for sign indicator has default value or not and then set the default width value for initial field.
+        let defaultWidth = this.pdfViewer.signatureFieldSettings.signatureIndicatorSettings.width === 19 ? (signatureField.isInitialField ? 30 : 25) : this.pdfViewer.signatureFieldSettings.signatureIndicatorSettings.width;
+        let signatureFieldIndicatorWidth: number = (signatureField.signatureIndicatorSettings && signatureField.signatureIndicatorSettings.width) ? signatureField.signatureIndicatorSettings.width: defaultWidth; 
+        let defaultHeight = this.pdfViewer.signatureFieldSettings.signatureIndicatorSettings.height === 10 ? 13 : this.pdfViewer.signatureFieldSettings.signatureIndicatorSettings.height;
+        let signatureFieldIndicatorHeight: number = (signatureField.signatureIndicatorSettings && signatureField.signatureIndicatorSettings.height) ? signatureField.signatureIndicatorSettings.height: defaultHeight;
+        let signatureFieldIndicatorBG: string = this.pdfViewer.signatureFieldSettings.signatureIndicatorSettings.backgroundColor === 'orange' ? '#FFE48559' : this.pdfViewer.signatureFieldSettings.signatureIndicatorSettings.backgroundColor;
+        let signIndicator: string = signatureField.isInitialField ? "Initial" : "Sign";
+        const signatureFieldWidth = signatureField.bounds ? signatureField.bounds.width : bounds.width;
+        const signatureFieldHeight = signatureField.bounds ? signatureField.bounds.height : bounds.height;
+        // eslint-disable-next-line max-len
+        const height: number = signatureFieldIndicatorHeight > signatureFieldHeight / 2 ? signatureFieldHeight / 2 : signatureFieldIndicatorHeight;
+        // eslint-disable-next-line max-len
+        const width: number = signatureFieldIndicatorWidth > signatureFieldWidth / 2 ? signatureFieldWidth / 2 : signatureFieldIndicatorWidth;
+        let fontSize: number = 10;
+        if (signatureField.signatureIndicatorSettings && signatureField.signatureIndicatorSettings.fontSize)
+        // eslint-disable-next-line max-len
+        fontSize =  signatureField.signatureIndicatorSettings.fontSize > height / 2 ? 10 : signatureField.signatureIndicatorSettings.fontSize;
+        else
+        // eslint-disable-next-line max-len
+        fontSize =  this.pdfViewer.signatureFieldSettings.signatureIndicatorSettings.fontSize > height / 2 ? 10 : this.pdfViewer.signatureFieldSettings.signatureIndicatorSettings.fontSize;
+
+        const spanElement: any = createElement("span");
+
+        if (signatureField.isInitialField) {
+            spanElement.id = "initialIcon" + signatureField.pageIndex + "_" + this.setFormFieldIdIndex();
+            // eslint-disable-next-line
+            spanElement.innerHTML = (signatureField.signatureIndicatorSettings && signatureField.signatureIndicatorSettings.text) ? signatureField.signatureIndicatorSettings.text: 'Initial';
+        } else {
+            spanElement.id = "signIcon" + signatureField.pageIndex + "_" + this.setFormFieldIdIndex();
+            // eslint-disable-next-line
+            spanElement.innerHTML = (signatureField.signatureIndicatorSettings && signatureField.signatureIndicatorSettings.text) ? signatureField.signatureIndicatorSettings.text : 'Sign';
+        }
+        spanElement.style.color = (signatureField.signatureIndicatorSettings && signatureField.signatureIndicatorSettings.color) ? signatureField.signatureIndicatorSettings.color : this.pdfViewer.signatureFieldSettings.signatureIndicatorSettings.color;
+        // eslint-disable-next-line
+        spanElement.style.backgroundColor = (signatureField.signatureIndicatorSettings && signatureField.signatureIndicatorSettings.backgroundColor) ? signatureField.signatureIndicatorSettings.backgroundColor: signatureFieldIndicatorBG;
+        spanElement.style.opacity = (signatureField.signatureIndicatorSettings && signatureField.signatureIndicatorSettings.opacity) ? signatureField.signatureIndicatorSettings.opacity: this.pdfViewer.signatureFieldSettings.signatureIndicatorSettings.opacity;
+        spanElement.style.position = "absolute";
+        spanElement.style.width = width + 'px';
+        spanElement.style.height = height + 'px';
+        spanElement.style.textAlign = "center";
+        spanElement.style.fontSize = fontSize;
+        spanElement.style.paddingTop = "1px";
+        if (!isPrint) {
+            element.appendChild(spanElement);
+        }
+        if (!isNullOrUndefined(signatureField.tooltip) && signatureField.tooltip != "") {
+            this.setToolTip(signatureField.tooltip, element);
+        }
+        return element;
+    }
+
+    private openSignatureDialog(commandHandler: PdfViewer, event: any): void {
+        commandHandler.clearSelection(this.pdfViewerBase.activeElements.activePageID);
+        let currentFieldID: string = isNullOrUndefined(event.path) ? event.composedPath()[2].id.split("_")[0] : event.path[2].id.split("_")[0];
+        let currentFormfield: PdfAnnotationBaseModel = (this.pdfViewer.nameTable as any)[currentFieldID] as PdfAnnotationBaseModel;
+        if (currentFormfield.formFieldAnnotationType === 'InitialField')
+            this.isInitialField = true;
+        else
+            this.isInitialField = false;
+        this.pdfViewerBase.isToolbarSignClicked = false;
+        this.pdfViewerBase.currentTarget = event.target;
+        this.pdfViewerBase.isInitialField = this.isInitialField;
+        this.pdfViewerBase.signatureModule.showSignatureDialog(true);
+        this.pdfViewerBase.isInitialField = false;
+    }
+
+    /**
+     * @private
+     */
+    public createDropDownList(dropdownElement: DiagramHtmlElement, drawingObject: PdfFormFieldBaseModel): HTMLElement {
+        let dropDownChildren: ItemModel[] = drawingObject.options ? drawingObject.options : [];
+        const element: HTMLElement = createElement("div");
+        element.className = "foreign-object";
+        element.style.position = "absolute";
+        element.style.width = "100%";
+        element.style.height = "100%";
+        let select = document.createElement("select");
+        select.addEventListener('change', this.dropdownChange.bind(this));
+        select.id = drawingObject.id + "_" + drawingObject.pageIndex + "_" + this.setFormFieldIdIndex();
+        select.name = "editabledropdown" + this.pdfViewerBase.activeElements.activePageID + dropdownElement.id;
+        select.className = "e-pv-formfield-dropdown";
+        select.style.width = "100%";
+        select.style.height = "100%";
+        this.updateDropdownListProperties(drawingObject, select);
+        for (let j: number = 0; j < dropDownChildren.length; j++) {
+            var option = document.createElement("option");
+            option.className = "e-pv-formfield-dropdown";
+            option.value = dropDownChildren[j].itemValue;
+            option.text = dropDownChildren[j].itemName;
+            this.updateDropdownListProperties(drawingObject, option);
+            select.appendChild(option);
+        }
+        select.selectedIndex = !isNullOrUndefined((drawingObject as any).selectedIndex) ? (drawingObject as any).selectedIndex : 0;
+        element.appendChild(select);
+        if (!isNullOrUndefined(drawingObject.tooltip) && drawingObject.tooltip != "") {
+            this.setToolTip(drawingObject.tooltip, element);
+        }
+        return element;
+    }
+
+    /**
+     * @private
+     */
+    public createListBox(listBoxElement: DiagramHtmlElement, drawingObject: PdfFormFieldBaseModel): HTMLElement {
+        let dropDownChildren: ItemModel[] = drawingObject.options ? drawingObject.options : [];
+        const element: HTMLElement = createElement("div");
+        element.className = "foreign-object";
+        element.style.position = "absolute";
+        element.style.width = "100%";
+        element.style.height = "100%";
+        let select = document.createElement("select");
+        select.addEventListener('click', this.listBoxChange.bind(this));
+        select.id = drawingObject.id + "_" + drawingObject.pageIndex + "_" + this.setFormFieldIdIndex();
+        select.name = "editabledropdown" + this.pdfViewerBase.activeElements.activePageID + listBoxElement.id;
+        select.className = "e-pv-formfield-listbox";
+        select.style.width = "100%";
+        select.style.height = "100%";
+        select.multiple = true;
+        this.updateListBoxProperties(drawingObject, select);
+        for (let j: number = 0; j < dropDownChildren.length; j++) {
+            var option = document.createElement("option");
+            option.className = "e-pv-formfield-listbox";
+            option.value = dropDownChildren[j].itemValue;
+            option.text = dropDownChildren[j].itemName;
+            if (!isNullOrUndefined((drawingObject as any).selectedIndex)) {
+                for (let k: number = 0; k < (drawingObject as any).selectedIndex.length; k++) {
+                    if (j === (drawingObject as any).selectedIndex[k]) {
+                        option.selected = true;
+                    }
+                }
+            }
+            this.updateListBoxProperties(drawingObject, option);
+            select.appendChild(option);
+        }
+        element.appendChild(select);
+        select.style.borderColor = drawingObject.borderColor ? drawingObject.borderColor : '#303030';
+        if (!isNullOrUndefined(drawingObject.tooltip) && drawingObject.tooltip != "") {
+            this.setToolTip(drawingObject.tooltip, element);
+        }
+        return element;
+    }
+
+    /**
+     * @private
+     */
+    public createInputElement(formFieldAnnotationType: string, drawingObject: PdfFormFieldBaseModel, bounds?: any, isPrint?: boolean): HTMLElement {
+        let zoomValue: number = this.pdfViewerBase.getZoomFactor();
+        const element: HTMLElement = createElement("div");
+        element.className = "foreign-object";
+        element.style.position = "absolute";
+        element.style.width = "100%";
+        element.style.height = "100%";
+        let labelElement: HTMLElement;
+        let checkboxDiv: HTMLElement;
+        let innerSpan: HTMLElement;
+        const inputElement: HTMLElement = createElement("input");
+        inputElement.id = drawingObject.id + "_" + drawingObject.pageIndex + "_" + this.setFormFieldIdIndex();
+        if (formFieldAnnotationType === "Textbox") {
+            (inputElement as IElement).type = "text";
+            inputElement.className = "e-pv-formfield-input";
+            (inputElement as IElement).autocomplete = "off";
+            inputElement.addEventListener('change', this.getTextboxValue.bind(this));
+            inputElement.addEventListener('click', this.inputElementClick.bind(this));
+            this.updateTextboxProperties(drawingObject, inputElement);
+        } else if (formFieldAnnotationType == "Checkbox") {
+            element.style.textAlign = (Browser.info.name === "chrome") ? "-webkit-center" : "center";
+            element.style.display = "flex";
+            element.style.alignItems = "center";
+            labelElement = createElement("label", { className: "e-pv-checkbox-container" });
+            labelElement.style.width = drawingObject.bounds ? (drawingObject.bounds.width * zoomValue) + "px" : (bounds.width * zoomValue) + "px";
+            labelElement.style.height = drawingObject.bounds ? (drawingObject.bounds.height * zoomValue) + "px" : (bounds.height * zoomValue) + "px";
+            if (this.isDrawHelper)
+                labelElement.style.cursor = 'crosshair';
+            else
+                labelElement.style.cursor = 'pointer';
+            checkboxDiv = createElement("div", { className: "e-pv-checkbox-div" });
+            checkboxDiv.addEventListener('click', this.setCheckBoxState.bind(this));
+            (checkboxDiv as HTMLElement).id = drawingObject.id + "_input";
+            if (drawingObject.isChecked) {
+                innerSpan = createElement("span", { className: "e-pv-checkbox-span e-pv-cb-checked" });
+            }
+            else
+                innerSpan = createElement("span", { className: "e-pv-checkbox-span e-pv-cb-unchecked" });
+            innerSpan.id = drawingObject.id + "_input_span";
+            labelElement.id =  drawingObject.id + "_input_label";
+            innerSpan.style.width = drawingObject.bounds ? ((drawingObject.bounds.width / 5) * zoomValue) + "px" : ((bounds.width / 5) * zoomValue) + "px";
+            innerSpan.style.height = drawingObject.bounds ? ((drawingObject.bounds.height / 2.5) * zoomValue) + "px" : ((bounds.height / 2.5) * zoomValue) + "px";
+            innerSpan.style.left = drawingObject.bounds ? ((drawingObject.bounds.width / 2.5) * zoomValue) + "px" : ((bounds.width / 2.5) * zoomValue) + "px";
+            innerSpan.style.top = drawingObject.bounds ? ((drawingObject.bounds.height / 5) * zoomValue) + "px" : ((bounds.height / 5) * zoomValue) + "px";
+
+            (inputElement as IElement).type = "checkbox";
+            inputElement.style.margin = "0px";
+            inputElement.style.width = drawingObject.bounds ? (drawingObject.bounds.width * zoomValue) + "px" : (bounds.width * zoomValue) + "px";
+            inputElement.style.height = drawingObject.bounds ? (drawingObject.bounds.height * zoomValue) + "px" : (bounds.height * zoomValue) + "px";
+            if (isPrint) {
+                this.updateCheckboxProperties(drawingObject, inputElement);
+            } else {
+                this.updateCheckboxProperties(drawingObject, checkboxDiv);
+            }
+            labelElement.appendChild(inputElement);
+            labelElement.appendChild(checkboxDiv);
+            checkboxDiv.appendChild(innerSpan);
+            if (isPrint) {
+                inputElement.style.outlineWidth = drawingObject.thickness + 'px';
+                inputElement.style.outlineColor = drawingObject.borderColor;
+                inputElement.style.outlineStyle = 'solid';
+                inputElement.style.background = drawingObject.backgroundColor;
+            }
+        } else if (formFieldAnnotationType == "PasswordField") {
+            (inputElement as IElement).type = "password";
+            inputElement.className = "e-pv-formfield-input";
+            inputElement.addEventListener('click', this.inputElementClick.bind(this));
+            inputElement.addEventListener('change', this.getTextboxValue.bind(this));
+            this.updatePasswordFieldProperties(drawingObject, inputElement);
+        } else {
+            element.style.textAlign = (Browser.info.name === "chrome") ? "-webkit-center" : "center";
+            element.style.display = "flex";
+            element.style.alignItems = "center";
+            labelElement = createElement("label", { className: "e-pv-radiobtn-container" });
+            labelElement.style.width = drawingObject.bounds ? (drawingObject.bounds.width * zoomValue) + "px" : (bounds.width * zoomValue) + "px";
+            labelElement.style.height = drawingObject.bounds ? (drawingObject.bounds.height * zoomValue) + "px" : (bounds.height * zoomValue) + "px";
+            labelElement.style.display = "flex";
+            labelElement.style.boxShadow = drawingObject.borderColor + ' 0px 0px 0px ' + drawingObject.thickness + 'px';
+            labelElement.style.borderRadius = '50%';
+            if (this.isDrawHelper)
+                labelElement.style.cursor = 'crosshair';
+            else
+                labelElement.style.cursor = 'pointer';
+            labelElement.style.background = drawingObject.backgroundColor;
+            innerSpan = createElement("span", { className: "e-pv-radiobtn-span" });
+            innerSpan.id = drawingObject.id;
+            innerSpan.style.width = drawingObject.bounds ? (drawingObject.bounds.width * zoomValue) + "px" : (bounds.width * zoomValue) + "px";
+            innerSpan.style.height = drawingObject.bounds ? (drawingObject.bounds.height * zoomValue) + "px" : (bounds.height * zoomValue) + "px";
+            innerSpan.addEventListener('click', this.setRadioButtonState.bind(this));
+            labelElement.id =  drawingObject.id + "_input_label";
+            (inputElement as IElement).type = "radio";
+            if (!isPrint)
+            inputElement.className = "e-pv-radio-btn";
+            inputElement.style.margin = "0px";
+            inputElement.style.width = drawingObject.bounds ? (drawingObject.bounds.width * zoomValue) + "px" : (bounds.width * zoomValue) + "px";
+            inputElement.style.height = drawingObject.bounds ? (drawingObject.bounds.height * zoomValue) + "px" : (bounds.height * zoomValue) + "px";
+            this.updateRadioButtonProperties(drawingObject, inputElement);
+
+            labelElement.appendChild(inputElement);
+            labelElement.appendChild(innerSpan);
+            // if (isPrint) {
+            //     inputElement.style.outlineWidth = drawingObject.thickness + 'px';
+            //     inputElement.style.outlineColor = drawingObject.borderColor;
+            //     inputElement.style.outlineStyle = 'solid';
+            //     inputElement.style.background = drawingObject.backgroundColor;
+            // }
+        }
+        if ((formFieldAnnotationType === "Checkbox" || formFieldAnnotationType === "RadioButton") && !isPrint) {
+            element.appendChild(labelElement);
+        } else {
+            inputElement.style.width = "100%";
+            inputElement.style.height = "100%";
+            element.appendChild(inputElement);
+        }
+        if (!isNullOrUndefined(drawingObject.tooltip) && drawingObject.tooltip != "") {
+            if (formFieldAnnotationType === 'RadioButton')
+                this.setToolTip(drawingObject.tooltip, labelElement);
+            else
+                this.setToolTip(drawingObject.tooltip, element);
+        }
+        this.isDrawHelper = false;
+        return element;
+    }
+
+    private listBoxChange(event: Event) {
+        var data = window.sessionStorage.getItem(this.pdfViewerBase.documentId + '_formDesigner');
+        var formFieldsData = JSON.parse(data);
+        for (let i: number = 0; i < formFieldsData.length; i++) {
+            if (formFieldsData[i].Key.split("_")[0] === (event.currentTarget as Element).id.split("_")[0] ||
+                (this.pdfViewer.nameTable as any)[(event.currentTarget as Element).id.split("_")[0]].name === formFieldsData[i].FormField.name) {
+                if (formFieldsData[i].Key.split("_")[0] !== (event.currentTarget as Element).id.split("_")[0]) {
+                    let inputElement: Element = document.getElementById((formFieldsData[i].Key.split("_")[0] + "_content_html_element")).firstElementChild.firstElementChild;
+                    for (let k: number = 0; k < (event.currentTarget as IElement).options.length; k++) {
+                        (inputElement as IElement).options[k].selected = (event.currentTarget as IElement).options[k].selected;
+                    }
+                }
+                formFieldsData[i].FormField.selectedIndex = [];
+                var oldValues = this.pdfViewerBase.formFieldCollection[i].FormField.selectedIndex;
+
+                for (let j: number = 0; j < (event.currentTarget as IElement).selectedOptions.length; j++) {
+                    let selectIndex: number = (event.currentTarget as IElement).selectedOptions[j].index;
+                    let oldValueIndex: number = 0;
+                    if (this.pdfViewerBase.formFieldCollection[i].FormField.selectedIndex.length !== 0) {
+                        oldValueIndex = this.pdfViewerBase.formFieldCollection[i].FormField.selectedIndex.pop();
+                        this.pdfViewerBase.formFieldCollection[i].FormField.selectedIndex.push(oldValueIndex);
+                    }
+                    let oldValue = formFieldsData[i].FormField.option[oldValueIndex].value;
+                    formFieldsData[i].FormField.selectedIndex.push(selectIndex);
+                    (this.pdfViewer.nameTable as any)[formFieldsData[i].Key.split("_")[0]].selectedIndex = formFieldsData[i].FormField.selectedIndex;
+                    this.pdfViewerBase.formFieldCollection[i].FormField.selectedIndex = formFieldsData[i].FormField.selectedIndex;
+                    let newValue = formFieldsData[i].FormField.option[selectIndex].value;
+                    this.pdfViewer.fireFormFieldPropertiesChangeEvent("formFieldPropertiesChange", formFieldsData[i].FormField, this.pdfViewerBase.formFieldCollection[i].FormField.pageNumber, true, false, false,
+                        false, false, false, false, false, false, false, false,
+                        false, false, false, false, oldValue, newValue);
+                }
+                this.pdfViewer.annotation.addAction(this.pdfViewerBase.formFieldCollection[i].FormField.pageNumber, null, this.pdfViewerBase.formFieldCollection[i].FormField, 'FormField Value Change', '', oldValues, this.pdfViewerBase.formFieldCollection[i].FormField.selectedIndex);
+            }
+        }
+        window.sessionStorage.setItem(this.pdfViewerBase.documentId + '_formDesigner', JSON.stringify(this.pdfViewerBase.formFieldCollection));
+    }
+    private dropdownChange(event: Event) {
+        var data = window.sessionStorage.getItem(this.pdfViewerBase.documentId + '_formDesigner');
+        var formFieldsData = JSON.parse(data);
+        for (let i: number = 0; i < formFieldsData.length; i++) {
+            if (formFieldsData[i].Key.split("_")[0] === (event.target as Element).id.split("_")[0] ||
+                (this.pdfViewer.nameTable as any)[(event.target as Element).id.split("_")[0]].name === formFieldsData[i].FormField.name) {
+                let selectIndex: number = (document.getElementById((event.currentTarget as Element).id) as IElement).selectedIndex;
+                let oldValueIndex: number = 0;
+                if (formFieldsData[i].FormField.selectedIndex.length !== 0) {
+                    oldValueIndex = formFieldsData[i].FormField.selectedIndex.pop();
+                    formFieldsData[i].FormField.selectedIndex.push(oldValueIndex);
+                }
+                let oldValue = formFieldsData[i].FormField.option[oldValueIndex].value;
+                formFieldsData[i].FormField.selectedIndex.push(selectIndex);
+                (this.pdfViewer.nameTable as any)[formFieldsData[i].Key.split("_")[0]].selectedIndex = selectIndex;
+                this.pdfViewerBase.formFieldCollection[i].FormField.selectedIndex.push(selectIndex);
+                let newValue = formFieldsData[i].FormField.option[selectIndex].value;
+                if (formFieldsData[i].Key.split("_")[0] !== (event.target as Element).id.split("_")[0]) {
+                    let inputElement: Element = document.getElementById((formFieldsData[i].Key.split("_")[0] + "_content_html_element")).firstElementChild.firstElementChild;
+                    (inputElement as IElement).selectedIndex = selectIndex;
+                }
+                this.pdfViewer.fireFormFieldPropertiesChangeEvent("formFieldPropertiesChange", formFieldsData[i].FormField, this.pdfViewerBase.formFieldCollection[i].FormField.pageNumber, true, false, false,
+                    false, false, false, false, false, false, false, false,
+                    false, false, false, false, oldValue, newValue);
+                this.pdfViewer.annotation.addAction(this.pdfViewerBase.formFieldCollection[i].FormField.pageNumber, null, this.pdfViewerBase.formFieldCollection[i].FormField, 'FormField Value Change', '', oldValueIndex, selectIndex);
+            }
+        }
+        window.sessionStorage.setItem(this.pdfViewerBase.documentId + '_formDesigner', JSON.stringify(this.pdfViewerBase.formFieldCollection));
+    }
+    private setCheckBoxState(event: Event) {
+        let isChecked: boolean = false;
+        if (!(this.pdfViewer.nameTable as any)[(event.target as Element).id.split("_")[0]].isReadonly) {
+            if (event.target && (event.target as Element).firstElementChild && (event.target as any).firstElementChild.className === "e-pv-checkbox-span e-pv-cb-checked") {
+                (event.target as Element).firstElementChild.classList.remove("e-pv-cb-checked");
+                (event.target as Element).firstElementChild.classList.add("e-pv-checkbox-span", "e-pv-cb-unchecked");
+                isChecked = false;
+            } else if ((event.target as Element).className === "e-pv-checkbox-span e-pv-cb-checked") {
+                (event.target as Element).classList.remove("e-pv-cb-checked");
+                (event.target as Element).classList.add("e-pv-checkbox-span", "e-pv-cb-unchecked");
+                isChecked = false;
+            } else {
+                (event.target as Element).firstElementChild.classList.remove("e-pv-cb-unchecked");
+                (event.target as Element).firstElementChild.classList.add("e-pv-checkbox-span", "e-pv-cb-checked");
+                isChecked = true;
+            }
+            var data = window.sessionStorage.getItem(this.pdfViewerBase.documentId + '_formDesigner');
+            var formFieldsData = JSON.parse(data);
+            for (let i: number = 0; i < formFieldsData.length; i++) {
+                if (formFieldsData[i].Key.split("_")[0] === (event.target as Element).id.split("_")[0] ||
+                    (this.pdfViewer.nameTable as any)[(event.target as Element).id.split("_")[0]].name === formFieldsData[i].FormField.name) {
+                    (this.pdfViewer.nameTable as any)[formFieldsData[i].Key.split("_")[0]].isChecked = isChecked;
+                    let oldValue = this.pdfViewerBase.formFieldCollection[i].FormField.isChecked;
+                    formFieldsData[i].FormField.isChecked = isChecked;
+                    this.pdfViewerBase.formFieldCollection[i].FormField.isChecked = formFieldsData[i].FormField.isChecked;
+                    if (formFieldsData[i].Key.split("_")[0] !== (event.target as Element).id.split("_")[0]) {
+                        let checkboxElement: Element = document.getElementById(formFieldsData[i].Key.split("_")[0] + "_input").firstElementChild;
+                        if (isChecked) {
+                            if (checkboxElement.classList.contains('e-pv-cb-unchecked'))
+                                checkboxElement.classList.remove('e-pv-cb-unchecked');
+                            checkboxElement.classList.add("e-pv-cb-checked");
+                        } else {
+                            if (checkboxElement.classList.contains('e-pv-cb-checked'))
+                                checkboxElement.classList.remove('e-pv-cb-checked');
+                            checkboxElement.classList.add("e-pv-cb-unchecked");
+                        }
+                    }
+                    this.pdfViewer.fireFormFieldPropertiesChangeEvent("formFieldPropertiesChange", formFieldsData[i].FormField, this.pdfViewerBase.formFieldCollection[i].FormField.pageNumber, true, false, false,
+                        false, false, false, false, false, false, false, false,
+                        false, false, false, false, oldValue, isChecked);
+                    this.pdfViewer.annotation.addAction(this.pdfViewerBase.formFieldCollection[i].FormField.pageNumber, null, this.pdfViewerBase.formFieldCollection[i].FormField, 'FormField Value Change', '', oldValue, isChecked);
+                }
+            }
+            window.sessionStorage.setItem(this.pdfViewerBase.documentId + '_formDesigner', JSON.stringify(this.pdfViewerBase.formFieldCollection));
+        }
+    }
+
+    private setCheckedValue(element: Element, isChecked?: boolean): void {
+        if (isChecked) {
+            element.firstElementChild.classList.remove("e-pv-cb-unchecked");
+            element.firstElementChild.classList.add("e-pv-checkbox-span", "e-pv-cb-checked");
+        } else {
+            element.firstElementChild.classList.remove("e-pv-cb-checked");
+            element.firstElementChild.classList.add("e-pv-checkbox-span", "e-pv-cb-unchecked");
+        }
+    }
+
+    private setRadioButtonState(event: Event) {
+        var data = window.sessionStorage.getItem(this.pdfViewerBase.documentId + '_formDesigner');
+        var formFieldsData = JSON.parse(data);
+        for (let i: number = 0; i < formFieldsData.length; i++) {
+            if (formFieldsData[i].FormField.radiobuttonItem != null) {
+                let oldValue;
+                let undoElement;
+                let redoElement;
+                for (let j: number = 0; j < formFieldsData[i].FormField.radiobuttonItem.length; j++) {
+                    if (formFieldsData[i].FormField.radiobuttonItem[j].id.split("_")[0] === (event.currentTarget as Element).id) {
+                        (this.pdfViewer.nameTable as any)[(event.currentTarget as Element).id.split("_")[0]].isSelected = true;
+                        formFieldsData[i].FormField.radiobuttonItem[j].isSelected = true;
+                        oldValue = this.pdfViewerBase.formFieldCollection[i].FormField.radiobuttonItem[j].isSelected;
+                        if (!oldValue)
+                            undoElement = this.pdfViewerBase.formFieldCollection[i].FormField.radiobuttonItem[j];
+                        this.pdfViewerBase.formFieldCollection[i].FormField.radiobuttonItem[j].isSelected = true;
+                        this.pdfViewer.fireFormFieldPropertiesChangeEvent("formFieldPropertiesChange", formFieldsData[i].FormField, this.pdfViewerBase.formFieldCollection[i].FormField.pageNumber, true, false, false,
+                            false, false, false, false, false, false, false, false,
+                            false, false, false, false, false, true);
+                    } else {
+                        if ((this.pdfViewer.nameTable as any)[(event.currentTarget as Element).id].name === formFieldsData[i].FormField.radiobuttonItem[j].name) {
+                            (this.pdfViewer.nameTable as any)[formFieldsData[i].FormField.radiobuttonItem[j].id.split("_")[0]].isSelected = false;
+                            let oldValue = this.pdfViewerBase.formFieldCollection[i].FormField.radiobuttonItem[j].isSelected;
+                            formFieldsData[i].FormField.radiobuttonItem[j].isSelected = false;
+                            oldValue = this.pdfViewerBase.formFieldCollection[i].FormField.radiobuttonItem[j].isSelected;
+                            if (oldValue)
+                                redoElement = this.pdfViewerBase.formFieldCollection[i].FormField.radiobuttonItem[j];
+                            this.pdfViewerBase.formFieldCollection[i].FormField.radiobuttonItem[j].isSelected = formFieldsData[i].FormField.radiobuttonItem[j].isSelected;
+                            this.pdfViewer.fireFormFieldPropertiesChangeEvent("formFieldPropertiesChange", formFieldsData[i].FormField, this.pdfViewerBase.formFieldCollection[i].FormField.pageNumber, true, false, false,
+                                false, false, false, false, false, false, false, false,
+                                false, false, false, false, true, false);
+                        }
+                    }
+                }
+                if (undoElement != null || redoElement != null)
+                    this.pdfViewer.annotation.addAction(this.pdfViewerBase.formFieldCollection[i].FormField.pageNumber, null, this.pdfViewerBase.formFieldCollection[i].FormField, 'FormField Value Change', '', undoElement, redoElement);
+            }
+        }
+        window.sessionStorage.setItem(this.pdfViewerBase.documentId + '_formDesigner', JSON.stringify(this.pdfViewerBase.formFieldCollection));
+    }
+
+    private getTextboxValue(event: Event): void {
+        var data = window.sessionStorage.getItem(this.pdfViewerBase.documentId + '_formDesigner');
+        var formFieldsData = JSON.parse(data);
+        for (let i: number = 0; i < formFieldsData.length; i++) {
+            if (formFieldsData[i].Key.split("_")[0] === (event.target as Element).id.split("_")[0] ||
+                (this.pdfViewer.nameTable as any)[(event.target as Element).id.split("_")[0]].name === formFieldsData[i].FormField.name) {
+                let oldValue = this.pdfViewerBase.formFieldCollection[i].FormField.value;
+                formFieldsData[i].FormField.value = (event.target as IElement).value;
+                (this.pdfViewer.nameTable as any)[formFieldsData[i].Key.split("_")[0]].value = formFieldsData[i].FormField.value;
+                this.pdfViewerBase.formFieldCollection[i].FormField.value = formFieldsData[i].FormField.value;
+                if (formFieldsData[i].Key.split("_")[0] !== (event.target as Element).id.split("_")[0]) {
+                    let inputElement: Element = document.getElementById((formFieldsData[i].Key.split("_")[0] + "_content_html_element")).firstElementChild.firstElementChild;
+                    (inputElement as IElement).value = formFieldsData[i].FormField.value;
+                }
+                this.pdfViewer.fireFormFieldPropertiesChangeEvent("formFieldPropertiesChange", this.pdfViewerBase.formFieldCollection[i].FormField, this.pdfViewerBase.formFieldCollection[i].FormField.pageNumber, true, false, false,
+                    false, false, false, false, false, false, false, false,
+                    false, false, false, false, oldValue, (event.target as IElement).value);
+                this.pdfViewer.annotation.addAction(this.pdfViewerBase.formFieldCollection[i].FormField.pageNumber, null, this.pdfViewerBase.formFieldCollection[i].FormField, 'FormField Value Change', '', oldValue, (event.target as IElement).value);   
+            }
+        }
+        window.sessionStorage.setItem(this.pdfViewerBase.documentId + '_formDesigner', JSON.stringify(this.pdfViewerBase.formFieldCollection));
+    }
+
+    private inputElementClick(event: any): void {
+        event.target.focus();
+    }
+
+    /**
+     * Adds form field to the PDF page.
+     * 
+     * @param formFieldType
+     * @param options
+     * @returns HTMLElement
+     */
+    public addFormField(formFieldType: FormFieldType,
+        options?: TextFieldSettings | PasswordFieldSettings | CheckBoxFieldSettings | DropdownFieldSettings | RadioButtonFieldSettings | ListBoxFieldSettings | SignatureFieldSettings | InitialFieldSettings): HTMLElement {
+        let obj: PdfFormFieldBaseModel = {
+            thickness: 0, bounds: { x: options.bounds.X, y: options.bounds.Y, width: options.bounds.Width, height: options.bounds.Height },
+            fontFamily: !isNullOrUndefined((options as TextFieldSettings).fontFamily) ? (options as TextFieldSettings).fontFamily : "Helvetica", fontSize: !isNullOrUndefined((options as TextFieldSettings).fontSize) ? (options as TextFieldSettings).fontSize : 10,
+            color: !isNullOrUndefined((options as TextFieldSettings).color) ? (options as TextFieldSettings).color : "black", backgroundColor: !isNullOrUndefined((options as TextFieldSettings).backgroundColor) ? (options as TextFieldSettings).backgroundColor : "#daeaf7ff",
+            alignment: !isNullOrUndefined((options as TextFieldSettings).alignment) ? (options as TextFieldSettings).alignment : "left", isReadonly: options.isReadOnly ? options.isReadOnly : false
+        };
+        (obj as any).fontStyle = !isNullOrUndefined((options as TextFieldSettings).fontStyle) ? (options as TextFieldSettings).fontStyle : "None";
+        obj.visibility = !isNullOrUndefined(options.visibility) ? options.visibility : "visible";
+        obj.value = !isNullOrUndefined((options as TextFieldSettings).value) ? (options as TextFieldSettings).value : "";
+        obj.isRequired = options.isRequired ? options.isRequired : false;
+        obj.isPrint = options.isPrint;
+        obj.pageNumber = !isNullOrUndefined(options.pageNumber) ? options.pageNumber : this.pdfViewerBase.currentPageNumber;
+        obj.pageIndex = obj.pageNumber - 1;
+        obj.font = (options as any).font;
+        switch (formFieldType) {
+            case 'Textbox':
+                obj.formFieldAnnotationType = formFieldType;
+                obj.name = !isNullOrUndefined(options.name) ? options.name : 'Textbox' + this.setFormFieldIndex();
+                obj.maxLength = (options as any).maxLength;
+                obj.thickness = !isNullOrUndefined((options as TextFieldSettings).thickness) ? (options as TextFieldSettings).thickness : 1;
+                obj.borderColor = !isNullOrUndefined((options as TextFieldSettings).borderColor) ? (options as TextFieldSettings).borderColor : '#303030';
+                break;
+            case 'Password':
+                obj.formFieldAnnotationType = 'PasswordField';
+                obj.name = !isNullOrUndefined(options.name) ? options.name : 'Password' + this.setFormFieldIndex();
+                obj.maxLength = (options as any).maxLength;
+                obj.thickness = !isNullOrUndefined((options as PasswordFieldSettings).thickness) ? (options as PasswordFieldSettings).thickness : 1;
+                obj.borderColor = !isNullOrUndefined((options as PasswordFieldSettings).borderColor) ? (options as PasswordFieldSettings).borderColor : '#303030';
+                break;
+            case 'DropDown':
+                obj.formFieldAnnotationType = 'DropdownList';
+                obj.name = !isNullOrUndefined(options.name) ? options.name : 'Dropdown' + this.setFormFieldIndex();
+                obj.options = (options as DropdownFieldSettings).options ? (options as DropdownFieldSettings).options : [];
+                for (let i: number = 0; i < this.pdfViewer.formFieldCollection.length; i++) {
+                    let formField = this.pdfViewer.formFieldCollection[i] as PdfFormFieldBaseModel;
+                    if (formField.formFieldAnnotationType === 'DropdownList' && formField.name === obj.name) {
+                        obj.options = formField.options;
+                        break;
+                    }
+                }
+                obj.selectedIndex = (options as any).selectedIndex;
+                obj.thickness = !isNullOrUndefined((options as DropdownFieldSettings).thickness) ? (options as DropdownFieldSettings).thickness : 1;
+                obj.borderColor = !isNullOrUndefined((options as DropdownFieldSettings).borderColor) ? (options as DropdownFieldSettings).borderColor : '#303030';
+                break;
+            case 'ListBox':
+                obj.formFieldAnnotationType = formFieldType;
+                obj.name = !isNullOrUndefined(options.name) ? options.name : 'List Box' + this.setFormFieldIndex();
+                obj.options = (options as ListBoxFieldSettings).options ? (options as DropdownFieldSettings).options : [];
+                for (let i: number = 0; i < this.pdfViewer.formFieldCollection.length; i++) {
+                    let formField = this.pdfViewer.formFieldCollection[i] as PdfFormFieldBaseModel;
+                    if (formField.formFieldAnnotationType === formFieldType && formField.name === obj.name) {
+                        obj.options = formField.options;
+                        break;
+                    }
+                }
+                obj.selectedIndex = (options as any).selectedIndex;
+                obj.thickness = !isNullOrUndefined((options as ListBoxFieldSettings).thickness) ? (options as ListBoxFieldSettings).thickness : 1;
+                obj.borderColor = !isNullOrUndefined((options as ListBoxFieldSettings).borderColor) ? (options as ListBoxFieldSettings).borderColor : '#303030';
+                break;
+            case 'CheckBox':
+                obj.formFieldAnnotationType = 'Checkbox';
+                obj.bounds = { x: options.bounds.X, y: options.bounds.Y, width: options.bounds.Width, height: options.bounds.Height };
+                obj.backgroundColor = !isNullOrUndefined((options as CheckBoxFieldSettings).backgroundColor) ? (options as CheckBoxFieldSettings).backgroundColor : "#6EB6D47D";
+                obj.isReadonly = options.isReadOnly ? options.isReadOnly : false;
+                obj.name = !isNullOrUndefined(options.name) ? options.name : 'Check Box' + this.setFormFieldIndex();
+                obj.isChecked = (options as CheckBoxFieldSettings).isChecked ? (options as CheckBoxFieldSettings).isChecked : false;
+                obj.visibility = options.visibility ? options.visibility : "visible";
+                obj.isRequired = options.isRequired ? options.isRequired : false;
+                obj.thickness = !isNullOrUndefined((options as CheckBoxFieldSettings).thickness) ? (options as CheckBoxFieldSettings).thickness : 1;
+                obj.borderColor = !isNullOrUndefined((options as CheckBoxFieldSettings).borderColor) ? (options as CheckBoxFieldSettings).borderColor : '#303030';
+                break;
+            case 'RadioButton':
+                obj.formFieldAnnotationType = formFieldType;
+                obj.bounds = { x: options.bounds.X, y: options.bounds.Y, width: options.bounds.Width, height: options.bounds.Height };
+                obj.backgroundColor = !isNullOrUndefined((options as RadioButtonFieldSettings).backgroundColor) ? (options as RadioButtonFieldSettings).backgroundColor : "#6EB6D47D";
+                obj.isReadonly = options.isReadOnly ? options.isReadOnly : false;
+                obj.name = !isNullOrUndefined(options.name) ? options.name : 'Radio Button' + this.setFormFieldIndex();
+                obj.isSelected = (options as RadioButtonFieldSettings).isSelected ? (options as RadioButtonFieldSettings).isSelected : false;
+                obj.visibility = options.visibility ? options.visibility : "visible";
+                obj.isRequired = options.isRequired ? options.isRequired : false;
+                obj.thickness = !isNullOrUndefined((options as RadioButtonFieldSettings).thickness) ? (options as RadioButtonFieldSettings).thickness : 1;
+                obj.borderColor = !isNullOrUndefined((options as RadioButtonFieldSettings).borderColor) ? (options as RadioButtonFieldSettings).borderColor : '#303030';
+                break;
+            case 'SignatureField':
+                obj.formFieldAnnotationType = formFieldType;
+                obj.bounds = { x: options.bounds.X, y: options.bounds.Y, width: options.bounds.Width, height: options.bounds.Height };
+                obj.backgroundColor = !isNullOrUndefined((options as unknown as SignatureIndicatorSettings).backgroundColor) ? (options as unknown as SignatureIndicatorSettings).backgroundColor : "#daeaf7ff";
+                obj.fontSize = !isNullOrUndefined((options as unknown as SignatureIndicatorSettings).fontSize) ? (options as unknown as SignatureIndicatorSettings).fontSize : 10;
+                (obj as any).fontStyle = !isNullOrUndefined((options as TextFieldSettings).fontStyle) ? (options as TextFieldSettings).fontStyle : "None";
+                obj.name = !isNullOrUndefined(options.name) ? options.name : 'Signature' + + this.setFormFieldIndex();
+                obj.isRequired = options.isRequired ? options.isRequired : false;
+                obj.isReadonly = options.isReadOnly ? options.isReadOnly : false;
+                obj.signatureIndicatorSettings = (options as SignatureFieldSettings).signatureIndicatorSettings ? {opacity: (options as SignatureFieldSettings).signatureIndicatorSettings.opacity ? (options as SignatureFieldSettings).signatureIndicatorSettings.opacity: 1 ,
+                    backgroundColor: (options as SignatureFieldSettings).signatureIndicatorSettings.backgroundColor ? (options as SignatureFieldSettings).signatureIndicatorSettings.backgroundColor: 'orange', width: (options as SignatureFieldSettings).signatureIndicatorSettings.width ? (options as SignatureFieldSettings).signatureIndicatorSettings.width: 19,
+                    height: (options as SignatureFieldSettings).signatureIndicatorSettings.height ? (options as SignatureFieldSettings).signatureIndicatorSettings.height: 10, fontSize: (options as SignatureFieldSettings).signatureIndicatorSettings.fontSize? (options as SignatureFieldSettings).signatureIndicatorSettings.fontSize: 10, 
+                    text: (options as SignatureFieldSettings).signatureIndicatorSettings.text? (options as SignatureFieldSettings).signatureIndicatorSettings.text: null,  color: (options as SignatureFieldSettings).signatureIndicatorSettings.color? (options as SignatureFieldSettings).signatureIndicatorSettings.color: 'black'  }: null;
+                break;
+            case 'InitialField':
+                obj.formFieldAnnotationType = formFieldType;
+                obj.bounds = { x: options.bounds.X, y: options.bounds.Y, width: options.bounds.Width, height: options.bounds.Height };
+                obj.backgroundColor = !isNullOrUndefined((options as unknown as SignatureIndicatorSettings).backgroundColor) ? (options as unknown as SignatureIndicatorSettings).backgroundColor : "#daeaf7ff";
+                obj.fontSize = !isNullOrUndefined((options as unknown as SignatureIndicatorSettings).fontSize) ? (options as unknown as SignatureIndicatorSettings).fontSize : 10;
+                (obj as any).fontStyle = !isNullOrUndefined((options as TextFieldSettings).fontStyle) ? (options as TextFieldSettings).fontStyle : "None";
+                (obj as any).name = !isNullOrUndefined(options.name) ? options.name : 'Initial' + + this.setFormFieldIndex();
+                (obj as any).isRequired = options.isRequired ? options.isRequired : false;
+                (obj as any).isReadonly = options.isReadOnly ? options.isReadOnly : false;
+                (obj as any).isInitialField = true;
+                obj.signatureIndicatorSettings = (options as SignatureFieldSettings).signatureIndicatorSettings ? {opacity: (options as SignatureFieldSettings).signatureIndicatorSettings.opacity ? (options as SignatureFieldSettings).signatureIndicatorSettings.opacity: 1 ,
+                    backgroundColor: (options as SignatureFieldSettings).signatureIndicatorSettings.backgroundColor ? (options as SignatureFieldSettings).signatureIndicatorSettings.backgroundColor: 'orange', width: (options as SignatureFieldSettings).signatureIndicatorSettings.width ? (options as SignatureFieldSettings).signatureIndicatorSettings.width: 19,
+                    height: (options as SignatureFieldSettings).signatureIndicatorSettings.height ? (options as SignatureFieldSettings).signatureIndicatorSettings.height: 10, fontSize: (options as SignatureFieldSettings).signatureIndicatorSettings.fontSize? (options as SignatureFieldSettings).signatureIndicatorSettings.fontSize: 10, 
+                    text: (options as SignatureFieldSettings).signatureIndicatorSettings.text? (options as SignatureFieldSettings).signatureIndicatorSettings.text: null,  color: (options as SignatureFieldSettings).signatureIndicatorSettings.color? (options as SignatureFieldSettings).signatureIndicatorSettings.color: 'black'  }: null;
+                break;
+        }
+        obj.tooltip = !isNullOrUndefined(options.tooltip) ? options.tooltip : '';
+        this.pdfViewerBase.disableTextSelectionMode();
+        let HTMLElement = this.drawFormField(obj);
+        return HTMLElement;
+    }
+
+    /**
+     * @private
+     */
+    public drawFormField(obj : PdfFormFieldBaseModel) {
+        let node = this.pdfViewer.add(obj as PdfAnnotationBase);
+        this.pdfViewer.formFieldCollection.push(node);
+        let formField: FormFieldModel = {id: node.id, name: (node as PdfFormFieldBaseModel).name, value: (node as PdfFormFieldBaseModel).value,
+            type: node.formFieldAnnotationType as FormFieldType, isReadOnly: node.isReadonly, fontFamily: node.fontFamily,
+            fontSize: node.fontSize, fontStyle: node.fontStyle as unknown as FontStyle, color: (node as PdfFormFieldBaseModel).color, backgroundColor: (node as PdfFormFieldBaseModel).backgroundColor,
+            alignment: (node as PdfFormFieldBaseModel).alignment as TextAlign, visibility: (node as PdfFormFieldBaseModel).visibility, maxLength: (node as PdfFormFieldBaseModel).maxLength, isRequired: (node as PdfFormFieldBaseModel).isRequired,
+            isPrint: node.isPrint, tooltip:  (node as PdfFormFieldBaseModel).tooltip, bounds: node.bounds as IFormFieldBound, thickness: node.thickness, borderColor: (node as PdfFormFieldBaseModel).borderColor, signatureIndicatorSettings: (node as PdfFormFieldBaseModel).signatureIndicatorSettings };
+        this.pdfViewer.formFieldCollections.push(formField);
+        let HTMLElement = this.drawHTMLContent(node.formFieldAnnotationType, node.wrapper.children[0] as DiagramHtmlElement, node, obj.pageNumber - 1, this.pdfViewer);
+        return HTMLElement;
+    }
+
+    /**
+     * Set the form field mode to add the form field on user interaction.
+     * 
+     * @param formFieldId
+     * @param options
+     * @returns void
+     */
+    public setFormFieldMode(formFieldType: FormFieldType,
+        options?: Item[]): void {
+        switch (formFieldType) {
+            case 'Textbox':
+                this.activateTextboxElement(formFieldType);
+                break;
+            case 'Password':
+                let passwordType: FormFieldAnnotationType = 'PasswordField';
+                this.activatePasswordField(passwordType);
+                break;
+            case 'CheckBox':
+                let checkboxType: FormFieldAnnotationType = 'Checkbox';
+                this.activateCheckboxElement(checkboxType);
+                break;
+            case 'RadioButton':
+                this.activateRadioButtonElement(formFieldType);
+                break;
+            case 'DropDown':
+                let dropdownType: FormFieldAnnotationType = 'DropdownList';
+                this.activateDropDownListElement(dropdownType, options);
+                break;
+            case 'ListBox':
+                this.activateListboxElement(formFieldType, options);
+                break;
+            case 'SignatureField':
+            case 'InitialField':
+                this.activateSignatureBoxElement(formFieldType)
+        }
+    }
+
+    /**
+     * Reset the form fields into its original state.
+     * 
+     * @param formFieldId
+     * @returns void
+     */
+    public resetFormField(formFieldId: string | object): void {
+        let formField: PdfFormFieldBaseModel = this.getFormField(formFieldId);
+        if (formField) {
+            switch (formField.formFieldAnnotationType) {
+                case 'Textbox':
+                    this.resetTextboxProperties(formField);
+                    break;
+                case 'PasswordField':
+                    this.resetPasswordProperties(formField);
+                    break;
+                case 'Checkbox':
+                    this.resetCheckboxProperties(formField);
+                    break;
+                case 'RadioButton':
+                    this.resetRadioButtonProperties(formField);
+                    break;
+                case 'DropdownList':
+                    this.resetDropdownListProperties(formField);
+                    break;
+                case 'ListBox':
+                    this.resetListBoxProperties(formField);
+                    break;
+                case 'SignatureField':
+                case 'InitialField':
+                    this.resetSignatureTextboxProperties(formField);
+                    break;
+            }
+            this.updateSessionFormFieldProperties(formField);   
+        }
+    }
+
+    /**
+     * Select the form field in the PDF Viewer.
+     * 
+     * @param formFieldId
+     * @returns void
+     */
+    public selectFormField(formFieldId: string | object): void {
+        let formField: PdfFormFieldBaseModel = this.getFormField(formFieldId);
+        if (formField) {
+            this.isProgrammaticSelection = true;
+            this.pdfViewer.select([formField.id]);
+            this.isProgrammaticSelection = false;
+        }
+    }
+
+    /**
+     * Update the form field with the given properties and value.
+     * 
+     * @param formFieldId
+     * @param options
+     * @returns void
+     */
+    public updateFormField(formFieldId: string | object,
+        options: TextFieldSettings | PasswordFieldSettings | CheckBoxFieldSettings | DropdownFieldSettings | RadioButtonFieldSettings): void {
+        let formField: PdfFormFieldBaseModel = this.getFormField(formFieldId);
+        if (formField) {
+            switch (formField.formFieldAnnotationType) {
+                case 'Textbox':
+                case 'PasswordField':
+                case 'DropdownList':
+                case 'ListBox':
+                case 'SignatureField':
+                case 'InitialField':
+                    let inputElement: Element = document.getElementById(formField.id + "_content_html_element").firstElementChild.firstElementChild;
+                    this.formFieldPropertyChange(formField, options, inputElement as HTMLElement);
+                    break;
+                case 'RadioButton':
+                    let radioButtonDivDivElement: Element = document.getElementById(formField.id + "_content_html_element").firstElementChild.firstElementChild.firstElementChild;
+                    this.formFieldPropertyChange(formField, options, radioButtonDivDivElement as HTMLElement);
+                    break;
+                case 'Checkbox':
+                    let checkboxDivElement: Element = document.getElementById(formField.id + "_content_html_element").firstElementChild.firstElementChild.lastElementChild;
+                    this.formFieldPropertyChange(formField, options, checkboxDivElement as HTMLElement);
+                    break;
+            }
+        }
+    }
+
+    private formFieldPropertyChange(formFieldObject: PdfFormFieldBaseModel,
+        options: TextFieldSettings | PasswordFieldSettings | CheckBoxFieldSettings | DropdownFieldSettings | RadioButtonFieldSettings, htmlElement: HTMLElement): void {
+        let isValueChanged: boolean = false, isFontFamilyChanged: boolean = false, isFontSizeChanged: boolean = false, isFontStyleChanged: boolean = false, isColorChanged: boolean = false,
+            isBackgroundColorChanged: boolean = false, isBorderColorChanged: boolean = false, isBorderWidthChanged: boolean = false, isAlignmentChanged: boolean = false, isReadOnlyChanged: boolean = false,
+            isVisibilityChanged: boolean = false, isMaxLengthChanged: boolean = false, isRequiredChanged: boolean = false, isPrintChanged: boolean = false, isToolTipChanged: boolean = false;
+        let oldValue: any, newValue: any;
+        if (options.name) {
+            formFieldObject.name = options.name;
+            let designerName = document.getElementById(formFieldObject.id + "_designer_name");
+            designerName.innerHTML = formFieldObject.name;
+            (htmlElement as IElement).name = options.name;
+            (this.pdfViewer.nameTable as any)[formFieldObject.id.split('_')[0]].name = formFieldObject.name;
+        }
+        if (formFieldObject.formFieldAnnotationType !== 'SignatureField') {
+            if (options.thickness) {
+                if (formFieldObject.thickness !== options.thickness) {
+                    isBorderWidthChanged = true;
+                    oldValue = formFieldObject.thickness;
+                    newValue = options.thickness;
+                }
+                htmlElement.style.borderWidth = options.thickness.toString();
+                formFieldObject.thickness = options.thickness;
+                (this.pdfViewer.nameTable as any)[formFieldObject.id.split('_')[0]].thickness = options.thickness;
+                if (isBorderWidthChanged) {
+                    this.updateFormFieldPropertiesChanges("formFieldPropertiesChange", formFieldObject, false, false, false,
+                        false, false, false, false, isBorderWidthChanged, false, false, false, false, false, false, false, oldValue, newValue);
+                }
+            }
+            if (options.borderColor) {
+                let borderColor = this.colorNametoHashValue(options.borderColor);
+                if (formFieldObject.borderColor !== borderColor) {
+                    isBorderColorChanged = true;
+                    oldValue = formFieldObject.borderColor;
+                    newValue = borderColor;
+                }
+                formFieldObject.borderColor = borderColor;
+                htmlElement.style.borderColor = borderColor;
+                if (formFieldObject.formFieldAnnotationType === 'RadioButton') {
+                    (htmlElement as any).parentElement.style.boxShadow = borderColor + ' 0px 0px 0px ' + formFieldObject.thickness + 'px';
+                    this.setToolTip(options.tooltip, (htmlElement as any).parentElement);
+                }
+                (this.pdfViewer.nameTable as any)[formFieldObject.id.split('_')[0]].borderColor = borderColor;
+                if (isBorderColorChanged) {
+                    this.updateFormFieldPropertiesChanges("formFieldPropertiesChange", formFieldObject, false, false, false,
+                        false, false, false, isBorderColorChanged, false, false, false, false, false, false, false, false, oldValue, newValue);
+                }
+            }
+        }
+        if (options.backgroundColor) {
+            let backColor = this.colorNametoHashValue(options.backgroundColor);
+            if (formFieldObject.backgroundColor !== backColor) {
+                isBackgroundColorChanged = true;
+                oldValue = formFieldObject.backgroundColor;
+                newValue = backColor;
+            }
+            formFieldObject.backgroundColor = backColor;
+            htmlElement.style.background = backColor;
+            if (formFieldObject.formFieldAnnotationType === 'RadioButton') {
+                (htmlElement as any).parentElement.style.background = formFieldObject.backgroundColor;
+            }
+            (this.pdfViewer.nameTable as any)[formFieldObject.id.split('_')[0]].backgroundColor = backColor;
+            if (isBackgroundColorChanged) {
+                this.updateFormFieldPropertiesChanges("formFieldPropertiesChange", formFieldObject, false, false, false,
+                    false, false, isBackgroundColorChanged, false, false, false, false, false, false, false, false, false, oldValue, newValue);
+            }
+        }
+        if (options.bounds) {
+            formFieldObject.bounds = { x: options.bounds.X, y: options.bounds.Y, width: options.bounds.Width, height: options.bounds.Height };
+            let zoomValue: number = this.pdfViewerBase.getZoomFactor();
+            let formField: PdfFormFieldBaseModel = (this.pdfViewer.nameTable as any)[formFieldObject.id.split("_")[0]];
+            formField.bounds = { x: options.bounds.X, y: options.bounds.Y, width: options.bounds.Width, height: options.bounds.Height };
+            formField.wrapper.bounds = new Rect(options.bounds.X, options.bounds.Y, options.bounds.Width, options.bounds.Height);
+            this.pdfViewer.drawing.nodePropertyChange(formField, {
+                bounds: {
+                    x: formField.wrapper.bounds.x, y: formField.wrapper.bounds.y,
+                    width: formField.wrapper.bounds.width, height: formField.wrapper.bounds.height
+                }
+            });
+            var element = formField.wrapper.children[0];
+            var point = cornersPointsBeforeRotation(formField.wrapper.children[0]).topLeft;
+            let hEment = document.getElementById(element.id + "_html_element");
+            if (!isNullOrUndefined(hEment)) {
+                hEment.setAttribute(
+                    'style', 'height:' + (element.actualSize.height * zoomValue) + 'px; width:' + (element.actualSize.width * zoomValue) +
+                    'px;left:' + point.x * zoomValue + 'px; top:' + point.y * zoomValue + 'px;' +
+                    'position:absolute;transform:rotate(' + (element.rotateAngle + element.parentTransform) + 'deg);' +
+                    'pointer-events:' + ((this.pdfViewer.designerMode) ? 'none' : 'all')
+                    + ';visibility:' + ((element.visible) ? 'visible' : 'hidden') + ';opacity:' + element.style.opacity + ';'
+                );
+            }
+        }
+        if (options.isReadOnly) {
+            if (formFieldObject.isReadonly !== options.isReadOnly) {
+                isReadOnlyChanged = true;
+                oldValue = formFieldObject.isReadonly;
+                newValue = options.isReadOnly;
+            }
+            formFieldObject.isReadonly = options.isReadOnly;
+            this.setReadOnlyToElement(formFieldObject, htmlElement, options.isReadOnly);
+            this.setReadOnlyToFormField(formFieldObject, options.isReadOnly);
+            (this.pdfViewer.nameTable as any)[formFieldObject.id.split('_')[0]].isReadonly = options.isReadOnly;
+            if (isReadOnlyChanged) {
+                this.updateFormFieldPropertiesChanges("formFieldPropertiesChange", formFieldObject, false, false, false,
+                    false, false, false, false, false, false, isReadOnlyChanged, false, false, false, false, false, oldValue, newValue);
+            }
+        }
+        if (options.isRequired) {
+            if (formFieldObject.isRequired !== options.isRequired) {
+                isRequiredChanged = true;
+                oldValue = formFieldObject.isRequired;
+                newValue = options.isRequired;
+            }
+            formFieldObject.isRequired = options.isRequired;
+            this.setRequiredToElement(formFieldObject, htmlElement, options.isRequired);
+            this.setRequiredToFormField(formFieldObject, options.isRequired);
+            (this.pdfViewer.nameTable as any)[formFieldObject.id.split('_')[0]].isRequired = options.isRequired;
+            if (isRequiredChanged) {
+                this.updateFormFieldPropertiesChanges("formFieldPropertiesChange", formFieldObject, false, false, false,
+                    false, false, false, false, false, false, false, false, false, isRequiredChanged, false, false, oldValue, newValue);
+            }
+        }
+        if (options.visibility) {
+            if (formFieldObject.visibility !== options.visibility) {
+                isVisibilityChanged = true;
+                oldValue = formFieldObject.visibility;
+                newValue = options.visibility;
+            }
+            formFieldObject.visibility = options.visibility;
+            (this.pdfViewer.nameTable as any)[formFieldObject.id.split('_')[0]].visibility = options.visibility;
+            if (isVisibilityChanged) {
+                this.updateFormFieldPropertiesChanges("formFieldPropertiesChange", formFieldObject, false, false, false,
+                    false, false, false, false, false, false, false, isVisibilityChanged, false, false, false, false, oldValue, newValue);
+            }
+        }
+        if (options.isPrint) {
+            if (formFieldObject.isPrint !== options.isPrint) {
+                isPrintChanged = true;
+                oldValue = formFieldObject.isPrint;
+                newValue = options.isPrint;
+            }
+            formFieldObject.isPrint = options.isPrint;
+            (this.pdfViewer.nameTable as any)[formFieldObject.id.split('_')[0]].isPrint = options.isPrint;
+            if (isPrintChanged) {
+                this.updateFormFieldPropertiesChanges("formFieldPropertiesChange", formFieldObject, false, false, false,
+                    false, false, false, false, false, false, false, false, false, false, isPrintChanged, false, oldValue, newValue);
+            }
+        }
+        if (options.tooltip) {
+            if (formFieldObject.tooltip !== options.tooltip) {
+                isToolTipChanged = true;
+                oldValue = formFieldObject.tooltip;
+                newValue = options.tooltip;
+            }
+            formFieldObject.tooltip = options.tooltip;
+            if (!isNullOrUndefined(options.tooltip)) {
+                if (formFieldObject.formFieldAnnotationType === 'RadioButton') {
+                    this.setToolTip(options.tooltip, (htmlElement as any).parentElement);
+                }
+                else {
+                    this.setToolTip(options.tooltip, htmlElement);
+                }
+            }
+            (this.pdfViewer.nameTable as any)[formFieldObject.id.split('_')[0]].tooltip = options.tooltip;
+            if (isToolTipChanged) {
+                this.updateFormFieldPropertiesChanges("formFieldPropertiesChange", formFieldObject, false, false, false,
+                    false, false, false, false, false, false, false, false, false, false, false, isToolTipChanged, oldValue, newValue);
+            }
+        }
+        if (formFieldObject.formFieldAnnotationType === 'Checkbox' && (options as CheckBoxFieldSettings).isChecked) {
+            if (formFieldObject.isChecked !== this.checkboxCheckedState) {
+                isValueChanged = true;
+                oldValue = formFieldObject.isChecked;
+                newValue = (options as CheckBoxFieldSettings).isChecked;
+            }
+            formFieldObject.isChecked = (options as CheckBoxFieldSettings).isChecked;
+            (htmlElement as IElement).checked = (options as CheckBoxFieldSettings).isChecked;
+            this.setCheckedValue(htmlElement, (options as CheckBoxFieldSettings).isChecked);
+            (this.pdfViewer.nameTable as any)[formFieldObject.id.split('_')[0]].isChecked = (options as CheckBoxFieldSettings).isChecked;
+            if (isValueChanged) {
+                this.updateFormFieldPropertiesChanges("formFieldPropertiesChange", formFieldObject, isValueChanged, false, false,
+                    false, false, false, false, false, false, false, false, false, false, false, false, oldValue, newValue);
+            }
+        }
+        if (formFieldObject.formFieldAnnotationType === 'RadioButton' && (options as RadioButtonFieldSettings).isSelected) {
+            if (formFieldObject.isSelected !== (options as RadioButtonFieldSettings).isSelected) {
+                isValueChanged = true;
+                oldValue = formFieldObject.isSelected;
+                newValue = this.checkboxCheckedState;
+            }
+            formFieldObject.isSelected = (options as RadioButtonFieldSettings).isSelected;
+            (htmlElement as IElement).checked = (options as RadioButtonFieldSettings).isSelected;
+            (this.pdfViewer.nameTable as any)[formFieldObject.id.split('_')[0]].isSelected = (options as RadioButtonFieldSettings).isSelected;
+            if (isValueChanged) {
+                this.updateFormFieldPropertiesChanges("formFieldPropertiesChange", formFieldObject, isValueChanged, false, false,
+                    false, false, false, false, false, false, false, false, false, false, false, false, oldValue, newValue);
+            }
+        }
+        if (formFieldObject.formFieldAnnotationType === 'DropdownList' || formFieldObject.formFieldAnnotationType === 'ListBox') {
+            if ((options as DropdownFieldSettings).options) {
+                formFieldObject.options = (options as DropdownFieldSettings).options;
+                this.updateDropDownListDataSource(formFieldObject, htmlElement);
+                (this.pdfViewer.nameTable as any)[formFieldObject.id.split('_')[0]].options = formFieldObject.options;
+            }
+        }
+        if (formFieldObject.formFieldAnnotationType === 'Textbox' || formFieldObject.formFieldAnnotationType === 'SignatureField' || formFieldObject.formFieldAnnotationType === 'InitialField' ||
+            formFieldObject.formFieldAnnotationType === 'DropdownList' || formFieldObject.formFieldAnnotationType === 'ListBox'
+            || formFieldObject.formFieldAnnotationType === 'PasswordField') {
+            if ((options as TextFieldSettings).value) {
+                if (formFieldObject.value !== (options as TextFieldSettings).value) {
+                    isValueChanged = true;
+                    oldValue = formFieldObject.value;
+                    newValue = (options as TextFieldSettings).value;
+                }
+                formFieldObject.value = (options as TextFieldSettings).value;
+                if (!(formFieldObject.formFieldAnnotationType === 'DropdownList' || formFieldObject.formFieldAnnotationType === 'ListBox')) {
+                    (htmlElement as IElement).value = (options as TextFieldSettings).value;
+                }
+                (this.pdfViewer.nameTable as any)[formFieldObject.id.split('_')[0]].value = (options as TextFieldSettings).value;
+                if (isValueChanged) {
+                    this.updateFormFieldPropertiesChanges("formFieldPropertiesChange", formFieldObject, isValueChanged, false, false,
+                        false, false, false, false, false, false, false, false, false, false, false, false, oldValue, newValue);
+                }
+            }
+            if ((options as any).fontSize) {
+                if (formFieldObject.fontSize !== (options as any).fontSize) {
+                    isFontSizeChanged = true;
+                    oldValue = formFieldObject.fontSize;
+                    newValue = (options as any).fontSize;
+                }
+                formFieldObject.fontSize = (options as any).fontSize;
+                htmlElement.style.fontSize = (options as any).fontSize + 'px';
+                (this.pdfViewer.nameTable as any)[formFieldObject.id.split('_')[0]].fontSize = (options as any).fontSize;
+                if (isFontSizeChanged) {
+                    this.updateFormFieldPropertiesChanges("formFieldPropertiesChange", formFieldObject, false, false, isFontSizeChanged,
+                        false, false, false, false, false, false, false, false, false, false, false, false, oldValue, newValue);
+                }
+            }
+            if ((options as any).color) {
+                let color = this.colorNametoHashValue((options as any).color);
+                if (formFieldObject.color !== color) {
+                    isColorChanged = true;
+                    oldValue = formFieldObject.color;
+                    newValue = color;
+                }
+                formFieldObject.color = color;
+                htmlElement.style.color = color;
+                (this.pdfViewer.nameTable as any)[formFieldObject.id.split('_')[0]].color = color;
+                if (isColorChanged) {
+                    this.updateFormFieldPropertiesChanges("formFieldPropertiesChange", formFieldObject, false, false, false,
+                        false, isColorChanged, false, false, false, false, false, false, false, false, false, false, oldValue, newValue);
+                }
+            }
+            if (formFieldObject.formFieldAnnotationType !== 'SignatureField') {
+                if ((options as any).alignment) {
+                    if (formFieldObject.alignment !== (options as any).alignment) {
+                        isAlignmentChanged = true;
+                        oldValue = formFieldObject.alignment;
+                        newValue = (options as any).alignment;
+                    }
+                    formFieldObject.alignment = (options as any).alignment;
+                    htmlElement.style.textAlign = (options as any).alignment;
+                    (this.pdfViewer.nameTable as any)[formFieldObject.id.split('_')[0]].alignment = (options as any).alignment;
+                    if (isAlignmentChanged) {
+                        this.updateFormFieldPropertiesChanges("formFieldPropertiesChange", formFieldObject, false, false, false,
+                            false, false, false, false, false, isAlignmentChanged, false, false, false, false, false, false, oldValue, newValue);
+                    }
+                }
+                if ((options as TextFieldSettings).maxLength) {
+                    if (formFieldObject.maxLength !== (options as TextFieldSettings).maxLength) {
+                        isMaxLengthChanged = true;
+                        oldValue = formFieldObject.maxLength;
+                        newValue = (options as TextFieldSettings).maxLength;
+                    }
+                    formFieldObject.maxLength = (options as TextFieldSettings).maxLength;
+                    (htmlElement as HTMLInputElement).maxLength = (options as TextFieldSettings).maxLength;
+                    (this.pdfViewer.nameTable as any)[formFieldObject.id.split('_')[0]].maxLength = (options as TextFieldSettings).maxLength;
+                    if (isMaxLengthChanged) {
+                        this.updateFormFieldPropertiesChanges("formFieldPropertiesChange", formFieldObject, false, false, false,
+                            false, false, false, false, false, false, false, false, isMaxLengthChanged, false, false, false, oldValue, newValue);
+                    }
+                }
+            }
+            if (formFieldObject.formFieldAnnotationType !== 'PasswordField') {
+                if ((options as any).fontFamily) {
+                    if (formFieldObject.fontFamily !== (options as any).fontFamily) {
+                        isFontFamilyChanged = true;
+                        oldValue = formFieldObject.fontFamily;
+                        newValue = (options as any).fontFamily;
+                    }
+                    formFieldObject.fontFamily = (options as any).fontFamily;
+                    htmlElement.style.fontFamily = (options as any).fontFamily;
+                    (this.pdfViewer.nameTable as any)[formFieldObject.id.split('_')[0]].fontFamily = (options as any).fontFamily;
+                    if (isFontFamilyChanged) {
+                        this.updateFormFieldPropertiesChanges("formFieldPropertiesChange", formFieldObject, false, isFontFamilyChanged, false,
+                            false, false, false, false, false, false, false, false, false, false, false, false, oldValue, newValue);
+                    }
+                }
+                let oldFontStyle: string = '';
+                let newFontStyle: string = '';
+                if ((options as any).fontStyle) {
+                    oldFontStyle += formFieldObject.font.isBold ? 'Bold' + ", " : '';
+                    oldFontStyle += formFieldObject.font.isItalic ? 'Italic' + ", " : '';
+                    oldFontStyle += formFieldObject.font.isStrikeout ? 'Strikethrough' + ", " : '';
+                    oldFontStyle += formFieldObject.font.isUnderline ? 'Underline' + ", " : '';
+                    if (((options as any).fontStyle & FontStyle.Bold) !== 0) {
+                        htmlElement.style.fontWeight = "bold";
+                        (formFieldObject as any).fontStyle = "Bold";
+                        formFieldObject.font.isBold = true;
+                        (this.pdfViewer.nameTable as any)[formFieldObject.id.split('_')[0]].font.isBold = true;
+                    }
+                    newFontStyle += formFieldObject.font.isBold ? 'Bold' + ", " : '';
+                    if (((options as any).fontStyle & FontStyle.Italic) !== 0) {
+                        htmlElement.style.fontStyle = "italic";
+                        (formFieldObject as any).fontStyle = "Italic";
+                        formFieldObject.font.isItalic = true;
+                        (this.pdfViewer.nameTable as any)[formFieldObject.id.split('_')[0]].font.isItalic = true;
+                    }
+                    newFontStyle += formFieldObject.font.isItalic ? 'Italic' + ", " : '';
+                    if (((options as any).fontStyle & FontStyle.Strikethrough) !== 0) {
+                        htmlElement.style.textDecoration = "line-through";
+                        formFieldObject.font.isStrikeout = true;
+                        (formFieldObject as any).fontStyle = "Strikethrough";
+                        (this.pdfViewer.nameTable as any)[formFieldObject.id.split('_')[0]].font.isStrikeout = true;
+                    }
+                    newFontStyle += formFieldObject.font.isStrikeout ? 'Strikethrough' + ", " : '';
+                    if (((options as any).fontStyle & FontStyle.Underline) !== 0) {
+                        htmlElement.style.textDecoration = "underline";
+                        (formFieldObject as any).fontStyle = "Underline";
+                        formFieldObject.font.isUnderline = true;
+                        (this.pdfViewer.nameTable as any)[formFieldObject.id.split('_')[0]].font.isUnderline = true;
+                    }
+                    newFontStyle += formFieldObject.font.isUnderline ? 'Underline' + ", " : '';
+                    isFontStyleChanged = true;
+                    if (isFontStyleChanged) {
+                        this.updateFormFieldPropertiesChanges("formFieldPropertiesChange", formFieldObject, false, false, false,
+                            isFontStyleChanged, false, false, false, false, false, false, false, false, false, false, false, oldFontStyle, newFontStyle);
+                    }
+                }
+            }
+        }
+        this.updateSessionFormFieldProperties(formFieldObject);
+        let formField: FormFieldModel = {id: formFieldObject.id, name: (formFieldObject as PdfFormFieldBaseModel).name, value: (formFieldObject as PdfFormFieldBaseModel).value,
+            type: formFieldObject.formFieldAnnotationType as FormFieldType, isReadOnly: formFieldObject.isReadonly, fontFamily: formFieldObject.fontFamily,
+            fontSize: formFieldObject.fontSize, fontStyle: formFieldObject.fontStyle as unknown as FontStyle, color: (formFieldObject as PdfFormFieldBaseModel).color, backgroundColor: (formFieldObject as PdfFormFieldBaseModel).backgroundColor,
+            alignment: (formFieldObject as PdfFormFieldBaseModel).alignment as TextAlign, visibility: (formFieldObject as PdfFormFieldBaseModel).visibility, maxLength: (formFieldObject as PdfFormFieldBaseModel).maxLength, isRequired: (formFieldObject as PdfFormFieldBaseModel).isRequired,
+            isPrint: formFieldObject.isPrint, tooltip:  (formFieldObject as PdfFormFieldBaseModel).tooltip, bounds: formFieldObject.bounds as IFormFieldBound, thickness: formFieldObject.thickness, borderColor: (formFieldObject as PdfFormFieldBaseModel).borderColor };
+        this.pdfViewer.formFieldCollections[this.pdfViewer.formFieldCollections.findIndex(el => el.id === formField.id)] = formField;
+    }
+    private colorNametoHashValue(colorString: string): string{
+        let colorCode: string = colorString;
+        if (!colorCode.match(/#([a-z0-9]+)/gi) && !colorCode.match(/^rgba?\((\d+),\s*(\d+),\s*(\d+)(?:,\s*(\d+(?:\.\d+)?))?\)$/)) {
+            colorCode = this.nameToHash(colorCode);
+        }
+        return colorCode !== '' ? colorCode: colorString;
+    }
+
+    /**
+     * @private
+     */
+    public getFormField(formFieldId: string | object): PdfFormFieldBaseModel {
+        let formField: PdfFormFieldBaseModel;
+        let formFieldCollectionObject: PdfFormFieldBaseModel;
+        if (typeof formFieldId === 'object') {
+            formFieldCollectionObject = this.getAnnotationsFromAnnotationCollections((formFieldId as any).id);
+            if (formFieldCollectionObject)
+                formField = (this.pdfViewer.nameTable as any)[formFieldCollectionObject.id];
+        }
+        if (typeof formFieldId === 'string') {
+            formFieldCollectionObject = this.getAnnotationsFromAnnotationCollections(formFieldId);
+            if (formFieldCollectionObject)
+                formField = (this.pdfViewer.nameTable as any)[formFieldCollectionObject.id];
+        }
+        return formField;
+    }
+
+    private resetTextboxProperties(obj: PdfFormFieldBaseModel): void {
+        let inputElement: Element = document.getElementById(obj.id + "_content_html_element").firstElementChild.firstElementChild;
+        if (inputElement) {
+            obj.name = 'textboxField';
+            obj.value = '';
+            obj.fontFamily = 'Helvetica';
+            obj.fontSize = 10;
+            obj.fontStyle = "None";
+            obj.color = 'black';
+            obj.backgroundColor = '#daeaf7ff';
+            obj.alignment = 'left';
+            obj.visibility = 'visible';
+            obj.isReadonly = false;
+            obj.isRequired = false;
+ 			obj.tooltip = '';
+            obj.isPrint = true;
+			obj.borderColor = '#303030';
+            obj.thickness = 1;
+            obj.maxLength = 0;
+            this.updateTextboxProperties(obj, inputElement as HTMLElement);
+        }
+    }
+    private resetPasswordProperties(obj: PdfFormFieldBaseModel): void {
+        let inputElement: Element = document.getElementById(obj.id + "_content_html_element").firstElementChild.firstElementChild;
+        if (inputElement) {
+            obj.name = 'passswordField';
+            obj.value = '';
+            obj.fontFamily = 'Helvetica';
+            obj.fontSize = 10;
+            obj.fontStyle = "None";
+            obj.color = 'black';
+            obj.backgroundColor = '#daeaf7ff';
+            obj.alignment = 'left';
+            obj.visibility = 'visible';
+            obj.isReadonly = false;
+            obj.isRequired = false;
+			obj.tooltip = '';
+            obj.isPrint = true;
+			obj.borderColor = '#303030';
+            obj.thickness = 1;
+            obj.maxLength = 0;
+            this.updatePasswordFieldProperties(obj, inputElement as HTMLElement);
+        }
+    }
+    private resetCheckboxProperties(obj: PdfFormFieldBaseModel): void {
+        let inputElement: Element = document.getElementById(obj.id + "_content_html_element").firstElementChild.firstElementChild;
+        if (inputElement) {
+            obj.name = 'checkboxField';
+            obj.isChecked = false;
+            obj.backgroundColor = '#daeaf7ff';
+            obj.visibility = 'visible';
+            obj.isReadonly = false;
+            obj.isRequired = false;
+			obj.tooltip = '';
+            obj.isPrint = true;
+           	obj.borderColor = '#303030';
+            obj.thickness = 1;
+            this.updateCheckboxProperties(obj, inputElement as HTMLElement);
+        }
+    }
+    private resetRadioButtonProperties(obj: PdfFormFieldBaseModel): void {
+        let inputElement: Element = document.getElementById(obj.id + "_content_html_element").firstElementChild.firstElementChild;
+        if (inputElement) {
+            obj.name = 'RadioButtonField';
+            obj.isSelected = false;
+            obj.backgroundColor = '#daeaf7ff';
+            obj.visibility = 'visible';
+            obj.isReadonly = false;
+            obj.isRequired = false;
+			obj.tooltip = '';
+            obj.isPrint = true;
+           	obj.borderColor = '#303030';
+            obj.thickness = 1;
+            this.updateRadioButtonProperties(obj, inputElement as HTMLElement);
+        }
+    }
+    private resetDropdownListProperties(obj: PdfFormFieldBaseModel): void {
+        let inputElement: Element = document.getElementById(obj.id + "_content_html_element").firstElementChild.firstElementChild;
+        if (inputElement) {
+            obj.name = 'dropDownField';
+            obj.value = '';
+            obj.fontFamily = 'Helvetica';
+            obj.fontSize = 10;
+            obj.fontStyle = "None";
+            obj.color = 'black';
+            obj.backgroundColor = '#daeaf7ff';
+            obj.alignment = 'left';
+            obj.visibility = 'visible';
+            obj.isReadonly = false;
+            obj.isRequired = false;
+            obj.tooltip = '';
+            obj.isPrint = true;
+            obj.borderColor = '#303030';
+            obj.thickness = 1;
+            obj.options = [];
+            this.updateDropdownListProperties(obj, inputElement as HTMLElement);
+            if (obj.options) {
+                this.updateDropDownListDataSource(obj, inputElement as HTMLElement);
+            }
+        }
+    }
+    private resetListBoxProperties(obj: PdfFormFieldBaseModel): void {
+        let inputElement: Element = document.getElementById(obj.id + "_content_html_element").firstElementChild.firstElementChild;
+        if (inputElement) {
+            obj.name = 'listBoxField';
+            obj.value = '';
+            obj.fontFamily = 'Helvetica';
+            obj.fontSize = 10;
+            obj.fontStyle = "None";
+            obj.color = 'black';
+            obj.backgroundColor = '#daeaf7ff';
+            obj.alignment = 'left';
+            obj.visibility = 'visible';
+            obj.isReadonly = false;
+            obj.isRequired = false;
+            obj.tooltip = '';
+            obj.isPrint = true;
+            obj.borderColor = '#303030';
+            obj.thickness = 1;
+            obj.options = [];
+            this.updateListBoxProperties(obj, inputElement as HTMLElement);
+            if (obj.options) {
+                this.updateDropDownListDataSource(obj, inputElement as HTMLElement);
+            }
+        }
+    }
+    private resetSignatureTextboxProperties(obj: PdfFormFieldBaseModel): void {
+        let inputElement: Element = document.getElementById(obj.id + "_content_html_element").firstElementChild.firstElementChild;
+        if (inputElement) {
+            obj.name = 'signatureField';
+            obj.value = '';
+            obj.fontFamily = 'Helvetica';
+            obj.fontSize = 10;
+            obj.fontStyle = "None";
+            obj.color = 'black';
+            obj.backgroundColor = '#daeaf7ff';
+            obj.isRequired = false;
+            obj.isReadonly = false;
+            obj.tooltip = '';
+            obj.isPrint = true;
+            obj.visibility = 'visible';
+            this.updateSignatureFieldProperties(obj, inputElement as HTMLElement);
+        }
+    }
+
+    /**
+     * Deletes the form field from the PDF page.
+     * 
+     * @param formFieldId
+     * @param addAction
+     * @returns void
+     */
+    public deleteFormField(formFieldId: string | object, addAction : boolean = true): void {
+        let formField: PdfFormFieldBaseModel = this.getFormField(formFieldId);
+        if (formField) {
+            this.clearSelection(formFieldId);
+            this.pdfViewer.remove(formField);
+            this.pdfViewer.renderDrawing();
+            if (!isNullOrUndefined(this.pdfViewer.toolbar) && !isNullOrUndefined(this.pdfViewer.toolbar.formDesignerToolbarModule))
+                this.pdfViewer.toolbar.formDesignerToolbarModule.showHideDeleteIcon(false)
+            if (this.pdfViewerBase.formFieldCollection.length > 0) {
+                this.pdfViewerBase.enableFormFieldButton(true);
+            } else {
+                this.pdfViewerBase.enableFormFieldButton(false);
+            }
+            if (addAction) {
+                this.pdfViewer.annotation.addAction(this.pdfViewerBase.currentPageNumber, null, formField, 'Delete', '', formField, formField);
+            }
+        }
+    }
+
+    /**
+     * Clears the selection of the form field in the PDF page.
+     * 
+     * @param formFieldId
+     * @returns void
+     */
+    public clearSelection(formFieldId: string | object): void {
+        let formField: PdfFormFieldBaseModel;
+        let formFieldCollectionObject: any;
+        if (typeof formFieldId === 'object') {
+            formFieldCollectionObject = this.getAnnotationsFromAnnotationCollections((formFieldId as any).id);
+            formField = (this.pdfViewer.nameTable as any)[formFieldCollectionObject.id];
+        }
+        if (typeof formFieldId === 'string') {
+            formFieldCollectionObject = this.getAnnotationsFromAnnotationCollections(formFieldId);
+            formField = (this.pdfViewer.nameTable as any)[formFieldCollectionObject.id];
+        }
+        if (formField && (this.pdfViewer.selectedItems && !isNullOrUndefined((this.pdfViewer.selectedItems as any).properties.formFields) && (this.pdfViewer.selectedItems as any).properties.formFields.length > 0 &&
+            (this.pdfViewer.selectedItems as any).properties.formFields[0].id === formField.id)) {
+            this.pdfViewer.clearSelection(this.pdfViewerBase.activeElements.activePageID);
+        }
+    }
+
+    /**
+     * @private
+     */
+    public setMode(mode: string): void {
+        if (mode && mode.indexOf("designer") !== -1) {
+            this.enableDisableFormFieldsInteraction(true);
+            this.pdfViewerBase.disableTextSelectionMode();
+        } else {
+            this.enableDisableFormFieldsInteraction(false);
+            this.pdfViewer.textSelectionModule.enableTextSelectionMode();
+        }
+    }
+
+    private enableDisableFormFieldsInteraction(enableDesignerMode: boolean): void {
+        let collections = this.pdfViewer.formFieldCollection;
+        if (collections && collections.length > 0) {
+            for (let i: number = 0; i < collections.length; i++) {
+                let element = document.getElementById(collections[i].id + "_content_html_element");
+                let designerName = document.getElementById(collections[i].id + "_designer_name");
+                if (element) {
+                    if (enableDesignerMode) {
+                        this.pdfViewer.designerMode = true;
+                        element.style.pointerEvents = "none";
+                        designerName.innerHTML = collections[i].name;
+                        designerName.style.position = 'absolute';
+                    } else {
+                        this.pdfViewer.designerMode = false;
+                        element.style.pointerEvents = "all";
+                        designerName.innerHTML = "";
+                        designerName.style.position = 'initial';
+                        if (collections[i].formFieldAnnotationType === 'RadioButton') {
+                            this.updateRadioButtonDesignerProperties(collections[i]);
+                        }
+                        if (collections[i].formFieldAnnotationType === 'Checkbox') {
+                            this.updateCheckboxFormDesignerProperties(collections[i]);
+                        }
+                        this.pdfViewer.clearSelection(collections[i].pageIndex);
+                    }
+                }
+            }
+        }
+    }
+
+    // eslint-disable-next-line
+    private getAnnotationsFromAnnotationCollections(annotationId: string): any {
+        // eslint-disable-next-line
+        let collections: any = this.pdfViewer.formFieldCollection;
+        if (collections && annotationId) {
+            for (let i: number = 0; i < collections.length; i++) {
+                if (collections[i].id === annotationId) {
+                    return collections[i];
+                }
+            }
+        }
+    }
+    /**
+     * @private
+     */
+    public updateSignatureValue(formFieldId:string):void{
+        for(let i:number=0;i<this.pdfViewerBase.formFieldCollection.length;i++){
+            if(formFieldId===this.pdfViewerBase.formFieldCollection[i].FormField.id){
+                this.pdfViewerBase.formFieldCollection[i].FormField.value='';
+                (this.pdfViewer.nameTable as any)[this.pdfViewerBase.formFieldCollection[i].FormField.id.split('_')[0]].value='';
+                this.pdfViewerBase.formFieldCollection[i].FormField.signatureType='';
+                (this.pdfViewer.nameTable as any)[this.pdfViewerBase.formFieldCollection[i].FormField.id.split('_')[0]].signatureType='';
+            }
+        }
+    }
+
+    /**
+     * @private
+     */
+    public removeFieldsFromAnnotationCollections(annotationId: string): any {
+        var data = window.sessionStorage.getItem(this.pdfViewerBase.documentId + '_formDesigner');
+        var formFieldsData = JSON.parse(data);
+        for (let i: number = 0; i < formFieldsData.length; i++) {
+            if (formFieldsData[i].Key.split("_")[0] === annotationId) {
+                formFieldsData.splice(i, 1);
+                this.pdfViewerBase.formFieldCollection.splice(i, 1);
+                break;
+            }
+        }
+        window.sessionStorage.setItem(this.pdfViewerBase.documentId + '_formDesigner', JSON.stringify(this.pdfViewerBase.formFieldCollection));
+        let storeObject: string = window.sessionStorage.getItem(this.pdfViewerBase.documentId + '_annotations_shape');
+        if (storeObject) {
+            let annotObject: IPageAnnotations[] = JSON.parse(storeObject);
+            let index: number = this.pdfViewer.annotationModule.getPageCollection(annotObject, this.pdfViewerBase.currentPageNumber - 1);
+            if (annotObject[index]) {
+                for (let m: number = 0; m < annotObject[index].annotations.length; m++) {
+                    if (annotationId === annotObject[index].annotations[m].id) {
+                        annotObject[index].annotations.splice(m, 1);
+                        break;
+                    }
+                }
+                const annotationStringified: string = JSON.stringify(annotObject);
+                window.sessionStorage.setItem(this.pdfViewerBase.documentId + '_annotations_shape', annotationStringified);
+            }
+        }
+        // eslint-disable-next-line
+        let collections: any = this.pdfViewer.formFieldCollection;
+        if (collections && annotationId) {
+            for (let i: number = 0; i < collections.length; i++) {
+                if (collections[i].formFieldId === annotationId) {
+                    this.pdfViewer.formFieldCollection.splice(i, 1);
+                }
+            }
+        }
+    }
+
+    private setFormFieldIndex(): number {
+        this.formFieldIndex = this.formFieldIndex + 1;
+        return this.formFieldIndex;
+    }
+
+    private setFormFieldIdIndex(): number {
+        this.formFieldIdIndex = this.formFieldIdIndex + 1;
+        return this.formFieldIdIndex;
+    }
+
+
+    private activateTextboxElement(formFieldType: FormFieldAnnotationType): void {
+        (this.pdfViewer.drawingObject as any) = {
+            formFieldAnnotationType: formFieldType,
+            name: 'Textbox' + this.setFormFieldIndex(), value: '', fontFamily: 'Helvetica', fontSize: 10, fontStyle: 'None', color: 'black',
+            backgroundColor: '#daeaf7ff', thickness: 1, borderColor: '#303030', alignment: 'left', isReadonly: false, visibility: "visible", isRequired: false, isPrint: true, rotateAngle: 0, tooltip: '', font: { isItalic: false, isBold: false, isStrikeout: false, isUnderline: false }
+        };
+        this.pdfViewer.tool = "DrawTool";
+    }
+
+    private activatePasswordField(formFieldType: FormFieldAnnotationType): void {
+        (this.pdfViewer.drawingObject as any) = {
+            formFieldAnnotationType: formFieldType,
+            name: 'Password' + this.setFormFieldIndex(), value: '', fontFamily: 'Helvetica', fontSize: 10, fontStyle: 'None', color: 'black',
+            alignment: 'left', backgroundColor: '#daeaf7ff', thickness: 1, borderColor: '#303030', isReadonly: false, visibility: "visible", isRequired: false, isPrint: true, rotateAngle: 0, tooltip: '', font: { isItalic: false, isBold: false, isStrikeout: false, isUnderline: false }
+        };
+        this.pdfViewer.tool = "DrawTool";
+    }
+
+    private activateCheckboxElement(formFieldType: FormFieldAnnotationType): void {
+        (this.pdfViewer.drawingObject as any) = {
+            formFieldAnnotationType: formFieldType,
+            name: 'Check Box' + this.setFormFieldIndex(), isChecked: false, backgroundColor: '#daeaf7ff', color: 'black', thickness: 1, borderColor: '#303030', isReadonly: false, visibility: "visible", isPrint: true, rotateAngle: 0, tooltip: ''
+        };
+        this.pdfViewer.tool = "DrawTool";
+    }
+
+    private activateRadioButtonElement(formFieldType: FormFieldAnnotationType): void {
+        (this.pdfViewer.drawingObject as any) = {
+            formFieldAnnotationType: formFieldType,
+            name: 'Radio Button' + this.setFormFieldIndex(), isSelected: false, backgroundColor: '#daeaf7ff', color: 'black', thickness: 1, borderColor: '#303030', isReadonly: false, visibility: "visible", isPrint: true, rotateAngle: 0, tooltip: ''
+        };
+        this.pdfViewer.tool = "DrawTool";
+    }
+
+    private activateDropDownListElement(formFieldType: FormFieldAnnotationType, dropDownOptions: Item[]): void {
+        (this.pdfViewer.drawingObject as any) = {
+            formFieldAnnotationType: formFieldType,
+            name: 'Dropdown' + this.setFormFieldIndex(), fontFamily: 'Helvetica', fontSize: 10, fontStyle: 'None', color: 'black', backgroundColor: '#daeaf7ff', thickness: 1, borderColor: '#303030',
+            alignment: 'left', isReadonly: false, visibility: "visible", isRequired: false, isPrint: true, rotateAngle: 0, tooltip: '',
+            options: dropDownOptions, isMultiSelect: false, font: { isItalic: false, isBold: false, isStrikeout: false, isUnderline: false }
+        };
+        this.pdfViewer.tool = "DrawTool";
+    }
+    private activateListboxElement(formFieldType: FormFieldAnnotationType, listBoxOptions: Item[]): void {
+        (this.pdfViewer.drawingObject as any) = {
+            formFieldAnnotationType: formFieldType,
+            name: 'List Box' + this.setFormFieldIndex(), fontFamily: 'Helvetica', fontSize: 10, fontStyle: 'None', color: 'black', backgroundColor: '#daeaf7ff', thickness: 1, borderColor: '#303030',
+            alignment: 'left', isReadonly: false, visibility: "visible", isRequired: false, isPrint: true, rotateAngle: 0, tooltip: '',
+            options: listBoxOptions, isMultiSelect: true, font: { isItalic: false, isBold: false, isStrikeout: false, isUnderline: false }
+        };
+        this.pdfViewer.tool = "DrawTool";
+    }
+
+    private activateSignatureBoxElement(formFieldType: FormFieldAnnotationType): void {
+        (this.pdfViewer.drawingObject as any) = {
+            formFieldAnnotationType: formFieldType,
+            name: this.pdfViewer.isInitialFieldToolbarSelection ? 'Initial' + this.setFormFieldIndex() : 'Signature' + this.setFormFieldIndex(), fontFamily: 'Helvetica', fontSize: 10, fontStyle: 'None', color: 'black', backgroundColor: '#daeaf7ff', alignment: 'left',
+            isReadonly: false, visibility: "visible", isRequired: false, isPrint: true, rotateAngle: 0, tooltip: '', font: { isItalic: false, isBold: false, isStrikeout: false, isUnderline: false },
+            isInitialField: this.pdfViewer.isInitialFieldToolbarSelection
+        };
+        this.pdfViewer.tool = "DrawTool";
+    }
+    /**
+     * @private
+    */
+    public updateTextboxProperties(obj: PdfFormFieldBaseModel, inputElement: HTMLElement): void {
+        (inputElement as IFormFieldProperty).name = obj.name ? obj.name : 'Textbox' + this.setFormFieldIndex();
+        (inputElement as IFormFieldProperty).value = obj.value ? obj.value : '';
+        inputElement.style.fontFamily = obj.fontFamily ? obj.fontFamily : 'Helvetica';
+        inputElement.style.fontSize = obj.fontSize ? obj.fontSize + 'px' : 10 + 'px';
+        if (obj.font.isBold) {
+            inputElement.style.fontWeight = "bold";
+        } if (obj.font.isItalic) {
+            inputElement.style.fontStyle = "italic";
+        } if (obj.font.isStrikeout) {
+            inputElement.style.textDecoration = "line-through";
+        } if (obj.font.isUnderline) {
+            inputElement.style.textDecoration = "underline";
+        }
+        inputElement.style.color = obj.color ? obj.color : 'black';
+        inputElement.style.backgroundColor = obj.backgroundColor ? obj.backgroundColor : '#daeaf7ff';
+        inputElement.style.borderWidth = !isNullOrUndefined(obj.thickness) ? obj.thickness + 'px' : '1px';
+        inputElement.style.borderColor = obj.borderColor ? obj.borderColor : '#303030';
+        inputElement.style.textAlign = obj.alignment ? obj.alignment.toLowerCase() : 'left';
+        inputElement.style.visibility = obj.visibility ? obj.visibility : 'visible';
+        inputElement.style.pointerEvents = obj.isReadonly ? 'none' : 'default';
+        if (obj.isReadonly) {
+            (inputElement as HTMLInputElement).disabled = true;
+            inputElement.style.cursor = 'default';
+            inputElement.style.backgroundColor = 'transparent';
+        }
+        if (obj.isRequired) {
+            (inputElement as HTMLInputElement).required = true;
+            inputElement.style.border = '1px solid red';
+            inputElement.style.borderWidth = !isNullOrUndefined(obj.thickness) ? obj.thickness + 'px' : '1px';
+        }
+        if (obj.maxLength != undefined) {
+            (inputElement as HTMLInputElement).maxLength = obj.maxLength === 0 ? 524288 : obj.maxLength;
+        }
+        inputElement.tabIndex = this.formFieldIndex;
+    }
+    /**
+     * @private
+    */
+    public updatePasswordFieldProperties(obj: PdfFormFieldBaseModel, inputElement: HTMLElement): void {
+        (inputElement as IFormFieldProperty).name = obj.name ? obj.name : 'Password' + this.setFormFieldIndex();
+        (inputElement as IFormFieldProperty).value = obj.value ? obj.value : '';
+        inputElement.style.fontFamily = obj.fontFamily ? obj.fontFamily : 'Helvetica';
+        inputElement.style.fontSize = obj.fontSize ? obj.fontSize + 'px' : 10 + 'px';
+        if (obj.font.isBold) {
+            inputElement.style.fontWeight = "bold";
+        } if (obj.font.isItalic) {
+            inputElement.style.fontStyle = "italic";
+        } if (obj.font.isStrikeout) {
+            inputElement.style.textDecoration = "line-through";
+        } if (obj.font.isUnderline) {
+            inputElement.style.textDecoration = "underline";
+        }
+        inputElement.style.borderWidth = !isNullOrUndefined(obj.thickness) ? obj.thickness + 'px' : '1px';
+        inputElement.style.color = obj.color ? obj.color : 'black';
+        inputElement.style.backgroundColor = obj.backgroundColor ? obj.backgroundColor : '#daeaf7ff';
+        inputElement.style.borderColor = obj.borderColor ? obj.borderColor : '#303030';
+        inputElement.style.textAlign = obj.alignment ? obj.alignment.toLowerCase() : 'left';
+        inputElement.style.visibility = obj.visibility ? obj.visibility : 'visible';
+        inputElement.style.pointerEvents = obj.isReadonly ? 'none' : 'default';
+        if (obj.isReadonly) {
+            (inputElement as HTMLInputElement).disabled = true;
+            inputElement.style.cursor = 'default';
+            inputElement.style.backgroundColor = 'transparent';
+        }
+        if (obj.isRequired) {
+            (inputElement as HTMLInputElement).required = true;
+            inputElement.style.border = '1px solid red';
+            inputElement.style.borderWidth = !isNullOrUndefined(obj.thickness) ? obj.thickness + 'px' : '1px';
+        }
+        if (obj.maxLength != undefined) {
+            (inputElement as HTMLInputElement).maxLength = obj.maxLength === 0 ? 524288 : obj.maxLength;
+        }
+        inputElement.tabIndex = this.formFieldIndex;
+    }
+    /**
+     * @private
+    */
+    public updateCheckboxProperties(obj: PdfFormFieldBaseModel, inputElement: HTMLElement): void {
+        (inputElement as IFormFieldProperty).name = obj.name ? obj.name : 'Check Box' + this.setFormFieldIndex();
+        (inputElement as IElement).checked = obj.isChecked ? true : false;
+        inputElement.style.backgroundColor = obj.backgroundColor ? obj.backgroundColor : '#daeaf7ff';
+        inputElement.style.borderColor = obj.borderColor ? obj.borderColor : '#303030';
+        inputElement.style.visibility = obj.visibility ? obj.visibility : 'visible';
+        inputElement.style.pointerEvents = obj.isReadonly ? 'none' : 'default';
+        inputElement.style.borderWidth = !isNullOrUndefined(obj.thickness) ? obj.thickness + 'px' : '1px';
+        if (obj.isReadonly) {
+            (inputElement as HTMLInputElement).disabled = true;
+            inputElement.style.cursor = 'default';
+            inputElement.style.backgroundColor = 'transparent';
+        }
+        if (obj.isRequired) {
+            (inputElement as HTMLInputElement).required = true;
+            inputElement.style.border = '1px solid red';
+            inputElement.style.borderWidth = !isNullOrUndefined(obj.thickness) ? obj.thickness + 'px' : '1px';
+        }
+        inputElement.tabIndex = this.formFieldIndex;
+    }
+    /**
+     * @private
+    */
+    public updateRadioButtonProperties(obj: PdfFormFieldBaseModel, inputElement: HTMLElement): void {
+        (inputElement as IFormFieldProperty).name = obj.name ? obj.name : 'Radio Button' + this.setFormFieldIndex();
+        (inputElement as IElement).checked = obj.isSelected ? true : false;
+        inputElement.style.backgroundColor = obj.backgroundColor ? obj.backgroundColor : '#daeaf7ff';
+        inputElement.style.borderColor = obj.borderColor ? obj.borderColor : '#303030';
+        inputElement.style.visibility = obj.visibility ? obj.visibility : 'visible';
+        inputElement.style.pointerEvents = obj.isReadonly ? 'none' : 'default';
+        inputElement.style.borderWidth = !isNullOrUndefined(obj.thickness) ? obj.thickness + 'px' : '1px';
+        if (obj.isReadonly) {
+            (inputElement as HTMLInputElement).disabled = true;
+            inputElement.style.cursor = 'default';
+            inputElement.style.backgroundColor = 'transparent';
+        }
+        if (obj.isRequired) {
+            (inputElement as HTMLInputElement).required = true;
+            inputElement.style.border = '1px solid red';
+            inputElement.style.borderWidth = !isNullOrUndefined(obj.thickness) ? obj.thickness + 'px' : '1px';
+        }
+        inputElement.tabIndex = this.formFieldIndex;
+    }
+    /**
+     * @private
+    */
+    public updateDropdownListProperties(obj: PdfFormFieldBaseModel, inputElement: HTMLElement): void {
+        (inputElement as IFormFieldProperty).name = obj.name ? obj.name : 'Dropdown' + this.setFormFieldIndex();
+        (inputElement as IFormFieldProperty).value = obj.value ? obj.value : '';
+        inputElement.style.fontFamily = obj.fontFamily ? obj.fontFamily : 'Helvetica';
+        inputElement.style.fontSize = obj.fontSize ? obj.fontSize + 'px' : 10 + 'px';
+        if (obj.font.isBold) {
+            inputElement.style.fontWeight = "bold";
+        } if (obj.font.isItalic) {
+            inputElement.style.fontStyle = "italic";
+        } if (obj.font.isStrikeout) {
+            inputElement.style.textDecoration = "line-through";
+        } if (obj.font.isUnderline) {
+            inputElement.style.textDecoration = "underline";
+        }
+        inputElement.style.borderWidth = !isNullOrUndefined(obj.thickness) ? obj.thickness + 'px' : '1px';
+        inputElement.style.color = obj.color ? obj.color : 'black';
+        inputElement.style.backgroundColor = obj.backgroundColor ? obj.backgroundColor : '#daeaf7ff';
+        inputElement.style.borderColor = obj.borderColor ? obj.borderColor : '#303030';
+        inputElement.style.textAlign = obj.alignment ? obj.alignment.toLowerCase() : 'left';
+        inputElement.style.visibility = obj.visibility ? obj.visibility : 'visible';
+        inputElement.style.pointerEvents = obj.isReadonly ? 'none' : 'default';
+        if (obj.isReadonly) {
+            (inputElement as HTMLInputElement).disabled = true;
+            inputElement.style.cursor = 'default';
+            inputElement.style.backgroundColor = 'transparent';
+        }
+        if (obj.isRequired) {
+            (inputElement as HTMLInputElement).required = true;
+            inputElement.style.border = '1px solid red';
+            inputElement.style.borderWidth = !isNullOrUndefined(obj.thickness) ? obj.thickness + 'px' : '1px';
+        }
+        inputElement.tabIndex = this.formFieldIndex;
+    }
+    /**
+     * @private
+    */
+    public updateListBoxProperties(obj: PdfFormFieldBaseModel, inputElement: HTMLElement): void {
+        (inputElement as IFormFieldProperty).name = obj.name ? obj.name : 'List Box' + this.setFormFieldIndex();
+        (inputElement as IFormFieldProperty).value = obj.value ? obj.value : '';
+        inputElement.style.fontFamily = obj.fontFamily ? obj.fontFamily : 'Helvetica';
+        inputElement.style.fontSize = obj.fontSize ? obj.fontSize + 'px' : 10 + 'px';
+        if (obj.font.isBold) {
+            inputElement.style.fontWeight = "bold";
+        } if (obj.font.isItalic) {
+            inputElement.style.fontStyle = "italic";
+        } if (obj.font.isStrikeout) {
+            inputElement.style.textDecoration = "line-through";
+        } if (obj.font.isUnderline) {
+            inputElement.style.textDecoration = "underline";
+        }
+        inputElement.style.color = obj.color ? obj.color : 'black';
+        inputElement.style.backgroundColor = obj.backgroundColor ? obj.backgroundColor : '#daeaf7ff';
+        inputElement.style.borderColor = obj.borderColor ? obj.borderColor : '#303030';
+        inputElement.style.textAlign = obj.alignment ? obj.alignment.toLowerCase() : 'left';
+        inputElement.style.visibility = obj.visibility ? obj.visibility : 'visible';
+        inputElement.style.pointerEvents = obj.isReadonly ? 'none' : 'default';
+        inputElement.style.borderWidth = !isNullOrUndefined(obj.thickness) ? obj.thickness + 'px' : '1px';
+        if (obj.isReadonly) {
+            (inputElement as HTMLInputElement).disabled = true;
+            inputElement.style.cursor = 'default';
+            inputElement.style.backgroundColor = 'transparent';
+        }
+        if (obj.isRequired) {
+            (inputElement as HTMLInputElement).required = true;
+            inputElement.style.border = '1px solid red';
+            inputElement.style.borderWidth = !isNullOrUndefined(obj.thickness) ? obj.thickness + 'px' : '1px';
+        }
+        inputElement.tabIndex = this.formFieldIndex;
+    }
+    /**
+     * @private
+    */
+    public updateSignatureFieldProperties(obj: PdfFormFieldBaseModel, inputElement: HTMLElement): void {
+        (inputElement as IFormFieldProperty).name = obj.name ? obj.name : 'Signature' + this.setFormFieldIndex();
+        (inputElement as IFormFieldProperty).value = obj.value ? obj.value : '';
+        inputElement.style.fontFamily = obj.fontFamily ? obj.fontFamily : 'Helvetica';
+        inputElement.style.fontSize = obj.fontSize ? obj.fontSize + 'px' : 10 + 'px';
+        if (obj.font.isBold) {
+            inputElement.style.fontWeight = "bold";
+        } if (obj.font.isItalic) {
+            inputElement.style.fontStyle = "italic";
+        } if (obj.font.isStrikeout) {
+            inputElement.style.textDecoration = "line-through";
+        } if (obj.font.isUnderline) {
+            inputElement.style.textDecoration = "underline";
+        }
+        inputElement.style.color = obj.color ? obj.color : 'black';
+        inputElement.style.borderWidth = !isNullOrUndefined(obj.thickness) ? obj.thickness + 'px' : '1px';
+        inputElement.style.backgroundColor = '#FFE48559';
+        if (obj.isReadonly) {
+            (inputElement as HTMLInputElement).disabled = true;
+            inputElement.style.cursor = 'default';
+            inputElement.style.backgroundColor = 'transparent';
+        }
+        if (obj.isRequired) {
+            (inputElement as HTMLInputElement).required = true;
+            inputElement.style.border = '1px solid red';
+            inputElement.style.borderWidth = !isNullOrUndefined(obj.thickness) ? obj.thickness + 'px' : '1px';
+        }
+        inputElement.tabIndex = this.formFieldIndex;
+    }
+
+    /**
+     * @private
+     */
+    public createHtmlElement(elementType: string, attribute: Object): HTMLElement {
+        const element: HTMLElement = createElement(elementType);
+        this.setAttributeHtml(element, attribute);
+        return element;
+    }
+    private setAttributeHtml(element: HTMLElement, attributes: any): void {
+        const keys: string[] = Object.keys(attributes);
+        for (let i: number = 0; i < keys.length; i++) {
+            if (keys[i] !== 'style') {
+                element.setAttribute(keys[i], attributes[keys[i]]);
+            } else {
+                this.applyStyleAgainstCsp(element, attributes[keys[i]]);
+            }
+        }
+    }
+    private applyStyleAgainstCsp(svg: SVGElement | HTMLElement, attributes: string): void {
+        const keys: string[] = attributes.split(';');
+        for (let i: number = 0; i < keys.length; i++) {
+            const attribute: any[] = keys[i].split(':');
+            if (attribute.length === 2) {
+                svg.style[attribute[0].trim()] = attribute[1].trim();
+            }
+        }
+    }
+    /**
+     * @private
+     */
+    // eslint-disable-next-line
+    public downloadFormDesigner(): string {
+        let data: string = window.sessionStorage.getItem(this.pdfViewerBase.documentId + '_formDesigner');
+        let formFieldsData: any = JSON.parse(data);
+        if (formFieldsData) {
+            for (let i: number = 0; i < formFieldsData.length; i++) {
+                let currentData: any = formFieldsData[i].FormField;
+                if (currentData.formFieldAnnotationType === 'Textbox' || currentData.formFieldAnnotationType === 'PasswordField' || currentData.Multiline) {
+                    if (currentData.value === null || currentData.value === '') {
+                        this.pdfViewerBase.validateForm = true;
+                        this.pdfViewerBase.nonFillableFields[currentData.name] = currentData.value;
+                    }
+                } else if (currentData.formFieldAnnotationType === 'RadioButton') {
+                    if (currentData.radiobuttonItem) {
+                        let isSelected: boolean;
+                        for (let j: number = 0; j < currentData.radiobuttonItem.length; j++) {
+                            if (currentData.radiobuttonItem[j].isSelected) {
+                                isSelected = true;
+                                break;
+                            }
+                        }
+                        if (!isSelected) {
+                            this.pdfViewerBase.validateForm = true;
+                            this.pdfViewerBase.nonFillableFields[currentData.name] = isSelected;
+                        }
+                    }
+                } else if (currentData.formFieldAnnotationType === 'CheckBox') {
+                    if (currentData.isChecked === false) {
+                        this.pdfViewerBase.validateForm = true;
+                        this.pdfViewerBase.nonFillableFields[currentData.name] = currentData.isChecked;
+                    }
+                } else if (currentData.formFieldAnnotationType === 'DropdownList' || currentData.formFieldAnnotationType === 'ListBox') {
+                    if (currentData.selectedIndex === null || currentData.selectedIndex.length === 0) {
+                        this.pdfViewerBase.validateForm = true;
+                        this.pdfViewerBase.nonFillableFields[currentData.name] = currentData.selectedIndex;
+                    }
+                } else if (currentData.formFieldAnnotationType === 'SignatureField' || currentData.formFieldAnnotationType === 'InitialField') {
+                    if (currentData.value === null || currentData.value === '') {
+                        this.pdfViewerBase.validateForm = true;
+                        this.pdfViewerBase.nonFillableFields[currentData.name] = currentData.value;
+                    }
+                }
+            }
+            return (JSON.stringify(formFieldsData));
+        } else {
+            return null;
+        }
+    }
+    /**
+     * @private
+     */
+    // eslint-disable-next-line max-len
+    public createAnnotationLayer(pageDiv: HTMLElement, pageWidth: number, pageHeight: number, pageNumber: number, displayMode: string): HTMLElement {
+        // eslint-disable-next-line max-len
+        const annotationCanvas: HTMLCanvasElement = createElement('canvas', { id: this.pdfViewer.element.id + '_annotationCanvas_' + pageNumber, className: 'e-pv-annotation-canvas' }) as HTMLCanvasElement;
+        annotationCanvas.width = pageWidth;
+        annotationCanvas.height = pageHeight;
+        annotationCanvas.style.display = displayMode;
+        this.pdfViewerBase.applyElementStyles(annotationCanvas, pageNumber);
+        pageDiv.appendChild(annotationCanvas);
+        return annotationCanvas;
+    }
+
+    /**
+     * @private
+    */
+    public resizeAnnotations(width: number, height: number, pageNumber: number): void {
+        const canvas: HTMLElement = this.pdfViewerBase.getElement('_annotationCanvas_' + pageNumber);
+        if (canvas) {
+            canvas.style.width = width + 'px';
+            canvas.style.height = height + 'px';
+            this.pdfViewerBase.applyElementStyles(canvas, pageNumber);
+        }
+    }
+    /**
+     * @private
+    */
+    public getEventPageNumber(event: Event): number {
+        let eventTarget: HTMLElement = event.target as HTMLElement;
+        if (eventTarget.classList.contains('e-pv-hyperlink')) {
+            eventTarget = eventTarget.parentElement;
+        } else if (eventTarget.parentElement.classList.contains('foreign-object')) {
+            eventTarget = eventTarget.parentElement.parentElement.parentElement.parentElement;
+        }
+        // eslint-disable-next-line
+        let pageString: string = eventTarget.id.split('_text_')[1] || eventTarget.id.split('_textLayer_')[1] || eventTarget.id.split('_annotationCanvas_')[1] || eventTarget.id.split('_pageDiv_')[1];
+        if (isNaN(pageString as unknown as number)) {
+            event = this.pdfViewerBase.annotationEvent;
+            if (event) {
+                eventTarget = event.target as HTMLElement;
+                // eslint-disable-next-line
+                pageString = eventTarget.id.split('_text_')[1] || eventTarget.id.split('_textLayer_')[1] || eventTarget.id.split('_annotationCanvas_')[1] || eventTarget.id.split('_pageDiv_')[1];
+            }
+        }
+        // eslint-disable-next-line
+        return parseInt(pageString);
+    }
+    private getPropertyPanelHeaderContent(formFieldType: FormFieldAnnotationType): string {
+        switch (formFieldType) {
+            case 'Textbox':
+                return 'Textbox';
+            case 'PasswordField':
+                return 'Password';
+            case 'Checkbox':
+                return 'Checkbox';
+            case 'RadioButton':
+                return 'Radio Button';
+            case 'DropdownList':
+                return 'Drop Down';
+            case 'ListBox':
+                return 'List Box';
+            case 'InitialField':
+                return 'Initial';
+            case 'SignatureField':
+                return 'Signature';
+        }
+    }
+
+    /**
+     * @private
+    */
+    public createPropertiesWindow(): void {
+        const elementID: string = this.pdfViewer.element.id;
+        let propertyWinMinHeight: string;
+        // eslint-disable-next-line max-len
+        const dialogDiv: HTMLElement = createElement('div', { id: elementID + '_properties_window', className: 'e-pv-properties-form-field-window' });
+        const appearanceTab: HTMLElement = this.createAppearanceTab();
+        this.pdfViewerBase.pageContainer.appendChild(dialogDiv);
+        if (this.pdfViewer.selectedItems.formFields[0].formFieldAnnotationType !== 'DropdownList' && this.pdfViewer.selectedItems.formFields[0].formFieldAnnotationType !== 'ListBox')
+            propertyWinMinHeight = '430px';
+        else
+            propertyWinMinHeight = '505px';
+        this.propertiesDialog = new Dialog({
+            showCloseIcon: true, closeOnEscape: false, isModal: true, header: '<div class="e-pv-form-field-property-header"> ' + this.getPropertyPanelHeaderContent(this.pdfViewer.selectedItems.formFields[0].formFieldAnnotationType) + ' ' + this.pdfViewer.localeObj.getConstant('Properties') + '</div>',
+            minHeight: propertyWinMinHeight, target: this.pdfViewer.element, content: appearanceTab, allowDragging: true, close: () => {
+                this.destroyPropertiesWindow();
+            }
+        });
+
+        if (!Browser.isDevice || this.pdfViewer.enableDesktopMode) {
+            this.propertiesDialog.buttons = [
+                // eslint-disable-next-line max-len
+                { buttonModel: { content: this.pdfViewer.localeObj.getConstant('Cancel') }, click: this.onCancelClicked.bind(this) },
+                { buttonModel: { content: this.pdfViewer.localeObj.getConstant('OK'), isPrimary: true }, click: this.onOkClicked.bind(this) }
+            ];
+        } else {
+            this.propertiesDialog.buttons = [
+                { buttonModel: { content: this.pdfViewer.localeObj.getConstant('Cancel') }, click: this.onCancelClicked.bind(this) },
+                // eslint-disable-next-line max-len
+                { buttonModel: { content: this.pdfViewer.localeObj.getConstant('OK'), isPrimary: true }, click: this.onOkClicked.bind(this) }
+            ];
+        }
+        if (this.pdfViewer.enableRtl) {
+            this.propertiesDialog.enableRtl = true;
+        }
+        let propertySpliterBottom: HTMLElement = createElement('div');
+        propertySpliterBottom.className = 'e-pv-properties-bottom-spliter';
+        dialogDiv.appendChild(propertySpliterBottom);
+        this.propertiesDialog.appendTo(dialogDiv);
+    }
+
+    private onOkClicked(args: any): void {
+        let selectedItem: PdfFormFieldBaseModel = this.pdfViewer.selectedItems.formFields[0];
+        let clonedItem: any = cloneObject(selectedItem);
+        if (selectedItem) {
+            switch (selectedItem.formFieldAnnotationType) {
+                case 'Textbox':
+                case 'PasswordField':
+                    this.updateTextboxFormDesignerProperties(selectedItem);
+                    let point: PointModel = cornersPointsBeforeRotation(selectedItem.wrapper.children[0]).topLeft;
+                    this.updateFormDesignerFieldInSessionStorage(point, selectedItem.wrapper.children[0] as DiagramHtmlElement, selectedItem.formFieldAnnotationType, selectedItem);
+                    break;
+                case 'Checkbox':
+                    this.updateCheckboxFormDesignerProperties(selectedItem);
+                    const point1: PointModel = cornersPointsBeforeRotation(selectedItem.wrapper.children[0]).topLeft;
+                    this.updateFormDesignerFieldInSessionStorage(point1, selectedItem.wrapper.children[0] as DiagramHtmlElement, selectedItem.formFieldAnnotationType, selectedItem);
+                    break;
+                case 'RadioButton':
+                    this.updateRadioButtonDesignerProperties(selectedItem);
+                    const point2: PointModel = cornersPointsBeforeRotation(selectedItem.wrapper.children[0]).topLeft;
+                    this.updateFormDesignerFieldInSessionStorage(point2, selectedItem.wrapper.children[0] as DiagramHtmlElement, selectedItem.formFieldAnnotationType, selectedItem);
+                    break;
+                case 'SignatureField':
+                case 'InitialField':
+                    this.updateSignatureTextboxProperties(selectedItem);
+                    const point3: PointModel = cornersPointsBeforeRotation(selectedItem.wrapper.children[0]).topLeft;
+                    this.updateFormDesignerFieldInSessionStorage(point3, selectedItem.wrapper.children[0] as DiagramHtmlElement, selectedItem.formFieldAnnotationType, selectedItem);
+                    break;
+                case 'DropdownList':
+                    this.updateDropdownFormDesignerProperties(selectedItem);
+                    const point4: PointModel = cornersPointsBeforeRotation(selectedItem.wrapper.children[0]).topLeft;
+                    this.updateFormDesignerFieldInSessionStorage(point4, selectedItem.wrapper.children[0] as DiagramHtmlElement, selectedItem.formFieldAnnotationType, selectedItem);
+                    break;
+                case 'ListBox':
+                    this.updateListBoxFormDesignerProperties(selectedItem);
+                    const point5: PointModel = cornersPointsBeforeRotation(selectedItem.wrapper.children[0]).topLeft;
+                    this.updateFormDesignerFieldInSessionStorage(point5, selectedItem.wrapper.children[0] as DiagramHtmlElement, selectedItem.formFieldAnnotationType, selectedItem);
+                    break;
+            }
+            this.updateFormFieldCollections(selectedItem);
+            let cloneChangedNode: any = cloneObject(selectedItem);
+            this.pdfViewer.annotation.addAction(this.pdfViewerBase.currentPageNumber, null, selectedItem, 'FormDesigner Properties Change', '', clonedItem, cloneChangedNode);    
+        }
+        this.propertiesDialog.hide();
+    }
+
+    private updateFormFieldCollections(formFieldObject: PdfFormFieldBaseModel): void {
+        let formField: FormFieldModel = {id: formFieldObject.id, name: (formFieldObject as PdfFormFieldBaseModel).name, value: (formFieldObject as PdfFormFieldBaseModel).value,
+            type: formFieldObject.formFieldAnnotationType as FormFieldType, isReadOnly: formFieldObject.isReadonly, fontFamily: formFieldObject.fontFamily,
+            fontSize: formFieldObject.fontSize, fontStyle: formFieldObject.fontStyle as unknown as FontStyle, color: (formFieldObject as PdfFormFieldBaseModel).color, backgroundColor: (formFieldObject as PdfFormFieldBaseModel).backgroundColor,
+            alignment: (formFieldObject as PdfFormFieldBaseModel).alignment as TextAlign, visibility: (formFieldObject as PdfFormFieldBaseModel).visibility, maxLength: (formFieldObject as PdfFormFieldBaseModel).maxLength, isRequired: (formFieldObject as PdfFormFieldBaseModel).isRequired,
+            isPrint: formFieldObject.isPrint, tooltip:  (formFieldObject as PdfFormFieldBaseModel).tooltip, bounds: formFieldObject.bounds as IFormFieldBound, thickness: formFieldObject.thickness, borderColor: (formFieldObject as PdfFormFieldBaseModel).borderColor };
+        this.pdfViewer.formFieldCollections[this.pdfViewer.formFieldCollections.findIndex(el => el.id === formField.id)] = formField;
+    }
+
+    /**
+     * @private
+     */
+    public updateDropdownFormDesignerProperties(selectedItem: PdfFormFieldBaseModel, isUndoRedo?: boolean): void {
+        let dropdownElement: any = document.getElementById(selectedItem.id + "_content_html_element").firstElementChild.firstElementChild;
+        if (this.pdfViewer.designerMode || isUndoRedo) {
+            var data = window.sessionStorage.getItem(this.pdfViewerBase.documentId + '_formDesigner');
+            var formFieldsData = JSON.parse(data);
+            let index : number = this.getFormFiledIndex(selectedItem.id.split('_')[0]);
+            selectedItem.options = this.createDropdownDataSource(selectedItem);
+            this.updateDropDownListDataSource(selectedItem, dropdownElement);
+            if (index > -1) {
+                formFieldsData[index].FormField.option =selectedItem.options;
+                this.pdfViewerBase.formFieldCollection[index].FormField.option = selectedItem.options;
+            }
+            (this.pdfViewer.nameTable as any)[selectedItem.id.split('_')[0]].options = selectedItem.options;
+            if ((this.formFieldName && this.formFieldName.value) || isUndoRedo) { 
+                this.updateNamePropertyChange(selectedItem, dropdownElement, isUndoRedo, index, formFieldsData);
+            }
+            if (this.formFieldPrinting || isUndoRedo) {
+                this.updateIsPrintPropertyChange(selectedItem, isUndoRedo, index, formFieldsData);
+            }
+            if ((this.formFieldTooltip) || isUndoRedo) {
+                this.updateTooltipPropertyChange(selectedItem, dropdownElement, isUndoRedo, index, formFieldsData);
+            }
+            if (this.formFieldVisibility || isUndoRedo) {
+                this.updateVisibilityPropertyChange(selectedItem, dropdownElement, isUndoRedo, index, formFieldsData);
+            }
+            if ((this.formFieldFontFamily && this.formFieldFontFamily.value) || isUndoRedo) {
+                this.updateFontFamilyPropertyChange(selectedItem, dropdownElement, isUndoRedo, index, formFieldsData);
+            }
+            if ((this.formFieldFontSize && this.formFieldFontSize.value) || isUndoRedo) {
+                this.updateFontSizePropertyChange(selectedItem, dropdownElement, isUndoRedo, index, formFieldsData);
+            }
+
+            this.updateFontStylePropertyChange(selectedItem, dropdownElement, isUndoRedo, index, formFieldsData);
+
+            if (this.formFieldAlign || isUndoRedo) {
+                this.updateAlignmentPropertyChange(selectedItem, dropdownElement, isUndoRedo, index, formFieldsData);
+            }
+            if (this.fontColorValue || isUndoRedo) {
+                this.updateColorPropertyChange(selectedItem, dropdownElement, isUndoRedo, index, formFieldsData);
+            }
+            if (this.backgroundColorValue || isUndoRedo) {
+                this.updateBackgroundColorPropertyChange(selectedItem, dropdownElement, isUndoRedo, index, formFieldsData);
+            }
+            if (this.borderColorValue || isUndoRedo) {
+                this.updateBorderColorPropertyChange(selectedItem, dropdownElement, isUndoRedo, index, formFieldsData);
+            }
+            if (this.formFieldBorderWidth || isUndoRedo) {
+                this.updateBorderThicknessPropertyChange(selectedItem, dropdownElement, isUndoRedo, index, formFieldsData);
+            }
+            if (this.formFieldReadOnly || isUndoRedo) {
+                this.updateIsReadOnlyPropertyChange(selectedItem, dropdownElement, isUndoRedo, index, formFieldsData);
+            }
+            if (this.formFieldRequired || isUndoRedo) {
+                this.updateIsRequiredPropertyChange(selectedItem, dropdownElement, isUndoRedo, index, formFieldsData);
+            }
+        }
+        if (isUndoRedo)
+            window.sessionStorage.setItem(this.pdfViewerBase.documentId + '_formDesigner', JSON.stringify(this.pdfViewerBase.formFieldCollection));
+    }
+
+    /**
+     * @private
+     */
+    public updateListBoxFormDesignerProperties(selectedItem: PdfFormFieldBaseModel, isUndoRedo?: boolean): void {
+        let dropdownElement: any = document.getElementById(selectedItem.id + "_content_html_element").firstElementChild.firstElementChild;
+        if (this.pdfViewer.designerMode || isUndoRedo) {
+            var data = window.sessionStorage.getItem(this.pdfViewerBase.documentId + '_formDesigner');
+            var formFieldsData = JSON.parse(data);
+            let index : number = this.getFormFiledIndex(selectedItem.id.split('_')[0]);
+            selectedItem.options = this.createDropdownDataSource(selectedItem);
+            this.updateDropDownListDataSource(selectedItem, dropdownElement);
+            if (index > -1) {
+                formFieldsData[index].FormField.option = selectedItem.options;
+                this.pdfViewerBase.formFieldCollection[index].FormField.option = selectedItem.options;
+            }
+            (this.pdfViewer.nameTable as any)[selectedItem.id.split('_')[0]].options = selectedItem.options;
+
+            if ((this.formFieldName && this.formFieldName.value) || isUndoRedo) { 
+                this.updateNamePropertyChange(selectedItem, dropdownElement, isUndoRedo, index, formFieldsData);
+            }
+            if (this.formFieldPrinting || isUndoRedo) {
+                this.updateIsPrintPropertyChange(selectedItem, isUndoRedo, index, formFieldsData);
+            }
+            if ((this.formFieldTooltip) || isUndoRedo) {
+                this.updateTooltipPropertyChange(selectedItem, dropdownElement, isUndoRedo, index, formFieldsData);
+            }
+            if (this.formFieldVisibility || isUndoRedo) {
+                this.updateVisibilityPropertyChange(selectedItem, dropdownElement, isUndoRedo, index, formFieldsData);
+            }
+            if ((this.formFieldFontFamily && this.formFieldFontFamily.value) || isUndoRedo) {
+                this.updateFontFamilyPropertyChange(selectedItem, dropdownElement, isUndoRedo, index, formFieldsData);
+            }
+            if ((this.formFieldFontSize && this.formFieldFontSize.value) || isUndoRedo) {
+                this.updateFontSizePropertyChange(selectedItem, dropdownElement, isUndoRedo, index, formFieldsData);
+            }
+
+            this.updateFontStylePropertyChange(selectedItem, dropdownElement, isUndoRedo, index, formFieldsData);
+
+            if (this.formFieldAlign || isUndoRedo) {
+                this.updateAlignmentPropertyChange(selectedItem, dropdownElement, isUndoRedo, index, formFieldsData);
+            }
+            if (this.fontColorValue || isUndoRedo) {
+                this.updateColorPropertyChange(selectedItem, dropdownElement, isUndoRedo, index, formFieldsData);
+            }
+            if (this.backgroundColorValue || isUndoRedo) {
+                this.updateBackgroundColorPropertyChange(selectedItem, dropdownElement, isUndoRedo, index, formFieldsData);
+            }
+            if (this.borderColorValue || isUndoRedo) {
+                this.updateBorderColorPropertyChange(selectedItem, dropdownElement, isUndoRedo, index, formFieldsData);
+            }
+            if (this.formFieldBorderWidth || isUndoRedo) {
+                this.updateBorderThicknessPropertyChange(selectedItem, dropdownElement, isUndoRedo, index, formFieldsData);
+            }
+            if (this.formFieldReadOnly || isUndoRedo) {
+                this.updateIsReadOnlyPropertyChange(selectedItem, dropdownElement, isUndoRedo, index, formFieldsData);
+            }
+            if (this.formFieldRequired || isUndoRedo) {
+                this.updateIsRequiredPropertyChange(selectedItem, dropdownElement, isUndoRedo, index, formFieldsData);
+            }
+        }
+        if (isUndoRedo)
+            window.sessionStorage.setItem(this.pdfViewerBase.documentId + '_formDesigner', JSON.stringify(this.pdfViewerBase.formFieldCollection));
+    } 
+
+    private updateDropDownListDataSource(selectedItem: PdfFormFieldBaseModel, dropdownElement: any): void {
+        while (dropdownElement.firstChild) {
+            dropdownElement.firstChild.remove()
+        }
+        for (let j: number = 0; j < selectedItem.options.length; j++) {
+            var option = document.createElement("option");
+            option.className = "e-pv-formfield-dropdown";
+            option.value = selectedItem.options[j].itemValue;
+            option.text = selectedItem.options[j].itemName;
+            dropdownElement.appendChild(option);
+        }
+    }
+
+    private createDropdownDataSource(selectedItem: PdfFormFieldBaseModel): any {
+        let ulItem: HTMLElement = document.getElementById(this.pdfViewer.element.id + '_ul_list_item');
+        this.formFieldListItemDataSource = [];
+        if (ulItem && ulItem.children && ulItem.children.length > 0) {
+            for (let i: number = 0; i < ulItem.children.length; i++) {
+                let liItem: Element = ulItem.children[i];
+                this.formFieldListItemDataSource.push({ itemName: liItem.innerHTML, itemValue: liItem.innerHTML });
+            }
+        } else if (selectedItem && selectedItem.options.length > 0) {
+            this.formFieldListItemDataSource = selectedItem.options;
+        }
+        return this.formFieldListItemDataSource;
+    }
+
+    /**
+     * @private
+     */
+    public updateSignatureTextboxProperties(selectedItem: PdfFormFieldBaseModel, isUndoRedo?: boolean): void {
+        let inputElement: any = document.getElementById(selectedItem.id + "_content_html_element").firstElementChild.firstElementChild;
+        var data = window.sessionStorage.getItem(this.pdfViewerBase.documentId + '_formDesigner');
+        var formFieldsData = JSON.parse(data);
+        let index : number = this.getFormFiledIndex(selectedItem.id.split('_')[0]);
+        if (this.pdfViewer.designerMode || isUndoRedo) {
+            if ((this.formFieldName && this.formFieldName.value) || isUndoRedo) {
+                this.updateNamePropertyChange(selectedItem, inputElement, isUndoRedo, index, formFieldsData);
+            }
+            if (this.formFieldPrinting || isUndoRedo) {
+                this.updateIsPrintPropertyChange(selectedItem, isUndoRedo, index, formFieldsData);
+            }
+            if ((this.formFieldTooltip) || isUndoRedo) {
+                this.updateTooltipPropertyChange(selectedItem, inputElement, isUndoRedo, index, formFieldsData);
+            }
+            if (this.formFieldVisibility || isUndoRedo) {
+                this.updateVisibilityPropertyChange(selectedItem, inputElement, isUndoRedo, index, formFieldsData);
+            }
+            if (this.formFieldReadOnly || isUndoRedo) {
+                this.updateIsReadOnlyPropertyChange(selectedItem, inputElement, isUndoRedo, index, formFieldsData);
+            }
+            if (this.formFieldRequired || isUndoRedo) {
+                this.updateIsRequiredPropertyChange(selectedItem, inputElement, isUndoRedo, index, formFieldsData);
+            }
+        }
+        if (isUndoRedo)
+            window.sessionStorage.setItem(this.pdfViewerBase.documentId + '_formDesigner', JSON.stringify(this.pdfViewerBase.formFieldCollection));
+    }
+
+    /**
+     * @private
+     */
+    public updateCheckboxFormDesignerProperties(selectedItem: PdfFormFieldBaseModel, isUndoRedo?: boolean): void {
+        let checkBoxElement: any = document.getElementById(selectedItem.id + "_content_html_element").firstElementChild.firstElementChild.lastElementChild;
+        var data = window.sessionStorage.getItem(this.pdfViewerBase.documentId + '_formDesigner');
+        var formFieldsData = JSON.parse(data);
+        let index : number = this.getFormFiledIndex(selectedItem.id.split('_')[0]);
+        if ((this.formFieldName && this.formFieldName.value) || isUndoRedo) {
+            this.updateNamePropertyChange(selectedItem, checkBoxElement, isUndoRedo, index, formFieldsData);
+        }
+        if (this.backgroundColorValue || isUndoRedo) {
+            this.updateBackgroundColorPropertyChange(selectedItem, checkBoxElement, isUndoRedo, index, formFieldsData);
+        }
+        if (this.borderColorValue || isUndoRedo) {
+            this.updateBorderColorPropertyChange(selectedItem, checkBoxElement, isUndoRedo, index, formFieldsData);
+        }
+        if (this.formFieldBorderWidth || isUndoRedo) {
+            this.updateBorderThicknessPropertyChange(selectedItem, checkBoxElement, isUndoRedo, index, formFieldsData);
+        }
+        if (this.formFieldChecked) {
+            this.checkboxCheckedState = this.formFieldChecked.checked;
+        }
+        if (this.formFieldPrinting || isUndoRedo) {
+            this.updateIsPrintPropertyChange(selectedItem, isUndoRedo, index, formFieldsData);
+        }
+        if ((this.formFieldTooltip) || isUndoRedo) {
+            this.updateTooltipPropertyChange(selectedItem, checkBoxElement, isUndoRedo, index, formFieldsData);
+        }
+        if (this.formFieldVisibility || isUndoRedo) {
+            this.updateVisibilityPropertyChange(selectedItem, checkBoxElement, isUndoRedo, index, formFieldsData);
+        }
+        if (this.checkboxCheckedState != undefined || isUndoRedo) {
+            this.updateIsCheckedPropertyChange(selectedItem, checkBoxElement, isUndoRedo, index, formFieldsData);
+        }
+        if ((this.pdfViewer.designerMode && this.borderColorValue) || isUndoRedo) {
+            this.updateBorderColorPropertyChange(selectedItem, checkBoxElement, isUndoRedo, index, formFieldsData);
+        }
+        if ((this.pdfViewer.designerMode && this.formFieldBorderWidth) || isUndoRedo) {
+            this.updateBorderThicknessPropertyChange(selectedItem, checkBoxElement, isUndoRedo, index, formFieldsData);
+        }
+        if (this.formFieldReadOnly || isUndoRedo) {
+            this.updateIsReadOnlyPropertyChange(selectedItem, checkBoxElement, isUndoRedo, index, formFieldsData);
+         }
+         if (this.formFieldRequired || isUndoRedo) {
+             this.updateIsRequiredPropertyChange(selectedItem, checkBoxElement, isUndoRedo, index, formFieldsData);
+         }
+        if (isUndoRedo)
+            window.sessionStorage.setItem(this.pdfViewerBase.documentId + '_formDesigner', JSON.stringify(this.pdfViewerBase.formFieldCollection));
+    }
+
+    /**
+     * @private
+     */
+    public updateRadioButtonDesignerProperties(selectedItem: PdfFormFieldBaseModel, isUndoRedo?: boolean): void {
+        let radioButton: any = document.getElementById(selectedItem.id + "_content_html_element").firstElementChild.firstElementChild.firstElementChild;
+        var data = window.sessionStorage.getItem(this.pdfViewerBase.documentId + '_formDesigner');
+        var formFieldsData = JSON.parse(data);
+        let index : number = this.getFormFiledIndex(selectedItem.id.split('_')[0]);
+        if ((this.formFieldName && this.formFieldName.value) || isUndoRedo) { 
+            this.updateNamePropertyChange(selectedItem, radioButton, isUndoRedo, index, formFieldsData);
+        }
+        if (this.formFieldChecked) {
+            this.checkboxCheckedState = this.formFieldChecked.checked;
+        }
+        if (this.formFieldPrinting || isUndoRedo) {
+            this.updateIsPrintPropertyChange(selectedItem, isUndoRedo, index, formFieldsData);
+        }
+        if ((this.formFieldTooltip) || isUndoRedo) {
+            this.updateTooltipPropertyChange(selectedItem, radioButton, isUndoRedo, index, formFieldsData);
+        }
+        if (this.formFieldVisibility || isUndoRedo) {
+            this.updateVisibilityPropertyChange(selectedItem, radioButton, isUndoRedo, index, formFieldsData);
+        }
+        if ((this.pdfViewer.designerMode && this.formFieldBorderWidth) || isUndoRedo) {            
+            this.updateBorderThicknessPropertyChange(selectedItem, radioButton, isUndoRedo, index, formFieldsData);
+        }
+        if (this.backgroundColorValue || isUndoRedo) {
+            this.updateBackgroundColorPropertyChange(selectedItem, radioButton, isUndoRedo, index, formFieldsData);
+        }
+        if (this.borderColorValue || isUndoRedo) {
+            this.updateBorderColorPropertyChange(selectedItem, radioButton, isUndoRedo, index, formFieldsData);
+        }
+        if (this.checkboxCheckedState != undefined || isUndoRedo) {
+            this.updateIsSelectedPropertyChange(selectedItem, radioButton, isUndoRedo, index, formFieldsData);
+        }
+        if (this.formFieldReadOnly || isUndoRedo) {
+            this.updateIsReadOnlyPropertyChange(selectedItem, radioButton, isUndoRedo, index, formFieldsData);
+         }
+         if (this.formFieldRequired || isUndoRedo) {
+             this.updateIsRequiredPropertyChange(selectedItem, radioButton, isUndoRedo, index, formFieldsData);
+         }
+        if (isUndoRedo) {
+            let formField : PdfFormFieldBaseModel = (this.pdfViewer.nameTable as any)[selectedItem.id.split('_')[0]];
+            const point2: PointModel = cornersPointsBeforeRotation(formField.wrapper.children[0]).topLeft;
+            this.updateFormDesignerFieldInSessionStorage(point2, formField.wrapper.children[0] as DiagramHtmlElement, formField.formFieldAnnotationType, formField);
+        }
+    }
+
+    /**
+     * @private
+     */
+    public updateTextboxFormDesignerProperties(selectedItem: PdfFormFieldBaseModel, isUndoRedo?: boolean): void {
+        let inputElement: any = document.getElementById(selectedItem.id + "_content_html_element").firstElementChild.firstElementChild;
+        let isMaxLengthChanged: boolean = false;
+        let oldValue: any, newValue: any;
+        var data = window.sessionStorage.getItem(this.pdfViewerBase.documentId + '_formDesigner');
+        var formFieldsData = JSON.parse(data);
+        let index : number = this.getFormFiledIndex(selectedItem.id.split('_')[0]);
+        if (this.pdfViewer.designerMode || isUndoRedo) {
+            if ((this.formFieldName && this.formFieldName.value) || isUndoRedo) { 
+                this.updateNamePropertyChange(selectedItem, inputElement, isUndoRedo, index, formFieldsData);
+            }
+            if (this.formFieldValue || isUndoRedo) {
+                this.updateValuePropertyChange(selectedItem, inputElement, isUndoRedo, index, formFieldsData);
+            }
+            if (this.formFieldPrinting || isUndoRedo) {
+                this.updateIsPrintPropertyChange(selectedItem, isUndoRedo, index, formFieldsData);
+            }
+            if ((this.formFieldTooltip) || isUndoRedo) {
+                this.updateTooltipPropertyChange(selectedItem, inputElement, isUndoRedo, index, formFieldsData);
+            }
+            if (this.formFieldVisibility || isUndoRedo) {
+                this.updateVisibilityPropertyChange(selectedItem, inputElement, isUndoRedo, index, formFieldsData);
+            }
+            if ((this.formFieldFontFamily && this.formFieldFontFamily.value) || isUndoRedo) {
+                this.updateFontFamilyPropertyChange(selectedItem, inputElement, isUndoRedo, index, formFieldsData);
+            }
+            if ((this.formFieldFontSize && this.formFieldFontSize.value) || isUndoRedo) {
+                this.updateFontSizePropertyChange(selectedItem, inputElement, isUndoRedo, index, formFieldsData);
+            }
+            
+            this.updateFontStylePropertyChange(selectedItem, inputElement, isUndoRedo, index, formFieldsData);
+    
+            if (this.formFieldAlign || isUndoRedo) {
+                this.updateAlignmentPropertyChange(selectedItem, inputElement, isUndoRedo, index, formFieldsData);
+            }
+            if (this.maxLengthItem || isUndoRedo) {
+                if (this.maxLengthItem && (selectedItem.maxLength !== this.maxLengthItem.value)) {
+                    isMaxLengthChanged = true;
+                    oldValue = selectedItem.maxLength;
+                    newValue = this.maxLengthItem.value;
+                }
+                let maxLength: number = this.maxLengthItem.value === 0 ? 524288 : this.maxLengthItem.value;
+                if (isUndoRedo && selectedItem.maxLength !== 0) {
+                    inputElement.maxLength = selectedItem.maxLength;
+                } else {
+                    inputElement.maxLength = maxLength;
+                    selectedItem.maxLength = this.maxLengthItem.value;
+                }
+                if (index > -1) {
+                    formFieldsData[index].FormField.maxLength = selectedItem.maxLength;
+                    this.pdfViewerBase.formFieldCollection[index].FormField.maxLength = selectedItem.maxLength;
+                }
+                (this.pdfViewer.nameTable as any)[selectedItem.id.split('_')[0]].maxLength = selectedItem.maxLength;
+                if (isMaxLengthChanged) {
+                    this.updateFormFieldPropertiesChanges("formFieldPropertiesChange", selectedItem, false, false, false,
+                        false, false, false, false, false, false, false, false, isMaxLengthChanged, false, false, false, oldValue, newValue);
+                }
+            }
+            if (this.fontColorValue || isUndoRedo) {
+                this.updateColorPropertyChange(selectedItem, inputElement, isUndoRedo, index, formFieldsData);
+            }
+            if (this.backgroundColorValue || isUndoRedo) {
+                this.updateBackgroundColorPropertyChange(selectedItem, inputElement, isUndoRedo, index, formFieldsData);
+            }
+            if (this.borderColorValue || isUndoRedo) {
+                this.updateBorderColorPropertyChange(selectedItem, inputElement, isUndoRedo, index, formFieldsData);
+            }
+            if (this.formFieldBorderWidth || isUndoRedo) {
+                this.updateBorderThicknessPropertyChange(selectedItem, inputElement, isUndoRedo, index, formFieldsData);
+            }
+            if (this.formFieldReadOnly || isUndoRedo) {
+                this.updateIsReadOnlyPropertyChange(selectedItem, inputElement, isUndoRedo, index, formFieldsData);
+            }
+            if (this.formFieldRequired || isUndoRedo) {
+                this.updateIsRequiredPropertyChange(selectedItem, inputElement, isUndoRedo, index, formFieldsData);
+            }
+        }
+        if (!this.pdfViewer.designerMode) {
+            if (this.formFieldVisibility && this.formFieldVisibility.value) {
+                selectedItem.visibility = this.formFieldVisibility.value as VisibilityState;
+                let visibleItem: any = document.getElementById(selectedItem.id + '_content_html_element').firstElementChild.firstElementChild;
+                visibleItem.style.visibility = selectedItem.visibility;
+            }
+        }
+
+        if (isUndoRedo)
+            window.sessionStorage.setItem(this.pdfViewerBase.documentId + '_formDesigner', JSON.stringify(this.pdfViewerBase.formFieldCollection));
+    }
+
+    /**
+     * @private
+     */
+    public updateIsCheckedPropertyChange(selectedItem : any, element : any, isUndoRedo : boolean, index : number, formFieldsData : any)  {
+        if (this.pdfViewer.designerMode || isUndoRedo) {
+            let isValueChanged: boolean = false
+            let oldValue: any, newValue: any;
+            if (selectedItem.isChecked !== this.checkboxCheckedState) {
+                isValueChanged = true;
+                oldValue = selectedItem.isChecked;
+                newValue = this.checkboxCheckedState;
+            }
+            if(!isUndoRedo) {
+                selectedItem.isChecked = this.checkboxCheckedState;
+            }
+            if (index > -1) {
+                formFieldsData[index].FormField.isChecked = selectedItem.isChecked;
+                this.pdfViewerBase.formFieldCollection[index].FormField.isChecked = selectedItem.isChecked;
+            }
+            (this.pdfViewer.nameTable as any)[selectedItem.id.split('_')[0]].isChecked = selectedItem.isChecked;
+            if (isValueChanged) {
+                this.updateFormFieldPropertiesChanges("formFieldPropertiesChange", selectedItem, isValueChanged, false, false,
+                    false, false, false, false, false, false, false, false, false, false, false, false, oldValue, newValue);
+            }
+        }
+
+        if (!this.pdfViewer.designerMode || isUndoRedo) {
+            let checkboxElement: any = document.getElementById(selectedItem.id + "_input").firstElementChild;
+            if (selectedItem.isChecked) {
+                if (checkboxElement.classList.contains('e-pv-cb-unchecked'))
+                    checkboxElement.classList.remove('e-pv-cb-unchecked');
+                checkboxElement.classList.add("e-pv-cb-checked");
+            } else {
+                if (checkboxElement.classList.contains('e-pv-cb-checked'))
+                    checkboxElement.classList.remove('e-pv-cb-checked');
+                checkboxElement.classList.add("e-pv-cb-unchecked");
+            }
+        }
+    }
+
+     /**
+     * @private
+     */
+    public updateIsSelectedPropertyChange(selectedItem : any, element : any, isUndoRedo : boolean, index : number, formFieldsData : any)  {
+        if (this.pdfViewer.designerMode || isUndoRedo) {
+            let isValueChanged: boolean = false
+            let oldValue: any, newValue: any;
+            if (selectedItem.isSelected !== this.checkboxCheckedState) {
+                isValueChanged = true;
+                oldValue = selectedItem.isSelected;
+                newValue = this.checkboxCheckedState;
+            }
+            if(!isUndoRedo) {
+                selectedItem.isSelected = this.checkboxCheckedState;
+            }
+            if (index > -1) {
+                formFieldsData[index].FormField.isSelected = selectedItem.isSelected;
+                this.pdfViewerBase.formFieldCollection[index].FormField.isSelected = selectedItem.isSelected;
+                for (let i: number = 0; i < formFieldsData[index].FormField.radiobuttonItem.length; i++) {
+                    if (formFieldsData[index].FormField.radiobuttonItem[i].id.split("_")[0] === selectedItem.id.split("_")[0]) {
+                        formFieldsData[index].FormField.radiobuttonItem[i].isSelected = selectedItem.isSelected;
+                        this.pdfViewerBase.formFieldCollection[index].FormField.radiobuttonItem[i].isSelected = selectedItem.isSelected;
+                    } 
+                }
+            }
+            (this.pdfViewer.nameTable as any)[selectedItem.id.split('_')[0]].isSelected = selectedItem.isSelected;
+            if (isValueChanged) {
+                this.updateFormFieldPropertiesChanges("formFieldPropertiesChange", selectedItem, isValueChanged, false, false,
+                    false, false, false, false, false, false, false, false, false, false, false, false, oldValue, newValue);
+            }
+        }
+        
+        if (!this.pdfViewer.designerMode || isUndoRedo) {
+            element.checked = selectedItem.isSelected;
+        }
+    }
+
+    /**
+     * @private
+     */
+    public updateValuePropertyChange(selectedItem : any, element : any, isUndoRedo : boolean, index : number, formFieldsData : any)  {
+        let isValueChanged: boolean = false
+        let oldValue: any, newValue: any;
+        if (this.formFieldValue && (selectedItem.value !== this.formFieldValue.value)) {
+            isValueChanged = true;
+            oldValue = selectedItem.value;
+            newValue = this.formFieldValue.value;
+        }
+        if(isUndoRedo) {
+            element.value = selectedItem.value;
+        } else {
+            selectedItem.value = this.formFieldValue.value;
+            element.value = this.formFieldValue.value;
+        }
+        if (index > -1) {
+            formFieldsData[index].FormField.value = selectedItem.value;
+            this.pdfViewerBase.formFieldCollection[index].FormField.value = selectedItem.value;
+        }
+        (this.pdfViewer.nameTable as any)[selectedItem.id.split('_')[0]].value = selectedItem.value;
+        if (isValueChanged) {
+            this.updateFormFieldPropertiesChanges("formFieldPropertiesChange", selectedItem, isValueChanged, false, false,
+                false, false, false, false, false, false, false, false, false, false, false, false, oldValue, newValue);
+        }
+    }
+
+    private updateFontStylePropertyChange(selectedItem : any, element : any, isUndoRedo : boolean, index : number, formFieldsData : any)  {
+        let isFontStyleChanged: boolean = false;
+        let oldValue: string = '';
+        let newValue: string = '';
+        let result = this.updateFontStyle(element, selectedItem, isUndoRedo, index, formFieldsData);
+        isFontStyleChanged = result[0];
+        oldValue = result[1];
+        newValue = result[2];
+        if (index > -1) {
+            formFieldsData[index].FormField.fontStyle = selectedItem.fontStyle;
+            this.pdfViewerBase.formFieldCollection[index].FormField.fontStyle = selectedItem.fontStyle;
+        }
+        (this.pdfViewer.nameTable as any)[selectedItem.id.split('_')[0]].fontStyle = selectedItem.fontStyle;
+        if (isFontStyleChanged) {
+            this.updateFormFieldPropertiesChanges("formFieldPropertiesChange", selectedItem, false, false, false,
+                isFontStyleChanged, false, false, false, false, false, false, false, false, false, false, false, oldValue, newValue);
+        }
+    }
+    
+    private updateBorderThicknessPropertyChange(selectedItem : any, element : any, isUndoRedo : boolean, index : number, formFieldsData : any)  {
+        let isBorderWidthChanged: boolean = false
+        let oldValue: any, newValue: any;
+        let borderWidth = parseInt(this.formFieldBorderWidth);
+        if (selectedItem.thickness !== borderWidth) {
+            isBorderWidthChanged = true;
+            oldValue = selectedItem.thickness;
+            newValue = borderWidth;
+        }
+        if(isUndoRedo) {
+            element.style.borderWidth = selectedItem.thickness.toString();
+        } else {
+            element.style.borderWidth = this.formFieldBorderWidth;
+            selectedItem.thickness = borderWidth;
+        }
+        if (index > -1) {
+            formFieldsData[index].FormField.thickness = selectedItem.thickness;
+            this.pdfViewerBase.formFieldCollection[index].FormField.thickness = selectedItem.thickness;
+        }
+        (this.pdfViewer.nameTable as any)[selectedItem.id.split('_')[0]].thickness = selectedItem.thickness;
+        if (isBorderWidthChanged) {
+            this.updateFormFieldPropertiesChanges("formFieldPropertiesChange", selectedItem, false, false, false,
+                false, false, false, false, isBorderWidthChanged, false, false, false, false, false, false, false, oldValue, newValue);
+        }
+    }
+
+    private updateBorderColorPropertyChange(selectedItem : any, element : any, isUndoRedo : boolean, index : number, formFieldsData : any)  {
+        let isBorderColorChanged: boolean = false
+        let oldValue: any, newValue: any;
+        if (selectedItem.borderColor !== this.borderColorValue) {
+            isBorderColorChanged = true;
+            oldValue = selectedItem.borderColor;
+            newValue = this.borderColorValue;
+        }
+        if (isUndoRedo) {
+            element.style.borderColor = selectedItem.borderColor;
+        } else {
+            element.style.borderColor = this.borderColorValue;
+            selectedItem.borderColor = this.borderColorValue;
+        }
+        if (selectedItem.formFieldAnnotationType == "RadioButton") 
+            (element as any).parentElement.style.boxShadow = this.borderColorValue + ' 0px 0px 0px ' + selectedItem.thickness + 'px';
+        if (index > -1) {
+            formFieldsData[index].FormField.borderColor = this.getRgbCode(selectedItem.borderColor);
+            this.pdfViewerBase.formFieldCollection[index].FormField.borderColor = this.getRgbCode(selectedItem.borderColor);
+        }
+        (this.pdfViewer.nameTable as any)[selectedItem.id.split('_')[0]].borderColor = selectedItem.borderColor;
+        if (isBorderColorChanged) {
+            this.updateFormFieldPropertiesChanges("formFieldPropertiesChange", selectedItem, false, false, false,
+                false, false, false, isBorderColorChanged, false, false, false, false, false, false, false, false, oldValue, newValue);
+        }
+    }
+
+    private updateBackgroundColorPropertyChange(selectedItem : any, element : any, isUndoRedo : boolean, index : number, formFieldsData : any)  {
+        let isBackgroundColorChanged: boolean = false
+        let oldValue: any, newValue: any;
+        if (selectedItem.backgroundColor !== this.backgroundColorValue) {
+            isBackgroundColorChanged = true;
+            oldValue = selectedItem.backgroundColor;
+            newValue = this.backgroundColorValue;
+        }
+        if (isUndoRedo) {
+            if (selectedItem.formFieldAnnotationType == "RadioButton") 
+                (element as any).parentElement.style.background = selectedItem.backgroundColor;
+            else
+                element.style.background = selectedItem.backgroundColor;
+        } else {
+            if (selectedItem.formFieldAnnotationType == "RadioButton") 
+                (element as any).parentElement.style.background = this.backgroundColorValue;
+            else
+                element.style.background = this.backgroundColorValue;
+            selectedItem.backgroundColor = this.backgroundColorValue;
+        }
+        if (index > -1) {
+            formFieldsData[index].FormField.backgroundColor = this.getRgbCode(selectedItem.backgroundColor);
+            this.pdfViewerBase.formFieldCollection[index].FormField.backgroundColor = this.getRgbCode(selectedItem.backgroundColor);
+        }
+        (this.pdfViewer.nameTable as any)[selectedItem.id.split('_')[0]].backgroundColor = selectedItem.backgroundColor;
+        if (isBackgroundColorChanged) {
+            this.updateFormFieldPropertiesChanges("formFieldPropertiesChange", selectedItem, false, false, false,
+                false, false, isBackgroundColorChanged, false, false, false, false, false, false, false, false, false, oldValue, newValue);
+        }
+    }
+
+    private updateColorPropertyChange(selectedItem : any, element : any, isUndoRedo : boolean, index : number, formFieldsData : any)  {
+        let isColorChanged: boolean = false
+        let oldValue: any, newValue: any;
+        if (selectedItem.color !== this.fontColorValue) {
+            isColorChanged = true;
+            oldValue = selectedItem.color;
+            newValue = this.fontColorValue;
+        }
+        if (isUndoRedo) {
+            element.style.color = selectedItem.color;
+        } else {
+            element.style.color = this.fontColorValue;
+            selectedItem.color = this.fontColorValue;
+        }
+        if (index > -1) {
+            formFieldsData[index].FormField.color = this.getRgbCode(selectedItem.color);
+            this.pdfViewerBase.formFieldCollection[index].FormField.color = this.getRgbCode(selectedItem.color);
+        }
+        (this.pdfViewer.nameTable as any)[selectedItem.id.split('_')[0]].color = selectedItem.color;
+        if (isColorChanged) {
+            this.updateFormFieldPropertiesChanges("formFieldPropertiesChange", selectedItem, false, false, false,
+                false, isColorChanged, false, false, false, false, false, false, false, false, false, false, oldValue, newValue);
+        }
+    }
+
+    private updateAlignmentPropertyChange(selectedItem : any, element : any, isUndoRedo : boolean, index : number, formFieldsData : any)  {
+        let isAlignmentChanged: boolean = false
+        let oldValue: any, newValue: any;
+        if (selectedItem.alignment !== this.formFieldAlign) {
+            isAlignmentChanged = true;
+            oldValue = selectedItem.alignment;
+            newValue = this.formFieldAlign;
+        }
+        if (isUndoRedo) {
+            element.style.textAlign = selectedItem.alignment;
+            if ((selectedItem.formFieldAnnotationType == "ListBox" || selectedItem.formFieldAnnotationType == "DropdownList" ) && element.children.length > 0) {
+                for (let i: number = 0; i < element.children.length; i++) {
+                    let dropDownChild: any = element.children[i];
+                    dropDownChild.style.textAlign = selectedItem.alignment;
+                }
+            }
+        } else {
+            element.style.textAlign = this.formFieldAlign;
+            selectedItem.alignment = this.formFieldAlign;
+            if ((selectedItem.formFieldAnnotationType == "ListBox" || selectedItem.formFieldAnnotationType == "DropdownList" ) && element.children.length > 0) {
+                for (let i: number = 0; i < element.children.length; i++) {
+                    let dropDownChild: any = element.children[i];
+                    dropDownChild.style.textAlign = this.formFieldAlign;
+                }
+            }
+        }
+        if (index > -1) {
+            formFieldsData[index].FormField.alignment =selectedItem.alignment;
+            this.pdfViewerBase.formFieldCollection[index].FormField.alignment = selectedItem.alignment;
+        }
+        (this.pdfViewer.nameTable as any)[selectedItem.id.split('_')[0]].alignment = selectedItem.alignment;
+        if (isAlignmentChanged) {
+            this.updateFormFieldPropertiesChanges("formFieldPropertiesChange", selectedItem, false, false, false,
+                false, false, false, false, false, isAlignmentChanged, false, false, false, false, false, false, oldValue, newValue);
+        }
+    }
+
+    private updateFontSizePropertyChange(selectedItem : any, element : any, isUndoRedo : boolean, index : number, formFieldsData : any)  {
+        let isFontSizeChanged: boolean = false
+        let oldValue: any, newValue: any;
+        let fontSize = this.formFieldFontSize? parseInt(this.formFieldFontSize.value.toString()): null;
+        if (selectedItem.fontSize !== fontSize) {
+            isFontSizeChanged = true;
+            oldValue = selectedItem.fontSize;
+            newValue = fontSize;
+        }
+        if (isUndoRedo) {
+            element.style.fontSize = selectedItem.fontSize.toString();
+        } else {
+            selectedItem.fontSize = fontSize;
+            element.style.fontSize = this.formFieldFontSize.value.toString();
+        }
+        if (index > -1) {
+            formFieldsData[index].FormField.fontSize =selectedItem.fontSize;
+            this.pdfViewerBase.formFieldCollection[index].FormField.fontSize = selectedItem.fontSize;
+        }
+        (this.pdfViewer.nameTable as any)[selectedItem.id.split('_')[0]].fontSize = selectedItem.fontSize;
+        if (isFontSizeChanged) {
+            this.updateFormFieldPropertiesChanges("formFieldPropertiesChange", selectedItem, false, false, isFontSizeChanged,
+                false, false, false, false, false, false, false, false, false, false, false, false, oldValue, newValue);
+        }
+    }
+
+    private updateFontFamilyPropertyChange(selectedItem : any, element : any, isUndoRedo : boolean, index : number, formFieldsData : any)  {
+        let isFontFamilyChanged: boolean = false
+        let oldValue: any, newValue: any;
+        let fontFamily = this.formFieldFontFamily ? this.formFieldFontFamily.value.toString(): "";
+        if (selectedItem.fontFamily !== fontFamily) {
+            isFontFamilyChanged = true;
+            oldValue = selectedItem.fontFamily;
+            newValue = fontFamily;
+        }
+        if(isUndoRedo) {
+            element.style.fontFamily = selectedItem.fontFamily;
+        } else {
+            selectedItem.fontFamily = fontFamily
+            element.style.fontFamily = fontFamily;
+        }
+        if (index > -1) {
+            formFieldsData[index].FormField.fontFamily = selectedItem.fontFamily;
+            this.pdfViewerBase.formFieldCollection[index].FormField.fontFamily = selectedItem.fontFamily;
+        }
+        (this.pdfViewer.nameTable as any)[selectedItem.id.split('_')[0]].fontFamily = selectedItem.fontFamily;
+        if (isFontFamilyChanged) {
+            this.updateFormFieldPropertiesChanges("formFieldPropertiesChange", selectedItem, false, isFontFamilyChanged, false,
+                false, false, false, false, false, false, false, false, false, false, false, false, oldValue, newValue);
+        }
+    }
+
+    private updateVisibilityPropertyChange(selectedItem : any, element : any, isUndoRedo : boolean, index : number, formFieldsData : any)  {
+        let isVisibilityChanged: boolean = false
+        let oldValue: any, newValue: any;
+        if (this.formFieldVisibility && (selectedItem.visibility !== this.formFieldVisibility.value)) {
+            isVisibilityChanged = true;
+            oldValue = selectedItem.visibility;
+            newValue = this.formFieldVisibility.value;
+        }
+        if(isUndoRedo) {
+            element.style.visibility = selectedItem.visibility;
+        } else {
+            selectedItem.visibility = this.formFieldVisibility.value as VisibilityState;
+            element.style.visibility = this.formFieldVisibility.value;
+        }
+        if (index > -1) {
+            formFieldsData[index].FormField.visibility =selectedItem.visibility;
+            this.pdfViewerBase.formFieldCollection[index].FormField.visibility = selectedItem.visibility;
+        }
+        // selectedItem.visibility = this.formFieldVisibility.value;
+        (this.pdfViewer.nameTable as any)[selectedItem.id.split('_')[0]].visibility = selectedItem.visibility;
+        if (isVisibilityChanged) {
+            this.updateFormFieldPropertiesChanges("formFieldPropertiesChange", selectedItem, false, false, false,
+                false, false, false, false, false, false, false, isVisibilityChanged, false, false, false, false, oldValue, newValue);
+        }
+    }
+
+    private updateTooltipPropertyChange(selectedItem : any, element : any, isUndoRedo : boolean, index : number, formFieldsData : any)  {
+        let isToolTipChanged: boolean = false
+        let oldValue: any, newValue: any;
+        if (this.formFieldTooltip && (selectedItem.tooltip !== this.formFieldTooltip.value)) {
+            isToolTipChanged = true;
+            oldValue = selectedItem.tooltip;
+            newValue = this.formFieldTooltip.value;
+        }
+        if(isUndoRedo) {
+            this.formFieldTooltip = new TextBox();
+            this.formFieldTooltip.value = selectedItem.tooltip;
+        } else {
+            selectedItem.tooltip = this.formFieldTooltip.value;
+        }
+        if (index > -1) {
+            formFieldsData[index].FormField.tooltip =selectedItem.tooltip;
+            this.pdfViewerBase.formFieldCollection[index].FormField.tooltip = selectedItem.tooltip;
+        }
+        (this.pdfViewer.nameTable as any)[selectedItem.id.split('_')[0]].tooltip = this.formFieldTooltip.value;
+        if (!isNullOrUndefined(this.formFieldTooltip.value) && this.formFieldTooltip.value !== '') {
+            this.setToolTip(this.formFieldTooltip.value, selectedItem.formFieldAnnotationType == "RadioButton" ? (element as any).parentElement : element);
+        }
+        if (isToolTipChanged) {
+            this.updateFormFieldPropertiesChanges("formFieldPropertiesChange", selectedItem, false, false, false,
+                false, false, false, false, false, false, false, false, false, false, false, isToolTipChanged, oldValue, newValue);
+        }
+    }
+
+    private updateNamePropertyChange(selectedItem : any, element : any, isUndoRedo : boolean, index : number, formFieldsData : any)  {
+        let designerName = document.getElementById(selectedItem.id + "_designer_name");
+        if (isUndoRedo) {
+            designerName.innerHTML = selectedItem.name;
+        } else {
+            selectedItem.name = this.formFieldName.value;
+            designerName.innerHTML = selectedItem.name;
+        }
+        if (index > -1) {
+            formFieldsData[index].FormField.name =selectedItem.name;
+            this.pdfViewerBase.formFieldCollection[index].FormField.name = selectedItem.name;
+        }
+        element.name = selectedItem.name;
+        (this.pdfViewer.nameTable as any)[selectedItem.id.split('_')[0]].name = selectedItem.name;
+        if (selectedItem.formFieldAnnotationType == "DropdownList" || selectedItem.formFieldAnnotationType == "ListBox") {
+            for (let i: number = 0; i < this.pdfViewer.formFieldCollection.length; i++) {
+                let formField = this.pdfViewer.formFieldCollection[i] as PdfFormFieldBaseModel;
+                if ((formField.formFieldAnnotationType === "DropdownList" || formField.formFieldAnnotationType === "ListBox") && formField.name === selectedItem.name && formField.id !== selectedItem.id) {
+                    selectedItem.options = formField.options;
+                    this.updateDropDownListDataSource(selectedItem, element);
+                    break;
+                }
+            }
+        }
+    }
+
+    private updateIsReadOnlyPropertyChange(selectedItem : any, element : any, isUndoRedo : boolean, index : number, formFieldsData : any)  {
+        let isReadOnlyChanged: boolean = false
+        let oldValue: any, newValue: any;
+        if (this.formFieldReadOnly && (selectedItem.isReadonly !== this.formFieldReadOnly.checked)) {
+            isReadOnlyChanged = true;
+            oldValue = selectedItem.isReadonly;
+            newValue = this.formFieldReadOnly.checked;
+        }
+        if(isUndoRedo) {
+            this.formFieldReadOnly = new CheckBox();
+            this.formFieldReadOnly.checked = selectedItem.isReadonly;
+        } else {
+            selectedItem.isReadonly = this.formFieldReadOnly.checked;
+        }
+        if (index > -1) {
+            formFieldsData[index].FormField.isReadonly = selectedItem.isReadonly;
+            this.pdfViewerBase.formFieldCollection[index].FormField.isReadonly = selectedItem.isReadonly;
+        }
+        (this.pdfViewer.nameTable as any)[selectedItem.id.split('_')[0]].isReadonly = selectedItem.isReadonly;
+        this.setReadOnlyToElement(selectedItem, element, selectedItem.isReadonly);
+        this.setReadOnlyToFormField(selectedItem, selectedItem.isReadonly);
+        if (isReadOnlyChanged) {
+            this.updateFormFieldPropertiesChanges("formFieldPropertiesChange", selectedItem, false, false, false,
+                false, false, false, false, false, false, isReadOnlyChanged, false, false, false, false, false, oldValue, newValue);
+        }
+    }
+
+    private updateIsRequiredPropertyChange(selectedItem : any, element : any, isUndoRedo : boolean, index : number, formFieldsData : any)  {
+        let isRequiredChanged: boolean = false
+        let oldValue: any, newValue: any;
+        if (this.formFieldRequired && (selectedItem.isRequired !== this.formFieldRequired.checked)) {
+            isRequiredChanged = true;
+            oldValue = selectedItem.isRequired;
+            newValue = this.formFieldRequired.checked;
+        }
+        if(isUndoRedo) {
+            this.formFieldRequired = new CheckBox();
+            this.formFieldRequired.checked = selectedItem.isRequired;
+        } else {
+            selectedItem.isRequired = this.formFieldRequired.checked;
+        }
+        if (index > -1) {
+            formFieldsData[index].FormField.isRequired =selectedItem.isRequired;
+            this.pdfViewerBase.formFieldCollection[index].FormField.isRequired = selectedItem.isRequired;
+        }
+        (this.pdfViewer.nameTable as any)[selectedItem.id.split('_')[0]].isRequired = selectedItem.isRequired;
+        this.setRequiredToElement(selectedItem, element, selectedItem.isRequired);
+        this.setRequiredToFormField(selectedItem, selectedItem.isRequired);
+        if (isRequiredChanged) {
+            this.updateFormFieldPropertiesChanges("formFieldPropertiesChange", selectedItem, false, false, false,
+                false, false, false, false, false, false, false, false, false, isRequiredChanged, false, false, oldValue, newValue);
+        }
+    }
+
+    private updateIsPrintPropertyChange(selectedItem : any, isUndoRedo : boolean, index : number, formFieldsData : any)  {
+        let isPrintChanged: boolean = false
+        let oldValue: any, newValue: any;
+        if (this.formFieldPrinting && (selectedItem.isPrint !== this.formFieldPrinting.checked)) {
+            isPrintChanged = true;
+            oldValue = selectedItem.isPrint;
+            newValue = this.formFieldPrinting.checked;
+        }
+        if(isUndoRedo) {
+            this.formFieldPrinting = new CheckBox();
+            this.formFieldPrinting.checked = selectedItem.isPrint;
+        } else {
+            selectedItem.isPrint = this.formFieldPrinting.checked;
+        }
+        if (index > -1) {
+            formFieldsData[index].FormField.isPrint = selectedItem.isPrint;
+            this.pdfViewerBase.formFieldCollection[index].FormField.isPrint = selectedItem.isPrint;
+        }
+        (this.pdfViewer.nameTable as any)[selectedItem.id.split('_')[0]].isPrint = selectedItem.isPrint;
+        if (isPrintChanged) {
+            this.updateFormFieldPropertiesChanges("formFieldPropertiesChange", selectedItem, false, false, false,
+                false, false, false, false, false, false, false, false, false, false, isPrintChanged, false, oldValue, newValue);
+        }
+    }
+    /**
+     * @private
+     */
+    public getFormFiledIndex(id : any) : number {
+        if (this.pdfViewerBase.formFieldCollection == null || this.pdfViewerBase.formFieldCollection.length == 0)
+            return -1;
+        for (let i: number = 0; i < this.pdfViewerBase.formFieldCollection.length; i++) {
+            if (this.pdfViewerBase.formFieldCollection[i].Key.split("_")[0] === id) {
+                return i;
+            } 
+        }   
+        return -1;
+    }
+
+    private updateFontStyle(inputElement: any, selectedItem: PdfFormFieldBaseModel, isUndoRedo: boolean, index : number, formFieldsData : any): any[] {
+        let isFontStyleChanged = false;
+        let oldValue: string = '';
+        let newValue: string = '';
+        if (this.formFieldBold) {
+            if (selectedItem.fontStyle !== 'Bold') {
+                isFontStyleChanged = true;
+                oldValue += selectedItem.font.isBold ? 'Bold' + ", " : '';
+            }
+            if(isUndoRedo) {
+               if (selectedItem.font.isBold) {
+                   this.setFontStyleValues(selectedItem, 'Bold', this.formFieldBold, inputElement, true, 'bold', index, formFieldsData);
+                } else {
+                   this.setFontStyleValues(selectedItem, 'None', this.formFieldBold, inputElement, false, '', index, formFieldsData);
+                }
+            } else if (this.formFieldBold === 'bold') {
+                    this.setFontStyleValues(selectedItem, 'Bold', this.formFieldBold, inputElement, true, 'bold', index, formFieldsData);
+            } else {
+                this.setFontStyleValues(selectedItem, 'None', 'bold', inputElement, false, '', index, formFieldsData);
+            }
+        }
+        else if (selectedItem.font.isBold) {
+            this.setFontStyleValues(selectedItem, 'None', 'bold', inputElement, false, '', index, formFieldsData);
+        }
+        newValue += selectedItem.font.isBold ? 'Bold' + ", " : '';
+        if (this.formFieldItalic) {
+            if (selectedItem.fontStyle !== 'Italic') {
+                isFontStyleChanged = true;
+                oldValue += selectedItem.font.isItalic ? 'Italic' + ", " : '';
+            }
+            if(isUndoRedo) {
+                if (selectedItem.font.isItalic) {
+                    this.setFontStyleValues(selectedItem, 'Italic', this.formFieldItalic, inputElement, true, 'italic', index, formFieldsData);
+                 } else {
+                    this.setFontStyleValues(selectedItem, 'None', this.formFieldItalic, inputElement, false, '', index, formFieldsData);
+                 }
+                } else if (this.formFieldItalic === 'italic') {
+                    this.setFontStyleValues(selectedItem, 'Italic', this.formFieldItalic, inputElement, true, 'italic', index, formFieldsData);
+            } else {
+                this.setFontStyleValues(selectedItem, 'None', 'italic', inputElement, false, '', index, formFieldsData);
+            }
+        }
+        else if (selectedItem.font.isItalic) {
+            this.setFontStyleValues(selectedItem, 'None', 'italic', inputElement, false, '', index, formFieldsData);
+        }
+        newValue += selectedItem.font.isItalic ? 'Italic' + ", " : '';
+        if (this.formFieldUnderline) {
+            if (selectedItem.fontStyle !== 'Underline') {
+                isFontStyleChanged = true;
+                oldValue += selectedItem.font.isUnderline ? 'Underline' + ", " : '';
+            }
+            if(isUndoRedo) {
+                if (selectedItem.font.isUnderline) {
+                    this.setFontStyleValues(selectedItem, 'Underline', this.formFieldUnderline, inputElement, true, 'underline', index, formFieldsData);  
+                 } else {
+                    this.setFontStyleValues(selectedItem, 'None', this.formFieldUnderline, inputElement, false, '', index, formFieldsData);
+                 }
+                } else if (this.formFieldUnderline === 'underline') {
+                    this.setFontStyleValues(selectedItem, 'Underline', this.formFieldUnderline, inputElement, true, 'underline', index, formFieldsData);
+            } else {
+                this.setFontStyleValues(selectedItem, 'None', 'underline', inputElement, false, '', index, formFieldsData);
+            }
+        }
+        else if (selectedItem.font.isUnderline) {
+            this.setFontStyleValues(selectedItem, 'None', 'underline', inputElement, false, '', index, formFieldsData);
+        }
+        newValue += selectedItem.font.isUnderline ? 'Underline' + ", " : '';
+        if (this.formFieldStrikeOut) {
+            if (selectedItem.fontStyle !== 'Strikethrough') {
+                isFontStyleChanged = true;
+                oldValue += selectedItem.font.isStrikeout ? 'Strikethrough' + ", " : '';
+            }
+            if(isUndoRedo) {
+                if (selectedItem.font.isStrikeout) {
+                    this.setFontStyleValues(selectedItem, 'Strikethrough', this.formFieldStrikeOut, inputElement, true, 'line-through', index, formFieldsData);
+                 } else {
+                    this.setFontStyleValues(selectedItem, 'None', this.formFieldStrikeOut, inputElement, false, '', index, formFieldsData);
+                 }
+                } else if (this.formFieldStrikeOut === 'line-through') {
+                    this.setFontStyleValues(selectedItem, 'Strikethrough', this.formFieldStrikeOut, inputElement, true, 'line-through', index, formFieldsData);
+            } else {
+                this.setFontStyleValues(selectedItem, 'None', 'line-through', inputElement, false, '', index, formFieldsData);
+            }
+        }
+        else if (selectedItem.font.isStrikeout) {
+            this.setFontStyleValues(selectedItem, 'None', 'line-through', inputElement, false, '', index, formFieldsData);
+        }
+        newValue += selectedItem.font.isStrikeout ? 'Strikethrough' + ", " : '';
+        return [isFontStyleChanged, oldValue, newValue];
+    }
+
+    private setFontStyleValues(selectedItem: PdfFormFieldBaseModel, selectedItemFontStyle: string, fontStyleType: string, inputElement: any, isFontStyleEnabled: boolean, fontStyleValue: string, index : number, formFieldsData : any): void {
+        if(fontStyleType === 'bold') {
+            selectedItem.fontStyle = selectedItemFontStyle;
+            selectedItem.font.isBold = isFontStyleEnabled;
+            inputElement.style.fontWeight = fontStyleValue;
+            this.setDropdownFontStyleValue(inputElement, fontStyleType, fontStyleValue);
+            if (index > -1) {
+                formFieldsData[index].FormField.font.isBold = isFontStyleEnabled;
+                this.pdfViewerBase.formFieldCollection[index].FormField.font.isBold = isFontStyleEnabled;
+            }
+            (this.pdfViewer.nameTable as any)[selectedItem.id.split('_')[0]].font.isBold = isFontStyleEnabled;
+        } else if(fontStyleType === 'italic') {
+            inputElement.style.fontStyle = fontStyleValue;
+            this.setDropdownFontStyleValue(inputElement, fontStyleType, fontStyleValue);
+            selectedItem.fontStyle = selectedItemFontStyle;
+            selectedItem.font.isItalic = isFontStyleEnabled;
+            if (index > -1) {
+                formFieldsData[index].FormField.font.isItalic = isFontStyleEnabled;
+                this.pdfViewerBase.formFieldCollection[index].FormField.font.isItalic = isFontStyleEnabled;
+            }
+            (this.pdfViewer.nameTable as any)[selectedItem.id.split('_')[0]].font.isItalic = isFontStyleEnabled;
+            
+        } else if(fontStyleType === 'underline') {
+            this.setDropdownFontStyleValue(inputElement, fontStyleType, fontStyleValue);
+            inputElement.style.textDecoration = fontStyleValue;
+            selectedItem.fontStyle = selectedItemFontStyle;
+            selectedItem.font.isUnderline = isFontStyleEnabled;
+            if (index > -1) {
+                formFieldsData[index].FormField.font.isUnderline = isFontStyleEnabled;
+                this.pdfViewerBase.formFieldCollection[index].FormField.font.isUnderline = isFontStyleEnabled;
+            }
+            (this.pdfViewer.nameTable as any)[selectedItem.id.split('_')[0]].font.isUnderline = isFontStyleEnabled;
+             
+        } else if(fontStyleType === 'line-through') {
+            this.setDropdownFontStyleValue(inputElement, fontStyleType, fontStyleValue);
+            inputElement.style.textDecoration = fontStyleValue;
+            selectedItem.fontStyle = selectedItemFontStyle;
+            selectedItem.font.isStrikeout = isFontStyleEnabled;
+            if (index > -1) {
+                formFieldsData[index].FormField.font.isStrikeout = isFontStyleEnabled;
+                this.pdfViewerBase.formFieldCollection[index].FormField.font.isStrikeout = isFontStyleEnabled;
+            }
+            (this.pdfViewer.nameTable as any)[selectedItem.id.split('_')[0]].font.isStrikeout = isFontStyleEnabled;
+        }
+    }
+
+    private setDropdownFontStyleValue(dropdownElement: any, fontStyleType: string, value: string): void {
+        if (dropdownElement.length > 0) {
+            for(let i = 0; i < dropdownElement.length; i++) {
+                if(fontStyleType === 'bold') {
+                    dropdownElement[i].style.fontWeight = value;
+                } else if(fontStyleType === 'italic') {
+                    dropdownElement[i].style.fontStyle = value;
+                } else if(fontStyleType === 'underline') {
+                    dropdownElement[i].style.textDecoration = value;
+                } else if(fontStyleType === 'line-through') {
+                    dropdownElement[i].style.textDecoration = value;
+                }
+            }
+        }
+    }
+
+    private updateFormFieldPropertiesChanges(name: string, selectedItem: PdfFormFieldBaseModel, isValueChanged: boolean, isFontFamilyChanged: boolean,
+        isFontSizeChanged: boolean, isFontStyleChanged: boolean, isColorChanged: boolean, isBackgroundColorChanged: boolean, isBorderColorChanged: boolean,
+        isBorderWidthChanged: boolean, isAlignmentChanged: boolean, isReadOnlyChanged: boolean, isVisibilityChanged: boolean, isMaxLengthChanged: boolean,
+        isRequiredChanged: boolean, isPrintChanged: boolean, isToolTipChanged: boolean, oldValue: any, newValue: any): void {
+        let field: IFormField = {
+            value: (selectedItem as any).value, fontFamily: (selectedItem as any).fontFamily, fontSize: (selectedItem as any).fontSize, fontStyle: (selectedItem as any).fontStyle,
+            color: (selectedItem as any).color, backgroundColor: (selectedItem as any).backgroundColor, alignment: (selectedItem as any).alignment, isReadonly: (selectedItem as any).isReadonly, visibility: (selectedItem as any).visibility,
+            maxLength: (selectedItem as any).maxLength, isRequired: (selectedItem as any).isRequired, isPrint: (selectedItem as any).isPrint, rotation: (selectedItem as any).rotateAngle, tooltip: (selectedItem as any).tooltip, options: (selectedItem as any).options,
+            isChecked: (selectedItem as any).isChecked, isSelected: (selectedItem as any).isSelected
+        };
+        this.pdfViewer.fireFormFieldPropertiesChangeEvent("formFieldPropertiesChange", field, selectedItem.pageIndex, isValueChanged, isFontFamilyChanged, isFontSizeChanged,
+            isFontStyleChanged, isColorChanged, isBackgroundColorChanged, isBorderColorChanged, isBorderWidthChanged, isAlignmentChanged, isReadOnlyChanged, isVisibilityChanged,
+            isMaxLengthChanged, isRequiredChanged, isPrintChanged, isToolTipChanged, oldValue, newValue);
+    }
+
+    private onCancelClicked(args: any): void {
+        this.propertiesDialog.hide();
+    }
+
+    private createAppearanceTab(): HTMLElement {
+        const elementID: string = this.pdfViewer.element.id;
+        // eslint-disable-next-line max-len
+        let appearanceDiv: HTMLElement = createElement('div', { id: elementID + '_properties_appearance' });
+        if (this.pdfViewer.selectedItems.formFields[0].formFieldAnnotationType !== 'DropdownList' && this.pdfViewer.selectedItems.formFields[0].formFieldAnnotationType !== 'ListBox') {
+            appearanceDiv.style.height = '260px';
+        } else {
+            appearanceDiv.style.height = '336px'
+        }
+        let propertySpliter: HTMLElement = createElement('div');
+        propertySpliter.className = 'e-pv-properties-header-spliter';
+        appearanceDiv.appendChild(propertySpliter);
+        const tabContainer: HTMLElement = createElement('div', { className: 'e-pv-properties-tab-style-prop' });
+        appearanceDiv.appendChild(tabContainer);
+        // <div style="/* border-color: red; *//* border-width: 2px; *//* background: red; *//* height: 1px; */width: 100%;position: absolute;padding-top: 35px;/* border-bottom-color: black; *//* border-bottom-width: 2px; *//* border: solid; */border-bottom-style: solid;border-bottom-width: 1px;left: 0;border-bottom-color: #E0E0E0;"></div>
+        if (this.pdfViewer.selectedItems && (this.pdfViewer.selectedItems.formFields[0].formFieldAnnotationType === 'ListBox' || this.pdfViewer.selectedItems.formFields[0].formFieldAnnotationType === 'DropdownList')) {
+            // eslint-disable-next-line max-len
+            this.tabControl = new Tab({
+                items: [
+                    {
+                        header: { 'text': '<div class="e-pv-form-field-property-header-general"> ' + this.pdfViewer.localeObj.getConstant('General') + '</div>' }, content: this.createGeneralProperties()
+                    },
+                    {
+                        header: { 'text': '<div class="e-pv-form-field-property-header-general"> ' + this.pdfViewer.localeObj.getConstant('Appearance') + '</div>' }, content: this.createAppearanceProperties()
+                    },
+                    {
+                        header: { 'text': '<div class="e-pv-form-field-property-header-general"> ' + this.pdfViewer.localeObj.getConstant('Options') + '</div>' }, content: this.createOptionProperties()
+                    },
+                ],
+            }, tabContainer)
+        } else if (this.pdfViewer.selectedItems && (this.pdfViewer.selectedItems.formFields[0].formFieldAnnotationType === 'SignatureField' || this.pdfViewer.selectedItems.formFields[0].formFieldAnnotationType === 'InitialField')) {
+            // eslint-disable-next-line max-len
+            this.tabControl = new Tab({
+                items: [
+                    {
+                        header: { 'text': '<div class="e-pv-form-field-property-header-general"> ' + this.pdfViewer.localeObj.getConstant('General') + '</div>' }, content: this.createGeneralProperties()
+                    }
+                ],
+            }, tabContainer)
+        } else {
+            // eslint-disable-next-line max-len
+            this.tabControl = new Tab({
+                items: [
+                    {
+                        header: { 'text': '<div class="e-pv-form-field-property-header-general"> ' + this.pdfViewer.localeObj.getConstant('General') + '</div>' }, content: this.createGeneralProperties()
+                    },
+                    {
+                        header: { 'text': '<div class="e-pv-form-field-property-header-general"> ' + this.pdfViewer.localeObj.getConstant('Appearance') + '</div>' }, content: this.createAppearanceProperties()
+                    }
+                ],
+            }, tabContainer)
+        }
+        (tabContainer.children[1] as HTMLElement).style.height = '100%';
+        return appearanceDiv;
+    }
+
+    private createGeneralProperties(): any {
+        let selectedItem = this.pdfViewer.selectedItems.formFields ? this.pdfViewer.selectedItems.formFields[0] : null;
+        const visibilityItems: string[] = ['visible', 'hidden'];
+        // eslint-disable-next-line max-len
+        const elementID: string = this.pdfViewer.element.id;
+        const generalPropertiesDiv: HTMLElement = createElement('div', { id: elementID + '_general_prop_appearance' });
+        const textStyleContainer: HTMLElement = createElement('div', { className: 'e-pv-properties-text-edit-prop' });
+        generalPropertiesDiv.appendChild(textStyleContainer);
+
+        let formFieldNameMainDiv = createElement('div', { className: 'e-pv-properties-form-field-name-main-div' });
+        // eslint-disable-next-line max-len
+        let formFieldNameDiv = createElement('div', { className: 'e-pv-properties-name-edit-prop' });
+        let formFieldNameContainer = createElement('input', { className: 'e-pv-properties-name-edit-input e-input' });
+        formFieldNameDiv.appendChild(formFieldNameContainer);
+        formFieldNameMainDiv.appendChild(formFieldNameDiv);
+        // eslint-disable-next-line max-len
+        this.formFieldName = new TextBox({ type: "text", floatLabelType: 'Always', placeholder: this.pdfViewer.localeObj.getConstant('Name'), value: selectedItem.name, cssClass: 'e-pv-properties-formfield-name' }, (formFieldNameContainer as HTMLInputElement));
+        textStyleContainer.appendChild(formFieldNameMainDiv);
+        let formFieldTooltipMainDiv = createElement('div', { className: 'e-pv-properties-form-field-tooltip-main-div' });
+        let formFieldTooltipDiv = createElement('div', { className: 'e-pv-properties-tooltip-edit-prop' });
+        let formFieldTooltipContainer = createElement('input', { className: 'e-pv-properties-tooltip-prop-input e-input' });
+        formFieldTooltipDiv.appendChild(formFieldTooltipContainer);
+        formFieldTooltipMainDiv.appendChild(formFieldTooltipDiv);
+        // eslint-disable-next-line max-len
+        this.formFieldTooltip = new TextBox({ type: "text", floatLabelType: 'Always', placeholder: this.pdfViewer.localeObj.getConstant('Tooltip'), value: selectedItem.tooltip, cssClass: 'e-pv-properties-formfield-tooltip' }, (formFieldTooltipContainer as HTMLInputElement));
+        textStyleContainer.appendChild(formFieldTooltipMainDiv);
+
+        const visibilityContainer: HTMLElement = createElement('div', { className: 'e-pv-properties-visibility-style-prop' });
+        generalPropertiesDiv.appendChild(visibilityContainer);
+
+        let formFieldValueMainDiv = createElement('div', { className: 'e-pv-properties-form-field-value-main-div' });
+        let formFieldValueDiv = createElement('div', { className: 'e-pv-properties-value-edit-prop' });
+        let formFieldValueContainer = createElement('input', { className: 'e-pv-properties-value-input e-input' });
+        formFieldValueDiv.appendChild(formFieldValueContainer);
+        formFieldValueMainDiv.appendChild(formFieldValueDiv);
+        // eslint-disable-next-line max-len
+        this.formFieldValue = new TextBox({ type: "text", floatLabelType: 'Always', placeholder: this.pdfViewer.localeObj.getConstant('Value'), value: selectedItem.value, cssClass: 'e-pv-properties-formfield-value' }, (formFieldValueContainer as HTMLInputElement));
+        if (this.pdfViewer.selectedItems.formFields[0].formFieldAnnotationType !== 'Textbox') {
+            this.formFieldValue.enabled = false;
+        }
+        visibilityContainer.appendChild(formFieldValueMainDiv);
+
+        let formFieldVisibilityMainDiv = createElement('div', { className: 'e-pv-properties-form-field-visibility-main-div' });
+        let formFieldVisibilityDiv = createElement('div', { className: 'e-pv-properties-visibility-edit-prop' });
+        let formFieldVisibilityContainer = createElement('div', { className: 'e-pv-properties-formfield-visibility' });
+        formFieldVisibilityDiv.appendChild(formFieldVisibilityContainer);
+        formFieldVisibilityMainDiv.appendChild(formFieldVisibilityDiv);
+        let selectedIndex: number = selectedItem.visibility === 'visible' ? 0 : 1;
+        this.formFieldVisibility = new DropDownList({ dataSource: visibilityItems, floatLabelType: 'Always', index: selectedIndex, value: selectedItem.visibility, placeholder: this.pdfViewer.localeObj.getConstant('Form Field Visibility'), cssClass: 'e-pv-properties-formfield-visibility' }, formFieldVisibilityContainer);
+        visibilityContainer.appendChild(formFieldVisibilityMainDiv);
+
+        let checkboxMainDiv = createElement('div', { className: 'e-pv-properties-checkbox-main-div-prop' });
+        const readOnly: HTMLElement = createElement('input', { className: 'e-pv-properties-checkbox-readonly-input e-input' });
+        checkboxMainDiv.appendChild(readOnly);
+        this.formFieldReadOnly = new CheckBox({ label: this.pdfViewer.localeObj.getConstant('Read Only'), checked: selectedItem.isReadonly, cssClass: 'e-pv-properties-form-field-checkbox' }, readOnly as HTMLInputElement);
+        if (this.pdfViewer.selectedItems.formFields[0].formFieldAnnotationType === 'Checkbox' || this.pdfViewer.selectedItems.formFields[0].formFieldAnnotationType === 'RadioButton') {
+            const checkedState: HTMLElement = createElement('input', { className: 'e-pv-properties-checkbox-checked-input e-input' });
+            checkboxMainDiv.appendChild(checkedState);
+            this.formFieldChecked = new CheckBox({ label: this.pdfViewer.localeObj.getConstant('Checked'), cssClass: 'e-pv-properties-form-field-checkbox', checked: selectedItem.isChecked || selectedItem.isSelected, change: this.checkBoxChange.bind(this) }, checkedState as HTMLInputElement);
+        }
+        const required: HTMLElement = createElement('input', { className: 'e-pv-properties-checkbox-required-input e-input' });
+        checkboxMainDiv.appendChild(required);
+        this.formFieldRequired = new CheckBox({ label: this.pdfViewer.localeObj.getConstant('Required'), checked: selectedItem.isRequired, cssClass: 'e-pv-properties-form-field-checkbox' }, required as HTMLInputElement);
+        const showPrinting: HTMLElement = createElement('input', { className: 'e-pv-properties-checkbox-printing-input e-input' });
+        checkboxMainDiv.appendChild(showPrinting);
+        this.formFieldPrinting = new CheckBox({ label: this.pdfViewer.localeObj.getConstant('Show Printing'), checked: selectedItem.isPrint, cssClass: 'e-pv-properties-form-field-checkbox' }, showPrinting as HTMLInputElement);
+        generalPropertiesDiv.appendChild(checkboxMainDiv);
+        return generalPropertiesDiv;
+    }
+
+    private checkBoxChange(args: any): void {
+        this.checkboxCheckedState = args.checked;
+    }
+    private setToolTip(tooltipContent: string, targetElement: any): void {
+        //initialize tooltip component
+        let tooltip: Tooltip = new Tooltip({
+            content: tooltipContent
+        });
+        // render initialized tooltip
+        tooltip.appendTo(targetElement);
+        tooltip.beforeOpen = this.tooltipBeforeOpen.bind(this);
+    }
+    private tooltipBeforeOpen(args: any) {
+        let currentFormField: any = (this.pdfViewer.nameTable as any)[args.target.id.split('_')[0]];
+        if (!isNullOrUndefined(currentFormField)) {
+            args.element.children[0].innerHTML = currentFormField.tooltip;
+        }
+    }
+    private createAppearanceProperties(): any {
+        let selectedItem = this.pdfViewer.selectedItems.formFields ? this.pdfViewer.selectedItems.formFields[0] : null;
+        const fontFamilyItems: string[] = ['Helvetica', 'Courier', 'Times New Roman', 'Symbol', 'ZapfDingbats'];
+        const fontSizeItems: string[] = ['6px', '8px', '10px', '12px', '14px', '16px', '18px', '20px', '24px', '28px', '32px', '36px', '40px'];
+        const elementID: string = this.pdfViewer.element.id;
+        const appearancePropertiesDiv: HTMLElement = createElement('div', { id: elementID + '_formatting_text_prop_appearance' });
+
+        const formatTextStyleContainer: HTMLElement = createElement('div', { className: 'e-pv-properties-format-text-style-prop' });
+        appearancePropertiesDiv.appendChild(formatTextStyleContainer);
+
+        this.createLabelElement(this.pdfViewer.localeObj.getConstant('Formatting'), formatTextStyleContainer, true, 'e-pv-properties-formfield-label', elementID + '_properties_formfield_formatting');
+        const fontItemsContainer: HTMLElement = createElement('div', { className: 'e-pv-properties-font-items-container' });
+
+        const fontFamilyDropdownContainer: HTMLElement = createElement('div', { className: 'e-pv-properties-font-family-container' });
+        const formatdropdownContainer: HTMLElement = createElement('div', { className: 'e-pv-properties-format-font-family-prop' });
+        fontFamilyDropdownContainer.appendChild(formatdropdownContainer);
+        fontItemsContainer.appendChild(fontFamilyDropdownContainer);
+        this.formFieldFontFamily = new DropDownList({ dataSource: fontFamilyItems, value: selectedItem.fontFamily, cssClass: 'e-pv-properties-formfield-fontfamily' }, formatdropdownContainer);
+        this.setToolTip(this.pdfViewer.localeObj.getConstant('Font family'), fontFamilyDropdownContainer);
+        const fontSizeContainer: HTMLElement = createElement('div', { className: 'e-pv-properties-font-size-container' });
+        const fontSizeDropdownContainer: HTMLElement = createElement('div', { className: 'e-pv-properties-format-font-family-prop' });
+        fontSizeContainer.appendChild(fontSizeDropdownContainer);
+        fontItemsContainer.appendChild(fontSizeContainer);
+        this.formFieldFontSize = new DropDownList({ dataSource: fontSizeItems, value: selectedItem.fontSize + 'px', cssClass: 'e-pv-properties-formfield-fontsize' }, fontSizeDropdownContainer);
+        this.setToolTip(this.pdfViewer.localeObj.getConstant('Font size'), fontSizeContainer);
+        let fontStyleContainer: HTMLElement = createElement('div', { className: 'e-pv-properties-form-field-font-style' });
+        fontStyleContainer.onclick = this.fontStyleClicked.bind(this);
+        fontStyleContainer.appendChild(this.addClassFontItem('_formField_bold', 'e-pv-bold-icon', selectedItem.font.isBold));
+        fontStyleContainer.appendChild(this.addClassFontItem('_formField_italic', 'e-pv-italic-icon', selectedItem.font.isItalic));
+        fontStyleContainer.appendChild(this.addClassFontItem('_formField_underline_textinput', 'e-pv-underlinetext-icon', selectedItem.font.isUnderline));
+        // eslint-disable-next-line max-len
+        fontStyleContainer.appendChild(this.addClassFontItem('_formField_strikeout', 'e-pv-strikeout-icon', selectedItem.font.isStrikeout));
+        fontItemsContainer.appendChild(fontStyleContainer);
+        appearancePropertiesDiv.appendChild(fontItemsContainer);
+
+        const fontColorContainer: HTMLElement = createElement('div', { className: 'e-pv-properties-font-color-container' });
+        let fontAlignContainer: HTMLElement = createElement('div', { className: 'e-pv-properties-form-field-font-align' });
+        fontAlignContainer.onclick = this.fontAlignClicked.bind(this);
+        fontAlignContainer.appendChild(this.addClassFontItem('_formField_left_align', 'e-pv-left-align-icon', selectedItem.alignment === 'left' ? true : false));
+        fontAlignContainer.appendChild(this.addClassFontItem('_formField_center_align', 'e-pv-center-align-icon', selectedItem.alignment === 'center' ? true : false));
+        fontAlignContainer.appendChild(this.addClassFontItem('_formField_right_align', 'e-pv-right-align-icon', selectedItem.alignment === 'right' ? true : false));
+        fontColorContainer.appendChild(fontAlignContainer);
+
+        this.fontColorElement = createElement('div', { className: 'e-pv-formfield-textcolor-icon', id: this.pdfViewer.element.id + 'formField_textColor' });
+        this.fontColorPalette = this.createColorPicker(this.fontColorElement.id, selectedItem.color);
+        this.fontColorPalette.change = this.onFontColorChange.bind(this);
+        this.fontColorDropDown = this.createDropDownButton(this.fontColorElement, 'e-pv-annotation-textcolor-icon', this.fontColorPalette.element.parentElement);
+        fontColorContainer.appendChild(this.fontColorElement);
+        this.setToolTip(this.pdfViewer.localeObj.getConstant('Font color'), this.fontColorDropDown.element);
+        this.updateColorInIcon(this.fontColorElement,this.pdfViewer.selectedItems.formFields[0].color);
+        if (selectedItem.formFieldAnnotationType === 'Checkbox' || selectedItem.formFieldAnnotationType === 'RadioButton') {
+            this.fontColorPalette.disabled = true;
+            this.fontColorDropDown.disabled = true;
+            this.fontColorElement.style.pointerEvents = 'none';
+            this.fontColorElement.style.opacity='0.5';
+            fontAlignContainer.style.pointerEvents = 'none';
+            fontAlignContainer.style.opacity='0.5';
+            this.formFieldFontSize.enabled = false;
+            this.formFieldFontFamily.enabled = false;
+            fontFamilyDropdownContainer.style.pointerEvents = 'none';
+            fontSizeContainer.style.pointerEvents = 'none';
+            fontStyleContainer.style.pointerEvents = 'none';
+            fontStyleContainer.style.opacity='0.5';
+        }
+        let maxLengthGroup: HTMLElement = createElement('div', { className: 'e-pv-formfield-maxlength-group', id: this.pdfViewer.element.id + 'formField_maxlength_group' })
+        let maxLengthContainer: HTMLElement = createElement('div', { className: 'e-pv-formfield-maxlength-icon', id: this.pdfViewer.element.id + 'formField_maxlength' });
+        maxLengthGroup.appendChild(maxLengthContainer);
+        this.createLabelElement(this.pdfViewer.localeObj.getConstant('Max Length'), maxLengthContainer, true, 'e-pv-properties-formfield-label', elementID + '_properties_formfield_maxlength');
+        let maxLengthDropdownContainer: HTMLElement = createElement('div', { className: 'e-pv-formfield-maxlength', id: this.pdfViewer.element.id + 'formField_maxlength_container' });
+        let maxLengthItemDropdown: any = createElement('input', { className: 'e-pv-formfield-maxlength-input e-input' });
+        maxLengthDropdownContainer.appendChild(maxLengthItemDropdown);
+        maxLengthGroup.appendChild(maxLengthDropdownContainer);
+        // Render the Numeric Textbox
+        this.maxLengthItem = new NumericTextBox({ format: 'n', value: selectedItem.maxLength !== 0 ? selectedItem.maxLength : 0, min: 0 }, maxLengthItemDropdown as HTMLInputElement);
+        fontColorContainer.appendChild(maxLengthGroup);
+        this.setToolTip(this.pdfViewer.localeObj.getConstant('Max Length'), this.maxLengthItem.element);
+        if (selectedItem.formFieldAnnotationType !== 'Textbox' && selectedItem.formFieldAnnotationType !== 'PasswordField') {
+            this.maxLengthItem.enabled = false;
+            maxLengthContainer.style.pointerEvents = 'none';
+        }
+        appearancePropertiesDiv.appendChild(fontColorContainer);
+
+        let colorContainer: HTMLElement = createElement('div', { className: 'e-pv-properties-color-container-style-prop' });
+        let backgroundColorContainer: HTMLElement = createElement('div', { className: 'e-pv-properties-fill-color-style-prop' });
+        appearancePropertiesDiv.appendChild(backgroundColorContainer);
+        this.createLabelElement(this.pdfViewer.localeObj.getConstant('Fill'), backgroundColorContainer, true, 'e-pv-properties-formfield-label', elementID + '_properties_formfield_fontcolor');
+        this.colorDropDownElement = createElement('div', { className: 'e-pv-formfield-fontcolor-icon', id: this.pdfViewer.element.id + 'formField_fontColor' });
+        this.colorPalette = this.createColorPicker(this.colorDropDownElement.id, selectedItem.backgroundColor);
+        this.colorPalette.change = this.onColorPickerChange.bind(this);
+        // eslint-disable-next-line max-len
+        this.colorDropDown = this.createDropDownButton(this.colorDropDownElement, 'e-pv-annotation-color-icon', this.colorPalette.element.parentElement);
+        this.setToolTip(this.pdfViewer.localeObj.getConstant('Fill Color'), this.colorDropDown.element);
+        backgroundColorContainer.appendChild(this.colorDropDownElement);
+        colorContainer.appendChild(backgroundColorContainer);
+        this.updateColorInIcon(this.colorDropDownElement,this.pdfViewer.selectedItems.formFields[0].backgroundColor);
+        let strokeColorContainer: HTMLElement = createElement('div', { className: 'e-pv-properties-stroke-color-style-prop' });
+        this.createLabelElement(this.pdfViewer.localeObj.getConstant('Border'), strokeColorContainer, true, 'e-pv-properties-formfield-label', elementID + '_properties_formfield_strokecolor');
+
+        this.strokeDropDownElement = createElement('div', { className: 'e-pv-formfield-strokecolor-icon', id: this.pdfViewer.element.id + 'formField_strokeColor' });
+        this.strokeColorPicker = this.createColorPicker(this.strokeDropDownElement.id, selectedItem.borderColor);
+        this.strokeColorPicker.change = this.onStrokePickerChange.bind(this);
+        // eslint-disable-next-line max-len
+        this.strokeDropDown = this.createDropDownButton(this.strokeDropDownElement, 'e-pv-annotation-stroke-icon', this.strokeColorPicker.element.parentElement);
+        this.setToolTip(this.pdfViewer.localeObj.getConstant('Border Color'), this.strokeDropDown.element);
+        strokeColorContainer.appendChild(this.strokeDropDownElement);
+        colorContainer.appendChild(strokeColorContainer);
+        this.updateColorInIcon(this.strokeDropDownElement,this.pdfViewer.selectedItems.formFields[0].borderColor);
+        let strokeThicknessContainer: HTMLElement = createElement('div', { className: 'e-pv-properties-stroke-thickness-style-prop' });
+        this.createLabelElement(this.pdfViewer.localeObj.getConstant('Thickness'), strokeThicknessContainer, true, 'e-pv-properties-formfield-label', elementID + '_properties_formfield_strokethickness');
+
+        this.thicknessElement = createElement('div', { className: 'e-pv-formfield-strokethickness-icon', id: this.pdfViewer.element.id + 'formField_strokethickness' });;
+        const thicknessContainer: HTMLElement = this.createThicknessSlider(this.thicknessElement.id);
+        // eslint-disable-next-line max-len
+        this.thicknessDropDown = this.createDropDownButton(this.thicknessElement, 'e-pv-annotation-thickness-icon', thicknessContainer);
+        this.thicknessDropDown.beforeOpen = this.thicknessDropDownBeforeOpen.bind(this);
+        this.setToolTip(this.pdfViewer.localeObj.getConstant('Thickness'), this.thicknessDropDown.element);
+        this.thicknessSlider.change = this.thicknessChange.bind(this);
+        this.thicknessSlider.changed = this.thicknessChange.bind(this);
+        strokeThicknessContainer.appendChild(this.thicknessElement);
+        colorContainer.appendChild(strokeThicknessContainer);
+        appearancePropertiesDiv.appendChild(colorContainer);
+        return appearancePropertiesDiv;
+    }
+
+    private thicknessChange(args: any): void {
+        if (this.pdfViewer.selectedItems.formFields.length === 1) {
+            this.formFieldBorderWidth = args.value;
+            this.updateThicknessIndicator();
+        }
+    }
+    private thicknessDropDownBeforeOpen(): void {
+        if (this.pdfViewer.selectedItems.formFields.length === 1) {
+            this.formFieldBorderWidth = this.pdfViewer.selectedItems.formFields[0].thickness.toString();
+            this.thicknessSlider.value = this.pdfViewer.selectedItems.formFields[0].thickness;
+        }
+        this.updateThicknessIndicator();
+    }
+    private updateThicknessIndicator(): void {
+        this.thicknessIndicator.textContent = this.thicknessSlider.value + ' pt';
+    }
+
+    private createOptionProperties(): any {
+        const elementID: string = this.pdfViewer.element.id;
+        const optionPropertiesDiv: HTMLElement = createElement('div', { id: elementID + '_option_prop_appearance' });
+
+        let listItemAddContainer: HTMLElement = createElement('div', { className: 'e-pv-properties-form-field-list-add-div' });
+        let formFieldListItemMainDiv: HTMLElement = createElement('div', { className: 'e-pv-properties-form-field-list-item-main-div' });
+        // eslint-disable-next-line max-len
+        this.createLabelElement(this.pdfViewer.localeObj.getConstant('List Item'), formFieldListItemMainDiv, true, 'e-pv-properties-formfield-label', elementID + '_properties_formfield_listitem');
+        let formFieldListItemDiv: HTMLElement = createElement('div', { className: 'e-pv-properties-list-item-edit-prop' });
+        let formFieldListItemContainer: HTMLElement = createElement('input', { className: 'e-pv-properties-list-item-input e-input' });
+        formFieldListItemContainer.addEventListener('keyup', (args) => {
+            this.formFieldAddButton.disabled = true;
+            this.formFieldListItem.value = (args.target as any).value;
+            if (args.target && (args.target as any).value) {
+                if (this.formFieldListItemCollection.length > 0) {
+                    for (let i: number = 0; i < this.formFieldListItemCollection.length; i++) {
+                        let itemName: string = this.formFieldListItemCollection[i];
+                        if (itemName === (args.target as any).value) {
+                            this.formFieldAddButton.disabled = true;
+                            break;
+                        } else {
+                            this.formFieldAddButton.disabled = false;
+                        }
+                    }
+                } else {
+                    this.formFieldAddButton.disabled = false;
+                }
+            }
+        });
+        formFieldListItemDiv.appendChild(formFieldListItemContainer);
+        formFieldListItemMainDiv.appendChild(formFieldListItemDiv);
+        // eslint-disable-next-line max-len
+        this.formFieldListItem = new TextBox({ type: "text", cssClass: 'e-pv-properties-formfield-listitem' }, (formFieldListItemContainer as HTMLInputElement));
+        listItemAddContainer.appendChild(formFieldListItemMainDiv);
+        optionPropertiesDiv.appendChild(listItemAddContainer);
+
+        let buttonDiv: HTMLElement = createElement('div', { className: 'e-pv-properties-form-field-list-btn-div' });
+        let buttonAddInput = createElement('button', { className: 'e-btn' });
+        buttonAddInput.addEventListener('click', this.addListItemOnClick.bind(this))
+        buttonDiv.appendChild(buttonAddInput);
+        this.formFieldAddButton = new Button({ content: this.pdfViewer.localeObj.getConstant('Add'), disabled: true, cssClass: 'e-pv-properties-dropdown-btn' }, buttonAddInput as HTMLButtonElement);
+        listItemAddContainer.appendChild(buttonDiv);
+
+        let exportValueContainer: HTMLElement = createElement('div', { className: 'e-pv-properties-form-field-export-value-div' });
+        let formFieldexportValueMainDiv: HTMLElement = createElement('div', { className: 'e-pv-properties-form-field-export-value-main-div' });
+        this.createLabelElement(this.pdfViewer.localeObj.getConstant('Export Value'), formFieldexportValueMainDiv, true, 'e-pv-properties-formfield-label', elementID + '_properties_formfield_exportValue');
+        let formFieldExportItemDiv: HTMLElement = createElement('div', { className: 'e-pv-properties-export-value-edit-prop' });
+        let formFieldExportItemContainer: HTMLElement = createElement('input', { className: 'e-pv-properties-export-value-input e-input' });
+        formFieldExportItemDiv.appendChild(formFieldExportItemContainer);
+        formFieldexportValueMainDiv.appendChild(formFieldExportItemDiv);
+        // eslint-disable-next-line max-len
+        this.formFieldListItem = new TextBox({ type: "text", cssClass: 'e-pv-properties-formfield-exportvalue' }, (formFieldExportItemContainer as HTMLInputElement));
+        exportValueContainer.appendChild(formFieldexportValueMainDiv);
+        optionPropertiesDiv.appendChild(exportValueContainer);
+
+        let dropdownListItemContainer: HTMLElement = createElement('div', { className: 'e-pv-properties-form-field-option-dropdown-list-div' });
+        let formFieldDropdownListMainDiv: HTMLElement = createElement('div', { className: 'e-pv-properties-form-field-option-dropdown-list-item-div' });
+        let selectedElement: PdfFormFieldBaseModel = this.pdfViewer.selectedItems.formFields[0];
+        if (selectedElement.formFieldAnnotationType === 'DropdownList') {
+            // eslint-disable-next-line max-len
+            this.createLabelElement(this.pdfViewer.localeObj.getConstant('Dropdown Item List'), formFieldDropdownListMainDiv, true, 'e-pv-properties-formfield-label', elementID + '_properties_formfield_dropdown_listitem');
+        } else {
+            // eslint-disable-next-line max-len
+            this.createLabelElement(this.pdfViewer.localeObj.getConstant('List Box Item List'), formFieldDropdownListMainDiv, true, 'e-pv-properties-formfield-label', elementID + '_properties_formfield_dropdown_listitem');
+        }
+        dropdownListItemContainer.appendChild(formFieldDropdownListMainDiv);
+
+        let btnTextAreaContainer: HTMLElement = createElement('div', { className: 'e-pv-properties-form-field-btn-textarea-container' });
+        let textAreaContainer: HTMLElement = createElement('div', { className: 'e-pv-properties-formfield-textarea', styles: 'width:300px;height:123px;border:1px solid #E0E0E0;margin-right:15px;overflow:auto' });
+        let listElement: HTMLElement = createElement('ul', { id: this.pdfViewer.element.id + '_ul_list_item', className: 'e-pv-form-designer-ul-list-items' });
+        let listCount = this.createListElement(listElement);
+        textAreaContainer.appendChild(listElement);
+        btnTextAreaContainer.appendChild(textAreaContainer);
+
+        let buttonGroup: HTMLElement = createElement('div', { className: 'e-pv-properties-form-field-group-btn-div' });
+        let deleteButtonDiv: HTMLElement = createElement('div', { className: 'e-pv-properties-form-field-delete-btn-div' });
+        let buttonDeleteInput = createElement('button', { className: 'e-btn' });
+        buttonDeleteInput.addEventListener('click', this.deleteListItem.bind(this));
+        deleteButtonDiv.appendChild(buttonDeleteInput);
+        this.formFieldDeleteButton = new Button({ content:this.pdfViewer.localeObj.getConstant('Delete Item'), disabled: listCount > 0 ? false : true, cssClass: 'e-pv-properties-dropdown-btn' }, buttonDeleteInput as HTMLButtonElement);
+        buttonGroup.appendChild(deleteButtonDiv);
+
+        let upButtonDiv: HTMLElement = createElement('div', { className: 'e-pv-properties-form-field-up-btn-div' });
+        let buttonUpInput = createElement('button', { className: 'e-btn' });
+        buttonUpInput.addEventListener('click', this.moveUpListItem.bind(this));
+        upButtonDiv.appendChild(buttonUpInput);
+        this.formFieldUpButton = new Button({ content: this.pdfViewer.localeObj.getConstant('Up'), disabled: listCount > 1 ? false : true, cssClass: 'e-pv-properties-dropdown-btn' }, buttonUpInput as HTMLButtonElement);
+        buttonGroup.appendChild(upButtonDiv);
+
+        let downButtonDiv: HTMLElement = createElement('div', { className: 'e-pv-properties-form-field-down-btn-div' });
+        let buttonDownInput = createElement('button', { className: 'e-btn' });
+        buttonDownInput.addEventListener('click', this.moveDownListItem.bind(this));
+        downButtonDiv.appendChild(buttonDownInput);
+        this.formFieldDownButton = new Button({ content: this.pdfViewer.localeObj.getConstant('Down'), disabled: true, cssClass: 'e-pv-properties-dropdown-btn' }, buttonDownInput as HTMLButtonElement);
+        buttonGroup.appendChild(downButtonDiv);
+
+        btnTextAreaContainer.appendChild(buttonGroup);
+        dropdownListItemContainer.appendChild(btnTextAreaContainer);
+        optionPropertiesDiv.appendChild(dropdownListItemContainer);
+        return optionPropertiesDiv;
+    }
+
+    private addListItemOnClick(): void {
+        let dropdownValue: string = this.formFieldListItem.value;
+        this.formFieldListItemCollection.push(dropdownValue);
+        let ulElement: HTMLElement = document.getElementById(this.pdfViewer.element.id + '_ul_list_item');
+        if (ulElement.children && ulElement.children.length > 0) {
+            for (let i: number = 0; i < ulElement.children.length; i++) {
+                let element: Element = ulElement.children[i];
+                if (element.classList.contains('e-pv-li-select')) {
+                    element.classList.remove('e-pv-li-select');
+                }
+            }
+        }
+        let createLiElement = createElement('li', { className: 'e-pv-formfield-li-element' });
+        createLiElement.addEventListener('click', this.listItemOnClick.bind(this))
+        createLiElement.innerHTML = dropdownValue;
+        createLiElement.classList.add('e-pv-li-select');
+        ulElement.appendChild(createLiElement);
+        this.formFieldDeleteButton.disabled = false;
+        this.formFieldAddButton.disabled = true;
+        if (createLiElement.previousElementSibling) {
+            this.formFieldUpButton.disabled = false;
+        }
+        if (!createLiElement.nextElementSibling) {
+            this.formFieldDownButton.disabled = true;
+        }
+    }
+
+    private listItemOnClick(args: any): void {
+        let ulElement: HTMLElement = document.getElementById(this.pdfViewer.element.id + '_ul_list_item');
+        if (ulElement.children && ulElement.children.length > 0) {
+            for (let i: number = 0; i < ulElement.children.length; i++) {
+                let element: Element = ulElement.children[i];
+                if (element.classList.contains('e-pv-li-select')) {
+                    element.classList.remove('e-pv-li-select');
+                }
+            }
+        }
+        if (args.target) {
+            args.target.classList.add('e-pv-li-select');
+        }
+        if (args.target.nextElementSibling) {
+            this.formFieldDownButton.disabled = false;
+        } else {
+            this.formFieldDownButton.disabled = true;
+        }
+        if (args.target.previousElementSibling) {
+            this.formFieldUpButton.disabled = false;
+        } else {
+            this.formFieldUpButton.disabled = true;
+        }
+    }
+
+    private deleteListItem(): void {
+        let ulElement: HTMLElement = document.getElementById(this.pdfViewer.element.id + '_ul_list_item');
+        if (ulElement.children && ulElement.children.length > 0) {
+            for (let i: number = 0; i < ulElement.children.length; i++) {
+                let element: Element = ulElement.children[i];
+                if (element.classList.contains('e-pv-li-select')) {
+                    element.classList.remove('e-pv-li-select');
+                    this.formFieldListItemCollection.splice(i, 1);
+                    if (element.previousElementSibling) {
+                        element.previousElementSibling.classList.add('e-pv-li-select');
+                        if (!element.previousElementSibling.previousElementSibling) {
+                            this.formFieldUpButton.disabled = true;
+                        }
+                    }
+                    else if (element.nextElementSibling) {
+                        element.nextElementSibling.classList.add('e-pv-li-select');
+                        if (!element.nextElementSibling.nextElementSibling) {
+                            this.formFieldDownButton.disabled = true;
+                        }
+                    }
+                    element.remove();
+                }
+            }
+        }
+        if (ulElement.children && ulElement.children.length === 0) {
+            this.formFieldDeleteButton.disabled = true;
+            this.formFieldUpButton.disabled = true;
+            this.formFieldDownButton.disabled = true;
+        }
+        if (ulElement.children && ulElement.children.length === 1) {
+            this.formFieldDeleteButton.disabled = false;
+            this.formFieldUpButton.disabled = true;
+            this.formFieldDownButton.disabled = true;
+        }
+    }
+
+    private moveUpListItem(): void {
+        let ulElement: HTMLElement = document.getElementById(this.pdfViewer.element.id + '_ul_list_item');
+        if (ulElement.children && ulElement.children.length > 0) {
+            for (let i: number = 0; i < ulElement.children.length; i++) {
+                let element: Element = ulElement.children[i];
+                if (element.classList.contains('e-pv-li-select')) {
+                    if (element.previousElementSibling) {
+                        element.parentNode.insertBefore(element, element.previousElementSibling);
+                        if (!element.previousElementSibling)
+                            this.formFieldUpButton.disabled = true;
+                    }
+                    else {
+                        this.formFieldUpButton.disabled = true;
+                    }
+                    if (element.nextElementSibling) {
+                        this.formFieldDownButton.disabled = false;
+                    }
+                }
+            }
+        }
+    }
+
+    private moveDownListItem(): void {
+        let element: any;
+        let ulElement: HTMLElement = document.getElementById(this.pdfViewer.element.id + '_ul_list_item');
+        if (ulElement.children && ulElement.children.length > 0) {
+            for (var i = 0; i < ulElement.children.length; i++) {
+                element = ulElement.children[i];
+                if (element.classList.contains('e-pv-li-select')) {
+                    if (element.nextElementSibling) {
+                        element.parentNode.insertBefore(element.nextElementSibling, element);
+                        break;
+                    }
+                    else {
+                        this.formFieldDownButton.disabled = true;
+                    }
+                }
+            }
+        }
+        if (!element.nextElementSibling) {
+            this.formFieldDownButton.disabled = true;
+        }
+        if (element.previousElementSibling) {
+            this.formFieldUpButton.disabled = false;
+        }
+    }
+
+    private createListElement(ulElement: HTMLElement): number {
+        let selectedElement: PdfFormFieldBaseModel = this.pdfViewer.selectedItems.formFields[0];
+        if (selectedElement) {
+            if (selectedElement.options && selectedElement.options.length > 0) {
+                for (let i: number = 0; i < selectedElement.options.length; i++) {
+                    let dropdownValue: string = selectedElement.options[i].itemName;
+                    if (this.formFieldListItemCollection[i] !== selectedElement.options[i].itemName) {
+                        this.formFieldListItemCollection.push(dropdownValue);
+                        let createLiElement = createElement('li', { className: 'e-pv-formfield-li-element' });
+                        createLiElement.addEventListener('click', this.listItemOnClick.bind(this));
+                        createLiElement.innerHTML = dropdownValue;
+                        ulElement.appendChild(createLiElement);
+                    }
+                }
+                ulElement.children[ulElement.children.length - 1].classList.add('e-pv-li-select');
+            }
+        }
+        return ulElement.children.length;
+    }
+
+    private createThicknessSlider(idString: string): HTMLElement {
+        const outerContainer: HTMLElement = createElement('div', { className: 'e-pv-annotation-thickness-popup-container' });
+        document.body.appendChild(outerContainer);
+        const label: HTMLElement = createElement('span', { id: idString + '_label', className: 'e-pv-annotation-thickness-label' });
+        label.textContent = this.pdfViewer.localeObj.getConstant('Line Thickness');
+        const sliderElement: HTMLElement = createElement('div', { id: idString + '_slider' });
+        this.thicknessSlider = new Slider({ type: 'MinRange', cssClass: 'e-pv-annotation-thickness-slider', max: 12, min: 0 });
+        // eslint-disable-next-line max-len
+        this.thicknessIndicator = createElement('div', { id: idString + '_thickness_indicator', className: 'e-pv-annotation-thickness-indicator' });
+        this.thicknessIndicator.textContent = '0 pt';
+        if (!this.pdfViewer.enableRtl) {
+            outerContainer.appendChild(label);
+            outerContainer.appendChild(sliderElement);
+            this.thicknessSlider.appendTo(sliderElement);
+            outerContainer.appendChild(this.thicknessIndicator);
+        } else {
+            outerContainer.appendChild(this.thicknessIndicator);
+            outerContainer.appendChild(sliderElement);
+            this.thicknessSlider.enableRtl = true;
+            this.thicknessSlider.appendTo(sliderElement);
+            outerContainer.appendChild(label);
+        }
+        this.thicknessSlider.element.parentElement.classList.add('e-pv-annotation-thickness-slider-container');
+        return outerContainer;
+    }
+
+    private createColorPicker(idString: string, color: string): ColorPicker {
+        const inputElement: HTMLElement = createElement('input', { id: idString + '_target' });
+        document.body.appendChild(inputElement);
+        const colorPicker: ColorPicker = new ColorPicker({
+            inline: true, mode: 'Palette', cssClass: 'e-show-value', enableOpacity: false,
+            value: color, showButtons: false, modeSwitcher: false
+        });
+        if (this.pdfViewer.enableRtl) {
+            colorPicker.enableRtl = true;
+        }
+        colorPicker.appendTo(inputElement);
+        return colorPicker;
+    }
+
+    private fontStyleClicked(args: any): void {
+        if (args.target) {
+            if (args.target.id.indexOf("formField_bold") !== -1) {
+                let item = (args.target.id.indexOf("formField_bold_div") !== -1) ? args.target : args.target.parentElement;
+                if (item.classList.contains('e-pv-li-select'))
+                    this.isBold = true;
+                this.isBold = !this.isBold;
+                if (this.isBold) {
+                    this.formFieldBold = "bold";
+                    item.classList.add('e-pv-li-select');
+                } else {
+                    this.formFieldBold = "normal";
+                    item.classList.remove('e-pv-li-select');
+                }
+
+            } else if (args.target.id.indexOf("formField_italic") !== -1) {
+                let item = (args.target.id.indexOf("formField_italic_div") !== -1) ? args.target : args.target.parentElement;
+                if (item.classList.contains('e-pv-li-select'))
+                    this.isItalic = true;
+                this.isItalic = !this.isItalic;
+                if (this.isItalic) {
+                    this.formFieldItalic = "italic";
+                    item.classList.add('e-pv-li-select');
+                } else {
+                    this.formFieldItalic = "normal";
+                    item.classList.remove('e-pv-li-select');
+                }
+            } else if (args.target.id.indexOf("formField_underline") !== -1) {
+                let item = (args.target.id.indexOf("formField_underline_textinput_div") !== -1) ? args.target : args.target.parentElement;
+                if (item.classList.contains('e-pv-li-select'))
+                    this.isUnderline = true;
+                this.isUnderline = !this.isUnderline;
+                if (this.isUnderline) {
+                    this.formFieldUnderline = "underline";
+                    this.isStrikeThrough = false;
+                    item.classList.add('e-pv-li-select');
+                } else {
+                    this.formFieldUnderline = "none";
+                    item.classList.remove('e-pv-li-select');
+                }
+            } else if (args.target.id.indexOf("formField_strikeout") !== -1) {
+                let item = (args.target.id.indexOf("formField_strikeout_div") !== -1) ? args.target : args.target.parentElement;
+                if (item.classList.contains('e-pv-li-select'))
+                    this.isStrikeThrough = true;
+                this.isStrikeThrough = !this.isStrikeThrough;
+                if (this.isStrikeThrough) {
+                    this.formFieldStrikeOut = "line-through";
+                    this.isUnderline = false;
+                    item.classList.add('e-pv-li-select');
+                } else {
+                    this.formFieldStrikeOut = "none";
+                    item.classList.remove('e-pv-li-select');
+                }
+            }
+        }
+    }
+    private clearFontAlignIconSelection(currentElement: HTMLElement): void {
+        for (let i: number = 0; i < currentElement.children.length; i++) {
+            if (currentElement.children[i].classList.contains('e-pv-li-select')) {
+                currentElement.children[i].classList.remove('e-pv-li-select');
+            }
+        }
+    }
+    private fontAlignClicked(args: any): void {
+        if (args.target) {
+            args.target.classList.remove('e-pv-li-select');
+            if (args.target.id.indexOf("_formField_left_align") !== -1) {
+                let item = (args.target.id.indexOf("_formField_left_align_div") !== -1) ? args.target : args.target.parentElement;
+                this.formFieldAlign = "left";
+                this.clearFontAlignIconSelection(args.currentTarget);
+                item.classList.add('e-pv-li-select');
+            } else if (args.target.id.indexOf("_formField_right_align") !== -1) {
+                let item = (args.target.id.indexOf("_formField_right_align_div") !== -1) ? args.target : args.target.parentElement;
+                this.formFieldAlign = "right";
+                this.clearFontAlignIconSelection(args.currentTarget);
+                item.classList.add('e-pv-li-select');
+            } else {
+                let item = (args.target.id.indexOf("_formField_center_align_div") !== -1) ? args.target : args.target.parentElement;
+                this.formFieldAlign = "center";
+                this.clearFontAlignIconSelection(args.currentTarget);
+                item.classList.add('e-pv-li-select');
+
+            }
+        }
+    }
+
+    private onFontColorChange(args: any): void {
+        this.fontColorValue = (args.currentValue.hex === '') ? '#ffffff00' : args.currentValue.hex;
+        this.updateColorInIcon(this.fontColorElement, this.fontColorValue);
+        this.fontColorDropDown.toggle();
+    }
+
+    private onColorPickerChange(args: any): void {
+        this.backgroundColorValue = (args.currentValue.hex === '') ? '#ffffff00' : args.currentValue.hex;
+        this.updateColorInIcon(this.colorDropDownElement, this.backgroundColorValue);
+        this.colorDropDown.toggle();
+    }
+
+    /**
+     * @private
+     */
+    public updateColorInIcon(element: HTMLElement, color: string): void {
+        (element.childNodes[0] as HTMLElement).style.borderBottomColor = color;
+    }
+
+    private onStrokePickerChange(args: any): void {
+        this.borderColorValue = (args.currentValue.hex === '') ? '#ffffff00' : args.currentValue.hex;
+        this.updateColorInIcon(this.strokeDropDownElement, this.borderColorValue);
+        this.strokeDropDown.toggle();
+    }
+
+    private createDropDownButton(element: HTMLElement, iconClass: string, target: HTMLElement): DropDownButton {
+        // eslint-disable-next-line max-len
+        const dropDownButton: DropDownButton = new DropDownButton({ iconCss: iconClass + ' e-pv-icon', target: target });
+        if (this.pdfViewer.enableRtl) {
+            dropDownButton.enableRtl = true;
+        }
+        dropDownButton.appendTo(element);
+        return dropDownButton;
+    }
+    /**
+     * @private
+    */
+    public addClassFontItem(idString: string, className: string, isSelectedStyle?: boolean): HTMLElement {
+        const element: HTMLElement = createElement('div', { id: this.pdfViewer.element.id + idString + '_div' })
+        element.classList.add(className + "-div");
+        const spanElement: HTMLElement = createElement('span', { id: this.pdfViewer.element.id + idString + '_span' });
+        spanElement.classList.add(className);
+        spanElement.classList.add("e-pv-icon");
+        switch (className) {
+            case 'e-pv-bold-icon':
+                this.setToolTip(this.pdfViewer.localeObj.getConstant('Bold'), element);
+                break;
+            case 'e-pv-italic-icon':
+                this.setToolTip(this.pdfViewer.localeObj.getConstant('Italic'), element);
+                break;
+            case 'e-pv-underlinetext-icon':
+                this.setToolTip(this.pdfViewer.localeObj.getConstant('Underlines'), element);
+                break;
+            case 'e-pv-strikeout-icon':
+                this.setToolTip(this.pdfViewer.localeObj.getConstant('Strikethroughs'), element);
+                break;
+            case 'e-pv-left-align-icon':
+                this.setToolTip(this.pdfViewer.localeObj.getConstant('Align left'), element);
+                break;
+            case 'e-pv-center-align-icon':
+                this.setToolTip(this.pdfViewer.localeObj.getConstant('Center'), element);
+                break;
+            case 'e-pv-right-align-icon':
+                this.setToolTip(this.pdfViewer.localeObj.getConstant('Align right'), element);
+                break;
+        }
+        if (isSelectedStyle)
+            element.classList.add('e-pv-li-select');
+        element.appendChild(spanElement);
+        return element;
+    }
+
+    // eslint-disable-next-line max-len
+    private createLabelElement(labelText: string, parentElement: HTMLElement, isLabelNeeded: boolean, className: string, idString: string): void {
+        const container: HTMLElement = createElement('div', { id: idString + '_container', className: className + '-container' });
+        let label: HTMLElement = null;
+        if (isLabelNeeded) {
+            label = createElement('div', { id: idString + '_label', className: className });
+            label.textContent = labelText;
+            container.appendChild(label);
+        }
+        parentElement.appendChild(label);
+    }
+
+    private setReadOnlyToFormField(selectedItem: PdfFormFieldBaseModel, isReadOnly: any){
+        for (let i: number = 0; i < this.pdfViewer.formFieldCollection.length; i++) {
+            let formField = this.pdfViewer.formFieldCollection[i] as PdfFormFieldBaseModel;
+            if (formField.formFieldAnnotationType === selectedItem.formFieldAnnotationType && formField.name === selectedItem.name && formField.id !== selectedItem.id) {
+                formField.isReadonly = isReadOnly;
+                switch (formField.formFieldAnnotationType) {
+                    case 'Textbox':
+                    case 'PasswordField':
+                    case 'DropdownList':
+                    case 'ListBox':
+                    case 'SignatureField':
+                    case 'InitialField':
+                        let inputElement: Element = document.getElementById(formField.id + "_content_html_element").firstElementChild.firstElementChild;
+                        this.setReadOnlyToElement(formField, inputElement, isReadOnly);
+                        break;
+                    case 'RadioButton':
+                        let radioButtonDivDivElement: Element = document.getElementById(formField.id + "_content_html_element").firstElementChild.firstElementChild.firstElementChild;
+                        this.setReadOnlyToElement(formField, radioButtonDivDivElement, isReadOnly);
+                        break;
+                    case 'Checkbox':
+                        let checkboxDivElement: Element = document.getElementById(formField.id + "_content_html_element").firstElementChild.firstElementChild.lastElementChild;
+                        this.setReadOnlyToElement(formField, checkboxDivElement, isReadOnly);
+                        break;
+                }
+            }
+        }
+    }
+
+    private setRequiredToFormField(selectedItem: PdfFormFieldBaseModel, isRequired: boolean) {
+        for (let i: number = 0; i < this.pdfViewer.formFieldCollection.length; i++) {
+            let formField = this.pdfViewer.formFieldCollection[i] as PdfFormFieldBaseModel;
+            if (formField.formFieldAnnotationType === selectedItem.formFieldAnnotationType && formField.name === selectedItem.name && formField.id !== selectedItem.id) {
+                formField.isRequired = isRequired;
+                switch (formField.formFieldAnnotationType) {
+                    case 'Textbox':
+                    case 'PasswordField':
+                    case 'DropdownList':
+                    case 'SignatureField':
+                    case 'InitialField':
+                        let inputElement: Element = document.getElementById(formField.id + "_content_html_element").firstElementChild.firstElementChild;
+                        this.setRequiredToElement(formField, inputElement, isRequired);
+                        break;
+                    case 'RadioButton':
+                        let radioButtonDivDivElement: Element = document.getElementById(formField.id + "_content_html_element").firstElementChild.firstElementChild.firstElementChild;
+                        this.setRequiredToElement(formField, radioButtonDivDivElement, isRequired);
+                        break;
+                    case 'Checkbox':
+                        let checkboxDivElement: Element = document.getElementById(formField.id + "_content_html_element").firstElementChild.firstElementChild.lastElementChild;
+                        this.setRequiredToElement(formField, checkboxDivElement, isRequired);
+                        break;
+                    default:
+                        break;
+                }
+            }
+        }
+    }
+
+    private setReadOnlyToElement(selectedItem: PdfFormFieldBaseModel, inputElement: any, isReadOnly: boolean) {
+        if (isReadOnly) {
+            (inputElement as HTMLInputElement).disabled = true;
+            if (selectedItem.formFieldAnnotationType === 'RadioButton') {
+                (inputElement as any).parentElement.style.cursor = 'default';
+                (inputElement as any).parentElement.style.backgroundColor = 'transparent';
+            }
+            else {
+                inputElement.style.cursor = 'default';
+                inputElement.style.backgroundColor = 'transparent';
+            }
+        } else {
+            (inputElement as HTMLInputElement).disabled = false;
+            if (selectedItem.formFieldAnnotationType === 'RadioButton') {
+                (inputElement as any).parentElement.style.backgroundColor = selectedItem.backgroundColor;
+            }
+            else {
+                inputElement.style.backgroundColor = selectedItem.backgroundColor;
+            }
+        }
+    }
+
+    private setRequiredToElement(selectedItem: PdfFormFieldBaseModel, inputElement: any, isRequired: boolean) {
+        if (isRequired) {
+            (inputElement as HTMLInputElement).required = true;
+            inputElement.style.border = '1px solid red';
+            if (selectedItem.formFieldAnnotationType === 'RadioButton') {
+                (inputElement as any).parentElement.style.boxShadow = 'red 0px 0px 0px ' + selectedItem.thickness + 'px';
+            }
+        } else {
+            (inputElement as HTMLInputElement).required = false;
+            inputElement.style.borderWidth = selectedItem.thickness;
+            inputElement.style.borderColor = selectedItem.borderColor;
+            if (selectedItem.formFieldAnnotationType === 'RadioButton') {
+                (inputElement as any).parentElement.style.boxShadow = selectedItem.borderColor + ' 0px 0px 0px ' + selectedItem.thickness + 'px';
+            }
+        }
+    }
+
+    /**
+     * @private
+    */
+    public destroyPropertiesWindow(): void {
+        this.formFieldListItemCollection = [];
+        this.formFieldListItemDataSource = [];
+        this.formFieldFontFamily = null;
+        this.formFieldFontSize = null;
+        this.formFieldAlign = null;
+        this.fontColorValue = null;
+        this.backgroundColorValue = null;
+        this.borderColorValue = null;
+        this.formFieldBorderWidth = null;
+        this.formFieldName = null;
+        this.formFieldChecked = null;
+        this.formFieldReadOnly = null;
+        this.formFieldRequired = null;
+        this.formFieldTooltip = null;
+        this.formFieldPrinting = null;
+        this.formFieldVisibility = null;
+        const dialogElement: HTMLElement = this.pdfViewerBase.getElement('_properties_window');
+        if (dialogElement) {
+            dialogElement.parentElement.removeChild(dialogElement);
+        }
+    }
+
+    /**
+     * @private
+    */
+    public destroy(): void {
+        this.destroyPropertiesWindow();
+    }
+
+
+    private hex(x: number): string {
+        return ('0' + x.toString(16)).slice(-2);
+    }
+    /**
+     * @private
+    */
+    public getModuleName(): string {
+        return 'FormDesigner';
+    }
+}
+/**
+ * Defines the common behavior of Form Fields
+ *
+ * @hidden
+ */
+
+interface IFormFieldProperty extends HTMLElement {
+    name: string;
+    value: string;
+}
+/**
+ * Defines the common properties of Radiobutton Item
+ *
+ * @hidden
+ */
+export interface IRadiobuttonItem {
+    id: string;
+    lineBound: IFormFieldBound;
+    pageNumber: number;
+    formFieldAnnotationType: string;
+    name: string;
+    value: string;
+    fontFamily: string;
+    fontSize: number;
+    fontStyle: string;
+    fontColor: any;
+    backgroundColor: any;
+    textAlign: string;
+    isReadonly: boolean;
+    visibility: string;
+    maxLength: number;
+    isRequired: boolean;
+    isPrint: boolean;
+    rotation: number;
+    tooltip: string;
+    isChecked: boolean;
+    isSelected: boolean;
+    zoomValue: number;
+    borderColor?: any;
+    thickness?: number;
+}
+/**
+ * Defines the common properties of Form Fields Item
+ *
+ * @hidden
+ */
+export interface IFormField {
+    id?: string;
+    lineBound?: IFormFieldBound;
+    pageNumber?: number;
+    zoomValue?: number;
+    formFieldAnnotationType?: string;
+    name?: string;
+    value?: string;
+    option?: ItemModel[];
+    fontFamily?: string;
+    fontSize?: number;
+    fontStyle?: string;
+    fontColor?: any;
+    color?: any;
+    backgroundColor: any;
+    textAlign?: string;
+    alignment?: string;
+    isReadonly?: boolean;
+    visibility?: string;
+    maxLength?: number;
+    isRequired?: boolean;
+    isPrint?: boolean;
+    rotation?: number;
+    tooltip?: string;
+    isChecked?: boolean;
+    isSelected?: boolean;
+    radiobuttonItem?: IRadiobuttonItem[];
+    selectedIndex?: number[];
+    options?: ItemModel[];
+    borderColor?: any;
+    thickness?: number;
+    font?: PdfFontModel;
+    signatureBound?: any;
+}
+/**
+ * Defines the FormFields Bound properties
+ *
+ * @hidden
+ */
+export interface IFormFieldBound {
+    X: number;
+    Y: number;
+    Width: number;
+    Height: number
+}
+
+/**
+ * Defines the FormFields element attributes
+ *
+ * @hidden
+ */
+export interface IElement extends HTMLElement {
+    options: any;
+    name: string;
+    value: string;
+    checked: boolean;
+    selectedIndex: number;
+    selectedOptions: any;
+    autocomplete: string;
+    type: string;
+}

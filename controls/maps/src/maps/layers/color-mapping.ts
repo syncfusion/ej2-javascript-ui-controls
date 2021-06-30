@@ -1,6 +1,7 @@
-/* eslint-disable @typescript-eslint/explicit-member-accessibility */
-/* eslint-disable @typescript-eslint/dot-notation */
-/* eslint-disable no-underscore-dangle */
+/* eslint-disable @typescript-eslint/explicit-module-boundary-types */
+/* eslint-disable jsdoc/require-param */
+/* eslint-disable jsdoc/require-returns */
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import { Maps } from '../../index';
 import { ShapeSettingsModel, ColorMappingSettingsModel, ColorValue } from '../index';
 import { isNullOrUndefined } from '@syncfusion/ej2-base';
@@ -133,14 +134,12 @@ export class ColorMapping {
             for (let i: number = 0; i < splitColorValueOffset.length; i++) {
                 if (previousOffset <= value && value <= splitColorValueOffset[i]['b'] && i === 0) {
                     midColor = splitColorValueOffset[i]['color'].charAt(0) === '#' ?
-                    // eslint-disable-next-line no-underscore-dangle
                         splitColorValueOffset[i]['color'] : this._colorNameToHex(splitColorValueOffset[i]['color']);
                     nextColor = midColor;
                     percent = value < splitColorValueOffset[i]['b'] ? 1 - Math.abs((value - splitColorValueOffset[i]['b']) / a)
                         : (value - splitColorValueOffset[i]['b']) / a;
                 } else if (splitColorValueOffset[i]['b'] <= value && value <= nextOffset && i === (splitColorValueOffset.length - 1)) {
                     midColor = splitColorValueOffset[i]['color'].charAt(0) === '#' ?
-                    // eslint-disable-next-line no-underscore-dangle
                         splitColorValueOffset[i]['color'] : this._colorNameToHex(splitColorValueOffset[i]['color']);
                     previousColor = midColor;
                     percent = value < splitColorValueOffset[i]['b'] ?
@@ -149,11 +148,9 @@ export class ColorMapping {
                 if (i !== splitColorValueOffset.length - 1 && i < splitColorValueOffset.length) {
                     if (splitColorValueOffset[i]['b'] <= value && value <= splitColorValueOffset[i + 1]['b']) {
                         midColor = splitColorValueOffset[i]['color'].charAt(0) === '#' ?
-                        // eslint-disable-next-line no-underscore-dangle
                             splitColorValueOffset[i]['color'] : this._colorNameToHex(splitColorValueOffset[i]['color']);
                         previousColor = midColor;
                         nextColor = splitColorValueOffset[i + 1]['color'].charAt(0) === '#' ?
-                        // eslint-disable-next-line no-underscore-dangle
                             splitColorValueOffset[i + 1]['color'] : this._colorNameToHex(splitColorValueOffset[i + 1]['color']);
                         percent = Math.abs((value - splitColorValueOffset[i + 1]['b'])) / a;
                     }

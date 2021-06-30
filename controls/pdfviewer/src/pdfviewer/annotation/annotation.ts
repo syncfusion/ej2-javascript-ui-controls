@@ -1,15 +1,16 @@
 /* eslint-disable */
+import { FreeTextSettings, HighlightSettings, LineSettings, StickyNotesSettings, StrikethroughSettings, UnderlineSettings, RectangleSettings, CircleSettings, ArrowSettings, PerimeterSettings, DistanceSettings, AreaSettings, RadiusSettings, VolumeSettings, PolygonSettings, InkAnnotationSettings, StampSettings, CustomStampSettings } from './../pdfviewer';
 import {
     // eslint-disable-next-line max-len
     PdfViewer, PdfViewerBase, AnnotationType, IShapeAnnotation, ITextMarkupAnnotation, TextMarkupAnnotation, ShapeAnnotation,
     StampAnnotation, StickyNotesAnnotation, IPopupAnnotation, ICommentsCollection, MeasureAnnotation, InkAnnotation, AllowedInteraction, DynamicStampItem,
-    SignStampItem, StandardBusinessStampItem
+    SignStampItem, StandardBusinessStampItem, PdfAnnotationType
 } from '../index';
 import { createElement, Browser, isNullOrUndefined, isBlazor } from '@syncfusion/ej2-base';
 import { NumericTextBox, Slider, ColorPicker, ColorPickerEventArgs } from '@syncfusion/ej2-inputs';
 import { Dialog } from '@syncfusion/ej2-popups';
 import { DropDownButton, MenuEventArgs } from '@syncfusion/ej2-splitbuttons';
-import { DecoratorShapes, PointModel } from '@syncfusion/ej2-drawings';
+import { DecoratorShapes, PointModel, processPathData, splitArrayCollection } from '@syncfusion/ej2-drawings';
 import { isLineShapes, cloneObject } from '../drawing/drawing-util';
 import { PdfAnnotationBaseModel, PdfFontModel } from '../drawing/pdf-annotation-model';
 import { NodeDrawingTool, LineTool, MoveTool, ResizeTool, ConnectTool } from '../drawing/tools';
@@ -19,6 +20,8 @@ import { FreeTextAnnotation } from './free-text-annotation';
 import { InputElement } from './input-element';
 import { InPlaceEditor } from '@syncfusion/ej2-inplace-editor';
 import { ShapeLabelSettingsModel, AnnotationSelectorSettingsModel } from '../pdfviewer-model';
+import { IFormField, IElement } from '../form-designer';
+import { PdfAnnotationBase } from '../drawing';
 /**
  * @hidden
  */
@@ -43,6 +46,38 @@ export interface IActionElements {
 export interface IPoint {
     x: number
     y: number
+}
+
+/**
+ * Interface for a class Point
+ *  @hidden
+ */
+ export interface IAnnotationPoint {
+
+    /**
+     * Sets the x-coordinate of a position
+     * @default 0
+     */
+    x: number;
+
+    /**
+     * Sets the y-coordinate of a position
+     * @default 0
+     */
+    y: number;
+
+    /**
+     * Sets the x-coordinate of a position
+     * @default 0
+     */
+    width: number;
+
+    /**
+     * Sets the y-coordinate of a position
+     * @default 0
+     */
+    height: number;
+
 }
 
 /**
@@ -168,6 +203,11 @@ export class Annotation {
      * @private
      */
     // eslint-disable-next-line
+    public isFormFieldShape: boolean = false;
+    /**
+     * @private
+     */
+    // eslint-disable-next-line
     public removedAnnotationCollection: any = [];
 
     /**
@@ -228,6 +268,8 @@ export class Annotation {
             this.freeTextAnnotationModule.isNewAddedAnnot = true;
         } else if (type === 'HandWrittenSignature') {
             this.pdfViewerBase.signatureModule.setAnnotationMode();
+        } else if (type === 'Initial') {
+            this.pdfViewerBase.signatureModule.setInitialMode();
         } else if (type === 'Ink') {
             this.inkAnnotationModule.setAnnotationMode();
         } else if (type === 'StickyNotes') {
@@ -328,7 +370,7 @@ export class Annotation {
                     this.pdfViewer.annotation.stickyNotesAnnotationModule.findPosition(annotation, 'FreeText', 'delete');
                     undoElement = this.modifyInCollections(annotation, 'delete');
                     this.updateImportAnnotationCollection(annotation, pageNumber, 'freeTextAnnotation');
-                } else if (shapeType === 'HandWrittenSignature') {
+                } else if (shapeType === 'HandWrittenSignature'||shapeType === 'SignatureImage'||shapeType === 'SignatureText') {
                     undoElement = this.modifyInCollections(annotation, 'delete');
                 } else if (shapeType === 'Ink') {
                     // eslint-disable-next-line max-len
@@ -371,36 +413,52 @@ export class Annotation {
                 const selectedAnnot: PdfAnnotationBaseModel = this.pdfViewer.selectedItems.annotations[0];
                 const annotationId: string = selectedAnnot.annotName;
                 const annotType: AnnotationType = this.getAnnotationType(selectedAnnot.shapeAnnotationType, selectedAnnot.measureType);
-                if (shapeType === 'Path' || shapeType === 'SignatureText' || shapeType === 'SignatureImage') {                    // eslint-disable-next-line
+                if (shapeType === 'Path' || selectedAnnot.formFieldAnnotationType === 'SignatureField' || selectedAnnot.formFieldAnnotationType === 'InitialField' || shapeType === 'HandWrittenSignature' || shapeType === 'SignatureText' || shapeType === 'SignatureImage') {                    // eslint-disable-next-line
                     let inputFields: any = document.getElementById(selectedAnnot.id);
+                    let signatureFieldElement: any = document.getElementById(selectedAnnot.id + "_html_element");
+                    if (inputFields === null && !isNullOrUndefined(signatureFieldElement)) {
+                        inputFields = signatureFieldElement.children[0].children[0]
+                    }
                     if (inputFields && inputFields.className === 'e-pdfviewer-signatureformfields-signature') {
                         inputFields.className = 'e-pdfviewer-signatureformfields';
                         inputFields.style.pointerEvents = '';
                         inputFields.parentElement.style.pointerEvents = '';
-                        this.pdfViewer.formFieldsModule.updateDataInSession(inputFields, '');
+                        if (this.pdfViewer.formDesignerModule) {
+                            this.pdfViewer.formDesignerModule.updateSignatureValue(selectedAnnot.id);
+                        } else {
+                            this.pdfViewer.formFieldsModule.updateDataInSession(inputFields, '');
+                        }
                     }
                     // eslint-disable-next-line
                     let formFieldCollection: any = this.pdfViewer.retrieveFormFields();
                     for (let m: number = 0; m < formFieldCollection.length; m++) {
                         if (selectedAnnot.id === formFieldCollection[m].id) {
                             formFieldCollection[m].value = '';
-                            formFieldCollection[m].signatureType = [''];
+                            formFieldCollection[m].signatureType = '';
                         }
                     }
                 }
-                this.updateAnnotationCollection(annotation);
+                if(this.pdfViewer.formDesignerModule && selectedAnnot.formFieldAnnotationType)
+                  this.updateFormFieldCollection(annotation)
+                else
+                  this.updateAnnotationCollection(annotation);
+                let formFieldObj:PdfAnnotationBase = (this.pdfViewer.nameTable as any)[annotation.id.split("_")[0]];
+                if (formFieldObj != null && (formFieldObj.formFieldAnnotationType === 'SignatureField' || formFieldObj.formFieldAnnotationType === 'InitialField') ) {
+                    formFieldObj.wrapper.children.splice(formFieldObj.wrapper.children.indexOf(annotation.wrapper.children[0]), 1);
+                }
                 this.pdfViewer.remove(annotation);
                 this.pdfViewer.renderDrawing();
                 this.pdfViewer.clearSelection(pageNumber);
+                window.sessionStorage.setItem(this.pdfViewerBase.documentId + '_formDesigner', JSON.stringify(this.pdfViewerBase.formFieldCollection));
                 this.pdfViewer.isDocumentEdited = true;
                 this.pdfViewerBase.tool = null;
                 this.pdfViewer.tool = null;
-                if (selectedAnnot.shapeAnnotationType === 'HandWrittenSignature') {
+                if (selectedAnnot.shapeAnnotationType === 'HandWrittenSignature'||selectedAnnot.shapeAnnotationType === 'SignatureText'||selectedAnnot.shapeAnnotationType === 'SignatureImage') {
                     // eslint-disable-next-line max-len
                     const bounds: object = { left: selectedAnnot.bounds.x, top: selectedAnnot.bounds.y, width: selectedAnnot.bounds.width, height: selectedAnnot.bounds.height };
                     // eslint-disable-next-line max-len
                     this.pdfViewer.fireSignatureRemove(pageNumber, selectedAnnot.signatureName, selectedAnnot.shapeAnnotationType as AnnotationType, bounds);
-                } else {
+                } else if(!this.pdfViewer.formDesignerModule) {
                     // eslint-disable-next-line max-len
                     this.pdfViewer.fireAnnotationRemove(pageNumber, annotationId, annotType, selectedAnnot.bounds);
                 }
@@ -426,6 +484,23 @@ export class Annotation {
      */
     // eslint-disable-next-line
     public storeAnnotationCollections(annotation: any, pageNumber: number): void {
+        if(this.isFormFieldShape) {
+            let collectionDetails: any = this.checkFormDesignCollection(annotation);
+            let selectAnnotation: any = cloneObject(annotation);
+            selectAnnotation.formFieldId = annotation.annotName;
+            selectAnnotation.pageNumber = pageNumber;
+            delete selectAnnotation.annotName;
+            if (annotation.id) {
+                selectAnnotation.uniqueKey = annotation.id;
+                delete selectAnnotation.id;
+            }
+            if (collectionDetails.isExisting) {
+                this.pdfViewer.formFieldCollection.splice(collectionDetails.position, 0, selectAnnotation);
+            } else {
+                this.pdfViewer.formFieldCollection.push(selectAnnotation);
+            }
+        } else {
+
         // eslint-disable-next-line
         let collectionDetails: any = this.checkAnnotationCollection(annotation);
         // eslint-disable-next-line
@@ -451,6 +526,33 @@ export class Annotation {
             this.pdfViewer.annotationCollection.push(selectAnnotation);
         }
     }
+    }
+    public checkFormDesignCollection(annotation: any): any {
+        // eslint-disable-next-line
+        let collections: any = this.pdfViewer.formFieldCollection;
+        if (collections && annotation) {
+            for (let i: number = 0; i < collections.length; i++) {
+                if (collections[i].formFieldId === annotation.annotName) {
+                    this.pdfViewer.formFieldCollection.splice(i, 1);
+                    return { isExisting: true, position: i };
+                }
+            }
+        }
+        return { isExisting: false, position: null };
+  }
+  public updateFormFieldCollection(annotation: any): void {
+    // eslint-disable-next-line
+let collections: any = this.pdfViewer.formFieldCollection;
+if (collections && annotation) {
+for (let i: number = 0; i < collections.length; i++) {
+    if (collections[i].formFieldId === annotation.annotName) {
+        this.removedAnnotationCollection.push(collections[i]);
+        this.pdfViewer.formFieldCollection.splice(i, 1);
+        break;
+    }
+}
+}
+}
 
     /**
      * @param annotation
@@ -1167,7 +1269,7 @@ export class Annotation {
         const action: IActionElements = {
             pageIndex: pageNumber, index: index, annotation: annotation,
             action: actionString, modifiedProperty: property, undoElement: node, redoElement: redo
-        };
+        }; 
         this.actionCollection.push(action);
         this.updateToolbar();
     }
@@ -1210,88 +1312,136 @@ export class Annotation {
                     this.pdfViewer.nodePropertyChange(actionObject.annotation, { notes: actionObject.undoElement.notes });
                     this.updateCalibrateValues(actionObject.annotation);
                 }
+                if (actionObject.annotation.formFieldAnnotationType) {
+                    this.pdfViewer.formDesigner.updateHTMLElement(actionObject.annotation);
+                }
                 this.pdfViewer.clearSelection(this.pdfViewerBase.activeElements.activePageID);
                 this.pdfViewer.select([actionObject.annotation.id]);
                 // eslint-disable-next-line max-len
                 if (actionObject.annotation.shapeAnnotationType === 'Line' || actionObject.annotation.shapeAnnotationType === 'Rectangle' || actionObject.annotation.shapeAnnotationType === 'Ellipse' || actionObject.annotation.shapeAnnotationType === 'Polygon' || actionObject.annotation.shapeAnnotationType === 'LineWidthArrowHead' ||
-                        actionObject.annotation.shapeAnnotationType === 'Radius' || actionObject.annotation.shapeAnnotationType === 'FreeText' || actionObject.annotation.shapeAnnotationType === 'HandWrittenSignature' || actionObject.annotation.shapeAnnotationType === 'Ink') {
+                        actionObject.annotation.shapeAnnotationType === 'Radius' || actionObject.annotation.shapeAnnotationType === 'FreeText' || actionObject.annotation.shapeAnnotationType === 'HandWrittenSignature' ||actionObject.annotation.shapeAnnotationType === 'SignatureText'|| actionObject.annotation.shapeAnnotationType === 'SignatureImage' || actionObject.annotation.shapeAnnotationType === 'Ink') {
                     this.modifyInCollections(actionObject.annotation, 'bounds');
                 }
                 break;
             case 'Addition':
-                let isAnnotationUpdate: boolean = false;
-                // eslint-disable-next-line max-len
-                if (shapeType === 'Line' || shapeType === 'LineWidthArrowHead' || shapeType === 'Polygon' || shapeType === 'Ellipse' || shapeType === 'Rectangle' || shapeType === 'Radius' || shapeType === 'Distance') {
-                    if (actionObject.annotation.measureType === '' || isNullOrUndefined(actionObject.annotation.measureType)) {
-                        this.pdfViewer.annotation.stickyNotesAnnotationModule.findPosition(actionObject.annotation, 'shape');
-                    } else {
-                        this.pdfViewer.annotation.stickyNotesAnnotationModule.findPosition(actionObject.annotation, 'measure');
+                if (this.pdfViewer.formDesigner && actionObject.annotation.formFieldAnnotationType) {
+                    this.pdfViewer.formDesigner.deleteFormField(actionObject.undoElement.id, false)
+                } else { 
+                    let isAnnotationUpdate: boolean = false;
+                    // eslint-disable-next-line max-len
+                    if (shapeType === 'Line' || shapeType === 'LineWidthArrowHead' || shapeType === 'Polygon' || shapeType === 'Ellipse' || shapeType === 'Rectangle' || shapeType === 'Radius' || shapeType === 'Distance') {
+                        if (actionObject.annotation.measureType === '' || isNullOrUndefined(actionObject.annotation.measureType)) {
+                            this.pdfViewer.annotation.stickyNotesAnnotationModule.findPosition(actionObject.annotation, 'shape');
+                        } else {
+                            this.pdfViewer.annotation.stickyNotesAnnotationModule.findPosition(actionObject.annotation, 'measure');
+                        }
+                        isAnnotationUpdate = true;
+                        actionObject.duplicate = this.modifyInCollections(actionObject.annotation, 'delete');
                     }
-                    isAnnotationUpdate = true;
-                    actionObject.duplicate = this.modifyInCollections(actionObject.annotation, 'delete');
-                }
-                if (shapeType === 'Stamp' || shapeType === 'Image') {
-                    // eslint-disable-next-line max-len
-                    this.pdfViewer.annotation.stickyNotesAnnotationModule.findPosition(actionObject.annotation, actionObject.annotation.shapeAnnotationType, 'delete');
-                    // eslint-disable-next-line max-len
-                    this.stampAnnotationModule.updateSessionStorage(actionObject.annotation, null, 'delete');
-                    isAnnotationUpdate = true;
-                }
-                if (shapeType === 'FreeText' || shapeType === 'HandWrittenSignature' || shapeType === 'Ink') {
-                    isAnnotationUpdate = true;
-                    // eslint-disable-next-line max-len
-                    this.pdfViewer.annotation.stickyNotesAnnotationModule.findPosition(actionObject.annotation, actionObject.annotation.shapeAnnotationType, 'delete');
-                    actionObject.duplicate = this.modifyInCollections(actionObject.annotation, 'delete');
-                }
-                if (!isAnnotationUpdate) {
-                    // eslint-disable-next-line max-len
-                    this.pdfViewer.annotation.stickyNotesAnnotationModule.findPosition(actionObject.annotation, actionObject.annotation.shapeAnnotationType, 'delete');
-                }
-                this.pdfViewer.clearSelection(this.pdfViewerBase.activeElements.activePageID);
-                this.pdfViewer.remove(actionObject.annotation);
-                this.pdfViewer.renderDrawing(null, actionObject.annotation.pageIndex);
-                // eslint-disable-next-line
-                    let removeDiv: any = document.getElementById(actionObject.annotation.annotName);
-                if (removeDiv) {
-                    if (removeDiv.parentElement.childElementCount === 1) {
-                        this.stickyNotesAnnotationModule.updateAccordionContainer(removeDiv);
-                    } else {
-                        removeDiv.remove();
+                    if (shapeType === 'Stamp' || shapeType === 'Image') {
+                        // eslint-disable-next-line max-len
+                        this.pdfViewer.annotation.stickyNotesAnnotationModule.findPosition(actionObject.annotation, actionObject.annotation.shapeAnnotationType, 'delete');
+                        // eslint-disable-next-line max-len
+                        this.stampAnnotationModule.updateSessionStorage(actionObject.annotation, null, 'delete');
+                        isAnnotationUpdate = true;
                     }
-                }
-                if (Browser.isDevice && !this.pdfViewer.enableDesktopMode) {
-                    let mobileAnnotationToolbar: HTMLElement = document.getElementById(this.pdfViewer.element.id + '_propertyToolbar');
-                    if (mobileAnnotationToolbar && mobileAnnotationToolbar.children.length > 0) {
-                        this.pdfViewer.toolbarModule.annotationToolbarModule.toolbarCreated = false;
-                        this.pdfViewer.toolbarModule.annotationToolbarModule.createAnnotationToolbarForMobile();
+                    if (shapeType === 'FreeText' || shapeType === 'HandWrittenSignature' ||shapeType === 'SignatureImage'||shapeType === 'SignatureText' || shapeType === 'Ink') {
+                        isAnnotationUpdate = true;
+                        // eslint-disable-next-line max-len
+                        this.pdfViewer.annotation.stickyNotesAnnotationModule.findPosition(actionObject.annotation, actionObject.annotation.shapeAnnotationType, 'delete');
+                        actionObject.duplicate = this.modifyInCollections(actionObject.annotation, 'delete');
+                    }
+                    if (!isAnnotationUpdate) {
+                        // eslint-disable-next-line max-len
+                        this.pdfViewer.annotation.stickyNotesAnnotationModule.findPosition(actionObject.annotation, actionObject.annotation.shapeAnnotationType, 'delete');
+                    }
+                    this.pdfViewer.clearSelection(this.pdfViewerBase.activeElements.activePageID);
+                    this.pdfViewer.remove(actionObject.annotation);
+                    this.pdfViewer.renderDrawing(null, actionObject.annotation.pageIndex);
+                    // eslint-disable-next-line
+                        let removeDiv: any = document.getElementById(actionObject.annotation.annotName);
+                    if (removeDiv) {
+                        if (removeDiv.parentElement.childElementCount === 1) {
+                            this.stickyNotesAnnotationModule.updateAccordionContainer(removeDiv);
+                        } else {
+                            removeDiv.remove();
+                        }
+                    }
+                    if (Browser.isDevice && !this.pdfViewer.enableDesktopMode) {
+                        let mobileAnnotationToolbar: HTMLElement = document.getElementById(this.pdfViewer.element.id + '_propertyToolbar');
+                        if (mobileAnnotationToolbar && mobileAnnotationToolbar.children.length > 0) {
+                            this.pdfViewer.toolbarModule.annotationToolbarModule.toolbarCreated = false;
+                            this.pdfViewer.toolbarModule.annotationToolbarModule.createAnnotationToolbarForMobile();
+                        }
                     }
                 }
                 break;
             case 'Delete':
-                // eslint-disable-next-line max-len
-                if (shapeType === 'Line' || shapeType === 'LineWidthArrowHead' || shapeType === 'Polygon' || shapeType === 'Ellipse' || shapeType === 'Rectangle' || shapeType === 'Radius' || shapeType === 'Distance') {
-                    if (actionObject.annotation.measureType === '' || isNullOrUndefined(actionObject.annotation.measureType)) {
-                        shapeType = 'shape';
-                        this.shapeAnnotationModule.addInCollection(actionObject.annotation.pageIndex, actionObject.undoElement);
-                    } else {
-                        shapeType = 'shape_measure';
-                        this.measureAnnotationModule.addInCollection(actionObject.annotation.pageIndex, actionObject.undoElement);
+                if (this.pdfViewer.formDesigner && actionObject.annotation.formFieldAnnotationType) {
+                    actionObject.undoElement.bounds.x = actionObject.undoElement.wrapper.bounds.x;
+                    actionObject.undoElement.bounds.y = actionObject.undoElement.wrapper.bounds.y;
+                    this.pdfViewer.formDesigner.drawFormField(actionObject.undoElement as any);
+                } else {
+                    // eslint-disable-next-line max-len
+                    if (shapeType === 'Line' || shapeType === 'LineWidthArrowHead' || shapeType === 'Polygon' || shapeType === 'Ellipse' || shapeType === 'Rectangle' || shapeType === 'Radius' || shapeType === 'Distance') {
+                        if (actionObject.annotation.measureType === '' || isNullOrUndefined(actionObject.annotation.measureType)) {
+                            shapeType = 'shape';
+                            this.shapeAnnotationModule.addInCollection(actionObject.annotation.pageIndex, actionObject.undoElement);
+                        } else {
+                            shapeType = 'shape_measure';
+                            this.measureAnnotationModule.addInCollection(actionObject.annotation.pageIndex, actionObject.undoElement);
+                        }
                     }
+                    if (shapeType === 'Stamp' || shapeType === 'Image') {
+                        this.stampAnnotationModule.updateDeleteItems(actionObject.annotation.pageIndex, actionObject.annotation);
+                    } else if (shapeType === 'FreeText') {
+                        this.freeTextAnnotationModule.addInCollection(actionObject.annotation.pageIndex, actionObject.undoElement);
+                    } else if (shapeType === 'Ink') {
+                        this.inkAnnotationModule.addInCollection(actionObject.annotation.pageIndex, actionObject.undoElement);
+                    }
+                    const addedAnnot: PdfAnnotationBaseModel = this.pdfViewer.add(actionObject.annotation);
+                    if ((shapeType === 'FreeText' || addedAnnot.enableShapeLabel) && addedAnnot) {
+                        this.pdfViewer.nodePropertyChange(addedAnnot, {});
+                    }
+
+                    let formFieldObj:PdfAnnotationBase = (this.pdfViewer.nameTable as any)[actionObject.annotation.id.split("_")[0]];
+                    if (formFieldObj != null && (formFieldObj.formFieldAnnotationType === 'SignatureField' || formFieldObj.formFieldAnnotationType === 'InitialField') ) {
+                        formFieldObj.wrapper.children.push(actionObject.annotation.wrapper.children[0]);
+                        if (actionObject.annotation.shapeAnnotationType === "SignatureText")
+                            formFieldObj.wrapper.children.push(actionObject.annotation.wrapper.children[1]);
+                   
+                        let key: string = actionObject.annotation.id.split('_')[0] + '_content';
+                        var data = window.sessionStorage.getItem(this.pdfViewerBase.documentId + '_formDesigner');
+                        var formFieldsData = JSON.parse(data);
+                        for (let i: number = 0; i < formFieldsData.length; i++) {
+                            if (formFieldsData[i].Key === key) {
+                                if (actionObject.annotation.shapeAnnotationType === "SignatureText") {
+                                    formFieldsData[i].FormField.signatureType = "Text";
+                                    formFieldsData[i].FormField.value = actionObject.annotation.data;
+                                    this.pdfViewerBase.formFieldCollection[i].FormField.value = actionObject.annotation.data;
+                                    this.pdfViewerBase.formFieldCollection[i].FormField.signatureType = "Text";
+                                } else if (actionObject.annotation.shapeAnnotationType === "SignatureImage") {
+                                    formFieldsData[i].FormField.signatureType = "Image";
+                                    formFieldsData[i].FormField.value = actionObject.annotation.data;
+                                    this.pdfViewerBase.formFieldCollection[i].FormField.value = actionObject.annotation.data;
+                                    this.pdfViewerBase.formFieldCollection[i].FormField.signatureType = "Image";
+                                } else {
+                                    formFieldsData[i].FormField.signatureType = "Path";
+                                    this.pdfViewerBase.formFieldCollection[i].FormField.signatureType = "Path";
+                                    let collectionData: any = processPathData(actionObject.annotation.data);
+                                    let csData: any = splitArrayCollection(collectionData);
+                                    formFieldsData[i].FormField.value = JSON.stringify(csData);
+                                    this.pdfViewerBase.formFieldCollection[i].FormField.value = JSON.stringify(csData);
+                                }
+                            }
+                        }
+                        window.sessionStorage.setItem(this.pdfViewerBase.documentId + '_formDesigner', JSON.stringify(this.pdfViewerBase.formFieldCollection));
+                    }
+
+                    this.pdfViewer.renderDrawing(null, actionObject.annotation.pageIndex);
+                    // eslint-disable-next-line max-len
+                    this.pdfViewer.annotationModule.stickyNotesAnnotationModule.addAnnotationComments(actionObject.annotation.pageIndex, shapeType);
                 }
-                if (shapeType === 'Stamp' || shapeType === 'Image') {
-                    this.stampAnnotationModule.updateDeleteItems(actionObject.annotation.pageIndex, actionObject.annotation);
-                } else if (shapeType === 'FreeText') {
-                    this.freeTextAnnotationModule.addInCollection(actionObject.annotation.pageIndex, actionObject.undoElement);
-                } else if (shapeType === 'Ink') {
-                    this.inkAnnotationModule.addInCollection(actionObject.annotation.pageIndex, actionObject.undoElement);
-                }
-                const addedAnnot: PdfAnnotationBaseModel = this.pdfViewer.add(actionObject.annotation);
-                if ((shapeType === 'FreeText' || addedAnnot.enableShapeLabel) && addedAnnot) {
-                    this.pdfViewer.nodePropertyChange(addedAnnot, {});
-                }
-                this.pdfViewer.renderDrawing(null, actionObject.annotation.pageIndex);
-                // eslint-disable-next-line max-len
-                this.pdfViewer.annotationModule.stickyNotesAnnotationModule.addAnnotationComments(actionObject.annotation.pageIndex, shapeType);
                 break;
             case 'stampOpacity':
                 this.pdfViewer.nodePropertyChange(actionObject.annotation, { opacity: actionObject.undoElement.opacity });
@@ -1401,6 +1551,43 @@ export class Annotation {
                 this.pdfViewer.nodePropertyChange(actionObject.annotation.annotations[0], { bounds: actionObject.undoElement.bounds, rotateAngle: actionObject.undoElement.rotateAngle });
                 this.modifyInCollections(actionObject.annotation.annotations[0], 'bounds');
                 this.pdfViewer.renderDrawing();
+                break;
+            case 'FormDesigner Properties Change':
+                this.updateFormFieldPropertiesChanges(actionObject.undoElement.formFieldAnnotationType, actionObject.undoElement);    
+                break;
+            case 'FormField Value Change':
+                if (actionObject.annotation.formFieldAnnotationType) {
+                    if (actionObject.annotation.formFieldAnnotationType == "RadioButton") {
+                        this.updateFormFieldValueChange(actionObject.annotation.formFieldAnnotationType, actionObject.undoElement, false);       
+                        this.updateFormFieldValueChange(actionObject.annotation.formFieldAnnotationType, actionObject.redoElement, true);                       
+                    }
+                    else {
+                        this.updateFormFieldValueChange(actionObject.annotation.formFieldAnnotationType, actionObject.annotation, actionObject.undoElement);                     
+                    }
+                } else {   
+                    let spanElement : any = document.getElementById(actionObject.annotation.id + "_html_element").children[0].children[0];
+                    spanElement.className = 'e-pdfviewer-signatureformfields';  
+                    let formFieldObj:PdfAnnotationBase = (this.pdfViewer.nameTable as any)[actionObject.annotation.id.split("_")[0]];   
+                    let annotationObj:PdfAnnotationBase = (this.pdfViewer.nameTable as any)[actionObject.annotation.id];   
+                    formFieldObj.wrapper.children.splice(formFieldObj.wrapper.children.indexOf(annotationObj.wrapper.children[0]), 1);
+                    if (actionObject.annotation.shapeAnnotationType === "SignatureText")
+                        formFieldObj.wrapper.children.splice(formFieldObj.wrapper.children.indexOf(annotationObj.wrapper.children[1]), 1);
+                    let key: string = actionObject.annotation.id.split('_')[0] + '_content';
+                    var data = window.sessionStorage.getItem(this.pdfViewerBase.documentId + '_formDesigner');
+                    var formFieldsData = JSON.parse(data);
+                    for (let i: number = 0; i < formFieldsData.length; i++) {
+                        if (formFieldsData[i].Key === key) {
+                            formFieldsData[i].FormField.value = '';
+                            formFieldsData[i].FormField.signatureType = '';
+                            this.pdfViewerBase.formFieldCollection[i].FormField.value = '';
+                            this.pdfViewerBase.formFieldCollection[i].FormField.signatureType = '';
+                        }
+                    }
+
+                    this.pdfViewer.remove(actionObject.annotation);
+                    this.pdfViewer.renderDrawing();
+                    window.sessionStorage.setItem(this.pdfViewerBase.documentId + '_formDesigner', JSON.stringify(this.pdfViewerBase.formFieldCollection));
+                }
             }
             this.redoCollection.push(actionObject);
             this.updateToolbar();
@@ -1448,93 +1635,126 @@ export class Annotation {
                     this.pdfViewer.nodePropertyChange(actionObject.annotation, { notes: actionObject.redoElement.notes });
                     this.updateCalibrateValues(actionObject.annotation);
                 }
+                if (actionObject.annotation.formFieldAnnotationType) {
+                    this.pdfViewer.formDesigner.updateHTMLElement(actionObject.annotation);
+                }
                 this.pdfViewer.clearSelection(this.pdfViewerBase.activeElements.activePageID);
                 this.pdfViewer.select([actionObject.annotation.id]);
                 // eslint-disable-next-line max-len
                 if (actionObject.annotation.shapeAnnotationType === 'Line' || actionObject.annotation.shapeAnnotationType === 'Rectangle' || actionObject.annotation.shapeAnnotationType === 'Ellipse' || actionObject.annotation.shapeAnnotationType === 'Polygon' || actionObject.annotation.shapeAnnotationType === 'LineWidthArrowHead'
-                        || actionObject.annotation.shapeAnnotationType === 'Radius' || actionObject.annotation.shapeAnnotationType === 'FreeText' || actionObject.annotation.shapeAnnotationType === 'HandWrittenSignature' || actionObject.annotation.shapeAnnotationType === 'Ink') {
+                        || actionObject.annotation.shapeAnnotationType === 'Radius' || actionObject.annotation.shapeAnnotationType === 'FreeText' || actionObject.annotation.shapeAnnotationType === 'HandWrittenSignature' ||actionObject.annotation.shapeAnnotationType === 'SignatureText'|| actionObject.annotation.shapeAnnotationType === 'SignatureImage' || actionObject.annotation.shapeAnnotationType === 'Ink') {
                     this.modifyInCollections(actionObject.annotation, 'bounds');
                 }
                 break;
-            case 'Addition':
-                // eslint-disable-next-line max-len
-                if (shapeType === 'Line' || shapeType === 'LineWidthArrowHead' || shapeType === 'Polygon' || shapeType === 'Ellipse' || shapeType === 'Rectangle' || shapeType === 'Radius' || shapeType === 'Distance') {
-                    if (actionObject.annotation.measureType === '' || isNullOrUndefined(actionObject.annotation.measureType)) {
-                        shapeType = 'shape';
-                        this.shapeAnnotationModule.addInCollection(actionObject.annotation.pageIndex, actionObject.duplicate);
-                    } else {
-                        shapeType = 'shape_measure';
-                        this.measureAnnotationModule.addInCollection(actionObject.annotation.pageIndex, actionObject.duplicate);
+            case 'Addition':    
+                if (this.pdfViewer.formDesigner && actionObject.annotation.formFieldAnnotationType) {
+                    actionObject.redoElement.bounds.x = actionObject.redoElement.wrapper.bounds.x;
+                    actionObject.redoElement.bounds.y = actionObject.redoElement.wrapper.bounds.y;
+                    this.pdfViewer.formDesigner.drawFormField(actionObject.redoElement as any);
+                } else {
+                    // eslint-disable-next-line max-len
+                    if (shapeType === 'Line' || shapeType === 'LineWidthArrowHead' || shapeType === 'Polygon' || shapeType === 'Ellipse' || shapeType === 'Rectangle' || shapeType === 'Radius' || shapeType === 'Distance') {
+                        if (actionObject.annotation.measureType === '' || isNullOrUndefined(actionObject.annotation.measureType)) {
+                            shapeType = 'shape';
+                            this.shapeAnnotationModule.addInCollection(actionObject.annotation.pageIndex, actionObject.duplicate);
+                        } else {
+                            shapeType = 'shape_measure';
+                            this.measureAnnotationModule.addInCollection(actionObject.annotation.pageIndex, actionObject.duplicate);
+                        }
                     }
-                }
-                if (shapeType === 'FreeText') {
-                    this.freeTextAnnotationModule.addInCollection(actionObject.annotation.pageIndex, actionObject.duplicate);
-                }
-                if (shapeType === 'Stamp') {
-                    this.stampAnnotationModule.updateDeleteItems(actionObject.annotation.pageIndex, actionObject.redoElement);
-                }
-                if (shapeType === 'HandWrittenSignature') {
-                    this.pdfViewerBase.signatureModule.addInCollection(actionObject.annotation.pageIndex, actionObject.duplicate);
-                }
-                if (shapeType === 'Ink') {
-                    this.inkAnnotationModule.addInCollection(actionObject.annotation.pageIndex, actionObject.duplicate);
-                }
-                const addedAnnot: PdfAnnotationBaseModel = this.pdfViewer.add(actionObject.annotation);
-                this.pdfViewer.select([actionObject.annotation.id]);
-                if ((shapeType === 'FreeText' || addedAnnot.enableShapeLabel) && addedAnnot) {
-                    this.pdfViewer.nodePropertyChange(addedAnnot, {});
-                }
-                this.pdfViewer.renderDrawing(null, actionObject.annotation.pageIndex);
-                // eslint-disable-next-line max-len
-                this.pdfViewer.annotationModule.stickyNotesAnnotationModule.addAnnotationComments(actionObject.annotation.pageIndex, shapeType);
-                if (Browser.isDevice && !this.pdfViewer.enableDesktopMode) {
-                    let mobileAnnotationToolbar: HTMLElement = document.getElementById(this.pdfViewer.element.id + '_propertyToolbar');
-                    if (mobileAnnotationToolbar && mobileAnnotationToolbar.children.length > 0) {
-                        this.pdfViewer.toolbarModule.annotationToolbarModule.toolbarCreated = false;
-                        this.pdfViewer.toolbarModule.annotationToolbarModule.createAnnotationToolbarForMobile();
+                    if (shapeType === 'FreeText') {
+                        this.freeTextAnnotationModule.addInCollection(actionObject.annotation.pageIndex, actionObject.duplicate);
+                    }
+                    if (shapeType === 'Stamp') {
+                        this.stampAnnotationModule.updateDeleteItems(actionObject.annotation.pageIndex, actionObject.redoElement);
+                    }
+                    if (shapeType === 'HandWrittenSignature' || shapeType === 'SignatureText' || shapeType === 'SignatureImage') {
+                        this.pdfViewerBase.signatureModule.addInCollection(actionObject.annotation.pageIndex, actionObject.duplicate);
+                    }
+                    if (shapeType === 'Ink') {
+                        this.inkAnnotationModule.addInCollection(actionObject.annotation.pageIndex, actionObject.duplicate);
+                    }
+                    const addedAnnot: PdfAnnotationBaseModel = this.pdfViewer.add(actionObject.annotation);
+                    this.pdfViewer.select([actionObject.annotation.id]);
+                    if ((shapeType === 'FreeText' || addedAnnot.enableShapeLabel) && addedAnnot) {
+                        this.pdfViewer.nodePropertyChange(addedAnnot, {});
+                    }
+                    this.pdfViewer.renderDrawing(null, actionObject.annotation.pageIndex);
+                    // eslint-disable-next-line max-len
+                    this.pdfViewer.annotationModule.stickyNotesAnnotationModule.addAnnotationComments(actionObject.annotation.pageIndex, shapeType);
+                    if (Browser.isDevice && !this.pdfViewer.enableDesktopMode) {
+                        let mobileAnnotationToolbar: HTMLElement = document.getElementById(this.pdfViewer.element.id + '_propertyToolbar');
+                        if (mobileAnnotationToolbar && mobileAnnotationToolbar.children.length > 0) {
+                            this.pdfViewer.toolbarModule.annotationToolbarModule.toolbarCreated = false;
+                            this.pdfViewer.toolbarModule.annotationToolbarModule.createAnnotationToolbarForMobile();
+                        }
                     }
                 }
                 break;
             case 'Delete':
-                let isUpdate: boolean = false;
-                let sType: string = actionObject.annotation.shapeAnnotationType;
-                // eslint-disable-next-line max-len
-                if (shapeType === 'Line' || shapeType === 'LineWidthArrowHead' || shapeType === 'Polygon' || shapeType === 'Ellipse' || shapeType === 'Rectangle' || shapeType === 'Radius' || shapeType === 'Distance') {
-                    if (actionObject.annotation.measureType === '' || isNullOrUndefined(actionObject.annotation.measureType)) {
-                        sType = 'shape';
-                    } else {
-                        sType = 'measure';
+                if (this.pdfViewer.formDesigner && actionObject.annotation.formFieldAnnotationType) {
+                    this.pdfViewer.formDesigner.deleteFormField(actionObject.redoElement.id, false)
+                } else {
+                    let isUpdate: boolean = false;
+                    let sType: string = actionObject.annotation.shapeAnnotationType;
+                    // eslint-disable-next-line max-len
+                    if (shapeType === 'Line' || shapeType === 'LineWidthArrowHead' || shapeType === 'Polygon' || shapeType === 'Ellipse' || shapeType === 'Rectangle' || shapeType === 'Radius' || shapeType === 'Distance') {
+                        if (actionObject.annotation.measureType === '' || isNullOrUndefined(actionObject.annotation.measureType)) {
+                            sType = 'shape';
+                        } else {
+                            sType = 'measure';
+                        }
+                        // eslint-disable-next-line max-len
+                        this.pdfViewer.annotation.stickyNotesAnnotationModule.findPosition(actionObject.annotation, sType, 'delete');
+                        this.modifyInCollections(actionObject.annotation, 'delete');
+                        isUpdate = true;
                     }
-                    // eslint-disable-next-line max-len
-                    this.pdfViewer.annotation.stickyNotesAnnotationModule.findPosition(actionObject.annotation, sType, 'delete');
-                    this.modifyInCollections(actionObject.annotation, 'delete');
-                    isUpdate = true;
-                }
-                if (shapeType === 'Stamp') {
-                    // eslint-disable-next-line max-len
-                    this.pdfViewer.annotation.stickyNotesAnnotationModule.findPosition(actionObject.annotation, sType, 'delete');
-                    this.stampAnnotationModule.updateSessionStorage(actionObject.annotation, null, 'delete');
-                    isUpdate = true;
-                }
-                if (shapeType === 'FreeText' || shapeType === 'HandWrittenSignature') {
-                    // eslint-disable-next-line max-len
-                    this.pdfViewer.annotation.stickyNotesAnnotationModule.findPosition(actionObject.annotation, sType, 'delete');
-                    this.modifyInCollections(actionObject.annotation, 'delete');
-                }
-                if (!isUpdate) {
-                    // eslint-disable-next-line max-len
-                    this.pdfViewer.annotation.stickyNotesAnnotationModule.findPosition(actionObject.annotation, sType, 'delete');
-                }
-                this.pdfViewer.clearSelection(actionObject.annotation.pageIndex);
-                this.pdfViewer.remove(actionObject.annotation);
-                this.pdfViewer.renderDrawing(null, actionObject.annotation.pageIndex);
-                // eslint-disable-next-line
-                    let removeDiv: any = document.getElementById(actionObject.annotation.annotName);
-                if (removeDiv) {
-                    if (removeDiv.parentElement.childElementCount === 1) {
-                        this.stickyNotesAnnotationModule.updateAccordionContainer(removeDiv);
-                    } else {
-                        removeDiv.remove();
+                    if (shapeType === 'Stamp') {
+                        // eslint-disable-next-line max-len
+                        this.pdfViewer.annotation.stickyNotesAnnotationModule.findPosition(actionObject.annotation, sType, 'delete');
+                        this.stampAnnotationModule.updateSessionStorage(actionObject.annotation, null, 'delete');
+                        isUpdate = true;
+                    }
+                    if (shapeType === 'FreeText' || shapeType === 'HandWrittenSignature' || shapeType === 'SignatureText' || shapeType === 'SignatureImage') {
+                        // eslint-disable-next-line max-len
+                        this.pdfViewer.annotation.stickyNotesAnnotationModule.findPosition(actionObject.annotation, sType, 'delete');
+                        this.modifyInCollections(actionObject.annotation, 'delete');
+                    }
+                    if (!isUpdate) {
+                        // eslint-disable-next-line max-len
+                        this.pdfViewer.annotation.stickyNotesAnnotationModule.findPosition(actionObject.annotation, sType, 'delete');
+                    }
+                    
+                    let formFieldObj:PdfAnnotationBase = (this.pdfViewer.nameTable as any)[actionObject.annotation.id.split("_")[0]];
+                    if (formFieldObj != null && (formFieldObj.formFieldAnnotationType === 'SignatureField' || formFieldObj.formFieldAnnotationType === 'InitialField') ) {
+                        formFieldObj.wrapper.children.splice(formFieldObj.wrapper.children.indexOf(actionObject.annotation.wrapper.children[0]), 1);
+                        if (actionObject.annotation.shapeAnnotationType === "SignatureText")
+                            formFieldObj.wrapper.children.splice(formFieldObj.wrapper.children.indexOf(actionObject.annotation.wrapper.children[1]), 1);
+                        let key: string = actionObject.annotation.id.split('_')[0] + '_content';
+                        var data = window.sessionStorage.getItem(this.pdfViewerBase.documentId + '_formDesigner');
+                        var formFieldsData = JSON.parse(data);
+                        for (let i: number = 0; i < formFieldsData.length; i++) {
+                            if (formFieldsData[i].Key === key) {
+                                formFieldsData[i].FormField.value = '';
+                                formFieldsData[i].FormField.signatureType = '';
+                                this.pdfViewerBase.formFieldCollection[i].FormField.value = '';
+                                this.pdfViewerBase.formFieldCollection[i].FormField.signatureType = '';
+                            }
+                        }
+                        window.sessionStorage.setItem(this.pdfViewerBase.documentId + '_formDesigner', JSON.stringify(this.pdfViewerBase.formFieldCollection));
+                    }
+
+                    this.pdfViewer.clearSelection(actionObject.annotation.pageIndex);
+                    this.pdfViewer.remove(actionObject.annotation);
+                    this.pdfViewer.renderDrawing(null, actionObject.annotation.pageIndex);
+                    // eslint-disable-next-line
+                        let removeDiv: any = document.getElementById(actionObject.annotation.annotName);
+                    if (removeDiv) {
+                        if (removeDiv.parentElement.childElementCount === 1) {
+                            this.stickyNotesAnnotationModule.updateAccordionContainer(removeDiv);
+                        } else {
+                            removeDiv.remove();
+                        }
                     }
                 }
                 break;
@@ -1641,6 +1861,57 @@ export class Annotation {
                 this.pdfViewer.nodePropertyChange(actionObject.annotation.annotations[0], { bounds: actionObject.redoElement.bounds, rotateAngle: actionObject.redoElement.rotateAngle });
                 this.modifyInCollections(actionObject.annotation.annotations[0], 'bounds');
                 this.pdfViewer.renderDrawing();
+                break;
+            case 'FormDesigner Properties Change':
+                this.updateFormFieldPropertiesChanges(actionObject.redoElement.formFieldAnnotationType, actionObject.redoElement);    
+                break;
+            case 'FormField Value Change':
+                if (actionObject.annotation.formFieldAnnotationType) {
+                    if (actionObject.annotation.formFieldAnnotationType == "RadioButton") {
+                        this.updateFormFieldValueChange(actionObject.annotation.formFieldAnnotationType, actionObject.undoElement, true);                     
+                        this.updateFormFieldValueChange(actionObject.annotation.formFieldAnnotationType, actionObject.redoElement, false);       
+                    }
+                    else {
+                        this.updateFormFieldValueChange(actionObject.annotation.formFieldAnnotationType, actionObject.annotation, actionObject.redoElement);                     
+                    }
+                } else {     
+                    let spanElement : any = document.getElementById(actionObject.annotation.id + "_html_element").children[0].children[0];
+                    spanElement.className = 'e-pdfviewer-signatureformfields-signature';    
+                    let formFieldObj:PdfAnnotationBase = (this.pdfViewer.nameTable as any)[actionObject.annotation.id.split("_")[0]]; 
+                    let annotationObj:PdfAnnotationBase = (this.pdfViewer.nameTable as any)[actionObject.annotation.id];     
+                    formFieldObj.wrapper.children.push(annotationObj.wrapper.children[0]);
+                    if (actionObject.annotation.shapeAnnotationType === "SignatureText")
+                        formFieldObj.wrapper.children.push(annotationObj.wrapper.children[1]);
+                    let key: string = actionObject.annotation.id.split('_')[0] + '_content';
+                    var data = window.sessionStorage.getItem(this.pdfViewerBase.documentId + '_formDesigner');
+                    var formFieldsData = JSON.parse(data);
+                    for (let i: number = 0; i < formFieldsData.length; i++) {
+                        if (formFieldsData[i].Key === key) {
+                            if (actionObject.annotation.shapeAnnotationType === "SignatureText") {
+                                formFieldsData[i].FormField.signatureType = "Text";
+                                formFieldsData[i].FormField.value = actionObject.annotation.data;
+                                this.pdfViewerBase.formFieldCollection[i].FormField.value = actionObject.annotation.data;
+                                this.pdfViewerBase.formFieldCollection[i].FormField.signatureType = "Text";
+                            } else if (actionObject.annotation.shapeAnnotationType === "SignatureImage") {
+                                formFieldsData[i].FormField.signatureType = "Image";
+                                formFieldsData[i].FormField.value = actionObject.annotation.data;
+                                this.pdfViewerBase.formFieldCollection[i].FormField.value = actionObject.annotation.data;
+                                this.pdfViewerBase.formFieldCollection[i].FormField.signatureType = "Image";
+                            } else {
+                                formFieldsData[i].FormField.signatureType = "Path";
+                                this.pdfViewerBase.formFieldCollection[i].FormField.signatureType = "Path";
+                                let collectionData: any = processPathData(actionObject.annotation.data);
+                                let csData: any = splitArrayCollection(collectionData);
+                                formFieldsData[i].FormField.value = JSON.stringify(csData);
+                                this.pdfViewerBase.formFieldCollection[i].FormField.value = JSON.stringify(csData);
+                            }
+                        }
+                    }
+                    this.pdfViewer.add(actionObject.annotation);
+                    let canvass: any = document.getElementById(this.pdfViewer.element.id + '_annotationCanvas_' + actionObject.pageIndex);
+                    this.pdfViewer.renderDrawing(canvass as any, actionObject.pageIndex);
+                    window.sessionStorage.setItem(this.pdfViewerBase.documentId + '_formDesigner', JSON.stringify(this.pdfViewerBase.formFieldCollection));
+                }
             }
             if (actionObject.redoElement && actionObject.redoElement.modifiedDate !== undefined) {
                 actionObject.annotation.modifiedDate = actionObject.redoElement.modifiedDate;
@@ -1648,6 +1919,76 @@ export class Annotation {
             this.actionCollection.push(actionObject);
             this.updateToolbar();
             this.isUndoRedoAction = false;
+        }
+    }
+
+    private updateFormFieldValueChange(formFieldAnnotationType : any, annotation : any, value : any) : void {
+        if (annotation) {
+            var formFieldModel = this.pdfViewer.formDesigner.getFormField(annotation.id.split("_")[0]);
+            var data = window.sessionStorage.getItem(this.pdfViewerBase.documentId + '_formDesigner');
+            var formFieldsData = JSON.parse(data);
+            let index : number = this.pdfViewer.formDesigner.getFormFiledIndex(annotation.id.split('_')[0]);
+            switch (formFieldAnnotationType) {
+                case 'Textbox':
+                case 'PasswordField':
+                case 'RadioButton':
+                case 'DropdownList':
+                case 'ListBox':
+                    let inputElement: Element = document.getElementById(annotation.id.split("_")[0] + "_content_html_element").firstElementChild.firstElementChild;
+                    if (formFieldAnnotationType == 'Textbox' || formFieldAnnotationType == 'PasswordField') {
+                        formFieldModel.value = value;
+                        this.pdfViewer.formDesigner.updateValuePropertyChange(formFieldModel, inputElement, true, index, formFieldsData);
+                    }
+                    else if (formFieldAnnotationType == 'RadioButton') {
+                        formFieldModel.isSelected = value;
+                        this.pdfViewer.formDesigner.updateIsSelectedPropertyChange(formFieldModel, inputElement.firstElementChild as IElement, true, index, formFieldsData);
+                    }
+                    else if (formFieldAnnotationType == 'DropdownList' || formFieldAnnotationType == 'ListBox') {
+                        formFieldModel.selectedIndex = value;
+                        formFieldsData[index].FormField.selectedIndex = value;
+                        this.pdfViewerBase.formFieldCollection[index].FormField.selectedIndex = value;
+                        (this.pdfViewer.nameTable as any)[formFieldsData[index].Key.split("_")[0]].selectedIndex = value;
+                        if (formFieldAnnotationType == 'ListBox') {
+                            for (let k: number = 0; k < (inputElement as IElement).options.length; k++) {
+                                (inputElement as IElement).options[k].selected = value.includes(k) ? true : false;
+                            }
+                        }
+                        else {
+                            (inputElement as IElement).selectedIndex = value;
+                        }
+                    }
+                    break;
+                case 'Checkbox':
+                    let checkboxDivElement: Element = document.getElementById(annotation.id.split("_")[0] + "_content_html_element").firstElementChild.firstElementChild.lastElementChild;
+                    formFieldModel.isChecked = value;
+                    this.pdfViewer.formDesigner.updateIsCheckedPropertyChange(formFieldModel, checkboxDivElement, true, index, formFieldsData);
+                    break;
+            }
+            window.sessionStorage.setItem(this.pdfViewerBase.documentId + '_formDesigner', JSON.stringify(this.pdfViewerBase.formFieldCollection));
+        }
+    }
+
+    private updateFormFieldPropertiesChanges(formFieldAnnotationType: string, element: any): void {
+        switch(formFieldAnnotationType) {
+            case 'Textbox':
+            case 'PasswordField':
+                this.pdfViewer.formDesigner.updateTextboxFormDesignerProperties(element, true);
+                break;
+            case 'Checkbox':
+                this.pdfViewer.formDesigner.updateCheckboxFormDesignerProperties(element, true);
+                break;
+            case 'RadioButton':
+                this.pdfViewer.formDesigner.updateRadioButtonDesignerProperties(element, true);
+                break;
+            case 'DropdownList':
+                this.pdfViewer.formDesigner.updateDropdownFormDesignerProperties(element, true);
+                break;
+            case 'ListBox':
+                this.pdfViewer.formDesigner.updateListBoxFormDesignerProperties(element, true);
+                break;
+            case 'SignatureField':
+            case 'InitialField':
+                 this.pdfViewer.formDesigner.updateSignatureTextboxProperties(element, true);
         }
     }
 
@@ -1893,7 +2234,7 @@ export class Annotation {
             } else {
                 this.modifyInCollections(currentAnnotation, 'opacity');
             }
-            if (currentAnnotation.shapeAnnotationType === 'HandWrittenSignature') {
+            if (currentAnnotation.shapeAnnotationType === 'HandWrittenSignature' || currentAnnotation.shapeAnnotationType === 'SignatureImage' || currentAnnotation.shapeAnnotationType === 'SignatureText') {
                 // eslint-disable-next-line max-len
                 this.pdfViewer.fireSignaturePropertiesChange(currentAnnotation.pageIndex, currentAnnotation.signatureName, currentAnnotation.shapeAnnotationType as AnnotationType, false, true, false, clonedObject.opacity, redoClonedObject.opacity);
             } else {
@@ -2048,7 +2389,7 @@ export class Annotation {
         redoClonedObject.thickness = thicknessValue;
         this.pdfViewer.nodePropertyChange(currentAnnotation, { thickness: thicknessValue });
         this.modifyInCollections(currentAnnotation, 'thickness');
-        if (currentAnnotation.shapeAnnotationType === 'HandWrittenSignature') {
+        if (currentAnnotation.shapeAnnotationType === 'HandWrittenSignature' || currentAnnotation.shapeAnnotationType === 'SignatureText' || currentAnnotation.shapeAnnotationType === 'SignatureImage') {
             // eslint-disable-next-line max-len
             this.pdfViewer.fireSignaturePropertiesChange(currentAnnotation.pageIndex, currentAnnotation.signatureName, currentAnnotation.shapeAnnotationType as AnnotationType, false, false, true, clonedObject.thickness, redoClonedObject.thickness);
         } else {
@@ -2070,7 +2411,7 @@ export class Annotation {
         redoClonedObject.strokeColor = color;
         this.pdfViewer.nodePropertyChange(currentAnnotation, { strokeColor: color });
         this.modifyInCollections(currentAnnotation, 'stroke');
-        if (currentAnnotation.shapeAnnotationType === 'HandWrittenSignature') {
+        if (currentAnnotation.shapeAnnotationType === 'HandWrittenSignature' || currentAnnotation.shapeAnnotationType === 'SignatureText' || currentAnnotation.shapeAnnotationType === 'SignatureImage') {
             // eslint-disable-next-line max-len
             this.pdfViewer.fireSignaturePropertiesChange(currentAnnotation.pageIndex, currentAnnotation.signatureName, currentAnnotation.shapeAnnotationType as AnnotationType, true, false, false, clonedObject.strokeColor, redoClonedObject.strokeColor);
         } else {
@@ -2129,7 +2470,7 @@ export class Annotation {
         if (annotationBase.measureType === '' || isNullOrUndefined(annotationBase.measureType)) {
             if (annotationBase.shapeAnnotationType === 'FreeText') {
                 returnObj = this.freeTextAnnotationModule.modifyInCollection(property, annotationBase.pageIndex, annotationBase);
-            } else if (annotationBase.shapeAnnotationType === 'HandWrittenSignature') {
+            } else if (annotationBase.shapeAnnotationType === 'HandWrittenSignature' || annotationBase.shapeAnnotationType === 'SignatureText' || annotationBase.shapeAnnotationType === 'SignatureImage') {
                 // eslint-disable-next-line max-len
                 returnObj = this.pdfViewerBase.signatureModule.modifySignatureCollection(property, annotationBase.pageIndex, annotationBase);
             } else if (annotationBase.shapeAnnotationType === 'Stamp') {
@@ -2754,7 +3095,7 @@ export class Annotation {
             }
             this.pdfViewerBase.disableTextSelectionMode();
         } else {
-            if (this.pdfViewer.textSelectionModule && !this.pdfViewerBase.isPanMode) {
+            if (this.pdfViewer.textSelectionModule && !this.pdfViewerBase.isPanMode && !this.pdfViewer.designerMode) {
                 this.pdfViewer.textSelectionModule.enableTextSelectionMode();
             }
             // eslint-disable-next-line max-len
@@ -2820,7 +3161,7 @@ export class Annotation {
                     if (pdfAnnotationBase.shapeAnnotationType === 'FreeText') {
                         // eslint-disable-next-line max-len
                         this.pdfViewer.annotation.freeTextAnnotationModule.modifyInCollection('bounds', this.pdfViewer.annotation.getEventPageNumber(event), pdfAnnotationBase);
-                    } else if (pdfAnnotationBase.shapeAnnotationType === 'HandWrittenSignature') {
+                    } else if (pdfAnnotationBase.shapeAnnotationType === 'HandWrittenSignature' || pdfAnnotationBase.shapeAnnotationType === 'SignatureImage' || pdfAnnotationBase.shapeAnnotationType === 'SignatureText') {
                         // eslint-disable-next-line max-len
                         this.pdfViewerBase.signatureModule.modifySignatureCollection('bounds', this.pdfViewer.annotation.getEventPageNumber(event), pdfAnnotationBase);
                     } else if (pdfAnnotationBase.shapeAnnotationType === 'Ink') {
@@ -2838,11 +3179,15 @@ export class Annotation {
                     this.pdfViewer.annotation.measureAnnotationModule.modifyInCollection('bounds', this.pdfViewer.annotation.getEventPageNumber(event), pdfAnnotationBase);
                 }
                 if (this.pdfViewerBase.tool instanceof ResizeTool) {
+                    if(!pdfAnnotationBase.formFieldAnnotationType) {
                     this.triggerAnnotationResize(pdfAnnotationBase);
+                  } 
                 }
                 if (this.pdfViewerBase.tool instanceof MoveTool) {
                     if (this.pdfViewerBase.action !== 'Select') {
+                        if(!pdfAnnotationBase.formFieldAnnotationType) {
                         this.triggerAnnotationMove(pdfAnnotationBase);
+                        }
                     }
                 }
             } else if (this.pdfViewerBase.tool instanceof ConnectTool) {
@@ -2864,7 +3209,7 @@ export class Annotation {
                 this.triggerAnnotationResize(pdfAnnotationBase);
             }
             // eslint-disable-next-line max-len
-            if (this.pdfViewerBase.navigationPane && this.pdfViewerBase.navigationPane.annotationMenuObj && this.pdfViewer.isSignatureEditable && pdfAnnotationBase.shapeAnnotationType === 'HandWrittenSignature') {
+            if (this.pdfViewerBase.navigationPane && this.pdfViewerBase.navigationPane.annotationMenuObj && this.pdfViewer.isSignatureEditable && (pdfAnnotationBase.shapeAnnotationType === 'HandWrittenSignature' || pdfAnnotationBase.shapeAnnotationType === 'SignatureText' || pdfAnnotationBase.shapeAnnotationType === 'SignatureImage')) {
                 // eslint-disable-next-line max-len
                 this.pdfViewerBase.navigationPane.annotationMenuObj.enableItems([this.pdfViewer.localeObj.getConstant('Export Annotations')], true);
                 // eslint-disable-next-line max-len
@@ -2879,13 +3224,26 @@ export class Annotation {
                     } else if (pdfAnnotationBase.measureType === 'Distance' || pdfAnnotationBase.measureType === 'Perimeter' || pdfAnnotationBase.measureType === 'Area' || pdfAnnotationBase.measureType === 'Volume' || pdfAnnotationBase.measureType === 'Radius') {
                         this.pdfViewer.toolbarModule.annotationToolbarModule.clearShapeMode();
                     }
-                    this.pdfViewer.toolbarModule.annotationToolbarModule.enableAnnotationPropertiesTools(true);
+                    if (this.pdfViewer.selectedItems.annotations.length === 1 && this.pdfViewer.selectedItems.annotations[0].formFieldAnnotationType === null) {
+                        this.pdfViewer.toolbarModule.annotationToolbarModule.enableAnnotationPropertiesTools(true);
+                    }
                     if (!isBlazor()) {
+                        if(this.pdfViewer.selectedItems.annotations.length === 1) {
                         this.pdfViewer.toolbarModule.annotationToolbarModule.selectAnnotationDeleteItem(true);
                         this.pdfViewer.toolbarModule.annotationToolbarModule.setCurrentColorInPicker();
                         this.pdfViewer.toolbarModule.annotationToolbarModule.isToolbarHidden = true;
                         // eslint-disable-next-line max-len
                         this.pdfViewer.toolbarModule.annotationToolbarModule.showAnnotationToolbar(this.pdfViewer.toolbarModule.annotationItem);
+                        if (this.pdfViewer.isAnnotationToolbarVisible && this.pdfViewer.isFormDesignerToolbarVisible) {
+                            let formDesignerMainDiv: HTMLElement = document.getElementById(this.pdfViewer.element.id + "_formdesigner_toolbar");
+                            formDesignerMainDiv.style.display = "none"; 
+                            if (this.pdfViewer.toolbarModule) {
+                            this.pdfViewer.toolbarModule.formDesignerToolbarModule.isToolbarHidden = false;
+                            this.pdfViewer.toolbarModule.formDesignerToolbarModule.showFormDesignerToolbar( this.pdfViewer.toolbarModule.formDesignerItem);
+                            this.pdfViewer.toolbarModule.annotationToolbarModule.adjustViewer(true);
+                             }
+                            }
+                        }
                     }
                 }
             }
@@ -2955,7 +3313,7 @@ export class Annotation {
      * @private
      */
     public onAnnotationMouseDown(): void {
-        if (this.pdfViewer.selectedItems.annotations.length === 1) {
+        if (this.pdfViewer.selectedItems.annotations.length === 1 && this.pdfViewer.selectedItems.annotations[0].formFieldAnnotationType===null) {
             if (this.pdfViewer.toolbar && this.pdfViewer.toolbar.annotationToolbarModule) {
                 if (!isBlazor() && Browser.isDevice && !this.pdfViewer.enableDesktopMode) {
                     let commentPanel: HTMLElement = document.getElementById(this.pdfViewer.element.id + '_commantPanel');
@@ -3008,7 +3366,9 @@ export class Annotation {
                 } else if (this.pdfViewer.selectedItems.annotations[0].shapeAnnotationType === 'Ink') {
                     this.pdfViewer.toolbar.annotationToolbarModule.enableSignaturePropertiesTools(true);
                 } else {
+                    if (this.pdfViewer.selectedItems.annotations.length === 1 && this.pdfViewer.selectedItems.annotations[0].formFieldAnnotationType === null) {
                     this.pdfViewer.toolbar.annotationToolbarModule.enableAnnotationPropertiesTools(true);
+                    }
                 }
             }
         // eslint-disable-next-line max-len
@@ -3073,6 +3433,8 @@ export class Annotation {
         let eventTarget: HTMLElement = event.target as HTMLElement;
         if (eventTarget.classList.contains('e-pv-hyperlink')) {
             eventTarget = eventTarget.parentElement;
+        } else if(eventTarget.parentElement.classList.contains('foreign-object')) {
+            eventTarget = eventTarget.parentElement.parentElement.parentElement.parentElement;
         }
         // eslint-disable-next-line
         let pageString: any = eventTarget.id.split('_text_')[1] || eventTarget.id.split('_textLayer_')[1] || eventTarget.id.split('_annotationCanvas_')[1] || eventTarget.id.split('_pageDiv_')[1];
@@ -3690,7 +4052,7 @@ export class Annotation {
             setting.borderDashArray = pdfAnnotationBase.borderDashArray;
         }
         let labelSettings: ShapeLabelSettingsModel;
-        if (this.pdfViewer.enableShapeLabel && pdfAnnotationBase.shapeAnnotationType !== 'HandWrittenSignature') {
+        if (this.pdfViewer.enableShapeLabel && (pdfAnnotationBase.shapeAnnotationType !== 'HandWrittenSignature' )) {
             labelSettings = {
                 // eslint-disable-next-line max-len
                 fontColor: pdfAnnotationBase.fontColor, fontSize: pdfAnnotationBase.fontSize, fontFamily: pdfAnnotationBase.fontFamily,
@@ -3699,7 +4061,7 @@ export class Annotation {
             // eslint-disable-next-line max-len
             this.pdfViewer.fireAnnotationResize(pdfAnnotationBase.pageIndex, pdfAnnotationBase.annotName, type, currentPosition, setting, null, null, null, labelSettings);
         } else {
-            if (pdfAnnotationBase.shapeAnnotationType === 'HandWrittenSignature') {
+            if (pdfAnnotationBase.shapeAnnotationType === 'HandWrittenSignature' || pdfAnnotationBase.shapeAnnotationType === 'SignatureText' || pdfAnnotationBase.shapeAnnotationType === 'SignatureImage') {
                 // eslint-disable-next-line max-len
                 this.pdfViewer.fireSignatureResize(pdfAnnotationBase.pageIndex, pdfAnnotationBase.signatureName, pdfAnnotationBase.shapeAnnotationType as AnnotationType, pdfAnnotationBase.opacity, pdfAnnotationBase.strokeColor, pdfAnnotationBase.thickness, currentPosition, previousPosition);
             } else {
@@ -3732,7 +4094,7 @@ export class Annotation {
             setting.lineHeadEndStyle = this.getArrowString(pdfAnnotationBase.taregetDecoraterShapes);
             setting.borderDashArray = pdfAnnotationBase.borderDashArray;
         }
-        if (pdfAnnotationBase.shapeAnnotationType === 'HandWrittenSignature') {
+        if (pdfAnnotationBase.shapeAnnotationType === 'HandWrittenSignature' || pdfAnnotationBase.shapeAnnotationType === 'SignatureText' || pdfAnnotationBase.shapeAnnotationType === 'SignatureImage') {
             // eslint-disable-next-line max-len
             this.pdfViewer.fireSignatureMove(pdfAnnotationBase.pageIndex, pdfAnnotationBase.signatureName, pdfAnnotationBase.shapeAnnotationType as AnnotationType, pdfAnnotationBase.opacity, pdfAnnotationBase.strokeColor, pdfAnnotationBase.thickness, previousPosition, currentPosition);
         } else {
@@ -3952,7 +4314,7 @@ export class Annotation {
             currentAnnotation = this.pdfViewer.selectedItems.annotations[0];
         }
         const pageNumber: number = currentAnnotation.pageIndex;
-        if (currentAnnotation.shapeAnnotationType === 'HandWrittenSignature') {
+        if (currentAnnotation.shapeAnnotationType === 'HandWrittenSignature' || currentAnnotation.shapeAnnotationType === 'SignatureText' || currentAnnotation.shapeAnnotationType === 'SignatureImage') {
             // eslint-disable-next-line
             let clonedObject: any = cloneObject(currentAnnotation);
             // eslint-disable-next-line
@@ -4608,6 +4970,9 @@ export class Annotation {
         newAnnotation.customData = annotation.customData;
         newAnnotation.modifiedDate = this.pdfViewer.annotation.stickyNotesAnnotationModule.getDateAndTime();
         newAnnotation.isPrint = annotation.isPrint;
+        if (annotation.annotationSettings && !isNullOrUndefined(annotation.annotationSettings.isLock)) {
+            newAnnotation.isLocked = annotation.annotationSettings.isLock;
+        }
         return newAnnotation;
     }
 
@@ -4822,7 +5187,7 @@ export class Annotation {
                 }
             }
         }
-        let settings: any = annotation.annotationSettings;
+        let settings: any = annotation ? annotation.annotationSettings: {};
         if (settings && (settings.minWidth || settings.maxWidth || settings.minHeight || settings.maxHeight)) {
             return this.updateSettings(settings);
         }
@@ -5870,5 +6235,119 @@ export class Annotation {
      */
     public getModuleName(): string {
         return 'Annotation';
+    }
+
+    /**
+     * Get vertex points properties 
+     * @private
+     */
+    public getVertexPointsXY(points: any): any {
+        let vertexPoints: any = [];
+        //Converting points model into vertex property
+        for (let j: number = 0; j < points.length; j++) {
+            vertexPoints[j] = {X:points[j].x,Y:points[j].y};
+        }
+        return vertexPoints;
+    }
+
+    /**
+     * Method used to add annotations using program.
+     *
+     * @param annotationType - It describes type of annotation object.
+     * @param options -  It describes about the annotation objects and it's property.
+     * @param dynamicStampItem - It describe which type of dynamic stamp.
+     * @param signStampItem - It describe which type of sign stamp.
+     * @param standardBusinessStampItem - It describe which type of standard business stamp.
+     * @returns void
+     */
+    public addAnnotation(annotationType: AnnotationType, options?: FreeTextSettings | StickyNotesSettings | HighlightSettings | UnderlineSettings | LineSettings| StrikethroughSettings | RectangleSettings | CircleSettings | ArrowSettings | PolygonSettings |DistanceSettings | PerimeterSettings | AreaSettings | RadiusSettings | VolumeSettings | InkAnnotationSettings | StampSettings | CustomStampSettings, dynamicStampItem?: DynamicStampItem, signStampItem?: SignStampItem, standardBusinessStampItem?: StandardBusinessStampItem): void 
+    {
+       //Initialize the bounds and pageNumber
+       let offset: IPoint = { x: 1, y: 1};
+       let pageNumber: number = 0;
+       if(options)
+       {
+           if(options.pageNumber && options.pageNumber > 0)
+               pageNumber = options.pageNumber ? options.pageNumber - 1 : 0;
+       }
+
+       //Initialize the pdf annotation object array
+       let annotationObject: any = null;
+       let pdfAnnotation: any = [];
+
+       //Seperate the annotation type with it's method
+       if(annotationType == 'FreeText')
+       {
+           pdfAnnotation[pageNumber] = this.pdfViewer.annotation.freeTextAnnotationModule.updateAddAnnotationDetails(options as FreeTextSettings, offset);
+           this.pdfViewer.annotation.freeTextAnnotationModule.isAddAnnotationProgramatically=true;
+       }
+       else if(annotationType == 'StickyNotes')
+       {
+           pdfAnnotation[pageNumber] = this.pdfViewer.annotation.stickyNotesAnnotationModule.updateAddAnnotationDetails(options as StickyNotesSettings, offset);    
+           this.pdfViewer.annotation.stickyNotesAnnotationModule.isAddAnnotationProgramatically=true;
+       }
+       else if(annotationType == 'Highlight'||annotationType == 'Underline'||annotationType == 'Strikethrough')
+       {
+           if(annotationType == 'Highlight')
+               annotationObject = options as HighlightSettings;
+           else if(annotationType == 'Underline')
+               annotationObject = options as UnderlineSettings;
+           else if(annotationType == 'Strikethrough')
+               annotationObject = options as StrikethroughSettings;
+           pdfAnnotation[pageNumber] = this.pdfViewer.annotation.textMarkupAnnotationModule.updateAddAnnotationDetails(annotationType, annotationObject);  
+           this.pdfViewer.annotation.textMarkupAnnotationModule.isAddAnnotationProgramatically=true;
+       }
+       else if (annotationType === 'Line' || annotationType === 'Arrow' || annotationType === 'Rectangle' || annotationType === 'Circle' || annotationType === 'Polygon') 
+       {
+           if(annotationType == 'Line')
+               annotationObject = options as LineSettings;
+           else if(annotationType == 'Arrow')
+               annotationObject = options as ArrowSettings;
+           else if(annotationType == 'Rectangle')
+               annotationObject = options as RectangleSettings;
+           else if(annotationType == 'Circle')
+               annotationObject = options as CircleSettings;
+           else if(annotationType == 'Polygon')
+               annotationObject = options as PolygonSettings;
+           pdfAnnotation[pageNumber] = this.pdfViewer.annotation.shapeAnnotationModule.updateAddAnnotationDetails(annotationType, annotationObject, offset);  
+           this.pdfViewer.annotation.shapeAnnotationModule.isAddAnnotationProgramatically=true;
+       }
+       else if (annotationType === 'Distance' || annotationType === 'Perimeter' || annotationType === 'Area' || annotationType === 'Radius' || annotationType === 'Volume') 
+       {
+           if(annotationType == 'Distance')
+               annotationObject = options as DistanceSettings;
+           else if(annotationType == 'Perimeter')
+               annotationObject = options as PerimeterSettings;
+           else if(annotationType == 'Area')
+               annotationObject = options as AreaSettings;
+           else if(annotationType == 'Radius')
+               annotationObject = options as RadiusSettings;
+           else if(annotationType == 'Volume')
+               annotationObject = options as VolumeSettings;
+           pdfAnnotation[pageNumber] = this.pdfViewer.annotation.measureAnnotationModule.updateAddAnnotationDetails(annotationType, annotationObject, offset);
+           this.pdfViewer.annotation.measureAnnotationModule.isAddAnnotationProgramatically=true;
+       }
+       else if (annotationType === 'Stamp')
+       {
+           if((options as CustomStampSettings) && (options as CustomStampSettings).customStamps)
+           {
+              pdfAnnotation[pageNumber] = this.pdfViewer.annotation.stampAnnotationModule.updateAddAnnotationDetails(options as CustomStampSettings, offset, pageNumber,dynamicStampItem, signStampItem, standardBusinessStampItem);
+           }
+           else{
+               pdfAnnotation[pageNumber] = this.pdfViewer.annotation.stampAnnotationModule.updateAddAnnotationDetails(options as StampSettings, offset, pageNumber,dynamicStampItem, signStampItem, standardBusinessStampItem);
+           }
+           this.pdfViewer.annotation.stampAnnotationModule.isAddAnnotationProgramatically=true;
+       }
+       else if (annotationType === 'Ink') 
+       {
+           pdfAnnotation[pageNumber] = this.pdfViewer.annotation.inkAnnotationModule.updateAddAnnotationDetails(options as InkAnnotationSettings, offset, pageNumber);
+           this.pdfViewer.annotation.inkAnnotationModule.isAddAnnotationProgramatically=true;
+       }
+
+       //Annotation rendering can be done with the import annotation method.
+       let pdf: object = {pdfAnnotation};
+       this.pdfViewerBase.isAddAnnotation = true;
+       this.pdfViewerBase.importAnnotations(pdf); 
+       this.pdfViewerBase.isAddAnnotation = false;
     }
 }

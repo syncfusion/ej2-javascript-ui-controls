@@ -4,7 +4,7 @@ import { InsertHtml } from './inserthtml';
 import { IHtmlSubCommands } from './../base/interface';
 /**
  * Selection EXEC internal component
- * 
+ *
  * @hidden
  * @deprecated
  */

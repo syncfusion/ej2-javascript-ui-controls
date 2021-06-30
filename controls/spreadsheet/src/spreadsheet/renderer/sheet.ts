@@ -102,7 +102,7 @@ export class SheetRender implements IRenderer {
         }
     }
 
-    private getScrollSize(addOffset?: boolean): number {
+    public getScrollSize(addOffset?: boolean): number {
         const prop: string = this.parent.enableRtl ? 'margin-left' : 'margin-right';
         return parseInt(this.headerPanel.style[prop], 10) ? parseInt(this.headerPanel.style[prop], 10) + (addOffset ? 1 : 0) : 0;
     }
@@ -290,7 +290,6 @@ export class SheetRender implements IRenderer {
             }
             if (args.left) {
                 content.scrollLeft = args.left; this.parent.getColumnHeaderContent().scrollLeft = args.left;
-                if (this.parent.allowScrolling) { this.parent.getScrollElement().scrollLeft = args.left; }
             }
             this.parent.notify(contentLoaded, args);
             this.checkTableWidth(sheet);
@@ -436,6 +435,7 @@ export class SheetRender implements IRenderer {
                     colGroupWidth = getColGroupWidth(indexes[0] + 1);
                 }
             }
+            if (frozenCol) { hdrRow = (hTBody.lastElementChild as HTMLElement) || hdrRow; }
             cell = row.appendChild(this.cellRenderer.render(<CellRenderArgs>{
                 rowIdx: indexes[0], colIdx: indexes[1], cell: value, address:
                     key, lastCell: indexes[1] === args.indexes[3], row: row, hRow: hdrRow, pRow: row.previousSibling,
@@ -606,6 +606,7 @@ export class SheetRender implements IRenderer {
                     }
                 }
             }
+            if (frozenCol) { hRow = (rFrag.lastElementChild as HTMLElement) || hRow; }
             cell = row.appendChild(this.cellRenderer.render(<CellRenderArgs>{ colIdx: indexes[1], rowIdx: indexes[2], cell: value, address:
                 cKey, lastCell: indexes[1] === args.indexes[3], row: row, pHRow: hRow.previousSibling,
             checkNextBorder: args.direction === 'last' && indexes[2] === args.indexes[2] ? 'Row' : '', pRow: row.previousSibling,

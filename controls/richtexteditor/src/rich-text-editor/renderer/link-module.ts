@@ -275,7 +275,6 @@ export class Link {
             { click: this.cancelDialog.bind(selectObj), buttonModel: { cssClass: 'e-flat', content: linkCancel } }],
             target: (Browser.isDevice) ? document.body : this.parent.element,
             animationSettings: { effect: 'None' },
-            // eslint-disable-next-line
             close: (event: { [key: string]: object }) => {
                 this.parent.isBlur = false;
                 if (event && (event.event as { [key: string]: string }).returnValue) {
@@ -353,7 +352,8 @@ export class Link {
         if (proxy.parent.editorMode === 'HTML' && isNullOrUndefined(
             closest(
                 (this as IImageNotifyArgs).selection.range.startContainer.parentNode, '[id='
-                + "'" + proxy.parent.contentModule.getPanel().id + "'" +']'))) {
+                // eslint-disable-next-line
+                + "'" + proxy.parent.contentModule.getPanel().id + "'" + ']'))) {
             (proxy.parent.contentModule.getEditPanel() as HTMLElement).focus();
             if (Browser.isIE && proxy.parent.iframeSettings.enable) {
                 (this as NotifyArgs).selection.restore();
@@ -379,7 +379,6 @@ export class Link {
         if (proxy.parent.formatter.getUndoRedoStack().length === 0) {
             proxy.parent.formatter.saveData();
         }
-        // eslint-disable-next-line
         let argsValue: KeyboardEvent | MouseEvent | ClickEventArgs | ClipboardEvent | TouchEvent | Object;
         if (((this as NotifyArgs).args as KeyboardEvent).code === 'KeyK') {
             const originalEvent: KeyboardEventArgs = (this as NotifyArgs).args as KeyboardEventArgs;
@@ -387,7 +386,6 @@ export class Link {
                 (this as NotifyArgs).args,
                 { item: { command: 'Links', subCommand: 'CreateLink' } as IToolbarItemModel, originalEvent: originalEvent },
                 true);
-            // eslint-disable-next-line
             const argsVal: Object = {
                 item: { command: 'Links', subCommand: 'CreateLink' } as IToolbarItemModel, originalEvent: originalEvent };
             argsValue = argsVal;
@@ -477,7 +475,8 @@ export class Link {
     private onDocumentClick(e: MouseEvent): void {
         const target: HTMLElement = <HTMLElement>e.target;
         if (!isNullOrUndefined(this.dialogObj) && ((
-            !closest(target, '[id=' + "'" + this.dialogObj.element.id + "'" +']') && this.parent.toolbarSettings.enable &&
+            // eslint-disable-next-line
+            !closest(target, '[id=' + "'" + this.dialogObj.element.id + "'" + ']') && this.parent.toolbarSettings.enable &&
             this.parent.getToolbarElement() && !this.parent.getToolbarElement().contains(e.target as Node)) ||
             (((this.parent.getToolbarElement() && this.parent.getToolbarElement().contains(e.target as Node)) ||
             this.parent.inlineMode.enable && !closest(target, '#' + this.dialogObj.element.id)) &&

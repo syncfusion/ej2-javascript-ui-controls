@@ -132,10 +132,10 @@ export class StatusBar {
         spellCheckBtn.setAttribute('title', 'Spell Checker options');
         const spellCheckItems: ItemModel[] = [
             {
-                text: 'Spell Check'
+                text: this.localObj.getConstant('Spell Check')
             },
             {
-                text: 'Underline errors'
+                text: this.localObj.getConstant('Underline errors')
             }
         ];
         this.spellCheckButton = new DropDownButton({
@@ -149,11 +149,11 @@ export class StatusBar {
                     this.allowSuggestion = this.documentEditor.spellChecker.allowSpellCheckAndSuggestion;
                 }
                 const span: HTMLElement = args.element.children[0] as HTMLElement;
-                if (args.item.text === 'Spell Check' && this.documentEditor.enableSpellCheck &&
+                if (args.item.text === this.localObj.getConstant('Spell Check') && this.documentEditor.enableSpellCheck &&
                     this.documentEditor.spellChecker.enableSpellCheck) {
                     span.style.marginRight = '10px';
                     span.setAttribute('class', 'e-de-selected-spellcheck-item');
-                } else if (args.item.text === 'Underline errors' && this.documentEditor.enableSpellCheck &&
+                } else if (args.item.text === this.localObj.getConstant('Underline errors') && this.documentEditor.enableSpellCheck &&
                     this.documentEditor.spellChecker.enableSpellCheck && !this.documentEditor.spellChecker.removeUnderline) {
                     span.style.marginRight = '10px';
                     span.setAttribute('class', 'e-de-selected-underline-item');

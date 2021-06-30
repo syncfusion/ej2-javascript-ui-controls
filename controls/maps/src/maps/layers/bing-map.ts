@@ -12,7 +12,6 @@ export class BingMap {
     public subDomains: string[];
     public imageUrl: string;
     public maxZoom: string;
-    // eslint-disable-next-line @typescript-eslint/explicit-member-accessibility
     constructor(maps: Maps) {
         this.maps = maps;
     }

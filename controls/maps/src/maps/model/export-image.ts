@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/explicit-member-accessibility */
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import { createElement, Browser } from '@syncfusion/ej2-base';
 import { Maps } from '../../index';
 import { triggerDownload } from '../utils/helper';

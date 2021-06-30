@@ -1169,11 +1169,10 @@ export class Filter implements IAction {
             this.parent.filterSettings.type === 'CheckBox' || this.parent.filterSettings.type === 'Excel') {
             const target: Element = e.target as Element;
             const datepickerEle: boolean = target.classList.contains('e-day'); // due to datepicker popup cause
-            const dialog: Element = this.parent.enableAdaptiveUI ? parentsUntil(this.parent.element, 'e-dialog') :
-                document.querySelector('.e-dialog');
+            const dialog: Element = parentsUntil(this.parent.element, 'e-dialog');
             let hasDialog: boolean = false;
             const popupEle: Element = parentsUntil(target, 'e-popup');
-            const hasDialogClosed: Element = document.querySelector('.e-filter-popup');
+            const hasDialogClosed: Element = this.parent.element.querySelector('.e-filter-popup');
             if (dialog && popupEle) {
                 hasDialog = dialog.id === popupEle.id;
             }

@@ -92,6 +92,6 @@ export const beforeExport: string  = 'beforeExport';
 /** @private */
 export const afterExport: string  = 'afterExport';
 /** @private */
-export const bulletChartMouseClick: string  = 'chartMouseClick';
+export const bulletChartMouseClick: string  = 'bulletChartMouseClick';
 /** @private */
 export const onZooming: string = 'onZooming';

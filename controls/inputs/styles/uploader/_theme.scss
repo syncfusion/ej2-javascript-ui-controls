@@ -4,9 +4,12 @@
 
   .e-upload {
     border: $upload-border;
+    @if $skin-name == 'tailwind' or $skin-name == 'tailwind-dark' {
+      border-radius: $upload-border-radius;
+    }
 
     #{if(&, '&', '*')} .e-file-drop {
-      color: $drop-text-color;
+      color: $file-drop-text-color;
     }
 
     #{if(&, '&', '*')} .e-upload-files {
@@ -69,6 +72,9 @@
 
           #{if(&, '&', '*')} .e-progress-bar-text {
             color: $drop-text-color;
+            @if $skin-name == 'tailwind' or $skin-name == 'tailwind-dark' {
+              color: $progress-text-color;
+            }
           }
         }
       }

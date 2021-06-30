@@ -10,10 +10,16 @@
         @if $skin-name == 'bootstrap4' {
           stroke-width: 1px;
         }
+        @else if $skin-name == 'tailwind' or $skin-name == 'tailwind-dark' {
+          stroke-width: 3px;
+        }
       }
 
       .e-path-arc {
         stroke: $btn-color;
+        @if $skin-name == 'tailwind' or $skin-name == 'tailwind-dark' {
+          stroke-width: 3px;
+        }
       }
     }
 
@@ -39,11 +45,21 @@
           stroke: $btn-flat-primary-color;
 
           .e-path-circle {
-            stroke: fade-out($btn-flat-primary-color, $progress-btn-circle-opacity);
+            @if $skin-name == 'tailwind' or $skin-name == 'tailwind-dark' {
+              stroke: fade-out($btn-flat-primary-path-arc, $progress-btn-circle-opacity);
+            }
+            @else {
+              stroke: fade-out($btn-flat-primary-color, $progress-btn-circle-opacity);
+            }
           }
 
           .e-path-arc {
-            stroke: $btn-flat-primary-color;
+            @if $skin-name == 'tailwind' or $skin-name == 'tailwind-dark' {
+              stroke: $btn-flat-primary-path-arc;
+            }
+            @else {
+              stroke: $btn-flat-primary-color;
+            }
           }
          }
        }
@@ -71,11 +87,21 @@
           stroke: $btn-flat-success-color;
 
           .e-path-circle {
-            stroke: fade-out($btn-flat-success-color, $progress-btn-circle-opacity);
+            @if $skin-name == 'tailwind' or $skin-name == 'tailwind-dark' {
+              stroke: fade-out($btn-flat-primary-path-arc, $progress-btn-circle-opacity);
+            }
+            @else {
+              stroke: fade-out($btn-flat-success-color, $progress-btn-circle-opacity);
+            }
            }
 
           .e-path-arc {
-            stroke: $btn-flat-success-color;
+            @if $skin-name == 'tailwind' or $skin-name == 'tailwind-dark' {
+              stroke: $btn-flat-primary-path-arc;
+            }
+            @else {
+              stroke: $btn-flat-success-color;
+            }
           }
         }
       }
@@ -103,11 +129,21 @@
           stroke: $btn-flat-info-color;
 
           .e-path-circle {
-            stroke: fade-out($btn-flat-info-color, $progress-btn-circle-opacity);
+            @if $skin-name == 'tailwind' or $skin-name == 'tailwind-dark' {
+              stroke: fade-out($btn-flat-primary-path-arc, $progress-btn-circle-opacity);
+            }
+            @else {
+              stroke: fade-out($btn-flat-info-color, $progress-btn-circle-opacity);
+            }
           }
 
           .e-path-arc {
-            stroke: $btn-flat-info-color;
+            @if $skin-name == 'tailwind' or $skin-name == 'tailwind-dark' {
+              stroke: $btn-flat-primary-path-arc;
+            }
+            @else {
+              stroke: $btn-flat-info-color;
+            }
           }
         }
       }
@@ -135,11 +171,21 @@
           stroke: $btn-flat-warning-color;
 
           .e-path-circle {
-            stroke: fade-out($btn-flat-warning-color, $progress-btn-circle-opacity);
+            @if $skin-name == 'tailwind' or $skin-name == 'tailwind-dark' {
+              stroke: fade-out($btn-flat-primary-path-arc, $progress-btn-circle-opacity);
+            }
+            @else {
+              stroke: fade-out($btn-flat-warning-color, $progress-btn-circle-opacity);
+            }
           }
 
           .e-path-arc {
-            stroke: $btn-flat-warning-color;
+            @if $skin-name == 'tailwind' or $skin-name == 'tailwind-dark' {
+              stroke: $btn-flat-primary-path-arc;
+            }
+            @else {
+              stroke: $btn-flat-warning-color;
+            }
           }
         }
        }
@@ -167,11 +213,21 @@
           stroke: $btn-flat-danger-color;
 
           .e-path-circle {
-            stroke: fade-out($btn-flat-danger-color, $progress-btn-circle-opacity);
+            @if $skin-name == 'tailwind' or $skin-name == 'tailwind-dark' {
+              stroke: fade-out($btn-flat-primary-path-arc, $progress-btn-circle-opacity);
+            }
+            @else {
+              stroke: fade-out($btn-flat-danger-color, $progress-btn-circle-opacity);
+            }
           }
 
           .e-path-arc {
-            stroke: $btn-flat-danger-color;
+            @if $skin-name == 'tailwind' or $skin-name == 'tailwind-dark' {
+              stroke: $btn-flat-primary-path-arc;
+            }
+            @else {
+              stroke: $btn-flat-danger-color;
+            }
           }
         }
        }

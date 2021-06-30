@@ -34,7 +34,7 @@ import { Resize } from '../actions/resize';
 import { FileManager } from '../actions/file-manager';
 /**
  * Specifies Rich Text Editor interfaces.
- * 
+ *
  * @hidden
  * @deprecated
  */
@@ -47,7 +47,7 @@ export interface IRichTextEditor extends Component<HTMLElement> {
 
     /**
      * Configures the image settings of the RTE.
-     * 
+     *
      * @default
      * {
      * allowedTypes: ['jpeg', 'jpg', 'png'],
@@ -80,6 +80,10 @@ export interface IRichTextEditor extends Component<HTMLElement> {
     fontSize?: IFontProperties
 
     fontColor?: IColorProperties
+
+    numberFormatList?: INumberFormatListPropertiesProperties
+
+    bulletFormatList?: IBulletFormatListPropertiesProperties
 
     backgroundColor?: IColorProperties
 
@@ -122,7 +126,6 @@ export interface IRichTextEditor extends Component<HTMLElement> {
     print(): void
     getContent?(): Element
     setRTEContent?(value: Element): void
-    // eslint-disable-next-line
     ensureModuleInjected(module: object): boolean
     getToolbar(): HTMLElement
     getTBarItemsIndex?(items: string[]): number[]
@@ -144,7 +147,6 @@ export interface IRichTextEditor extends Component<HTMLElement> {
     onCopy?(): void
     onCut?(): void
     onPaste?(): void
-    // eslint-disable-next-line
     clipboardAction?: Function
     localeObj?: L10n
     invokeChangeEvent?(): void
@@ -157,6 +159,7 @@ export interface IRichTextEditor extends Component<HTMLElement> {
     enableXhtml?: boolean
     enableHtmlSanitizer?: boolean
     getInsertImgMaxWidth?(): string | number
+    getSelection(): string
 }
 /**
  * @deprecated
@@ -180,6 +183,7 @@ export interface IRenderer {
     renderDropDownButton?(args: DropDownItemModel): DropDownButton
     renderColorPicker?(args: IColorPickerModel, item?: string): ColorPicker
     renderColorPickerDropDown?(args?: IColorPickerModel, item?: string, colorPicker?: ColorPicker): DropDownButton
+    renderListDropDown?(args: IDropDownModel): DropDownButton
 }
 
 /**
@@ -191,7 +195,6 @@ export interface NotifyArgs {
     cancel?: boolean
     requestType?: string
     enable?: boolean
-    // eslint-disable-next-line
     properties?: object
     selection?: NodeSelection
     selfLink?: Link
@@ -278,6 +281,8 @@ export interface IDropDownItem extends ItemModel {
     command?: string
     subCommand?: string
     controlParent?: DropDownButton
+    listImage?: string
+    value?: string
 }
 
 /**
@@ -306,7 +311,6 @@ export interface IImageNotifyArgs {
     cancel?: boolean
     requestType?: string
     enable?: boolean
-    // eslint-disable-next-line
     properties?: object
     selection?: NodeSelection
     selfImage?: Image
@@ -418,7 +422,6 @@ export interface ITableNotifyArgs {
     cancel?: boolean
     requestType?: string
     enable?: boolean
-    // eslint-disable-next-line
     properties?: object
     self?: Table
 }
@@ -427,7 +430,6 @@ export interface ITableNotifyArgs {
  * Provides information about a EditorModel.
  */
 export interface IEditorModel {
-    // eslint-disable-next-line
     execCommand?: Function
     observer?: Observer
     markdownSelection?: MarkdownSelection
@@ -527,6 +529,20 @@ export interface IToolsItemConfigs {
  * @hidden
  * @deprecated
  */
+export interface IListDropDownModel extends DropDownItemModel {
+    cssClass?: string
+    command?: string
+    subCommand?: string
+    value?: string
+    text?: string
+    listStyle?: string
+    listImage?: string
+}
+
+/**
+ * @hidden
+ * @deprecated
+ */
 export interface IDropDownItemModel extends DropDownItemModel {
     cssClass?: string
     command?: string
@@ -547,7 +563,7 @@ export interface ActionCompleteEventArgs {
     editorMode?: string
     /**
      * Defines the selected elements.
-     * 
+     *
      * @deprecated
      */
     elements?: Node[]
@@ -555,7 +571,7 @@ export interface ActionCompleteEventArgs {
     event?: MouseEvent | KeyboardEvent
     /**
      * Defines the selected range.
-     * 
+     *
      * @deprecated
      */
     range?: Range
@@ -571,7 +587,7 @@ export interface ActionBeginEventArgs {
     cancel?: boolean
     /**
      * Defines the current item.
-     * 
+     *
      * @deprecated
      */
     item?: IToolbarItemModel | IDropDownItemModel
@@ -581,7 +597,7 @@ export interface ActionBeginEventArgs {
     name?: string
     /**
      * Defines the url action details.
-     * 
+     *
      * @deprecated
      */
     itemCollection?: IItemCollectionArgs
@@ -660,7 +676,7 @@ export interface IQuickToolbarOptions {
 export interface BeforeQuickToolbarOpenArgs {
     /**
      * Defines the instance of the current popup element
-     * 
+     *
      * @deprecated
      */
     popup?: Popup
@@ -686,7 +702,7 @@ export interface AfterImageDeleteEventArgs {
 export interface QuickToolbarEventArgs {
     /**
      * Defines the instance of the current popup element
-     * 
+     *
      * @deprecated
      */
     popup?: Popup
@@ -719,19 +735,13 @@ export interface IFormatter {
     listTags?: { [key: string]: string }
     /** Configure the key settings. */
     keyConfig?: { [key: string]: string }
-    // eslint-disable-next-line
     process?: Function
-    // eslint-disable-next-line
     onKeyHandler?: Function
     editorManager?: IEditorModel
-    // eslint-disable-next-line
     getUndoRedoStack?: Function
-    // eslint-disable-next-line
     onSuccess?: Function
-    // eslint-disable-next-line
     saveData?: Function
     disableToolbarItem?(items: string | string[]): void
-    /* eslint-disable */
     enableUndo?: Function
     setDocument?: Function
     getDocument?: Function
@@ -739,7 +749,6 @@ export interface IFormatter {
     getEditPanel?: Function
     updateFormatter?: Function
     initializePlugin?: Function
-    /* eslint-enable */
     isAppliedCommand?(e?: MouseEvent): string
     mdSelectionFormat?: MDSelectionFormats
 }
@@ -771,6 +780,20 @@ export interface IFontProperties {
     default?: string
     items?: IDropDownItemModel[]
     width?: string
+}
+
+/**
+ * @deprecated
+ */
+export interface IBulletFormatListPropertiesProperties {
+    types?: IListDropDownModel[]
+}
+
+/**
+ * @deprecated
+ */
+export interface INumberFormatListPropertiesProperties {
+    types?: IListDropDownModel[]
 }
 
 /**
@@ -814,7 +837,6 @@ export interface BeforeSanitizeHtmlArgs {
      * @param {string} value - Returns the value.
      * @returns {string}
      */
-    // eslint-disable-next-line
     helper?: Function
     /** Returns the selectors object which carrying both tags and attributes selectors to block list of cross-site scripting attack.
      * Also possible to modify the block list in this event.
@@ -943,10 +965,10 @@ export interface ImageSuccessEventArgs {
     /**
      * Returns the original event arguments.
      */
-    // eslint-disable-next-line
     e?: object
     /**
      * Returns the details about upload file.
+     *
      * @blazorType Syncfusion.EJ2.Blazor.Inputs.FileInfo
      */
     file: FileInfo
@@ -960,6 +982,7 @@ export interface ImageSuccessEventArgs {
     operation: string
     /**
      * Returns the upload event operation.
+     *
      * @blazorType ResponseEventArgs
      */
     response?: ResponseEventArgs
@@ -980,10 +1003,10 @@ export interface ImageFailedEventArgs {
     /**
      * Returns the original event arguments.
      */
-    // eslint-disable-next-line
     e?: object
     /**
      * Returns the details about upload file.
+     *
      * @blazorType Syncfusion.EJ2.Blazor.Inputs.FileInfo
      */
     file: FileInfo
@@ -997,6 +1020,7 @@ export interface ImageFailedEventArgs {
     operation: string
     /**
      * Returns the upload event operation.
+     *
      * @blazorType ResponseEventArgs
      */
     response?: ResponseEventArgs
@@ -1017,12 +1041,10 @@ export interface ResponseEventArgs {
     /**
      * Returns the readyState information.
      */
-    // eslint-disable-next-line
     readyState?: object
     /**
      * Returns the upload image statusCode.
      */
-    // eslint-disable-next-line
     statusCode?: object
     /**
      * Returns the upload image statusText.
@@ -1086,6 +1108,7 @@ export interface ToolbarClickEventArgs {
     cancel: boolean
     /**
      * Defines the current Toolbar Item Object.
+     *
      * @blazorType Syncfusion.EJ2.Blazor.Navigations.ItemModel
      */
     item: ItemModel
@@ -1156,14 +1179,13 @@ export interface ImageUploadingEventArgs {
     cancel: boolean
     /**
      * Defines the additional data in key and value pair format that will be submitted to the upload action.
-     * 
+     *
      * @blazorType object
      */
-    // eslint-disable-next-line
     customFormData: { [key: string]: Object; }[];
     /**
      * Returns the XMLHttpRequest instance that is associated with upload action.
-     * 
+     *
      * @blazorType object
      */
     currentRequest?: { [key: string]: string }[]
@@ -1357,7 +1379,7 @@ export declare type CommandName = 'bold' | 'italic' | 'underline' | 'strikeThrou
  * @hidden
  * @deprecated
  */
- export interface StatusArgs {
+export interface StatusArgs {
     html: Object
     markdown: Object
 }

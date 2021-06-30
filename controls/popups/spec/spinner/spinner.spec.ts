@@ -99,6 +99,25 @@ describe('Spinner Control', () => {
             expect((<HTMLElement>fabricObj.childNodes[1]).classList.contains('e-path-arc')).toEqual(true);
             expect((<HTMLElement>innerObject.childNodes[1]).classList.contains('e-spin-label')).toEqual(true);
         });
+        it('Ensure tailwind theme element structure and class testing', () => {
+            let spinObject = createSpinner({ 
+                target: document.getElementById('spinner-01'), 
+                    width: 50,
+                    label:"Loading...",
+                    type: 'Tailwind'
+            });
+            let container = document.getElementById('spinner-01');
+            showSpinner(container);
+            expect((container.querySelector('.e-spinner-pane') as HTMLElement).classList.contains('e-spinner-pane')).toEqual(true);
+            let innerObject = (<HTMLElement>(container.querySelector('.e-spinner-pane')as HTMLElement).childNodes[0]);
+            expect(innerObject.classList.contains('e-spinner-inner')).toEqual(true);
+            let fabricObj = (<HTMLElement>innerObject.childNodes[0]);
+            expect(fabricObj.classList.contains('e-spin-tailwind')).toEqual(true);
+            expect((<HTMLElement>fabricObj.childNodes[0]).classList.contains('e-path-circle')).toEqual(true);
+            expect((<HTMLElement>fabricObj.childNodes[1]).classList.contains('e-path-arc')).toEqual(true);
+            expect((<HTMLElement>innerObject.childNodes[1]).classList.contains('e-spin-label')).toEqual(true);
+        });
+
          it('Ensure bootstrap theme element structure and class testing', () => {
             let spinObject = createSpinner({ 
                 target: document.getElementById('spinner-01'),

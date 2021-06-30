@@ -1,4 +1,4 @@
-import { ChildProperty, Property, Complex } from '@syncfusion/ej2-base';import { PointModel, DecoratorShapes } from '@syncfusion/ej2-drawings';import { Point } from '@syncfusion/ej2-drawings';import { Size } from '@syncfusion/ej2-drawings';import { Container } from '@syncfusion/ej2-drawings';import { PdfAnnotationType } from './enum';import { ICommentsCollection, IReviewCollection, AnnotationSelectorSettingsModel, AllowedInteraction } from '../index';
+import { ChildProperty, Property, Complex } from '@syncfusion/ej2-base';import { PointModel, DecoratorShapes } from '@syncfusion/ej2-drawings';import { Point } from '@syncfusion/ej2-drawings';import { Size } from '@syncfusion/ej2-drawings';import { Container } from '@syncfusion/ej2-drawings';import { PdfAnnotationType, FormFieldAnnotationType } from './enum';import { ICommentsCollection, IReviewCollection, AnnotationSelectorSettingsModel, AllowedInteraction, ItemModel, SignatureIndicatorSettingsModel } from '../index';import { FontStyle } from '../base';
 
 /**
  * Interface for a class PdfBounds
@@ -130,6 +130,13 @@ export interface PdfAnnotationBaseModel {
      * @default 'Rectangle'
      */
     shapeAnnotationType?: PdfAnnotationType;
+
+    /**
+     * Represents the annotation type of the form field
+     *
+     * @default ''
+     */
+    formFieldAnnotationType?: FormFieldAnnotationType;
 
     /**
      * Represents the measure type of the annotation
@@ -406,6 +413,13 @@ export interface PdfAnnotationBaseModel {
     fontFamily?: string;
 
     /**
+     * Represents the font style of the annotation content
+     *
+     * @default 'None'
+     */
+    fontStyle?: string;
+
+    /**
      * Represents the shape annotation label add flag
      *
      * @default 'false'
@@ -557,6 +571,241 @@ export interface PdfAnnotationBaseModel {
      * Allows to edit the free text annotation
      */
     isReadonly?: boolean;
+
+}
+
+/**
+ * Interface for a class PdfFormFieldBase
+ */
+export interface PdfFormFieldBaseModel {
+
+    /**
+     * Represents the unique id of formField
+     *
+     * @default ''
+     */
+    id?: string;
+
+    /**
+     * Represents the name of the formField
+     *
+     * @default ''
+     */
+    name?: string;
+
+    /**
+     * Represents the value of the formField
+     *
+     * @default ''
+     */
+    value?: string;
+
+    /**
+     * Represents the annotation type of the form field
+     *
+     * @default ''
+     */
+    formFieldAnnotationType?: FormFieldAnnotationType;
+
+    /**
+     * Represents the fill color of the form field
+     *
+     * @default '#daeaf7ff'
+     */
+    backgroundColor?: string;
+
+    /**
+     * Represents the text color of the form field
+     *
+     * @default 'black'
+     */
+    color?: string;
+
+    /**
+     * Represents the border color of the form field
+     *
+     * @default '#303030'
+     */
+    borderColor?: string;
+
+    /**
+     * Represents the tooltip of the form field
+     *
+     * @default ''
+     */
+    tooltip?: string;
+
+    /**
+     * Represents the opecity value of the formField
+     *
+     * @default 1
+     */
+    opacity?: number;
+
+    /**
+     * Represents the thickness value of FormField
+     *
+     * @default 1
+     */
+    thickness?: number;
+
+    /**
+     * Represents the rotate angle of formField
+     *
+     * @default 0
+     */
+    rotateAngle?: number;
+
+    /**
+     * Represents bounds of the formField
+     *
+     * @default new Point(0,0)
+     */
+    bounds?: PdfBoundsModel;
+
+    /**
+     * Represents the cloud intensity
+     *
+     * @default 0
+     */
+    pageIndex?: number;
+
+    /**
+     * Represents the page number
+     *
+     * @default 1
+     */
+    pageNumber?: number;
+
+    /**
+     * Represents the cloud intensity
+     *
+     * @default -1
+     */
+
+    zIndex?: number;
+
+    /**
+     * Represents the cloud intensity
+     *
+     * @default null
+     */
+    wrapper?: Container;
+
+    /**
+     * Represents the font size of the formField content
+     *
+     * @default 16
+     */
+    fontSize?: number;
+
+    /**
+     * Represents the font family of the formField content
+     *
+     * @default 'Helvetica'
+     */
+    fontFamily?: string;
+
+    /**
+     * Represents the font style of the formField content
+     *
+     * @default 'None'
+     */
+    fontStyle?: string;
+
+    /**
+     * Represents the text anlignment style of formField
+     *
+     * @default 'left'
+     */
+    alignment?: string;
+
+    /**
+     * specifies the minHeight of the formField.
+     *
+     * @default 0
+     */
+    minHeight?: number;
+
+    /**
+     * specifies the minWidth of the formField.
+     *
+     * @default 0
+     */
+    minWidth?: number;
+
+    /**
+     * specifies the minHeight of the formField.
+     *
+     * @default 0
+     */
+    maxHeight?: number;
+
+    /**
+     * specifies the maxWidth of the formField.
+     *
+     * @default 0
+     */
+    maxWidth?: number;
+
+    /**
+     * specifies the maxLength of the textbox/password.
+     *
+     * @default 0
+     */
+    maxLength?: number;
+
+    /**
+     * If it is set as Hidden, Html element will be hide in the UI. By default it is visible.
+     */
+    visibility?: VisibilityState;
+
+    /**
+     * specifies whether the form field are included or not in print actions.
+     */
+    isPrint?: boolean;
+
+    /**
+     * Allows to edit the form Field text.
+     */
+    isReadonly?: boolean;
+
+    /**
+     * Enable or disable the checkbox state.
+     */
+    isChecked?: boolean;
+
+    /**
+     * Enable or disable the RadioButton state.
+     */
+    isSelected?: boolean;
+
+    /**
+     * Specify whether an form field element is mandatory.
+     */
+    isRequired?: boolean;
+
+    /**
+     * Gets or sets the items to be displayed for drop down/ listbox.
+     */
+    options?: ItemModel[];
+
+    /**
+     * Specifies the properties of the signature indicator in the signature field.
+     */
+    signatureIndicatorSettings?: SignatureIndicatorSettingsModel;
+
+    /**
+     * Represents the text style of annotation
+     *
+     * @default ''
+     */
+    font?: PdfFontModel;
+
+    /**
+     * Gets or sets the items selected in the drop down/ listbox.
+     */
+    selectedIndex?: number[];
 
 }
 

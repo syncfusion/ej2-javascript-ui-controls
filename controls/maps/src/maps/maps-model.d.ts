@@ -154,7 +154,7 @@ export interface MapsModel extends ComponentModel{
     /**
      * Triggers when the map is on load.
      *
-     * @event
+     * @event load
      * @blazorProperty 'OnLoad'
      */
     load?: EmitType<ILoadEventArgs>;
@@ -162,7 +162,7 @@ export interface MapsModel extends ComponentModel{
     /**
      * Triggers before the print gets started.
      *
-     * @event
+     * @event beforePrint
      * @blazorProperty 'OnPrint'
      */
     beforePrint?: EmitType<IPrintEventArgs>;
@@ -170,7 +170,7 @@ export interface MapsModel extends ComponentModel{
     /**
      * Triggers after the maps gets rendered.
      *
-     * @event
+     * @event loaded
      * @blazorProperty 'Loaded'
      */
     loaded?: EmitType<ILoadedEventArgs>;
@@ -178,7 +178,7 @@ export interface MapsModel extends ComponentModel{
     /**
      * Triggers when clicking an element in maps.
      *
-     * @event
+     * @event click
      * @blazorProperty 'OnClick'
      */
     click?: EmitType<IMouseEventArgs>;
@@ -186,7 +186,7 @@ export interface MapsModel extends ComponentModel{
     /**
      * Triggers when performing the double click operation on an element in maps.
      *
-     * @event
+     * @event doubleClick
      * @blazorProperty 'OnDoubleClick'
      */
     doubleClick?: EmitType<IMouseEventArgs>;
@@ -194,7 +194,7 @@ export interface MapsModel extends ComponentModel{
     /**
      * Triggers when performing the right click operation on an element in maps.
      *
-     * @event
+     * @event rightClick
      * @blazorProperty 'OnRightClick'
      */
     rightClick?: EmitType<IMouseEventArgs>;
@@ -202,7 +202,7 @@ export interface MapsModel extends ComponentModel{
     /**
      * Triggers when resizing the maps.
      *
-     * @event
+     * @event resize
      * @blazorProperty 'Resizing'
      */
     resize?: EmitType<IResizeEventArgs>;
@@ -210,7 +210,7 @@ export interface MapsModel extends ComponentModel{
     /**
      * Triggers before the maps tooltip gets rendered.
      *
-     * @event
+     * @event tooltipRender
      * @blazorProperty 'TooltipRendering'
      */
     tooltipRender?: EmitType<ITooltipRenderEventArgs>;
@@ -218,7 +218,7 @@ export interface MapsModel extends ComponentModel{
     /**
      * Triggers before the legend gets rendered.
      *
-     * @event
+     * @event legendRendering
      * @deprecated
      * @blazorProperty 'LegendRendering'
      */
@@ -228,7 +228,7 @@ export interface MapsModel extends ComponentModel{
      * Triggers after the maps tooltip gets rendered.
      *
      * @deprecated
-     * @event
+     * @event tooltipRenderComplete
      * @blazorProperty 'TooltipRenderComplete'
      */
     tooltipRenderComplete?: EmitType<ITooltipRenderCompleteEventArgs>;
@@ -236,7 +236,7 @@ export interface MapsModel extends ComponentModel{
     /**
      * Triggers when clicking a shape in maps.
      *
-     * @event
+     * @event shapeSelected
      * @blazorProperty 'ShapeSelected'
      */
     shapeSelected?: EmitType<IShapeSelectedEventArgs>;
@@ -244,7 +244,7 @@ export interface MapsModel extends ComponentModel{
     /**
      * Triggers when clicking the shape on maps and before the selection is applied.
      *
-     * @event
+     * @event itemSelection
      * @blazorProperty 'OnItemSelect'
      */
     itemSelection?: EmitType<ISelectionEventArgs>;
@@ -252,7 +252,7 @@ export interface MapsModel extends ComponentModel{
     /**
      * Trigger when mouse move on the shape in maps and before the shape gets highlighted.
      *
-     * @event
+     * @event itemHighlight
      * @blazorProperty 'OnItemHighlight'
      */
     itemHighlight?: EmitType<ISelectionEventArgs>;
@@ -260,7 +260,7 @@ export interface MapsModel extends ComponentModel{
     /**
      * Triggers when mouse move on the shape in maps and before the shape gets highlighted.
      *
-     * @event
+     * @event shapeHighlight
      * @blazorProperty 'ShapeHighlighted'
      */
     shapeHighlight?: EmitType<IShapeSelectedEventArgs>;
@@ -268,7 +268,7 @@ export interface MapsModel extends ComponentModel{
     /**
      * Triggers before the maps layer gets rendered.
      *
-     * @event
+     * @event layerRendering
      * @blazorProperty 'LayerRendering'
      */
     layerRendering?: EmitType<ILayerRenderingEventArgs>;
@@ -276,7 +276,7 @@ export interface MapsModel extends ComponentModel{
     /**
      * Triggers before the maps shape gets rendered.
      *
-     * @event
+     * @event shapeRendering
      * @blazorProperty 'ShapeRendering'
      */
     shapeRendering?: EmitType<IShapeRenderingEventArgs>;
@@ -284,7 +284,7 @@ export interface MapsModel extends ComponentModel{
     /**
      * Triggers before the maps marker gets rendered.
      *
-     * @event
+     * @event markerRendering
      * @blazorProperty 'MarkerRendering'
      */
     markerRendering?: EmitType<IMarkerRenderingEventArgs>;
@@ -292,14 +292,14 @@ export interface MapsModel extends ComponentModel{
     /**
      * Triggers before the maps marker cluster gets rendered.
      *
-     * @event
+     * @event markerClusterRendering
      */
     markerClusterRendering?: EmitType<IMarkerClusterRenderingEventArgs>;
 
     /**
      * Triggers when clicking on the maps marker element.
      *
-     * @event
+     * @event markerClick
      * @blazorProperty 'OnMarkerClick'
      */
     markerClick?: EmitType<IMarkerClickEventArgs>;
@@ -307,21 +307,21 @@ export interface MapsModel extends ComponentModel{
     /**
      * Triggers when clicking the marker cluster in maps.
      *
-     * @event
+     * @event markerClusterClick
      */
     markerClusterClick?: EmitType<IMarkerClusterClickEventArgs>;
 
     /**
      * Triggers when moving the mouse over the marker cluster element in maps.
      *
-     * @event
+     * @event markerClusterMouseMove
      */
     markerClusterMouseMove?: EmitType<IMarkerClusterMoveEventArgs>;
 
     /**
      * Triggers when moving the mouse over the marker element in maps.
      *
-     * @event
+     * @event markerMouseMove
      * @blazorProperty 'OnMarkerMouseMove'
      */
     markerMouseMove?: EmitType<IMarkerMoveEventArgs>;
@@ -329,7 +329,7 @@ export interface MapsModel extends ComponentModel{
     /**
      * Triggers before the data-label gets rendered.
      *
-     * @event
+     * @event dataLabelRendering
      * @blazorProperty 'DataLabelRendering'
      */
     dataLabelRendering?: EmitType<ILabelRenderingEventArgs>;
@@ -337,7 +337,7 @@ export interface MapsModel extends ComponentModel{
     /**
      * Triggers before the bubble element gets rendered on the map.
      *
-     * @event
+     * @event bubbleRendering
      * @blazorProperty 'BubbleRendering'
      */
     bubbleRendering?: EmitType<IBubbleRenderingEventArgs>;
@@ -345,7 +345,7 @@ export interface MapsModel extends ComponentModel{
     /**
      * Triggers when performing the click operation on the bubble element in maps.
      *
-     * @event
+     * @event bubbleClick
      * @blazorProperty 'OnBubbleClick'
      */
     bubbleClick?: EmitType<IBubbleClickEventArgs>;
@@ -353,7 +353,7 @@ export interface MapsModel extends ComponentModel{
     /**
      * Triggers when hovering the mouse on the bubble element in maps.
      *
-     * @event
+     * @event bubbleMouseMove
      * @blazorProperty 'OnBubbleMouseMove'
      */
     bubbleMouseMove?: EmitType<IBubbleMoveEventArgs>;
@@ -361,7 +361,7 @@ export interface MapsModel extends ComponentModel{
     /**
      * Triggers after the animation completed in the maps component.
      *
-     * @event
+     * @event animationComplete
      * @blazorProperty 'AnimationCompleted'
      */
     animationComplete?: EmitType<IAnimationCompleteEventArgs>;
@@ -369,7 +369,7 @@ export interface MapsModel extends ComponentModel{
     /**
      * Triggers before rendering the annotation in maps.
      *
-     * @event
+     * @event annotationRendering
      * @blazorProperty 'AnnotationRendering'
      */
     annotationRendering?: EmitType<IAnnotationRenderingEventArgs>;
@@ -377,7 +377,7 @@ export interface MapsModel extends ComponentModel{
     /**
      * Triggers before the zoom operations in the maps such as zoom in and zoom out.
      *
-     * @event
+     * @event zoom
      * @blazorProperty 'OnZoom'
      */
     zoom?: EmitType<IMapZoomEventArgs>;
@@ -385,7 +385,7 @@ export interface MapsModel extends ComponentModel{
     /**
      * Triggers before performing the panning operation.
      *
-     * @event
+     * @event pan
      * @blazorProperty 'OnPan'
      */
     pan?: EmitType<IMapPanEventArgs>;

@@ -188,7 +188,7 @@ export class LinearGauge extends Component<HTMLElement> implements INotifyProper
      * Specifies the options for customizing the appearance of title for linear gauge.
      */
 
-    @Complex<FontModel>({ size: '15px', color: null }, Font)
+    @Complex<FontModel>({ size: '15px', color: null, fontStyle: null, fontWeight: null }, Font)
     public titleStyle: FontModel;
 
     /**
@@ -674,6 +674,8 @@ export class LinearGauge extends Component<HTMLElement> implements INotifyProper
         if (this.title) {
             this.titleStyle.fontFamily = this.themeStyle.fontFamily || this.titleStyle.fontFamily;
             this.titleStyle.size = this.themeStyle.fontSize || this.titleStyle.size;
+            this.titleStyle.fontStyle = this.titleStyle.fontStyle || this.themeStyle.titleFontStyle;
+            this.titleStyle.fontWeight = this.titleStyle.fontWeight || this.themeStyle.titleFontWeight;
             const element: Element = textElement(
                 options, this.titleStyle, this.titleStyle.color || this.themeStyle.titleFontColor, this.svgObject
             );
@@ -818,8 +820,10 @@ export class LinearGauge extends Component<HTMLElement> implements INotifyProper
         if (this.containerBounds.width > 0) {
             this.containerObject = this.renderer.createGroup({ id: this.element.id + '_Container_Group', transform: 'translate( 0, 0)' });
             if (this.container.type === 'Normal') {
+                let containerBorder: BorderModel = { color: this.container.border.color || this.themeStyle.containerBorderColor,
+                    width: this.container.border.width };
                 rect = new RectOption(
-                    this.element.id + '_' + this.container.type + '_Layout', fill, this.container.border, 1,
+                    this.element.id + '_' + this.container.type + '_Layout', fill, containerBorder, 1,
                     new Rect(x, y, width, height));
                 this.containerObject.appendChild(this.renderer.drawRectangle(rect));
             } else {
@@ -828,7 +832,7 @@ export class LinearGauge extends Component<HTMLElement> implements INotifyProper
                     new Size(this.container.height, this.container.width), 'container', null, null, this.container.roundedCornerRadius);
                 options = new PathOption(
                     this.element.id + '_' + this.container.type + '_Layout', fill,
-                    this.container.border.width, this.container.border.color, 1, '', path);
+                    this.container.border.width, this.container.border.color || this.themeStyle.containerBorderColor, 1, '', path);
                 this.containerObject.appendChild(this.renderer.drawPath(options) as SVGAElement);
             }
             this.svgObject.appendChild(this.containerObject);
@@ -910,6 +914,7 @@ export class LinearGauge extends Component<HTMLElement> implements INotifyProper
                     if (!(isNullOrUndefined(current)) && current.pointer) {
                         this.pointerDrag = true;
                         this.mouseElement = args.target;
+                        this.mouseElement.setAttribute('cursor', current.style);
                     }
                 }
             }
@@ -1003,17 +1008,17 @@ export class LinearGauge extends Component<HTMLElement> implements INotifyProper
                     top = (!axis.isInversed) ? top : top + svgPath.getBBox().height;
                     isPointer = !axis.isInversed ? (this.mouseY < (top + 10) && this.mouseY >= top) :
                         (this.mouseY <= top && this.mouseY > (top - 10));
-                    cursorStyle = 'n-resize';
+                    cursorStyle = 'grabbing';
                 } else {
                     left = pointerElement.getBoundingClientRect().left - clientRect.left;
                     left = (!axis.isInversed) ? left + svgPath.getBBox().width : left;
                     isPointer = !axis.isInversed ? (this.mouseX > (left - 10) && this.mouseX <= left) :
                         (this.mouseX >= left && this.mouseX < (left + 10));
-                    cursorStyle = 'e-resize';
+                    cursorStyle = 'grabbing';
                 }
             } else {
                 isPointer = true;
-                cursorStyle = 'pointer';
+                cursorStyle = 'grabbing';
             }
         }
         if (isPointer) {
@@ -1086,6 +1091,7 @@ export class LinearGauge extends Component<HTMLElement> implements INotifyProper
         this.setMouseXY(e);
         let parentNode: HTMLElement;
         let tooltipInterval: number;
+        const isImage: boolean = isNullOrUndefined(this.activePointer) ? false : this.activePointer.markerType === 'Image';
         const isTouch: boolean = e.pointerType === 'touch' || e.pointerType === '2' || e.type === 'touchend';
         const args: IMouseEventArgs = this.getMouseArgs(e, 'touchend', gaugeMouseUp);
         const blazorArgs: IMouseEventArgs = {
@@ -1109,10 +1115,13 @@ export class LinearGauge extends Component<HTMLElement> implements INotifyProper
                     axisIndex: axisInd,
                     pointerIndex: pointerInd
                 } as IPointerDragEventArgs);
+                if (isImage) {
+                    this.activePointer.pathElement[0].setAttribute('cursor', 'pointer');
+                }
                 this.activeAxis = null;
                 this.activePointer = null;
                 this.isDrag = false;
-                if (!isNullOrUndefined(this.mouseElement)) {
+                if (!isNullOrUndefined(this.mouseElement && !isImage)) {
                     this.triggerDragEvent(this.mouseElement);
                 }
             }
@@ -1210,6 +1219,10 @@ export class LinearGauge extends Component<HTMLElement> implements INotifyProper
             if (pointer.markerType === 'Image') {
                 this.mouseElement.setAttribute('x', (pointer.bounds.x - (pointer.bounds.width / 2)).toString());
                 this.mouseElement.setAttribute('y', (pointer.bounds.y - (pointer.bounds.height / 2)).toString());
+            } else if (pointer.markerType === 'Circle') {
+                this.mouseElement.setAttribute('cx', (options.cx).toString());
+                this.mouseElement.setAttribute('cy', (options.cy).toString());
+                this.mouseElement.setAttribute('r',(options.r).toString());
             } else {
                 this.mouseElement.setAttribute('d', options.d);
             }

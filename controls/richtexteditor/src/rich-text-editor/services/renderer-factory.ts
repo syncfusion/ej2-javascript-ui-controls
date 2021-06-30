@@ -5,7 +5,7 @@ import { RenderType } from '../base/enum';
 
 /**
  * RendererFactory
- * 
+ *
  * @hidden
  * @deprecated
  */

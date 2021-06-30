@@ -20,10 +20,10 @@ import { EditorMode } from './../../common/types';
 import { Toolbar } from '../actions/toolbar';
 import { ExecCommandCallBack } from '../actions/execute-command-callback';
 import { KeyboardEvents, KeyboardEventArgs } from '../actions/keyboard';
-import { FontFamilyModel, FontSizeModel, FontColorModel, FormatModel, BackgroundColorModel } from '../models/models';
+import { FontFamilyModel, FontSizeModel, FontColorModel, FormatModel, BackgroundColorModel, NumberFormatListModel, BulletFormatListModel } from '../models/models';
 import { ToolbarSettingsModel, IFrameSettingsModel, ImageSettingsModel, TableSettingsModel } from '../models/models';
 import { QuickToolbarSettingsModel, InlineModeModel, PasteCleanupSettingsModel, FileManagerSettingsModel } from '../models/models';
-import { ToolbarSettings, ImageSettings, QuickToolbarSettings, FontFamily, FontSize, Format } from '../models/toolbar-settings';
+import { ToolbarSettings, ImageSettings, QuickToolbarSettings, FontFamily, FontSize, Format, NumberFormatList, BulletFormatList } from '../models/toolbar-settings';
 import { FileManagerSettings } from '../models/toolbar-settings';
 import { TableSettings, PasteCleanupSettings } from '../models/toolbar-settings';
 import { FontColor, BackgroundColor } from '../models/toolbar-settings';
@@ -607,6 +607,39 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
     @Complex<FormatModel>({}, Format)
     public format: FormatModel;
     /**
+     * Predefine the advanced list types that populate in the numberFormatList dropdown list from the toolbar.
+     *
+     * @default
+     * {
+     * types: [
+     * { text: 'None', value: 'none' },
+     * { text: 'Number', value: 'decimal' },
+     * { text: 'Lower Greek', value: 'lowerGreek' },
+     * { text: 'Lower Roman', value: 'lowerRoman' },
+     * { text: 'Upper Alpha', value: 'upperAlpha' },
+     * { text: 'Lower Alpha', value: 'lowerAlpha' },
+     * { text: 'Upper Roman', value: 'upperRoman' },
+     * ]
+     * }
+     */
+    @Complex<NumberFormatListModel>({}, NumberFormatList)
+    public numberFormatList: NumberFormatListModel;
+    /**
+     * Predefine the advanced list types that populate in the bulletFormatList dropdown list from the toolbar.
+     *
+     * @default
+     * {
+     * types: [
+     * { text: 'None', value: 'none' },
+     * { text: 'Disc', value: 'disc' },
+     * { text: 'Circle', value: 'circle' },
+     * { text: 'Square', value: 'square' }
+     * ]
+     * }
+     */
+    @Complex<BulletFormatListModel>({}, BulletFormatList)
+    public bulletFormatList: BulletFormatListModel;
+    /**
      * Predefine the font families that populate in font family dropdown list from the toolbar.
      *
      * {% codeBlock src='rich-text-editor/font-family/index.md' %}{% endcodeBlock %}
@@ -751,10 +784,8 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
      * @blazorProperty 'DialogOpened'
      * @blazorType DialogOpenEventArgs
      */
-    /* eslint-disable */
     @Event()
     public dialogOpen: EmitType<Object>;
-    /* eslint-enable */
     /**
      * Event triggers when the dialog is being closed.
      * If you cancel this event, the dialog remains opened.
@@ -773,10 +804,8 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
      * @blazorProperty 'DialogClosed'
      * @blazorType DialogCloseEventArgs
      */
-    /* eslint-disable */
     @Event()
     public dialogClose: EmitType<Object>;
-    /* eslint-enable */
     /**
      * Event triggers when the quick toolbar is being opened.
      *
@@ -792,10 +821,8 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
      * @blazorProperty 'QuickToolbarOpened'
      * @blazorType QuickToolbarEventArgs
      */
-    /* eslint-disable */
     @Event()
     public quickToolbarOpen: EmitType<Object>;
-    /* eslint-enable */
     /**
      * Event triggers after the quick toolbar has been closed.
      *
@@ -803,30 +830,24 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
      * @blazorProperty 'QuickToolbarClosed'
      * @blazorType QuickToolbarEventArgs
      */
-    /* eslint-disable */
     @Event()
     public quickToolbarClose: EmitType<Object>;
-    /* eslint-enable */
     /**
      * This event is deprecated and no longer works. Use `updatedToolbarStatus` event to get the undo and redo status.
      *
      * @deprecated
      * @event 'object'
      */
-    /* eslint-disable */
     @Event()
     private toolbarStatusUpdate: EmitType<Object>;
-    /* eslint-enable */
     /**
      * Triggers when the toolbar items status is updated.
      *
      * @event 'object'
      * @blazorType ToolbarUpdateEventArgs
      */
-    /* eslint-disable */
     @Event()
     private updatedToolbarStatus: EmitType<ToolbarStatusEventArgs>;
-    /* eslint-enable */
     /**
      * Event triggers when the image is selected or dragged into the insert image dialog.
      *
@@ -857,10 +878,8 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
      * @blazorProperty 'OnImageUploadSuccess'
      * @blazorType ImageSuccessEventArgs
      */
-    /* eslint-disable */
     @Event()
     public imageUploadSuccess: EmitType<Object>;
-    /* eslint-enable */
     /**
      * Event triggers when there is an error in the image upload.
      *
@@ -868,10 +887,8 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
      * @blazorProperty 'OnImageUploadFailed'
      * @blazorType ImageFailedEventArgs
      */
-    /* eslint-disable */
     @Event()
     public imageUploadFailed: EmitType<Object>;
-    /* eslint-enable */
     /**
      * Event triggers when the selected image is cleared from the insert image dialog.
      *
@@ -894,10 +911,8 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
      * @event 'object'
      * @blazorProperty 'Created'
      */
-    /* eslint-disable */
     @Event()
     public created: EmitType<Object>;
-    /* eslint-enable */
     /**
      * Triggers when the Rich Text Editor is destroyed.
      *
@@ -905,10 +920,8 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
      * @blazorProperty 'Destroyed'
      * @blazorType DestroyedEventArgs
      */
-    /* eslint-disable */
     @Event()
     public destroyed: EmitType<Object>;
-    /* eslint-enable */
     /**
      * Event triggers before sanitize the value. It's only applicable to editorMode as `HTML`.
      *
@@ -923,10 +936,8 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
      * @event 'object'
      * @blazorType BlurEventArgs
      */
-    /* eslint-disable */
     @Event()
     public blur: EmitType<Object>;
-    /* eslint-enable */
     /**
      * Triggers when Rich Text Editor Toolbar items is clicked.
      *
@@ -934,20 +945,16 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
      * @blazorProperty 'OnToolbarClick'
      * @blazorType ToolbarClickEventArgs
      */
-    /* eslint-disable */
     @Event()
     public toolbarClick: EmitType<Object>;
-    /* eslint-enable */
     /**
      * Triggers when Rich Text Editor is focused in
      *
      * @event 'object'
      * @blazorType FocusEventArgs
      */
-    /* eslint-disable */
     @Event()
     public focus: EmitType<Object>;
-    /* eslint-enable */
     /**
      * Triggers only when Rich Text Editor is blurred and changes are done to the content.
      *
@@ -1337,9 +1344,7 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
                 }
                 break;
             case 'insertTable':
-                // eslint-disable-next-line
                 if (isNOU((value as { [key: string]: object }).width)) {
-                    // eslint-disable-next-line
                     (value as { [key: string]: object }).width = { minWidth: this.tableSettings.minWidth,
                         maxWidth: this.tableSettings.maxWidth, width: this.tableSettings.width };
                 }
@@ -1359,15 +1364,11 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
                 }).firstElementChild).getAttribute('src')) || null;
                 url = !isNOU(url) ? url : '';
                 (value as IImageCommandsArgs).url = url;
-                // eslint-disable-next-line
                 if (isNOU((value as { [key: string]: object }).width)) {
-                    // eslint-disable-next-line
                     (value as { [key: string]: object }).width = { minWidth: this.insertImageSettings.minWidth,
                         maxWidth: this.insertImageSettings.maxWidth, width: this.insertImageSettings.width };
                 }
-                // eslint-disable-next-line
                 if (isNOU((value as { [key: string]: object }).height)) {
-                    // eslint-disable-next-line
                     (value as { [key: string]: object }).height = { minHeight: this.insertImageSettings.minHeight,
                         maxHeight: this.insertImageSettings.maxHeight, height: this.insertImageSettings.height };
                 }
@@ -1634,11 +1635,11 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
         if (e.detail === 3) {
             const range: Range = this.getRange();
             const selection: Selection = (this.formatter.editorManager as EditorManager).domNode.getSelection();
-            if(/\s+$/.test(selection.toString())) {
+            if (/\s+$/.test(selection.toString())) {
                 if (!isNOU(range.startContainer.parentElement) && (!isNOU(range.startContainer.parentElement.nextSibling) &&
                 (range.startContainer.parentElement.nextSibling.nodeType !== 3 ||
                 /\s+$/.test(range.startContainer.parentElement.nextSibling.textContent)) || range.startOffset === range.endOffset)
-                || range.startContainer.parentElement.tagName.toLocaleLowerCase() === "li") {
+                || range.startContainer.parentElement.tagName.toLocaleLowerCase() === 'li') {
                     range.setStart(range.startContainer, range.startOffset);
                     range.setEnd(range.startContainer, range.startContainer.textContent.length);
                 }
@@ -1652,7 +1653,6 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
      * @hidden
      * @deprecated
      */
-    // eslint-disable-next-line
     public ensureModuleInjected(module: Function): boolean {
         return this.getInjectedModules().indexOf(module) >= 0;
     }
@@ -1682,13 +1682,11 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
      * @deprecated
      */
     public onPaste(e?: KeyboardEvent | ClipboardEvent): void {
-        // eslint-disable-next-line
         const evenArgs: { [key: string]: Object } = {
             originalEvent: e,
             cancel: false,
             requestType: 'Paste'
         };
-        // eslint-disable-next-line
         this.trigger(events.actionBegin, evenArgs, (pasteArgs: { [key: string]: Object }) => {
             const currentLength: number = this.getText().length;
             const selectionLength: number = this.getSelection().length;
@@ -1706,7 +1704,6 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
                 if (!isNOU(this.pasteCleanupModule)) {
                     this.notify(events.pasteClean, { args: e as ClipboardEvent });
                 } else {
-                    // eslint-disable-next-line
                     const args: Object = { requestType: 'Paste', editorMode: this.editorMode, event: e };
                     let value: string = null;
                     let htmlValue: boolean = false;
@@ -2400,7 +2397,6 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
             if (typeof this.valueTemplate === 'string') {
                 this.setProperties({ value: this.valueTemplate });
             } else {
-                // eslint-disable-next-line
                 const compiledString: Function = compile(this.valueTemplate);
                 const compiledTemplate: Element[] = compiledString({});
                 for (let i: number = 0; i < compiledTemplate.length; i++) {
@@ -2459,14 +2455,13 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
         let heightValue: string;
         let topValue: number = 0;
         let rteHeightPercent: string;
-        let heightPercent: boolean;
+        const heightPercent: boolean = typeof (this.height) === 'string' && this.height.indexOf('%') > -1;
         const cntEle: HTMLElement = (this.sourceCodeModule.getPanel() &&
             this.sourceCodeModule.getPanel().parentElement.style.display === 'block') ? this.sourceCodeModule.getPanel().parentElement :
             <HTMLElement>this.contentModule.getPanel();
         let rteHeight: number = this.element.offsetHeight;
-        if (this.element.offsetHeight === 0 && this.height !== 'auto' && !this.getToolbar()) {
+        if (rteHeight === 0 && this.height !== 'auto' && !this.getToolbar()) {
             rteHeight = parseInt(this.height as string, 10);
-            heightPercent = typeof (this.height) === 'string' && this.height.indexOf('%') > -1;
             if (heightPercent) {
                 rteHeightPercent = this.height as string;
             }
@@ -2485,7 +2480,9 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
                 heightValue = heightPercent ? rteHeightPercent : rteHeight - (tbHeight + rzHeight) + 'px';
             }
         }
-        setStyleAttribute(cntEle, { height: heightValue, marginTop: topValue + 'px' });
+        if (target !== 'windowResize') {
+            setStyleAttribute(cntEle, { height: heightValue, marginTop: topValue + 'px' });
+        }
         if (this.iframeSettings.enable && target === 'sourceCode') {
             const codeElement: HTMLElement = <HTMLElement>select('.' + classes.CLS_RTE_CONTENT, this.element);
             setStyleAttribute(codeElement, { height: heightValue, marginTop: topValue + 'px' });
@@ -2643,7 +2640,7 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
             this.toolbarModule.refreshToolbarOverflow();
             isExpand = this.toolbarModule.baseToolbar.toolbarObj.element.classList.contains(classes.CLS_EXPAND_OPEN);
         }
-        this.setContentHeight('', isExpand);
+        this.setContentHeight('windowResize', isExpand);
         this.notify(events.windowResize, null);
     }
 
@@ -2755,7 +2752,7 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
             this.isRTE = false;
         }
         this.notify(events.docClick, { args: e });
-        if(e.detail > 3) {
+        if (e.detail > 3) {
             e.preventDefault();
         }
     }

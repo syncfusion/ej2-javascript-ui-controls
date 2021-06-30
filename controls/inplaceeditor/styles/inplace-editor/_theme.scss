@@ -162,9 +162,20 @@
     }
   }
 
+  @if $inplace-skin == 'tailwind' or $inplace-skin == 'tailwind-dark' {
+    .e-inplaceeditor .e-editable-value-wrapper {
+      background-color: $editor-background-color;
+      border-radius: 4px;
+    }
+
+    .e-inplaceeditor .e-editable-value-wrapper.e-tooltip.e-editable-open {
+      background: $wrapper-background-color;
+    }
+  }
+
   .e-inplaceeditor-tip {
 
-    &.e-tooltip-wrap {
+    &.e-tooltip-wrap.e-popup {
       background: $editor-tip-bg;
       box-shadow: $editor-tip-box-shadow;
 

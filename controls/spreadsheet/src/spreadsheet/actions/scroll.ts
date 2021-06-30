@@ -186,14 +186,15 @@ export class Scroll {
         return { idx: this.offset.left.idx, size: this.offset.left.size };
     }
 
-    private contentLoaded(): void {
-        this.setScrollEvent();
-        if (this.parent.enableRtl) { this.initScrollValue = this.parent.getScrollElement().scrollLeft; }
+    private contentLoaded(args: { left?: number }): void {
         if (!this.parent.scrollSettings.enableVirtualization) {
             const scrollTrack: HTMLElement = this.parent.createElement('div', { className: 'e-virtualtrack' });
             this.updateNonVirualScrollWidth({ scrollTrack: scrollTrack });
             this.parent.getScrollElement().appendChild(scrollTrack);
         }
+        if (args.left) { this.parent.getScrollElement().scrollLeft = args.left; }
+        this.setScrollEvent();
+        if (this.parent.enableRtl) { this.initScrollValue = this.parent.getScrollElement().scrollLeft; }
     }
 
     private updateNonVirualScrollWidth(args: { scrollTrack?: HTMLElement }): void {

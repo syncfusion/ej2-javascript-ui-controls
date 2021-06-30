@@ -119,7 +119,7 @@ export const listConversionFilters: { [key: string]: string } = {
 
 /**
  * Dom-Node Grouping of self closing tags
- * 
+ *
  * @hidden
  */
 export const selfClosingTags: string[] = [

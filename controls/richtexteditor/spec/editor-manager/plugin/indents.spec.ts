@@ -98,6 +98,98 @@ describe('Indents plugin', () => {
         });
     });
 
+    describe(' RTL - apply Indents testing', () => {
+        let editorObj: EditorManager;
+
+        let elem: HTMLElement = createElement('div', {
+            id: 'dom-node', innerHTML: `
+        <div style="color:red;" id="content-edit" contenteditable="true" class="e-node-deletable e-node-inner e-rtl">
+          <p class='first-p-node'>dom node
+           <a href="https://www.google.com" tabindex="1">Google</a>
+           <label>First label Node</label>
+           </p>
+           <p class='last-p-node'>
+             <label>Last Label Node</label>
+           </p>
+         </div>
+         ` });
+        beforeAll(() => {
+            document.body.appendChild(elem);
+            editorObj = new EditorManager({ document: document, editableElement: document.getElementById("content-edit") });
+        });
+
+        it(' increase indents format', () => {
+            let elem: HTMLElement = editorObj.editableElement as HTMLElement;
+            let start: HTMLElement = elem.querySelector('p');
+            let end: HTMLElement = elem.querySelector('label');
+            editorObj.nodeSelection.setSelectionText(document, start.childNodes[0], end, 0, 0);
+            editorObj.execCommand("Indents", 'Indent', null);
+            expect(start.style.marginRight === '20px').toBe(true);
+            editorObj.execCommand("Indents", 'Indent', null);
+            expect(start.style.marginRight === '40px').toBe(true);
+            start.style.marginRight = '';
+            editorObj.nodeSelection.Clear(document);
+
+            start = elem.querySelector('.first-p-node');
+            end = elem.querySelector('.last-p-node');
+            editorObj.nodeSelection.setSelectionText(document, start.childNodes[0], end, 0, 0);
+            editorObj.execCommand("Indents", 'Indent', null);
+            expect(start.style.marginRight === '20px').toBe(true);
+            expect(end.style.marginRight === '20px').toBe(true);
+
+            editorObj.execCommand("Indents", 'Indent', null);
+            expect(start.style.marginRight === '40px').toBe(true);
+            expect(end.style.marginRight === '40px').toBe(true);
+            start.style.marginRight = '';
+            end.style.marginRight = '';
+            editorObj.nodeSelection.Clear(document);
+        });
+
+        it(' Outdent format', () => {
+            let elem: HTMLElement = editorObj.editableElement as HTMLElement;
+            let start: HTMLElement = elem.querySelector('p');
+            let end: HTMLElement = elem.querySelector('label');
+            editorObj.nodeSelection.setSelectionText(document, start.childNodes[0], end, 0, 0);
+            editorObj.execCommand("Indents", 'Indent', null);
+            expect(start.style.marginRight === '20px').toBe(true);
+            editorObj.execCommand("Indents", 'Indent', null);
+            expect(start.style.marginRight === '40px').toBe(true);
+
+            editorObj.execCommand("Indents", 'Outdent', null);
+            expect(start.style.marginRight === '20px').toBe(true);
+            editorObj.execCommand("Indents", 'Outdent', null);
+            expect(start.style.marginRight === '0px').toBe(true);
+
+            editorObj.execCommand("Indents", 'Outdent', null);
+            expect(start.style.marginRight === '').toBe(true);
+
+            start.style.marginRight = '';
+            editorObj.nodeSelection.Clear(document);
+
+            start = elem.querySelector('.first-p-node');
+            end = elem.querySelector('.last-p-node');
+            editorObj.nodeSelection.setSelectionText(document, start.childNodes[0], end, 0, 0);
+            editorObj.execCommand("Indents", 'Indent', null);
+            expect(start.style.marginRight === '20px').toBe(true);
+            expect(end.style.marginRight === '20px').toBe(true);
+
+            editorObj.execCommand("Indents", 'Outdent', null);
+            expect(start.style.marginRight === '0px').toBe(true);
+            expect(end.style.marginRight === '0px').toBe(true);
+
+            editorObj.execCommand("Indents", 'Outdent', null);
+            expect(start.style.marginRight === '').toBe(true);
+            expect(end.style.marginRight === '').toBe(true);
+
+            start.style.marginRight = '';
+            end.style.marginRight = '';
+            editorObj.nodeSelection.Clear(document);
+        });
+        afterAll(() => {
+            detach(elem);
+        });
+    });
+
     describe(' apply Indents to List element testing', () => {
         let editorObj: EditorManager;
 

@@ -4,12 +4,14 @@ import { CreateElementArgs } from '@syncfusion/ej2-buttons';
 const globalTimeOut: { [key: string]: GlobalTimeOut } = {};
 const DEFT_MAT_WIDTH: number = 30;
 const DEFT_FAB_WIDTH: number = 30;
+const DEFT_TAIL_WIDTH: number = 24;
 const DEFT_BOOT_WIDTH: number = 30;
 const DEFT_BOOT4_WIDTH: number = 36;
 const CLS_SHOWSPIN: string = 'e-spin-show';
 const CLS_HIDESPIN: string = 'e-spin-hide';
 const CLS_MATERIALSPIN: string = 'e-spin-material';
 const CLS_FABRICSPIN: string = 'e-spin-fabric';
+const CLS_TAILWINDSPIN: string = 'e-spin-tailwind';
 const CLS_BOOTSPIN: string = 'e-spin-bootstrap';
 const CLS_BOOT4SPIN: string = 'e-spin-bootstrap4';
 const CLS_HIGHCONTRASTSPIN: string = 'e-spin-high-contrast';
@@ -31,7 +33,7 @@ export type createElementParams = (
 /**
   * Defines the type of spinner.
   */
-export type SpinnerType = 'Material' | 'Fabric'| 'Bootstrap' | 'HighContrast' | 'Bootstrap4';
+export type SpinnerType = 'Material' | 'Fabric'| 'Bootstrap' | 'HighContrast' | 'Bootstrap4' | 'Tailwind';
 
 // eslint-disable-next-line
 /**
@@ -182,6 +184,14 @@ function createFabricSpinner(container: HTMLElement, radius: number, makeElement
     fb_calculate_attributes(radius, container, CLS_FABRICSPIN);
 }
 
+
+function createTailwindSpinner(container: HTMLElement, radius: number, makeElement: createElementParams): void {
+    const uniqueID: string = random_generator();
+    globalTimeOut[uniqueID] = { timeOut: 0, type: 'Tailwind', radius: radius };
+    create_fabric_element(container, uniqueID, CLS_TAILWINDSPIN, makeElement);
+    fb_calculate_attributes(radius, container, CLS_TAILWINDSPIN);
+}
+
 /**
  *
  * @param {HTMLElement} container - specifies the element
@@ -235,6 +245,10 @@ function setTheme(theme: string, container: HTMLElement, radius: number, makeEle
         break;
     case 'Bootstrap4':
         createBootstrap4Spinner(innerContainer, radius, makeElement );
+        break;
+    case 'Tailwind':
+    case 'Tailwind-dark':
+        createTailwindSpinner(innerContainer, radius, makeElement );
         break;
     }
 }
@@ -411,6 +425,10 @@ function calculateRadius(width: string | number, theme: string): number {
         defaultSize = DEFT_MAT_WIDTH;
         break;
     case 'Fabric':
+        defaultSize = DEFT_FAB_WIDTH;
+        break;
+    case 'Tailwind':
+    case 'Tailwind-dark':
         defaultSize = DEFT_FAB_WIDTH;
         break;
     case 'Bootstrap4':

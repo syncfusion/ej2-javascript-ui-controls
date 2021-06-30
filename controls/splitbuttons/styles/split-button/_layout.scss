@@ -14,6 +14,10 @@
         padding-left: $split-btn-icon-btn-padding;
         padding-right: $split-btn-icon-btn-padding;
       }
+      @else if $skin-name == 'tailwind' or $skin-name == 'tailwind-dark' {
+        padding-left: 12px;
+        padding-right: 12px;
+      }
       @else {
         padding-left: 10px;
         padding-right: 4px;
@@ -23,9 +27,18 @@
         outline-offset: $split-btn-focus-outline-offset;
       }
 
-      &:hover,
-      &:focus {
+      &:hover {
         @if $skin-name != 'bootstrap4' {
+          box-shadow: none;
+        }
+      }
+
+      &:focus {
+        @if $skin-name == 'tailwind' or $skin-name == 'tailwind-dark' {
+          box-shadow: $split-btn-active-box-shadow;
+          z-index: 2;
+        }
+        @else {
           box-shadow: none;
         }
       }
@@ -74,6 +87,9 @@
         padding-left: 4px;
         padding-right: 4px;
       }
+      @if $skin-name == 'tailwind' or $skin-name == 'tailwind-dark' {
+        z-index: 1;
+      }
 
       &:focus,
       &:hover {
@@ -105,9 +121,17 @@
         box-shadow: none;
       }
 
-      &:hover,
-      &:focus {
+      &:hover {
         @if $skin-name != 'bootstrap4' {
+          box-shadow: none;
+        }
+      }
+
+      &:focus {
+        @if $skin-name == 'tailwind' or $skin-name == 'tailwind-dark' {
+          box-shadow: $split-btn-active-box-shadow;
+        }
+        @else {
           box-shadow: none;
         }
       }
@@ -131,6 +155,10 @@
         @if $skin-name == 'bootstrap4' {
           padding-left: $split-btn-icon-btn-padding;
           padding-right: $split-btn-icon-btn-padding;
+        }
+        @else if $skin-name == 'tailwind' or $skin-name == 'tailwind-dark' {
+          padding-left: 12px;
+          padding-right: 12px;
         }
         @else {
           padding-left: 4px;
@@ -163,6 +191,9 @@
         border-top-left-radius: $split-btn-border-radius;
         border-top-right-radius: 0;
         margin-left: 0;
+        @if $skin-name == 'tailwind' or $skin-name == 'tailwind-dark' {
+          z-index: 1;
+        }
       }
     }
 
@@ -235,6 +266,10 @@
         padding-left: $split-btn-icon-btn-padding-bigger;
         padding-right: $split-btn-icon-btn-padding-bigger;
       }
+      @else if $skin-name == 'tailwind' or $skin-name == 'tailwind-dark' {
+        padding-left: 16px;
+        padding-right: 16px;
+      }
       @else {
         padding-left: 12px;
         padding-right: 6px;
@@ -276,6 +311,9 @@
         padding-left: 4px;
         padding-right: 4px;
       }
+      @if $skin-name == 'tailwind' or $skin-name == 'tailwind-dark' {
+        z-index: 1;
+      }
     }
 
     &.e-rtl {
@@ -283,6 +321,10 @@
         @if $skin-name == 'bootstrap4' {
           padding-left: $split-btn-icon-btn-padding-bigger;
           padding-right: $split-btn-icon-btn-padding-bigger;
+        }
+        @else if $skin-name == 'tailwind' or $skin-name == 'tailwind-dark' {
+          padding-left: 12px;
+          padding-right: 12px;
         }
         @else {
           padding-left: 6px;
@@ -329,6 +371,9 @@
         @else {
           padding-bottom: 4px;
           padding-top: 4px;
+        }
+        @if $skin-name == 'tailwind' or $skin-name == 'tailwind-dark' {
+          z-index: 1;
         }
 
         .e-icon-bottom {

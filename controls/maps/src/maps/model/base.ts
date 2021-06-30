@@ -1,5 +1,4 @@
-/* eslint-disable @typescript-eslint/ban-types */
-/* eslint-disable @typescript-eslint/explicit-member-accessibility */
+/* eslint-disable @typescript-eslint/explicit-module-boundary-types */
 /**
  * Maps base document
  */
@@ -156,8 +155,8 @@ export class Border extends ChildProperty<Border> {
     /**
      * Sets and gets the opacity of the border in maps.
      */
-     @Property(null)
-     public opacity: number;
+    @Property(null)
+    public opacity: number;
 
 }
 /**
@@ -827,7 +826,7 @@ export class SubTitleSettings extends CommonTitleSettings {
     /**
      * Sets and gets the options for customizing the text in the subtitle for maps.
      */
-    @Complex<FontModel>({ size: Theme.mapsSubTitleFont.size }, Font)
+    @Complex<FontModel>({ size: Theme.mapsSubTitleFont.size, fontWeight: null }, Font)
     public textStyle: FontModel;
     /**
      * Sets and gets the alignment of the subtitle for maps.
@@ -844,7 +843,7 @@ export class TitleSettings extends CommonTitleSettings {
     /**
      * Sets and gets the options for customizing the text of the title in Maps.
      */
-    @Complex<FontModel>({ size: Theme.mapsTitleFont.size }, Font)
+    @Complex<FontModel>({ size: Theme.mapsTitleFont.size, fontWeight: null }, Font)
     public textStyle: FontModel;
     /**
      * Sets and gets the alignment for the text in the title for the maps.
@@ -904,12 +903,12 @@ export class ZoomSettings extends ChildProperty<ZoomSettings> {
     /**
      * Sets and gets the color for the zooming toolbar when the mouse has hovered on toolbar element in maps.
      */
-    @Property('#e61576')
+    @Property(null)
     public highlightColor: string;
     /**
      * Sets and gets the color for the zooming toolbar when clicking the zooming toolbar in maps.
      */
-    @Property('#e61576')
+    @Property(null)
     public selectionColor: string;
 
     /**
@@ -1330,9 +1329,9 @@ export class ShapeSettings extends ChildProperty<ShapeSettings> {
     /**
      * Sets and gets the color of the shapes in maps.
      *
-     * @default '#A6A6A6'
+     * @default null
      */
-    @Property('#A6A6A6')
+    @Property(null)
     public fill: string;
     /**
      * Sets and gets a set of colors for the shapes in maps.
@@ -1787,12 +1786,10 @@ export class LayerSettings extends ChildProperty<LayerSettings> {
     public factor: number;
     /**
      * @private
-     * Stores the layer bounds
      */
     public layerBounds: GeoLocation;
     /**
      * @private
-     * Stores the rect bounds
      */
     public rectBounds: Object;
     /**

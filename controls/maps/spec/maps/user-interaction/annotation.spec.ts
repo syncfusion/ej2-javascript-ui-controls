@@ -10,7 +10,7 @@ import  {profile , inMB, getMemoryProfile} from '../common.spec';
 Maps.Inject(Zoom, Marker, Bubble, Annotations);
 
 let MapData: Object = World_Map;
-describe('Zoom feature tesing for map control', () => {
+describe('Zoom feature tesing for Map control', () => {
     beforeAll(() => {
         const isDef = (o: any) => o !== undefined && o !== null;
         if (!isDef(window.performance)) {

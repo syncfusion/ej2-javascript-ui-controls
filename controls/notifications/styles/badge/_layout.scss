@@ -11,6 +11,9 @@
     font-size: $badge-base-font-size;
     font-weight: $badge-base-font-weight;
     line-height: $badge-base-line-height;
+    @if ($skin-name == 'tailwind' or $skin-name == 'tailwind-dark') {
+      height: $badge-base-height;
+    }
     overflow: hidden;
     padding: $badge-padding;
     text-align: center;
@@ -24,6 +27,16 @@
 
     &.e-badge-pill {
       border-radius: $badge-pill-border-radius;
+      @if ($skin-name == 'tailwind' or $skin-name == 'tailwind-dark') {
+        padding: $badge-pill-padding;
+       }
+    }
+
+    &.e-badge-ghost {
+      @if ($skin-name == 'tailwind' or $skin-name == 'tailwind-dark') {
+        line-height: $badge-ghost-line-height;
+        padding: $badge-ghost-padding;
+      }
     }
 
     &.e-badge-notification {
@@ -53,6 +66,9 @@
 
       &.e-badge-ghost {
         line-height: $badge-circle-ghost-line-height;
+        @if ($skin-name == 'tailwind' or $skin-name == 'tailwind-dark') {
+          padding: $badge-circle-ghost-padding;
+        }
       }
     }
 
@@ -93,7 +109,12 @@
 
     @at-root {
       button#{''} .e-badge {
-        line-height: .9;
+        @if ($skin-name == 'tailwind' or $skin-name == 'tailwind-dark') {
+          line-height: $leading-none;
+        }
+        @else {
+          line-height: .9;
+        }
         position: relative;
         top: $badge-button-top;
 
@@ -106,6 +127,54 @@
             line-height: $badge-ghost-circle-line-height;
           }
         }
+      }
+    }
+  }
+
+  .e-bigger .e-badge,
+  .e-badge.e-bigger {
+    @if ($skin-name == 'tailwind' or $skin-name == 'tailwind-dark') {
+      border-radius: $badge-touch-base-border-radius;
+      font-size: $badge-touch-base-font-size;
+      font-weight: $badge-touch-base-font-weight;
+      height: $badge-touch-base-height;
+      line-height: $badge-touch-base-line-height;
+      padding: $badge-touch-padding;
+
+      &.e-badge-pill {
+        border-radius: $badge-pill-border-radius;
+        padding: $badge-touch-pill-padding;
+      }
+
+      &.e-badge-ghost {
+        padding: $badge-touch-ghost-padding;
+
+        &.e-badge-circle {
+          padding: $badge-touch-ghost-circle-padding;
+        }
+
+        &.e-badge-notification {
+          padding: $badge-touch-ghost-notification-padding;
+        }
+      }
+
+      &.e-badge-notification {
+        border-radius: $badge-pill-border-radius;
+        min-width: $badge-touch-notification-min-width;
+        padding: $badge-touch-pill-padding;
+      }
+
+      &.e-badge-circle {
+        border-radius: $badge-circle-border-radius;
+        min-width: $badge-circle-min-width;
+        padding: $badge-touch-circle-padding;
+        width: $badge-touch-circle-width;
+      }
+
+      &.e-badge-dot {
+        border-radius: $badge-dot-border-radius;
+        height: $badge-touch-dot-height;
+        width: $badge-touch-dot-width;
       }
     }
   }

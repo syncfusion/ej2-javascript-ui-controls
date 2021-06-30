@@ -495,6 +495,9 @@ export declare class QueryBuilder extends Component<HTMLDivElement> implements I
     /**
      * notify the changes to component.
      *
+     * @param {string | number | boolean | Date | string[] | number[] | Date[]} value - 'value' to be passed to update the rule value.
+     * @param {Element} element - 'element' to be passed to update the rule.
+     * @param {string} type - 'type' to be passed to update the rule .
      * @returns {void}.
      */
     notifyChange(value: string | number | boolean | Date | string[] | number[] | Date[], element: Element, type?: string): void;
@@ -516,6 +519,7 @@ export declare class QueryBuilder extends Component<HTMLDivElement> implements I
     /**
      * return values bound to the column.
      *
+     * @param {string} field - 'field' to be passed to get the field values.
      * @returns {object[]} - Values bound to the column
      */
     getValues(field: string): object[];
@@ -551,19 +555,24 @@ export declare class QueryBuilder extends Component<HTMLDivElement> implements I
     /**
      * Removes the component from the DOM and detaches all its related event handlers.
      * Also it maintains the initial input element from the DOM.
+     *
      * @method destroy
-     * @return {void}
+     * @returns {void}
      */
     destroy(): void;
     /**
      * Adds single or multiple rules.
      *
+     * @param {RuleModel[]} rule - 'rule collection' to be passed to add the rules.
+     * @param {string} groupID - 'group id' to be passed to add the rule in groups.
      * @returns {void}.
      */
     addRules(rule: RuleModel[], groupID: string): void;
     /**
      * Adds single or multiple groups, which contains the collection of rules.
      *
+     * @param {RuleModel[]} groups - 'group collection' to be passed to add the groups.
+     * @param {string} groupID - 'group id' to be passed to add the groups.
      * @returns {void}.
      */
     addGroups(groups: RuleModel[], groupID: string): void;
@@ -583,6 +592,12 @@ export declare class QueryBuilder extends Component<HTMLDivElement> implements I
     protected wireEvents(): void;
     protected unWireEvents(): void;
     private getParentGroup;
+    /**
+     * Delete the Group
+     *
+     * @param {Element | string} target - 'target' to be passed to delete the group.
+     * @returns {void}
+     */
     deleteGroup(target: Element | string): void;
     private deleteGroupSuccessCallBack;
     private isPlatformTemplate;
@@ -593,8 +608,9 @@ export declare class QueryBuilder extends Component<HTMLDivElement> implements I
     private clearQBTemplate;
     private disableRuleCondition;
     /**
-     * return the valid rule or rules collection.
+     * Get the valid rule or rules collection.
      *
+     * @param {RuleModel} currentRule - 'currentRule' to be passed to get the valid rules.
      * @returns {RuleModel} - Valid rule or rules collection
      */
     getValidRules(currentRule?: RuleModel): RuleModel;
@@ -602,6 +618,7 @@ export declare class QueryBuilder extends Component<HTMLDivElement> implements I
     /**
      * Set the rule or rules collection.
      *
+     * @param {RuleModel} rule - 'rule' to be passed to set rules.
      * @returns {void}.
      */
     setRules(rule: RuleModel): void;
@@ -614,18 +631,21 @@ export declare class QueryBuilder extends Component<HTMLDivElement> implements I
     /**
      * Gets the rule.
      *
+     * @param {string | HTMLElement} elem - 'elem' to be passed to get rule.
      * @returns {object} - Rule
      */
     getRule(elem: string | HTMLElement): RuleModel;
     /**
      * Gets the group.
      *
+     * @param {string | Element} target - 'target' to be passed to get group.
      * @returns {object} -Group
      */
     getGroup(target: Element | string): RuleModel;
     /**
      * Deletes the group or groups based on the group ID.
      *
+     * @param {string[]} groupIdColl - 'groupIdColl' to be passed to delete groups.
      * @returns {void}
      */
     deleteGroups(groupIdColl: string[]): void;
@@ -639,18 +659,21 @@ export declare class QueryBuilder extends Component<HTMLDivElement> implements I
     /**
      * Deletes the rule or rules based on the rule ID.
      *
+     * @param {string[]} ruleIdColl - 'ruleIdColl' to be passed to delete rules.
      * @returns {void}.
      */
     deleteRules(ruleIdColl: string[]): void;
     /**
      * Gets the query for Data Manager.
      *
+     * @param {RuleModel} rule - 'rule' to be passed to get query.
      * @returns {string} - Query for Data Manager
      */
     getDataManagerQuery(rule: RuleModel): Query;
     /**
      * Get the predicate from collection of rules.
      *
+     * @param {RuleModel} rule - 'rule' to be passed to get predicate.
      * @returns {Predicate} - Predicate from collection of rules
      */
     getPredicate(rule: RuleModel): Predicate;
@@ -674,20 +697,27 @@ export declare class QueryBuilder extends Component<HTMLDivElement> implements I
     private renderRule;
     private enableReadonly;
     private enableBtnGroup;
+    private isDateFunction;
     private getSqlString;
     /**
      * Sets the rules from the sql query.
+     *
+     * @param {string} sqlString - 'sql String' to be passed to set the rule.
+     * @returns {void}
      */
     setRulesFromSql(sqlString: string): void;
     /**
      * Get the rules from SQL query.
      *
+     * @param {string} sqlString - 'sql String' to be passed to get the rule.
      * @returns {object} - Rules from SQL query
      */
     getRulesFromSql(sqlString: string): RuleModel;
     /**
      * Gets the sql query from rules.
      *
+     * @param {RuleModel} rule - 'rule' to be passed to get the sql.
+     * @param {boolean} allowEscape - Set `true` if it exclude the escape character.
      * @returns {object} - Sql query from rules.
      */
     getSqlFromRules(rule?: RuleModel, allowEscape?: boolean): string;
@@ -707,16 +737,19 @@ export interface Level {
 export interface TemplateColumn {
     /**
      * Creates the custom component.
+     *
      * @default null
      */
     create?: Element | Function | string;
     /**
      * Wire events for the custom component.
+     *
      * @default null
      */
     write?: void | Function | string;
     /**
      * Destroy the custom component.
+     *
      * @default null
      */
     destroy?: Function | string;
@@ -727,16 +760,19 @@ export interface TemplateColumn {
 export interface Validation {
     /**
      * Specifies the minimum value in textbox validation.
+     *
      * @default 2
      */
     min?: number;
     /**
      * Specifies the maximum value in textbox validation.
+     *
      * @default 10
      */
     max?: number;
     /**
      * Specifies whether the value is required or not
+     *
      * @default true
      */
     isRequired: boolean;

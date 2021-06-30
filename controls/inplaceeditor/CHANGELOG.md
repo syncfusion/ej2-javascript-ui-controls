@@ -2,13 +2,17 @@
 
 ## [Unreleased]
 
-## 19.1.57 (2021-04-20)
+## 19.2.44 (2021-06-30)
 
 ### In-place Editor
 
 #### New Features
 
-- `#I320740` - The `enableHtmlParse` new property provided to enable or disable the parsing of HTML string content as DOM elements.
+- `#I311906`, `#FB23798` - Provided the new event `endEdit` that triggers when the edit action is finished and begin to submit/cancel the current value.
+
+#### Bug Fixes
+
+- `#I330556` - Resolved the exception raised, when the large value is typed and starting to edit for the second time in In-Place Editor.
 
 ## 18.4.30 (2020-12-17)
 

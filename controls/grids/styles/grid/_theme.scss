@@ -127,6 +127,10 @@
       border-color: $grid-header-border-color;
     }
 
+    .e-rowdragheader {
+      background-color: $grid-header-bg-color;
+    }
+
     .e-headercell,
     .e-detailheadercell {
       background-color: $grid-header-bg-color;

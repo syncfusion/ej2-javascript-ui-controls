@@ -1,4 +1,4 @@
-import { Component, ModuleDeclaration, EventHandler, Complex, Browser, EmitType, addClass, select, detach } from '@syncfusion/ej2-base';import { Property, NotifyPropertyChanges, INotifyPropertyChanged, formatUnit, L10n, closest } from '@syncfusion/ej2-base';import { setStyleAttribute, Event, removeClass, print as printWindow, attributes } from '@syncfusion/ej2-base';import { isNullOrUndefined as isNOU, compile, append, extend, debounce, isBlazor } from '@syncfusion/ej2-base';import { Touch as EJ2Touch, TapEventArgs } from '@syncfusion/ej2-base';import { getScrollableParent, BeforeOpenEventArgs, BeforeCloseEventArgs } from '@syncfusion/ej2-popups';import * as events from '../base/constant';import * as classes from '../base/classes';import { Render } from '../renderer/render';import { ViewSource } from '../renderer/view-source';import { IRenderer, IFormatter, PrintEventArgs, ActionCompleteEventArgs, ActionBeginEventArgs, ImageDropEventArgs } from './interface';import { IExecutionGroup, executeGroup, CommandName, ResizeArgs, StatusArgs, ToolbarStatusEventArgs } from './interface';import { BeforeQuickToolbarOpenArgs, ChangeEventArgs, AfterImageDeleteEventArgs, PasteCleanupArgs } from './interface';import { ILinkCommandsArgs, IImageCommandsArgs, BeforeSanitizeHtmlArgs, ITableCommandsArgs, ExecuteCommandOption } from './interface';import { ServiceLocator } from '../services/service-locator';import { RendererFactory } from '../services/renderer-factory';import { RenderType, ToolbarType } from './enum';import { EditorMode } from './../../common/types';import { Toolbar } from '../actions/toolbar';import { ExecCommandCallBack } from '../actions/execute-command-callback';import { KeyboardEvents, KeyboardEventArgs } from '../actions/keyboard';import { FontFamilyModel, FontSizeModel, FontColorModel, FormatModel, BackgroundColorModel } from '../models/models';import { ToolbarSettingsModel, IFrameSettingsModel, ImageSettingsModel, TableSettingsModel } from '../models/models';import { QuickToolbarSettingsModel, InlineModeModel, PasteCleanupSettingsModel, FileManagerSettingsModel } from '../models/models';import { ToolbarSettings, ImageSettings, QuickToolbarSettings, FontFamily, FontSize, Format } from '../models/toolbar-settings';import { FileManagerSettings } from '../models/toolbar-settings';import { TableSettings, PasteCleanupSettings } from '../models/toolbar-settings';import { FontColor, BackgroundColor } from '../models/toolbar-settings';import { IFrameSettings } from '../models/iframe-settings';import { InlineMode } from '../models/inline-mode';import { Link } from '../renderer/link-module';import { Image } from '../renderer/image-module';import { Table } from '../renderer/table-module';import { Count } from '../actions/count';import { HtmlEditor } from '../actions/html-editor';import { MarkdownEditor } from '../actions/markdown-editor';import { defaultLocale } from '../models/default-locale';import { setAttributes } from '../actions/html-attributes';import { BaseToolbar } from '../actions/base-toolbar';import { QuickToolbar } from '../actions/quick-toolbar';import { FullScreen } from '../actions/full-screen';import { PasteCleanup } from '../actions/paste-clean-up';import * as CONSTANT from '../../common/constant';import { IHtmlKeyboardEvent } from '../../editor-manager/base/interface';import { dispatchEvent, getEditValue, isIDevice, decode, isEditableValueEmpty } from '../base/util';import { DialogRenderer } from '../renderer/dialog-renderer';import { SelectedEventArgs, RemovingEventArgs, UploadingEventArgs, BeforeUploadEventArgs } from '@syncfusion/ej2-inputs';import { Resize } from '../actions/resize';import { FileManager } from '../actions/file-manager';import { EditorManager } from '../../editor-manager';
+import { Component, ModuleDeclaration, EventHandler, Complex, Browser, EmitType, addClass, select, detach } from '@syncfusion/ej2-base';import { Property, NotifyPropertyChanges, INotifyPropertyChanged, formatUnit, L10n, closest } from '@syncfusion/ej2-base';import { setStyleAttribute, Event, removeClass, print as printWindow, attributes } from '@syncfusion/ej2-base';import { isNullOrUndefined as isNOU, compile, append, extend, debounce, isBlazor } from '@syncfusion/ej2-base';import { Touch as EJ2Touch, TapEventArgs } from '@syncfusion/ej2-base';import { getScrollableParent, BeforeOpenEventArgs, BeforeCloseEventArgs } from '@syncfusion/ej2-popups';import * as events from '../base/constant';import * as classes from '../base/classes';import { Render } from '../renderer/render';import { ViewSource } from '../renderer/view-source';import { IRenderer, IFormatter, PrintEventArgs, ActionCompleteEventArgs, ActionBeginEventArgs, ImageDropEventArgs } from './interface';import { IExecutionGroup, executeGroup, CommandName, ResizeArgs, StatusArgs, ToolbarStatusEventArgs } from './interface';import { BeforeQuickToolbarOpenArgs, ChangeEventArgs, AfterImageDeleteEventArgs, PasteCleanupArgs } from './interface';import { ILinkCommandsArgs, IImageCommandsArgs, BeforeSanitizeHtmlArgs, ITableCommandsArgs, ExecuteCommandOption } from './interface';import { ServiceLocator } from '../services/service-locator';import { RendererFactory } from '../services/renderer-factory';import { RenderType, ToolbarType } from './enum';import { EditorMode } from './../../common/types';import { Toolbar } from '../actions/toolbar';import { ExecCommandCallBack } from '../actions/execute-command-callback';import { KeyboardEvents, KeyboardEventArgs } from '../actions/keyboard';import { FontFamilyModel, FontSizeModel, FontColorModel, FormatModel, BackgroundColorModel, NumberFormatListModel, BulletFormatListModel } from '../models/models';import { ToolbarSettingsModel, IFrameSettingsModel, ImageSettingsModel, TableSettingsModel } from '../models/models';import { QuickToolbarSettingsModel, InlineModeModel, PasteCleanupSettingsModel, FileManagerSettingsModel } from '../models/models';import { ToolbarSettings, ImageSettings, QuickToolbarSettings, FontFamily, FontSize, Format, NumberFormatList, BulletFormatList } from '../models/toolbar-settings';import { FileManagerSettings } from '../models/toolbar-settings';import { TableSettings, PasteCleanupSettings } from '../models/toolbar-settings';import { FontColor, BackgroundColor } from '../models/toolbar-settings';import { IFrameSettings } from '../models/iframe-settings';import { InlineMode } from '../models/inline-mode';import { Link } from '../renderer/link-module';import { Image } from '../renderer/image-module';import { Table } from '../renderer/table-module';import { Count } from '../actions/count';import { HtmlEditor } from '../actions/html-editor';import { MarkdownEditor } from '../actions/markdown-editor';import { defaultLocale } from '../models/default-locale';import { setAttributes } from '../actions/html-attributes';import { BaseToolbar } from '../actions/base-toolbar';import { QuickToolbar } from '../actions/quick-toolbar';import { FullScreen } from '../actions/full-screen';import { PasteCleanup } from '../actions/paste-clean-up';import * as CONSTANT from '../../common/constant';import { IHtmlKeyboardEvent } from '../../editor-manager/base/interface';import { dispatchEvent, getEditValue, isIDevice, decode, isEditableValueEmpty } from '../base/util';import { DialogRenderer } from '../renderer/dialog-renderer';import { SelectedEventArgs, RemovingEventArgs, UploadingEventArgs, BeforeUploadEventArgs } from '@syncfusion/ej2-inputs';import { Resize } from '../actions/resize';import { FileManager } from '../actions/file-manager';import { EditorManager } from '../../editor-manager';
 import {ComponentModel} from '@syncfusion/ej2-base';
 
 /**
@@ -431,6 +431,39 @@ export interface RichTextEditorModel extends ComponentModel{
     format?: FormatModel;
 
     /**
+     * Predefine the advanced list types that populate in the numberFormatList dropdown list from the toolbar.
+     *
+     * @default
+     * {
+     * types: [
+     * { text: 'None', value: 'none' },
+     * { text: 'Number', value: 'decimal' },
+     * { text: 'Lower Greek', value: 'lowerGreek' },
+     * { text: 'Lower Roman', value: 'lowerRoman' },
+     * { text: 'Upper Alpha', value: 'upperAlpha' },
+     * { text: 'Lower Alpha', value: 'lowerAlpha' },
+     * { text: 'Upper Roman', value: 'upperRoman' },
+     * ]
+     * }
+     */
+    numberFormatList?: NumberFormatListModel;
+
+    /**
+     * Predefine the advanced list types that populate in the bulletFormatList dropdown list from the toolbar.
+     *
+     * @default
+     * {
+     * types: [
+     * { text: 'None', value: 'none' },
+     * { text: 'Disc', value: 'disc' },
+     * { text: 'Circle', value: 'circle' },
+     * { text: 'Square', value: 'square' }
+     * ]
+     * }
+     */
+    bulletFormatList?: BulletFormatListModel;
+
+    /**
      * Predefine the font families that populate in font family dropdown list from the toolbar.
      *
      * {% codeBlock src='rich-text-editor/font-family/index.md' %}{% endcodeBlock %}
@@ -573,7 +606,6 @@ export interface RichTextEditorModel extends ComponentModel{
      * @blazorProperty 'DialogOpened'
      * @blazorType DialogOpenEventArgs
      */
-    /* eslint-disable */
     dialogOpen?: EmitType<Object>;
 
     /**
@@ -594,7 +626,6 @@ export interface RichTextEditorModel extends ComponentModel{
      * @blazorProperty 'DialogClosed'
      * @blazorType DialogCloseEventArgs
      */
-    /* eslint-disable */
     dialogClose?: EmitType<Object>;
 
     /**
@@ -612,7 +643,6 @@ export interface RichTextEditorModel extends ComponentModel{
      * @blazorProperty 'QuickToolbarOpened'
      * @blazorType QuickToolbarEventArgs
      */
-    /* eslint-disable */
     quickToolbarOpen?: EmitType<Object>;
 
     /**
@@ -622,7 +652,6 @@ export interface RichTextEditorModel extends ComponentModel{
      * @blazorProperty 'QuickToolbarClosed'
      * @blazorType QuickToolbarEventArgs
      */
-    /* eslint-disable */
     quickToolbarClose?: EmitType<Object>;
 
     /**
@@ -631,7 +660,6 @@ export interface RichTextEditorModel extends ComponentModel{
      * @deprecated
      * @event 'object'
      */
-    /* eslint-disable */
     toolbarStatusUpdate?: EmitType<Object>;
 
     /**
@@ -640,7 +668,6 @@ export interface RichTextEditorModel extends ComponentModel{
      * @event 'object'
      * @blazorType ToolbarUpdateEventArgs
      */
-    /* eslint-disable */
     updatedToolbarStatus?: EmitType<ToolbarStatusEventArgs>;
 
     /**
@@ -673,7 +700,6 @@ export interface RichTextEditorModel extends ComponentModel{
      * @blazorProperty 'OnImageUploadSuccess'
      * @blazorType ImageSuccessEventArgs
      */
-    /* eslint-disable */
     imageUploadSuccess?: EmitType<Object>;
 
     /**
@@ -683,7 +709,6 @@ export interface RichTextEditorModel extends ComponentModel{
      * @blazorProperty 'OnImageUploadFailed'
      * @blazorType ImageFailedEventArgs
      */
-    /* eslint-disable */
     imageUploadFailed?: EmitType<Object>;
 
     /**
@@ -708,7 +733,6 @@ export interface RichTextEditorModel extends ComponentModel{
      * @event 'object'
      * @blazorProperty 'Created'
      */
-    /* eslint-disable */
     created?: EmitType<Object>;
 
     /**
@@ -718,7 +742,6 @@ export interface RichTextEditorModel extends ComponentModel{
      * @blazorProperty 'Destroyed'
      * @blazorType DestroyedEventArgs
      */
-    /* eslint-disable */
     destroyed?: EmitType<Object>;
 
     /**
@@ -735,7 +758,6 @@ export interface RichTextEditorModel extends ComponentModel{
      * @event 'object'
      * @blazorType BlurEventArgs
      */
-    /* eslint-disable */
     blur?: EmitType<Object>;
 
     /**
@@ -745,7 +767,6 @@ export interface RichTextEditorModel extends ComponentModel{
      * @blazorProperty 'OnToolbarClick'
      * @blazorType ToolbarClickEventArgs
      */
-    /* eslint-disable */
     toolbarClick?: EmitType<Object>;
 
     /**
@@ -754,7 +775,6 @@ export interface RichTextEditorModel extends ComponentModel{
      * @event 'object'
      * @blazorType FocusEventArgs
      */
-    /* eslint-disable */
     focus?: EmitType<Object>;
 
     /**

@@ -1,4 +1,6 @@
-/* eslint-disable @typescript-eslint/dot-notation */
+/* eslint-disable jsdoc/require-param */
+/* eslint-disable @typescript-eslint/no-unused-vars */
+/* eslint-disable max-len */
 import { Maps } from '../../index';
 import { SelectionSettingsModel, click, ISelectionEventArgs, itemSelection } from '../index';
 import { getElement, createStyle, customizeStyle, removeClass, getTargetElement, getElementByID} from '../utils/helper';
@@ -14,7 +16,6 @@ export class Selection {
      * @private
      */
     public selectionType: string;
-    // eslint-disable-next-line @typescript-eslint/explicit-member-accessibility
     constructor(maps: Maps) {
         this.maps = maps;
         this.addEventListener();

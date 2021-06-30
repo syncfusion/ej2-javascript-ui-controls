@@ -587,9 +587,9 @@ export class TooltipSettings extends ChildProperty<TooltipSettings> {
     /**
      * Sets and gets the background color of tooltip in the treemap component.
      *
-     * @default '#000816'
+     * @default null
      */
-    @Property('#000816')
+    @Property(null)
     public fill: string;
     /**
      * Sets and gets the opacity of tooltip in the treemap component.

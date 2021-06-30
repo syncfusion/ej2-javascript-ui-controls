@@ -103,6 +103,18 @@ export interface BeginEditEventArgs {
 }
 
 /**
+ * Provides information about the EndEdit event.
+ */
+export interface EndEditEventArgs {
+    /** Defines the type of action ends the edit. */
+    action?: string
+    /** Specifies whether to cancel the end edit action. */
+    cancel?: boolean
+    /** Defines the current editor mode. */
+    mode?: RenderMode
+}
+
+/**
  * Provides information about the Change event.
  */
 export interface ChangeEventArgs {

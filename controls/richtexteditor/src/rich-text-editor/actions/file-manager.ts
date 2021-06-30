@@ -84,7 +84,6 @@ export class FileManager {
             position: { X: 'center', Y: 'center' },
             buttons: this.dlgButtons,
             created: this.renderFileManager.bind(this),
-            // eslint-disable-next-line
             close: (e: { [key: string]: object }) => {
                 this.parent.isBlur = false;
                 if (e && (e.event as { [key: string]: string }).returnValue) {
@@ -101,8 +100,8 @@ export class FileManager {
     }
 
     private renderFileManager(): void {
-         // eslint-disable-next-line
-         const proxy: FileManager = this;
+        // eslint-disable-next-line
+        const proxy: FileManager = this;
         this.fileObj = new EJ2FileManager({
             allowMultiSelection: false,
             locale: this.parent.locale,

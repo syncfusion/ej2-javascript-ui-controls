@@ -53,6 +53,15 @@ export interface GroupingBarSettingsModel {
      */
     allowDragAndDrop?: boolean;
 
+    /**
+     * Allows you to show an additional UI along with the grouping bar UI, which contains the fields that aren't bound in the current report.
+     * It allows you to modify the report by re-arranging the pivot buttons through drag-and-drop operation between axes (row, column, value and filter)
+     * that are used to update the pivot table during runtime.
+     * > This property is applicable only for relational data source.
+     * @default false     
+     */
+    showFieldsPanel?: boolean;
+
 }
 
 /**

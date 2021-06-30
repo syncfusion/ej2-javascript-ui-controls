@@ -914,4 +914,7 @@ describe('selection character format validation on enter', () => {
         editor.editor.onEnter();
         expect(editor.selection.characterFormat.fontSize).toBe(11);
     });
+    it('paragrapgh character format validation on enter', () => {
+        expect((editor.selection.start.paragraph.previousWidget as ParagraphWidget).characterFormat.fontSize).toBe(11);
+    });
 });

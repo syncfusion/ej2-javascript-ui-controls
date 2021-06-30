@@ -13,6 +13,7 @@ export type ToolbarItem =
     'DownloadOption' |
     'UndoRedoTool' |
     'AnnotationEditTool' |
+    'FormDesignerEditTool' |
     'CommentTool' |
     'SubmitForm';
 
@@ -40,6 +41,20 @@ export type AnnotationToolbarItem =
     'FontAlignAnnotationTool' |
     'FontColorAnnotationTool'|
     'CommentPanelTool';
+
+/**
+ * Enum value of form designer toolbar item.
+ */
+export type FormDesignerToolbarItem =
+'TextboxTool' |
+'PasswordTool' |
+'CheckBoxTool' |
+'RadioButtonTool' |
+'DropdownTool' |
+'ListboxTool' |
+'DrawSignatureTool' |
+'DeleteTool';
+
 /**
  * Enum LinkTarget for hyperlink navigation
  */
@@ -48,12 +63,16 @@ export type LinkTarget = 'CurrentTab' | 'NewTab' | 'NewWindow';
  * Enum InteractionMode for interaction mode
  */
 export type InteractionMode = 'TextSelection' | 'Pan';
+/**
+* Enum type for Signature Items
+*/
+export type SignatureItem = 'Signature' | 'Initial';
 
 /**
  * Enum AnnotationType for specifying Annotations
  */
 // eslint-disable-next-line max-len
-export type AnnotationType = 'None' | 'Highlight' | 'Underline' | 'Strikethrough' | 'Line' | 'Arrow' | 'Rectangle' | 'Circle' | 'Polygon' | 'Distance' | 'Perimeter' | 'Area' | 'Radius' | 'Volume' | 'FreeText' | 'HandWrittenSignature' | 'Ink' | 'Stamp' | 'Image' | 'StickyNotes';
+export type AnnotationType = 'None' | 'Highlight' | 'Underline' | 'Strikethrough' | 'Line' | 'Arrow' | 'Rectangle' | 'Circle' | 'Polygon' | 'Distance' | 'Perimeter' | 'Area' | 'Radius' | 'Volume' | 'FreeText' | 'HandWrittenSignature' | 'Initial' | 'Ink' | 'Stamp' | 'Image' | 'StickyNotes';
 
 /**
  * Enum LineHeadStyle for line and arrow annotation
@@ -84,7 +103,7 @@ export type ContextMenuAction = 'None' | 'MouseUp' | 'RightClick';
 /**
  * Enum unit for FormFieldType
  */
-export type FormFieldType = 'Textbox' | 'Password' | 'CheckBox' | 'RadioButton' | 'DropDown' | 'ListBox' | 'SignatureField';
+export type FormFieldType = 'Textbox' | 'Password' | 'CheckBox' | 'RadioButton' | 'DropDown' | 'ListBox' | 'SignatureField' | 'InitialField';
 
 /**
  * Enum for font styles

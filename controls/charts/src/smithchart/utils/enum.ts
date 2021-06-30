@@ -22,7 +22,11 @@ export type SmithchartTheme =
     /**  Render a smithchart with Bootstrap Dark theme. */
     'BootstrapDark'|
     /** Render a smithchart with Bootstrap4 theme. */
-    'Bootstrap4';
+    'Bootstrap4'|
+	/**  Render a smithchart with Tailwind theme. */
+    'Tailwind' |
+    /**  Render a smithchart with TailwindDark theme. */
+    'TailwindDark';
 
 /**
  * Defines render type of smithchart. They are

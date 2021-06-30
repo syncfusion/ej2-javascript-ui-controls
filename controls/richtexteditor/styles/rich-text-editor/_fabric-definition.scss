@@ -2,6 +2,8 @@ $rte-border-size: 1px !default;
 $rte-2px-border-size: 2px !default;
 $rte-border-type: solid !default;
 
+$rte-list-btn-flex: column !default;
+$rte-list-btn-line-height: 1 !default;
 $skin-name: 'fabric' !default;
 $rte-border-color: $neutral-quintenaryalt !default;
 $rte-full-screen-bg: $neutral-white !default;
@@ -9,6 +11,8 @@ $rte-content-bg: $neutral-white !default;
 $rte-content-font-color: #333 !default;
 $rte-item-color: $neutral-light-fontalt !default;
 $rte-icons-color: $neutral-light-fontalt !default;
+$rte-content-padding: 16px !default;
+$rte-table-popup-padding: 10px !default;
 
 $rte-big-quick-item-btn-width: 39px !default;
 $rte-quick-item-btn-width: 27px !default;
@@ -24,6 +28,8 @@ $rte-quick-item-active-font-color: $neutral-light-fontalt !default;
 $rte-quick-item-border: 0 !default;
 $rte-quick-item-hover-border-color: $neutral-white !default;
 $rte-quick-item-active-border-color: $neutral-white !default;
+$font-weight: 500 !default;
+$rte-table-popup-bdr-radius: 0 !default;
 
 $rte-big-quick-drop-btn-line-height: 33px !default;
 $rte-quick-drop-btn-line-height: 24px !default;
@@ -76,8 +82,8 @@ $rte-split-btn-bar-bg: $neutral-tertiary-alt !default;
 $rte-split-btn-active-bar-bg: $neutral-tertiary !default;
 $rte-split-btn-bar-size: 1px !default;
 $rte-split-btn-active-border: 0 !default;
-$rte-split-btn-active-color-icon-line-height: 25px !default;
-$rte-big-split-btn-active-color-icon-line-height: 35px !default;
+$rte-split-btn-active-color-icon-line-height: 38px !default;
+$rte-big-split-btn-active-color-icon-line-height: 48px !default;
 
 $rte-link-valid-color: #f00 !default;
 $rte-img-popup-color: #000 !default;
@@ -134,6 +140,8 @@ $rte-table-popup-box: 0 3px 8px 0 rgba($neutral-light-fontalt, .26) !default;
 $rte-table-border-color: #bdbdbd !default;
 $rte-table-alternate-color: #f5f5f5 !default;
 $rte-table-header-bg: #e0e0e0 !default;
+$rte-toolbar-icon-size: 16px !default;
+$rte-toolbar-big-icon-size: 18px !default;
 
 $rte-insert-dialog-label-padding-top: 20px !default;
 $rte-insert-dialog-label-padding-bottom: 20px !default;
@@ -153,3 +161,5 @@ $rte-inline-tmp-color-min-width: 50px;
 $rte-resize-handler-width: 15px;
 $rte-resize-handler-height: 15px;
 $rte-resize-handler-position: 0;
+
+$rte-big-color-list-span-common-padding-left-right: 0;

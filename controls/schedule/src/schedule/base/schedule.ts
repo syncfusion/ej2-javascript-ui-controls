@@ -242,6 +242,7 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
     /**
      * To define the minimum date on the Schedule, `minDate` property can be defined.
      * Usually, it defaults to the new Date(1900, 0, 1).
+     * {% codeBlock src='schedule/minDate/index.md' %}{% endcodeBlock %}
      *
      * @default new Date(1900, 0, 1)
      * @aspDefaultValue new DateTime(1900, 1, 1)
@@ -252,6 +253,7 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
     /**
      * To define the maximum date on the Schedule, `maxDate` property can be defined.
      * Usually, it defaults to the new Date(2099, 11, 31).
+     * {% codeBlock src='schedule/maxDate/index.md' %}{% endcodeBlock %}
      *
      * @default new Date(2099, 11, 31)
      * @aspDefaultValue new DateTime(2099, 12, 31)
@@ -331,6 +333,16 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
     public workDays: number[];
 
     /**
+     * This option allows the user to set the number of months count to be displayed on the Schedule.
+     * {% codeBlock src='schedule/monthsCount/index.md' %}{% endcodeBlock %}
+     *
+     * @default 12
+     * @aspType int
+     */
+    @Property(12)
+    public monthsCount: number;
+
+    /**
      * It is used to specify the starting hour, from which the Schedule starts to display. It accepts the time string in a short skeleton
      * format and also, hides the time beyond the specified start time.
      * {% codeBlock src='schedule/startHour/index.md' %}{% endcodeBlock %}
@@ -368,6 +380,15 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
      */
     @Property(false)
     public enableAllDayScroll: boolean;
+
+    /**
+     * When set to `true`, the header view navigations are listed under the popup and if we enable resource grouping, the compact view will be enabled.
+     * {% codeBlock src='schedule/enableAdaptiveUI/index.md' %}{% endcodeBlock %}
+     *
+     * @default false
+     */
+    @Property(false)
+    public enableAdaptiveUI: boolean;
 
     /**
      * When set to `true`, allows the resizing of appointments. It allows the rescheduling of appointments either by changing the
@@ -467,8 +488,8 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
      * * groupIndex
      * * type
      *
-     * Refer to the below code snippet
-     * 
+     * Refer to the below code snippet.
+     *
      * {% codeBlock src='schedule/cellTemplate/index.md' %}{% endcodeBlock %}
      *
      * @default null
@@ -497,6 +518,7 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
 
     /**
      * This property helps user to add/edit the event in inline.
+     * {% codeBlock src='schedule/allowInline/index.md' %}{% endcodeBlock %}
      * By default, it is set to `false`.
      *
      * @default false
@@ -506,6 +528,7 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
 
     /**
      * This property helps user to allow/prevent the selection of multiple cells.
+     * {% codeBlock src='schedule/allowMultiCellSelection/index.md' %}{% endcodeBlock %}
      * By default, it is set to `true`.
      *
      * @default true
@@ -515,6 +538,7 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
 
     /**
      * This property helps user to allow/prevent the selection of multiple days(rows).
+     * {% codeBlock src='schedule/allowMultiRowSelection/index.md' %}{% endcodeBlock %}
      * By default, it is set to `true`.
      *
      * @default true
@@ -524,6 +548,7 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
 
     /**
      * This property helps to show quick popup after multiple cell selection.
+     * {% codeBlock src='schedule/quickInfoOnSelectionEnd/index.md' %}{% endcodeBlock %}
      *  By default, it is set to `false`.
      *
      * @default false
@@ -648,9 +673,9 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
      * The following can be accessible via template.
      * * resource - All the resource fields.
      * * resourceData - object collection of current resource.
-     * 
-     * Refer to the below code snippet
-     * 
+     *
+     * Refer to the below code snippet.
+     *
      * {% codeBlock src='schedule/resourceHeaderTemplate/index.md' %}{% endcodeBlock %}
      *
      * @default null
@@ -767,6 +792,7 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
 
     /**
      * Triggers on beginning of every scheduler action.
+     * {% codeBlock src='schedule/actionBegin/index.md' %}{% endcodeBlock %}
      *
      * @event 'actionBegin'
      */
@@ -775,6 +801,7 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
 
     /**
      * Triggers on successful completion of the scheduler actions.
+     * {% codeBlock src='schedule/actionComplete/index.md' %}{% endcodeBlock %}
      *
      * @event 'actionComplete'
      */
@@ -783,6 +810,7 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
 
     /**
      * Triggers when a scheduler action gets failed or interrupted and an error information will be returned.
+     * {% codeBlock src='schedule/actionFailure/index.md' %}{% endcodeBlock %}
      *
      * @event 'actionFailure'
      */
@@ -791,6 +819,7 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
 
     /**
      * Triggers before the date or view navigation takes place on scheduler.
+     * {% codeBlock src='schedule/navigating/index.md' %}{% endcodeBlock %}
      *
      * @event 'navigating'
      */
@@ -799,6 +828,7 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
 
     /**
      * Triggers before each element of the schedule rendering on the page.
+     * {% codeBlock src='schedule/renderCell/index.md' %}{% endcodeBlock %}
      *
      * @event 'renderCell'
      */
@@ -807,6 +837,7 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
 
     /**
      * Triggers when the events are single clicked or on single tapping the events on the mobile devices.
+     * {% codeBlock src='schedule/eventClick/index.md' %}{% endcodeBlock %}
      *
      * @event 'eventClick'
      */
@@ -815,6 +846,7 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
 
     /**
      * Triggers before each of the event getting rendered on the scheduler user interface.
+     * {% codeBlock src='schedule/eventRendered/index.md' %}{% endcodeBlock %}
      *
      * @event 'eventRendered'
      */
@@ -823,6 +855,7 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
 
     /**
      * Triggers before the data binds to the scheduler.
+     * {% codeBlock src='schedule/dataBinding/index.md' %}{% endcodeBlock %}
      *
      * @event 'dataBinding'
      */
@@ -831,6 +864,7 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
 
     /**
      * Triggers before any of the scheduler popups opens on the page.
+     * {% codeBlock src='schedule/popupOpen/index.md' %}{% endcodeBlock %}
      *
      * @event 'popupOpen'
      */
@@ -839,6 +873,7 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
 
     /**
      * Triggers before any of the scheduler popups close on the page.
+     * {% codeBlock src='schedule/popupClose/index.md' %}{% endcodeBlock %}
      *
      * @event 'popupClose'
      */
@@ -847,6 +882,7 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
 
     /**
      * Triggers when an appointment is started to drag.
+     * {% codeBlock src='schedule/dragStart/index.md' %}{% endcodeBlock %}
      *
      * @event 'dragStart'
      */
@@ -855,6 +891,7 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
 
     /**
      * Triggers when an appointment is being in a dragged state.
+     * {% codeBlock src='schedule/drag/index.md' %}{% endcodeBlock %}
      *
      * @event 'drag'
      */
@@ -863,6 +900,7 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
 
     /**
      * Triggers when the dragging of appointment is stopped.
+     * {% codeBlock src='schedule/dragStop/index.md' %}{% endcodeBlock %}
      *
      * @event 'dragStop'
      */
@@ -871,6 +909,7 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
 
     /**
      * Triggers when an appointment is started to resize.
+     * {% codeBlock src='schedule/resizeStart/index.md' %}{% endcodeBlock %}
      *
      * @event 'resizeStart'
      */
@@ -879,6 +918,7 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
 
     /**
      * Triggers when an appointment is being in a resizing action.
+     * {% codeBlock src='schedule/resizing/index.md' %}{% endcodeBlock %}
      *
      * @event 'resizing'
      */
@@ -887,6 +927,7 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
 
     /**
      * Triggers when the resizing of appointment is stopped.
+     * {% codeBlock src='schedule/resizeStop/index.md' %}{% endcodeBlock %}
      *
      * @event 'resizeStop'
      */
@@ -895,6 +936,7 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
 
     /**
      * Triggers once the event data is bound to the scheduler.
+     * {% codeBlock src='schedule/dataBound/index.md' %}{% endcodeBlock %}
      *
      * @event 'dataBound'
      */
@@ -1159,6 +1201,7 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
             firstMonthOfYear: this.firstMonthOfYear,
             firstDayOfWeek: this.firstDayOfWeek,
             workDays: workDays,
+            monthsCount: this.monthsCount,
             showWeekend: this.showWeekend,
             showWeekNumber: this.showWeekNumber,
             displayName: null,
@@ -1730,7 +1773,7 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
      */
     public getDateFromElement(td: Element): Date {
         let dateString: string;
-        if(!isNullOrUndefined(td)) {
+        if (!isNullOrUndefined(td)) {
             dateString = td.getAttribute('data-date');
         }
         if (!isNullOrUndefined(dateString)) {
@@ -1977,6 +2020,8 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
             this.activeView.resetColWidth();
             this.notify(events.scrollUiUpdate, { cssProperties: this.getCssProperties(), isPreventScrollUpdate: true });
             this.notify(events.dataReady, {});
+        } else {
+            this.notify(events.contentReady, {});
         }
     }
 
@@ -2180,11 +2225,6 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
                 if (this.eventWindow) { this.eventWindow.refreshRecurrenceEditor(); }
                 state.isLayout = true;
                 break;
-            case 'firstMonthOfYear':
-                this.activeViewOptions.firstMonthOfYear = newProp.firstMonthOfYear;
-                this.viewIndex = this.activeView.viewIndex;
-                state.isLayout = true;
-                break;
             case 'showTimeIndicator':
                 if (this.activeViewOptions.timeScale.enable && this.activeView) {
                     this.activeView.highlightCurrentTime();
@@ -2351,11 +2391,25 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
             break;
         case 'firstMonthOfYear':
             this.activeViewOptions.firstMonthOfYear = newProp.firstMonthOfYear;
+            this.viewIndex = this.activeView.viewIndex;
+            state.isLayout = true;
+            break;
+        case 'monthsCount':
+            this.activeViewOptions.monthsCount = newProp.monthsCount;
+            this.viewIndex = this.activeView.viewIndex;
             state.isLayout = true;
             break;
         case 'timeFormat':
             this.internalTimeFormat = newProp.timeFormat || this.activeViewOptions.timeFormat;
             if (this.eventWindow) { this.eventWindow.refreshDateTimePicker(); }
+            state.isLayout = true;
+            break;
+        case 'enableAdaptiveUI':
+            if (this.showHeaderBar && this.headerModule) {
+                this.destroyHeaderModule();
+                this.headerModule = new HeaderRenderer(this);
+                this.headerModule.updateDateRange(this.activeView.getDateRangeText());
+            }
             state.isLayout = true;
             break;
         }
@@ -3129,12 +3183,12 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
     }
 
     /**
-    * Select the resources to the based on id.
-    *
-    * @param {string | number} id id of the resource defined in resources collection.
-    * @param {string} name Name of the resource defined in resources collection.
-    * @returns {number}
-    */
+     * Select the resources to the based on id.
+     *
+     * @param {string | number} id id of the resource defined in resources collection.
+     * @param {string} name Name of the resource defined in resources collection.
+     * @returns {number} Returns the group index
+     */
     public getIndexFromResourceId(id: string | number, name?: string): number {
         if (this.resourceBase) {
             return this.resourceBase.getIndexFromResourceId(id, name);

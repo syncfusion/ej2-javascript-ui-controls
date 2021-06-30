@@ -25,7 +25,6 @@ export class UndoRedoCommands {
         this.addEventListener();
     }
     protected addEventListener(): void {
-        // eslint-disable-next-line
         const debounceListener: Function = debounce(this.keyUp, this.undoRedoTimer);
         this.parent.observer.on(EVENTS.KEY_UP_HANDLER, debounceListener, this);
         this.parent.observer.on(EVENTS.KEY_DOWN_HANDLER, this.keyDown, this);
@@ -45,7 +44,6 @@ export class UndoRedoCommands {
         }
     }
     protected removeEventListener(): void {
-        // eslint-disable-next-line
         const debounceListener: Function = debounce(this.keyUp, 300);
         this.parent.observer.off(EVENTS.KEY_UP_HANDLER, debounceListener);
         this.parent.observer.off(EVENTS.KEY_DOWN_HANDLER, this.keyDown);
@@ -114,7 +112,6 @@ export class UndoRedoCommands {
         const start: number = textArea.selectionStart;
         const end: number = textArea.selectionEnd;
         const textValue: string = (this.parent.element as HTMLTextAreaElement).value;
-        // eslint-disable-next-line
         const changEle: { [key: string]: string | Object } = { text: textValue, start: start, end: end};
         if (this.undoRedoStack.length >= this.steps) {
             this.undoRedoStack = this.undoRedoStack.slice(0, this.steps + 1);

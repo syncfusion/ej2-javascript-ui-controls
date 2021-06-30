@@ -1,0 +1,16 @@
+
+@include export-module('toolbar-tailwind-dark-icons') {
+  /*! toolbar icons */
+  #{&}.e-toolbar {
+
+    .e-popup-down-icon::before {
+      content: '\e706';
+      line-height: normal;
+    }
+
+    .e-popup-up-icon::before {
+      content: '\e752';
+      line-height: normal;
+    }
+  }
+}

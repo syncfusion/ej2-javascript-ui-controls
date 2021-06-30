@@ -310,9 +310,15 @@
           }
 
           & .e-slider-track {
-            border-radius: 0;
             height: $cpicker-slider-height;
             top: $cpicker-slider-track-top;
+
+            @if $skin-name == 'tailwind' or $skin-name == 'tailwind-dark' {
+              border-radius: 6px;
+            }
+            @else {
+              border-radius: 0;
+            }
           }
 
           & .e-handle {
@@ -376,6 +382,9 @@
         position: relative;
         top: $cpicker-preview-container-top;
         width: $cpicker-preview-size;
+        @if $skin-name == 'tailwind' or $skin-name == 'tailwind-dark' {
+          height: 38px;
+        }
 
         & .e-preview {
           display: block;
@@ -418,10 +427,17 @@
 
       & .e-value-switch-btn {
         font-family: 'e-icons';
-        font-size: 16px;
-        line-height: 16px;
         margin-top: $cpicker-value-switch-btn-margin;
         padding: $cpicker-switch-btn-padding;
+
+        @if $skin-name == 'tailwind' or $skin-name == 'tailwind-dark' {
+          font-size: 22px;
+          line-height: 22px;
+        }
+        @else {
+          font-size: 16px;
+          line-height: 16px;
+        }
       }
     }
 
@@ -477,11 +493,18 @@
           width: 89.913%;
         }
 
+        @if $skin-name == 'tailwind' or $skin-name == 'tailwind-dark' {
+          width: 86.913%;
+        }
+
         & .e-btn {
           max-width: $cpicker-ctrl-btn-width;
           overflow: hidden;
           text-overflow: ellipsis;
           white-space: nowrap;
+          @if $skin-name == 'tailwind' or $skin-name == 'tailwind-dark' {
+            height: 30px;
+          }
 
           &.e-cancel {
             margin-left: $cpicker-cancel-btn-margin;
@@ -528,7 +551,7 @@
         height: 26px;
       }
       @else {
-        height: 24px;
+        height: $cpicker-switch-btn-height;
       }
     }
 
@@ -557,6 +580,12 @@
 
         +.e-switch-ctrl-btn {
           padding: $cpicker-palette-ctrl-btn-padding;
+
+          @if $skin-name == 'tailwind' or $skin-name == 'tailwind-dark' {
+            & .e-mode-switch-btn {
+              width: $cpicker-palette-switch-btn-width;
+            }
+          }
         }
       }
     }
@@ -730,6 +759,18 @@
     & .e-container {
       &.e-color-picker {
         width: $cpicker-bigger-container-width;
+
+        & .e-switch-ctrl-btn .e-ctrl-btn .e-btn {
+          @if $skin-name == 'tailwind' or $skin-name == 'tailwind-dark' {
+            height: 38px;
+          }
+        }
+
+        & .e-switch-ctrl-btn .e-mode-switch-btn {
+          @if $skin-name == 'tailwind' or $skin-name == 'tailwind-dark' {
+            height: 38px;
+          }
+        }
       }
 
       & .e-palette {
@@ -763,9 +804,15 @@
 
         & .e-preview-container {
           margin-left: $cpicker-bigger-preview-margin-left;
-          top: 0;
           vertical-align: super;
           width: $cpicker-bigger-preview-size;
+
+          @if $skin-name == 'tailwind' or $skin-name == 'tailwind-dark' {
+            top: 5px;
+          }
+          @else {
+            top: 0;
+          }
         }
 
         & .e-colorpicker-slider {
@@ -775,6 +822,12 @@
             height: $cpicker-bigger-slider-container-height;
             @if $skin-name == 'bootstrap4' {
               padding: 12px;
+            }
+
+            & .e-slider-track {
+              @if $skin-name == 'tailwind' or $skin-name == 'tailwind-dark' {
+                height: $cpicker-bigger-slider-height;
+              }
             }
 
             & .e-handle {
@@ -811,6 +864,12 @@
         & .e-palette {
           +.e-switch-ctrl-btn {
             padding: $cpicker-bigger-palette-ctrl-btn-padding;
+
+            & .e-ctrl-btn .e-btn {
+              @if $skin-name == 'tailwind' or $skin-name == 'tailwind-dark' {
+                line-height: 0;
+              }
+            }
           }
         }
       }
@@ -842,12 +901,18 @@
 
       & .e-css.e-value-switch-btn,
       & .e-mode-switch-btn {
-        font-size: 18px;
-        line-height: 18px;
         padding: $cpicker-bigger-switch-btn-padding;
         width: $cpicker-bigger-switch-btn-width;
         @if $skin-name == 'bootstrap4' {
           height: $cpicker-bigger-switch-btn-width;
+        }
+        @if $skin-name == 'tailwind' or $skin-name == 'tailwind-dark' {
+          font-size: 22px;
+          line-height: 22px;
+        }
+        @else {
+          font-size: 18px;
+          line-height: 18px;
         }
       }
 

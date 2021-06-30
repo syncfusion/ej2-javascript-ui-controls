@@ -37,7 +37,7 @@ let treemap: TreeMap = new TreeMap({
         { groupPath: 'States', fill: '#336699', border: { color: 'black', width: 0.5 } },
         { groupPath: 'Region', showHeader: false, fill: '#336699', border: { color: 'black', width: 0.5 } },
     ],
-    click: (args: IClickEventArgs)=> {
+    click: (args: IClickEventArgs): void => {
         if (count === 0) {
             treemap.titleSettings.text = 'Click Event';
 			treemap.refresh();

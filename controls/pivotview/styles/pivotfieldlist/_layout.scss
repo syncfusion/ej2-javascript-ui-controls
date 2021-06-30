@@ -61,6 +61,13 @@
     .e-format-font-color-picker {
       margin-left: 0;
       margin-right: 18px;
+      @if ($field-list-skin == 'tailwind') {
+        margin-right: 7px;
+      }
+
+      @if ($field-list-skin == 'tailwind-dark') {
+        margin-right: 7px;
+      }
     }
 
     .e-format-inner-div {
@@ -191,12 +198,29 @@
         text-overflow: ellipsis;
         white-space: nowrap;
       }
+
+      .e-format-font-color-picker {
+        @if ($field-list-skin == 'tailwind') {
+          margin-right: 30px;
+        }
+
+        @if ($field-list-skin == 'tailwind-dark') {
+          margin-right: 30px;
+        }
+      }
     }
 
     &.e-rtl {
       .e-format-font-color-picker {
         margin-left: 18px;
         margin-right: 0;
+        @if ($field-list-skin == 'tailwind') {
+          margin-left: 6px;
+        }
+
+        @if ($field-list-skin == 'tailwind-dark') {
+          margin-left: 6px;
+        }
       }
 
       .e-format-condition-button {
@@ -215,6 +239,18 @@
       .e-format-delete-button {
         float: left;
         padding-left: 12px;
+      }
+
+      &.e-device {
+        .e-format-font-color-picker {
+          @if ($field-list-skin == 'tailwind') {
+            margin-left: 30px;
+          }
+  
+          @if ($field-list-skin == 'tailwind-dark') {
+            margin-left: 30px;
+          }
+        }
       }
     }
   }
@@ -258,6 +294,13 @@
     .e-format-font-color-picker {
       margin-left: 0;
       margin-right: 20px;
+      @if ($field-list-skin == 'tailwind') {
+        margin-right: 7px;
+      }
+
+      @if ($field-list-skin == 'tailwind-dark') {
+        margin-right: 7px;
+      }
     }
 
     .e-colorpicker-wrapper .e-split-btn-wrapper .e-btn.e-icon-btn,
@@ -282,12 +325,41 @@
         padding-right: 16px;
         padding-top: 16px;
       }
+
+      .e-format-font-color-picker {
+        @if ($field-list-skin == 'tailwind') {
+          margin-right: 30px;
+        }
+  
+        @if ($field-list-skin == 'tailwind-dark') {
+          margin-right: 30px;
+        }
+      }
     }
 
     &.e-rtl {
       .e-format-font-color-picker {
         margin-left: 20px;
         margin-right: 0;
+        @if ($field-list-skin == 'tailwind') {
+          margin-left: 6px;
+        }
+
+        @if ($field-list-skin == 'tailwind-dark') {
+          margin-left: 6px;
+        }
+      }
+
+      &.e-device {
+        .e-format-font-color-picker {
+          @if ($field-list-skin == 'tailwind') {
+            margin-left: 30px;
+          }
+    
+          @if ($field-list-skin == 'tailwind-dark') {
+            margin-left: 30px;
+          }
+        }
       }
     }
   }
@@ -362,12 +434,25 @@
 
     .e-treeview .e-list-item div.e-icons {
       cursor: pointer;
-      font-size: 12px;
+      font-size: $field-list-icon-size;
       height: 24px;
       opacity: $pivot-calculated-icon-opacity;
       padding: 2px 4px 4px;
       pointer-events: auto;
       width: 24px;
+    }
+
+    .e-treeview .e-list-item div.e-icons.e-format {
+      @if ($field-list-skin == 'tailwind') {
+        float: right;
+        margin-right: 12px;
+        padding-top: 10px;
+      }
+      @if ($field-list-skin == 'tailwind-dark') {
+        float: right;
+        margin-right: 12px;
+        padding-top: 10px;
+      }
     }
 
     .e-treeview .e-list-item div.e-iconspace {
@@ -423,6 +508,20 @@
         margin-bottom: 10px;
         padding: 5px;
         width: 24px;
+
+        @if ($field-list-skin == 'tailwind') {
+          float: left;
+          margin-right: 0;
+          margin-left: 12px;
+          padding-top: 0 !important;
+        }
+  
+        @if ($field-list-skin == 'tailwind-dark') {
+          float: left;
+          margin-right: 0;
+          margin-left: 12px;
+          padding-top: 0 !important;
+        }
       }
 
       .e-treeview .e-list-item div.e-edit.e-icons,
@@ -731,6 +830,10 @@
       }
     }
 
+    .e-treeview .e-list-item div.e-icons {
+      font-size: $field-list-bigger-icon-size;
+    }
+
     .e-treeview .e-list-item span.e-icons {
       font-size: $field-list-bigger-icon-size;
     }
@@ -1014,6 +1117,13 @@
       .e-excelfilter {
         padding-top: 20px;
 
+        @if ($field-list-skin == 'tailwind') {
+          padding-top: 12px;
+        }
+        @if ($field-list-skin == 'tailwind-dark') {
+          padding-top: 12px;
+        }
+
         .e-member-editor-container-outer-div {
           height: $field-list-excel-member-filter-height;
         }
@@ -1031,6 +1141,13 @@
           color: $field-list-button-icon-color !important;
           font-size: 13px;
           font-weight: 500;
+          @if ($field-list-skin == 'tailwind') {
+            padding: 4px;
+          }
+
+          @if ($field-list-skin == 'tailwind-dark') {
+            padding: 4px;
+          }
         }
         // sass-lint:enable-all
 
@@ -1046,6 +1163,14 @@
 
         .e-disable {
           display: none;
+        }
+
+        @if ($field-list-skin == 'tailwind') {
+          padding-top: 0;
+        }
+
+        @if ($field-list-skin == 'tailwind-dark') {
+          padding-top: 0;
         }
       }
 
@@ -1197,6 +1322,14 @@
               font-size: 13px;
               font-weight: 500;
               width: 100%;
+
+              @if ($field-list-skin == 'tailwind') {
+                padding-bottom: 4px;
+              }
+      
+              @if ($field-list-skin == 'tailwind-dark') {
+                padding-bottom: 4px;
+              }
             }
 
             .e-caption-input-text {
@@ -1233,6 +1366,14 @@
       .e-dlg-content {
         overflow: hidden;
         padding: 0;
+
+        @if ($field-list-skin == 'tailwind') {
+          padding-top: 12px;
+        }
+
+        @if ($field-list-skin == 'tailwind-dark') {
+          padding-top: 12px;
+        }
 
         .e-empty-field::-webkit-input-placeholder {
           color: $error-font-color !important;
@@ -1493,6 +1634,14 @@
       .e-excelfilter {
         padding-top: 20px;
 
+        @if ($field-list-skin == 'tailwind') {
+          padding-top: 12px;
+        }
+
+        @if ($field-list-skin == 'tailwind-dark') {
+          padding-top: 12px;
+        }
+
         .e-member-editor-container-outer-div {
           height: $field-list-excel-member-filter-height;
         }
@@ -1510,6 +1659,13 @@
           color: $field-list-button-icon-color !important;
           font-size: 13px;
           font-weight: 500;
+          @if ($field-list-skin == 'tailwind') {
+            padding: 4px;
+          }
+
+          @if ($field-list-skin == 'tailwind-dark') {
+            padding: 4px;
+          }
         }
         // sass-lint:enable-all
 
@@ -1525,6 +1681,14 @@
 
         .e-disable {
           display: none;
+        }
+
+        @if ($field-list-skin == 'tailwind') {
+          padding-top: 0;
+        }
+
+        @if ($field-list-skin == 'tailwind-dark') {
+          padding-top: 0;
         }
       }
 
@@ -1676,6 +1840,14 @@
               font-size: 13px;
               font-weight: 500;
               width: 100%;
+
+              @if ($field-list-skin == 'tailwind') {
+                padding-bottom: 4px;
+              }
+      
+              @if ($field-list-skin == 'tailwind-dark') {
+                padding-bottom: 4px;
+              }
             }
 
             .e-caption-input-text {
@@ -1712,6 +1884,14 @@
       .e-dlg-content {
         overflow: hidden;
         padding: 0;
+
+        @if ($field-list-skin == 'tailwind') {
+          padding-top: 12px;
+        }
+
+        @if ($field-list-skin == 'tailwind-dark') {
+          padding-top: 12px;
+        }
 
         // sass-lint:disable-all
 
@@ -1869,8 +2049,9 @@
     box-shadow: $field-list-drag-clone-shadow-color;
     color: $field-list-drag-clone-text-color;
     font-size: $field-list-drag-clone-font-size;
-    height: 28px;
-    line-height: 1.0em;
+    font-family: $field-list-font-family;
+    height: $field-list-drag-clone-height;
+    line-height: $field-list-drag-clone-line-height;
     min-width: 100px;
     overflow: hidden;
     padding: 5px 10px;
@@ -2168,6 +2349,14 @@
       }
 
       .e-excelfilter {
+
+        @if ($field-list-skin == 'tailwind') {
+          padding-top: 16px;
+        }
+        @if ($field-list-skin == 'tailwind-dark') {
+          padding-top: 16px;
+        }
+
         .e-member-editor-container-outer-div {
           height: $field-list-excel-member-filter-bigger-height;
         }

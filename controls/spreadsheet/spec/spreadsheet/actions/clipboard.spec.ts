@@ -161,5 +161,49 @@ describe('Clipboard ->', () => {
                 });
             });
         });
+
+        describe('I329167, I328868 ->', () => {
+            beforeAll((done: Function) => {
+                helper.initializeSpreadsheet({
+                    sheets: [{ rows: [{ cells: [{ index: 5, value: '10' }, { value: '11' }, { value: '8' }] }, { cells: [{ index: 5,
+                    formula: '=IF(F1>10,"Pass","Fail")' }, { index: 7, value: '10' }] }, { cells: [{ index: 7, formula: '=SUM(H1:H2)' }] }],
+                    selectedRange: 'F2' }]
+                }, done);
+            });
+            afterAll(() => {
+                helper.invoke('destroy');
+            });
+            it('Copy Paste functions with Formula applied cells issue', (done: Function) => {
+                const spreadsheet: Spreadsheet = helper.getInstance();
+                helper.invoke('copy').then((): void => {
+                    helper.invoke('selectRange', ['G2']);
+                    setTimeout((): void => {
+                        helper.invoke('paste');
+                        setTimeout((): void => {
+                            expect(spreadsheet.sheets[0].rows[1].cells[5].formula).toEqual('=IF(F1>10,"Pass","Fail")');
+                            expect(spreadsheet.sheets[0].rows[1].cells[6].value).toEqual('Pass');
+                            expect(spreadsheet.sheets[0].rows[1].cells[6].formula).toEqual('=IF(G1>10,"Pass","Fail")');
+                            helper.invoke('selectRange', ['H3']);
+                            done();
+                        });
+                    });
+                });
+            });
+            it('Copy a formula from one cell to another (onto multiple cells), it shows the correct result only for the final row', (done: Function) => {
+                const spreadsheet: Spreadsheet = helper.getInstance();
+                helper.invoke('copy').then((): void => {
+                    helper.invoke('selectRange', ['I3:I5']);
+                    setTimeout((): void => {
+                        helper.invoke('paste');
+                        setTimeout((): void => {
+                            expect(spreadsheet.sheets[0].rows[2].cells[8].formula).toEqual('=SUM(I1:I2)');
+                            expect(spreadsheet.sheets[0].rows[3].cells[8].formula).toEqual('=SUM(I2:I3)');
+                            expect(spreadsheet.sheets[0].rows[4].cells[8].formula).toEqual('=SUM(I3:I4)');
+                            done();
+                        });
+                    });
+                });
+            });
+        });
     });
 });

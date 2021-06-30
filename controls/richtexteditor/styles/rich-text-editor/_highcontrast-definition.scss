@@ -2,6 +2,8 @@ $rte-border-size: 1px;
 $rte-2px-border-size: 2px;
 $rte-border-type: solid;
 
+$rte-list-btn-flex: column !default;
+$rte-list-btn-line-height: 1 !default;
 $skin-name: 'highcontrast' !default;
 $rte-border-color: $border-fg !default;
 $rte-full-screen-bg: $bg-base-0 !default;
@@ -9,6 +11,8 @@ $rte-content-bg: $bg-base-0 !default;
 $rte-content-font-color: #fff !default;
 $rte-item-color: $content-font !default;
 $rte-icons-color: $content-font !default;
+$rte-content-padding: 16px !default;
+$rte-table-popup-padding: 10px !default;
 
 $rte-big-quick-item-btn-width: 39px !default;
 $rte-quick-item-btn-width: 27px !default;
@@ -25,6 +29,8 @@ $rte-quick-item-border: $rte-2px-border-size solid transparent !default;
 $rte-quick-item-hover-border-color: $border-fg !default;
 $rte-quick-item-active-border-color: $selection-bg !default;
 
+$font-weight: 500 !default;
+$rte-table-popup-bdr-radius: 0 !default;
 $rte-big-quick-drop-btn-line-height: 33px !default;
 $rte-quick-drop-btn-line-height: 24px !default;
 $rte-big-quick-drop-btn-margin: 4px 0 !default;
@@ -76,8 +82,8 @@ $rte-split-btn-bar-bg: $border-fg !default;
 $rte-split-btn-active-bar-bg: $bg-base-0 !default;
 $rte-split-btn-bar-size: 1.5px !default;
 $rte-split-btn-active-border: 2px solid $selection-bg !default;
-$rte-split-btn-active-color-icon-line-height: 25px !default;
-$rte-big-split-btn-active-color-icon-line-height: 35px !default;
+$rte-split-btn-active-color-icon-line-height: 38px !default;
+$rte-big-split-btn-active-color-icon-line-height: 48px !default;
 
 $rte-link-valid-color: #f00 !default;
 $rte-img-popup-color: #000 !default;
@@ -142,6 +148,8 @@ $rte-big-quick-tbar-item-min-width: 39px !default;
 $rte-content-font-size: 14px !default;
 $rte-dropdown-caret-icon-size: 12px !default;
 $rte-big-dropdown-caret-icon-size: 12px !default;
+$rte-toolbar-icon-size: 16px !default;
+$rte-toolbar-big-icon-size: 18px !default;
 
 $rte-big-inline-tmp-min-width: 44px;
 $rte-inline-tmp-min-width: 46px;
@@ -153,3 +161,5 @@ $rte-inline-tmp-color-min-width: 54px;
 $rte-resize-handler-width: 15px;
 $rte-resize-handler-height: 15px;
 $rte-resize-handler-position: 0;
+
+$rte-big-color-list-span-common-padding-left-right: 0;

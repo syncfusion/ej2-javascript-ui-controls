@@ -32,6 +32,7 @@ export * from './series/waterfall-series';
 export * from './series/hilo-series';
 export * from './series/hilo-open-close-series';
 export * from './series/range-area-series';
+export * from './series/spline-range-area-series';
 export * from './series/bubble-series';
 export * from './series/spline-series';
 export * from './series/histogram-series';

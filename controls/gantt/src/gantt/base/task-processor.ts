@@ -1,4 +1,4 @@
-import { isNullOrUndefined, getValue, isBlazor, extend, setValue } from '@syncfusion/ej2-base';
+import { isNullOrUndefined, getValue, extend, setValue } from '@syncfusion/ej2-base';
 import { getUid, ReturnType } from '@syncfusion/ej2-grids';
 import { IGanttData, ITaskData, IParent, IWorkTimelineRanges, IWorkingTimeRange, ITaskSegment } from './interface';
 import { DataManager, Query, Group, ReturnOption } from '@syncfusion/ej2-data';
@@ -315,7 +315,7 @@ export class TaskProcessor extends DateProcessor {
         const resourceFields: ResourceFieldsModel = this.parent.resourceFields;
         let progress: number = data[taskSettings.progress];
         let id: string = null; let name: string = null;
-        let notes: string = data[taskSettings.notes];
+        const notes: string = data[taskSettings.notes];
         progress = progress ? parseFloat(progress.toString()) ? parseFloat(progress.toString()) : 0 : 0;
         const predecessors: string | number | object[] = data[taskSettings.dependency];
         const baselineStartDate: Date = this.getDateFromFormat(data[taskSettings.baselineStartDate], true);
@@ -2098,13 +2098,6 @@ export class TaskProcessor extends DateProcessor {
                 childData = childRecords[count] as IGanttData;
                 if (this.parent.isOnDelete && childData.isDelete) {
                     if (childLength === 1 && this.parent.viewType === 'ProjectView') {
-                        if (isBlazor()) {
-                            const id: string = parentData.ganttProperties.rowUniqueID;
-                            const task: IGanttData = this.parent.getRecordByID(id);
-                            if (task && this.parent.editedRecords.indexOf(task) === -1) {
-                                this.parent.editedRecords.push(task);
-                            }
-                        }
                         deleteUpdate = true;
                     }
                     continue;

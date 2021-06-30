@@ -12,7 +12,7 @@ $switch-inner-active-border-color: $primary !default;
 $switch-active-background: transparent !default;
 $switch-handle-top: 2px !default;
 $switch-handle-left: 1px !default;
-$switch-handle-margin: auto 2px !default;
+$switch-handle-margin: 0 2px 2px 1px !default;
 $switch-inner-top: 0 !default;
 $switch-inner-left: 0 !default;
 $switch-off-text-indent: 14px !default;
@@ -92,6 +92,8 @@ $switch-focused-outline: none !default;
 $switch-focused-outline-offset: initial !default;
 $switch-focused-outline-active: none !default;
 $switch-handle-off-hover-bg-color: $gray-500 !default;
+$switch-inner-text-top: 1px !default;
+$switch-disabled-bg-color-opacity: 1 !default;
 
 $switch-bigger-wrapper-height: 16px !default;
 $switch-bigger-wrapper-width: 38px !default;

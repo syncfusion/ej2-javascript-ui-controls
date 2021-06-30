@@ -263,7 +263,7 @@ export class Touch extends Base<HTMLElement> implements INotifyPropertyChanged {
         diffY = Math.floor(diffY < 0 ? -1 * diffY : diffX);
         this.isTouchMoved = diffX > 1 || diffY > 1;
         // tslint:disable-next-line:no-any
-        const isFirefox: boolean = (/Mozilla|Firefox|Mac OS/).test(Browser.userAgent);
+        const isFirefox: boolean = (/Mozilla|Firefox/).test(Browser.userAgent);
         if (isFirefox && point.clientX === 0 && point.clientY === 0 && evt.type === 'mouseup') {
             this.isTouchMoved = false;
         }

@@ -148,7 +148,6 @@ export class Table {
         case 'HorizontalSplit':
             this.UpdateCells(args.selection , e);
             break;
-        
         }
     }
 
@@ -371,8 +370,10 @@ export class Table {
     }
     private setBGColor(args: IColorPickerEventArgs): void {
         const range: Range = this.parent.formatter.editorManager.nodeSelection.getRange(this.contentModule.getDocument());
+        // eslint-disable-next-line
         const selection: NodeSelection = this.parent.formatter.editorManager.nodeSelection.save(range, this.contentModule.getDocument());
-        let selectedCells = this.curTable.querySelectorAll(".e-cell-select");
+        // eslint-disable-next-line
+        const selectedCells = this.curTable.querySelectorAll('.e-cell-select');
         for (let i: number = 0; i < selectedCells.length; i++) {
             (selectedCells[i] as HTMLElement).style.backgroundColor = args.item.value;
         }
@@ -392,7 +393,7 @@ export class Table {
             { selection: selection, subCommand: ((e as ClickEventArgs).item as IDropDownItemModel).subCommand });
     }
     private editAreaClickHandler(e: ITableNotifyArgs): void {
-        if (this.parent.readonly) {
+        if (this.parent.readonly || !isNOU(closest((e.args as MouseEvent).target as Element, '.e-img-caption'))) {
             return;
         }
         const args: MouseEvent = e.args as MouseEvent;
@@ -442,8 +443,9 @@ export class Table {
         this.tblHeader.innerHTML = (col + 1) + 'x' + (row + 1);
     }
 
+    // eslint-disable-next-line
     private tableMouseUp(e?: MouseEvent): void {
-         EventHandler.remove(this.curTable, 'mousemove', this.tableMove);
+        EventHandler.remove(this.curTable, 'mousemove', this.tableMove);
     }
 
     // eslint-disable-next-line
@@ -469,7 +471,8 @@ export class Table {
         const parentNode: Node = startContainer.parentNode;
         if (proxy.parent.editorMode === 'HTML' &&
             ((proxy.parent.iframeSettings.enable && !hasClass(parentNode.ownerDocument.querySelector('body'), 'e-lib')) ||
-                (!proxy.parent.iframeSettings.enable && isNOU(closest(parentNode, '[id=' + "'" + proxy.contentModule.getPanel().id + "'" +']'))))) {
+                // eslint-disable-next-line
+                (!proxy.parent.iframeSettings.enable && isNOU(closest(parentNode, '[id=' + "'" + proxy.contentModule.getPanel().id + "'" + ']'))))) {
             (proxy.contentModule.getEditPanel() as HTMLElement).focus();
             const range: Range = proxy.parent.formatter.editorManager.nodeSelection.getRange(proxy.contentModule.getDocument());
             selectionObj.selection = proxy.parent.formatter.editorManager.nodeSelection.save(
@@ -614,7 +617,7 @@ export class Table {
             offsetParent = offsetParent.parentNode;
         }
         if (offsetParent.nodeName === 'TD' && elem.nodeName === 'TABLE') {
-            offsetParent = closest(offsetParent, '.e-control');
+            offsetParent = closest(offsetParent, '.e-rte-content');
         }
         if (offsetParent && offsetParent !== elem && offsetParent.nodeType === 1) {
             parentOffset = (<HTMLElement>offsetParent).getBoundingClientRect();
@@ -837,7 +840,6 @@ export class Table {
         return this.resizeBtnStat = { column: false, row: false, tableBox: false };
     }
     private addRow(selectCell: NodeSelection, e: ClickEventArgs | KeyboardEvent, tabkey?: boolean): void {
-        // eslint-disable-next-line
         let cmd: { [key: string]: object };
         if (tabkey) {
             cmd = {
@@ -860,7 +862,6 @@ export class Table {
         this.hideTableQuickToolbar();
     }
     private removeTable(selection: NodeSelection, args?: ClickEventArgs | KeyboardEventArgs, delKey?: boolean): void {
-        // eslint-disable-next-line
         let cmd: { [key: string]: object };
         if (delKey) {
             cmd = { item: { command: 'Table', subCommand: 'TableRemove' }};
@@ -934,9 +935,9 @@ export class Table {
         addClass([this.popupObj.element], 'e-popup-open');
         this.popupObj.refreshPosition(target);
     }
-    // eslint-disable-next-line
     private docClick(e: { [key: string]: object }): void {
         const target: HTMLElement = <HTMLElement>(e.args as MouseEvent).target;
+        // eslint-disable-next-line
         if (target && target.classList && ((this.popupObj && !closest(target, '[id=' + "'" + this.popupObj.element.id + "'" +']') ||
             (this.editdlgObj && !closest(target, '#' + this.editdlgObj.element.id)))) && !target.classList.contains('e-create-table') &&
             target.offsetParent && !target.offsetParent.classList.contains('e-rte-backgroundcolor-dropdown')) {
@@ -1079,6 +1080,7 @@ export class Table {
             this.editdlgObj = null;
         }
     }
+
     // eslint-disable-next-line
     private createDialog(args: ITableArgs | ClickEventArgs | MouseEvent): void {
         if (this.editdlgObj) {
@@ -1110,7 +1112,6 @@ export class Table {
             }],
             target: (Browser.isDevice) ? document.body : this.parent.element,
             animationSettings: { effect: 'None' },
-            // eslint-disable-next-line
             close: (event: { [key: string]: object }) => {
                 this.parent.isBlur = false;
                 this.editdlgObj.destroy();
@@ -1239,5 +1240,4 @@ export class Table {
     private getModuleName(): string {
         return 'table';
     }
-
 }

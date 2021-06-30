@@ -1,5 +1,6 @@
 /* eslint-disable */
-import { PdfViewerBase, PdfViewer, IPageAnnotations, AjaxHandler, AllowedInteraction } from '../index';
+import { StickyNotesSettings } from './../pdfviewer';
+import { PdfViewerBase, PdfViewer, IPageAnnotations, AjaxHandler, AllowedInteraction, IPoint } from '../index';
 import { createElement, Browser, Internationalization } from '@syncfusion/ej2-base';
 import { Accordion, BeforeOpenCloseMenuEventArgs, ContextMenu as Context, MenuItemModel } from '@syncfusion/ej2-navigations';
 import { InPlaceEditor } from '@syncfusion/ej2-inplace-editor';
@@ -93,6 +94,10 @@ export class StickyNotesAnnotation {
     /**
      * @private
      */
+    public isAddAnnotationProgramatically: boolean = false;
+    /**
+     * @private
+     */
     public isEditableElement: boolean = false;
     /**
      * @private
@@ -168,6 +173,9 @@ export class StickyNotesAnnotation {
                         } else {
                             isPrint = annotation.AnnotationSettings.isPrint;
                         }
+                        if (annotation.IsLock) {
+                            annotation.AnnotationSettings.isLock = annotation.IsLock;
+                        }
                         annotationObject = {
                             // eslint-disable-next-line max-len
                             shapeAnnotationType: 'sticky', author: author, modifiedDate: annotation.ModifiedDate, subject: annotation.Subject, note: annotation.Note, opacity: annotation.Opacity, state: annotation.State, stateModel: annotation.StateModel,
@@ -192,6 +200,16 @@ export class StickyNotesAnnotation {
                             // eslint-disable-next-line max-len
                             annotationAddMode: annotation.annotationAddMode, isPrint: isPrint, isCommentLock: annotationObject.isCommentLock
                         };
+                        if(this.isAddAnnotationProgramatically)
+                        {
+                            // eslint-disable-next-line
+                            let settings: any = {
+                                opacity: annot.opacity, borderColor: annot.strokeColor, borderWidth: annot.thickness, author: annotation.author, subject: annotation.subject, modifiedDate: annotation.modifiedDate,
+                                // eslint-disable-next-line
+                                fillColor: annot.fillColor, fontSize: annot.fontSize, width: annot.bounds.width, height: annot.bounds.height, fontColor: annot.fontColor, fontFamily: annot.fontFamily, defaultText: annot.dynamicText, fontStyle: annot.font, textAlignment: annot.textAlign
+                            };
+                            this.pdfViewer.fireAnnotationAdd(annot.pageIndex, annot.annotName, 'StickyNotes', annot.bounds, settings);
+                        }
                         if (canvas) {
                             this.drawStickyNotes(position.Left, position.Top, position.Width, position.Height, pageNumber, annot, canvas);
                         } else {
@@ -388,6 +406,7 @@ export class StickyNotesAnnotation {
                         isInitialRender = true;
                     }
                     if (data.annotationDetails && data.uniqueId === proxy.pdfViewerBase.documentId) {
+                        proxy.pdfViewer.fireAjaxRequestSuccess(this.pdfViewer.serverActionSettings.renderComments, data);
                         proxy.isAnnotationRendered = true;
                         // eslint-disable-next-line
                         let annotationCollections: any;
@@ -2184,7 +2203,7 @@ export class StickyNotesAnnotation {
                     this.pdfViewer.navigationModule.goToPage(pageNumber);
                 }
                 let annotType: string = element.getAttribute('name');
-                if (annotType === 'null') {
+                if (annotType === 'null' || annotType === 'Ink') {
                     annotType = 'ink';
                 }
                 this.isCommentsSelected = false;
@@ -3428,9 +3447,12 @@ export class StickyNotesAnnotation {
             annotation.Author = (this.pdfViewer.annotationSettings.author !== 'Guest') ? this.pdfViewer.annotationSettings.author : this.pdfViewer.stickyNotesSettings.author;
         }
         // eslint-disable-next-line max-len
-        const isLock: boolean = this.pdfViewer.stickyNotesSettings.isLock ? this.pdfViewer.stickyNotesSettings.isLock : this.pdfViewer.annotationSettings.isLock;
+        let isLock: boolean = this.pdfViewer.stickyNotesSettings.isLock ? this.pdfViewer.stickyNotesSettings.isLock : this.pdfViewer.annotationSettings.isLock;
         // eslint-disable-next-line
         let allowedInteractions: any = annotation.AllowedInteraction ? annotation.AllowedInteraction : this.pdfViewer.annotationModule.updateAnnotationAllowedInteractions(annotation);
+        if (annotation.IsLock) {
+            isLock = annotation.isLock;
+        }
         annotationObject = {
             // eslint-disable-next-line max-len
             shapeAnnotationType: 'sticky', author: annotation.Author, allowedInteractions: allowedInteractions, modifiedDate: annotation.ModifiedDate, subject: annotation.Subject, note: annotation.Note, opacity: annotation.Opacity, state: annotation.State, stateModel: annotation.StateModel,
@@ -3474,5 +3496,75 @@ export class StickyNotesAnnotation {
      */
     public getModuleName(): string {
         return 'StickyNotesAnnotation';
+    }
+
+    /** 
+     * This method used to add annotations with using program.
+     * 
+     * @param annotationObject - It describes type of annotation object
+     * @param offset - It describes about the annotation bounds or location
+     * @returns Object
+     * @private
+     */
+    public updateAddAnnotationDetails(annotationObject: StickyNotesSettings, offset: IPoint): Object 
+    {
+        //Creating new object if annotationObject is null
+        if(!annotationObject)
+        {
+         annotationObject = { offset: { x: 1, y: 1}, pageNumber: 0} as StickyNotesSettings;
+         offset = annotationObject.offset;
+        }
+        else if(!annotationObject.offset)
+         offset = { x: 1, y: 1};
+        else
+         offset = annotationObject.offset;
+
+        //Creating the CurrentDate and Annotation name
+        let currentDateString: string = this.pdfViewer.annotation.stickyNotesAnnotationModule.getDateAndTime();
+        let annotationName: string = this.pdfViewer.annotation.createGUID();
+
+        //Creating annotation settings
+        let annotationSelectorSettings: any = this.pdfViewer.stickyNotesSettings.annotationSelectorSettings ? this.pdfViewer.stickyNotesSettings.annotationSelectorSettings : this.pdfViewer.annotationSelectorSettings;
+        let annotationSettings: any = this.pdfViewer.annotationModule.updateSettings(this.pdfViewer.stickyNotesSettings);
+        let allowedInteractions: any = this.pdfViewer.stickyNotesSettings.allowedInteractions ? this.pdfViewer.stickyNotesSettings.allowedInteractions : this.pdfViewer.annotationSettings.allowedInteractions;
+        annotationSettings.isLock = annotationObject.isLock?annotationObject.isLock:false;
+
+        //Creating Annotation objects with it's proper properties
+        let stickyNotesAnnotation: any = [];
+        let stickyNotes :any = 
+        {
+             AllowedInteractions: annotationObject.allowedInteractions?annotationObject.allowedInteractions:allowedInteractions,
+             AnnotName: annotationName,
+             AnnotType: 'sticky',
+             AnnotationFlags: null,
+             AnnotationSelectorSettings: annotationObject.annotationSelectorSettings?annotationObject.annotationSelectorSettings: annotationSelectorSettings,       
+             AnnotationSettings: annotationSettings,
+             Author: annotationObject.author ? annotationObject.author : 'Guest',
+             Bounds: {X: offset.x, Y: offset.y, Width: 30, Height: 30, Left: offset.x, Top: offset.y, Location:{X: offset.x,Y: offset.y}, Size:{Height: 30,IsEmpty: false,Width: 30}},
+             Color: {IsEmpty: false, B: 51, Blue: 0.2, C: 0, G: 255},
+             Comments: null,
+             CreatedDate: currentDateString,
+             CustomData: annotationObject.customData?annotationObject.customData:null,
+             ExistingCustomData: null,
+             Icon: 'Comment',
+             IsCommentLock: false,
+             IsLock: annotationObject.isLock?annotationObject.isLock:false,
+             IsPrint: annotationObject.isPrint?annotationObject.isPrint:true,
+             ModifiedDate: currentDateString,
+             Note: "",
+             Opacity: annotationObject.opacity?annotationObject.opacity:1,
+             Reference: null,
+             Size: {IsEmpty: true, Width: 0, Height: 0},
+             State: "",
+             StateModel: "",
+             StrokeColor: null,
+             SubType: null,
+             Subject: 'Sticky Note',
+             Type: null
+         }     
+
+         //Adding the annotation object to an array and return it
+         stickyNotesAnnotation[0] = stickyNotes;
+         return {stickyNotesAnnotation};  
     }
 }

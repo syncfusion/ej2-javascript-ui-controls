@@ -1,5 +1,7 @@
-/* eslint-disable @typescript-eslint/member-delimiter-style */
-/* eslint-disable @typescript-eslint/dot-notation */
+/* eslint-disable @typescript-eslint/explicit-module-boundary-types */
+/* eslint-disable jsdoc/require-param */
+/* eslint-disable jsdoc/require-returns */
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import { Maps } from '../../index';
 import { BubbleSettingsModel, ColorMapping, IBubbleRenderingEventArgs, bubbleRendering } from '../index';
 import { IBubbleClickEventArgs, bubbleClick, LayerSettings, IBubbleMoveEventArgs, bubbleMouseMove } from '../index';
@@ -20,7 +22,6 @@ export class Bubble {
      * Bubble Id for current layer
      */
     public id: string = '';
-    // eslint-disable-next-line @typescript-eslint/explicit-member-accessibility
     constructor(maps: Maps) {
         this.maps = maps;
         this.bubbleCollection = [];
@@ -99,7 +100,7 @@ export class Bubble {
         }
         const projectionType: string = this.maps.projectionType;
         let centerY: number; let eventArgs: IBubbleRenderingEventArgs;
-        let bubbleBorder: BorderModel = {
+        const bubbleBorder: BorderModel = {
             color: bubbleSettings.border.color, opacity: bubbleSettings.border.opacity,
             width: bubbleSettings.border.width
         };
@@ -154,11 +155,8 @@ export class Bubble {
                 maintainSelection(this.maps.selectedBubbleElementId, this.maps.bubbleSelectionClass, bubbleElement,
                                   'BubbleselectionMapStyle');
                 this.bubbleCollection.push({
-                    // eslint-disable-next-line @typescript-eslint/naming-convention
                     LayerIndex: layerIndex,
-                    // eslint-disable-next-line @typescript-eslint/naming-convention
                     BubbleIndex: bubbleIndex,
-                    // eslint-disable-next-line @typescript-eslint/naming-convention
                     DataIndex: dataIndex,
                     element: bubbleElement,
                     center: { x: eventArgs.cx, y: eventArgs.cy }

@@ -212,7 +212,8 @@ export class KeyboardInteraction {
         });
     }
     private processEnter(e: Event): void {
-        if ((this.parent.activeViewOptions.readonly && !(e.target as Element).classList.contains(cls.APPOINTMENT_CLASS)) || this.isPreventAction(e)) {
+        if ((this.parent.activeViewOptions.readonly && !(e.target as Element).classList.contains(cls.APPOINTMENT_CLASS))
+            || this.isPreventAction(e)) {
             return;
         }
         const target: HTMLTableCellElement = e.target as HTMLTableCellElement;
@@ -808,7 +809,8 @@ export class KeyboardInteraction {
         if (activeEle && activeEle.classList.contains(cls.APPOINTMENT_CLASS)) {
             addClass([activeEle], cls.APPOINTMENT_BORDER);
             this.parent.activeEventData = this.parent.eventBase.getSelectedEvents();
-            if (this.parent.activeViewOptions.readonly || activeEle.classList.contains(cls.READ_ONLY) || !this.parent.eventSettings.allowDeleting) {
+            if (this.parent.activeViewOptions.readonly || activeEle.classList.contains(cls.READ_ONLY) ||
+                !this.parent.eventSettings.allowDeleting) {
                 return;
             }
             this.parent.quickPopup.deleteClick();

@@ -40,7 +40,6 @@ export class DialogRenderer {
             this.parent.notify(events.clearDialogObj, null);
         }
     }
-    // eslint-disable-next-line
     private open(args: Object): void {
         this.parent.trigger(events.dialogOpen, args);
     }
@@ -61,7 +60,6 @@ export class DialogRenderer {
      * @hidden
      * @deprecated
      */
-    // eslint-disable-next-line
     public close(args: Object): void {
         this.parent.trigger(events.dialogClose, args);
     }

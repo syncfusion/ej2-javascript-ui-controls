@@ -88,6 +88,213 @@ describe('Linear gauge control', () => {
             gauge.refresh();
         });
 
+        it('checking drag and drop - Cursor-style', (done: Function): void => {
+            gauge.loaded = (args: ILoadedEventArgs): void => {
+                svg = <HTMLElement>document.getElementById('container_AxisIndex_0_MarkerPointer_0').children[0];
+                let x: string = svg.getAttribute('cursor');
+                trigger.dragAndDropEvent(svg, 511.5, 63.75, 511.5, 100, '', gauge);
+                expect(x != svg.getAttribute('cursor')).toBe(true);
+                done();
+            };
+            gauge.axes[0].pointers[0].enableDrag = true;
+            gauge.axes[0].pointers[0].type = 'Marker';
+            gauge.axes[0].pointers[0].markerType = 'Circle';
+            gauge.refresh();
+        });
+
+        it('checking drag and drop - Cursor-style-over the pointer', (done: Function): void => {
+            gauge.loaded = (args: ILoadedEventArgs): void => {
+                svg = <HTMLElement>document.getElementById('container_AxisIndex_0_MarkerPointer_0').children[0];
+                let x: string = svg.getAttribute('cursor');
+                trigger.mouseoverEvent(svg);
+                expect(x == svg.getAttribute('cursor')).toBe(true);
+                done();
+            };
+            gauge.axes[0].pointers[0].enableDrag = true;
+            gauge.axes[0].pointers[0].type = 'Marker';
+            gauge.axes[0].pointers[0].markerType = 'Circle';
+            gauge.refresh();
+        });
+
+        it('checking drag and drop - circle-pointer', (done: Function): void => {
+            gauge.loaded = (args: ILoadedEventArgs): void => {
+                svg = <HTMLElement>document.getElementById('container_AxisIndex_0_MarkerPointer_0').children[0];
+                let x: string = svg.getAttribute('cy');
+                trigger.dragAndDropEvent(svg, 511.5, 63.75, 511.5, 100, '', gauge);
+                expect(x != svg.getAttribute('cy')).toBe(true);
+                done();
+            };
+            gauge.orientation = 'Vertical';
+            gauge.axes[0].pointers[0].value = 0;
+            gauge.axes[0].pointers[0].enableDrag = true;
+            gauge.axes[0].pointers[0].type = 'Marker';
+            gauge.axes[0].pointers[0].markerType = 'Circle';
+            gauge.refresh();
+        });
+
+        it('checking drag and drop - circle-pointer - axis-inversed', (done: Function): void => {
+            gauge.loaded = (args: ILoadedEventArgs): void => {
+                svg = <HTMLElement>document.getElementById('container_AxisIndex_0_MarkerPointer_0').children[0];
+                let x: string = svg.getAttribute('cy');
+                trigger.dragAndDropEvent(svg, 511.5, 63.75, 511.5, 100, '', gauge);
+                expect(x != svg.getAttribute('cy')).toBe(true);
+                done();
+            };
+            gauge.orientation = 'Vertical';
+            gauge.axes[0].isInversed = false;
+            gauge.axes[0].pointers[0].value = 0;
+            gauge.axes[0].pointers[0].enableDrag = true;
+            gauge.axes[0].pointers[0].type = 'Marker';
+            gauge.axes[0].pointers[0].markerType = 'Circle';
+            gauge.refresh();
+        });
+
+        it('checking drag and drop - circle-pointer - horizontal', (done: Function): void => {
+            gauge.loaded = (args: ILoadedEventArgs): void => {
+                svg = <HTMLElement>document.getElementById('container_AxisIndex_0_MarkerPointer_0').children[0];
+                let x: string = svg.getAttribute('cx');
+                trigger.dragAndDropEvent(svg, 511.5, 63.75, 600.5, 63.75, '', gauge);
+                expect(x != svg.getAttribute('cx')).toBe(true);
+                done();
+            };
+            gauge.orientation = 'Horizontal';
+            gauge.axes[0].pointers[0].value = 0;
+            gauge.axes[0].pointers[0].enableDrag = true;
+            gauge.axes[0].pointers[0].type = 'Marker';
+            gauge.axes[0].pointers[0].markerType = 'Circle';
+            gauge.refresh();
+        });
+
+        it('checking drag and drop - Arrow-pointer', (done: Function): void => {
+            gauge.loaded = (args: ILoadedEventArgs): void => {
+                svg = <HTMLElement>document.getElementById('container_AxisIndex_0_MarkerPointer_0').children[0];
+                let x: string = svg.getAttribute('d');
+                trigger.dragAndDropEvent(svg, 511.5, 63.75, 511.5, 100, '', gauge);
+                expect(x != svg.getAttribute('d')).toBe(true);
+                done();
+            };
+            gauge.orientation = 'Vertical';
+            gauge.axes[0].isInversed = true;
+            gauge.axes[0].pointers[0].value = 0;
+            gauge.axes[0].pointers[0].enableDrag = true;
+            gauge.axes[0].pointers[0].type = 'Marker';
+            gauge.axes[0].pointers[0].markerType = 'Arrow';
+            gauge.refresh();
+        });
+
+        it('checking drag and drop - Diamond-pointer', (done: Function): void => {
+            gauge.loaded = (args: ILoadedEventArgs): void => {
+                svg = <HTMLElement>document.getElementById('container_AxisIndex_0_MarkerPointer_0').children[0];
+                let x: string = svg.getAttribute('d');
+                trigger.dragAndDropEvent(svg, 511.5, 63.75, 511.5, 100, '', gauge);
+                expect(x != svg.getAttribute('d')).toBe(true);
+                done();
+            };
+            gauge.orientation = 'Vertical';
+            gauge.axes[0].pointers[0].value = 0;
+            gauge.axes[0].pointers[0].enableDrag = true;
+            gauge.axes[0].pointers[0].type = 'Marker';
+            gauge.axes[0].pointers[0].markerType = 'Diamond';
+            gauge.refresh();
+        });
+
+        it('checking drag and drop - Image-pointer', (done: Function): void => {
+            gauge.loaded = (args: ILoadedEventArgs): void => {
+                svg = <HTMLElement>document.getElementById('container_AxisIndex_0_MarkerPointer_0').children[0];
+                let x: string = svg.getAttribute('y');
+                trigger.dragAndDropEvent(svg, 511.5, 63.75, 511.5, 100, '', gauge);
+                expect(x != svg.getAttribute('y')).toBe(true);
+                done();
+            };
+            gauge.orientation = 'Vertical';
+            gauge.axes[0].pointers[0].value = 0;
+            gauge.axes[0].pointers[0].enableDrag = true;
+            gauge.axes[0].pointers[0].type = 'Marker';
+            gauge.axes[0].pointers[0].markerType = 'Image';
+            gauge.refresh();
+        });
+
+        it('checking drag and drop - Image-pointer - multiple element', (done: Function): void => {
+            gauge.loaded = (args: ILoadedEventArgs): void => {
+                svg = <HTMLElement>document.getElementById('container_AxisIndex_0_MarkerPointer_0').children[0];
+                let x: number = svg.childElementCount;
+                trigger.dragAndDropEvent(svg, 511.5, 63.75, 511.5, 100, '', gauge);
+                trigger.dragAndDropEvent(svg, 511.5, 82, 511.5, 200, '', gauge);
+                expect(x == svg.childElementCount).toBe(true);
+                done();
+            };
+            gauge.orientation = 'Vertical';
+            gauge.axes[0].pointers[0].value = 0;
+            gauge.axes[0].pointers[0].enableDrag = true;
+            gauge.axes[0].pointers[0].type = 'Marker';
+            gauge.axes[0].pointers[0].markerType = 'Image';
+            gauge.refresh();
+        });
+
+        it('checking drag and drop - InvertedArrow-pointer', (done: Function): void => {
+            gauge.loaded = (args: ILoadedEventArgs): void => {
+                svg = <HTMLElement>document.getElementById('container_AxisIndex_0_MarkerPointer_0').children[0];
+                let x: string = svg.getAttribute('d');
+                trigger.dragAndDropEvent(svg, 511.5, 63.75, 511.5, 100, '', gauge);
+                expect(x != svg.getAttribute('d')).toBe(true);
+                done();
+            };
+            gauge.orientation = 'Vertical';
+            gauge.axes[0].pointers[0].value = 0;
+            gauge.axes[0].pointers[0].enableDrag = true;
+            gauge.axes[0].pointers[0].type = 'Marker';
+            gauge.axes[0].pointers[0].markerType = 'InvertedArrow';
+            gauge.refresh();
+        });
+
+        it('checking drag and drop - InvertedTriangle-pointer', (done: Function): void => {
+            gauge.loaded = (args: ILoadedEventArgs): void => {
+                svg = <HTMLElement>document.getElementById('container_AxisIndex_0_MarkerPointer_0').children[0];
+                let x: string = svg.getAttribute('d');
+                trigger.dragAndDropEvent(svg, 511.5, 63.75, 511.5, 100, '', gauge);
+                expect(x != svg.getAttribute('d')).toBe(true);
+                done();
+            };
+            gauge.orientation = 'Vertical';
+            gauge.axes[0].pointers[0].value = 0;
+            gauge.axes[0].pointers[0].enableDrag = true;
+            gauge.axes[0].pointers[0].type = 'Marker';
+            gauge.axes[0].pointers[0].markerType = 'InvertedTriangle';
+            gauge.refresh();
+        });
+
+        it('checking drag and drop - Rectangle-pointer', (done: Function): void => {
+            gauge.loaded = (args: ILoadedEventArgs): void => {
+                svg = <HTMLElement>document.getElementById('container_AxisIndex_0_MarkerPointer_0').children[0];
+                let x: string = svg.getAttribute('d');
+                trigger.dragAndDropEvent(svg, 511.5, 63.75, 511.5, 100, '', gauge);
+                expect(x != svg.getAttribute('d')).toBe(true);
+                done();
+            };
+            gauge.orientation = 'Vertical';
+            gauge.axes[0].pointers[0].value = 0;
+            gauge.axes[0].pointers[0].enableDrag = true;
+            gauge.axes[0].pointers[0].type = 'Marker';
+            gauge.axes[0].pointers[0].markerType = 'Rectangle';
+            gauge.refresh();
+        });
+
+        it('checking drag and drop - Triangle-pointer', (done: Function): void => {
+            gauge.loaded = (args: ILoadedEventArgs): void => {
+                svg = <HTMLElement>document.getElementById('container_AxisIndex_0_MarkerPointer_0').children[0];
+                let x: string = svg.getAttribute('d');
+                trigger.dragAndDropEvent(svg, 511.5, 63.75, 511.5, 100, '', gauge);
+                expect(x != svg.getAttribute('d')).toBe(true);
+                done();
+            };
+            gauge.orientation = 'Vertical';
+            gauge.axes[0].pointers[0].value = 0;
+            gauge.axes[0].pointers[0].enableDrag = true;
+            gauge.axes[0].pointers[0].type = 'Marker';
+            gauge.axes[0].pointers[0].markerType = 'Triangle';
+            gauge.refresh();
+        });
+
         // it('checking drag and drop - touch move - axis inversed', (done: Function): void => {
         //     gauge.loaded = (args: ILoadedEventArgs): void => {
         //         debugger;

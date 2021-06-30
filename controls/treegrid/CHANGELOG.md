@@ -2,108 +2,14 @@
 
 ## [Unreleased]
 
-## 19.1.67 (2021-06-08)
+## 19.2.44 (2021-06-30)
 
 ### Tree Grid
 
 #### Bug Fixes
 
-- `#I328708` - Child level aggregate values when using stacked header works fine.
-- `#I312347` - Selected row is displayed properly in view port when Virtualization is enabled.
-
-## 19.1.66 (2021-06-01)
-
-### Tree Grid
-
-#### Bug Fixes
-
-- `#I328329`, `#I328381` - Adding a new record while using both context menu add Row and toolbar add option works fine.
-- `#I328329` - Provided support for adding new row as a child using context menu.
-
-## 19.1.65 (2021-05-25)
-
-### Tree Grid
-
-#### Bug Fixes
-
-- `#I324262` - EllipsisWithTooltip mode of clipMode works fine.
-- `#I326030` - CRUD actions works properly while we bind dataSource using DataManager with Offline mode in load event.
-- `#I325331` - Immutable mode refresh works properly on dataSource changes.
-
-## 19.1.64 (2021-05-19)
-
-### Tree Grid
-
-#### Bug Fixes
-
-- `#I325061` - Adding a new record below last row using `addRecord` method works fine.
-- `#F165367` - StackedHeader columns works fine when value for `columns` property is given as `null`.
-
-## 19.1.63 (2021-05-13)
-
-### Tree Grid
-
-#### New Features
-
-- `#F160234`, `#I306539` - Provided support for adding parent and child records together using `addRecord` method.
-
-#### Bug Fixes
-
-- `#I317091` - Cell Editing works fine when Virtualization is enabled
-
-## 19.1.59 (2021-05-04)
-
-### Tree Grid
-
-#### Bug Fixes
-
-- `#I315811` - Collapse All with Virtualization enabled works fine when using less number of records
-- `#I321468` - Column template with stacked header works fine
-
-## 19.1.58 (2021-04-27)
-
-### Tree Grid
-
-#### Bug Fixes
-
-- `#F163555` - Updating datasource dynamically with Virtualization enabled works fine.
-- `#I324405` - Running Tree Grid application in production mode works fine.
-
-## 19.1.57 (2021-04-20)
-
-### Tree Grid
-
-#### Bug Fixes
-
-- `#I317066` - Right-clicking on the bottom rows in the current view works fine with Virtualization.
-
-## 19.1.56 (2021-04-13)
-
-### Tree Grid
-
-#### Bug Fixes
-
-- `#321468` - Updating datasource dynamically with column template and stacked header enabled works fine.
-
-## 19.1.55 (2021-04-06)
-
-### Tree Grid
-
-#### Bug Fixes
-
-- `#318449` - Expand/Collapse works properly while using enableImmutableMode property with Remote Data.
-- `#320432` - Initial Filter with showColumnMenu works properly.
-- `#317928` - Rendering Grid and Tree Grid in the same page with Virtualization works fine.
-- `#315665, #318515, #320888` - Row Drag and Drop within treegrid and to another treegrid works fine.
-
-## 19.1.54 (2021-03-30)
-
-### Tree Grid
-
-#### New Features
-
-- `#274416, #274607, #313192, #F159014` -  Provided Infinite Scrolling support for Tree Grid which allows you to lazy load data when scroller reaches the near end.
-- `#280065` - Provided support to maintain Expand/Collapse state of Tree Grid while exporting the data.
+- `#I329350` - Immutable mode works fine for date values and row reordering.
+- `#I329988`, `#I331155` - Editing a newly added child record works fine with self referential data.
 
 ## 18.4.30 (2020-12-17)
 

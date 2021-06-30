@@ -61,6 +61,7 @@ describe('Render Frozen Rows and columns', () => {
         done();
       }
        gridObj.frozenRows = 3;
+       gridObj.dataBind();
        gridObj.freezeModule.destroy();
    });
         afterAll(() => {

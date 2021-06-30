@@ -1,6 +1,6 @@
 {
 	"name": "@syncfusion/ej2-richtexteditor",
-	"version": "19.1.67",
+	"version": "18.3.35",
 	"description": "Essential JS 2 RichTextEditor component",
 	"author": "Syncfusion Inc.",
 	"license": "SEE LICENSE IN license",
@@ -9,12 +9,12 @@
 	"es2015": "./dist/es6/ej2-richtexteditor.es2015.js",
 	"dependencies": {
 		"@syncfusion/ej2-base": "*",
+		"@syncfusion/ej2-buttons": "*",
+		"@syncfusion/ej2-filemanager": "*",
+		"@syncfusion/ej2-inputs": "*",
 		"@syncfusion/ej2-navigations": "*",
 		"@syncfusion/ej2-popups": "*",
-		"@syncfusion/ej2-splitbuttons": "*",
-		"@syncfusion/ej2-inputs": "*",
-		"@syncfusion/ej2-buttons": "*",
-		"@syncfusion/ej2-filemanager": "*"
+		"@syncfusion/ej2-splitbuttons": "*"
 	},
 	"devDependencies": {
 		"@types/chai": "^3.4.28",

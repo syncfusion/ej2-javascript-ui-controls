@@ -20,6 +20,20 @@
     border: 1px solid $listbox-border-color;
   }
 
+  .e-bigger.e-listbox-wrapper,
+  .e-bigger.e-listbox-container {
+    @if ($skin-name == 'tailwind' or $skin-name == 'tailwind-dark') {
+      font-size: $listview-touch-item-font-size;
+    }
+
+    & .e-list-header,
+    & .e-list-group-item {
+      @if ($skin-name == 'tailwind' or $skin-name == 'tailwind-dark') {
+        font-size: $listview-touch-header-font-size;
+      }
+    }
+  }
+
   .e-listbox-wrapper,
   .e-listbox-container {
     font-family: $listview-font-family;

@@ -58,7 +58,7 @@
         border-color: $ddl-list-gradient-color;
         color: $ddl-list-header-font-color;
         font-family: $ddl-list-font-family;
-        font-size: $ddl-group-list-font-size;
+        font-size: $ddl-list-header-font-size;
         font-weight: $ddl-header-font-weight;
         line-height: $ddl-list-line-height;
         min-height: $ddl-list-line-height;
@@ -94,6 +94,7 @@
       #{if(&, '&', '*')} .e-list-group-item,
       #{if(&, '&', '*')} .e-fixed-head {
         font-size: $ddl-bigger-list-header-font-size;
+        padding-left: $ddl-list-header-bigger-padding-left;
       }
     }
   }
@@ -168,8 +169,10 @@
 
       #{if(&, '&', '*')} .e-list-group-item,
       #{if(&, '&', '*')} .e-fixed-head {
+        font-size: $ddl-small-list-header-font-size;
         line-height: $ddl-small-line-height;
         min-height: $ddl-small-line-height;
+        padding-left: $ddl-list-header-small-padding-left;
       }
 
       #{if(&, '&', '*')} .e-list-item .e-list-icon {
@@ -194,6 +197,7 @@
       #{if(&, '&', '*')} .e-fixed-head {
         line-height: $ddl-bigger-small-line-height;
         min-height: $ddl-bigger-small-line-height;
+        padding-left: $ddl-list-header-bigger-small-padding-left;
       }
 
       #{if(&, '&', '*')} .e-list-item .e-list-icon {

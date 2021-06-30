@@ -7,7 +7,7 @@ import { KeyboardEventArgs } from '@syncfusion/ej2-base';
 import * as EVENTS from './../../common/constant';
 /**
  * Clear Format EXEC internal component
- * 
+ *
  * @hidden
  * @deprecated
  */

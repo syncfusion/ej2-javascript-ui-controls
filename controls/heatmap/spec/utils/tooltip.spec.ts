@@ -204,6 +204,15 @@ describe('Heatmap Control', () => {
             heatmap.cellSettings.border.width = 1;
             heatmap.refresh();
         });
+        it('Check tooltip font family', function () {
+            heatmap.theme = "TailwindDark",
+            heatmap.dataBind();
+            tempElement = document.getElementById('container_HeatMapRect_0');
+            trigger.mousemoveEvent(tempElement, 0, 0, 60, 20, false);
+            expect(document.getElementById('containerCelltooltipcontainer_text').getAttribute("font-family")).toBe("Inter");
+            expect(document.getElementById('containerCelltooltipcontainer_path').getAttribute("fill")).toBe("#F9FAFB");
+            expect(document.getElementById('containerCelltooltipcontainer_path').getAttribute("opacity")).toBe("1");
+        });
         it('Check tooltip template support', function () {
             heatmap.tooltipSettings.template = "<div>${xValue}</div><div>${yValue}</div>${value}";
             heatmap.refresh();
@@ -211,6 +220,53 @@ describe('Heatmap Control', () => {
             trigger.mousemoveEvent(tempElement, 0, 0, 60, 20, false);
             tempElement = document.getElementById('containerCelltooltipcontainerparent_template');
             expect(tempElement.textContent).toBe("09100");
+        });
+    });
+    describe('Heatmap tooltip with Tailwind theme', () => {
+        let heatmap: HeatMap;
+        let ele: HTMLElement;
+        let tempElement: HTMLElement;
+        let trigger: MouseEvents = new MouseEvents();
+        beforeAll((): void => {
+            ele = createElement('div', { id: 'container' });
+            document.body.appendChild(ele);
+            heatmap = new HeatMap({
+                width: "100%",
+                height: "300px",
+                xAxis: {
+                    title: { text: "Weekdays" },
+                },
+                yAxis: {
+                    title: { text: "YAxis" },
+                },
+                dataSource: [[10, "", 30, 40, 50, 60, 70, 80, 90, 100],
+                [10, 20, 30, null, 50, 60, 70, 80, 90, 100],
+                [10, 20, 30, 0, 50, 60, 70, 80, 90, 100]],
+                paletteSettings: {
+                    palette: [{ 'value': 100, 'color': "rgb(255, 255, 153)" },
+                    { 'value': 50, 'color': "rgb(153, 255, 187)" },
+                    { 'value': 20, 'color': "rgb(153, 153, 255)" },
+                    { 'value': 0, 'color': "rgb(255, 159, 128)" },
+                    ],
+                    type: "Fixed"
+                },
+                theme: "Tailwind",
+                legendSettings: {
+                    visible: false
+                },
+                showTooltip: true,
+            });
+            heatmap.appendTo('#container');
+        });
+
+        afterAll((): void => {
+            heatmap.destroy();
+        });
+        it('Check tooltip visibility of Tailwind Theme', () => {
+            tempElement = document.getElementById('container_HeatMapRect_0');
+            trigger.mousemoveEvent(tempElement, 0, 0, 60, 20, false);
+            expect(document.getElementById('containerCelltooltipcontainer_text').getAttribute("font-family")).toBe("Inter");
+            expect(document.getElementById('containerCelltooltipcontainer_path').getAttribute("opacity")).toBe("1");
         });
     });
     it('memory leak', () => {

@@ -135,11 +135,7 @@ export class ConnectorLine {
                 (<HTMLElement>innerChild[j]).setAttribute('aria-label', ariaString);
             }
         }
-        if (this.parent.virtualScrollModule && this.parent.enableVirtualization) {
-            this.parent.ganttChartModule.virtualRender.appendChildElements(this.dependencyViewContainer);
-        } else {
-            this.parent.ganttChartModule.chartBodyContent.appendChild(this.dependencyViewContainer);
-        }
+        this.parent.ganttChartModule.chartBodyContent.appendChild(this.dependencyViewContainer);
     }
 
     /**

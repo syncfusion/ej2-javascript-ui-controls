@@ -54,6 +54,9 @@
   .e-diagram-resize-handle {
     fill: $diagram-resize-handle-color;
     stroke: $diagram-resize-handle-stroke;
+    @if ($skin-name == 'tailwind' or $skin-name == 'tailwind-dark') {
+      stroke: $diagram-endpoint-handle-color;
+    }
   }
 
   .e-diagram-resize-handle.e-disabled {

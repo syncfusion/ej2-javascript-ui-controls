@@ -1115,9 +1115,37 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
         if (insideDomCount) {
             this.selectRange(address);
             let viewportIndexes: number[] = getCellIndexes(sheet.paneTopLeftCell);
-            const lastRowIdx: number = (viewportIndexes[0] - frozenRow) + (this.viewport.rowCount - 1 - sheet.frozenRows);
-            viewportIndexes[2] = lastRowIdx;
-            viewportIndexes[3] = (viewportIndexes[1] - frozenCol) + (this.viewport.colCount - 1 - sheet.frozenColumns);
+            let viewportSize: number = this.viewport.height - this.getScrollElement().parentElement.getBoundingClientRect().height;
+            let threshold: number = 0; let lastRowIdx: number = 0;
+            if (frozenRow) {
+                let topLeftIndexes: number[] = getCellIndexes(sheet.topLeftCell);
+                for (let i: number = topLeftIndexes[0]; i < frozenRow; i++) {
+                    threshold += getRowHeight(sheet, i);
+                    if (threshold > viewportSize) { lastRowIdx = i; break; }
+                }
+            }
+            if (lastRowIdx === 0) {
+                for (let i: number = viewportIndexes[0]; i < this.viewport.bottomIndex; i++) {
+                    threshold += getRowHeight(sheet, i);
+                    if (threshold > viewportSize) { lastRowIdx = i; break; }
+                }
+            }
+            viewportIndexes[2] = lastRowIdx; let lastColIdx: number = 0; threshold = 0;
+            viewportSize = this.viewport.width - this.sheetModule.getScrollSize();
+            if (frozenCol) {
+                let topLeftIndexes: number[] = getCellIndexes(sheet.topLeftCell);
+                for (let i: number = topLeftIndexes[1]; i < frozenCol; i++) {
+                    threshold += getColumnWidth(sheet, i);
+                    if (threshold > viewportSize) { lastColIdx = i; break; }
+                }
+            }
+            if (lastColIdx === 0) {
+                for (let i: number = viewportIndexes[1]; i < this.viewport.rightIndex; i++) {
+                    threshold += getColumnWidth(sheet, i);
+                    if (threshold > viewportSize) { lastColIdx = i; break; }
+                }
+            }
+            viewportIndexes[3] = lastColIdx;
             if (indexes[0] >= viewportIndexes[0] && indexes[0] < viewportIndexes[2] && indexes[1] >= viewportIndexes[1] &&
                 indexes[1] < viewportIndexes[3]) { return; }
             if (frozenRow || frozenCol) {
@@ -1534,7 +1562,17 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
         for (let rowIdx: number = rangeIndexes[0]; rowIdx <= rangeIndexes[2]; rowIdx++) {
             for (let colIdx: number = rangeIndexes[1]; colIdx <= rangeIndexes[3]; colIdx++) {
                 if (sheet && sheet.rows[rowIdx] && sheet.rows[rowIdx].cells[colIdx]) {
+                    const prevELem: HTMLElement = this.getCell(rowIdx, colIdx);
+                    let classList: string[] = [];
+                    for (let i: number = 0; i < prevELem.classList.length; i++) {
+                        classList.push(prevELem.classList[i]);
+                    }
                     this.notify(deleteHyperlink, { sheet: sheet, rowIdx: rowIdx, colIdx: colIdx });
+                    for (let i: number = 0; i < classList.length; i++) {
+                        if (!this.getCell(rowIdx, colIdx).classList.contains(classList[i])) {
+                            this.getCell(rowIdx, colIdx).classList.add(classList[i]);
+                        }
+                    }
                 }
             }
         }
@@ -1557,6 +1595,12 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
             let sheet: SheetModel = this.getActiveSheet();
             // let isEmpty: boolean;
             address = address ? address : this.getActiveSheet().activeCell;
+            cellIdx = getRangeIndexes(address);
+            const prevELem: HTMLElement = this.getCell(cellIdx[0], cellIdx[1]);
+            let classList: string[] = [];
+            for (let i: number = 0; i < prevELem.classList.length; i++) {
+                classList.push(prevELem.classList[i]);
+            }
             const befArgs: BeforeHyperlinkArgs = { hyperlink: hyperlink, cell: address, cancel: false };
             const aftArgs: AfterHyperlinkArgs = { hyperlink: hyperlink, cell: address };
             if (!isMethod) {
@@ -1603,6 +1647,11 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
                 }
                 if (sheet === this.getActiveSheet()) {
                     this.serviceLocator.getService<ICellRenderer>('cell').refreshRange(cellIdx);
+                    for (let i: number = 0; i < classList.length; i++) {
+                        if (!this.getCell(cellIdx[0], cellIdx[1]).classList.contains(classList[i])) {
+                            this.getCell(cellIdx[0], cellIdx[1]).classList.add(classList[i]);
+                        }
+                    }
                     this.notify(refreshRibbonIcons, null);
                 }
             }

@@ -1,6 +1,6 @@
 import { TreeGrid, Filter as TreeGridFilter, FilterSettingsModel as TreeFilterSettingsModel } from '@syncfusion/ej2-treegrid';
 import { FilterEventArgs, filterAfterOpen, GroupEventArgs, getFilterMenuPostion, ColumnMenuOpenEventArgs } from '@syncfusion/ej2-grids';
-import { getActualProperties, IFilterMUI, Filter as GridFilter, IXLFilter, getCustomDateFormat } from '@syncfusion/ej2-grids';
+import { getActualProperties, IFilterMUI, Filter as GridFilter, getCustomDateFormat } from '@syncfusion/ej2-grids';
 import { Gantt } from '../base/gantt';
 import { FilterSettingsModel, ColumnModel, TaskFieldsModel } from '../models/models';
 import { getValue, isNullOrUndefined, remove, createElement, addClass, closest } from '@syncfusion/ej2-base';
@@ -211,7 +211,7 @@ export class Filter {
     }
     private actionComplete(args: GroupEventArgs): void {
         if (args.requestType === filterAfterOpen) {
-            if(this.parent.treeGrid.filterSettings.type === 'Menu') {
+            if (this.parent.treeGrid.filterSettings.type === 'Menu') {
                 this.filterMenuElement = getValue('filterModel.dlgObj.element', args);
             }
             else {
@@ -263,7 +263,7 @@ export class Filter {
         if (this.parent.showColumnMenu) {
             targetElement = document.querySelector('#treeGrid' + this.parent.controlId + '_gridcontrol_colmenu_Filter');
             element.style.zIndex = targetElement.parentElement.style.zIndex;
-            if(this.parent.treeGrid.filterSettings.type === 'Menu') {
+            if (this.parent.treeGrid.filterSettings.type === 'Menu') {
                 this.setPosition(targetElement, getValue('filterModel.dlgObj.element', args));
             }
             else {
@@ -271,14 +271,14 @@ export class Filter {
             }
         } else {
             targetElement = this.parent.treeGrid.grid.getColumnHeaderByField(args.columnName).querySelector('.e-filtermenudiv');
-            if(this.parent.treeGrid.filterSettings.type === 'Menu') {
+            if (this.parent.treeGrid.filterSettings.type === 'Menu') {
                 getFilterMenuPostion(targetElement, getValue('filterModel.dlgObj', args));
             }
             else {
                 getFilterMenuPostion(targetElement, getValue('filterModel.dialogObj', args));
             }
         }
-        if(this.parent.treeGrid.filterSettings.type === 'Menu') {
+        if (this.parent.treeGrid.filterSettings.type === 'Menu') {
             (element.querySelector('.e-valid-input') as HTMLElement).focus();
         }
     }

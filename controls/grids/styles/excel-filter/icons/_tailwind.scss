@@ -1,0 +1,38 @@
+@include export-module('excel-filter-tailwind-icons') {
+  /*! component icons */
+
+  .e-icon-check::before {
+    content: '\e75d';
+  }
+
+  #{&}.e-excelfilter {
+    .e-icon-filter::before {
+      content: '\e71b';
+    }
+
+    .e-excl-filter-icon::before {
+      content: '\e71b';
+    }
+
+    .e-excl-filter-icon.e-filtered::before {
+      content: '\e774';
+    }
+
+    .e-ccsearch-icon::before {
+      content: '\e737';
+    }
+
+    .e-chkcancel-icon::before {
+      content: '\e771';
+    }
+
+    .e-sortascending::before {
+      content: '\e837';
+    }
+
+    .e-sortdescending::before {
+      content: '\e84c';
+    }
+  }
+}
+  

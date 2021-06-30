@@ -87,8 +87,9 @@ export class Render {
         this.updateLabelText(viewName);
         this.parent.activeView.addEventListener();
         this.parent.activeView.getRenderDates();
-        this.parent.uiStateValues.isGroupAdaptive = this.parent.isAdaptive && this.parent.activeViewOptions.group.resources.length > 0 &&
-            this.parent.activeViewOptions.group.enableCompactView;
+        this.parent.uiStateValues.isGroupAdaptive = this.parent.activeViewOptions.group.resources.length > 0 &&
+            (this.parent.enableAdaptiveUI && !this.parent.isAdaptive ||
+                this.parent.isAdaptive && this.parent.activeViewOptions.group.enableCompactView);
         if (this.parent.virtualScrollModule) {
             this.parent.virtualScrollModule.destroy();
             this.parent.virtualScrollModule = null;

@@ -69,7 +69,8 @@ export class WrapText {
                                 ele.innerHTML
                                     = this.parent.createElement('span', {
                                         className: 'e-wrap-content',
-                                        innerHTML: ele.innerHTML
+                                        innerHTML: ele.innerHTML,
+                                        styles: (ele as HTMLElement).style.cssText
                                     }).outerHTML;
                             }
                         }

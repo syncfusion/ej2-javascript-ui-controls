@@ -11,6 +11,13 @@
       position: relative;
     }
 
+    .e-header-calendar {
+      @if ($schedule-skin == 'tailwind' or $schedule-skin == 'tailwind-dark') {
+        background-color: $schedule-calendar-background;
+        box-shadow: $schedule-popup-box-shadow-1;
+      }
+    }
+
     .e-vertical-view {
       .e-date-header-wrap table tbody td:first-child,
       .e-content-wrap table td:first-child {
@@ -73,6 +80,9 @@
         @if ($schedule-skin == 'bootstrap4') {
           color: $schedule-primary-content-font-color;
         }
+        @if ($schedule-skin == 'tailwind' or $schedule-skin == 'tailwind-dark') {
+          background-color: $schedule-tbar-default-bg;
+        }
       }
 
       .e-time-cells-wrap table td {
@@ -80,7 +90,9 @@
       }
 
       .e-time-cells-wrap .e-time-cells {
-        border-bottom-color: $schedule-content-border-color;
+        @if ($schedule-skin != 'tailwind' and $schedule-skin != 'tailwind-dark') {
+          border-bottom-color: $schedule-content-border-color;
+        }
       }
 
       .e-header-cells {
@@ -88,6 +100,9 @@
 
         &.e-current-day {
           color: $schedule-active-font-color;
+          @if ($schedule-skin == 'tailwind' or $schedule-skin == 'tailwind-dark') {
+            font-weight: 500;
+          }
         }
       }
 
@@ -176,8 +191,17 @@
         color: $schedule-header-font-color;
         text-align: left;
 
+        @if ($schedule-skin == 'tailwind' or $schedule-skin == 'tailwind-dark') {
+          font-size: 12px;
+          text-align: center;
+          text-transform: uppercase;
+        }
+
         &.e-current-day {
           color: $schedule-active-font-color;
+          @if ($schedule-skin == 'tailwind' or $schedule-skin == 'tailwind-dark') {
+            font-weight: 500;
+          }
         }
       }
 
@@ -267,6 +291,9 @@
 
         &.e-current-day {
           color: $schedule-active-font-color;
+          @if ($schedule-skin == 'tailwind' or $schedule-skin == 'tailwind-dark') {
+            font-weight: 500;
+          }
         }
       }
 

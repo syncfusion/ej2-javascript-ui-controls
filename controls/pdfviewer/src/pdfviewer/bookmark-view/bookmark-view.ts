@@ -78,6 +78,7 @@ export class BookmarkView {
                     }
                 }
                 if (data && data.uniqueId === proxy.pdfViewerBase.documentId) {
+                    proxy.pdfViewer.fireAjaxRequestSuccess('Bookmarks', data);
                     proxy.bookmarks = { bookMark: data.Bookmarks };
                     proxy.bookmarkStyles = data.Bookmarkstyles;
                     proxy.bookmarksDestination = { bookMarkDestination: data.BookmarksDestination };

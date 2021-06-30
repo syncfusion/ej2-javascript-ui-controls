@@ -238,7 +238,9 @@ export class CommentReviewPane {
 
     public insertComment(): void {
         if (this.owner && this.owner.editorModule) {
+            this.owner.editor.isUserInsert = true;
             this.owner.editorModule.insertComment('');
+            this.owner.editor.isUserInsert = false;
         }
     }
 
@@ -308,11 +310,29 @@ export class CommentReviewPane {
         }
     }
 
+    public enableDisableItems(): void {
+        this.enableDisableToolbarItem();
+        const keys: CommentElementBox[] = this.commentPane.comments.keys;
+        for (let i: number = 0; i < keys.length; i++) {
+            const commentView: CommentView = this.commentPane.comments.get(keys[i]);
+            if (this.owner.isReadOnly) {
+                commentView.replyViewTextBox.style.display = 'none'
+                commentView.menuBar.style.display = 'none';
+            } else {
+                commentView.replyViewTextBox.style.display = 'block';
+                commentView.menuBar.style.display = 'block';
+            }
+        }
+    }
+
     public enableDisableToolbarItem(): void {
         if (this.toolbar) {
             let enable: boolean = true;
             if (this.commentPane.isEditMode) {
                 enable = !this.commentPane.isEditMode;
+            }
+            if (this.owner.isReadOnly) {
+                enable = !this.owner.isReadOnly;
             }
             const elements: NodeListOf<Element> = this.toolbar.element.querySelectorAll('.' + 'e-de-cmt-tbr');
             this.toolbar.enableItems(elements[0].parentElement.parentElement, enable);

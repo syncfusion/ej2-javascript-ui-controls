@@ -21,6 +21,8 @@ $editor-value-hover-bg: $hover-bg !default;
 $editor-value-text-color: $content-font !default;
 $editor-overlay-icon-color: $content-font !default;
 $editor-value-text-border: 1px dashed $editor-value-text-color !default;
+$editable-overlay-icon-height: inherit !default;
+$editable-overlay-icon: 0 !default;
 
 /*! Tooltip styles */
 $editor-tip-bg: $bg-base-0 !default;

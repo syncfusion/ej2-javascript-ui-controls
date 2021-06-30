@@ -139,7 +139,7 @@ export class RangeTooltip {
                     enableShadow: false,
                     marginY: 2, arrowPadding: 8, rx: 0, ry: 0,
                     inverted: control.series.length > 0,
-                    areaBounds: bounds, fill: tooltip.fill,
+                    areaBounds: bounds, fill: tooltip.fill ? tooltip.fill : this.control.themeStyle.tooltipBackground,
                     theme: this.control.theme,
                     //enableShadow: false,
                     clipBounds: { x: left },

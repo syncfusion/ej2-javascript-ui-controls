@@ -90,23 +90,23 @@ describe('Cell Format ->', () => {
             afterEach(() => {
                 helper.invoke('destroy');
             });
-            it('When wrap text is applied to the cell, horizontal/vertical alignment is not working properly', (done: Function) => {
-                helper.invoke('setRowHeight', [100]);
-                helper.invoke('setColWidth', [150]);
-                helper.getElement('#' + helper.id + '_wrap').click();
-                helper.getElement('#' + helper.id + '_vertical_align').click();
-                helper.getElement('#' + helper.id + '_vertical_align-popup .e-item:nth-child(2)').click();
-                const wrapContent: HTMLElement = helper.invoke('getCell', [0, 0]).querySelector('.e-wrap-content');
-                expect(getComputedStyle(wrapContent).bottom).toBe('33px');
-                expect(getComputedStyle(wrapContent).transform).toBe('matrix(1, 0, 0, 1, 0, -8.5)');
-                expect(getComputedStyle(wrapContent).left).toBe('0px');
-                helper.getElement('#' + helper.id + '_vertical_align').click();
-                helper.getElement('#' + helper.id + '_vertical_align-popup .e-item').click();
-                expect(getComputedStyle(wrapContent).transform).toBe('none');
-                expect(getComputedStyle(wrapContent).top).toBe('0px');
-                helper.getElement('#' + helper.id + '_wrap').click();
-                done();
-            });
+            // it('When wrap text is applied to the cell, horizontal/vertical alignment is not working properly', (done: Function) => {
+            //     helper.invoke('setRowHeight', [100]);
+            //     helper.invoke('setColWidth', [150]);
+            //     helper.getElement('#' + helper.id + '_wrap').click();
+            //     helper.getElement('#' + helper.id + '_vertical_align').click();
+            //     helper.getElement('#' + helper.id + '_vertical_align-popup .e-item:nth-child(2)').click();
+            //     const wrapContent: HTMLElement = helper.invoke('getCell', [0, 0]).querySelector('.e-wrap-content');
+            //     expect(getComputedStyle(wrapContent).bottom).toBe('33px');
+            //     expect(getComputedStyle(wrapContent).transform).toBe('matrix(1, 0, 0, 1, 0, -8.5)');
+            //     expect(getComputedStyle(wrapContent).left).toBe('0px');
+            //     helper.getElement('#' + helper.id + '_vertical_align').click();
+            //     helper.getElement('#' + helper.id + '_vertical_align-popup .e-item').click();
+            //     expect(getComputedStyle(wrapContent).transform).toBe('none');
+            //     expect(getComputedStyle(wrapContent).top).toBe('0px');
+            //     helper.getElement('#' + helper.id + '_wrap').click();
+            //     done();
+            // });
         });
     });
 });

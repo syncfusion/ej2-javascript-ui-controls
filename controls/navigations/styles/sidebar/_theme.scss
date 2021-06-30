@@ -55,14 +55,24 @@
         }
 
     &.e-right {
-      border-left: 1px solid $sidebar-border;
+      @if ($skin-name == 'tailwind' or $skin-name == 'tailwind-dark') {
+        border-left: 0 solid $sidebar-border;
+      }
+      @else {
+        border-left: 1px solid $sidebar-border;
+      }
       left: auto;
       right: 0;
       top: 0;
         }
 
     &.e-left {
-      border-right: 1px solid $sidebar-border;
+      @if ($skin-name == 'tailwind' or $skin-name == 'tailwind-dark') {
+        border-right: 0 solid $sidebar-border;
+      }
+      @else {
+        border-right: 1px solid $sidebar-border;
+      }
       left: 0;
       right: auto;
       top: 0;
@@ -148,7 +158,9 @@
     background-color: $sidebar-overlay;
     height: 100%;
     left: 0;
-    opacity: .5;
+    @if ($skin-name != 'tailwind' and $skin-name != 'tailwind-dark') {
+      opacity: .5;
+    }
     pointer-events: auto;
     position: fixed;
     top: 0;

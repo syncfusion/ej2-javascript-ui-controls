@@ -1,0 +1,90 @@
+@import 'definition.scss';
+
+$skin-name: 'tailwind-dark';
+$diagram-endpoint-handle-color: $white;
+$diagram-endpoint-handle-connected-border: $white;
+$diagram-endpoint-handle-connected-color: $primary;
+
+$diagram-resize-handle-color: $primary;
+$diagram-resize-handle-stroke: $primary;
+$diagram-border-stroke: $primary;
+
+$diagram-resize-handle-disable-color: $content-bg-color-alt5;
+$diagram-resize-handle-disable-stroke: $white;
+$diagram-border-stroke-disabled: $primary;
+
+$diagram-rotate-handle-color: $icon-color;
+
+$diagram-bezier-handle-color: $white;
+$diagram-bezier-line-color: $primary;
+
+$diagram-highlighter-stroke: $primary;
+$diagram-selected-region-stroke: $primary;
+$diagram-pivot-line-stroke: $primary;
+
+$diagram-text-edit-selection-color: $primary-text-color;
+$diagram-text-edit-selection-background: $primary;
+
+$diagram-symbolpalette-hover: $content-bg-color-hover;
+$diagram-symbolpalette-shape-radius: 00px;
+$diagram-symbolpalette-selected: $content-bg-color-selected;
+
+$diagram-tooltip: none;
+
+$diagram-ruler-color: $content-text-color-alt2;
+$diagram-ruler-font-size: $text-xxs;
+$diagram-ruler-marker-stroke: $primary;
+$diagram-ruler-marker-background-color: $content-bg-color-alt1;
+$diagram-ruler-label-fill: $content-text-color-alt2;
+$diagram-ruler-tick-stroke: $series-2;
+
+$diagram-background-color: $white;
+
+$diagram-editbox-background: $primary-text-color;
+$diagram-editbox-fontcolor: $white;
+$diagram-border-stroke-width: 2;
+$diagram-lane-border-stroke-width: 2;
+$diagram-highlighter-border-stroke-width: 2;
+$diagram-border-strokes: $primary;
+$diagram-lane-border-strokes: $primary;
+
+.e-icons {
+  font-family: 'e-icons';
+  font-style: normal;
+  font-variant: normal;
+  font-weight: normal;
+  line-height: 1;
+  text-transform: none;
+}
+
+@include export-module('diagram-material-icons') {
+  .e-diagram-menu {
+    .e-bringforward::before { content: '\e747'; }
+    .e-bringfront::before { content: '\e744'; }
+    .e-sendback::before { content: '\e716'; }
+    .e-sendbackward::before { content: '\e7a3'; }
+    .e-delete::before { content: '\e78d'; }
+    .e-ungroup::before { content: '\e7a4'; }
+    .e-group::before { content: '\e74d'; }
+    .e-undo::before { content: '\e7bd'; }
+    .e-cut::before { content: '\e763'; }
+    .e-save::before { content: '\e704'; }
+    .e-paste::before { content: '\e75e'; }
+    .e-copy::before { content: '\e7ce'; }
+    .e-redo::before { content: '\e7b9'; }
+    .e-zoomin::before { content: '\e70a'; }
+    .e-italic::before { content: '\e722'; }
+    .e-close::before { content: '\e771'; }
+    .e-pan::before { content: '\e712'; }
+    .e-bold::before { content: '\e79d'; }
+    .e-underline::before { content: '\e7d4'; }
+    .e-zoomout::before { content: '\e779'; }
+    .e-export::before { content: '\e7bf'; }
+    .e-print::before { content: '\e76c'; }
+    .e-order::before { content: '\e765'; }
+  }
+
+  .e-symbolpalette {
+    .e-clear-searchtext::before { content: '\e771'; }
+  }
+}

@@ -70,9 +70,45 @@ export type PdfAnnotationType =
     /**
      * SignatureImage - Represents the signature as Image.
      */
-    'SignatureImage';
-
-
+    'SignatureImage'
+    ;
+/**
+ * @hidden
+ */
+export type FormFieldAnnotationType =
+    /**
+     * Textbox - Represents the form field type as Textbox.
+     */
+    'Textbox' |
+    /**
+     * Textbox - Represents the form field type as Textbox.
+     */
+    'PasswordField' |
+    /**
+     * Checkbox - Represents the form field type as Checkbox.
+     */
+    'Checkbox' |
+    /**
+     * RadioButton - Represents the form field type as RadioButton.
+     */
+    'RadioButton' |
+    /**
+     * DropdownList - Represents the form field type as DropdownList.
+    */
+    'DropdownList' |
+    /**
+     * Listbox - Represents the form field type as Listbox.
+    */
+   'ListBox' |
+    /**
+     * SignatureField - Represents the form field type as SignatureField.
+     */
+    'SignatureField' |
+    /**
+     * InitialField - Represents the form field type as InitialField.
+     */
+    'InitialField' 
+    ;
 
 /**
  * Defines the decorator shape of the connector

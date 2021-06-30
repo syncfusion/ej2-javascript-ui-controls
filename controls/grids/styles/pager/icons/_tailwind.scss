@@ -1,0 +1,50 @@
+@include export-module('pager-tailwind-icons') {
+  /*!componenticons*/
+
+  #{&}.e-pager,
+  .e-grid-menu {
+
+    .e-icon-last::before {
+      content: '\e751';
+    }
+
+    .e-icon-first::before {
+      content: '\e78b';
+    }
+
+    .e-icon-prev::before {
+      content: '\e70f';
+    }
+
+    .e-icon-next::before {
+      content: '\e7b7';
+    }
+
+    &.e-rtl {
+      & .e-icon-last.e-lastpage::before,
+      & .e-icon-last.e-lastpage:hover,
+      & .e-icon-last.e-lastpagedisabled::before {
+        content: '\e78b';
+      }
+
+      & .e-icon-first.e-firstpage::before,
+      & .e-icon-first.e-firstpage:hover,
+      & .e-icon-first.e-firstpagedisabled::before {
+        content: '\e751';
+      }
+
+      & .e-icon-prev.e-prevpage::before,
+      & .e-icon-prev.e-prevpage:hover,
+      & .e-icon-prev.e-prevpagedisabled::before {
+        content: '\e7b7';
+      }
+
+      & .e-icon-next.e-nextpage::before,
+      & .e-icon-next.e-nextpage:hover,
+      & .e-icon-next.e-nextpagedisabled::before {
+        content: '\e70f';
+      }
+    }
+  }
+}
+  

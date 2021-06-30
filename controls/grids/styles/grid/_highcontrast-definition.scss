@@ -530,9 +530,17 @@ $grid-responsive-search-left-padding: 0 !default;
 $grid-responsive-filter-clear-margin: 3px !default;
 $grid-responsive-toolbar-filter-font-size: 18px !default;
 $grid-responsive-tbar-btn-bgr-padding: 0 !default;
+$grid-responsive-btn-top: 0 !default;
+$grid-responsive-apply-btn-top: 3px !default;
 
 $grid-rtl-headercelldiv-left-align-margin: 10px !default;
 $grid-rtl-filtermenudiv-left-align-margin: -5px !default;
 $grid-rtl-sort-num-left-align-margin: 8px -2px 0 0 !default;
 $grid-frozen-mac-scrollbar-background: rgba(0, 0, 0, .5) !default;
 $grid-rowcell-color: rgba($grid-content-font-color,  $grid-conent-font-opacity) !default;
+$grid-reorderarrow-margin-top: 0 !default;
+$grid-sortnumber-font-size: 9px;
+$grid-header-text-transform: none;
+$grid-bigger-toolbar-icon-size: 18px !default;
+$grid-reorderarrow-margin-left: 0 !default;
+$grid-column-chooser-cancel-icon-size: 11px !default;

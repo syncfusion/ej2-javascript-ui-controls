@@ -75,7 +75,7 @@ const keyCode: { [key: string]: number } = {
  *   });
  * </script>
  * ```
- * 
+ *
  * @hidden
  * @deprecated
  */
@@ -84,7 +84,7 @@ export class KeyboardEvents extends Base<HTMLElement> implements INotifyProperty
 
     /**
      * Specifies key combination and it respective action name.
-     * 
+     *
      * @default null
      */
     @Property({})
@@ -92,7 +92,7 @@ export class KeyboardEvents extends Base<HTMLElement> implements INotifyProperty
 
     /**
      * Specifies on which event keyboardEvents class should listen for key press. For ex., `keyup`, `keydown` or `keypress`
-     * 
+     *
      * @default 'keyup'
      */
     @Property('keyup')
@@ -119,7 +119,7 @@ export class KeyboardEvents extends Base<HTMLElement> implements INotifyProperty
 
     /**
      * Unwire bound events and destroy the instance.
-     * 
+     *
      * @returns {void}
      */
     public destroy(): void {
@@ -205,7 +205,7 @@ export class KeyboardEvents extends Base<HTMLElement> implements INotifyProperty
 
     /**
      * To get the key configuration data
-     * 
+     *
      * @param {string} config - configuration data
      * @returns {KeyData} - specifies the key data
      */
@@ -242,5 +242,5 @@ interface KeyData {
     ctrlKey: Boolean
     shiftKey: Boolean
     keyCode: number | string
-    /* eslint-enable */ 
+    /* eslint-enable */
 }

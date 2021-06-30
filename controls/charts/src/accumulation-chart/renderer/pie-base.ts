@@ -23,9 +23,9 @@ export class PieBase extends AccumulationBase {
     protected totalAngle: number;
     public innerRadius: number;
 
-    public center: ChartLocation;
-    public radius: number;
-    public labelRadius: number;
+    public pieBaseCenter: ChartLocation;
+    public pieBaseRadius: number;
+    public pieBaseLabelRadius: number;
     public isRadiusMapped: boolean;
     public seriesRadius: number;
     public size: number;
@@ -44,10 +44,10 @@ export class PieBase extends AccumulationBase {
 
         if ((series.radius.indexOf('%') !== -1 || typeof r === 'number') && !isNaN(r)) {
             this.isRadiusMapped = false;
-            this.radius = stringToNumber(series.radius, this.size / 2);
-            this.innerRadius = stringToNumber(series.innerRadius, this.radius);
-            this.labelRadius = series.dataLabel.position === 'Inside' ? (((this.radius - this.innerRadius) / 2) + this.innerRadius) :
-                (this.radius + stringToNumber(series.dataLabel.connectorStyle.length || '4%', this.size / 2));
+            this.pieBaseRadius = stringToNumber(series.radius, this.size / 2);
+            this.innerRadius = stringToNumber(series.innerRadius, this.pieBaseRadius);
+            this.pieBaseLabelRadius = series.dataLabel.position === 'Inside' ? (((this.pieBaseRadius - this.innerRadius) / 2) + this.innerRadius) :
+                (this.pieBaseRadius + stringToNumber(series.dataLabel.connectorStyle.length || '4%', this.size / 2));
         } else {
             const radiusCollection: number[] = [];
             this.isRadiusMapped = true;
@@ -60,7 +60,7 @@ export class PieBase extends AccumulationBase {
             }
             const minRadius: number = Math.min.apply(null, radiusCollection);
             const maxRadius: number = Math.max.apply(null, radiusCollection);
-            this.radius = this.seriesRadius = maxRadius;
+            this.pieBaseRadius = this.seriesRadius = maxRadius;
             this.innerRadius = stringToNumber(series.innerRadius, this.seriesRadius);
             this.innerRadius = this.innerRadius > minRadius ? (this.innerRadius / 2) : this.innerRadius;
         }
@@ -69,8 +69,11 @@ export class PieBase extends AccumulationBase {
         // this.innerRadius = stringToNumber(series.innerRadius, this.radius);
         // this.labelRadius = series.dataLabel.position === 'Inside' ? (((this.radius - this.innerRadius) / 2) + this.innerRadius) :
         //     (this.radius + stringToNumber(series.dataLabel.connectorStyle.length || '4%', size / 2));
-        chart.explodeDistance = series.explode ? stringToNumber(series.explodeOffset, this.radius) : 0;
+        this.radius = this.pieBaseRadius;
+        this.labelRadius = this.pieBaseLabelRadius;
+        chart.explodeDistance = series.explode ? stringToNumber(series.explodeOffset, this.pieBaseRadius) : 0;
         this.findCenter(chart, series);
+        this.center = this.pieBaseCenter;
         this.defaultLabelBound(series, series.dataLabel.visible, series.dataLabel.position);
         this.totalAngle -= 0.001;
     }
@@ -81,7 +84,7 @@ export class PieBase extends AccumulationBase {
     public getLabelRadius(series: AccumulationSeriesModel, point: AccPoints): number {
 
         return series.dataLabel.position === 'Inside' ?
-            ((((stringToNumber(point.sliceRadius, this.radius) - this.innerRadius)) / 2) + this.innerRadius) :
+            ((((stringToNumber(point.sliceRadius, this.pieBaseRadius) - this.innerRadius)) / 2) + this.innerRadius) :
             (stringToNumber(point.sliceRadius, this.seriesRadius) + stringToNumber(
                 series.dataLabel.connectorStyle.length || '4%', this.size / 2));
 
@@ -94,16 +97,16 @@ export class PieBase extends AccumulationBase {
      */
     public findCenter(accumulation: AccumulationChart, series: AccumulationSeries): void {
         this.accumulation = accumulation;
-        this.center = {
+        this.pieBaseCenter = {
             x: stringToNumber(accumulation.center.x, accumulation.initialClipRect.width) + (accumulation.initialClipRect.x),
             y: stringToNumber(accumulation.center.y, accumulation.initialClipRect.height) + (accumulation.initialClipRect.y)
         };
         const accumulationRect: Rect = this.getSeriesBound(series);
         const accumulationRectCenter: ChartLocation = new ChartLocation(
             accumulationRect.x + accumulationRect.width / 2, accumulationRect.y + accumulationRect.height / 2);
-        this.center.x += (this.center.x - accumulationRectCenter.x);
-        this.center.y += (this.center.y - accumulationRectCenter.y);
-        this.accumulation.origin = this.center;
+        this.pieBaseCenter.x += (this.pieBaseCenter.x - accumulationRectCenter.x);
+        this.pieBaseCenter.y += (this.pieBaseCenter.y - accumulationRectCenter.y);
+        this.accumulation.origin = this.pieBaseCenter;
     }
 
     /**
@@ -147,7 +150,7 @@ export class PieBase extends AccumulationBase {
         end = (end === 0) ? 360 : end;
         series.findMaxBounds(rect, this.getRectFromAngle(start));
         series.findMaxBounds(rect, this.getRectFromAngle(end));
-        series.findMaxBounds(rect, new Rect(this.center.x, this.center.y, 0, 0));
+        series.findMaxBounds(rect, new Rect(this.pieBaseCenter.x, this.pieBaseCenter.y, 0, 0));
         let nextQuandrant: number = (Math.floor(start / 90) * 90 + 90) % 360;
         let lastQuadrant: number = (Math.floor(end / 90) * 90) % 360;
         lastQuadrant = (lastQuadrant === 0) ? 360 : lastQuadrant;
@@ -174,7 +177,7 @@ export class PieBase extends AccumulationBase {
      * To get rect location size from angle
      */
     private getRectFromAngle(angle: number): Rect {
-        const location: ChartLocation = degreeToLocation(angle, this.radius, this.center);
+        const location: ChartLocation = degreeToLocation(angle, this.pieBaseRadius, this.pieBaseCenter);
         return new Rect(location.x, location.y, 0, 0);
     }
     /**
@@ -214,7 +217,7 @@ export class PieBase extends AccumulationBase {
         const startAngle: number = series.startAngle - 90;
         const duration: number = this.accumulation.duration ? this.accumulation.duration : series.animation.duration;
         let value: number;
-        this.center.x += 1;
+        this.pieBaseCenter.x += 1;
         let radius: number = Math.max(this.accumulation.availableSize.height, this.accumulation.availableSize.width) * 0.75;
         radius += radius * (0.414); // formula r + r / 2 * (1.414 -1)
         // eslint-disable-next-line @typescript-eslint/ban-types
@@ -224,11 +227,11 @@ export class PieBase extends AccumulationBase {
             delay: series.animation.delay,
             progress: (args: AnimationOptions): void => {
                 value = effect(args.timeStamp, startAngle, this.totalAngle, args.duration);
-                slice.setAttribute('d', this.getPathArc(this.center, startAngle, value, radius, 0));
+                slice.setAttribute('d', this.getPathArc(this.pieBaseCenter, startAngle, value, radius, 0));
             },
             end: () => {
-                this.center.x -= 1;
-                slice.setAttribute('d', this.getPathArc(this.center, 0, 359.99999, radius, 0));
+                this.pieBaseCenter.x -= 1;
+                slice.setAttribute('d', this.getPathArc(this.pieBaseCenter, 0, 359.99999, radius, 0));
                 this.accumulation.trigger(animationComplete, this.accumulation.isBlazor ? {} :
                     { series: series, accumulation: this.accumulation, chart: this.accumulation });
                 const datalabelGroup: Element = getElement(this.accumulation.element.id + '_datalabel_Series_' + series.index);

@@ -228,7 +228,7 @@ describe(' Inline Quick Toolbar - ', () => {
                     enable: true
                 },
                 toolbarSettings: {
-                    items: ['FontName', 'FontSize', 'Formats', 'Alignments', 'FontColor', 'BackgroundColor']
+                    items: ['FontName', 'FontSize', 'Formats', 'Alignments', 'FontColor', 'BackgroundColor', 'NumberFormatList', 'BulletFormatList']
                 },
                 value: `<p id="spanSize">The Rich Text Editor (RTE) control is an easy to render in client side.
                 Customer easy to edit the contents and get the HTML content for the displayed content.<br></p>`
@@ -249,6 +249,10 @@ describe(' Inline Quick Toolbar - ', () => {
                 expect(formatsItem.classList.contains('e-rte-inline-template')).toBe(true);
                 let alignmentsItem: HTMLElement = document.querySelector('#' + controlId + '_quick_Alignments').parentElement;
                 expect(alignmentsItem.classList.contains('e-rte-inline-template')).toBe(true);
+                let olItem: HTMLElement = document.querySelector('#' + controlId + '_quick_NumberFormatList').parentElement;
+                expect(olItem.classList.contains('e-rte-inline-template')).toBe(true);
+                let ulItem: HTMLElement = document.querySelector('#' + controlId + '_quick_BulletFormatList').parentElement;
+                expect(ulItem.classList.contains('e-rte-inline-template')).toBe(true);
                 let fontSizeItem: HTMLElement = document.querySelector('#' + controlId + '_quick_FontSize').parentElement;
                 expect(fontSizeItem.classList.contains('e-rte-inline-size-template')).toBe(true);
                 let fontColorItem: HTMLElement = document.querySelector('#' + controlId + '_quick_FontColor').parentElement;

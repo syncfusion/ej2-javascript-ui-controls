@@ -1,6 +1,6 @@
 {
 	"name": "@syncfusion/ej2-querybuilder",
-	"version": "19.1.54",
+	"version": "18.2.46",
 	"description": "Essential JS 2 QueryBuilder",
 	"author": "Syncfusion Inc.",
 	"license": "SEE LICENSE IN license",
@@ -12,8 +12,8 @@
 		"@syncfusion/ej2-buttons": "*",
 		"@syncfusion/ej2-calendars": "*",
 		"@syncfusion/ej2-dropdowns": "*",
-		"@syncfusion/ej2-splitbuttons": "*",
-		"@syncfusion/ej2-inputs": "*"
+		"@syncfusion/ej2-inputs": "*",
+		"@syncfusion/ej2-splitbuttons": "*"
 	},
 	"devDependencies": {
 		"json-sql": "^0.4.11",

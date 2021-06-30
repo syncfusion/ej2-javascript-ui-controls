@@ -114,6 +114,10 @@
       font-family: 'e-icons';
     }
 
+    .e-pv-formdesigner-icon::before {
+      content: '\e90c';
+    }
+
     .e-pv-annotation-icon::before {
       content: '\ec26';
     }
@@ -167,6 +171,30 @@
       background-repeat: $pv-corrupted-notification-background-repeat;
       background-size: $pv-corrupted-notification-background-size;
       height: $pv-corrupted-notification-height;
+    }
+
+    .e-pv-textbox-icon::before {
+      content: '\e89f';
+    }
+
+    .e-pv-password-icon::before {
+      content: '\e91a';
+    }
+
+    .e-pv-checkbox-icon::before {
+      content: '\e90b';
+    }
+
+    .e-pv-radiobutton-icon::before {
+      content: '\e90f';
+    }
+
+    .e-pv-dropdown-icon::before {
+      content: '\e90e';
+    }
+
+    .e-pv-listbox-icon::before {
+      content: '\e89e';
     }
 
     .e-pv-annotation-shape-icon::before {

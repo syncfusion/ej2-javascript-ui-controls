@@ -306,7 +306,7 @@ export class BaseQuickToolbar {
     public addQTBarItem(item: (string | IToolbarItems)[], index: number): void {
         this.quickTBarObj.toolbarObj.addItems((this.quickTBarObj.getItems(item, 'toolbar') as IToolbarItemModel[]), index);
     }
-     /**
+    /**
      * @param {number} index - specifies the index value
      * @returns {void}
      * @hidden
@@ -329,7 +329,7 @@ export class BaseQuickToolbar {
     }
 
     private updateStatus(args: IToolbarStatus): void {
-        let options: ISetToolbarStatusArgs = {
+        const options: ISetToolbarStatusArgs = {
             args: args,
             dropDownModule: this.dropDownButtons,
             parent: this.parent,
@@ -374,7 +374,7 @@ export class BaseQuickToolbar {
             this.parent.on(events.toolbarUpdated, this.updateStatus, this);
         }
     }
-   /**
+    /**
      * Called internally if any of the property value changed.
      *
      * @param {RichTextEditorModel} e - specifies the model element

@@ -840,8 +840,25 @@
       -webkit-box-shadow: $input-border-shadow;
       box-shadow: $input-border-shadow;
     }
+    @if $input-skin-name == 'tailwind' or $input-skin-name == 'tailwind-dark'  {
+      border-radius: $input-groupo-focus-border-radius;
+      box-shadow: $imput-group-focus-box-shadow;
+    }
     @if $input-skin-name == 'bootstrap4'  {
       transition: $input-transition-shadow;
+    }
+  }
+
+  // sass-lint:disable no-vendor-prefixes
+  .e-input-group .e-input#{$css}:focus:not(.e-success):not(.e-warning):not(.e-error),
+  .e-input-group .e-float-input:not(.e-success):not(.e-warning):not(.e-error):not(.e-input-group) input:focus,
+  .e-input-group .e-float-input:not(.e-success):not(.e-warning):not(.e-error):not(.e-input-group) textarea:focus,
+  .e-input-group .e-float-input.e-control-wrapper:not(.e-success):not(.e-warning):not(.e-error):not(.e-input-group) input:focus,
+  .e-input-group .e-float-input.e-control-wrapper:not(.e-success):not(.e-warning):not(.e-error):not(.e-input-group) textarea:focus,
+  .e-input-group .e-float-input:not(.e-success):not(.e-warning):not(.e-error):not(.e-input-group).e-input-focus input,
+  .e-input-group .e-float-input.e-control-wrapper:not(.e-success):not(.e-warning):not(.e-error):not(.e-input-group).e-input-focus input {
+    @if $input-skin-name == 'tailwind' or $input-skin-name == 'tailwind-dark'  {
+      box-shadow: none;
     }
   }
 
@@ -929,6 +946,11 @@
     @if $input-skin-name == 'bootstrap4'  {
       transition: $input-transition-shadow;
     }
+    @if $input-skin-name == 'tailwind' or $input-skin-name == 'tailwind-dark'  {
+      border-color: $input-group-border-color-focus;
+      border-radius: $input-groupo-focus-border-radius;
+      box-shadow: $imput-group-focus-box-shadow;
+    }
   }
 
   // sass-lint:disable no-vendor-prefixes 
@@ -1015,6 +1037,9 @@
   .e-input-group.e-control-wrapper:not(.e-success):not(.e-warning):not(.e-error) {
     @if $input-skin-name != 'material' {
       border-color: $input-group-full-border-color;
+    }
+    @if $input-skin-name == 'tailwind' or $input-skin-name == 'tailwind-dark' {
+      box-shadow: $input-group-border-shadow;
     }
   }
 
@@ -1156,6 +1181,13 @@
   .e-input-group .e-clear-icon,
   .e-input-group.e-control-wrapper .e-clear-icon {
     color: $input-clear-icon-color;
+  }
+
+  .e-float-input .e-clear-icon:hover,
+  .e-float-input.e-control-wrapper .e-clear-icon:hover,
+  .e-input-group .e-clear-icon:hover,
+  .e-input-group.e-control-wrapper .e-clear-icon:hover {
+    color: $input-clear-icon-hover-color;
   }
 
   .e-float-input:not(.e-disabled) .e-clear-icon:hover,
@@ -1606,7 +1638,7 @@
   .e-float-input.e-control-wrapper:hover:not(.e-success):not(.e-warning):not(.e-error):not(.e-disabled),
   .e-float-input.e-control-wrapper:hover:not(.e-input-group):not(.e-success):not(.e-warning):not(.e-error):not(.e-disabled) input:not([disabled]),
   .e-float-input.e-control-wrapper:hover:not(.e-input-group):not(.e-success):not(.e-warning):not(.e-error):not(.e-disabled) textarea:not([disabled]) {
-    @if $input-skin-name != 'material' and $input-skin-name != 'bootstrap' and $input-skin-name != 'bootstrap4' and $input-skin-name != 'highcontrast' {
+    @if $input-skin-name != 'material' and $input-skin-name != 'bootstrap' and $input-skin-name != 'bootstrap4' and $input-skin-name != 'highcontrast' and $input-skin-name != 'tailwind' and $input-skin-name != 'tailwind-dark' {
       border-color: $input-group-border-color-hover;
     }
   }
@@ -2979,6 +3011,34 @@
   .e-input-group.e-filled.e-control-wrapper textarea.e-input:-ms-input-placeholder {
     @if $input-skin-name == 'material' {
       color: $filled-input-float-label-color;
+    }
+  }
+
+  // sass-lint:disable no-vendor-prefixes
+  .e-input-group textarea.e-input:-ms-input-placeholder {
+    @if $input-skin-name == 'tailwind' or $input-skin-name == 'tailwind-dark' {
+      color: $input-placeholder-color;
+    }
+  }
+
+  // sass-lint:disable no-vendor-prefixes
+  .e-input-group textarea.e-input:-moz-placeholder {
+    @if $input-skin-name == 'tailwind' or $input-skin-name == 'tailwind-dark' {
+      color: $input-placeholder-color;
+    }
+  }
+
+  // sass-lint:disable no-vendor-prefixes
+  .e-input-group .e-input:-ms-input-placeholder {
+    @if $input-skin-name == 'tailwind' or $input-skin-name == 'tailwind-dark' {
+      color: $input-placeholder-color;
+    }
+  }
+
+  // sass-lint:disable no-vendor-prefixes
+  input.e-input#{$css}::-webkit-input-placeholder {
+    @if $input-skin-name == 'tailwind' or $input-skin-name == 'tailwind-dark' {
+      color: $input-placeholder-color;
     }
   }
 

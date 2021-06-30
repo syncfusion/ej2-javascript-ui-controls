@@ -599,17 +599,24 @@ export class Zoom {
             transform: 'translate(' + transX + ',' + transY + ')'
         });
         this.toolkitElements.appendChild(defElement);
+        const zoomFillColor: string = this.chart.theme === 'Tailwind' ? '#F3F4F6' :
+            this.chart.theme === 'TailwindDark' ? '#374151' : '#fafafa';
         this.toolkitElements.appendChild(render.drawRectangle(new RectOption(
-            this.elementId + '_Zooming_Rect', '#fafafa', { color: 'transparent', width: 1 },
+            this.elementId + '_Zooming_Rect', zoomFillColor, { color: 'transparent', width: 1 },
             1, new Rect(0, 0, width, (height + (spacing * 2))), 0, 0
         )) as HTMLElement);
         const outerElement: Element = render.drawRectangle(new RectOption(
-            this.elementId + '_Zooming_Rect', '#fafafa', { color: 'transparent', width: 1 },
+            this.elementId + '_Zooming_Rect', zoomFillColor, { color: 'transparent', width: 1 },
             0.1, new Rect(0, 0, width, (height + (spacing * 2))), 0, 0
         ));
-        outerElement.setAttribute('filter', 'url(#chart_shadow)');
+        if (this.chart.theme === 'Tailwind' || this.chart.theme === 'TailwindDark') {
+            outerElement.setAttribute('box-shadow', '0px 1px 2px rgba(0, 0, 0, 0.06), 0px 1px 3px rgba(0, 0, 0, 0.1)');
+        } else {
+            outerElement.setAttribute('filter', 'url(#chart_shadow)');
+        }
         this.toolkitElements.appendChild(outerElement);
         let currentItem: ToolbarItems;
+        let panIcon: boolean = false;
         for (let i: number = 1; i <= length; i++) {
             currentItem = toolboxItems[i - 1];
             element = render.createGroup({
@@ -617,7 +624,7 @@ export class Zoom {
             });
             // for desktop toolkit hight is 32 and top padding is 8 icon size 16
             switch (currentItem) {
-            case 'Pan': toolkit.createPanButton(element, this.toolkitElements); break;
+            case 'Pan': toolkit.createPanButton(element, this.toolkitElements); panIcon = true; break;
             case 'Zoom': toolkit.createZoomButton(element, this.toolkitElements); break;
             case 'ZoomIn': toolkit.createZoomInButton(element, this.toolkitElements, chart); break;
             case 'ZoomOut': toolkit.createZoomOutButton(element, this.toolkitElements, chart); break;
@@ -647,7 +654,7 @@ export class Zoom {
         if (!this.isDevice) {
             EventHandler.add(this.toolkitElements, 'mousemove touchstart', this.zoomToolkitMove, this);
             EventHandler.add(this.toolkitElements, 'mouseleave touchend', this.zoomToolkitLeave, this);
-            if (this.isPanning) {
+            if (this.isPanning && panIcon) {
                 toolkit.pan();
             }
         }

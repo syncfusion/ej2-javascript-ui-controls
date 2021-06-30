@@ -1205,7 +1205,8 @@ export type Action = 'Insert' | 'Delete' | 'BackSpace' | 'Selection' | 'MultiSel
 | 'ParagraphBidi' | 'TableBidi' | 'ContextualSpacing' | 'RestrictEditing' | 'RemoveEditRange' | 'InsertComment' | 'DeleteComment'
 | 'RemoveInline' | 'DeleteAllComments' | 'InsertCommentWidget' | 'DeleteCommentWidget' | 'FormField' | 'UpdateFormField' |
 'FormTextFormat' | 'Accept Change' | 'Reject Change' | 'Accept All' | 'Reject All' | 'ParaMarkTrack' | 'ParaMarkReject' |
-'RemoveRowTrack' | 'AcceptTOC' | 'ClearRevisions' | 'TrackingPageBreak' | 'InsertTextParaReplace' | 'Uppercase';
+'RemoveRowTrack' | 'AcceptTOC' | 'ClearRevisions' | 'TrackingPageBreak' | 'InsertTextParaReplace' | 'Uppercase'| 'PasteColumn'|
+'PasteRow' | 'PasteOverwrite' | 'PasteNested';
 /**
  * Enum for direction
  */
@@ -1275,6 +1276,12 @@ export type PasteOptions =
      * Keep text only.
      */
     'KeepTextOnly';
+
+ /**
+  * Specifies the paste options for table
+  * @private
+  */
+export type TablePasteOptions = 'InsertAsRows' | 'NestTable' | 'InsertAsColumns' | 'OverwriteCells' | 'DefaultPaste';
 
 /**
  * Specifies the layout type
@@ -1494,7 +1501,7 @@ export type CollaborativeEditingAction = 'LockContent' | 'SaveContent' | 'Unlock
 /**
  * Specifies comment action
  */
-export type CommentAction = 'Delete' | 'Reply'| 'Edit' | 'Resolve' | 'Reopen' | 'Post';
+export type CommentAction = 'Delete' | 'Reply' | 'Edit' | 'Resolve' | 'Reopen' | 'Post';
 /**
  * Specifies the Footnote type
  */

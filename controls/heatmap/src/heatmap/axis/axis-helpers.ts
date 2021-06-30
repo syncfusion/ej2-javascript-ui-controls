@@ -532,6 +532,10 @@ export class AxisHelper {
         axis.multiLevelLabels.map((multiLevel: MultiLevelLabels, level: number) => {
             labelElement = this.heatMap.renderer.createGroup({ id: this.heatMap.element.id + '_XAxisMultiLevelLabel' + level });
             multiLevel.categories.map((categoryLabel: MultiLevelCategories, i: number) => {
+                if (this.heatMap.theme === 'Tailwind' || this.heatMap.theme === 'TailwindDark') {
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                    (multiLevel as any).setProperties({ textStyle : { fontFamily: "Inter" }}, true);
+                }
                 tooltip = false;
                 start = typeof categoryLabel.start === 'number' ? categoryLabel.start : Number(new Date(<string>categoryLabel.start));
                 end = typeof categoryLabel.end === 'number' ? categoryLabel.end : Number(new Date(<string>categoryLabel.end));
@@ -670,6 +674,10 @@ export class AxisHelper {
             startY = axis.multiLevelPosition[level].y;
             labelElement = this.heatMap.renderer.createGroup({ id: this.heatMap.element.id + '_YAxisMultiLevelLabel' + level });
             multiLevel.categories.map((categoryLabel: MultiLevelCategories, i: number) => {
+                if (this.heatMap.theme === "Tailwind" || this.heatMap.theme === "TailwindDark") {
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                    (multiLevel as any).setProperties({ textStyle : { fontFamily: "Inter" }}, true);
+                }
                 start = typeof categoryLabel.start === 'number' ? categoryLabel.start : Number(new Date(<string>categoryLabel.start));
                 end = typeof categoryLabel.end === 'number' ? categoryLabel.end : Number(new Date(<string>categoryLabel.end));
                 startY = position + this.calculateLeftPosition(axis, start, categoryLabel.start, axis.rect);

@@ -208,6 +208,9 @@ export class RowDD {
                         const bottomborder: HTMLElement = this.parent.createElement('div', { className: 'e-lastrow-dragborder' });
                         const gridcontentEle: Element = this.parent.getContent();
                         bottomborder.style.width = (this.parent.element as HTMLElement).offsetWidth - this.getScrollWidth() + 'px';
+                        if (this.parent.enableVirtualization) {
+                            bottomborder.style.zIndex = '1';
+                        }
                         if (!gridcontentEle.getElementsByClassName('e-lastrow-dragborder').length) {
                             gridcontentEle.classList.add('e-grid-relative');
                             gridcontentEle.appendChild(bottomborder);
@@ -266,11 +269,6 @@ export class RowDD {
             }
         }
         this.processArgs(target);
-        if (this.parent.enableVirtualization && isNullOrUndefined(this.rows[0])) {
-            this.dragTarget = null;
-            remove(e.helper);
-            return;
-        }
         const args: RowDropEventArgs = {
             target: target, draggableType: 'rows',
             cancel: false,
@@ -298,7 +296,7 @@ export class RowDD {
                 this.dragTarget = null;
                 if (!gObj.rowDropSettings.targetID) {
                     remove(e.helper);
-                    if (gObj.frozenRows && gObj.enableVirtualization) {
+                    if (gObj.enableVirtualization) {
                         gObj.refresh();
                     } else {
                         this.rowOrder(args);
@@ -349,11 +347,7 @@ export class RowDD {
                 frTr = [].slice.call(frTbody.getElementsByClassName(literals.row));
             }
         }
-        if (this.parent.enableVirtualization) {
-            this.refreshVirtualData(tr, mtr, frTr);
-        } else {
-            this.refreshData(tr, mtr, frTr);
-        }
+        this.refreshData(tr, mtr, frTr);
         if (this.parent.frozenRows) {
             for (let i: number = 0, len: number = tr.length; i < len; i++) {
                 if (i < this.parent.frozenRows) {
@@ -451,40 +445,6 @@ export class RowDD {
         this.parent.clearSelection();
         const targetRows: {target: Element, mTarget: Element, frTarget: Element} = this.refreshRowTarget(args);
         this.refreshRow(args, tbody, mtbody, frTbody,  targetRows.target, targetRows.mTarget, targetRows.frTarget);
-    }
-
-    private refreshVirtualData(tr: HTMLTableRowElement[], mtr: HTMLTableRowElement[], frTr: HTMLTableRowElement[]): void {
-        const recordobj: object = {};
-        const currentViewData: Object[] = this.parent.getCurrentViewRecords();
-        const startedRow: Element = this.parent.isFrozenGrid() ? this.parent.getMovableRows()[0] : this.parent.getRows()[0];
-        const startIndex: number = parseInt(startedRow.getAttribute(literals.ariaRowIndex), 10);
-        for (let i: number = 0, len: number = tr.length; i < len; i++) {
-            let index: number = parseInt(tr[i].getAttribute(literals.ariaRowIndex), 10);
-            this.parent.notify(events.refreshVirtualCacheOnRowDD, { objIndex: index, end: i === tr.length - 1, startIndex: startIndex });
-            index = index - startIndex;
-            recordobj[i] = currentViewData[index];
-        }
-        const rowsElem: Element[] = this.parent.getRows();
-        let mvbRows: Element[]; let frRightRow: Element[];
-        if (this.parent.isFrozenGrid()) {
-            mvbRows = this.parent.getMovableRows();
-            if (frTr) {
-                frRightRow = this.parent.getFrozenRightRows();
-            }
-        }
-        for (let i: number = 0, len: number = tr.length; i < len; i++) {
-            tr[i].setAttribute(literals.ariaRowIndex, (i + startIndex).toString());
-            rowsElem[i] = tr[i];
-            currentViewData[i] = recordobj[i];
-            if (this.parent.isFrozenGrid()) {
-                mtr[i].setAttribute(literals.ariaRowIndex, (i + startIndex).toString());
-                mvbRows[i] = mtr[i];
-                if (frTr) {
-                    frTr[i].setAttribute(literals.ariaRowIndex, (i + startIndex).toString());
-                    frRightRow[i] = frTr[i];
-                }
-            }
-        }
     }
 
     private refreshData(tr: HTMLTableRowElement[], mtr: HTMLTableRowElement[], frTr: HTMLTableRowElement[]): void {
@@ -710,12 +670,13 @@ export class RowDD {
         const cliRect: ClientRect = this.isDropGrid.getContent().getBoundingClientRect();
         const rowHeight: number = this.isDropGrid.getRowHeight() - 15;
         const scrollElem: Element = this.isDropGrid.getContent().firstElementChild;
+        const virtualScrollbtm: number = this.parent.enableVirtualization ? 20 : 0;
         if (cliRect.top >= y) {
             const scrollPixel: number = -(this.isDropGrid.getRowHeight());
             this.isOverflowBorder = false;
             this.timer = window.setInterval(
                 () => { this.setScrollDown(scrollElem, scrollPixel); }, 200);
-        } else if (cliRect.top + this.isDropGrid.getContent().clientHeight - rowHeight - 33 <= y) {
+        } else if (cliRect.top + this.isDropGrid.getContent().clientHeight - rowHeight - 33 - virtualScrollbtm <= y) {
             const scrollPixel: number = (this.isDropGrid.getRowHeight());
             this.isOverflowBorder = false;
             this.timer = window.setInterval(
@@ -845,7 +806,7 @@ export class RowDD {
     }
 
     private onDataBound(): void {
-        if (this.selectedRowColls.length > 0) {
+        if (this.selectedRowColls.length > 0 && this.parent.enableVirtualization) {
             this.parent.selectRows(this.selectedRowColls);
             this.selectedRowColls = [];
         }
@@ -969,30 +930,21 @@ export class RowDD {
         const dragIdx: number = parseInt(this.startedRow.getAttribute(literals.ariaRowIndex), 10);
         if ((gObj.getSelectedRecords().length > 0 && this.startedRow.cells[0].classList.contains('e-selectionbackground') === false)
             || gObj.getSelectedRecords().length === 0) {
-            this.rows = [this.parent.getRowByIndex(dragIdx)];
-            if (gObj.isFrozenGrid()) {
-                this.rows = [gObj.getRowByIndex(dragIdx), gObj.getMovableRowByIndex(dragIdx)];
-                if (gObj.getFrozenMode() === literals.leftRight) {
-                    this.rows = [gObj.getRowByIndex(dragIdx), gObj.getMovableRowByIndex(dragIdx), gObj.getFrozenRightRowByIndex(dragIdx)];
+            if (this.parent.enableVirtualization) {
+                this.rows = [this.startedRow];
+            } else {
+                this.rows = [this.parent.getRowByIndex(dragIdx)];
+                if (gObj.isFrozenGrid()) {
+                    this.rows = [gObj.getRowByIndex(dragIdx), gObj.getMovableRowByIndex(dragIdx)];
+                    if (gObj.getFrozenMode() === literals.leftRight) {
+                        this.rows = [gObj.getRowByIndex(dragIdx), gObj.getMovableRowByIndex(dragIdx), gObj.getFrozenRightRowByIndex(dragIdx)];
+                    }
                 }
             }
             this.rowData = [this.parent.getRowInfo((this.startedRow).querySelector('.' + literals.rowCell)).rowData];
         } else {
             this.rows = gObj.getSelectedRows();
             this.rowData = gObj.getSelectedRecords();
-            if (this.parent.enableVirtualization) {
-                this.rows = [];
-                const selIndex: number[] = gObj.getSelectedRowIndexes();
-                for (let i: number = 0, len: number = selIndex.length; i < len; i++) {
-                    this.rows.push(gObj.getRowByIndex(selIndex[i]));
-                    if (gObj.isFrozenGrid()) {
-                        this.rows.push(gObj.getMovableRowByIndex(selIndex[i]));
-                        if (gObj.getFrozenMode() === literals.leftRight) {
-                            this.rows.push(gObj.getFrozenRightRowByIndex(selIndex[i]));
-                        }
-                    }
-                }
-            }
         }
     }
 }

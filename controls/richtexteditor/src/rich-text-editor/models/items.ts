@@ -3,9 +3,9 @@
  * Export items model
  */
 
-import { IToolsItems, IDropDownItemModel, IRichTextEditor } from '../base/interface';
+import { IToolsItems, IDropDownItemModel, IRichTextEditor, IListDropDownModel  } from '../base/interface';
 
-export let templateItems: string[] = ['alignments', 'formats', 'fontname', 'fontsize', 'fontcolor', 'backgroundcolor', 'align', 'display', 'tablerows', 'tablecolumns', 'tablecell', 'tablecellhorizontalalign', 'tablecellverticalalign', 'styles'];
+export let templateItems: string[] = ['alignments', 'formats', 'fontname', 'fontsize', 'fontcolor', 'backgroundcolor', 'align', 'display', 'tablerows', 'tablecolumns', 'tablecell', 'tablecellhorizontalalign', 'tablecellverticalalign', 'styles', 'numberformatlist', 'bulletformatlist'];
 
 export let tools: { [key: string]: IToolsItems } = {
     'alignments': {
@@ -149,6 +149,20 @@ export let tools: { [key: string]: IToolsItems } = {
         'tooltip': 'Numbered List',
         'command': 'Lists',
         'subCommand': 'OL'
+    },
+    'numberformatlist': {
+        'id': 'NumberFormatList',
+        'icon': 'e-order-list',
+        'tooltip': 'NumberFormatList',
+        'command': 'NumberFormatList',
+        'subCommand': 'NumberFormatList'
+    },
+    'bulletformatlist': {
+        'id': 'BulletFormatList',
+        'icon': 'e-unorder-list',
+        'tooltip': 'BulletFormatList',
+        'command': 'BulletFormatList',
+        'subCommand': 'BulletFormatList'
     },
     'indent': {
         'id': 'Indent',
@@ -585,7 +599,6 @@ export const formatItems: IDropDownItemModel[] = [
 ];
 
 export const fontColor: { [key: string]: string[] } = {
-    // eslint-disable-next-line
     'Custom': [
         '', '#000000', '#e7e6e6', '#44546a', '#4472c4', '#ed7d31', '#a5a5a5', '#ffc000', '#70ad47', '#ff0000',
         '#f2f2f2', '#808080', '#cfcdcd', '#d5dce4', '#d9e2f3', '#fbe4d5', '#ededed', '#fff2cc', '#e2efd9', '#ffcccc',
@@ -596,7 +609,6 @@ export const fontColor: { [key: string]: string[] } = {
 };
 
 export const backgroundColor: { [key: string]: string[] } = {
-    // eslint-disable-next-line
     'Custom': [
         '', '#000000', '#ffff00', '#00ff00', '#00ffff', '#0000ff', '#ff0000', '#000080', '#800080', '#996633',
         '#f2f2f2', '#808080', '#ffffcc', '#b3ffb3', '#ccffff', '#ccccff', '#ffcccc', '#ccccff', '#ff80ff', '#f2e6d9',
@@ -606,6 +618,23 @@ export const backgroundColor: { [key: string]: string[] } = {
         '#7f7f7f', '#0d0d0d', '#999900', '#006600', '#006666', '#000066', '#660000', '#00004d', '#4d004d', '#734d26'
     ]
 };
+
+export const numberFormatList: IListDropDownModel[] = [
+    {text: 'None', command: 'Lists', subCommand: 'NumberFormatList', value: 'none' },
+    {text: 'Number', command: 'Lists', subCommand: 'NumberFormatList', value: 'decimal' },
+    {text: 'Lower Greek', command: 'Lists', subCommand: 'NumberFormatList', value: 'lowerGreek' },
+    {text: 'Lower Roman', command: 'Lists', subCommand: 'NumberFormatList', value: 'lowerRoman' },
+    {text: 'Upper Alpha', command: 'Lists', subCommand: 'NumberFormatList', value: 'upperAlpha' },
+    {text: 'Lower Alpha', command: 'Lists', subCommand: 'NumberFormatList', value: 'lowerAlpha' },
+    {text: 'Upper Roman', command: 'Lists', subCommand: 'NumberFormatList', value: 'upperRoman' },
+];
+
+export const bulletFormatList: IListDropDownModel[] = [
+    {text: 'None', command: 'Lists', subCommand: 'BulletFormatList', value: 'none' },
+    {text: 'Disc', command: 'Lists', subCommand: 'BulletFormatList', value: 'disc' },
+    {text: 'Circle', command: 'Lists', subCommand: 'BulletFormatList', value: 'circle' },
+    {text: 'Square', command: 'Lists', subCommand: 'BulletFormatList', value: 'square' },
+];
 
 function getLocale(self: IRichTextEditor, localeItems: { [ket: string]: string }[], item: IDropDownItemModel): string {
     for (let i: number = 0; localeItems.length > i; i++) {

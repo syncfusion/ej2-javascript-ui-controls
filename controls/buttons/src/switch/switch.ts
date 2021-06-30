@@ -27,9 +27,7 @@ export class Switch extends Component<HTMLInputElement> implements INotifyProper
     private tagName: string;
     private isFocused: boolean = false;
     private isDrag: boolean = false;
-    // eslint-disable-next-line
     private delegateMouseUpHandler: Function;
-    // eslint-disable-next-line
     private delegateKeyUpHandler: Function;
     private formElement: HTMLFormElement;
     private initialSwitchCheckedValue: boolean;

@@ -1,10 +1,9 @@
 /* eslint-disable prefer-spread */
-/* eslint-disable @typescript-eslint/ban-types */
 import { BaseEventArgs, Component, EmitType, Event, INotifyPropertyChanged, NotifyPropertyChanges, Property } from '@syncfusion/ej2-base';
 import { Browser, closest, detach, EventHandler, getInstance, select, selectAll, formatUnit } from '@syncfusion/ej2-base';
 import { addClass, attributes, classList, isNullOrUndefined, L10n } from '@syncfusion/ej2-base';
 import { remove, removeClass, rippleEffect } from '@syncfusion/ej2-base';
-import { SplitButton, BeforeOpenCloseMenuEventArgs, getModel, ClickEventArgs, OpenCloseMenuEventArgs } from '@syncfusion/ej2-splitbuttons';
+import { SplitButton, BeforeOpenCloseMenuEventArgs, getModel } from '@syncfusion/ej2-splitbuttons';
 import { Deferred } from '@syncfusion/ej2-splitbuttons';
 import { Tooltip, TooltipEventArgs, getZindexPartial, Popup } from '@syncfusion/ej2-popups';
 import { Input } from './../input/index';
@@ -383,7 +382,7 @@ export class ColorPicker extends Component<HTMLInputElement> implements INotifyP
                 disabled: this.disabled,
                 enableRtl: this.enableRtl,
                 open: this.onOpen.bind(this),
-                click: (args: ClickEventArgs) => {
+                click: () => {
                     this.trigger('change', {
                         currentValue: { hex: this.value.slice(0, 7), rgba: this.convertToRgbString(this.hexToRgb(this.value)) },
                         previousValue: { hex: null, rgba: null }, value: this.value
@@ -412,7 +411,7 @@ export class ColorPicker extends Component<HTMLInputElement> implements INotifyP
         this.bindCallBackEvent();
     }
 
-    private onOpen(args: OpenCloseMenuEventArgs): void {
+    private onOpen(): void {
         this.trigger('open', <OpenEventArgs>{ element: this.container });
     }
 
@@ -1137,7 +1136,6 @@ export class ColorPicker extends Component<HTMLInputElement> implements INotifyP
 
     private handlerDown(e: MouseEvent & TouchEvent): void {
         e.preventDefault();
-        let x: number; let y: number;
         if (e.type === 'mousedown') {
             this.clientX = Math.abs(e.pageX - pageXOffset); this.clientY = Math.abs(e.pageY - pageYOffset);
             this.setTooltipOffset(8);
@@ -1167,7 +1165,6 @@ export class ColorPicker extends Component<HTMLInputElement> implements INotifyP
         }
         this.setHsv(x, y);
         const dragHandler: HTMLElement = this.getDragHandler();
-        const left: number = parseInt(dragHandler.style.left, 10); const top: number = parseInt(dragHandler.style.top, 10);
         this.updateHsv();
         this.convertToOtherFormat();
         this.getTooltipInst().refresh(dragHandler);
@@ -1254,8 +1251,7 @@ export class ColorPicker extends Component<HTMLInputElement> implements INotifyP
         }
     }
 
-    private formatSwitchHandler(e: MouseEvent | KeyboardEvent): void {
-        const target: HTMLElement = (e.target as HTMLElement).parentElement;
+    private formatSwitchHandler(): void {
         if (this.isRgb) {
             this.updateValue(this.hsv, true, 3, [360, 100, 100]);
             this.isRgb = false;
@@ -1335,7 +1331,7 @@ export class ColorPicker extends Component<HTMLInputElement> implements INotifyP
                     this.ctrlBtnClick(target, e);
                 } else {
                     if (this.getWrapper().classList.contains(SHOWVALUE) && closest(target, '.' + FORMATSWITCH)) {
-                        this.formatSwitchHandler(e);
+                        this.formatSwitchHandler();
                     }
                 }
             }
@@ -1620,7 +1616,6 @@ export class ColorPicker extends Component<HTMLInputElement> implements INotifyP
 
     protected unWireEvents(): void {
         if (this.isPicker()) {
-            const wrapper: HTMLElement = this.getWrapper();
             const dragHandler: HTMLElement = this.getDragHandler();
             EventHandler.remove(dragHandler, 'keydown', this.pickerKeyDown);
             EventHandler.remove(this.getHsvContainer(), 'mousedown touchstart', this.handlerDown);
@@ -1795,7 +1790,7 @@ export class ColorPicker extends Component<HTMLInputElement> implements INotifyP
         }
     }
 
-    private setInputEleProps(prop: boolean): void {
+    private setInputEleProps(): void {
         remove(select('.' + INPUTWRAPPER, this.container));
         this.createInput();
     }
@@ -1804,7 +1799,7 @@ export class ColorPicker extends Component<HTMLInputElement> implements INotifyP
         if (this.isPicker()) {
             this.hueSlider.enabled = !newProp;
             this.opacitySlider.enabled = !newProp;
-            this.setInputEleProps(newProp);
+            this.setInputEleProps();
         }
         if (newProp) {
             this.toggleDisabled(true);
@@ -1925,7 +1920,7 @@ export class ColorPicker extends Component<HTMLInputElement> implements INotifyP
                 if (this.isPicker()) {
                     this.hueSlider.enableRtl = newProp.enableRtl;
                     if (this.enableOpacity) { this.opacitySlider.enableRtl = newProp.enableRtl; }
-                    this.setInputEleProps(newProp.enableRtl);
+                    this.setInputEleProps();
                 }
                 this.changeRtlProps(newProp.enableRtl);
                 break;

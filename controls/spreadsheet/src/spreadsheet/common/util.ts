@@ -1299,8 +1299,24 @@ export function setRowEleHeight(
 export function getTextHeight(context: Workbook, style: CellStyleModel, lines: number = 1): number {
     const fontSize: string = (style && style.fontSize) || context.cellStyle.fontSize;
     const fontSizePx: number = fontSize.indexOf('pt') > -1 ? parseInt(fontSize, 10) * 1.33 : parseInt(fontSize, 10);
-    const hgt: number = fontSizePx * (style && style.fontFamily === 'Arial Black' ? 1.44 : 1.24) * lines;
+    const hgt: number = fontSizePx * getLineHeight(style) * lines;
     return Math.ceil(hgt % 1 > 0.9 ? hgt + 1 : hgt); // 0.9 -> if it is nearest value adding extra 1 pixel
+}
+
+/**
+ * @param {CellStyleModel} style - cell style
+ * @returns {number} - returns line height
+ */
+function getLineHeight(style: CellStyleModel): number {
+    let lineHeight: number = 1.24;
+    if (style) {
+        if (style.fontFamily === 'Arial Black') {
+            lineHeight = 1.44;
+        } else if ((style.fontFamily as string) === '"Segoe UI", sans-serif') {
+            lineHeight = 1.36;
+        }
+    }
+    return lineHeight;
 }
 
 /**

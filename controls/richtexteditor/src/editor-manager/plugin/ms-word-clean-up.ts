@@ -4,7 +4,7 @@ import { NotifyArgs } from '../../rich-text-editor/base/interface';
 import { createElement, isNullOrUndefined as isNOU, detach } from '@syncfusion/ej2-base';
 /**
  * PasteCleanup for MsWord content
- * 
+ *
  * @hidden
  * @deprecated
  */

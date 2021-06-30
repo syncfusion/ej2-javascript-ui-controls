@@ -3,6 +3,7 @@
     .e-treegrid {
       .e-treegridexpand,
       .e-treegridcollapse {
+        font-size: $treegrid-bigger-icon-font-size;
         height: $treegrid-bigger-icon-size;
         width: $treegrid-bigger-icon-size;
       }
@@ -15,6 +16,11 @@
         padding-left: 2px;
       }
 
+      .e-hierarchycheckbox .e-frame {
+        height: $treegrid-frame-bigger-icon-height;
+        width: $treegrid-frame-bigger-icon-width;
+      }
+
       .e-treecell {
         line-height: $treegrid-bigger-icon-size;
       }
@@ -25,7 +31,8 @@
 
     .e-treegridexpand::before,
     .e-treegridcollapse::before {
-      vertical-align: middle;
+      text-align: center;
+      vertical-align: $treegrid-right-arrow-icon-vertical-align;
     }
 
     .e-rowcell:not(.e-gridclip) {
@@ -90,10 +97,11 @@
         display: inline-block;
         vertical-align: middle;
       }
+    }
 
-      .e-hierarchycheckbox .e-frame {
-        height: $treegrid-frame-icon-height;
-      }
+    .e-hierarchycheckbox .e-frame {
+      height: $treegrid-frame-icon-height;
+      width: $treegrid-frame-icon-width;
     }
 
     .e-checkselection {
@@ -110,10 +118,11 @@
       color: $treegrid-right-arrow-icon-color;
       cursor: pointer;
       font-size: $treegrid-right-arrow-icon-font-size;
-      height: 16px;
+      height: $treegrid-right-arrow-icon-height;
+      padding: $treegrid-right-arrow-icon-padding;
       text-align: center;
       vertical-align: bottom;
-      width: 16px;
+      width: $treegrid-right-arrow-icon-width;
     }
 
     .e-treecell {
@@ -180,7 +189,7 @@
     .e-gridcontent {
       td.e-childborder {
         border-color: $childborder-color;
-        border-width: 1px 0 0;
+        border-width: $treegrid-rowdd-childborder-width;
         box-shadow: 0 1px 0 0 $childborder-color;
         position: relative;
         z-index: 1;
@@ -209,7 +218,7 @@
       }
 
       td.e-lastrowcell.e-childborder {
-        border-width: 1px 0;
+        border-width: $treegrid-lastrowdd-childborder-width;
       }
 
       td.e-lastrowcell.e-childborder:last-child {
@@ -231,6 +240,7 @@
       td.e-droptop:first-child,
       td.e-rowcell.e-droptop {
         border-top-color: $childborder-color;
+        border-width: $treegrid-rowdd-childborder-width;
       }
 
       td.e-lastrowcell.e-dropbottom {
@@ -304,6 +314,64 @@
         &.e-dropbottom {
           border-bottom: $treegrid-rowdd-topbottom-border;
           box-shadow: 0 0 0 0 $treegrid-rowdd-boxshadow;
+        }
+      }
+    }
+
+    .e-grid.e-rtl {
+      .e-gridheader .e-firstrow-dragborder {
+        height: 0;
+      }
+
+      .e-gridcontent {
+        td.e-childborder {
+          border-color: $childborder-color;
+          border-width: $treegrid-rtl-rowdd-childborder-width;
+          position: relative;
+          z-index: 1;
+        }
+
+        td.e-rowcell.e-dragborder,
+        tr.e-row:first-child .e-rowcell.e-dragborder,
+        .e-rowdragdrop.e-dragborder {
+          box-shadow: 0 0 0 0;
+        }
+
+        td.e-childborder:first-child {
+          border-right: $treegrid-rowdrag-childborder-border;
+          box-shadow: 0 1px 0 0 $childborder-color;
+          position: relative;
+          z-index: 1;
+        }
+
+        td.e-rowcell.e-childborder:last-child {
+          border-left: $treegrid-rowdrag-childborder-border;
+        }
+
+        td.e-lastrowcell.e-childborder {
+          border-width: $treegrid-lastrowdd-childborder-width;
+        }
+
+        td.e-lastrowcell.e-childborder:last-child {
+          border-right: $treegrid-rowdrag-childborder-border;
+        }
+
+        td.e-lastrowcell.e-childborder:first-child {
+          border-left: $treegrid-rowdrag-childborder-border;
+        }
+
+        td.e-droptop:first-child,
+        td.e-rowcell.e-droptop {
+          border-top-color: $childborder-color;
+          border-width: $treegrid-rowdd-childborder-width;
+        }
+
+        td.e-lastrowcell.e-dropbottom {
+          border-bottom-color: $childborder-color;
+        }
+
+        .e-droptop .e-lastrow-dragborder {
+          height: 0;
         }
       }
     }

@@ -1,5 +1,3 @@
-/* eslint-disable @typescript-eslint/member-delimiter-style */
-/* eslint-disable @typescript-eslint/ban-types */
 /**
  * Maps interfaces doc
  */
@@ -788,6 +786,12 @@ export interface IThemeStyle {
     legendFontSize?: string;
     /** Specifies the font-family for the data label in maps. */
     labelFontFamily?: string;
+    /** Specifies the font-weight for the data label in maps. */
+    titleFontWeight?: string;
+    /** Specifies the hover color for the zoom toolbar buttons in maps. */
+    zoomSelectionColor?: string;
+    /** Specifies the color for the shapes in the maps. */
+    shapeFill?: string;
 }
 
 /**
@@ -805,10 +809,8 @@ export interface IDataTemplate {
     /** Defines the admin name for data-label. */
     admin?: string;
     /** Defines the population of bubble. */
-    // eslint-disable-next-line @typescript-eslint/naming-convention
     Population?: number;
     /** Defines the name of country. */
-    // eslint-disable-next-line @typescript-eslint/naming-convention
     Country?: string;
     /** Defines the Text of any string. */
     text?: string[];

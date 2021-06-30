@@ -480,19 +480,19 @@ export class ResourceBase {
             removeClass([this.popupOverlay], cls.ENABLE_CLASS);
             const treeNodes: HTMLLIElement[] = [].slice.call(this.treeViewObj.element.querySelectorAll('.e-list-item:not(.e-has-child)'));
             const groupIndex: number = treeNodes.indexOf(event.node);
-            this.triggerEvents(groupIndex, event)
+            this.triggerEvents(groupIndex, event);
             event.event.preventDefault();
-    }
+        }
     }
 
     private triggerEvents(groupIndex: number, event?: NodeClickEventArgs): void {
-        let args: ActionEventArgs = { cancel: false, event: (event) ? event.event: null, groupIndex: groupIndex, requestType: 'resourceChange' };
+        let args: ActionEventArgs = { cancel: false, event: (event) ? event.event : null, groupIndex: groupIndex, requestType: 'resourceChange' };
         this.parent.trigger(events.actionBegin, args, (actionArgs: ActionEventArgs) => {
             if (!actionArgs.cancel) {
                 this.parent.uiStateValues.groupIndex = actionArgs.groupIndex;
                 this.parent.renderModule.render(this.parent.currentView);
                 args = {
-                    cancel: false, event: (event) ? event.event: null, groupIndex: this.parent.uiStateValues.groupIndex, requestType: 'resourceChanged'
+                    cancel: false, event: (event) ? event.event : null, groupIndex: this.parent.uiStateValues.groupIndex, requestType: 'resourceChanged'
                 };
                 this.parent.trigger(events.actionComplete, args);
             }

@@ -2,7 +2,21 @@
 
 ## [Unreleased]
 
-## 19.1.67 (2021-06-08)
+## 19.2.44 (2021-06-30)
+
+### Schedule
+
+#### New Features
+
+- Provided option to set the custom months count in year views.
+
+#### Bug Fixes
+
+- `#FB25227` - An issue with the scheduler resize action is not working in timeline views has been fixed.
+- `#I331501` - An issue with the scheduler height is not responsive related to the parent container has been fixed.
+- `#I332366` - An issue with the toolbar popup is not open properly when multiple schedules are rendered on a single page has been fixed.
+
+## 19.1.69 (2021-06-15)
 
 ### Schedule
 

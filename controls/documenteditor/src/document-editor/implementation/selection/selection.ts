@@ -27,7 +27,7 @@ import { TextPositionInfo, PositionInfo, ParagraphInfo } from '../editor/editor-
 import { WCharacterFormat, WParagraphFormat, WStyle, WParagraphStyle, WSectionFormat } from '../index';
 import { HtmlExport } from '../writer/html-export';
 import { Popup } from '@syncfusion/ej2-popups';
-import { ContextType, RequestNavigateEventArgs } from '../../index';
+import { ContextType, RequestNavigateEventArgs, TablePasteOptions } from '../../index';
 import { TextPosition, SelectionWidgetInfo, Hyperlink, ImageInfo } from './selection-helper';
 import { ItemModel, MenuEventArgs, DropDownButton } from '@syncfusion/ej2-splitbuttons';
 import { Revision } from '../track-changes/track-changes';
@@ -52,10 +52,6 @@ export class Selection {
      * @private
      */
     public isImageSelected: boolean = false;
-    /**
-     * @private
-     */
-    public isSelectAll: boolean = false;
     private documentHelper: DocumentHelper;
     private contextTypeInternal: ContextType = undefined;
     /**
@@ -91,6 +87,10 @@ export class Selection {
      * @private
      */
     public pasteElement: HTMLElement;
+    /**
+     * @private
+     */
+    public currentPasteAction: TablePasteOptions;
     /**
      * @private
      */
@@ -2724,7 +2724,7 @@ export class Selection {
     public selectAll(): void {
         let documentStart: TextPosition;
         let documentEnd: TextPosition;
-        this.isSelectAll = true;
+        this.documentHelper.skipScrollToPosition = true;
         const container: Widget = this.getContainerWidget(this.start.paragraph);
         if (this.owner.enableHeaderAndFooter) {
             const headerFooter: HeaderFooterWidget = this.getContainerWidget(this.start.paragraph) as HeaderFooterWidget;
@@ -4491,11 +4491,7 @@ export class Selection {
             if (offset > 0) {
                 left += size.width;
             }
-            if (this.isSelectAll) {
-                return new Point(left, this.end.location.y);
-            } else {
-                return new Point(left, paragraphWidget.y + topMargin);
-            }
+            return new Point(left, paragraphWidget.y + topMargin);
         } else {
             let indexInInline: number = 0;
             const inlineObj: ElementInfo = line.getInline(offset, indexInInline, line.paragraph.bidi);
@@ -8172,22 +8168,50 @@ export class Selection {
      * @private
      */
     public createPasteElement(top: string, left: string): void {
+        let items: ItemModel[];
         let locale: L10n = new L10n('documenteditor', this.owner.defaultLocale);
         locale.setLocale(this.owner.locale);
-        let items: ItemModel[] = [
-            {
-                text: locale.getConstant('Keep source formatting'),
-                iconCss: 'e-icons e-de-paste-source'
-            },
-            {
-                text: locale.getConstant('Match destination formatting'),
-                iconCss: 'e-icons e-de-paste-merge'
-            },
-            {
-                text: locale.getConstant('Text only'),
-                iconCss: 'e-icons e-de-paste-text'
+        if (this.currentPasteAction === 'DefaultPaste') {
+            items = [
+                {
+                    text: locale.getConstant('Keep source formatting'),
+                    iconCss: 'e-icons e-de-paste-source'
+                },
+                {
+                    text: locale.getConstant('Match destination formatting'),
+                    iconCss: 'e-icons e-de-paste-merge'
+                },
+                {
+                    text: locale.getConstant('Text only'),
+                    iconCss: 'e-icons e-de-paste-text'
+                }
+            ];
+        } else {
+            items = [
+                {
+                    text: locale.getConstant('NestTable'),
+                    iconCss: 'e-icons e-de-paste-nested-table'
+                },
+                {
+                    text: locale.getConstant('InsertAsRows'),
+                    iconCss: 'e-icons e-de-paste-row'
+                }
+            ];
+            if (this.currentPasteAction === 'InsertAsColumns') {
+                let obj = {
+                    text: locale.getConstant('InsertAsColumns'),
+                    iconCss: 'e-icons e-de-paste-column'
+                };
+                items.unshift(obj);
             }
-        ];
+            else if (this.currentPasteAction === 'OverwriteCells') {
+                let obj = {
+                    text: locale.getConstant('OverwriteCells'),
+                    iconCss: 'e-icons e-de-paste-overwrite-cells'
+                };
+                items.splice(2, 0, obj);
+            }
+        }
         if (!this.pasteElement) {
             this.pasteElement = createElement('div', { className: 'e-de-tooltip' });
             this.documentHelper.viewerContainer.appendChild(this.pasteElement);
@@ -8197,20 +8221,34 @@ export class Selection {
                 items: items, iconCss: 'e-icons e-de-paste', select: this.pasteOptions
             });
             this.pasteDropDwn.appendTo(splitButtonEle);
+        } else {
+            this.pasteDropDwn.items = items;
         }
         this.pasteElement.style.display = 'block';
         this.pasteElement.style.position = 'absolute';
         this.pasteElement.style.left = left;
         this.pasteElement.style.top = top;
+        this.pasteDropDwn.dataBind();
     }
+
     /**
      * @private
      */
     public pasteOptions = (event: MenuEventArgs) => {
+        let locale: L10n = new L10n('documenteditor', this.owner.defaultLocale);
+        locale.setLocale(this.owner.locale);
         if (event.item.text === 'Keep source formatting') {
             this.owner.editor.applyPasteOptions('KeepSourceFormatting');
         } else if (event.item.text === 'Match destination formatting') {
             this.owner.editor.applyPasteOptions('MergeWithExistingFormatting');
+        } else if (event.item.text === locale.getConstant('NestTable')) {
+            this.owner.editor.applyTablePasteOptions('NestTable');
+        } else if (event.item.text === locale.getConstant('InsertAsRows')) {
+            this.owner.editor.applyTablePasteOptions('InsertAsRows');
+        } else if (event.item.text === locale.getConstant('InsertAsColumns')) {
+            this.owner.editor.applyTablePasteOptions('InsertAsColumns');
+        } else if (event.item.text === locale.getConstant('OverwriteCells')) {
+            this.owner.editor.applyTablePasteOptions('OverwriteCells');
         } else {
             this.owner.editor.applyPasteOptions('KeepTextOnly');
         }

@@ -5,6 +5,7 @@ import * as events from '../../common/base/constant';
 import * as cls from '../../common/base/css-constant';
 import { PivotButtonArgs } from '../base/interface';
 import { createElement, prepend } from '@syncfusion/ej2-base';
+import { PivotUtil } from '../../base/util';
 
 /**
  * Module to render Axis Fields
@@ -52,7 +53,7 @@ export class AxisFields {
             [this.parent.dataSourceSettings.rows, this.parent.dataSourceSettings.columns,
             this.parent.dataSourceSettings.values, this.parent.dataSourceSettings.filters];
         for (let element of this.parent.element.querySelectorAll(
-            '.' + cls.GROUP_ROW_CLASS + ',.' + cls.GROUP_COLUMN_CLASS + ',.'
+            '.' + cls.GROUP_ALL_FIELDS_CLASS + ',.' + cls.GROUP_ROW_CLASS + ',.' + cls.GROUP_COLUMN_CLASS + ',.'
             + cls.GROUP_VALUE_CLASS + ',.' + cls.GROUP_FILTER_CLASS) as any) {  /* eslint-disable-line */
             if ((this.parent.dataSourceSettings.values.length > 0 ? !element.classList.contains(cls.GROUP_CHART_VALUE) : true) ||
                 (this.parent.dataSourceSettings.columns.length > 0 ? !element.classList.contains(cls.GROUP_CHART_COLUMN) : true)) {
@@ -61,6 +62,15 @@ export class AxisFields {
         }
         /* eslint-enable @typescript-eslint/no-explicit-any */
         let axis: string[] = ['rows', 'columns', 'values', 'filters'];
+        if (this.parent.dataType === 'pivot' && this.parent.groupingBarSettings.showFieldsPanel) {
+            axis.push('all-fields');
+            fields.push([]);
+            for (let key of (this.parent.engineModule && this.parent.engineModule.fieldList ? Object.keys(this.parent.engineModule.fieldList) : [])) {
+                if (this.parent.engineModule.fieldList[key] && !this.parent.engineModule.fieldList[key].isSelected) {
+                    fields[fields.length - 1].push(PivotUtil.getFieldInfo(key, this.parent, true).fieldItem);
+                }
+            }
+        }
         for (let i: number = 0, lnt: number = fields.length; i < lnt; i++) {
             if (fields[i]) {
                 let args: PivotButtonArgs = {

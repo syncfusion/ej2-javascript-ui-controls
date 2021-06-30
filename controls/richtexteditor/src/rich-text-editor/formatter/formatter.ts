@@ -10,7 +10,7 @@ import { IHtmlUndoRedoData } from '../../editor-manager/base/interface';
 import { NodeSelection } from '../../selection/selection';
 /**
  * Formatter
- * 
+ *
  * @hidden
  * @deprecated
  */
@@ -53,13 +53,11 @@ export class Formatter {
             if (action !== 'tab' && action !== 'enter' && action !== 'space' && action !== 'escape') {
                 args = {};
                 if (self.editorMode === 'Markdown' && action === 'insert-table') {
-                    // eslint-disable-next-line
                     value  = <{}>{
                         'headingText': self.localeObj.getConstant('TableHeadingText'),
                         'colText': self.localeObj.getConstant('TableColText')
                     };
                 }
-                // eslint-disable-next-line
                 const items: object = {
                     originalEvent: event, cancel: false,
                     requestType: action || ((event as KeyboardEventArgs).key + 'Key'),

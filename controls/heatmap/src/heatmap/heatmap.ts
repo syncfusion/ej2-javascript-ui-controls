@@ -52,9 +52,7 @@ export class HeatMap extends Component<HTMLElement> implements INotifyPropertyCh
     public width: string;
 
     /**
-     * The height of the heatmap as a string accepts input as both like '100px' or '100%'.
-     *
-     * If specified as '100%, heatmap renders to the full height of its parent element.
+     * The height of the heatmap accepts pixel values given in string format.
      *
      * @default null
      */
@@ -498,6 +496,14 @@ export class HeatMap extends Component<HTMLElement> implements INotifyPropertyCh
         this.horizontalGradient = this.legendSettings.position === 'Bottom' || this.legendSettings.position === 'Top';
         this.updateBubbleHelperProperty();
         this.trigger('load', { heatmap: (this.isBlazor ? null : this) });
+        if (this.theme === 'TailwindDark' || this.theme === 'Tailwind') {
+            let textSettings =  { title : { textStyle : { size : "12px", fontFamily : "Inter", fontWeight : "500" }}, textStyle : { size : "12px", fontFamily : "Inter" }};
+            this.setProperties({ titleSettings : { textStyle : { size : "14px", fontFamily : "Inter" }}}, true);
+            this.setProperties({ legendSettings : textSettings }, true);
+            this.setProperties({ xAxis : textSettings }, true);
+            this.setProperties({ yAxis : textSettings }, true);
+            this.setProperties({ cellSettings : { textStyle : { fontFamily : "Inter" }}}, true);    
+        }
         this.initAxis();
         this.processInitData();
         this.setTheme();

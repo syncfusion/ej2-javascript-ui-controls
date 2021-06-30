@@ -1,0 +1,35 @@
+@include export-module('uploader-tailwind-dark-icons') {
+  .e-upload .e-upload-files .e-file-remove-btn.e-icons::before {
+    content: '\e771';
+  }
+
+  .e-upload .e-upload-files .e-icons.e-file-pause-btn::before {
+    content: '\e788';
+  }
+
+  .e-upload .e-upload-files .e-icons.e-file-reload-btn::before {
+    content: '\e711';
+  }
+
+  .e-upload .e-upload-files .e-icons.e-file-play-btn::before {
+    content: '\e725';
+  }
+
+  .e-upload .e-upload-files .e-file-delete-btn.e-icons::before {
+    content: '\e78d';
+  }
+
+  .e-upload .e-upload-files .e-file-abort-btn.e-icons::before {
+    content: '\e769';
+  }
+
+  .e-upload .e-upload-files .e-icons.e-msie::before {
+    position: relative;
+    right: $ie-icons-position-value;
+  }
+
+  .e-upload .e-upload-files .e-icons.e-file-abort-icon.e-msie::before {
+    right: $ie-abort-icon-position-value;
+  }
+}
+  

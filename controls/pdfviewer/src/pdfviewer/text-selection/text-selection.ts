@@ -1851,16 +1851,8 @@ export class TextSelection {
         if (this.pdfViewer.contextMenuSettings.contextMenuAction === 'MouseUp') {
             left = left - 50;
         }
-        // eslint-disable-next-line
-        let highlightButton: any = document.getElementById(this.pdfViewer.element.id + '_highlight');
-        // eslint-disable-next-line
-        let underlineButton: any = document.getElementById(this.pdfViewer.element.id + '_underline');
-        // eslint-disable-next-line
-        let strikethroughButton: any = document.getElementById(this.pdfViewer.element.id + '_strikethrough');
-        if (highlightButton && !highlightButton.classList.contains('e-pv-select') || underlineButton && !underlineButton.classList.contains('e-pv-select') || strikethroughButton && !strikethroughButton.classList.contains('e-pv-select')) {
-            // eslint-disable-next-line max-len
-            this.pdfViewerBase.contextMenuModule.open(top, left - this.pdfViewerBase.viewerContainer.clientLeft, this.pdfViewerBase.viewerContainer);
-        }
+        // eslint-disable-next-line max-len
+        this.pdfViewerBase.contextMenuModule.open(top, left - this.pdfViewerBase.viewerContainer.clientLeft, this.pdfViewerBase.viewerContainer);
     }
     private onLeftTouchSelectElementTouchStart = (event: TouchEvent): void => {
         this.initiateSelectionByTouch();

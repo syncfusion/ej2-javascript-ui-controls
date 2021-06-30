@@ -1,5 +1,5 @@
 import { createElement, isNullOrUndefined, extend, compile, getValue, setValue } from '@syncfusion/ej2-base';
-import { formatUnit, updateBlazorTemplate, resetBlazorTemplate, isBlazor, addClass } from '@syncfusion/ej2-base';
+import { formatUnit, updateBlazorTemplate, resetBlazorTemplate, addClass } from '@syncfusion/ej2-base';
 import { Gantt } from '../base/gantt';
 import { isScheduledTask } from '../base/utils';
 import { DataManager, Query } from '@syncfusion/ej2-data';
@@ -39,7 +39,6 @@ export class ChartRows extends DateProcessor {
     private refreshedTr: Element[] = [];
     private refreshedData: IGanttData[] = [];
     private isUpdated: boolean = true;
-   
     constructor(ganttObj?: Gantt) {
         super(ganttObj);
         this.parent = ganttObj;
@@ -66,7 +65,7 @@ export class ChartRows extends DateProcessor {
     public refreshChartByTimeline(): void {
         this.taskTable.style.width = formatUnit(this.parent.timelineModule.totalTimelineWidth);
         const prevDate: Date = getValue('prevProjectStartDate', this.parent.dataOperation);
-        var isUpdated: boolean = false;
+        let isUpdated: boolean = false;
         if (prevDate) {
             isUpdated = prevDate.getTime() === this.parent.cloneProjectStartDate.getTime();
         }
@@ -96,13 +95,7 @@ export class ChartRows extends DateProcessor {
             id: this.parent.element.id + 'GanttTaskTableBody'
         });
         this.taskTable.appendChild(this.ganttChartTableBody);
-        if (this.parent.virtualScrollModule && this.parent.enableVirtualization) {
-            this.parent.ganttChartModule.virtualRender.renderWrapper();
-            const wrapper: HTMLElement = getValue('wrapper', this.parent.ganttChartModule.virtualRender);
-            wrapper.style.transform = 'translate(0px, 0px)';
-        } else {
-            this.parent.ganttChartModule.chartBodyContent.appendChild(this.taskTable);
-        }
+        this.parent.ganttChartModule.chartBodyContent.appendChild(this.taskTable);
     }
 
     public initiateTemplates(): void {
@@ -401,6 +394,10 @@ export class ChartRows extends DateProcessor {
             this.parent.predecessorModule.updatedRecordsDateByPredecessor();
             this.parent.connectorLineModule.removePreviousConnectorLines(this.parent.flatData);
             this.parent.connectorLineEditModule.refreshEditedRecordConnectorLine(this.parent.flatData);
+            if (data.parentItem && this.parent.getParentTask(data.parentItem).ganttProperties.isAutoSchedule
+                && this.parent.isInPredecessorValidation) {  
+                this.parent.dataOperation.updateParentItems(data.parentItem);
+            }
             this.refreshRecords(this.parent.currentViewData);
         } else {
             this.refreshRow(this.parent.currentViewData.indexOf(data));
@@ -1568,10 +1565,6 @@ export class ChartRows extends DateProcessor {
         args.leftLabelColor = trElement.querySelector('.' + cls.leftLabelContainer) &&
             (trElement.querySelector('.' + cls.leftLabelContainer)).querySelector('.' + cls.label) ?
             getComputedStyle((trElement.querySelector('.' + cls.leftLabelContainer)).querySelector('.' + cls.label)).color : null;
-        if (isBlazor()) {
-            rowElement = args.rowElement;
-            triggerTaskbarElement = args.taskbarElement;
-        }
         this.parent.trigger('queryTaskbarInfo', args, (taskbarArgs: IQueryTaskbarInfoEventArgs) => {
             this.updateQueryTaskbarInfoArgs(taskbarArgs, rowElement, triggerTaskbarElement);
         });
@@ -1587,8 +1580,8 @@ export class ChartRows extends DateProcessor {
      * @private
      */
     private updateQueryTaskbarInfoArgs(args: IQueryTaskbarInfoEventArgs, rowElement?: Element, taskBarElement?: Element): void {
-        const trElement: Element = isBlazor() && rowElement ? rowElement : args.rowElement;
-        const taskbarElement: Element = isBlazor() && taskBarElement ? taskBarElement : args.taskbarElement;
+        const trElement: Element = args.rowElement;
+        const taskbarElement: Element = args.taskbarElement;
         const classCollections: string[] = this.getClassName(args);
         if (args.taskbarType === 'Milestone') {
             if (taskbarElement.querySelector(classCollections[0]) &&

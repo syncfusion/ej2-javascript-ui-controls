@@ -1667,7 +1667,7 @@ export class TaskbarEdit extends DateProcessor {
                 const cEndDate: Date = new Date(segment.endDate.getTime());
                 cStartDate.setDate(cStartDate.getDate() - 1); cEndDate.setDate(cEndDate.getDate() + 1);
                 cStartDate.setHours(0, 0, 0, 0); cEndDate.setHours(0, 0, 0, 0);
-                if (cStartDate.getTime() <= eDate.getTime()) {
+                if (cStartDate.getTime() <= eDate.getTime() && !isNullOrUndefined(previousSegment) && !isNullOrUndefined(segment)) {
                     const segmentIndexes: { firstSegmentIndex: number, secondSegmentIndex: number }[] = [
                         { 'firstSegmentIndex': previousSegment.segmentIndex, 'secondSegmentIndex': segment.segmentIndex }
                     ];

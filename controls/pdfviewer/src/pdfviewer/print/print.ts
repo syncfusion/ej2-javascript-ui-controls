@@ -1,8 +1,9 @@
 /* eslint-disable */
 import { PdfViewer } from '../index';
-import { PdfViewerBase } from '../index';
+import { PdfViewerBase, PdfAnnotationBaseModel } from '../index';
 import { createElement, Browser } from '@syncfusion/ej2-base';
 import { AjaxHandler } from '../index';
+import { DiagramHtmlElement } from "../drawing/html-element";
 /**
  * Print module
  */
@@ -98,6 +99,7 @@ export class Print {
         }
         // eslint-disable-next-line
         proxy.printRequestHandler.onSuccess = function (result: any) {
+            proxy.pdfViewerBase.isPrint = true;
             // eslint-disable-next-line
             let printImage: any = result.data;
             if (printImage) {
@@ -115,6 +117,7 @@ export class Print {
                 }
             }
             if (printImage && printImage.uniqueId === proxy.pdfViewerBase.documentId) {
+                proxy.pdfViewer.fireAjaxRequestSuccess(proxy.pdfViewer.serverActionSettings.print, printImage);
                 let annotationSource: string = '';
                 if (!proxy.pdfViewer.annotationSettings.skipPrint) {
                     // eslint-disable-next-line
@@ -180,6 +183,7 @@ export class Print {
                 annotationImage.src = annotationSource;
                 proxy.printViewerContainer.appendChild(proxy.printCanvas);
             }
+            proxy.pdfViewerBase.isPrint = false;
         };
         // eslint-disable-next-line
         this.printRequestHandler.onFailure = function (result: any) {
@@ -197,6 +201,12 @@ export class Print {
         let data: any = window.sessionStorage.getItem(this.pdfViewerBase.documentId + '_formfields');
         // eslint-disable-next-line
         let formFieldsData: any = JSON.parse(data);
+        let targetField: any;
+        if (this.pdfViewer.printMode === 'Default') {
+            targetField = this.frameDoc.document.getElementById('fields_' + pageIndex);
+        } else {
+            targetField = this.printWindow.document.getElementById('fields_' + pageIndex);
+        }
         if (formFieldsData) {
             for (let i: number = 0; i < formFieldsData.length; i++) {
                 // eslint-disable-next-line
@@ -204,12 +214,7 @@ export class Print {
                 // eslint-disable-next-line
                 if (parseFloat(currentData['PageIndex']) === pageIndex) {
                     // eslint-disable-next-line
-                    let targetField: any;
-                    if (this.pdfViewer.printMode === 'Default') {
-                        targetField = this.frameDoc.document.getElementById('fields_' + pageIndex);
-                    } else {
-                        targetField = this.printWindow.document.getElementById('fields_' + pageIndex);
-                    }
+
                     // eslint-disable-next-line
                     let inputField: any = this.pdfViewer.formFieldsModule.createFormFields(currentData, pageIndex, i, targetField);
                     if (inputField) {
@@ -247,6 +252,105 @@ export class Print {
                 }
             }
         }
+        var formDesignerData = window.sessionStorage.getItem(this.pdfViewerBase.documentId + '_formDesigner');
+        if (formDesignerData !== null) {
+            var formDesignerFieldsData = JSON.parse(formDesignerData);
+            for (let i: number = 0; i < formDesignerFieldsData.length; i++) {
+                // eslint-disable-next-line
+                let currentData: any = formDesignerFieldsData[i].FormField;
+                if (currentData.pageNumber - 1 === pageIndex && currentData.isPrint) {
+                    let signatureField: PdfAnnotationBaseModel = (this.pdfViewer.nameTable as any)[formDesignerFieldsData[i].Key.split("_")[0]];
+                    let element: DiagramHtmlElement = signatureField.wrapper.children[0] as DiagramHtmlElement;
+                    let htmlElement: HTMLElement;
+                    if (element) {
+                        if (currentData.formFieldAnnotationType === "RadioButton") {
+                            for (let j: number = 0; j < currentData.radiobuttonItem.length; j++) {
+                                signatureField = (this.pdfViewer.nameTable as any)[currentData.radiobuttonItem[j].id.split("_")[0]];
+                                htmlElement = this.createFormDesignerFields(currentData.radiobuttonItem[j], element, signatureField);
+                                if (htmlElement) {
+                                    // eslint-disable-next-line
+                                    let bounds: any = currentData.radiobuttonItem[j].lineBound;
+                                    // eslint-disable-next-line
+                                    let font: any = currentData.radiobuttonItem[j].fontFamily;
+                                    this.applyPosition(htmlElement, bounds, font, heightRatio, widthRatio, true, currentData.radiobuttonItem[j].zoomValue);
+                                    // htmlElement.style.backgroundColor = 'transparent';
+                                    // if (currentData.formFieldAnnotationType !== "SignatureField") {
+                                    //     htmlElement.style.borderColor = 'transparent';
+                                    // }
+                                    targetField.appendChild(htmlElement);
+                                    if (signatureField.formFieldAnnotationType === "RadioButton") {
+                                    if (document.getElementsByClassName("e-pv-radiobtn-span").length > 0) {
+                                        let spanElement = document.getElementsByClassName("e-pv-radiobtn-span");
+                                        for (let i: number = 0; i < spanElement.length; i++) {
+                                            (spanElement as any)[i].style.width = ((signatureField.bounds.width * currentData.zoomValue) - 10) + "px";
+                                            (spanElement as any)[i].style.height = ((signatureField.bounds.height * currentData.zoomValue) - 10) + "px";
+                                            if (parseInt((spanElement as any)[i].style.width, 10) === 0 || parseInt((spanElement as any)[i].style.height, 10) === 0) {
+                                                (spanElement as any)[i].style.width = "2px";
+                                                (spanElement as any)[i].style.height = "2px";
+                                            }
+                                        }
+                                    }
+                                }
+                                }
+                            }
+                        } else {
+                            htmlElement = this.createFormDesignerFields(currentData, element, signatureField);
+                            if (htmlElement) {
+                                // eslint-disable-next-line
+                                let bounds: any = currentData.lineBound;
+                                // eslint-disable-next-line
+                                let font: any = currentData.fontFamily;
+                                this.applyPosition(htmlElement, bounds, font, heightRatio, widthRatio, true, currentData.zoomValue);
+                               // htmlElement.style.backgroundColor = 'transparent';
+                                // if (currentData.formFieldAnnotationType !== "SignatureField") {
+                                //     htmlElement.style.borderColor = 'transparent';
+                                // }
+                                targetField.appendChild(htmlElement);
+                                if (signatureField.formFieldAnnotationType === "RadioButton") {
+                                    if (document.getElementsByClassName("e-pv-radiobtn-span").length > 0) {
+                                        let spanElement = document.getElementsByClassName("e-pv-radiobtn-span");
+                                        for (let i: number = 0; i < spanElement.length; i++) {
+                                            (spanElement as any)[i].style.width = ((signatureField.bounds.width * currentData.zoomValue) - 10) + "px";
+                                            (spanElement as any)[i].style.height = ((signatureField.bounds.height * currentData.zoomValue) - 10) + "px";
+                                            if (parseInt((spanElement as any)[i].style.width, 10) === 0 || parseInt((spanElement as any)[i].style.height, 10) === 0) {
+                                                (spanElement as any)[i].style.width = "2px";
+                                                (spanElement as any)[i].style.height = "2px";
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+    private createFormDesignerFields(currentData: any, element: any, signatureField: any): any {
+        let htmlElement: HTMLElement; let parentHtmlElement: HTMLElement;
+        const parentHtmlElementAttribute: Object = {
+            'id': "form_field_" + element.id + '_html_element',
+            'class': 'foreign-object'
+        };
+        parentHtmlElement = this.pdfViewer.formDesignerModule.createHtmlElement('div', parentHtmlElementAttribute);
+        const HtmlElementAttribute: Object = {
+            'id': element.id + '_html_element',
+            'class': 'foreign-object'
+        };
+        htmlElement = this.pdfViewer.formDesignerModule.createHtmlElement('div', HtmlElementAttribute);
+        if (currentData.formFieldAnnotationType === "SignatureField" || currentData.formFieldAnnotationType === "InitialField") {
+            this.pdfViewer.formDesignerModule.disableSignatureClickEvent = true;
+            element.template = htmlElement.appendChild(this.pdfViewer.formDesignerModule.createSignatureDialog(this.pdfViewer, signatureField,null,true));
+            this.pdfViewer.formDesignerModule.disableSignatureClickEvent = false;
+        } else if (currentData.formFieldAnnotationType === "DropdownList") {
+            element.template = htmlElement.appendChild(this.pdfViewer.formDesignerModule.createDropDownList(element, signatureField));
+        } else if (currentData.formFieldAnnotationType === "ListBox") {
+            element.template = htmlElement.appendChild(this.pdfViewer.formDesignerModule.createListBox(element, signatureField));
+        } else {
+            element.template = htmlElement.appendChild(this.pdfViewer.formDesignerModule.createInputElement(currentData.formFieldAnnotationType, signatureField,null,true));
+        }
+        parentHtmlElement.appendChild(htmlElement);
+        return htmlElement;
     }
     /**
      * @param inputField
@@ -262,12 +366,12 @@ export class Print {
      * @private
      */
     // eslint-disable-next-line
-    public applyPosition(inputField: any, bounds: any, font: any, heightRatio: number, widthRatio: number): any {
+    public applyPosition(inputField: any, bounds: any, font: any, heightRatio: number, widthRatio: number, isFormDesignerField?: boolean, zoomValue?: number): any {
         if (bounds) {
-            const left: number = (this.pdfViewer.formFieldsModule.ConvertPointToPixel(bounds.X)) / widthRatio;
-            let top: number = (this.pdfViewer.formFieldsModule.ConvertPointToPixel(bounds.Y)) / heightRatio;
-            const width: number = (this.pdfViewer.formFieldsModule.ConvertPointToPixel(bounds.Width)) / widthRatio;
-            const height: number = (this.pdfViewer.formFieldsModule.ConvertPointToPixel(bounds.Height)) / heightRatio;
+            const left: number = isFormDesignerField ? (bounds.X / zoomValue) / widthRatio : (this.pdfViewer.formFieldsModule.ConvertPointToPixel(bounds.X)) / widthRatio;
+            let top: number = isFormDesignerField ? (bounds.Y / zoomValue) / heightRatio : (this.pdfViewer.formFieldsModule.ConvertPointToPixel(bounds.Y)) / heightRatio;
+            const width: number = isFormDesignerField ? (bounds.Width / zoomValue) / widthRatio : (this.pdfViewer.formFieldsModule.ConvertPointToPixel(bounds.Width)) / widthRatio;
+            const height: number = isFormDesignerField ? (bounds.Height / zoomValue) / heightRatio : (this.pdfViewer.formFieldsModule.ConvertPointToPixel(bounds.Height)) / heightRatio;
             let fontHeight: number = 0;
             if (font !== null && font.Height) {
                 inputField.style.fontfamily = font.Name;
@@ -282,7 +386,7 @@ export class Print {
             if (Browser.isIE) {
                 top = top - 1;
             }
-            this.pdfViewer.formFieldsModule.setStyleToTextDiv(inputField, left, top, fontHeight, width, height, true);
+           this.pdfViewer.formFieldsModule.setStyleToTextDiv(inputField, left, top, fontHeight, width, height, true);
         }
     }
     private printWindowOpen(): void {

@@ -6,11 +6,11 @@
 	"license": "SEE LICENSE IN license",
 	"dependencies": {
 		"@syncfusion/ej2-base": "*",
-		"@syncfusion/ej2-data": "*",
-		"@syncfusion/ej2-svg-base": "*",
-		"@syncfusion/ej2-pdf-export": "*",
 		"@syncfusion/ej2-compression": "*",
-		"@syncfusion/ej2-file-utils": "*"
+		"@syncfusion/ej2-data": "*",
+		"@syncfusion/ej2-file-utils": "*",
+		"@syncfusion/ej2-pdf-export": "*",
+		"@syncfusion/ej2-svg-base": "*"
 	},
 	"devDependencies": {
 		"@types/chai": "^3.4.28",

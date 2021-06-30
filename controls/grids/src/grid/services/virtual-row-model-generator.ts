@@ -1,4 +1,4 @@
-import { Browser } from '@syncfusion/ej2-base';
+import { Browser, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { Group } from '@syncfusion/ej2-data';
 import { IModelGenerator, IGrid, VirtualInfo, NotifyArgs } from '../base/interface';
 import { Row } from '../models/row';
@@ -26,6 +26,9 @@ export class VirtualRowModelGenerator implements IModelGenerator<Column> {
     public rowCache: { [x: number]: Row<Column> } = {};
     public data: { [x: number]: Object[] } = {};
     public groups: { [x: number]: Object } = {};
+    public currentInfo: VirtualInfo = {};
+    public includePrevPage: boolean;
+    public startIndex: number;
 
     constructor(parent: IGrid) {
         this.parent = parent;
@@ -35,11 +38,17 @@ export class VirtualRowModelGenerator implements IModelGenerator<Column> {
 
     public generateRows(data: Object[], e?: NotifyArgs): Row<Column>[] {
         const isFrozen: boolean = this.parent.isFrozenGrid();
+        let isManualRefresh: boolean = false;
         const info: VirtualInfo = e.virtualInfo = e.virtualInfo || this.getData();
         const xAxis: boolean = info.sentinelInfo && info.sentinelInfo.axis === 'X';
         const page: number = !xAxis && info.loadNext && !info.loadSelf ? info.nextInfo.page : info.page;
         let result: Row<Column>[] = [];
-        const indexes: number[] = this.getBlockIndexes(page); const loadedBlocks: number[] = [];
+        let indexes: number[] = this.getBlockIndexes(page); const loadedBlocks: number[] = [];
+        if (this.currentInfo.blockIndexes) {
+            indexes = info.blockIndexes = e.virtualInfo.blockIndexes = this.includePrevPage ? this.currentInfo.blockIndexes.slice(1)
+                : this.currentInfo.blockIndexes.slice(0, this.currentInfo.blockIndexes.length - 1);
+            isManualRefresh = true;
+        }
         if ((isFrozen && (this.parent.getFrozenMode() !== literals.leftRight && !e.renderMovableContent)
             || this.parent.getFrozenMode() === literals.leftRight && !e.renderMovableContent && !e.renderFrozenRightContent) || !isFrozen) {
             this.checkAndResetCache(e.requestType);
@@ -63,8 +72,9 @@ export class VirtualRowModelGenerator implements IModelGenerator<Column> {
         const values: number[] = info.blockIndexes;
         for (let i: number = 0; i < values.length; i++) {
             if (!this.isBlockAvailable(values[i])) {
+                const startIdx: number = !isNullOrUndefined(this.startIndex) ? this.startIndex : this.getStartIndex(values[i], data);
                 const rows: Row<Column>[] = this.rowModelGenerator.generateRows(data, {
-                    virtualInfo: info, startIndex: this.getStartIndex(values[i], data)
+                    virtualInfo: info, startIndex: startIdx
                 });
                 if (isGroupAdaptive(this.parent) && !this.parent.vcRows.length) {
                     this.parent.vRows = rows;
@@ -81,12 +91,16 @@ export class VirtualRowModelGenerator implements IModelGenerator<Column> {
                         this.cache[indexes[1]] = rows.slice(median, this.model.pageSize);
                     }
                 } else {
-                    median = ~~Math.max(rows.length, this.model.pageSize) / 2;
-                    if (!this.isBlockAvailable(indexes[0])) {
-                        this.cache[indexes[0]] = rows.slice(0, median);
-                    }
-                    if (!this.isBlockAvailable(indexes[1])) {
-                        this.cache[indexes[1]] = rows.slice(median);
+                    if (isManualRefresh) {
+                        this.setBlockForManualRefresh(this.cache, indexes, rows);
+                    } else {
+                        median = ~~Math.max(rows.length, this.model.pageSize) / 2;
+                        if (!this.isBlockAvailable(indexes[0])) {
+                            this.cache[indexes[0]] = rows.slice(0, median);
+                        }
+                        if (!this.isBlockAvailable(indexes[1])) {
+                            this.cache[indexes[1]] = rows.slice(median);
+                        }
                     }
                 }
             }
@@ -97,17 +111,22 @@ export class VirtualRowModelGenerator implements IModelGenerator<Column> {
                 || (e.renderFrozenRightContent && !this.isFrozenRightBlockAvailable(values[i]))) {
                 const cache: { [x: number]: Row<Column>[] } = e.renderMovableContent
                     ? this.movableCache : this.frozenRightCache;
+                const startIdx: number = !isNullOrUndefined(this.startIndex) ? this.startIndex : this.getStartIndex(values[i], data);
                 const rows: Row<Column>[] = this.rowModelGenerator.generateRows(data, {
-                    virtualInfo: info, startIndex: this.getStartIndex(values[i], data)
+                    virtualInfo: info, startIndex: startIdx
                 });
-                const median: number = ~~Math.max(rows.length, this.model.pageSize) / 2;
-                if ((e.renderFrozenRightContent && !this.isFrozenRightBlockAvailable(indexes[0]))
-                    || (e.renderMovableContent && !this.isMovableBlockAvailable(indexes[0]))) {
-                    cache[indexes[0]] = rows.slice(0, median);
-                }
-                if ((e.renderFrozenRightContent && !this.isFrozenRightBlockAvailable(indexes[1]))
-                    || (e.renderMovableContent && !this.isMovableBlockAvailable(indexes[1]))) {
-                    cache[indexes[1]] = rows.slice(median);
+                if (isManualRefresh) {
+                    this.setBlockForManualRefresh(cache, indexes, rows);
+                } else {
+                    const median: number = ~~Math.max(rows.length, this.model.pageSize) / 2;
+                    if ((e.renderFrozenRightContent && !this.isFrozenRightBlockAvailable(indexes[0]))
+                        || (e.renderMovableContent && !this.isMovableBlockAvailable(indexes[0]))) {
+                        cache[indexes[0]] = rows.slice(0, median);
+                    }
+                    if ((e.renderFrozenRightContent && !this.isFrozenRightBlockAvailable(indexes[1]))
+                        || (e.renderMovableContent && !this.isMovableBlockAvailable(indexes[1]))) {
+                        cache[indexes[1]] = rows.slice(median);
+                    }
                 }
             }
             if (!e.renderMovableContent && !e.renderFrozenRightContent && this.cache[values[i]]) {
@@ -136,6 +155,21 @@ export class VirtualRowModelGenerator implements IModelGenerator<Column> {
             this.parent.currentViewData = result.map((m: Row<Column>) => m.data);
         }
         return result;
+    }
+
+    private setBlockForManualRefresh(cache: { [x: number]: Row<Column>[] }, blocks: number[], rows: Row<Column>[]): void {
+        const size: number = this.model.pageSize / 2;
+        if (this.includePrevPage) {
+            cache[blocks[0] - 1] = rows.slice(0, size);
+            cache[blocks[0]] = rows.slice(size, size * 2);
+            cache[blocks[1]] = rows.slice(size * 2, size * 3);
+            cache[blocks[2]] = rows.slice(size * 3, size * 4);
+        } else {
+            cache[blocks[0]] = rows.slice(0, size);
+            cache[blocks[1]] = rows.slice(size, size * 2);
+            cache[blocks[2]] = rows.slice(size * 2, size * 3);
+            cache[blocks[2] + 1] = rows.slice(size * 3, size * 4);
+        }
     }
 
     public getBlockIndexes(page: number): number[] {
@@ -281,8 +315,9 @@ export class VirtualRowModelGenerator implements IModelGenerator<Column> {
 
     public generateCells(): Cell<Column>[] {
         const cells: Cell<Column>[] = [];
-        for (let i: number = 0; i < this.parent.columns.length; i++) {
-            cells.push((this.rowModelGenerator as RowModelGenerator).generateCell(this.parent.columns[i] as Column));
+        const cols: Column[] = (<{ columnModel?: Column[] }>this.parent).columnModel;
+        for (let i: number = 0; i < cols.length; i++) {
+            cells.push((this.rowModelGenerator as RowModelGenerator).generateCell(cols[i]));
         }
         return cells;
     }

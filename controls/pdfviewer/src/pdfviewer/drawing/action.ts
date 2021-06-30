@@ -9,7 +9,7 @@ import { PdfAnnotationBaseModel, PdfBoundsModel } from './pdf-annotation-model';
 import { ZOrderPageTable } from './pdf-annotation';
 import { isPointOverConnector } from './connector-util';
 import { LineTool, NodeDrawingTool } from './tools';
-
+import { isNullOrUndefined } from '@syncfusion/ej2-base';
 /**
  * @param event
  * @param pdfBase
@@ -78,6 +78,10 @@ export function findObjectUnderMouse(
                 offsetY = touchArg.changedTouches[0].clientY - pageCurrentRect.top;
             }
         }
+    } else if(event && event.target && event.target.parentElement && event.target.parentElement.classList.contains("foreign-object")){
+        const targetParentRect: ClientRect = (event as any).path[4].getBoundingClientRect();
+        offsetX = (event as PointerEvent).clientX - targetParentRect.left;
+        offsetY = (event as PointerEvent).clientY - targetParentRect.top;
     } else {
         offsetX = !isNaN(event.offsetX) ? event.offsetX : (event.position ? event.position.x : 0);
         offsetY = !isNaN(event.offsetY) ? event.offsetY : (event.position ? event.position.y : 0);
@@ -238,20 +242,36 @@ export function findTargetShapeElement(container: Container, position: PointMode
     if (container && container.children) {
         for (let i: number = container.children.length - 1; i >= 0; i--) {
             const shapeElement: DrawingElement = container.children[i];
-            if (shapeElement && shapeElement.bounds.containsPoint(position, 10)) {
-                if (shapeElement instanceof Container) {
-                    const targetElement: DrawingElement = this.findTargetElement(shapeElement, position);
-                    if (targetElement) {
-                        return targetElement;
+            if (!isNullOrUndefined((shapeElement as any).children) && (shapeElement as any).children.length > 0) {
+                for (let j: number = (shapeElement as any).children.length - 1; j >= 0; j--) {
+                    let currentTarget: any = (shapeElement as any).children[j];
+                    if (currentTarget && currentTarget.bounds.containsPoint(position, 10)) {
+                        if (currentTarget instanceof Container) {
+                            const targetElement: DrawingElement = this.findTargetElement(currentTarget, position);
+                            if (targetElement) {
+                                return targetElement;
+                            }
+                        }
+                        if (currentTarget.bounds.containsPoint(position, 10)) {
+                            return currentTarget;
+                        }
                     }
                 }
-                if (shapeElement.bounds.containsPoint(position, 10)) {
-                    return shapeElement;
+            } else {
+                if (shapeElement && shapeElement.bounds.containsPoint(position, 10)) {
+                    if (shapeElement instanceof Container) {
+                        const targetElement: DrawingElement = this.findTargetElement(shapeElement, position);
+                        if (targetElement) {
+                            return targetElement;
+                        }
+                    }
+                    if (shapeElement.bounds.containsPoint(position, 10)) {
+                        return shapeElement;
+                    }
                 }
             }
         }
     }
-
     if (container && container.bounds.containsPoint(position, padding) && container.style.fill !== 'none') {
         return container;
     }

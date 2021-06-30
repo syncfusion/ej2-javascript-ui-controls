@@ -78,6 +78,22 @@ export function getTooltipThemeColor(theme: TooltipTheme): ITooltipThemeStyle {
             tooltipHeaderLine: 'rgba(255, 255, 255, 0.2)'
         };
         break;
+    case 'Tailwind':
+        style = {
+            tooltipFill: '#111827',
+            tooltipBoldLabel: '#D1D5DB',
+            tooltipLightLabel: '#F9FAFB',
+            tooltipHeaderLine: '#6B7280',
+        };
+        break;
+    case 'TailwindDark':
+        style = {
+            tooltipFill: '#F9FAFB',
+            tooltipBoldLabel: '#6B7280',
+            tooltipLightLabel: '#1F2937',
+            tooltipHeaderLine: '#9CA3AF',
+        };
+        break;
     default:
         style = {
             tooltipFill: 'rgba(0, 8, 22, 0.75)',

@@ -131,7 +131,7 @@ export class Text {
     }
     private createChangecase = (container: HTMLElement): void => {
         const items: ItemModel[] = [{
-            text: 'UPPERCASE'
+            text: this.localObj.getConstant('UPPERCASE')
         }];
         this.changeCaseDropdown = new DropDownButton({
             items: items,

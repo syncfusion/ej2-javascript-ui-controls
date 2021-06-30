@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable max-len */
-import { isNullOrUndefined } from '@syncfusion/ej2-base';
+import { isNullOrUndefined, extend } from '@syncfusion/ej2-base';
 import { Query } from '@syncfusion/ej2-data';
 import { getRecurrenceStringFromDate, generate } from '../../recurrence-editor/date-generator';
 import { ActionEventArgs, EventFieldsMapping, SaveChanges, CrudArgs, CrudAction, TdData } from '../base/interface';
@@ -60,7 +60,7 @@ export class Crud {
                 for (const data of crudData) {
                     this.crudObj.isCrudAction = !(args.requestType === 'eventRemoved' && !isNullOrUndefined(data.parent));
                     const groupIndex: number = this.parent.eventBase.getGroupIndexFromEvent(data);
-                    if (this.parent.crudModule.crudObj.sourceEvent.filter((tdData: TdData) => tdData.groupIndex === groupIndex).length === 0
+                    if (groupIndex > -1 && this.parent.crudModule.crudObj.sourceEvent.filter((tdData: TdData) => tdData.groupIndex === groupIndex).length === 0
                         && this.crudObj.isCrudAction) {
                         this.crudObj.sourceEvent.push(this.parent.resourceBase.lastResourceLevel[groupIndex]);
                     }
@@ -108,7 +108,8 @@ export class Crud {
                     let promise: Promise<any>;
                     if (addArgs.addedRecords instanceof Array) {
                         for (const event of addArgs.addedRecords) {
-                            editParams.addedRecords.push(this.parent.eventBase.processTimezone(event, true));
+                            const eventData: Record<string, any> = <Record<string, any>>extend({}, this.parent.eventBase.processTimezone(event, true), null, true);
+                            editParams.addedRecords.push(eventData);
                         }
                         promise = this.parent.dataModule.dataManager.saveChanges(editParams, fields.id, this.getTable(), this.getQuery()) as Promise<any>;
                     } else {
@@ -161,7 +162,7 @@ export class Crud {
                         const editParams: SaveChanges = { addedRecords: [], changedRecords: [], deletedRecords: [] };
                         if (saveArgs.changedRecords instanceof Array) {
                             for (const event of saveArgs.changedRecords) {
-                                const eventData: Record<string, any> = this.parent.eventBase.processTimezone(event, true);
+                                const eventData: Record<string, any> = <Record<string, any>>extend({}, this.parent.eventBase.processTimezone(event, true), null, true);
                                 editParams.changedRecords.push(eventData);
                             }
                             promise = this.parent.dataModule.dataManager.saveChanges(editParams, fields.id, this.getTable(), this.getQuery()) as Promise<any>;

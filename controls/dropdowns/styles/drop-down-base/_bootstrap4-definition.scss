@@ -3,6 +3,7 @@ $ddl-default-font-family: inherit !default;
 $ddl-list-border-size: 1px !default;
 $ddl-list-bottom-border: $ddl-list-border-size !default;
 $ddl-list-border-color: rgba($black, .15) !default;
+$ddl-line-height: 48px !default;
 $ddl-list-font-family: inherit !default;
 $ddl-list-gradient-color: $white !default;
 $ddl-list-bg-color: $white !default;
@@ -16,8 +17,14 @@ $ddl-list-hover-border-color: $white !default;
 $ddl-list-hover-font-color: $gray-900 !default;
 $ddl-nodata-font-color: $gray-900 !default;
 $ddl-group-list-padding-left: 30px !default;
+$ddl-group-list-small-padding-left: $ddl-group-list-padding-left !default;
+$ddl-group-list-bigger-padding-left: $ddl-group-list-padding-left !default;
+$ddl-group-list-bigger-small-padding-left: $ddl-group-list-padding-left !default;
 $ddl-header-font-weight: normal !default;
 $ddl-list-header-padding-left: 20px !default;
+$ddl-list-header-small-padding-left: $ddl-list-header-padding-left !default;
+$ddl-list-header-bigger-small-padding-left: $ddl-list-header-padding-left !default;
+$ddl-list-header-bigger-padding-left: $ddl-list-header-padding-left !default;
 $ddl-list-font-size: 14px !default;
 $ddl-group-list-font-size: 12px !default;
 $ddl-list-header-font-color: $gray-600 !default;
@@ -29,6 +36,8 @@ $ddl-list-rtl-padding-left: 24px !default;
 $ddl-bigger-list-header-font-size: $ddl-list-font-size !default;
 $ddl-multi-column-border-width: 0 0 1px 0 !default;
 $ddl-multi-column-border-color: rgba($black, .12) !default;
+$ddl-list-header-font-size: $ddl-group-list-font-size !default;
+$ddl-small-list-header-font-size: $ddl-group-list-font-size !default;
 
 // small size
 

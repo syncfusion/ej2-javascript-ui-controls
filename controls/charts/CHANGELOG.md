@@ -2,6 +2,24 @@
 
 ## [Unreleased]
 
+## 19.2.44 (2021-06-30)
+
+### Chart
+
+#### Bug Fixes
+
+- `#331558` - Zooming working fine when the pan element not shown in toolbar.
+
+#### New Features
+
+- The "Spline Range Area" interactive chart series is now available.
+
+### Stock Chart
+
+#### New Features
+
+- The legend feature has been added to the stock chart.
+
 ## 19.1.69 (2021-06-15)
 
 ### Chart
@@ -23,6 +41,10 @@
 ## 19.1.65 (2021-05-25)
 
 ### Chart
+
+#### Bug Fixes
+
+- `#328528` - Histogram is rendering properly when the `binInterval` value is 0.
 
 ### Stock Chart
 

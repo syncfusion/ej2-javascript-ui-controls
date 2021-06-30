@@ -73,9 +73,8 @@ export class ContentRender implements IRenderer {
         const arg: NotifyArgs = args;
         return () => {
             if (this.parent.isFrozenGrid() && this.parent.enableVirtualization) {
-                const mContentRows: Element[] = [].slice.call(this.parent.getMovableVirtualContent().getElementsByClassName(literals.row));
-                const fContentRows: Element[] = [].slice.call(this.parent.getFrozenVirtualContent().getElementsByClassName(literals.row));
-                this.isLoaded = !mContentRows ? false : mContentRows.length === fContentRows.length;
+                let tableName: freezeTable = (<{ tableName?: freezeTable }>args).tableName;
+                this.isLoaded = this.parent.getFrozenMode() === literals.leftRight ? tableName === 'frozen-right' : tableName === 'movable';
                 if (this.parent.enableColumnVirtualization && args.requestType === 'virtualscroll' && this.isLoaded) {
                     const mHdr: Element[] = [].slice.call(this.parent.getMovableVirtualHeader().getElementsByClassName(literals.row));
                     const fHdr: Element[] = [].slice.call(this.parent.getFrozenVirtualHeader().getElementsByClassName(literals.row));
@@ -91,6 +90,7 @@ export class ContentRender implements IRenderer {
             }
             this.parent.notify(events.contentReady, { rows: rows, args: arg });
             if (this.isLoaded) {
+                this.parent.isManualRefresh = false;
                 this.parent.trigger(events.dataBound, {}, () => {
                     if (this.parent.allowTextWrap) {
                         this.parent.notify(events.freezeRender, { case: 'textwrap' });

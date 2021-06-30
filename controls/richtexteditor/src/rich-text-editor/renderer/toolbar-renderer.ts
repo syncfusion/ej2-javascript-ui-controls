@@ -7,7 +7,8 @@ import * as classes from '../base/classes';
 import * as events from '../base/constant';
 import { CLS_TOOLBAR, CLS_DROPDOWN_BTN, CLS_RTE_ELEMENTS, CLS_TB_BTN, CLS_INLINE_DROPDOWN,
     CLS_COLOR_CONTENT, CLS_FONT_COLOR_DROPDOWN, CLS_BACKGROUND_COLOR_DROPDOWN, CLS_COLOR_PALETTE,
-    CLS_FONT_COLOR_PICKER, CLS_BACKGROUND_COLOR_PICKER, CLS_CUSTOM_TILE, CLS_NOCOLOR_ITEM } from '../base/classes';
+    CLS_FONT_COLOR_PICKER, CLS_BACKGROUND_COLOR_PICKER, CLS_CUSTOM_TILE, CLS_NOCOLOR_ITEM,
+    CLS_BULLETFORMATLIST_TB_BTN, CLS_NUMBERFORMATLIST_TB_BTN, CLS_LIST_PRIMARY_CONTENT } from '../base/classes';
 import { IRenderer, IRichTextEditor, IToolbarOptions, IDropDownModel, IColorPickerModel, IColorPickerEventArgs } from '../base/interface';
 import { ColorPicker, PaletteTileEventArgs, ModeSwitchEventArgs } from '@syncfusion/ej2-inputs';
 import { hasClass } from '../base/util';
@@ -81,14 +82,14 @@ export class ToolbarRenderer implements IRenderer {
     }
 
     private dropDownOpen(args: MenuEventArgs): void {
-        if (args.element.parentElement.getAttribute("id").indexOf("TableCell") > -1) {
-            let listEle: NodeListOf<HTMLElement> = args.element.querySelectorAll("li");
-            if (this.parent.inputElement.querySelectorAll(".e-cell-select").length === 1) {
-                addClass([listEle[0]], "e-disabled")
-                removeClass([listEle[1], listEle[2]], "e-disabled");
-            } else if (this.parent.inputElement.querySelectorAll(".e-cell-select").length > 1) {
-                removeClass([listEle[0]], "e-disabled")
-                addClass([listEle[1], listEle[2]], "e-disabled");
+        if (args.element.parentElement.getAttribute('id').indexOf('TableCell') > -1) {
+            const listEle: NodeListOf<HTMLElement> = args.element.querySelectorAll('li');
+            if (this.parent.inputElement.querySelectorAll('.e-cell-select').length === 1) {
+                addClass([listEle[0]], 'e-disabled');
+                removeClass([listEle[1], listEle[2]], 'e-disabled');
+            } else if (this.parent.inputElement.querySelectorAll('.e-cell-select').length > 1) {
+                removeClass([listEle[0]], 'e-disabled');
+                addClass([listEle[1], listEle[2]], 'e-disabled');
             }
         }
         if (Browser.isDevice && !args.element.parentElement.classList.contains(classes.CLS_QUICK_DROPDOWN)) {
@@ -197,6 +198,62 @@ export class ToolbarRenderer implements IRenderer {
         args.element.tabIndex = -1;
         const popupElement: Element = document.getElementById(dropDown.element.id + '-popup');
         popupElement.setAttribute('aria-owns', this.parent.getID());
+        return dropDown;
+    }
+    /**
+     * renderListDropDown method
+     *
+     * @param {IDropDownModel} args - specifies the the arguments.
+     * @param {string} item - specifies the string value
+     * @returns {void}
+     * @hidden
+     * @deprecated
+     */
+    public renderListDropDown(args: IDropDownModel): DropDownButton {
+        // eslint-disable-next-line
+        const proxy: this = this;
+        let css: string = CLS_RTE_ELEMENTS + ' ' + CLS_TB_BTN + ((this.parent.inlineMode) ? (' ' + CLS_INLINE_DROPDOWN) : '');
+        css += (' ' + ((args.itemName === 'NumberFormatList') ? CLS_NUMBERFORMATLIST_TB_BTN : CLS_BULLETFORMATLIST_TB_BTN));
+        const content: HTMLElement = proxy.parent.createElement('span', { className: CLS_LIST_PRIMARY_CONTENT });
+        const inlineEle: HTMLElement = proxy.parent.createElement('span', { className: args.cssClass });
+        content.appendChild(inlineEle);
+        const dropDown: DropDownButton = new DropDownButton({
+            items: args.items,
+            cssClass: css,
+            content: args.content,
+            enablePersistence: this.parent.enablePersistence,
+            enableRtl: this.parent.enableRtl,
+            select: this.dropDownSelected.bind(this),
+            beforeOpen: (args: BeforeOpenCloseMenuEventArgs): void => {
+                if (proxy.parent.readonly || !proxy.parent.enabled) {
+                    args.cancel = true;
+                    return;
+                }
+                const element: HTMLElement = (args.event) ? (args.event.target as HTMLElement) : null;
+                proxy.currentElement = dropDown.element;
+                proxy.currentDropdown = dropDown;
+                if (args.event && args.event.type === 'click' && (element.classList.contains(CLS_LIST_PRIMARY_CONTENT)
+                        || element.parentElement.classList.contains(CLS_LIST_PRIMARY_CONTENT))) {
+                    args.cancel = true;
+                    return;
+                }
+                proxy.parent.notify(events.beforeDropDownOpen, args);
+            },
+            close: this.dropDownClose.bind(this),
+            open: this.dropDownOpen.bind(this),
+            beforeItemRender: this.beforeDropDownItemRender.bind(this)
+        });
+        dropDown.isStringTemplate = true;
+        dropDown.createElement = proxy.parent.createElement;
+        dropDown.appendTo(args.element);
+        args.element.tabIndex = -1;
+        const popupElement: Element = document.getElementById(dropDown.element.id + '-popup');
+        popupElement.setAttribute('aria-owns', this.parent.getID());
+        if (args.element.childElementCount === 1) {
+            dropDown.element.insertBefore(content, dropDown.element.querySelector('.e-caret'));
+        }
+        args.element.tabIndex = -1; 
+        dropDown.element.removeAttribute('type');
         return dropDown;
     }
     // eslint-disable-next-line

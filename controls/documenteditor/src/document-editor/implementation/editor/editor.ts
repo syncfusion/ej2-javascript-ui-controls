@@ -41,7 +41,7 @@ import { Dictionary } from '../../base/dictionary';
 import { WParagraphStyle } from '../format/style';
 import {
     TableAlignment, WidthType, HeightType, CellVerticalAlignment, BorderType, LineStyle,
-    TabLeader, OutlineLevel, AutoFitType, ProtectionType, PasteOptions, FormFieldType, TextFormFieldType, RevisionType,
+    TabLeader, OutlineLevel, AutoFitType, ProtectionType, PasteOptions, TablePasteOptions, FormFieldType, TextFormFieldType, RevisionType,
     FootEndNoteNumberFormat, FootnoteRestartIndex
 } from '../../base/types';
 import { DocumentEditor } from '../../document-editor';
@@ -51,6 +51,7 @@ import { DocumentHelper, Layout } from '../viewer';
 import { Revision } from '../track-changes/track-changes';
 import { XmlHttpRequestHandler } from '../../base/ajax-helper';
 import { CommentActionEventArgs } from '../../base/index';
+import { CommentView } from '../comments';
 
 /**
  * Editor module
@@ -82,6 +83,10 @@ export class Editor {
     /**
      * @private
      */
+     public isUserInsert: boolean = false;
+    /**
+     * @private
+     */
     public tableResize: TableResizer = undefined;
     /**
      * @private
@@ -91,6 +96,7 @@ export class Editor {
      * @private
      */
     public chartType: boolean = false;
+
     private refListNumber: number = undefined;
     private incrementListNumber: number = -1;
     private removedBookmarkElements: BookmarkElementBox[] = [];
@@ -487,6 +493,10 @@ export class Editor {
             this.editorHistory.updateComplexHistory();
         }
         this.reLayout(this.selection, false);
+        if (!this.isUserInsert) {
+            let comment: CommentView = this.owner.commentReviewPane.commentPane.comments.get(commentAdv);
+            comment.postComment();
+        }
     }
 
     /**
@@ -595,6 +605,9 @@ export class Editor {
      * @returns {void}
      */
     public resolveComment(comment: CommentElementBox): void {
+        if (this.owner.isReadOnlyMode) {
+            return;
+        }
         const eventArgs: CommentActionEventArgs = { author: comment.author, cancel: false, type: 'Resolve' };
         this.owner.trigger('beforeCommentAction', eventArgs);
         if (eventArgs.cancel && eventArgs.type === 'Resolve') {
@@ -612,6 +625,9 @@ export class Editor {
      * @returns {void}
      */
     public reopenComment(comment: CommentElementBox): void {
+        if (this.owner.isReadOnlyMode) {
+            return;
+        }
         const eventArgs: CommentActionEventArgs = { author: comment.author, cancel: false, type: 'Reopen' };
         this.owner.trigger('beforeCommentAction', eventArgs);
         if (eventArgs.cancel && eventArgs.type === 'Reopen') {
@@ -637,6 +653,9 @@ export class Editor {
      * @returns {void}
      */
     public replyComment(parentComment: CommentElementBox, text?: string): void {
+        if (this.owner.isReadOnlyMode) {
+            return;
+        }
         const commentWidget: CommentElementBox = parentComment;
         if (parentComment) {
             this.initComplexHistory('InsertComment');
@@ -4377,6 +4396,7 @@ export class Editor {
             }
         }
     }
+
     private applyFormatInternal(widget: BlockWidget, insertFormat: WCharacterFormat): void {
         if (widget instanceof ParagraphWidget) {
             for (let j: number = 0; j < widget.childWidgets.length; j++) {
@@ -4414,6 +4434,9 @@ export class Editor {
         }
     }
 
+    /**
+     * @private
+     */
     public applyPasteOptions(options: PasteOptions): void {
         if (isNullOrUndefined(this.copiedContent) || this.copiedTextContent === '') {
             return;
@@ -4437,6 +4460,39 @@ export class Editor {
         }
         this.isSkipHistory = false;
     }
+
+    /**
+     * @private
+     */
+    public applyTablePasteOptions(options: TablePasteOptions): void {
+        if (isNullOrUndefined(this.copiedContent) || this.copiedTextContent === '') {
+            return;
+        }
+        this.isPaste = true;
+        let copiedContent: object = this.copiedContent !== '' ? this.copiedContent : this.copiedTextContent;
+        if (this.editorHistory && this.editorHistory.canUndo()) {
+            this.editorHistory.undo();
+            this.editorHistory.redoStack.pop();
+        }
+        let widgets: BodyWidget[] = this.getBlocks(copiedContent, true);
+        let currentFormat: WParagraphFormat = this.selection.start.paragraph.paragraphFormat;
+        switch (options) {
+            case 'NestTable':
+                this.pasteAsNestedTable(widgets, currentFormat);
+                break;
+            case 'InsertAsRows':
+                this.pasteAsNewRow(widgets[0].childWidgets[0] as TableWidget);
+                break;
+            case 'InsertAsColumns':
+                this.pasteAsNewColumn(widgets[0].childWidgets[0] as TableWidget);
+                break;
+            case 'OverwriteCells':
+                this.pasteOverwriteCell(widgets[0].childWidgets[0] as TableWidget);
+                break;
+        }
+        this.isPaste = false;
+    }
+
     /**
      * @private
      * @returns {void}
@@ -4466,6 +4522,42 @@ export class Editor {
     private pasteContentsInternal(widgets: BodyWidget[], isPaste: boolean, currentFormat?: WParagraphFormat): void {
         this.isPaste = isPaste;
         /* eslint-enable @typescript-eslint/no-explicit-any */
+        let selection: Selection = this.documentHelper.selection;
+        if (selection.start.paragraph.isInsideTable && selection.end.paragraph.isInsideTable) {
+            let isTablePaste: boolean = false;
+            if (widgets.length === 1) {
+                let childWidgets: IWidget[] = widgets[0].childWidgets;
+                // tslint:disable-next-line:max-line-length
+                if ((childWidgets.length < 3)) {
+                    if (childWidgets.length === 1 && childWidgets[0] instanceof TableWidget || childWidgets.length === 2 && childWidgets[0] instanceof TableWidget && (childWidgets[1] as ParagraphWidget).isEmpty()) {
+                        isTablePaste = true;
+                    }
+                }
+            }
+            if (isTablePaste) {
+                let startCell: TableCellWidget = selection.start.paragraph.associatedCell;
+                let endCell: TableCellWidget = selection.end.paragraph.associatedCell;
+                let newTable: TableWidget = widgets[0].childWidgets[0] as TableWidget;
+                // tslint:disable-next-line:max-line-length
+                if (startCell.ownerTable.equals(endCell.ownerTable)) {
+                    if (selection.start.paragraph.associatedCell.rowIndex === 0 && selection.end.paragraph.associatedCell.rowIndex === 0
+                        && startCell.equals(endCell) && !this.selection.isCellSelected(startCell, selection.start, selection.end)) {
+                        this.selection.currentPasteAction = 'InsertAsColumns';
+                        this.pasteAsNewColumn(newTable);
+                    } else {
+                        this.selection.currentPasteAction = 'OverwriteCells';
+                        this.pasteOverwriteCell(newTable);
+                    }
+                    this.isPaste = false;
+                    return;
+                }
+            }
+        }
+        this.selection.currentPasteAction = 'DefaultPaste';
+        this.defaultPaste(widgets as BodyWidget[], currentFormat)
+    }
+    
+    private defaultPaste(widgets: BodyWidget[], currentFormat?: WParagraphFormat): void {
         let selection: Selection = this.documentHelper.selection;
         let isRemoved: boolean = true;
         if (!this.isSkipHistory) {
@@ -4497,6 +4589,379 @@ export class Editor {
         }
         this.isPaste = false;
     }
+
+    private pasteAsNewColumn(data: TableWidget): void {
+        if (this.owner.isReadOnlyMode || !this.canEditContentControl) {
+            return;
+        }
+        if (this.selection.start.paragraph.isInsideTable) {
+            if (this.checkIsNotRedoing()) {
+                this.initHistory('PasteColumn');
+            }
+            let startCell: TableCellWidget = this.getOwnerCell(this.selection.isForward);
+            let table: TableWidget = startCell.ownerRow.ownerTable.combineWidget(this.owner.viewer) as TableWidget;
+            if (this.editorHistory) {
+                //Clones the entire table to preserve in history.
+                let clonedTable: TableWidget = this.cloneTableToHistoryInfo(table);
+            }
+            this.selection.owner.isLayoutEnabled = false;
+            let cloneTable: TableWidget = data.clone();
+            let rowWidget: TableRowWidget = cloneTable.childWidgets[0] as TableRowWidget;
+            let numberOfRows: number = cloneTable.childWidgets.length;
+            let numberOfColumns: number = rowWidget.childWidgets.length;
+            let cellIndex: number = startCell.columnIndex;
+            let startParagraph: ParagraphWidget = undefined;
+            let newCell: TableCellWidget = undefined;
+            let columnCount: number = numberOfColumns;
+            let rowSpannedCells: TableCellWidget[] = [];
+            if (numberOfRows > table.childWidgets.length) {
+                this.addRows(numberOfRows - table.childWidgets.length, table);
+                this.tableUpdate(table);
+            } else if (table.childWidgets.length > numberOfRows) {
+                this.addRows(table.childWidgets.length - numberOfRows, cloneTable, table);
+                this.tableUpdate(table);
+            }
+            for (let i: number = 0; i < columnCount; i++) {
+                for (let j: number = 0; j < table.childWidgets.length; j++) {
+                    let row: TableRowWidget = table.childWidgets[j] as TableRowWidget;
+                    let rowWidget: TableRowWidget = cloneTable.childWidgets[j] as TableRowWidget;
+                    let cellWidget: TableCellWidget = rowWidget.childWidgets[i] as TableCellWidget;
+                    let cell: TableCellWidget = row.childWidgets[startCell.columnIndex] as TableCellWidget;
+                    newCell = this.createColumn(this.selection.getLastParagraph(startCell));
+                    newCell.index = j;
+                    newCell.rowIndex = row.index;
+                    newCell.containerWidget = row; let prevCell: TableCellWidget = row.previousWidget as TableCellWidget;
+                    let spannedCell = this.rowspannedCollection(row, rowSpannedCells);
+
+                    if (cell != null) {
+                        newCell.cellFormat.copyFormat(cell.cellFormat);
+                        newCell.cellFormat.rowSpan = 1;
+                    } else if (spannedCell.length > 0) {
+                        for (let z: number = 0; z < spannedCell.length; z++) {
+                            if (prevCell.rowIndex + (spannedCell[z].cellFormat.rowSpan - 1) >= row.rowIndex) {
+                                newCell.cellFormat.copyFormat(spannedCell[z].cellFormat);
+                                newCell.cellFormat.rowSpan = 1;
+                            }
+                        }
+                    }
+
+                    cellWidget.containerWidget = newCell.containerWidget;
+                    newCell.childWidgets = cellWidget.childWidgets;
+                    if (isNullOrUndefined(startParagraph)) {
+                        startParagraph = this.selection.getFirstParagraph(newCell);
+                    }
+                    if (cellIndex === 0) {
+                        row.childWidgets.splice(i, 0, newCell);
+                    } else {
+                        this.insertSpannedCells(row, rowSpannedCells, newCell, cellIndex);
+                    }
+                }
+            }
+            this.tableReLayout(table, startParagraph, newCell);
+        }
+    }
+
+    private pasteAsNestedTable(widgets: BodyWidget[], currentFormat?: WParagraphFormat): void {
+        let data: TableWidget = widgets[0].childWidgets[0] as TableWidget;
+        if (this.selection.start.paragraph.isInsideTable) {
+            if (this.checkIsNotRedoing()) {
+                this.initHistory('PasteNested');
+            }
+            let startCell: TableCellWidget = this.getOwnerCell(this.selection.isForward);
+            let table: TableWidget = startCell.ownerRow.ownerTable.combineWidget(this.owner.viewer) as TableWidget;
+            if (this.editorHistory) {
+                //Clones the entire table to preserve in history.
+                this.cloneTableToHistoryInfo(table);
+            }
+            let startParagraph: ParagraphWidget = undefined;
+            let dataTable: TableWidget = data.clone();
+            let endCell: TableCellWidget = this.selection.end.paragraph.containerWidget as TableCellWidget;
+            let pasteCell: TableCellWidget;
+            if (startCell != endCell) {
+                let row: TableRowWidget = startCell.ownerRow as TableRowWidget;
+                while (row != endCell.ownerRow.nextRow) {
+                    for (let cellIndex: number = startCell.columnIndex; cellIndex <= endCell.columnIndex; cellIndex++) {
+                        pasteCell = row.childWidgets[cellIndex] as TableCellWidget;
+                        let clonedTable: TableWidget = dataTable.clone() as TableWidget;
+                        let newPara: ParagraphWidget = new ParagraphWidget();
+                        pasteCell.childWidgets = [];
+                        pasteCell.childWidgets[0] = clonedTable;
+                        pasteCell.childWidgets[1] = newPara;
+                        newPara.containerWidget = pasteCell;
+                        clonedTable.containerWidget = pasteCell;
+                        clonedTable.index = 0;
+                        newPara.index = 1;
+                        row.childWidgets[cellIndex] = pasteCell;
+                        if (isNullOrUndefined(startParagraph)) {
+                            startParagraph = this.selection.getFirstParagraph(pasteCell);
+                        }
+                    }
+                    row = row.nextRow;
+                }
+                this.tableReLayout(table, startParagraph, pasteCell);
+            }
+            else {
+                this.defaultPaste(widgets, currentFormat);
+            }
+        }
+    }
+
+    private pasteOverwriteCell(data: TableWidget): void {
+        if (this.selection.start.paragraph.isInsideTable) {
+            if (this.checkIsNotRedoing()) {
+                this.initHistory('PasteOverwrite');
+            }
+            let startCell: TableCellWidget = this.getOwnerCell(this.selection.isForward);
+            let table: TableWidget = startCell.ownerRow.ownerTable.combineWidget(this.owner.viewer) as TableWidget;
+            if (this.editorHistory) {
+                //Clones the entire table to preserve in history.
+                this.cloneTableToHistoryInfo(table);
+            }
+            let cloneTable: TableWidget = data.clone();
+            // let rowWidget: TableRowWidget = cloneTable.childWidgets[0] as TableRowWidget;
+            let numberOfRows: number = cloneTable.childWidgets.length;
+            let endCell: TableCellWidget = this.getOwnerCell(!this.selection.isForward);
+            // let columnCount: number = numberOfColumns;
+            // let newCell: TableCellWidget = undefined;
+            let coloumnIndexPaste: number = startCell.columnIndex;
+            let rowIndexPaste: number = startCell.rowIndex;
+            let startParagraph: ParagraphWidget = undefined;
+            let row: TableRowWidget = this.selection.start.paragraph.associatedCell.ownerRow as TableRowWidget;
+            let rowWidget: TableRowWidget = cloneTable.childWidgets[0] as TableRowWidget;
+            let newCells: TableCellWidget;// = rowWidget.childWidgets[0] as TableCellWidget;
+            let numberOfColumns: number = rowWidget.childWidgets.length;
+            let row2: TableRowWidget = startCell.ownerRow as TableRowWidget;
+            if (startCell != endCell) {
+                let k: number = 0;
+                let rowSpan: number;
+                let rowSpanIndex: number;
+                let columnSpan: number;
+                let cloneCells: TableCellWidget;
+                while (row2 != endCell.ownerRow.nextRow) {
+                    rowWidget = cloneTable.childWidgets[k] as TableRowWidget || cloneTable.childWidgets[k = 0] as TableRowWidget;
+                    let rowWidgetLength: number = rowWidget.childWidgets.length;
+                    let cellIndexSE: number = 0;
+                    for (let cellIndex: number = startCell.columnIndex; cellIndex <= endCell.columnIndex; cellIndex++) {
+                        rowWidget = cloneTable.childWidgets[k] as TableRowWidget;
+                        if (rowSpan > 1 && rowSpanIndex === cellIndex) {
+                            cellIndex++;
+                            rowSpan--;
+                            rowSpanIndex = null;
+                        }
+                        if (columnSpan > 1 && cellIndexSE >= (rowWidgetLength - (columnSpan - 1))) {
+                            columnSpan = 1;
+                            cellIndex = cellIndex + (columnSpan - 1);
+                            cellIndexSE = 0;
+                        }
+                        newCells = rowWidget.childWidgets[cellIndexSE] as TableCellWidget || rowWidget.childWidgets[cellIndexSE = 0] as TableCellWidget;
+                        cloneCells = newCells.clone();
+                        let pasteCell: TableCellWidget = row2.childWidgets[cellIndex] as TableCellWidget;
+                        for (let x: number = 0; x < cloneCells.childWidgets.length; x++) {
+                            let newPara: ParagraphWidget = cloneCells.childWidgets[x] as ParagraphWidget;
+                            newPara.containerWidget = pasteCell;
+                            cloneCells.childWidgets[x] = newPara;
+                        }
+                        pasteCell.childWidgets = cloneCells.childWidgets;
+                        if (newCells.cellFormat.rowSpan > 1) {
+                            rowSpan = newCells.cellFormat.rowSpan;
+                            rowSpanIndex = cellIndex;
+                        }
+                        if (newCells.cellFormat.columnSpan > 1) {
+                            columnSpan = newCells.cellFormat.columnSpan;
+                        }
+                        row2.childWidgets[cellIndex] = pasteCell;
+                        if (isNullOrUndefined(startParagraph)) {
+                            startParagraph = this.selection.getFirstParagraph(cloneCells);
+                        }
+                        cellIndexSE++;
+                    }
+                    row2 = row2.nextRow;
+                    k++;
+                }
+                this.tableReLayout(table, startParagraph, cloneCells);
+            }
+            else {
+                let rowsToAdd: number;
+                let rowSpan: number;
+                let rowSpanIndex: number;
+                let pasteCell: TableCellWidget;
+                if (numberOfRows > table.childWidgets.length - rowIndexPaste) {
+                    rowsToAdd = numberOfRows - table.childWidgets.length + rowIndexPaste;
+                    this.addRows(rowsToAdd, table);
+                }
+                for (let i: number = 0; i < numberOfRows; i++) {
+                    let cellIndex: number = startCell.columnIndex;
+                    rowWidget = cloneTable.childWidgets[i] as TableRowWidget;
+                    let numberOfColumns: number = rowWidget.childWidgets.length;
+                    for (let cellIterate: number = 0; cellIterate < numberOfColumns; cellIterate++) {
+                        newCells = rowWidget.childWidgets[cellIterate] as TableCellWidget;
+                        let cloneCells: TableCellWidget = newCells.clone();
+                        if (rowSpan > 1 && rowSpanIndex === cellIndex) {
+                            cellIndex++;
+                            rowSpan--;
+                            rowSpanIndex = null;
+                        }
+                        pasteCell = row.childWidgets[cellIndex] as TableCellWidget;
+                        if (!pasteCell) {
+                            pasteCell = cloneCells;
+                            pasteCell.containerWidget = row;
+                            pasteCell.index = cellIndex;
+                        }
+                        for (let index: number = 0; index < cloneCells.childWidgets.length; index++) {
+                            let newPara: ParagraphWidget = cloneCells.childWidgets[index] as ParagraphWidget;
+                            newPara.containerWidget = pasteCell;
+                            cloneCells.childWidgets[index] = newPara;
+                        }
+                        pasteCell.childWidgets = cloneCells.childWidgets;
+                        if (newCells.cellFormat.rowSpan > 1) {
+                            rowSpan = newCells.cellFormat.rowSpan;//getting span
+                            rowSpanIndex = cellIndex;
+                        }
+                        row.childWidgets.splice(cellIndex++, 1, pasteCell);
+                        if (isNullOrUndefined(startParagraph)) {
+                            startParagraph = this.selection.getFirstParagraph(pasteCell);
+                        }
+                    }
+                    row = row.nextRow;
+                }
+                this.tableReLayout(table, startParagraph, pasteCell);
+            }
+        }
+    }
+
+    private pasteAsNewRow(data: TableWidget): void {
+        if (this.owner.isReadOnlyMode || !this.canEditContentControl) {
+            return;
+        }
+        if (this.checkIsNotRedoing()) {
+            this.initHistory('PasteRow');
+        }
+        this.documentHelper.owner.isShiftingEnabled = true;
+        let startCell: TableCellWidget = this.getOwnerCell(this.selection.isForward).getSplitWidgets()[0] as TableCellWidget;
+        let endCell: TableCellWidget = this.getOwnerCell(!this.selection.isForward).getSplitWidgets()[0] as TableCellWidget;
+        let table: TableWidget = startCell.ownerTable.combineWidget(this.owner.viewer) as TableWidget;
+        let row: TableRowWidget = endCell.ownerRow;
+        if (this.editorHistory) {
+            this.cloneTableToHistoryInfo(table);
+        }
+        let rowCount: number = this.getRowCountToInsert();
+        let columncount: number = this.getColumnCountToInsert();
+        let rows: TableRowWidget[] = [];
+        let index: number = row.rowIndex;
+        index++;
+        let pasteRowCount: number = data.childWidgets.length;
+        for (let i: number = 0; i < pasteRowCount; i++) {
+            let newRow: TableRowWidget = (data.childWidgets[i] as TableRowWidget).clone();
+            if (this.owner.enableTrackChanges) {
+                this.insertRevision(newRow.rowFormat, 'Insertion');
+            }
+            rows.push(newRow);
+        }
+        table.insertTableRowsInternal(rows, index, false);
+        let cellWidget: TableCellWidget = undefined;
+        let paragraphWidget: ParagraphWidget = undefined;
+        if ((table.childWidgets[index] instanceof TableRowWidget)) {
+            cellWidget = ((table.childWidgets[index] as TableRowWidget).firstChild as TableCellWidget);
+            paragraphWidget = this.selection.getFirstParagraph(cellWidget);
+        } else {
+            let widget: Widget = undefined;
+            while (!(widget instanceof TableWidget)) {
+                widget = table.nextRenderedWidget;
+            }
+            paragraphWidget = this.selection.getFirstParagraphInFirstCell(widget);
+        }
+        this.documentHelper.layout.reLayoutTable(table);
+        this.selection.selectParagraphInternal(paragraphWidget, true);
+        this.reLayout(this.selection, true);
+    }
+
+    private tableUpdate(table: TableWidget): void {
+        table.isGridUpdated = false;
+        table.calculateGrid();
+        table.buildTableColumns();
+        table.isGridUpdated = true;
+    }
+
+    private rowspannedCollection(row: TableRowWidget, rowSpannedCells: TableCellWidget[]) {
+        for (let j: number = 0; j < row.childWidgets.length; j++) {
+            let rowCell: TableCellWidget = row.childWidgets[j] as TableCellWidget;
+            if (rowCell.cellFormat.rowSpan > 1) {
+                rowSpannedCells.push(rowCell);
+            }
+        }
+        return rowSpannedCells;
+    }
+
+    private insertSpannedCells(row: TableRowWidget, rowSpannedCells: TableCellWidget[], newCell: TableCellWidget, cellIndex: number): void {
+        let isCellInserted: boolean = false;
+        for (let j: number = 0; j < row.childWidgets.length; j++) {
+            let rowCell: TableCellWidget = row.childWidgets[j] as TableCellWidget;
+            // Add the row spanned cells to colection for adding column before / after row spnned cells.
+            if (rowCell.cellFormat.rowSpan > 1) {
+                rowSpannedCells.push(rowCell);
+            }
+            if (rowCell.columnIndex + rowCell.cellFormat.columnSpan === cellIndex) {
+                row.childWidgets.splice(rowCell.cellIndex + 1, 0, newCell);
+                isCellInserted = true;
+            } else if (cellIndex > rowCell.columnIndex && rowCell.columnIndex + rowCell.cellFormat.columnSpan > cellIndex
+                && cellIndex < rowCell.columnIndex + rowCell.cellFormat.columnSpan) {
+                row.childWidgets.splice(rowCell.cellIndex + 1, 0, newCell);
+                isCellInserted = true;
+            }
+            if (isCellInserted) {
+                break;
+            }
+        }
+        // If the cell is not inserted for row, then check for row spanned cells.
+        if (!isCellInserted) {
+            if (rowSpannedCells.length > 0) {
+                for (let k: number = 0; k < rowSpannedCells.length; k++) {
+                    let rowSpannedCell: TableCellWidget = rowSpannedCells[k];
+                    if (rowSpannedCell.ownerRow !== row
+                        && row.rowIndex <= rowSpannedCell.ownerRow.rowIndex + rowSpannedCell.cellFormat.rowSpan - 1) {
+                        if (rowSpannedCell.columnIndex + rowSpannedCell.cellFormat.columnSpan === cellIndex) {
+                            if (rowSpannedCell.cellIndex > row.childWidgets.length) {
+                                row.childWidgets.push(newCell);
+                            } else {
+                                row.childWidgets.splice(rowSpannedCell.cellIndex, 0, newCell);
+                            }
+                            isCellInserted = true;
+                        } else if (cellIndex > rowSpannedCell.columnIndex &&
+                            rowSpannedCell.columnIndex + rowSpannedCell.cellFormat.columnSpan > cellIndex
+                            && cellIndex < rowSpannedCell.columnIndex + rowSpannedCell.cellFormat.columnSpan) {
+                            row.childWidgets.splice(rowSpannedCell.columnIndex, 0, newCell);
+                            isCellInserted = true;
+                        }
+                    }
+                    if (isCellInserted) {
+                        break;
+                    }
+                }
+            }
+        }
+    }
+
+    private addRows(count: number, table: TableWidget, ownerTable?: TableWidget): void {
+        let rowPlacement: RowPlacement = 'Below';
+        if (this.owner.isReadOnlyMode || !this.canEditContentControl) {
+            return;
+        }
+        let isInsertRow: boolean = false;
+        let startPos: TextPosition = this.selection.isForward ? this.selection.start : this.selection.end;
+        let endPos: TextPosition = this.selection.isForward ? this.selection.end : this.selection.start;
+        let rows: number = table.childWidgets.length;
+        let rowWidget: TableRowWidget = table.childWidgets[rows - 1] as TableRowWidget;
+        let column: number = rowWidget.childWidgets.length;
+        let cloneTable: TableWidget = ownerTable ? ownerTable : table;
+        if (startPos.paragraph.isInsideTable) {
+            let startCell: TableCellWidget = this.getOwnerCell(this.selection.isForward).getSplitWidgets()[0] as TableCellWidget;
+            let endCell: TableCellWidget = rowWidget.childWidgets[column - 1] as TableCellWidget;
+            let row: TableRowWidget = endCell.ownerRow;
+            this.rowInsertion(count, rowPlacement, startCell, endCell, row, table, isInsertRow);
+        }
+        //this.reLayout(this.selection, true);
+    }
+
     private pasteContent(widgets: BodyWidget[], currentFormat?: WParagraphFormat): void {
         /* eslint-enable @typescript-eslint/no-explicit-any */
         this.documentHelper.owner.isShiftingEnabled = true;
@@ -4534,6 +4999,7 @@ export class Editor {
         this.documentHelper.owner.isPastingContent = false;
         this.documentHelper.selection.fireSelectionChanged(true);
     }
+
     private pasteCopiedData(bodyWidget: BodyWidget[], currentFormat?: WParagraphFormat): void {
         if (this.documentHelper.layout.isBidiReLayout) {
             this.documentHelper.layout.isBidiReLayout = false;
@@ -4651,7 +5117,7 @@ export class Editor {
         let insertIndex: number = table.getIndex();
         if (moveRows) {
             //Moves the rows to table.
-            for (let i: number = 0, index: number = 0; i < table.childWidgets.length; i++ , index++) {
+            for (let i: number = 0, index: number = 0; i < table.childWidgets.length; i++, index++) {
                 let row: TableRowWidget = table.childWidgets[i] as TableRowWidget;
                 newTable.childWidgets.splice(index, 0, row);
                 row.containerWidget = newTable;
@@ -5341,6 +5807,7 @@ export class Editor {
         if (this.owner.isReadOnlyMode || !this.canEditContentControl) {
             return;
         }
+        let isInsertRow: boolean = true;
         let startPos: TextPosition = this.selection.isForward ? this.selection.start : this.selection.end;
         let endPos: TextPosition = this.selection.isForward ? this.selection.end : this.selection.start;
         if (startPos.paragraph.isInsideTable) {
@@ -5355,52 +5822,59 @@ export class Editor {
             if (this.editorHistory) {
                 let clonedTable: TableWidget = this.cloneTableToHistoryInfo(table);
             }
-            let rowCount: number = count ? count : this.getRowCountToInsert();
-            let rows: TableRowWidget[] = [];
-            let index: number = row.rowIndex;
-            if (rowPlacement === 'Below') {
-                index++;
-                let isAffectedByRowSpannedCell: boolean = isNullOrUndefined(endCell.previousWidget)
-                    || endCell.columnIndex === (endCell.previousWidget as TableCellWidget).columnIndex + 1;
-                let isRowSpanEnd: boolean = endCell.cellIndex !== endCell.columnIndex && isAffectedByRowSpannedCell
-                    && row.rowIndex + startCell.cellFormat.rowSpan - 1 === endCell.ownerRow.rowIndex;
-                if (!isRowSpanEnd) {
-                    if (endCell.cellFormat.rowSpan > 1) {
-                        if (!isNullOrUndefined(row.nextWidget) && row.nextWidget instanceof TableRowWidget) {
-                            endCell.cellFormat.rowSpan += rowCount;
-                            row = row.nextWidget as TableRowWidget;
-                        }
+            this.rowInsertion(count, rowPlacement, startCell, endCell, row, table, isInsertRow);
+        }
+
+        this.reLayout(this.selection, true);
+    }
+
+    private rowInsertion(count: number, rowPlacement: RowPlacement, startCell: TableCellWidget, endCell: TableCellWidget, row: TableRowWidget, table: TableWidget, isInsertRow: boolean): void {
+        let rowCount: number = count ? count : this.getRowCountToInsert();
+        let rows: TableRowWidget[] = [];
+        let index: number = row.rowIndex;
+        if (rowPlacement === 'Below') {
+            index++;
+            let isAffectedByRowSpannedCell: boolean = isNullOrUndefined(endCell.previousWidget)
+                || endCell.columnIndex === (endCell.previousWidget as TableCellWidget).columnIndex + 1;
+            let isRowSpanEnd: boolean = endCell.cellIndex !== endCell.columnIndex && isAffectedByRowSpannedCell
+                && row.rowIndex + startCell.cellFormat.rowSpan - 1 === endCell.ownerRow.rowIndex;
+            if (!isRowSpanEnd) {
+                if (endCell.cellFormat.rowSpan > 1) {
+                    if (!isNullOrUndefined(row.nextWidget) && row.nextWidget instanceof TableRowWidget) {
+                        endCell.cellFormat.rowSpan += rowCount;
+                        row = row.nextWidget as TableRowWidget;
                     }
                 }
-                row.bottomBorderWidth = 0;
             }
-            for (let i: number = 0; i < rowCount; i++) {
-                let cellCountInfo: CellCountInfo = this.updateRowspan(row, rowPlacement === 'Below' ? endCell : startCell, rowPlacement);
-                let newRow: TableRowWidget = this.createRowAndColumn(cellCountInfo.count, i);
-                newRow.rowFormat.copyFormat(row.rowFormat);
-                if (this.owner.enableTrackChanges) {
-                    this.insertRevision(newRow.rowFormat, 'Insertion');
-                }
-                this.updateCellFormatForInsertedRow(newRow, cellCountInfo.cellFormats);
-                rows.push(newRow);
-            }
-            table.insertTableRowsInternal(rows, index);
-            let cell: TableCellWidget = undefined;
-            let paragraph: ParagraphWidget = undefined;
-            if ((table.childWidgets[index] instanceof TableRowWidget)) {
-                cell = ((table.childWidgets[index] as TableRowWidget).firstChild as TableCellWidget);
-                paragraph = this.selection.getFirstParagraph(cell);
-            } else {
-                let widget: Widget = undefined;
-                while (!(widget instanceof TableWidget)) {
-                    widget = table.nextRenderedWidget;
-                }
-                paragraph = this.selection.getFirstParagraphInFirstCell(widget);
-            }
-            this.documentHelper.layout.reLayoutTable(table);
-            this.selection.selectParagraphInternal(paragraph, true);
+            row.bottomBorderWidth = 0;
         }
-        this.reLayout(this.selection, true);
+        for (let i: number = 0; i < rowCount; i++) {
+            let cellCountInfo: CellCountInfo = this.updateRowspan(row, rowPlacement === 'Below' ? endCell : startCell, rowPlacement);
+            let newRow: TableRowWidget = this.createRowAndColumn(cellCountInfo.count, i);
+            newRow.rowFormat.copyFormat(row.rowFormat);
+            if (this.owner.enableTrackChanges) {
+                this.insertRevision(newRow.rowFormat, 'Insertion');
+            }
+            this.updateCellFormatForInsertedRow(newRow, cellCountInfo.cellFormats);
+            rows.push(newRow);
+        }
+        table.insertTableRowsInternal(rows, index, isInsertRow);
+        let cell: TableCellWidget = undefined;
+        let paragraph: ParagraphWidget = undefined;
+        if ((table.childWidgets[index] instanceof TableRowWidget)) {
+            cell = ((table.childWidgets[index] as TableRowWidget).firstChild as TableCellWidget);
+            paragraph = this.selection.getFirstParagraph(cell);
+        } else {
+            let widget: Widget = undefined;
+            while (!(widget instanceof TableWidget)) {
+                widget = table.nextRenderedWidget;
+            }
+            paragraph = this.selection.getFirstParagraphInFirstCell(widget);
+        }
+        if (isInsertRow) {
+            this.documentHelper.layout.reLayoutTable(table);
+        }
+        this.selection.selectParagraphInternal(paragraph, true);
     }
     /**
      * Fits the table based on AutoFitType.
@@ -5535,7 +6009,7 @@ export class Editor {
         //     let clonedTable: TableWidget = this.cloneTableToHistoryInfo(prevBlock);
         // }
         let row: TableRowWidget = prevBlock.childWidgets[prevBlock.childWidgets.length - 1] as TableRowWidget;
-        prevBlock.insertTableRowsInternal(table.childWidgets as TableRowWidget[], prevBlock.childWidgets.length);
+        prevBlock.insertTableRowsInternal(table.childWidgets as TableRowWidget[], prevBlock.childWidgets.length, true);
         let paragraph: ParagraphWidget = this.selection.getFirstParagraph(row.nextWidget.childWidgets[0] as TableCellWidget);
         if (this.checkInsertPosition(this.selection)) {
             this.updateHistoryPosition(this.selection.getHierarchicalIndex(paragraph, '0'), true);
@@ -5599,75 +6073,35 @@ export class Editor {
                     if (cellIndex === 0) {
                         row.childWidgets.splice(cellIndex, 0, newCell);
                     } else {
-                        let isCellInserted: boolean = false;
-                        for (let j: number = 0; j < row.childWidgets.length; j++) {
-                            let rowCell: TableCellWidget = row.childWidgets[j] as TableCellWidget;
-                            // Add the row spanned cells to colection for adding column before / after row spnned cells.
-                            if (rowCell.cellFormat.rowSpan > 1) {
-                                rowSpannedCells.push(rowCell);
-                            }
-                            if (rowCell.columnIndex + rowCell.cellFormat.columnSpan === cellIndex) {
-                                row.childWidgets.splice(rowCell.cellIndex + 1, 0, newCell);
-                                isCellInserted = true;
-                            } else if (cellIndex > rowCell.columnIndex && rowCell.columnIndex + rowCell.cellFormat.columnSpan > cellIndex
-                                && cellIndex < rowCell.columnIndex + rowCell.cellFormat.columnSpan) {
-                                row.childWidgets.splice(rowCell.cellIndex, 0, newCell);
-                                isCellInserted = true;
-                            }
-                            if (isCellInserted) {
-                                break;
-                            }
-                        }
-                        // If the cell is not inserted for row, then check for row spanned cells.
-                        if (!isCellInserted) {
-                            if (rowSpannedCells.length > 0) {
-                                for (let k: number = 0; k < rowSpannedCells.length; k++) {
-                                    let rowSpannedCell: TableCellWidget = rowSpannedCells[k];
-                                    if (rowSpannedCell.ownerRow !== row
-                                        && row.rowIndex <= rowSpannedCell.ownerRow.rowIndex + rowSpannedCell.cellFormat.rowSpan - 1) {
-                                        if (rowSpannedCell.columnIndex + rowSpannedCell.cellFormat.columnSpan === cellIndex) {
-                                            if (rowSpannedCell.cellIndex > row.childWidgets.length) {
-                                                row.childWidgets.push(newCell);
-                                            } else {
-                                                row.childWidgets.splice(rowSpannedCell.cellIndex, 0, newCell);
-                                            }
-                                            isCellInserted = true;
-                                        } else if (cellIndex > rowSpannedCell.columnIndex &&
-                                            rowSpannedCell.columnIndex + rowSpannedCell.cellFormat.columnSpan > cellIndex
-                                            && cellIndex < rowSpannedCell.columnIndex + rowSpannedCell.cellFormat.columnSpan) {
-                                            row.childWidgets.splice(rowSpannedCell.columnIndex, 0, newCell);
-                                            isCellInserted = true;
-                                        }
-                                    }
-                                    if (isCellInserted) {
-                                        break;
-                                    }
-                                }
-                            }
-                        }
+                        this.insertSpannedCells(row, rowSpannedCells, newCell, cellIndex);
                     }
                 }
             }
-            table.updateRowIndex(0);
-            let parentTable: TableWidget = this.documentHelper.layout.getParentTable(table);
-            if (parentTable) {
-                parentTable.fitChildToClientArea();
-            } else {
-                table.fitChildToClientArea();
-            }
-            this.selection.owner.isLayoutEnabled = true;
-            table.isGridUpdated = false;
-            table.buildTableColumns();
-            table.isGridUpdated = true;
-            this.documentHelper.skipScrollToPosition = true;
-            this.documentHelper.layout.reLayoutTable(table);
-            this.selection.start.setPosition(startParagraph.firstChild as LineWidget, true);
-            this.selection.end.setPosition(this.selection.getLastParagraph(newCell).firstChild as LineWidget, false);
-            if (this.checkIsNotRedoing() || isNullOrUndefined(this.editorHistory)) {
-                this.reLayout(this.selection);
-            }
+            this.tableReLayout(table, startParagraph, newCell);
         }
     }
+
+    private tableReLayout(table: TableWidget, startParagraph: ParagraphWidget, newCell: TableCellWidget): void {
+        table.updateRowIndex(0);
+        let parentTable: TableWidget = this.documentHelper.layout.getParentTable(table);
+        if (parentTable) {
+            parentTable.fitChildToClientArea();
+        } else {
+            table.fitChildToClientArea();
+        }
+        this.selection.owner.isLayoutEnabled = true;
+        table.isGridUpdated = false;
+        table.buildTableColumns();
+        table.isGridUpdated = true;
+        this.documentHelper.skipScrollToPosition = true;
+        this.documentHelper.layout.reLayoutTable(table);
+        this.selection.start.setPosition(startParagraph.firstChild as LineWidget, true);
+        this.selection.end.setPosition(this.selection.getLastParagraph(newCell).firstChild as LineWidget, false);
+        if (this.checkIsNotRedoing() || isNullOrUndefined(this.editorHistory)) {
+            this.reLayout(this.selection);
+        }
+    }
+
     /**
      * Creates table with specified rows and columns.
      * @private
@@ -6428,7 +6862,7 @@ export class Editor {
                 if (selection.start.paragraph.containerWidget instanceof FootNoteWidget) {
                     if (selection.start.paragraph.containerWidget.footNoteType === 'Footnote') {
                         this.documentHelper.layout.isRelayoutFootnote = true;
-                        this.shiftFootnotePageContent();
+                        this.shiftFootnotePageContent(selection.start.paragraph.containerWidget);
                     } else {
                         this.documentHelper.layout.isRelayoutFootnote = false;
                         this.shiftFootnotePageContent();
@@ -6551,8 +6985,12 @@ export class Editor {
             }
         }
     }
-    private shiftFootnotePageContent(): void {
+    private shiftFootnotePageContent(foot?: FootNoteWidget): void {
         let section: BodyWidget = this.documentHelper.pages[0].bodyWidgets[0];
+        if (!isNullOrUndefined(foot)) {
+            let index: number = this.documentHelper.pages.indexOf(foot.page);
+            section = this.documentHelper.pages[index].bodyWidgets[0];
+        }
         if (!isNullOrUndefined(section.page.footnoteWidget)) {
             this.checkAndShiftFromBottom(section.page, section.page.footnoteWidget);
         }
@@ -6656,12 +7094,6 @@ export class Editor {
             if (bodyWidget.childWidgets.length - 1 === i && block.y + block.height < footerWidget.y) {
                 blockToShift = block as BlockWidget;
                 break;
-            }
-            if (footerWidget instanceof FootNoteWidget) {
-                if (block.y + block.height < footerWidget.y) {
-                    blockToShift = block as BlockWidget;
-                    break;
-                }
             }
         }
         this.owner.viewer.updateClientArea(bodyWidget.sectionFormat, page, true);
@@ -11967,6 +12399,9 @@ export class Editor {
                 paragraph.paragraphFormat.copyFormat(paragraphAdv.paragraphFormat);
                 paragraph.characterFormat.copyFormat(paragraphAdv.characterFormat);
             }
+            if ((paragraphAdv.lastChild as LineWidget).children.length > 0) {
+                paragraphAdv.characterFormat.copyFormat((paragraphAdv.lastChild as LineWidget).children[(paragraphAdv.lastChild as LineWidget).children.length - 1].characterFormat);
+            }
             // let revisions: Revision[] = [];
             // if (paragraphAdv.characterFormat.revisions.length > 0) {
             //     revisions = paragraphAdv.characterFormat.revisions;
@@ -16727,7 +17162,7 @@ export class Editor {
         }
     }
     private separator(type: string): void {
-        //var block = new page_1.block;
+        //let block = new page_1.block;
         let paragraph: ParagraphWidget = new ParagraphWidget();
         let lineWidget: LineWidget = new LineWidget(paragraph);
         let text: TextElementBox = new TextElementBox();

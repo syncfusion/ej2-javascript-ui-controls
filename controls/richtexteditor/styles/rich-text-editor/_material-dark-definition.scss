@@ -3,6 +3,8 @@ $rte-border-size: 1px !default;
 $rte-2px-border-size: 2px !default;
 $rte-border-type: solid !default;
 
+$rte-list-btn-flex: column !default;
+$rte-list-btn-line-height: 1 !default;
 $skin-name: 'material' !default;
 $rte-btn-color: rgba($grey-dark-font, .22) !default;
 $rte-border-color: $grey-700 !default;
@@ -11,7 +13,13 @@ $rte-full-screen-bg: $grey-dark !default;
 $rte-content-font-color: $grey-dark-font !default;
 $rte-item-color: $grey-dark-font !default;
 $rte-icons-color: $grey-dark-font !default;
+$rte-content-padding: 16px !default;
+$rte-table-popup-padding: 10px !default;
+$rte-toolbar-icon-size: 16px !default;
+$rte-toolbar-big-icon-size: 18px !default;
 
+$font-weight: 500 !default;
+$rte-table-popup-bdr-radius: 0 !default;
 $rte-big-quick-item-btn-width: 39px !default;
 $rte-quick-item-btn-width: 27px !default;
 $rte-big-quick-item-btn-height: 34px !default;
@@ -155,4 +163,8 @@ $rte-inline-tmp-color-min-width: 55px;
 $rte-resize-handler-width: 15px;
 $rte-resize-handler-height: 15px;
 $rte-resize-handler-position: 0;
+
+$rte-big-color-list-span-common-padding-left-right: 0;
+
+$rte-big-color-list-span-common-padding-left-right: 0;
 //enddefult

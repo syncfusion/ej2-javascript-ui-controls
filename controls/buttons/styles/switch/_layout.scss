@@ -53,11 +53,17 @@
       }
 
       & .e-switch-on {
+        @if $skin-name == 'bootstrap4' {
+          top: $switch-inner-text-top;
+        }
         left: $switch-on-position-left;
         text-indent: $switch-on-text-indent;
       }
 
       & .e-switch-off {
+        @if $skin-name == 'bootstrap4' {
+          top: $switch-inner-text-top;
+        }
         left: $switch-off-position-left;
         opacity: $switch-off-opacity;
         text-indent: $switch-off-text-indent;

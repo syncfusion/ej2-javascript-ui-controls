@@ -6,7 +6,7 @@ import { IHtmlKeyboardEvent } from './../../editor-manager/base/interface';
 import * as EVENTS from './../../common/constant';
 /**
  * Selection EXEC internal component
- * 
+ *
  * @hidden
  * @deprecated
  */

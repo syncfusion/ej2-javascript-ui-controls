@@ -63,7 +63,7 @@ export class Resize {
             this.parent.element.style.height = (<MouseEvent>e).clientY - boundRect.top + 'px';
             this.parent.element.style.width = (<MouseEvent>e).clientX - boundRect.left + 'px';
         } else {
-            let eventType: MouseEvent | Touch = Browser.info.name !== 'msie' ? (<TouchEvent>e).touches[0] : (<MouseEvent>e);
+            const eventType: MouseEvent | Touch = Browser.info.name !== 'msie' ? (<TouchEvent>e).touches[0] : (<MouseEvent>e);
             this.parent.element.style.height = eventType.clientY - boundRect.top + 'px';
             this.parent.element.style.width = eventType.clientX - boundRect.left + 'px';
         }

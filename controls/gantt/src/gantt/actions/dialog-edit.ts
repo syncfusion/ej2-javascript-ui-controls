@@ -1,4 +1,4 @@
-import { remove, extend, isNullOrUndefined, createElement, L10n, getValue, setValue, closest, isBlazor } from '@syncfusion/ej2-base';
+import { remove, extend, isNullOrUndefined, createElement, L10n, getValue, setValue, closest } from '@syncfusion/ej2-base';
 import { DataManager, DataUtil } from '@syncfusion/ej2-data';
 import { Dialog, PositionDataModel, DialogModel } from '@syncfusion/ej2-popups';
 import { Tab, TabModel, TabItemModel, SelectEventArgs } from '@syncfusion/ej2-navigations';
@@ -638,7 +638,7 @@ export class DialogEdit {
             requestType: this.beforeOpenArgs.requestType as string,
             cancel: this.beforeOpenArgs.cancel as boolean
         };
-        this.parent.trigger('actionBegin', isBlazor() ? args : this.beforeOpenArgs, (arg: ActionBeginArgs | CObject) => {
+        this.parent.trigger('actionBegin', this.beforeOpenArgs, (arg: ActionBeginArgs | CObject) => {
             this.renderTabItems();
             if (!arg.cancel) {
                 tabModel.selected = this.tabSelectedEvent.bind(this);
@@ -660,9 +660,6 @@ export class DialogEdit {
                     element: this.dialog,
                     cancel: false
                 };
-                if (isBlazor()) {
-                    this.parent.updateDataArgs(actionCompleteArgs);
-                }
                 this.parent.trigger('actionComplete', actionCompleteArgs, (actionCompleteArg: CObject) => {
                     if (actionCompleteArg.cancel) {
                         this.resetValues();

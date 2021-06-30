@@ -2,15 +2,32 @@
 
 ## [Unreleased]
 
-## 19.1.69 (2021-06-15)
+## 19.1.67 (2021-06-08)
 
 ### PDF Viewer
 
 #### Bug Fixes
 
-- `#329356` - Now, Add comment option icon is shown properly in the toolbar while restricting some toolbar items when the PDF Viewer has the minimum width.
+- `#328989` - Now, the clear and create button in the signature panel is enabled only on drawing the signature.
+- `#328499` - Now, the stamp annotations are downloaded correctly in the PDF document.
 
-## 19.1.67 (2021-06-08)
+## 19.1.66 (2021-06-01)
+
+### PDF Viewer
+
+#### Bug Fixes
+
+- `#328030` - The dynamic stamp annotation size is maintained properly while importing and exporting the stamp annotation in XFDF format.
+
+## 19.1.65 (2021-05-25)
+
+### PDF Viewer
+
+#### New Features
+
+- `#326021` - hyperlinkClick event must be handled to cancel the navigation or change the URL.
+
+## 19.1.64 (2021-05-19)
 
 ### PDF Viewer
 

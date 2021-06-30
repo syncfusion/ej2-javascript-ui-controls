@@ -1,6 +1,6 @@
 @include export-module('documenteditor-layout') {
   .e-de-blink-cursor {
-    border-left: 1px solid $de-tooltip-color;
+    border-left: 1px solid $de-blink-cursor-clr;
     pointer-events: none;
     position: absolute;
     z-index: 3;
@@ -117,18 +117,19 @@
       display: block;
     }
   }
-
+  
   .e-documenteditor {
-    .e-checkbox-wrapper .e-frame {
-      height: 14px;
-      line-height: 6px;
-      width: 14px;
-    }
-
-    .e-checkbox-wrapper .e-label {
-      font-size: 12px;
-    }
-
+    @if $skin_name != 'tailwind' and $skin_name != 'tailwind-dark' {
+      .e-checkbox-wrapper .e-frame {
+        height: 14px;
+        line-height: 6px;
+        width: 14px;
+      }
+  
+      .e-checkbox-wrapper .e-label {
+        font-size: 12px;
+      }      
+    }    
     .e-de-op-close-button {
       left: 267px;
       position: absolute;

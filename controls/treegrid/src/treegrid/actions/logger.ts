@@ -16,7 +16,7 @@ const WARNING: string = '[EJ2TreeGrid.Warning]';
 const ERROR: string = '[EJ2TreeGrid.Error]';
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 const INFO: string = '[EJ2TreeGrid.Info]';
-let isRowDDEnabled: boolean = false;
+let IsRowDDEnabled: boolean = false;
 
 export interface TreeItemDetails {
     type: string;
@@ -55,9 +55,9 @@ export class Logger extends GridLogger {
             if (cOp.success) {
                 let message: string = item.generateMessage(args, this.parent, cOp.options);
                 message =  message.replace('EJ2Grid', 'EJ2TreeGrid').replace('* Hierarchy Grid', '').replace('* Grouping', '');
-                if (isRowDDEnabled && type[i] === 'primary_column_missing') {
+                if (IsRowDDEnabled && type[i] === 'primary_column_missing') {
                     message = message.replace('Editing', 'Row DragAndDrop');
-                    isRowDDEnabled = false;
+                    IsRowDDEnabled = false;
                 }
                 const index: number = message.indexOf('https');
                 const gridurl: string = message.substring(index);
@@ -92,7 +92,7 @@ export class Logger extends GridLogger {
         if (!(types instanceof Array)) { types = [types]; }
         const type: string[] = (<string[]>types);
         if (treeGrid.allowRowDragAndDrop && !(<Column[]>treeGrid.columns).filter((column: Column) => column.isPrimaryKey).length) {
-            isRowDDEnabled = true;
+            IsRowDDEnabled = true;
             this.log('primary_column_missing', args);
         }
         for (let i: number = 0; i < type.length; i++) {

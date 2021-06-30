@@ -328,6 +328,7 @@ export class Image {
             offsetParent = offsetParent.parentNode;
         }
         if (offsetParent && offsetParent !== elem && offsetParent.nodeType === 1) {
+            // eslint-disable-next-line
             parentOffset = (<HTMLElement>offsetParent).getBoundingClientRect();
         }
         return {
@@ -339,11 +340,18 @@ export class Image {
         if (isNullOrUndefined(img.width)) {
             return;
         }
-        const width: number = img.style.width !== '' ? parseInt(img.style.width, 10) : img.width;
+        const width: number = img.style.width !== '' ? img.style.width.match(/^\d+(\.\d*)?%$/g) ? parseFloat(img.style.width) :
+        parseInt(img.style.width, 10) : img.width;
         const height: number = img.style.height !== '' ? parseInt(img.style.height, 10) : img.height;
         if (width > height) {
             if (this.parent.insertImageSettings.resizeByPercent) {
-                img.style.width = this.pixToPerc((width / height * expectedY), (img.previousElementSibling || img.parentElement)) + '%';
+                img.style.minWidth = '20px';
+                if (parseInt('' + img.getBoundingClientRect().width + '') !== 0 && parseInt('' + width + '') !== 0) {
+                    const percentageValue = this.pixToPerc((width / height * expectedY), (img.previousElementSibling || img.parentElement));
+                    img.style.width = Math.min(Math.round((percentageValue / img.getBoundingClientRect().width) * expectedX * 100) / 100, 100) + '%';
+                } else {
+                    img.style.width = this.pixToPerc((width / height * expectedY), (img.previousElementSibling || img.parentElement)) + '%';
+                }
                 img.style.height = null;
                 img.removeAttribute('height');
             } else if (img.style.width !== '') {
@@ -355,7 +363,11 @@ export class Image {
             }
         } else if (height > width) {
             if (this.parent.insertImageSettings.resizeByPercent) {
-                img.style.width = this.pixToPerc((expectedX / height * expectedY), (img.previousElementSibling || img.parentElement)) + '%';
+                if (parseInt('' + img.getBoundingClientRect().width + '') !== 0 && parseInt('' + width + '') !== 0) {
+                    img.style.width = Math.min(Math.round((width / img.getBoundingClientRect().width) * expectedX * 100) / 100, 100) + '%';
+                } else {
+                    img.style.width = this.pixToPerc((expectedX / height * expectedY), (img.previousElementSibling || img.parentElement)) + '%';
+                }
                 img.style.height = null;
                 img.removeAttribute('height');
             } else if (img.style.width !== '') {
@@ -1199,7 +1211,6 @@ export class Image {
             }],
             target: (Browser.isDevice) ? document.body : this.parent.element,
             animationSettings: { effect: 'None' },
-            // eslint-disable-next-line
             close: (event: { [key: string]: object }) => {
                 if (this.isImgUploaded) {
                     this.uploadObj.removing();
@@ -1275,7 +1286,8 @@ export class Image {
             this.imgEle = target as HTMLImageElement;
         }
         if (!isNullOrUndefined(this.dialogObj) && ((
-            !closest(target, '[id=' + "'" + this.dialogObj.element.id + "'" +']') && this.parent.toolbarSettings.enable && this.parent.getToolbarElement() &&
+            // eslint-disable-next-line
+            !closest(target, '[id=' + "'" + this.dialogObj.element.id + "'" + ']') && this.parent.toolbarSettings.enable && this.parent.getToolbarElement() &&
             !this.parent.getToolbarElement().contains(e.target as Node)) ||
             (this.parent.getToolbarElement() && this.parent.getToolbarElement().contains(e.target as Node) &&
             !closest(target, '#' + this.parent.getID() + '_toolbar_Image') &&
@@ -1306,7 +1318,7 @@ export class Image {
         detach(this.contentModule.getEditPanel().querySelector('.e-img-resize'));
     }
 
-    private onWindowResize():void {
+    private onWindowResize(): void {
         if (!isNOU(this.contentModule) && !isNOU(this.contentModule.getEditPanel().querySelector('.e-img-resize'))) {
             this.cancelResizeAction();
         }
@@ -1347,7 +1359,8 @@ export class Image {
         } else if (url !== '') {
             if (proxy.parent.editorMode === 'HTML' && isNullOrUndefined(
                 closest(
-                    (this as IImageNotifyArgs).selection.range.startContainer.parentNode, '[id=' + "'" + proxy.contentModule.getPanel().id + "'" +']'))) {
+                    // eslint-disable-next-line
+                    (this as IImageNotifyArgs).selection.range.startContainer.parentNode, '[id=' + "'" + proxy.contentModule.getPanel().id + "'" + ']'))) {
                 (proxy.contentModule.getEditPanel() as HTMLElement).focus();
                 const range: Range = proxy.parent.formatter.editorManager.nodeSelection.getRange(proxy.contentModule.getDocument());
                 (this as IImageNotifyArgs).selection = proxy.parent.formatter.editorManager.nodeSelection.save(
@@ -1454,7 +1467,8 @@ export class Image {
         const proxy: this = this;
         const iframe: boolean = proxy.parent.iframeSettings.enable;
         if (proxy.parent.editorMode === 'HTML' && (!iframe && isNullOrUndefined(closest(e.selection.range.startContainer.parentNode, '[id='
-        + "'" + this.parent.contentModule.getPanel().id + "'" +']'))
+        // eslint-disable-next-line
+        + "'" + this.parent.contentModule.getPanel().id + "'" + ']'))
             || (iframe && !hasClass(e.selection.range.startContainer.parentNode.ownerDocument.querySelector('body'), 'e-lib')))) {
             (this.contentModule.getEditPanel() as HTMLElement).focus();
             const range: Range = this.parent.formatter.editorManager.nodeSelection.getRange(this.parent.contentModule.getDocument());
@@ -1564,9 +1578,7 @@ export class Image {
                     this.parent.trigger(events.imageUploading, e);
                 }
             },
-            // eslint-disable-next-line
             success: (e: Object) => {
-                // eslint-disable-next-line
                 this.parent.trigger(events.imageUploadSuccess, e, (e: object) => {
                     if (!isNullOrUndefined(this.parent.insertImageSettings.path)) {
                         const url: string = this.parent.insertImageSettings.path + (e as MetaData).file.name;
@@ -1586,7 +1598,6 @@ export class Image {
                     }
                 });
             },
-            // eslint-disable-next-line
             failure: (e: object) => {
                 this.parent.trigger(events.imageUploadFailed, e);
             },
@@ -1647,6 +1658,9 @@ export class Image {
 
     /**
      * Used to set range When drop an image
+     *
+     * @param {ImageDropEventArgs} args - specifies the image arguments.
+     * @returns {void}
      */
     private dragDrop(args: ImageDropEventArgs): void {
         this.parent.trigger(events.beforeImageDrop, args, (e: ImageDropEventArgs) => {
@@ -1912,7 +1926,6 @@ export class Image {
                     rawFile = e.filesData;
                 }
             },
-            // eslint-disable-next-line
             failure: (e: Object) => {
                 isUploading = false;
                 this.parent.inputElement.contentEditable = 'true';
@@ -1969,7 +1982,6 @@ export class Image {
      * @param {Object} e - specfies the object.
      * @returns {void}
      */
-    // eslint-disable-next-line
     private uploadFailure(imgEle: HTMLElement, args: IShowPopupArgs, e: Object): void {
         detach(imgEle);
         if (this.popupObj) {
@@ -1991,7 +2003,6 @@ export class Image {
         imageElement.style.opacity = '1';
         imageElement.classList.add(classes.CLS_IMG_FOCUS);
         e.element = imageElement;
-        // eslint-disable-next-line
         this.parent.trigger(events.imageUploadSuccess, e, (e: object) => {
             if (!isNullOrUndefined(this.parent.insertImageSettings.path)) {
                 const url: string = this.parent.insertImageSettings.path + (e as MetaData).file.name;

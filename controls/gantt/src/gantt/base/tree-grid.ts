@@ -2,7 +2,7 @@ import { Gantt } from './gantt';
 import { TreeGrid, ColumnModel } from '@syncfusion/ej2-treegrid';
 import { createElement, isNullOrUndefined, getValue, extend, EventHandler, deleteObject } from '@syncfusion/ej2-base';
 import { FilterEventArgs, SortEventArgs, FailureEventArgs } from '@syncfusion/ej2-grids';
-import { setValue, isBlazor, getElement } from '@syncfusion/ej2-base';
+import { setValue, getElement } from '@syncfusion/ej2-base';
 import { Deferred, Query } from '@syncfusion/ej2-data';
 import { TaskFieldsModel } from '../models/models';
 import { ColumnModel as GanttColumnModel, Column as GanttColumn } from '../models/column';
@@ -94,7 +94,7 @@ export class GanttTreeGrid {
         this.parent.treeGrid[isGantt] = true;
         this.parent.treeGrid.rowHeight = this.parent.rowHeight;
         this.parent.treeGrid.gridLines = this.parent.gridLines;
-        if (!isBlazor() || this.parent.searchSettings.fields.length !== 0 || this.parent.searchSettings.key !== '') {
+        if (this.parent.searchSettings.fields.length !== 0 || this.parent.searchSettings.key !== '') {
             this.parent.treeGrid.searchSettings = this.parent.searchSettings;
         }
         const isJsComponent: string = 'isJsComponent';
@@ -165,8 +165,7 @@ export class GanttTreeGrid {
     private beforeDataBound(args: object): void {
         this.parent.updatedRecords = this.parent.virtualScrollModule && this.parent.enableVirtualization ?
             getValue('virtualScrollModule.visualData', this.parent.treeGrid) : getValue('result', args);
-        if (getValue('actionArgs.requestType', args) !== 'virtualscroll' && this.parent.virtualScrollModule &&
-        this.parent.enableVirtualization) {
+        if (this.parent.virtualScrollModule && this.parent.enableVirtualization) {
             this.parent.updateContentHeight(args);
         }
         setValue('contentModule.objectEqualityChecker', this.objectEqualityChecker, this.parent.treeGrid.grid);
@@ -190,19 +189,7 @@ export class GanttTreeGrid {
         const callBackPromise: Deferred = new Deferred();
         if (!this.parent.ganttChartModule.isExpandCollapseFromChart) {
             const collapsingArgs: object = this.createExpandCollapseArgs(args);
-            if (isBlazor()) {
-                this.parent.trigger('collapsing', collapsingArgs, (arg: object) => {
-                    callBackPromise.resolve(arg);
-                    setValue('chartRow', getElement(getValue('chartRow', arg)), arg);
-                    setValue('gridRow', getElement(getValue('gridRow', arg)), arg);
-                    if (!getValue('cancel', arg)) {
-                        this.parent.ganttChartModule.collapseGanttRow(arg, true);
-                    }
-                });
-                return callBackPromise;
-            } else {
-                this.parent.ganttChartModule.collapseGanttRow(collapsingArgs);
-            }
+            this.parent.ganttChartModule.collapseGanttRow(collapsingArgs);
             setValue('cancel', getValue('cancel', collapsingArgs), args);
         }
     }
@@ -211,40 +198,20 @@ export class GanttTreeGrid {
         const callBackPromise: Deferred = new Deferred();
         if (!this.parent.ganttChartModule.isExpandCollapseFromChart) {
             const expandingArgs: object = this.createExpandCollapseArgs(args);
-            if (isBlazor()) {
-                this.parent.trigger('expanding', expandingArgs, (arg: object) => {
-                    callBackPromise.resolve(arg);
-                    setValue('chartRow', getElement(getValue('chartRow', arg)), arg);
-                    setValue('gridRow', getElement(getValue('gridRow', arg)), arg);
-                    if (!getValue('cancel', arg)) {
-                        this.parent.ganttChartModule.expandGanttRow(arg, true);
-                    }
-                });
-                return callBackPromise;
-            } else {
-                this.parent.ganttChartModule.expandGanttRow(expandingArgs);
-            }
+            this.parent.ganttChartModule.expandGanttRow(expandingArgs);
             setValue('cancel', getValue('cancel', expandingArgs), args);
         }
     }
     private collapsed(args: object): void {
-        this.updateExpandStatus(args);
         if (!this.parent.ganttChartModule.isExpandCollapseFromChart) {
             const collapsedArgs: object = this.createExpandCollapseArgs(args);
             this.parent.ganttChartModule.collapsedGanttRow(collapsedArgs);
         }
     }
     private expanded(args: object): void {
-        this.updateExpandStatus(args);
         if (!this.parent.ganttChartModule.isExpandCollapseFromChart) {
             const expandedArgs: object = this.createExpandCollapseArgs(args);
             this.parent.ganttChartModule.expandedGanttRow(expandedArgs);
-        }
-    }
-    private updateExpandStatus(args: object): void {
-        if (getValue('data', args) && isBlazor()) {
-            const record: IGanttData = this.parent.getTaskByUniqueID(getValue('data', args).uniqueID);
-            record.expanded = getValue('data', args).expanded;
         }
     }
     private actionBegin(args: FilterEventArgs | SortEventArgs): void {
@@ -277,23 +244,20 @@ export class GanttTreeGrid {
         const record: IGanttData = getValue('data', args);
         const gridRow: Node = getValue('row', args);
         let chartRow: Node;
-        if (isBlazor()) {
-            /* eslint-disable-next-line */
-            chartRow = this.parent.ganttChartModule.getChartRows()[this.parent.currentViewData.indexOf(this.parent.getTaskByUniqueID(record.uniqueID))];
-        } else {
-            chartRow = this.parent.ganttChartModule.getChartRows()[this.parent.currentViewData.indexOf(record)];
-        }
+        chartRow = this.parent.ganttChartModule.getChartRows()[this.parent.currentViewData.indexOf(record)];
         const eventArgs: object = { data: record, gridRow: gridRow, chartRow: chartRow, cancel: false };
         return eventArgs;
     }
-      
+    // eslint-disable-next-line valid-jsdoc
     private objectEqualityChecker = (old: Object, current: Object) => {
         if (old) {
             const keys: string[] = Object.keys(old);
             let isEqual: boolean = true;
-            const excludeKeys: string[] = ['Children', 'childRecords', 'taskData', 'uniqueID', 'parentItem', 'parentUniqueID', "ganttProperties"];
+            const excludeKeys: string[] = ['Children', 'childRecords', 'taskData', 'uniqueID', 'parentItem', 'parentUniqueID', 'ganttProperties'];
             for (let i: number = 0; i < keys.length; i++) {
+                /* eslint-disable-next-line */
                 const oldKey: any = old[keys[i]] instanceof Date ? new Date(old[keys[i]]).getTime() : old[keys[i]];
+                /* eslint-disable-next-line */
 				const currentKey: any = current[keys[i]] instanceof Date ? new Date(current[keys[i]]).getTime() : current[keys[i]];
                 if (oldKey !== currentKey && excludeKeys.indexOf(keys[i]) === -1) {
                     this.parent.modifiedRecords.push(current);
@@ -335,9 +299,6 @@ export class GanttTreeGrid {
         }
         if (!isNullOrUndefined(getValue('batchChanges', args)) && !isNullOrUndefined(this.parent.toolbarModule)) {
             this.parent.toolbarModule.refreshToolbarItems();
-        }
-        if (isBlazor()) {
-            this.parent.updateDataArgs(updatedArgs);
         }
         if (this.parent.isCancelled) {
             setValue('requestType', 'cancel', updatedArgs);
@@ -521,9 +482,6 @@ export class GanttTreeGrid {
             column.headerText = column.headerText ? column.headerText : this.parent.localeObj.getConstant('notes');
             column.width = column.width ? column.width : 150;
             column.editType = column.editType ? column.editType : 'stringedit';
-            if (isBlazor() && !column.template) {
-                this.parent.setProperties({ 'showInlineNotes': true }, true);
-            }
             if (!this.parent.showInlineNotes) {
                 if (!column.template) {
                     column.template = '<div class="e-ganttnotes-info">' +

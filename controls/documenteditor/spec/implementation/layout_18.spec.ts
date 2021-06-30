@@ -1,6 +1,6 @@
 import { DocumentEditor } from '../../src/document-editor/document-editor';
 import { createElement } from '@syncfusion/ej2-base';
-import { DocumentHelper, Editor, LineWidget, ParagraphWidget, Selection, TabElementBox, TableRowWidget, TableWidget, EditorHistory, TextElementBox, WordExport, SfdtExport } from '../../src/index';
+import { DocumentHelper, Editor, LineWidget, ParagraphWidget, Selection, TabElementBox, TableRowWidget, TableWidget, TableCellWidget, EditorHistory, TextElementBox, WordExport, SfdtExport } from '../../src/index';
 import { TestHelper } from '../test-helper.spec';
 describe('Merge cell index validtaion', () => {
     let editor: DocumentEditor = undefined;
@@ -1015,6 +1015,51 @@ describe('Layout shape with', () => {
         let shapeBottom: number = previousBlock.floatingElements[0].y + previousBlock.floatingElements[0].height;
         expect(lastBlock.y).toBe(shapeBottom);
     });
+    it('Square wrapping text alignment validation',()  =>{
+        let sfdt = '{"sections":[{"blocks":[{"characterFormat":{"fontColor":"empty"},"paragraphFormat":{"textAlignment":"Left","styleName":"Normal"},"inlines":[{"shapeId":6,"name":"Text Box 6","alternativeText":null,"title":null,"visible":true,"width":94.32,"height":46.8,"widthScale":100.0,"heightScale":100.0,"lineFormat":{"lineFormatType":"Solid","color":"#000000FF","weight":0.5,"lineStyle":"Solid"},"fillFormat":{"color":"#FFFFFFFF","fill":true},"verticalPosition":88.71,"verticalOrigin":"Page","verticalAlignment":"None","horizontalPosition":251.0,"horizontalOrigin":"Column","horizontalAlignment":"None","zOrderPosition":251660288,"allowOverlap":true,"layoutInCell":true,"lockAnchor":false,"textWrappingStyle":"Square","textWrappingType":"Both","distanceBottom":0.0,"distanceLeft":7.2,"distanceRight":7.2,"distanceTop":0.0,"autoShapeType":"Rectangle","textFrame":{"textVerticalAlignment":"Top","leftMargin":7.2,"rightMargin":7.2,"topMargin":3.6,"bottomMargin":3.6,"blocks":[{"characterFormat":{"fontColor":"empty"},"paragraphFormat":{"styleName":"Normal"},"inlines":[{"text":"Text Box with ","characterFormat":{"fontColor":"empty"}},{"text":"TopAndBottom","characterFormat":{"fontColor":"empty"}}]}]}},{"shapeId":7,"name":"Text Box 7","alternativeText":null,"title":null,"visible":true,"width":94.32,"height":46.8,"widthScale":100.0,"heightScale":100.0,"lineFormat":{"lineFormatType":"Solid","color":"#000000FF","weight":0.5,"lineStyle":"Solid"},"fillFormat":{"color":"#FFFFFFFF","fill":true},"verticalPosition":88.41,"verticalOrigin":"Page","verticalAlignment":"None","horizontalPosition":40.28,"horizontalOrigin":"Column","horizontalAlignment":"None","zOrderPosition":251662336,"allowOverlap":true,"layoutInCell":true,"lockAnchor":false,"textWrappingStyle":"Square","textWrappingType":"Both","distanceBottom":0.0,"distanceLeft":0.0,"distanceRight":0.0,"distanceTop":0.0,"autoShapeType":"Rectangle","textFrame":{"textVerticalAlignment":"Top","leftMargin":7.2,"rightMargin":7.2,"topMargin":3.6,"bottomMargin":3.6,"blocks":[{"characterFormat":{"fontColor":"empty"},"paragraphFormat":{"styleName":"Normal"},"inlines":[{"text":"Text Box with ","characterFormat":{"fontColor":"empty"}},{"text":"TopAndBottom","characterFormat":{"fontColor":"empty"}}]}]}},{"text":"Adventure Works Cycles, the fictitious company on which the AdventureWorks sample databases are based, is a large, multinational manufacturing company. The company manufactures and sells metal and composite bicycles to North American, European and Asian commercial markets. While its base operation is located in Bothell, Washington with 290 employees, several regional sales teams are located throughout their market base.","characterFormat":{"fontColor":"empty"}}]},{"characterFormat":{"fontColor":"empty"},"paragraphFormat":{"styleName":"Normal"},"inlines":[]}],"headersFooters":{"header":{"blocks":[{"characterFormat":{"fontColor":"empty"},"paragraphFormat":{"styleName":"Header"},"inlines":[{"text":" ","characterFormat":{"fontColor":"empty"}}]}]},"footer":{"blocks":[{"inlines":[]}]},"evenHeader":{"blocks":[{"inlines":[]}]},"evenFooter":{"blocks":[{"inlines":[]}]},"firstPageHeader":{"blocks":[{"inlines":[]}]},"firstPageFooter":{"blocks":[{"inlines":[]}]}},"sectionFormat":{"headerDistance":36.0,"footerDistance":36.0,"pageWidth":612.0,"pageHeight":792.0,"leftMargin":72.0,"rightMargin":72.0,"topMargin":72.0,"bottomMargin":72.0,"differentFirstPage":false,"differentOddAndEvenPages":false,"bidi":false,"restartPageNumbering":false,"pageStartingNumber":0,"endnoteNumberFormat":"LowerCaseRoman","footNoteNumberFormat":"Arabic","restartIndexForFootnotes":"DoNotRestart","restartIndexForEndnotes":"DoNotRestart"}}],"characterFormat":{"fontSize":11.0,"fontFamily":"Calibri","fontColor":"empty","fontSizeBidi":11.0,"fontFamilyBidi":"Arial"},"paragraphFormat":{"afterSpacing":8.0,"lineSpacing":1.0791666507720947,"lineSpacingType":"Multiple"},"background":{"color":"#FFFFFFFF"},"styles":[{"type":"Paragraph","name":"Normal","next":"Normal","characterFormat":{"fontColor":"empty"}},{"type":"Character","name":"Default Paragraph Font","characterFormat":{"fontColor":"empty"}},{"type":"Paragraph","name":"Header","basedOn":"Normal","next":"Header","link":"Header Char","characterFormat":{"fontColor":"empty"},"paragraphFormat":{"afterSpacing":0.0,"lineSpacing":1.0,"lineSpacingType":"Multiple","tabs":[{"tabJustification":"Center","position":234.0,"tabLeader":"None","deletePosition":0.0},{"tabJustification":"Right","position":468.0,"tabLeader":"None","deletePosition":0.0}]}},{"type":"Character","name":"Header Char","basedOn":"Default Paragraph Font","characterFormat":{"fontColor":"empty"}},{"type":"Paragraph","name":"Footer","basedOn":"Normal","next":"Footer","link":"Footer Char","characterFormat":{"fontColor":"empty"},"paragraphFormat":{"afterSpacing":0.0,"lineSpacing":1.0,"lineSpacingType":"Multiple","tabs":[{"tabJustification":"Center","position":234.0,"tabLeader":"None","deletePosition":0.0},{"tabJustification":"Right","position":468.0,"tabLeader":"None","deletePosition":0.0}]}},{"type":"Character","name":"Footer Char","basedOn":"Default Paragraph Font","characterFormat":{"fontColor":"empty"}}],"defaultTabWidth":36.0,"formatting":false,"trackChanges":false,"protectionType":"NoProtection","enforcement":false,"dontUseHTMLParagraphAutoSpacing":false,"alignTablesRowByRow":false,"formFieldShading":true,"footnotes":{"separator":[{"characterFormat":{"fontColor":"empty"},"paragraphFormat":{"afterSpacing":0.0,"lineSpacing":1.0,"lineSpacingType":"Multiple","styleName":"Normal"},"inlines":[{"text":"\\u0003","characterFormat":{"fontColor":"empty"}}]}],"continuationSeparator":[{"characterFormat":{"fontColor":"empty"},"paragraphFormat":{"afterSpacing":0.0,"lineSpacing":1.0,"lineSpacingType":"Multiple","styleName":"Normal"},"inlines":[{"text":"\\u0004","characterFormat":{"fontColor":"empty"}}]}],"continuationNotice":[{"inlines":[]}]},"endnotes":{"separator":[{"characterFormat":{"fontColor":"empty"},"paragraphFormat":{"afterSpacing":0.0,"lineSpacing":1.0,"lineSpacingType":"Multiple","styleName":"Normal"},"inlines":[{"text":"\\u0003","characterFormat":{"fontColor":"empty"}}]}],"continuationSeparator":[{"characterFormat":{"fontColor":"empty"},"paragraphFormat":{"afterSpacing":0.0,"lineSpacing":1.0,"lineSpacingType":"Multiple","styleName":"Normal"},"inlines":[{"text":"\\u0004","characterFormat":{"fontColor":"empty"}}]}],"continuationNotice":[{"inlines":[]}]}}'; 
+        
+        editor.open(sfdt);
+        
+        let paragraph: ParagraphWidget = editor.selection.start.paragraph;
+
+        expect((paragraph.childWidgets[1] as LineWidget).children[1].margin.left).toBe(0)
+
+        expect((paragraph.childWidgets[1] as LineWidget).children[2].margin.left).toBe(0);
+
+        expect((paragraph.childWidgets[2] as LineWidget).children[0].margin.left).toBe(0)
+
+        expect((paragraph.childWidgets[2] as LineWidget).children[1].margin.left).toBe(0);
+
+        editor.editorModule.toggleTextAlignment("Center");
+
+        let firstLeft = (paragraph.childWidgets[1] as LineWidget).children[1].margin.left;
+        
+        expect(firstLeft).toBeGreaterThan(0)
+
+        let secondLeft = (paragraph.childWidgets[1] as LineWidget).children[2].margin.left;
+
+        expect(secondLeft).toBeGreaterThan(0);
+
+        let thirdLeft = (paragraph.childWidgets[2] as LineWidget).children[0].margin.left;
+        
+        expect(thirdLeft).toBeGreaterThan(0)
+
+        let fourthLeft = (paragraph.childWidgets[2] as LineWidget).children[1].margin.left;
+
+        expect(fourthLeft).toBeGreaterThan(0);
+
+        editor.editorModule.toggleTextAlignment("Right");
+
+        expect((paragraph.childWidgets[1] as LineWidget).children[1].margin.left).toBe(firstLeft*2)
+
+        expect((paragraph.childWidgets[1] as LineWidget).children[2].margin.left).toBe(secondLeft *2);
+
+        expect((paragraph.childWidgets[2] as LineWidget).children[0].margin.left).toBe(thirdLeft *2)
+
+        expect((paragraph.childWidgets[2] as LineWidget).children[1].margin.left).toBe(fourthLeft * 2);
+
+        editor.editorModule.toggleTextAlignment("Justify");
+    }); 
 });
 
 let shapeJson: any = {
@@ -10893,4 +10938,1695 @@ describe('Footnote Layout validation', () => {
         expect(footNote).toBe(4);
         expect(foot).toBe(6);
     });
+});
+
+let shapeInTableJson1: any = {
+    "sections": [
+        {
+            "blocks": [
+                {
+                    "rows": [
+                        {
+                            "rowFormat": {
+                                "allowBreakAcrossPages": true,
+                                "isHeader": false,
+                                "height": 221.5,
+                                "heightType": "AtLeast",
+                                "borders": {
+                                    "left": {
+                                        "lineStyle": "None",
+                                        "lineWidth": 0.0,
+                                        "shadow": false,
+                                        "space": 0.0,
+                                        "hasNoneStyle": false
+                                    },
+                                    "right": {
+                                        "lineStyle": "None",
+                                        "lineWidth": 0.0,
+                                        "shadow": false,
+                                        "space": 0.0,
+                                        "hasNoneStyle": false
+                                    },
+                                    "top": {
+                                        "lineStyle": "None",
+                                        "lineWidth": 0.0,
+                                        "shadow": false,
+                                        "space": 0.0,
+                                        "hasNoneStyle": false
+                                    },
+                                    "bottom": {
+                                        "lineStyle": "None",
+                                        "lineWidth": 0.0,
+                                        "shadow": false,
+                                        "space": 0.0,
+                                        "hasNoneStyle": false
+                                    },
+                                    "vertical": {
+                                        "lineStyle": "None",
+                                        "lineWidth": 0.0,
+                                        "shadow": false,
+                                        "space": 0.0,
+                                        "hasNoneStyle": false
+                                    },
+                                    "horizontal": {
+                                        "lineStyle": "None",
+                                        "lineWidth": 0.0,
+                                        "shadow": false,
+                                        "space": 0.0,
+                                        "hasNoneStyle": false
+                                    },
+                                    "diagonalDown": {
+                                        "lineStyle": "None",
+                                        "lineWidth": 0.0,
+                                        "shadow": false,
+                                        "space": 0.0,
+                                        "hasNoneStyle": false
+                                    },
+                                    "diagonalUp": {
+                                        "lineStyle": "None",
+                                        "lineWidth": 0.0,
+                                        "shadow": false,
+                                        "space": 0.0,
+                                        "hasNoneStyle": false
+                                    }
+                                }
+                            },
+                            "cells": [
+                                {
+                                    "blocks": [
+                                        {
+                                            "characterFormat": {
+                                                "fontColor": "empty"
+                                            },
+                                            "paragraphFormat": {
+                                                "styleName": "Normal"
+                                            },
+                                            "inlines": []
+                                        }
+                                    ],
+                                    "cellFormat": {
+                                        "columnSpan": 1,
+                                        "rowSpan": 1,
+                                        "preferredWidth": 233.75,
+                                        "preferredWidthType": "Point",
+                                        "verticalAlignment": "Top",
+                                        "isSamePaddingAsTable": true,
+                                        "borders": {
+                                            "left": {
+                                                "lineStyle": "None",
+                                                "lineWidth": 0.0,
+                                                "shadow": false,
+                                                "space": 0.0,
+                                                "hasNoneStyle": false
+                                            },
+                                            "right": {
+                                                "lineStyle": "None",
+                                                "lineWidth": 0.0,
+                                                "shadow": false,
+                                                "space": 0.0,
+                                                "hasNoneStyle": false
+                                            },
+                                            "top": {
+                                                "lineStyle": "None",
+                                                "lineWidth": 0.0,
+                                                "shadow": false,
+                                                "space": 0.0,
+                                                "hasNoneStyle": false
+                                            },
+                                            "bottom": {
+                                                "lineStyle": "None",
+                                                "lineWidth": 0.0,
+                                                "shadow": false,
+                                                "space": 0.0,
+                                                "hasNoneStyle": false
+                                            },
+                                            "vertical": {
+                                                "lineStyle": "None",
+                                                "lineWidth": 0.0,
+                                                "shadow": false,
+                                                "space": 0.0,
+                                                "hasNoneStyle": false
+                                            },
+                                            "horizontal": {
+                                                "lineStyle": "None",
+                                                "lineWidth": 0.0,
+                                                "shadow": false,
+                                                "space": 0.0,
+                                                "hasNoneStyle": false
+                                            },
+                                            "diagonalDown": {
+                                                "lineStyle": "None",
+                                                "lineWidth": 0.0,
+                                                "shadow": false,
+                                                "space": 0.0,
+                                                "hasNoneStyle": false
+                                            },
+                                            "diagonalUp": {
+                                                "lineStyle": "None",
+                                                "lineWidth": 0.0,
+                                                "shadow": false,
+                                                "space": 0.0,
+                                                "hasNoneStyle": false
+                                            }
+                                        },
+                                        "cellWidth": 233.75
+                                    }
+                                },
+                                {
+                                    "blocks": [
+                                        {
+                                            "characterFormat": {
+                                                "fontColor": "empty"
+                                            },
+                                            "paragraphFormat": {
+                                                "styleName": "Normal"
+                                            },
+                                            "inlines": [
+                                                {
+                                                    "shapeId": 1,
+                                                    "name": "Text Box 1",
+                                                    "alternativeText": null,
+                                                    "title": null,
+                                                    "visible": true,
+                                                    "width": 93.0,
+                                                    "height": 86.0,
+                                                    "widthScale": 100.0,
+                                                    "heightScale": 100.0,
+                                                    "lineFormat": {
+                                                        "lineFormatType": "Solid",
+                                                        "color": "#000000FF",
+                                                        "weight": 0.5,
+                                                        "lineStyle": "Solid"
+                                                    },
+                                                    "fillFormat": {
+                                                        "color": "#FFFFFFFF",
+                                                        "fill": true
+                                                    },
+                                                    "verticalPosition": 6.0,
+                                                    "verticalOrigin": "Paragraph",
+                                                    "verticalAlignment": "None",
+                                                    "horizontalPosition": 11.6,
+                                                    "horizontalOrigin": "Column",
+                                                    "horizontalAlignment": "None",
+                                                    "zOrderPosition": 251659264,
+                                                    "allowOverlap": true,
+                                                    "layoutInCell": true,
+                                                    "lockAnchor": false,
+                                                    "textWrappingStyle": "InFrontOfText",
+                                                    "textWrappingType": "Both",
+                                                    "distanceBottom": 0.0,
+                                                    "distanceLeft": 9.0,
+                                                    "distanceRight": 9.0,
+                                                    "distanceTop": 0.0,
+                                                    "autoShapeType": "Rectangle",
+                                                    "textFrame": {
+                                                        "textVerticalAlignment": "Top",
+                                                        "leftMargin": 7.2,
+                                                        "rightMargin": 7.2,
+                                                        "topMargin": 3.6,
+                                                        "bottomMargin": 3.6,
+                                                        "blocks": [
+                                                            {
+                                                                "characterFormat": {
+                                                                    "fontColor": "empty"
+                                                                },
+                                                                "paragraphFormat": {
+                                                                    "styleName": "Normal"
+                                                                },
+                                                                "inlines": [
+                                                                    {
+                                                                        "text": "Test",
+                                                                        "characterFormat": {
+                                                                            "fontColor": "empty"
+                                                                        }
+                                                                    }
+                                                                ]
+                                                            }
+                                                        ]
+                                                    }
+                                                },
+                                                {
+                                                    "text": "Test",
+                                                    "characterFormat": {
+                                                        "fontColor": "empty"
+                                                    }
+                                                }
+                                            ]
+                                        }
+                                    ],
+                                    "cellFormat": {
+                                        "columnSpan": 1,
+                                        "rowSpan": 1,
+                                        "preferredWidth": 233.75,
+                                        "preferredWidthType": "Point",
+                                        "verticalAlignment": "Bottom",
+                                        "isSamePaddingAsTable": true,
+                                        "borders": {
+                                            "left": {
+                                                "lineStyle": "None",
+                                                "lineWidth": 0.0,
+                                                "shadow": false,
+                                                "space": 0.0,
+                                                "hasNoneStyle": false
+                                            },
+                                            "right": {
+                                                "lineStyle": "None",
+                                                "lineWidth": 0.0,
+                                                "shadow": false,
+                                                "space": 0.0,
+                                                "hasNoneStyle": false
+                                            },
+                                            "top": {
+                                                "lineStyle": "None",
+                                                "lineWidth": 0.0,
+                                                "shadow": false,
+                                                "space": 0.0,
+                                                "hasNoneStyle": false
+                                            },
+                                            "bottom": {
+                                                "lineStyle": "None",
+                                                "lineWidth": 0.0,
+                                                "shadow": false,
+                                                "space": 0.0,
+                                                "hasNoneStyle": false
+                                            },
+                                            "vertical": {
+                                                "lineStyle": "None",
+                                                "lineWidth": 0.0,
+                                                "shadow": false,
+                                                "space": 0.0,
+                                                "hasNoneStyle": false
+                                            },
+                                            "horizontal": {
+                                                "lineStyle": "None",
+                                                "lineWidth": 0.0,
+                                                "shadow": false,
+                                                "space": 0.0,
+                                                "hasNoneStyle": false
+                                            },
+                                            "diagonalDown": {
+                                                "lineStyle": "None",
+                                                "lineWidth": 0.0,
+                                                "shadow": false,
+                                                "space": 0.0,
+                                                "hasNoneStyle": false
+                                            },
+                                            "diagonalUp": {
+                                                "lineStyle": "None",
+                                                "lineWidth": 0.0,
+                                                "shadow": false,
+                                                "space": 0.0,
+                                                "hasNoneStyle": false
+                                            }
+                                        },
+                                        "cellWidth": 233.75
+                                    }
+                                }
+                            ]
+                        },
+                        {
+                            "rowFormat": {
+                                "allowBreakAcrossPages": true,
+                                "isHeader": false,
+                                "height": 0.0,
+                                "heightType": "AtLeast",
+                                "borders": {
+                                    "left": {
+                                        "lineStyle": "None",
+                                        "lineWidth": 0.0,
+                                        "shadow": false,
+                                        "space": 0.0,
+                                        "hasNoneStyle": false
+                                    },
+                                    "right": {
+                                        "lineStyle": "None",
+                                        "lineWidth": 0.0,
+                                        "shadow": false,
+                                        "space": 0.0,
+                                        "hasNoneStyle": false
+                                    },
+                                    "top": {
+                                        "lineStyle": "None",
+                                        "lineWidth": 0.0,
+                                        "shadow": false,
+                                        "space": 0.0,
+                                        "hasNoneStyle": false
+                                    },
+                                    "bottom": {
+                                        "lineStyle": "None",
+                                        "lineWidth": 0.0,
+                                        "shadow": false,
+                                        "space": 0.0,
+                                        "hasNoneStyle": false
+                                    },
+                                    "vertical": {
+                                        "lineStyle": "None",
+                                        "lineWidth": 0.0,
+                                        "shadow": false,
+                                        "space": 0.0,
+                                        "hasNoneStyle": false
+                                    },
+                                    "horizontal": {
+                                        "lineStyle": "None",
+                                        "lineWidth": 0.0,
+                                        "shadow": false,
+                                        "space": 0.0,
+                                        "hasNoneStyle": false
+                                    },
+                                    "diagonalDown": {
+                                        "lineStyle": "None",
+                                        "lineWidth": 0.0,
+                                        "shadow": false,
+                                        "space": 0.0,
+                                        "hasNoneStyle": false
+                                    },
+                                    "diagonalUp": {
+                                        "lineStyle": "None",
+                                        "lineWidth": 0.0,
+                                        "shadow": false,
+                                        "space": 0.0,
+                                        "hasNoneStyle": false
+                                    }
+                                }
+                            },
+                            "cells": [
+                                {
+                                    "blocks": [
+                                        {
+                                            "characterFormat": {
+                                                "fontColor": "empty"
+                                            },
+                                            "paragraphFormat": {
+                                                "styleName": "Normal"
+                                            },
+                                            "inlines": []
+                                        }
+                                    ],
+                                    "cellFormat": {
+                                        "columnSpan": 1,
+                                        "rowSpan": 1,
+                                        "preferredWidth": 233.75,
+                                        "preferredWidthType": "Point",
+                                        "verticalAlignment": "Top",
+                                        "isSamePaddingAsTable": true,
+                                        "borders": {
+                                            "left": {
+                                                "lineStyle": "None",
+                                                "lineWidth": 0.0,
+                                                "shadow": false,
+                                                "space": 0.0,
+                                                "hasNoneStyle": false
+                                            },
+                                            "right": {
+                                                "lineStyle": "None",
+                                                "lineWidth": 0.0,
+                                                "shadow": false,
+                                                "space": 0.0,
+                                                "hasNoneStyle": false
+                                            },
+                                            "top": {
+                                                "lineStyle": "None",
+                                                "lineWidth": 0.0,
+                                                "shadow": false,
+                                                "space": 0.0,
+                                                "hasNoneStyle": false
+                                            },
+                                            "bottom": {
+                                                "lineStyle": "None",
+                                                "lineWidth": 0.0,
+                                                "shadow": false,
+                                                "space": 0.0,
+                                                "hasNoneStyle": false
+                                            },
+                                            "vertical": {
+                                                "lineStyle": "None",
+                                                "lineWidth": 0.0,
+                                                "shadow": false,
+                                                "space": 0.0,
+                                                "hasNoneStyle": false
+                                            },
+                                            "horizontal": {
+                                                "lineStyle": "None",
+                                                "lineWidth": 0.0,
+                                                "shadow": false,
+                                                "space": 0.0,
+                                                "hasNoneStyle": false
+                                            },
+                                            "diagonalDown": {
+                                                "lineStyle": "None",
+                                                "lineWidth": 0.0,
+                                                "shadow": false,
+                                                "space": 0.0,
+                                                "hasNoneStyle": false
+                                            },
+                                            "diagonalUp": {
+                                                "lineStyle": "None",
+                                                "lineWidth": 0.0,
+                                                "shadow": false,
+                                                "space": 0.0,
+                                                "hasNoneStyle": false
+                                            }
+                                        },
+                                        "cellWidth": 233.75
+                                    }
+                                },
+                                {
+                                    "blocks": [
+                                        {
+                                            "characterFormat": {
+                                                "fontColor": "empty"
+                                            },
+                                            "paragraphFormat": {
+                                                "styleName": "Normal"
+                                            },
+                                            "inlines": []
+                                        }
+                                    ],
+                                    "cellFormat": {
+                                        "columnSpan": 1,
+                                        "rowSpan": 1,
+                                        "preferredWidth": 233.75,
+                                        "preferredWidthType": "Point",
+                                        "verticalAlignment": "Top",
+                                        "isSamePaddingAsTable": true,
+                                        "borders": {
+                                            "left": {
+                                                "lineStyle": "None",
+                                                "lineWidth": 0.0,
+                                                "shadow": false,
+                                                "space": 0.0,
+                                                "hasNoneStyle": false
+                                            },
+                                            "right": {
+                                                "lineStyle": "None",
+                                                "lineWidth": 0.0,
+                                                "shadow": false,
+                                                "space": 0.0,
+                                                "hasNoneStyle": false
+                                            },
+                                            "top": {
+                                                "lineStyle": "None",
+                                                "lineWidth": 0.0,
+                                                "shadow": false,
+                                                "space": 0.0,
+                                                "hasNoneStyle": false
+                                            },
+                                            "bottom": {
+                                                "lineStyle": "None",
+                                                "lineWidth": 0.0,
+                                                "shadow": false,
+                                                "space": 0.0,
+                                                "hasNoneStyle": false
+                                            },
+                                            "vertical": {
+                                                "lineStyle": "None",
+                                                "lineWidth": 0.0,
+                                                "shadow": false,
+                                                "space": 0.0,
+                                                "hasNoneStyle": false
+                                            },
+                                            "horizontal": {
+                                                "lineStyle": "None",
+                                                "lineWidth": 0.0,
+                                                "shadow": false,
+                                                "space": 0.0,
+                                                "hasNoneStyle": false
+                                            },
+                                            "diagonalDown": {
+                                                "lineStyle": "None",
+                                                "lineWidth": 0.0,
+                                                "shadow": false,
+                                                "space": 0.0,
+                                                "hasNoneStyle": false
+                                            },
+                                            "diagonalUp": {
+                                                "lineStyle": "None",
+                                                "lineWidth": 0.0,
+                                                "shadow": false,
+                                                "space": 0.0,
+                                                "hasNoneStyle": false
+                                            }
+                                        },
+                                        "cellWidth": 233.75
+                                    }
+                                }
+                            ]
+                        }
+                    ],
+                    "title": null,
+                    "description": null,
+                    "tableFormat": {
+                        "allowAutoFit": true,
+                        "leftIndent": 0.0,
+                        "tableAlignment": "Left",
+                        "preferredWidthType": "Auto",
+                        "borders": {
+                            "left": {
+                                "lineStyle": "Single",
+                                "lineWidth": 0.5,
+                                "shadow": false,
+                                "space": 0.0,
+                                "hasNoneStyle": false
+                            },
+                            "right": {
+                                "lineStyle": "Single",
+                                "lineWidth": 0.5,
+                                "shadow": false,
+                                "space": 0.0,
+                                "hasNoneStyle": false
+                            },
+                            "top": {
+                                "lineStyle": "Single",
+                                "lineWidth": 0.5,
+                                "shadow": false,
+                                "space": 0.0,
+                                "hasNoneStyle": false
+                            },
+                            "bottom": {
+                                "lineStyle": "Single",
+                                "lineWidth": 0.5,
+                                "shadow": false,
+                                "space": 0.0,
+                                "hasNoneStyle": false
+                            },
+                            "vertical": {
+                                "lineStyle": "Single",
+                                "lineWidth": 0.5,
+                                "shadow": false,
+                                "space": 0.0,
+                                "hasNoneStyle": false
+                            },
+                            "horizontal": {
+                                "lineStyle": "Single",
+                                "lineWidth": 0.5,
+                                "shadow": false,
+                                "space": 0.0,
+                                "hasNoneStyle": false
+                            },
+                            "diagonalDown": {
+                                "lineStyle": "None",
+                                "lineWidth": 0.0,
+                                "shadow": false,
+                                "space": 0.0,
+                                "hasNoneStyle": false
+                            },
+                            "diagonalUp": {
+                                "lineStyle": "None",
+                                "lineWidth": 0.0,
+                                "shadow": false,
+                                "space": 0.0,
+                                "hasNoneStyle": false
+                            }
+                        },
+                        "bidi": false,
+                        "horizontalPositionAbs": "Left",
+                        "horizontalPosition": 0.0
+                    }
+                },
+                {
+                    "characterFormat": {
+                        "fontColor": "empty"
+                    },
+                    "paragraphFormat": {
+                        "styleName": "Normal"
+                    },
+                    "inlines": []
+                }
+            ],
+            "headersFooters": {
+                "header": {
+                    "blocks": [
+                        {
+                            "inlines": []
+                        }
+                    ]
+                },
+                "footer": {
+                    "blocks": [
+                        {
+                            "inlines": []
+                        }
+                    ]
+                },
+                "evenHeader": {
+                    "blocks": [
+                        {
+                            "inlines": []
+                        }
+                    ]
+                },
+                "evenFooter": {
+                    "blocks": [
+                        {
+                            "inlines": []
+                        }
+                    ]
+                },
+                "firstPageHeader": {
+                    "blocks": [
+                        {
+                            "inlines": []
+                        }
+                    ]
+                },
+                "firstPageFooter": {
+                    "blocks": [
+                        {
+                            "inlines": []
+                        }
+                    ]
+                }
+            },
+            "sectionFormat": {
+                "headerDistance": 36.0,
+                "footerDistance": 36.0,
+                "pageWidth": 612.0,
+                "pageHeight": 792.0,
+                "leftMargin": 72.0,
+                "rightMargin": 72.0,
+                "topMargin": 72.0,
+                "bottomMargin": 72.0,
+                "differentFirstPage": false,
+                "differentOddAndEvenPages": false,
+                "bidi": false,
+                "restartPageNumbering": false,
+                "pageStartingNumber": 0,
+                "endnoteNumberFormat": "LowerCaseRoman",
+                "footNoteNumberFormat": "Arabic",
+                "restartIndexForFootnotes": "DoNotRestart",
+                "restartIndexForEndnotes": "DoNotRestart"
+            }
+        }
+    ],
+    "characterFormat": {
+        "fontSize": 11.0,
+        "fontFamily": "Calibri",
+        "fontColor": "empty",
+        "fontSizeBidi": 11.0,
+        "fontFamilyBidi": "Arial"
+    },
+    "paragraphFormat": {
+        "afterSpacing": 8.0,
+        "lineSpacing": 1.0791666507720947,
+        "lineSpacingType": "Multiple"
+    },
+    "background": {
+        "color": "#FFFFFFFF"
+    },
+    "styles": [
+        {
+            "type": "Paragraph",
+            "name": "Normal",
+            "next": "Normal",
+            "characterFormat": {
+                "fontColor": "empty"
+            }
+        },
+        {
+            "type": "Character",
+            "name": "Default Paragraph Font",
+            "characterFormat": {
+                "fontColor": "empty"
+            }
+        }
+    ],
+    "defaultTabWidth": 36.0,
+    "formatting": false,
+    "trackChanges": false,
+    "protectionType": "NoProtection",
+    "enforcement": false,
+    "dontUseHTMLParagraphAutoSpacing": false,
+    "alignTablesRowByRow": false,
+    "formFieldShading": true,
+    "footnotes": {
+        "separator": [
+            {
+                "characterFormat": {
+                    "fontColor": "empty"
+                },
+                "paragraphFormat": {
+                    "styleName": "Normal"
+                },
+                "inlines": [
+                    {
+                        "text": "\u0003",
+                        "characterFormat": {
+                            "fontColor": "empty"
+                        }
+                    }
+                ]
+            }
+        ],
+        "continuationSeparator": [
+            {
+                "characterFormat": {
+                    "fontColor": "empty"
+                },
+                "paragraphFormat": {
+                    "styleName": "Normal"
+                },
+                "inlines": [
+                    {
+                        "text": "\u0004",
+                        "characterFormat": {
+                            "fontColor": "empty"
+                        }
+                    }
+                ]
+            }
+        ],
+        "continuationNotice": [
+            {
+                "inlines": []
+            }
+        ]
+    },
+    "endnotes": {
+        "separator": [
+            {
+                "characterFormat": {
+                    "fontColor": "empty"
+                },
+                "paragraphFormat": {
+                    "styleName": "Normal"
+                },
+                "inlines": [
+                    {
+                        "text": "\u0003",
+                        "characterFormat": {
+                            "fontColor": "empty"
+                        }
+                    }
+                ]
+            }
+        ],
+        "continuationSeparator": [
+            {
+                "characterFormat": {
+                    "fontColor": "empty"
+                },
+                "paragraphFormat": {
+                    "styleName": "Normal"
+                },
+                "inlines": [
+                    {
+                        "text": "\u0004",
+                        "characterFormat": {
+                            "fontColor": "empty"
+                        }
+                    }
+                ]
+            }
+        ],
+        "continuationNotice": [
+            {
+                "inlines": []
+            }
+        ]
+    }
+};
+let shapeInTableJson2: any = {
+    "sections": [
+        {
+            "blocks": [
+                {
+                    "rows": [
+                        {
+                            "rowFormat": {
+                                "allowBreakAcrossPages": true,
+                                "isHeader": false,
+                                "height": 221.5,
+                                "heightType": "AtLeast",
+                                "borders": {
+                                    "left": {
+                                        "lineStyle": "None",
+                                        "lineWidth": 0.0,
+                                        "shadow": false,
+                                        "space": 0.0,
+                                        "hasNoneStyle": false
+                                    },
+                                    "right": {
+                                        "lineStyle": "None",
+                                        "lineWidth": 0.0,
+                                        "shadow": false,
+                                        "space": 0.0,
+                                        "hasNoneStyle": false
+                                    },
+                                    "top": {
+                                        "lineStyle": "None",
+                                        "lineWidth": 0.0,
+                                        "shadow": false,
+                                        "space": 0.0,
+                                        "hasNoneStyle": false
+                                    },
+                                    "bottom": {
+                                        "lineStyle": "None",
+                                        "lineWidth": 0.0,
+                                        "shadow": false,
+                                        "space": 0.0,
+                                        "hasNoneStyle": false
+                                    },
+                                    "vertical": {
+                                        "lineStyle": "None",
+                                        "lineWidth": 0.0,
+                                        "shadow": false,
+                                        "space": 0.0,
+                                        "hasNoneStyle": false
+                                    },
+                                    "horizontal": {
+                                        "lineStyle": "None",
+                                        "lineWidth": 0.0,
+                                        "shadow": false,
+                                        "space": 0.0,
+                                        "hasNoneStyle": false
+                                    },
+                                    "diagonalDown": {
+                                        "lineStyle": "None",
+                                        "lineWidth": 0.0,
+                                        "shadow": false,
+                                        "space": 0.0,
+                                        "hasNoneStyle": false
+                                    },
+                                    "diagonalUp": {
+                                        "lineStyle": "None",
+                                        "lineWidth": 0.0,
+                                        "shadow": false,
+                                        "space": 0.0,
+                                        "hasNoneStyle": false
+                                    }
+                                }
+                            },
+                            "cells": [
+                                {
+                                    "blocks": [
+                                        {
+                                            "characterFormat": {
+                                                "fontColor": "empty"
+                                            },
+                                            "paragraphFormat": {
+                                                "styleName": "Normal"
+                                            },
+                                            "inlines": []
+                                        }
+                                    ],
+                                    "cellFormat": {
+                                        "columnSpan": 1,
+                                        "rowSpan": 1,
+                                        "preferredWidth": 233.75,
+                                        "preferredWidthType": "Point",
+                                        "verticalAlignment": "Top",
+                                        "isSamePaddingAsTable": true,
+                                        "borders": {
+                                            "left": {
+                                                "lineStyle": "None",
+                                                "lineWidth": 0.0,
+                                                "shadow": false,
+                                                "space": 0.0,
+                                                "hasNoneStyle": false
+                                            },
+                                            "right": {
+                                                "lineStyle": "None",
+                                                "lineWidth": 0.0,
+                                                "shadow": false,
+                                                "space": 0.0,
+                                                "hasNoneStyle": false
+                                            },
+                                            "top": {
+                                                "lineStyle": "None",
+                                                "lineWidth": 0.0,
+                                                "shadow": false,
+                                                "space": 0.0,
+                                                "hasNoneStyle": false
+                                            },
+                                            "bottom": {
+                                                "lineStyle": "None",
+                                                "lineWidth": 0.0,
+                                                "shadow": false,
+                                                "space": 0.0,
+                                                "hasNoneStyle": false
+                                            },
+                                            "vertical": {
+                                                "lineStyle": "None",
+                                                "lineWidth": 0.0,
+                                                "shadow": false,
+                                                "space": 0.0,
+                                                "hasNoneStyle": false
+                                            },
+                                            "horizontal": {
+                                                "lineStyle": "None",
+                                                "lineWidth": 0.0,
+                                                "shadow": false,
+                                                "space": 0.0,
+                                                "hasNoneStyle": false
+                                            },
+                                            "diagonalDown": {
+                                                "lineStyle": "None",
+                                                "lineWidth": 0.0,
+                                                "shadow": false,
+                                                "space": 0.0,
+                                                "hasNoneStyle": false
+                                            },
+                                            "diagonalUp": {
+                                                "lineStyle": "None",
+                                                "lineWidth": 0.0,
+                                                "shadow": false,
+                                                "space": 0.0,
+                                                "hasNoneStyle": false
+                                            }
+                                        },
+                                        "cellWidth": 233.75
+                                    }
+                                },
+                                {
+                                    "blocks": [
+                                        {
+                                            "characterFormat": {
+                                                "fontColor": "empty"
+                                            },
+                                            "paragraphFormat": {
+                                                "styleName": "Normal"
+                                            },
+                                            "inlines": [
+                                                {
+                                                    "shapeId": 1,
+                                                    "name": "Text Box 1",
+                                                    "alternativeText": null,
+                                                    "title": null,
+                                                    "visible": true,
+                                                    "width": 167.0,
+                                                    "height": 215.5,
+                                                    "widthScale": 100.0,
+                                                    "heightScale": 100.0,
+                                                    "lineFormat": {
+                                                        "lineFormatType": "Solid",
+                                                        "color": "#000000FF",
+                                                        "weight": 0.5,
+                                                        "lineStyle": "Solid"
+                                                    },
+                                                    "fillFormat": {
+                                                        "color": "#FFFFFFFF",
+                                                        "fill": true
+                                                    },
+                                                    "verticalPosition": 48.3,
+                                                    "verticalOrigin": "Paragraph",
+                                                    "verticalAlignment": "None",
+                                                    "horizontalPosition": 15.85,
+                                                    "horizontalOrigin": "Column",
+                                                    "horizontalAlignment": "None",
+                                                    "zOrderPosition": 251659264,
+                                                    "allowOverlap": true,
+                                                    "layoutInCell": true,
+                                                    "lockAnchor": false,
+                                                    "textWrappingStyle": "InFrontOfText",
+                                                    "textWrappingType": "Both",
+                                                    "distanceBottom": 0.0,
+                                                    "distanceLeft": 9.0,
+                                                    "distanceRight": 9.0,
+                                                    "distanceTop": 0.0,
+                                                    "autoShapeType": "Rectangle",
+                                                    "textFrame": {
+                                                        "textVerticalAlignment": "Top",
+                                                        "leftMargin": 7.2,
+                                                        "rightMargin": 7.2,
+                                                        "topMargin": 3.6,
+                                                        "bottomMargin": 3.6,
+                                                        "blocks": [
+                                                            {
+                                                                "characterFormat": {
+                                                                    "fontColor": "empty"
+                                                                },
+                                                                "paragraphFormat": {
+                                                                    "styleName": "Normal"
+                                                                },
+                                                                "inlines": [
+                                                                    {
+                                                                        "text": "Test",
+                                                                        "characterFormat": {
+                                                                            "fontColor": "empty"
+                                                                        }
+                                                                    }
+                                                                ]
+                                                            }
+                                                        ]
+                                                    }
+                                                },
+                                                {
+                                                    "text": "Test",
+                                                    "characterFormat": {
+                                                        "fontColor": "empty"
+                                                    }
+                                                },
+                                                {
+                                                    "text": " Adventure Works Cycles, the fictitious company on which the ",
+                                                    "characterFormat": {
+                                                        "fontColor": "empty"
+                                                    }
+                                                },
+                                                {
+                                                    "text": "AdventureWorks",
+                                                    "characterFormat": {
+                                                        "fontColor": "empty"
+                                                    }
+                                                },
+                                                {
+                                                    "text": " sample databases are based, is a large, multinational manufacturing company. The company manufactures and sells metal and composite bicycles to ",
+                                                    "characterFormat": {
+                                                        "fontColor": "empty"
+                                                    }
+                                                },
+                                                {
+                                                    "text": "NorthAdventure",
+                                                    "characterFormat": {
+                                                        "fontColor": "empty"
+                                                    }
+                                                },
+                                                {
+                                                    "text": " Works Cycles, the fictitious company on which the ",
+                                                    "characterFormat": {
+                                                        "fontColor": "empty"
+                                                    }
+                                                },
+                                                {
+                                                    "text": "AdventureWorks",
+                                                    "characterFormat": {
+                                                        "fontColor": "empty"
+                                                    }
+                                                },
+                                                {
+                                                    "text": " sample databases are based, is a large",
+                                                    "characterFormat": {
+                                                        "fontColor": "empty"
+                                                    }
+                                                }
+                                            ]
+                                        }
+                                    ],
+                                    "cellFormat": {
+                                        "columnSpan": 1,
+                                        "rowSpan": 1,
+                                        "preferredWidth": 233.75,
+                                        "preferredWidthType": "Point",
+                                        "verticalAlignment": "Bottom",
+                                        "isSamePaddingAsTable": true,
+                                        "borders": {
+                                            "left": {
+                                                "lineStyle": "None",
+                                                "lineWidth": 0.0,
+                                                "shadow": false,
+                                                "space": 0.0,
+                                                "hasNoneStyle": false
+                                            },
+                                            "right": {
+                                                "lineStyle": "None",
+                                                "lineWidth": 0.0,
+                                                "shadow": false,
+                                                "space": 0.0,
+                                                "hasNoneStyle": false
+                                            },
+                                            "top": {
+                                                "lineStyle": "None",
+                                                "lineWidth": 0.0,
+                                                "shadow": false,
+                                                "space": 0.0,
+                                                "hasNoneStyle": false
+                                            },
+                                            "bottom": {
+                                                "lineStyle": "None",
+                                                "lineWidth": 0.0,
+                                                "shadow": false,
+                                                "space": 0.0,
+                                                "hasNoneStyle": false
+                                            },
+                                            "vertical": {
+                                                "lineStyle": "None",
+                                                "lineWidth": 0.0,
+                                                "shadow": false,
+                                                "space": 0.0,
+                                                "hasNoneStyle": false
+                                            },
+                                            "horizontal": {
+                                                "lineStyle": "None",
+                                                "lineWidth": 0.0,
+                                                "shadow": false,
+                                                "space": 0.0,
+                                                "hasNoneStyle": false
+                                            },
+                                            "diagonalDown": {
+                                                "lineStyle": "None",
+                                                "lineWidth": 0.0,
+                                                "shadow": false,
+                                                "space": 0.0,
+                                                "hasNoneStyle": false
+                                            },
+                                            "diagonalUp": {
+                                                "lineStyle": "None",
+                                                "lineWidth": 0.0,
+                                                "shadow": false,
+                                                "space": 0.0,
+                                                "hasNoneStyle": false
+                                            }
+                                        },
+                                        "cellWidth": 233.75
+                                    }
+                                }
+                            ]
+                        },
+                        {
+                            "rowFormat": {
+                                "allowBreakAcrossPages": true,
+                                "isHeader": false,
+                                "height": 0.0,
+                                "heightType": "AtLeast",
+                                "borders": {
+                                    "left": {
+                                        "lineStyle": "None",
+                                        "lineWidth": 0.0,
+                                        "shadow": false,
+                                        "space": 0.0,
+                                        "hasNoneStyle": false
+                                    },
+                                    "right": {
+                                        "lineStyle": "None",
+                                        "lineWidth": 0.0,
+                                        "shadow": false,
+                                        "space": 0.0,
+                                        "hasNoneStyle": false
+                                    },
+                                    "top": {
+                                        "lineStyle": "None",
+                                        "lineWidth": 0.0,
+                                        "shadow": false,
+                                        "space": 0.0,
+                                        "hasNoneStyle": false
+                                    },
+                                    "bottom": {
+                                        "lineStyle": "None",
+                                        "lineWidth": 0.0,
+                                        "shadow": false,
+                                        "space": 0.0,
+                                        "hasNoneStyle": false
+                                    },
+                                    "vertical": {
+                                        "lineStyle": "None",
+                                        "lineWidth": 0.0,
+                                        "shadow": false,
+                                        "space": 0.0,
+                                        "hasNoneStyle": false
+                                    },
+                                    "horizontal": {
+                                        "lineStyle": "None",
+                                        "lineWidth": 0.0,
+                                        "shadow": false,
+                                        "space": 0.0,
+                                        "hasNoneStyle": false
+                                    },
+                                    "diagonalDown": {
+                                        "lineStyle": "None",
+                                        "lineWidth": 0.0,
+                                        "shadow": false,
+                                        "space": 0.0,
+                                        "hasNoneStyle": false
+                                    },
+                                    "diagonalUp": {
+                                        "lineStyle": "None",
+                                        "lineWidth": 0.0,
+                                        "shadow": false,
+                                        "space": 0.0,
+                                        "hasNoneStyle": false
+                                    }
+                                }
+                            },
+                            "cells": [
+                                {
+                                    "blocks": [
+                                        {
+                                            "characterFormat": {
+                                                "fontColor": "empty"
+                                            },
+                                            "paragraphFormat": {
+                                                "styleName": "Normal"
+                                            },
+                                            "inlines": []
+                                        }
+                                    ],
+                                    "cellFormat": {
+                                        "columnSpan": 1,
+                                        "rowSpan": 1,
+                                        "preferredWidth": 233.75,
+                                        "preferredWidthType": "Point",
+                                        "verticalAlignment": "Top",
+                                        "isSamePaddingAsTable": true,
+                                        "borders": {
+                                            "left": {
+                                                "lineStyle": "None",
+                                                "lineWidth": 0.0,
+                                                "shadow": false,
+                                                "space": 0.0,
+                                                "hasNoneStyle": false
+                                            },
+                                            "right": {
+                                                "lineStyle": "None",
+                                                "lineWidth": 0.0,
+                                                "shadow": false,
+                                                "space": 0.0,
+                                                "hasNoneStyle": false
+                                            },
+                                            "top": {
+                                                "lineStyle": "None",
+                                                "lineWidth": 0.0,
+                                                "shadow": false,
+                                                "space": 0.0,
+                                                "hasNoneStyle": false
+                                            },
+                                            "bottom": {
+                                                "lineStyle": "None",
+                                                "lineWidth": 0.0,
+                                                "shadow": false,
+                                                "space": 0.0,
+                                                "hasNoneStyle": false
+                                            },
+                                            "vertical": {
+                                                "lineStyle": "None",
+                                                "lineWidth": 0.0,
+                                                "shadow": false,
+                                                "space": 0.0,
+                                                "hasNoneStyle": false
+                                            },
+                                            "horizontal": {
+                                                "lineStyle": "None",
+                                                "lineWidth": 0.0,
+                                                "shadow": false,
+                                                "space": 0.0,
+                                                "hasNoneStyle": false
+                                            },
+                                            "diagonalDown": {
+                                                "lineStyle": "None",
+                                                "lineWidth": 0.0,
+                                                "shadow": false,
+                                                "space": 0.0,
+                                                "hasNoneStyle": false
+                                            },
+                                            "diagonalUp": {
+                                                "lineStyle": "None",
+                                                "lineWidth": 0.0,
+                                                "shadow": false,
+                                                "space": 0.0,
+                                                "hasNoneStyle": false
+                                            }
+                                        },
+                                        "cellWidth": 233.75
+                                    }
+                                },
+                                {
+                                    "blocks": [
+                                        {
+                                            "characterFormat": {
+                                                "fontColor": "empty"
+                                            },
+                                            "paragraphFormat": {
+                                                "styleName": "Normal"
+                                            },
+                                            "inlines": []
+                                        }
+                                    ],
+                                    "cellFormat": {
+                                        "columnSpan": 1,
+                                        "rowSpan": 1,
+                                        "preferredWidth": 233.75,
+                                        "preferredWidthType": "Point",
+                                        "verticalAlignment": "Top",
+                                        "isSamePaddingAsTable": true,
+                                        "borders": {
+                                            "left": {
+                                                "lineStyle": "None",
+                                                "lineWidth": 0.0,
+                                                "shadow": false,
+                                                "space": 0.0,
+                                                "hasNoneStyle": false
+                                            },
+                                            "right": {
+                                                "lineStyle": "None",
+                                                "lineWidth": 0.0,
+                                                "shadow": false,
+                                                "space": 0.0,
+                                                "hasNoneStyle": false
+                                            },
+                                            "top": {
+                                                "lineStyle": "None",
+                                                "lineWidth": 0.0,
+                                                "shadow": false,
+                                                "space": 0.0,
+                                                "hasNoneStyle": false
+                                            },
+                                            "bottom": {
+                                                "lineStyle": "None",
+                                                "lineWidth": 0.0,
+                                                "shadow": false,
+                                                "space": 0.0,
+                                                "hasNoneStyle": false
+                                            },
+                                            "vertical": {
+                                                "lineStyle": "None",
+                                                "lineWidth": 0.0,
+                                                "shadow": false,
+                                                "space": 0.0,
+                                                "hasNoneStyle": false
+                                            },
+                                            "horizontal": {
+                                                "lineStyle": "None",
+                                                "lineWidth": 0.0,
+                                                "shadow": false,
+                                                "space": 0.0,
+                                                "hasNoneStyle": false
+                                            },
+                                            "diagonalDown": {
+                                                "lineStyle": "None",
+                                                "lineWidth": 0.0,
+                                                "shadow": false,
+                                                "space": 0.0,
+                                                "hasNoneStyle": false
+                                            },
+                                            "diagonalUp": {
+                                                "lineStyle": "None",
+                                                "lineWidth": 0.0,
+                                                "shadow": false,
+                                                "space": 0.0,
+                                                "hasNoneStyle": false
+                                            }
+                                        },
+                                        "cellWidth": 233.75
+                                    }
+                                }
+                            ]
+                        }
+                    ],
+                    "title": null,
+                    "description": null,
+                    "tableFormat": {
+                        "allowAutoFit": true,
+                        "leftIndent": 0.0,
+                        "tableAlignment": "Left",
+                        "preferredWidthType": "Auto",
+                        "borders": {
+                            "left": {
+                                "lineStyle": "Single",
+                                "lineWidth": 0.5,
+                                "shadow": false,
+                                "space": 0.0,
+                                "hasNoneStyle": false
+                            },
+                            "right": {
+                                "lineStyle": "Single",
+                                "lineWidth": 0.5,
+                                "shadow": false,
+                                "space": 0.0,
+                                "hasNoneStyle": false
+                            },
+                            "top": {
+                                "lineStyle": "Single",
+                                "lineWidth": 0.5,
+                                "shadow": false,
+                                "space": 0.0,
+                                "hasNoneStyle": false
+                            },
+                            "bottom": {
+                                "lineStyle": "Single",
+                                "lineWidth": 0.5,
+                                "shadow": false,
+                                "space": 0.0,
+                                "hasNoneStyle": false
+                            },
+                            "vertical": {
+                                "lineStyle": "Single",
+                                "lineWidth": 0.5,
+                                "shadow": false,
+                                "space": 0.0,
+                                "hasNoneStyle": false
+                            },
+                            "horizontal": {
+                                "lineStyle": "Single",
+                                "lineWidth": 0.5,
+                                "shadow": false,
+                                "space": 0.0,
+                                "hasNoneStyle": false
+                            },
+                            "diagonalDown": {
+                                "lineStyle": "None",
+                                "lineWidth": 0.0,
+                                "shadow": false,
+                                "space": 0.0,
+                                "hasNoneStyle": false
+                            },
+                            "diagonalUp": {
+                                "lineStyle": "None",
+                                "lineWidth": 0.0,
+                                "shadow": false,
+                                "space": 0.0,
+                                "hasNoneStyle": false
+                            }
+                        },
+                        "bidi": false,
+                        "horizontalPositionAbs": "Left",
+                        "horizontalPosition": 0.0
+                    }
+                },
+                {
+                    "characterFormat": {
+                        "fontColor": "empty"
+                    },
+                    "paragraphFormat": {
+                        "styleName": "Normal"
+                    },
+                    "inlines": []
+                }
+            ],
+            "headersFooters": {
+                "header": {
+                    "blocks": [
+                        {
+                            "inlines": []
+                        }
+                    ]
+                },
+                "footer": {
+                    "blocks": [
+                        {
+                            "inlines": []
+                        }
+                    ]
+                },
+                "evenHeader": {
+                    "blocks": [
+                        {
+                            "inlines": []
+                        }
+                    ]
+                },
+                "evenFooter": {
+                    "blocks": [
+                        {
+                            "inlines": []
+                        }
+                    ]
+                },
+                "firstPageHeader": {
+                    "blocks": [
+                        {
+                            "inlines": []
+                        }
+                    ]
+                },
+                "firstPageFooter": {
+                    "blocks": [
+                        {
+                            "inlines": []
+                        }
+                    ]
+                }
+            },
+            "sectionFormat": {
+                "headerDistance": 36.0,
+                "footerDistance": 36.0,
+                "pageWidth": 612.0,
+                "pageHeight": 792.0,
+                "leftMargin": 72.0,
+                "rightMargin": 72.0,
+                "topMargin": 72.0,
+                "bottomMargin": 72.0,
+                "differentFirstPage": false,
+                "differentOddAndEvenPages": false,
+                "bidi": false,
+                "restartPageNumbering": false,
+                "pageStartingNumber": 0,
+                "endnoteNumberFormat": "LowerCaseRoman",
+                "footNoteNumberFormat": "Arabic",
+                "restartIndexForFootnotes": "DoNotRestart",
+                "restartIndexForEndnotes": "DoNotRestart"
+            }
+        }
+    ],
+    "characterFormat": {
+        "fontSize": 11.0,
+        "fontFamily": "Calibri",
+        "fontColor": "empty",
+        "fontSizeBidi": 11.0,
+        "fontFamilyBidi": "Arial"
+    },
+    "paragraphFormat": {
+        "afterSpacing": 8.0,
+        "lineSpacing": 1.0791666507720947,
+        "lineSpacingType": "Multiple"
+    },
+    "background": {
+        "color": "#FFFFFFFF"
+    },
+    "styles": [
+        {
+            "type": "Paragraph",
+            "name": "Normal",
+            "next": "Normal",
+            "characterFormat": {
+                "fontColor": "empty"
+            }
+        },
+        {
+            "type": "Character",
+            "name": "Default Paragraph Font",
+            "characterFormat": {
+                "fontColor": "empty"
+            }
+        }
+    ],
+    "defaultTabWidth": 36.0,
+    "formatting": false,
+    "trackChanges": false,
+    "protectionType": "NoProtection",
+    "enforcement": false,
+    "dontUseHTMLParagraphAutoSpacing": false,
+    "alignTablesRowByRow": false,
+    "formFieldShading": true,
+    "footnotes": {
+        "separator": [
+            {
+                "characterFormat": {
+                    "fontColor": "empty"
+                },
+                "paragraphFormat": {
+                    "styleName": "Normal"
+                },
+                "inlines": [
+                    {
+                        "text": "\u0003",
+                        "characterFormat": {
+                            "fontColor": "empty"
+                        }
+                    }
+                ]
+            }
+        ],
+        "continuationSeparator": [
+            {
+                "characterFormat": {
+                    "fontColor": "empty"
+                },
+                "paragraphFormat": {
+                    "styleName": "Normal"
+                },
+                "inlines": [
+                    {
+                        "text": "\u0004",
+                        "characterFormat": {
+                            "fontColor": "empty"
+                        }
+                    }
+                ]
+            }
+        ],
+        "continuationNotice": [
+            {
+                "inlines": []
+            }
+        ]
+    },
+    "endnotes": {
+        "separator": [
+            {
+                "characterFormat": {
+                    "fontColor": "empty"
+                },
+                "paragraphFormat": {
+                    "styleName": "Normal"
+                },
+                "inlines": [
+                    {
+                        "text": "\u0003",
+                        "characterFormat": {
+                            "fontColor": "empty"
+                        }
+                    }
+                ]
+            }
+        ],
+        "continuationSeparator": [
+            {
+                "characterFormat": {
+                    "fontColor": "empty"
+                },
+                "paragraphFormat": {
+                    "styleName": "Normal"
+                },
+                "inlines": [
+                    {
+                        "text": "\u0004",
+                        "characterFormat": {
+                            "fontColor": "empty"
+                        }
+                    }
+                ]
+            }
+        ],
+        "continuationNotice": [
+            {
+                "inlines": []
+            }
+        ]
+    }
+};
+describe('Shape inside table', () => {
+	let editor: DocumentEditor = undefined;
+	beforeAll(() => {
+		document.body.innerHTML = '';
+		let ele: HTMLElement = createElement('div', { id: 'container' });
+		document.body.appendChild(ele);
+		DocumentEditor.Inject(Selection, Editor, SfdtExport, WordExport);
+		editor = new DocumentEditor({ isReadOnly: false, enableSelection: true, enableEditor: true, enableWordExport: true, enableSfdtExport: true });
+		(editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+		(editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+		(editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+		(editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+		editor.appendTo('#container');
+	});
+	afterAll((done) => {
+		editor.destroy();
+		document.body.removeChild(document.getElementById('container'));
+		editor = undefined;
+		document.body.innerHTML = '';
+		setTimeout(() => {
+			done();
+		}, 1000);
+	});
+	it('Shape inside table vaidation 1', () => {
+		editor.open(JSON.stringify(shapeInTableJson1));
+		let bodyWidget = editor.documentHelper.pages[0].bodyWidgets[0];
+		let cell: TableCellWidget = ((bodyWidget.childWidgets[0] as TableWidget).childWidgets[0] as TableRowWidget).childWidgets[1] as TableCellWidget;
+		expect((cell.childWidgets[0] as ParagraphWidget).y).toBeGreaterThan(268);
+		expect((cell.childWidgets[0] as ParagraphWidget).y).toBeLessThan(271);
+	});
+	it('Shape inside table vaidation 2', () => {
+		editor.open(JSON.stringify(shapeInTableJson2));
+		let bodyWidget = editor.documentHelper.pages[0].bodyWidgets[0];
+		let cell: TableCellWidget = ((bodyWidget.childWidgets[0] as TableWidget).childWidgets[0] as TableRowWidget).childWidgets[1] as TableCellWidget;
+		expect((cell.childWidgets[0] as ParagraphWidget).y).toBeGreaterThan(95);
+		expect((cell.childWidgets[0] as ParagraphWidget).y).toBeLessThan(97);
+	});
 });

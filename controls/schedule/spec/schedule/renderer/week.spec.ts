@@ -371,6 +371,18 @@ describe('Schedule Week view', () => {
             const dialogElement: HTMLElement = document.querySelector('.' + cls.EVENT_WINDOW_DIALOG_CLASS) as HTMLElement;
             expect(dialogElement.classList.contains('e-popup-close')).toBeTruthy();
         });
+
+        it('EJ2-50109 - Add icon shows on mobile when disabled adding events', () => {
+            const model: ScheduleModel = {
+                currentView: 'Week',
+                enableAdaptiveUI: true,
+                eventSettings: { allowAdding : false },
+                selectedDate: new Date(2017, 9, 5)
+            };
+            schObj = util.createSchedule(model, []);
+            const addButton: HTMLElement = schObj.element.querySelector('.e-add');
+            expect(addButton.classList).toContain('e-hidden');
+        });
     });
 
     describe('Client side events', () => {

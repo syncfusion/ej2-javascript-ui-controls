@@ -96,6 +96,24 @@ describe('Range navigator', () => {
             range.theme = 'HighContrastLight';
             range.refresh();
         });
+        it('checking with tailwind theme', (done: Function) => {
+            range.loaded = (args: Object) => {
+                let selectedElement: Element = document.getElementById('container_SelectedArea');
+                expect(selectedElement.getAttribute('fill')).toEqual('#4F46E5');
+                done();
+            };
+            range.theme = 'Tailwind';
+            range.refresh();
+        });
+        it('checking with tailwind dark theme', (done: Function) => {
+            range.loaded = (args: Object) => {
+                let selectedElement: Element = document.getElementById('container_SelectedArea');
+                expect(selectedElement.getAttribute('fill')).toEqual('#22D3EE');
+                done();
+            };
+            range.theme = 'TailwindDark';
+            range.refresh();
+        });
         it('checking with custom width', (done: Function) => {
             range.loaded = (args: Object): void => {
                 let container: Element = document.getElementById('container_svg');

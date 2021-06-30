@@ -112,6 +112,11 @@ export class ToolBarSelector {
                 const text: string = this.tickMark(args);
                 this.addedSeries(text);
                 this.stockChart.cartesianChart.initializeChart();
+                if (this.stockChart.stockLegendModule && this.stockChart.stockLegendModule.legendCollections.length
+                    && this.stockChart.legendSettings.visible) {
+                    const bounds: Rect = this.stockChart.stockLegendModule.legendBounds;
+                    this.stockChart.stockLegendModule.renderLegend(this.stockChart, this.stockChart.legendSettings, bounds);
+                }
             }
         });
         seriesType.appendTo('#' + this.stockChart.element.id + '_seriesType');

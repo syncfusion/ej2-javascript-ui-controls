@@ -3,7 +3,7 @@
 /* eslint-disable jsdoc/require-param */
 /* eslint-disable @typescript-eslint/no-inferrable-types */
 /* eslint-disable @typescript-eslint/ban-types */
-import { Component, INotifyPropertyChanged, Property, Complex, Collection, Internationalization } from '@syncfusion/ej2-base';
+import { Component, INotifyPropertyChanged, Property, Complex, Collection, Internationalization, NotifyPropertyChanges, ModuleDeclaration } from '@syncfusion/ej2-base';
 import { Browser, EmitType, remove, Event, EventHandler } from '@syncfusion/ej2-base';
 import { DataManager } from '@syncfusion/ej2-data';
 import { StockChartModel } from './stock-chart-model';
@@ -26,7 +26,7 @@ import { PeriodSelector } from '../common/period-selector/period-selector';
 import { CartesianChart } from './renderer/cartesian-chart';
 import { RangeSelector } from './renderer/range-selector';
 import { ToolBarSelector } from './renderer/toolbar-selector';
-import { StockMargin, StockChartArea, StockChartAxis, StockChartRow, StockChartIndexes, StockEventsSettings } from './model/base';
+import { StockMargin, StockChartArea, StockChartAxis, StockChartRow, StockChartIndexes, StockEventsSettings, IStockLegendRenderEventArgs, IStockLegendClickEventArgs } from './model/base';
 import { StockSeries, IStockChartEventArgs, StockChartIndicator, StockChartBorder, IRangeChangeEventArgs } from './model/base';
 import { StockChartAnnotationSettings, IStockEventRenderArgs, } from './model/base';
 import { StockChartAnnotationSettingsModel } from './model/base-model';
@@ -36,15 +36,26 @@ import { StockChartIndexesModel, StockChartFontModel, StockChartAreaModel, Stock
 import { StockChartBorderModel, StockMarginModel } from './model/base-model';
 import { ChartSeriesType, TrendlineTypes, TechnicalIndicators, ChartTheme, SelectionMode } from '../chart/utils/enum';
 import { ExportType, Alignment } from '../common/utils/enum';
-import { getThemeColor } from '../common/model/theme';
+import { getSeriesColor, getThemeColor } from '../common/model/theme';
 import { StockEvents } from './renderer/stock-events';
 import { IThemeStyle } from '../chart/model/chart-interface';
+import { StockChartLegendSettingsModel } from './legend/legend-model';
+import { StockLegend, StockChartLegendSettings } from './legend/legend';
+import { SeriesModel } from './index';
 
 /**
  * Stock Chart
+ * @public
  */
-
+@NotifyPropertyChanges
 export class StockChart extends Component<HTMLElement> implements INotifyPropertyChanged {
+    
+    //Module Declaration of Stockchart.
+    /**
+     * `legendModule` is used to manipulate and add legend to the Stockchart.
+     */
+     public stockLegendModule: StockLegend;
+
     /**
      * The width of the stockChart as a string accepts input as both like '100px' or '100%'.
      * If specified as '100%, stockChart renders to the full width of its parent element.
@@ -224,6 +235,12 @@ export class StockChart extends Component<HTMLElement> implements INotifyPropert
     public crosshair: CrosshairSettingsModel;
 
     /**
+     * Options for customizing the legend of the stockChart.
+     */
+    @Complex<StockChartLegendSettingsModel>({}, StockChartLegendSettings)
+    public legendSettings: StockChartLegendSettingsModel; 
+
+    /**
      * Options to enable the zooming feature in the chart.
      */
     @Complex<ZoomSettingsModel>({}, ZoomSettings)
@@ -361,6 +378,22 @@ export class StockChart extends Component<HTMLElement> implements INotifyPropert
     @Event()
     public onZooming: EmitType<IZoomingEventArgs>;
 
+    /**
+     * Triggers before the legend is rendered.
+     *
+     * @event legendRender
+     * @deprecated
+     */
+    @Event()
+    public legendRender: EmitType<IStockLegendRenderEventArgs>;
+
+    /**
+     * Triggers after click on legend
+     *
+     * @event legendClick
+     */
+    @Event()
+    public legendClick: EmitType<IStockLegendClickEventArgs>;
 
     /**
      * Specifies whether series or data point has to be selected. They are,
@@ -496,6 +529,13 @@ export class StockChart extends Component<HTMLElement> implements INotifyPropert
     @Property(['Linear', 'Exponential', 'Polynomial', 'Logarithmic', 'Moving Average'])
     public trendlineType: TrendlineTypes[];
 
+    /**
+     * Gets the current visible series of the Chart.
+     *
+     * @hidden
+     */
+    public visibleSeries: Series[];
+
     /** @private */
     public startValue: number;
     /** @private */
@@ -605,6 +645,16 @@ export class StockChart extends Component<HTMLElement> implements INotifyPropert
     public tempPeriods: PeriodsModel[] = [];
     /** @private */
     public isBlazor: boolean;
+    /** @private */
+    public legend: StockLegend;
+    /** @private */
+    public visibleSeriesCount: number;
+    /** @private */
+    public redraw: boolean;
+    /** @private */
+    public initialClipRect: Rect;
+    /** @private */
+    public tempAvailableSize: Size;
 
     /**
      * Constructor for creating the widget
@@ -751,10 +801,11 @@ export class StockChart extends Component<HTMLElement> implements INotifyPropert
         const loadEventData: IStockChartEventArgs = { name: 'load', stockChart: this.isBlazor ? {} as StockChart : this, theme: this.theme };
         this.trigger('load', loadEventData, () => {
             this.theme = this.isBlazor ? loadEventData.theme : this.theme;
-            this.stockChartTheme = getThemeColor(this.theme);
+            this.themeStyle = getThemeColor(this.theme);
             this.storeDataSource();
             this.drawSVG();
             this.renderTitle();
+            this.renderLegend();
             this.chartModuleInjection();
             this.chartRender();
             if (!(this.dataSource instanceof DataManager) || !(this.series[0].dataSource instanceof DataManager)) {
@@ -802,6 +853,8 @@ export class StockChart extends Component<HTMLElement> implements INotifyPropert
         this.renderer = new SvgRenderer(this.element.id);
         this.renderBorder();
         this.createSecondaryElements();
+        this.calculateVisibleSeries();        
+        this.calculateLegendBounds();
         //overall svg in which chart and selector appened
         this.mainObject = this.renderer.createSvg({
             id: this.element.id + '_stockChart_svg',
@@ -810,6 +863,22 @@ export class StockChart extends Component<HTMLElement> implements INotifyPropert
         });
         this.svgObject = this.mainObject;
         this.element.appendChild(this.mainObject);
+    }
+
+    private calculateVisibleSeries(): void {
+        this.visibleSeries = [];
+        let series: Series;        
+        const color: string[] = getSeriesColor(this.theme);
+        const count: number = color.length;
+        const seriesCollections: SeriesModel[] = this.series.sort((a: SeriesModel, b: SeriesModel) => { return a.zOrder - b.zOrder; });
+        for (let i: number = 0, len: number = seriesCollections.length; i < len; i++) {
+            series = <Series>seriesCollections[i];
+            series.category = 'Series';
+            series.index = i;
+            series.interior = series.fill || color[i % count];
+            this.visibleSeries.push(series);
+            seriesCollections[i] = series;
+        }
     }
 
     private createSecondaryElements(): void {
@@ -825,6 +894,23 @@ export class StockChart extends Component<HTMLElement> implements INotifyPropert
         const height: number = (this.enablePeriodSelector ? this.toolbarHeight : 0) + this.titleSize.height;
         tooltipDiv.setAttribute('style', 'position: relative; height:' + height + 'px');
         appendChildElement(false, this.element, tooltipDiv, false);
+    }
+
+    /**
+     * To provide the array of modules needed for control rendering
+     *
+     * @returns {ModuleDeclaration[]} required modules
+     * @private
+     */
+     public requiredModules(): ModuleDeclaration[] {
+        const modules: ModuleDeclaration[] = [];
+        if(this.legendSettings.visible) {
+            modules.push({
+                member: 'StockLegend',
+                args: [this]
+            });
+        }
+        return modules;
     }
 
     public findCurrentData(totalData: Object, xName: string): Object {
@@ -979,7 +1065,9 @@ export class StockChart extends Component<HTMLElement> implements INotifyPropert
             (): void => {
                 calculateSize(this);
                 this.renderBorder();
+                this.calculateLegendBounds();
                 this.renderTitle();
+                this.renderLegend();
                 this.cartesianChart.cartesianChartRefresh(this);
                 this.mainObject.setAttribute('width', this.availableSize.width.toString());
                 if (this.enablePeriodSelector) {
@@ -1269,7 +1357,7 @@ export class StockChart extends Component<HTMLElement> implements INotifyPropert
                     id: this.element.id + '_stockChart_Title',
                     width: this.availableSize.width,
                     height: this.titleSize.height,
-                    fill: this.background || this.stockChartTheme.background
+                    fill: this.background || this.themeStyle.background
                 }),
                 false);
             const alignment: Alignment = this.titleStyle.textAlignment;
@@ -1291,6 +1379,43 @@ export class StockChart extends Component<HTMLElement> implements INotifyPropert
             this.availableSize.height -= (this.titleSize.height + 5);
         }
     }
+
+    /**
+     * @private
+     */
+    public calculateLegendBounds(): void {
+        if (this.stockLegendModule && this.legendSettings.visible) {
+            this.stockLegendModule.getLegendOptions(this.visibleSeries, this);            
+        }
+        const titleHeight: number = this.titleSize.height;
+        const left: number = this.border.width;
+        const width: number = this.availableSize.width - this.border.width - left;
+        const top: number = this.chartArea.border.width * 0.5 + this.border.width;
+        const height: number = this.availableSize.height - top - this.border.width - (this.enablePeriodSelector ? this.toolbarHeight : 0) - titleHeight;
+        this.initialClipRect = new Rect(left, top, width, height);
+        this.tempAvailableSize = new Size(this.availableSize.width, this.availableSize.height - (this.enablePeriodSelector ? this.toolbarHeight : 0) - titleHeight)
+        if (this.stockLegendModule && this.legendSettings.visible) {
+            this.stockLegendModule.calculateLegendBounds(this.initialClipRect, this.tempAvailableSize, null);
+        }
+    }
+
+    /**
+     * To render the legend
+     * @private
+     */
+    public renderLegend(): void {
+        if (this.stockLegendModule && this.stockLegendModule.legendCollections.length && this.legendSettings.visible) {
+            this.stockLegendModule.calTotalPage = true;
+            const bounds: Rect = this.stockLegendModule.legendBounds;
+            this.stockLegendModule.renderLegend(this, this.legendSettings, bounds);
+            if (this.legendSettings.position === "Auto" || this.legendSettings.position === "Bottom" || this.legendSettings.position === "Top") {
+                this.availableSize.height -= this.stockLegendModule.legendBounds.height;
+            } else if (this.legendSettings.position === "Left" || this.legendSettings.position === "Right") {    
+                this.availableSize.width -= this.stockLegendModule.legendBounds.width;
+            }
+        }
+    }
+
     private findTitleColor(): string {
         if (this.theme.toLocaleLowerCase().indexOf('highcontrast') > -1 || this.theme.indexOf('Dark') > -1) {
             return '#ffffff';

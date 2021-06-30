@@ -5,8 +5,9 @@ import { Point } from '@syncfusion/ej2-drawings';
 import { Size } from '@syncfusion/ej2-drawings';
 import { PdfBoundsModel, PdfAnnotationBaseModel, PdfFontModel } from './pdf-annotation-model';
 import { Container } from '@syncfusion/ej2-drawings';
-import { PdfAnnotationType } from './enum';
-import { ICommentsCollection, IReviewCollection, AnnotationSelectorSettingsModel, AllowedInteraction } from '../index';
+import { PdfAnnotationType, FormFieldAnnotationType } from './enum';
+import { ICommentsCollection, IReviewCollection, AnnotationSelectorSettingsModel, AllowedInteraction, ItemModel, SignatureIndicatorSettingsModel } from '../index';
+import { FontStyle } from '../base';
 /**
  * The `PdfBounds` is base for annotation bounds.
  *
@@ -157,6 +158,14 @@ export class PdfAnnotationBase extends ChildProperty<PdfAnnotationBase> {
      */
     @Property('Rectangle')
     public shapeAnnotationType: PdfAnnotationType;
+        
+    /**
+     * Represents the annotation type of the form field
+     *
+     * @default ''
+     */
+    @Property(null)
+    public formFieldAnnotationType: FormFieldAnnotationType;
 
     /**
      * Represents the measure type of the annotation
@@ -471,6 +480,14 @@ export class PdfAnnotationBase extends ChildProperty<PdfAnnotationBase> {
     public fontFamily: string;
 
     /**
+     * Represents the font style of the annotation content
+     *
+     * @default 'None'
+     */
+    @Property('None')
+    public fontStyle: string;
+
+    /**
      * Represents the shape annotation label add flag
      *
      * @default 'false'
@@ -649,6 +666,282 @@ export class PdfAnnotationBase extends ChildProperty<PdfAnnotationBase> {
     }
 
 }
+
+/**
+ * Defines the common behavior of PdfFormFieldBase
+ *
+ * @hidden
+ */
+export class PdfFormFieldBase extends ChildProperty<PdfFormFieldBase> {
+
+    /**
+     * Represents the unique id of formField
+     *
+     * @default ''
+     */
+    @Property('')
+    public id: string;
+
+    /**
+     * Represents the name of the formField
+     *
+     * @default ''
+     */
+    @Property('')
+    public name: string;
+
+    /**
+     * Represents the value of the formField
+     *
+     * @default ''
+     */
+     @Property('')
+     public value: string;
+        
+    /**
+     * Represents the annotation type of the form field
+     *
+     * @default ''
+     */
+    @Property(null)
+    public formFieldAnnotationType: FormFieldAnnotationType;
+
+    /**
+     * Represents the fill color of the form field
+     *
+     * @default '#daeaf7ff'
+     */
+    @Property('#daeaf7ff')
+    public backgroundColor: string;
+
+    /**
+     * Represents the text color of the form field
+     *
+     * @default 'black'
+     */
+    @Property('black')
+    public color: string;
+
+    /**
+     * Represents the border color of the form field
+     *
+     * @default '#303030'
+     */
+    @Property('#303030')
+    public borderColor: string;
+
+    /**
+     * Represents the tooltip of the form field
+     *
+     * @default ''
+     */
+    @Property('')
+    public tooltip: string;
+
+    /**
+     * Represents the opecity value of the formField
+     *
+     * @default 1
+     */
+    @Property(1)
+    public opacity: number;
+
+    /**
+     * Represents the thickness value of FormField
+     *
+     * @default 1
+     */
+    @Property(1)
+    public thickness: number;
+
+    /**
+     * Represents the rotate angle of formField
+     *
+     * @default 0
+     */
+    @Property(0)
+    public rotateAngle: number;
+
+    /**
+     * Represents bounds of the formField
+     *
+     * @default new Point(0,0)
+     */
+    @Complex<PdfBoundsModel>({ x: 0, y: 0 }, PdfBounds)
+    public bounds: PdfBoundsModel;
+
+    /**
+     * Represents the cloud intensity
+     *
+     * @default 0
+     */
+    @Property(0)
+    public pageIndex: number;
+
+    /**
+     * Represents the page number
+     *
+     * @default 1
+     */
+    @Property(1)
+    public pageNumber: number;
+
+    /**
+     * Represents the cloud intensity
+     *
+     * @default -1
+     */
+
+    @Property(-1)
+    public zIndex: number;
+
+    /**
+     * Represents the cloud intensity
+     *
+     * @default null
+     */
+    @Property(null)
+    public wrapper: Container;
+
+    /**
+     * Represents the font size of the formField content
+     *
+     * @default 16
+     */
+    @Property(16)
+    public fontSize: number;
+
+    /**
+     * Represents the font family of the formField content
+     *
+     * @default 'Helvetica'
+     */
+    @Property('Helvetica')
+    public fontFamily: string;
+
+    /**
+     * Represents the font style of the formField content
+     *
+     * @default 'None'
+     */
+    @Property('None')
+    public fontStyle: string;
+
+    /**
+     * Represents the text anlignment style of formField
+     *
+     * @default 'left'
+     */
+    @Property('left')
+    public alignment: string;
+
+    /**
+     * specifies the minHeight of the formField.
+     *
+     * @default 0
+     */
+    @Property(0)
+    public minHeight: number;
+
+    /**
+     * specifies the minWidth of the formField.
+     *
+     * @default 0
+     */
+    @Property(0)
+    public minWidth: number;
+
+    /**
+     * specifies the minHeight of the formField.
+     *
+     * @default 0
+     */
+    @Property(0)
+    public maxHeight: number;
+
+    /**
+     * specifies the maxWidth of the formField.
+     *
+     * @default 0
+     */
+    @Property(0)
+    public maxWidth: number;
+
+    /**
+     * specifies the maxLength of the textbox/password.
+     *
+     * @default 0
+     */
+    @Property(0)
+    public maxLength: number;
+
+    /**
+     * If it is set as Hidden, Html element will be hide in the UI. By default it is visible.
+     */
+    @Property('visible')
+    public visibility: VisibilityState;
+
+    /**
+     * specifies whether the form field are included or not in print actions.
+     */
+    @Property(true)
+    public isPrint: boolean;
+
+    /**
+     * Allows to edit the form Field text.
+     */
+    @Property(false)
+    public isReadonly: boolean;
+
+    /**
+     * Enable or disable the checkbox state.
+     */
+    @Property(false)
+    public isChecked: boolean;
+
+    /**
+     * Enable or disable the RadioButton state.
+     */
+    @Property(false)
+    public isSelected: boolean;
+
+    /**
+     * Specify whether an form field element is mandatory.
+     */
+    @Property(false)
+    public isRequired: boolean;
+
+    /**
+     * Gets or sets the items to be displayed for drop down/ listbox.
+     */
+    @Property('')
+    public options: ItemModel[];
+
+    /**
+     * Specifies the properties of the signature indicator in the signature field.
+     */
+    @Property()
+    public signatureIndicatorSettings: SignatureIndicatorSettingsModel;
+
+    /**
+     * Represents the text style of annotation
+     *
+     * @default ''
+     */
+    @Complex<PdfFontModel>({ isBold: false, isItalic: false, isStrikeout: false, isUnderline: false }, PdfFont)
+    public font: PdfFontModel;
+
+    /**
+     * Gets or sets the items selected in the drop down/ listbox.
+     */
+    @Property()
+    public selectedIndex: number[];
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    constructor(parent: any, propName: string, defaultValue: Object, isArray?: boolean) {
+        super(parent, propName, defaultValue, isArray);
+    }
+}
+
 /**
  * @hidden
  */

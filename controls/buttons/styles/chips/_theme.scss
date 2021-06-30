@@ -19,7 +19,7 @@
 }
 
 @mixin chip-dlt-btn-color($hover-color, $pressed-color) {
-  &:not(.e-active) {
+  @if ($skin-name == 'tailwind' or $skin-name == 'tailwind-dark') {
     .e-chip-delete.e-dlt-btn {
       &:hover {
         color: $hover-color;
@@ -27,6 +27,19 @@
 
       &:active {
         color: $pressed-color;
+      }
+    }
+  }
+  @else {
+    &:not(.e-active) {
+      .e-chip-delete.e-dlt-btn {
+        &:hover {
+          color: $hover-color;
+        }
+
+        &:active {
+          color: $pressed-color;
+        }
       }
     }
   }

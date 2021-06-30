@@ -21,6 +21,12 @@ export function destroy(editorObj: InPlaceEditor): void {
     document.body.innerHTML = '';
 }
 
+export function dispatchEvent(element: Element, type: string) {
+    let evt: any = document.createEvent('MouseEvents');
+    evt.initEvent(type, true, true);
+    element.dispatchEvent(evt);
+}
+
 export function triggerKeyBoardEvent(ele: HTMLElement, code: number): void {
     let eve: any = new KeyboardEvent("keydown", { bubbles: true, cancelable: true, key: code.toString(), shiftKey: true });
     Object.defineProperty(eve, "keyCode", { "value": code });

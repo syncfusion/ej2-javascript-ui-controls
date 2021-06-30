@@ -56,7 +56,7 @@
           min-width: $acrdn-bgr-icn-minwidth;
           right: $acrdn-bgr-header-paddingpix;
 
-          @if $acrdn-skin == 'bootstrap4' {
+          @if $acrdn-skin == 'bootstrap4' or $acrdn-skin == 'tailwind' or $acrdn-skin == 'tailwind-dark' {
             font-size: $acrdn-bgr-arrow-icon-font-size;
           }
         }
@@ -65,7 +65,7 @@
           display: inline-block;
           padding: 0 $acrdn-bgr-header-icon-padding 0 0;
 
-          @if $acrdn-skin == 'bootstrap4' {
+          @if $acrdn-skin == 'bootstrap4' or $acrdn-skin == 'tailwind' or $acrdn-skin == 'tailwind-dark' {
             .e-acrdn-icons.e-icons {
               font-size: $acrdn-bgr-icon-font-size;
             }
@@ -318,6 +318,12 @@
           @if $acrdn-skin == 'bootstrap4' {
             .e-acrdn-icons.e-icons {
               font-size: $acrdn-bgr-arrow-icon-font-size;
+            }
+          }
+
+          @if $acrdn-skin == 'tailwind' or $acrdn-skin == 'tailwind-dark' {
+            .e-acrdn-icons.e-icons {
+              font-size: $acrdn-icon-font-size;
             }
           }
         }

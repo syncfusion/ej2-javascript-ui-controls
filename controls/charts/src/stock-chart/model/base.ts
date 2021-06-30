@@ -1,10 +1,10 @@
 /* eslint-disable @typescript-eslint/ban-types */
 import { ChildProperty, Property, Complex, Collection } from '@syncfusion/ej2-base';
 import { DataManager, Query} from '@syncfusion/ej2-data';
-import { MarkerSettings, Trendline } from '../../chart/series/chart-series';
+import { MarkerSettings, Series, Trendline } from '../../chart/series/chart-series';
 import { MarkerSettingsModel, TrendlineModel } from '../../chart/series/chart-series-model';
 import { StockChart } from '../stock-chart';
-import { ChartSeriesType, EmptyPointMode, TechnicalIndicators, MacdType, FinancialDataFields, ChartTheme } from '../../chart/utils/enum';
+import { ChartSeriesType, EmptyPointMode, TechnicalIndicators, MacdType, FinancialDataFields, ChartTheme, ChartShape } from '../../chart/utils/enum';
 import { Anchor, ZIndex, SizeType, LabelIntersectAction, LabelPlacement, AxisPosition, IntervalType } from '../../chart/utils/enum';
 import { SkeletonType, ChartRangePadding, EdgeLabelPlacement, ValueType, LegendShape, TrendlineTypes } from '../../chart/utils/enum';
 import { MajorGridLinesModel, MajorTickLinesModel, CrosshairTooltipModel, AxisLineModel } from '../../chart/axis/axis-model';
@@ -14,7 +14,7 @@ import { ConnectorType } from '../../accumulation-chart/model/enum';
 import { CornerRadius } from '../../common/model/base';
 import { TextOverflow, Alignment, Regions, Units, Position, FlagType } from '../../common/utils/enum';
 import { Theme } from '../../common/model/theme';
-import { AnimationModel, CornerRadiusModel, EmptyPointSettingsModel, ConnectorModel } from '../../chart/index';
+import { AnimationModel, CornerRadiusModel, EmptyPointSettingsModel, ConnectorModel, IChartEventArgs } from '../../chart/index';
 import {  StockChartBorderModel, StockChartConnectorModel, StockChartStripLineSettingsModel, StockSeriesModel } from './base-model';
 import { StockChartFontModel } from './base-model';
 
@@ -572,6 +572,33 @@ export class StockSeries extends ChildProperty<StockSeries> {
     public pointColorMapping: string;
 
     /**
+     * The shape of the legend. Each series has its own legend shape. They are
+     * * Circle - Renders a circle.
+     * * Rectangle - Renders a rectangle.
+     * * Triangle - Renders a triangle.
+     * * Diamond - Renders a diamond.
+     * * Cross - Renders a cross.
+     * * HorizontalLine - Renders a horizontalLine.
+     * * VerticalLine - Renders a verticalLine.
+     * * Pentagon - Renders a pentagon.
+     * * InvertedTriangle - Renders a invertedTriangle.
+     * * SeriesType -Render a legend shape based on series type.
+     * * Image -Render a image.     * 
+     * @default 'SeriesType'
+     */
+
+    @Property('SeriesType')
+    public legendShape: LegendShape;
+ 
+    /**
+     * The URL for the Image that is to be displayed as a Legend icon.  It requires  `legendShape` value to be an `Image`.
+     * @default ''
+     */
+ 
+    @Property('')
+    public legendImageUrl: string;
+
+    /**
      * Options to customizing animation for the series.
      */
 
@@ -798,6 +825,8 @@ export class StockSeries extends ChildProperty<StockSeries> {
     public columnSpacing: number;
     /** @private */
     public localData: Object = undefined;
+    /** @private */
+    public chart: StockChart;
 }
 
 export interface IStockChartEventArgs {
@@ -845,6 +874,27 @@ export interface IStockEventRenderArgs {
     series: StockSeriesModel;
 }
 
+export interface IStockLegendRenderEventArgs extends IChartEventArgs {
+    /** Defines the current legend text */
+    text: string;
+    /** Defines the current legend fill color */
+    fill: string;
+    /** Defines the current legend shape */
+    shape: LegendShape;
+    /** Defines the current legend marker shape */
+    markerShape?: ChartShape;
+}
+
+export interface IStockLegendClickEventArgs extends IChartEventArgs {
+    /** Defines the chart when legendClick */
+    chart: StockChart;
+    /** Defines the current legend shape */
+    legendShape: LegendShape;
+    /** Defines the current series */
+    series: Series;
+    /** Defines the current legend text */
+    legendText: string;
+}
 
 export class StockChartIndicator extends ChildProperty<StockChartIndicator> {
     /**

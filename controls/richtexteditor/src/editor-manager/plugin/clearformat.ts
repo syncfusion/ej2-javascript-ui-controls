@@ -52,7 +52,7 @@ export class ClearFormat {
                 }
                 const lasNode: Node = nodeCutter.GetSpliceNode(range, lastText as HTMLElement);
                 nodeSelection.setSelectionText(docElement, preNode, lasNode, 0, (lasNode.nodeType === 3) ?
-                lasNode.textContent.length : lasNode.childNodes.length);
+                    lasNode.textContent.length : lasNode.childNodes.length);
                 range = nodeSelection.getRange(docElement);
             }
             let exactNodes: Node[] = nodeSelection.getNodeCollection(range);
@@ -89,9 +89,9 @@ export class ClearFormat {
             selectionNodes[selectionNodes.length - 1],
             false,
             docElement);
-        let endIndexNode: Node = selectionNodes[selectionNodes.length - 1];
+        const endIndexNode: Node = selectionNodes[selectionNodes.length - 1];
         save.endOffset = (endIndexNode.nodeType === 3) ? endIndexNode.textContent.length
-        : endIndexNode.childNodes.length;
+            : endIndexNode.childNodes.length;
         save.restore();
     }
 

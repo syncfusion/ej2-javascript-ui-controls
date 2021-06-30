@@ -17,6 +17,7 @@ import { createSvgElement, createHtmlElement, getBackgroundLayerSvg } from '../u
 import { removeGradient, checkBrowserInfo } from '../utility/diagram-util';
 import { Container } from '../core/containers/container';
 import { isBlazor } from '@syncfusion/ej2-base';
+
 /**
  * SVG Renderer
  */
@@ -576,8 +577,16 @@ export class SvgRenderer implements IRenderer {
                 'class': 'foreign-object'
             };
             htmlElement = createHtmlElement('div', attr);
-            // eslint-disable-next-line @typescript-eslint/no-unused-expressions
-            element.isTemplate ? htmlElement.appendChild(element.template) : htmlElement.appendChild(element.template.cloneNode(true));
+            let isOverviewLayer: boolean = false;
+            if (canvas.parentNode && canvas.parentNode.parentNode && canvas.parentNode.parentNode.parentNode && (canvas.parentNode.parentNode.parentNode as any).classList.contains('e-overview')) {
+                isOverviewLayer = true;
+            }
+            if (isOverviewLayer) {
+                htmlElement.appendChild(element.template.cloneNode(true));
+            } else {
+                // eslint-disable-next-line @typescript-eslint/no-unused-expressions
+                element.isTemplate ? htmlElement.appendChild(element.template) : htmlElement.appendChild(element.template.cloneNode(true));
+            }
             if (indexValue !== undefined && canvas.childNodes.length > indexValue) {
                 canvas.insertBefore(htmlElement, canvas.childNodes[indexValue]);
 

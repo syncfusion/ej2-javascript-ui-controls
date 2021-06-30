@@ -7,10 +7,21 @@
     }
     text-transform: none;
     white-space: normal;
+    @if $skin-name == 'tailwind' or $skin-name == 'tailwind-dark' {
+      padding: 6px 11px;
+    }
 
-    &:hover,
-    &:focus {
+    &:hover {
       @if $skin-name != 'bootstrap4' {
+        box-shadow: none;
+    }
+  }
+
+    &:focus {
+      @if $skin-name == 'tailwind' or $skin-name == 'tailwind-dark' {
+        box-shadow: $drop-down-btn-box-shadow;
+      }
+      @else {
         box-shadow: none;
       }
     }
@@ -55,6 +66,13 @@
   }
 
   .e-bigger .e-dropdown-btn,
+  .e-bigger .e-dropdown-btn.e-btn {
+    @if $skin-name == 'tailwind' or $skin-name == 'tailwind-dark' {
+      padding: 8px 11px;
+    }
+  }
+
+  .e-bigger .e-dropdown-btn,
   .e-bigger.e-dropdown-btn {
     .e-btn-icon {
       font-size: $drop-down-btn-icon-font-size-bigger;
@@ -79,6 +97,9 @@
 
   .e-dropdown-popup {
     position: absolute;
+    @if $skin-name == 'tailwind' or $skin-name == 'tailwind-dark' {
+      margin-top: $drop-down-btn-popup-margin-top;
+    }
 
     & ul {
       border: $drop-down-btn-ul-border;
@@ -170,6 +191,9 @@
     max-width: $drop-down-btn-bigger-max-width;
     min-width: $drop-down-btn-bigger-min-width;
     padding: $drop-down-btn-ul-bigger-padding;
+    @if $skin-name == 'tailwind' or $skin-name == 'tailwind-dark' {
+      margin-top: $drop-down-btn-bigger-popup-margin-top;
+    }
 
     & .e-item  {
       height: $drop-down-btn-bigger-li-height;

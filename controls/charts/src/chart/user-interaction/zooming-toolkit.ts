@@ -42,8 +42,10 @@ export class Toolkit {
         this.chart = chart;
         this.elementId = chart.element.id;
         this.chart.svgRenderer = new SvgRenderer(this.elementId);
-        this.selectionColor = chart.theme === 'Bootstrap4' ? '#FFFFFF' : '#ff4081';
-        this.fillColor = chart.theme === 'Bootstrap4' ? '#495057' : '#737373';
+        this.selectionColor = chart.theme === 'Bootstrap4' ? '#FFFFFF' :
+            chart.theme === 'Tailwind' ? '#374151' : chart.theme === 'TailwindDark' ? '#F3F4F6' : '#ff4081';
+        this.fillColor = chart.theme === 'Bootstrap4' ? '#495057' :
+            chart.theme === 'Tailwind' ? '#6B7280' : chart.theme === 'TailwindDark' ? '#D1D5DB' : '#737373';
         this.iconRectOverFill = chart.theme === 'Bootstrap4' ? '#5A6268' : this.iconRectOverFill;
         this.iconRectSelectionFill = chart.theme === 'Bootstrap4' ? '#5B6269' : this.iconRectSelectionFill;
         this.iconRect = chart.theme === 'Bootstrap4' ? new Rect(-5, -5, 26, 26) : new Rect(0, 0, 16, 16);

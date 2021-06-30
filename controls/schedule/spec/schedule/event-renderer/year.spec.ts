@@ -145,7 +145,7 @@ describe('Year and TimelineYear View Event Render Module', () => {
             const otherMonthCells: NodeListOf<Element> = schObj.element.querySelectorAll('.e-work-cells.e-other-month');
             expect(otherMonthCells.length).toEqual(67);
             const workCell: HTMLElement = schObj.element.querySelector('.e-work-cells') as HTMLElement;
-            expect(workCell.offsetWidth).toEqual(60);
+            expect(workCell.offsetWidth).toEqual(100);
             expect(workCell.offsetHeight).toEqual(70);
         });
 
@@ -238,7 +238,7 @@ describe('Year and TimelineYear View Event Render Module', () => {
             const otherMonthCells: NodeListOf<Element> = schObj.element.querySelectorAll('.e-work-cells.e-other-month');
             expect(otherMonthCells.length).toEqual(67);
             const workCell: HTMLElement = schObj.element.querySelector('.e-work-cells') as HTMLElement;
-            expect(workCell.offsetWidth).toEqual(60);
+            expect(workCell.offsetWidth).toEqual(100);
             expect(workCell.offsetHeight).toEqual(70);
         });
 
@@ -248,7 +248,7 @@ describe('Year and TimelineYear View Event Render Module', () => {
             schObj.scrollTo(null, new Date(2019, 1, 3));
             setTimeout(
                 () => {
-                    expect(contentArea.scrollLeft).toEqual(60);
+                    expect(contentArea.scrollLeft).toEqual(100);
                     expect(contentArea.scrollTop).toEqual(490);
                     done();
                 },
@@ -333,7 +333,7 @@ describe('Year and TimelineYear View Event Render Module', () => {
             schObj.scrollTo(null, new Date(2019, 1, 3));
             setTimeout(
                 () => {
-                    expect(contentArea.scrollLeft).toEqual(420);
+                    expect(contentArea.scrollLeft).toEqual(700);
                     done();
                 },
                 400);

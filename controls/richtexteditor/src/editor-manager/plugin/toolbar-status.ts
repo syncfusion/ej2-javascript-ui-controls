@@ -5,6 +5,7 @@ import { IToolbarStatus } from './../../common/interface';
 import { getDefaultHtmlTbStatus } from './../../common/util';
 /**
  * Update Toolbar Status
+ *
  * @hidden
  * @deprecated
  */
@@ -93,6 +94,12 @@ export class ToolbarStatus {
             if ((index === 0 && formatCollection.createlink) || !formatCollection.createlink) {
                 nodeCollection.createlink = formatCollection.createlink;
             }
+            if ((index === 0 && formatCollection.numberFormatList) || !formatCollection.numberFormatList) {
+                nodeCollection.numberFormatList = formatCollection.numberFormatList;
+            }
+            if ((index === 0 && formatCollection.bulletFormatList) || !formatCollection.bulletFormatList) {
+                nodeCollection.bulletFormatList = formatCollection.bulletFormatList;
+            }
             formatCollection = JSON.parse(JSON.stringify(statusCollection));
         }
         return nodeCollection;
@@ -171,6 +178,12 @@ export class ToolbarStatus {
         }
         if (!formatCollection.createlink) {
             formatCollection.createlink = this.isLink(node);
+        }
+        if (!formatCollection.numberFormatList) {
+            formatCollection.numberFormatList = this.isNumberFormatList(node);
+        }
+        if (!formatCollection.bulletFormatList) {
+            formatCollection.bulletFormatList = this.isBulletFormatList(node);
         }
         return formatCollection;
     }
@@ -279,5 +292,39 @@ export class ToolbarStatus {
     private static getComputedStyle(docElement: Document, node: HTMLElement, prop: string): string {
         return docElement.defaultView.getComputedStyle(node, null).getPropertyValue(prop);
     }
+    private static isNumberFormatList(node: Node): string {
+        const list: string = (node as HTMLElement).style && (node as HTMLElement).style.listStyleType;
+        if (list === 'lower-alpha') {
+            return 'Lower Alpha';
+        } else if (list === 'number') {
+            return 'Number';
+        } else if (list === 'upper-alpha') {
+            return 'Upper Alpha';
+        } else if (list === 'lower-roman') {
+            return 'Lower Roman';
+        } else if (list === 'upper-roman') {
+            return 'Upper Roman';
+        }else if (list === 'lower-greek') {
+            return 'Lower Greek';
+        }else if (list === 'none') {
+            return 'None';
+        } else {
+            return null;
+        }
+    }
 
+    private static isBulletFormatList(node: Node): string {
+        const list: string = (node as HTMLElement).style && (node as HTMLElement).style.listStyleType;
+        if (list === 'circle') {
+            return 'Circle';
+        } else if (list === 'square') {
+            return 'Square';
+        } else if (list === 'none') {
+            return 'None';
+        } else if (list === 'disc') {
+            return 'Disc';
+        } else {
+            return null;
+        }
+    }
 }

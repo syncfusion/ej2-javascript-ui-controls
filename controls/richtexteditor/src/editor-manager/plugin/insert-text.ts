@@ -4,7 +4,7 @@ import { IHtmlSubCommands } from '../base/interface';
 import { InsertHtml } from './inserthtml';
 /**
  * Insert a Text Node or Text
- * 
+ *
  * @hidden
  * @deprecated
  */

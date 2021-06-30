@@ -128,6 +128,7 @@ export type SizeType =
  * * hiloOpenClose - Renders the HiloOpenClose Series
  * * Waterfall - Renders the Waterfall Series
  * * rangeArea - Renders the rangeArea series.
+ * * splineRangeArea - Renders the splineRangeArea series.
  * * Pareto-Render the Pareto series
  */
 export type ChartSeriesType =
@@ -179,6 +180,8 @@ export type ChartSeriesType =
     'Waterfall' |
     /** Define the RangeArea Series */
     'RangeArea' |
+    /** Define the SplineRangeArea Series */
+    'SplineRangeArea' |
     /** Define the Bubble Series */
     'Bubble' |
     /** Define the Candle Series */
@@ -632,7 +635,11 @@ export type ChartTheme =
     /**  Render a chart with BootstrapDark theme. */
     'BootstrapDark' |
     /**  Render a chart with Bootstrap4 theme. */
-    'Bootstrap4';
+    'Bootstrap4' |
+    /**  Render a chart with Tailwind theme. */
+    'Tailwind' |
+    /**  Render a chart with TailwindDark theme. */
+    'TailwindDark';
 
 /**
  *  Specifies the order of the strip line. `Over` | `Behind`.

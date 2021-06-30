@@ -1,7 +1,7 @@
 /**
  * Predecessor calculation goes here
  */
-import { IGanttData, ITaskData, IPredecessor, IConnectorLineObject, ITaskSegment } from '../base/interface';
+import { IGanttData, ITaskData, IPredecessor, IConnectorLineObject, ITaskSegment, IParent } from '../base/interface';
 import { TaskFieldsModel } from '../models/models';
 import { DateProcessor } from '../base/date-processor';
 import { Gantt } from '../base/gantt';
@@ -12,6 +12,8 @@ export class Dependency {
 
     private parent: Gantt;
     private dateValidateModule: DateProcessor;
+    private parentRecord: IParent[] = [];
+    private parentIds: string[] = [];
     constructor(gantt: Gantt) {
         this.parent = gantt;
         this.dateValidateModule = this.parent.dateValidationModule;
@@ -405,8 +407,11 @@ export class Dependency {
             this.parent.dataOperation.updateWidthLeft(childGanttRecord);
 
             if (childGanttRecord.parentItem && this.parent.getParentTask(childGanttRecord.parentItem).ganttProperties.isAutoSchedule
-                && this.parent.isInPredecessorValidation) {
-                this.parent.dataOperation.updateParentItems(childGanttRecord.parentItem);
+                && this.parent.isInPredecessorValidation && !this.parent.isLoad) {
+                    if (this.parentIds.indexOf(childGanttRecord.parentItem.uniqueID) === -1) {
+                        this.parentIds.push(childGanttRecord.parentItem.uniqueID);
+                        this.parentRecord.push(childGanttRecord.parentItem);
+                    }
             }
         }
     }

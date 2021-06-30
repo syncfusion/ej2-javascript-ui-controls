@@ -1,4 +1,4 @@
-import { createElement, isNullOrUndefined, isBlazor } from '@syncfusion/ej2-base';
+import { createElement, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { Gantt } from '../base/gantt';
 import * as cls from '../base/css-constants';
 import { Splitter as SplitterLayout, ResizeEventArgs, ResizingEventArgs } from '@syncfusion/ej2-layouts';
@@ -45,8 +45,8 @@ export class Splitter {
             ],
             orientation: 'Horizontal',
             resizeStart: (args: ResizeEventArgs) => {
-                const leftPane: HTMLElement = isBlazor() ? args.element.querySelectorAll('.e-pane')[0] as HTMLElement : args.pane[0];
-                const rightPane: HTMLElement = isBlazor() ? args.element.querySelectorAll('.e-pane')[1] as HTMLElement : args.pane[1];
+                const leftPane: HTMLElement = args.pane[0];
+                const rightPane: HTMLElement = args.pane[1];
                 this.splitterPreviousPositionGrid = leftPane.scrollWidth + 1 + 'px';
                 this.splitterPreviousPositionChart = rightPane.scrollWidth + 1 + 'px';
                 const callBackPromise: Deferred = new Deferred();

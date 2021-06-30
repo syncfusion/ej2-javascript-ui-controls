@@ -35,7 +35,9 @@
         }
 
         & .e-rte-backgroundcolor-dropdown,
-        & .e-rte-fontcolor-dropdown {
+        & .e-rte-fontcolor-dropdown,
+        & .e-rte-numberformatlist-dropdown,
+        & .e-rte-bulletformatlist-dropdown {
 
           &:hover .e-rte-color-content::after {
             background: $rte-split-btn-bar-bg;
@@ -48,7 +50,8 @@
             }
 
             .e-caret:active.e-icons,
-            .e-rte-color-content:active .e-icons {
+            .e-rte-color-content:active .e-icons,
+            .e-rte-list-primary-content:active .e-icons {
               color: $rte-split-btn-active-color;
             }
           }
@@ -56,7 +59,8 @@
           &:hover {
             background: $rte-split-btn-hover-bg;
 
-            .e-rte-color-content {
+            .e-rte-color-content,
+            .e-rte-list-primary-content {
 
               &:hover {
                 background: $rte-split-btn-span-hover-bg;
@@ -96,7 +100,8 @@
             }
 
             &:hover .e-caret:hover,
-            &:hover .e-rte-color-content:hover {
+            &:hover .e-rte-color-content:hover,
+            &:hover .e-rte-list-primary-content:hover {
               background: transparent;
             }
 
@@ -140,6 +145,11 @@
       border: 0;
     }
 
+    img.e-img-focus::selection {
+      background: transparent;
+      color: transparent;
+    }
+
     .e-rte-content,
     .e-source-content {
       background: $rte-content-bg;
@@ -157,6 +167,13 @@
       .e-content a {
         color: $rte-anchor-color;
     }
+    }
+
+    &.e-rtl {
+      .e-rte-content .e-content blockquote {
+        border-left: 0;
+        border-right: $rte-content-blockquote-border-left-color;
+      }
     }
 
     &.e-rte-resize {
@@ -488,6 +505,16 @@
     & .e-tbar-btn:focus .e-icons,
     & .e-tbar-btn:hover .e-icons {
       color: $rte-quick-item-active-font-color;
+    }
+  }
+
+  @if $skin-name == 'tailwind' or $skin-name == 'tailwind-dark' {
+    .e-richtexteditor .e-rte-toolbar .e-toolbar-extended {
+      background: $rte-extended-toolbar-background;
+    }
+
+    .e-richtexteditor .e-toolbar.e-extended-toolbar .e-toolbar-extended .e-toolbar-item .e-tbar-btn .e-icons {
+      color: $rte-icons-color;
     }
   }
 

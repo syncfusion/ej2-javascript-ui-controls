@@ -15,10 +15,10 @@ import { IScrollbarThemeStyle } from '../../chart/index';
 export function createScrollSvg(scrollbar: ScrollBar, renderer: SvgRenderer): void {
     const rect: Rect = scrollbar.axis.rect;
     const isHorizontalAxis: boolean = scrollbar.axis.orientation === 'Horizontal';
-    let enablePadding: boolean = false; let  markerHeight: number = 5;
+    let enablePadding: boolean = false; let  markerHeight: number = 0;
     let yMin: number | string;
     for (const tempSeries of scrollbar.axis.series) {
-        if (tempSeries.marker.height > markerHeight) {
+        if (tempSeries.marker.visible && tempSeries.marker.height > markerHeight) {
             markerHeight = tempSeries.marker.height;
         }
     }

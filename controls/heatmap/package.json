@@ -1,6 +1,6 @@
 {
 	"name": "@syncfusion/ej2-heatmap",
-	"version": "19.1.63",
+	"version": "18.2.54",
 	"description": "Feature rich data visulization control used to visualize the matrix data where the individual values are represented as colors",
 	"author": "Syncfusion Inc.",
 	"license": "SEE LICENSE IN license",
@@ -58,5 +58,6 @@
 	"scripts": {
 		"build": "gulp build",
 		"test": "gulp test"
-	}
+	},
+	"typings": "index.d.ts"
 }

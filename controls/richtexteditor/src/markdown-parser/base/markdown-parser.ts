@@ -17,7 +17,7 @@ import { ClearFormat } from './../plugin/clearformat';
 
 /**
  * MarkdownParser internal component
- * 
+ *
  * @hidden
  * @deprecated
  */
@@ -66,7 +66,6 @@ export class MarkdownParser {
         this.observer.on(EVENTS.KEY_UP, this.editorKeyUp, this);
         this.observer.on(EVENTS.MODEL_CHANGED, this.onPropertyChanged, this);
     }
-    // eslint-disable-next-line
     private onPropertyChanged(props: { [key: string]: Object }): void {
         this.observer.notify(EVENTS.MODEL_CHANGED_PLUGIN, props);
     }
@@ -91,7 +90,6 @@ export class MarkdownParser {
      * @deprecated
      */
     /* eslint-enable */
-    // eslint-disable-next-line
     public execCommand<T>(command: MarkdownExecCommand, value: T, event?: Event, callBack?: Function, text?: string, exeValue?: T): void {
         switch (command.toLocaleLowerCase()) {
         case 'lists':
@@ -114,9 +112,9 @@ export class MarkdownParser {
             break;
         case 'table':
             switch (value.toString().toLocaleLowerCase()) {
-                case 'createtable':
-                    this.observer.notify(CONSTANT.MD_TABLE, { subCommand: value, item: exeValue, event: event, callBack: callBack });
-                    break;
+            case 'createtable':
+                this.observer.notify(CONSTANT.MD_TABLE, { subCommand: value, item: exeValue, event: event, callBack: callBack });
+                break;
             }
             break;
         case 'clear':

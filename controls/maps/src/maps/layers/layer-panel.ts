@@ -1,7 +1,7 @@
-/* eslint-disable @typescript-eslint/member-delimiter-style */
+/* eslint-disable @typescript-eslint/explicit-module-boundary-types */
+/* eslint-disable jsdoc/require-param */
 /* eslint-disable no-case-declarations */
-/* eslint-disable @typescript-eslint/dot-notation */
-/* eslint-disable max-len */
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import { isNullOrUndefined, extend, createElement, Ajax } from '@syncfusion/ej2-base';
 import { Maps } from '../../maps/maps';
 import { getShapeColor } from '../model/theme';
@@ -39,7 +39,6 @@ export class LayerPanel {
     private animateToZoomY : number;
     public horizontalPan: boolean = false;
     public horizontalPanXCount: number = 0;
-    // eslint-disable-next-line @typescript-eslint/explicit-member-accessibility
     constructor(map: Maps) {
         this.mapObject = map;
         this.ajaxModule = new Ajax();
@@ -232,10 +231,11 @@ export class LayerPanel {
         if (!this.mapObject.enablePersistence) {
             const itemName: string = this.mapObject.getModuleName() + this.mapObject.element.id;
             if (navigator.userAgent.indexOf('Edge') === -1) {
-                let data;
-                try{
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                let data: any;
+                try {
                     data = window.localStorage;
-                } catch(e) {
+                } catch (e) {
                     data = null;
                 }
                 if (!isNullOrUndefined(data) && window.localStorage.getItem(itemName)) {
@@ -400,7 +400,8 @@ export class LayerPanel {
                 let pathOptions: PathOption; let polyLineOptions: PolylineOption;
                 let circleOptions: CircleOption; let groupElement: Element; let drawObject: Element;
                 let path: string = ''; let points: string = '';
-                let fill: string = (shapeSettings.autofill) ? colors[i % colors.length] : shapeSettings.fill;
+                let fill: string = (shapeSettings.autofill) ? colors[i % colors.length] :
+                    (shapeSettings.fill || this.mapObject.themeStyle.shapeFill);
                 if (shapeSettings.colorValuePath !== null && !isNullOrUndefined(currentShapeData['property'])) {
                     k = checkShapeDataFields(
                         // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -418,7 +419,7 @@ export class LayerPanel {
                             (getValueFromObject(currentShapeData['property'], shapeSettings.colorValuePath)) :
                             currentShapeData['property'][shapeSettings.colorValuePath]);
                     }
-                    fill = !isNullOrUndefined(fill) ? fill : shapeSettings.fill;
+                    fill = !isNullOrUndefined(fill) ? fill : (shapeSettings.fill || this.mapObject.themeStyle.shapeFill);
                 }
                 const shapeID: string = this.mapObject.element.id + '_LayerIndex_' + layerIndex + '_shapeIndex_' + i + '_dataIndex_' + k;
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -461,7 +462,8 @@ export class LayerPanel {
                         ? 'MultiPolygon' : isNullOrUndefined(currentShapeData['type']) ? currentShapeData[0]['type'] : currentShapeData['type'];
                     drawingType = (drawingType === 'Polygon' || drawingType === 'MultiPolygon') ? 'Polygon' : drawingType;
                     if (!eventArgs.cancel) {
-                        eventArgs.fill = eventArgs.fill === '#A6A6A6' ? eventArgs.shape.fill : eventArgs.fill;
+                        eventArgs.fill = eventArgs.fill === '#A6A6A6' ? eventArgs.shape.fill ||
+                            this.mapObject.themeStyle.shapeFill : eventArgs.fill;
                         eventArgs.border.color = eventArgs.border.color === '#000000' ?
                             eventArgs.shape.border.color : eventArgs.border.color;
                         eventArgs.border.width = eventArgs.border.width === 0 ? eventArgs.shape.border.width : eventArgs.border.width;

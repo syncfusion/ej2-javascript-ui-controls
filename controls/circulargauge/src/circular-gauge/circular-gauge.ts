@@ -146,7 +146,7 @@ export class CircularGauge extends Component<HTMLElement> implements INotifyProp
     /**
      * Sets and gets the options for customizing the title for circular gauge.
      */
-    @Complex<FontModel>({ size: '15px', color: null }, Font)
+    @Complex<FontModel>({ size: '15px', color: null, fontWeight: null }, Font)
     public titleStyle: FontModel;
 
     /**
@@ -798,7 +798,10 @@ export class CircularGauge extends Component<HTMLElement> implements INotifyProp
                 currentPointer = getPointer(args.target.id, this);
                 this.activeAxis = <Axis>this.axes[currentPointer.axisIndex];
                 this.activePointer = <Pointer>this.activeAxis.pointers[currentPointer.pointerIndex];
-                if (isNullOrUndefined(this.activePointer.pathElement )) {
+                if (isNullOrUndefined(this.activePointer.pathElement)) {
+                    this.activePointer.pathElement = [e.target as Element];
+                }
+                if (this.activePointer.type === 'Marker' && this.activePointer.markerShape === 'Text' && this.activePointer.pathElement.length === 0) {
                     this.activePointer.pathElement = [e.target as Element];
                 }
                 const pointInd: number = parseInt(this.activePointer.pathElement[0].id.slice(-1), 10);
@@ -1288,6 +1291,7 @@ export class CircularGauge extends Component<HTMLElement> implements INotifyProp
         if (this.title) {
             this.titleStyle.fontFamily = this.themeStyle.fontFamily || this.titleStyle.fontFamily;
             this.titleStyle.size = this.themeStyle.fontSize || this.titleStyle.size;
+            this.titleStyle.fontWeight = this.titleStyle.fontWeight || this.themeStyle.titleFontWeight;
             const size: Size = measureText(this.title, this.titleStyle);
             const options: TextOption = new TextOption(
                 this.element.id + '_CircularGaugeTitle',

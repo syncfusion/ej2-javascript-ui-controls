@@ -618,7 +618,7 @@ export class PivotChart {
                         textRender: this.chartSettings.textRender ? this.chartSettings.textRender.bind(this) : undefined,
                         pointRender: this.chartSettings.pointRender ? this.chartSettings.pointRender.bind(this) : undefined,
                         seriesRender: this.chartSettings.seriesRender ? this.chartSettings.seriesRender.bind(this) : undefined,
-                        axisMultiLabelRender: this.chartSettings.axisMultiLabelRender ? this.chartSettings.axisMultiLabelRender.bind(this) : undefined,
+                        axisMultiLabelRender: this.chartSettings.multiLevelLabelRender ? this.chartSettings.multiLevelLabelRender.bind(this) : undefined,
                         chartMouseMove: this.chartSettings.chartMouseMove ? this.chartSettings.chartMouseMove.bind(this) : undefined,
                         chartMouseClick: this.chartSettings.chartMouseClick ? this.chartSettings.chartMouseClick.bind(this) : undefined,
                         pointMove: this.chartSettings.pointMove ? this.chartSettings.pointMove.bind(this) : undefined,

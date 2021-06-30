@@ -7,6 +7,565 @@ import { IToolbarStatus } from '../../../src/common/interface';
 import { renderRTE, destroy, dispatchEvent } from "./../render.spec";
 import { NodeSelection } from "../../../src/selection/index";
 
+ describe('Checking the customized NumberFormatListand BulletFormatList dropdownItems', () => {
+        let rteObj: RichTextEditor;
+        let rteEle: HTMLElement;
+        let controlId: string;
+        beforeAll((done: Function) => {
+            rteObj = renderRTE({
+                toolbarSettings: {
+                    items: ['NumberFormatList', 'BulletFormatList']
+                },
+                numberFormatList: {
+                    types: [
+                        { text: 'None', value:'none' },
+                        { text: 'Number', value: 'decimal' },
+                        { text: 'UpperAlpha', value: 'upperAlpha' },
+                        { text: 'LowerGreek', value: 'lowerGreek' },
+                        { text: 'Hebrew', value: 'hebrew' },
+                        { text: 'Katakana', value: 'katakana'}
+            
+                    ]
+                },
+                bulletFormatList: {
+                    types: [
+                        { text: 'None', value: 'none' },
+                        { text: 'Square', value: 'square' },
+                    ]
+                },
+                value: `<p id="rte">RichTextEditor</p>`
+            });
+            rteEle = rteObj.element;
+            controlId = rteEle.id;
+            done();
+        });
+        it(' Checking the sampleLevel numberFormatList items ', (done) => {
+            let format: HTMLElement = rteObj.element.querySelector('#' + controlId + '_toolbar_NumberFormatList');
+            dispatchEvent(format, 'mousedown');
+            dispatchEvent(format, 'mouseup');
+            format.click();
+            setTimeout(() => {
+            let items: any = document.querySelectorAll('#' + controlId + '_toolbar_NumberFormatList-popup .e-item');
+            expect(items[0].textContent === 'None').toBe(true);
+            expect(items[1].textContent === 'Number').toBe(true);
+            expect(items[2].textContent === 'UpperAlpha').toBe(true);
+            expect(items[3].textContent === 'LowerGreek').toBe(true);
+            expect(items[4].textContent === 'Hebrew').toBe(true);
+            expect(items[5].textContent === 'Katakana').toBe(true);
+            done();
+        }, 200)
+        });
+        it(' Checking the sampleLevel bulletFormatList items ', (done) => {
+            let format: HTMLElement = rteObj.element.querySelector('#' + controlId + '_toolbar_BulletFormatList');
+            dispatchEvent(format, 'mousedown');
+            dispatchEvent(format, 'mouseup');
+            format.click();
+            setTimeout(() => {
+            let items: any = document.querySelectorAll('#' + controlId + '_toolbar_BulletFormatList-popup .e-item');
+            expect(items[0].textContent === 'None').toBe(true);
+            expect(items[1].textContent === 'Square').toBe(true);
+            done();
+        }, 200)
+        });
+        afterAll(() => {
+            destroy(rteObj);
+        });
+    });
+    describe('Checking the NumberFormatList dropdownItems', () => {
+        let rteObj: RichTextEditor;
+        let rteEle: HTMLElement;
+        let controlId: string;
+        beforeEach((done: Function) => {
+            rteObj = renderRTE({
+                toolbarSettings: {
+                    items: ['NumberFormatList', 'BulletFormatList']
+                },
+                value: `<p id="rte">RichTextEditor</p>`
+            });
+            rteEle = rteObj.element;
+            controlId = rteEle.id;
+            done();
+        });
+    it(' Check the numberFormatList items 1', (done) => {
+        let pEle: HTMLElement = rteObj.element.querySelector('#rte');
+        rteObj.formatter.editorManager.nodeSelection.setSelectionText(document, rteObj.element.querySelector('#rte').childNodes[0], rteObj.element.querySelector('#rte').childNodes[0], 0, 14);
+        let numberFormatList: HTMLElement = rteObj.element.querySelector('#' + controlId + '_toolbar_NumberFormatList');
+        dispatchEvent(numberFormatList, 'mousedown');
+        dispatchEvent(numberFormatList, 'mouseup');
+        numberFormatList.click();
+        let items: any = document.querySelectorAll('#' + controlId + '_toolbar_NumberFormatList-popup .e-item');
+        items[1].click();
+        expect(pEle.style.listStyleType === 'decimal').toBe(true);
+        expect(rteObj.element.querySelector('#rte').tagName === 'OL').toBe(true);
+        done();
+    });
+    it(' Check the numberFormatList items 2', (done) => {
+        let pEle: HTMLElement = rteObj.element.querySelector('#rte');
+        rteObj.formatter.editorManager.nodeSelection.setSelectionText(document, rteObj.element.querySelector('#rte').childNodes[0], rteObj.element.querySelector('#rte').childNodes[0], 0, 14);
+        let numberFormatList: HTMLElement = rteObj.element.querySelector('#' + controlId + '_toolbar_NumberFormatList');
+        dispatchEvent(numberFormatList, 'mousedown');
+        dispatchEvent(numberFormatList, 'mouseup');
+        numberFormatList.click();
+        let items: any = document.querySelectorAll('#' + controlId + '_toolbar_NumberFormatList-popup .e-item');
+        items[2].click();
+        expect(pEle.style.listStyleType === 'lower-greek').toBe(true);
+        expect(rteObj.element.querySelector('#rte').tagName === 'OL').toBe(true);
+        done();
+    });
+    it(' Check the numberFormatList items 3', (done) => {
+        let pEle: HTMLElement = rteObj.element.querySelector('#rte');
+        rteObj.formatter.editorManager.nodeSelection.setSelectionText(document, rteObj.element.querySelector('#rte').childNodes[0], rteObj.element.querySelector('#rte').childNodes[0], 0, 14);
+        let numberFormatList: HTMLElement = rteObj.element.querySelector('#' + controlId + '_toolbar_NumberFormatList');
+        dispatchEvent(numberFormatList, 'mousedown');
+        dispatchEvent(numberFormatList, 'mouseup');
+        numberFormatList.click();
+        let items: any = document.querySelectorAll('#' + controlId + '_toolbar_NumberFormatList-popup .e-item');
+        items[3].click();
+        expect(pEle.style.listStyleType === 'lower-roman').toBe(true);
+        expect(rteObj.element.querySelector('#rte').tagName === 'OL').toBe(true);
+        done();
+    });
+    it(' Check the numberFormatList items 4', (done) => {
+        let pEle: HTMLElement = rteObj.element.querySelector('#rte');
+        rteObj.formatter.editorManager.nodeSelection.setSelectionText(document, rteObj.element.querySelector('#rte').childNodes[0], rteObj.element.querySelector('#rte').childNodes[0], 0, 14);
+        let numberFormatList: HTMLElement = rteObj.element.querySelector('#' + controlId + '_toolbar_NumberFormatList');
+        dispatchEvent(numberFormatList, 'mousedown');
+        dispatchEvent(numberFormatList, 'mouseup');
+        numberFormatList.click();
+        let items: any = document.querySelectorAll('#' + controlId + '_toolbar_NumberFormatList-popup .e-item');
+        items[4].click();
+        expect(pEle.style.listStyleType === 'upper-alpha').toBe(true);
+        expect(rteObj.element.querySelector('#rte').tagName === 'OL').toBe(true);
+        done();
+    });
+    it(' Check the numberFormatList items 5', (done) => {
+        let pEle: HTMLElement = rteObj.element.querySelector('#rte');
+        rteObj.formatter.editorManager.nodeSelection.setSelectionText(document, rteObj.element.querySelector('#rte').childNodes[0], rteObj.element.querySelector('#rte').childNodes[0], 0, 14);
+        let numberFormatList: HTMLElement = rteObj.element.querySelector('#' + controlId + '_toolbar_NumberFormatList');
+        dispatchEvent(numberFormatList, 'mousedown');
+        dispatchEvent(numberFormatList, 'mouseup');
+        numberFormatList.click();
+        let items: any = document.querySelectorAll('#' + controlId + '_toolbar_NumberFormatList-popup .e-item');
+        items[5].click();
+        expect(pEle.style.listStyleType === 'lower-alpha').toBe(true);
+        expect(rteObj.element.querySelector('#rte').tagName === 'OL').toBe(true);
+        done();
+    });
+    it(' Check the numberFormatList items 6', (done) => {
+        let pEle: HTMLElement = rteObj.element.querySelector('#rte');
+        rteObj.formatter.editorManager.nodeSelection.setSelectionText(document, rteObj.element.querySelector('#rte').childNodes[0], rteObj.element.querySelector('#rte').childNodes[0], 0, 14);
+        let numberFormatList: HTMLElement = rteObj.element.querySelector('#' + controlId + '_toolbar_NumberFormatList');
+        dispatchEvent(numberFormatList, 'mousedown');
+        dispatchEvent(numberFormatList, 'mouseup');
+        numberFormatList.click();
+        let items: any = document.querySelectorAll('#' + controlId + '_toolbar_NumberFormatList-popup .e-item');
+        items[0].click();
+        expect(pEle.style.listStyleType === 'none').toBe(true);
+        expect(rteObj.element.querySelector('#rte').tagName === 'OL').toBe(true);
+        done();
+    });
+    it(' Check the numberFormatList items 7', (done) => {
+        let pEle: HTMLElement = rteObj.element.querySelector('#rte');
+        rteObj.formatter.editorManager.nodeSelection.setSelectionText(document, rteObj.element.querySelector('#rte').childNodes[0], rteObj.element.querySelector('#rte').childNodes[0], 0, 14);
+        let numberFormatList: HTMLElement = rteObj.element.querySelector('#' + controlId + '_toolbar_NumberFormatList');
+        dispatchEvent(numberFormatList, 'mousedown');
+        dispatchEvent(numberFormatList, 'mouseup');
+        numberFormatList.click();
+        let items: any = document.querySelectorAll('#' + controlId + '_toolbar_NumberFormatList-popup .e-item');
+        items[1].click();
+        expect(pEle.style.listStyleType === 'decimal').toBe(true);
+        expect(rteObj.element.querySelector('#rte').tagName === 'OL').toBe(true);
+        done();
+    });
+    afterEach(() => {
+        destroy(rteObj);
+    });
+    });
+
+    describe('Checking the BulletFormatList  dropdownItems', () => {
+        let rteObj: RichTextEditor;
+        let rteEle: HTMLElement;
+        let controlId: string;
+        beforeEach((done: Function) => {
+            rteObj = renderRTE({
+                toolbarSettings: {
+                    items: ['NumberFormatList', 'BulletFormatList']
+                },
+                value: `<p id="rte">RichTextEditor</p>`
+            });
+            rteEle = rteObj.element;
+            controlId = rteEle.id;
+            done();
+        });
+    it(' Check the bulletFormatList items 1', (done) => {
+        let pEle: HTMLElement = rteObj.element.querySelector('#rte');
+        rteObj.formatter.editorManager.nodeSelection.setSelectionText(document, rteObj.element.querySelector('#rte').childNodes[0], rteObj.element.querySelector('#rte').childNodes[0], 0, 14);
+        let bulletFormatList: HTMLElement = rteObj.element.querySelector('#' + controlId + '_toolbar_BulletFormatList');
+        dispatchEvent(bulletFormatList, 'mousedown');
+        dispatchEvent(bulletFormatList, 'mouseup');
+        bulletFormatList.click();
+        let items: any = document.querySelectorAll('#' + controlId + '_toolbar_BulletFormatList-popup .e-item');
+        items[1].click();
+        expect(pEle.style.listStyleType === 'disc').toBe(true);
+        expect(rteObj.element.querySelector('#rte').tagName === 'UL').toBe(true);
+        done();
+    });
+    it(' Check the bulletFormatList items 2', (done) => {
+        let pEle: HTMLElement = rteObj.element.querySelector('#rte');
+        rteObj.formatter.editorManager.nodeSelection.setSelectionText(document, rteObj.element.querySelector('#rte').childNodes[0], rteObj.element.querySelector('#rte').childNodes[0], 0, 14);
+        let bulletFormatList: HTMLElement = rteObj.element.querySelector('#' + controlId + '_toolbar_BulletFormatList');
+        dispatchEvent(bulletFormatList, 'mousedown');
+        dispatchEvent(bulletFormatList, 'mouseup');
+        bulletFormatList.click();
+        let items: any = document.querySelectorAll('#' + controlId + '_toolbar_BulletFormatList-popup .e-item');
+        items[2].click();
+        expect(pEle.style.listStyleType === 'circle').toBe(true);
+        expect(rteObj.element.querySelector('#rte').tagName === 'UL').toBe(true);
+        done();
+    });
+    it(' Check the bulletFormatList items 3', (done) => {
+        let pEle: HTMLElement = rteObj.element.querySelector('#rte');
+        rteObj.formatter.editorManager.nodeSelection.setSelectionText(document, rteObj.element.querySelector('#rte').childNodes[0], rteObj.element.querySelector('#rte').childNodes[0], 0, 14);
+        let bulletFormatList: HTMLElement = rteObj.element.querySelector('#' + controlId + '_toolbar_BulletFormatList');
+        dispatchEvent(bulletFormatList, 'mousedown');
+        dispatchEvent(bulletFormatList, 'mouseup');
+        bulletFormatList.click();
+        let items: any = document.querySelectorAll('#' + controlId + '_toolbar_BulletFormatList-popup .e-item');
+        items[3].click();
+        expect(pEle.style.listStyleType === 'square').toBe(true);
+        expect(rteObj.element.querySelector('#rte').tagName === 'UL').toBe(true);
+        done();
+    });
+    it(' Check the bulletFormatList items 4', (done) => {
+        let pEle: HTMLElement = rteObj.element.querySelector('#rte');
+        rteObj.formatter.editorManager.nodeSelection.setSelectionText(document, rteObj.element.querySelector('#rte').childNodes[0], rteObj.element.querySelector('#rte').childNodes[0], 0, 14);
+        let bulletFormatList: HTMLElement = rteObj.element.querySelector('#' + controlId + '_toolbar_BulletFormatList');
+        dispatchEvent(bulletFormatList, 'mousedown');
+        dispatchEvent(bulletFormatList, 'mouseup');
+        bulletFormatList.click();
+        let items: any = document.querySelectorAll('#' + controlId + '_toolbar_BulletFormatList-popup .e-item');
+        items[0].click();
+        expect(pEle.style.listStyleType === 'none').toBe(true);
+        expect(rteObj.element.querySelector('#rte').tagName === 'UL').toBe(true);
+        done();
+    });
+    afterEach(() => {
+        destroy(rteObj);
+    });
+    });
+    describe('Applying ordered and unordered list then, advanced ol,ul to p tag', () => {
+        let rteObj: RichTextEditor;
+        let rteEle: HTMLElement;
+        let controlId: string;
+        beforeEach((done: Function) => {
+            rteObj = renderRTE({
+                toolbarSettings: {
+                    items: ['NumberFormatList', 'BulletFormatList', 'OrderedList', 'UnorderedList']
+                },
+                value: `<p id="rte">RichTextEditor</p>`
+            });
+            rteEle = rteObj.element;
+            controlId = rteEle.id;
+            done();
+        });
+        it('Applying Ordered list then, NumberFormatList to p tag ', (done) => {
+            rteObj.formatter.editorManager.nodeSelection.setSelectionText(document, rteObj.element.querySelector('#rte').childNodes[0], rteObj.element.querySelector('#rte').childNodes[0], 0, 14);
+            let OL: HTMLElement = rteObj.element.querySelector('#' + controlId + '_toolbar_OrderedList');
+            dispatchEvent(OL, 'mousedown');
+            dispatchEvent(OL, 'mouseup');
+            OL.click();
+            let pEle: HTMLElement = rteObj.element.querySelector('#rte');
+            expect(pEle.tagName === 'LI').toBe(true);
+            expect(pEle.parentElement.tagName === 'OL').toBe(true);
+            let numberFormatList: HTMLElement = rteObj.element.querySelector('#' + controlId + '_toolbar_NumberFormatList');
+            dispatchEvent(numberFormatList, 'mousedown');
+            dispatchEvent(numberFormatList, 'mouseup');
+            numberFormatList.click();
+            let items: any = document.querySelectorAll('#' + controlId + '_toolbar_NumberFormatList-popup .e-item');
+            items[3].click();
+            let Elem: HTMLElement = rteObj.element.querySelector('#rte');
+            expect(Elem.tagName === 'LI').toBe(true);
+            expect(Elem.parentElement.tagName === 'OL').toBe(true);
+            expect(Elem.parentElement.style.listStyleType === 'lower-roman').toBe(true);
+            done();
+            });
+        it('Applying UnOrdered list then, BulletFormatList to p tag ', (done) => {
+            rteObj.formatter.editorManager.nodeSelection.setSelectionText(document, rteObj.element.querySelector('#rte').childNodes[0], rteObj.element.querySelector('#rte').childNodes[0], 0, 14);
+            let UL: HTMLElement = rteObj.element.querySelector('#' + controlId + '_toolbar_UnorderedList');
+            dispatchEvent(UL, 'mousedown');
+            dispatchEvent(UL, 'mouseup');
+            UL.click();
+            let pEle: HTMLElement = rteObj.element.querySelector('#rte');
+            expect(pEle.tagName === 'LI').toBe(true);
+            expect(pEle.parentElement.tagName === 'UL').toBe(true);
+            let bulletFormatList: HTMLElement = rteObj.element.querySelector('#' + controlId + '_toolbar_BulletFormatList');
+            dispatchEvent(bulletFormatList, 'mousedown');
+            dispatchEvent(bulletFormatList, 'mouseup');
+            bulletFormatList.click();
+            let items: any = document.querySelectorAll('#' + controlId + '_toolbar_BulletFormatList-popup .e-item');
+            items[3].click();
+            let Elem: HTMLElement = rteObj.element.querySelector('#rte');
+            expect(Elem.tagName === 'LI').toBe(true);
+            expect(Elem.parentElement.tagName === 'UL').toBe(true);
+            expect(Elem.parentElement.style.listStyleType === 'square').toBe(true);
+            done();
+            });
+        afterEach(() => {
+            destroy(rteObj);
+        });
+    });
+
+    describe('Checking the NumberFormatListand BulletFormatList style type and style image', () => {
+        let rteObj: RichTextEditor;
+        let rteEle: HTMLElement;
+        let controlId: string;
+        beforeEach((done: Function) => {
+            rteObj = renderRTE({
+                toolbarSettings: {
+                    items: ['NumberFormatList', 'BulletFormatList']
+                },
+                numberFormatList: {
+                    types: [
+                        { text: 'None', value:'none' },
+                        { text: 'Number', value: 'decimal' },
+                        { text: 'UpperAlpha', value: 'upperAlpha' },
+                        { text: 'LowerGreek', value: 'lowerGreek' },
+                        { text: 'Hebrew', value: 'hebrew' },
+                        { text: 'Katakana', value: 'katakana'},
+                        { text: 'Star', value: 'listImage', listImage: 'url("https://mdn.mozillademos.org/files/11981/starsolid.gif")'},
+                    ]
+                },
+                bulletFormatList: {
+                    types: [
+                        { text: 'None', value: 'none' },
+                        { text: 'Square', value: 'square' },
+                        { text: 'Circle', value: 'listImage', listImage: 'linear-gradient(to left bottom, red, blue)'}
+                    ]
+                },
+                value: `<p id="rte">RichTextEditor</p>`
+            });
+            rteEle = rteObj.element;
+            controlId = rteEle.id;
+            done();
+        });
+        it(' Checking the NumberFormatListlist style image to style type', (done) => {
+            let pEle: HTMLElement = rteObj.element.querySelector('#rte');
+            expect(pEle.tagName !== 'LI').toBe(true);
+            rteObj.formatter.editorManager.nodeSelection.setSelectionText(document, rteObj.element.querySelector('#rte').childNodes[0], rteObj.element.querySelector('#rte').childNodes[0], 0, 14);
+            let numberFormatList: HTMLElement = rteObj.element.querySelector('#' + controlId + '_toolbar_NumberFormatList');
+            dispatchEvent(numberFormatList, 'mousedown');
+            dispatchEvent(numberFormatList, 'mouseup');
+            numberFormatList.click();
+            let items: any = document.querySelectorAll('#' + controlId + '_toolbar_NumberFormatList-popup .e-item');
+            items[6].click();
+            expect(pEle.style.listStyleImage === 'url("https://mdn.mozillademos.org/files/11981/starsolid.gif")').toBe(true);
+            expect(rteObj.element.querySelector('#rte').tagName === 'OL').toBe(true);
+            let numberFormatList1: HTMLElement = rteObj.element.querySelector('#' + controlId + '_toolbar_NumberFormatList');
+            dispatchEvent(numberFormatList1, 'mousedown');
+            dispatchEvent(numberFormatList1, 'mouseup');
+            numberFormatList1.click();
+            let item: any = document.querySelectorAll('#' + controlId + '_toolbar_NumberFormatList-popup .e-item');
+            item[3].click();
+            let Elem: HTMLElement = rteObj.element.querySelector('#rte');
+            expect((Elem.childNodes[0] as HTMLElement).tagName === 'LI').toBe(true);
+            expect(Elem.tagName === 'OL').toBe(true);
+            expect(Elem.style.listStyleType === 'lower-greek').toBe(true);
+            expect(Elem.style.listStyleImage === 'none').toBe(true);
+            done();
+            });
+        it(' Checking the BulletFormatList list style image to style type', (done) => {
+            let pEle: HTMLElement = rteObj.element.querySelector('#rte');
+            expect(pEle.tagName !== 'LI').toBe(true);
+            rteObj.formatter.editorManager.nodeSelection.setSelectionText(document, rteObj.element.querySelector('#rte').childNodes[0], rteObj.element.querySelector('#rte').childNodes[0], 0, 14);
+            let bulletFormatList: HTMLElement = rteObj.element.querySelector('#' + controlId + '_toolbar_BulletFormatList');
+            dispatchEvent(bulletFormatList, 'mousedown');
+            dispatchEvent(bulletFormatList, 'mouseup');
+            bulletFormatList.click();
+            let items: any = document.querySelectorAll('#' + controlId + '_toolbar_BulletFormatList-popup .e-item');
+            items[2].click();
+            expect(pEle.style.listStyleImage === 'linear-gradient(to left bottom, red, blue)').toBe(true);
+            expect(rteObj.element.querySelector('#rte').tagName === 'UL').toBe(true);
+            let bulletFormatList1: HTMLElement = rteObj.element.querySelector('#' + controlId + '_toolbar_BulletFormatList');
+            dispatchEvent(bulletFormatList1, 'mousedown');
+            dispatchEvent(bulletFormatList1, 'mouseup');
+            bulletFormatList1.click();
+            let item: any = document.querySelectorAll('#' + controlId + '_toolbar_BulletFormatList-popup .e-item');
+            item[1].click();
+            let Elem: HTMLElement = rteObj.element.querySelector('#rte');
+            expect((Elem.childNodes[0] as HTMLElement).tagName === 'LI').toBe(true);
+            expect(Elem.tagName === 'UL').toBe(true);
+            expect(Elem.style.listStyleType === 'square').toBe(true);
+            expect(Elem.style.listStyleImage === 'none').toBe(true);
+            done();
+            });
+            afterEach(() => {
+                destroy(rteObj);
+            });
+        });
+
+    describe('Checking the LI tag', () => {
+        let rteObj: RichTextEditor;
+        let rteEle: HTMLElement;
+        let controlId: string;
+        beforeEach((done: Function) => {
+            rteObj = renderRTE({
+                toolbarSettings: {
+                    items: ['NumberFormatList', 'BulletFormatList']
+                },
+                value: `<p id="rte">RichTextEditor</p>`
+            });
+            rteEle = rteObj.element;
+            controlId = rteEle.id;
+            done();
+        });
+        it(' Check the numberFormatList with LI tag', (done) => {
+            let pEle: HTMLElement = rteObj.element.querySelector('#rte');
+            let node = pEle.parentElement as HTMLElement;
+            rteObj.formatter.editorManager.nodeSelection.setSelectionText(document, rteObj.element.querySelector('#rte').childNodes[0], rteObj.element.querySelector('#rte').childNodes[0], 0, 14);
+            let numberFormatList: HTMLElement = rteObj.element.querySelector('#' + controlId + '_toolbar_NumberFormatList');
+            dispatchEvent(numberFormatList, 'mousedown');
+            dispatchEvent(numberFormatList, 'mouseup');
+            numberFormatList.click();
+            let items: any = document.querySelectorAll('#' + controlId + '_toolbar_NumberFormatList-popup .e-item');
+            items[3].click();
+            expect((rteObj.element.querySelector('#rte').childNodes[0] as HTMLElement).tagName === 'LI').toBe(true);
+            expect(rteObj.element.querySelector('#rte').tagName === 'OL').toBe(true);
+            expect(pEle.style.listStyleType === 'lower-roman').toBe(true);
+            done();
+            });
+        it(' Check the bulletFormatList with LI tag', (done) => {
+            let pEle: HTMLElement = rteObj.element.querySelector('#rte');
+            rteObj.formatter.editorManager.nodeSelection.setSelectionText(document, rteObj.element.querySelector('#rte').childNodes[0], rteObj.element.querySelector('#rte').childNodes[0], 0, 14);
+            let bulletFormatList: HTMLElement = rteObj.element.querySelector('#' + controlId + '_toolbar_BulletFormatList');
+            dispatchEvent(bulletFormatList, 'mousedown');
+            dispatchEvent(bulletFormatList, 'mouseup');
+            bulletFormatList.click();
+            let items: any = document.querySelectorAll('#' + controlId + '_toolbar_BulletFormatList-popup .e-item');
+            items[2].click();
+            expect((rteObj.element.querySelector('#rte').childNodes[0] as HTMLElement).tagName === 'LI').toBe(true);
+            expect(rteObj.element.querySelector('#rte').tagName === 'UL').toBe(true);
+            expect(pEle.style.listStyleType === 'circle').toBe(true);
+            done();
+            });
+            afterEach(() => {
+                destroy(rteObj);
+            });
+        });
+
+    describe('Checking the OL tag to UL', () => {
+        let rteObj: RichTextEditor;
+        let rteEle: HTMLElement;
+        let controlId: string;
+        beforeEach((done: Function) => {
+            rteObj = renderRTE({
+                toolbarSettings: {
+                    items: ['NumberFormatList', 'BulletFormatList']
+                },
+                numberFormatList: {
+                    types: [
+                        { text: 'None', value:'none' },
+                        { text: 'Number', value: 'decimal' },
+                        { text: 'UpperAlpha', value: 'upperAlpha' },
+                        { text: 'LowerGreek', value: 'lowerGreek' },
+                        { text: 'Hebrew', value: 'hebrew' },
+                        { text: 'Katakana', value: 'katakana'},
+                        { text: 'Star', value: 'listImage', listImage: 'url("https://mdn.mozillademos.org/files/11981/starsolid.gif")'},
+                    ]
+                },
+                bulletFormatList: {
+                    types: [
+                        { text: 'None', value: 'none' },
+                        { text: 'Square', value: 'square' },
+                        { text: 'Circle', value: 'listImage', listImage: 'linear-gradient(to left bottom, red, blue)'}
+                    ]
+                },
+                value: `<p id="rte">RichTextEditor</p>`
+            });
+            rteEle = rteObj.element;
+            controlId = rteEle.id;
+            done();
+        });
+        it(' Check the numberFormatList list style image', (done) => {
+            let pEle: HTMLElement = rteObj.element.querySelector('#rte');
+            let node = pEle.parentElement as HTMLElement;
+            rteObj.formatter.editorManager.nodeSelection.setSelectionText(document, rteObj.element.querySelector('#rte').childNodes[0], rteObj.element.querySelector('#rte').childNodes[0], 0, 14);
+            let numberFormatList: HTMLElement = rteObj.element.querySelector('#' + controlId + '_toolbar_NumberFormatList');
+            dispatchEvent(numberFormatList, 'mousedown');
+            dispatchEvent(numberFormatList, 'mouseup');
+            numberFormatList.click();
+            let items: any = document.querySelectorAll('#' + controlId + '_toolbar_NumberFormatList-popup .e-item');
+            items[6].click();
+            expect(pEle.style.listStyleImage === 'url("https://mdn.mozillademos.org/files/11981/starsolid.gif")').toBe(true);
+            expect(rteObj.element.querySelector('#rte').tagName === 'OL').toBe(true);
+            done();
+            });
+        it('  Check the bulletFormatList list style image', (done) => {
+            let pEle: HTMLElement = rteObj.element.querySelector('#rte');
+            rteObj.formatter.editorManager.nodeSelection.setSelectionText(document, rteObj.element.querySelector('#rte').childNodes[0], rteObj.element.querySelector('#rte').childNodes[0], 0, 14);
+            let bulletFormatList: HTMLElement = rteObj.element.querySelector('#' + controlId + '_toolbar_BulletFormatList');
+            dispatchEvent(bulletFormatList, 'mousedown');
+            dispatchEvent(bulletFormatList, 'mouseup');
+            bulletFormatList.click();
+            let items: any = document.querySelectorAll('#' + controlId + '_toolbar_BulletFormatList-popup .e-item');
+            items[2].click();
+            expect(pEle.style.listStyleImage === 'linear-gradient(to left bottom, red, blue)').toBe(true);
+            expect(rteObj.element.querySelector('#rte').tagName === 'UL').toBe(true);
+            done();
+            });
+        it(' Checking the numberFormatList tag to BulletFormatList', (done) => {
+            let pEle: HTMLElement = rteObj.element.querySelector('#rte');
+            rteObj.formatter.editorManager.nodeSelection.setSelectionText(document, rteObj.element.querySelector('#rte').childNodes[0], rteObj.element.querySelector('#rte').childNodes[0], 0, 14);
+            let numberFormatList: HTMLElement = rteObj.element.querySelector('#' + controlId + '_toolbar_NumberFormatList');
+            dispatchEvent(numberFormatList, 'mousedown');
+            dispatchEvent(numberFormatList, 'mouseup');
+            numberFormatList.click();
+            let items: any = document.querySelectorAll('#' + controlId + '_toolbar_NumberFormatList-popup .e-item');
+            items[6].click();
+            expect(pEle.style.listStyleImage === 'url("https://mdn.mozillademos.org/files/11981/starsolid.gif")').toBe(true);
+            expect(rteObj.element.querySelector('#rte').tagName === 'OL').toBe(true);
+            done();
+            let bulletFormatList: HTMLElement = rteObj.element.querySelector('#' + controlId + '_toolbar_BulletFormatList');
+            dispatchEvent(bulletFormatList, 'mousedown');
+            dispatchEvent(bulletFormatList, 'mouseup');
+            bulletFormatList.click();
+            let item: any = document.querySelectorAll('#' + controlId + '_toolbar_BulletFormatList-popup .e-item');
+            item[2].click();
+            pEle = rteObj.element.querySelector('#rte');
+            expect(pEle.style.listStyleImage === 'linear-gradient(to left bottom, red, blue)').toBe(true);
+            expect(rteObj.element.querySelector('#rte').tagName === 'UL').toBe(true);
+            done();
+            });
+        it(' Checking the bulletFormatList tag to NumberFormatList', (done) => {
+            let pEle: HTMLElement = rteObj.element.querySelector('#rte');
+            rteObj.formatter.editorManager.nodeSelection.setSelectionText(document, rteObj.element.querySelector('#rte').childNodes[0], rteObj.element.querySelector('#rte').childNodes[0], 0, 14);
+            let bulletFormatList: HTMLElement = rteObj.element.querySelector('#' + controlId + '_toolbar_BulletFormatList');
+            dispatchEvent(bulletFormatList, 'mousedown');
+            dispatchEvent(bulletFormatList, 'mouseup');
+            bulletFormatList.click();
+            let items: any = document.querySelectorAll('#' + controlId + '_toolbar_BulletFormatList-popup .e-item');
+            items[2].click();
+            expect(pEle.style.listStyleImage === 'linear-gradient(to left bottom, red, blue)').toBe(true);
+            expect(rteObj.element.querySelector('#rte').tagName === 'UL').toBe(true);
+            done();
+            let numberFormatList: HTMLElement = rteObj.element.querySelector('#' + controlId + '_toolbar_NumberFormatList');
+            dispatchEvent(numberFormatList, 'mousedown');
+            dispatchEvent(numberFormatList, 'mouseup');
+            numberFormatList.click();
+            let item: any = document.querySelectorAll('#' + controlId + '_toolbar_NumberFormatList-popup .e-item');
+            item[6].click();
+            pEle = rteObj.element.querySelector('#rte');
+            expect(pEle.style.listStyleImage === 'url("https://mdn.mozillademos.org/files/11981/starsolid.gif")').toBe(true);
+            expect(rteObj.element.querySelector('#rte').tagName === 'OL').toBe(true);
+            done();
+            });
+        afterEach(() => {
+            destroy(rteObj);
+        });
+    });
+
+   
+
+
 L10n.load({
     'de-DE': {
         'richtexteditor': {

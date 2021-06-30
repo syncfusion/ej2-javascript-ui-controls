@@ -16,15 +16,23 @@
     .e-slider-button {
       background-color: $slider-button-bg-color;
       border: 1px solid $slider-button-border-color;
-      border-radius: 50%;
+      @if ($skin-name == 'tailwind' or $skin-name == 'tailwind-dark') {
+        border-radius: 10px;
+        box-shadow: $slider-button-shadow;
+        height: 20px;
+        width: 20px;
+      }
+      @else {
+        border-radius: 50%;
+        height: 18px;
+        width: 18px;
+      }
       box-sizing: border-box;
       cursor: pointer;
-      height: 18px;
       outline: none;
       padding: 0;
       position: absolute;
-      width: 18px;
-      @if $skin-name == 'bootstrap4' {
+      @if ($skin-name == 'bootstrap4') {
         border: 0;
         height: 16px;
         width: 16px;
@@ -56,6 +64,20 @@
       }
     }
 
+    @if ($skin-name == 'tailwind' or $skin-name == 'tailwind-dark') {
+      &:not(.e-disabled) {
+        .e-slider-button {
+          &:hover {
+            background-color: $secondary-bg-color-hover;
+          }
+
+          &:active {
+            background-color: $secondary-bg-color-pressed;
+          }
+        }
+      }
+    }
+
     .e-slider {
       .e-range {
         background-color: $slider-range-bar-color;
@@ -72,7 +94,7 @@
 
       .e-handle {
         background-color: $slider-handle-bg-color;
-        @if ($skin-name == 'bootstrap' or $skin-name == 'bootstrap-dark') {
+        @if ($skin-name == 'bootstrap' or $skin-name == 'bootstrap-dark' or $skin-name == 'tailwind' or $skin-name == 'tailwind-dark') {
           border: 1px solid $slider-normal-handle-border-color;
         }
         @if ($skin-name == 'fabric' or $skin-name == 'fabric-dark') {
@@ -157,6 +179,21 @@
       .e-handle {
         @if ($skin-name != 'highcontrast' and $skin-name != 'highcontrast-light' and $skin-name != 'bootstrap4') {
           border-color: $slider-handle-hover-border-color;
+        }
+      }
+    }
+
+    &.e-disabled {
+      @if ($skin-name == 'tailwind' or $skin-name == 'tailwind-dark') {
+        .e-slider {
+          .e-range {
+            background: $slider-disabled-bg-color;
+          }
+
+          .e-handle {
+            background: $slider-disabled-bg-color;
+            border-color: $slider-disabled-bg-color;
+          }
         }
       }
     }

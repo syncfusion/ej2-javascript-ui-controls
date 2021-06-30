@@ -277,6 +277,14 @@ export interface IThemeStyle {
      */
     titleFontColor: string;
     /**
+     * Specifies the font style for the title in  the linear gauge.
+     */
+    titleFontStyle: string;
+    /**
+     * Specifies the font weight for the title in  the linear gauge.
+     */
+    titleFontWeight: string;
+    /**
      * Specifies the fill color for the tooltip in the linear gauge.
      */
     tooltipFillColor: string;
@@ -292,6 +300,14 @@ export interface IThemeStyle {
      * Specifies the color of the label in the linear gage.
      */
     labelColor: string;
+    /**
+     * Specifies the font weight of the label in the linear gage.
+     */
+    labelWeight: string;
+    /**
+     * Specifies the font style of the label in the linear gage.
+     */
+    labelStyle: string;
     /**
      * Specifies the color for major ticks in the linear gauge.
      */
@@ -328,6 +344,10 @@ export interface IThemeStyle {
      * Specifies the background color of the container.
      */
     containerBackground?: string;
+    /**
+     * Specifies the border color of the container.
+     */
+    containerBorderColor?: string;
 }
 
 

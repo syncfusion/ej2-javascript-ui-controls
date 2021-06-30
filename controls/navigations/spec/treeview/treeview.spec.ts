@@ -5149,7 +5149,7 @@ describe('TreeView control', () => {
                     mouseEventArgs.target = (treeObj.element as any).querySelector("[data-uid='c111'] .e-ripple-container");
                     (<any>treeObj).touchClickObj.tap(tapEvent);
                     setTimeout(() => {
-                        expect(timeTaken).toBeLessThan(1000);
+                        expect(timeTaken).toBeLessThan(2000);
                         done();
                     },2000 );  
                 },10000 );            

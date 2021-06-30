@@ -6,7 +6,7 @@ import { isBlazor } from '@syncfusion/ej2-base';
 import * as events from '../base/constant';
 /**
  * `Popup renderer` module is used to render popup in RichTextEditor.
- * 
+ *
  * @hidden
  * @deprecated
  */

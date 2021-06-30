@@ -338,7 +338,7 @@ describe('Circular-Gauge Control', () => {
             gauge.axes[0].ranges[0].end = 120;
             gauge.refresh();
         });
-		it('Checking Axis start angle and end angle same', (done: Function) => {
+        it('Checking Axis start angle and end angle same', (done: Function) => {
             gauge.loaded = (args: ILoadedEventArgs): void => {
             svg = document.getElementById('container_AxisLine_0');
             expect(svg.getAttribute('fill') == "transparent").toBe(true);

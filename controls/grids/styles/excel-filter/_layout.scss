@@ -299,6 +299,7 @@
     }
 
     .e-dlg-content {
+      background-color: $grid-dialog-footer-color;
       padding-top: 0;
     }
 
@@ -344,7 +345,7 @@
     }
 
     .e-dlg-content {
-      padding-top: 0;
+      padding-top: $grid-xlfl-dlg-content-top-padding;
     }
 
     .e-xlsel {

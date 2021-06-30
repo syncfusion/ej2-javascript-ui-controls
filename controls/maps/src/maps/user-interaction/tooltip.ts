@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/dot-notation */
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import { Maps, ITooltipRenderEventArgs, tooltipRender, MapsTooltipOption, ITooltipRenderCompleteEventArgs } from '../index';
 import { Tooltip } from '@syncfusion/ej2-svg-base';
 import { createElement, Browser, isNullOrUndefined, extend, remove } from '@syncfusion/ej2-base';
@@ -21,7 +21,6 @@ export class MapsTooltip {
     private currentTime: number;
     private clearTimeout: number;
     public tooltipTargetID: string;
-    // eslint-disable-next-line @typescript-eslint/explicit-member-accessibility
     constructor(maps: Maps) {
         this.maps = maps;
         this.tooltipId = this.maps.element.id + '_mapsTooltip';
@@ -94,7 +93,6 @@ export class MapsTooltip {
                     index = isShape ? index : null;
                     if (!isNullOrUndefined(layer.dataSource[index])) {
                         templateData = JSON.parse(JSON.stringify(layer.dataSource[index]));
-                        // eslint-disable-next-line no-restricted-syntax
                         for (keyString in value) {
                             // eslint-disable-next-line no-prototype-builtins
                             if (!templateData.hasOwnProperty(keyString)) {

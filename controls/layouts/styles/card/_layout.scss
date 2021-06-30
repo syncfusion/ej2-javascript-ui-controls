@@ -443,7 +443,18 @@
 
       .e-card-btn,
       a {
-        border-radius: 2px;
+        @if $skin-name == 'tailwind' or $skin-name == 'tailwind-dark' {
+          border-radius: 4px;
+        }
+
+        else {
+          border-radius: 2px;
+        }
+      }
+
+      .e-card-btn,
+      a {
+
         font-family: $font-family;
         font-size: $card-action-btn-font;
         line-height: $card-action-btn-nrml-height;
@@ -461,7 +472,7 @@
 
     .e-card-content {
       font-size: $card-content-font-size;
-      line-height: normal;
+      line-height: $card-content-line-height;
       padding: $card-nrml-content-padding;
 
       + :not(.e-card-content),
@@ -471,9 +482,15 @@
       }
     }
 
+    @if $skin-name == 'tailwind' or $skin-name == 'tailwind-dark' {
+      .e-card-header .e-card-actions {
+        padding: 0;
+      }
+    }
+
     .e-card-content,
     .e-card-content p {
-      line-height: normal;
+      line-height: $card-content-line-height;
       overflow: hidden;
       text-overflow: ellipsis;
     }

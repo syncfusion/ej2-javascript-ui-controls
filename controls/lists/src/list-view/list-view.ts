@@ -598,10 +598,10 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
                 }
                 break;
             case 'sortOrder':
-            case 'template':            
-            if (!this.enableVirtualization) {
-                if (!(this.isServerRendered && isBlazor())) {
-                    this.refresh();
+            case 'template':
+                if (!this.enableVirtualization) {
+                    if (!(this.isServerRendered && isBlazor())) {
+                        this.refresh();
                     }
                 }
             break;

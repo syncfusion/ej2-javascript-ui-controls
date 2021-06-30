@@ -12,6 +12,19 @@
       & .e-panel-container {
         & .e-panel-header {
           color: $panel-header-color;
+          @if ($skin-name == 'tailwind' or $skin-name == 'tailwind-dark') {
+            background: $content-bg-color-alt1;
+            box-sizing: $panel-box-sizing;
+          }
+        }
+      }
+    }
+
+    & .e-panel.e-dragging {
+      &:active {
+        @if ($skin-name == 'tailwind' or $skin-name == 'tailwind-dark') {
+          background: $content-bg-color;
+          box-shadow: $panel-active-drag-box-shadow;
         }
       }
     }
@@ -21,6 +34,12 @@
       box-shadow: $panel-box-shadow;
       box-sizing: $panel-box-sizing;
       position: $panel-position;
+
+      &:active {
+        @if ($skin-name == 'tailwind' or $skin-name == 'tailwind-dark') {
+          background: $panel-active-background;
+        }
+      }
 
       & .e-panel-container {
         & .e-panel-header {

@@ -34,7 +34,11 @@ export type ProgressTheme =
     /** Bootstrap4 */
     'Bootstrap4' |
     /** HighContrast */
-    'HighContrast';
+    'HighContrast'|
+	/** Tailwind */
+    'Tailwind' |
+    /** TailwindDark */
+    'TailwindDark';
 
 /**
  * Text alignment

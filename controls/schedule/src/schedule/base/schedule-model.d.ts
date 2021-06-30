@@ -93,6 +93,7 @@ export interface ScheduleModel extends ComponentModel{
     /**
      * To define the minimum date on the Schedule, `minDate` property can be defined.
      * Usually, it defaults to the new Date(1900, 0, 1).
+     * {% codeBlock src='schedule/minDate/index.md' %}{% endcodeBlock %}
      *
      * @default new Date(1900, 0, 1)
      * @aspDefaultValue new DateTime(1900, 1, 1)
@@ -102,6 +103,7 @@ export interface ScheduleModel extends ComponentModel{
     /**
      * To define the maximum date on the Schedule, `maxDate` property can be defined.
      * Usually, it defaults to the new Date(2099, 11, 31).
+     * {% codeBlock src='schedule/maxDate/index.md' %}{% endcodeBlock %}
      *
      * @default new Date(2099, 11, 31)
      * @aspDefaultValue new DateTime(2099, 12, 31)
@@ -174,6 +176,15 @@ export interface ScheduleModel extends ComponentModel{
     workDays?: number[];
 
     /**
+     * This option allows the user to set the number of months count to be displayed on the Schedule.
+     * {% codeBlock src='schedule/monthsCount/index.md' %}{% endcodeBlock %}
+     *
+     * @default 12
+     * @aspType int
+     */
+    monthsCount?: number;
+
+    /**
      * It is used to specify the starting hour, from which the Schedule starts to display. It accepts the time string in a short skeleton
      * format and also, hides the time beyond the specified start time.
      * {% codeBlock src='schedule/startHour/index.md' %}{% endcodeBlock %}
@@ -207,6 +218,14 @@ export interface ScheduleModel extends ComponentModel{
      * @default false
      */
     enableAllDayScroll?: boolean;
+
+    /**
+     * When set to `true`, the header view navigations are listed under the popup and if we enable resource grouping, the compact view will be enabled.
+     * {% codeBlock src='schedule/enableAdaptiveUI/index.md' %}{% endcodeBlock %}
+     *
+     * @default false
+     */
+    enableAdaptiveUI?: boolean;
 
     /**
      * When set to `true`, allows the resizing of appointments. It allows the rescheduling of appointments either by changing the
@@ -297,8 +316,8 @@ export interface ScheduleModel extends ComponentModel{
      * * groupIndex
      * * type
      *
-     * Refer to the below code snippet
-     * 
+     * Refer to the below code snippet.
+     *
      * {% codeBlock src='schedule/cellTemplate/index.md' %}{% endcodeBlock %}
      *
      * @default null
@@ -324,6 +343,7 @@ export interface ScheduleModel extends ComponentModel{
 
     /**
      * This property helps user to add/edit the event in inline.
+     * {% codeBlock src='schedule/allowInline/index.md' %}{% endcodeBlock %}
      * By default, it is set to `false`.
      *
      * @default false
@@ -332,6 +352,7 @@ export interface ScheduleModel extends ComponentModel{
 
     /**
      * This property helps user to allow/prevent the selection of multiple cells.
+     * {% codeBlock src='schedule/allowMultiCellSelection/index.md' %}{% endcodeBlock %}
      * By default, it is set to `true`.
      *
      * @default true
@@ -340,6 +361,7 @@ export interface ScheduleModel extends ComponentModel{
 
     /**
      * This property helps user to allow/prevent the selection of multiple days(rows).
+     * {% codeBlock src='schedule/allowMultiRowSelection/index.md' %}{% endcodeBlock %}
      * By default, it is set to `true`.
      *
      * @default true
@@ -348,6 +370,7 @@ export interface ScheduleModel extends ComponentModel{
 
     /**
      * This property helps to show quick popup after multiple cell selection.
+     * {% codeBlock src='schedule/quickInfoOnSelectionEnd/index.md' %}{% endcodeBlock %}
      *  By default, it is set to `false`.
      *
      * @default false
@@ -460,9 +483,9 @@ export interface ScheduleModel extends ComponentModel{
      * The following can be accessible via template.
      * * resource - All the resource fields.
      * * resourceData - object collection of current resource.
-     * 
-     * Refer to the below code snippet
-     * 
+     *
+     * Refer to the below code snippet.
+     *
      * {% codeBlock src='schedule/resourceHeaderTemplate/index.md' %}{% endcodeBlock %}
      *
      * @default null
@@ -566,6 +589,7 @@ export interface ScheduleModel extends ComponentModel{
 
     /**
      * Triggers on beginning of every scheduler action.
+     * {% codeBlock src='schedule/actionBegin/index.md' %}{% endcodeBlock %}
      *
      * @event 'actionBegin'
      */
@@ -573,6 +597,7 @@ export interface ScheduleModel extends ComponentModel{
 
     /**
      * Triggers on successful completion of the scheduler actions.
+     * {% codeBlock src='schedule/actionComplete/index.md' %}{% endcodeBlock %}
      *
      * @event 'actionComplete'
      */
@@ -580,6 +605,7 @@ export interface ScheduleModel extends ComponentModel{
 
     /**
      * Triggers when a scheduler action gets failed or interrupted and an error information will be returned.
+     * {% codeBlock src='schedule/actionFailure/index.md' %}{% endcodeBlock %}
      *
      * @event 'actionFailure'
      */
@@ -587,6 +613,7 @@ export interface ScheduleModel extends ComponentModel{
 
     /**
      * Triggers before the date or view navigation takes place on scheduler.
+     * {% codeBlock src='schedule/navigating/index.md' %}{% endcodeBlock %}
      *
      * @event 'navigating'
      */
@@ -594,6 +621,7 @@ export interface ScheduleModel extends ComponentModel{
 
     /**
      * Triggers before each element of the schedule rendering on the page.
+     * {% codeBlock src='schedule/renderCell/index.md' %}{% endcodeBlock %}
      *
      * @event 'renderCell'
      */
@@ -601,6 +629,7 @@ export interface ScheduleModel extends ComponentModel{
 
     /**
      * Triggers when the events are single clicked or on single tapping the events on the mobile devices.
+     * {% codeBlock src='schedule/eventClick/index.md' %}{% endcodeBlock %}
      *
      * @event 'eventClick'
      */
@@ -608,6 +637,7 @@ export interface ScheduleModel extends ComponentModel{
 
     /**
      * Triggers before each of the event getting rendered on the scheduler user interface.
+     * {% codeBlock src='schedule/eventRendered/index.md' %}{% endcodeBlock %}
      *
      * @event 'eventRendered'
      */
@@ -615,6 +645,7 @@ export interface ScheduleModel extends ComponentModel{
 
     /**
      * Triggers before the data binds to the scheduler.
+     * {% codeBlock src='schedule/dataBinding/index.md' %}{% endcodeBlock %}
      *
      * @event 'dataBinding'
      */
@@ -622,6 +653,7 @@ export interface ScheduleModel extends ComponentModel{
 
     /**
      * Triggers before any of the scheduler popups opens on the page.
+     * {% codeBlock src='schedule/popupOpen/index.md' %}{% endcodeBlock %}
      *
      * @event 'popupOpen'
      */
@@ -629,6 +661,7 @@ export interface ScheduleModel extends ComponentModel{
 
     /**
      * Triggers before any of the scheduler popups close on the page.
+     * {% codeBlock src='schedule/popupClose/index.md' %}{% endcodeBlock %}
      *
      * @event 'popupClose'
      */
@@ -636,6 +669,7 @@ export interface ScheduleModel extends ComponentModel{
 
     /**
      * Triggers when an appointment is started to drag.
+     * {% codeBlock src='schedule/dragStart/index.md' %}{% endcodeBlock %}
      *
      * @event 'dragStart'
      */
@@ -643,6 +677,7 @@ export interface ScheduleModel extends ComponentModel{
 
     /**
      * Triggers when an appointment is being in a dragged state.
+     * {% codeBlock src='schedule/drag/index.md' %}{% endcodeBlock %}
      *
      * @event 'drag'
      */
@@ -650,6 +685,7 @@ export interface ScheduleModel extends ComponentModel{
 
     /**
      * Triggers when the dragging of appointment is stopped.
+     * {% codeBlock src='schedule/dragStop/index.md' %}{% endcodeBlock %}
      *
      * @event 'dragStop'
      */
@@ -657,6 +693,7 @@ export interface ScheduleModel extends ComponentModel{
 
     /**
      * Triggers when an appointment is started to resize.
+     * {% codeBlock src='schedule/resizeStart/index.md' %}{% endcodeBlock %}
      *
      * @event 'resizeStart'
      */
@@ -664,6 +701,7 @@ export interface ScheduleModel extends ComponentModel{
 
     /**
      * Triggers when an appointment is being in a resizing action.
+     * {% codeBlock src='schedule/resizing/index.md' %}{% endcodeBlock %}
      *
      * @event 'resizing'
      */
@@ -671,6 +709,7 @@ export interface ScheduleModel extends ComponentModel{
 
     /**
      * Triggers when the resizing of appointment is stopped.
+     * {% codeBlock src='schedule/resizeStop/index.md' %}{% endcodeBlock %}
      *
      * @event 'resizeStop'
      */
@@ -678,6 +717,7 @@ export interface ScheduleModel extends ComponentModel{
 
     /**
      * Triggers once the event data is bound to the scheduler.
+     * {% codeBlock src='schedule/dataBound/index.md' %}{% endcodeBlock %}
      *
      * @event 'dataBound'
      */

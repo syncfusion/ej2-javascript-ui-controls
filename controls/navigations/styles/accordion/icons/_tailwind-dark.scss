@@ -1,0 +1,17 @@
+
+@include export-module('accordion-tailwind-dark-icons') {
+  /*! accordion icons */
+  #{&}.e-accordion {
+
+    .e-tgl-collapse-icon {
+
+      &::before {
+        content: '\e706';
+      }
+
+      &.e-expand-icon {
+        transform: rotate(-180deg);
+      }
+  }
+  }
+}

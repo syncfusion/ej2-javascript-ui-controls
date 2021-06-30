@@ -154,6 +154,9 @@ export class Data implements IDataProcessor {
     protected pageQuery(query: Query, skipPage?: boolean): Query {
         const gObj: IGrid = this.parent;
         const fName: string = 'fn';
+        const args: { query: Query, skipPage: boolean } = { query: query, skipPage: false };
+        gObj.notify(events.setVirtualPageQuery, args);
+        if (args.skipPage) { return query; }
         if ((gObj.allowPaging || gObj.enableVirtualization || gObj.enableInfiniteScrolling) && skipPage !== true) {
             gObj.pageSettings.currentPage = Math.max(1, gObj.pageSettings.currentPage);
             if (gObj.pageSettings.pageCount <= 0) {

@@ -1,5 +1,4 @@
 /* eslint-disable @typescript-eslint/triple-slash-reference */
-/* eslint-disable @typescript-eslint/ban-types */
 /// <reference path='../common/menu-base-model.d.ts'/>
 import { attributes, NotifyPropertyChanges, INotifyPropertyChanged, Property } from '@syncfusion/ej2-base';
 import { Browser, Complex, getUniqueID, SanitizeHtmlHelper  } from '@syncfusion/ej2-base';
@@ -284,7 +283,7 @@ export class Menu extends MenuBase implements INotifyPropertyChanged {
     /**
      * This method is used to open the Menu in hamburger mode.
      *
-     * @method open
+     * @function open
      * @returns {void}
      */
     public open(): void {
@@ -294,6 +293,7 @@ export class Menu extends MenuBase implements INotifyPropertyChanged {
     /**
      * Closes the Menu if it is opened in hamburger mode.
      *
+     * @function close
      * @returns {void}
      */
     public close(): void {

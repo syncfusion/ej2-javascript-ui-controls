@@ -418,9 +418,11 @@ export class Draggable extends Base<HTMLElement> implements INotifyPropertyChang
                 if (axis === 'vertical') {
                     this.parentScrollY = this.parentScrollY +
                         (this.parentScrollY === 0 ? element.scrollTop : element.scrollTop - this.parentScrollY);
+                    this.tempScrollHeight = element.scrollHeight;
                 } else {
                     this.parentScrollX = this.parentScrollX +
                         (this.parentScrollX === 0 ? element.scrollLeft : element.scrollLeft - this.parentScrollX);
+                    this.tempScrollWidth = element.scrollWidth;
                 }
                 if (!isNullOrUndefined(element)) {
                     return this.getScrollableParent(element.parentNode as HTMLElement, axis);
@@ -922,6 +924,11 @@ export class Draggable extends Base<HTMLElement> implements INotifyPropertyChang
         } else {
             pageX = this.clone ? intCoord.pageX : (intCoord.pageX + window.pageXOffset) - this.relativeXPosition;
             pageY = this.clone ? intCoord.pageY : (intCoord.pageY + window.pageYOffset) - this.relativeYPosition;
+        }
+        if (!this.clone && this.dragArea) {
+            this.getScrollableValues();
+            pageY -=  this.tempScrollHeight ? this.parentScrollY : 0;
+            pageX -=  this.tempScrollWidth ? this.parentScrollX : 0;
         }
         return {
             left: pageX - (this.margin.left + this.cursorAt.left),

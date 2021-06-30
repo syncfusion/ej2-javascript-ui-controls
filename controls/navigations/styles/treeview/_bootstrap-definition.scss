@@ -1,6 +1,5 @@
 /*! TreeView's bootstrap theme wise override definitions and variables */
 // sass-lint:disable-all
-$treeview-skin-name: 'bootstrap' !default;
 $treeview-font-size: 14px !default;
 $treeview-icon-font-size: 8px !default;
 $treeview-image-font-size: 16px !default;
@@ -101,39 +100,3 @@ $treeview-drag-icon-padding: 6px !default;
 $ripple-size: -7px !default;
 $ripple-height: 32px !default;
 $ripple-width: 32px !default;
-
-.e-treeview {
-
-  .e-list-item {
-
-    div.e-icons.interaction {
-      -webkit-transition: -webkit-transform .3s ease-in-out;
-      border-radius: 15px;
-      transition: -webkit-transform .3s ease-in-out;
-      transition: transform .3s ease-in-out;
-      transition: transform .3s ease-in-out, -webkit-transform .3s ease-in-out;
-    }
-
-    .e-icons.e-icon-collapsible {
-      -webkit-transform: rotate(90deg);
-      transform: rotate(90deg);
-    }
-  }
-
-  &.e-drag-item {
-
-    &.e-rtl {
-
-      .e-icons.e-drop-next {
-        transform: rotate(180deg);
-      }
-    }
-  }
-
-  &.e-rtl {
-
-    div.e-icons {
-      transform: rotate(180deg);
-    }
-  }
-}

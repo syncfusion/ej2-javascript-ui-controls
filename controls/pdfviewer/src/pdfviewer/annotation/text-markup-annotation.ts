@@ -3,7 +3,8 @@ import {
     PdfViewer, PdfViewerBase, IRectangle, ISelection, AnnotationType, IPageAnnotations, ICommentsCollection,
     IReviewCollection,
     ISize,
-    AllowedInteraction
+    AllowedInteraction,
+    IPoint
 } from '../index';
 import { createElement, Browser, isNullOrUndefined, isBlazor } from '@syncfusion/ej2-base';
 import { ChangeEventArgs } from '@syncfusion/ej2-inputs';
@@ -114,6 +115,10 @@ export class TextMarkupAnnotation {
      * @private
      */
     public currentTextMarkupAnnotation: ITextMarkupAnnotation = null;
+    /**
+     * @private
+     */
+    public isAddAnnotationProgramatically: boolean = false;
     private currentAnnotationIndex: number = null;
     private isAnnotationSelect: boolean = false;
     // eslint-disable-next-line
@@ -570,6 +575,16 @@ export class TextMarkupAnnotation {
                             annotationObject.textMarkupEndIndex = annotation.textMarkupEndIndex;
                         }
                         this.pdfViewer.annotationModule.storeAnnotations(pageNumber, annotationObject, '_annotations_textMarkup');
+                        if(this.isAddAnnotationProgramatically)
+                        {
+                            // eslint-disable-next-line
+                            let settings: any = {
+                                opacity: annotationObject.opacity, author: annotation.author, subject: annotation.subject, modifiedDate: annotation.modifiedDate,
+                                // eslint-disable-next-line
+                                width: annotationObject.bounds.width, height: annotationObject.bounds.height
+                            };
+                            this.pdfViewer.fireAnnotationAdd(annotationObject.pageNumber, annotationObject.annotName, annotation.TextMarkupAnnotationType, annotationObject.bounds, settings);                      
+                        }
                     }
                     // eslint-disable-next-line max-len
                     const type: string = annotation.TextMarkupAnnotationType ? annotation.TextMarkupAnnotationType : annotation.textMarkupAnnotationType;
@@ -1680,9 +1695,9 @@ export class TextMarkupAnnotation {
         let top: number = bounds.top ? bounds.top : bounds.Top;
         const height: number = bounds.height ? bounds.height : bounds.Height;
         const width: number = bounds.width ? bounds.width : bounds.Width;
+        const pageDetails: ISize = this.pdfViewerBase.pageSize[pageIndex];
         left = left ? left : bounds.x;
         top = top ? top : bounds.y;
-        const pageDetails: ISize = this.pdfViewerBase.pageSize[pageIndex];
         if (pageDetails) {
             if (pageDetails.rotation === 1) {
                 return { left: top, top: pageDetails.width - (left + width), width: height, height: width };
@@ -2144,7 +2159,7 @@ export class TextMarkupAnnotation {
                 } else {
                     eventTarget.style.cursor = 'auto';
                 }
-                if (this.pdfViewerBase.isMousedOver) {
+                if (this.pdfViewerBase.isMousedOver && !this.pdfViewerBase.isFormFieldMousedOver) {
                     this.pdfViewer.fireAnnotationMouseLeave(pageIndex);
                     this.pdfViewerBase.isMousedOver = false;
                 }
@@ -2763,5 +2778,120 @@ export class TextMarkupAnnotation {
         this.currentTextMarkupAnnotation = null;
         this.annotationClickPosition = null;
         window.sessionStorage.removeItem(this.pdfViewerBase.documentId + '_annotations_textMarkup');
+    }
+
+    /**
+     * Get vertex points properties 
+     * @private
+     */
+    private getOffsetPoints(points: any): any {
+        let offsetPoints: any = [];
+        //Converting points model into vertex property
+        for (let j: number = 0; j < points.length; j++) {
+            offsetPoints[j] = {X:points[j].x, Y:points[j].y, Width:points[j].width, Height:points[j].height, Left:points[j].x, Top:points[j].y};
+        }
+        return offsetPoints;
+    }
+
+    /** 
+     * This method used to add annotations with using program.
+     * 
+     * @param annotationType - It describes the annotation type 
+     * @param annotationObject - It describes type of annotation object
+     * @returns Object
+     * @private
+     */
+    public updateAddAnnotationDetails(annotationType: AnnotationType, annotationObject: any): Object 
+    {
+        //Creating new object if annotationObject is null
+        if(!annotationObject)
+        {
+         annotationObject = {pageNumber: 0};
+        }
+
+        //Initialize the annotation settings
+        let annotSelectorSettings: any = null;
+        let annotallowedInteractions: any = null;
+        let textMarkupAnnotationType: string =''; 
+        let annotSettings: any = null;
+        let color: string = '';
+        let bounds :any[] = [];
+
+        //Creating the CurrentDate and Annotation name
+        let currentDateString: string = this.pdfViewer.annotation.stickyNotesAnnotationModule.getDateAndTime();
+        let annotationName: string = this.pdfViewer.annotation.createGUID();
+
+        if(annotationType == 'Highlight')
+        {
+            //Creating annotation settings
+            annotSelectorSettings = this.pdfViewer.highlightSettings.annotationSelectorSettings ? this.pdfViewer.highlightSettings.annotationSelectorSettings : this.pdfViewer.annotationSelectorSettings;          
+            annotSettings = this.pdfViewer.annotationModule.updateSettings(this.pdfViewer.highlightSettings);
+            annotallowedInteractions = this.pdfViewer.highlightSettings.allowedInteractions ? this.pdfViewer.highlightSettings.allowedInteractions : this.pdfViewer.annotationSettings.allowedInteractions;
+            textMarkupAnnotationType = 'Highlight';
+            color = annotationObject.color?annotationObject.color:'#ffff00';
+        }
+        else if(annotationType == 'Underline')
+        {
+            //Creating annotation settings
+            annotSelectorSettings = this.pdfViewer.underlineSettings.annotationSelectorSettings ? this.pdfViewer.underlineSettings.annotationSelectorSettings : this.pdfViewer.annotationSelectorSettings;          
+            annotSettings = this.pdfViewer.annotationModule.updateSettings(this.pdfViewer.underlineSettings);
+            annotallowedInteractions = this.pdfViewer.underlineSettings.allowedInteractions ? this.pdfViewer.underlineSettings.allowedInteractions : this.pdfViewer.annotationSettings.allowedInteractions;
+            textMarkupAnnotationType = 'Underline';
+            color = annotationObject.color?annotationObject.color:'#00ff00';
+        }
+        else if(annotationType == 'Strikethrough')
+        {              
+            //Creating annotation settings
+            annotSelectorSettings = this.pdfViewer.strikethroughSettings.annotationSelectorSettings ? this.pdfViewer.strikethroughSettings.annotationSelectorSettings : this.pdfViewer.annotationSelectorSettings;          
+            annotSettings = this.pdfViewer.annotationModule.updateSettings(this.pdfViewer.strikethroughSettings);
+            annotallowedInteractions = this.pdfViewer.strikethroughSettings.allowedInteractions ? this.pdfViewer.strikethroughSettings.allowedInteractions : this.pdfViewer.annotationSettings.allowedInteractions;               
+            textMarkupAnnotationType = 'Strikethrough';
+            color = annotationObject.color?annotationObject.color:'#ff0000';
+        }
+        annotSettings.isLock = annotationObject.isLock?annotationObject.isLock:false;
+
+        //Creating the offset points
+        if(annotationObject.bounds)
+        {
+            bounds = this.getOffsetPoints(annotationObject.bounds);
+        }
+        else
+            bounds = [{X: 1, Y: 1, Width:100, Height: 14, Left: 1, Top: 1, Location:{X: 1,Y: 1}, Size:{Height: 14,IsEmpty: false,Width: 100}}];
+
+        //Creating Annotation objects with it's proper properties       
+        let textMarkupAnnotation: any = [];
+        let textmarkup:any = {
+            AllowedInteractions: annotationObject.allowedInteractions?annotationObject.allowedInteractions : annotallowedInteractions,
+            AnnotName: annotationName,
+            AnnotNameCollection: null,
+            AnnotType: 'textMarkup',
+            AnnotationSelectorSettings: annotationObject.annotationSelectorSettings?annotationObject.annotationSelectorSettings: annotSelectorSettings,       
+            AnnotationSettings: annotSettings,
+            Author: annotationObject.author ? annotationObject.author : 'Guest',
+            Bounds: bounds,
+            Color: annotationObject.color?annotationObject.color:color,
+            Comments: null,
+            CreatedDate: currentDateString,
+            CustomData: annotationObject.customData?annotationObject.customData:null,
+            ExistingCustomData: null,
+            EnableMultiPageAnnotation : annotationObject.enableMultiPageAnnotation?annotationObject.enableMultiPageAnnotation:false,
+            EnableTextMarkupResizer : annotationObject.enableTextMarkupResizer?annotationObject.enableTextMarkupResizer:false,
+            IsCommentLock: false,
+            IsMultiSelect: false,
+            IsLock: annotationObject.isLock ? annotationObject.isLock:false,
+            IsPrint: annotationObject.isPrint ? annotationObject.isPrint:true,
+            ModifiedDate: currentDateString,
+            Note: '',
+            Opacity: annotationObject.opacity?annotationObject.opacity:1,
+            Rect: {},
+            State: '',
+            StateModel: '',
+            Subject: textMarkupAnnotationType,
+            TextMarkupAnnotationType: textMarkupAnnotationType,
+        }
+        
+        //Adding the annotation object to an array and return it
+        textMarkupAnnotation[0] = textmarkup;
+        return {textMarkupAnnotation};
     }
 }

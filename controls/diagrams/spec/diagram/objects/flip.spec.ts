@@ -5,8 +5,8 @@ import { NodeModel, PathModel, FlowShapeModel, TextModel } from '../../../src/di
 import { MouseEvents } from '../interaction/mouseevents.spec';
 import { UndoRedo } from '../../../src/diagram/objects/undo-redo';
 import { HistoryEntry, History } from '../../../src/diagram/diagram/history';
-import { SnapConstraints, PointPortModel, AnnotationModel, PathElement } from '../../../src/diagram/index';
-import { PortConstraints, PortVisibility, ConnectorConstraints, NodeConstraints, DecoratorShapes } from '../../../src/diagram/enum/enum';
+import { SnapConstraints, PointPortModel, AnnotationModel, PathElement, ConnectorBridging } from '../../../src/diagram/index';
+import { PortConstraints, PortVisibility, ConnectorConstraints, NodeConstraints, DecoratorShapes, DiagramConstraints } from '../../../src/diagram/enum/enum';
 Diagram.Inject(UndoRedo);
 /**
  * Interaction Specification Document
@@ -149,58 +149,49 @@ describe('Diagram Control', () => {
             ele.remove();
         });
         it('Checking flip horizontal to connector', (done: Function) => {
-
             let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
             let element: HTMLElement = document.getElementById(diagram.nodes[0].id + '_' + 'content');
             diagram.connectors[0].flip= "Horizontal";
-           
-            expect(diagram.connectors[0].sourcePoint.x === 200 && diagram.connectors[0].sourcePoint.y === 200 &&
-                diagram.connectors[0].targetPoint.x === 400 && diagram.connectors[0].targetPoint.y === 400).toBe(true);
             done();
         });
         it('Checking flip vertical to connector', (done: Function) => {
-
+            expect(diagram.connectors[0].sourcePoint.x === 400 && diagram.connectors[0].sourcePoint.y === 200 &&
+                diagram.connectors[0].targetPoint.x === 200 && diagram.connectors[0].targetPoint.y === 400).toBe(true);
             let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
             let element: HTMLElement = document.getElementById(diagram.nodes[0].id + '_' + 'content');
             diagram.connectors[0].flip= "Vertical";
-           
-
-            expect((diagram.connectors[0].wrapper.children[0] as PathElement).absolutePath ===
-            'M 0 0 L 0 20 L 200 20 L 200 199.5').toBe(true);
             done();
         });
         it('Checking flip vertical for connector source point change', (done: Function) => {
-
+            expect((diagram.connectors[0].wrapper.children[0] as PathElement).absolutePath ===
+            'M 200 200 L 200 180 L 0 180 L 0 0.5').toBe(true);
             let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
             let element: HTMLElement = document.getElementById(diagram.nodes[0].id + '_' + 'content');
             diagram.connectors[0].sourcePoint = { x: 100, y: 100 };
             diagram.connectors[0].flip= "Horizontal";
-           
-            expect((diagram.connectors[0].wrapper.children[0] as PathElement).absolutePath ===
-            'M 0 0 L 0 20 L 200 20 L 200 199.5').toBe(true);
-
             done();
         });
         it('Checking flip vertical for connector target  point change', (done: Function) => {
-
+            expect((diagram.connectors[0].wrapper.children[0] as PathElement).absolutePath ===
+            'M 100 0 L 100 20 L 0 20 L 0 99.5').toBe(true);
             let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
             let element: HTMLElement = document.getElementById(diagram.nodes[0].id + '_' + 'content');
             diagram.connectors[0].targetPoint = { x: 300, y: 350 };
             diagram.connectors[0].flip= "Horizontal";
-           
-            expect((diagram.connectors[0].wrapper.children[0] as PathElement).absolutePath ===
-            'M 0 0 L 0 20 L 300 20 L 300 299.5').toBe(true); 
             done();
         });
         it('Checking flip both for connector target  point change', (done: Function) => {
-
+            expect((diagram.connectors[0].wrapper.children[0] as PathElement).absolutePath ===
+            'M 0 0 L 0 20 L 100 20 L 100 249.5').toBe(true); 
             let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
             let element: HTMLElement = document.getElementById(diagram.nodes[0].id + '_' + 'content');
             diagram.connectors[0].targetPoint = { x: 300, y: 350 };
             diagram.connectors[0].flip= "Both";          
-           
+            done();
+        });
+        it('Checking flip both for connector target  point change', (done: Function) => {
             expect((diagram.connectors[0].wrapper.children[0] as PathElement).absolutePath ===
-            'M 200 0 L 200 20 L 0 20 L 0 249.5').toBe(true); 
+            'M 100 250 L 100 230 L 0 230 L 0 0.5').toBe(true); 
             done();
         });
 
@@ -508,4 +499,77 @@ describe('Diagram Control', () => {
 
 
     })
+
+    describe('Connectors-Flip change and Testing ', () => {
+        let diagram: Diagram;
+        let ele: HTMLElement;
+        Diagram.Inject(ConnectorBridging);
+        beforeAll((): void => {
+            const isDef = (o: any) => o !== undefined && o !== null;
+            if (!isDef(window.performance)) {
+                console.log("Unsupported environment, window.performance.memory is unavailable");
+                this.skip(); //Skips test (in Chai)
+                return;
+            }
+            ele = createElement('div', { id: 'diagramFlipTest' });
+            document.body.appendChild(ele);
+            diagram = new Diagram({
+                width: '1050px', height: '500px',
+                connectors: [
+                    {
+                        id: 'connector1',
+                        type: 'Straight',
+                        sourcePoint: { x: 100, y: 100 },
+                        targetPoint: { x: 200, y: 200 },
+                        flip: "None"
+                    },
+                    {
+                        id: 'connector2',
+                        type: 'Straight',
+                        sourcePoint: { x: 200, y: 100 },
+                        targetPoint: { x: 100, y: 200 },
+                        flip: "None"
+                    },
+                    {
+                        id: 'connector3',
+                        type: 'Straight',
+                        sourcePoint: { x: 400, y: 100 },
+                        targetPoint: { x: 500, y: 200 },
+                        flip: "None"
+                    },
+                    {
+                        id: 'connector4',
+                        type: 'Straight',
+                        sourcePoint: { x: 400, y: 200 },
+                        targetPoint: { x: 500, y: 300 },
+                        flip: "None"
+                    },
+                ],
+                constraints: DiagramConstraints.Default | DiagramConstraints.Bridging
+            });
+            diagram.appendTo('#diagramFlipTest');
+        });
+        afterAll((): void => {
+            diagram.destroy();
+            ele.remove();
+        });
+        it('Changing the flip and checking functionality', function (done) {
+            expect((diagram.connectors[0].wrapper.children[0] as any).pathData === 'M100 100 L146.46446609406726 146.46446609406726A 5 5 -135 , 1 1 153.53553390593274,153.53553390593274 L199.65 199.65');
+            expect((diagram.connectors[1].wrapper.children[0] as any).pathData === 'M200 100 L153.53553390593274 146.46446609406726A 5 5 -45 , 1 0 146.46446609406726,153.53553390593274 L100.35 199.65');
+            expect((diagram.connectors[2].wrapper.children[0] as any).pathData === 'M400 100 L499.65 199.65');
+            expect((diagram.connectors[3].wrapper.children[0] as any).pathData === 'M400 200 L499.65 299.65');
+            diagram.connectors[0].flip = 'Both';
+            diagram.connectors[1].flip = 'Both';
+            diagram.connectors[2].flip = 'Horizontal';
+            diagram.connectors[3].flip = 'Horizontal';
+            done();
+        });
+        it('After changing flip in runtime and checking functionality', function (done) {
+            expect((diagram.connectors[0].wrapper.children[0] as any).pathData === 'M200 200 L153.5355339059327 153.53553390593274A 5 5 45 , 1 0 146.46446609406723,146.46446609406726 L100.35 100.35');
+            expect((diagram.connectors[1].wrapper.children[0] as any).pathData === 'M100 200 L146.46446609406726 153.5355339059327A 5 5 135 , 1 1 153.5355339059327,146.46446609406723 L199.65 100.35');
+            expect((diagram.connectors[2].wrapper.children[0] as any).pathData === 'M500 100 L400.35 199.65');
+            expect((diagram.connectors[3].wrapper.children[0] as any).pathData === 'M500 200 L400.35 299.65');
+            done();
+        });
+    });
 });

@@ -102,7 +102,8 @@ export class PivotButton implements IAction {
                             innerHTML: ((this.parent as PivotView).groupingBarSettings.allowDragAndDrop ? axis === 'rows' ? this.parent.localeObj.getConstant('rowAxisPrompt') :
                                 axis === 'columns' ? this.parent.localeObj.getConstant('columnAxisPrompt') :
                                     axis === 'values' ? this.parent.localeObj.getConstant('valueAxisPrompt') :
-                                        this.parent.localeObj.getConstant('filterAxisPrompt') : '')
+                                        axis === 'filters' ? this.parent.localeObj.getConstant('filterAxisPrompt') :
+                                            this.parent.localeObj.getConstant('allFields') : '')
                         });
                         element.appendChild(axisPrompt);
                     }
@@ -115,7 +116,7 @@ export class PivotButton implements IAction {
                         let isMeasureFieldsAvail: boolean = (this.parent.dataType === 'olap' && axis === 'values');
                         if (!element.classList.contains(cls.GROUP_CHART_VALUE) && !element.classList.contains(cls.GROUP_CHART_COLUMN)) {
                             let buttonWrapper: HTMLElement = createElement('div', {
-                                className: cls.PIVOT_BUTTON_WRAPPER_CLASS + (i === 0 ? ' e-first-btn' : ''),
+                                className: cls.PIVOT_BUTTON_WRAPPER_CLASS + (i === 0 && axis !== 'all-fields' ? ' e-first-btn' : ''),
                                 attrs: { 'data-tag': axis + ':' + field[i].name }
                             });
                             let buttonElement: HTMLElement = createElement('div', {
@@ -142,60 +143,65 @@ export class PivotButton implements IAction {
                             let dragWrapper: HTMLElement = this.createButtonDragIcon(field[i], buttonElement);
                             let contentElement: HTMLElement = this.createButtonText(field, i, axis, valuePos);
                             buttonElement.appendChild(contentElement);
-                            if (!isMeasureAvail && !field[i].isNamedSet && !field[i].isCalculatedField) {
-                                if (['filters', 'values'].indexOf(axis) === -1 && valuePos !== i &&
-                                    !(this.parent.dataType === 'olap' && ((this.parent.getModuleName() === 'pivotview' &&
-                                        (this.parent as PivotView).enableVirtualization) || (this.parent.getModuleName() === 'pivotfieldlist' &&
-                                            (this.parent as PivotFieldList).pivotGridModule !== undefined &&
-                                            (this.parent as PivotFieldList).pivotGridModule.enableVirtualization)))) {
-                                    this.createSortOption(buttonElement, field[i].name, field[i]);
+                            if (axis !== 'all-fields') {
+                                if (!isMeasureAvail && !field[i].isNamedSet && !field[i].isCalculatedField) {
+                                    if (['filters', 'values'].indexOf(axis) === -1 && valuePos !== i &&
+                                        !(this.parent.dataType === 'olap' && ((this.parent.getModuleName() === 'pivotview' &&
+                                            (this.parent as PivotView).enableVirtualization) || (this.parent.getModuleName() === 'pivotfieldlist' &&
+                                                (this.parent as PivotFieldList).pivotGridModule !== undefined &&
+                                                (this.parent as PivotFieldList).pivotGridModule.enableVirtualization)))) {
+                                        this.createSortOption(buttonElement, field[i].name, field[i]);
+                                    }
+                                    if (axis !== 'values' && valuePos !== i) {
+                                        this.createFilterOption(buttonElement, field[i].name, axis, field[i]);
+                                    }
+                                    if (axis === 'values') {
+                                        this.getTypeStatus(field, i, buttonElement);
+                                    }
                                 }
-                                if (axis !== 'values' && valuePos !== i) {
-                                    this.createFilterOption(buttonElement, field[i].name, axis, field[i]);
+                                if ((field[i].isCalculatedField || field[i].type === 'CalculatedField')) {
+                                    let calcElement: Element = createElement('span', {
+                                        attrs: { 'tabindex': '-1', 'aria-disabled': 'false', 'title': this.parent.localeObj.getConstant('editCalculatedField') },
+                                        className: cls.ICON + ' ' + cls.CALC_EDIT
+                                    });
+                                    if (this.parent.allowCalculatedField && this.parent.calculatedFieldModule && field[i].showEditIcon) {
+                                        removeClass([calcElement], cls.ICON_DISABLE);
+                                    } else {
+                                        addClass([calcElement], cls.ICON_DISABLE);
+                                    }
+                                    buttonElement.appendChild(calcElement);
                                 }
-                                if (axis === 'values') {
-                                    this.getTypeStatus(field, i, buttonElement);
-                                }
-                            }
-                            if ((field[i].isCalculatedField || field[i].type === 'CalculatedField')) {
-                                let calcElement: Element = createElement('span', {
-                                    attrs: { 'tabindex': '-1', 'aria-disabled': 'false', 'title': this.parent.localeObj.getConstant('editCalculatedField') },
-                                    className: cls.ICON + ' ' + cls.CALC_EDIT
+                                let removeElement: Element = createElement('span', {
+                                    attrs: { 'tabindex': '-1', 'aria-disabled': 'false', 'title': this.parent.localeObj.getConstant('remove') },
+                                    className: cls.ICON + ' ' + cls.REMOVE_CLASS
                                 });
-                                if (this.parent.allowCalculatedField && this.parent.calculatedFieldModule && field[i].showEditIcon) {
-                                    removeClass([calcElement], cls.ICON_DISABLE);
+                                if (this.parent.getModuleName() === 'pivotview') {
+                                    if (((this.parent as PivotView).groupingBarSettings.showRemoveIcon && field[i].showRemoveIcon)) {
+                                        removeClass([removeElement], cls.ICON_DISABLE);
+                                    } else {
+                                        addClass([removeElement], cls.ICON_DISABLE);
+                                    }
                                 } else {
-                                    addClass([calcElement], cls.ICON_DISABLE);
+                                    if (field[i].showRemoveIcon) {
+                                        removeClass([removeElement], cls.ICON_DISABLE);
+                                    } else {
+                                        addClass([removeElement], cls.ICON_DISABLE);
+                                    }
                                 }
-                                buttonElement.appendChild(calcElement);
-                            }
-                            let removeElement: Element = createElement('span', {
-                                attrs: { 'tabindex': '-1', 'aria-disabled': 'false', 'title': this.parent.localeObj.getConstant('remove') },
-                                className: cls.ICON + ' ' + cls.REMOVE_CLASS
-                            });
-                            if (this.parent.getModuleName() === 'pivotview') {
-                                if (((this.parent as PivotView).groupingBarSettings.showRemoveIcon && field[i].showRemoveIcon)) {
-                                    removeClass([removeElement], cls.ICON_DISABLE);
-                                } else {
-                                    addClass([removeElement], cls.ICON_DISABLE);
-                                }
+                                buttonElement.appendChild(removeElement);
+                                buttonWrapper.appendChild(dropIndicatorElement);
+                                buttonWrapper.appendChild(buttonElement);
+                                buttonWrapper.appendChild(dropLastIndicatorElement);
                             } else {
-                                if (field[i].showRemoveIcon) {
-                                    removeClass([removeElement], cls.ICON_DISABLE);
-                                } else {
-                                    addClass([removeElement], cls.ICON_DISABLE);
-                                }
+                                buttonWrapper.appendChild(dropIndicatorElement);
+                                buttonWrapper.appendChild(buttonElement);
                             }
-                            buttonElement.appendChild(removeElement);
-                            buttonWrapper.appendChild(dropIndicatorElement);
-                            buttonWrapper.appendChild(buttonElement);
-                            buttonWrapper.appendChild(dropLastIndicatorElement);
                             element.appendChild(buttonWrapper);
                             let pivotButton: Button = new Button({ enableRtl: this.parent.enableRtl, locale: this.parent.locale });
                             pivotButton.isStringTemplate = true;
                             pivotButton.appendTo(buttonElement);
-                            this.unWireEvent(buttonWrapper, i === valuePos ? 'values' : axis, isMeasureAvail);
-                            this.wireEvent(buttonWrapper, i === valuePos ? 'values' : axis, isMeasureAvail);
+                            this.unWireEvent(buttonWrapper, i === valuePos && axis !== 'all-fields' ? 'values' : axis, isMeasureAvail);
+                            this.wireEvent(buttonWrapper, i === valuePos && axis !== 'all-fields' ? 'values' : axis, isMeasureAvail);
                             if ((this.parent.getModuleName() === 'pivotview' && !this.parent.isAdaptive) ||
                                 this.parent.getModuleName() === 'pivotfieldlist') {
                                 this.createDraggable(field[i], this.parent.getModuleName() === 'pivotview' ? contentElement : dragWrapper);
@@ -481,7 +487,9 @@ export class PivotButton implements IAction {
             className: cls.ICON + ' ' + cls.DRAG_CLASS + ' ' + (field.allowDragAndDrop ? '' : cls.DRAG_DISABLE_CLASS)
         });
         dragWrapper.appendChild(dragElement);
-        pivotButton.appendChild(dragWrapper);
+        if (this.parent.getModuleName() === 'pivotfieldlist') {
+            pivotButton.appendChild(dragWrapper);
+        }
         return dragWrapper;
     }
     private createSortOption(pivotButton: HTMLElement, fieldName: string, field: IFieldOptions): Element {
@@ -748,9 +756,8 @@ export class PivotButton implements IAction {
     }
     private onDragStop(args: DragEventArgs & DragAndDropEventArgs): void {
         this.parent.isDragging = false;
-        if (args.target.classList && (args.target.classList.contains(cls.GROUP_CHART_VALUE) || args.target.classList.contains(cls.GROUP_CHART_VALUE_DROPDOWN))) {   /* eslint-disable-line */
-            args.target = this.parent.element.querySelector('.' + cls.GROUP_CHART_ROW);
-        } if (args.target.classList && args.element && (args.target.classList.contains(cls.GROUP_CHART_COLUMN) || args.target.classList.contains(cls.GROUP_CHART_COLUMN_DROPDOWN))) {   /* eslint-disable-line */
+        if (args.target && args.element && (closest(args.element, '.' + cls.GROUP_ALL_FIELDS_CLASS) &&
+            !closest(args.target, '.' + cls.DROPPABLE_CLASS))) {   /* eslint-disable-line */
             args.cancel = true;
         }
         let element: Element = closest(args.element, '.' + cls.PIVOT_BUTTON_CLASS);
@@ -784,7 +791,7 @@ export class PivotButton implements IAction {
         let axisPanel: HTMLElement = closest(target, '.' + cls.DROPPABLE_CLASS) as HTMLElement;
         let droppableElement: HTMLElement = closest(dropTarget, '.' + cls.DROPPABLE_CLASS) as HTMLElement;
         let isDropped: boolean = true;
-        if (axisPanel === droppableElement) {
+        if (axisPanel && axisPanel === droppableElement) {
             let pivotButtons: HTMLElement[] = [].slice.call(axisPanel.querySelectorAll('.' + cls.PIVOT_BUTTON_CLASS));
             let droppableTarget: HTMLElement = closest(dropTarget, '.' + cls.PIVOT_BUTTON_WRAPPER_CLASS) as HTMLElement;
             let sourcePosition: number;
@@ -1371,8 +1378,10 @@ export class PivotButton implements IAction {
             removeClass(
                 [].slice.call(this.parentElement.querySelectorAll('.' + cls.DROP_INDICATOR_CLASS + '-last')), cls.INDICATOR_HOVER_CLASS);
             removeClass([].slice.call(this.parentElement.querySelectorAll('.' + cls.DROP_INDICATOR_CLASS)), cls.INDICATOR_HOVER_CLASS);
-            let element: HTMLElement = closest((e.target as HTMLElement), '.' + cls.PIVOT_BUTTON_WRAPPER_CLASS) as HTMLElement;
-            addClass([element.querySelector('.' + cls.DROP_INDICATOR_CLASS)], cls.INDICATOR_HOVER_CLASS);
+            if (closest((e.target as HTMLElement), '.' + cls.DROPPABLE_CLASS)) {
+                let element: HTMLElement = closest((e.target as HTMLElement), '.' + cls.PIVOT_BUTTON_WRAPPER_CLASS) as HTMLElement;
+                addClass([element.querySelector('.' + cls.DROP_INDICATOR_CLASS)], cls.INDICATOR_HOVER_CLASS);
+            }
         }
     }
     private wireEvent(element: Element, axis: string, isMeasureAvail: boolean): void {
@@ -1391,7 +1400,9 @@ export class PivotButton implements IAction {
         if (element.querySelector('.' + cls.CALC_EDIT) !== null) {
             EventHandler.add(element.querySelector('.' + cls.CALC_EDIT), 'click', this.openCalculatedFieldDialog, this);
         }
-        EventHandler.add(element.querySelector('.' + cls.REMOVE_CLASS), 'click', this.removeButton, this);
+        if (element.querySelector('.' + cls.REMOVE_CLASS) !== null) {
+            EventHandler.add(element.querySelector('.' + cls.REMOVE_CLASS), 'click', this.removeButton, this);
+        }
     }
     private unWireEvent(element: Element, axis: string, isMeasureAvail: boolean): void {
         EventHandler.remove(element, 'mouseover', this.updateDropIndicator);
@@ -1409,7 +1420,9 @@ export class PivotButton implements IAction {
         if (element.querySelector('.' + cls.CALC_EDIT) !== null) {
             EventHandler.remove(element.querySelector('.' + cls.CALC_EDIT), 'click', this.openCalculatedFieldDialog);
         }
-        EventHandler.remove(element.querySelector('.' + cls.REMOVE_CLASS), 'click', this.removeButton);
+        if (element.querySelector('.' + cls.REMOVE_CLASS) !== null) {
+            EventHandler.remove(element.querySelector('.' + cls.REMOVE_CLASS), 'click', this.removeButton);
+        }
     }
 
     /**

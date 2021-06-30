@@ -34,6 +34,7 @@ export interface IRenderer {
     getRowHeaderWidth(sheet: SheetModel, skipFreezeCheck?: boolean): number;
     getColHeaderHeight(sheet: SheetModel, skipHeader?: boolean): number
     setPanelWidth(sheet: SheetModel, rowHdr: HTMLElement): void;
+    getScrollSize(addOffset?: boolean): number;
 }
 
 /** @hidden */
@@ -131,7 +132,7 @@ export interface ICellRenderer {
     renderColHeader(index: number): Element;
     renderRowHeader(index: number): Element;
     render(args: CellRenderArgs): Element;
-    refreshRange(range: number[]): void;
+    refreshRange(range: number[], reCalculateFormula?: boolean): void;
     refresh(rowIdx: number, colIdx: number, lastCell?: boolean, element?: Element): void;
 }
 

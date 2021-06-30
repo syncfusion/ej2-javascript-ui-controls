@@ -484,8 +484,8 @@ function resizeEast(e: any): void {
     const coordinates: Touch | MouseEvent = (e as TouchEvent).touches ? (e as TouchEvent).changedTouches[0] : e as MouseEvent;
     const pageX: number = coordinates.pageX;
     const targetRectValues: ClientRect | DOMRect =  getClientRectValues(targetElement);
-    if (!isNOU(containerElement) && (((targetRectValues.left - containerRectValues.left) + targetRectValues.width) < maxWidth
-    || (targetRectValues.right - containerRectValues.left) > targetRectValues.width)) {
+    if (!isNOU(containerElement) && (((targetRectValues.left - containerRectValues.left) + targetRectValues.width) <= maxWidth
+    || (targetRectValues.right - containerRectValues.left) >= targetRectValues.width)) {
         calculateValue = true;
     } else if (isNOU(containerElement) && (documentWidth - pageX) > 0) {
         calculateValue = true;

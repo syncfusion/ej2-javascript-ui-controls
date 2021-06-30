@@ -130,6 +130,14 @@ export function getSeriesColor(theme: ChartTheme | AccumulationTheme): string[] 
         // palette = ['#B586FF', '#71F9A3', '#FF9572', '#5BD5FF', '#F9F871',
         //     '#B6F971', '#8D71F9', '#FF6F91', '#FFC75F', '#D55DB1'];
         // break;
+    case 'Tailwind':
+        palette = ['#5A61F6', '#65A30D', '#334155', '#14B8A6', '#8B5CF6',
+                '#0369A1', '#F97316', '#9333EA', '#F59E0B', '#15803D'];
+        break;
+    case 'TailwindDark':
+        palette = ['#8B5CF6', '#22D3EE', '#F87171', '#4ADE80', '#E879F9',
+                    '#FCD34D', '#F97316', '#2DD4BF', '#F472B6', '#10B981'];
+        break;    
     default:
         palette = ['#00bdae', '#404041', '#357cd2', '#e56590', '#f8b883',
             '#70ad47', '#dd8abd', '#7f84e8', '#7bb4eb', '#ea7a57'];
@@ -209,6 +217,58 @@ export function getThemeColor(theme: ChartTheme | AccumulationTheme): IThemeStyl
             selectionRectFill: 'rgba(255,255,255, 0.1)', selectionRectStroke: 'rgba(0, 123, 255)', selectionCircleStroke: '#495057'
         };
         break;
+    case 'Tailwind':
+    style = {
+        axisLabel: '#6B728', axisTitle: '#374151',
+        axisLine: ' #D1D5DB',
+        majorGridLine: '#E5E7EB',
+        minorGridLine: '#E5E7EB',
+        majorTickLine: '#D1D5DB',
+        minorTickLine: ' #D1D5DB',
+        chartTitle: '#374151',
+        legendLabel: '#374151',
+        background: 'rgba(255,255,255, 0.0)',
+        areaBorder: ' #E5E7EB',
+        errorBar: '#374151',
+        crosshairLine: '#1F2937',
+        crosshairFill: '#111827',
+        crosshairLabel: '#F9FAFB',
+        tooltipFill: '#111827',
+        tooltipBoldLabel: '#D1D5DB',
+        tooltipLightLabel: '#F9FAFB',
+        tooltipHeaderLine: '#6B7280',
+        markerShadow: null,
+        selectionRectFill: 'rgba(79,70,229, 0.1)',
+        selectionRectStroke: '#4F46E5',
+        selectionCircleStroke: '#6B7280'
+    };
+    break;
+case 'TailwindDark':
+    style = {
+        axisLabel: '#9CA3AF', axisTitle: '#9CA3AF',
+        axisLine: ' #4B5563',
+        majorGridLine: '#374151',
+        minorGridLine: '#374151',
+        majorTickLine: '#4B5563',
+        minorTickLine: ' #4B5563',
+        chartTitle: '#D1D5DB',
+        legendLabel: '#D1D5DB',
+        background: 'rgba(255,255,255, 0.0)',
+        areaBorder: ' #374151',
+        errorBar: '#374151',
+        crosshairLine: '#9CA3AF',
+        crosshairFill: '#F9FAFB',
+        crosshairLabel: '#1F2937',
+        tooltipFill: '#F9FAFB',
+        tooltipBoldLabel: '#6B7280',
+        tooltipLightLabel: '#1F2937',
+        tooltipHeaderLine: '#9CA3AF',
+        markerShadow: null,
+        selectionRectFill: 'rgba(34,211,238, 0.1)',
+        selectionRectStroke: '#22D3EE',
+        selectionCircleStroke: '#282727'
+    };
+    break;
     default:
         style = {
             axisLabel: '#686868',

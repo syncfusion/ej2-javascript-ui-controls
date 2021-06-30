@@ -3,6 +3,7 @@ import * as events from '../base/constant';
 import { IRichTextEditor, IColorPickerEventArgs, IDropDownClickArgs } from '../base/interface';
 import { ServiceLocator } from '../services/service-locator';
 import { RendererFactory } from '../services/renderer-factory';
+import { IAdvanceListItem } from '../../common';
 
 /**
  * `ToolbarAction` module is used to toolbar click action
@@ -25,16 +26,27 @@ export class ToolbarAction {
     }
 
     private toolbarClick(args: IDropDownClickArgs): void {
-        if (isNOU(args.item)) { 
+        if (isNOU(args.item)) {
             return;
         }
-        // eslint-disable-next-line
         if (!isNOU((args.item as { [key: string]: object }).controlParent)) {
             // eslint-disable-next-line
             let activeEle: HTMLElement = (((args.item as { [key: string]: object }).controlParent as { [key: string]: object })
                 .activeEle as HTMLElement);
             if (activeEle) {
                 activeEle.tabIndex = -1;
+            }
+        }
+        if (args.item.command === 'NumberFormatList' || args.item.command === 'BulletFormatList') {
+            if ((args.originalEvent.target as HTMLElement).classList.contains('e-order-list') || (args.originalEvent.target as HTMLElement).classList.contains('e-unorder-list')) {
+                args.item.command = 'Lists' ;
+                args.item.subCommand = args.item.subCommand === 'NumberFormatList' ? 'OL' : 'UL';
+            }
+        }
+        if (args.item.command === 'Lists') {
+            if ((args.originalEvent.target as HTMLElement).classList.contains('e-caret') &&
+            ((args.originalEvent.target as HTMLElement).parentElement.classList.contains('e-rte-bulletformatlist-dropdown') || (args.originalEvent.target as HTMLElement).parentElement.classList.contains('e-rte-numberformatlist-dropdown'))) {
+                args.item.command = args.item.subCommand = null;
             }
         }
         this.parent.notify(events.htmlToolbarClick, args);
@@ -46,7 +58,13 @@ export class ToolbarAction {
             && e.item && (e.item.command === 'Images' || e.item.command === 'Display' || e.item.command as string === 'Table'))) {
             const value: string = e.item.controlParent && this.parent.quickToolbarModule && this.parent.quickToolbarModule.tableQTBar
                 && this.parent.quickToolbarModule.tableQTBar.element.contains(e.item.controlParent.element) ? 'Table' : null;
-            this.parent.formatter.process(this.parent, e, e.originalEvent, value);
+            if (e.item.command === 'Lists') {
+                const listItem: IAdvanceListItem = {listStyle: e.item.value, listImage: e.item.listImage, type: e.item.subCommand};
+                this.parent.formatter.process(this.parent, e, e.originalEvent, listItem);
+            }
+            else {
+                this.parent.formatter.process(this.parent, e, e.originalEvent, value);
+            }
         }
         this.parent.notify(events.selectionSave, {});
     }

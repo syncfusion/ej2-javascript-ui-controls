@@ -111,6 +111,133 @@ L10n.load({
     }
 });
 
+describe('EJ2-44314: Improvement with backSpaceKey action in the Rich Text Editor', () => {
+    let rteObj: RichTextEditor;
+    let keyBoardEvent: any = { type: 'keydown', preventDefault: () => { }, ctrlKey: true, key: 'backspace', stopPropagation: () => { }, shiftKey: false, which: 8};
+    it('Checking the backspacekey between two nodes', (done: Function) => {
+        rteObj = renderRTE({
+            value: `<p>Testing 1<br></p><p>Testing 2</p>`,
+        });
+        let node: any = rteObj.inputElement.childNodes[1];
+        setCursorPoint(document, node, 0);
+        (rteObj as any).mouseUp({ target: rteObj.inputElement, isTrusted: true });
+        keyBoardEvent.keyCode = 8;
+        keyBoardEvent.code = 'Backspace';
+        (rteObj as any).keyDown(keyBoardEvent);
+        expect((rteObj as any).inputElement.childNodes[0].innerHTML).toBe('Testing 1Testing 2');
+        expect((rteObj as any).inputElement.childNodes[0].parentElement.hasAttribute('style')).toBe(false);
+        done();
+    });
+    afterAll(() => {
+        destroy(rteObj);
+    });
+});
+describe('EJ2-44314: Improvement with backSpaceKey action in the Rich Text Editor', () => {
+    let rteObj: RichTextEditor;
+    let keyBoardEvent: any = { type: 'keydown', preventDefault: () => { }, ctrlKey: true, key: 'backspace', stopPropagation: () => { }, shiftKey: false, which: 8};
+    it('Checking the li element skipping for nested LI', (done: Function) => {
+        rteObj = renderRTE({
+            value: `<p>TextContent</p><ul><li>Testing 1</li><li>Testing 2﻿﻿<br></li></ul>`,
+        });
+        let node: any = rteObj.inputElement.childNodes[1].childNodes[1];
+        setCursorPoint(document, node, 0);
+        (rteObj as any).mouseUp({ target: rteObj.inputElement, isTrusted: true });
+        keyBoardEvent.keyCode = 8;
+        keyBoardEvent.code = 'Backspace';
+        (rteObj as any).keyDown(keyBoardEvent);
+        expect((rteObj as any).inputElement.childNodes[1].childNodes[1].innerHTML === "Testing 2﻿﻿<br>").toBe(true);
+        done();
+    });
+    afterAll(() => {
+        destroy(rteObj);
+    });
+});
+describe('EJ2-44314: Improvement with backSpaceKey action in the Rich Text Editor', () => {
+    let rteObj: RichTextEditor;
+    let keyBoardEvent: any = { type: 'keydown', preventDefault: () => { }, ctrlKey: true, key: 'Enter', keyCode: 13, stopPropagation: () => { }, shiftKey: false, which: 8};
+    it('Checking the keyboard enter inside the table', (done: Function) => {
+        rteObj = renderRTE({
+            value: `<table class="e-rte-table" style="width: 100%; min-width: 0px;"><tbody><tr><td style="width: 50%;" class="">Testing1</td>
+            <td style="width: 50%;">Testing2</td></tr><tr><td style="width: 50%;"><br></td><td style="width: 50%;"><br></td></tr></tbody></table><p><br></p>`,
+        });
+        let node: any = (rteObj as any).element.querySelector('table').querySelector('tr').firstElementChild.firstChild;
+        setCursorPoint(document, node, 8);
+        (rteObj as any).mouseUp({ target: rteObj.inputElement, isTrusted: true });
+        keyBoardEvent.action = 'enter';
+        keyBoardEvent.which = 13;
+        (rteObj as any).keyDown(keyBoardEvent);
+        expect((node as any).textContent.length).toBe(8);
+        done();
+    });
+    afterAll(() => {
+        destroy(rteObj);
+    });
+});
+describe('EJ2-44314: Improvement with backSpaceKey action in the Rich Text Editor', () => {
+    let rteObj: RichTextEditor;
+    let keyBoardEvent: any = { type: 'keydown', preventDefault: () => { }, ctrlKey: true, key: 'Enter', keyCode: 13, stopPropagation: () => { }, shiftKey: false, which: 8};
+    it('Checking the keyboard enter inside the nodes', (done: Function) => {
+        rteObj = renderRTE({
+            value: `<p>Testing 1<br></p><p>Testing 2</p>`,
+        });
+        let node: any = (rteObj as any).inputElement.childNodes[0].firstChild;
+        setCursorPoint(document, node, 9);
+        (rteObj as any).mouseUp({ target: rteObj.inputElement, isTrusted: true });
+        keyBoardEvent.action = 'enter';
+        keyBoardEvent.which = 13;
+        (rteObj as any).keyDown(keyBoardEvent);
+        expect((node as any).textContent.length).toBe(9);
+        done();
+    });
+    afterAll(() => {
+        destroy(rteObj);
+    });
+});
+
+describe('EJ2-44314: Improvement with backSpaceKey action in the Rich Text Editor', () => {
+    let rteObj: RichTextEditor;
+    let keyBoardEvent: any = { type: 'keydown', preventDefault: () => { }, ctrlKey: true, key: 'backspace', stopPropagation: () => { }, shiftKey: false, which: 8};
+    it('Checking the LI element with blocknodes', (done: Function) => {
+        rteObj = renderRTE({
+            value: `<p><b>Functional\n            Specifications/Requirements:</b></p><ol><li><p>Provide\n            the tool bar support, it\u2019s also customizable.</p></li><li><p>Options\n            to get the HTML elements with styles.</p></li><li><p>Support\n            to insert image from a defined path.</p></li></ol></p>`,
+        });
+        let node: any = (rteObj as any).inputElement.childNodes[1].childNodes[1].lastElementChild.firstChild;
+        setCursorPoint(document, node, 0);
+        keyBoardEvent.keyCode = 8;
+        keyBoardEvent.code = 'Backspace';
+        (rteObj as any).keyDown(keyBoardEvent);
+        expect((rteObj as any).inputElement.childNodes[1].childElementCount).toBe(2);
+        done();
+    });
+    afterAll(() => {
+        destroy(rteObj);
+    });
+});
+describe('EJ2-44314: Improvement with backSpaceKey action in the Rich Text Editor', () => {
+    let rteObj: RichTextEditor;
+    let keyBoardEvent: any = { type: 'keydown', preventDefault: () => { }, ctrlKey: true, key: 'backspace', stopPropagation: () => { }, shiftKey: false, which: 8};
+    it('Checking the LI element with text nodes', (done: Function) => {
+        rteObj = renderRTE({
+            value: `<p><b>Functional
+            Specifications/Requirements:</b></p><ol><li><p>Provide
+            the tool bar support, it’s also customizable.</p></li><li><p>Options
+            to get the HTML elements with styles.</p></li><li>Support
+            to insert image from a defined path.</li><li><p>Footer
+            elements and styles(tag / Element information , Action button (Upload, Cancel))</p></li></ol><p></p>`,
+        });
+        let node: any = (rteObj as any).inputElement.childNodes[1].childNodes[2].firstChild;
+        setCursorPoint(document, node, 0);
+        keyBoardEvent.keyCode = 8;
+        keyBoardEvent.code = 'Backspace';
+        (rteObj as any).keyDown(keyBoardEvent);
+        expect((rteObj as any).inputElement.childNodes[1].childElementCount).toBe(3);
+        done();
+    });
+    afterAll(() => {
+        destroy(rteObj);
+    });
+});
+
 describe('RTE base module', () => {
 
     beforeAll(() => {
@@ -3148,6 +3275,18 @@ describe("RTE ExecuteCommand public method testing", () => {
         rteObj.executeCommand("insertHorizontalRule");
         expect(rteObj.inputElement.querySelectorAll('hr').length === 1).toBe(true);
     });
+    it('Insert HR tag using InsertHorizontalRule', () => {
+        rteObj.value = `<p><br /></p>`;
+        rteObj.dataBind();
+        rteObj.executeCommand("insertHorizontalRule");
+        expect(rteObj.inputElement.querySelectorAll('hr').length === 1).toBe(true);
+        rteObj.executeCommand("insertHorizontalRule");
+        expect(rteObj.inputElement.querySelectorAll('hr').length === 2).toBe(true);
+        rteObj.executeCommand("insertHorizontalRule");
+        expect(rteObj.inputElement.querySelectorAll('hr').length === 3).toBe(true);
+        rteObj.executeCommand("insertHorizontalRule");
+        expect(rteObj.inputElement.querySelectorAll('hr').length === 4).toBe(true);
+    });
 });
 
 describe("RTE content remove issue", () => {
@@ -4493,12 +4632,11 @@ describe('EJ2-46060: 8203 character not removed after start typing', () => {
         destroy(rteObj);
     });
 });
-
 describe('EJ2-47075: Applying heading to the content in the Rich Text Editor applies heading to the next element', () => {
     let rteObj: RichTextEditor;
     let domSelection: NodeSelection = new NodeSelection();
     beforeEach(() => { });
-    it('Checking the alignment applied for element.', (done: Function) => {
+    it('Checking the heading format applied for element.', (done: Function) => {
         rteObj = renderRTE({
             value: `<h3 id="node1"><span>Plan voor training en bewustzijn</span></h3><p>Om bij het personeel van Spectator bewustzijn met betrekking tot
             informatiebeveiliging te creëren worden verschillende activiteiten georganiseerd. <br /> </p>

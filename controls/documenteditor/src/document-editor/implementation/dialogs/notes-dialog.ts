@@ -59,7 +59,7 @@ export class NotesDialog {
         const numberformat: HTMLElement = createElement('div', {
             className: 'e-de-insert-footnote-dlg-sub-header', innerHTML: localValue.getConstant('Number format')
         });
-        const numberFormatDiv: HTMLDivElement = <HTMLDivElement>createElement('div', { id: '_paperSizeDiv', styles: 'height:37px;', className: 'e-de-page-setup-dlg-sub-container' });
+        const numberFormatDiv: HTMLDivElement = <HTMLDivElement>createElement('div', { className: 'e-de-insert-footnote-dlg-header' });
         const formatType: HTMLElement = createElement('select', {
             id: this.target.id + '_papersize', styles: 'padding-bottom: 20px;',
             innerHTML: '<option value="1, 2, 3, ...">' + localValue.getConstant('1, 2, 3, ...') +

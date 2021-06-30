@@ -1,6 +1,7 @@
-/* eslint-disable @typescript-eslint/member-delimiter-style */
+/* eslint-disable valid-jsdoc */
+/* eslint-disable jsdoc/require-param */
+/* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable max-len */
-/* eslint-disable @typescript-eslint/dot-notation */
 import { Maps } from '../../index';
 import {
     LayerSettings, MarkerSettings, IMarkerRenderingEventArgs, markerRendering,
@@ -31,7 +32,6 @@ export class Marker {
      * @private
      */
     public sameMarkerData: MarkerClusterData[];
-    // eslint-disable-next-line @typescript-eslint/explicit-member-accessibility
     constructor(maps: Maps) {
         this.maps = maps;
         this.trackElements = [];
@@ -74,7 +74,6 @@ export class Marker {
                 };
                 eventArgs = markerColorChoose(eventArgs, data);
                 eventArgs = markerShapeChoose(eventArgs, data);
-                // eslint-disable-next-line @typescript-eslint/naming-convention
                 this.maps.trigger('markerRendering', eventArgs, (MarkerArgs: IMarkerRenderingEventArgs) => {
                     if (markerSettings.colorValuePath !== eventArgs.colorValuePath ) {
                         eventArgs = markerColorChoose(eventArgs, data);
@@ -176,7 +175,6 @@ export class Marker {
         }
         return scaleFactor;
     }
-    // eslint-disable-next-line valid-jsdoc
     /**
      * To calculate center position and factor value dynamically
      */
@@ -288,7 +286,6 @@ export class Marker {
             }
         }
     }
-    // eslint-disable-next-line valid-jsdoc
     /**
      * To check and trigger marker click event
      */
@@ -297,7 +294,6 @@ export class Marker {
         if (target.indexOf('_LayerIndex_') === -1 || target.indexOf('_cluster_') > 0) {
             return;
         }
-        // eslint-disable-next-line @typescript-eslint/ban-types
         const options: { marker: MarkerSettingsModel, data: object } = this.getMarker(target);
         if (isNullOrUndefined(options)) {
             return;
@@ -318,13 +314,11 @@ export class Marker {
     /**
      * To check and trigger Cluster click event
      */
-    // eslint-disable-next-line max-len
     public markerClusterClick(e: PointerEvent): void {
         const target: string = (e.target as Element).id;
         if (target.indexOf('_LayerIndex_') === -1 || target.indexOf('_cluster_') === -1) {
             return;
         }
-        // eslint-disable-next-line @typescript-eslint/ban-types
         const options: { marker: MarkerSettingsModel, data: object, clusterCollection: MarkerClusterData[], markCollection: object[] } = this.getMarker(target);
         if (isNullOrUndefined(options)) {
             return;
@@ -343,7 +337,7 @@ export class Marker {
                 clusterSeparate(this.sameMarkerData, this.maps, this.markerSVGObject, true);
             }
         }
-        let eventArgs: IMarkerClusterClickEventArgs = {
+        const eventArgs: IMarkerClusterClickEventArgs = {
             cancel: false, name: markerClusterClick, data: options, maps: this.maps,
             target: target, x: e.clientX, y: e.clientY,
             latitude: options.data['latitude'] || options.data['Latitude'], longitude: options.data['longitude'] || options.data['Longitude'],
@@ -392,7 +386,6 @@ export class Marker {
                     collection = [];
                     for (const i of indexes) {
                         collection.push({ data: marker.dataSource[i], index: i });
-                        // eslint-disable-next-line brace-style
                         if (this.maps.isBlazor) { marker.dataSource[i]['text'] = ''; }
                         markCollection.push(marker.dataSource[i]);
                     }
@@ -408,7 +401,6 @@ export class Marker {
         }
         return null;
     }
-    // eslint-disable-next-line valid-jsdoc
     /**
      * To check and trigger marker move event
      */
@@ -417,18 +409,16 @@ export class Marker {
         if (targetId.indexOf('_LayerIndex_') === -1 || targetId.indexOf('_cluster_') > 0) {
             return;
         }
-        // eslint-disable-next-line @typescript-eslint/ban-types
         const options: { marker: MarkerSettingsModel, data: object } = this.getMarker(targetId);
         if (isNullOrUndefined(options)) {
             return;
         }
-        let eventArgs: IMarkerMoveEventArgs = {
+        const eventArgs: IMarkerMoveEventArgs = {
             cancel: false, name: markerMouseMove, data: options.data,
             maps: this.maps, target: targetId, x: e.clientX, y: e.clientY
         };
         this.maps.trigger(markerMouseMove, eventArgs);
     }
-    // eslint-disable-next-line valid-jsdoc
     /**
      * To check and trigger cluster move event
      */
@@ -437,7 +427,6 @@ export class Marker {
         if (targetId.indexOf('_LayerIndex_') === -1 || targetId.indexOf('_cluster_') === -1) {
             return;
         }
-        // eslint-disable-next-line @typescript-eslint/ban-types
         const options: { marker: MarkerSettingsModel, data: object, clusterCollection: MarkerClusterData[] } = this.getMarker(targetId);
         if (this.maps.markerClusterExpand) {
             (e.target as Element).setAttribute('style', 'cursor: pointer');
@@ -445,7 +434,7 @@ export class Marker {
         if (isNullOrUndefined(options)) {
             return;
         }
-        let eventArgs: IMarkerClusterMoveEventArgs = {
+        const eventArgs: IMarkerClusterMoveEventArgs = {
             cancel: false, name: markerClusterMouseMove, data: options.data, maps: this.maps,
             target: targetId, x: e.clientX, y: e.clientY
         };

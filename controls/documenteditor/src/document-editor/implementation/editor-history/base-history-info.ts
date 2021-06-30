@@ -337,10 +337,8 @@ export class BaseHistoryInfo {
             updateSelection = true;
         }
         if (!this.owner.trackChangesPane.isTrackingPageBreak && ((this.editorHistory.isUndoing || this.endRevisionLogicalIndex || this.action === 'RemoveRowTrack' || updateSelection) && isNullOrUndefined(this.editorHistory.currentHistoryInfo) || updateSelection) ||
-            ((this.action === 'InsertRowAbove' || this.action === 'Borders' || this.action === 'InsertRowBelow'
-                || this.action === 'InsertColumnLeft'
-                || this.action === 'InsertColumnRight' || this.action === 'Accept Change') && (this.editorHistory.isRedoing
-                    || this.editorHistory.currentHistoryInfo.action === 'Paste'))) {
+            ((this.action === 'InsertRowAbove' || this.action === 'Borders' || this.action === 'InsertRowBelow' || this.action === 'InsertColumnLeft' || this.action === 'InsertColumnRight' || this.action === 'Accept Change' || this.action === 'PasteColumn' || this.action === 'PasteRow' || this.action === 'PasteOverwrite' || this.action === 'PasteNested') && (this.editorHistory.isRedoing
+                || this.editorHistory.currentHistoryInfo.action === 'Paste'))) {
             if (this.action === 'RemoveRowTrack' && this.editorHistory.isRedoing) {
                 selectionStartTextPosition = this.owner.selection.getTextPosBasedOnLogicalIndex(this.selectionStart);
                 selectionEndTextPosition = this.owner.selection.getTextPosBasedOnLogicalIndex(this.selectionEnd);
@@ -504,19 +502,20 @@ export class BaseHistoryInfo {
             || this.action === 'DeleteColumn' || this.action === 'DeleteRow' || this.action === 'InsertRowAbove' ||
             this.action === 'InsertRowBelow' || this.action === 'InsertColumnLeft' || this.action === 'InsertColumnRight'
             || this.action === 'MergeCells' || this.action === 'SectionBreak' || this.action === 'TableAutoFitToContents' ||
-            this.action === 'TableAutoFitToWindow' || this.action === 'TableFixedColumnWidth')) {
+            this.action === 'TableAutoFitToWindow' || this.action === 'TableFixedColumnWidth' || this.action === 'PasteColumn' || this.action === 'PasteOverwrite' || this.action === 'PasteNested')) {
             this.redoAction();
             if (this.action === 'SectionBreak') {
                 return;
             }
         }
         if (deletedNodes.length > 0) {
+            //tslint:disable-next-line:max-line-length
             if ((this.editorHistory.isUndoing && (this.action === 'RemoveRowTrack' || this.action === 'DeleteCells' ||
                 this.action === 'DeleteColumn' || this.action === 'DeleteRow' || this.action === 'MergeCells'))
                 || (this.action === 'InsertRowAbove' || this.action === 'InsertRowBelow' || this.action === 'InsertColumnLeft'
-                    || this.action === 'ClearCells' || this.action === 'InsertColumnRight' || this.action === 'Borders' ||
-                    this.action === 'TableAutoFitToContents' || this.action === 'TableAutoFitToWindow' ||
-                    this.action === 'TableFixedColumnWidth' || this.action === 'RemoveRowTrack')) {
+                //tslint:disable-next-line:max-line-length
+                    || this.action === 'ClearCells' || this.action === 'InsertColumnRight' || this.action === 'Borders' || this.action === 'TableAutoFitToContents' || this.action === 'TableAutoFitToWindow' ||
+                    this.action === 'TableFixedColumnWidth' || this.action === 'RemoveRowTrack' || this.action === 'PasteColumn' || this.action === 'PasteRow' || this.action === 'PasteOverwrite' || this.action === 'PasteNested')) {
                 let insertIndex: string = this.selectionStart;
                 let block: BlockWidget = this.owner.editorModule.getBlock({ index: insertIndex }).node as BlockWidget;
                 let lastNode: IWidget = deletedNodes[deletedNodes.length - 1];
@@ -529,7 +528,11 @@ export class BaseHistoryInfo {
                     }
                     block = block.combineWidget(this.viewer) as BlockWidget;
                     this.owner.editorModule.insertTableInternal(block as TableWidget, lastNode as TableWidget, false);
-                    deletedNodes.splice(deletedNodes.indexOf(lastNode), 1);
+                    if (this.action === 'PasteColumn' || this.action === 'PasteRow' || this.action === 'PasteOverwrite' || this.action === 'PasteNested') {
+                        this.removedNodes.push(block);
+                    } else {
+                        deletedNodes.splice(deletedNodes.indexOf(lastNode), 1);
+                    }
                 } else if (lastNode instanceof TableWidget) {
                     this.owner.editorModule.insertBlock(lastNode as TableWidget);
                 }

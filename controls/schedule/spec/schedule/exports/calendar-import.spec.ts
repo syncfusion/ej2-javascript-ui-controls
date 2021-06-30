@@ -30,6 +30,7 @@ END:STANDARD
 END:VTIMEZONE
 BEGIN:VEVENT
 DTSTART;TZID=Asia/Kolkata:20190304T100000
+CalendarId:3
 DTEND;TZID=Asia/Kolkata:20190304T103000
 RRULE:FREQ=DAILY;COUNT=6
 EXDATE;TZID=Asia/Kolkata:20190305T100000
@@ -51,6 +52,7 @@ TRIGGER:-P0DT0H30M0S
 END:VALARM
 END:VEVENT
 BEGIN:VEVENT
+CalendarId:1
 DTSTART;TZID=Asia/Kolkata:20190306T100000
 DTEND;TZID=Asia/Kolkata:20190306T103000
 DTSTAMP:20190207T043849Z
@@ -71,6 +73,7 @@ TRIGGER:-P0DT0H30M0S
 END:VALARM
 END:VEVENT
 BEGIN:VEVENT
+CalendarId:3
 DTSTART;TZID=Asia/Kolkata:20190307T100000
 DTEND;TZID=Asia/Kolkata:20190307T103000
 DTSTAMP:20190207T043849Z
@@ -91,6 +94,7 @@ TRIGGER:-P0DT0H30M0S
 END:VALARM
 END:VEVENT
 BEGIN:VEVENT
+CalendarId:1
 DTSTART;VALUE=DATE:20190204
 DTEND;VALUE=DATE:20190205
 DTSTAMP:20190207T043849Z
@@ -105,6 +109,7 @@ SUMMARY:Normal Event
 TRANSP:TRANSPARENT
 END:VEVENT
 BEGIN:VEVENT
+CalendarId:2
 DTSTART;TZID=Asia/Kolkata:20190318T100000
 DTEND;TZID=Asia/Kolkata:20190318T103000
 RRULE:FREQ=DAILY;COUNT=4
@@ -120,6 +125,7 @@ SUMMARY:Occurence edit
 TRANSP:OPAQUE
 END:VEVENT
 BEGIN:VEVENT
+CalendarId:1
 DTSTART;TZID=Asia/Kolkata:20190319T100000
 DTEND;TZID=Asia/Kolkata:20190319T103000
 DTSTAMP:20190207T043849Z
@@ -135,6 +141,7 @@ SUMMARY:Occurence edit -1
 TRANSP:OPAQUE
 END:VEVENT
 BEGIN:VEVENT
+CalendarId:2
 DTSTART;TZID=Asia/Kolkata:20190415T100000
 DTEND;TZID=Asia/Kolkata:20190415T103000
 RRULE:FREQ=DAILY;COUNT=4
@@ -151,6 +158,7 @@ SUMMARY:occurce delete
 TRANSP:OPAQUE
 END:VEVENT
 BEGIN:VEVENT
+CalendarId:1
 DTSTART;TZID=Asia/Kolkata:20190422T100000
 DTEND;TZID=Asia/Kolkata:20190422T103000
 RRULE:FREQ=DAILY;COUNT=5
@@ -168,6 +176,7 @@ SUMMARY:delete
 TRANSP:OPAQUE
 END:VEVENT
 BEGIN:VEVENT
+CalendarId:2
 DTSTART;TZID=Asia/Kolkata:20190325T100000
 DTEND;TZID=Asia/Kolkata:20190325T103000
 RRULE:FREQ=DAILY;COUNT=5
@@ -183,6 +192,7 @@ SUMMARY:edited 2
 TRANSP:OPAQUE
 END:VEVENT
 BEGIN:VEVENT
+CalendarId:3
 DTSTART;TZID=Asia/Kolkata:20190326T100000
 DTEND;TZID=Asia/Kolkata:20190326T103000
 DTSTAMP:20190207T043849Z
@@ -198,6 +208,7 @@ SUMMARY:1
 TRANSP:OPAQUE
 END:VEVENT
 BEGIN:VEVENT
+CalendarId:3
 DTSTART;TZID=Asia/Kolkata:20190327T100000
 DTEND;TZID=Asia/Kolkata:20190327T103000
 DTSTAMP:20190207T043849Z
@@ -213,6 +224,7 @@ SUMMARY:2
 TRANSP:OPAQUE
 END:VEVENT
 BEGIN:VEVENT
+CalendarId:2
 DTSTART;TZID=Asia/Kolkata:20190218T100000
 DTEND;TZID=Asia/Kolkata:20190218T103000
 RRULE:FREQ=DAILY;COUNT=4
@@ -233,12 +245,14 @@ TRIGGER:-P0DT0H30M0S
 END:VALARM
 END:VEVENT
 BEGIN:VEVENT
+CalendarId:1
 DTSTART:20190207T043000Z
 DTEND:20190207T050000Z
 DTSTAMP:20190207T043849Z
 UID:4hjime1te90lmgnivscv9bag20@google.com
 CREATED:20190207T043841Z
 DESCRIPTION:sfdfdfd
+ISREADONLY:true
 LAST-MODIFIED:20190207T043841Z
 LOCATION:cdcd
 SEQUENCE:0
@@ -293,6 +307,106 @@ describe('ICS calendar import', () => {
             expect(schObj.eventsData.length).toEqual(3);
             const fileObj: File = new File([iCalString], 'EJSchedule.ics', { lastModified: 0, type: 'text/calendar' });
             schObj.importICalendar(fileObj);
+        });
+    });
+
+    describe('Import checking with resource', () => {
+        let schObj: Schedule;
+        beforeAll((done: DoneFn) => {
+            const events: Record<string, any>[] = [{
+                Id: 10,
+                Subject: 'recurrence event',
+                StartTime: new Date(2017, 9, 19, 10, 0),
+                EndTime: new Date(2017, 9, 19, 11, 0),
+                RecurrenceRule: 'FREQ=DAILY;INTERVAL=1;COUNT=5',
+                CalendarId: 1
+            }, {
+                Id: 11,
+                StartTime: new Date(2017, 9, 19, 11, 0),
+                EndTime: new Date(2017, 9, 19, 12, 30),
+                CalendarId: 2
+            }, {
+                Id: 12,
+                Subject: 'event 2',
+                StartTime: new Date(2017, 9, 20, 11, 0),
+                EndTime: new Date(2017, 9, 20, 12, 30),
+                CalendarId: 3
+            }];
+            const options: ScheduleModel = {
+                width: '100%',
+                height: 500,
+                selectedDate: new Date(2019, 1, 15),
+                group: { resources: ['Calendars'] },
+                resources: [{
+                    field: 'CalendarId', title: 'Calendars', name: 'Calendars', allowMultiple: true,
+                    textField: 'CalendarText', idField: 'CalendarId', colorField: 'CalendarColor',
+                    dataSource: [
+                { CalendarText: 'My Calendar', CalendarId: 1, CalendarColor: '#c43081' },
+                { CalendarText: 'Company', CalendarId: 2, CalendarColor: '#ff7f50' },
+                { CalendarText: 'Birthday', CalendarId: 3, CalendarColor: '#AF27CD' },
+                { CalendarText: 'Holiday', CalendarId: 4, CalendarColor: '#808000' }],
+                }],
+                };
+            schObj = createSchedule(options, events, done);
+        });
+        afterAll(() => {
+            destroy(schObj);
+        });
+
+        it('Import checking with EJ2 scheduler exported file', (done: DoneFn) => {
+            schObj.dataBound = () => {
+                expect(schObj.eventsData.length).toEqual(16);
+                done();
+            };
+            expect(schObj.eventsData.length).toEqual(3);
+            const fileObj: File = new File([iCalString], 'EJSchedule.ics', { lastModified: 0, type: 'text/calendar' });
+            schObj.importICalendar(fileObj);
+        });
+    });
+
+    describe('Import checking with readonly events', () => {
+        let schObj: Schedule;
+        beforeAll((done: DoneFn) => {
+            const events: Record<string, any>[] = [{
+                Id: 10,
+                Subject: 'recurrence event',
+                StartTime: new Date(2017, 9, 19, 10, 0),
+                EndTime: new Date(2017, 9, 19, 11, 0),
+                RecurrenceRule: 'FREQ=DAILY;INTERVAL=1;COUNT=5'
+            }, {
+                Id: 11,
+                StartTime: new Date(2017, 9, 19, 11, 0),
+                EndTime: new Date(2017, 9, 19, 12, 30)
+            }, {
+                Id: 12,
+                Subject: 'event 2',
+                StartTime: new Date(2017, 9, 20, 11, 0),
+                EndTime: new Date(2017, 9, 20, 12, 30),
+            }];
+            const options: ScheduleModel = { selectedDate: new Date(2017, 1, 7) };
+            schObj = createSchedule(options, events, done);
+        });
+        afterAll(() => {
+            destroy(schObj);
+        });
+
+        it('Import checking with EJ2 scheduler exported file', (done: DoneFn) => {
+            schObj.dataBound = () => {
+                expect(schObj.eventsData.length).toEqual(16);
+                done();
+            };
+            expect(schObj.eventsData.length).toEqual(3);
+            const fileObj: File = new File([iCalString], 'EJSchedule.ics', { lastModified: 0, type: 'text/calendar' });
+            schObj.importICalendar(fileObj);
+        });
+
+        it('Import checking with readonly event', () => {
+            schObj.dataBound = () => {
+            expect(schObj.eventsData.length).toEqual(16);
+            const events: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
+            expect(events[1].classList).toContain('e-read-only');
+            expect(events[1].getAttribute('aria-readonly')).toEqual('true');
+            }
         });
     });
 

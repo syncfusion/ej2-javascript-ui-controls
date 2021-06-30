@@ -160,41 +160,44 @@ export class EditTooltip {
             }
             tooltipString = (templateNode[0] as HTMLElement);
         } else {
+            const startDate: string = '<tr><td class = "e-gantt-tooltip-label">' + this.parent.localeObj.getConstant('startDate') +
+                '</td><td>:</td><td class = "e-gantt-tooltip-value">' +
+                instance.formatDate(editRecord.startDate, { format: this.parent.getDateFormat() }) + '</td></tr>';
+            const endDate: string = '<tr><td class = "e-gantt-tooltip-label">' + this.parent.localeObj.getConstant('endDate') +
+                '</td><td>:</td><td class = "e-gantt-tooltip-value">' +
+                instance.formatDate(editRecord.endDate, { format: this.parent.getDateFormat() }) + '</td></tr>';   
+            const duration: string = '<tr><td class = "e-gantt-tooltip-label">' + this.parent.localeObj.getConstant('duration') +
+                    '</td><td>:</td><td class = "e-gantt-tooltip-value">' +
+                    this.parent.getDurationString(editRecord.duration, (editRecord as ITaskData).durationUnit) + '</td></tr>'; 
             switch (this.taskbarEdit.taskBarEditAction) {
             case 'ProgressResizing':
-                tooltipString = this.parent.localeObj.getConstant('progress') + ' : ' + (editRecord as ITaskData).progress;
+                const progress: string = '<tr><td class = "e-gantt-tooltip-label">' + this.parent.localeObj.getConstant('progress') +
+                    '</td><td>:</td><td class = "e-gantt-tooltip-value">' + (editRecord as ITaskData).progress + '</td></tr>';
+                tooltipString =  '<table class = "e-gantt-tooltiptable"><tbody>' +
+                    progress + '</tbody></table>';
+
                 break;
             case 'LeftResizing':
-                tooltipString = this.parent.localeObj.getConstant('startDate') + ' : ';
-                tooltipString += instance.formatDate(
-                    editRecord.startDate, { format: this.parent.getDateFormat() });
-                tooltipString += '<br/>' + this.parent.localeObj.getConstant('duration') + ' : ' +
-                    this.parent.getDurationString(editRecord.duration, (editRecord as ITaskData).durationUnit);
+                tooltipString =  '<table class = "e-gantt-tooltiptable"><tbody>' +
+                startDate + duration + '</tbody></table>';
                 break;
             case 'RightResizing':
             case 'ParentResizing':
-                tooltipString = this.parent.localeObj.getConstant('endDate') + ' : ';
-                tooltipString += instance.formatDate(
-                    editRecord.endDate, { format: this.parent.getDateFormat() });
-                tooltipString += '<br/>' + this.parent.localeObj.getConstant('duration') + ' : ' +
-                    this.parent.getDurationString(editRecord.duration, (editRecord as ITaskData).durationUnit);
+                tooltipString =  '<table class = "e-gantt-tooltiptable"><tbody>' +
+                    endDate + duration + '</tbody></table>';
                 break;
             case 'ChildDrag':
             case 'ParentDrag':
             case 'MilestoneDrag':
             case 'ManualParentDrag':
+                let sDate: string = ''; let eDate: string = '';
                 if (!isNullOrUndefined(this.taskbarEdit.taskBarEditRecord.ganttProperties.startDate)) {
-                    tooltipString = this.parent.localeObj.getConstant('startDate') + ' : ';
-                    tooltipString += instance.formatDate(
-                        editRecord.startDate,
-                        { format: this.parent.getDateFormat() });
+                    sDate = startDate;
                 }
                 if (!isNullOrUndefined(this.taskbarEdit.taskBarEditRecord.ganttProperties.endDate)) {
-                    tooltipString += tooltipString === '' ? '' : '<br/>';
-                    tooltipString += this.parent.localeObj.getConstant('endDate') + ' : ' + instance.formatDate(
-                        editRecord.endDate,
-                        { format: this.parent.getDateFormat() });
+                    eDate = endDate;
                 }
+                tooltipString =  '<table class = "e-gantt-tooltiptable"><tbody>' + sDate + eDate + '</tbody></table>';
                 break;
             case 'ConnectorPointLeftDrag':
             case 'ConnectorPointRightDrag':

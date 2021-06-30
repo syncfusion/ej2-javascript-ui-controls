@@ -100,7 +100,8 @@ export class Marker extends MarkerExplode {
         point.color = argsData.fill;
         if (!argsData.cancel) {
             let y: Object;
-            if (series.type === 'RangeArea' || series.type === 'RangeColumn' || series.drawType === 'RangeColumn') {
+            if (series.type === 'RangeArea' || series.type === 'RangeColumn' || series.drawType === 'RangeColumn'
+            || series.type === 'SplineRangeArea') {
                 y = index ? point.low : point.high;
             } else if (isBoxPlot) {
                 y = point.outliers[index];
@@ -224,7 +225,7 @@ export class Marker extends MarkerExplode {
             const delay: number = series.animation.delay + series.animation.duration;
             const duration: number = series.chart.animated ? series.chart.duration : 200;
             let j: number = 1;
-            const incFactor: number = (series.type === 'RangeArea' || series.type === 'RangeColumn') ? 2 : 1;
+            const incFactor: number = (series.type === 'RangeArea' || series.type === 'RangeColumn' || series.type === 'SplineRangeArea') ? 2 : 1;
             for (let i: number = 0; i < series.points.length; i++) {
                 if (series.points[i].symbolLocations) {
                     if (!series.points[i].symbolLocations.length || !markerElements[j]) {

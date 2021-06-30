@@ -135,7 +135,7 @@ export function getLastTextNode(startChildNodes: Node): Node {
  * @returns {void}
  * @hidden
  */
- export function getDefaultHtmlTbStatus(): IToolbarStatus {
+export function getDefaultHtmlTbStatus(): IToolbarStatus {
     return {
         bold: false,
         italic: false,
@@ -160,7 +160,7 @@ export function getLastTextNode(startChildNodes: Node): Node {
  * @returns {void}
  * @hidden
  */
- export function getDefaultMDTbStatus(): IToolbarStatus {
+export function getDefaultMDTbStatus(): IToolbarStatus {
     return {
         bold: false,
         italic: false,

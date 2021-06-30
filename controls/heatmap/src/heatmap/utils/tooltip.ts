@@ -126,8 +126,15 @@ export class Tooltip {
             this.heatMap.heatMapSeries.checkLabelYDisplay) {
             offset = parseInt(this.heatMap.cellSettings.textStyle.size, 10) / 2;
         }
+        if (this.heatMap.theme === 'Tailwind') {
+            this.heatMap.setProperties({ tooltipSettings : { textStyle : { size : "12px", fontFamily : "Inter", fontWeight : "500" }}}, true);
+        }
+        if (this.heatMap.theme === 'TailwindDark') {
+            this.heatMap.setProperties({ tooltipSettings : { fill : "#F9FAFB", textStyle : { size: "12px", fontFamily : "Inter", fontWeight : "500", color : "#1F2937" }}}, true);
+        }
         this.tooltipObject = new tool(
             {
+                opacity: (this.heatMap.theme == 'Tailwind' || this.heatMap.theme === 'TailwindDark') ? 1 : 0.75,
                 enableAnimation: false,
                 offset: offset,
                 location: { x: x, y: y },

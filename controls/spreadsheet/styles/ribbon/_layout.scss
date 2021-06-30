@@ -75,6 +75,12 @@
           border-radius: 0;
         }
       }
+
+      @if $skin-name == 'tailwind' or $skin-name == 'tailwind-dark' {
+        & .e-content .e-item {
+          padding: 0;
+        }
+      }
     }
 
     @include default-props;
@@ -93,6 +99,10 @@
 
       @if $skin-name != 'bootstrap4' {
         font-size: 10px;
+      }
+
+      @if $skin-name == 'tailwind' or $skin-name == 'tailwind-dark' {
+        font-size: 18px;
       }
 
       &.e-disabled {
@@ -193,6 +203,11 @@
     & .e-drop-icon {
       font-size: 12px;
       margin: $bigger-drop-icon-margin;
+
+      @if $skin-name == 'tailwind' or $skin-name == 'tailwind-dark' {
+        font-size: 18px;
+        line-height: 8px;
+      }
     }
 
     @if $skin-name == 'material' {

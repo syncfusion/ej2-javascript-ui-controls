@@ -234,6 +234,8 @@ export class AxisRenderer extends Animations {
                 }
             }
             axis.labelStyle.font.fontFamily = this.gauge.themeStyle.labelFontFamily || axis.labelStyle.font.fontFamily;
+            axis.labelStyle.font.fontStyle = axis.labelStyle.font.fontStyle || this.gauge.themeStyle.labelStyle;
+            axis.labelStyle.font.fontWeight = axis.labelStyle.font.fontWeight || this.gauge.themeStyle.labelWeight;
             options = new TextOption(this.gauge.element.id + '_AxisLabel_' + i, pointX, pointY, anchor, axis.visibleLabels[i].text, null, baseline);
             textElement(options, axis.labelStyle.font, labelColor, labelElement);
         }
@@ -308,6 +310,7 @@ export class AxisRenderer extends Animations {
             this.performMarkerAnimation(pointerElement, axis, pointer);
         }
         pointerElement.setAttribute('aria-label', pointer.description || 'Pointer:' + Number(pointer.currentValue).toString());
+        pointerElement.setAttribute('cursor', 'pointer');
     }
 
     public drawBarPointer(axis: Axis, axisIndex: number, pointer: Pointer, pointerIndex: number, parentElement: Element): void {
@@ -359,6 +362,7 @@ export class AxisRenderer extends Animations {
             parentElement.appendChild(pointerElement);
         }
         pointerElement.setAttribute('aria-label', pointer.description || 'Pointer:' + Number(pointer.currentValue).toString());
+        pointerElement.setAttribute('cursor', 'pointer');
         if (pointer.animationDuration > 0 && !this.gauge.gaugeResized) {
             if (this.gauge.container.type === 'Thermometer' && pointer.startValue === 0) {
                 clipRectElement = this.gauge.renderer.drawClipPath(

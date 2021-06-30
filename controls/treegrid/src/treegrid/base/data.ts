@@ -213,7 +213,8 @@ export class DataManipulation {
      */
     private updateParentRemoteData(args?: BeforeDataBoundArgs) : void {
         const records: ITreeData[] = args.result;
-        if (!this.parent.hasChildMapping && !this.parentItems.length && !this.parent.loadChildOnDemand) {
+        if (!this.parent.hasChildMapping && !this.parentItems.length &&
+      (!this.parent.loadChildOnDemand)) {
             this.zerothLevelData = args;
             setValue('cancel', true, args);
         } else {

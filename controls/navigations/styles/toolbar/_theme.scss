@@ -150,6 +150,10 @@
       border: $tbar-border-size $tbar-border-type $tbar-default-border;
       box-shadow: $tbar-pop-box-shadow;
 
+      @if $tbar-skin == 'tailwind' or $tbar-skin == 'tailwind-dark' {
+        background: $tbar-pop-bg;
+      }
+
       .e-toolbar-item {
 
         @if $tbar-skin == 'bootstrap4' {
@@ -168,6 +172,16 @@
 
           .e-tbar-btn {
             background: $tbar-popup-btn-bg-color;
+          }
+        }
+
+        @if $tbar-skin == 'tailwind' or $tbar-skin == 'tailwind-dark' {
+          .e-tbar-btn {
+            background: $tbar-popup-btn-bg-color;
+
+            &:hover {
+              background: $tbar-hover-bg;
+            }
           }
         }
 
@@ -350,7 +364,7 @@
       border-width: $tbar-popup-border-width;
     }
 
-    .e-hor-nav:not(.e-expended-nav)  {
+    .e-hor-nav  {
 
       &::after {
         @include tbar-btn-animation;

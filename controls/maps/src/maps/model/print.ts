@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import { print as printWindow, createElement } from '@syncfusion/ej2-base';
 import { Maps } from '../../index';
 import { getElement } from '../utils/helper';
@@ -18,7 +19,6 @@ export class Print {
      *
      * @param {Maps} control - Specifies the instance of the map
      */
-    // eslint-disable-next-line @typescript-eslint/explicit-member-accessibility
     constructor(control: Maps) {
         this.control = control;
     }

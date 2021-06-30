@@ -23,7 +23,7 @@ import { EJ2Intance } from '../base/interface';
 import { TemplateEditCell } from '../renderer/template-edit-cell';
 import { DataUtil } from '@syncfusion/ej2-data';
 import { Row } from '../models/row';
-import { addRemoveEventListener } from '../base/util';
+import { addRemoveEventListener, getColumnModelByFieldName } from '../base/util';
 import * as literals from '../base/string-literals';
 
 /**
@@ -361,10 +361,10 @@ export class Edit implements IAction {
      * @returns {boolean} returns whether the form is validated
      */
     public editFormValidate(): boolean {
-        if (this.formObj) {
-            return this.formObj.validate();
-        }
-        return false;
+        const form1: boolean = this.formObj ? this.formObj.validate() : true;
+        const form2: boolean = this.mFormObj ? this.mFormObj.validate() : true;
+        const form3: boolean = this.frFormObj ? this.frFormObj.validate() : true;
+        return form1 && form2 && form3;
     }
 
     /**
@@ -670,13 +670,17 @@ export class Edit implements IAction {
             this.closeEdit();
         } else {
             const editRow: Element = this.parent.element.querySelector('.' + literals.editedRow);
+            const addRow: Element = this.parent.element.querySelector('.' + literals.addedRow);
             if (editRow && this.parent.frozenRows && e.requestType === 'virtualscroll'
                 && parseInt(parentsUntil(editRow, literals.row).getAttribute(literals.ariaRowIndex), 10) < this.parent.frozenRows) {
                 return;
             }
             const restrictedRequestTypes: string[] = ['filterafteropen', 'filterbeforeopen', 'filterchoicerequest', 'save', 'infiniteScroll', 'virtualscroll'];
-            if (this.parent.editSettings.mode !== 'Batch' && this.formObj && !this.formObj.isDestroyed
-                && restrictedRequestTypes.indexOf(e.requestType) === -1 && !e.cancel) {
+            const isRestrict: boolean = restrictedRequestTypes.indexOf(e.requestType) === -1;
+            const isDestroyVirtualForm: boolean = this.parent.enableVirtualization && this.formObj
+                && !this.formObj.isDestroyed && (editRow || addRow || e.requestType === 'cancel') && isRestrict;
+            if ((!this.parent.enableVirtualization && this.parent.editSettings.mode !== 'Batch' && this.formObj && !this.formObj.isDestroyed
+                && isRestrict && !e.cancel) || isDestroyVirtualForm) {
                 this.destroyWidgets();
                 this.destroyForm();
             }
@@ -733,8 +737,11 @@ export class Edit implements IAction {
      */
     public destroyForm(): void {
         this.destroyToolTip();
-        if (this.formObj && !this.formObj.isDestroyed) {
-            this.formObj.destroy();
+        const formObjects: FormValidator[] = [this.formObj, this.mFormObj, this.frFormObj, this.virtualFormObj];
+        for (let i: number = 0; i < formObjects.length; i++) {
+            if (formObjects[i] && formObjects[i].element && !formObjects[i].isDestroyed) {
+                formObjects[i].destroy();
+            }
         }
         this.destroyToolTip();
     }
@@ -898,12 +905,34 @@ export class Edit implements IAction {
 
     private getElemTable(inputElement: Element): Element {
         let isFHdr: boolean;
-        if (this.parent.editSettings.mode !== 'Dialog') {
-            isFHdr = (this.parent.frozenRows && this.parent.frozenRows
+        const gObj: IGrid = this.parent;
+        let table: Element;
+        if (gObj.editSettings.mode !== 'Dialog') {
+            isFHdr = (gObj.frozenRows && gObj.frozenRows
                 > (parseInt(closest(inputElement, '.' + literals.row).getAttribute(literals.ariaRowIndex), 10) || 0));
+            const field: string = (inputElement as HTMLInputElement).name;
+            let col: Column;
+            if (field) {
+                col = getColumnModelByFieldName(this.parent, setComplexFieldID(field));
+            }
+            if (col && gObj.isFrozenGrid()  ) {
+                if (col.getFreezeTableName() === 'frozen-left') {
+                    table = isFHdr ? gObj.getFrozenVirtualHeader().querySelector('table')
+                        : gObj.getFrozenVirtualContent().querySelector('table');
+                } else if (col.getFreezeTableName() === 'frozen-right') {
+                    table = isFHdr ? gObj.getFrozenRightHeader().querySelector('table')
+                        : gObj.getFrozenRightContent().querySelector('table');
+                } else if (col.getFreezeTableName() === 'movable') {
+                    table = isFHdr ? gObj.getMovableVirtualHeader().querySelector('table')
+                        : gObj.getMovableVirtualContent().querySelector('table');
+                }
+            } else {
+                table = isFHdr ? gObj.getHeaderTable() : gObj.getContentTable();
+            }
+        } else {
+            table = select('#' + gObj.element.id + '_dialogEdit_wrapper', document);
         }
-        return this.parent.editSettings.mode !== 'Dialog' ? isFHdr ? this.parent.getHeaderTable() : this.parent.getContentTable() :
-            select('#' + this.parent.element.id + '_dialogEdit_wrapper', document);
+        return table;
     }
 
     public resetElemPosition(elem: HTMLElement, args: { status: string, inputName: string,
@@ -1014,7 +1043,7 @@ export class Edit implements IAction {
         }
         div.appendChild(content);
         div.appendChild(arrow);
-        if ((frzCols || this.parent.frozenRows) && this.parent.editSettings.mode !== 'Dialog') {
+        if (!customForm && (frzCols || this.parent.frozenRows) && this.parent.editSettings.mode !== 'Dialog') {
             const getEditCell: HTMLElement = this.parent.editSettings.mode === 'Normal' ?
                 closest(element, '.e-editcell') as HTMLElement : closest(element, '.' + literals.table) as HTMLElement;
             getEditCell.style.position = 'relative';

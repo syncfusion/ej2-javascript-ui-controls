@@ -7,6 +7,7 @@ import { Gantt } from '../base/gantt';
 export class VirtualContentRenderer {
     private parent: Gantt;
     private wrapper: HTMLElement;
+    private virtualTrack: HTMLElement;
     constructor(parent: Gantt) {
         this.parent = parent;
     }
@@ -14,14 +15,15 @@ export class VirtualContentRenderer {
     /**
      * To render a wrapper for chart body content when virtualization is enabled.
      *
-     * @param {number} height .
      * @returns {void} .
      * @hidden
      */
-    public renderWrapper(height?: number): void {
-        this.wrapper = createElement('div', { className: 'e-virtualtable', styles: `min-height:${formatUnit(height)}` });
-        this.parent.ganttChartModule.chartBodyContent.appendChild(this.wrapper);
-        this.appendChildElements(this.parent.chartRowsModule.taskTable);
+    public renderWrapper(): void {
+        this.wrapper = createElement('div', { className: 'e-virtualtable', styles: 'position: absolute; transform: translate(0px, 0px);' });
+        this.parent.ganttChartModule.scrollElement.appendChild(this.wrapper);
+        this.virtualTrack = createElement('div', { className: 'e-virtualtrack', styles: 'position: relative; pointer-events: none; width: 100%;' });
+        this.parent.ganttChartModule.scrollElement.appendChild(this.virtualTrack);
+        this.wrapper.appendChild(this.parent.ganttChartModule.chartBodyContent);
     }
 
     /**

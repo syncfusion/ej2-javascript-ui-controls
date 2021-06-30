@@ -1,5 +1,6 @@
 /* eslint-disable */
-import { PdfViewer } from '../index';
+import { InkAnnotationSettings } from './../pdfviewer';
+import { IPoint, PdfViewer } from '../index';
 import { PdfViewerBase, IPageAnnotations } from '../index';
 import { PdfAnnotationBaseModel } from '../drawing/pdf-annotation-model';
 import { PdfAnnotationBase } from '../drawing/pdf-annotation';
@@ -29,6 +30,10 @@ export class InkAnnotation {
      */
     // eslint-disable-next-line
     public inkAnnotationindex: any = [];
+    /**
+     * @private
+     */
+    public isAddAnnotationProgramatically: boolean = false;
     /**
      * @private
      */
@@ -164,7 +169,7 @@ export class InkAnnotation {
                 author: author , subject: 'Ink', notes: '',
                 review: { state: '', stateModel: '', modifiedDate: modifiedDate, author: author },
                 annotationSelectorSettings: this.getSelector('Ink', ''), modifiedDate: modifiedDate, annotationSettings: annotationSettings,
-                isPrint: isPrint, allowedInteractions: allowedInteractions, isCommentLock: false
+                isPrint: isPrint, allowedInteractions: allowedInteractions, isCommentLock: false, isLocked: isLock
             };
             const annotation: PdfAnnotationBaseModel = this.pdfViewer.add(annot as PdfAnnotationBase);
             // eslint-disable-next-line
@@ -345,7 +350,7 @@ export class InkAnnotation {
                             data = getPathString(JSON.parse(currentAnnotation.PathData));
                         }
                     }
-                    const isLock: boolean = currentAnnotation.AnnotationSettings ? currentAnnotation.AnnotationSettings.isLock : false;
+                    let isLock: boolean = currentAnnotation.AnnotationSettings ? currentAnnotation.AnnotationSettings.isLock : false;
                     // eslint-disable-next-line
                     let selectorSettings: any = currentAnnotation.AnnotationSelectorSettings ? currentAnnotation.AnnotationSelectorSettings : this.getSelector(currentAnnotation, 'Ink');
                     const customData: any = this.pdfViewer.annotation.getCustomData(currentAnnotation);
@@ -354,6 +359,9 @@ export class InkAnnotation {
                         isPrint = currentAnnotation.AnnotationSettings.isPrint;
                     } else {
                         isPrint = this.pdfViewer.inkAnnotationSettings.isPrint;
+                    }
+                    if (currentAnnotation.IsLocked) {
+                        isLock = currentAnnotation.IsLocked;
                     }
                     // eslint-disable-next-line max-len
                     currentAnnotation.allowedInteractions = currentAnnotation.AllowedInteractions ? currentAnnotation.AllowedInteractions :  this.pdfViewer.annotationModule.updateAnnotationAllowedInteractions(currentAnnotation);
@@ -373,6 +381,14 @@ export class InkAnnotation {
                     // eslint-disable-next-line
                     this.pdfViewer.renderDrawing(canvass as any, annot.pageIndex);
                     this.pdfViewer.annotationModule.storeAnnotations(annot.pageIndex, annot, '_annotations_ink');
+                    if(this.isAddAnnotationProgramatically)
+                    {
+                        let settings: any = {
+                            opacity: annot.opacity, strokeColor: annot.strokeColor, thickness: annot.thickness, modifiedDate: annot.modifiedDate,
+                            width: annot.bounds.width, height: annot.bounds.height, data: this.outputString
+                        };
+                        this.pdfViewer.fireAnnotationAdd(annot.pageIndex, annot.annotName, 'Ink', bounds, settings);
+                    }
                     this.pdfViewerBase.currentSignatureAnnot = null;
                     this.pdfViewerBase.signatureCount++;
                     this.pdfViewerBase.inkCount++;
@@ -554,6 +570,11 @@ export class InkAnnotation {
             // eslint-disable-next-line
             let allowedInteractions: any = currentAnnotation.AllowedInteractions ? currentAnnotation.AllowedInteractions : this.pdfViewer.annotationModule.updateAnnotationAllowedInteractions(currentAnnotation);
             // eslint-disable-next-line
+            let annotationSettings: any = currentAnnotation.AnnotationSettings ? currentAnnotation.AnnotationSettings : this.pdfViewer.inkAnnotationSettings ? this.pdfViewer.inkAnnotationSettings : this.pdfViewer.annotationSettings;
+            if (currentAnnotation.IsLocked) {
+                annotationSettings.isLock = currentAnnotation.IsLocked;
+            }
+            // eslint-disable-next-line
             let data: any = currentAnnotation.PathData;
             if (isImport) {
                 data = getPathString(JSON.parse(currentAnnotation.PathData));
@@ -565,10 +586,84 @@ export class InkAnnotation {
                 shapeAnnotationType: 'Ink', opacity: currentAnnotation.Opacity, strokeColor: currentAnnotation.StrokeColor, thickness: currentAnnotation.Thickness, annotationId: currentAnnotation.AnnotName,
                 // eslint-disable-next-line max-len
                 customData: customData, comments: this.pdfViewer.annotationModule.getAnnotationComments(currentAnnotation.Comments, currentAnnotation, currentAnnotation.Author), author: currentAnnotation.Author, allowedInteractions: allowedInteractions, subject: currentAnnotation.Subject, modifiedDate: currentAnnotation.ModifiedDate,
-                review: { state: '', stateModel: '', modifiedDate: currentAnnotation.ModifiedDate, author: currentAnnotation.Author }, notes: currentAnnotation.Note, isPrint: isPrint, isCommentLock: currentAnnotation.IsCommentLock
+                review: { state: '', stateModel: '', modifiedDate: currentAnnotation.ModifiedDate, author: currentAnnotation.Author }, notes: currentAnnotation.Note, isPrint: isPrint, isCommentLock: currentAnnotation.IsCommentLock, annotationSettings: annotationSettings, isLocked: annotationSettings.isLock
 
             };
             return annot;
         }
+    }
+    /**
+     * This method used to add annotations with using program.
+     *
+     * @param annotationObject - It describes type of annotation object
+     * @param offset - It describes about the annotation bounds or location
+     * @param pageNumber - It describes about the annotation page number
+     * @returns Object
+     * @private
+     */
+    public updateAddAnnotationDetails(annotationObject: InkAnnotationSettings, offset: IPoint, pageNumber: number): Object 
+    {
+        //Creating new object if annotationObject is null
+        if(!annotationObject)
+        {
+         annotationObject = { offset: { x: 10, y: 10},pageNumber: 0, width: undefined, height: undefined} as InkAnnotationSettings;
+         offset = annotationObject.offset;
+        }
+        else if(!annotationObject.offset)
+         offset = { x: 10, y: 10};
+        else
+         offset = annotationObject.offset;
+
+        //Creating the CurrentDate and Annotation name
+        let currentDateString: string = this.pdfViewer.annotation.stickyNotesAnnotationModule.getDateAndTime();
+        let annotationName: string = this.pdfViewer.annotation.createGUID();
+        
+        //Creating annotation settings
+        let annotationSelectorSettings: any = this.pdfViewer.inkAnnotationSettings.annotationSelectorSettings ? this.pdfViewer.inkAnnotationSettings.annotationSelectorSettings : this.pdfViewer.annotationSelectorSettings;
+        let annotationSettings: any = this.pdfViewer.annotationModule.updateSettings(this.pdfViewer.inkAnnotationSettings);
+        let allowedInteractions: any = this.pdfViewer.inkAnnotationSettings.allowedInteractions ? this.pdfViewer.inkAnnotationSettings.allowedInteractions : this.pdfViewer.annotationSettings.allowedInteractions;
+        annotationSettings.isLock = annotationObject.isLock?annotationObject.isLock:false;
+        annotationObject.width = annotationObject.width?annotationObject.width :150;
+        annotationObject.height = annotationObject.height?annotationObject.height :60;        
+        let pathData: string = annotationObject.path?annotationObject.path:'';
+        annotationObject.path = getPathString(JSON.parse(pathData));
+
+        //Creating Annotation objects with it's proper properties
+        let signatureInkAnnotation: any = [];
+        let ink: any = 
+        {
+             AllowedInteractions: annotationObject.allowedInteractions?annotationObject.allowedInteractions:allowedInteractions,
+             AnnotName: annotationName,
+             AnnotType: 'ink',
+             AnnotationFlags: null,
+             AnnotationSelectorSettings: annotationObject.annotationSelectorSettings?annotationObject.annotationSelectorSettings: annotationSelectorSettings,       
+             AnnotationSettings: annotationSettings,
+             AnnotationType: 'Ink',
+             Author: annotationObject.author ? annotationObject.author : 'Guest',
+             Bounds: {X: offset.x, Y: offset.y, Width: annotationObject.width, Height: annotationObject.height, Left: offset.x, Top: offset.y, Location:{X: offset.x, Y: offset.y}, Size:{Height: annotationObject.height,IsEmpty: false, Width: annotationObject.width}},
+             Comments: null,
+             CreatedDate: currentDateString,
+             CustomData: annotationObject.customData?annotationObject.customData:null,
+             ExistingCustomData: null,
+             IsCommentLock: false,
+             IsLock: annotationObject.isLock?annotationObject.isLock:false,
+             IsPrint: annotationObject.isPrint?annotationObject.isPrint:true,
+             ModifiedDate: currentDateString,
+             Note: '',
+             Opacity: annotationObject.opacity?annotationObject.opacity:1,
+             PathData: annotationObject.path,
+             PageNumber: pageNumber,
+             State: '',
+             StateModel: '',
+             StrokeColor: annotationObject.strokeColor?annotationObject.strokeColor:'rgba(255,0,0,1)',
+             SubType: null,
+             Subject: 'Ink',
+             Type: null,
+             Thickness: annotationObject.thickness?annotationObject.thickness:1
+         }      
+
+         //Adding the annotation object to an array and return it
+         signatureInkAnnotation[0] = ink;
+         return {signatureInkAnnotation};  
     }
 }

@@ -529,7 +529,9 @@ export class Toolbar {
                 this.container.documentEditor.showDialog('Bookmark');
                 break;
             case id + COMMENT_ID:
+                this.documentEditor.editor.isUserInsert =  true;
                 this.documentEditor.editor.insertComment('');
+                this.documentEditor.editor.isUserInsert =  false;
                 break;
             case id + TRACK_ID:
                 this.toggleTrackChangesInternal(args.item.id);

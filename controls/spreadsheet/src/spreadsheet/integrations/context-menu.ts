@@ -1,5 +1,5 @@
 import { Spreadsheet } from '../base/index';
-import { ContextMenu as ContextMenuComponent, BeforeOpenCloseMenuEventArgs, MenuItemModel } from '@syncfusion/ej2-navigations';
+import { ContextMenu as ContextMenuComponent, BeforeOpenCloseMenuEventArgs, MenuItemModel, OpenCloseMenuEventArgs } from '@syncfusion/ej2-navigations';
 import { MenuEventArgs } from '@syncfusion/ej2-navigations';
 import { closest, extend, detach, L10n } from '@syncfusion/ej2-base';
 import { MenuSelectEventArgs, removeSheetTab, cMenuBeforeOpen, renameSheetTab, cut, copy, paste, focus } from '../common/index';
@@ -7,7 +7,7 @@ import { addContextMenuItems, removeContextMenuItems, enableContextMenuItems, in
 import { openHyperlink, initiateHyperlink, editHyperlink, hideShow, HideShowEventArgs, applyProtect } from '../common/index';
 import { filterByCellValue, reapplyFilter, clearFilter, getFilteredColumn, applySort, locale } from '../common/index';
 import { getRangeIndexes, getColumnHeaderText, getCellIndexes, InsertDeleteModelArgs, insertModel } from '../../workbook/common/index';
-import { RowModel, ColumnModel, SheetModel, getSwapRange } from '../../workbook/index';
+import { RowModel, ColumnModel, SheetModel, getSwapRange, getSheetIndexByName, getSheetIndex, moveSheet, duplicateSheet } from '../../workbook/index';
 
 /**
  * Represents context menu for Spreadsheet.
@@ -100,6 +100,15 @@ export class ContextMenu {
                 break;
             case id + '_hide_sheet':
                 this.parent.notify(hideSheet, null);
+                break;
+            case id + '_duplicate':
+                duplicateSheet(this.parent, undefined, true);
+                break;
+            case id + '_move_right':
+                moveSheet(this.parent, this.parent.activeSheetIndex + 1, null, true);
+                break;
+            case id + '_move_left':
+                moveSheet(this.parent, this.parent.activeSheetIndex - 1, null, true);
                 break;
             case id + '_ascending':
                 this.parent.notify(applySort, null);
@@ -237,6 +246,14 @@ export class ContextMenu {
                     deleteEle.classList.add('e-disabled');
                 }
             }
+        } else if (target === 'Footer') {
+            const sheetIdx: number = getSheetIndex(this.parent, (args.event.target as Element).textContent);
+            if (sheetIdx === 0) {
+                args.element.querySelector('#' + this.parent.element.id + '_cmenu_move_left').classList.add('e-disabled');
+            }
+            if (sheetIdx === this.parent.sheets.length - 1) {
+                args.element.querySelector('#' + this.parent.element.id + '_cmenu_move_right').classList.add('e-disabled');
+            }
         }
         this.parent.trigger('contextMenuBeforeOpen', args);
         this.parent.notify(cMenuBeforeOpen, extend(args, { target: target, items: items }));
@@ -309,12 +326,21 @@ export class ContextMenu {
                 text: l10n.getConstant('Delete'), iconCss: 'e-icons e-delete', id: id + '_delete_sheet'
             });
             items.push({
+                text: l10n.getConstant('DuplicateSheet'), id: id + '_duplicate'
+            });
+            items.push({
                 text: l10n.getConstant('Rename'), id: id + '_rename'
             });
             items.push({
                 text: l10n.getConstant('Hide'), id: id + '_hide_sheet'
             });
             this.setProtectSheetItems(items, id);
+            items.push({
+                text: l10n.getConstant('MoveRight'), id: id + '_move_right'
+            });
+            items.push({
+                text: l10n.getConstant('MoveLeft'), id: id + '_move_left'
+            });
         }
         return items;
     }

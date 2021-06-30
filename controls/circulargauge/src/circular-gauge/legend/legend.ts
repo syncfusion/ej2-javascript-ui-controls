@@ -531,6 +531,7 @@ export class Legend {
         const hiddenColor: string = '#D3D3D3';
         textOptions.id = this.legendID + '_Axis_' + axisIndex + '_text_' + rangeIndex;
         const fontcolor: string = legendOption.visible ? legend.textStyle.color || this.gauge.themeStyle.labelColor : hiddenColor;
+        legend.textStyle.fontFamily = legend.textStyle.fontFamily || this.gauge.themeStyle.labelFontFamily;
         textOptions.text = legendOption.text;
         textOptions.x = legendOption.location.x + (legend.shapeWidth / 2) + legend.shapePadding;
         textOptions.y = legendOption.location.y + this.maxItemHeight / 4;

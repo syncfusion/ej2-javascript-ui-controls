@@ -507,8 +507,6 @@ export const customFilterClose: string = 'custom-filter-close';
 /** @hidden */
 export const setFullScreenDialog: string = 'set-fullscreen-dialog';
 /** @hidden */
-export const refreshVirtualCacheOnRowDD: string = 'refresh-Virtual-Cache-On-RowDD';
-/** @hidden */
 export const refreshExpandandCollapse: string = 'refresh-Expand-and-Collapse';
 /** @hidden */
 export const rowModeChange: string = 'row-mode-change';
@@ -516,6 +514,8 @@ export const rowModeChange: string = 'row-mode-change';
 export const enterKeyHandler: string = 'enter-key-handler';
 /** @hidden */
 export const refreshVirtualMaxPage: string = 'refresh-virtual-max-page';
+/** @hidden */
+export const setVirtualPageQuery: string = 'set-virtual-page-query';
 /** @hidden */
 export const selectRowOnContextOpen: string = 'select-row-on-context-open';
 /** @hidden */
@@ -536,3 +536,7 @@ export const refreshVirtualEditFormCells: string = 'refresh-virtual-editform-cel
 export const scrollToEdit: string = 'scroll-to-edit';
 /** @hidden */
 export const beforeCheckboxRendererQuery: string = 'before-checkbox-renderer-query';
+/** @hidden */
+export const createVirtualValidationForm: string = 'create-virtual-validation-form';
+/** @hidden */
+export const validateVirtualForm: string = 'validate-virtual-form';

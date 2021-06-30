@@ -2,8 +2,11 @@
   /*! Tooltip theme */
   .e-tooltip-wrap {
     border-radius: $tooltip-border-radius;
-    filter: $tooltip-drop-shadow;
-    opacity: $tooltip-opacity;
+
+    @if ($skin-name != 'tailwind' and $skin-name != 'tailwind-dark') {
+      filter: $tooltip-drop-shadow;
+      opacity: $tooltip-opacity;
+    }
 
     &.e-popup {
       background-color: $tooltip-content-bg-color;
@@ -68,7 +71,12 @@
     .e-tooltip-close {
       background-color: $tooltip-icon-bg-normal;
       border-color: $tooltip-icon-border-color;
-      border-radius: 8px;
+      @if ($skin-name == 'tailwind' or $skin-name == 'tailwind-dark') {
+        border-radius: 9px;
+      }
+      @else {
+        border-radius: 8px;
+      }
       color: $tooltip-default-icon-color;
       @if ($skin-name == 'highcontrast' or $skin-name == 'highcontrast-light') {
         border-style: solid;
@@ -76,14 +84,19 @@
         height: 16px;
         width: 16px;
       }
-      @if $skin-name == 'bootstrap4' {
+      @if ($skin-name == 'bootstrap4' or $skin-name == 'tailwind' or $skin-name == 'tailwind-dark') {
         border: $tooltip-close-icon-border;
       }
     }
 
     .e-tooltip-close:hover {
-      background-color: $tooltip-icon-bg-hover;
-      color: $tooltip-hover-icon-color;
+      @if ($skin-name == 'tailwind' or $skin-name == 'tailwind-dark') {
+        color: $tooltip-hover-icon-color;
+      }
+      @else {
+        background-color: $tooltip-icon-bg-hover;
+        color: $tooltip-hover-icon-color;
+      }
     }
 
     /*! tooltip content area */

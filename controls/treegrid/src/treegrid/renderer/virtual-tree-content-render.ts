@@ -5,7 +5,7 @@ import { RowPosition } from '../enum';
 import { InterSectionObserver, RowSelectEventArgs  } from '@syncfusion/ej2-grids';
 import { TreeVirtualRowModelGenerator } from '../renderer/virtual-row-model-generator';
 import * as events from '../base/constant';
-import { isNullOrUndefined, EventHandler, getValue, setValue, Browser } from '@syncfusion/ej2-base';
+import { isNullOrUndefined, EventHandler, getValue, setValue, Browser, KeyboardEventArgs } from '@syncfusion/ej2-base';
 import { DataManager } from '@syncfusion/ej2-data';
 import { isCountRequired } from '../utils';
 
@@ -100,10 +100,17 @@ export class VirtualTreeContentRenderer extends VirtualContentRenderer {
             this.parent[action]('virtual-scroll-edit-cancel', this.cancelEdit, this);
             this.parent[action]('select-row-on-context-open', this.toSelectRowOnContextOpen, this);
             this.parent[action]('refresh-virtual-editform-cells', this.refreshCell, this);
+            this.parent[action]('virtaul-cell-focus', this.cellFocus, this);
         } else {
             super.eventListener('on');
         }
     }
+
+    private cellFocus(e: KeyboardEventArgs): void {
+        const virtualCellFocus: string = 'virtualCellFocus';
+        super[virtualCellFocus](e);
+    }
+
     protected onDataReady (e?: NotifyArgs) : void {
         super.onDataReady(e);
         if (!(this.parent.dataSource instanceof DataManager && (this.parent.dataSource as DataManager).dataSource.url !== undefined
@@ -290,7 +297,7 @@ export class VirtualTreeContentRenderer extends VirtualContentRenderer {
         const content: HTMLElement = this.parent.getContent().querySelector('.e-content');
         const scrollHeight: number = outBuffer * this.parent.getRowHeight();
         const upScroll: boolean = (scrollArgs.offset.top - this.translateY) < 0;
-        const downScroll: boolean = (scrollArgs.offset.top - this.translateY) > scrollHeight;
+        const downScroll: boolean = Math.ceil(scrollArgs.offset.top - this.translateY) >= scrollHeight;
         const selectedRowIndex: string = 'selectedRowIndex';
         if (upScroll) {
             const vHeight: number = +(this.parent.height.toString().indexOf('%') < 0 ? this.parent.height :
@@ -415,6 +422,7 @@ export class VirtualTreeContentRenderer extends VirtualContentRenderer {
         this.parent.off('virtual-scroll-edit-cancel', this.cancelEdit);
         this.parent.off('select-row-on-context-open', this.toSelectRowOnContextOpen);
         this.parent.off('refresh-virtual-editform-cells', this.refreshCell);
+        this.parent.off('virtaul-cell-focus', this.cellFocus);
     }
 
 }

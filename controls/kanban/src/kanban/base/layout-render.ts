@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import {
-    append, createElement, formatUnit, EventHandler, addClass, remove, extend, Browser, isNullOrUndefined, removeClass, closest
+    append, createElement, formatUnit, EventHandler, addClass, remove, extend, Browser, isNullOrUndefined, removeClass, closest, setStyleAttribute
 } from '@syncfusion/ej2-base';
 import { Kanban } from '../base/kanban';
 import { CardRenderedEventArgs, QueryCellInfoEventArgs, HeaderArgs, ScrollOffset } from '../base/interface';
@@ -22,6 +22,8 @@ export class LayoutRender extends MobileLayout {
     private swimlaneRow: HeaderArgs[];
     public columnData: { [key: string]: any[] };
     public swimlaneData: { [key: string]: any[] };
+    public frozenSwimlaneRow: HTMLElement;
+    public frozenOrder: number;
 
     constructor(parent: Kanban) {
         super(parent);
@@ -30,6 +32,7 @@ export class LayoutRender extends MobileLayout {
         this.swimlaneIndex = 0;
         this.swimlaneData = {};
         this.scrollLeft = 0;
+        this.frozenOrder = 0;
         this.parent.on(events.dataReady, this.initRender, this);
         this.parent.on(events.contentReady, this.scrollUiUpdate, this);
     }
@@ -542,8 +545,77 @@ export class LayoutRender extends MobileLayout {
         const header: HTMLElement = this.parent.element.querySelector('.' + cls.HEADER_CLASS) as HTMLElement;
         [].slice.call(header.children).forEach((node: HTMLElement) => { node.scrollLeft = target.scrollLeft; });
         this.parent.scrollPosition.content = { left: target.scrollLeft, top: target.scrollTop };
+        if (!isNullOrUndefined(this.parent.swimlaneSettings.keyField) && this.parent.swimlaneSettings.enableFrozenRows) {
+            this.frozenRows(e);
+        }
     }
 
+    public frozenRows(e?: Event): void {
+        let firstSwimlane: HTMLElement =  this.parent.element.querySelector('.' + cls.SWIMLANE_ROW_CLASS) as HTMLElement;
+        const header: HTMLElement = this.parent.element.querySelector('.' + cls.HEADER_CLASS) as HTMLElement;
+        const content: HTMLElement = this.parent.element.querySelector('.' + cls.CONTENT_CLASS) as HTMLElement;
+        if (isNullOrUndefined(this.frozenSwimlaneRow)) {
+            this.frozenSwimlaneRow = createElement('div', { className: cls.FROZEN_SWIMLANE_ROW_CLASS });
+            let frozenRow: HTMLElement = createElement('div', { className: cls.FROZEN_ROW_CLASS });
+            this.frozenSwimlaneRow.appendChild(frozenRow);
+            this.parent.element.insertBefore(this.frozenSwimlaneRow, this.parent.element.firstElementChild);
+            frozenRow.appendChild(firstSwimlane.querySelector('.' + cls.SWIMLANE_HEADER_CLASS).cloneNode(true));
+            setStyleAttribute(this.frozenSwimlaneRow, { height: formatUnit(firstSwimlane.getBoundingClientRect().height), 
+                width: formatUnit(content.querySelector('.e-swimlane').getBoundingClientRect().width),
+                top: formatUnit(header.getBoundingClientRect().height.toString())
+             });
+            setStyleAttribute(header, { position: 'relative', top: formatUnit((-this.frozenSwimlaneRow.getBoundingClientRect().height)) });
+            setStyleAttribute(content, { position: 'relative', top: formatUnit((-this.frozenSwimlaneRow.getBoundingClientRect().height)) });
+        } else {
+            const swimlaneRows: HTMLElement[] = [].slice.call(this.parent.element.querySelectorAll('.' + cls.SWIMLANE_ROW_CLASS));
+            let curSwim: HTMLElement = swimlaneRows[this.frozenOrder];
+            let prevSwim: HTMLElement = swimlaneRows[this.frozenOrder - 1];
+            let nextSwim: HTMLElement = swimlaneRows[this.frozenOrder + 1];
+            let curSwimHeight: number;
+            let prevSwimHeight: number;
+            let nextSwimHeight: number;
+            if (curSwim) {
+                curSwimHeight = curSwim.getBoundingClientRect().top + curSwim.getBoundingClientRect().height;
+            }
+            if (prevSwim) {
+                prevSwimHeight = prevSwim.getBoundingClientRect().top + prevSwim.getBoundingClientRect().height    
+            }
+            if (nextSwim) {
+                nextSwimHeight = nextSwim.getBoundingClientRect().top + nextSwim.getBoundingClientRect().height    
+            }
+            let frozenSwimHeight: number = content.getBoundingClientRect().top + this.frozenSwimlaneRow.getBoundingClientRect().height;
+            let frozenRowsElement: HTMLElement = this.frozenSwimlaneRow.querySelector('.' + cls.FROZEN_ROW_CLASS);
+            if (nextSwimHeight && frozenSwimHeight >= nextSwimHeight && this.frozenOrder < swimlaneRows.length - 1) {
+                if (frozenRowsElement) {
+                    remove(frozenRowsElement.querySelector('.' + cls.SWIMLANE_HEADER_CLASS));
+                    frozenRowsElement.appendChild(nextSwim.querySelector('.' + cls.SWIMLANE_HEADER_CLASS).cloneNode(true));
+                }
+                ++this.frozenOrder;
+            }
+            else if (prevSwimHeight && frozenSwimHeight < curSwimHeight && frozenSwimHeight > prevSwimHeight && this.frozenOrder > 0) {
+                if (frozenRowsElement) {
+                    remove(frozenRowsElement.querySelector('.' + cls.SWIMLANE_HEADER_CLASS));
+                    frozenRowsElement.appendChild(prevSwim.querySelector('.' + cls.SWIMLANE_HEADER_CLASS).cloneNode(true));
+                }
+                --this.frozenOrder;
+            }
+        }
+        if (e && (e.target as HTMLElement).scrollTop == 0) {
+            this.removeFrozenRows();
+        }
+    }
+
+    public removeFrozenRows(): void {
+        remove(this.frozenSwimlaneRow);
+        this.frozenSwimlaneRow = null;
+        const header: HTMLElement = this.parent.element.querySelector('.' + cls.HEADER_CLASS) as HTMLElement;
+        const content: HTMLElement = this.parent.element.querySelector('.' + cls.CONTENT_CLASS) as HTMLElement;
+        setStyleAttribute(header, { position: '', top: '' });
+        setStyleAttribute(content, { position: '', top: '' });
+        this.parent.scrollPosition.content = { left: this.parent.scrollPosition.content.left, top: 0 };
+        content.scrollTop = 0;
+        this.frozenOrder = 0;
+    }
     private onColumnScroll(e: Event): void {
         const target: HTMLElement = e.target as HTMLElement;
         if (target.offsetParent) {
@@ -558,7 +630,15 @@ export class LayoutRender extends MobileLayout {
         }
     }
 
-    private isColumnVisible(column: ColumnsModel): boolean {
+    /**
+     * Check column is visible or not.
+     *
+     * @param {ColumnsModel} column - specifies the column.
+     * @returns {boolean}
+     * @private
+     * @hidden
+     */
+    public isColumnVisible(column: ColumnsModel): boolean {
         let isVisible: boolean = false;
         const isNumeric: boolean = typeof column.keyField === 'number';
         if (isNumeric) {
@@ -635,7 +715,7 @@ export class LayoutRender extends MobileLayout {
         const validations: HTMLElement[] = [].slice.call(this.parent.element.querySelectorAll('.' + cls.LIMITS_CLASS));
         validations.forEach((node: HTMLElement) => { remove(node); });
         const minClass: HTMLElement[] = [].slice.call(this.parent.element.querySelectorAll('.' + cls.MIN_COLOR_CLASS));
-        removeClass(minClass, cls.MIN_COUNT_CLASS);
+        removeClass(minClass, cls.MIN_COLOR_CLASS);
         const maxClass: HTMLElement[] = [].slice.call(this.parent.element.querySelectorAll('.' + cls.MAX_COLOR_CLASS));
         removeClass(maxClass, cls.MAX_COLOR_CLASS);
         this.renderValidation();
@@ -778,11 +858,11 @@ export class LayoutRender extends MobileLayout {
                     const isNumeric: boolean = typeof column.keyField === 'number';
                     let cardLength: number = 0;
                     if (isNumeric) {
-                        cardLength = ([].slice.call(this.parent.element.querySelectorAll('.' + cls.CARD_CLASS + '[data-key="' + column.keyField + '"]'))).length;
+                        cardLength = ([].slice.call(this.parent.element.querySelectorAll('.' + cls.CARD_CLASS + '[data-key=\"' + column.keyField + '\"]'))).length;
                     } else {
                         const keys: string[] = (column.keyField as string).split(',');
                         for (const key of keys) {
-                            const cards: HTMLElement[] = [].slice.call(this.parent.element.querySelectorAll('.' + cls.CARD_CLASS + '[data-key=' + key.trim() + ']'));
+                            const cards: HTMLElement[] = [].slice.call(this.parent.element.querySelectorAll('.' + cls.CARD_CLASS + '[data-key=\"' + key.trim() + '\"]'));
                             cardLength = cards.length + cardLength;
                         }
                     }

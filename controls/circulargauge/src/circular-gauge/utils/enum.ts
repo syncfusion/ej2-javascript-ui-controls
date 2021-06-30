@@ -73,7 +73,11 @@ export type GaugeTheme =
     /** Render a gauge with bootstrap Dark theme. */
     'BootstrapDark'|
     /** Render a gauge with bootstrap 4 theme. */
-    'Bootstrap4';
+    'Bootstrap4' |
+    /**  Render a gauge with Tailwind theme. */
+    'Tailwind' |
+    /**  Render a gauge with TailwindDark theme. */
+    'TailwindDark';
 
 
 /**

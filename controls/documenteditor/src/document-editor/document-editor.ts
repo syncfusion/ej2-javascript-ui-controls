@@ -1018,6 +1018,10 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
      */
     public constructor(options?: DocumentEditorModel, element?: string | HTMLElement) {
         super(options, <HTMLElement | string>element);
+    }
+    protected preRender(): void {
+        //pre render section
+        this.findResultsList = [];
         this.documentHelper = new DocumentHelper(this);
         if (this.layoutType === 'Pages') {
             this.viewer = new PageLayoutViewer(this);
@@ -1025,10 +1029,6 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
             this.viewer = new WebLayoutViewer(this);
         }
         this.parser = new SfdtReader(this.documentHelper);
-    }
-    protected preRender(): void {
-        //pre render section
-        this.findResultsList = [];
     }
     protected render(): void {
         if (!isNullOrUndefined(this.element)) {
@@ -1105,6 +1105,7 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
                     if (this.showComments) {
                         this.commentReviewPane.showHidePane(true, 'Comments');
                     }
+                    this.commentReviewPane.enableDisableItems();
                     break;
                 case 'currentUser':
                 case 'userColor':
@@ -1995,7 +1996,7 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
         'Spell Check': 'Spell Check',
         'Underline errors': 'Underline errors',
         'Ignore': 'Ignore',
-        'Ignore all': 'Ignore All',
+        'Ignore All': 'Ignore All',
         'Add to Dictionary': 'Add to Dictionary',
         'Change': 'Change',
         'Change All': 'Change All',
@@ -2007,6 +2008,10 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
         'Find Next Region I Can Edit': 'Find Next Region I Can Edit',
         'Keep source formatting': 'Keep source formatting',
         'Match destination formatting': 'Match destination formatting',
+        'InsertAsRows': 'Insert as New Rows',
+        'InsertAsColumns': 'Insert as New Columns',
+        'OverwriteCells': 'Overwrite Cells',
+        'NestTable': 'Nest Table',
         'Text only': 'Text only',
         'Comments': 'Comments',
         'Type your comment': 'Type your comment',
@@ -2081,7 +2086,10 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
         'Already locked': 'Selected or part of region is already locked by another user',
         'Click to View/Edit Footnote': 'Click to View/Edit Footnote',
         'Click to View/Edit Endnote': 'Click to View/Edit Endnote',
-        'Multiple Comment': 'Please post your comment'
+        'Multiple Comment': 'Please post your comment',
+        "No suggestions": 'No suggestions',
+		"More Suggestion": 'More Suggestion',
+		"Ignore Once": 'Ignore Once'
     };
     /* eslint-enable */
     // Public Implementation Starts
@@ -2630,7 +2638,9 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
             this.element.classList.remove('e-documenteditor');
             this.element.innerHTML = '';
         }
-        this.element = undefined;
+        if (!this.refreshing) {
+            this.element = undefined;
+        }
         this.findResultsList = [];
         this.findResultsList = undefined;
     }

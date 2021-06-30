@@ -8,7 +8,7 @@ import { isNullOrUndefined } from '@syncfusion/ej2-base';
 
 /**
  * Lists internal component
- * 
+ *
  * @hidden
  */
 export class MDLists {

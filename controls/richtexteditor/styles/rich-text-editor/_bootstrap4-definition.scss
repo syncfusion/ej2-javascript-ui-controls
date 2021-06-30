@@ -1,7 +1,11 @@
 $rte-border-size: 1px !default;
 $rte-2px-border-size: 2px !default;
 $rte-border-type: solid !default;
+$rte-list-btn-flex: column !default;
+$rte-list-btn-line-height: unset !default;
 
+$rte-list-btn-flex: unset !default;
+$rte-list-btn-line-height: unset !default;
 $skin-name: 'bootstrap4' !default;
 $rte-border-color: $gray-300 !default;
 $rte-full-screen-bg: $content-bg !default;
@@ -70,8 +74,8 @@ $rte-split-btn-bar-bg: darken($gray-600, 10%) !default;
 $rte-split-btn-active-bar-bg: darken($gray-600, 12.5%) !default;
 $rte-split-btn-bar-size: 1px !default;
 $rte-split-btn-active-border: 1px solid $gray-600 !default;
-$rte-split-btn-active-color-icon-line-height: 25px !default;
-$rte-big-split-btn-active-color-icon-line-height: 34px !default;
+$rte-split-btn-active-color-icon-line-height: 30px !default;
+$rte-big-split-btn-active-color-icon-line-height: 32px !default;
 $rte-link-valid-color: $danger !default;
 $rte-img-popup-color: $gray-900 !default;
 $rte-img-border-color: rgba(0, 0, 0, .2) !default;
@@ -105,8 +109,8 @@ $rte-colorpicker-parent-padding-hover: 1px !default;
 $rte-colorpicker-parent-padding-active-hover: 1px !default;
 $rte-overlay-color: rgba(0, 0, 0, .5) !default;
 $rte-font-icon-width: 30px !default;
-$rte-font-arrow-width: 18px !default;
-$rte-font-arrow-touch-width: 20px !default;
+$rte-font-arrow-width: 20px !default;
+$rte-font-arrow-touch-width: 25px !default;
 $rte-font-icon-line-height: 1 !default;
 $rte-colorpicker-padding: 1.5px 0 !default;
 $rte-dropdown-selection-color: $primary-font !default;
@@ -127,17 +131,26 @@ $rte-table-popup-box: none !default;
 $rte-table-border-color: $gray-500 !default;
 $rte-table-alternate-color: $gray-100 !default;
 $rte-table-header-bg: $gray-200 !default;
-
+$rte-content-padding: 16px !default;
+$rte-table-popup-padding: 10px !default;
+$font-weight: 500 !default;
 $rte-insert-dialog-label-padding-top: 14px !default;
 $rte-insert-dialog-label-padding-bottom: 14px !default;
 $rte-big-quick-tbar-item-min-height: 38px !default;
 $rte-big-quick-tbar-item-min-width: 38px !default;
 $rte-content-font-size: 14px !default;
+$rte-table-popup-bdr-radius: 0 !default;
 
 $rte-table-popup-border: rgba(0, 0, 0, .2) !default;
 $rte-big-content-font-size: 16px !default;
 $rte-dropdown-caret-icon-size: 8px !default;
 $rte-big-dropdown-caret-icon-size: 10px !default;
+$rte-toolbar-icon-size: 16px !default;
+$rte-toolbar-big-icon-size: 18px !default;
+
+$rte-resize-handler-width: 15px;
+$rte-resize-handler-height: 15px;
+$rte-resize-handler-position: 0;
 
 $rte-big-inline-tmp-min-width: 54px;
 $rte-inline-tmp-min-width: 62px;
@@ -146,9 +159,7 @@ $rte-inline-tmp-size-min-width: 71px;
 $rte-big-inline-tmp-color-min-width: 56px;
 $rte-inline-tmp-color-min-width: 60px;
 
-$rte-resize-handler-width: 15px;
-$rte-resize-handler-height: 15px;
-$rte-resize-handler-position: 0;
+$rte-big-color-list-span-common-padding-left-right: 1px;
 
 @include export-module('richtexteditor-bootstrap4') {
   .e-richtexteditor {
@@ -309,6 +320,49 @@ $rte-resize-handler-position: 0;
 
     & .e-btn-icon.e-caret {
       font-size: 10px;
+    }
+  }
+
+  .e-bigger .e-rte-toolbar .e-toolbar-item .e-tbar-btn.e-btn.e-control.e-dropdown-btn,
+  .e-bigger .e-rte-toolbar.e-extended-toolbar .e-toolbar-item .e-tbar-btn.e-btn.e-control.e-dropdown-btn {
+    &.e-rte-backgroundcolor-dropdown,
+    &.e-rte-fontcolor-dropdown,
+    &.e-rte-numberformatlist-dropdown,
+    &.e-rte-bulletformatlist-dropdown {
+      padding-left: 1px;
+      padding-right: 1px;
+
+      &:hover,
+      &.e-active:hover {
+        padding-left: 1px;
+        padding-right: 1px;
+      }
+    }
+  }
+
+  .e-rte-toolbar,
+  .e-rte-toolbar.e-extended-toolbar {
+    .e-toolbar-items,
+    .e-toolbar-popup,
+    .e-toolbar-extended {
+      .e-rte-backgroundcolor-dropdown,
+      .e-rte-fontcolor-dropdown,
+      .e-rte-numberformatlist-dropdown,
+      .e-rte-bulletformatlist-dropdown {
+        padding-bottom: 0;
+        padding-top: 0;
+
+        &.e-tbar-btn.e-btn:hover,
+        &.e-tbar-btn.e-btn.e-active,
+        &.e-tbar-btn.e-btn.e-active:hover {
+          padding-bottom: 0;
+          padding-top: 0;
+        }
+
+        &.e-active {
+          border-radius: 4px;
+        }
+      }
     }
   }
 }

@@ -21,7 +21,12 @@ export function getThemeStyle(theme: LinearGaugeTheme): IThemeStyle {
             lineColor: '#C8C8C8',
             majorTickColor: '#C8C8C8',
             minorTickColor: '#9A9A9A',
-            pointerColor: '#9A9A9A'
+            pointerColor: '#9A9A9A',
+            titleFontStyle: 'Normal',
+            titleFontWeight: 'Normal',
+            labelStyle: 'Normal',
+            labelWeight: 'Normal',
+            containerBorderColor: '#bfbfbf'
         };
         break;
     case 'highcontrast':
@@ -34,7 +39,12 @@ export function getThemeStyle(theme: LinearGaugeTheme): IThemeStyle {
             lineColor: '#FFFFFF',
             majorTickColor: '#FFFFFF',
             minorTickColor: '#FFFFFF',
-            pointerColor: '#FFFFFF'
+            pointerColor: '#FFFFFF',
+            titleFontStyle: 'Normal',
+            titleFontWeight: 'Normal',
+            labelStyle: 'Normal',
+            labelWeight: 'Normal',
+            containerBorderColor: '#bfbfbf'
         };
         break;
     case 'bootstrap4':
@@ -53,7 +63,60 @@ export function getThemeStyle(theme: LinearGaugeTheme): IThemeStyle {
             labelFontFamily: 'HelveticaNeue',
             tooltipFillOpacity: 1,
             tooltipTextOpacity: 0.9,
-            containerBackground: '#F8F9FA'
+            containerBackground: '#F8F9FA',
+            titleFontStyle: 'Normal',
+            titleFontWeight: 'Normal',
+            labelStyle: 'Normal',
+            labelWeight: 'Normal',
+            containerBorderColor: '#bfbfbf'
+        };
+        break;
+    case 'tailwind':
+        style = {
+            backgroundColor: 'rgba(255,255,255, 0.0)',
+            titleFontColor: '#374151',
+            tooltipFillColor: '#111827',
+            tooltipFontColor: '#F9FAFB',
+            labelColor: '#6B7280',
+            lineColor: '#E5E7EB',
+            majorTickColor: '#9CA3AF',
+            minorTickColor: '#9CA3AF',
+            pointerColor: '#1F2937',
+            fontFamily: 'Inter',
+            fontSize: '14px',
+            labelFontFamily: 'Inter',
+            tooltipFillOpacity: 1,
+            tooltipTextOpacity: 0.9,
+            containerBackground: 'rgba(255,255,255, 0.0)',
+            titleFontStyle: 'Normal',
+            titleFontWeight: '500',
+            labelStyle: 'Normal',
+            labelWeight: 'Normal',
+            containerBorderColor: '#E5E7EB'
+        };
+        break;
+    case 'tailwinddark':
+        style = {
+            backgroundColor: 'rgba(255,255,255, 0.0)',
+            titleFontColor: '#D1D5DB',
+            tooltipFillColor: '#F9FAFB',
+            tooltipFontColor: '#1F2937',
+            labelColor: '#9CA3AF',
+            lineColor: '#374151',
+            majorTickColor: '#6B7280',
+            minorTickColor: '#6B7280',
+            pointerColor: '#9CA3AF',
+            fontFamily: 'Inter',
+            fontSize: '14px',
+            labelFontFamily: 'Inter',
+            tooltipFillOpacity: 1,
+            tooltipTextOpacity: 0.9,
+            containerBackground: 'rgba(255,255,255, 0.0)',
+            titleFontStyle: 'Normal',
+            titleFontWeight: '500',
+            labelStyle: 'Normal',
+            labelWeight: 'Normal',
+            containerBorderColor: '#4b5563'
         };
         break;
     default:
@@ -67,7 +130,12 @@ export function getThemeStyle(theme: LinearGaugeTheme): IThemeStyle {
             majorTickColor: '#a6a6a6',
             minorTickColor: '#a6a6a6',
             pointerColor: '#a6a6a6',
-            containerBackground: '#e0e0e0'
+            containerBackground: '#e0e0e0',
+            titleFontStyle: 'Normal',
+            titleFontWeight: 'Normal',
+            labelStyle: 'Normal',
+            labelWeight: 'Normal',
+            containerBorderColor: '#bfbfbf'
         };
         break;
     }

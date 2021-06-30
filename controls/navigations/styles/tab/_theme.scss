@@ -9,6 +9,10 @@
       border: 0;
       border-radius: 0;
 
+      @if $tab-skin == 'tailwind' or $tab-skin == 'tailwind-dark' {
+        font-weight: $tab-font-weight;
+      }
+
       @if $tab-skin == 'bootstrap' or $tab-skin == 'bootstrap4' {
 
         &::before {
@@ -261,7 +265,9 @@
 
       .e-scroll-nav,
       .e-hscroll:not(.e-scroll-device) .e-scroll-nav {
-        background: inherit;
+        @if $tab-skin != 'tailwind' and $tab-skin != 'tailwind-dark' {
+          background: inherit;
+        }
         border: 0;
 
 
@@ -282,6 +288,10 @@
 
             @if $tab-skin == 'highcontrast' {
               border: 2px solid $tab-wrap-hover-border-color;
+            }
+
+            @if $tab-skin == 'tailwind' or $tab-skin == 'tailwind-dark' {
+              background: $tab-pop-icon-hover-bg-color;
             }
           }
 
@@ -325,6 +335,10 @@
               }
             }
           }
+
+          @if $tab-skin == 'tailwind' or $tab-skin == 'tailwind-dark' {
+            background: $tab-nav-focus-bg-color;
+          }
         }
 
         &:active {
@@ -335,6 +349,10 @@
 
           @if $tab-skin == 'bootstrap4' {
             border: $tab-nav-pop-press-active-border;
+          }
+
+          @if $tab-skin == 'tailwind' or $tab-skin == 'tailwind-dark' {
+            background: $tab-active-bg-color;
           }
         }
 
@@ -349,6 +367,10 @@
               @if $tab-skin == 'highcontrast' {
                 background: $tab-nav-disable-hover-bg-color;
                 border-color: $tab-nav-disable-hover-border-color;
+              }
+
+              @if $tab-skin == 'tailwind' or $tab-skin == 'tailwind-dark' {
+                background: $tab-pop-icon-hover-bg-color;
               }
             }
           }
@@ -474,6 +496,10 @@
               }
             }
           }
+
+          @if $tab-skin == 'tailwind' or $tab-skin == 'tailwind-dark' {
+            background: $tab-nav-focus-bg-color;
+          }
         }
 
         &:hover {
@@ -486,12 +512,20 @@
           &:active {
             background: transparent;
           }
+
+          @if $tab-skin == 'tailwind' or $tab-skin == 'tailwind-dark' {
+            background: $tab-pop-icon-hover-bg-color;
+          }
         }
 
         &:active {
 
           @if $tab-skin == 'bootstrap' {
             box-shadow: $tab-nav-active-box-shadow;
+          }
+
+          @if $tab-skin == 'tailwind' or $tab-skin == 'tailwind-dark' {
+            background: $tab-active-bg-color;
           }
         }
 
@@ -1077,6 +1111,10 @@
 
         .e-indicator {
           background: $tab-alt-border-color;
+
+          @if $tab-skin == 'tailwind' or $tab-skin == 'tailwind-dark' {
+            bottom: 1px;
+          }
         }
 
         .e-toolbar-item {
@@ -1604,6 +1642,11 @@
 
         .e-indicator {
           background: $tab-border-color;
+
+          @if $tab-skin == 'tailwind' or $tab-skin == 'tailwind-dark' {
+            background: $tab-alt-border-color;
+            bottom: 1px;
+          }
         }
 
         &.e-disable {
@@ -1752,6 +1795,12 @@
       .e-item {
         background: inherit;
         color: $tab-content-font-color;
+
+        @if $tab-skin == 'tailwind' or $tab-skin == 'tailwind-dark' {
+          font-size: $tab-nrml-font-size;
+          line-height: $tab-nrml-text-wrap-height;
+          padding: 12px 0;
+        }
       }
     }
   }

@@ -1,6 +1,6 @@
 /**
  * Types type for EditorManager
- * 
+ *
  * @hidden
  * @deprecated
  */

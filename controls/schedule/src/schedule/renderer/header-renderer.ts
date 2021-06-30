@@ -212,18 +212,18 @@ export class HeaderRenderer {
             overflow: 'Show',
             htmlAttributes: { 'aria-atomic': 'true', 'aria-live': 'assertive', 'aria-label': 'title', 'role': 'navigation' }
         });
-        if (this.parent.isAdaptive) {
+        if (this.parent.isAdaptive || this.parent.enableAdaptiveUI) {
             items.push({
-                align: 'Right', showAlwaysInPopup: this.parent.isAdaptive, prefixIcon: 'e-icon-add',
+                align: 'Right', showAlwaysInPopup: (this.parent.isAdaptive || this.parent.enableAdaptiveUI), prefixIcon: 'e-icon-add',
                 text: this.l10n.getConstant('newEvent'), cssClass: 'e-add', overflow: 'Show'
             });
             items.push({
-                align: 'Right', showAlwaysInPopup: this.parent.isAdaptive, prefixIcon: 'e-icon-today',
+                align: 'Right', showAlwaysInPopup: (this.parent.isAdaptive || this.parent.enableAdaptiveUI), prefixIcon: 'e-icon-today',
                 text: this.l10n.getConstant('today'), cssClass: 'e-today', overflow: 'Show'
             });
         } else {
             items.push({
-                align: 'Right', showAlwaysInPopup: this.parent.isAdaptive, prefixIcon: 'e-icon-day',
+                align: 'Right', showAlwaysInPopup: (this.parent.isAdaptive || this.parent.enableAdaptiveUI), prefixIcon: 'e-icon-day',
                 text: this.l10n.getConstant('today'), cssClass: 'e-today', overflow: 'Show'
             });
             if (this.parent.views.length > 1) {
@@ -250,77 +250,78 @@ export class HeaderRenderer {
         }
         let view: ItemModel;
         let orientationClass: string;
+        const isItemInsidePopup: boolean = this.parent.isAdaptive || this.parent.enableAdaptiveUI;
         switch (viewName) {
         case 'day':
             view = {
-                align: 'Right', showAlwaysInPopup: this.parent.isAdaptive, prefixIcon: 'e-icon-day',
+                align: 'Right', showAlwaysInPopup: isItemInsidePopup, prefixIcon: 'e-icon-day',
                 text: displayName || this.l10n.getConstant('day'), cssClass: 'e-views e-day'
             };
             break;
         case 'week':
             view = {
-                align: 'Right', showAlwaysInPopup: this.parent.isAdaptive, prefixIcon: 'e-icon-week',
+                align: 'Right', showAlwaysInPopup: isItemInsidePopup, prefixIcon: 'e-icon-week',
                 text: displayName || this.l10n.getConstant('week'), cssClass: 'e-views e-week'
             };
             break;
         case 'workweek':
             view = {
-                align: 'Right', showAlwaysInPopup: this.parent.isAdaptive, prefixIcon: 'e-icon-workweek',
+                align: 'Right', showAlwaysInPopup: isItemInsidePopup, prefixIcon: 'e-icon-workweek',
                 text: displayName || this.l10n.getConstant('workWeek'), cssClass: 'e-views e-work-week'
             };
             break;
         case 'month':
             view = {
-                align: 'Right', showAlwaysInPopup: this.parent.isAdaptive, prefixIcon: 'e-icon-month',
+                align: 'Right', showAlwaysInPopup: isItemInsidePopup, prefixIcon: 'e-icon-month',
                 text: displayName || this.l10n.getConstant('month'), cssClass: 'e-views e-month'
             };
             break;
         case 'year':
             view = {
-                align: 'Right', showAlwaysInPopup: this.parent.isAdaptive, prefixIcon: 'e-icon-year',
+                align: 'Right', showAlwaysInPopup: isItemInsidePopup, prefixIcon: 'e-icon-year',
                 text: displayName || this.l10n.getConstant('year'), cssClass: 'e-views e-year'
             };
             break;
         case 'agenda':
             view = {
-                align: 'Right', showAlwaysInPopup: this.parent.isAdaptive, prefixIcon: 'e-icon-agenda',
+                align: 'Right', showAlwaysInPopup: isItemInsidePopup, prefixIcon: 'e-icon-agenda',
                 text: displayName || this.l10n.getConstant('agenda'), cssClass: 'e-views e-agenda'
             };
             break;
         case 'monthagenda':
             view = {
-                align: 'Right', showAlwaysInPopup: this.parent.isAdaptive, prefixIcon: 'e-icon-month-agenda',
+                align: 'Right', showAlwaysInPopup: isItemInsidePopup, prefixIcon: 'e-icon-month-agenda',
                 text: displayName || this.l10n.getConstant('monthAgenda'), cssClass: 'e-views e-month-agenda'
             };
             break;
         case 'timelineday':
             view = {
-                align: 'Right', showAlwaysInPopup: this.parent.isAdaptive, prefixIcon: 'e-icon-timeline-day',
+                align: 'Right', showAlwaysInPopup: isItemInsidePopup, prefixIcon: 'e-icon-timeline-day',
                 text: displayName || this.l10n.getConstant('timelineDay'), cssClass: 'e-views e-timeline-day'
             };
             break;
         case 'timelineweek':
             view = {
-                align: 'Right', showAlwaysInPopup: this.parent.isAdaptive, prefixIcon: 'e-icon-timeline-week',
+                align: 'Right', showAlwaysInPopup: isItemInsidePopup, prefixIcon: 'e-icon-timeline-week',
                 text: displayName || this.l10n.getConstant('timelineWeek'), cssClass: 'e-views e-timeline-week'
             };
             break;
         case 'timelineworkweek':
             view = {
-                align: 'Right', showAlwaysInPopup: this.parent.isAdaptive, prefixIcon: 'e-icon-timeline-workweek',
+                align: 'Right', showAlwaysInPopup: isItemInsidePopup, prefixIcon: 'e-icon-timeline-workweek',
                 text: displayName || this.l10n.getConstant('timelineWorkWeek'), cssClass: 'e-views e-timeline-work-week'
             };
             break;
         case 'timelinemonth':
             view = {
-                align: 'Right', showAlwaysInPopup: this.parent.isAdaptive, prefixIcon: 'e-icon-timeline-month',
+                align: 'Right', showAlwaysInPopup: isItemInsidePopup, prefixIcon: 'e-icon-timeline-month',
                 text: displayName || this.l10n.getConstant('timelineMonth'), cssClass: 'e-views e-timeline-month'
             };
             break;
         case 'timelineyear':
             orientationClass = ((item as ViewsModel).orientation === 'Vertical') ? 'vertical' : 'horizontal';
             view = {
-                align: 'Right', showAlwaysInPopup: this.parent.isAdaptive, prefixIcon: 'e-icon-timeline-year-' + orientationClass,
+                align: 'Right', showAlwaysInPopup: isItemInsidePopup, prefixIcon: 'e-icon-timeline-year-' + orientationClass,
                 text: displayName || this.l10n.getConstant('timelineYear'), cssClass: 'e-views e-timeline-year'
             };
             break;

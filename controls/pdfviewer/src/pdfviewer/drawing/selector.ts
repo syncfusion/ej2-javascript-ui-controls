@@ -1,13 +1,12 @@
 /* eslint-disable */
-import { Property, ChildProperty, Collection, Complex } from '@syncfusion/ej2-base';
+import { Property, ChildProperty, Collection, Complex,isNullOrUndefined } from '@syncfusion/ej2-base';
 import { IElement, ThumbsConstraints } from '@syncfusion/ej2-drawings';
 import { Container } from '@syncfusion/ej2-drawings';
-
 import { PointModel } from '@syncfusion/ej2-drawings';
 import { Point } from '@syncfusion/ej2-drawings';
 import { Size } from '@syncfusion/ej2-drawings';
-import { PdfAnnotationBaseModel } from './pdf-annotation-model';
-import { PdfAnnotationBase } from './pdf-annotation';
+import { PdfAnnotationBaseModel, PdfFormFieldBaseModel } from './pdf-annotation-model';
+import { PdfAnnotationBase, PdfFormFieldBase } from './pdf-annotation';
 
 /**
  * Defines the size and position of selected items and defines the appearance of selector
@@ -29,6 +28,12 @@ export class Selector extends ChildProperty<Selector> implements IElement {
 
     @Collection<PdfAnnotationBaseModel>([], PdfAnnotationBase)
     public annotations: PdfAnnotationBaseModel[];
+
+    /**
+     * Defines the collection of selected form Fields
+     */
+     @Collection<PdfFormFieldBaseModel>([], PdfFormFieldBase)
+     public formFields: PdfFormFieldBaseModel[];
 
     /**
      * Sets/Gets the width of the container
@@ -109,12 +114,20 @@ export class Selector extends ChildProperty<Selector> implements IElement {
         container.measureChildren = false;
         const consize: Size = new Size();
         container.children = [];
-        if (this.annotations) {
+        if(this.formFields && this.formFields.length > 0) {
+            for (let i: number = 0; i < this.formFields.length; i++) {
+                const node: PdfFormFieldBaseModel = diagram.pdfViewer.nameTable[this.formFields[i].id];
+                const wrapper: Container = node.wrapper;
+                container.children.push(wrapper);
+            }
+        } else if (this.annotations) {
             for (let i: number = 0; i < this.annotations.length; i++) {
+                if(!isNullOrUndefined(this.annotations[i])){
                 const node: PdfAnnotationBaseModel = diagram.pdfViewer.nameTable[this.annotations[i].id];
                 const wrapper: Container = node.wrapper;
                 container.children.push(wrapper);
             }
+        }
         }
         this.wrapper = container;
         return container;

@@ -1241,6 +1241,10 @@ describe('FileManager control LargeIcons view', () => {
             mousemove.srcElement = mousemove.target = mousemove.toElement = li[2].querySelector('.e-fullrow');
             mousemove = setMouseCordinates(mousemove, rect[0].x + 5, rect[0].y + 5);
             EventHandler.trigger(<any>(document), 'mousemove', mousemove);
+            rect = li[2].querySelector('.e-fullrow').getClientRects();
+            mousemove.srcElement = mousemove.target = mousemove.toElement = li[2].querySelector('.e-fullrow');
+            mousemove = setMouseCordinates(mousemove, rect[0].x + 5, rect[0].y + 5);
+            EventHandler.trigger(<any>(document), 'mousemove', mousemove);
             rect = li[3].querySelector('.e-fullrow').getClientRects();
             mousemove.srcElement = mousemove.target = mousemove.toElement = li[3].querySelector('.e-fullrow');
             mousemove = setMouseCordinates(mousemove, rect[0].x + 5, rect[0].y + 5);

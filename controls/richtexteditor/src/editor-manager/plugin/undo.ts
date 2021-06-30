@@ -24,14 +24,12 @@ export class UndoRedoManager {
         this.addEventListener();
     }
     protected addEventListener(): void {
-        // eslint-disable-next-line
         const debounceListener: Function = debounce(this.keyUp, this.undoRedoTimer);
         this.parent.observer.on(EVENTS.KEY_UP_HANDLER, debounceListener, this);
         this.parent.observer.on(EVENTS.KEY_DOWN_HANDLER, this.keyDown, this);
         this.parent.observer.on(EVENTS.ACTION, this.onAction, this);
         this.parent.observer.on(EVENTS.MODEL_CHANGED_PLUGIN, this.onPropertyChanged, this);
     }
-    // eslint-disable-next-line
     private onPropertyChanged(props: { [key: string]: Object }): void {
         for (const prop of Object.keys(props.newProp)) {
             switch (prop) {
@@ -109,7 +107,6 @@ export class UndoRedoManager {
         const range: Range = new NodeSelection().getRange(this.parent.currentDocument);
         const save: NodeSelection = new NodeSelection().save(range, this.parent.currentDocument);
         const htmlText: string = this.parent.editableElement.innerHTML;
-        // eslint-disable-next-line
         const changEle: { [key: string]: string | Object} = { text: htmlText, range: save };
         if (this.undoRedoStack.length >= this.steps) {
             this.undoRedoStack = this.undoRedoStack.slice(0, this.steps + 1);
@@ -142,7 +139,6 @@ export class UndoRedoManager {
      */
     public undo(e?: IHtmlSubCommands | IHtmlKeyboardEvent): void {
         if (this.steps > 0) {
-            // eslint-disable-next-line
             const range: string | object = this.undoRedoStack[this.steps - 1].range;
             const removedContent: string = this.undoRedoStack[this.steps - 1].text as string;
             this.parent.editableElement.innerHTML = removedContent;
@@ -174,7 +170,6 @@ export class UndoRedoManager {
      */
     public redo(e?: IHtmlSubCommands | IHtmlKeyboardEvent): void {
         if (this.undoRedoStack[this.steps + 1] != null) {
-            // eslint-disable-next-line
             const range: string | object = this.undoRedoStack[this.steps + 1].range;
             this.parent.editableElement.innerHTML = this.undoRedoStack[this.steps + 1].text as string;
             (this.parent.editableElement as HTMLElement).focus();

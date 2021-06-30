@@ -7,7 +7,7 @@ import { ContentRender } from '../renderer/content-renderer';
 
 /**
  * Content module is used to render Rich Text Editor content
- * 
+ *
  * @hidden
  * @deprecated
  */

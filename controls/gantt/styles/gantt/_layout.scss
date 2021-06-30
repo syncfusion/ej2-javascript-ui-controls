@@ -154,7 +154,7 @@
 
       .e-columnheader,
       .e-headercell {
-        height: 63px !important; // sass-lint:disable-line no-important
+        height: $gantt-treegrid-header-border-height !important; // sass-lint:disable-line no-important
       }
 
       .e-gridcontent .e-content {
@@ -831,6 +831,9 @@
 
       > .e-dlg-content {
         padding: 0 !important; // sass-lint:disable-line no-important
+        @if $tab-skin == 'tailwind' or $tab-skin == 'tailwind-dark' {
+          height: 291px;
+        }
       }
 
       .e-dlg-header-content {
@@ -906,7 +909,7 @@
   .e-gantt-tooltip-label {
     padding-bottom: 2px;
     padding-right: 2px;
-    text-align: right;
+    text-align: left;
   }
 
   .e-gantt.e-device {

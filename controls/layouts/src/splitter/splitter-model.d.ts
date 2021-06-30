@@ -49,7 +49,7 @@ export interface PanePropertiesModel {
 
     /**
      * Specifies the maximum size of a pane. The pane cannot be resized if it is more than the specified maximum limit.
-     * 
+     *
      * @default null
      */
     max?: string;

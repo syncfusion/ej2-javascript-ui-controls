@@ -22,7 +22,7 @@ import * as EVENTS from './../../common/constant';
 import { InsertTextExec } from '../plugin/insert-text';
 /**
  * EditorManager internal component
- * 
+ *
  * @hidden
  * @deprecated
  */
@@ -47,9 +47,10 @@ export class EditorManager {
     public editableElement: Element;
     /**
      * Constructor for creating the component
-     * 
+     *
      * @hidden
      * @deprecated
+     * @param {ICommandModel} options - specifies the command Model
      */
     public constructor(options: ICommandModel) {
         this.currentDocument = options.document;
@@ -82,7 +83,6 @@ export class EditorManager {
     private onWordPaste(e: NotifyArgs): void {
         this.observer.notify(EVENTS.MS_WORD_CLEANUP_PLUGIN, e);
     }
-    // eslint-disable-next-line
     private onPropertyChanged(props: { [key: string]: Object }): void {
         this.observer.notify(EVENTS.MODEL_CHANGED_PLUGIN, props);
     }
@@ -109,12 +109,12 @@ export class EditorManager {
      */
     /* eslint-enable */
     public execCommand<T>(
-        // eslint-disable-next-line
         command: ExecCommand, value: T, event?: Event, callBack?: Function, text?: string | Node, exeValue?: T,
         selector?: string): void {
         switch (command.toLocaleLowerCase()) {
         case 'lists':
-            this.observer.notify(EVENTS.LIST_TYPE, { subCommand: value, event: event, callBack: callBack, selector: selector });
+            this.observer.notify(EVENTS.LIST_TYPE, { subCommand: value, event: event, callBack: callBack,
+                selector: selector, item: exeValue });
             break;
         case 'formats':
             this.observer.notify(EVENTS.FORMAT_TYPE, { subCommand: value, event: event, callBack: callBack,
@@ -144,43 +144,43 @@ export class EditorManager {
             break;
         case 'table':
             switch (value.toString().toLocaleLowerCase()) {
-                case 'createtable':
-                    this.observer.notify(CONSTANT.TABLE, { item: exeValue, event: event, callBack: callBack });
-                    break;
-                case 'insertrowbefore':
-                case 'insertrowafter':
-                    this.observer.notify(CONSTANT.INSERT_ROW, { item: exeValue, event: event, callBack: callBack });
-                    break;
-                case 'insertcolumnleft':
-                case 'insertcolumnright':
-                    this.observer.notify(CONSTANT.INSERT_COLUMN, { item: exeValue, event: event, callBack: callBack });
-                    break;
-                case 'deleterow':
-                    this.observer.notify(CONSTANT.DELETEROW, { item: exeValue, event: event, callBack: callBack });
-                    break;
-                case 'deletecolumn':
-                    this.observer.notify(CONSTANT.DELETECOLUMN, { item: exeValue, event: event, callBack: callBack });
-                    break;
-                case 'tableremove':
-                    this.observer.notify(CONSTANT.REMOVETABLE, { item: exeValue, event: event, callBack: callBack });
-                    break;
-                case 'tableheader':
-                    this.observer.notify(CONSTANT.TABLEHEADER, { item: exeValue, event: event, callBack: callBack });
-                    break;
-                case 'aligntop':
-                case 'alignmiddle':
-                case 'alignbottom':
-                    this.observer.notify(CONSTANT.TABLE_VERTICAL_ALIGN, { item: exeValue, event: event, callBack: callBack });
-                    break;
-                case 'merge':
-                    this.observer.notify(CONSTANT.TABLE_MERGE, { item: exeValue, event: event, callBack: callBack });
-                    break;
-                case 'horizontalsplit':
-                    this.observer.notify(CONSTANT.TABLE_HORIZONTAL_SPLIT, { item: exeValue, event: event, callBack: callBack });
-                    break;
-                case 'verticalsplit':
-                    this.observer.notify(CONSTANT.TABLE_VERTICAL_SPLIT, { item: exeValue, event: event, callBack: callBack });
-                    break;
+            case 'createtable':
+                this.observer.notify(CONSTANT.TABLE, { item: exeValue, event: event, callBack: callBack });
+                break;
+            case 'insertrowbefore':
+            case 'insertrowafter':
+                this.observer.notify(CONSTANT.INSERT_ROW, { item: exeValue, event: event, callBack: callBack });
+                break;
+            case 'insertcolumnleft':
+            case 'insertcolumnright':
+                this.observer.notify(CONSTANT.INSERT_COLUMN, { item: exeValue, event: event, callBack: callBack });
+                break;
+            case 'deleterow':
+                this.observer.notify(CONSTANT.DELETEROW, { item: exeValue, event: event, callBack: callBack });
+                break;
+            case 'deletecolumn':
+                this.observer.notify(CONSTANT.DELETECOLUMN, { item: exeValue, event: event, callBack: callBack });
+                break;
+            case 'tableremove':
+                this.observer.notify(CONSTANT.REMOVETABLE, { item: exeValue, event: event, callBack: callBack });
+                break;
+            case 'tableheader':
+                this.observer.notify(CONSTANT.TABLEHEADER, { item: exeValue, event: event, callBack: callBack });
+                break;
+            case 'aligntop':
+            case 'alignmiddle':
+            case 'alignbottom':
+                this.observer.notify(CONSTANT.TABLE_VERTICAL_ALIGN, { item: exeValue, event: event, callBack: callBack });
+                break;
+            case 'merge':
+                this.observer.notify(CONSTANT.TABLE_MERGE, { item: exeValue, event: event, callBack: callBack });
+                break;
+            case 'horizontalsplit':
+                this.observer.notify(CONSTANT.TABLE_HORIZONTAL_SPLIT, { item: exeValue, event: event, callBack: callBack });
+                break;
+            case 'verticalsplit':
+                this.observer.notify(CONSTANT.TABLE_VERTICAL_SPLIT, { item: exeValue, event: event, callBack: callBack });
+                break;
             }
 
             break;

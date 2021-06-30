@@ -1,5 +1,6 @@
-/* eslint-disable @typescript-eslint/explicit-member-accessibility */
-/* eslint-disable @typescript-eslint/dot-notation */
+/* eslint-disable jsdoc/require-param */
+/* eslint-disable jsdoc/require-returns */
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import { Maps } from '../../index';
 import { LayerSettings, convertTileLatLongToPoint  } from '../index';
 import { convertGeoToPoint, Point, PathOption, maintainSelection } from '../utils/helper';

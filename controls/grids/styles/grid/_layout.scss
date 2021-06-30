@@ -32,7 +32,7 @@
     }
 
     .e-toolbar .e-toolbar-items .e-tbar-btn .e-icons {
-      font-size: 18px;
+      font-size: $grid-bigger-toolbar-icon-size;
     }
 
     .e-flmenu-valuediv {
@@ -123,6 +123,11 @@
       height: $grid-bigger-filterbarcell-text-input;
     }
 
+    .e-ftrchk {
+      padding-bottom: $grid-bigger-checkbox-padding-topbottom;
+      padding-top: $grid-bigger-checkbox-padding-topbottom;
+    }
+
     .e-columnmenu {
       bottom: $grid-column-menu-top-touch;
     }
@@ -131,8 +136,37 @@
       user-select: none;
     }
 
+    .e-dialog.e-checkboxfilter,
     .e-dialog.e-flmenu {
       min-width: 260px;
+    }
+
+    .e-dialog.e-checkboxfilter {
+      min-height: $grid-bigger-checkbox-filter-min-height;
+    }
+
+    .e-checkboxfilter {
+      & .e-dlg-content {
+        padding-left: $grid-bigger-checkbox-content-padding-left;
+      }
+
+      & .e-ftrchk,
+      & .e-searchbox {
+        padding-left: $grid-bigger-checkbox-padding-topbottom;
+      }
+    }
+
+    &.e-rtl .e-checkboxfilter {
+      & .e-dlg-content {
+        padding-left: $grid-rtl-bigger-checkbox-content-padding-left;
+        padding-right: $grid-bigger-checkbox-content-padding-left;
+      }
+
+      & .e-ftrchk,
+      & .e-searchbox {
+        padding-left: 0;
+        padding-right: $grid-bigger-checkbox-padding-topbottom;
+      }
     }
 
     .e-filtermenudiv {
@@ -946,6 +980,7 @@
       overflow: hidden;
       padding: $grid-headercell-div-padding;
       text-align: left;
+	  text-transform: $grid-header-text-transform;
       user-select: none;
     }
 
@@ -1387,7 +1422,7 @@
       border-radius: $grid-sortnumber-border-radius;
       display: inline-block;
       float: right;
-      font-size: 9px;
+      font-size: $grid-sortnumber-font-size;
       height: 15px;
       line-height: $grid-sortnumer-line-height;
       margin: $grid-sortnumber-margin;
@@ -1623,8 +1658,33 @@
       line-height: $grid-checkbox-wrapper-line-height;
     }
 
+    .e-dialog.e-checkboxfilter,
     .e-dialog.e-flmenu {
       min-width: 250px;
+    }
+
+    .e-dialog.e-checkboxfilter {
+      min-height: $grid-checkbox-filter-min-height;
+    }
+
+    .e-checkboxfilter .e-searchbox {
+      display: block;
+    }
+
+    .e-checkboxfilter {
+      & .e-dlg-content {
+        padding-left: $grid-checkbox-content-padding-left;
+      }
+
+      & .e-ftrchk,
+      & .e-searchbox {
+        padding-left: $grid-checkbox-padding-topbottom;
+      }
+    }
+
+    .e-ftrchk {
+      padding-bottom: $grid-checkbox-padding-topbottom;
+      padding-top: $grid-checkbox-padding-topbottom;
     }
 
     .e-filterdiv,
@@ -1776,6 +1836,8 @@
     .e-gridheader .e-headercontent .e-reorderuparrow,
     .e-gridheader .e-headercontent .e-reorderdownarrow {
       font-size: $grid-reorderarrow-font-size;
+      margin-left: $grid-reorderarrow-margin-left;
+      margin-top: $grid-reorderarrow-margin-top;
       position: absolute;
       z-index: 10;
     }
@@ -2182,7 +2244,7 @@
         }
 
         span.e-ccsearch-icon.e-cc-cancel {
-          font-size: 11px;
+          font-size: $grid-column-chooser-cancel-icon-size;
           padding: $grid-column-chooser-cancel-icon-padding;
         }
       }
@@ -2223,6 +2285,11 @@
         padding-left: $grid-columnchooser-input-padding-left;
         padding-top: $grid-columnchooser-input-padding-top;
       }
+    }
+
+    .e-checkboxfiltertext {
+      width: $grid-checkboxfiltertext-width;
+      word-break: normal;
     }
 
     .e-frozenhdrcont .e-headercontent > .e-table,
@@ -2364,6 +2431,19 @@
       .e-tableborder {
         border-left: 1px solid;
         border-right: 0;
+      }
+
+      .e-checkboxfilter {
+        & .e-dlg-content {
+          padding-left: $grid-rtl-checkbox-content-padding-left;
+          padding-right: $grid-checkbox-content-padding-left;
+        }
+
+        & .e-ftrchk,
+        & .e-searchbox {
+          padding-left: 0;
+          padding-right: $grid-checkbox-padding-topbottom;
+        }
       }
 
       & .e-headercell,
@@ -2924,7 +3004,7 @@
 
       .e-movablecontent {
         height: inherit;
-        overflow: scroll;
+        overflow: hidden;
       }
 
       .e-frozencontent {
@@ -2938,9 +3018,12 @@
         overflow-y: auto;
       }
 
-      .e-gridcontent .e-content.e-yscroll,
-      .e-gridcontent .e-content .e-movablecontent.e-yscroll {
+      .e-gridcontent .e-content.e-yscroll {
         overflow-y: scroll;
+      }
+
+      .e-gridcontent .e-content .e-movablecontent.e-yscroll {
+        overflow-y: hidden;
       }
 
       .e-gridcontent .e-content.e-noscroll,
@@ -3228,7 +3311,7 @@
       & .e-btn-icon {
         color: $grid-responsive-close-icon-color;
         font-size: $grid-responsive-btn-icon-font-size;
-        margin-top: 0;
+        margin-top: $grid-responsive-btn-top;
       }
     }
 
@@ -3280,7 +3363,7 @@
           padding: 0;
           padding-left: 20px;
           padding-right: 0;
-          padding-top: 3px;
+          padding-top: $grid-responsive-apply-btn-top;
         }
 
         & .e-res-apply-btn:disabled {
@@ -3445,102 +3528,4 @@
       }
     }
   }
-}
-
-.e-bigger {
-    .e-dialog.e-checkboxfilter {
-      min-width: 260px;
-      min-height: $grid-bigger-checkbox-filter-min-height;
-      .e-dlg-content {
-        padding-left: $grid-bigger-checkbox-content-padding-left;
-      }
-
-      .e-ftrchk,
-      .e-searchbox {
-       padding-left: $grid-bigger-checkbox-padding-topbottom;
-      }
-
-      .e-ftrchk {
-          padding-bottom: $grid-bigger-checkbox-padding-topbottom;
-          padding-top: $grid-bigger-checkbox-padding-topbottom;
-      }
-    }
-
-    &.e-rtl .e-checkboxfilter {
-        .e-dlg-content {
-          padding-left: $grid-rtl-bigger-checkbox-content-padding-left;
-          padding-right: $grid-bigger-checkbox-content-padding-left;
-        }
-        
-        .e-ftrchk,
-        .e-searchbox {
-          padding-left: 0;
-          padding-right: $grid-bigger-checkbox-padding-topbottom;
-        }
-    }
-}
-
-.e-dialog.e-checkboxfilter {
-    min-width: 250px;
-    min-height: $grid-checkbox-filter-min-height;
-
-    .e-dlg-content {
-     padding-left: $grid-checkbox-content-padding-left;
-    }
-
-    .e-ftrchk,
-    .e-searchbox {
-      padding-left: $grid-checkbox-padding-topbottom;
-    }
-
-    .e-searchbox {
-        display: block;
-    }
-
-    .e-searchclear {
-        float: right;
-        position: relative;
-    }
-
-    .e-checkboxlist {
-        height: 200px;
-        margin-top: 5px;
-        min-height: 160px;
-        overflow-y: auto;
-    }
-
-    .e-ftrchk {
-        padding-bottom: $grid-checkbox-padding-topbottom;
-        padding-top: $grid-checkbox-padding-topbottom;
-    }
-
-    .e-chk-hidden {
-        -moz-appearance: none; // sass-lint:disable-line no-vendor-prefixes
-        height: 1px;
-        opacity: 0;
-        width: 1px;
-    }
-
-    .e-checkboxfiltertext {
-        width: $grid-checkboxfiltertext-width;
-        word-break: normal;
-    }
-
-    &.e-rtl {
-        .e-dlg-content {
-         padding-left: $grid-rtl-checkbox-content-padding-left;
-         padding-right: $grid-checkbox-content-padding-left;
-        }
-
-        .e-ftrchk,
-        .e-searchbox {
-         padding-left: 0;
-         padding-right: $grid-checkbox-padding-topbottom;
-        }
-
-        .e-searchclear {
-            float: left;
-            position: relative;
-        }
-    }
 }

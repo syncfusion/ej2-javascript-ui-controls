@@ -56,7 +56,7 @@ export class Label extends ChildProperty<Label> {
      * Sets and gets the options for customizing the style of the text in axis labels.
      */
 
-    @Complex<FontModel>({ size: '12px', color: null }, Font)
+    @Complex<FontModel>({ size: '12px', color: null, fontStyle: null, fontWeight: null }, Font)
     public font: FontModel;
 
     /**

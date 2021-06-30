@@ -908,6 +908,7 @@ export interface SeriesModel extends SeriesBaseModel{
      * * HiloOpenClose
      * * Waterfall
      * * RangeArea
+     * * SplineRangeArea
      * * Bubble
      * * Candle
      * * Polar

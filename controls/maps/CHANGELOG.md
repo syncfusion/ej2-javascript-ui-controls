@@ -8,22 +8,6 @@
 
 ## [Unreleased]
 
-## 19.1.69 (2021-06-15)
-
-### Maps
-
-#### Bug Fixes
-
-- `#328767` - Clusters will now be created for the template markers in the Maps.
-
-## 19.1.66 (2021-06-01)
-
-### Maps
-
-#### Bug Fixes
-
-- `#322790` - When third-party cookies are disabled in the web browser, Maps will now display correctly.
-
 ## 19.1.59 (2021-05-04)
 
 ### Maps

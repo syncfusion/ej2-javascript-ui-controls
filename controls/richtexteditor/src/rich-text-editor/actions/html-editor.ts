@@ -2,7 +2,7 @@ import * as events from '../base/constant';
 import { IRichTextEditor, IToolbarItemModel, IColorPickerRenderArgs, IRenderer } from '../base/interface';
 import { NotifyArgs, IToolbarOptions } from '../base/interface';
 import { ServiceLocator } from '../services/service-locator';
-import { isNullOrUndefined, closest, KeyboardEventArgs, attributes, removeClass, addClass } from '@syncfusion/ej2-base';
+import { isNullOrUndefined, closest, KeyboardEventArgs, attributes, removeClass, addClass, Browser, detach } from '@syncfusion/ej2-base';
 import { HTMLFormatter } from '../formatter/html-formatter';
 import { RendererFactory } from '../services/renderer-factory';
 import { RenderType } from '../base/enum';
@@ -31,6 +31,8 @@ export class HtmlEditor {
     private colorPickerModule: ColorPickerInput;
     private nodeSelectionObj: NodeSelection;
     private rangeCollection: Range[] = [];
+    private rangeElement: Element;
+    private oldRangeElement: Element;
     private saveSelection: NodeSelection;
     public xhtmlValidation: XhtmlValidation;
 
@@ -109,6 +111,11 @@ export class HtmlEditor {
     }
 
     private onKeyDown(e: NotifyArgs): void {
+        let currentRange: Range;
+        if (Browser.info.name === 'chrome') {
+            currentRange = this.parent.getRange();
+            this.backSpaceCleanup(e, currentRange);
+        }
         if ((e.args as KeyboardEvent).keyCode === 9 && this.parent.enableTabKey) {
             const range: Range = this.nodeSelectionObj.getRange(this.contentRenderer.getDocument());
             const parentNode: Node[] = this.nodeSelectionObj.getParentNodeCollection(range);
@@ -132,6 +139,81 @@ export class HtmlEditor {
             ((e as NotifyArgs).args as KeyboardEventArgs).action === 'enter') {
             this.spaceLink(e.args as KeyboardEvent);
         }
+        if (Browser.info.name === 'chrome' && !isNullOrUndefined(this.rangeElement) && !isNullOrUndefined(this.oldRangeElement) &&
+            currentRange.startContainer.parentElement.tagName !== 'TD' && currentRange.startContainer.parentElement.tagName !== 'TH') {
+            this.rangeElement = null;
+            this.oldRangeElement = null;
+            (e.args as KeyboardEvent).preventDefault();
+        }
+    }
+    private backSpaceCleanup(e: NotifyArgs, currentRange: Range): void {
+        let isLiElement: boolean = false;
+        if (((e as NotifyArgs).args as KeyboardEventArgs).code === 'Backspace' && ((e as NotifyArgs).args as KeyboardEventArgs).keyCode === 8 && currentRange.startOffset === 0 &&
+            currentRange.endOffset === 0 && this.parent.getSelection().length === 0 && currentRange.startContainer.textContent.length > 0 &&
+            currentRange.startContainer.parentElement.tagName !== 'TD' && currentRange.startContainer.parentElement.tagName !== 'TH') {
+            this.rangeElement = (this.getRootBlockNode(currentRange.startContainer) as HTMLElement);
+            if (this.rangeElement.tagName === 'OL' || this.rangeElement.tagName === 'UL') {
+                const liElement: HTMLElement = (this.getRangeLiNode(currentRange.startContainer) as HTMLElement);
+                if (liElement.previousElementSibling && liElement.previousElementSibling.childElementCount > 0) {
+                    this.oldRangeElement = liElement.previousElementSibling.lastElementChild;
+                    if (!isNullOrUndefined(liElement.lastElementChild)) {
+                        this.rangeElement = liElement.lastElementChild;
+                        isLiElement = true;
+                    } else {
+                        this.rangeElement = liElement;
+                    }
+                }
+            } else if (this.rangeElement.tagName === 'TABLE' || (!isNullOrUndefined(this.rangeElement.previousElementSibling) &&
+                this.rangeElement.previousElementSibling.tagName === 'TABLE')) {
+                return;
+            } else {
+                this.oldRangeElement = (this.rangeElement.previousElementSibling as HTMLElement);
+            }
+            if (isNullOrUndefined(this.oldRangeElement)) {
+                return;
+            } else {
+                if (this.oldRangeElement.tagName === 'OL' || this.oldRangeElement.tagName === 'UL') {
+                    this.oldRangeElement = this.oldRangeElement.lastElementChild.lastElementChild
+                        ? this.oldRangeElement.lastElementChild.lastElementChild :
+                        this.oldRangeElement.lastElementChild;
+                }
+                this.parent.formatter.editorManager.nodeSelection.setCursorPoint(this.parent.contentModule.getDocument(),
+                    // eslint-disable-next-line
+                    this.oldRangeElement, this.oldRangeElement.childNodes.length);
+                if (this.oldRangeElement.querySelector('BR')) {
+                    detach(this.oldRangeElement.querySelector('BR'));
+                }
+                if (!isNullOrUndefined(this.rangeElement) && this.oldRangeElement !== this.rangeElement) {
+                    while (this.rangeElement.firstChild) {
+                        this.oldRangeElement.appendChild(this.rangeElement.childNodes[0]);
+                    }
+                    // eslint-disable-next-line
+                    !isLiElement ? detach(this.rangeElement) : detach(this.rangeElement.parentElement);
+                    this.oldRangeElement.normalize();
+                }
+            }
+        }
+    }
+    private getRootBlockNode(rangeBlockNode: Node): Node {
+        // eslint-disable-next-line
+        for (; rangeBlockNode && this.parent && this.parent.inputElement !== rangeBlockNode; rangeBlockNode = rangeBlockNode) {
+            if (rangeBlockNode.parentElement === this.parent.inputElement) {
+                break;
+            } else {
+                rangeBlockNode = rangeBlockNode.parentElement;
+            }
+        }
+        return rangeBlockNode;
+    }
+    private getRangeLiNode(rangeLiNode: Node): Node {
+        let node: HTMLElement = rangeLiNode.parentElement;
+        while (node !== this.parent.inputElement) {
+            if (node.nodeType === 1 && node.tagName === 'LI') {
+                break;
+            }
+            node = node.parentElement;
+        }
+        return node;
     }
     private onPaste(e: NotifyArgs): void {
         // eslint-disable-next-line

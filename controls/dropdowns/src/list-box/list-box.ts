@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/ban-types */
 // eslint-disable-next-line @typescript-eslint/triple-slash-reference
 /// <reference path='../drop-down-base/drop-down-base-model.d.ts'/>
 import { Input, InputObject } from '@syncfusion/ej2-inputs';
@@ -1163,21 +1162,23 @@ export class ListBox extends DropDownBase {
             this.moveAllData(this, tlistbox, false, index);
         }
     }
-    // eslint-disable-next-line valid-jsdoc
+    /* eslint-disable */
     /**
      * Gets the updated dataSource in ListBox.
      *
      * @returns {{ [key: string]: Object }[] | string[] | boolean[] | number[]} - Updated DataSource.
      */
+    /* eslint-enable */
     public getDataList(): { [key: string]: Object }[] | string[] | boolean[] | number[] {
         return this.jsonData;
     }
-    // eslint-disable-next-line valid-jsdoc
+    /* eslint-disable */
     /**
      * Returns the sorted Data in ListBox.
      *
      * @returns {{ [key: string]: Object }[] | string[] | boolean[] | number[]} - Sorted data
      */
+    /* eslint-enable */
     public getSortedList(): { [key: string]: Object }[] | string[] | boolean[] | number[] {
         let sortData: dataType[]; let tempData: { [key: string]: Object }[] | string[] | boolean[] | number[];
         sortData = tempData = this.sortedData;
@@ -1371,10 +1372,6 @@ export class ListBox extends DropDownBase {
                     className: listBoxClasses.filterInput
                 });
                 this.element.parentNode.insertBefore(this.filterInput, this.element);
-                let backIcon: boolean = false;
-                if (Browser.isDevice) {
-                    backIcon = true;
-                }
                 filterInputObj = Input.createInput(
                     {
                         element: this.filterInput,
@@ -1643,7 +1640,7 @@ export class ListBox extends DropDownBase {
         fListBox.value = [];
         if (elems.length) {
             this.removeSelected(fListBox, elems);
-            elems.forEach((ele: Element, i: number) => {
+            elems.forEach((ele: Element) => {
                 idx.push(Array.prototype.indexOf.call(fListBox.ulElement.children, ele)); // update sortable elem
                 // To update lb view data
                 dataLiIdx.push(Array.prototype.indexOf.call(fListBox.ulElement.querySelectorAll('.e-list-item'), ele));
@@ -2010,8 +2007,6 @@ export class ListBox extends DropDownBase {
     }
 
     private KeyUp(e: KeyboardEvent): void {
-        const text: string = this.targetElement();
-        const keyCode: number = e.keyCode;
         const char: string = String.fromCharCode(e.keyCode);
         const isWordCharacter: Object = char.match(/\w/);
         if (!isNullOrUndefined(isWordCharacter)) {
@@ -2040,14 +2035,14 @@ export class ListBox extends DropDownBase {
                     };
                     this.trigger('filtering', eventArgsData, (args: FilteringEventArgs) => {
                         this.isDataFetched = false;
-                        if (eventArgsData.cancel || (this.filterInput.value !== '' && this.isFiltered)) {
+                        if (args.cancel || (this.filterInput.value !== '' && this.isFiltered)) {
                             return;
                         }
-                        if (!eventArgsData.cancel && !this.isCustomFiltering && !eventArgsData.preventDefaultAction) {
+                        if (!args.cancel && !this.isCustomFiltering && !args.preventDefaultAction) {
                             this.inputString = this.filterInput.value;
                             this.filteringAction(this.jsonData, new Query(), this.fields);
                         }
-                        if (!this.isFiltered && !this.isCustomFiltering && !eventArgsData.preventDefaultAction) {
+                        if (!this.isFiltered && !this.isCustomFiltering && !args.preventDefaultAction) {
                             this.dataUpdater(this.jsonData, new Query(), this.fields);
                         }
                     });

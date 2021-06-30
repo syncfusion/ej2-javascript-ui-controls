@@ -1001,8 +1001,9 @@ describe('Hierarchy Filter Mode Testing - Parent and child', () => {
         destroy(gridObj);
       });
     });
-    
-    describe('EJ2-47011: Filtering using query', () => {
+
+
+      describe('EJ2-47011: Filtering using query', () => {
       let gridObj: TreeGrid;
       let actionComplete: ()=>void;
       beforeAll((done: Function) => {
@@ -1062,6 +1063,7 @@ describe('Hierarchy Filter Mode Testing - Parent and child', () => {
         destroy(gridObj);
       });
     });
+
     it('memory leak', () => {
       profile.sample();
       let average: any = inMB(profile.averageChange)

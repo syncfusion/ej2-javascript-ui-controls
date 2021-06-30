@@ -161,7 +161,7 @@ export class Year extends ViewBase implements IRenderer {
 
     public getMonthName(date: Date): string {
         const month: string = this.parent.globalize.formatDate(date, {
-            format: this.parent.activeViewOptions.dateFormat || 'MMMM',
+            format: this.parent.activeViewOptions.dateFormat || 'MMMM y',
             calendar: this.parent.getCalendarMode()
         });
         return util.capitalizeFirstWord(month, 'multiple');
@@ -205,18 +205,18 @@ export class Year extends ViewBase implements IRenderer {
     }
 
     public getRowColumnCount(type: string): number {
-        const monthCount: number = 12;
+        const months: number[] = this.getMonths();
         const year: number = this.parent.selectedDate.getFullYear();
-        const months: number[] = [];
-        for (let month: number = 0; month < monthCount; month++) {
-            months.push(new Date(year, month, 1).getDay() + new Date(year, month + 1, 0).getDate());
+        const monthDaysCount: number[] = [];
+        for (const month of months) {
+            monthDaysCount.push(new Date(year, month, 1).getDay() + new Date(year, month + 1, 0).getDate());
         }
-        const maxCount: number = Math.max(...months);
+        const maxCount: number = Math.max(...monthDaysCount);
         let count: number;
         if (type === 'row') {
-            count = this.parent.activeViewOptions.orientation === 'Horizontal' ? monthCount : maxCount;
+            count = this.parent.activeViewOptions.orientation === 'Horizontal' ? months.length : maxCount;
         } else {
-            count = this.parent.activeViewOptions.orientation === 'Horizontal' ? maxCount : monthCount;
+            count = this.parent.activeViewOptions.orientation === 'Horizontal' ? maxCount : months.length;
         }
         return count;
     }
@@ -227,7 +227,8 @@ export class Year extends ViewBase implements IRenderer {
 
     public getMonths(): number[] {
         // eslint-disable-next-line prefer-spread
-        return Array.apply(null, { length: 12 }).map((value: number, index: number) => this.parent.firstMonthOfYear + index);
+        return Array.apply(null, { length: this.parent.activeViewOptions.monthsCount }).map((value: number, index: number) =>
+            this.parent.firstMonthOfYear + index);
     }
 
     private onCellClick(e: Event): void {
@@ -263,11 +264,6 @@ export class Year extends ViewBase implements IRenderer {
         if (contentWrapper) {
             contentWrapper.style.height = formatUnit(height);
         }
-        const leftPanelSelector: string = `.${cls.MONTH_HEADER_WRAPPER},.${cls.RESOURCE_COLUMN_WRAP_CLASS}`;
-        const leftPanelElement: HTMLElement = this.element.querySelector(leftPanelSelector) as HTMLElement;
-        if (leftPanelElement) {
-            leftPanelElement.style.height = formatUnit(height - this.getScrollXIndent(contentWrapper));
-        }
         if (!this.parent.isAdaptive && headerWrapper) {
             const scrollBarWidth: number = util.getScrollBarWidth();
             if (contentWrapper.offsetWidth - contentWrapper.clientWidth > 0) {
@@ -279,6 +275,12 @@ export class Year extends ViewBase implements IRenderer {
             }
         }
         this.setColWidth(this.getContentAreaElement());
+        const leftPanelSelector: string = `.${cls.MONTH_HEADER_WRAPPER},.${cls.RESOURCE_COLUMN_WRAP_CLASS}`;
+        const leftPanelElement: HTMLElement = this.element.querySelector(leftPanelSelector) as HTMLElement;
+        if (leftPanelElement) {
+            const isYScroll: boolean = contentWrapper.scrollWidth > contentWrapper.clientWidth; 
+            leftPanelElement.style.height = formatUnit(height - (isYScroll ? 17 : 0));
+        }
         this.retainScrollPosition();
     }
 
@@ -287,7 +289,7 @@ export class Year extends ViewBase implements IRenderer {
     }
 
     private getEndDate(): Date {
-        return util.addDays(util.addMonths(this.getStartDate(), 12), -1);
+        return util.addDays(util.addMonths(this.getStartDate(), this.parent.monthsCount), -1);
     }
 
     public startDate(): Date {
@@ -335,7 +337,7 @@ export class Year extends ViewBase implements IRenderer {
     public onDataReady(args: NotifyEventArgs): void {
         this.yearEventModule = new YearEvent(this.parent);
         this.yearEventModule.renderAppointments();
-        this.parent.notify('events-loaded', args);
+        this.parent.notify(event.eventsLoaded, args);
     }
 
     public wireEvents(element: HTMLElement, type: string): void {

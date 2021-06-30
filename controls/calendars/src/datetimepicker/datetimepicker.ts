@@ -85,6 +85,7 @@ export class DateTimePicker extends DatePicker {
     protected preventArgs: PopupObjectArgs;
     private dateTimeOptions: DateTimePickerModel;
     protected scrollInvoked: boolean = false;
+    protected maskedDateValue: string;
 
     /**
      * Specifies the format of the time value that to be displayed in time popup list.
@@ -478,6 +479,29 @@ export class DateTimePicker extends DatePicker {
     @Property(false)
     public openOnFocus : boolean;
     /**
+     * Specifies whether it is a masked datetimepicker or not.
+     * By default the datetimepicker component render without masked input.
+     * If you need masked datetimepicker input then specify it as true.
+     * 
+     * @default false
+     */
+     @Property(false)
+     public enableMask: boolean;
+ 
+     /**
+      * Specifies the mask placeholder to be displayed on masked datetimepicker.
+      * By default it works based on narrow format .
+      * Possible values are:
+      * Narrow: Displays the full name  like day/month/year hour:minute:second.
+      * Short: Displays the single character like dd/mm/yyyy hh:mm:ss.
+      * 
+      * @default {}
+      * @asptype object
+      * @aspjsonconverterignore
+      */
+     @Property({})
+     public maskPlaceholder: {[key: string]: string };
+    /**
      * Triggers when popup is opened.
      *
      * @event open
@@ -661,7 +685,15 @@ export class DateTimePicker extends DatePicker {
         this.createInputElement();
         super.updateHtmlAttributeToWrapper();
         this.bindInputEvents();
+        if (this.enableMask) {
+            this.notify("createMask", {
+              module: "MaskedDateTime",
+            });
+          }
         this.setValue();
+        if(this.enableMask && !this.value && this.maskedDateValue && (this.floatLabelType == 'Always' || !this.floatLabelType || !this.placeholder)){
+            Input.setValue(this.maskedDateValue, this.inputElement, this.floatLabelType, this.showClearButton);
+        }
         this.setProperties({ scrollTo: this.checkDateValue(new Date(this.checkValue(this.scrollTo))) }, true);
         this.previousDateTime = this.value && new Date(+this.value);
         if (this.element.tagName === 'EJS-DATETIMEPICKER') {
@@ -1206,6 +1238,10 @@ export class DateTimePicker extends DatePicker {
             Input.setValue(tempVal, this.inputElement, this.floatLabelType, this.showClearButton);
             this.previousElementValue = this.inputElement.value;
             this.setProperties({ value: new Date(this.timeCollections[this.activeIndex]) }, true);
+            if(this.enableMask)
+            {
+                this.createMask();
+            }
         }
         this.updateIconState();
     }
@@ -1217,6 +1253,11 @@ export class DateTimePicker extends DatePicker {
             value = this.previousDate;
         }
         return this.validateMinMaxRange(value);
+    }
+    private createMask(): void {
+        this.notify("createMask", {
+            module: "MaskedDateTime",
+          });
     }
     private combineDateTime(value: Date): Date {
         if (this.isDateObject(value)) {
@@ -1507,8 +1548,18 @@ export class DateTimePicker extends DatePicker {
         if (this) {
             modules.push({ args: [this], member: 'islamic' });
         }
+        if(this.enableMask)
+        {
+           modules.push(this.maskedDateModule());
+        }
 
         return modules;
+    }
+
+    private maskedDateModule(): ModuleDeclaration
+    {
+       let modules: ModuleDeclaration = {args: [this], member: 'MaskedDateTime'};
+       return modules;
     }
 
     private getTimeActiveElement(): HTMLElement[] {
@@ -1739,6 +1790,11 @@ export class DateTimePicker extends DatePicker {
                 this.updateInput();
                 this.changeTrigger(null);
                 this.preventChange = this.isAngular && this.preventChange ? !this.preventChange : this.preventChange;
+                if (this.enableMask && this.value) {
+                    this.notify("createMask", {
+                      module: "MaskedDateTime",
+                    });
+                  }
                 break;
             case 'min':
             case 'max':

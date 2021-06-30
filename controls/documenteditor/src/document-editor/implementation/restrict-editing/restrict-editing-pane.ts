@@ -159,7 +159,8 @@ export class RestrictEditing {
         this.userWholeDiv.appendChild(userDiv);
         let subContentDiv: HTMLElement = createElement('div', {
             innerHTML: localObj.getConstant('Select Part Of Document And User'),
-            styles: 'margin-bottom:8px;'
+            styles: 'margin-bottom:8px;',
+            className: 'e-de-rp-sub-content-div'
         });
         this.userWholeDiv.appendChild(subContentDiv);
         let emptyuserDiv: HTMLElement = createElement('div', { className: 'e-de-rp-user' });

@@ -1,6 +1,6 @@
 /**
  * Is formatted or not.
- * 
+ *
  * @hidden
  * @deprecated
  */

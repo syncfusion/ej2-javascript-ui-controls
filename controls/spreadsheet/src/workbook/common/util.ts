@@ -1,4 +1,5 @@
-import { CellModel, ColumnModel } from './../base/index';
+import { CellModel, ColumnModel, getCell, SheetModel } from './../base/index';
+import { getCellAddress, getRangeIndexes } from './address';
 
 /**
  * Check whether the text is formula or not.
@@ -160,4 +161,64 @@ export function isValidCellReference(value: string): boolean {
         }
     }
     return false;
+}
+
+/**
+ * @param {number[]} currIndexes - current indexes in which formula get updated
+ * @param {number[]} prevIndexes - copied indexes
+ * @param {SheetModel} sheet - sheet model
+ * @param {CellModel} prevCell - copied or prev cell
+ * @returns {string} - retruns updated formula
+ * @hidden
+ */
+export function getUpdatedFormula(currIndexes: number[], prevIndexes: number[], sheet: SheetModel, prevCell?: CellModel): string {
+    let cIdxValue: string; let cell: CellModel;
+    if (prevIndexes) {
+        cell = prevCell || getCell(prevIndexes[0], prevIndexes[1], sheet, false, true);
+        cIdxValue = cell.formula ? cell.formula.toUpperCase() : '';
+    }
+    if (cIdxValue) {
+        if (cIdxValue.indexOf('=') === 0) {
+            cIdxValue = cIdxValue.slice(1);
+        }
+        cIdxValue = cIdxValue.split('(').join(',').split(')').join(',');
+        const formulaOperators: string[] = ['+', '-', '*', '/', '>=', '<=', '<>', '>', '<', '=', '%']; let splitArray: string[];
+        let value: string = cIdxValue;
+        for (let i: number = 0; i < formulaOperators.length; i++) {
+            splitArray = value.split(formulaOperators[i]);
+            value = splitArray.join(',');
+        }
+        splitArray = value.split(',');
+        const newAddress: { [key: string]: string }[] = []; let newRef: string; let refObj: { [key: string]: string };
+        for (let j: number = 0; j < splitArray.length; j++) {
+            if (isCellReference(splitArray[j])) {
+                const range: number[] = getRangeIndexes(splitArray[j]);
+                const newRange: number[] = [currIndexes[0] - (prevIndexes[0] - range[0]), currIndexes[1] - (prevIndexes[1] - range[1]),
+                    currIndexes[0] - (prevIndexes[0] - range[2]), currIndexes[1] - (prevIndexes[1] - range[3])];
+                if (newRange[0] < 0 || newRange[1] < 0 || newRange[2] < 0 || newRange[3] < 0) {
+                    newRef = '#REF!';
+                } else {
+                    newRef = getCellAddress(newRange[0], newRange[1]);
+                    if (splitArray[j].includes(':')) {
+                        newRef += (':' + getCellAddress(newRange[2], newRange[3]));
+                    }
+                    newRef = isCellReference(newRef) ? newRef : '#REF!';
+                }
+                refObj = {}; refObj[splitArray[j]] = newRef;
+                if (splitArray[j].includes(':')) {
+                    newAddress.splice(0, 0, refObj);
+                } else {
+                    newAddress.push(refObj);
+                }
+            }
+        }
+        let objKey: string; cIdxValue = cell.formula;
+        for (let j: number = 0; j < newAddress.length; j++) {
+            objKey = Object.keys(newAddress[j])[0];
+            cIdxValue = cIdxValue.replace(new RegExp(objKey, 'gi'), newAddress[j][objKey].toUpperCase());
+        }
+        return cIdxValue;
+    } else {
+        return null;
+    }
 }

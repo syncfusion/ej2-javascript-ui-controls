@@ -17,9 +17,7 @@ export interface HeatMapModel extends ComponentModel{
     width?: string;
 
     /**
-     * The height of the heatmap as a string accepts input as both like '100px' or '100%'.
-     *
-     * If specified as '100%, heatmap renders to the full height of its parent element.
+     * The height of the heatmap accepts pixel values given in string format.
      *
      * @default null
      */

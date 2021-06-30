@@ -63,8 +63,8 @@ export class AxisLayoutPanel {
             axis.currentRadius = currentRadius - axis.nearSize;
             if (this.gauge.moveToCenter && this.gauge.axes.length === 1 &&
                 isNullOrUndefined(this.gauge.centerX) && isNullOrUndefined(this.gauge.centerY)) {
-                let startAngle: number; let endAngle: number;
-                startAngle = axis.startAngle;
+                let endAngle: number;
+                const startAngle: number = axis.startAngle;
                 let startPoint: GaugeLocation = getLocationFromAngle(startAngle - 90, currentRadius, this.gauge.midPoint);
                 endAngle = axis.endAngle;
                 endAngle -= isCompleteAngle(startAngle, endAngle) ? 0.0001 : 0;

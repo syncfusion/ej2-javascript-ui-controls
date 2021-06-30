@@ -1,0 +1,459 @@
+@include export-module('pdfviewer-tailwind-icons') {
+  .e-pdfviewer {
+    .e-pv-icon::before {
+      font-family: 'e-icons';
+    }
+
+    .e-pv-icon-search::before {
+      font-family: 'e-icons';
+      font-size: 12px;
+    }
+
+    .e-pv-open-document-icon::before {
+      content: '\e7d3';
+    }
+
+    .e-pv-download-document-icon::before {
+      content: '\e794';
+    }
+
+    .e-pv-print-document-icon::before {
+      content: '\e76c';
+    }
+
+    .e-pv-first-page-navigation-icon::before {
+      content: '\e7d1';
+    }
+
+    .e-pv-previous-page-navigation-icon::before,
+    .e-pv-prev-search-icon::before {
+      content: '\e70f';
+      font-size: 18px;
+    }
+
+    .e-pv-next-page-navigation-icon::before,
+    .e-pv-next-search-icon::before {
+      content: '\e7b7';
+      font-size: 18px;
+    }
+
+    .e-pv-last-page-navigation-icon::before {
+      content: '\e7cd';
+    }
+
+    .e-pv-zoom-out-icon::before {
+      content: '\e769';
+      line-height: $pv-toolbaritem-btn-line-height;
+    }
+
+    .e-pv-zoom-in-icon::before {
+      content: '\e783';
+      line-height: $pv-toolbaritem-btn-line-height;
+    }
+
+    .e-pv-thumbnail-view-icon::before {
+      content: '\e7e3';
+    }
+
+    .e-pv-stamp-icon::before {
+      content: '\e77b';
+    }
+
+    .e-pv-thumbnail-view-disable-icon::before {
+      color: $pv-thumbnail-icon-disable-color;
+      content: '\e7e3';
+    }
+
+    .e-pv-thumbnail-view-selection-icon::before {
+      color: $pv-thumbnail-icon-selection-color;
+      content: '\e7e3';
+    }
+
+    .e-pv-bookmark-icon::before {
+      content: '\e793';
+    }
+
+    .e-pv-bookmark-disable-icon::before {
+      color: $pv-thumbnail-icon-disable-color;
+      content: '\e793';
+    }
+
+    .e-pv-bookmark-selection-icon::before {
+      color: $pv-thumbnail-icon-selection-color;
+      content: '\e793';
+    }
+
+    .e-pv-title-close-icon::before,
+    .e-pv-annotation-tools-close-icon::before,
+    .e-pv-annotation-popup-close::before {
+      content: '\e771';
+    }
+
+    .e-pv-resize-icon::before {
+      content: '\e855';
+      font-size: 10px;
+    }
+
+    .e-pv-text-select-tool-icon::before {
+      content: '\e7af';
+    }
+
+    .e-pv-pan-tool-icon::before {
+      content: '\e712';
+    }
+
+    .e-pv-text-search-icon::before {
+      content: '\e737';
+    }
+
+    .e-pv-search-icon::before {
+      content: '\e737';
+      font-family: 'e-icons';
+    }
+
+    .e-pv-search-close::before {
+      content: '\e737';
+      font-family: 'e-icons';
+    }
+
+    .e-pv-formdesigner-icon::before {
+      content: '\e90c';
+    }
+
+    .e-pv-annotation-icon::before {
+      content: '\e796';
+    }
+
+    .e-pv-annotation-color-icon::before {
+      content: '\e782';
+    }
+
+    .e-pv-annotation-stroke-icon::before {
+      content: '\e826';
+    }
+
+    .e-pv-annotation-opacity-icon::before {
+      content: '\e700';
+    }
+
+    .e-pv-annotation-thickness-icon::before {
+      content: '\e754';
+    }
+
+    .e-pv-annotation-delete-icon::before {
+      content: '\e78d';
+    }
+
+    .e-pv-undo-icon::before {
+      content: '\e7bd';
+    }
+
+    .e-pv-redo-icon::before {
+      content: '\e7b9';
+    }
+
+    .e-pv-more-icon::before {
+      content: '\e7e2';
+    }
+
+    .e-pv-backward-icon::before {
+      content: '\e7a5';
+    }
+
+    .e-pv-notification-icon {
+      background-image: $pv-corrupted-notification-background-image;
+      background-repeat: $pv-corrupted-notification-background-repeat;
+      background-size: $pv-corrupted-notification-background-size;
+      height: $pv-corrupted-notification-height;
+    }
+
+    .e-pv-notification-icon-rtl {
+      background-image: $pv-corrupted-notification-background-image;
+      background-position: $pv-corrupted-notification-background-position;
+      background-repeat: $pv-corrupted-notification-background-repeat;
+      background-size: $pv-corrupted-notification-background-size;
+      height: $pv-corrupted-notification-height;
+    }
+
+    .e-pv-textbox-icon::before {
+      content: '\e860';
+    }
+
+    .e-pv-password-icon::before {
+      content: '\e8f4';
+    }
+
+    .e-pv-checkbox-icon::before {
+      content: '\e85f';
+    }
+
+    .e-pv-radiobutton-icon::before {
+      content: '\e8ef';
+    }
+
+    .e-pv-dropdown-icon::before {
+      content: '\e865';
+    }
+
+    .e-pv-listbox-icon::before {
+      content: '\e743';
+    }
+
+    .e-pv-annotation-shape-icon::before {
+      content: '\e7d7';
+    }
+
+    .e-pv-annotation-calibrate-icon::before {
+      content: '\e809';
+    }
+  }
+
+  .e-pv-download-document-icon.e-menu-icon::before {
+    content: '\e794';
+  }
+
+  .e-pv-bookmark-icon.e-menu-icon::before {
+    content: '\e793';
+  }
+
+  .e-pv-highlight-icon::before {
+    content: '\e7c1';
+    font-family: 'e-icons';
+  }
+
+  .e-pv-underline-icon::before {
+    content: '\e7d4';
+    font-family: 'e-icons';
+  }
+
+  .e-pv-strikethrough-icon::before {
+    content: '\e760';
+    font-family: 'e-icons';
+  }
+
+  .e-pv-copy-icon::before {
+    content: '\e7ce';
+    font-family: 'e-icons';
+  }
+
+  .e-pv-cut-icon::before {
+    content: '\e763';
+    font-family: 'e-icons';
+  }
+
+  .e-pv-paste-icon::before {
+    content: '\e75e';
+    font-family: 'e-icons';
+  }
+
+  .e-pv-delete-icon::before {
+    content: '\e78d';
+    font-family: 'e-icons';
+  }
+
+  .e-pv-properties-fill-color-icon::before {
+    content: '\e782';
+    font-family: 'e-icons';
+  }
+
+  .e-pv-properties-stroke-color-icon::before {
+    content: '\e826';
+    font-family: 'e-icons';
+  }
+
+  .e-pv-shape-line-icon::before {
+    content: '\e826';
+    font-family: 'e-icons';
+  }
+
+  .e-pv-shape-arrow-icon::before {
+    content: '\e832';
+    font-family: 'e-icons';
+  }
+
+  .e-pv-shape-rectangle-icon::before {
+    content: '\e850';
+    font-family: 'e-icons';
+  }
+
+  .e-pv-shape-circle-icon::before {
+    content: '\e849';
+    font-family: 'e-icons';
+  }
+
+  .e-pv-shape-pentagon-icon::before {
+    content: '\e848';
+    font-family: 'e-icons';
+  }
+
+  .e-pv-comment-icon::before {
+    content: '\e83b';
+    font-family: 'e-icons';
+  }
+
+  .e-pv-comment-selection-icon::before {
+    color: $pv-thumbnail-icon-selection-color;
+    content: '\e83b';
+    font-family: 'e-icons';
+  }
+
+  .e-pv-comment-panel-icon::before {
+    content: '\e75f';
+    font-family: 'e-icons';
+  }
+
+  .e-pv-accepted-icon::before {
+    color: $pv-status-icon-color;
+    content: '\e682';
+    font-family: 'e-icons';
+    font-size: $pv-status-icon-font-size;
+    padding: $pv-accepted-icon-padding;
+    position: $pv-status-icon-position;
+  }
+
+  .e-pv-rejected-icon::before {
+    color: $pv-status-icon-color;
+    content: '\e683';
+    font-family: 'e-icons';
+    font-size: $pv-status-icon-font-size;
+    padding: $pv-rejected-icon-padding;
+    position: $pv-status-icon-position;
+  }
+
+  .e-pv-completed-icon::before {
+    color: $pv-status-icon-color;
+    content: '\e614';
+    font-family: 'e-icons';
+    font-size: $pv-status-icon-font-size;
+    padding: $pv-status-icon-padding;
+    position: $pv-status-icon-position;
+  }
+
+  .e-pv-cancelled-icon::before {
+    color: $pv-status-icon-color;
+    content: '\e60a';
+    font-family: 'e-icons';
+    font-size: $pv-status-icon-font-size;
+    padding: $pv-status-icon-padding;
+    position: $pv-status-icon-position;
+  }
+
+  .e-pv-scale-ratio-icon::before {
+    content: '\e678';
+    font-family: 'e-icons';
+  }
+
+  .e-pv-calibrate-distance-icon::before {
+    content: '\e82c';
+    font-family: 'e-icons';
+  }
+
+  .e-pv-calibrate-perimeter-icon::before {
+    content: '\e852';
+    font-family: 'e-icons';
+  }
+
+  .e-pv-calibrate-area-icon::before {
+    content: '\e818';
+    font-family: 'e-icons';
+  }
+
+  .e-pv-calibrate-radius-icon::before {
+    content: '\e825';
+    font-family: 'e-icons';
+  }
+
+  .e-pv-calibrate-volume-icon::before {
+    content: '\e810';
+    font-family: 'e-icons';
+  }
+
+  .e-pv-annotation-stamp-container .e-menu-wrapper ul .e-menu-item .e-caret::before {
+    content: '\e732';
+    font-size: 18px;
+  }
+
+  .e-pv-freetext-icon::before {
+    content: '\e7bb';
+    font-family: 'e-icons';
+  }
+
+  .e-pv-annotation-textcolor-icon::before {
+    content: '\e775';
+  }
+
+  .e-pv-annotation-textalign-icon::before {
+    content: '\e7ae';
+    font-family: 'e-icons';
+  }
+
+  .e-pv-annotation-textprop-icon::before {
+    content: '\e76f';
+    font-family: 'e-icons';
+  }
+
+  .e-pv-left-align-icon::before {
+    content: '\e7ae';
+    font-family: 'e-icons';
+  }
+
+  .e-pv-right-align-icon::before {
+    content: '\e772';
+    font-family: 'e-icons';
+  }
+
+  .e-pv-center-align-icon::before {
+    content: '\e74f';
+    font-family: 'e-icons';
+  }
+
+  .e-pv-justfiy-align-icon::before {
+    content: '\e723';
+    font-family: 'e-icons';
+  }
+
+  .e-pv-bold-icon::before {
+    content: '\e79d';
+    font-family: 'e-icons';
+  }
+
+  .e-pv-italic-icon::before {
+    content: '\e722';
+    font-family: 'e-icons';
+  }
+
+  .e-pv-strikeout-icon::before {
+    content: '\e760';
+    font-family: 'e-icons';
+  }
+
+  .e-pv-underlinetext-icon::before {
+    content: '\e7d4';
+    font-family: 'e-icons';
+  }
+
+  .e-pv-superscript-icon::before {
+    content: '\e352';
+    font-family: 'e-icons';
+  }
+
+  .e-pv-subscript-icon::before {
+    content: '\e357';
+    font-family: 'e-icons';
+  }
+
+  .e-pv-handwritten-icon::before {
+    content: '\e727';
+    font-family: 'e-icons';
+  }
+
+  .e-pv-inkannotation-icon::before {
+    content: '\e724';
+    font-family: 'e-icons';
+  }
+
+  .e-pv-delete::before {
+    content: '\e78d';
+    font-family: 'e-icons';
+  }
+}

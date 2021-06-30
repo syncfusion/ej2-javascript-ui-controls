@@ -398,6 +398,28 @@ export interface DateTimePickerModel extends DatePickerModel{
     openOnFocus?: boolean;
 
     /**
+     * Specifies whether it is a masked datetimepicker or not.
+     * By default the datetimepicker component render without masked input.
+     * If you need masked datetimepicker input then specify it as true.
+     * 
+     * @default false
+     */
+    enableMask?: boolean;
+
+    /**
+      * Specifies the mask placeholder to be displayed on masked datetimepicker.
+      * By default it works based on narrow format .
+      * Possible values are:
+      * Narrow: Displays the full name  like day/month/year hour:minute:second.
+      * Short: Displays the single character like dd/mm/yyyy hh:mm:ss.
+      * 
+      * @default {}
+      * @asptype object
+      * @aspjsonconverterignore
+      */
+    maskPlaceholder?: {[key: string]: string };
+
+    /**
      * Triggers when popup is opened.
      *
      * @event open

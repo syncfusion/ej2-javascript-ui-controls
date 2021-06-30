@@ -4,7 +4,7 @@ import { InsertMethods } from './insert-methods';
 
 /**
  * Split the Node based on selection
- * 
+ *
  * @hidden
  * @deprecated
  */

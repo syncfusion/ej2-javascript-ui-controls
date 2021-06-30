@@ -1,6 +1,5 @@
-/* eslint-disable valid-jsdoc */
-/* eslint-disable @typescript-eslint/dot-notation */
-/* eslint-disable max-len */
+/* eslint-disable @typescript-eslint/explicit-module-boundary-types */
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import { Maps } from '../../index';
 import {
     findMidPointOfPolygon, Rect, filter, getTemplateFunction, getZoomTranslate,
@@ -26,7 +25,6 @@ export class DataLabel {
     public dataLabelCollections: any[];
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     private value: any = { rightWidth: 0, leftWidth: 0, heightTop: 0, heightBottom: 0 };
-    // eslint-disable-next-line @typescript-eslint/explicit-member-accessibility
     constructor(maps: Maps) {
         this.maps = maps;
         this.dataLabelCollections = [];
@@ -52,14 +50,15 @@ export class DataLabel {
     /**
      * To render label for maps
      *
-     * @param layer
-     * @param layerIndex
-     * @param shape
-     * @param layerData
-     * @param group
-     * @param labelTemplateElement
-     * @param index
-     * @param intersect
+     * @param {LayerSettings} layer - Specifies the layer settings
+     * @param {number} layerIndex - Specifies the layer index.
+     * @param {any} shape - Specifies the shape.
+     * @param {any[]} layerData - Specifies the layer data.
+     * @param {Element} group Specifies the element.
+     * @param {HTMLElement} labelTemplateElement - Specifies the template element.
+     * @param {number} index - Specifies the index number.
+     * @param {any[]} intersect - Specifies the intersect.
+     * @returns {void}
      */
     public renderLabel(
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -219,7 +218,7 @@ export class DataLabel {
             }
             let eventargs: ILabelRenderingEventArgs = {
                 name: dataLabelRendering, maps: this.maps, cancel: false, border: { color: dataLabel.border.color,
-                width: dataLabel.border.width, opacity: dataLabel.border.opacity }, datalabel: dataLabel,
+                    width: dataLabel.border.width, opacity: dataLabel.border.opacity }, datalabel: dataLabel,
                 fill: dataLabel.fill, template: dataLabel.template, text: text
             };
             if (this.maps.isBlazor) {

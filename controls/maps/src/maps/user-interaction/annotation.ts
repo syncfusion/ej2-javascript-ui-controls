@@ -1,4 +1,5 @@
-/* eslint-disable max-len */
+/* eslint-disable @typescript-eslint/no-unused-vars */
+/* eslint-disable jsdoc/require-param */
 import { Maps, IAnnotationRenderingEventArgs, annotationRendering, Annotation } from '../index';
 import { createElement, isNullOrUndefined, updateBlazorTemplate } from '@syncfusion/ej2-base';
 import { getTemplateFunction, Size, getElementOffset, getElementByID } from '../utils/helper';
@@ -10,7 +11,6 @@ import { getTemplateFunction, Size, getElementOffset, getElementByID } from '../
 export class Annotations {
 
     private map: Maps;
-    // eslint-disable-next-line @typescript-eslint/explicit-member-accessibility
     constructor(map: Maps) {
         this.map = map;
     }

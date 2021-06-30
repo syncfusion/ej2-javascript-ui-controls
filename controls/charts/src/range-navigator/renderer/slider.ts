@@ -22,7 +22,8 @@ export class RangeSlider {
     private selectedElement: Element;
     private leftSlider: Element;
     private rightSlider: Element;
-    private control: RangeNavigator;
+    /** @private */
+    public control: RangeNavigator;
     /** @private */
     public isDrag: boolean;
     private elementId: string;
@@ -245,12 +246,6 @@ export class RangeSlider {
     public triggerEvent(range: VisibleRangeModel): void {
         const xAxis: Axis = this.control.chartSeries.xAxis;
         const valueType: RangeValueType = xAxis.valueType as RangeValueType;
-        const trigger: boolean = this.control.enableDeferredUpdate;
-        const enabledTooltip: boolean = this.control.tooltip.enable;
-        if (this.isDrag && this.control.allowSnapping) {
-            this.isDrag = false;
-            this.setAllowSnapping(this.control, this.currentStart, this.currentEnd, trigger, enabledTooltip);
-        }
         const argsData: IChangedEventArgs = {
             cancel: false,
             start: valueType === 'DateTime' ? new Date(this.currentStart) :
@@ -466,8 +461,9 @@ export class RangeSlider {
      * @param {number} end end
      * @param {boolean} trigger trigger
      * @param {boolean} tooltip tooltip
+     * @private
      */
-    private setAllowSnapping(
+    public setAllowSnapping(
         control: RangeNavigator, start: number, end: number,
         trigger: boolean, tooltip: boolean
     ): void {

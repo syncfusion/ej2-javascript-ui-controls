@@ -331,7 +331,7 @@ export class TimelineEvent extends MonthEvent {
                 endDate = util.resetTime(new Date(endDate.getTime()));
                 endDate.setHours(endTime.getHours(), endTime.getMinutes(), endTime.getSeconds());
                 const count: number = eventData.count as number;
-                let actualEndTime: Date = eventData[this.fields.endTime] as Date;
+                const actualEndTime: Date = eventData[this.fields.endTime] as Date;
                 eventData.count = actualEndTime.getHours() !== 0 || actualEndTime.getMinutes() !== 0 ? count - 1 : count;
                 return endDate;
             }

@@ -239,27 +239,27 @@ describe('Protect sheet ->', () => {
             afterEach(() => {
                 helper.invoke('destroy');
             });
-            it('Aggregate after open from json throw error issue and cell cannot be copy/paste after using openFromJson', (done: Function) => {
-                const json: object = { "Workbook": { "sheets": [{ "rows": [{ "cells": [{ "value": "20" }, { "value": "10" }] }, { "cells":
-                    [{ "value": "5" }, { "value": "7" }] }], "selectedRange": "A1:B2" }] } };
-                const spreadsheet: Spreadsheet = helper.getInstance();
-                spreadsheet.openFromJson({ file: json });
-                setTimeout((): void => {
-                    helper.getElement('#' + helper.id + '_aggregate').click();
-                    const aggregatePopup: HTMLElement = helper.getElement('#' + helper.id + '_aggregate-popup');
-                    expect(aggregatePopup.classList).toContain('e-popup-open');
-                    expect(aggregatePopup.firstElementChild.childElementCount).toBe(5);
-                    expect(aggregatePopup.querySelector('.e-item').textContent).toBe('Count: 4');
-                    helper.invoke('copy').then((): void => {
-                        helper.invoke('paste', ['C3']);
-                        setTimeout((): void => {
-                            expect(spreadsheet.sheets[0].rows[2].cells[2].value.toString()).toBe('20');
-                            expect(spreadsheet.sheets[0].rows[3].cells[3].value.toString()).toBe('7');
-                            done();
-                        });
-                    });
-                });
-            });
+            // it('Aggregate after open from json throw error issue and cell cannot be copy/paste after using openFromJson', (done: Function) => {
+            //     const json: object = { "Workbook": { "sheets": [{ "rows": [{ "cells": [{ "value": "20" }, { "value": "10" }] }, { "cells":
+            //         [{ "value": "5" }, { "value": "7" }] }], "selectedRange": "A1:B2" }] } };
+            //     const spreadsheet: Spreadsheet = helper.getInstance();
+            //     spreadsheet.openFromJson({ file: json });
+            //     setTimeout((): void => {
+            //         helper.getElement('#' + helper.id + '_aggregate').click();
+            //         const aggregatePopup: HTMLElement = helper.getElement('#' + helper.id + '_aggregate-popup');
+            //         expect(aggregatePopup.classList).toContain('e-popup-open');
+            //         expect(aggregatePopup.firstElementChild.childElementCount).toBe(5);
+            //         expect(aggregatePopup.querySelector('.e-item').textContent).toBe('Count: 4');
+            //         helper.invoke('copy').then((): void => {
+            //             helper.invoke('paste', ['C3']);
+            //             setTimeout((): void => {
+            //                 expect(spreadsheet.sheets[0].rows[2].cells[2].value.toString()).toBe('20');
+            //                 expect(spreadsheet.sheets[0].rows[3].cells[3].value.toString()).toBe('7');
+            //                 done();
+            //             });
+            //         });
+            //     });
+            // });
         });
         describe('F161227 ->', () => {
             beforeEach((done: Function) => {

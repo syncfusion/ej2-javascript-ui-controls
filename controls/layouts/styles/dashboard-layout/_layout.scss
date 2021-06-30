@@ -1,3 +1,14 @@
+@mixin bigger-header-style {
+  font-size: $panel-bigger-header-font-size;
+  font-weight: $panel-bigger-header-font-weight;
+  height: $panel-bigger-header-height;
+  padding: $panel-bigger-header-padding;
+  @if ($skin-name == 'tailwind' or $skin-name == 'tailwind-dark') {
+    line-height: $panel-bigger-header-line-height;
+  }
+}
+
+
 @include export-module('dashboardlayout-layout') {
   .e-dashboardlayout.e-control {
 
@@ -9,7 +20,12 @@
     }
 
     .e-dashboard-gridline-table tbody tr td.e-dashboard-gridline {
-      border: 1px dotted $gridline-border;
+      @if ($skin-name == 'tailwind' or $skin-name == 'tailwind-dark') {
+        border: 1px dashed $gridline-border;
+      }
+      @else {
+        border: 1px dotted $gridline-border;
+      }
       position: absolute;
     }
 
@@ -23,8 +39,17 @@
 
     & .e-panel {
 
+      & .e-resize.e-dl-icon {
+        @if ($skin-name == 'tailwind' or $skin-name == 'tailwind-dark') {
+          line-height: 9px;
+        }
+      }
+
       &:hover {
         border: $panel-hover-border;
+        @if ($skin-name == 'tailwind' or $skin-name == 'tailwind-dark') {
+          box-shadow: $panel-hover-box-shadow;
+        }
 
         & .e-panel-container {
           & .e-resize.e-dl-icon {
@@ -59,6 +84,9 @@
         font-weight: $panel-header-font-weight;
         height: $panel-header-height;
         padding: $panel-header-padding;
+        @if ($skin-name == 'tailwind' or $skin-name == 'tailwind-dark') {
+          line-height: $panel-header-line-height;
+        }
 
         & div {
           overflow: $panel-header-overflow;
@@ -191,11 +219,18 @@
     }
 
     .e-panel.e-bigger {
-      &.e-panel-header {
-        font-size: $panel-bigger-header-font-size;
-        font-weight: $panel-bigger-header-font-weight;
-        height: $panel-bigger-header-height;
-        padding: $panel-bigger-header-padding;
+      & .e-panel-header {
+        @include bigger-header-style;
+      }
+    }
+  }
+
+  .e-bigger {
+    .e-dashboardlayout.e-control {
+      & .e-panel {
+        & .e-panel-header {
+          @include bigger-header-style;
+        }
       }
     }
   }

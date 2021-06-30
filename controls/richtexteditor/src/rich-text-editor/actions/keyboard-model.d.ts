@@ -8,14 +8,14 @@ export interface KeyboardEventsModel {
 
     /**
      * Specifies key combination and it respective action name.
-     * 
+     *
      * @default null
      */
     keyConfigs?: { [key: string]: string };
 
     /**
      * Specifies on which event keyboardEvents class should listen for key press. For ex., `keyup`, `keydown` or `keypress`
-     * 
+     *
      * @default 'keyup'
      */
     eventName?: string;

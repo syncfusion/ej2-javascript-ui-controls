@@ -39,7 +39,8 @@
           max-height: $range-value-none;
         }
       }#{if(&, '&', '*')} .e-range-header {
-        margin: $range-control-header-margin;
+        background: $range-header-bg-color;
+        padding: $range-control-header-margin;
         width: $range-control-header-width;
 
         #{if(&, '&', '*')} .e-start-label,
@@ -368,6 +369,7 @@
 
         #{if(&, '&', '*')} .e-range-header {
           margin: $range-device-control-header-margin;
+          padding: $range-device-control-header-padding;
 
           #{if(&, '&', '*')} .e-day-span {
             margin: $range-device-indicator-margin;

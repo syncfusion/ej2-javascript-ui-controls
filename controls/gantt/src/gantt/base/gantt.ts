@@ -1,5 +1,5 @@
 import { Component, createElement, Complex, addClass, removeClass, Event, EmitType, formatUnit, Browser } from '@syncfusion/ej2-base';
-import { Internationalization, extend, getValue, isObjectArray, isObject, setValue, isUndefined, isBlazor } from '@syncfusion/ej2-base';
+import { Internationalization, extend, getValue, isObjectArray, isObject, setValue, isUndefined } from '@syncfusion/ej2-base';
 import { Property, NotifyPropertyChanges, INotifyPropertyChanged, L10n, ModuleDeclaration, EventHandler } from '@syncfusion/ej2-base';
 import { isNullOrUndefined, KeyboardEvents, KeyboardEventArgs, Collection, append, remove } from '@syncfusion/ej2-base';
 import { createSpinner, showSpinner, hideSpinner, Dialog } from '@syncfusion/ej2-popups';
@@ -1572,8 +1572,7 @@ export class Gantt extends Component<HTMLElement>
         if (!isNullOrUndefined(this.dateFormat)) {
             return this.dateFormat;
         } else {
-            const ganttDateFormat: string = isBlazor() ? this.globalize.getDatePattern({ skeleton: 'd' }) :
-                this.globalize.getDatePattern({ skeleton: 'yMd' });
+            const ganttDateFormat: string = this.globalize.getDatePattern({ skeleton: 'yMd' });
             return ganttDateFormat;
         }
     }
@@ -1802,16 +1801,7 @@ export class Gantt extends Component<HTMLElement>
         this.treeGridModule.renderTreeGrid();
     }
     private updateCurrentViewData(): void {
-        if (isBlazor() && this.flatData.length !== 0) {
-            const records: IGanttData[] = this.treeGrid.getCurrentViewRecords().slice();
-            this.currentViewData = [];
-            for (let i: number = 0; i < records.length; i++) {
-                this.currentViewData.push(this.getTaskByUniqueID(records[i].uniqueID));
-            }
-            this.treeGrid.grid.currentViewData = this.currentViewData;
-        } else {
-            this.currentViewData = this.treeGrid.getCurrentViewRecords().slice();
-        }
+        this.currentViewData = this.treeGrid.getCurrentViewRecords().slice();
     }
     /**
      * @param {IGanttData} records .
@@ -1832,7 +1822,7 @@ export class Gantt extends Component<HTMLElement>
      */
     public updateContentHeight(args?: object): void {
         if (this.virtualScrollModule && this.enableVirtualization && !isNullOrUndefined(args)) {
-            const length: number = getValue('count', args);
+            const length: number = getValue('result.length', args);
             this.contentHeight = length * this.rowHeight;
         } else {
             const expandedRecords: IGanttData[] = this.virtualScrollModule && this.enableVirtualization ?
@@ -2241,8 +2231,13 @@ export class Gantt extends Component<HTMLElement>
                 this.treeGrid.dataBind();
                 break;
             case 'searchSettings':
-                this.treeGrid.grid.searchSettings = getActualProperties(this.searchSettings);
-                this.treeGrid.grid.dataBind();
+                if (newProp.searchSettings.key !== ("" || undefined)) {
+                    this.treeGrid.grid.searchSettings = getActualProperties(this.searchSettings);
+                    this.treeGrid.grid.dataBind();
+                } else {
+                    this.treeGrid.searchSettings = getActualProperties(this.searchSettings);
+                    this.treeGrid.dataBind();
+                }
                 if (this.toolbarModule) {
                     this.toolbarModule.updateSearchTextBox();
                 }
@@ -2809,21 +2804,6 @@ export class Gantt extends Component<HTMLElement>
             left: 'Left',
             right: 'Right'
         };
-        if (isBlazor()) {
-            const blazorLocale: Object = {
-                zoomIn: 'Zoom In',
-                zoomOut: 'Zoom Out',
-                zoomToFit: 'Zoom To Fit',
-                excelExport: 'Excel Export',
-                csvExport: 'CSV Export',
-                pdfExport: 'Pdf Export',
-                expandAll: 'Expand All',
-                collapseAll: 'Collapse All',
-                nextTimeSpan: 'Next Timespan',
-                prevTimeSpan: 'Previous Timespan'
-            };
-            extend(ganttLocale, blazorLocale, {}, true);
-        }
         return ganttLocale;
     }
     /**
@@ -3069,10 +3049,6 @@ export class Gantt extends Component<HTMLElement>
      * @public
      */
     public updateProjectDates(startDate: Date, endDate: Date, isTimelineRoundOff: boolean, isFrom?: string): void {
-        if (isBlazor()) {
-            startDate = this.dataOperation.getDateFromFormat(startDate);
-            endDate = this.dataOperation.getDateFromFormat(endDate);
-        }
         this.timelineModule.totalTimelineWidth = 0;
         this.cloneProjectStartDate = startDate;
         this.cloneProjectEndDate = endDate;
@@ -3999,8 +3975,10 @@ export class Gantt extends Component<HTMLElement>
         const ganttProp: ITaskData = ganttData.ganttProperties;
         this.isOnEdit = true;
         this.setRecordValue('isAutoSchedule', !ganttProp.isAutoSchedule, ganttProp, true);
-        this.setRecordValue('taskData.' + tasks.manual, !ganttProp.isAutoSchedule, ganttData);
-        this.setRecordValue(tasks.manual, !ganttProp.isAutoSchedule, ganttData);
+        if (!isNullOrUndefined(this.taskFields.manual)) {
+            this.setRecordValue('taskData.' + tasks.manual, !ganttProp.isAutoSchedule, ganttData);
+            this.setRecordValue(tasks.manual, !ganttProp.isAutoSchedule, ganttData);
+        }
         this.editModule.updateTaskScheduleModes(ganttData);
         const args: ITaskbarEditedEventArgs = {
             data: ganttData

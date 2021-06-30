@@ -1,7 +1,6 @@
-/* eslint-disable valid-jsdoc */
 /* eslint-disable max-len */
-/* eslint-disable @typescript-eslint/dot-notation */
-/* eslint-disable brace-style */
+/* eslint-disable @typescript-eslint/no-unused-vars */
+/* eslint-disable @typescript-eslint/explicit-module-boundary-types */
 import { Maps, Orientation, ITouches, ZoomSettings } from '../../index';
 import { Point, getElementByID, Size, PathOption, Rect, convertGeoToPoint, CircleOption, convertTileLatLongToPoint } from '../utils/helper';
 import { RectOption, PolygonOption, createTooltip, calculateScale, getTouchCenter, getTouches, targetTouches } from '../utils/helper';
@@ -81,7 +80,6 @@ export class Zoom {
     public isSingleClick: boolean = false;
     /** @private */
     public layerCollectionEle: Element;
-    // eslint-disable-next-line @typescript-eslint/explicit-member-accessibility
     constructor(maps: Maps) {
         this.maps = maps;
         this.wheelEvent = this.browserName === 'mozilla' ? (this.isPointer ? 'mousewheel' : 'DOMMouseScroll') : 'mousewheel';
@@ -95,9 +93,10 @@ export class Zoom {
     /**
      * To perform zooming for maps
      *
-     * @param position
-     * @param newZoomFactor
-     * @param type
+     * @param {Point} position - Specifies the position.
+     * @param {number} newZoomFactor - Specifies the zoom factor.
+     * @param {string} type - Specifies the type.
+     * @returns {void}
      */
     public performZooming(position: Point, newZoomFactor: number, type: string): void {
         const map: Maps = this.maps;
@@ -585,7 +584,6 @@ export class Zoom {
                         markerSettings.latitudeValuePath : !isNullOrUndefined(data['Latitude']) ? latitudeValue :
                             !isNullOrUndefined(data['latitude']) ? 'latitude' : null;
                 }
-                // eslint-disable-next-line @typescript-eslint/naming-convention
                 this.maps.trigger('markerRendering', eventArgs, (MarkerArgs: IMarkerRenderingEventArgs) => {
                     if (markerSettings.shapeValuePath !== eventArgs.shapeValuePath ) {
                         eventArgs = markerShapeChoose(eventArgs, data);
@@ -1113,6 +1111,7 @@ export class Zoom {
             const fillColor: string = '';
             const fill: string = 'transparent';
             let direction: string = ''; const polygonDirection: string = '';
+            this.selectionColor = this.maps.zoomSettings.selectionColor || this.maps.themeStyle.zoomSelectionColor;
             switch (toolbar.toLowerCase()) {
             case 'zoom': {
                 let fillColor: string;
@@ -1350,7 +1349,7 @@ export class Zoom {
         }
         element.style.left = x + 'px';
         element.style.top = y + 'px';
-        const color: string = this.maps.zoomSettings.highlightColor;
+        const color: string = this.maps.zoomSettings.highlightColor || this.maps.themeStyle.zoomSelectionColor;
         const css: string = ' .e-maps-toolbar:hover > circle { stroke:' + color + '; } .e-maps-toolbar:hover > path { fill: ' + color + ' ;  stroke: ' + color + '; }' +
             '.e-maps-toolbar:hover { cursor: pointer; } .e-maps-cursor-disable:hover { cursor: not-allowed; } .e-maps-panning:hover { cursor: pointer; } ' +
             '.e-maps-popup-close { display: block; opacity: 0; }';
@@ -1585,7 +1584,8 @@ export class Zoom {
     /**
      * To handle the click event for maps.
      *
-     * @param e
+     * @param {PointerEvent} e - Specifies the pointer event.
+     * @returns {void}
      */
     public click(e: PointerEvent): void {
         const map: Maps = this.maps;

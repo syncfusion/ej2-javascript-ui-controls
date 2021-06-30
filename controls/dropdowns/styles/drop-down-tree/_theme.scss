@@ -22,8 +22,26 @@
           }
         }
 
+        @if $ddt-skin-name == 'tailwind' or $ddt-skin-name == 'tailwind-dark' {
+          .e-chips-close::before {
+            color: $icon-color-hover;
+          }
+        }
+
         >.e-chipcontent {
           color: $ddt-chip-hover-font-color;
+        }
+      }
+    }
+
+    @if $ddt-skin-name == 'tailwind' or $ddt-skin-name == 'tailwind-dark' {
+      &.e-disabled {
+        .e-chips {
+          background-color: $content-bg-color-alt3;
+
+          >.e-chipcontent {
+            color: $content-text-color-disabled;
+          }
         }
       }
     }
@@ -42,7 +60,9 @@
     &.e-input-group.e-control-wrapper,
     &.e-float-input.e-control-wrapper {
       .e-clear-icon {
-        background-color: $ddt-icon-bg-color;
+        @if $ddt-skin-name != 'tailwind' and $ddt-skin-name != 'tailwind-dark' {
+          background-color: $ddt-icon-bg-color;
+        }
       }
 
       .e-input-group-icon.e-ddt-icon {
@@ -56,6 +76,13 @@
     &.e-float-input.e-control-wrapper input[readonly] {
       @if $ddt-skin-name == 'bootstrap4' {
         background: $ddt-readonly-input-bg-color;
+      }
+
+      &.e-disabled {
+        @if $ddt-skin-name == 'tailwind' or $ddt-skin-name == 'tailwind-dark' {
+          background-color: $content-bg-color-alt1;
+          color: $content-text-color-disabled;
+        }
       }
     }
 

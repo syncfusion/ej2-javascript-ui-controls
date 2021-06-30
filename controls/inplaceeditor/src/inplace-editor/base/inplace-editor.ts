@@ -32,7 +32,7 @@ import { InPlaceEditorModel } from './inplace-editor-model';
 import { PopupSettingsModel } from './models-model';
 /* Interface */
 import { ActionBeginEventArgs, ActionEventArgs, FormEventArgs, ValidateEventArgs, IButton, BeginEditEventArgs } from './interface';
-import { ChangeEventArgs } from './interface';
+import { ChangeEventArgs, EndEditEventArgs } from './interface';
 /* Interface */
 import { parseValue, getCompValue, encode } from './util';
 
@@ -492,6 +492,13 @@ export class InPlaceEditor extends Component<HTMLElement> implements INotifyProp
     @Event()
     public beginEdit: EmitType<BeginEditEventArgs>;
     /**
+     * The event will be fired when the edit action is finished and begin to submit/cancel the current value.
+     *
+     * @event 'event'
+     */
+    @Event()
+    public endEdit: EmitType<EndEditEventArgs>;
+    /**
      * The event will be fired when the integrated component value has changed that render based on the `type` property
      * in the In-place editor.
      *
@@ -560,7 +567,7 @@ export class InPlaceEditor extends Component<HTMLElement> implements INotifyProp
             : this.renderInitialValue();
         this.wireEvents();
         this.setRtl(this.enableRtl);
-        this.enableEditor(this.enableEditMode);
+        this.enableEditor(this.enableEditMode, true);
         this.setClass('add', this.cssClass);
         this.renderComplete();
     }
@@ -884,7 +891,13 @@ export class InPlaceEditor extends Component<HTMLElement> implements INotifyProp
                 break;
             case 'Numeric':
                 if (this.model.value) {
-                    this.model.value = (this.model.value as string).toString().replace(/[`~!@#$%^&*()_|\=?;:'",<>\{\}\[\]\\\/]/gi, '');
+                    // eslint-disable-next-line no-useless-escape
+                    const expRegex = new RegExp('[eE][\-+]?([0-9]+)');
+                    if (expRegex.test(this.model.value as string)) {
+                        this.model.value =  this.model.value;
+                    } else {
+                        this.model.value = (this.model.value as string).toString().replace(/[`~!@#$%^&*()_|\=?;:'",<>\{\}\[\]\\\/]/gi, '');
+                    }
                 }
                 this.componentObj = new NumericTextBox(this.model as NumericTextBoxModel);
                 break;
@@ -1232,9 +1245,10 @@ export class InPlaceEditor extends Component<HTMLElement> implements INotifyProp
         // eslint-disable-next-line
         value ? addClass([this.element], [classes.DISABLE]) : removeClass([this.element], [classes.DISABLE]);
     }
-    private enableEditor(val: boolean): void {
+    private enableEditor(val: boolean, isInit?: boolean): void {
+        if (isInit && !val) { return; }
         // eslint-disable-next-line
-        (val) ? this.renderEditor() : this.cancelHandler();
+        (val) ? this.renderEditor() : this.cancelHandler('cancel');
     }
     private checkValidation(fromSubmit : boolean , isValidate?: boolean): void {
         let args: ValidateEventArgs;
@@ -1290,9 +1304,7 @@ export class InPlaceEditor extends Component<HTMLElement> implements INotifyProp
         } else {
             this.afterValidation(isValidate);
         }
-
     }
-
     private afterValidation(isValidate: boolean): void {
         if (!this.formEle.classList.contains(classes.ERROR) && isValidate) {
             this.loadSpinner('validate');
@@ -1337,6 +1349,12 @@ export class InPlaceEditor extends Component<HTMLElement> implements INotifyProp
             this.removeEditor();
         });
     }
+    private triggerEndEdit(closeBeginBy: string): void {
+        const endEditArgs = { cancel: false, mode: this.mode, action: closeBeginBy };
+        this.trigger('endEdit', endEditArgs, (args: EndEditEventArgs) => {
+            if (!args.cancel) { this.removeEditor(); }
+        });
+    }
     private wireEvents(): void {
         this.wireEditEvent(this.editableOn);
         EventHandler.add(this.editIcon, 'click', this.clickHandler, this);
@@ -1377,7 +1395,7 @@ export class InPlaceEditor extends Component<HTMLElement> implements INotifyProp
         }
     }
     private cancelBtnClick(e: MouseEvent) : void {
-        this.cancelHandler();
+        this.cancelHandler('cancel');
         this.trigger('cancelClick' , e);
     }
     private unWireEvents(): void {
@@ -1417,7 +1435,7 @@ export class InPlaceEditor extends Component<HTMLElement> implements INotifyProp
             if (trg.classList.contains(classes.BTN_SAVE)) {
                 this.save();
             } else if (trg.classList.contains(classes.BTN_CANCEL)) {
-                this.cancelHandler();
+                this.cancelHandler('cancel');
             }
         }
         if (e.keyCode === 9 && e.shiftKey === false &&
@@ -1426,7 +1444,7 @@ export class InPlaceEditor extends Component<HTMLElement> implements INotifyProp
             if (this.actionOnBlur === 'Submit') {
                 this.save();
             } else if (this.actionOnBlur === 'Cancel') {
-                this.cancelHandler();
+                this.cancelHandler('cancel');
             }
         }
     }
@@ -1481,8 +1499,8 @@ export class InPlaceEditor extends Component<HTMLElement> implements INotifyProp
         this.save();
         this.trigger('submitClick', e);
     }
-    private cancelHandler(): void {
-        this.removeEditor();
+    private cancelHandler(action: string): void {
+        this.triggerEndEdit(action);
     }
     private popClickHandler(e: MouseEvent): void {
         const tipTarget: HTMLElement = <HTMLElement>select('.' + classes.VALUE_WRAPPER, this.element);
@@ -1512,7 +1530,7 @@ export class InPlaceEditor extends Component<HTMLElement> implements INotifyProp
             if ((e.keyCode === 13 && e.which === 13) && closest(e.target as Element, '.' + classes.INPUT)) {
                 this.save();
             } else if (e.keyCode === 27 && e.which === 27) {
-                this.cancelHandler();
+                this.cancelHandler('cancel');
             }
         }
     }
@@ -1521,7 +1539,7 @@ export class InPlaceEditor extends Component<HTMLElement> implements INotifyProp
             if (this.actionOnBlur === 'Submit') {
                 this.save();
             } else if (this.actionOnBlur === 'Cancel') {
-                this.cancelHandler();
+                this.cancelHandler('cancel');
             }
         }
         if ((e.keyCode === 13 && e.which === 13) && (e.target as Element).classList.contains(classes.ROOT) &&
@@ -1537,7 +1555,7 @@ export class InPlaceEditor extends Component<HTMLElement> implements INotifyProp
     }
     private scrollResizeHandler(): void {
         if (this.mode === 'Popup' && this.tipObj && !(Browser.isDevice)) {
-            this.removeEditor();
+            this.triggerEndEdit('cancel');
         }
     }
     private docClickHandler(e: Event): void {
@@ -1558,7 +1576,7 @@ export class InPlaceEditor extends Component<HTMLElement> implements INotifyProp
             if (this.actionOnBlur === 'Submit') {
                 this.save();
             } else if (this.actionOnBlur === 'Cancel') {
-                this.cancelHandler();
+                this.cancelHandler('cancel');
             }
         }
     }
@@ -1600,7 +1618,10 @@ export class InPlaceEditor extends Component<HTMLElement> implements INotifyProp
         if (!this.isTemplate) {
             this.setValue();
         }
-        this.checkValidation(true, true);
+        const endEditArgs = { cancel: false, mode: this.mode, action: 'submit' };
+        this.trigger('endEdit', endEditArgs, (args: EndEditEventArgs) => {
+            if (!args.cancel) { this.checkValidation(true, true); }
+        });
     }
     /**
      * Removes the control from the DOM and also removes all its related events.
@@ -1667,7 +1688,10 @@ export class InPlaceEditor extends Component<HTMLElement> implements INotifyProp
      */
     public onPropertyChanged(newProp: InPlaceEditorModel, oldProp: InPlaceEditorModel): void {
         if (this.isEditorOpen()) {
-            this.removeEditor();
+            const editModeChanged: boolean = 'enableEditMode' in newProp;
+            if ((editModeChanged && oldProp.enableEditMode && !newProp.enableEditMode) || (!editModeChanged && this.enableEditMode)) {
+                this.triggerEndEdit('cancel');
+            } else { this.removeEditor(); }
         }
         for (const prop of Object.keys(newProp)) {
             switch (prop) {

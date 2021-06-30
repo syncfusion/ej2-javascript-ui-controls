@@ -2039,7 +2039,7 @@ export class TableWidget extends BlockWidget {
     /**
      * @private
      */
-    public insertTableRowsInternal(tableRows: TableRowWidget[], startIndex: number): void {
+    public insertTableRowsInternal(tableRows: TableRowWidget[], startIndex: number, isInsertRow?: boolean): void {
         for (let i: number = tableRows.length - 1; i >= 0; i--) {
             let row: TableRowWidget = tableRows.splice(i, 1)[0] as TableRowWidget;
             row.containerWidget = this;
@@ -2047,7 +2047,9 @@ export class TableWidget extends BlockWidget {
         }
         this.updateRowIndex(startIndex);
         this.isGridUpdated = false;
-        this.buildTableColumns();
+        if (isInsertRow) {
+            this.buildTableColumns();
+        }
         this.isGridUpdated = true;
     }
     /**
@@ -2884,10 +2886,16 @@ export class TableCellWidget extends BlockWidget {
             this.cellFormat.preferredWidthType !== 'Auto')) {
             return this.cellFormat.preferredWidth;
         } else if (this.cellFormat.preferredWidth === 0 && this.cellFormat.preferredWidthType === 'Auto'
+            && this.cellFormat.cellWidth !== 0 && this.ownerTable &&
+            this.ownerTable.tableFormat.preferredWidthType !== 'Auto') {
+            // Get preferred Width from cell width.
+            return this.cellFormat.cellWidth;
+        } else if (this.cellFormat.preferredWidth === 0 && this.cellFormat.preferredWidthType === 'Auto'
             && this.cellFormat.cellWidth === 0 && this.previousWidget &&
             (this.previousWidget as TableCellWidget).cellFormat.preferredWidth > 0) {
             return (this.previousWidget as TableCellWidget).cellFormat.preferredWidth;
         }
+
         defaultWidth = this.leftMargin + this.rightMargin + this.getLeftBorderWidth() + this.getRightBorderWidth() + this.getCellSpacing();
         return defaultWidth;
     }

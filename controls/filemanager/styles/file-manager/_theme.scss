@@ -58,6 +58,14 @@
       }
     }
 
+    @if $fm-skin-name == 'tailwind' or $fm-skin-name == 'tailwind-dark' {
+      .e-navigation {
+        &.e-pane {
+          background-color: $content-bg-color-alt1;
+        }
+      }
+    }
+
     .e-address {
       border-bottom-color: $fe-border-color;
 
@@ -81,7 +89,9 @@
         color: $fe-bc-link-color;
 
         &:focus .e-list-text {
-          background: $fe-bc-hover-bg-color;
+          @if $fm-skin-name != 'tailwind' and $fm-skin-name != 'tailwind-dark' {
+            background: $fe-bc-hover-bg-color;
+          }
           color: $fe-bc-hover-font-color;
         }
 
@@ -96,17 +106,23 @@
           .e-list-text {
 
             &:hover {
-              background: $fe-bc-hover-bg-color;
+              @if $fm-skin-name != 'tailwind' and $fm-skin-name != 'tailwind-dark' {
+                background: $fe-bc-hover-bg-color;
+              }
               color: $fe-bc-hover-font-color;
             }
 
             &:active {
-              background: $fe-bc-hover-bg-color;
+              @if $fm-skin-name != 'tailwind' and $fm-skin-name != 'tailwind-dark' {
+                background: $fe-bc-hover-bg-color;
+              }
               color: $fe-bc-hover-font-color;
             }
 
             &:focus {
-              background: $fe-bc-hover-bg-color;
+              @if $fm-skin-name != 'tailwind' and $fm-skin-name != 'tailwind-dark' {
+                background: $fe-bc-hover-bg-color;
+              }
               color: $fe-bc-hover-font-color;
             }
           }
@@ -225,6 +241,12 @@
 
       .e-active {
         color: $fe-active-font-color;
+      }
+
+      .e-empty-inner-content {
+        @if $fm-skin-name == 'tailwind' or $fm-skin-name == 'tailwind-dark' {
+          color: $content-text-color-alt2;
+        }
       }
 
       .e-large-icon {

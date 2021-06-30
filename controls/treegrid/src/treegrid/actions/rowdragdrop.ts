@@ -172,11 +172,14 @@ export class RowDD {
             const dragLength: number = e.records.length;
             for (let i: number = dragLength - 1; i > -1; i--) {
                 draggedRecord = dragRecords[i];
+                if (!i && draggedRecord.hasChildRecords) {
+                    draggedRecord.taskData[this.parent.parentIdMapping] = null;
+                }
                 const recordIndex1: number = 0;
                 if (!isNullOrUndefined(tObj.parentIdMapping)) {
                     tObj.childMapping = null;
                 }
-                if (!isNullOrUndefined(draggedRecord.taskData) &&
+                if (!isNullOrUndefined(draggedRecord.taskData) && !isNullOrUndefined(tObj.childMapping) &&
                 !Object.prototype.hasOwnProperty.call(draggedRecord.taskData, tObj.childMapping)) {
                     draggedRecord.taskData[tObj.childMapping] = [];
                 }
@@ -218,8 +221,8 @@ export class RowDD {
             }
             if (isNullOrUndefined(this.dropPosition)) {
                 this.dropPosition = 'bottomSegment';
-                // eslint-disable-next-line max-len
-                args.dropIndex = this.parent.getCurrentViewRecords().length > 1 ? this.parent.getCurrentViewRecords().length - 1 : args.dropIndex;
+                args.dropIndex = this.parent.getCurrentViewRecords().length > 1 ? this.parent.getCurrentViewRecords().length - 1 :
+                    args.dropIndex;
                 args.data = args.data.map((i: ITreeData) => {
                     if (i.hasChildRecords && isNullOrUndefined(i.parentItem)) {
                         i.level = 0;
@@ -663,17 +666,20 @@ export class RowDD {
             for (let i: number = 0; i < records.length; i++) {
                 indexes[i] = records[i].index;
             }
-            if (this.parent.idMapping != null && ( isNullOrUndefined(this.dropPosition) || this.dropPosition === 'bottomSegment')) {
+            const data:ITreeData[] = srcControl.dataSource as ITreeData[];
+            if (this.parent.idMapping != null && ( isNullOrUndefined(this.dropPosition) || this.dropPosition === 'bottomSegment' || this.dropPosition === 'Invalid') && !(data.length)) {
                 const actualData: ITreeData[] = [];
                 for (let i: number = 0; i < records.length; i++) {
                     if (records[i].hasChildRecords) {
                         actualData.push(records[i]);
-                        const child: ITreeData[] = records[i].childRecords;
+                        const child: ITreeData[] = findChildrenRecords(records[i]);
                         for (let i: number = 0; i < child.length; i++) {
                             actualData.push(child[i]); // push child records to drop the parent record along with its child records
                         }
-                        records = actualData;
                     }
+                }
+                if (actualData.length) {
+                    records = actualData;
                 }
             }
             tObj.notify(events.rowsRemove, { indexes: indexes, records: records });
@@ -796,11 +802,6 @@ export class RowDD {
                                 draggedRecord[this.parent.parentIdMapping] = null;
                             }
                         }
-                        if (draggedRecord.hasChildRecords) {
-                            const level: number = 1;
-                            this.updateChildRecordLevel(draggedRecord, level);
-                            this.updateChildRecord(draggedRecord, recordIndex1 + count + 1);
-                        }
                         if (droppedRecord.parentItem) {
                             const rec: ITreeData[] = this.getChildrecordsByParentID(droppedRecord.parentUniqueID);
                             const childRecords: ITreeData[] = rec[0].childRecords;
@@ -811,6 +812,11 @@ export class RowDD {
                                 draggedRecord.parentItem = droppedRecord.parentItem;
                                 draggedRecord.level = droppedRecord.level;
                             }
+                        }
+                        if (draggedRecord.hasChildRecords) {
+                            const level: number = 1;
+                            this.updateChildRecordLevel(draggedRecord, level);
+                            this.updateChildRecord(draggedRecord, recordIndex1 + count + 1);
                         }
                     }
                     this.dropMiddle(recordIndex1);
@@ -1004,7 +1010,7 @@ export class RowDD {
                         idz = i;
                     }
                 }
-                if (idx !== -1 || idz !== -1) {
+                if (idx !== -1 && !isNullOrUndefined(idx) || idz !== -1 && !isNullOrUndefined(idz)) {
                     (dataSource as ITreeData[]).splice(idx, 1);
                     this.treeGridData.splice(idz, 1);
                 }
@@ -1065,7 +1071,7 @@ export class RowDD {
                     break;
                 }
             }
-            if (idx !== -1 || idz !== -1) {
+            if (idx !== -1 && !isNullOrUndefined(idx) || idz !== -1 && !isNullOrUndefined(idz)) {
                 (dataSource as ITreeData[]).splice(idx, 1);
                 this.treeGridData.splice(idz, 1);
             }

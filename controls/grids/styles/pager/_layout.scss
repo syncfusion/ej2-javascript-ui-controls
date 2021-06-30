@@ -16,7 +16,7 @@
     }
 
     .e-pagerdropdown {
-      height: 40px;
+      height: $pager-bigger-dropdown-heigh;
       margin: $pager-bigger-dropdown-margin;
       margin-top: $pager-bigger-dropdown-margin-top;
     }
@@ -192,7 +192,7 @@
     .e-prevpagedisabled,
     .e-nextpagedisabled,
     .e-lastpagedisabled {
-      opacity: .3;
+      opacity: $pager-disabled-icons-opacity;
     }
 
     .e-spacing,

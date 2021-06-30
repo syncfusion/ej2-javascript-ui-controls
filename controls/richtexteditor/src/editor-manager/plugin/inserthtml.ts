@@ -8,14 +8,14 @@ import { updateTextNode } from './../../common/util';
 
 /**
  * Insert a HTML Node or Text
- * 
+ *
  * @hidden
  * @deprecated
  */
 export class InsertHtml {
     /**
      * Insert method
-     * 
+     *
      * @hidden
      * @deprecated
      */
@@ -284,6 +284,13 @@ export class InsertHtml {
         } else if (range.startContainer === editNode && !isNOU(range.startContainer.childNodes[range.endOffset]) &&
         range.startContainer.childNodes[range.endOffset].nodeName === 'TABLE') {
             range.startContainer.insertBefore(node, range.startContainer.childNodes[range.endOffset]);
+        } else if (range.startContainer === range.endContainer && range.startContainer.nodeType !== 3
+                && node.firstChild.nodeName === 'HR') {
+            if ((range.startContainer as HTMLElement).classList.contains('e-content') || range.startContainer.nodeName === 'BODY') {
+                range.startContainer.appendChild(node);
+            } else {
+                range.startContainer.parentNode.insertBefore(node, range.startContainer);
+            }
         } else {
             let blockNode: Node = this.getImmediateBlockNode(nodes[nodes.length - 1], editNode);
             if ((isNOU(blockNode) || isNOU(blockNode.parentElement)) && range.endContainer.nodeType !== 3) {
@@ -353,7 +360,7 @@ export class InsertHtml {
             if (emptyElements[i].tagName !== 'IMG' && emptyElements[i].tagName !== 'BR' &&
             emptyElements[i].tagName !== 'IFRAME' && emptyElements[i].tagName !== 'TD' &&
             emptyElements[i].tagName !== 'SOURCE' && emptyElements[i].tagName !== 'HR') {
-                let detachableElement: HTMLElement = this.findDetachEmptyElem(emptyElements[i]);
+                const detachableElement: HTMLElement = this.findDetachEmptyElem(emptyElements[i]);
                 if (!isNOU(detachableElement)) {
                     detach(detachableElement);
                 }

@@ -96,8 +96,8 @@ export class Page {
         record: ITreeData, args: RowCollapsedEventArgs }): void {
         rowDetails.record.expanded = rowDetails.action === 'collapse' ? false : true;
         if (this.parent.enableImmutableMode) {
-            let primaryKeyField: string = this.parent.getPrimaryKeyFieldNames()[0];
-            let record: ITreeData[] = this.parent.flatData.filter(e => {
+            const primaryKeyField: string = this.parent.getPrimaryKeyFieldNames()[0];
+            const record: ITreeData[] = this.parent.flatData.filter((e: ITreeData) => {
                 return e[primaryKeyField] === rowDetails.record[primaryKeyField];
             });
             if (record.length) {

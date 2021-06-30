@@ -3,7 +3,7 @@ import {
     ContextMenuOpenEventArgs as CMenuOpenEventArgs, ContextMenuClickEventArgs as CMenuClickEventArgs, ActionBeginArgs
 } from './../base/interface';
 import { TreeGrid, ContextMenu as TreeGridContextMenu } from '@syncfusion/ej2-treegrid';
-import { remove, closest, isNullOrUndefined, getValue, extend, getElement, isBlazor, addClass } from '@syncfusion/ej2-base';
+import { remove, closest, isNullOrUndefined, getValue, extend, getElement, addClass } from '@syncfusion/ej2-base';
 import { Gantt } from './../base/gantt';
 import { Deferred } from '@syncfusion/ej2-data';
 import { ContextMenu as Menu, OpenCloseMenuEventArgs } from '@syncfusion/ej2-navigations';
@@ -328,11 +328,6 @@ export class ContextMenu {
             const callBackPromise: Deferred = new Deferred();
             this.parent.trigger('contextMenuOpen', args, (arg: CMenuOpenEventArgs) => {
                 callBackPromise.resolve(arg);
-                if (isBlazor()) {
-                    arg.element = !isNullOrUndefined(arg.element) ? getElement(arg.element) : arg.element;
-                    arg.gridRow = !isNullOrUndefined(arg.gridRow) ? getElement(arg.gridRow) : arg.gridRow;
-                    arg.chartRow = !isNullOrUndefined(arg.chartRow) ? getElement(arg.chartRow) : arg.chartRow;
-                }
                 this.hideItems = arg.hideItems;
                 this.disableItems = arg.disableItems;
                 if (!arg.parentItem && arg.hideItems.length === arg.items.length) {
@@ -694,9 +689,6 @@ export class ContextMenu {
     }
 
     private revertItemStatus(): void {
-        if (isBlazor() && isNullOrUndefined(this.disableItems)) {
-            this.disableItems = [];
-        }
         this.contextMenu.showItems(this.hideItems);
         this.contextMenu.enableItems(this.disableItems);
         this.hideItems = [];

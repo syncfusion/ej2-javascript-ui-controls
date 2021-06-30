@@ -127,6 +127,38 @@ export function getThemeColor(theme: HeatMapTheme): IThemeStyle {
                 { 'color': '#4CA1AF' }]
         };
         break;
+    case 'tailwind':
+        style = {
+            heatMapTitle: '#374151',
+            axisTitle: '#374151',
+            axisLabel: '#6B7280',
+            cellBorder: '#E5E7EB',
+            background: 'transparent',
+            cellTextColor: '#111827',
+            toggledColor: 'transparent',
+            emptyCellColor: '#E5E7EB',
+            legendLabel: '#374151',
+            palette: [{ 'color': '#5A61F6' },
+                { 'color': '#65A30D' },
+                { 'color': '#14B8A6' }]
+        };
+        break;
+    case 'tailwinddark':
+        style = {
+            heatMapTitle: '#D1D5DB',
+            axisTitle: '#D1D5DB',
+            axisLabel: '#9CA3AF',
+            cellBorder: '#4B5563',
+            background: 'transparent',
+            cellTextColor: '#FFFFFF',
+            toggledColor: 'transparent',
+            emptyCellColor: '#374151',
+            legendLabel: '#D1D5DB',
+            palette: [{ 'color': '#8B5CF6' },
+                { 'color': '#22D3EE' },
+                { 'color': '#F87171' }]
+        };
+        break;
     default:
         style = {
             heatMapTitle: '#424242',

@@ -7,7 +7,7 @@ import * as events from '../base/constant';
 import * as classes from '../base/classes';
 import { getDropDownValue, getFormattedFontSize, getTooltipText } from '../base/util';
 import * as model from '../models/items';
-import { IRichTextEditor, IRenderer, IDropDownModel, IDropDownItemModel, IDropDownRenderArgs } from '../base/interface';
+import { IRichTextEditor, IRenderer, IDropDownModel, IDropDownItemModel, IDropDownRenderArgs, IListDropDownModel } from '../base/interface';
 import { ServiceLocator } from '../services/service-locator';
 import { RendererFactory } from '../services/renderer-factory';
 import { dispatchEvent } from '../base/util';
@@ -16,6 +16,8 @@ import { dispatchEvent } from '../base/util';
  * `Toolbar` module is used to handle Toolbar actions.
  */
 export class DropDownButtons {
+    public numberFormatListDropDown: DropDownButton;
+    public bulletFormatListDropDown: DropDownButton;
     public formatDropDown: DropDownButton;
     public fontNameDropDown: DropDownButton;
     public fontSizeDropDown: DropDownButton;
@@ -73,6 +75,40 @@ export class DropDownButtons {
             let targetElement: Element = undefined;
             if (getIndex(item, args.items) !== -1) {
                 switch (item) {
+                case 'numberformatlist': {
+                    targetElement = select('#' + this.parent.getID() + '_' + type + '_NumberFormatList', tbElement);
+                    if (isNullOrUndefined(targetElement) || targetElement.classList.contains(classes.CLS_DROPDOWN_BTN)) {
+                        return;
+                    }
+                    const formatOLItem: IListDropDownModel[] = this.parent.numberFormatList.types.slice();
+                    formatOLItem.forEach((item: IListDropDownModel): void => {
+                        Object.defineProperties((item as object), {
+                            command: { value: 'Lists', enumerable: true }, subCommand: { value: 'NumberFormatList', enumerable: true }
+                        });
+                    });
+                    this.numberFormatListDropDown = this.toolbarRenderer.renderListDropDown({
+                        cssClass: 'e-order-list' + ' ' + classes.CLS_RTE_ELEMENTS + ' ' + classes.CLS_ICONS,
+                        itemName: 'NumberFormatList', items: formatOLItem, element: targetElement
+                    } as IDropDownModel);
+                    break;
+                }
+                case 'bulletformatlist': {
+                    targetElement = select('#' + this.parent.getID() + '_' + type + '_BulletFormatList', tbElement);
+                    if (isNullOrUndefined(targetElement) || targetElement.classList.contains(classes.CLS_DROPDOWN_BTN)) {
+                        return;
+                    }
+                    const formatULItem: IListDropDownModel[] = this.parent.bulletFormatList.types.slice();
+                    formatULItem.forEach((item: IListDropDownModel): void => {
+                        Object.defineProperties((item as object), {
+                            command: { value: 'Lists', enumerable: true }, subCommand: { value: 'BulletFormatList', enumerable: true }
+                        });
+                    });
+                    this.bulletFormatListDropDown = this.toolbarRenderer.renderListDropDown({
+                        cssClass: 'e-unorder-list' + ' ' + classes.CLS_RTE_ELEMENTS + ' ' + classes.CLS_ICONS,
+                        itemName: 'BulletFormatList', items: formatULItem, element: targetElement
+                    } as IDropDownModel);
+                    break;
+                }
                 case 'formats': {
                     targetElement = select('#' + this.parent.getID() + '_' + type + '_Formats', tbElement);
                     if (isNullOrUndefined(targetElement) || targetElement.classList.contains(classes.CLS_DROPDOWN_BTN)) {
@@ -80,7 +116,6 @@ export class DropDownButtons {
                     }
                     const formatItem: IDropDownItemModel[] = this.parent.format.types.slice();
                     formatItem.forEach((item: IDropDownItemModel): void => {
-                        // eslint-disable-next-line
                         Object.defineProperties((item as object), {
                             command: { value: 'Formats', enumerable: true }, subCommand: { value: item.value, enumerable: true }
                         });
@@ -104,7 +139,6 @@ export class DropDownButtons {
                     }
                     const fontItem: IDropDownItemModel[] = this.parent.fontFamily.items.slice();
                     fontItem.forEach((item: IDropDownItemModel): void => {
-                        // eslint-disable-next-line
                         Object.defineProperties((item as object), {
                             command: { value: 'Font', enumerable: true }, subCommand: { value: 'FontName', enumerable: true }
                         });
@@ -131,7 +165,6 @@ export class DropDownButtons {
                     }
                     const fontsize: IDropDownItemModel[] = this.parent.fontSize.items.slice();
                     fontsize.forEach((item: IDropDownItemModel): void => {
-                        // eslint-disable-next-line
                         Object.defineProperties((item as object), {
                             command: { value: 'Font', enumerable: true }, subCommand: { value: 'FontSize', enumerable: true }
                         });
@@ -183,7 +216,6 @@ export class DropDownButtons {
     private getUpdateItems(items: IDropDownItemModel[], value: string): IDropDownItemModel[] {
         const dropDownItems: IDropDownItemModel[] = items.slice();
         dropDownItems.forEach((item: IDropDownItemModel): void => {
-            // eslint-disable-next-line
             Object.defineProperties((item as object), {
                 command: { value: (value === 'Format' ? 'Formats' : 'Font'), enumerable: true },
                 subCommand: { value: (value === 'Format' ? item.value : value), enumerable: true }
@@ -192,7 +224,6 @@ export class DropDownButtons {
         return dropDownItems;
     }
 
-    // eslint-disable-next-line
     private onPropertyChanged(model: { [key: string]: Object }): void {
         const newProp: RichTextEditorModel = model.newProp;
         let type: string;
@@ -442,9 +473,16 @@ export class DropDownButtons {
             this.removeDropDownClasses(this.tableCellVerticalAlignDropDown.element);
             this.tableCellVerticalAlignDropDown.destroy();
         }
+        if (this.numberFormatListDropDown) {
+            this.removeDropDownClasses(this.numberFormatListDropDown.element);
+            this.numberFormatListDropDown.destroy();
+        }
+        if (this.bulletFormatListDropDown) {
+            this.removeDropDownClasses(this.bulletFormatListDropDown.element);
+            this.bulletFormatListDropDown.destroy();
+        }
     }
 
-    // eslint-disable-next-line
     private setRtl(args: { [key: string]: Object }): void {
         if (this.formatDropDown) {
             this.formatDropDown.setProperties({ enableRtl: args.enableRtl });
@@ -463,6 +501,12 @@ export class DropDownButtons {
         }
         if (this.displayDropDown) {
             this.displayDropDown.setProperties({ enableRtl: args.enableRtl });
+        }
+        if (this.numberFormatListDropDown) {
+            this.numberFormatListDropDown.setProperties({ enableRtl: args.enableRtl });
+        }
+        if (this.bulletFormatListDropDown) {
+            this.bulletFormatListDropDown.setProperties({ enableRtl: args.enableRtl });
         }
     }
 

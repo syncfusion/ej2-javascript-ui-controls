@@ -253,7 +253,7 @@ export class TextLayer {
     /**
      * @private
      */
-    public clearTextLayers(): void {
+    public clearTextLayers(isPinchZoomed?: boolean): void {
         let lowerPageValue: number = this.pdfViewerBase.currentPageNumber - 3;
         lowerPageValue = (lowerPageValue > 0) ? lowerPageValue : 0;
         let higherPageValue: number = this.pdfViewerBase.currentPageNumber + 1;
@@ -265,24 +265,39 @@ export class TextLayer {
                 // eslint-disable-next-line radix
                 const pageNumber: number = parseInt((textLayers[i] as HTMLElement).id.split('_textLayer_')[1]);
                 if (!(((lowerPageValue + 1) <= pageNumber) && (pageNumber <= (higherPageValue - 1)))) {
-                    this.removeElement(textLayers[i] as HTMLElement);
+                    this.removeElement(textLayers[i] as HTMLElement, isPinchZoomed);
                 }
             } else if (this.pdfViewerBase.getPinchZoomed()) {
-                this.removeElement(textLayers[i] as HTMLElement);
+                this.removeElement(textLayers[i] as HTMLElement, isPinchZoomed);
             } else {
-                this.removeElement(textLayers[i] as HTMLElement);
+                this.removeElement(textLayers[i] as HTMLElement, isPinchZoomed);
             }
         }
     }
-    private removeElement(element: HTMLElement): void {
-        if (Browser.isIE) {
-            if (element.parentElement) {
-                element.parentElement.removeChild(element);
-            } else if (element.parentNode) {
-                element.parentNode.removeChild(element);
+    private removeElement(element: HTMLElement, isPinchZoomed?: boolean): void {
+        if (isPinchZoomed) {
+            this.removeForeignObjects(element);
+        }
+        else {
+            if (Browser.isIE) {
+                if (element.parentElement) {
+                    element.parentElement.removeChild(element);
+                } else if (element.parentNode) {
+                    element.parentNode.removeChild(element);
+                }
+            } else {
+                element.remove();
             }
-        } else {
-            element.remove();
+        }
+    }
+    private removeForeignObjects(element: HTMLElement): void {
+        const childElement = element.getElementsByClassName('foreign-object');
+        if (childElement) {
+            for (let i: number = 0; i < childElement.length; i++) {
+                if (childElement[i].parentElement.className === "e-pv-text-layer") {
+                    element.removeChild(childElement[0]);
+                }
+            }
         }
     }
     /**

@@ -1548,6 +1548,7 @@ export function calculateLegendShapes(location: ChartLocation, size: Size, shape
         merge(options, { 'd': dir });
         break;
     case 'SplineArea':
+    case 'SplineRangeArea':
         dir = 'M' + ' ' + (lx - (width / 2)) + ' ' + (ly + (height / 5)) + ' ' + 'Q' + ' ' + lx
                 + ' ' + (ly - height) + ' ' + lx + ' ' + (ly + (height / 5)) + ' ' + 'Z' + ' ' + 'M'
                 + ' ' + lx + ' ' + (ly + (height / 5)) + ' ' + 'Q' + ' ' + (lx + (width / 2)) + ' '
@@ -1730,9 +1731,10 @@ export function textElement(
 export function calculateSize(chart: Chart | AccumulationChart | RangeNavigator | StockChart): void {
     // fix for Chart rendered with default width in IE issue
     let containerWidth: number = chart.element.clientWidth || chart.element.offsetWidth;
-    const containerHeight: number = chart.element.clientHeight;
+    let containerHeight: number = chart.element.clientHeight;
     if ((chart as Chart).stockChart) {
-        containerWidth = (chart as Chart).stockChart.element.clientWidth;
+        containerWidth = (chart as Chart).stockChart.availableSize.width;
+        containerHeight = (chart as Chart).stockChart.availableSize.height;
     }
     let height: number = 450;
     let marginHeight: number;

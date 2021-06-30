@@ -136,7 +136,6 @@ export class ColorPickerInput {
         }
     }
 
-    // eslint-disable-next-line
     private setRtl(args: { [key: string]: Object }): void {
         if (this.fontColorPicker) {
             this.fontColorPicker.setProperties({ enableRtl: args.enableRtl });
@@ -156,7 +155,6 @@ export class ColorPickerInput {
         this.parent.on(events.modelChanged, this.onPropertyChanged, this);
     }
 
-    // eslint-disable-next-line
     private onPropertyChanged(model: { [key: string]: Object }): void {
         const newProp: RichTextEditorModel = model.newProp;
         let element: HTMLElement;

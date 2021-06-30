@@ -575,7 +575,7 @@ export interface TooltipSettingsModel {
     /**
      * Sets and gets the background color of tooltip in the treemap component.
      *
-     * @default '#000816'
+     * @default null
      */
     fill?: string;
 

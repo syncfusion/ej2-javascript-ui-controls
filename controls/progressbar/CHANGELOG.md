@@ -2,14 +2,6 @@
 
 ## [Unreleased]
 
-## 19.1.57 (2021-04-20)
-
-### ProgressBar
-
-#### Bug Fixes
-
-- `#F161003` - ProgressBar label is now rendering properly on live update.
-
 ## 19.1.54 (2021-03-30)
 
 ### ProgressBar

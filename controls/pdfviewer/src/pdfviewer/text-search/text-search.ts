@@ -925,6 +925,7 @@ export class TextSearch {
                         }
                         if (data) {
                             if (data.pageText && data.uniqueId === proxy.pdfViewerBase.documentId) {
+                                proxy.pdfViewer.fireAjaxRequestSuccess(this.pdfViewer.serverActionSettings.renderPages, data);
                                 const pageNumber: number = (data.pageNumber !== undefined) ? data.pageNumber : pageIndex;
                                 if (viewPortWidth >= pageWidth) {
                                     proxy.pdfViewerBase.storeWinData(data, pageNumber);
@@ -996,6 +997,7 @@ export class TextSearch {
                 }
                 if (data) {
                     if (data.documentTextCollection && data.uniqueId === proxy.pdfViewerBase.documentId) {
+                        proxy.pdfViewer.fireAjaxRequestSuccess(this.pdfViewer.serverActionSettings.renderTexts, data);
                         if (proxy.documentTextCollection.length > 0) {
                             proxy.documentTextCollection = data.documentTextCollection.concat(proxy.documentTextCollection);
                             proxy.documentTextCollection = proxy.orderPdfTextCollections(proxy.documentTextCollection);

@@ -114,6 +114,7 @@ export class ScatterSeries {
         let circlePath: String;
         let previousPath: string;
         const marker: MarkerSettingsModel = series.marker;
+        const imageURL : string = argsData.point.marker.imageUrl || marker.imageUrl; 
         const shapeOption: PathOption = new PathOption(
             chart.element.id + '_Series_' + series.index + '_Point_' + point.index, argsData.fill,
             argsData.border.width, argsData.border.color, series.opacity, null
@@ -125,7 +126,7 @@ export class ScatterSeries {
         appendChildElement(
             false, series.seriesElement, drawSymbol(
                 point.symbolLocations[0], argsData.shape, new Size(argsData.width, argsData.height),
-                marker.imageUrl, shapeOption, point.x.toString() + ':' + point.yValue.toString(),
+                imageURL, shapeOption, point.x.toString() + ':' + point.yValue.toString(),
                 series.chart.svgRenderer, series.clipRect
             ),
             chart.redraw, true, circlePath + 'x', circlePath + 'y',
@@ -138,7 +139,7 @@ export class ScatterSeries {
         point.marker = {
             border: argsData.border, fill: argsData.fill,
             height: argsData.height, visible: true,
-            width: argsData.width, shape: argsData.shape
+            width: argsData.width, shape: argsData.shape, imageUrl: imageURL
         };
     }
     /**

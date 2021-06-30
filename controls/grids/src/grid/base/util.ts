@@ -1238,9 +1238,11 @@ export function checkDepth(col: Column, index: number): number {
  */
 export function refreshFilteredColsUid(gObj: IGrid, filteredCols: PredicateModel[]): void {
     for (let i: number = 0; i < filteredCols.length; i++) {
+        const uid: string = gObj.enableColumnVirtualization ? getColumnModelByFieldName(gObj, filteredCols[i].field).uid
+            : gObj.getColumnByField(filteredCols[i].field).uid;
         filteredCols[i].uid = filteredCols[i].isForeignKey ?
             getColumnByForeignKeyValue(filteredCols[i].field, gObj.getForeignKeyColumns()).uid
-            : gObj.getColumnByField(filteredCols[i].field).uid;
+            : uid;
     }
 }
 
@@ -1422,21 +1424,6 @@ export function resetRowIndex(gObj: IGrid, rows: Row<Column>[], rowElms: HTMLTab
     }
     if (!rows.length) {
         gObj.renderModule.emptyRow(true);
-    }
-}
-
-/**
- * @param {IGrid} gObj - Defines the IGrid
- * @param {Row<Column>[]} rows - Defines the row
- * @param {number} index - Defines the index
- * @returns {void}
- * @hidden
- */
-export function resetRowObjectIndex(gObj: IGrid, rows: Row<Column>[], index?: number): void {
-    let startIndex: number = index ? index : 0;
-    for (let i: number = 0; i < rows.length; i++) {
-        rows[i].index = startIndex;
-        startIndex++;
     }
 }
 
@@ -1820,4 +1807,36 @@ export function createEditElement(parent: IGrid, column: Column, classNames: str
     return parent.createElement('input', {
         className: classNames, attrs: attr
     });
+}
+
+/**
+     * @param {string} uid - Defines column's uid
+     * @returns {Column} returns column model
+     * @hidden
+     */
+export function getColumnModelByUid(gObj: IGrid, uid: string): Column {
+    let column: Column;
+    for (const col of ((<{ columnModel?: Column[] }>gObj).columnModel)) {
+        if (col.uid === uid) {
+            column = col;
+            break;
+        }
+    }
+    return column;
+}
+
+/**
+ * @param {string} field - Defines column's uid
+ * @returns {Column} returns column model
+ * @hidden
+ */
+export function getColumnModelByFieldName(gObj: IGrid, field: string): Column {
+    let column: Column;
+    for (const col of ((<{ columnModel?: Column[] }>gObj).columnModel)) {
+        if (col.field === field) {
+            column = col;
+            break;
+        }
+    }
+    return column;
 }

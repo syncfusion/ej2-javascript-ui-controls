@@ -47,9 +47,13 @@ export class DropDownEditCell extends EditCellBase implements IEditCell {
                 created: this.dropdownCreated.bind(this),
                 placeholder: isInline ? '' : args.column.headerText, popupHeight: '200px',
                 floatLabelType: isInline ? 'Never' : 'Always', open: this.dropDownOpen.bind(this),
-                sortOrder: 'Ascending'
+                sortOrder: 'Ascending',
+                beforeOpen: this.dropdownBeforeOpen.bind(this)
             },
             params));
+        if (this.parent.enableVirtualization) {
+            this.obj.dataSource = [args.rowData] as string[];
+        }
         this.obj.query.params = this.parent.query.params;
         this.obj.appendTo(args.element as HTMLElement);
         /* tslint:disable-next-line:no-any */
@@ -59,6 +63,13 @@ export class DropDownEditCell extends EditCellBase implements IEditCell {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     private dropdownCreated(e: FilteringEventArgs): void {
         this.flag = true;
+    }
+
+    private dropdownBeforeOpen(): void {
+        if (this.parent.enableVirtualization) {
+            (this.obj as DropDownList).dataSource = this.parent.dataSource instanceof DataManager ?
+                this.parent.dataSource : new DataManager(this.parent.dataSource);
+        }
     }
 
     private ddActionComplete(e: { result: Object[] }): void {

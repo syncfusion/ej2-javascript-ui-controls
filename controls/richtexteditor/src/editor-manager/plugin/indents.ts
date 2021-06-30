@@ -8,7 +8,7 @@ import * as EVENTS from './../../common/constant';
 import { isIDevice, setEditFrameFocus } from '../../common/util';
 /**
  * Indents internal component
- * 
+ *
  * @hidden
  * @deprecated
  */
@@ -43,6 +43,8 @@ export class Indents {
         }
     }
     private applyIndents(e: IHtmlSubCommands): void {
+        const editEle: HTMLElement = this.parent.editableElement as HTMLElement;
+        const isRtl: boolean = editEle.classList.contains('e-rtl');
         const range: Range = this.parent.nodeSelection.getRange(this.parent.currentDocument);
         let save: NodeSelection = this.parent.nodeSelection.save(range, this.parent.currentDocument);
         this.parent.domNode.setMarker(save);
@@ -75,22 +77,22 @@ export class Indents {
             });
         }
         for (let i: number = 0; i < indentsNodes.length; i++) {
-            const parentNode: Element = indentsNodes[i] as Element;
-            const marginLeft: string = (parentNode as HTMLElement).style.marginLeft;
+            const parentNode: HTMLElement = indentsNodes[i] as HTMLElement;
+            const marginLeftOrRight: string = isRtl ? parentNode.style.marginRight : parentNode.style.marginLeft;
             let indentsValue: string;
             if (e.subCommand === 'Indent') {
-                // eslint-disable-next-line
-                indentsValue = marginLeft === '' ? this.indentValue + 'px' : parseInt(marginLeft, null) + this.indentValue + 'px';
-                (parentNode as HTMLElement).style.marginLeft = indentsValue;
+                /* eslint-disable */
+                indentsValue = marginLeftOrRight === '' ? this.indentValue + 'px' : parseInt(marginLeftOrRight, null) + this.indentValue + 'px';
+                isRtl ? (parentNode.style.marginRight = indentsValue) : (parentNode.style.marginLeft = indentsValue);
             } else {
-                // eslint-disable-next-line
-                indentsValue = (marginLeft === '' || marginLeft === '0px') ? '' : parseInt(marginLeft, null) - this.indentValue + 'px';
-                (parentNode as HTMLElement).style.marginLeft = indentsValue;
+                indentsValue = (marginLeftOrRight === '' || marginLeftOrRight === '0px') ? '' : parseInt(marginLeftOrRight, null) - this.indentValue + 'px';
+                isRtl ? (parentNode.style.marginRight = indentsValue) : (parentNode.style.marginLeft = indentsValue);
+                /* eslint-enable */
             }
         }
-        (this.parent.editableElement as HTMLElement).focus();
+        editEle.focus();
         if (isIDevice()) {
-            setEditFrameFocus(this.parent.editableElement, e.selector);
+            setEditFrameFocus(editEle, e.selector);
         }
         save = this.parent.domNode.saveMarker(save);
         save.restore();

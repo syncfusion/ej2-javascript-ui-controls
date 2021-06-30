@@ -2,14 +2,6 @@
 
 ## [Unreleased]
 
-## 19.1.69 (2021-06-15)
-
-### Compression
-
-#### Bug Fixes
-
-- Updated the license configuration.
-
 ## 15.4.26-preview (2018-01-23)
 
 ### Compression

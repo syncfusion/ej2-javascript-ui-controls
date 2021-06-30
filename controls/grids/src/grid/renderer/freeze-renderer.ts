@@ -246,6 +246,7 @@ export class FreezeContentRender extends ContentRender implements IRenderer {
             tableName = cell.column.getFreezeTableName();
         }
         this.setIdx(idx);
+        (<{ tableName?: freezeTable }>args).tableName = tableName;
         return tableName;
     }
 

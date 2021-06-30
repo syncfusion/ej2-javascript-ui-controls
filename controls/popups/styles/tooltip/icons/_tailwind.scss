@@ -1,0 +1,24 @@
+.e-tooltip-wrap {
+  /*! Tooltip icons */
+  .e-tooltip-close::before {
+    content: '\e91c';
+    font-size: 9px;
+    margin-left: 3px;
+  }
+
+  .e-arrow-tip-inner.e-tip-right::before {
+    content: '\e7d5';
+  }
+
+  .e-arrow-tip-inner.e-tip-top::before {
+    content: '\e768';
+  }
+
+  .e-arrow-tip-inner.e-tip-bottom::before {
+    content: '\e732';
+  }
+
+  .e-arrow-tip-inner.e-tip-left::before {
+    content: '\e74b';
+  }
+}

@@ -135,6 +135,42 @@ export function getRangeThemeColor(theme: ChartTheme, range: RangeNavigator): IR
             thumbHeight: thumbHeight
         };
         break;
+	case 'Tailwind':
+        style = {
+            gridLineColor: '#E5E7EB',
+            axisLineColor: '#D1D5DB',
+            labelFontColor: '#6B7280',
+            unselectedRectColor: range.series.length ? 'transparent' : '#E5E7EB',
+            thumpLineColor: '#9CA3AF',
+            thumbBackground: '#FFFFFF',
+            gripColor: '#6B7280',
+            background: 'rgba(255, 255, 255, 0.6)',
+            thumbHoverColor: '#374151',
+            selectedRegionColor: range.series.length ? 'rgba(79, 70, 229, 0.3)' : '#4F46E5',
+            tooltipBackground: '#111827',
+            tooltipFontColor: '#F9FAFB',
+            thumbWidth: thumbWidth,
+            thumbHeight: thumbHeight
+        };
+        break;
+	case 'TailwindDark':
+        style = {
+            gridLineColor: '#374151',
+            axisLineColor: '#4B5563',
+            labelFontColor: '#9CA3AF',
+            unselectedRectColor: range.series.length ? 'transparent' : '#4B5563',
+            thumpLineColor: '#6B7280',
+            thumbBackground: '#1F2937',
+            gripColor: '#D1D5DB',
+            background: 'rgba(255, 255, 255, 0.6)',
+            thumbHoverColor: '#E5E7EB',
+            selectedRegionColor: range.series.length ? 'rgba(255, 255, 255, 0.6)' : '#22D3EE',
+            tooltipBackground: '#F9FAFB',
+            tooltipFontColor: '#1F2937',
+            thumbWidth: thumbWidth,
+            thumbHeight: thumbHeight
+        };
+        break;
     default:
         style.selectedRegionColor = range.series.length ? 'transparent' : '#FF4081';
         break;

@@ -1,5 +1,5 @@
 /* eslint-disable */
-import { PdfAnnotationBaseModel } from './pdf-annotation-model';
+import { PdfAnnotationBaseModel, PdfFormFieldBaseModel } from './pdf-annotation-model';
 // eslint-disable-next-line max-len
 import { DrawingElement, TextElement, PointModel, Point, BaseAttributes, rotateMatrix, identityMatrix, transformPointByMatrix, Matrix } from '@syncfusion/ej2-drawings';
 import { Transforms } from './drawing';
@@ -20,19 +20,29 @@ export function isLineShapes(obj: PdfAnnotationBaseModel): boolean {
  * @param element
  * @hidden
  */
-export function setElementStype(obj: PdfAnnotationBaseModel, element: DrawingElement): void {
+export function setElementStype(obj: PdfAnnotationBaseModel | PdfFormFieldBaseModel, element: DrawingElement): void {
     if (obj && element) {
-        const fillColor: string = (obj.fillColor === '#ffffff00' ? 'transparent' : obj.fillColor);
-        element.style.fill = fillColor;
-        element.style.strokeColor = obj.strokeColor;
-        (element as TextElement).style.color = obj.strokeColor;
+        if((obj as PdfFormFieldBaseModel).formFieldAnnotationType) {
+            if(obj.id.indexOf("diagram_helper") !==-1) {
+                element.style.fill = 'transparent';
+                element.style.strokeWidth = 1; 
+                element.style.strokeDashArray = (obj as PdfAnnotationBaseModel).borderDashArray;
+            } else {
+            element.style.fill = 'transparent';
+            element.style.strokeWidth = 0;
+            }
+        } else {
+        const fillColor: string = ((obj as PdfAnnotationBaseModel).fillColor === '#ffffff00' ? 'transparent' : (obj as PdfAnnotationBaseModel).fillColor);
+        element.style.fill = fillColor ? fillColor: "white";
+        element.style.strokeColor = (obj as PdfAnnotationBaseModel).strokeColor ? (obj as PdfAnnotationBaseModel).strokeColor: (obj as PdfFormFieldBaseModel).borderColor;
+        (element as TextElement).style.color = (obj as PdfAnnotationBaseModel).strokeColor ? (obj as PdfAnnotationBaseModel).strokeColor: (obj as PdfFormFieldBaseModel).borderColor;
         element.style.strokeWidth = obj.thickness;
-        if (obj.shapeAnnotationType === 'Image') {
+        if ((obj as PdfAnnotationBaseModel).shapeAnnotationType === 'Image' || (obj as PdfAnnotationBaseModel).shapeAnnotationType === 'SignatureText' || (obj as PdfAnnotationBaseModel).shapeAnnotationType === 'SignatureImage' ) {
             element.style.strokeWidth = 0;
         }
-        element.style.strokeDashArray = obj.borderDashArray;
-        element.style.opacity = obj.opacity;
-
+        element.style.strokeDashArray = (obj as PdfAnnotationBaseModel).borderDashArray;
+        element.style.opacity = obj.opacity; 
+      }
     }
 }
 /**

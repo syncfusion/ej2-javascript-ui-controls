@@ -90,7 +90,8 @@ export class TooltipRender {
                 header: argsData.headerText,
                 content: argsData.text,
                 border: series.tooltip.border,
-                fill: smithchart.themeStyle.tooltipFill,
+                fill: series.tooltip.fill || smithchart.themeStyle.tooltipFill,
+                opacity: series.tooltip.opacity,
                 data: currentPoint,
                 template: argsData.template,
                 location: {
@@ -110,6 +111,7 @@ export class TooltipRender {
             this.tooltipElement.opacity = smithchart.themeStyle.tooltipFillOpacity || this.tooltipElement.opacity;
             this.tooltipElement.textStyle.fontFamily = smithchart.themeStyle.fontFamily || 'Roboto, Segoe UI, Noto, Sans-serif';
             this.tooltipElement.textStyle.opacity = smithchart.themeStyle.tooltipTextOpacity || this.tooltipElement.textStyle.opacity;
+			this.tooltipElement.textStyle.color = smithchart.themeStyle.tooltipBoldLabel || this.tooltipElement.textStyle.color;
             this.tooltipElement.appendTo(div as HTMLElement);
         };
         smithChartTooltipSuccess.bind(this, smithchart);

@@ -1,4 +1,4 @@
-import { isNullOrUndefined, isUndefined, extend, setValue, getValue, deleteObject, createElement, isBlazor } from '@syncfusion/ej2-base';
+import { isNullOrUndefined, isUndefined, extend, setValue, getValue, deleteObject, createElement } from '@syncfusion/ej2-base';
 import { Gantt } from '../base/gantt';
 import { TaskFieldsModel, EditSettingsModel, ResourceFieldsModel } from '../models/models';
 import { IGanttData, ITaskData, ITaskbarEditedEventArgs, IValidateArgs, IParent, IPredecessor } from '../base/interface';
@@ -385,31 +385,6 @@ export class Edit {
             }
             const ganttData: IGanttData = this.parent.viewType === 'ResourceView' ?
                 this.parent.flatData[this.parent.getTaskIds().indexOf('T' + data[tasks.id])] : this.parent.getRecordByID(data[tasks.id]);
-            if (isBlazor()) {
-                const keys: string[] = Object.keys(data);
-                if (keys.indexOf(tasks.startDate) !== -1 && !isNullOrUndefined(getValue(this.parent.taskFields.startDate, data))) {
-                    setValue(
-                        this.parent.taskFields.startDate,
-                        this.parent.dataOperation.getDateFromFormat(getValue(this.parent.taskFields.startDate, data)), data);
-                }
-                if (keys.indexOf(tasks.endDate) !== -1 && !isNullOrUndefined(getValue(this.parent.taskFields.endDate, data))) {
-                    setValue(
-                        this.parent.taskFields.endDate,
-                        this.parent.dataOperation.getDateFromFormat(getValue(this.parent.taskFields.endDate, data)), data);
-                }
-                /* eslint-disable-next-line */
-                if (keys.indexOf(tasks.baselineStartDate) !== -1 && !isNullOrUndefined(getValue(this.parent.taskFields.baselineStartDate, data))) {
-                    setValue(
-                        this.parent.taskFields.baselineStartDate,
-                        this.parent.dataOperation.getDateFromFormat(getValue(this.parent.taskFields.baselineStartDate, data)), data);
-                }
-                if (keys.indexOf(tasks.baselineEndDate) !== -1 && !isNullOrUndefined(getValue(this.parent.taskFields.baselineEndDate, data)
-                )) {
-                    setValue(
-                        this.parent.taskFields.baselineEndDate,
-                        this.parent.dataOperation.getDateFromFormat(getValue(this.parent.taskFields.baselineEndDate, data)), data);
-                }
-            }
             if (!isNullOrUndefined(this.parent.editModule) && ganttData) {
                 this.parent.isOnEdit = true;
                 this.validateUpdateValues(data, ganttData, true);
@@ -500,13 +475,15 @@ export class Edit {
                     ganttPropKey = 'taskName';
                 } else if (key === tasks.segments) {
                     ganttPropKey = 'segments';
-                    if (data && data[this.parent.taskFields.segments].length === 0) {
+                    /* eslint-disable-next-line */
+                    if (data && !isNullOrUndefined(data[this.parent.taskFields.segments]) && data[this.parent.taskFields.segments].length > 0) {
                         let totDuration: number = 0;
-                        for(let i: number = 0; i < ganttData.ganttProperties.segments.length; i++) {
+                        for (let i: number = 0; i < ganttData.ganttProperties.segments.length; i++) {
                             totDuration = totDuration + ganttData.ganttProperties.segments[i].duration;
                         }
-                        let sdate: Date = ganttData.ganttProperties.startDate;
-                        let edate: Date = this.parent.dataOperation.getEndDate(sdate, totDuration, ganttData.ganttProperties.durationUnit, ganttData.ganttProperties, false);
+                        const sdate: Date = ganttData.ganttProperties.startDate;
+                        /* eslint-disable-next-line */
+                        const edate: Date = this.parent.dataOperation.getEndDate(sdate, totDuration, ganttData.ganttProperties.durationUnit, ganttData.ganttProperties, false);
                         ganttObj.setRecordValue('endDate', ganttObj.dataOperation.getDateFromFormat(edate), ganttData.ganttProperties, true);
                     }
                 }
@@ -525,7 +502,8 @@ export class Edit {
                         ganttData.ganttProperties, true);
                 }
                 ganttObj.setRecordValue('taskData.' + key, value, ganttData);
-                if (key === tasks.segments && data && data[this.parent.taskFields.segments].length > 0) {
+                /* eslint-disable-next-line */
+                if (key === tasks.segments && data && !isNullOrUndefined(data[this.parent.taskFields.segments]) && data[this.parent.taskFields.segments].length > 0) {
                     ganttObj.dataOperation.setSegmentsInfo(ganttData, true);
                 }
                 ganttObj.setRecordValue(key, value, ganttData);
@@ -798,13 +776,8 @@ export class Edit {
         newArgs.requestType = 'validateLinkedTask';
         newArgs.validateMode = this.parent.dialogValidateMode;
         newArgs.editEventArgs = editedEventArgs;
-        if (isBlazor()) {
-            blazorArgs = { ...newArgs };
-            this.parent.updateDataArgs(newArgs);
-            this.parent.currentEditedArgs = blazorArgs;
-        }
         this.parent.actionBeginTask(newArgs);
-        return isBlazor() ? blazorArgs : newArgs;
+        return newArgs;
     }
 
     private resetValidateArgs(): void {
@@ -839,6 +812,7 @@ export class Edit {
                 }
                 this.parent.predecessorModule.validatePredecessor(ganttRecord, [], '');
             }
+            this.updateParentItemOnEditing();
         }
         /** Update parent up-to zeroth level */
         if (ganttRecord.parentItem || this.parent.taskMode !== 'Auto') {
@@ -847,6 +821,14 @@ export class Edit {
         this.initiateSaveAction(args);
     }
 
+    private updateParentItemOnEditing(): void {
+        const childRecord: object[] = getValue('parentRecord', this.parent.predecessorModule);
+        for (let i: number = 0; i < childRecord.length; i++) {
+            this.parent.dataOperation.updateParentItems(childRecord[i]);
+        }
+        setValue('parentRecord', [], this.parent.predecessorModule);
+        setValue('parentIds', [], this.parent.predecessorModule);
+    }
     /**
      * To update parent records while perform drag action.
      *
@@ -1171,9 +1153,6 @@ export class Edit {
         if (args.action && args.action === 'DrawConnectorLine') {
             eventArgs.action = 'DrawConnectorLine';
         }
-        if (isBlazor()) {
-            eventArgs = this.parent.updateDataArgs(eventArgs);
-        }
         this.parent.trigger('actionBegin', eventArgs, (eventArg: IActionBeginEventArgs) => {
             if (eventArg.cancel) {
                 this.reUpdatePreviousRecords();
@@ -1291,16 +1270,10 @@ export class Edit {
                 eventArgs.taskBarEditAction = args.taskBarEditAction;
             }
             this.endEditAction(args);
-            if (isBlazor()) {
-                this.parent.updateDataArgs(eventArgs);
-            }
             this.parent.trigger('actionComplete', eventArgs);
         } else {
             this.taskbarEditModule.dependencyCancel = false;
             this.resetEditProperties();
-            if (isBlazor()) {
-                this.parent.updateDataArgs(eventArgs);
-            }
         }
         if (this.parent.viewType === 'ResourceView' && this.isTreeGridRefresh) {
             this.parent.treeGrid.parentData = [];
@@ -1459,6 +1432,7 @@ export class Edit {
                 deleteRecordIDs.push(deletedRow.ganttProperties.rowUniqueID.toString());
                 this.parent.editModule.removeFromDataSource(deleteRecordIDs);
             }
+            const flatRecordIndex: number = this.parent.flatData.indexOf(deletedRow);
             if (gObj.taskFields.parentID) {
                 let idx: number;
                 const ganttData: IGanttData[] = this.parent.currentViewData;
@@ -1472,18 +1446,18 @@ export class Edit {
                         (dataSource as IGanttData[]).splice(idx, 1);
                     }
                     data.splice(idx, 1);
-                    this.parent.flatData.splice(idx, 1);
-                    this.parent.ids.splice(idx, 1);
-                    this.parent.getTaskIds().splice(idx, 1);
+                    this.parent.flatData.splice(flatRecordIndex, 1);
+                    this.parent.ids.splice(flatRecordIndex, 1);
+                    this.parent.getTaskIds().splice(flatRecordIndex, 1);
                 }
             }
             const recordIndex: number = data.indexOf(deletedRow);
             if (!gObj.taskFields.parentID) {
                 const deletedRecordCount: number = this.parent.editModule.getChildCount(deletedRow, 0);
                 data.splice(recordIndex, deletedRecordCount + 1);
-                this.parent.flatData.splice(recordIndex, deletedRecordCount + 1);
-                this.parent.ids.splice(recordIndex, deletedRecordCount + 1);
-                this.parent.getTaskIds().splice(recordIndex, deletedRecordCount + 1);
+                this.parent.flatData.splice(flatRecordIndex, deletedRecordCount + 1);
+                this.parent.ids.splice(flatRecordIndex, deletedRecordCount + 1);
+                this.parent.getTaskIds().splice(flatRecordIndex, deletedRecordCount + 1);
             }
             if (deletedRow.parentItem && flatParentData && flatParentData.childRecords && !flatParentData.childRecords.length) {
                 this.parent.setRecordValue('expanded', false, flatParentData);
@@ -1971,11 +1945,6 @@ export class Edit {
         eventArgs.modifiedRecords = args.updatedRecordCollection;
         eventArgs.modifiedTaskData = getTaskData(args.updatedRecordCollection, null, null, this.parent);
         const blazorArgs: IActionBeginEventArgs = {};
-        if (isBlazor()) {
-            eventArgs = this.parent.updateDataArgs(eventArgs);
-            blazorArgs.modifiedTaskData = eventArgs.modifiedTaskData;
-            blazorArgs.data = eventArgs.data;
-        }
         this.parent.trigger('actionBegin', eventArgs, (eventArg: IActionBeginEventArgs) => {
             if (eventArg.cancel) {
                 const deleteRecords: IGanttData[] = this.deletedTaskDetails;
@@ -1990,21 +1959,12 @@ export class Edit {
                 if (isRemoteData(this.parent.dataSource)) {
                     const data: DataManager = this.parent.dataSource as DataManager;
                     if (this.parent.timezone) {
-                        if (isBlazor()) {
-                            updateDates(blazorArgs.modifiedTaskData as IGanttData, this.parent);
-                        } else {
-                            updateDates(eventArg.modifiedTaskData as IGanttData, this.parent);
-                        }
+                        updateDates(eventArg.modifiedTaskData as IGanttData, this.parent);
                     }
                     const updatedData: object = {
-                        deletedRecords: isBlazor() ? getTaskData(blazorArgs.data as IGanttData[], null, null, this.parent)
-                            : getTaskData(eventArg.data as IGanttData[], null, null, this.parent), // to check
-                        changedRecords: isBlazor() ? blazorArgs.modifiedTaskData : eventArg.modifiedTaskData
+                        deletedRecords: getTaskData(eventArg.data as IGanttData[], null, null, this.parent), // to check
+                        changedRecords: eventArg.modifiedTaskData
                     };
-                    if (isBlazor()) {
-                        const blazAddedRec: string = 'addedRecords';
-                        updatedData[blazAddedRec] = [];
-                    }
                     const adaptor: AdaptorOptions = data.adaptor;
                     if (!(adaptor instanceof WebApiAdaptor && adaptor instanceof ODataAdaptor) || data.dataSource.batchUrl) {
                         const crud: Promise<Object> = data.saveChanges(updatedData, this.parent.taskFields.id) as Promise<Object>;
@@ -2081,9 +2041,6 @@ export class Edit {
         this.parent.updatedConnectorLineCollection = [];
         this.parent.connectorLineIds = [];
         this.parent.predecessorModule.createConnectorLinesCollection(this.parent.flatData);
-        if (this.parent.taskFields.dependency) {
-            this.parent.predecessorModule.updatedRecordsDateByPredecessor();
-        }
         this.parent.treeGrid.parentData = [];
         this.parent.treeGrid.refresh();
         if (this.parent.enableImmutableMode) {
@@ -2095,9 +2052,6 @@ export class Edit {
         eventArgs.modifiedRecords = args.updatedRecordCollection;
         eventArgs.modifiedTaskData = getTaskData(args.updatedRecordCollection, null, null, this.parent);
         setValue('action', args.action, eventArgs);
-        if (isBlazor()) {
-            this.parent.updateDataArgs(eventArgs);
-        }
         this.parent.trigger('actionComplete', eventArgs);
         this.deletedTaskDetails = [];
         this.parent.initiateEditAction(false);
@@ -2196,10 +2150,9 @@ export class Edit {
             this.parent.predecessorModule.ensurePredecessorCollectionHelper(cAddedRecord, cAddedRecord.ganttProperties);
             this.parent.predecessorModule.updatePredecessorHelper(cAddedRecord);
             this.parent.predecessorModule.validatePredecessorDates(cAddedRecord);
-        } else {
-            if (cAddedRecord.parentItem && this.parent.getParentTask(cAddedRecord.parentItem).ganttProperties.isAutoSchedule) {
-                this.parent.dataOperation.updateParentItems(cAddedRecord.parentItem);
-            }
+        }
+        if (cAddedRecord.parentItem && this.parent.getParentTask(cAddedRecord.parentItem).ganttProperties.isAutoSchedule) {
+            this.parent.dataOperation.updateParentItems(cAddedRecord.parentItem);
         }
         this.parent.isOnEdit = false;
         return cAddedRecord;
@@ -2604,21 +2557,8 @@ export class Edit {
             args = this.constructTaskAddedEventArgs(cAddedRecord, this.parent.editedRecords, 'beforeAdd');
             this.parent.showSpinner();
             let blazorArgs: ITaskAddedEventArgs = {};
-            if (isBlazor()) {
-                if (!Array.isArray(args.data)) {
-                    const customData: IGanttData[] = [];
-                    customData.push(args.data);
-                    setValue('data', customData, args);
-                }
-                blazorArgs = { ...args };
-            }
             this.parent.trigger('actionBegin', args, (args: ITaskAddedEventArgs) => {
                 if (!args.cancel) {
-                    if (isBlazor()) {
-                        (blazorArgs.data as IGanttData) = blazorArgs.data[0];
-                        args = blazorArgs;
-                        this._resetProperties();
-                    }
                     if (isRemoteData(this.parent.dataSource)) {
                         const data: DataManager = this.parent.dataSource as DataManager;
                         const updatedData: object = {
@@ -2711,7 +2651,7 @@ export class Edit {
                         this._resetProperties();
                     }
                 } else {
-                    args = isBlazor() ? blazorArgs : args;
+                    args = args;
                     this.removeAddedRecord();
                     this.reUpdatePreviousRecords();
                     this._resetProperties();
@@ -2735,7 +2675,7 @@ export class Edit {
             this.parent.selectionModule ?
                 (this.parent.selectionSettings.mode === 'Row' || this.parent.selectionSettings.mode === 'Both') &&
                     this.parent.selectionModule.selectedRowIndexes.length === 1 ?
-                    this.parent.updatedRecords.indexOf(this.parent.selectionModule.getSelectedRecords()[0]) :
+                    this.parent.selectionModule.selectedRowIndexes[0] :
                     this.parent.selectionSettings.mode === 'Cell' &&
                         this.parent.selectionModule.getSelectedRowCellIndexes().length === 1 ?
                         this.parent.selectionModule.getSelectedRowCellIndexes()[0].rowIndex : null : null : rowIndex;
@@ -2832,9 +2772,6 @@ export class Edit {
         }
         this.addSuccess(args);
         args = this.constructTaskAddedEventArgs(cAddedRecord, args.modifiedRecords, 'add');
-        if (isBlazor()) {
-            this.parent.updateDataArgs(args);
-        }
         this.parent.trigger('actionComplete', args);
         if (this.dialogModule.dialog && !this.dialogModule.dialogObj.isDestroyed) {
             this.dialogModule.dialogObj.hide();
@@ -3100,6 +3037,13 @@ export class Edit {
             this.updateParentRecords = [];
             this.parent.isOnEdit = false;
         }
+        this.refreshRecord(args);
+    }
+    /**
+     * @returns {void} .
+     * @private
+     */
+    public refreshRecord(args: RowDropEventArgs, isDrag?: boolean): void {
         if (isRemoteData(this.parent.dataSource)) {
             const data: DataManager = this.parent.dataSource as DataManager;
             const updatedData: object = {
@@ -3114,28 +3058,32 @@ export class Edit {
                 const changedRecords: string = 'changedRecords';
                 crud = data.update(this.parent.taskFields.id, updatedData[changedRecords], null, queryValue) as Promise<Object>;
             }
-            crud.then((e: ReturnType) => this.indentSuccess(e, args))
+            crud.then((e: ReturnType) => this.indentSuccess(e, args, isDrag))
                 .catch((e: { result: Object[] }) => this.indentFailure(e as { result: Object[] }));
         } else {
-            this.indentOutdentSuccess(args);
+            this.indentOutdentSuccess(args, isDrag);
         }
     }
-    private indentSuccess(e: ReturnType, args: RowDropEventArgs): void {
-        this.indentOutdentSuccess(args);
+    private indentSuccess(e: ReturnType, args: RowDropEventArgs, isDrag: boolean): void {
+        this.indentOutdentSuccess(args, isDrag);
     }
     private indentFailure(e: { result: Object[] }): void {
         this.parent.trigger('actionFailure', { error: e });
     }
-    private indentOutdentSuccess(args: RowDropEventArgs): void {
+    private indentOutdentSuccess(args: RowDropEventArgs, isDrag: boolean): void {
         this.parent.treeGrid.parentData = [];
         this.parent.treeGrid.refresh();
         if (this.parent.enableImmutableMode) {
             this.refreshRecordInImmutableMode();
         }
-        if (this.dropPosition === 'middleSegment') {
-            args.requestType = 'indented';
-        } else if (this.dropPosition === 'bottomSegment') {
-            args.requestType = 'outdented';
+        if (isDrag) {
+            args.requestType = 'rowDropped';
+        } else {
+            if (this.dropPosition === 'middleSegment') {
+                args.requestType = 'indented';
+            } else if (this.dropPosition === 'bottomSegment') {
+                args.requestType = 'outdented';
+            }
         }
         args.modifiedRecords = this.parent.editedRecords;
         if (this.parent.timezone) {

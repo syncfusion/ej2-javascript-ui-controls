@@ -2,9 +2,9 @@
  * InPlace-Editor spec document
  */
 import { isNullOrUndefined as isNOU, select, selectAll, createElement, Browser, detach } from '@syncfusion/ej2-base';
-import { InPlaceEditor, BeforeSanitizeHtmlArgs } from '../../src/inplace-editor/base/index';
+import { InPlaceEditor, BeforeSanitizeHtmlArgs, EndEditEventArgs } from '../../src/inplace-editor/base/index';
 import * as classes from '../../src/inplace-editor/base/classes';
-import { renderEditor, destroy, triggerKeyBoardEvent, safariMobileUA } from './../render.spec';
+import { renderEditor, destroy, triggerKeyBoardEvent, safariMobileUA, dispatchEvent } from './../render.spec';
 import { profile, inMB, getMemoryProfile } from './../common.spec';
 
 describe('InPlace-Editor Control', () => {
@@ -2822,6 +2822,215 @@ describe('InPlace-Editor Control', () => {
             ele = editorObj.element;
             expect(isNOU(ele.getAttribute('tabindex'))).toBe(false);
             expect(ele.getAttribute('tabindex')).toBe('3');
+        });
+    });
+
+    describe('EJ2-45911 - endEdit - Need event before exit mode in In-place Editor', () => {
+        let ele: HTMLElement;
+        let editorObj: any;
+        let btnEle: any;
+        beforeEach((): void => {
+            btnEle = document.createElement('button');
+            btnEle.innerHTML = "Click Me";
+            document.body.appendChild(btnEle);
+        });
+        afterEach((): void => {
+            destroy(editorObj);
+            editorObj = undefined;
+            detach(btnEle);
+        });
+        it('Outside click testing', (done: Function) => {
+            let closeType: string;
+            editorObj = renderEditor({
+                enableEditMode: true,
+                endEdit: (e: EndEditEventArgs) => {
+                    closeType = e.action;
+                }
+            });
+            ele = editorObj.element;
+            let valueWrapper: any = <HTMLElement>select('.' + classes.VALUE_WRAPPER, ele);
+            expect(valueWrapper.classList.contains(classes.OPEN)).toEqual(true);
+            dispatchEvent(btnEle, 'mousedown');
+            setTimeout(() => {
+                expect(closeType).toBe('submit');
+                expect(valueWrapper.classList.contains(classes.OPEN)).toEqual(false);
+                done();
+            }, 1000);
+        });
+        it('Save method testing', (done: Function) => {
+            let closeType: string;
+            editorObj = renderEditor({
+                enableEditMode: true,
+                endEdit: (e: EndEditEventArgs) => {
+                    closeType = e.action;
+                }
+            });
+            ele = editorObj.element;
+            let valueWrapper: any = <HTMLElement>select('.' + classes.VALUE_WRAPPER, ele);
+            expect(valueWrapper.classList.contains(classes.OPEN)).toEqual(true);
+            editorObj.save();
+            setTimeout(() => {
+                expect(closeType).toBe('submit');
+                expect(valueWrapper.classList.contains(classes.OPEN)).toEqual(false);
+                done();
+            }, 1000);
+        });
+        it('actionOnBlur - Submit with outside click testing', (done: Function) => {
+            let closeType: string;
+            editorObj = renderEditor({
+                enableEditMode: true,
+                actionOnBlur: 'Submit',
+                endEdit: (e: EndEditEventArgs) => {
+                    closeType = e.action;
+                }
+            });
+            ele = editorObj.element;
+            let valueWrapper: any = <HTMLElement>select('.' + classes.VALUE_WRAPPER, ele);
+            expect(valueWrapper.classList.contains(classes.OPEN)).toEqual(true);
+            dispatchEvent(btnEle, 'mousedown');
+            setTimeout(() => {
+                expect(closeType).toBe('submit');
+                expect(valueWrapper.classList.contains(classes.OPEN)).toEqual(false);
+                done();
+            }, 1000);
+        });
+        it('actionOnBlur - Cancel with outside click testing', (done: Function) => {
+            let closeType: string;
+            editorObj = renderEditor({
+                enableEditMode: true,
+                actionOnBlur: 'Cancel',
+                endEdit: (e: EndEditEventArgs) => {
+                    closeType = e.action;
+                }
+            });
+            ele = editorObj.element;
+            let valueWrapper: any = <HTMLElement>select('.' + classes.VALUE_WRAPPER, ele);
+            expect(valueWrapper.classList.contains(classes.OPEN)).toEqual(true);
+            dispatchEvent(btnEle, 'mousedown');
+            setTimeout(() => {
+                expect(closeType).toBe('cancel');
+                expect(valueWrapper.classList.contains(classes.OPEN)).toEqual(false);
+                done();
+            }, 1000);
+        });
+        it('actionOnBlur - Ignore with outside click testing', (done: Function) => {
+            let closeType: string;
+            editorObj = renderEditor({
+                enableEditMode: true,
+                actionOnBlur: 'Ignore',
+                endEdit: (e: EndEditEventArgs) => {
+                    closeType = e.action;
+                }
+            });
+            ele = editorObj.element;
+            let valueWrapper: any = <HTMLElement>select('.' + classes.VALUE_WRAPPER, ele);
+            expect(valueWrapper.classList.contains(classes.OPEN)).toEqual(true);
+            dispatchEvent(btnEle, 'mousedown');
+            setTimeout(() => {
+                expect(closeType).toBe(undefined);
+                expect(valueWrapper.classList.contains(classes.OPEN)).toEqual(true);
+                done();
+            }, 1000);
+        });
+        it('Save button click testing', (done: Function) => {
+            let closeType: string;
+            editorObj = renderEditor({
+                enableEditMode: true,
+                endEdit: (e: EndEditEventArgs) => {
+                    closeType = e.action;
+                }
+            });
+            ele = editorObj.element;
+            let valueWrapper: any = <HTMLElement>select('.' + classes.VALUE_WRAPPER, ele);
+            expect(valueWrapper.classList.contains(classes.OPEN)).toEqual(true);
+            dispatchEvent(document.querySelector('.e-btn-save'), 'mousedown');
+            setTimeout(() => {
+                expect(closeType).toBe('submit');
+                expect(valueWrapper.classList.contains(classes.OPEN)).toEqual(false);
+                done();
+            }, 1000);
+        });
+        it('Cancel button click testing', (done: Function) => {
+            let closeType: string;
+            editorObj = renderEditor({
+                enableEditMode: true,
+                endEdit: (e: EndEditEventArgs) => {
+                    closeType = e.action;
+                }
+            });
+            ele = editorObj.element;
+            let valueWrapper: any = <HTMLElement>select('.' + classes.VALUE_WRAPPER, ele);
+            expect(valueWrapper.classList.contains(classes.OPEN)).toEqual(true);
+            dispatchEvent(document.querySelector('.e-btn-cancel'), 'mousedown');
+            setTimeout(() => {
+                expect(closeType).toBe('cancel');
+                expect(valueWrapper.classList.contains(classes.OPEN)).toEqual(false);
+                done();
+            }, 1000);
+        });
+        it('Keydown testing', (done: Function) => {
+            let closeType: string;
+            editorObj = renderEditor({
+                enableEditMode: true,
+                endEdit: (e: EndEditEventArgs) => {
+                    closeType = e.action;
+                }
+            });
+            ele = editorObj.element;
+            let valueWrapper: any = <HTMLElement>select('.' + classes.VALUE_WRAPPER, ele);
+            expect(valueWrapper.classList.contains(classes.OPEN)).toEqual(true);
+            triggerKeyBoardEvent(select('input', document.body) as HTMLElement, 13);
+            setTimeout(() => {
+                expect(closeType).toBe('submit');
+                expect(valueWrapper.classList.contains(classes.OPEN)).toEqual(false);
+                done();
+            }, 1000);
+        });
+        it('Property change testing', (done: Function) => {
+            let closeType: string;
+            editorObj = renderEditor({
+                enableEditMode: true,
+                endEdit: (e: EndEditEventArgs) => {
+                    closeType = e.action;
+                }
+            });
+            ele = editorObj.element;
+            let valueWrapper: any = <HTMLElement>select('.' + classes.VALUE_WRAPPER, ele);
+            expect(valueWrapper.classList.contains(classes.OPEN)).toEqual(true);
+            editorObj.enableEditMode = false;
+            editorObj.dataBind();
+            setTimeout(() => {
+                expect(closeType).toBe('cancel');
+                expect(valueWrapper.classList.contains(classes.OPEN)).toEqual(false);
+                done();
+            }, 1000);
+        });
+    });
+
+    describe('EJ2-49882- Console error occurs when the large value is typed', () => {
+        let ele: HTMLElement;
+        let editorObj: InPlaceEditor;
+        let valueEle: HTMLElement;
+        let valueWrapper: HTMLElement;
+        afterEach((): void => {
+            destroy(editorObj);
+        });
+        it('starting to edit with large values', () => {
+            editorObj = renderEditor({
+                type: 'Numeric',
+                model: {
+                    placeholder: 'Currency format',
+                    showClearButton: true,                    
+                },
+                value: parseFloat('2.2342432423423425e+58')
+            });
+            ele = editorObj.element;
+            valueWrapper = <HTMLElement>select('.' + classes.VALUE_WRAPPER, ele);
+            valueEle = <HTMLElement>select('.' + classes.VALUE, valueWrapper);
+            editorObj.model.value = parseFloat('2.2342432423423425e+58');
+            editorObj.dataBind();
+            valueEle.click();
+            expect(parseFloat(editorObj.model.value as any) === parseFloat('2.2342432423423425e+58')).toEqual(true);
         });
     });
 });

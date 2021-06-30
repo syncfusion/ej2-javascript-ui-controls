@@ -2,6 +2,7 @@
 $ddl-list-line-height: 36px !default;
 $ddl-header-font-weight: 600 !default;
 $ddl-last-child-bottom-border: 0 !default;
+$ddl-line-height: 48px !default;
 $ddl-default-font-family: inherit !default;
 $ddl-list-border-size: 0 !default;
 $ddl-list-bottom-border: $ddl-list-border-size !default;
@@ -26,7 +27,13 @@ $ddl-default-header-font-color: rgba($grey-dark-font, .7) !default;
 $ddl-list-focus-color: $grey-50 !default;
 $ddl-list-focus-border: 1px solid $grey-400 !default;
 $ddl-group-list-padding-left: 2em !default;
+$ddl-group-list-small-padding-left: $ddl-group-list-padding-left !default;
+$ddl-group-list-bigger-padding-left: $ddl-group-list-padding-left !default;
+$ddl-group-list-bigger-small-padding-left: $ddl-group-list-padding-left !default;
 $ddl-list-header-padding-left: 16px !default;
+$ddl-list-header-small-padding-left: $ddl-list-header-padding-left !default;
+$ddl-list-header-bigger-small-padding-left: $ddl-list-header-padding-left !default;
+$ddl-list-header-bigger-padding-left: $ddl-list-header-padding-left !default;
 $ddl-list-text-indent: 16px !default;
 $ddl-list-rtl-padding-right: 0 !default;
 $ddl-list-padding-right: 16px !default;
@@ -34,6 +41,8 @@ $ddl-list-rtl-padding-left: 16px !default;
 $ddl-bigger-list-header-font-size: 14px !default;
 $ddl-multi-column-border-width: 0 0 1px 0 !default;
 $ddl-multi-column-border-color: $grey-700 !default;
+$ddl-list-header-font-size: $ddl-group-list-font-size !default;
+$ddl-small-list-header-font-size: $ddl-group-list-font-size !default;
 
 // Small Size
 

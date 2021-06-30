@@ -2,6 +2,8 @@ $rte-border-size: 1px !default;
 $rte-2px-border-size: 2px !default;
 $rte-border-type: solid !default;
 
+$rte-list-btn-flex: column !default;
+$rte-list-btn-line-height: 1 !default;
 $skin-name: 'material' !default;
 $rte-btn-color: rgba($grey-black, .87) !default;
 $rte-border-color: rgba($grey-black, .12) !default;
@@ -10,6 +12,8 @@ $rte-full-screen-bg: $grey-white !default;
 $rte-content-font-color: #333 !default;
 $rte-item-color: $grey-black !default;
 $rte-icons-color: $grey-black !default;
+$rte-content-padding: 16px !default;
+$rte-table-popup-padding: 10px !default;
 
 $rte-big-quick-item-btn-width: 39px !default;
 $rte-quick-item-btn-width: 27px !default;
@@ -26,6 +30,8 @@ $rte-quick-item-border: 0 !default;
 $rte-quick-item-hover-border-color: $grey-white !default;
 $rte-quick-item-active-border-color: $grey-white !default;
 
+$font-weight: 500 !default;
+$rte-table-popup-bdr-radius: 0 !default;
 $rte-big-quick-drop-btn-line-height: 33px !default;
 $rte-quick-drop-btn-line-height: 24px !default;
 $rte-big-quick-drop-btn-margin: 4px 0 !default;
@@ -144,6 +150,8 @@ $rte-big-quick-tbar-item-min-width: 39px !default;
 $rte-content-font-size: 14px !default;
 $rte-dropdown-caret-icon-size: 12px !default;
 $rte-big-dropdown-caret-icon-size: 12px !default;
+$rte-toolbar-icon-size: 16px !default;
+$rte-toolbar-big-icon-size: 18px !default;
 
 $rte-big-inline-tmp-min-width: 48px;
 $rte-inline-tmp-min-width: 55px;
@@ -155,3 +163,5 @@ $rte-inline-tmp-color-min-width: 55px;
 $rte-resize-handler-width: 15px;
 $rte-resize-handler-height: 15px;
 $rte-resize-handler-position: 0;
+
+$rte-big-color-list-span-common-padding-left-right: 0;

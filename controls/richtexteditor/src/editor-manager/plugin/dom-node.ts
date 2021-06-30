@@ -10,7 +10,7 @@ export const markerClassName: { [key: string]: string } = {
 };
 /**
  * DOMNode internal plugin
- * 
+ *
  * @hidden
  * @deprecated
  */

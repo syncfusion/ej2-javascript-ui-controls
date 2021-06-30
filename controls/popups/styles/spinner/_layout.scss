@@ -110,6 +110,21 @@
         }
       }
 
+      @if $skin-name == 'tailwind' or $skin-name == 'tailwind-dark'  {
+        .e-spin-tailwind {
+          @include tw-spinner-rotate;
+          display: block;
+          margin: 0 auto;
+          overflow: visible;
+
+          .e-path-arc,
+          .e-path-circle {
+            fill: none;
+            stroke-width: $spin-tailwind-stroke-width;
+          }
+        }
+      }
+
       .e-spin-bootstrap {
         display: block;
         margin: 0 auto;

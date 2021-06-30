@@ -1,9 +1,9 @@
 import { NodeSelection } from './../../selection/index';
 import { KeyboardEventArgs } from '@syncfusion/ej2-base';
-import { IHtmlFormatterCallBack } from '../../common/interface';
+import { IHtmlFormatterCallBack, IAdvanceListItem } from '../../common/interface';
 /**
  * Specifies  Command models interfaces.
- * 
+ *
  * @hidden
  * @deprecated
  */
@@ -21,11 +21,15 @@ export interface ICommandModel {
 
 /**
  * Specifies IHtmlSubCommands interfaces.
- * 
+ *
  * @hidden
  * @deprecated
  */
 export interface IHtmlSubCommands {
+    /**
+     * Specifies the item
+     */
+    item?: IAdvanceListItem
     /**
      * Specifies the subCommand.
      */
@@ -54,7 +58,7 @@ export interface IHtmlSubCommands {
 
 /**
  * Specifies  IKeyboardActionArgs interfaces for command line.
- * 
+ *
  * @hidden
  * @deprecated
  */
@@ -115,7 +119,7 @@ export interface IHtmlUndoRedoData {
 
 /**
  * Specifies IHtmlKeyboardEvent interfaces.
- * 
+ *
  * @hidden
  * @deprecated
  */

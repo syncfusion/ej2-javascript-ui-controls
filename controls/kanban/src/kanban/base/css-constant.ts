@@ -193,3 +193,7 @@ export const SHOW_ADD_BUTTON: string = 'e-show-add-button';
 export const SHOW_ADD_ICON: string = 'e-show-add-icon';
 /** @private */
 export const SHOW_ADD_FOCUS: string = 'e-show-add-focus';
+/** @private */
+export const FROZEN_SWIMLANE_ROW_CLASS: string = 'e-frozen-swimlane-row';
+/** @private */
+export const FROZEN_ROW_CLASS: string = 'e-frozen-row';

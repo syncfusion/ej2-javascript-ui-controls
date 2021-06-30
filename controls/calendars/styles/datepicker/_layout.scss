@@ -13,6 +13,15 @@
     }
   }
 
+  #{&}.e-datepicker.e-bigger,
+  .e-bigger #{&}.e-datepicker {
+    #{if(&, '&', '*')}.e-popup-wrapper {
+      @if $skin-name == 'tailwind' or $skin-name == 'tailwind-dark' {
+        margin-top: $datepicker-popup-bigger-margin-top;
+      }
+    }
+  }
+
   #{&}.e-datepicker {
 
     #{if(&, '&', '*')} .e-calendar {

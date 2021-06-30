@@ -81,7 +81,7 @@ export class ContextMenu extends MenuBase implements INotifyPropertyChanged {
      * @param {number} top - To specify ContextMenu vertical positioning.
      * @param {number} left - To specify ContextMenu horizontal positioning.
      * @param {HTMLElement} target - To calculate z-index for ContextMenu based upon the specified target.
-     * @method open
+     * @function open
      * @returns {void}
      */
     public open(top: number, left: number, target?: HTMLElement): void {
@@ -91,6 +91,7 @@ export class ContextMenu extends MenuBase implements INotifyPropertyChanged {
     /**
      * Closes the ContextMenu if it is opened.
      *
+     * @function close
      * @returns {void}
      */
     public close(): void {

@@ -220,3 +220,5 @@ export const beforeInsert: string = 'beforeInsert';
 export const beforeDelete: string = 'beforeDelete';
 /** @hidden */
 export const deleteHyperlink: string = 'deleteHyperlink';
+/** @hidden */
+export const moveOrDuplicateSheet: string = 'moveOrDuplicateSheet';

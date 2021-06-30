@@ -66,6 +66,36 @@ export function getThemeColor(theme: SparklineTheme): IThemes {
             labelFontFamily: 'HelveticaNeue'
         };
         break;
+	case 'tailwind':
+        themeColors = {
+			axisLineColor: '#4B5563',
+            dataLabelColor: '#212529',
+            rangeBandColor: '#212529',
+            background: '#FFFFFF',
+			tooltipFill: '#111827',
+            tooltipFontColor: '#F9FAFB',
+            trackerLineColor: '#1F2937',
+            fontFamily: 'Inter',
+            tooltipFillOpacity: 1,
+            tooltipTextOpacity: 1,
+            labelFontFamily: 'Inter'
+        };
+        break;
+	case 'tailwinddark':
+        themeColors = {
+            axisLineColor: '#D1D5DB',
+            dataLabelColor: '#F9FAFB',
+            rangeBandColor: '#F9FAFB',
+            background: 'transparent',
+			tooltipFill: '#F9FAFB',
+            tooltipFontColor: '#1F2937',
+            trackerLineColor: '#9CA3AF',
+            fontFamily: 'Inter',
+            tooltipFillOpacity: 1,
+            tooltipTextOpacity: 1,
+            labelFontFamily: 'Inter'
+        };
+        break;	
     default: {
         themeColors = {
             axisLineColor: '#000000',
@@ -99,7 +129,8 @@ export function stringToNumber(value: string, containerSize: number): number {
  */
 export function calculateSize(sparkline: Sparkline): void {
     const containerWidth: number = !sparkline.element.clientWidth ? (!sparkline.element.parentElement ? 100 :
-        sparkline.element.parentElement.clientWidth) : sparkline.element.clientWidth;
+        (!sparkline.element.parentElement.clientWidth ? window.innerWidth : sparkline.element.parentElement.clientWidth)) :
+        sparkline.element.clientWidth;
     const containerHeight: number = !sparkline.element.clientHeight ? (!sparkline.element.parentElement ? 50 :
         sparkline.element.parentElement.clientHeight) : sparkline.element.clientHeight;
     sparkline.availableSize = new Size(

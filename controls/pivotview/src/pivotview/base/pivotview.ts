@@ -133,6 +133,16 @@ export class GroupingBarSettings extends ChildProperty<GroupingBarSettings> {
      */
     @Property(true)
     public allowDragAndDrop: boolean;
+
+    /**
+     * Allows you to show an additional UI along with the grouping bar UI, which contains the fields that aren't bound in the current report.
+     * It allows you to modify the report by re-arranging the pivot buttons through drag-and-drop operation between axes (row, column, value and filter)
+     * that are used to update the pivot table during runtime.
+     * > This property is applicable only for relational data source.
+     * @default false     
+     */
+    @Property(false)
+    public showFieldsPanel: boolean;
 }
 
 /**         
@@ -2840,7 +2850,13 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
                     this.initialLoad();
                     break;
                 case 'groupingBarSettings':
-                    this.axisFieldModule.render();
+                    if (newProp.groupingBarSettings && this.showGroupingBar && this.groupingBarModule &&
+                        Object.keys(newProp.groupingBarSettings).indexOf("showFieldsPanel") > -1) {
+                        this.groupingBarModule.RefreshFieldsPanel();
+                        this.layoutRefresh();
+                    } else {
+                        this.axisFieldModule.render();
+                    }
                     break;
                 case 'showTooltip':
                     this.renderToolTip();

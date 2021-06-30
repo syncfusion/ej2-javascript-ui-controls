@@ -32,9 +32,10 @@ export class CommandColumnRenderer extends CellRenderer implements ICellRenderer
      * @param {cell<Column>} cell - specifies the cell
      * @param {Object} data - specifies the data
      * @param {Object} attributes - specifies the attributes
+     * @param {boolean} isVirtualEdit - specifies virtual scroll editing
      * @returns {Element} returns the element
      */
-    public render(cell: Cell<Column>, data: Object, attributes?: { [x: string]: Object }): Element {
+    public render(cell: Cell<Column>, data: Object, attributes?: { [x: string]: Object }, isVirtualEdit?: boolean): Element {
         let node: Element = this.element.cloneNode() as Element;
         const uid: string = 'uid';
         node.appendChild(this.unbounDiv.cloneNode());
@@ -53,7 +54,7 @@ export class CommandColumnRenderer extends CellRenderer implements ICellRenderer
             }
         }
         this.setAttributes(<HTMLElement>node, cell, attributes);
-        if (this.parent.isEdit) {
+        if ((!this.parent.enableVirtualization && this.parent.isEdit) || isVirtualEdit) {
             addClass([].slice.call(node.getElementsByClassName('e-edit-delete')), 'e-hide');
             removeClass([].slice.call(node.getElementsByClassName('e-save-cancel')), 'e-hide');
         } else {

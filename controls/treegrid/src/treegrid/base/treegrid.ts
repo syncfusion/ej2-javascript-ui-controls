@@ -1530,31 +1530,35 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
                 }
                 break;
             case 'downArrow':
-                parentTarget = (<HTMLTableCellElement>e.target).parentElement;
-                summaryElement = this.findnextRowElement(parentTarget);
-                if (summaryElement !== null) {
-                    const rowIndex: number = (<HTMLTableRowElement>summaryElement).rowIndex;
-                    this.selectRow(rowIndex);
-                    const cellIndex: number = (<HTMLTableCellElement>e.target).cellIndex;
-                    const row: Element = (<HTMLTableRowElement>summaryElement).children[cellIndex];
-                    addClass([row], 'e-focused');
-                    addClass([row], 'e-focus');
-                } else {
-                    this.clearSelection();
+                if (!this.enableVirtualization) {
+                    parentTarget = (<HTMLTableCellElement>e.target).parentElement;
+                    summaryElement = this.findnextRowElement(parentTarget);
+                    if (summaryElement !== null) {
+                        const rowIndex: number = (<HTMLTableRowElement>summaryElement).rowIndex;
+                        this.selectRow(rowIndex);
+                        const cellIndex: number = (<HTMLTableCellElement>e.target).cellIndex;
+                        const row: Element = (<HTMLTableRowElement>summaryElement).children[cellIndex];
+                        addClass([row], 'e-focused');
+                        addClass([row], 'e-focus');
+                    } else {
+                        this.clearSelection();
+                    }
                 }
                 break;
             case 'upArrow':
-                parentTarget = (<HTMLTableCellElement>e.target).parentElement;
-                summaryElement = this.findPreviousRowElement(parentTarget);
-                if (summaryElement !== null) {
-                    const rIndex: number = (<HTMLTableRowElement>summaryElement).rowIndex;
-                    this.selectRow(rIndex);
-                    const cIndex: number = (<HTMLTableCellElement>e.target).cellIndex;
-                    const rows: Element = (<HTMLTableRowElement>summaryElement).children[cIndex];
-                    addClass([rows], 'e-focused');
-                    addClass([rows], 'e-focus');
-                } else {
-                    this.clearSelection();
+                if (!this.enableVirtualization) {
+                    parentTarget = (<HTMLTableCellElement>e.target).parentElement;
+                    summaryElement = this.findPreviousRowElement(parentTarget);
+                    if (summaryElement !== null) {
+                        const rIndex: number = (<HTMLTableRowElement>summaryElement).rowIndex;
+                        this.selectRow(rIndex);
+                        const cIndex: number = (<HTMLTableCellElement>e.target).cellIndex;
+                        const rows: Element = (<HTMLTableRowElement>summaryElement).children[cIndex];
+                        addClass([rows], 'e-focused');
+                        addClass([rows], 'e-focus');
+                    } else {
+                        this.clearSelection();
+                    }
                 }
             }
         }
@@ -1817,7 +1821,7 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
         }
         this.element.appendChild(gridContainer);
         const gridRequiredModules: Function = this.grid.requiredModules;
-        this.grid.requiredModules = function (): ModuleDeclaration[] {
+        this.grid.requiredModules = function(): ModuleDeclaration[] {
             let modules: ModuleDeclaration[] = [];
             modules = gridRequiredModules.apply(this);
             for (let i: number = 0; i < modules.length; i++) {
@@ -1848,7 +1852,6 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
         }
         this.clipboardModule = this.grid.clipboardModule = new TreeClipboard(this);
     }
-
     private convertTreeData(data: Object): void {
         if (isCountRequired(this)) {
             data = getValue('result', data);
@@ -2102,10 +2105,13 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
         if (old) {
             const keys: string[] = Object.keys(old);
             let isEqual: boolean = true;
-            let excludeKeys: string[] = ["Children", "childRecords","taskData","uniqueID","parentItem", "parentUniqueID"];
+            let excludeKeys: string[] = ["Children", "childRecords","taskData","uniqueID","parentItem", "parentUniqueID", "index"];
             for (let i: number = 0; i < keys.length; i++) {
                 if (old[keys[i]] !== current[keys[i]] && excludeKeys.indexOf(keys[i]) === -1) {
-                    isEqual = false; break;
+                    const isDate: boolean = old[keys[i]] instanceof Date && current[keys[i]] instanceof Date;
+                    if (!isDate || ((old[keys[i]] as Date).getTime() !== (current[keys[i]] as Date).getTime())) {
+                        isEqual = false; break;
+                    }    
                 }
             }
             return isEqual;
@@ -2115,6 +2121,11 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
     }
     private bindCallBackEvents(): void {
         this.grid.toolbarClick = (args: ClickEventArgs): Deferred | void => {
+            if ((args.item.id === this.grid.element.id + '_excelexport' && this.allowExcelExport === false) ||
+            (args.item.id === this.grid.element.id + '_pdfexport' && this.allowPdfExport === false) ||
+            (args.item.id === this.grid.element.id + '_csvexport' && this.allowExcelExport === false)){
+                return;
+            }
             const callBackPromise: Deferred = new Deferred();
             this.trigger(events.toolbarClick, args, (toolbarargs: ClickEventArgs) => {
                 if (!toolbarargs.cancel) {
@@ -2227,10 +2238,11 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
         if (this.dataSource instanceof DataManager && (this.dataSource.dataSource.offline || this.dataSource.ready)) {
             this.grid.dataSource[dataSource].json = extendArray(this.dataSource[dataSource].json);
             this.grid.dataSource[ready] = this.dataSource.ready;
-            let proxy: TreeGrid = this;
+            // eslint-disable-next-line @typescript-eslint/no-this-alias
+            const proxy: TreeGrid = this;
             if ( !isNullOrUndefined(this.grid.dataSource[ready]) ) {
                 this.grid.dataSource[ready].then((e: ReturnOption): void => {
-                    let dm: Object = proxy.grid.dataSource;
+                    const dm: Object = proxy.grid.dataSource;
                     dm[dataSource].offline = true;
                     dm[isDataAvailable] = true;
                     dm[dataSource].json = e.result;
@@ -2254,7 +2266,7 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
             if (!isRemoteData(this) && !isNullOrUndefined(this.filterModule) && !isCountRequired(this)
         && (this.grid.filterSettings.columns.length === 0 || this.grid.searchSettings.key.length === 0)) {
                 this.notify('clearFilters', { flatData: this.grid.dataSource });
-                this.grid.dataSource = this.dataResults.result;
+                this.grid.setProperties({ dataSource: this.dataResults.result }, true);
             }
             const callBackPromise: Deferred = new Deferred();
             this.trigger(events.actionBegin, args, (actionArgs: ActionEventArgs) => {

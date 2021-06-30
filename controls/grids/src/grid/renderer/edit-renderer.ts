@@ -51,17 +51,18 @@ export class EditRender {
         this.convertWidget(args);
     }
 
-    public update(args: CustomEditEventArgs): void {
+    public update(args: Object): void {
         this.renderer.update(this.getEditElements(args), args);
-        if (!args.isCustomFormValidation) {
+        const isCustomFormValidation: boolean = (<{ isCustomFormValidation?: boolean }>args).isCustomFormValidation;
+        if (!isCustomFormValidation) {
             this.parent.notify(events.beforeStartEdit, args);
+            this.convertWidget(args);
         }
-        this.convertWidget(args);
     }
 
     private convertWidget(args: {
         rowData?: Object, columnName?: string, requestType?: string, row?: Element, type?: string,
-        foreignKeyData?: Object, frozenRightForm?: Element, isScroll?: boolean, isCustomFormValidation?: boolean, form?: Element
+        foreignKeyData?: Object, frozenRightForm?: Element, isScroll?: boolean, form?: Element
     }): void {
         const gObj: IGrid = this.parent;
         let isFocused: boolean;
@@ -74,9 +75,6 @@ export class EditRender {
         let form: Element = gObj.editSettings.mode === 'Dialog' ?
             select('#' + gObj.element.id + '_dialogEdit_wrapper .e-gridform', document) :
             gObj.element.getElementsByClassName('e-gridform')[index];
-        if (args.isCustomFormValidation) {
-            form = args.form;
-        }
         const isVirtualFrozen: boolean = frzCols && this.parent.enableColumnVirtualization && args.isScroll;
         if (frzCols && gObj.editSettings.mode === 'Normal') {
             const rowIndex: number = parseInt(args.row.getAttribute(literals.ariaRowIndex), 10);
@@ -186,7 +184,7 @@ export class EditRender {
         }
     }
 
-    private getEditElements(args: {
+    public getEditElements(args: {
         rowData?: Object, columnName?: string, requestType?: string, row?: Element,
         rowIndex?: number, isScroll?: boolean, isCustomFormValidation?: boolean
     }): Object {
@@ -194,18 +192,16 @@ export class EditRender {
         const elements: Object = {};
         let cols: Column[] = gObj.editSettings.mode !== 'Batch' ? gObj.getColumns() as Column[] : [gObj.getColumnByField(args.columnName)];
         if (args.isCustomFormValidation) {
-            cols = this.parent.columns as Column[];
+            cols = (<{ columnModel?: Column[] }>this.parent).columnModel;
         }
         if (this.parent.editSettings.template) {
             return {};
         }
         const isVirtualFrozen: boolean = gObj.isFrozenGrid() && gObj.enableColumnVirtualization && args.isScroll;
         for (let i: number = 0, len: number = cols.length; i < len; i++) {
-            if (isVirtualFrozen && cols[i].getFreezeTableName() !== 'movable') {
-                continue;
-            }
             const col: Column = cols[i];
-            if (this.parent.editModule.checkColumnIsGrouped(col)) {
+            if (this.parent.editModule.checkColumnIsGrouped(col) || (isVirtualFrozen && cols[i].getFreezeTableName() !== 'movable')
+                || (args.isCustomFormValidation && (col.commands || col.commandsTemplate || !col.field))) {
                 continue;
             }
             if (col.commands || col.commandsTemplate) {
@@ -215,7 +211,7 @@ export class EditRender {
                 const cells: Cell<Column>[] = model.generateRows(args.rowData)[0].cells;
                 const cell: Cell<Column>[] = cells.filter((cell: Cell<Column>) => cell.rowID);
                 const td: Element = cellRenderer.render(
-                    cell[i], args.rowData, <{ [x: string]: string }>{ 'index': args.row ? args.row.getAttribute(literals.ariaRowIndex) : 0 });
+                    cell[i], args.rowData, <{ [x: string]: string }>{ 'index': args.row ? args.row.getAttribute(literals.ariaRowIndex) : 0 }, this.parent.enableVirtualization);
                 const div: Element = td.firstElementChild;
                 div.setAttribute('textAlign', td.getAttribute('textAlign'));
                 elements[col.uid] = div;

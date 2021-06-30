@@ -28,7 +28,6 @@ export class MarkdownToolbarStatus {
         this.parent.off(events.toolbarRefresh, this.onRefreshHandler);
         this.parent.off(events.destroy, this.removeEventListener);
     }
-    // eslint-disable-next-line
     private onRefreshHandler(args: { [key: string]: Node | Object }): void {
         const parentsLines: { [key: string]: string | number }[] = this.selection.getSelectedParentPoints(this.element);
         this.toolbarStatus = {
@@ -96,7 +95,6 @@ export class MarkdownToolbarStatus {
         let isFormat: boolean = false;
         const textArea: HTMLTextAreaElement = this.parent.inputElement as HTMLTextAreaElement;
         const start: number = textArea.selectionStart;
-        // eslint-disable-next-line
         const splitAt: Function = (index: number) => (x: string) => [x.slice(0, index), x.slice(index)];
         const splitText: string[] = splitAt(start)(textArea.value);
         const cmdPre: string = this.parent.formatter.formatTags.pre;

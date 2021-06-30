@@ -49,6 +49,14 @@
       right: -9px;
       top: -9px;
       z-index: inherit;
+      @if ($skin-name == 'tailwind' or $skin-name == 'tailwind-dark') {
+        border-radius: 9px;
+        border-width: 1px;
+        box-shadow: $shadow-sm;
+        box-sizing: border-box;
+        height: 16px;
+        width: 16px;
+      }
     }
 
     /*! tooltip content area */
@@ -67,16 +75,63 @@
       @if $skin-name == 'bootstrap4' {
         border-radius: inherit;
       }
+      @if ($skin-name == 'tailwind' or $skin-name == 'tailwind-dark') {
+        font-weight: 500;
+      }
+    }
+
+    &.e-rtl {
+      .e-tooltip-close::before {
+        @if ($skin-name == 'tailwind' or $skin-name == 'tailwind-dark') {
+          font-size: 9px;
+          margin-right: 2px;
+        }
+      }
     }
   }
 
   /*! Bigger Style */
   .e-bigger .e-tooltip-wrap .e-tip-content,
   .e-tooltip-wrap.e-bigger .e-tip-content {
-    line-height: 20px;
+    @if ($skin-name == 'tailwind' or $skin-name == 'tailwind-dark') {
+      line-height: 22px;
+    }
+    @else {
+      line-height: 20px;
+    }
     padding: $tooltip-mobile-horizontal-padding $tooltip-mobile-vertical-padding;
     @if $skin-name == 'bootstrap4' {
       line-height: 1.5;
+    }
+  }
+
+  .e-bigger .e-tooltip-wrap,
+  .e-tooltip-wrap.e-bigger {
+
+    .e-tooltip-close {
+      @if ($skin-name == 'tailwind' or $skin-name == 'tailwind-dark') {
+        border-radius: 10px;
+        border-width: 1px;
+        height: 20px;
+        width: 20px;
+      }
+    }
+
+    .e-tooltip-close::before {
+      @if ($skin-name == 'tailwind' or $skin-name == 'tailwind-dark') {
+        font-size: 11px;
+        margin-left: 4px;
+        vertical-align: middle;
+      }
+    }
+
+    &.e-rtl {
+      .e-tooltip-close::before {
+        @if ($skin-name == 'tailwind' or $skin-name == 'tailwind-dark') {
+          font-size: 11px;
+          margin-right: 3px;
+        }
+      }
     }
   }
 }

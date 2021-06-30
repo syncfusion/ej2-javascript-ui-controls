@@ -508,7 +508,7 @@ describe('Column freeze render module', () => {
         });
         it('Ensure frozen left-right check validation', () => {
             gridObj.endEdit();
-            expect(gridObj.editModule.editFormValidate()).toBeTruthy();
+            expect(gridObj.editModule.editFormValidate()).toBeFalsy();
         });
         afterAll(() => {
             gridObj['freezeModule'].destroy();

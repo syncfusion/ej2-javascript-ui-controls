@@ -318,43 +318,48 @@ export class Renderer {
                 if (shape instanceof ImageElementBox) {
                     this.renderImageElementBox(shape, shape.x, shape.y, 0);
                 } else if (shape instanceof ShapeElementBox) {
-                    let isZeroShapeHeight: boolean = (shape.height === 0) ? true : false;
-                    let shapeType: any = shape.autoShapeType;
-                    let blocks: BlockWidget[] = shape.textFrame.childWidgets as BlockWidget[];
                     let shapeLeft: number = this.getScaledValue(shape.x, 1);
                     let shapeTop: number = this.getScaledValue(shape.y, 2);
-                    this.pageContext.beginPath();
-                    if (shape.fillFormat && shape.fillFormat.color) {
-                        this.pageContext.fillStyle = shape.fillFormat.color;
-                        this.pageContext.fillRect(shapeLeft, shapeTop, this.getScaledValue(shape.width), this.getScaledValue(shape.height));
-                    }
-                    if (!isNullOrUndefined(shapeType)) {
-                        if ((shape.lineFormat.line && shape.lineFormat.lineFormatType !== 'None') || (!isNullOrUndefined(shape.lineFormat.lineFormatType) && shape.lineFormat.lineFormatType !== 'None')) {
-                            this.pageContext.lineWidth = shape.lineFormat.weight;
-                            this.pageContext.strokeStyle = HelperMethods.getColor(shape.lineFormat.color);
-                            this.pageContext.strokeRect(shapeLeft, shapeTop, this.getScaledValue(shape.width), this.getScaledValue(shape.height));
-                        }
-                    }
-                    this.pageContext.closePath();
-                    let isClipped: boolean = false;
-                    if (shape.width != 0 && shape.height != 0) {
-                        isClipped = true;
-                        this.clipRect(shape.x, shape.y, this.getScaledValue(shape.width), this.getScaledValue(shape.height));
-                    }
-                    for (let i: number = 0; i < blocks.length; i++) {
-                        this.renderWidget(page, blocks[i]);
-                        if (isZeroShapeHeight && shapeType !== 'StraightConnector') {
-                            shape.height += blocks[i].height;
-                        }
-                    }
-                    if (isZeroShapeHeight) {
-                        isZeroShapeHeight = false;
-                    }
-                    if (isClipped) {
-                        this.pageContext.restore();
-                    }
+                    this.renderShapeElementBox(shape, shapeLeft, shapeTop, page);
                 }
             }
+        }
+    }
+
+    private renderShapeElementBox(shape: ShapeElementBox, shapeLeft: number, shapeTop: number, page: Page): void {
+        let isZeroShapeHeight: boolean = (shape.height === 0) ? true : false;
+        let shapeType: any = shape.autoShapeType;
+        let blocks: BlockWidget[] = shape.textFrame.childWidgets as BlockWidget[];
+        
+        this.pageContext.beginPath();
+        if (shape.fillFormat && shape.fillFormat.color) {
+            this.pageContext.fillStyle = shape.fillFormat.color;
+            this.pageContext.fillRect(shapeLeft, shapeTop, this.getScaledValue(shape.width), this.getScaledValue(shape.height));
+        }
+        if (!isNullOrUndefined(shapeType)) {
+            if ((shape.lineFormat.line && shape.lineFormat.lineFormatType !== 'None') || (!isNullOrUndefined(shape.lineFormat.lineFormatType) && shape.lineFormat.lineFormatType !== 'None')) {
+                this.pageContext.lineWidth = shape.lineFormat.weight;
+                this.pageContext.strokeStyle = HelperMethods.getColor(shape.lineFormat.color);
+                this.pageContext.strokeRect(shapeLeft, shapeTop, this.getScaledValue(shape.width), this.getScaledValue(shape.height));
+            }
+        }
+        this.pageContext.closePath();
+        let isClipped: boolean = false;
+        if (shape.width != 0 && shape.height != 0) {
+            isClipped = true;
+            this.clipRect(shape.x, shape.y, this.getScaledValue(shape.width), this.getScaledValue(shape.height));
+        }
+        for (let i: number = 0; i < blocks.length; i++) {
+            this.renderWidget(page, blocks[i]);
+            if (isZeroShapeHeight && shapeType !== 'StraightConnector') {
+                shape.height += blocks[i].height;
+            }
+        }
+        if (isZeroShapeHeight) {
+            isZeroShapeHeight = false;
+        }
+        if (isClipped) {
+            this.pageContext.restore();
         }
     }
 
@@ -560,8 +565,7 @@ export class Renderer {
         let isCommentMark: boolean = false;
         for (let i: number = 0; i < lineWidget.children.length; i++) {
             let elementBox: ElementBox = lineWidget.children[i] as ElementBox;
-            if (elementBox instanceof ShapeElementBox ||
-                (elementBox instanceof ImageElementBox && elementBox.textWrappingStyle !== 'Inline')) {
+            if (elementBox instanceof ShapeBase && elementBox.textWrappingStyle !== 'Inline') {
                 continue;
             }
             if (elementBox instanceof CommentCharacterElementBox || elementBox instanceof EditRangeStartElementBox) {
@@ -645,7 +649,11 @@ export class Renderer {
                 this.renderListTextElementBox(elementBox, left, top, underlineY);
             } else if (elementBox instanceof ImageElementBox) {
                 this.renderImageElementBox(elementBox, left, top, underlineY);
-            } else {
+            } else if (elementBox instanceof ShapeElementBox) {
+                let shapeLeft: number = this.getScaledValue(left, 1);
+                let shapeTop: number = this.getScaledValue(top, 2);
+                this.renderShapeElementBox(elementBox, shapeLeft, shapeTop, page);
+            }  else {
                 elementBox.isVisible = true;
                 left += elementBox.padding.left;
                 this.renderTextElementBox(elementBox as TextElementBox, left, top, underlineY);

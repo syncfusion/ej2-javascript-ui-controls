@@ -1,0 +1,490 @@
+@include export-module("document-editor-container-tailwind-dark-icons") {
+  .e-de-ctnr-close::before {
+    content: "\e771";
+    color: $icon-color;
+    font-size: 16px;
+  }
+
+  .e-de-ctnr-linespacing::before {
+    content: "\e7de";
+    color: $icon-color;
+  }
+
+  .e-de-ctnr-undo::before {
+    content: "\e7bd";
+    color: $icon-color;
+  }
+
+  .e-de-ctnr-find::before {
+    content: "\e737";
+    color: $icon-color;
+  }
+
+  .e-de-ctnr-lock::before {
+    content: "\e753";
+    color: $icon-color;
+  }
+
+  .e-de-ctnr-italic::before {
+    content: "\e722";
+    color: $icon-color;
+  }
+
+  .e-de-selected-spellcheck-item::before {
+    content: "\e75d";
+    font-size: 10px;
+    font-family: 'e-icons';
+    color: $icon-color;
+  }
+
+  .e-de-selected-underline-item::before {
+    content: "\e75d";
+    font-family: 'e-icons';
+    font-size: 10px;
+    color: $icon-color;
+  }
+
+  .e-de-ctnr-link::before {
+    content: "\e74a";
+    color: $icon-color;
+  }
+
+  .e-de-ctnr-table::before {
+    content: "\e79f";
+    color: $icon-color;
+  }
+
+  .e-de-ctnr-download::before {
+    content: "\e794";
+    color: $icon-color;
+  }
+
+  .e-de-ctnr-justify::before {
+    content: "\e723";
+    color: $icon-color;
+  }
+
+  .e-de-ctnr-tableofcontent::before {
+    content: "\e733";
+    color: $icon-color;
+  }
+
+  .e-de-ctnr-pagenumber::before {
+    content: "\e7cf";
+    color: $icon-color;
+  }
+
+  .e-de-ctnr-highlight::before {
+    content: "\e7c1";
+    color: $icon-color;
+  }
+
+  .e-de-ctnr-new::before {
+    content: "\e78a";
+    color: $icon-color;
+  }
+
+  .e-de-ctnr-paste::before {
+    content: "\e75e";
+    color: $icon-color;
+  }
+
+  .e-de-ctnr-bold::before {
+    content: "\e79d";
+    color: $icon-color;
+  }
+
+  .e-de-ctnr-subscript::before {
+    content: "\e7b4";
+    color: $icon-color;
+  }
+
+  .e-de-ctnr-aligncenter::before {
+    content: "\e74f";
+    color: $icon-color;
+  }
+
+  .e-de-ctnr-fontcolor::before {
+    content: "\e775";
+    color: $icon-color;
+  }
+
+  .e-de-ctnr-change-case::before {
+    content: "\e86a";
+    color: $icon-color;
+  }
+
+  .e-de-ctnr-pagesetup::before {
+    content: "\e79a";
+    color: $icon-color;
+  }
+
+  .e-de-ctnr-strokestyle::before {
+    content: "\eb62";
+    color: $icon-color;
+  }
+
+  .e-de-ctnr-strikethrough::before {
+    content: "\e760";
+    color: $icon-color;
+  }
+
+  .e-de-ctnr-image::before {
+    content: "\e7da";
+    color: $icon-color;
+  }
+
+  .e-de-ctnr-redo::before {
+    content: "\e7b9";
+    color: $icon-color;
+  }
+
+  .e-de-ctnr-bookmark::before {
+    content: "\e793";
+    color: $icon-color;
+  }
+
+  .e-de-ctnr-increaseindent::before {
+    content: "\e7ac";
+    color: $icon-color;
+  }
+
+  .e-de-ctnr-header::before {
+    content: "\e739";
+    color: $icon-color;
+  }
+
+  .e-de-ctnr-backgroundcolor::before {
+    content: "\eb6b";
+    color: $icon-color;
+  }
+
+  .e-de-ctnr-open::before {
+    content: "\e749";
+    color: $icon-color;
+  }
+
+  .e-de-ctnr-underline::before {
+    content: "\e7d4";
+    color: $icon-color;
+  }
+
+  .e-de-ctnr-superscript::before {
+    content: "\e7cb";
+    color: $icon-color;
+  }
+
+  .e-de-ctnr-alignleft::before {
+    content: "\e7ae";
+    color: $icon-color;
+  }
+
+  .e-de-ctnr-numbering::before {
+    content: "\e71f";
+    color: $icon-color;
+  }
+
+  .e-de-ctnr-bullets::before {
+    content: "\e743";
+    color: $icon-color;
+  }
+
+  .e-de-ctnr-decreaseindent::before {
+    content: "\e735";
+    color: $icon-color;
+  }
+
+  .e-de-ctnr-showhide::before {
+    content: "\e75f";
+    font-size: 16px;
+  }
+
+  .e-de-ctnr-print::before {
+    content: "\e76c";
+    color: $icon-color;
+  }
+
+  .e-de-ctnr-alignright::before {
+    content: "\e772";
+    color: $icon-color;
+  }
+
+  .e-de-ctnr-footer::before {
+    content: "\e78c";
+    color: $icon-color;
+  }
+
+  .e-de-ctnr-clearall::before {
+    content: "\e792";
+    color: $icon-color;
+  }
+
+  .e-de-ctnr-outsideborder::before {
+    content: "\e7c4";
+    color: $icon-color;
+  }
+
+  .e-de-ctnr-allborders::before {
+    content: "\e79f";
+    color: $icon-color;
+  }
+
+  .e-de-ctnr-insideborders::before {
+    content: "\e79c";
+    color: $icon-color;
+  }
+
+  .e-de-ctnr-leftborders::before {
+    content: "\e784";
+    color: $icon-color;
+  }
+
+  .e-de-ctnr-insideverticalborder::before {
+    content: "\e702";
+    color: $icon-color;
+  }
+
+  .e-de-ctnr-rightborder::before {
+    content: "\e72e";
+    color: $icon-color;
+  }
+
+  .e-de-ctnr-topborder::before {
+    content: "\e7a7";
+    color: $icon-color;
+  }
+
+  .e-de-ctnr-insidehorizondalborder::before {
+    content: "\e73b";
+    color: $icon-color;
+  }
+
+  .e-de-ctnr-bottomborder::before {
+    content: "\e791";
+    color: $icon-color;
+  }
+
+  .e-de-ctnr-strokesize::before {
+    content: "\e754";
+    color: $icon-color;
+  }
+
+  .e-de-ctnr-highlightcolor::before {
+    content: "\e7c1";
+    color: $icon-color;
+  }
+
+  .e-de-ctnr-mergecell::before {
+    content: "\e73f";
+    color: $icon-color;
+  }
+
+  .e-de-ctnr-insertleft::before {
+    content: "\e7db";
+    color: $icon-color;
+  }
+
+  .e-de-ctnr-insertright::before {
+    content: "\e710";
+    color: $icon-color;
+  }
+
+  .e-de-ctnr-insertabove::before {
+    content: "\e7dd";
+    color: $icon-color;
+  }
+
+  .e-de-ctnr-insertbelow::before {
+    content: "\e757";
+    color: $icon-color;
+  }
+
+  .e-de-ctnr-deleterows::before {
+    content: "\e75a";
+    color: $icon-color;
+  }
+
+  .e-de-ctnr-deletecolumns::before {
+    content: "\e721";
+    color: $icon-color;
+  }
+
+  .e-de-ctnr-aligntop::before {
+    content: "\e709";
+    color: $icon-color;
+  }
+
+  .e-de-ctnr-alignbottom::before {
+    content: "\e73e";
+    color: $icon-color;
+  }
+
+  .e-de-ctnr-aligncenter-table::before {
+    content: "\e7cc";
+    color: $icon-color;
+  }
+
+  .e-de-ctnr-cellbg-clr-picker::before {
+    content: "\e782";
+    color: $icon-color;
+  }
+
+  .e-de-ctnr-bullet-none::before {
+    content: "\e7e1";
+    color: $icon-color;
+    font-size: 20px;
+    line-height: 28px;
+  }
+
+  .e-de-ctnr-bullet-dot::before {
+    content: "\e7e8";
+    font-size: 8px;
+    line-height: 28px;
+    color: $icon-color;
+  }
+
+  .e-de-ctnr-bullet-circle::before {
+    content: "\e803";
+    font-size: 8px;
+    line-height: 28px;
+    color: $icon-color;
+  }
+
+  .e-de-ctnr-bullet-square::before {
+    content: "\e804";
+    font-size: 8px;
+    line-height: 28px;
+    color: $icon-color;
+  }
+
+  .e-de-ctnr-bullet-flower::before {
+    content: "\e7e4";
+    color: $icon-color;
+    line-height: 28px;
+  }
+
+  .e-de-ctnr-bullet-arrow::before {
+    content: "\e7e9";
+    color: $icon-color;
+    line-height: 28px;
+  }
+
+  .e-de-ctnr-bullet-tick::before {
+    content: "\e7ec";
+    color: $icon-color;
+    line-height: 28px;
+  }
+
+  .e-de-selected-item::before {
+    content: "\e75d";
+    color: $icon-color;
+  }
+
+  .e-de-ctnr-break::before {
+    content: "\e777";
+    color: $icon-color;
+  }
+
+  .e-de-ctnr-page-break::before {
+    content: "\e708";
+    color: $icon-color;
+  }
+
+  .e-de-ctnr-section-break::before {
+    content: "\e74c";
+    color: $icon-color;
+  }
+
+  .e-de-ctnr-upload::before {
+    content: "\e7b5";
+    color: $icon-color;
+  }
+
+  .e-de-flip {
+    transform: scaleX(-1);
+  }
+
+  .e-de-cnt-cmt-add::before {
+    content: "\e82a";
+    color: $icon-color;
+  }
+
+  .e-de-cnt-track::before {
+    content: "\e81f";
+    color: $icon-color;
+  }
+
+  .e-de-printlayout::before {
+    content: "\e822";
+    color: $icon-color;
+  }
+
+  .e-de-weblayout::before {
+    content: "\e82e";
+    color: $icon-color;
+  }
+
+  .e-de-textform::before {
+    content: "\e860";
+    font-family: "e-icons";
+    color: $icon-color;
+  }
+
+  .e-de-formproperties::before {
+    content: "\e8f1";
+    font-family: "e-icons";
+    color: $icon-color;
+  }
+
+  .e-de-clearform::before {
+    content: "\e8f2";
+    font-family: "e-icons";
+    color: $icon-color;
+  }
+
+  .e-de-dropdownform::before {
+    content: "\e865";
+    font-family: "e-icons";
+    color: $icon-color;
+  }
+
+  .e-de-formfield::before {
+    content: "\e867";
+    font-family: "e-icons";
+    color: $icon-color;
+  }
+
+  .e-de-checkbox-form::before {
+    content: "\e85f";
+    font-family: "e-icons";
+    color: $icon-color;
+  }
+
+  .e-de-arrow-up::before {
+    content: "\e768";
+    font-family: "e-icons";
+  }
+
+  .e-de-arrow-down::before {
+    content: "\e732";
+    font-family: "e-icons";
+  }
+
+  .e-de-update-field::before {
+    content: "\e838";
+    font-family: "e-icons";
+    color: $icon-color;
+  }
+
+  .e-de-footnote::before {
+    content: "\e868";
+    font-family: "e-icons";
+    color: $icon-color;
+  }
+
+  .e-de-endnote::before {
+    content: "\e868";
+    font-family: "e-icons";
+    color: $icon-color;
+  }
+}

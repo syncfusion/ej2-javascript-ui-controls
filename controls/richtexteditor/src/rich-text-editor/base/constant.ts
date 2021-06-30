@@ -155,7 +155,7 @@ export const linkToolbarAction: string = 'link-toolbar-action';
  * @hidden
  * @deprecated
  */
- export const windowResize: string = 'resize';
+export const windowResize: string = 'resize';
 /**
  * @hidden
  * @deprecated
@@ -450,7 +450,7 @@ export const beforeDialogOpen: string = 'beforeDialogOpen';
  * @hidden
  * @deprecated
  */
- export const clearDialogObj: string = 'clearDialogObj';
+export const clearDialogObj: string = 'clearDialogObj';
 /**
  * @hidden
  * @deprecated
@@ -554,14 +554,14 @@ export const dynamicModule: string = 'dynamicModule';
 /**
  * @hidden
  * @deprecated
- */  
+ */
 export const beforePasteCleanup: string = 'beforePasteCleanup';
 /**
  * @hidden
  * @deprecated
  */
 export const afterPasteCleanup: string = 'afterPasteCleanup';
- /**
+/**
  * @hidden
  * @deprecated
  */
