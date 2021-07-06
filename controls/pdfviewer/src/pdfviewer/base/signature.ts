@@ -144,7 +144,7 @@ export class Signature {
                         // eslint-disable-next-line
                         let signatureWindow: any = document.getElementById(this.pdfViewer.element.id + '_signature_window');
                         if (signatureWindow) {
-                            signatureWindow.remove();
+                            signatureWindow.parentNode ? signatureWindow.parentNode.removeChild(signatureWindow) : signatureWindow.parentElement.removeChild(signatureWindow);
                         }
                         if (!this.pdfViewerBase.isToolbarSignClicked && !this.pdfViewerBase.drawSignatureWithTool) {
                             if (!isNullOrUndefined(this.pdfViewer.formFieldsModule.currentTarget))
@@ -734,9 +734,10 @@ export class Signature {
                         signbutton.style.visibility = 'hidden';
                         context.drawImage(image, 0, 0, canvas.width, canvas.height);
                         proxy.enableCreateButton(false);
-                        this.outputString = image.src;
+                        proxy.outputString = image.src;
                     };
                     image.src = e.currentTarget.result;
+                    proxy.outputString =  e.currentTarget.result;
                 };
                 reader.readAsDataURL(uploadedFile);
             }

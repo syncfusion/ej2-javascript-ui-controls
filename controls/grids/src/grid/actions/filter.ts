@@ -48,6 +48,7 @@ export class Filter implements IAction {
     public operators: Object = {};
     private cellText: Object = {};
     private nextFlMenuOpen: string = '';
+    private refreshFilterValueFn: () => void;
     private type: Object = { 'Menu': FilterMenuRenderer, 'CheckBox': CheckBoxFilter, 'Excel': ExcelFilter };
     /** @hidden */
     public filterModule: {
@@ -337,7 +338,7 @@ export class Filter implements IAction {
         if (this.filterSettings.type === 'FilterBar' && this.filterSettings.columns.length &&
             !this.parent.getCurrentViewRecords().length && this.parent.enablePersistence) {
             this.initialEnd();
-            this.parent.removeEventListener(events.beforeDataBound, this.refreshFilterValue);
+            this.parent.removeEventListener(events.beforeDataBound, this.refreshFilterValueFn);
         }
     }
 
@@ -380,7 +381,8 @@ export class Filter implements IAction {
         this.parent.on(events.click, this.filterIconClickHandler, this);
         this.parent.on('persist-data-changed', this.initialEnd, this);
         this.parent.on(events.closeFilterDialog, this.clickHandler, this);
-        this.parent.addEventListener(events.beforeDataBound, this.refreshFilterValue.bind(this));
+        this.refreshFilterValueFn = this.refreshFilterValue.bind(this);
+        this.parent.addEventListener(events.beforeDataBound, this.refreshFilterValueFn);
     }
 
     /**

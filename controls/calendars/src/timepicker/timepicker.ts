@@ -3,12 +3,12 @@ import { EventHandler, Property, Internationalization, NotifyPropertyChanges, is
 import { KeyboardEvents, KeyboardEventArgs, Animation, AnimationModel, Browser, BaseEventArgs } from '@syncfusion/ej2-base';
 import { EmitType, cldrData, L10n, Component, getDefaultDateObject, rippleEffect, RippleOptions, Event } from '@syncfusion/ej2-base';
 import { remove, addClass, detach, removeClass, closest, append, attributes, setStyleAttribute } from '@syncfusion/ej2-base';
-import { isNullOrUndefined, formatUnit, getValue, extend, getUniqueID, blazorCultureFormats, ModuleDeclaration } from '@syncfusion/ej2-base';
+import { isNullOrUndefined, formatUnit, getValue, extend, getUniqueID, blazorCultureFormats, ModuleDeclaration, ChildProperty } from '@syncfusion/ej2-base';
 import { Popup } from '@syncfusion/ej2-popups';
 import { FocusEventArgs, BlurEventArgs, ClearedEventArgs } from '../calendar/calendar';
 import { Input, InputObject, IInput, FloatLabelType } from '@syncfusion/ej2-inputs';
 import { ListBase, ListBaseOptions, createElementParams } from '@syncfusion/ej2-lists';
-import { TimePickerModel } from './timepicker-model';
+import { TimePickerModel, TimeMaskPlaceholderModel } from './timepicker-model';
 
 const WRAPPERCLASS: string = 'e-time-wrapper';
 const POPUP: string = 'e-popup';
@@ -141,6 +141,59 @@ export namespace TimePickerBase {
     }
 }
 
+export class TimeMaskPlaceholder  extends ChildProperty<TimeMaskPlaceholder> {
+    /**
+     * Specifies the mask placeholder value for day section.
+     *
+     * @default 'day'
+     */
+    @Property('day')
+    public day: string;
+    /**
+     * Specifies the mask placeholder value for month section.
+     *
+     * @default 'month'
+     */
+    @Property('month')
+    public month: string;
+    /**
+     * Specifies the mask placeholder value for year section.
+     *
+     * @default 'year'
+     */
+    @Property('year')
+    public year: string;
+    /**
+     * Specifies the mask placeholder value for day of the week section.
+     *
+     * @default 'day of the week'
+     */
+     @Property('day of the week')
+     public dayOfTheWeek: string;
+    /**
+     * Specifies the mask placeholder value for hour section.
+     *
+     * @default 'hour'
+     */
+    @Property('hour')
+    public hour: string;
+    /**
+     * Specifies the mask placeholder value for minute section.
+     *
+     * @default 'minute'
+     */
+    @Property('minute')
+    public minute: string;
+    /**
+     * Specifies the mask placeholder value for second section.
+     *
+     * @default 'second'
+     */
+     @Property('second')
+     public second: string;
+    
+}
+
 /**
  * TimePicker is an intuitive interface component which provides an options to select a time value
  * from popup list or to set a desired time value.
@@ -200,6 +253,7 @@ export class TimePicker extends Component<HTMLElement> implements IInput {
     protected isAngular: boolean = false;
     protected preventChange: boolean = false;
     protected maskedDateValue: string = '';
+    protected moduleName: string = this.getModuleName();
     /**
      * Gets or sets the width of the TimePicker component. The width of the popup is based on the width of the component.
      *
@@ -449,18 +503,12 @@ export class TimePicker extends Component<HTMLElement> implements IInput {
      public enableMask: boolean;
  
      /**
-      * Specifies the mask placeholder to be displayed on masked timepicker.
-      * By default it works based on narrow format .
-      * Possible values are:
-      * Narrow: Displays the full name  like day/month/year hour:minute:second.
-      * Short: Displays the single character like dd/mm/yyyy hh:mm:ss.
-      * 
-      * @default {}
-      * @asptype object
-      * @aspjsonconverterignore
-      */
-     @Property({})
-     public maskPlaceholder: {[key: string]: string };
+     * Specifies the mask placeholder to be displayed on masked timepicker.
+     * 
+     * @default {day:'day' , month:'month', year: 'year', hour:'hour',minute:'minute',second:'second',dayOfTheWeek: 'day of the week'}
+     */
+      @Property({day:'day' , month:'month', year: 'year', hour:'hour', minute:'minute', second:'second', dayOfTheWeek: 'day of the week'})
+      public maskPlaceholder: TimeMaskPlaceholderModel;
  
     /**
      * Triggers when the value is changed.
@@ -1391,7 +1439,7 @@ export class TimePicker extends Component<HTMLElement> implements IInput {
             case 'end':
             case 'up':
             case 'down':
-            if(this.enableMask && !this.readonly)
+            if(this.enableMask && !this.readonly && !this.isPopupOpen())
             {
             event.preventDefault();
             this.notify("keyDownHandler", {
@@ -1456,7 +1504,7 @@ export class TimePicker extends Component<HTMLElement> implements IInput {
             case 'left':
             case 'tab':
             case 'shiftTab':
-                if (!this.popupObj && this.enableMask && !this.readonly)
+                if (!this.isPopupOpen() && this.enableMask && !this.readonly)
                 {
                     if((this.inputElement.selectionStart == 0 && this.inputElement.selectionEnd == this.inputElement.value.length) || 
                     (this.inputElement.selectionEnd !== length && event.action == 'tab') || 
@@ -1716,6 +1764,9 @@ export class TimePicker extends Component<HTMLElement> implements IInput {
         EventHandler.add(this.inputElement, 'focus', this.inputFocusHandler, this);
         EventHandler.add(this.inputElement, 'change', this.inputChangeHandler, this);
         EventHandler.add(this.inputElement, 'input', this.inputEventHandler, this);
+        if(this.enableMask){
+            EventHandler.add(this.inputElement, 'keydown',this.keydownHandler,this);
+            }
         if (this.showClearButton && this.inputWrapper.clearButton) {
             EventHandler.add(this.inputWrapper.clearButton, 'mousedown', this.clearHandler, this);
         }
@@ -1733,6 +1784,22 @@ export class TimePicker extends Component<HTMLElement> implements IInput {
             if (this.showClearButton && this.inputElement ) {
                 EventHandler.add(this.inputElement, 'mousedown', this.mouseDownHandler, this);
             }
+        }
+    }
+    private keydownHandler(e: KeyboardEventArgs): void{
+        switch(e.code)
+        {
+        case 'Delete':
+            if(this.enableMask && !this.popupObj && !this.readonly)
+            {
+            this.notify("keyDownHandler", {
+                module: "MaskedDateTime" ,
+                e: e
+              });
+            }
+            break;
+        default:
+            break;
         }
     }
     protected formResetHandler(): void {
@@ -2036,7 +2103,6 @@ export class TimePicker extends Component<HTMLElement> implements IInput {
                 {
                     this.updateInputValue(this.maskedDateValue);  
                 }
-                this.createMask();
             }
         } else {
             this.updateInputValue(time);
@@ -2574,7 +2640,7 @@ export class TimePicker extends Component<HTMLElement> implements IInput {
             return;
         }
         this.closePopup(0, e);
-        if(this.enableMask && this.maskedDateValue && this.placeholder)
+        if(this.enableMask && this.maskedDateValue && this.placeholder && this.floatLabelType !== 'Always')
            {
             if(this.inputElement.value == this.maskedDateValue && !this.value && (this.floatLabelType == 'Auto' || this.floatLabelType == 'Never' || this.placeholder))
             {
@@ -2638,6 +2704,8 @@ export class TimePicker extends Component<HTMLElement> implements IInput {
             if(this.maskedDateValue && !this.value && (this.floatLabelType == 'Auto' || this.floatLabelType == 'Never' || this.placeholder))
             {
                 this.updateInputValue(this.maskedDateValue);
+                this.inputElement.selectionStart =  0;
+                this.inputElement.selectionEnd = this.inputElement.value.length;
             }
         }
         this.trigger('focus', focusArguments);
@@ -2895,6 +2963,11 @@ export class TimePicker extends Component<HTMLElement> implements IInput {
                 this.updatePlaceHolder();
                 if (!this.isBlazorServer) {
                     this.setValue(this.value);
+                    if (this.enableMask) {
+                        this.notify("createMask", {
+                          module: "MaskedDateTime",
+                        });
+                      }
                 }
                 break;
             case 'width':
@@ -2906,6 +2979,13 @@ export class TimePicker extends Component<HTMLElement> implements IInput {
                 this.checkTimeFormat();
                 if (!this.isBlazorServer) {
                     this.setValue(this.value);
+                    if(this.enableMask) {
+                        this.createMask();
+                        if(!this.value)
+                        {
+                            this.updateInputValue(this.maskedDateValue);
+                        }
+                    }
                 }
                 break;
             case 'value':
@@ -2974,6 +3054,21 @@ export class TimePicker extends Component<HTMLElement> implements IInput {
                         this.setScrollTo();
                     }
                 }
+                break;
+                case 'enableMask':
+                if (this.enableMask) {
+                    this.notify("createMask", {
+                      module: "MaskedDateTime",
+                    });
+                    this.updateInputValue(this.maskedDateValue);
+                  }
+                  else
+                  {
+                      if(this.inputElement.value === this.maskedDateValue)
+                      {
+                          this.updateInputValue('');
+                      }
+                  }
                 break;
             }
         }

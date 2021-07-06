@@ -22,12 +22,11 @@ export class NonWorkingDay {
      * @returns {void} .
      */
     private createNonworkingContainer(): void {
-        if (!this.parent.ganttChartModule.chartBodyContainer.contains(this.nonworkingContainer)) {
+        if (!this.parent.ganttChartModule.chartBodyContent.contains(this.nonworkingContainer)) {
             this.nonworkingContainer = createElement('div', {
-                className: cls.nonworkingContainer, styles: 'top:' +
-                this.parent.ganttChartModule.chartTimelineContainer.offsetHeight + 'px;'
+                className: cls.nonworkingContainer
             });
-            this.parent.ganttChartModule.chartBodyContainer.appendChild(this.nonworkingContainer);
+            this.parent.ganttChartModule.chartBodyContent.appendChild(this.nonworkingContainer);
         }
     }
     /**

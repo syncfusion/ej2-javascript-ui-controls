@@ -39,9 +39,7 @@ export class Dialog {
             buttons: []
         };
         dialogModel.close = () => {
-            this.dialogInstance.destroy();
-            remove(this.dialogInstance.element);
-            this.dialogInstance = null;
+            this.destroyDialog();
             if (closeHandler) {
                 closeHandler();
             }
@@ -60,6 +58,17 @@ export class Dialog {
         this.dialogInstance.createElement = this.parent.createElement;
         this.dialogInstance.appendTo(div);
         this.dialogInstance.refreshPosition();
+    }
+
+    /**
+     * To destroy the dialog if it open is prevented by user.
+     *
+     * @returns {void}
+     */
+    public destroyDialog(): void {
+        this.dialogInstance.destroy();
+        remove(this.dialogInstance.element);
+        this.dialogInstance = null;
     }
 
     /**

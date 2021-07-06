@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 19.2.46 (2021-07-06)
+
+### Context Menu
+
+#### Bug Fixes
+
+- Role Attribute issue in context menu has been fixed.
+
 ## 19.1.69 (2021-06-15)
 
 ### Tab

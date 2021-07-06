@@ -103,13 +103,13 @@ describe('Excel Filter =>', () => {
 
         it('pre-filter-settings', (done: Function) => {
             expect(gridObj.element.querySelectorAll('.e-row').length).toBe(58);
-            expect(getString(gridObj.filterSettings.columns)).toBe('[{"field":"ShipCountry","operator":"contains","value":"a","predicate":"or","matchCase":false,"ignoreAccent":false,"actualFilterValue":{},"actualOperator":{}}]');
+            expect(getString(gridObj.filterSettings.columns)).toBe('[{"field":"ShipCountry","operator":"contains","value":"a","predicate":"or","matchCase":false,"uid":"' + gridObj.filterSettings.columns[0].uid + '","ignoreAccent":false,"actualFilterValue":{},"actualOperator":{}}]');
             done();
         });
         it('or-predicate', (done: Function) => {
             actionComplete = (args?: Object): void => {
                 expect(gridObj.element.querySelectorAll('.e-row').length).toBe(58);
-                expect(getString(gridObj.filterSettings.columns)).toBe('[{"field":"ShipCountry","operator":"contains","value":"a","predicate":"or","matchCase":false,"ignoreAccent":false,"actualFilterValue":{},"actualOperator":{}},{"field":"OrderID","predicate":"or","matchCase":false,"ignoreAccent":false,"operator":"greaterthan","value":10249,"type":"number"},{"field":"OrderID","predicate":"or","matchCase":false,"ignoreAccent":false,"operator":"lessthan","value":10280,"type":"number"}]');
+                expect(getString(gridObj.filterSettings.columns)).toBe('[{"field":"ShipCountry","operator":"contains","value":"a","predicate":"or","matchCase":false,"uid":"' + gridObj.filterSettings.columns[0].uid + '","ignoreAccent":false,"actualFilterValue":{},"actualOperator":{}},{"field":"OrderID","predicate":"or","matchCase":false,"ignoreAccent":false,"operator":"greaterthan","value":10249,"type":"number","uid":"' + gridObj.filterSettings.columns[1].uid + '"},{"field":"OrderID","predicate":"or","matchCase":false,"ignoreAccent":false,"operator":"lessthan","value":10280,"type":"number","uid":"' + gridObj.filterSettings.columns[1].uid + '"}]');
                 done();
             };
 
@@ -136,7 +136,7 @@ describe('Excel Filter =>', () => {
         it('and-predicate', (done: Function) => {
             actionComplete = (args?: Object): void => {
                 expect(gridObj.element.querySelectorAll('.e-row').length).toBe(55);
-                expect(getString(gridObj.filterSettings.columns)).toBe('[{"field":"ShipCountry","operator":"contains","value":"a","predicate":"or","matchCase":false,"ignoreAccent":false,"actualFilterValue":{},"actualOperator":{}},{"field":"OrderID","predicate":"and","matchCase":false,"ignoreAccent":false,"operator":"greaterthan","value":10249,"type":"number"},{"field":"OrderID","predicate":"and","matchCase":false,"ignoreAccent":false,"operator":"notequal","value":10250,"type":"number"}]');
+                expect(getString(gridObj.filterSettings.columns)).toBe('[{"field":"ShipCountry","operator":"contains","value":"a","predicate":"or","matchCase":false,"uid":"' + gridObj.filterSettings.columns[0].uid + '","ignoreAccent":false,"actualFilterValue":{},"actualOperator":{}},{"field":"OrderID","predicate":"and","matchCase":false,"ignoreAccent":false,"operator":"greaterthan","value":10249,"type":"number","uid":"' + gridObj.filterSettings.columns[1].uid + '"},{"field":"OrderID","predicate":"and","matchCase":false,"ignoreAccent":false,"operator":"notequal","value":10250,"type":"number","uid":"' + gridObj.filterSettings.columns[1].uid + '"}]');
                 done();
             };
 
@@ -162,7 +162,7 @@ describe('Excel Filter =>', () => {
         it('first value', (done: Function) => {
             actionComplete = (args?: Object): void => {
                 expect(gridObj.element.querySelectorAll('.e-row').length).toBe(56);
-                expect(getString(gridObj.filterSettings.columns)).toBe('[{"field":"ShipCountry","operator":"contains","value":"a","predicate":"or","matchCase":false,"ignoreAccent":false,"actualFilterValue":{},"actualOperator":{}},{"field":"OrderID","predicate":"and","matchCase":false,"operator":"greaterthan","value":10249,"type":"number","ignoreAccent":false}]');
+                expect(getString(gridObj.filterSettings.columns)).toBe('[{"field":"ShipCountry","operator":"contains","value":"a","predicate":"or","matchCase":false,"uid":"' + gridObj.filterSettings.columns[0].uid + '","ignoreAccent":false,"actualFilterValue":{},"actualOperator":{}},{"field":"OrderID","predicate":"and","matchCase":false,"operator":"greaterthan","value":10249,"type":"number","uid":"' + gridObj.filterSettings.columns[1].uid + '","ignoreAccent":false}]');
                 done();
             };
 

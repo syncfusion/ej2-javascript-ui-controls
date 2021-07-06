@@ -3445,7 +3445,7 @@ export class WordExport {
         writer.writeStartElement('a', 'avLst', this.aNamespace);
         writer.writeEndElement();
         writer.writeEndElement();
-        if (shape.fillFormat && shape.fillFormat.color) {
+        if (shape.fillFormat && shape.fillFormat.color && shape.fillFormat.fill) {
             writer.writeStartElement('a', 'solidFill', this.aNamespace);
             writer.writeStartElement('a', 'srgbClr', this.aNamespace);
             writer.writeAttributeString(undefined, 'val', undefined, this.getColor(shape.fillFormat.color));

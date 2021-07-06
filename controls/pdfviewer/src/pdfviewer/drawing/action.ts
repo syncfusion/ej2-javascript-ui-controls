@@ -78,7 +78,7 @@ export function findObjectUnderMouse(
                 offsetY = touchArg.changedTouches[0].clientY - pageCurrentRect.top;
             }
         }
-    } else if(event && event.target && event.target.parentElement && event.target.parentElement.classList.contains("foreign-object")){
+    } else if(event && event.target &&  (event as any).path && event.target.parentElement && event.target.parentElement.classList.contains("foreign-object")){
         const targetParentRect: ClientRect = (event as any).path[4].getBoundingClientRect();
         offsetX = (event as PointerEvent).clientX - targetParentRect.left;
         offsetY = (event as PointerEvent).clientY - targetParentRect.top;

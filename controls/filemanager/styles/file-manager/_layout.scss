@@ -88,7 +88,15 @@
 
         .e-btn-icon.e-icons.e-caret {
           font-size: $fe-tb-ddb-caret-size;
-          padding: 0 8px;
+          @if $fm-skin-name == 'tailwind' or $fm-skin-name == 'tailwind-dark' {
+            height: 18px;
+            margin: 2px 4px 0;
+            padding: 1px;
+            width: 18px;
+          }
+          @else {
+            padding: 0 8px;
+          }
         }
 
         .e-tbar-btn-text.e-tbar-ddb-text {
@@ -413,6 +421,8 @@
           @if $fm-skin-name == 'tailwind' or $fm-skin-name == 'tailwind-dark' {
             border-bottom: 1px dashed $fe-drop-folder-bg-color;
             border-top: 1px dashed $fe-drop-folder-bg-color;
+            padding-bottom: 6px;
+            padding-top: 6px;
           }
           @else {
             box-shadow: 0 2px 0 -1px $fe-drop-folder-bg-color inset, 0 -2px 0 -1px $fe-drop-folder-bg-color inset;
@@ -429,6 +439,9 @@
         margin: $fe-grid-empty-content-margin;
         padding: $fe-grid-empty-content-padding;
         text-align: $fe-grid-empty-content-text-align;
+        @if $fm-skin-name == 'tailwind' or $fm-skin-name == 'tailwind-dark' {
+          line-height: 24px;
+        }
       }
 
       .e-empty-icon {
@@ -440,7 +453,12 @@
       .e-empty-inner-content {
         font-size: $fe-grid-empty-inner-content-font-size;
         margin: $fe-grid-empty-inner-content-margin;
-        opacity: $fe-grid-empty-inner-content-opacity;
+        @if $fm-skin-name == 'tailwind' or $fm-skin-name == 'tailwind-dark' {
+          line-height: 22px;
+        }
+        @else {
+          opacity: $fe-lg-icon-empty-inner-content-opacity;
+        }
         padding: $fe-grid-empty-inner-content-padding;
         text-align: $fe-grid-empty-inner-content-text-align;
       }
@@ -576,7 +594,10 @@
       .e-empty-inner-content {
         font-size: $fe-lg-icon-empty-inner-content-font-size;
         margin: $fe-lg-icon-empty-inner-content-margin;
-        @if $fm-skin-name != 'tailwind' and $fm-skin-name != 'tailwind-dark' {
+        @if $fm-skin-name == 'tailwind' or $fm-skin-name == 'tailwind-dark' {
+          line-height: 22px;
+        }
+        @else {
           opacity: $fe-lg-icon-empty-inner-content-opacity;
         }
         padding: $fe-lg-icon-empty-inner-content-padding;
@@ -685,12 +706,13 @@
             font-size: 14px;
             line-height: 22px;
             margin: 8px 8px 8px 0;
+            max-width: 150px;
           }
           @else {
             font-size: 13px;
             margin: auto 8px;
+            max-width: 70px;
           }
-          max-width: 70px;
           overflow: hidden;
           text-overflow: ellipsis;
           white-space: nowrap;
@@ -996,6 +1018,7 @@
 
     .e-fe-error {
       @if $fm-skin-name == 'tailwind' or $fm-skin-name == 'tailwind-dark' {
+        font-size: $text-xs;
         line-height: 18px;
         padding-top: 4px;
       }
@@ -1380,7 +1403,16 @@
         }
 
         &.e-tbar-btn .e-btn-icon.e-icons.e-caret {
-          padding: 0 10px;
+          @if $fm-skin-name == 'tailwind' or $fm-skin-name == 'tailwind-dark' {
+            font-size: 22px;
+            height: 22px;
+            margin: 4px 4px 0;
+            padding: 1px;
+            width: 22px;
+          }
+          @else {
+            padding: 0 10px;
+          }
         }
       }
 
@@ -1525,6 +1557,15 @@
         }
       }
 
+      .e-content {
+        tr.e-row.e-fe-drop-folder .e-rowcell {
+          @if $fm-skin-name == 'tailwind' or $fm-skin-name == 'tailwind-dark' {
+            padding-bottom: 11px;
+            padding-top: 11px;
+          }
+        }
+      }
+
       .e-fe-icon {
         @if $fm-skin-name == 'tailwind' or $fm-skin-name == 'tailwind-dark' {
           height: 24px;
@@ -1555,7 +1596,9 @@
       .e-empty-inner-content {
         font-size: $fe-big-grid-empty-inner-content-font-size;
         margin: $fe-big-grid-empty-inner-content-margin;
-        opacity: $fe-big-grid-empty-inner-content-opacity;
+        @if $fm-skin-name != 'tailwind' and $fm-skin-name != 'tailwind-dark' {
+          opacity: $fe-big-grid-empty-inner-content-opacity;
+        }
         padding: $fe-big-grid-empty-inner-content-padding;
         text-align: $fe-big-grid-empty-inner-content-text-align;
       }
@@ -1615,7 +1658,9 @@
       .e-empty-inner-content {
         font-size: $fe-big-lg-icon-empty-inner-content-font-size;
         margin: $fe-big-lg-icon-empty-inner-content-margin;
-        opacity: $fe-big-lg-icon-empty-inner-content-opacity;
+        @if $fm-skin-name != 'tailwind' and $fm-skin-name != 'tailwind-dark' {
+          opacity: $fe-big-lg-icon-empty-inner-content-opacity;
+        }
         padding: $fe-big-lg-icon-empty-inner-content-padding;
         text-align: $fe-big-lg-icon-empty-inner-content-text-align;
       }

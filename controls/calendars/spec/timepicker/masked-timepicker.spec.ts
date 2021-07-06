@@ -25,16 +25,16 @@ function loadCultureFiles(name: string, base?: boolean): void {
 
 L10n.load({
     'en': {
-        'MaskedDateTime': { day: 'day' , month: 'month', year: 'year', hour: 'hour' ,minute: 'minute', second:'second' }
+        'timepicker': { day: 'day' , month: 'month', year: 'year', hour: 'hour' ,minute: 'minute', second:'second' }
     },
     'de': {
-        'MaskedDateTime': { day: 'Tag' , month: 'Monat', year: 'Jahr', hour: 'Stunde' ,minute: 'Minute', second:'Sekunden' }
+        'timepicker': { day: 'Tag' , month: 'Monat', year: 'Jahr', hour: 'Stunde' ,minute: 'Minute', second:'Sekunden' }
     },
     'zh': {
-        'MaskedDateTime': { day: '日' , month: '月', year: '年', hour: '小時' ,minute: '分鐘', second:'第二' }
+        'timepicker': { day: '日' , month: '月', year: '年', hour: '小時' ,minute: '分鐘', second:'第二' }
     },
     'ja': {
-        'MaskedDateTime': { day: '日' , month: '月', year: '年', hour: '時間' ,minute: '分', second:'秒'}
+        'timepicker': { day: '日' , month: '月', year: '年', hour: '時間' ,minute: '分', second:'秒'}
     },
 });
 
@@ -282,6 +282,8 @@ describe('Timepicker', () => {
             timepicker.element.value = ':minute:second PM';
             timepicker.element.selectionStart = 0;
             timepicker.element.selectionEnd = 2;
+            keyEventArgs.action = keyEventArgs.key = keyEventArgs.code = 'Delete'
+            timepicker.keydownHandler(keyEventArgs);
             timepicker.inputEventHandler();
             expect(timepicker.element.value).toBe('hour:minute:second PM');
             expect(timepicker.value).toBe(null);
@@ -490,18 +492,21 @@ describe('Timepicker', () => {
         //     expect(timepicker.element.value).toBe('Stunde:Minute:Sekunden');
         // });
         
-        // it('dynamic mask module ', () => { 
-        //     let inputEle: HTMLElement = createElement('input', { id: 'timepicker' });
-        //     document.body.appendChild(inputEle);
-        //     timepicker = new TimePicker({format: 'hh:mm:ss'});
-        //     timepicker.appendTo('#timepicker');
-        //     expect(timepicker.element.value).toBe('');
-        //     expect(timepicker.value).toBe(null);
-        //     timepicker.enableMask = true;
-        //     timepicker.dataBind();
-        //     expect(timepicker.element.value).toBe('hour:minute:second');
-        //     expect(timepicker.value).toBe(null);
-        // });
+        it('dynamic mask module ', () => { 
+            let inputEle: HTMLElement = createElement('input', { id: 'timepicker' });
+            document.body.appendChild(inputEle);
+            timepicker = new TimePicker({format: 'hh:mm:ss'});
+            timepicker.appendTo('#timepicker');
+            expect(timepicker.element.value).toBe('');
+            expect(timepicker.value).toBe(null);
+            timepicker.enableMask = true;
+            timepicker.dataBind();
+            expect(timepicker.element.value).toBe('hour:minute:second');
+            expect(timepicker.value).toBe(null);
+            timepicker.enableMask = false;
+            timepicker.dataBind();
+            expect(timepicker.element.value).toBe('');
+        });
         // it('ChangeEvent ', () => { 
         //     let inputEle: HTMLElement = createElement('input', { id: 'timepicker' });
         //     document.body.appendChild(inputEle);

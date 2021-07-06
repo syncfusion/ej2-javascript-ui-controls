@@ -2384,8 +2384,9 @@ export class Edit {
             childIndex = parentItem.childRecords.indexOf(this.addRowSelectedItem);
             /*Child collection update*/
             parentItem.childRecords.splice(childIndex, 0, record);
-            if (this.parent.dataSource instanceof DataManager &&
-                isNullOrUndefined(parentItem.taskData[this.parent.taskFields.parentID])) {
+            if ((this.parent.dataSource instanceof DataManager &&
+                isNullOrUndefined(parentItem.taskData[this.parent.taskFields.parentID])) ||
+                 !isNullOrUndefined(this.parent.dataSource)) {
                 const child: string = this.parent.taskFields.child;
                 if (parentItem.taskData[child] && parentItem.taskData[child].length > 0) {
                     parentItem.taskData[child].push(record.taskData);

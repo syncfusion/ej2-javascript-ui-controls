@@ -37,9 +37,6 @@ export class WorkbookDelete {
             if (args.end > args.model.usedRange.rowIndex) { args.end -= (args.end - args.model.usedRange.rowIndex); }
             args.model.usedRange.rowIndex -= ((args.end - args.start) + 1);
             if (args.model.usedRange.rowIndex < 0) { args.model.usedRange.rowIndex = 0; }
-            if (args.model !== this.parent.getActiveSheet()) {
-                this.parent.notify(updateUsedRange, { index: args.model.usedRange.rowIndex, update: 'row' });
-            }
             let frozenRow: number = this.parent.frozenRowCount(args.model);
             if (args.start < frozenRow) {
                 frozenRow = args.end < frozenRow ? (args.end - args.start) + 1 : frozenRow - args.start;
@@ -104,9 +101,6 @@ export class WorkbookDelete {
             args.model.usedRange.colIndex -= count;
             if (args.model.usedRange.colIndex < 0) { args.model.usedRange.colIndex = 0; }
             //this.setDeleteInfo(args.start, args.end, 'fldLen', 'Column');
-            if (args.model !== this.parent.getActiveSheet()) {
-                this.parent.notify(updateUsedRange, { index: args.model.usedRange.colIndex, update: 'col' });
-            }
             let frozenCol: number = this.parent.frozenColCount(args.model);
             if (args.start < frozenCol) {
                 frozenCol = args.end < frozenCol ? (args.end - args.start) + 1 : frozenCol - args.start;

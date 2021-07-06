@@ -1960,9 +1960,9 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
      * @param {number} colIndex - specify the col index.
      * @returns {string | number} - to get Value Row Col.
      */
-    public getValueRowCol(sheetIndex: number, rowIndex: number, colIndex: number, formulaCellReference?: string): string | number {
-        const val: string | number = super.getValueRowCol(sheetIndex, rowIndex, colIndex, formulaCellReference);
-        return val;
+    public getValueRowCol(
+        sheetIndex: number, rowIndex: number, colIndex: number, formulaCellReference?: string, refresh?: boolean): string | number {
+        return super.getValueRowCol(sheetIndex, rowIndex, colIndex, formulaCellReference, refresh);
     }
 
     /**

@@ -6,7 +6,7 @@ import { AutoComplete } from '@syncfusion/ej2-dropdowns';
 import { BeforeOpenEventArgs } from '@syncfusion/ej2-popups';
 import { PopupEventArgs, SelectEventArgs, AutoCompleteModel } from '@syncfusion/ej2-dropdowns';
 import { KeyboardEventArgs, L10n, detach, isNullOrUndefined, select } from '@syncfusion/ej2-base';
-import { checkIsFormula, getSheet, SheetModel, getSheetName, DefineNameModel, getCellIndexes, Workbook } from '../../workbook/index';
+import { checkIsFormula, getSheet, SheetModel, getSheetName, DefineNameModel, getCellIndexes, Workbook, isCellReference } from '../../workbook/index';
 import { Dialog } from '../services/index';
 import { dialog, locale, focus } from '../common/index';
 
@@ -419,6 +419,10 @@ export class Formula {
     private addDefinedName(definedName: DefineNameModel): boolean {
         const name: string = definedName.name;
         let isAdded: boolean = false;
+        if (name && isCellReference(name.toUpperCase())) {
+            this.parent.goTo(name);
+            return isAdded;
+        }
         if (!definedName.refersTo) {
             const sheet: SheetModel = getSheet(this.parent as Workbook, this.parent.activeSheetIndex);
             let sheetName: string = getSheetName(this.parent as Workbook);

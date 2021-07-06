@@ -13,6 +13,10 @@ import { Dictionary } from '../../base/index';
  * Track changes pane
  */
 export class TrackChangesPane {
+    /***
+     * @private
+     */
+    public isChangesTabVisible: boolean;
     private owner: DocumentEditor;
     private trackChangeDiv: HTMLElement;
     private toolbarElement: HTMLElement;
@@ -47,9 +51,12 @@ export class TrackChangesPane {
     }
 
     public set setNoChangesVisibility(visible: boolean) {
+        this.isChangesTabVisible = !visible;
         this.noChangeDivElement.style.display = visible ? 'block' : 'none';
         this.noChangesVisibleInternal = visible;
         this.enableDisableToolbarItem(!visible);
+        this.commentReviewPane.reviewTab.hideTab(1, visible);
+        this.owner.notify('reviewPane', {changes: !visible, comment: this.commentReviewPane.isCommentTabVisible});
     }
 
 
@@ -331,6 +338,8 @@ export class TrackChangesPane {
             } else if (this.menuoptionEle.classList.contains('e-de-overlay')) {
                 this.menuoptionEle.classList.remove('e-de-overlay');
             }
+            this.isChangesTabVisible = true;
+            this.owner.notify('reviewPane', { comment: this.commentReviewPane.isCommentTabVisible, changes: this.isChangesTabVisible});
             for (let i: number = 0; i < this.owner.revisions.changes.length; i++) {
                 let revision: Revision = this.owner.revisions.changes[i];
                 this.addChanges(revision);
@@ -401,11 +410,11 @@ export class TrackChangesPane {
             this.menuDropDownButton.destroy();
             this.menuDropDownButton = undefined;
         }
-        
+
         if (this.viewTypeDropDownButton) {
             this.viewTypeDropDownButton.destroy();
         }
-        if(this.menuDropDownButton){
+        if (this.menuDropDownButton) {
             this.menuDropDownButton.destroy();
             this.menuDropDownButton = undefined;
         }

@@ -16,6 +16,7 @@ import { CharacterFormatProperties, ParagraphFormatProperties, SectionFormatProp
 import { ToolbarItem } from '../document-editor/base/types';
 import { CustomToolbarItemModel, TrackChangeEventArgs } from '../document-editor/base/events-helper';
 import { ClickEventArgs } from '@syncfusion/ej2-navigations';
+import { internalZoomFactorChange, beforeCommentActionEvent, commentDeleteEvent, contentChangeEvent, trackChangeEvent, beforePaneSwitchEvent, serviceFailureEvent, documentChangeEvent, selectionChangeEvent, customContextMenuSelectEvent, customContextMenuBeforeOpenEvent } from '../document-editor/base/constants';
 
 /**
  * Document Editor container component.
@@ -864,7 +865,6 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
             selectionChange: this.onSelectionChange.bind(this),
             contentChange: this.onContentChange.bind(this),
             documentChange: this.onDocumentChange.bind(this),
-            zoomFactorChange: this.onZoomFactorChange.bind(this),
             requestNavigate: this.onRequestNavigate.bind(this),
             viewChange: this.onViewChange.bind(this),
             customContextMenuSelect: this.onCustomContextMenuSelect.bind(this),
@@ -890,12 +890,19 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
             showRevisions: this.enableTrackChanges,
             enableLockAndEdit: this.enableLockAndEdit
         });
+        this.wireEvents();
         this.documentEditor.enableAllModules();
         this.documentEditor.enableComment = this.enableComment;
         this.editorContainer.insertBefore(documentEditorTarget, this.editorContainer.firstChild);
         this.setFormat();
         this.documentEditor.appendTo(documentEditorTarget);
         this.documentEditor.resize();
+    }
+    private wireEvents(): void{
+        this.documentEditor.on(internalZoomFactorChange, this.onZoomFactorChange, this);
+    }
+    private unWireEvents(): void{
+        this.documentEditor.off(internalZoomFactorChange, this.onZoomFactorChange);
     }
     private onCommentBegin(): void {
         if (this.toolbarModule) {
@@ -908,26 +915,26 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
         }
     }
     private onCommentDelete(args: CommentDeleteEventArgs): void {
-        this.trigger('commentDelete', args);
+        this.trigger(commentDeleteEvent, args);
     }
     private onCommentAction(args: CommentActionEventArgs): void {
-        this.trigger('beforeCommentAction', args);
+        this.trigger(beforeCommentActionEvent, args);
     }
     private onTrackChange(args: TrackChangeEventArgs): void {
-        this.trigger('trackChange', args);
+        this.trigger(trackChangeEvent, args);
         if (this.toolbarModule) {
             this.toolbarModule.toggleTrackChanges(args.isTrackChangesEnabled);
         }
 
     }
     private onBeforePaneSwitch(args: BeforePaneSwitchEventArgs): void {
-        this.trigger('beforePaneSwitch', args);
+        this.trigger(beforePaneSwitchEvent, args);
     }
     /**
      * @private
      */
     private fireServiceFailure(eventArgs: ServiceFailureArgs): void {
-        this.trigger('serviceFailure', eventArgs);
+        this.trigger(serviceFailureEvent, eventArgs);
     }
     /**
      * @private
@@ -983,7 +990,7 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
             this.statusBar.updatePageCount();
         }
         let eventArgs: ContainerContentChangeEventArgs = { source: isBlazor() ? null : this };
-        this.trigger('contentChange', eventArgs);
+        this.trigger(contentChangeEvent, eventArgs);
     }
     /**
      * @private
@@ -1003,7 +1010,7 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
             this.statusBar.updatePageCount();
         }
         let eventArgs: ContainerDocumentChangeEventArgs = { source: isBlazor() ? null : this };
-        this.trigger('documentChange', eventArgs);
+        this.trigger(documentChangeEvent, eventArgs);
     }
     /**
      * @private
@@ -1012,7 +1019,7 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
         setTimeout(() => {
             this.showPropertiesPaneOnSelection();
             let eventArgs: ContainerSelectionChangeEventArgs = { source: isBlazor() ? null : this };
-            this.trigger('selectionChange', eventArgs);
+            this.trigger(selectionChangeEvent, eventArgs);
         });
     }
     /**
@@ -1048,13 +1055,13 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
      * @private
      */
     private onCustomContextMenuSelect(args: CustomContentMenuEventArgs): void {
-        this.trigger('customContextMenuSelect', args);
+        this.trigger(customContextMenuSelectEvent, args);
     }
     /**
      * @private
      */
     private onCustomContextMenuBeforeOpen(args: BeforeOpenCloseCustomContentMenuEventArgs): void {
-        this.trigger('customContextMenuBeforeOpen', args);
+        this.trigger(customContextMenuBeforeOpenEvent, args);
     }
     /**
      * @private
@@ -1220,5 +1227,6 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
         this.containerTarget = undefined;
         this.statusBarElement = undefined;
         this.editorContainer = undefined;
+        this.unWireEvents();
     }
 }

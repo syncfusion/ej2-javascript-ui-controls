@@ -4,6 +4,10 @@
 
 ## 19.2.44 (2021-06-30)
 
+### File Manager
+
+#### Bug Fixes
+
 - `#F160683` - The issue with "Error dialog shown while quickly clicking on the folders when enabling drag and drop support" has been resolved.
 
 ## 19.1.66 (2021-06-01)

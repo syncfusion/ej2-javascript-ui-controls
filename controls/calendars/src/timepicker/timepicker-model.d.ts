@@ -1,6 +1,62 @@
-import { EventHandler, Property, Internationalization, NotifyPropertyChanges, isBlazor } from '@syncfusion/ej2-base';import { KeyboardEvents, KeyboardEventArgs, Animation, AnimationModel, Browser, BaseEventArgs } from '@syncfusion/ej2-base';import { EmitType, cldrData, L10n, Component, getDefaultDateObject, rippleEffect, RippleOptions, Event } from '@syncfusion/ej2-base';import { remove, addClass, detach, removeClass, closest, append, attributes, setStyleAttribute } from '@syncfusion/ej2-base';import { isNullOrUndefined, formatUnit, getValue, extend, getUniqueID, blazorCultureFormats, ModuleDeclaration } from '@syncfusion/ej2-base';import { Popup } from '@syncfusion/ej2-popups';import { FocusEventArgs, BlurEventArgs, ClearedEventArgs } from '../calendar/calendar';import { Input, InputObject, IInput, FloatLabelType } from '@syncfusion/ej2-inputs';import { ListBase, ListBaseOptions, createElementParams } from '@syncfusion/ej2-lists';
+import { EventHandler, Property, Internationalization, NotifyPropertyChanges, isBlazor } from '@syncfusion/ej2-base';import { KeyboardEvents, KeyboardEventArgs, Animation, AnimationModel, Browser, BaseEventArgs } from '@syncfusion/ej2-base';import { EmitType, cldrData, L10n, Component, getDefaultDateObject, rippleEffect, RippleOptions, Event } from '@syncfusion/ej2-base';import { remove, addClass, detach, removeClass, closest, append, attributes, setStyleAttribute } from '@syncfusion/ej2-base';import { isNullOrUndefined, formatUnit, getValue, extend, getUniqueID, blazorCultureFormats, ModuleDeclaration, ChildProperty } from '@syncfusion/ej2-base';import { Popup } from '@syncfusion/ej2-popups';import { FocusEventArgs, BlurEventArgs, ClearedEventArgs } from '../calendar/calendar';import { Input, InputObject, IInput, FloatLabelType } from '@syncfusion/ej2-inputs';import { ListBase, ListBaseOptions, createElementParams } from '@syncfusion/ej2-lists';
 import {TimeFormatObject,ChangeEventArgs,PopupEventArgs,ItemEventArgs} from "./timepicker";
 import {ComponentModel} from '@syncfusion/ej2-base';
+
+/**
+ * Interface for a class TimeMaskPlaceholder
+ */
+export interface TimeMaskPlaceholderModel {
+
+    /**
+     * Specifies the mask placeholder value for day section.
+     *
+     * @default 'day'
+     */
+    day?: string;
+
+    /**
+     * Specifies the mask placeholder value for month section.
+     *
+     * @default 'month'
+     */
+    month?: string;
+
+    /**
+     * Specifies the mask placeholder value for year section.
+     *
+     * @default 'year'
+     */
+    year?: string;
+
+    /**
+     * Specifies the mask placeholder value for day of the week section.
+     *
+     * @default 'day of the week'
+     */
+    dayOfTheWeek?: string;
+
+    /**
+     * Specifies the mask placeholder value for hour section.
+     *
+     * @default 'hour'
+     */
+    hour?: string;
+
+    /**
+     * Specifies the mask placeholder value for minute section.
+     *
+     * @default 'minute'
+     */
+    minute?: string;
+
+    /**
+     * Specifies the mask placeholder value for second section.
+     *
+     * @default 'second'
+     */
+    second?: string;
+
+}
 
 /**
  * Interface for a class TimePicker
@@ -255,17 +311,11 @@ export interface TimePickerModel extends ComponentModel{
     enableMask?: boolean;
 
     /**
-      * Specifies the mask placeholder to be displayed on masked timepicker.
-      * By default it works based on narrow format .
-      * Possible values are:
-      * Narrow: Displays the full name  like day/month/year hour:minute:second.
-      * Short: Displays the single character like dd/mm/yyyy hh:mm:ss.
-      * 
-      * @default {}
-      * @asptype object
-      * @aspjsonconverterignore
-      */
-    maskPlaceholder?: {[key: string]: string };
+     * Specifies the mask placeholder to be displayed on masked timepicker.
+     * 
+     * @default {day:'day' , month:'month', year: 'year', hour:'hour',minute:'minute',second:'second',dayOfTheWeek: 'day of the week'}
+     */
+    maskPlaceholder?: TimeMaskPlaceholderModel;
 
     /**
      * Triggers when the value is changed.

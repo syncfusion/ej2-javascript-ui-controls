@@ -222,3 +222,57 @@ export function getUpdatedFormula(currIndexes: number[], prevIndexes: number[], 
         return null;
     }
 }
+
+
+/**
+ * @param {number} rowIdx - row index
+ * @param {number} colIdx - column index
+ * @param {SheetModel} sheet - sheet model
+ * @returns {number[]} - retruns data range
+ * @hidden
+ */
+export function getDataRange(rowIdx: number, colIdx: number, sheet: SheetModel): number[] {
+    let topIdx: number = rowIdx; let btmIdx: number = rowIdx;
+    let leftIdx: number = colIdx; let prevleftIdx: number;
+    let rightIdx: number = colIdx; let prevrightIdx: number;
+    let topReached: boolean; let btmReached: boolean;
+    let leftReached: boolean; let rightReached: boolean;
+    for (let i: number = 1; ; i++) {
+        if (!btmReached && getCell(rowIdx + i, colIdx, sheet, null, true).value) {
+            btmIdx = rowIdx + i;
+        } else {
+            btmReached = true;
+        }
+        if (!topReached && getCell(rowIdx - i, colIdx, sheet, null, true).value) {
+            topIdx = rowIdx - i;
+        } else {
+            topReached = true;
+        }
+        if (topReached && btmReached) {
+            break;
+        }
+    }
+    for (let j: number = 1; ; j++) {
+        prevleftIdx = leftIdx;
+        prevrightIdx = rightIdx;
+        for (let i: number = topIdx; i <= btmIdx; i++) {
+            if (!leftReached && getCell(i, leftIdx - 1, sheet, null, true).value) {
+                leftIdx = prevleftIdx - 1;
+            }
+            if (!rightReached && getCell(i, rightIdx + 1, sheet, null, true).value) {
+                rightIdx = prevrightIdx + 1;
+            }
+            if (i === btmIdx) {
+                if (leftIdx === prevleftIdx) {
+                    leftReached = true;
+                }
+                if (rightIdx === prevrightIdx) {
+                    rightReached = true;
+                }
+            }
+            if (rightReached && leftReached) {
+                return [topIdx, leftIdx, btmIdx, rightIdx];
+            }
+        }
+    }
+}

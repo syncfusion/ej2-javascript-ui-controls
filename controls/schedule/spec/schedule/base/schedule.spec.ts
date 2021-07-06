@@ -460,7 +460,11 @@ describe('Schedule base module', () => {
             schObj = new Schedule({ showTimeIndicator: true });
             schObj.appendTo('#Schedule');
             expect(schObj.element.querySelectorAll('.e-current-time').length).toEqual(1);
-            jasmine.clock().tick(60050);
+            const currentTime = schObj.getCurrentTime();
+            const interval = 60000 - currentTime.getSeconds() * 1000 + currentTime.getMilliseconds();
+            jasmine.clock().tick(interval);
+            expect(schObj.element.querySelectorAll('.e-current-time').length).toEqual(1);
+            jasmine.clock().tick(60000);
             expect(schObj.element.querySelectorAll('.e-current-time').length).toEqual(1);
             schObj.showTimeIndicator = false;
             schObj.dataBind();

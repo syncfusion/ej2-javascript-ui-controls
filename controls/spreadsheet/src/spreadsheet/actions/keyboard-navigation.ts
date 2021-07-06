@@ -36,7 +36,7 @@ export class KeyboardNavigation {
 
     private keyDownHandler(e: KeyboardEvent): void {
         if (!this.parent.isEdit && (document.activeElement.classList.contains('e-spreadsheet') ||
-            closest(document.activeElement, '.e-sheet'))) {
+            closest(document.activeElement, '.e-sheet')) && !closest(e.target as Element, '.e-name-box')) {
             let isNavigate: boolean;
             let scrollIdxes: number[];
             const isRtl: boolean = this.parent.enableRtl;

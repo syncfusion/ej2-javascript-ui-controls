@@ -17,12 +17,11 @@ export class EventMarker {
      */
     public renderEventMarkers(): void {
         if (this.parent.eventMarkers && this.parent.eventMarkers.length > 0) {
-            if (!this.parent.ganttChartModule.chartBodyContainer.contains(this.eventMarkersContainer)) {
+            if (!this.parent.ganttChartModule.chartBodyContent.contains(this.eventMarkersContainer)) {
                 this.eventMarkersContainer = createElement('div', {
-                    className: cls.eventMarkersContainer, styles: 'top:' +
-                     this.parent.ganttChartModule.chartTimelineContainer.offsetHeight + 'px;'
+                    className: cls.eventMarkersContainer
                 });
-                this.parent.ganttChartModule.chartBodyContainer.appendChild(this.eventMarkersContainer);
+                this.parent.ganttChartModule.chartBodyContent.appendChild(this.eventMarkersContainer);
             }
             this.eventMarkersContainer.innerHTML = '';
             this.getEventMarkersElements(this.eventMarkersContainer);

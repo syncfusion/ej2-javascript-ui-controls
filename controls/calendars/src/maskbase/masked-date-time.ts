@@ -46,17 +46,20 @@ export class MaskedDateTime {
     private isComplete : boolean = false;
     private previousDate : Date;
     private isNavigate : boolean = false;
-    private formatRegex : RegExp = /dddd|ddd|dd|d|MMMM|MMM|MM|M|yyyy|yy|HH|H|hh|h|mm|m|fff|ff|f|aa|a|ss|s|zzz|zz|z|'[^']*'|'[^']*'/g;
+    private formatRegex : RegExp = /EEEEE|EEEE|EEE|EE|E|dddd|ddd|dd|d|MMMM|MMM|MM|M|yyyy|yy|y|HH|H|hh|h|mm|m|fff|ff|f|aa|a|ss|s|zzzz|zzz|zz|z|'[^']*'|'[^']*'/g;
     private isDeletion: boolean = false;
     private isShortYear: boolean = false;
+    private isDeleteKey: boolean = false;
     public constructor(parent? : IMaskedDateTime) {
         this.parent = parent;
-        this.dateformat = this.parent.format ? this.parent.format : 'dd/MM/yyyy';
+        this.dateformat = this.getCulturedFormat();
         this.value = this.parent.value != null ? this.parent.value : new Date();
         this.value.setMonth(0);
         this.value.setHours(0);
         this.value.setMinutes(0);
         this.value.setSeconds(0);
+        this.previousDate = new Date(this.value.getFullYear(), this.value.getMonth(), this.value.getDate(),this.value.getHours(),
+        this.value.getMinutes(),this.value.getSeconds());
         this.removeEventListener();
         this.addEventListener();
     }
@@ -87,38 +90,36 @@ export class MaskedDateTime {
 
     private createMask(dateformat : string): void {
         this.isDayPart = this.isMonthPart = this.isYearPart = this.isHourPart = this.isMinutePart = this.isSecondsPart = false;
-        if (typeof this.parent.maskPlaceholder === 'object') {
-            if (this.parent.maskPlaceholder['day']) 
-                this.defaultConstant['day'] = this.parent.maskPlaceholder['day'].toString();
-            
+        this.dateformat = this.getCulturedFormat();
+        
+    if (this.parent.maskPlaceholder.day) 
+        this.defaultConstant['day'] = this.parent.maskPlaceholder.day;
+    
 
-            if (this.parent.maskPlaceholder['month']) 
-                this.defaultConstant['month'] = this.parent.maskPlaceholder['month'].toString();
-            
+    if (this.parent.maskPlaceholder.month) 
+        this.defaultConstant['month'] = this.parent.maskPlaceholder.month;
+    
 
-            if (this.parent.maskPlaceholder['year']) 
-                this.defaultConstant['year'] = this.parent.maskPlaceholder['year'].toString();
-            
+    if (this.parent.maskPlaceholder.year) 
+        this.defaultConstant['year'] = this.parent.maskPlaceholder.year;
+    
 
-            if (this.parent.maskPlaceholder['hour']) 
-                this.defaultConstant['hour'] = this.parent.maskPlaceholder['hour'].toString();
-            
+    if (this.parent.maskPlaceholder.hour) 
+        this.defaultConstant['hour'] = this.parent.maskPlaceholder.hour;
+    
 
-            if (this.parent.maskPlaceholder['minute']) 
-                this.defaultConstant['minute'] = this.parent.maskPlaceholder['minute'].toString();
-            
+    if (this.parent.maskPlaceholder.minute) 
+        this.defaultConstant['minute'] = this.parent.maskPlaceholder.minute;
+    
 
-            if (this.parent.maskPlaceholder['second']) 
-                this.defaultConstant['second'] = this.parent.maskPlaceholder['second'].toString();
-            
+    if (this.parent.maskPlaceholder.second) 
+        this.defaultConstant['second'] = this.parent.maskPlaceholder.second;
+    
 
-            if (this.parent.maskPlaceholder['dayOfTheWeek']) 
-                this.defaultConstant['dayOfTheWeek'] = this.parent.maskPlaceholder['dayOfTheWeek'].toString();
-            
+    if (this.parent.maskPlaceholder.dayOfTheWeek) 
+        this.defaultConstant['dayOfTheWeek'] = this.parent.maskPlaceholder.dayOfTheWeek.toString();
 
-            this.objectString = Object.keys(this.parent.maskPlaceholder);
-            this.getCUltureMaskFormat();
-        } 
+        this.getCUltureMaskFormat();
         let inputValue: string = this.dateformat.replace(this.formatRegex, this.formatCheck());
         this.isHiddenMask = true;
         this.hiddenMask = this.dateformat.replace(this.formatRegex, this.formatCheck());
@@ -132,7 +133,7 @@ export class MaskedDateTime {
     }
 
     private getCUltureMaskFormat(): void {
-        this.l10n = new L10n('MaskedDateTime', this.defaultConstant, this.parent.locale);
+        this.l10n = new L10n(this.parent.moduleName, this.defaultConstant, this.parent.locale);
         this.objectString = Object.keys(this.defaultConstant);
         for (let i: number = 0; i < this.objectString.length; i++) {
             this.defaultConstant[this.objectString[i].toString()] = this.l10n.getConstant(this.objectString[i].toString());
@@ -178,6 +179,11 @@ export class MaskedDateTime {
     }
 
     private maskKeydownHandler(args : events): void {
+        if(args.e.key === 'Delete')
+        {
+        this.isDeleteKey = true;
+        return;
+        }
         if ((!args.e.altKey && !args.e.ctrlKey) && (args.e.key === ARROWLEFT || args.e.key === ARROWRIGHT || args.e.key === SHIFTTAB || args.e.key === TAB || args.e.action === SHIFTTAB ||
             args.e.key === END || args.e.key === HOME)) {
             let start: number = this.parent.inputElement.selectionStart;
@@ -324,7 +330,7 @@ export class MaskedDateTime {
                 }
                 break;
             case 'h':
-                this.hour = (this.isHourPart && newDateValue.getHours().toString().length < 2  ? (newDateValue.getHours() % 12 || 12) * 10 : 0) + parseInt(newVal[start - 1], 10);
+                this.hour = (this.isHourPart && (newDateValue.getHours() % 12 || 12).toString().length < 2  ? (newDateValue.getHours() % 12 || 12) * 10 : 0) + parseInt(newVal[start - 1], 10);
                 if (isNaN(this.hour)) {
                     return;
                 }
@@ -401,20 +407,29 @@ export class MaskedDateTime {
             let dayKeyAbbreviated: string[] = Object.keys(daysAbbreviated);
             let daysWide: any = <string[]>(proxy.getCulturedValue('days[stand-alone].wide'));
             let dayKeyWide: string[] = Object.keys(daysWide);
+            let daysNarrow: any = <string[]>(proxy.getCulturedValue('days[stand-alone].narrow'));
+            let dayKeyNarrow: string[] = Object.keys(daysNarrow);
             let monthAbbreviated: string[] = <string[]>(proxy.getCulturedValue('months[stand-alone].abbreviated'));
             let monthWide: string[] = <string[]>(proxy.getCulturedValue('months[stand-alone].wide'));
             let periodString: any = <string[]>(proxy.getCulturedValue('dayPeriods.format.wide'));
             let periodkeys: string[] = Object.keys(periodString);
             let milliseconds: number;
+            let dateOptions: object;
             switch (formattext) {
+                case 'ddd':
+                case 'dddd':
                 case 'd': result = proxy.isDayPart ? proxy.value.getDate().toString() :  proxy.defaultConstant['day'].toString();
                     break;
                 case 'dd': result = proxy.isDayPart ? proxy.roundOff(proxy.value.getDate(), 2) :  proxy.defaultConstant['day'].toString();
                     break;
-
-                case 'ddd': result = proxy.isDayPart && proxy.isMonthPart && proxy.isYearPart ? daysAbbreviated[dayKeyAbbreviated[proxy.value.getDay()]].toString() :  proxy.defaultConstant['dayOfTheWeek'].toString();
+                case 'E' :
+                case 'EE':
+                case 'EEE': result = proxy.isDayPart && proxy.isMonthPart && proxy.isYearPart ? daysAbbreviated[dayKeyAbbreviated[proxy.value.getDay()]].toString() :  proxy.defaultConstant['dayOfTheWeek'].toString();
                     break;
-                case 'dddd': result = proxy.isDayPart && proxy.isMonthPart && proxy.isYearPart ? daysWide[dayKeyWide[proxy.value.getDay()]].toString() :  proxy.defaultConstant['dayOfTheWeek'].toString();
+                case 'EEEE': result = proxy.isDayPart && proxy.isMonthPart && proxy.isYearPart ? daysWide[dayKeyWide[proxy.value.getDay()]].toString() :  proxy.defaultConstant['dayOfTheWeek'].toString();
+                    break;
+                case 'EEEEE':
+                    result = proxy.isDayPart && proxy.isMonthPart && proxy.isYearPart ? daysNarrow[dayKeyNarrow[proxy.value.getDay()]].toString() :  proxy.defaultConstant['dayOfTheWeek'].toString();
                     break;
                 case 'M': result = proxy.isMonthPart ? (proxy.value.getMonth() + 1).toString() :  proxy.defaultConstant['month'].toString();
                     break;
@@ -429,6 +444,7 @@ export class MaskedDateTime {
                         proxy.isNavigate = proxy.isShortYear = (proxy.value.getFullYear() % 100).toString().length === 2;
                     }
                     break;
+                case 'y':
                 case 'yyyy': result = proxy.isYearPart ? proxy.roundOff(proxy.value.getFullYear(), 4) :  proxy.defaultConstant['year'].toString();
                     break;
                 case 'h': result = proxy.isHourPart ? (proxy.value.getHours() % 12 || 12).toString() :  proxy.defaultConstant['hour'].toString();
@@ -460,32 +476,20 @@ export class MaskedDateTime {
                 case 'a':    
                 case 'aa': result =  proxy.value.getHours() < 12 ? periodString[periodkeys[0]] : periodString[periodkeys[1]] ;
                     break;
-                case 'zzz':
-                    let offset: number = proxy.value.getTimezoneOffset();
-                    let offsettime: number;
-                    isSymbol = offset < 0;
-                    offsettime = parseInt(Math.abs(offset / 60).toString().split('.')[0]);
-                    offset = Math.abs(offset) - offsettime * 60;
-                    result = (isSymbol ? '+' : '-') + proxy.roundOff(offsettime, 2);
-                    result += ':' + proxy.roundOff(offset, 2);
-                    break;
                 case 'z':
                 case 'zz':
-                    let offsetValue: number = proxy.value.getTimezoneOffset() / 60;
-                    isSymbol = offsetValue < 0;
-                    offsetValue = parseInt(Math.abs(offsetValue).toString().split('.')[0]);
-                    result = (isSymbol ? '+' : '-') + (formattext === 'zz' ? proxy.roundOff(offsetValue, 2) : offsetValue.toString());
-                    break;
+                case 'zzz':
+                case 'zzzz':
+                    dateOptions = {
+                        format: formattext,
+                        type: 'dateTime', skeleton: 'yMd', calendar: proxy.parent.calendarMode
+                    };
+                   result = proxy.parent.globalize.formatDate(proxy.value,dateOptions);
+                break;
             }
             result = result !== undefined ? result : formattext.slice(1, formattext.length - 1);
             if (proxy.isHiddenMask) {
                 let hiddenChar: string = '';
-                if (formattext == 'ddd') {
-                    formattext = 'EEE';
-                }
-                if (formattext == 'dddd') {
-                    formattext = 'EEEE';
-                }
                 for (let i: number = 0; i < result.length; i++) {
                     hiddenChar += formattext[0];
                 }
@@ -511,11 +515,12 @@ export class MaskedDateTime {
         this.parent.inputElement.value = inputValue;
         this.parent.inputElement.selectionStart = start;
         this.validCharacterCheck();
-        if (this.isNavigate || this.isDeletion) {
+        if ((this.isNavigate || this.isDeletion) && !this.isDeleteKey ) {
           let isbackward: boolean = this.isNavigate ? false : true;
             this.isNavigate = this.isDeletion = false;
             this.navigateSelection(isbackward);
         }
+        this.isDeleteKey = false;
         // this.setSelection(selectionChar);
         // this.navigateSelection(inputValue);
     }
@@ -640,6 +645,31 @@ export class MaskedDateTime {
             result = getValue('main.' + '' + locale + ('.dates.calendars.gregorian.' + format), cldrData);
         }
         return result;
+    }
+
+    private getCulturedFormat(): string{
+        let formatString: string = (this.getCulturedValue('dateTimeFormats[availableFormats].yMd')).toString();
+        if(this.parent.moduleName == 'datepicker')
+        {
+            formatString = (this.getCulturedValue('dateTimeFormats[availableFormats].yMd')).toString();
+            if(this.parent.format && this.parent.formatString)
+            {
+                formatString = this.parent.formatString
+            }
+        }
+        if(this.parent.moduleName == 'datetimepicker')
+        {
+            formatString = (this.getCulturedValue('dateTimeFormats[availableFormats].yMd')).toString();
+            if(this.parent.dateTimeFormat)
+            {
+            formatString = this.parent.dateTimeFormat;
+            }
+        }
+        if(this.parent.moduleName == 'timepicker')
+        {
+            formatString = this.parent.cldrTimeFormat();
+        }
+        return formatString;
     }
 
     private clearHandler(): void {

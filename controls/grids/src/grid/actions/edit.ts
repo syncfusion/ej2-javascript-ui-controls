@@ -845,7 +845,8 @@ export class Edit implements IAction {
         const frRules: Object = {};
         cols = cols ? cols : gObj.getColumns() as Column[];
         for (let i: number = 0; i < cols.length; i++) {
-            if (!cols[i].visible) {
+            if (!cols[i].visible && (gObj.editSettings.mode !== 'Dialog' || (gObj.groupSettings.columns.indexOf(cols[i].field) === -1
+                && gObj.editSettings.mode === 'Dialog'))) {
                 continue;
             }
             if (cols[i].validationRules) {

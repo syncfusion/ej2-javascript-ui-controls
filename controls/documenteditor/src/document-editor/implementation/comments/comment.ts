@@ -5,7 +5,7 @@ import { DropDownButton, ItemModel, MenuEventArgs } from '@syncfusion/ej2-splitb
 import { Button } from '@syncfusion/ej2-buttons';
 import { Toolbar, TabItemModel, Tab, SelectEventArgs } from '@syncfusion/ej2-navigations';
 import { DialogUtility, Dialog } from '@syncfusion/ej2-popups';
-import { Dictionary, ReviewTabType, CommentDeleteEventArgs, CommentActionEventArgs } from '../../base/index';
+import { Dictionary, ReviewTabType, CommentDeleteEventArgs, CommentActionEventArgs, beforeCommentActionEvent, commentEndEvent, commentBeginEvent, commentDeleteEvent } from '../../base/index';
 import { HelperMethods } from '../editor/editor-helper';
 
 /**
@@ -25,6 +25,7 @@ export class CommentReviewPane {
     public reviewTab: Tab;
     public parentPaneElement: HTMLElement;
     public element: HTMLElement;
+    public isCommentTabVisible: boolean;
     /**
      * @private
      */
@@ -69,14 +70,24 @@ export class CommentReviewPane {
     public showHidePane(show: boolean, tab: ReviewTabType): void {
         if (this.parentPaneElement) {
             this.updateTabHeaderWidth();
-            this.parentPaneElement.style.display = show ? 'block' : 'none';
-            if (tab === 'Changes') {
-                this.reviewTab.select(1);
-            } else {
-                this.reviewTab.select(0);
+            if (show) {
+                this.parentPaneElement.style.display = 'block';
+                if (tab === 'Changes') {
+                    this.isCommentTabVisible = false;
+                    this.owner.notify('reviewPane', { comment: this.isCommentTabVisible, changes: true });
+                    this.reviewTab.select(1);
+                } else {
+                    this.owner.trackChangesPane.isChangesTabVisible = false;
+                    this.owner.notify('reviewPane', { comment: true, changes: this.owner.trackChangesPane.isChangesTabVisible });
+                    this.reviewTab.select(0);
+                }
+                this.owner.trackChangesPane.updateTrackChanges(show);
+                this.commentPane.updateCommentStatus();
+            }
+            else {
+                this.parentPaneElement.style.display = 'none';
             }
         }
-        this.owner.trackChangesPane.updateTrackChanges(show);
         if (show) {
             this.commentPane.updateHeight();
         }
@@ -85,7 +96,30 @@ export class CommentReviewPane {
         }
     }
 
-    private updateTabHeaderWidth(): void {
+    public reviewPaneHelper(args: any): void {
+        if (!isNullOrUndefined(args.comment) || !isNullOrUndefined(args.changes)) {
+            if ((args.comment || args.changes)) {
+                if (this.parentPaneElement.style.display === 'none') {
+                    this.parentPaneElement.style.display = 'block';
+                    if (this.owner) {
+                        setTimeout(() => {
+                            this.owner.resize();
+                        }, 10);
+                    }
+                }
+            }
+            else {
+                this.parentPaneElement.style.display = 'none';
+                if (this.owner) {
+                    setTimeout(() => {
+                        this.owner.resize();
+                    }, 10);
+                }
+            }
+        }
+    }
+
+    public updateTabHeaderWidth(): void {
         const reviewTabsEle: HTMLCollectionOf<Element> = this.reviewTab.getRootElement().getElementsByClassName('e-tab-wrap');
         (reviewTabsEle[0] as HTMLElement).style.padding = '0 8px';
         (reviewTabsEle[1] as HTMLElement).style.padding = '0 8px';
@@ -97,6 +131,7 @@ export class CommentReviewPane {
         this.initPaneHeader(localValue);
         reviewContainer.appendChild(this.addReviewTab(localValue));
         this.initCommentPane();
+        this.owner.on('reviewPane', this.reviewPaneHelper, this);
     }
     private addReviewTab(localValue: L10n): HTMLElement {
         const commentHeader: HTMLElement = createElement('div', { innerHTML: localValue.getConstant('Comments') });
@@ -137,7 +172,9 @@ export class CommentReviewPane {
         } else {
             this.commentPane.updateHeight();
         }
-        this.owner.resize();
+        setTimeout(() => {
+            this.owner.resize();
+        }, 10);   
     };
 
     public initPaneHeader(localValue: L10n): HTMLElement {
@@ -185,10 +222,11 @@ export class CommentReviewPane {
                 this.owner.showComments = false;
             }
         } else {
-            this.owner.documentHelper.currentSelectedComment = undefined;
             this.owner.showComments = false;
             this.owner.showRevisions = false;
+            this.owner.documentHelper.currentSelectedComment = undefined;
             this.owner.documentHelper.currentSelectedRevision = undefined;
+            this.owner.notify('reviewPane', {changes: false, comment: false});
         }
     }
 
@@ -396,6 +434,7 @@ export class CommentReviewPane {
         if (this.reviewPane && this.reviewPane.parentElement) {
             this.reviewPane.parentElement.removeChild(this.reviewPane);
         }
+        this.owner.off('reviewPane', this.reviewPaneHelper);
         this.reviewPane.innerHTML = '';
         this.reviewPane = undefined;
         this.owner = undefined;
@@ -436,9 +475,9 @@ export class CommentPane {
         }
         if (this.owner) {
             if (this.isEditModeInternal) {
-                this.owner.trigger('commentBegin');
+                this.owner.trigger(commentBeginEvent);
             } else {
-                this.owner.trigger('commentEnd');
+                this.owner.trigger(commentEndEvent);
             }
         }
     }
@@ -529,6 +568,7 @@ export class CommentPane {
             comment = comment.ownerComment;
         }
         if (comment) {
+            this.owner.notify('reviewPane', { comment: true, changes: this.owner.trackChangesPane.isChangesTabVisible});
             const commentView: CommentView = this.comments.get(comment);
             const selectedElement: HTMLElement = commentView.parentElement;
             if (selectedElement) {
@@ -574,6 +614,12 @@ export class CommentPane {
                 commentView.parentElement.parentElement.removeChild(commentView.parentElement);
             }
             //this.commentPane.removeChild();
+            for (let i: number = 0; i < comment.replyComments.length; i++) {
+                let replyCmt: CommentElementBox = comment.replyComments[i];
+                if (this.comments.containsKey(replyCmt)) {
+                    this.comments.remove(replyCmt);
+                }
+            }
             this.comments.remove(comment);
             commentView.destroy();
         }
@@ -600,8 +646,14 @@ export class CommentPane {
                 this.commentPane.appendChild(this.noCommentIndicator);
             }
             this.noCommentIndicator.style.display = 'block';
+            this.parentPane.isCommentTabVisible = false;
+            this.owner.notify('reviewPane', { comment: false, changes: this.owner.trackChangesPane.isChangesTabVisible});
+            this.parentPane.reviewTab.hideTab(0);
         } else {
+            this.parentPane.isCommentTabVisible = true;
             this.noCommentIndicator.style.display = 'none';
+            this.owner.notify('reviewPane', { comment: true, changes: this.owner.trackChangesPane.isChangesTabVisible});
+            this.parentPane.reviewTab.hideTab(0, false);
         }
         if (this.parentPane) {
             this.parentPane.enableDisableToolbarItem();
@@ -865,18 +917,16 @@ export class CommentView {
     }
     private deleteComment(): void {
         const eventArgs: CommentDeleteEventArgs = { author: this.comment.author, cancel: false};
-        this.owner.trigger('commentDelete', eventArgs);
+        this.owner.trigger(commentDeleteEvent, eventArgs);
         const eventActionArgs: CommentActionEventArgs = { author: this.comment.author, cancel: eventArgs.cancel, type: 'Delete'};
-        this.owner.trigger('beforeCommentAction', eventActionArgs);
+        this.owner.trigger(beforeCommentActionEvent, eventActionArgs);
         if (eventActionArgs.cancel) {
             return;
         }
         this.owner.editorModule.deleteCommentInternal(this.comment);
-        this.owner.trigger('commentDelete', eventArgs);
         if (eventArgs.cancel) {
             return;
         }
-        this.owner.editorModule.deleteCommentInternal(this.comment);
     }
 
     private updateReplyTextAreaHeight(): void {
@@ -897,7 +947,7 @@ export class CommentView {
 
     private enableReplyView(): void {
         const eventArgs: CommentActionEventArgs = { author: this.comment.author, cancel: false, type: 'Reply' };
-        this.owner.trigger('beforeCommentAction', eventArgs);
+        this.owner.trigger(beforeCommentActionEvent, eventArgs);
         if (eventArgs.cancel && eventArgs.type === 'Reply') {
             return;
         }
@@ -987,7 +1037,7 @@ export class CommentView {
 
     public editComment(): void {
         const eventArgs: CommentActionEventArgs = { author: this.comment.author, cancel: false, type: 'Edit' };
-        this.owner.trigger('beforeCommentAction', eventArgs);
+        this.owner.trigger(beforeCommentActionEvent, eventArgs);
         if (eventArgs.cancel && eventArgs.type === 'Edit') {
             return;
         }
@@ -1026,7 +1076,7 @@ export class CommentView {
 
     public postComment(): void {
         const eventArgs: CommentActionEventArgs = { author: this.comment.author, cancel: false, type: 'Post' };
-        this.owner.trigger('beforeCommentAction', eventArgs);
+        this.owner.trigger(beforeCommentActionEvent, eventArgs);
         if (eventArgs.cancel && eventArgs.type === 'Post') {
             return;
         }

@@ -70,7 +70,7 @@ describe('RadioButton', () => {
 
         it('RadioButton with cssClass', () => {
             radio = new RadioButton({ cssClass: 'class' }, '#radio');
-            expect(element.nextElementSibling.classList.contains('class')).toEqual(true);
+            expect(element.parentElement.classList.contains('class')).toEqual(true);
         });
 
         it('RadioButton with change event', () => {
@@ -231,10 +231,10 @@ describe('RadioButton', () => {
             radio = new RadioButton({}, '#radio');
             radio.cssClass = 'class';
             radio.dataBind();
-            expect(element.nextElementSibling.classList.contains('class')).toEqual(true);
+            expect(element.parentElement.classList.contains('class')).toEqual(true);
             radio.cssClass = 'newClass';
             radio.dataBind();
-            expect(element.nextElementSibling.classList.contains('newClass')).toEqual(true);
+            expect(element.parentElement.classList.contains('newClass')).toEqual(true);
         });
     });
 

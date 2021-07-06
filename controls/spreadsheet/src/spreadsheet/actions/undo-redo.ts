@@ -124,7 +124,7 @@ export class UndoRedo {
                 undoRedoArgs = this.performOperation(undoRedoArgs);
                 break;
             case 'conditionalFormat':
-                updateAction(undoRedoArgs, this.parent, !args.isUndo);
+                updateAction(undoRedoArgs, this.parent, !args.isUndo, this.undoCollection);
                 break;
             case 'clearCF':
                 updateAction(undoRedoArgs, this.parent, !args.isUndo);

@@ -215,6 +215,17 @@ export class VerticalView extends ViewBase implements IRenderer {
                     this.changeCurrentTimePosition();
                 }
                 if (isNullOrUndefined(this.currentTimeIndicatorTimer)) {
+                    const currentDate: Date = this.parent.getCurrentTime();
+                    const interval: number = util.MS_PER_MINUTE - ((currentDate.getSeconds() * 1000) + currentDate.getMilliseconds());
+                    if(interval <= (util.MS_PER_MINUTE - 1000)) {
+                        window.setTimeout(() => {
+                            if(!isNullOrUndefined(this.currentTimeIndicatorTimer)) {
+                                this.clearCurrentTimeIndicatorTimer();
+                                this.changeCurrentTimePosition();
+                                this.currentTimeIndicatorTimer = window.setInterval(() => { this.changeCurrentTimePosition(); }, util.MS_PER_MINUTE);
+                            }
+                        }, interval);
+                    }
                     this.currentTimeIndicatorTimer = window.setInterval(() => { this.changeCurrentTimePosition(); }, util.MS_PER_MINUTE);
                 }
             } else {

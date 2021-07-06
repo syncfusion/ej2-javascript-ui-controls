@@ -7,7 +7,7 @@ import { TextPosition } from '../selection/selection-helper';
 import { Selection } from '../selection/index';
 import { isNullOrUndefined, L10n } from '@syncfusion/ej2-base';
 import { WSectionFormat } from '../format/section-format';
-import { XmlHttpRequestHandler } from '../../base/ajax-helper';
+import { XmlHttpRequestHandler, actionCompleteEvent } from '../../base/index';
 import { ElementInfo, PositionInfo, ParagraphInfo, LockSelectionInfo, CollaborativeEditingEventArgs } from './editor-helper';
 import { HistoryInfo, BaseHistoryInfo } from '../editor-history/index';
 import { DialogUtility } from '@syncfusion/ej2-popups';
@@ -225,7 +225,7 @@ export class CollaborativeEditing {
             this.owner.editorHistory.clearHistory();
             this.owner.fireContentChange();
             // Todo: selection tranformation
-            this.owner.trigger('actionComplete', saveObject);
+            this.owner.trigger(actionCompleteEvent, saveObject);
         }
     }
     private removeEditRange(user: string): void {
@@ -274,7 +274,7 @@ export class CollaborativeEditing {
                 },
                 roomName: this.collaborativeEditingSettings.roomName
             };
-            this.owner.trigger('actionComplete', saveObject);
+            this.owner.trigger(actionCompleteEvent, saveObject);
         }
     }
 
@@ -318,7 +318,7 @@ export class CollaborativeEditing {
                 data: '',
                 roomName: this.collaborativeEditingSettings.roomName
             };
-            this.owner.trigger('actionComplete', lockObject);
+            this.owner.trigger(actionCompleteEvent, lockObject);
         } else {
             const localizeValue: L10n = new L10n('documenteditor', this.owner.defaultLocale);
             localizeValue.setLocale(this.owner.locale);

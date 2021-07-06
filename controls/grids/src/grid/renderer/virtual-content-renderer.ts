@@ -1255,8 +1255,9 @@ export class VirtualContentRenderer extends ContentRender implements IRenderer {
     }
 
     private isRowInView(row: Element): boolean {
-        const top: number = row.getBoundingClientRect().top - this.parent.element.getBoundingClientRect().top;
-        return (top >= this.initialRowTop && top <= this.content.offsetHeight);
+        const top: number = row.getBoundingClientRect().top;
+        const bottom: number = row.getBoundingClientRect().bottom;
+        return (top >= this.content.getBoundingClientRect().top && bottom <= this.content.getBoundingClientRect().bottom);
     }
 }
 /**

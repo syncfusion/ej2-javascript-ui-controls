@@ -1,6 +1,6 @@
 import { Workbook, SheetModel, CellModel, getCell, setCell, getData } from '../base/index';
 import { DataManager, Query, ReturnOption, DataUtil, Deferred } from '@syncfusion/ej2-data';
-import { getCellIndexes, getIndexesFromAddress, getColumnHeaderText, getRangeAddress, workbookLocale, isNumber, getUpdatedFormula } from '../common/index';
+import { getCellIndexes, getIndexesFromAddress, getColumnHeaderText, getRangeAddress, workbookLocale, isNumber, getUpdatedFormula, getDataRange } from '../common/index';
 import { SortDescriptor, SortOptions, BeforeSortEventArgs, SortEventArgs, getSwapRange, CellStyleModel } from '../common/index';
 import { parseIntValue } from '../common/index';
 import { initiateSort } from '../common/event';
@@ -65,7 +65,7 @@ export class WorkbookSort {
 
         let containsHeader: boolean = sortOptions.containsHeader;
         if (range[0] === range[2]) { //if selected range is a single cell
-            range = this.getSortDataRange(range[0], range[1], sheet);
+            range = getDataRange(range[0], range[1], sheet);
             isSingleCell = true;
             if (isNullOrUndefined(sortOptions.containsHeader)) {
                 if (typeof getCell(range[0], range[1], sheet, null, true).value ===
@@ -156,52 +156,6 @@ export class WorkbookSort {
             }
         }
         return sameStyle;
-    }
-
-    private getSortDataRange(rowIdx: number, colIdx: number, sheet: SheetModel): number[] {
-        let topIdx: number = rowIdx; let btmIdx: number = rowIdx;
-        let leftIdx: number = colIdx; let prevleftIdx: number;
-        let rightIdx: number = colIdx; let prevrightIdx: number;
-        let topReached: boolean; let btmReached: boolean;
-        let leftReached: boolean; let rightReached: boolean;
-        for (let i: number = 1; ; i++) {
-            if (!btmReached && getCell(rowIdx + i, colIdx, sheet, null, true).value) {
-                btmIdx = rowIdx + i;
-            } else {
-                btmReached = true;
-            }
-            if (!topReached && getCell(rowIdx - i, colIdx, sheet, null, true).value) {
-                topIdx = rowIdx - i;
-            } else {
-                topReached = true;
-            }
-            if (topReached && btmReached) {
-                break;
-            }
-        }
-        for (let j: number = 1; ; j++) {
-            prevleftIdx = leftIdx;
-            prevrightIdx = rightIdx;
-            for (let i: number = topIdx; i <= btmIdx; i++) {
-                if (!leftReached && getCell(i, leftIdx - 1, sheet, null, true).value) {
-                    leftIdx = prevleftIdx - 1;
-                }
-                if (!rightReached && getCell(i, rightIdx + 1, sheet, null, true).value) {
-                    rightIdx = prevrightIdx + 1;
-                }
-                if (i === btmIdx) {
-                    if (leftIdx === prevleftIdx) {
-                        leftReached = true;
-                    }
-                    if (rightIdx === prevrightIdx) {
-                        rightReached = true;
-                    }
-                }
-                if (rightReached && leftReached) {
-                    return [topIdx, leftIdx, btmIdx, rightIdx];
-                }
-            }
-        }
     }
 
     /**

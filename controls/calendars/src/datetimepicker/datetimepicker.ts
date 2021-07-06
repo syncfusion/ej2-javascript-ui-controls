@@ -11,6 +11,7 @@ import { BlurEventArgs, ClearedEventArgs, CalendarType, CalendarView, DayHeaderF
 import { DatePicker, PopupObjectArgs } from '../datepicker/datepicker';
 import { TimePickerBase } from '../timepicker/timepicker';
 import { DateTimePickerModel } from './datetimepicker-model';
+import {MaskPlaceholderModel} from '../calendar/calendar-model'
 
 //class constant defination
 const DATEWRAPPER: string = 'e-date-wrapper';
@@ -86,6 +87,7 @@ export class DateTimePicker extends DatePicker {
     private dateTimeOptions: DateTimePickerModel;
     protected scrollInvoked: boolean = false;
     protected maskedDateValue: string;
+    protected moduleName: string = this.getModuleName();
 
     /**
      * Specifies the format of the time value that to be displayed in time popup list.
@@ -489,18 +491,13 @@ export class DateTimePicker extends DatePicker {
      public enableMask: boolean;
  
      /**
-      * Specifies the mask placeholder to be displayed on masked datetimepicker.
-      * By default it works based on narrow format .
-      * Possible values are:
-      * Narrow: Displays the full name  like day/month/year hour:minute:second.
-      * Short: Displays the single character like dd/mm/yyyy hh:mm:ss.
-      * 
-      * @default {}
-      * @asptype object
-      * @aspjsonconverterignore
-      */
-     @Property({})
-     public maskPlaceholder: {[key: string]: string };
+     * Specifies the mask placeholder to be displayed on masked datetimepicker.
+     * 
+     * @default {day:'day' , month:'month', year: 'year', hour:'hour',minute:'minute',second:'second',dayOfTheWeek: 'day of the week'}
+     */
+      @Property({day:'day' , month:'month', year: 'year', hour:'hour', minute:'minute', second:'second', dayOfTheWeek: 'day of the week'})
+      public maskPlaceholder: MaskPlaceholderModel;
+      
     /**
      * Triggers when popup is opened.
      *
@@ -1834,6 +1831,15 @@ export class DateTimePicker extends DatePicker {
                 this.checkFormat();
                 this.dateTimeFormat = this.formatString;
                 this.setValue();
+                if (this.enableMask) {
+                    this.notify("createMask", {
+                      module: "MaskedDateTime",
+                    });
+                    if(!this.value)
+                    {
+                        Input.setValue(this.maskedDateValue, this.inputElement, this.floatLabelType, this.showClearButton);
+                    }
+                }
                 break;
             case 'placeholder':
                 Input.setPlaceholder(newProp.placeholder, this.inputElement);
@@ -1870,6 +1876,22 @@ export class DateTimePicker extends DatePicker {
                     this.setProperties({ scrollTo: null }, true);
                 }
                 break;
+                case 'enableMask':
+                    if (this.enableMask) {
+                        this.notify("createMask", {
+                          module: "MaskedDateTime",
+                        });
+                        Input.setValue(this.maskedDateValue, this.inputElement, this.floatLabelType, this.showClearButton);
+                      }
+                      else
+                      {
+                          if(this.inputElement.value === this.maskedDateValue)
+                          {
+                            this.maskedDateValue = '';
+                            Input.setValue(this.maskedDateValue, this.inputElement, this.floatLabelType, this.showClearButton);
+                          }
+                      }
+                    break;
             default:
                 super.onPropertyChanged(newProp, oldProp);
                 break;

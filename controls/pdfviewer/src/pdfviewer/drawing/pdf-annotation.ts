@@ -683,6 +683,12 @@ export class PdfFormFieldBase extends ChildProperty<PdfFormFieldBase> {
     public id: string;
 
     /**
+     * specifies the type of the signature.
+     */
+    @Property('')
+    public signatureType: string;
+
+    /**
      * Represents the name of the formField
      *
      * @default ''

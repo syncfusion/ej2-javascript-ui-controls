@@ -256,12 +256,12 @@ export class PdfGanttTaskbarCollection {
     private drawRightLabel(page: PdfPage, startPoint: PointF, detail: TimelineDetails, cumulativeWidth: number): void {
         let left: number;
         const graphics: PdfGraphics = page.graphics;
-        const actualLeft: number = left - pixelToPoint(cumulativeWidth) + startPoint.x;
         if (this.rightTaskLabel.isLeftCalculated) {
             left = this.rightTaskLabel.left;
         } else {
             left = pixelToPoint(this.rightTaskLabel.left);
         }
+        const actualLeft: number = left - pixelToPoint(cumulativeWidth) + startPoint.x;
         if (detail.startPoint <= left && left < detail.endPoint &&
             !isNullOrUndefined(this.rightTaskLabel.value) && !this.rightTaskLabel.isCompleted) {
             const result: PdfStringLayoutResult = this.getWidth(this.rightTaskLabel.value, detail.endPoint - left, 15);

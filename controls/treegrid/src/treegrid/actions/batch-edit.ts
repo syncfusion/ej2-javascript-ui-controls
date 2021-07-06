@@ -3,7 +3,7 @@ import { isNullOrUndefined, extend, setValue, getValue, merge } from '@syncfusio
 import { TreeGrid } from '../base';
 import * as events from '../base/constant';
 import { DataManager } from '@syncfusion/ej2-data';
-import { findChildrenRecords, getParentData, extendArray } from '../utils';
+import { findChildrenRecords, getParentData, extendArray, isCountRequired } from '../utils';
 import { BeforeBatchSaveArgs, getUid, CellSaveArgs, NotifyArgs, Column, Row, BatchChanges } from '@syncfusion/ej2-grids';
 import { BatchAddArgs, BeforeBatchAddArgs } from '@syncfusion/ej2-grids';
 import { updateParentRow, editAction } from './crud-actions';
@@ -424,7 +424,7 @@ export class BatchEdit {
         if (this.parent.editSettings.mode === 'Batch') {
             let i: number; const batchChanges: Object = Object.hasOwnProperty.call(args, 'updatedRecords') ? args.updatedRecords : this.parent.getBatchChanges(); const deletedRecords: string = 'deletedRecords';
             const addedRecords: string = 'addedRecords'; const index: string = 'index'; const uniqueID: string = 'uniqueID';
-            const data: Object[] = <Object[]>(this.parent.grid.dataSource instanceof DataManager ?
+            let data: Object[] = <Object[]>(this.parent.grid.dataSource instanceof DataManager ?
                 this.parent.grid.dataSource.dataSource.json : this.parent.grid.dataSource);
             let currentViewRecords: Object[] = this.parent.grid.getCurrentViewRecords();
             const primarykey: string = this.parent.grid.getPrimaryKeyFieldNames()[0]; const level: string = 'level';
@@ -435,6 +435,9 @@ export class BatchEdit {
                 addRecords.reverse();
             }
             if (this.parent.editSettings.newRowPosition !== 'Bottom' && !Object.hasOwnProperty.call(args, 'updatedRecords')) {
+                if (isCountRequired(this.parent)) {
+                    data = getValue('result', data);
+                }
                 data.splice(data.length - addRecords.length, addRecords.length);
                 if (!this.parent.allowPaging && data.length !== currentViewRecords.length) {
                     if (currentViewRecords.length > addRecords.length) {

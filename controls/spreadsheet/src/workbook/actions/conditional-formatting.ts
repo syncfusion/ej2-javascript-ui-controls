@@ -1,7 +1,7 @@
 import { Workbook, setCell, SheetModel, setRow, CellModel, getSheet } from '../base/index';
 import { setCFRule, clearCFRule, getRangeAddress, CellStyleModel, applyCellFormat, getSwapRange } from '../common/index';
 import { getRangeIndexes, CellFormatArgs, ConditionalFormatModel } from '../common/index';
-import { cFInitialCheck, clearCF } from '../common/index';
+import { cFInitialCheck, clearCF, addHighlight, cFUndo, goto } from '../common/index';
 import { completeAction } from '../../spreadsheet/common/event';
 import { isNullOrUndefined } from '@syncfusion/ej2-base';
 
@@ -34,19 +34,21 @@ export class WorkbookConditionalFormat {
     private addEventListener(): void {
         this.parent.on(setCFRule, this.setCFrulHandler, this);
         this.parent.on(clearCFRule, this.clearRules, this);
+        this.parent.on(cFUndo, this.cFUndoHandler, this);
     }
 
     private removeEventListener(): void {
         if (!this.parent.isDestroyed) {
             this.parent.off(setCFRule, this.setCFrulHandler);
             this.parent.off(clearCFRule, this.clearRules);
+            this.parent.off(cFUndo, this.cFUndoHandler);
         }
     }
 
-    private setCFrulHandler(args: { conditionalFormat: ConditionalFormatModel, isAction?: boolean }): void {
+    private setCFrulHandler(args: { conditionalFormat: ConditionalFormatModel, isAction?: boolean, sheetIdx?: number, isUndoRedo?: boolean }): void {
         const conditionalFormat: ConditionalFormatModel = args.conditionalFormat;
         let range: string = conditionalFormat.range;
-        const sheetIndex: number = this.parent.getAddressInfo(range).sheetIndex;
+        const sheetIndex: number = args.isUndoRedo ? args.sheetIdx : this.parent.getAddressInfo(range).sheetIndex;
         const sheet: SheetModel = getSheet(this.parent, sheetIndex);
         range = range || sheet.selectedRange;
         const indexes: number[] = getSwapRange(getRangeIndexes(range));
@@ -56,6 +58,10 @@ export class WorkbookConditionalFormat {
         }
         const cfrCount: number = sheet.conditionalFormats.length;
         sheet.conditionalFormats[cfrCount] = conditionalFormat;
+        if (args.isUndoRedo && sheetIndex !== this.parent.activeSheetIndex) {
+            this.parent.notify(goto, { address: sheet.name + '!' + conditionalFormat.range });
+            return;
+        }
         for (let rIdx: number = indexes[0]; rIdx <= indexes[2]; rIdx++) {
             if (!sheet.rows[rIdx]) { setRow(sheet, rIdx, {}); }
             for (let cIdx: number = indexes[1]; cIdx <= indexes[3]; cIdx++) {
@@ -70,7 +76,7 @@ export class WorkbookConditionalFormat {
         }
     }
 
-    private clearRules(args: { range: string, isPublic?: boolean }): void {
+    private clearRules(args: { range: string, isPublic?: boolean, isclearFormat?: true, sheetIdx?: number, isClearCF?: boolean, isUndoRedo?: boolean }): void {
         const isPublic: boolean = isNullOrUndefined(args.isPublic) ? true : false;
         const cFormats: ConditionalFormatModel[] = [];
         const oldRange: string[] = [];
@@ -84,7 +90,7 @@ export class WorkbookConditionalFormat {
         let topRowIdx: number;
         let bottomRowIdx: number;
         const range: string = args.range;
-        const sheetIndex: number = this.parent.getAddressInfo(range).sheetIndex;
+        const sheetIndex: number = args.isUndoRedo ? args.sheetIdx : this.parent.getAddressInfo(range).sheetIndex;
         const sheet: SheetModel = getSheet(this.parent, sheetIndex);
         const cFRules: ConditionalFormatModel[] = sheet.conditionalFormats;
         const rangeIndexes: number[] = getRangeIndexes(range);
@@ -103,7 +109,7 @@ export class WorkbookConditionalFormat {
             let result: string = '';
             const cFRule: ConditionalFormatModel = cFRules[cFRulesIdx];
             const cFRanges: string[] = cFRule.range.split(',');
-            if (sheetIndex === this.parent.activeSheetIndex) {
+            if (sheetIndex === this.parent.activeSheetIndex && ( args.isClearCF || !args.isUndoRedo)) {
                 for (let cFRangeIdx: number = 0; cFRangeIdx < cFRanges.length; cFRangeIdx++) {
                     let isFull: boolean = false;
                     const cFRange: string = cFRanges[cFRangeIdx];
@@ -378,10 +384,40 @@ export class WorkbookConditionalFormat {
                 cFRule.range = result.trim().replace(' ', ',');
                 cFormats.push(cFRule);
             }
+            if (args.isUndoRedo) {
+                if (this.parent.activeSheetIndex !== args.sheetIdx) {
+                    this.parent.notify(goto, { address: sheet.name + '!' + args.range });
+                }
+                break;
+            }
         }
         if (!isPublic) {
-            const eventArgs: object = { cFormats: cFormats, oldRange: oldRange, selectedRange: range };
+            const eventArgs: object = { cFormats: cFormats, oldRange: oldRange, selectedRange: range, sheetIdx: sheetIndex };
             this.parent.notify(completeAction, { eventArgs: eventArgs, action: 'clearCF' });
+        }
+        if (!args.isclearFormat) {
+            this.parent.notify(addHighlight, { range: range, isclearFormat: true });
+        }
+    }
+
+    private cFUndoHandler(args: { conditionalFormat: ConditionalFormatModel, sheetIdx: number }): void {
+        if (args.sheetIdx === this.parent.activeSheetIndex) {
+            const cFRule: ConditionalFormatModel = args.conditionalFormat;
+        const cFRanges: string[] = cFRule.range.split(',');
+            const sheet: SheetModel = getSheet(this.parent, args.sheetIdx);
+            for (let cFRangeIdx: number = 0; cFRangeIdx < cFRanges.length; cFRangeIdx++) {
+                const cFRange: string = cFRanges[cFRangeIdx];
+                const cFRangeIndexes: number[] = getRangeIndexes(cFRange);
+                for (let cFRRowIdx: number = cFRangeIndexes[0]; cFRRowIdx <= cFRangeIndexes[2]; cFRRowIdx++) {
+                    for (let cFRColIdx: number = cFRangeIndexes[1]; cFRColIdx <= cFRangeIndexes[3]; cFRColIdx++) {
+                        const cell: CellModel = sheet.rows[cFRRowIdx].cells[cFRColIdx];
+                        this.parent.notify(
+                            cFInitialCheck, {
+                            rowIdx: cFRRowIdx, colIdx: cFRColIdx, cell: cell, conditionalFormat: cFRule, isAction: true
+                        });
+                    }
+                }
+            }
         }
     }
 

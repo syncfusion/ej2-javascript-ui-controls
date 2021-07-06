@@ -2117,6 +2117,89 @@ describe('Cancel', () => {
     });
 });
 
+describe('Closed by argument testing with closeIcon -', () => {
+    let ele: HTMLElement;
+    let dialog: Dialog;
+    let dialogClosedBy:string;
+    beforeAll((done: Function) => {
+        ele = createElement('div', { id: 'dialog' });
+        document.body.appendChild(ele);
+        function cancelEvents(args: any) {            
+            dialogClosedBy = args.closedBy;
+        }
+        dialog = new Dialog({ showCloseIcon: true, beforeClose: cancelEvents, content: 'Dialog content',  position: { X: 200, Y: 300 }, isModal: true }, '#dialog');
+        dialog.dataBind();
+        setTimeout(() => { done(); }, 10);
+    });
+    afterAll(() => {
+        destroyDialog(dialog);
+    });
+
+    it('Dialog closed by close icon click', () => {
+        dialog.show();
+        (dialog.element.querySelector('.e-dlg-closeicon-btn') as HTMLButtonElement).click();
+        expect(dialogClosedBy === 'close icon').toBe(true);
+    });
+});
+
+describe('Closed by argument testing with button -', () => {
+    let ele: HTMLElement;
+    let dialog: Dialog;
+    let dialogClosedBy:string;
+    beforeAll((done: Function) => {
+        ele = createElement('div', { id: 'dialog' });
+        document.body.appendChild(ele);
+        function cancelEvents(args: any) {            
+            dialogClosedBy = args.closedBy;
+        }
+        function buttonClick() {            
+            dialog.hide();
+        }
+        dialog = new Dialog({ showCloseIcon: true, beforeClose: cancelEvents, buttons: [{ buttonModel: { content: "Ok" }, click: buttonClick }], content: 'Dialog content',  position: { X: 200, Y: 300 }, isModal: true }, '#dialog');
+        dialog.dataBind();
+        setTimeout(() => { done(); }, 10);
+    });
+    afterAll(() => {
+        destroyDialog(dialog);
+    });
+
+    it('Dialog closed by button click', () => {
+        dialog.show();
+        (dialog.element.querySelector('.e-footer-content button') as HTMLButtonElement).click();
+        expect(dialogClosedBy === 'user action').toBe(true);
+    });
+});
+
+describe('Closed by argument testing with esc key -', () => {
+    let events: any;
+    let eventArgs: any;
+    let dialogClosedBy:string;
+    beforeAll(() => {
+        let ele: HTMLElement = createElement('div', { id: 'dialog2' });
+        let inputField: HTMLElement = createElement('input', {id : 'dialogInput'});
+        ele.appendChild(inputField);
+        inputField.onblur = function() {
+            expect(document.activeElement).not.toEqual(inputField);
+        }
+        document.body.appendChild(ele);
+        function cancelEvents(args: any) {            
+            dialogClosedBy = args.closedBy;
+        }
+        events = new Dialog({header:'Demo', beforeClose: cancelEvents, content:'First demo content', animationSettings: { effect: 'None' }, closeOnEscape: true });        
+        events.appendTo(ele);
+    });
+
+    it('Dialog closed by esc key action ', () => {
+        (document.getElementById('dialogInput') as HTMLInputElement).focus();
+        eventArgs = { keyCode: 27, altKey: false, ctrlKey: false, shiftKey: false };
+        events.keyDown(eventArgs);
+        expect(dialogClosedBy === 'escape').toBe(true);
+    });
+    afterAll(() => {
+        destroyDialog(events);
+    });
+});
+
 describe('Hide() method', () => {
     let ele: HTMLElement;
     let dialog: Dialog;

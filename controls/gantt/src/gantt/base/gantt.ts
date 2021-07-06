@@ -2139,6 +2139,7 @@ export class Gantt extends Component<HTMLElement>
         // this.chartRowsModule.refreshGanttRows();
         if (this.virtualScrollModule && this.enableVirtualization) {
             this.ganttChartModule.virtualRender.adjustTable();
+            this.ganttChartModule.scrollObject.updateTopPosition();
         }
     }
 
@@ -2661,10 +2662,9 @@ export class Gantt extends Component<HTMLElement>
         if (!this.element.contains(this.chartVerticalLineContainer)) {
             this.chartVerticalLineContainer = createElement('div', {
                 id: this.element.id + 'line-container',
-                styles: 'position:absolute;height:100%;z-index:1;top:' +
-                this.ganttChartModule.chartTimelineContainer.offsetHeight + 'px;'
+                styles: 'position:absolute;height:100%;z-index:1'
             });
-            this.ganttChartModule.chartBodyContainer.appendChild(this.chartVerticalLineContainer);
+            this.ganttChartModule.chartBodyContent.appendChild(this.chartVerticalLineContainer);
         }
         this.chartVerticalLineContainer.innerHTML = '';
         let headerTable: Element = this.element.getElementsByClassName('e-timeline-header-table-container')[1];

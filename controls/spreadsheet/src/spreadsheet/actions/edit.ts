@@ -796,7 +796,7 @@ export class Edit {
                 workbookEditOperation,
                 { action: 'updateCellValue', address: this.editCellData.addr, value: this.editCellData.value });
             const cell: CellModel = getCell(cellIndex[0], cellIndex[1], sheet, true);
-            const eventArgs: RefreshValueArgs = this.getRefreshNodeArgs(cell);
+            const eventArgs: RefreshValueArgs = this.getRefreshNodeArgs(cell, cellIndex[0], cellIndex[1]);
             this.editCellData.value = <string>eventArgs.value;
             if (cell && cell.formula) {
                 this.editCellData.formula = cell.formula;
@@ -818,19 +818,19 @@ export class Edit {
                 if (td) {
                     const sheet: SheetModel = getSheet(this.parent as Workbook, sheetIdx);
                     const cell: CellModel = getCell(rowIdx, colIdx, sheet);
-                    const eventArgs: RefreshValueArgs = this.getRefreshNodeArgs(cell);
+                    const eventArgs: RefreshValueArgs = this.getRefreshNodeArgs(cell, rowIdx, colIdx);
                     this.parent.refreshNode(td, eventArgs);
                 }
             }
         }
     }
 
-    private getRefreshNodeArgs(cell: CellModel): RefreshValueArgs {
+    private getRefreshNodeArgs(cell: CellModel, rowIdx: number, colIdx: number): RefreshValueArgs {
         cell = cell ? cell : {};
         const fCode: string = (cell && cell.format) ? cell.format : '';
-        const eventArgs: { [key: string]: string | number | boolean } = {
-            value: cell.value, format: fCode, onLoad: true,
-            formattedText: '', isRightAlign: false, type: 'General'
+        const eventArgs: { [key: string]: string | number | boolean | CellModel } = {
+            value: cell.value, format: fCode, onLoad: true, rowIdx: rowIdx, colIdx: colIdx,
+            formattedText: '', isRightAlign: false, type: 'General', cell: cell
         };
         this.parent.notify(getFormattedCellObject, eventArgs);
         eventArgs.formattedText = this.parent.allowNumberFormatting ? eventArgs.formattedText : eventArgs.value;

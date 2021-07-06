@@ -279,6 +279,9 @@ export class Edit {
         if (args.action === 'f2') {
             this.recordDoubleClick(args as Object);
         }
+        if (args.action == 'escape') {
+            this.parent.closeEdit();
+        }
     }
 
     private deleteUniqueID( value: string) : void {
@@ -457,6 +460,9 @@ export class Edit {
             type: 'save', column: this.parent.getColumnByField(args.columnName), data: args.rowData,
             previousData: args.previousValue, row: row, target: (args.cell as HTMLElement)
         };
+        if (this.parent.aggregates.map((ag) => ag.showChildSummary == true).length) {
+            this.parent.grid.refresh();
+        }
         this.parent.trigger(events.actionComplete, saveArgs);
     }
 

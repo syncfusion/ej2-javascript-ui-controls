@@ -4,7 +4,7 @@ import { PdfViewerBase } from '../index';
 import { createElement, Browser, isBlazor, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { PdfAnnotationBaseModel } from '../drawing/pdf-annotation-model';
 import { PdfAnnotationBase } from '../drawing/pdf-annotation';
-import { splitArrayCollection, processPathData, Rect, PointModel } from '@syncfusion/ej2-drawings';
+import { splitArrayCollection, processPathData, cornersPointsBeforeRotation, Rect, PointModel } from '@syncfusion/ej2-drawings';
 import { DiagramHtmlElement } from '../drawing/html-element';
 import { ItemModel } from '../pdfviewer-model';
 
@@ -761,7 +761,10 @@ export class FormFields {
         let parentElementBounds: Rect;
         // eslint-disable-next-line
         let currentField: any = this.currentTarget ? this.currentTarget : target;
-        if (target && target.offsetParent) {
+        currentField = currentField ?  currentField: this.pdfViewerBase.currentTarget;
+        let elementId: string = currentField.offsetParent.offsetParent.id.split("_")[0];
+        let signatureField: PdfAnnotationBase = (this.pdfViewer.nameTable as any)[elementId];
+        if (target && target.offsetParent && signatureField) {
             targetBounds = target.getBoundingClientRect();
             parentElementBounds = target.offsetParent.offsetParent.offsetParent.getBoundingClientRect();
             this.pdfViewerBase.drawSignatureWithTool = true;
@@ -777,7 +780,7 @@ export class FormFields {
         const currentLeft: number = this.pdfViewerBase.drawSignatureWithTool ? ((targetBounds.left - parentElementBounds.left)) / zoomvalue : parseFloat(currentField.style.left) / zoomvalue;
         const currentTop: number = this.pdfViewerBase.drawSignatureWithTool ? ((targetBounds.top - parentElementBounds.top)) / zoomvalue : parseFloat(currentField.style.top) / zoomvalue;
         const currentPage: number = this.pdfViewerBase.drawSignatureWithTool ? this.pdfViewer.currentPageNumber - 1 : parseFloat(currentField.id.split('_')[1]);
-        const currentIndex: number = this.pdfViewerBase.drawSignatureWithTool ? parseFloat(target.nextElementSibling.id.split('_')[1]) : parseFloat(currentField.id.split('_')[2]);
+        const currentIndex: number = this.pdfViewerBase.drawSignatureWithTool ? target.nextElementSibling ? parseFloat(target.nextElementSibling.id.split('_')[1]) : parseFloat(currentField.id.split('_')[2]) : parseFloat(currentField.id.split('_')[2]);
         let signString: string = this.pdfViewerBase.signatureModule.saveImageString;
         let signatureFontFamily: string;
         let signatureFontSize: number;
@@ -843,9 +846,7 @@ export class FormFields {
                 };
             }
         }
-        if (this.pdfViewerBase.drawSignatureWithTool) {
-            let elementId: string = this.pdfViewerBase.currentTarget.offsetParent.offsetParent.id.split("_")[0];
-            let signatureField: PdfAnnotationBase = (this.pdfViewer.nameTable as any)[elementId];
+        if (this.pdfViewerBase.drawSignatureWithTool && signatureField) {
             annot.id = signatureField.id + "_content";
             let obj: PdfAnnotationBaseModel = this.pdfViewer.add(annot as PdfAnnotationBase);
             signatureField.wrapper.children.push(obj.wrapper);
@@ -870,11 +871,11 @@ export class FormFields {
         } else {
             currentField.className = 'e-pdfviewer-signatureformfields-signature';
         }
-        if (!this.pdfViewerBase.drawSignatureWithTool)
-            this.updateDataInSession(currentField, annot.data, annot.bounds, signatureFontFamily, signatureFontSize);
-        else {
+        if (this.pdfViewerBase.drawSignatureWithTool && signatureField) {
             let key: string = target.offsetParent.offsetParent.id.split('_')[0] + '_content';
             this.updateSignatureDataInSession(annot, key);
+        } else {
+            this.updateDataInSession(currentField, annot.data, annot.bounds, signatureFontFamily, signatureFontSize);
         }
         currentField.style.pointerEvents = 'none';
         this.pdfViewerBase.signatureModule.hideSignaturePanel();
@@ -1198,6 +1199,7 @@ export class FormFields {
         this.pdfViewer.isDocumentEdited = true;
         // eslint-disable-next-line
         let data: any = window.sessionStorage.getItem(this.pdfViewerBase.documentId + '_formfields');
+        if(data){
         // eslint-disable-next-line
         let FormFieldsData: any = JSON.parse(data);
         for (let m: number = 0; m < FormFieldsData.length; m++) {
@@ -1283,6 +1285,14 @@ export class FormFields {
         }
         window.sessionStorage.removeItem(this.pdfViewerBase.documentId + '_formfields');
         window.sessionStorage.setItem(this.pdfViewerBase.documentId + '_formfields', JSON.stringify(FormFieldsData));
+        } else {
+            if (this.pdfViewer.formDesignerModule) {
+                let selectedItem: any = (this.pdfViewer.nameTable as any)[target.id.split('_')[0]];
+                selectedItem.value = target.value;
+                let point: PointModel = cornersPointsBeforeRotation(selectedItem.wrapper.children[0]).topLeft;
+                this.pdfViewer.formDesignerModule.updateFormDesignerFieldInSessionStorage(point, selectedItem.wrapper.children[0] as DiagramHtmlElement, selectedItem.formFieldAnnotationType, selectedItem);
+            }
+        }
     }
     /**
      * @private
@@ -1794,7 +1804,7 @@ export class FormFields {
             // eslint-disable-next-line
             let currentData: any = formFieldsData[m];
             // eslint-disable-next-line max-len
-            if ((currentData.Name === 'ink' || currentData.Name === 'SignatureField' || currentData.Name === 'SignatureImage' || currentData.Name === 'SignatureText') && currentData.FieldName === signData.FieldName && currentData.Value && currentData.Value !== '') {
+            if ((currentData.Name === 'ink' || currentData.Name === 'SignatureField' || currentData.Name === 'SignatureImage' || currentData.Name === 'SignatureText') && currentData.FieldName === signData.ActualFieldName && currentData.Value && currentData.Value !== '') {
                 signData.Value = currentData.Value;
                 signData.Bounds = currentData.LineBounds;
                 signData.FontFamily = currentData.FontFamily;

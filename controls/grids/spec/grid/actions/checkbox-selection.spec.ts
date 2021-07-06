@@ -957,6 +957,16 @@ describe('Grid checkbox selection functionality', () => {
             gridObj.rowDeselected = rowDeselected;
             chkAll.click();
         });
+        it('EJ2-50083 - RowDeselected event is not triggered after paging while using clearSelction', (done: Function) => {
+            rowDeselected = (args: any) => {
+                done();
+            };
+            gridObj.rowDeselected = rowDeselected;
+            chkAll.click();
+            let cols: any = gridObj.getHeaderContent().querySelectorAll('.e-headercell');
+            cols[2].click();
+            gridObj.clearSelection();
+        });
 
         afterAll(() => {
             destroy(gridObj);
@@ -998,6 +1008,39 @@ describe('Grid checkbox selection functionality', () => {
         afterAll(() => {
             destroy(gridObj);
             gridObj = rowDeselected = null;
+        });
+    });
+
+    describe('EJ2-50665 - Persist selection is not working properly with up/down arrows', () => {
+        let gridObj: Grid;
+        let rowDeselected: (args: any) => void;
+        let preventDefault: Function = new Function();
+        beforeAll((done: Function) => {
+            gridObj = createGrid(
+                {
+                    dataSource: filterData,
+                    selectionSettings: { persistSelection: true },
+                    columns: [
+                        { type: 'checkbox', width: 120 },
+                        { field: 'OrderID', headerText: 'Order ID', isPrimaryKey: true, width: 120, textAlign: 'Right', minWidth: 10 },
+                        { field: 'Freight', width: 125, minWidth: 10 },
+                        { field: 'CustomerID', headerText: 'Customer ID', width: 130, minWidth: 10 }
+                    ],
+                }, done);
+        });
+
+        it('use uparrow key and check the Select row', () => {
+            (gridObj.element.querySelectorAll('.e-checkselect')[1] as any).click();
+            (gridObj.element.querySelectorAll('.e-checkselect')[2] as any).click();
+            (gridObj.element.querySelectorAll('.e-checkselect')[2] as any).click();
+            let args: any = { action: 'upArrow', preventDefault: preventDefault };
+            gridObj.keyboardModule.keyAction(args);
+            expect(gridObj.getSelectedRecords().length).toBe(1);
+        });
+
+        afterAll(() => {
+            destroy(gridObj);
+            gridObj = rowDeselected = preventDefault = null;
         });
     });
 });

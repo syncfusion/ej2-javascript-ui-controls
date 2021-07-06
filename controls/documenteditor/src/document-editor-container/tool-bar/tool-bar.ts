@@ -6,7 +6,7 @@ import { DropDownButton, DropDownButtonModel, MenuEventArgs, ItemModel } from '@
 import { DocumentEditor } from '../../document-editor/document-editor';
 import { showSpinner, hideSpinner, DialogUtility } from '@syncfusion/ej2-popups';
 import { ToolbarItem, BeforeFileOpenArgs } from '../../document-editor/base';
-import { XmlHttpRequestHandler } from '../../document-editor/base/ajax-helper';
+import { XmlHttpRequestHandler, beforePaneSwitchEvent, toolbarClickEvent, beforeFileOpenEvent } from '../../document-editor/base/index';
 import { CustomToolbarItemModel } from '../../document-editor/base/events-helper';
 
 const TOOLBAR_ID: string = '_toolbar';
@@ -263,7 +263,7 @@ export class Toolbar {
             paneDiv.classList.remove('e-de-pane-disable-clr');
             this.buttonElement.title = locale.getConstant('Hide properties pane');
             classList(paneDiv, ['e-de-pane-enable-clr'], []);
-            this.container.trigger('beforePaneSwitch', { type: 'PropertiesPane' });
+            this.container.trigger(beforePaneSwitchEvent, { type: 'PropertiesPane' });
         } else if (this.container.previousContext.indexOf('Header') >= 0
             || this.container.previousContext.indexOf('Footer') >= 0) {
             this.container.showHeaderProperties = !this.container.showHeaderProperties;
@@ -569,7 +569,7 @@ export class Toolbar {
                 this.documentEditor.editor.insertEndnote();
                 break;
             default:
-                this.container.trigger('toolbarClick', args);
+                this.container.trigger(toolbarClickEvent, args);
                 break;
         }
         if (args.item.id !== id + FIND_ID && args.item.id !== id + INSERT_IMAGE_ID) {
@@ -634,7 +634,7 @@ export class Toolbar {
         const filesize: number = file.size;
         let check: boolean;
         const eventArgs: BeforeFileOpenArgs = { fileSize: filesize, isCanceled: check };
-        this.documentEditor.trigger('beforeFileOpen', eventArgs);
+        this.documentEditor.trigger(beforeFileOpenEvent, eventArgs);
         if (eventArgs.isCanceled) {
             return;
         }

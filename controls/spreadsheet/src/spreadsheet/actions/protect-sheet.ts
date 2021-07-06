@@ -1,4 +1,4 @@
-import { Spreadsheet, DialogBeforeOpenEventArgs } from '../index';
+import { Spreadsheet, DialogBeforeOpenEventArgs, getUpdateUsingRaf } from '../index';
 import { applyProtect, protectSheet, protectCellFormat, editAlert, enableFormulaInput, protectWorkbook, keyUp } from '../common/event';
 import { unProtectWorkbook, getPassWord, importProtectWorkbook } from '../common/event';
 import { clearCopy, protectSelection, clearUndoRedoCollection, focus } from '../common/index';
@@ -231,6 +231,7 @@ export class ProtectSheet {
                 this.parent.trigger('dialogBeforeOpen', dlgArgs);
                 if (dlgArgs.cancel) {
                     args.cancel = true;
+                    getUpdateUsingRaf((): void => this.dialog.destroyDialog());
                 }
                 focus(this.parent.element);
             },

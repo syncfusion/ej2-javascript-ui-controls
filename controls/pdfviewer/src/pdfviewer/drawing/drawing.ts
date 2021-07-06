@@ -1006,7 +1006,7 @@ export class Drawing {
                                         this.renderResizeHandle(
                                             node.wrapper.children[0], selectorElement, selectorModel.thumbsConstraints, zoom,
                                             // eslint-disable-next-line max-len
-                                            undefined, undefined, undefined, node.shapeAnnotationType === 'Stamp', false, isSignature, (node.shapeAnnotationType === 'FreeText' || node.shapeAnnotationType === 'HandWrittenSignature' || node.shapeAnnotationType === 'SignatureImage' || node.shapeAnnotationType === 'SignatureText'), currentSelector);
+                                            undefined, undefined, undefined, node.shapeAnnotationType === 'Stamp', false, isSignature, (node.shapeAnnotationType === 'FreeText' || node.shapeAnnotationType === 'HandWrittenSignature' || node.shapeAnnotationType === 'SignatureImage'|| node.shapeAnnotationType === 'Image' || node.shapeAnnotationType === 'SignatureText'), currentSelector);
                                     }
                                 }
                             }

@@ -2470,4 +2470,49 @@ describe('Check for operator symbol in datasource value in filtebar', () => {
         destroy(gridObj);
         gridObj = actionComplete = null;
     });
-});  
+});
+
+describe('EJ2-50100- Script error is thrown while clearing initial filter dynamically', ()=>{
+    let gridObj: Grid;
+    let actionComplete: (args: any) => void;
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: normalData,
+                allowFiltering: true,
+                filterSettings: {
+                    type: 'CheckBox',
+                    columns: [
+                      {
+                        field: 'CustomerID',
+                        matchCase: false,
+                        operator: 'startswith',
+                        predicate: 'or',
+                        value: 'H'
+                      },
+                      { field: 'Freight', operator: 'equal', predicate: 'or', value: '58.17' }
+                    ]
+                },
+                columns: [
+                    { field: 'OrderID', headerText: 'Order ID', isPrimaryKey: true, width: 120, textAlign: 'Right' },
+                    { field: 'CustomerID', headerText: 'Customer ID', width: 150 },
+                    { field: 'OrderDate', headerText: 'Order Date', width: 130, format: 'yMd', textAlign: 'Right' },
+                    { field: 'Freight', width: 120, format: 'C2', textAlign: 'Right' },
+                    { field: 'ShipCountry', headerText: 'Ship Country', width: 150 }
+                ],
+                actionComplete: actionComplete
+            }, done);
+    });
+    it('remove column filter', (done: Function) => {
+        actionComplete = (args?: any): void => {
+            gridObj.actionComplete = null;
+            done();
+        };
+        gridObj.actionComplete = actionComplete;
+        gridObj.removeFilteredColsByField("Freight");
+    });        
+    afterAll(() => {
+        destroy(gridObj);
+        gridObj = actionComplete = null;
+    });
+});

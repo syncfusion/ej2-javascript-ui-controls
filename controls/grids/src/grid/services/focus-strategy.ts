@@ -901,6 +901,7 @@ export class HeaderFocus extends ContentFocus implements IFocus {
 
     public onClick(e: Event): void | boolean {
         let target: HTMLTableCellElement = <HTMLTableCellElement>e.target;
+        this.target = target;
         target = <HTMLTableCellElement>(target.classList.contains('e-headercell') ? target : closest(target, 'th'));
         if (!target && this.parent.frozenRows !== 0) {
             target = <HTMLTableCellElement>((<HTMLElement>e.target).classList.contains(literals.rowCell) ? e.target :

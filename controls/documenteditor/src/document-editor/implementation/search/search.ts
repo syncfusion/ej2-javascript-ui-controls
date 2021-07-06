@@ -12,7 +12,7 @@ import { TextSearchResult } from '../search/text-search-result';
 import { TextSearchResults } from '../search/text-search-results';
 import { SearchResults } from './search-results';
 import { ParagraphWidget } from '../viewer/page';
-import { SearchResultsChangeEventArgs } from '../../base';
+import { SearchResultsChangeEventArgs, searchResultsChangeEvent } from '../../base/index';
 /**
  * Search module
  */
@@ -151,7 +151,7 @@ export class Search {
         startPosition.setPositionParagraph(endTextPosition.currentWidget, endPosition.offset - replaceText.length);
         this.documentHelper.selection.selectRange(endPosition, startPosition);
         const eventArgs: SearchResultsChangeEventArgs = { source: this.viewer.owner };
-        this.viewer.owner.trigger('searchResultsChange', eventArgs);
+        this.viewer.owner.trigger(searchResultsChangeEvent, eventArgs);
         return 1;
     }
     /**
@@ -641,7 +641,7 @@ export class Search {
             this.searchHighlighters = undefined;
         }
         let eventArgs: SearchResultsChangeEventArgs = { source: this.viewer.owner };
-        this.viewer.owner.trigger('searchResultsChange', eventArgs);
+        this.viewer.owner.trigger(searchResultsChangeEvent, eventArgs);
     }
     /**
      * @private

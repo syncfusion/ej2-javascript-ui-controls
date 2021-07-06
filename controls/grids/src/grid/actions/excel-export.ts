@@ -282,8 +282,10 @@ export class ExcelExport {
             this.sheet.enableRtl = this.parent.enableRtl;
             if (this.parent.allowFiltering && gObj.getVisibleColumns().length && isExportPropertiesPresent &&
                 exportProperties.enableFilter) {
+                const headerRowLen: number = exportProperties.header ? exportProperties.header.headerRows ||
+                    exportProperties.header.rows.length : 0;
                 const autoFilters: AutoFilters = {
-                    row: colDepth, column: this.groupedColLength ? this.groupedColLength + 1 :
+                    row: colDepth + headerRowLen, column: this.groupedColLength ? this.groupedColLength + 1 :
                         this.sheet.columns[0].index, lastRow: this.sheet.rows.length, lastColumn: this.sheet.columns.length
                 };
                 this.sheet.autoFilters = autoFilters;

@@ -213,9 +213,6 @@ export class GanttChart {
         this.scrollElement = createElement('div', {
             className: cls.chartScrollElement + ' ' + cls.scrollContent, styles: 'position:relative;'
         });
-        if (this.parent.enableVirtualization) {
-            this.scrollElement.style.zIndex = '2';
-        }
         this.chartBodyContainer.appendChild(this.scrollElement);
         this.chartBodyContent = createElement('div', { className: cls.chartBodyContent, styles: 'position:relative; overflow:hidden ' });
         if (this.parent.virtualScrollModule && this.parent.enableVirtualization) {
@@ -355,7 +352,7 @@ export class GanttChart {
             || (this.scrollElement.scrollLeft > scrollLeft)) {
             this.scrollObject.setScrollLeft(scrollLeft - 50);
         }
-        this.parent.ganttChartModule.scrollObject.updateLeftPosition();
+      //  this.parent.ganttChartModule.scrollObject.updateLeftPosition();
     }
 
     /**

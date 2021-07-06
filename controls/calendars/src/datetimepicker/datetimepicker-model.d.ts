@@ -1,4 +1,4 @@
-import { EventHandler, Internationalization, Property, NotifyPropertyChanges, Browser, RippleOptions } from '@syncfusion/ej2-base';import { Animation, EmitType, Event, AnimationModel, cldrData, getDefaultDateObject, detach } from '@syncfusion/ej2-base';import { createElement, remove, addClass, L10n, removeClass, closest, append, attributes } from '@syncfusion/ej2-base';import { KeyboardEvents, KeyboardEventArgs, isNullOrUndefined, formatUnit, getValue, rippleEffect } from '@syncfusion/ej2-base';import { ModuleDeclaration, extend, isBlazor, blazorCultureFormats } from '@syncfusion/ej2-base';import { Popup } from '@syncfusion/ej2-popups';import { Input } from '@syncfusion/ej2-inputs';import { BlurEventArgs, ClearedEventArgs, CalendarType, CalendarView, DayHeaderFormats } from '../calendar/calendar';import { DatePicker, PopupObjectArgs } from '../datepicker/datepicker';import { TimePickerBase } from '../timepicker/timepicker';
+import { EventHandler, Internationalization, Property, NotifyPropertyChanges, Browser, RippleOptions } from '@syncfusion/ej2-base';import { Animation, EmitType, Event, AnimationModel, cldrData, getDefaultDateObject, detach } from '@syncfusion/ej2-base';import { createElement, remove, addClass, L10n, removeClass, closest, append, attributes } from '@syncfusion/ej2-base';import { KeyboardEvents, KeyboardEventArgs, isNullOrUndefined, formatUnit, getValue, rippleEffect } from '@syncfusion/ej2-base';import { ModuleDeclaration, extend, isBlazor, blazorCultureFormats } from '@syncfusion/ej2-base';import { Popup } from '@syncfusion/ej2-popups';import { Input } from '@syncfusion/ej2-inputs';import { BlurEventArgs, ClearedEventArgs, CalendarType, CalendarView, DayHeaderFormats } from '../calendar/calendar';import { DatePicker, PopupObjectArgs } from '../datepicker/datepicker';import { TimePickerBase } from '../timepicker/timepicker';import {MaskPlaceholderModel} from '../calendar/calendar-model'
 import {DatePickerModel} from "../datepicker/datepicker-model";
 
 /**
@@ -407,17 +407,11 @@ export interface DateTimePickerModel extends DatePickerModel{
     enableMask?: boolean;
 
     /**
-      * Specifies the mask placeholder to be displayed on masked datetimepicker.
-      * By default it works based on narrow format .
-      * Possible values are:
-      * Narrow: Displays the full name  like day/month/year hour:minute:second.
-      * Short: Displays the single character like dd/mm/yyyy hh:mm:ss.
-      * 
-      * @default {}
-      * @asptype object
-      * @aspjsonconverterignore
-      */
-    maskPlaceholder?: {[key: string]: string };
+     * Specifies the mask placeholder to be displayed on masked datetimepicker.
+     * 
+     * @default {day:'day' , month:'month', year: 'year', hour:'hour',minute:'minute',second:'second',dayOfTheWeek: 'day of the week'}
+     */
+    maskPlaceholder?: MaskPlaceholderModel;
 
     /**
      * Triggers when popup is opened.

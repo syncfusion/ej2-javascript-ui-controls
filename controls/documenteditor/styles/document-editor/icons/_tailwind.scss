@@ -75,11 +75,12 @@
 
     .e-de-cmt-delete::before {
       content: "\e78d";
+      font-family: "e-icons";
       color: $icon-color;
     }
 
     .e-de-cmt-reopen::before {
-      content: "\e818";
+      content: "\e85c";
       font-family: "e-icons";
       color: $icon-color;
     }

@@ -222,3 +222,5 @@ export const beforeDelete: string = 'beforeDelete';
 export const deleteHyperlink: string = 'deleteHyperlink';
 /** @hidden */
 export const moveOrDuplicateSheet: string = 'moveOrDuplicateSheet';
+/** @hidden */
+export const cFUndo: string = 'cFUndo';

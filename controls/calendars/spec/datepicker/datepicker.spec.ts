@@ -4260,16 +4260,16 @@ function loadCultureFiles_mask(name: string, base?: boolean): void {
 
 L10n.load({
     'en': {
-        'MaskedDateTime': { day: 'day' , month: 'month', year: 'year' }
+        'datepicker': { day: 'day' , month: 'month', year: 'year' }
     },
     'de': {
-        'MaskedDateTime': { day: 'Tag' , month: 'Monat', year: 'Jahr' }
+        'datepicker': { day: 'Tag' , month: 'Monat', year: 'Jahr' }
     },
     'zh': {
-        'MaskedDateTime': { day: '日' , month: '月', year: '年' }
+        'datepicker': { day: '日' , month: '月', year: '年' }
     },
     'ja': {
-        'MaskedDateTime': { day: '日' , month: '月', year: '年'}
+        'datepicker': { day: '日' , month: '月', year: '年'}
     },
 });
 
@@ -4323,7 +4323,7 @@ describe('Masked DatePicker', () => {
             document.body.appendChild(inputEle);
             datepicker = new DatePicker({enableMask: true});
             datepicker.appendTo('#datepicker');
-            expect(datepicker.element.value).toBe('day/month/year');
+            expect(datepicker.element.value).toBe('month/day/year');
             expect(datepicker.value).toBe(null);
         });
         it('Rendering with maskPlaceholder as custom type ', () => { 
@@ -4331,7 +4331,7 @@ describe('Masked DatePicker', () => {
             document.body.appendChild(inputEle);
             datepicker = new DatePicker({enableMask: true , maskPlaceholder: {day: 'd.',month: 'M.' ,year: 'y.'}});
             datepicker.appendTo('#datepicker');
-            expect(datepicker.element.value).toBe('d./M./y.');
+            expect(datepicker.element.value).toBe('M./d./y.');
             expect(datepicker.value).toBe(null);
         });
         it('With format property -1 ', () => { 
@@ -4369,7 +4369,7 @@ describe('Masked DatePicker', () => {
         it('with format property -5', () => { 
             let inputEle: HTMLElement = createElement('input', { id: 'datepicker' });
             document.body.appendChild(inputEle);
-            datepicker = new DatePicker({enableMask: true , format: 'dd/MM/yy ddd'});
+            datepicker = new DatePicker({enableMask: true , format: 'dd/MM/yy E'});
             datepicker.appendTo('#datepicker');
             expect(datepicker.element.value).toBe('day/month/year day of the week');
             expect(datepicker.value).toBe(null);
@@ -4440,7 +4440,7 @@ describe('Masked DatePicker', () => {
         it('Increment and decrement of date using arrow keys', () => { 
             let inputEle: HTMLElement = createElement('input', { id: 'datepicker' });
             document.body.appendChild(inputEle);
-            datepicker = new DatePicker({enableMask: true , format: 'dd/MM/yyyy'});
+            datepicker = new DatePicker({enableMask: true , format: 'd/MM/yyyy'});
             datepicker.appendTo('#datepicker');
             datepicker.focusIn();
             expect(datepicker.element.value).toBe('day/month/year');
@@ -4896,7 +4896,7 @@ describe('Masked DatePicker', () => {
             });
             datepicker.appendTo('#date');
             expect(datepicker.locale).toBe('ja');
-            datepicker.focusIn();
+            datepicker.inputFocusHandler();
             expect(datepicker.element.value).toBe('日/月/年');
         });
         // it('culture(de) test case', () => {

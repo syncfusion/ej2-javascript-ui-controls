@@ -131,7 +131,8 @@ export class WorkbookFormula {
             this.unRegisterSheet(<number>args.sheetIndex, <number>args.sheetCount, <boolean>args.propertyChange); break;
         case 'refreshCalculate':
             if (<boolean>args.isFormula) {
-                args.value = this.autoCorrectFormula(<string>args.value, <number>args.rowIndex, <number>args.colIndex);
+                args.value = this.autoCorrectFormula(
+                    <string>args.value, <number>args.rowIndex, <number>args.colIndex, <number>args.sheetIndex);
             }
             this.refreshCalculate(
                 <number>args.rowIndex, <number>args.colIndex, <string>args.value,
@@ -394,14 +395,12 @@ export class WorkbookFormula {
     }
 
     private refreshCalculate(rowIdx: number, colIdx: number, value: string, isFormula: boolean, sheetIdx: number): void {
-        if (sheetIdx === undefined) {
-            sheetIdx = this.parent.activeSheetIndex;
-        }
-        let sheetName: string = getSheet(this.parent, sheetIdx).id + '';
+        const sheet: SheetModel = isNullOrUndefined(sheetIdx) ? this.parent.getActiveSheet() : getSheet(this.parent, sheetIdx);
+        let sheetName: string = sheet.id + '';
         if (isFormula) {
             value = this.parseSheetRef(value);
             const cellArgs: ValueChangedArgs = new ValueChangedArgs(rowIdx + 1, colIdx + 1, value);
-            const usedRange: number[] = [this.parent.getActiveSheet().usedRange.rowIndex, this.parent.getActiveSheet().usedRange.colIndex];
+            const usedRange: number[] = [sheet.usedRange.rowIndex, sheet.usedRange.colIndex];
             this.calculateInstance.valueChanged(sheetName, cellArgs, true, usedRange);
             const referenceCollection: string[] = this.calculateInstance.randCollection;
             if (this.calculateInstance.isRandomVal === true) {
@@ -453,7 +452,7 @@ export class WorkbookFormula {
         }
     }
 
-    private autoCorrectFormula(formula: string, rowIdx: number, colIdx: number): string {
+    private autoCorrectFormula(formula: string, rowIdx: number, colIdx: number, sheetIdx: number): string {
         if (!isNullOrUndefined(formula)) {
             formula = formula.toString();
             if (formula.split('(').length === 2 && formula.indexOf(')') < 0) {
@@ -489,7 +488,9 @@ export class WorkbookFormula {
             }
             formula = isEqual ? '=' + formula : formula;
             if (lessEq || greaterEq || equal) {
-                getCell(rowIdx, colIdx, this.parent.getActiveSheet()).formula = formula;
+                getCell(
+                    rowIdx, colIdx, isNullOrUndefined(sheetIdx) ? this.parent.getActiveSheet() : getSheet(
+                    this.parent, sheetIdx)).formula = formula;
             }
         }
         return formula;
@@ -739,6 +740,8 @@ export class WorkbookFormula {
         let sheet: SheetModel;
         const sheets: SheetModel[] = this.parent.sheets;
         const sheetLen: number = sheets.length;
+        if (isNullOrUndefined(args.activeSheetIndex)) { args.activeSheetIndex = this.parent.activeSheetIndex; }
+        const sheetName: string = this.parent.sheets[args.activeSheetIndex].name;
         let address: number[];
         let cell: CellModel;
         let s: number;
@@ -751,6 +754,9 @@ export class WorkbookFormula {
                 for (let j: number = address[1]; j <= address[3]; j++) {
                     cell = getCell(i, j, sheet);
                     if (cell && cell.formula && checkIsFormula(cell.formula)) {
+                        if (args.activeSheetIndex !== s && !cell.formula.includes(sheetName)) {
+                            continue;
+                        }
                         this.clearFormula({
                             rowIdx: i, colIdx: j, sheetIdx: s, count: count, status: args.name,
                             type: args.modelType, startIdx: args.startIndex

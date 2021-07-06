@@ -302,11 +302,9 @@ export class Data implements IDataProcessor {
                 }
             }
             if (defaultFltrCols.length) {
-                if (gObj.filterSettings.type === 'FilterBar' || gObj.filterSettings.type === 'Menu') {
-                    for (let i: number = 0, len: number = defaultFltrCols.length; i < len; i++) {
-                        defaultFltrCols[i].uid = defaultFltrCols[i].uid ||
-                            this.parent.grabColumnByFieldFromAllCols(defaultFltrCols[i].field).uid;
-                    }
+                for (let i: number = 0, len: number = defaultFltrCols.length; i < len; i++) {
+                    defaultFltrCols[i].uid = defaultFltrCols[i].uid ||
+                        this.parent.grabColumnByFieldFromAllCols(defaultFltrCols[i].field).uid;
                 }
                 const excelPredicate: Predicate = CheckBoxFilterBase.getPredicate(defaultFltrCols);
                 for (const prop of Object.keys(excelPredicate)) {

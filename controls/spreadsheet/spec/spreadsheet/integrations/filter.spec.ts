@@ -236,5 +236,31 @@ describe('Filter ->', () => {
         //     });
 
         // });
+
+        describe('I328009 ->', () => {
+            let filterArgs: any;
+            beforeAll((done: Function) => {
+                helper.initializeSpreadsheet({
+                    sheets: [{ ranges: [{ dataSource: defaultData }] }],
+                    actionComplete: (args: any): void => {
+                        if (args.action === 'filter') {
+                            filterArgs = args.eventArgs;
+                        }
+                    }
+                }, done);
+            });
+            afterAll(() => {
+                helper.invoke('destroy');
+            });
+            it('Filter event argument checking', (done: Function) => {
+                helper.invoke('selectRange', ['E2']);
+                helper.getInstance().filterModule.filterByCellValueHandler();
+                setTimeout(() => {
+                    expect(JSON.stringify(filterArgs.predicates)).toBe(JSON.stringify(helper.getInstance().filterModule.filterCollection.get(0)));
+                    expect(filterArgs.range).toBe('A1:H11');
+                    done();
+                });
+            });
+        });
     });
 });

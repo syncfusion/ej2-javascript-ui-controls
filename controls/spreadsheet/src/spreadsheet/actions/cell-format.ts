@@ -3,7 +3,7 @@ import { getExcludedColumnWidth, selectRange } from '../common/index';
 import { rowHeightChanged, setRowEleHeight, setMaxHgt, getTextHeight, getMaxHgt, getLines, initialLoad } from '../common/index';
 import { CellFormatArgs, getRowHeight, applyCellFormat, CellStyleModel, CellStyleExtendedModel, CellModel, Workbook} from '../../workbook/index';
 import { SheetModel, isHiddenRow, getCell, getRangeIndexes, getSheetIndex, clearCFRule } from '../../workbook/index';
-import { wrapEvent, getRangeAddress, ClearOptions, clear, activeCellMergedRange } from '../../workbook/index';
+import { wrapEvent, getRangeAddress, ClearOptions, clear, activeCellMergedRange, addHighlight } from '../../workbook/index';
 import { removeClass, isNullOrUndefined } from '@syncfusion/ej2-base';
 /**
  * CellFormat module allows to format the cell styles.
@@ -259,7 +259,7 @@ export class CellFormat {
             this.parent.notify(beginAction, { action: 'beforeClear', eventArgs: eventArgs });
         }
         if (options.type === 'Clear Formats' || options.type === 'Clear All') {
-            this.parent.notify(clearCFRule, { range: range, isPublic: false });
+            this.parent.notify(clearCFRule, { range: range, isPublic: false, isclearFormat: true });
             for (sRIdx; sRIdx <= eRIdx; sRIdx++) {
                 sCIdx = rangeIdx[1];
                 eCIdx = rangeIdx[3];
@@ -290,6 +290,7 @@ export class CellFormat {
             eventArgs = { range: sheet.name + '!' + range, type: options.type, sheetIndex: sheetIndex };
             this.parent.notify('actionComplete', { eventArgs: eventArgs, action: 'clear' });
         }
+        this.parent.notify(addHighlight, { range: range, isclearFormat: true });
         this.parent.notify(selectRange, {address: range});
     }
 

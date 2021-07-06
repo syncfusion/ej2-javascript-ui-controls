@@ -375,6 +375,8 @@ export interface UndoRedoEventArgs extends CellSaveEventArgs, BeforeSortEventArg
     isUndoRedo?: boolean;
     pasteSheetIndex: number;
     pastedPictureElement: HTMLElement;
+    cFColor?: CFColor;
+    sheetIdx?: number;
 }
 export interface BeforeActionData {
     cellDetails: PreviousCellDetails[];
@@ -487,6 +489,7 @@ export interface CFormattingEventArgs {
     type?: HighlightCell | TopBottom | DataBar | ColorScale | IconSet;
     cFColor?: CFColor;
     value?: string;
+    sheetIdx?: number;
     cancel: boolean;
 }
 

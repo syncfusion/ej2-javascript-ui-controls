@@ -146,6 +146,7 @@ export class Selection implements IAction {
     private isAddRowsToSelection: boolean = false;
     private initialRowSelection: boolean = false;
     private isPrevRowSelection: boolean = false;
+    private isKeyAction: boolean = false;
     private evtHandlers: { event: string, handler: Function }[];
     /**
      * @hidden
@@ -328,7 +329,9 @@ export class Selection implements IAction {
         this.activeTarget();
         isToggle = !isToggle ? isToggle :
             !this.selectedRowIndexes.length ? false :
-                (this.selectedRowIndexes.length === 1 ? (index === this.selectedRowIndexes[0]) : false);
+                (this.selectedRowIndexes.length === 1 ? (this.isKeyAction && this.parent.isCheckBoxSelection ?
+                    false : index === this.selectedRowIndexes[0]) : false);
+        this.isKeyAction = false;
         let args: Object;
         const can: string = 'cancel';
         if (!isToggle) {
@@ -782,6 +785,7 @@ export class Selection implements IAction {
      * @returns {void}
      */
     public clearSelection(): void {
+        this.checkSelectAllClicked = true;
         if (this.selectionSettings.persistSelection && this.persistSelectedData.length) {
             this.deSelectedData = iterateExtend(this.persistSelectedData);
         }
@@ -801,6 +805,7 @@ export class Selection implements IAction {
             this.prevRowIndex = undefined;
             this.enableSelectMultiTouch = false;
             this.isInteracted = false;
+            this.checkSelectAllClicked = false;
         }
     }
 
@@ -3184,6 +3189,7 @@ export class Selection implements IAction {
         case 'enter':
         case 'shiftEnter':
             this.target = e.element;
+            this.isKeyAction = true;
             this.applyDownUpKey(rowIndex, cellIndex);
             break;
         case 'rightArrow':

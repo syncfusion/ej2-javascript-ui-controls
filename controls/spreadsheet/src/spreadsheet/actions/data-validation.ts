@@ -160,12 +160,12 @@ export class DataValidation {
                         dataSource: dataSource,
                         fields: { text: 'text', value: 'id' },
                         width: '0px',
-                        popupWidth: tdEle.offsetWidth - 1,
                         popupHeight: '200px',
                         change: () => { this.listValueChange(this.listObj.text); },
                         open: (args: PopupEventArgs) => {
                             args.popup.offsetX = - (tdEle.offsetWidth - 20) + 4;
                             args.popup.offsetY = -13;
+                            args.popup.element.style.width = tdEle.offsetWidth - 1 + 'px';
                             // Positioning popup in mobile device based on transform css applied on virtual element as suggested by dropdown team
                             if (Browser.isDevice && this.parent.scrollModule) {
                                 const offset: { left: IOffset, top: IOffset } = this.parent.scrollModule.offset;

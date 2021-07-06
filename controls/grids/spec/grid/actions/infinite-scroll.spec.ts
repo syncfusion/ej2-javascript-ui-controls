@@ -1370,3 +1370,51 @@ describe('EJ2-42591-Infinite scroll with grouping => ', () => {
         gridObj = null;
     });
 });
+
+describe('EJ2-50577 - Script error throws when add record in a empty Grid with infiniteScrolling feature => ', () => {
+    let gridObj: Grid;
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: [],
+                enableInfiniteScrolling: true,
+                pageSettings: { pageSize: 50 },
+                editSettings: { allowAdding: true, allowEditing: true, allowDeleting: true },
+                toolbar: ['Add', 'Edit', 'Delete', 'Update', 'Cancel'],
+                height: 400,
+                columns: [
+                    { field: 'FIELD2', headerText: 'FIELD2', isPrimaryKey: true, width: 120 },
+                    { field: 'FIELD1', headerText: 'FIELD1', width: 100 },
+                    { field: 'FIELD3', headerText: 'FIELD3', width: 120 },
+                    { field: 'FIELD4', headerText: 'FIELD4', width: 120 },
+                    { field: 'FIELD5', headerText: 'FIELD5', width: 120 }
+                ]
+            }, () => {
+                setTimeout(done, 200);
+            });
+    });
+    it('Add row in empty grid', function(done: Function){
+        let actionComplete = function (args: NotifyArgs) {
+            if (args.requestType === 'add') {
+                gridObj.actionComplete = null;
+                done();
+            }
+        };
+        gridObj.actionComplete = actionComplete;
+        (<any>gridObj.toolbarModule).toolbarClickHandler({ item: { id: gridObj.element.id + '_add' } });
+    });
+    it('Update the row in empty grid', function(done: Function){
+        let actionComplete = function(args: NotifyArgs) {
+            if (args.requestType === 'save') {
+                gridObj.actionComplete = null;
+                done();
+            }
+        };
+        gridObj.actionComplete = actionComplete;
+        gridObj.endEdit();
+    });
+    afterAll(() => {
+        destroy(gridObj);
+        gridObj = null;
+    });
+});

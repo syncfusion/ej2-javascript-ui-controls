@@ -3351,16 +3351,16 @@ function loadCultureFiles_mask(name: string, base?: boolean): void {
 
 L10n.load({
     'en': {
-        'MaskedDateTime': { day: 'day' , month: 'month', year: 'year', hour: 'hour' ,minute: 'minute', second:'second' }
+        'datetimepicker': { day: 'day' , month: 'month', year: 'year', hour: 'hour' ,minute: 'minute', second:'second' }
     },
     'de': {
-        'MaskedDateTime': { day: 'Tag' , month: 'Monat', year: 'Jahr', hour: 'Stunde' ,minute: 'Minute', second:'Sekunden' }
+        'datetimepicker': { day: 'Tag' , month: 'Monat', year: 'Jahr', hour: 'Stunde' ,minute: 'Minute', second:'Sekunden' }
     },
     'zh': {
-        'MaskedDateTime': { day: '日' , month: '月', year: '年', hour: '小時' ,minute: '分鐘', second:'第二' }
+        'datetimepicker': { day: '日' , month: '月', year: '年', hour: '小時' ,minute: '分鐘', second:'第二' }
     },
     'ja': {
-        'MaskedDateTime': { day: '日' , month: '月', year: '年', hour: '時間' ,minute: '分', second:'秒'}
+        'datetimepicker': { day: '日' , month: '月', year: '年', hour: '時間' ,minute: '分', second:'秒'}
     },
 });
 
@@ -3412,7 +3412,7 @@ describe('Datetimepicker', () => {
             document.body.appendChild(inputEle);
             datetimepicker = new DateTimePicker({enableMask: true});
             datetimepicker.appendTo('#datetimepicker');
-            expect(datetimepicker.element.value).toBe('day/month/year');
+            expect(datetimepicker.element.value).toBe('month/day/year hour:minute AM');
             expect(datetimepicker.value).toBe(null);
         });
         it('Rendering with maskPlaceholder as custom type ', () => { 
@@ -3426,7 +3426,7 @@ describe('Datetimepicker', () => {
         it('With format property ', () => { 
             let inputEle: HTMLElement = createElement('input', { id: 'datetimepicker' });
             document.body.appendChild(inputEle);
-            datetimepicker = new DateTimePicker({enableMask: true , format: 'd:M:yyyy dddd'});
+            datetimepicker = new DateTimePicker({enableMask: true , format: 'd:M:yyyy E'});
             datetimepicker.appendTo('#datetimepicker');
             expect(datetimepicker.element.value).toBe('day:month:year day of the week');
             expect(datetimepicker.value).toBe(null);
@@ -3434,17 +3434,17 @@ describe('Datetimepicker', () => {
         it('With format property -1 ', () => { 
             let inputEle: HTMLElement = createElement('input', { id: 'datetimepicker' });
             document.body.appendChild(inputEle);
-            datetimepicker = new DateTimePicker({enableMask: true , format: 'MM yyyy'});
+            datetimepicker = new DateTimePicker({enableMask: true , format: 'MM yyyy EEEE'});
             datetimepicker.appendTo('#datetimepicker');
-            expect(datetimepicker.element.value).toBe('month year');
+            expect(datetimepicker.element.value).toBe('month year day of the week');
             expect(datetimepicker.value).toBe(null);
         });
         it('with format property -2', () => { 
             let inputEle: HTMLElement = createElement('input', { id: 'datetimepicker' });
             document.body.appendChild(inputEle);
-            datetimepicker = new DateTimePicker({enableMask: true , format: 'MM/dd/yyyy'});
+            datetimepicker = new DateTimePicker({enableMask: true , format: 'MM/dd/yyyy EEEEE'});
             datetimepicker.appendTo('#datetimepicker');
-            expect(datetimepicker.element.value).toBe('month/day/year');
+            expect(datetimepicker.element.value).toBe('month/day/year day of the week');
             expect(datetimepicker.value).toBe(null);
         });
         it('with format property -3', () => { 
@@ -3466,7 +3466,7 @@ describe('Datetimepicker', () => {
         it('with format property -5', () => { 
             let inputEle: HTMLElement = createElement('input', { id: 'datetimepicker' });
             document.body.appendChild(inputEle);
-            datetimepicker = new DateTimePicker({enableMask: true , format: 'dd/MM/yy ddd'});
+            datetimepicker = new DateTimePicker({enableMask: true , format: 'dd/MM/yy E'});
             datetimepicker.appendTo('#datetimepicker');
             expect(datetimepicker.element.value).toBe('day/month/year day of the week');
             expect(datetimepicker.value).toBe(null);
@@ -3518,6 +3518,17 @@ describe('Datetimepicker', () => {
             datetimepicker.keydownHandler(keyEventArgs);
             expect(datetimepicker.element.selectionStart).toBe(10);
             expect(datetimepicker.element.selectionEnd).toBe(14);
+            keyEventArgs.action = keyEventArgs.key = keyEventArgs.code =  'Home';
+            datetimepicker.keydownHandler(keyEventArgs);
+            expect(datetimepicker.element.selectionStart).toBe(0);
+            expect(datetimepicker.element.selectionEnd).toBe(3);
+            keyEventArgs.action = keyEventArgs.key = keyEventArgs.code =  'End';
+            datetimepicker.keydownHandler(keyEventArgs);
+            expect(datetimepicker.element.selectionStart).toBe(10);
+            expect(datetimepicker.element.selectionEnd).toBe(14);
+
+
+
         });
         it('Selection navigation using tab and shiftTab ', () => { 
             let inputEle: HTMLElement = createElement('input', { id: 'datetimepicker' });
@@ -3548,7 +3559,7 @@ describe('Datetimepicker', () => {
         it('Increment and decrement of date using up arrow', () => { 
             let inputEle: HTMLElement = createElement('input', { id: 'datetimepicker' });
             document.body.appendChild(inputEle);
-            datetimepicker = new DateTimePicker({enableMask: true , format: 'dd/MM/yyyy hh:mm:ss'});
+            datetimepicker = new DateTimePicker({enableMask: true , format: 'd/MM/yyyy hh:mm:ss'});
             datetimepicker.appendTo('#datetimepicker');
             datetimepicker.focusIn();
             expect(datetimepicker.element.value).toBe('day/month/year hour:minute:second');

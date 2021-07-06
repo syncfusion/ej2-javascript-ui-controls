@@ -11,7 +11,7 @@ import { TextSearchResult } from './text-search-result';
 import { TextSearchResults } from './text-search-results';
 import { DocumentEditor } from '../../document-editor';
 import { DocumentHelper } from '../index';
-import { SearchResultsChangeEventArgs } from '../../base';
+import { SearchResultsChangeEventArgs, searchResultsChangeEvent } from '../../base/index';
 /**
  * @private
  */
@@ -85,7 +85,7 @@ export class TextSearch {
         }
         if (!isNullOrUndefined(results.currentSearchResult)) {
             const eventArgs: SearchResultsChangeEventArgs = { source: this.documentHelper.owner };
-            this.documentHelper.owner.trigger('searchResultsChange', eventArgs);
+            this.documentHelper.owner.trigger(searchResultsChangeEvent, eventArgs);
             return results;
         }
         return undefined;

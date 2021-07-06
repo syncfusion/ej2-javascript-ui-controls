@@ -1163,15 +1163,16 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
                     if (this.template && ((this as any).isReact || (this as any).isAngular)) {
                         requestAnimationFrame(() => {
                             this.collision();
+                            this.popupWrapper.style.display = '';
                         })
                     } else {
                         this.collision();
-                    }
-                    
+                        this.popupWrapper.style.display = '';
+                    }  
                 } else {
                     this.popupObj.collision = { X: 'none', Y: 'none' };
+                    this.popupWrapper.style.display = '';
                 }
-                this.popupWrapper.style.display = '';
                 break;
             case 'none':
                 this.top = observedOpenArgs.top; this.left = observedOpenArgs.left;

@@ -335,7 +335,8 @@ export class EditorHistory {
     public updateComplexHistory(): void {
         const selection: Selection = this.documentHelper.selection;
         if (this.currentHistoryInfo.hasAction) {
-            if (this.currentHistoryInfo.action === 'AutoFormatHyperlink') {
+            if (this.currentHistoryInfo.action === 'AutoFormatHyperlink' || this.currentHistoryInfo.action === 'SkipCommentInline' 
+            || this.currentHistoryInfo.action === 'DeleteCommentInline') {
                 const startPosition: TextPosition = new TextPosition(selection.owner);
                 this.owner.editorModule.setPositionForCurrentIndex(startPosition, this.currentHistoryInfo.insertPosition);
                 // this.reLayoutParagraph(startPosition.paragraph, 0);

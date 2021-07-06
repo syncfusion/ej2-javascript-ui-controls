@@ -8,7 +8,7 @@ import { DateTimePicker, ChangedEventArgs } from '@syncfusion/ej2-calendars';
 import { DocumentEditor } from '../../document-editor';
 import { DropDownList } from '@syncfusion/ej2-dropdowns';
 import { TextFormFieldType } from '../../base/types';
-import { FormFieldFillEventArgs } from '../..';
+import { afterFormFieldFillEvent, FormFieldFillEventArgs } from '../../base/index';
 
 /**
  * @private
@@ -138,7 +138,7 @@ export class FormFieldPopUp {
      */
     private applyTextFormFieldValue = (): void => {
         this.owner.editor.updateFormField(this.formField, this.textBoxInstance.value);
-        this.owner.trigger('afterFormFieldFill', { 'fieldName': this.formField.formFieldData.name, value: this.formField.resultText, isCanceled: false });
+        this.owner.trigger(afterFormFieldFillEvent, { 'fieldName': this.formField.formFieldData.name, value: this.formField.resultText, isCanceled: false });
         this.hidePopup();
     };
     /**
@@ -146,7 +146,7 @@ export class FormFieldPopUp {
      */
     private applyNumberFormFieldValue = (): void => {
         this.owner.editor.updateFormField(this.formField, this.numberInput.value.toString());
-        this.owner.trigger('afterFormFieldFill', { 'fieldName': this.formField.formFieldData.name, value: this.formField.resultText, isCanceled: false });
+        this.owner.trigger(afterFormFieldFillEvent, { 'fieldName': this.formField.formFieldData.name, value: this.formField.resultText, isCanceled: false });
         this.hidePopup();
     };
     /**
@@ -155,7 +155,7 @@ export class FormFieldPopUp {
     private applyDateFormFieldValue = (): void => {
         if (!isNullOrUndefined(this.datePickerInstance.value)) {
             this.owner.editor.updateFormField(this.formField, this.dateInput.value);
-            this.owner.trigger('afterFormFieldFill', { 'fieldName': this.formField.formFieldData.name, value: this.formField.resultText, isCanceled: false });
+            this.owner.trigger(afterFormFieldFillEvent, { 'fieldName': this.formField.formFieldData.name, value: this.formField.resultText, isCanceled: false });
             this.hidePopup();
         }
     };
@@ -164,7 +164,7 @@ export class FormFieldPopUp {
      */
     private applyDropDownFormFieldValue = (): void => {
         this.owner.editor.updateFormField(this.formField, this.ddlInstance.index);
-        this.owner.trigger('afterFormFieldFill', { 'fieldName': this.formField.formFieldData.name, value: (this.formField.formFieldData as DropDownFormField).selectedIndex, isCanceled: false });
+        this.owner.trigger(afterFormFieldFillEvent, { 'fieldName': this.formField.formFieldData.name, value: (this.formField.formFieldData as DropDownFormField).selectedIndex, isCanceled: false });
         this.hidePopup();
     };
     /**
@@ -274,7 +274,7 @@ export class FormFieldPopUp {
             eventArgs.value = (field.formFieldData as DropDownFormField).selectedIndex;
         }
         eventArgs.isCanceled = true;
-        this.owner.trigger('afterFormFieldFill', eventArgs);
+        this.owner.trigger(afterFormFieldFillEvent, eventArgs);
     };
     /**
      * @private

@@ -2,14 +2,17 @@
 
 ## [Unreleased]
 
-## 19.2.44 (2021-06-30)
+## 19.2.46 (2021-07-06)
 
 ### Tree Grid
 
 #### Bug Fixes
 
-- `#I329350` - Immutable mode works fine for date values and row reordering.
-- `#I329988`, `#I331155` - Editing a newly added child record works fine with self referential data.
+- `#I331724` - Child summary values are updated properly after editing a record.
+- `#332604` - Resolved white space issue while using less number of records with Virtualization.
+- `#I328508` - Selecting a row using selectRow method at load time works properly with Virtualization.
+- `#332847` - Batch Edit mode works properly with custom data binding.
+- `#333663` - Cancelling the edit action works properly when using escape key.
 
 ## 18.4.30 (2020-12-17)
 

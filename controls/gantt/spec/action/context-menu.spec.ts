@@ -1,11 +1,11 @@
 import { ContextMenuClickEventArgs, IGanttData, ITaskData } from './../../src/gantt/base/interface';
 import { GanttModel } from './../../src/gantt/base/gantt-model.d';
-import { Gantt, Edit, Selection, ContextMenu, Sort, Resize, ContextMenuItem} from '../../src/index';
+import { Gantt, Edit, Selection, ContextMenu, Sort, Resize, RowDD, ContextMenuItem} from '../../src/index';
 import { projectData1, scheduleModeData, selfReference, splitTasksData} from '../base/data-source.spec';
 import { createGantt, destroyGantt, triggerMouseEvent } from '../base/gantt-util.spec';
 import { ItemModel } from '@syncfusion/ej2-navigations';
 describe('Context-', () => {
-    Gantt.Inject(Edit, Selection, ContextMenu, Sort, Resize);
+    Gantt.Inject(Edit, Selection, ContextMenu, RowDD, Sort, Resize);
     let ganttObj: Gantt;
     let menuItem: any = ['AutoFit', 'AutoFitAll', 'SortAscending', 'SortDescending',
         'TaskInformation', 'Add', 'DeleteTask', 'DeleteDependency', 'Convert', 'Save', 'Cancel',
@@ -321,7 +321,7 @@ describe('Context-', () => {
             (ganttObj.contextMenuModule as any).contextMenuItemClick(e);
             let ok: HTMLElement = ganttObj.element.querySelector('#' + ganttObj.element.id + '_deleteConfirmDialog > div.e-footer-content > button');
             triggerMouseEvent(ok, 'click');
-            expect(ganttObj.currentViewData.length).toBe(40);
+            expect(ganttObj.currentViewData.length).toBe(41);
             done();
         });
         it('Destroy', () => {
@@ -787,6 +787,52 @@ describe('Context-', () => {
             };
             (ganttObj.contextMenuModule as any).contextMenuItemClick(e);
             expect(ganttObj.currentViewData[2].ganttProperties.isAutoSchedule).toBe(false);
+        });
+    });
+    
+     describe('Content menu -', () => {
+        beforeAll((done: Function) => {
+            ganttObj = createGantt({
+                dataSource: projectData1,
+                allowSelection: true,
+                taskFields: {
+                    id: 'TaskID',
+                    name: 'TaskName',
+                    startDate: 'StartDate',
+                    endDate: 'EndDate',
+                    duration: 'Duration',
+                    progress: 'Progress',
+                    child: 'subtasks',
+                    dependency: 'Predecessor'
+                },
+                editSettings: {
+                    allowAdding: true
+                },
+                enableContextMenu: true,
+                allowRowDragAndDrop: true,
+                }, done);
+        });
+        afterAll(() => {
+            if (ganttObj) {
+                destroyGantt(ganttObj);
+            }
+        });
+        beforeEach((done: Function) => {
+            let $tr: HTMLElement = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol_content_table > tbody > tr:nth-child(3)') as HTMLElement;
+            triggerMouseEvent($tr, 'contextmenu', 0, 0, false, false, 2);
+            setTimeout(done, 500);
+        });
+      
+         it('Drag and drop after adding record as child Position', () => {
+            let e: ContextMenuClickEventArgs = {
+                item: { id: ganttObj.element.id + '_contextMenu_Child' },
+                element: null,
+            };
+            (ganttObj.contextMenuModule as any).contextMenuItemClick(e);
+            ganttObj.reorderRows([3], 4, 'child');
+            setTimeout(() => {
+                expect(ganttObj.flatData[4]['TaskID']).toBe(53);
+            }, 100);
         });
     });
 });

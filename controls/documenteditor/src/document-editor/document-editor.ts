@@ -37,6 +37,7 @@ import { TrackChangesPane } from './implementation/track-changes/track-changes-p
 import { RevisionCollection } from './implementation/track-changes/track-changes';
 import { NotesDialog } from './implementation/dialogs/notes-dialog';
 import { FootNoteWidget } from './implementation/viewer/page';
+import { internalZoomFactorChange, contentChangeEvent, documentChangeEvent, selectionChangeEvent, zoomFactorChangeEvent, beforeFieldFillEvent, afterFieldFillEvent, serviceFailureEvent, viewChangeEvent, customContextMenuSelectEvent, customContextMenuBeforeOpenEvent } from './base/constants';
 /**
  * The `DocumentEditorSettings` module is used to provide the customize property of Document Editor.
  */
@@ -1288,7 +1289,7 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
             this.collaborativeEditingModule.saveContent();
         }
         const eventArgs: ContentChangeEventArgs = { source: isBlazor() ? null : this };
-        this.trigger('contentChange', eventArgs);
+        this.trigger(contentChangeEvent, eventArgs);
     }
     /**
      * @private
@@ -1299,7 +1300,7 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
             this.editor.enforceProtection('', false, true);
         }
         const eventArgs: DocumentChangeEventArgs = { source: isBlazor() ? null : this };
-        this.trigger('documentChange', eventArgs);
+        this.trigger(documentChangeEvent, eventArgs);
     }
     /**
      * @private
@@ -1311,7 +1312,7 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
         }
         const eventArgs: SelectionChangeEventArgs = { source: isBlazor() ? null : this };
         // if (this.createdTriggered) {
-        this.trigger('selectionChange', eventArgs);
+        this.trigger(selectionChangeEvent, eventArgs);
         // }
     }
     /**
@@ -1320,7 +1321,8 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
      */
     public fireZoomFactorChange(): void {
         const eventArgs: ZoomFactorChangeEventArgs = { source: isBlazor() ? null : this };
-        this.trigger('zoomFactorChange', eventArgs);
+        this.trigger(zoomFactorChangeEvent, eventArgs);
+        this.notify(internalZoomFactorChange, eventArgs);
     }
     /**
      * @private
@@ -1328,7 +1330,7 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
      */
     public fireBeformFieldFill(): void {
         const eventArgs: FormFieldFillEventArgs = {};
-        this.trigger('beforeFieldFill', eventArgs);
+        this.trigger(beforeFieldFillEvent, eventArgs);
     }
     /**
      * @private
@@ -1336,7 +1338,7 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
      */
     public fireAfterFormFieldFill(): void {
         const eventArgs: FormFieldFillEventArgs = {};
-        this.trigger('afterFieldFill', eventArgs);
+        this.trigger(afterFieldFillEvent, eventArgs);
     }
 
     /**
@@ -1345,7 +1347,7 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
      * @returns {void}
      */
     public fireServiceFailure(eventArgs: ServiceFailureArgs): void {
-        this.trigger('serviceFailure', eventArgs);
+        this.trigger(serviceFailureEvent, eventArgs);
     }
     /**
      * @private
@@ -1360,7 +1362,7 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
                     endPage: pages[pages.length - 1].index + 1,
                     source: isBlazor() ? null : this
                 };
-                this.trigger('viewChange', eventArgs);
+                this.trigger(viewChangeEvent, eventArgs);
             }
         }
     }
@@ -1371,7 +1373,7 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
      */
     public fireCustomContextMenuSelect(item: string): void {
         const eventArgs: CustomContentMenuEventArgs = { id: item };
-        this.trigger('customContextMenuSelect', eventArgs);
+        this.trigger(customContextMenuSelectEvent, eventArgs);
     }
     /**
      * @private
@@ -1380,7 +1382,7 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
      */
     public fireCustomContextMenuBeforeOpen(item: string[]): void {
         const eventArgs: BeforeOpenCloseCustomContentMenuEventArgs = { ids: item };
-        this.trigger('customContextMenuBeforeOpen', eventArgs);
+        this.trigger(customContextMenuBeforeOpenEvent, eventArgs);
     }
     /**
      * Shows the Paragraph dialog

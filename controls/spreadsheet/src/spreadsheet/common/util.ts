@@ -2,12 +2,12 @@ import { Browser, setStyleAttribute as setBaseStyleAttribute, getComponent, deta
 import { StyleType, CollaborativeEditArgs, CellSaveEventArgs, ICellRenderer, IAriaOptions } from './index';
 import { IOffset, clearViewer, deleteImage, createImageElement, refreshImgCellObj } from './index';
 import { Spreadsheet } from '../base/index';
-import { SheetModel, getRowsHeight, getColumnsWidth, getSwapRange, CellModel, CellStyleModel, clearCells, RowModel } from '../../workbook/index';
+import { SheetModel, getRowsHeight, getColumnsWidth, getSwapRange, CellModel, CellStyleModel, clearCells, RowModel, getSheet, cFInitialCheck, cFUndo } from '../../workbook/index';
 import { RangeModel, getRangeIndexes, Workbook, wrap, setRowHeight, insertModel, InsertDeleteModelArgs, getColumnWidth } from '../../workbook/index';
 import { BeforeSortEventArgs, SortEventArgs, initiateSort, getIndexesFromAddress, getRowHeight, setMerge, isLocked } from '../../workbook/index';
 import { ValidationModel, setValidation, removeValidation, clearCFRule, setCFRule, ConditionalFormatModel, getColumn } from '../../workbook/index';
 import { removeSheetTab, rowHeightChanged } from './index';
-import { getCellIndexes, getCell, ChartModel, setChart, refreshChartSize } from '../../workbook/index';
+import { getCellIndexes, getCell, ChartModel, setChart, refreshChartSize, HighlightCell, TopBottom, DataBar, ColorScale, IconSet, CFColor } from '../../workbook/index';
 import { deleteChart } from '../../spreadsheet/index';
 import { initiateFilterUI } from './event';
 
@@ -964,7 +964,7 @@ export function findMaxValue(
  * @param {boolean} isRedo - Specifyt he boolean value.
  * @returns {void} - To update the Action.
  */
-export function updateAction(options: CollaborativeEditArgs, spreadsheet: Spreadsheet, isRedo?: boolean): void {
+export function updateAction(options: CollaborativeEditArgs, spreadsheet: Spreadsheet, isRedo?: boolean, undoCollections?: CollaborativeEditArgs[]): void {
     /* eslint-disable-next-line  @typescript-eslint/no-explicit-any */
     const eventArgs: any = options.eventArgs;
     let chartElement: HTMLElement;
@@ -1137,14 +1137,23 @@ export function updateAction(options: CollaborativeEditArgs, spreadsheet: Spread
                 type: eventArgs.type, cFColor: eventArgs.cFColor, value: eventArgs.value,
                 range: eventArgs.range
             };
-            spreadsheet.notify(setCFRule, { conditionalFormat: conditionalFormat });
-        } else {
-            spreadsheet.notify(clearCFRule, { range: eventArgs.range });
-        }
-        break;
+            spreadsheet.notify(setCFRule, { conditionalFormat: conditionalFormat, sheetIdx: eventArgs.sheetIdx, isUndoRedo: true });
+            } else {
+                spreadsheet.notify(clearCFRule, { range: eventArgs.range, sheetIdx: eventArgs.sheetIdx, isUndoRedo: true });
+                for (let undoCollIdx: number = 0; undoCollIdx < undoCollections.length; undoCollIdx++) {
+                    if (undoCollections[undoCollIdx].action === 'conditionalFormat' ) {
+                        let conditionalFormat: ConditionalFormatModel = {
+                            type: undoCollections[undoCollIdx].eventArgs.type as (HighlightCell | TopBottom | DataBar | ColorScale | IconSet), cFColor: undoCollections[undoCollIdx].eventArgs.cFColor as CFColor,
+                            value: undoCollections[undoCollIdx].eventArgs.value, range: undoCollections[undoCollIdx].eventArgs.range
+                        }
+                        spreadsheet.notify(cFUndo, { conditionalFormat: conditionalFormat, sheetIdx: undoCollections[undoCollIdx].eventArgs.sheetIdx });
+                    }
+                }
+            }
+            break;
     case 'clearCF':
         if (isRedo) {
-            spreadsheet.notify(clearCFRule, { range: eventArgs.selectedRange });
+            spreadsheet.notify(clearCFRule, { range: eventArgs.selectedRange, sheetIdx: eventArgs.sheetIdx, isClearCF: true, isUndoRedo: true });
         } else {
             spreadsheet.notify(clearCells, {
                 conditionalFormats: eventArgs.cFormats,

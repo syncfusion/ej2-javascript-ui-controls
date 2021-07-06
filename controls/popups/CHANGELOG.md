@@ -2,13 +2,19 @@
 
 ## [Unreleased]
 
-## 19.2.44 (2021-06-30)
+## 19.2.46 (2021-07-06)
 
 ### Tooltip
 
 #### Bug Fixes
 
 - `#I328768` - The issue with "The Tooltip is not opened in the current cursor position while enabling the `mouseTrail` and `openDelay` support" has been resolved.
+
+### Dialog
+
+#### Bug Fixes
+
+- `#I333082` - Provided a new additional argument `closedBy`, in the `beforeClose` event of the dialog.
 
 ## 19.1.66 (2021-06-01)
 

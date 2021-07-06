@@ -21,7 +21,8 @@ import { isNullOrUndefined, createElement, L10n, Browser } from '@syncfusion/ej2
 import { Dictionary } from '../../base/dictionary';
 import {
     LineSpacingType, BaselineAlignment, HighlightColor,
-    Strikethrough, Underline, TextAlignment, FormFieldType, FormFieldFillEventArgs
+    Strikethrough, Underline, TextAlignment, FormFieldType, FormFieldFillEventArgs, contentControlEvent,
+    beforeFormFieldFillEvent, afterFormFieldFillEvent, requestNavigateEvent
 } from '../../base/index';
 import { TextPositionInfo, PositionInfo, ParagraphInfo } from '../editor/editor-helper';
 import { WCharacterFormat, WParagraphFormat, WStyle, WParagraphStyle, WSectionFormat } from '../index';
@@ -895,7 +896,7 @@ export class Selection {
             localReference: hyperlink.localReference,
             source: this.owner
         };
-        this.owner.trigger('requestNavigate', eventArgs);
+        this.owner.trigger(requestNavigateEvent, eventArgs);
         if (!eventArgs.isHandled) {
             this.documentHelper.selection.navigateBookmark(hyperlink.localReference, true);
         }
@@ -2491,13 +2492,13 @@ export class Selection {
             }
 
             previousFieldData = { 'fieldName': previousField.formFieldData.name, 'value': this.owner.editorModule.getFormFieldText(previousField) };
-            this.owner.trigger('afterFormFieldFill', previousFieldData);
+            this.owner.trigger(afterFormFieldFillEvent, previousFieldData);
         }
         if (currentField !== previousField && currentField && currentField.formFieldData instanceof TextFormField
             && currentField.formFieldData.type === 'Text') {
 
             currentFieldData = { 'fieldName': currentField.formFieldData.name, 'value': this.owner.editorModule.getFormFieldText(currentField) };
-            this.owner.trigger('beforeFormFieldFill', currentFieldData);
+            this.owner.trigger(beforeFormFieldFillEvent, currentFieldData);
         }
     }
 
@@ -3609,6 +3610,24 @@ export class Selection {
             return block as TableWidget;
         }
         return undefined;
+    }
+    /**
+     * @private
+     * @param element 
+     * @returns 
+     */
+    public isElementInSelection(element:ElementBox): boolean {
+        let offset: number = element.line.getOffset(element, 1);
+        let elemPosition: TextPosition = new TextPosition(this.owner);
+        elemPosition.setPositionParagraph(element.line, offset);
+        let start: TextPosition = this.start;
+        let end: TextPosition = this.end;
+        if (!this.isForward) {
+            start = end;
+            end = start;
+        }
+        return ((elemPosition.isExistAfter(start) || elemPosition.isAtSamePosition(start))
+            && (elemPosition.isExistBefore(end) || elemPosition.isAtSamePosition(end)));
     }
     /**
      * @private
@@ -5300,7 +5319,7 @@ export class Selection {
         element = this.getElementBox(inline, index, moveNextLine).element;
         let lineWidget: LineWidget = undefined;
         if (isNullOrUndefined(element) || isNullOrUndefined(element.line)) {
-            if (inline instanceof FieldElementBox && inline.fieldType === 1) {
+            if (inline instanceof FieldElementBox && inline.fieldType === 1 || inline instanceof CommentCharacterElementBox) {
                 element = inline;
             } else {
                 if (inline instanceof FieldElementBox || inline instanceof BookmarkElementBox) {
@@ -5334,7 +5353,7 @@ export class Selection {
             if (element.margin.top + element.height - measureObj.BaselineOffset > 0) {
                 top += element.margin.top + element.height - measureObj.BaselineOffset;
             }
-        } else if (!(element instanceof FieldElementBox)) {
+        } else if (!(element instanceof FieldElementBox || inline instanceof CommentCharacterElementBox)) {
             top += margin.top > 0 ? margin.top : 0;
         }
         left = (isNullOrUndefined(element) || isNullOrUndefined(lineWidget)) ? 0 : this.getLeftInternal(lineWidget, element, index);
@@ -10125,6 +10144,8 @@ export class Selection {
             endElement = (element as ContentControl).reference as ElementBox;
         } else if (element instanceof BookmarkElementBox) {
             endElement = element.reference;
+        } else if (element instanceof CommentCharacterElementBox) {
+            endElement = element.comment.commentEnd;
         }
         offset = endElement.line.getOffset(endElement, 1);
         let endPosition: TextPosition = new TextPosition(this.owner);
@@ -10154,7 +10175,7 @@ export class Selection {
                 let cCEndInsideSelction: boolean = ((cCend.isExistAfter(start) || cCend.isAtSamePosition(start)) && (cCend.isExistBefore(end) || cCend.isAtSamePosition(end)));
                 if (cCStartInsideSelction && cCEndInsideSelction) {
                     if (contentControlStart.contentControlProperties.lockContentControl) {
-                        this.owner.trigger('contentControl');
+                        this.owner.trigger(contentControlEvent);
                         return true;
                     }
                     return false;
@@ -10172,14 +10193,14 @@ export class Selection {
                     this.owner.editorModule.isXmlMapped = true;
                 }
                 if (contentControlStart.contentControlProperties.lockContents) {
-                    this.owner.trigger('contentControl');
+                    this.owner.trigger(contentControlEvent);
                     return true;
                 } else if (isNullOrUndefined(checkFormat)
                     && (contentControlStart.contentControlProperties.type === 'CheckBox'
                         || contentControlStart.contentControlProperties.type === 'ComboBox'
                         || contentControlStart.contentControlProperties.type === 'DropDownList'
                         || contentControlStart.contentControlProperties.type === 'Date')) {
-                    this.owner.trigger('contentControl');
+                    this.owner.trigger(contentControlEvent);
                     return true;
                 }
             }

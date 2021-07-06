@@ -425,6 +425,12 @@ export class Toolbar extends Component<HTMLElement> implements INotifyPropertyCh
         if ((this as any).isReact) {
             this.clearTemplate();
         }
+        const btnItems: NodeList = this.element.querySelectorAll('.e-control.e-btn');
+        [].slice.call(btnItems).forEach((el: EJ2Instance) => {
+            if (!isNOU(el) && !isNOU(el.ej2_instances[0]) && !((el.ej2_instances[0] as Button).isDestroyed)) {
+                (el.ej2_instances[0] as Button).destroy();
+            }
+        });
         super.destroy();
         this.unwireEvents();
         this.tempId.forEach((ele: Str): void => {
@@ -1863,6 +1869,10 @@ export class Toolbar extends Component<HTMLElement> implements INotifyPropertyCh
             }
             if ((this as any).isReact) {
                 this.clearTemplate();
+            }
+            const btnItem: EJ2Instance = innerItems[index].querySelector('.e-control.e-btn');
+            if (!isNOU(btnItem) && !isNOU(btnItem.ej2_instances[0]) && !((btnItem.ej2_instances[0] as Button).isDestroyed)) {
+                (btnItem.ej2_instances[0] as Button).destroy();
             }
             detach(innerItems[index]);
             this.items.splice(eleIdx, 1);

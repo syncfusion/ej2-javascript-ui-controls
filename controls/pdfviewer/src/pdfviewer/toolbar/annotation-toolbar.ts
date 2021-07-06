@@ -895,7 +895,11 @@ export class AnnotationToolbar {
                     addInitialSpan.textContent = 'ADD SIGNATURE';
                     addInitialSpan.style.fontFamily = 'Roboto';
                     addInitialSpan.style.fontSize = '14px';
-                    addInitialSpan.style.width = 'fit-content';
+                    if (navigator.userAgent.indexOf('MSIE') !== -1 || navigator.userAgent.indexOf('Trident') !== -1) {
+                        addInitialSpan.style.maxWidth = '140px';
+                    } else {
+                        addInitialSpan.style.width = 'fit-content';
+                    }
                     addInitialSpan.addEventListener('mouseover', this.hoverSignature.bind(this));
                     addInitialSpan.addEventListener('mouseleave', this.leaveSignature.bind(this));
                     addInitialSpan.addEventListener('click', this.clickSignature.bind(this));
@@ -977,7 +981,11 @@ export class AnnotationToolbar {
                     let addInitialSpan: HTMLElement = createElement('span');
                     addInitialSpan.classList.add('e-pv-align-sign');
                     addInitialSpan.textContent = 'ADD INITIAL';
-                    addInitialSpan.style.width = 'fit-content';
+                    if (navigator.userAgent.indexOf('MSIE') !== -1 || navigator.userAgent.indexOf('Trident') !== -1) {
+                        addInitialSpan.style.maxWidth = '100px';
+                    } else {
+                        addInitialSpan.style.width = 'fit-content';
+                    }
                     addInitialSpan.style.fontFamily = 'Roboto';
                     addInitialSpan.style.left= '40px';
                     addInitialSpan.addEventListener('mouseover', this.hoverSignature.bind(this));
@@ -1078,7 +1086,12 @@ export class AnnotationToolbar {
     }
     private hoverInitialBtn(event:any): void {
         const eventTarget: HTMLElement = event.target as HTMLElement;
-        let currentFieldID: string = isNullOrUndefined(event.path) ? event.composedPath()[0].id : event.path[0].id;
+        let currentFieldID: string = '';
+        if (navigator.userAgent.indexOf('MSIE') !== -1 || navigator.userAgent.indexOf('Trident') !== -1) {
+            currentFieldID = eventTarget.id;
+        } else {
+            currentFieldID = isNullOrUndefined(event.path) ? event.composedPath()[0].id : event.path[0].id;
+        }
         if(currentFieldID!=='sign_'+currentFieldID.split("_")[1] && currentFieldID!=='delete_'+currentFieldID.split("_")[1]){
         let liElement: HTMLElement = document.getElementById(eventTarget.id);
         if (isNullOrUndefined(liElement)) {
@@ -1171,7 +1184,7 @@ export class AnnotationToolbar {
         event.target.parentElement.remove();
     }
     private getTemplate(elementName: string, id: string, className: string): string {
-        const element: HTMLElement = createElement(elementName, { id: this.pdfViewer.element.id + id });
+        const element: HTMLElement = createElement(elementName, { id: this.pdfViewer.element.id + id, styles:'text-align:left' });
         if (className) {
             element.className = className;
         }
@@ -2477,12 +2490,8 @@ export class AnnotationToolbar {
     }
 
     private createDropDownListForFamily(fontSelectElement: HTMLElement): void {
-        const fontStyle: { [key: string]: Object }[] = [{ FontName: 'Algerian' }, { FontName: 'Arial' },
-        { FontName: 'Calibri' }, { FontName: 'Cambria' }, { FontName: 'Cambria Math' }, { FontName: 'Candara' },
-        { FontName: 'Courier New' }, { FontName: 'Georgia' }, { FontName: 'Impact' }, { FontName: 'Segoe Print' },
-        { FontName: 'Segoe Script' }, { FontName: 'Segoe UI' }, { FontName: 'Symbol' },
-        { FontName: 'Times New Roman' }, { FontName: 'Verdana' }, { FontName: 'Windings' }, { FontName: 'Helvetica' }
-        ];
+        const fontStyle: { [key: string]: Object }[] = [{ FontName: 'Helvetica' },
+        { FontName: 'Courier' }, { FontName: 'Symbol' }, { FontName: 'Times New Roman' }];
         this.fontFamily = new ComboBox({
             dataSource: fontStyle,
             query: new Query().select(['FontName']),

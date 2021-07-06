@@ -202,8 +202,8 @@ export class InfiniteScroll implements IAction {
     }
 
     private modelChanged(args: InfiniteScrollArgs): void {
-        if (args.requestType !== 'infiniteScroll' && (args.requestType === 'delete' || this.requestType === 'add')) {
-            const rows: Element[] = this.parent.getRows();
+        const rows: Element[] = this.parent.getRows();
+        if (rows.length && args.requestType !== 'infiniteScroll' && (args.requestType === 'delete' || this.requestType === 'add')) {
             this.firstIndex = parseInt(rows[0].getAttribute(literals.ariaRowIndex), 10);
             this.firstBlock = Math.ceil((this.firstIndex + 1) / this.parent.pageSettings.pageSize);
             this.lastIndex = parseInt(rows[rows.length - 1].getAttribute(literals.ariaRowIndex), 10);
@@ -245,13 +245,15 @@ export class InfiniteScroll implements IAction {
             const rowElms: Element[] = this.parent.getRows();
             const rows: Row<Column>[] = this.parent.getRowsObject();
             if (this.ensureRowAvailability(rows, args.result[0])) {
-                this.resetRowIndex(rows, args.e, rowElms, this.requestType === 'add', true);
-                if (frozenCols) {
-                    const rows: Row<Column>[] = this.parent.getMovableRowsObject();
-                    this.resetRowIndex(rows, args.e, this.parent.getMovableDataRows(), this.requestType === 'add');
-                    if (this.parent.getFrozenMode() === literals.leftRight) {
-                        const frRows: Row<Column>[] = this.parent.getFrozenRightRowsObject();
-                        this.resetRowIndex(frRows, args.e, this.parent.getFrozenRightRows(), this.requestType === 'add');
+                if (rowElms.length) {
+                    this.resetRowIndex(rows, args.e, rowElms, this.requestType === 'add', true);
+                    if (frozenCols) {
+                        const rows: Row<Column>[] = this.parent.getMovableRowsObject();
+                        this.resetRowIndex(rows, args.e, this.parent.getMovableDataRows(), this.requestType === 'add');
+                        if (this.parent.getFrozenMode() === literals.leftRight) {
+                            const frRows: Row<Column>[] = this.parent.getFrozenRightRowsObject();
+                            this.resetRowIndex(frRows, args.e, this.parent.getFrozenRightRows(), this.requestType === 'add');
+                        }
                     }
                 }
                 if (!this.isLastPage) {

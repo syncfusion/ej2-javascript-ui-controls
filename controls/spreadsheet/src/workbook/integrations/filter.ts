@@ -149,7 +149,7 @@ export class WorkbookFilter {
         if (this.filterRange) {
             const range: number[] =  getCellIndexes(this.filterRange);
             const sheet: SheetModel = this.parent.getActiveSheet();
-            this.parent.hideRow(range[0], sheet.usedRange.rowIndex - 1, false);
+            this.parent.hideRow(range[0], sheet.usedRange.rowIndex, false);
         }
     }
 

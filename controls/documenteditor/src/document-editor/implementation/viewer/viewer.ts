@@ -34,7 +34,7 @@ import {
 } from '../../base/types';
 import { Editor } from '../index';
 import { CaretHeightInfo } from '../editor/editor-helper';
-import { DocumentEditorKeyDownEventArgs, BeforePaneSwitchEventArgs, FormFieldFillEventArgs } from '../../base/events-helper';
+import { DocumentEditorKeyDownEventArgs, BeforePaneSwitchEventArgs, FormFieldFillEventArgs, beforePaneSwitchEvent, keyDownEvent, beforeFormFieldFillEvent, afterFormFieldFillEvent } from '../../base/index';
 import { RestrictEditing } from '../restrict-editing/restrict-editing-pane';
 import { FormFieldPopUp } from '../dialogs/form-field-popup';
 import { Revision } from '../track-changes/track-changes';
@@ -962,7 +962,7 @@ export class DocumentHelper {
     public showComments(show: boolean): void {
         if (this.owner && show && this.owner.enableComment) {
             const eventArgs: BeforePaneSwitchEventArgs = { type: 'Comment' };
-            this.owner.trigger('beforePaneSwitch', eventArgs);
+            this.owner.trigger(beforePaneSwitchEvent, eventArgs);
         }
         this.owner.commentReviewPane.reviewTab.hideTab(0, false);
         this.owner.commentReviewPane.reviewTab.hideTab(1, false);
@@ -972,7 +972,7 @@ export class DocumentHelper {
         let isCommentTabVisible: boolean = false;
         if (this.owner && show) {
             const eventArgs: BeforePaneSwitchEventArgs = { type: 'comment' };
-            this.owner.trigger('beforePaneSwitch', eventArgs);
+            this.owner.trigger(beforePaneSwitchEvent, eventArgs);
         }
         if (!show && this.owner.showComments) {
             this.owner.commentReviewPane.reviewTab.hideTab(0, false);
@@ -985,7 +985,7 @@ export class DocumentHelper {
             if (!this.owner.enableComment) {
                 isCommentTabVisible = true;
             }
-            this.owner.commentReviewPane.reviewTab.hideTab(0, isCommentTabVisible);
+            // this.owner.commentReviewPane.reviewTab.hideTab(0, isCommentTabVisible);
             this.showRevision = false;
         }
         if (show) {
@@ -2063,7 +2063,7 @@ export class DocumentHelper {
                     } else {
                         data.value = (formField.formFieldData as DropDownFormField).selectedIndex;
                     }
-                    this.owner.trigger('beforeFormFieldFill', data);
+                    this.owner.trigger(beforeFormFieldFillEvent, data);
                     if (this.owner.documentEditorSettings.formFieldSettings.formFillingMode === 'Popup' && !(formField.formFieldData instanceof CheckBoxFormField)
                         || (formField.formFieldData instanceof TextFormField && !(formField.formFieldData.type === 'Text'))
                         || formField.formFieldData instanceof DropDownFormField) {
@@ -2072,7 +2072,7 @@ export class DocumentHelper {
                         this.owner.editor.toggleCheckBoxFormField(formField);
                         data.value = (formField.formFieldData as CheckBoxFormField).checked;
                         data.isCanceled = false;
-                        this.owner.trigger('afterFormFieldFill', data);
+                        this.owner.trigger(afterFormFieldFillEvent, data);
                     }
                 }
                 if (!formField && this.isFormFillProtectedMode) {
@@ -2942,7 +2942,7 @@ export class DocumentHelper {
         }
         let isHandled: boolean = false;
         let keyEventArgs: DocumentEditorKeyDownEventArgs = { 'event': event, 'isHandled': false, source: this.owner };
-        this.owner.trigger('keyDown', keyEventArgs);
+        this.owner.trigger(keyDownEvent, keyEventArgs);
         if (keyEventArgs.isHandled) {
             return;
         }

@@ -64,7 +64,7 @@ export class ConditionalFormatting {
         conditionalFormat.range = conditionalFormat.range || this.parent.getActiveSheet().selectedRange;
         const eventArgs: CFormattingEventArgs = {
             range: conditionalFormat.range, type: conditionalFormat.type, cFColor: conditionalFormat.cFColor,
-            value: conditionalFormat.value, cancel: false
+            value: conditionalFormat.value, sheetIdx: this.parent.activeSheetIndex, cancel: false
         };
         this.parent.notify(beginAction, { eventArgs: eventArgs, action: 'conditionalFormat' });
         if (!eventArgs.cancel) {
@@ -84,7 +84,7 @@ export class ConditionalFormatting {
         const oldRange: string[] = args.oldRange;
         const selectedRange: string = args.selectedRange;
         const conditionalFormats: ConditionalFormatModel[] = sheet.conditionalFormats;
-        for (let cCFIdx: number = 0; cCFIdx < clearCFormats.length; cCFIdx++) {
+        for (let cCFIdx: number = clearCFormats.length - 1; cCFIdx >= 0; cCFIdx--) {
             let isApply: boolean = false;
             for (let cFIdx: number = 0; cFIdx < conditionalFormats.length; cFIdx++) {
                 if (conditionalFormats[cFIdx].type === clearCFormats[cCFIdx].type &&

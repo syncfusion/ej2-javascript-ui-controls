@@ -1185,7 +1185,7 @@ export class SfdtReader {
                 if (inline.hasOwnProperty('fillFormat')) {
                     let fillFormat: FillFormat = new FillFormat();
                     fillFormat.color = inline.fillFormat.color;
-                    fillFormat.fill = inline.fillFormat.weight;
+                    fillFormat.fill = inline.fillFormat.fill;
                     shape.fillFormat = fillFormat;
                 }
                 if (inline.hasOwnProperty('textFrame')) {

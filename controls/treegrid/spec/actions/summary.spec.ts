@@ -720,6 +720,69 @@ describe('Summary with child aggregate value and also with stacked header ', () 
     destroy(TreegridObj);
   });
 });
+
+describe('Child summary after cell editing ', () => {
+  let TreegridObj: TreeGrid;
+  beforeAll((done: Function) => {
+    TreegridObj = createGrid(
+      {
+        dataSource: sampleData,
+        childMapping: 'subtasks',
+        treeColumnIndex: 1,
+        toolbar: ['Add', 'Delete', 'Update', 'Cancel'],
+        editSettings: {
+            allowAdding: true,
+            allowEditing: true,
+            allowDeleting: true,
+            mode: 'Cell',
+            newRowPosition: 'Below'
+        },
+        columns: [
+        {
+            field: 'FreightID',
+            headerText: 'Freight ID',
+            isPrimaryKey: true,
+            width: 130
+        },
+        { field: 'FreightName', width: 200, headerText: 'Freight Name' },
+        {
+            field: 'UnitWeight',
+            headerText: 'Weight Per Unit',
+            type: 'number',
+            width: 140,
+            textAlign: 'Right'
+        },
+        {
+            field: 'TotalUnits',
+            headerText: 'Total Units',
+            type: 'number',
+            width: 140,
+            textAlign: 'Right'
+        }
+        ],
+        aggregates: [
+        {
+            showChildSummary: true,
+            columns: [
+                {
+                    type: 'Sum',
+                    field: 'UnitWeight',
+                    columnName: 'UnitWeight',
+                    footerTemplate: 'Sum: ${Sum}'
+                }
+            ]
+          }]
+      },done);
+  });
+
+  it('Child summary Row Rendering', () => {
+    (TreegridObj.getRows()[1].children[2] as HTMLElement).innerHTML = "51";
+    expect((TreegridObj.getRows()[5].children[2] as HTMLElement).innerText === "Sum: 242");
+  });
+  afterAll(() => {
+    destroy(TreegridObj);
+  });
+});
 });
 
 

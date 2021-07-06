@@ -590,5 +590,47 @@ describe('Dialog Editing module', () => {
             gridObj = null;
         });
     });
-    
+
+    describe('EJ2-50266 - Validation rules for grouped field columns are not working => ', () => {
+        let gridObj: Grid;
+        let actionComplete: () => void;
+        beforeAll((done: Function) => {
+            gridObj = createGrid(
+                {
+                    dataSource: data,
+                    editSettings: { allowEditing: true, allowAdding: true, allowDeleting: true, mode: 'Dialog' },
+                    allowGrouping: true,
+                    groupSettings: {  columns: ['CustomerID'] },
+                    allowPaging: true,
+                    pageSettings: { pageCount: 5 },
+                    toolbar: ['Add', 'Edit', 'Delete'],
+                    columns: [
+                        { field: 'OrderID', isPrimaryKey: true, headerText: 'Order ID', textAlign: 'Right', width: 120 },
+                        { field: 'CustomerID', headerText: 'Customer ID', width: 140, validationRules: { required: true } },
+                        { field: 'Freight', headerText: 'Freight', textAlign: 'Right', editType: 'numericedit', width: 120, format: 'C2' },
+                        { field: 'OrderDate', headerText: 'Order Date', editType: 'datepickeredit', format: 'yMd', width: 170 },
+                        { field: 'ShipCountry', headerText: 'Ship Country', editType: 'dropdownedit', width: 150, 
+                          edit: { params: { popupHeight: '300px' } } }
+                    ]
+                }, done);
+        });
+        it('Add Record', (done: Function) => {
+            actionComplete = (args?: any): void => {
+                if (args.requestType === 'add') {
+                    done();
+                }
+            };
+            gridObj.actionComplete = actionComplete;
+            (<any>gridObj.toolbarModule).toolbarClickHandler({ item: { id: gridObj.element.id + '_add' } });
+        });
+        it('Check the validation message', () => {
+            (select('#'+ gridObj.element.id +'_dialogEdit_wrapper', document).querySelectorAll('button') as any)[1].click();
+            expect(document.querySelectorAll('.e-griderror').length).toBe(1);
+        });
+
+        afterAll(() => {
+            destroy(gridObj);
+            gridObj = null;
+        });
+    });
 });

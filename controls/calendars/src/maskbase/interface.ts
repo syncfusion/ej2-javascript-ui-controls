@@ -1,4 +1,5 @@
-import { Component, L10n } from '@syncfusion/ej2-base';
+import { Component, L10n,Internationalization } from '@syncfusion/ej2-base';
+import { CalendarType } from '../calendar/calendar';
 
 /**
  * Specifies mulitselct interfaces.
@@ -15,4 +16,10 @@ export interface IMaskedDateTime extends Component<HTMLElement> {
     inputElement: HTMLInputElement;
     value: Date;
     updateInputValue(value?: string): void
+    dateTimeFormat: string
+    formatString: string
+    moduleName: string
+    cldrTimeFormat(): string
+    calendarMode: CalendarType;
+    globalize: Internationalization;
 }

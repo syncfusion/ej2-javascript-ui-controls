@@ -1688,19 +1688,19 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
             requestType: 'Paste'
         };
         this.trigger(events.actionBegin, evenArgs, (pasteArgs: { [key: string]: Object }) => {
-            const currentLength: number = this.getText().length;
+            const currentLength: number = this.getText().trim().length;
             const selectionLength: number = this.getSelection().length;
             const pastedContentLength: number = (isNOU(e as ClipboardEvent) || isNOU((e as ClipboardEvent).clipboardData))
                 ? 0 : (e as ClipboardEvent).clipboardData.getData('text/plain').length;
             const totalLength: number = (currentLength - selectionLength) + pastedContentLength;
             if (this.editorMode === 'Markdown') {
-                if (!(this.maxLength === -1 || totalLength < this.maxLength)) {
+                if (!(this.maxLength === -1 || totalLength <= this.maxLength)) {
                     e.preventDefault();
                 }
                 return;
             }
             if (!pasteArgs.cancel && this.inputElement.contentEditable === 'true' &&
-            (this.maxLength === -1 || totalLength < this.maxLength)) {
+            (this.maxLength === -1 || totalLength <= this.maxLength)) {
                 if (!isNOU(this.pasteCleanupModule)) {
                     this.notify(events.pasteClean, { args: e as ClipboardEvent });
                 } else {
@@ -1770,7 +1770,7 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
         if (this.isDestroyed || !this.isRendered) {
             return;
         }
-        if (this.element.offsetParent === null) {
+        if (this.element.offsetParent === null && !isNOU(this.toolbarModule)) {
             this.toolbarModule.destroy();
             return;
         }
@@ -2502,7 +2502,7 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
      * @public
      */
     public getHtml(): string {
-        return this.value;
+        return this.serializeValue(this.contentModule.getEditPanel().innerHTML);
     }
 
     /**

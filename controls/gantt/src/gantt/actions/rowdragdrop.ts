@@ -656,7 +656,7 @@ export class RowDD {
                     }
                     childIndex = childRecords.indexOf(deletedRow);
                     flatParentData.childRecords.splice(childIndex, 1);
-                    if (!this.parent.taskFields.parentID) {
+                    if (!this.parent.taskFields.parentID && flatParentData.taskData[this.parent.taskFields.child]) {
                         flatParentData.taskData[this.parent.taskFields.child].splice(childIndex, 1);
                     }
                     // collection for updating parent record

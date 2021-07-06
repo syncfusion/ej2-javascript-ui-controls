@@ -3,7 +3,7 @@ import { INotifyPropertyChanged, KeyboardEvents, L10n } from '@syncfusion/ej2-ba
 import { NotifyPropertyChanges, KeyboardEventArgs, BaseEventArgs } from '@syncfusion/ej2-base';
 import { cldrData, getDefaultDateObject, rippleEffect } from '@syncfusion/ej2-base';
 import { removeClass, detach, closest, addClass, attributes } from '@syncfusion/ej2-base';
-import { getValue, getUniqueID, extend, Browser } from '@syncfusion/ej2-base';
+import { getValue, getUniqueID, extend, Browser , ChildProperty} from '@syncfusion/ej2-base';
 import { Property, Event, EmitType, isNullOrUndefined, throwError } from '@syncfusion/ej2-base';
 import { CalendarModel, CalendarBaseModel } from './calendar-model';
 import { Islamic, IslamicDateArgs } from './index';
@@ -62,6 +62,58 @@ const PRIMARY: string = 'e-primary';
 const DAYHEADERLONG: string = 'e-calendar-day-header-lg';
 const dayMilliSeconds: number = 86400000;
 const minutesMilliSeconds: number = 60000;
+
+export class MaskPlaceholder  extends ChildProperty<MaskPlaceholder> {
+    /**
+     * Specifies the mask placeholder value for day section.
+     *
+     * @default 'day'
+     */
+    @Property('day')
+    public day: string;
+    /**
+     * Specifies the mask placeholder value for month section.
+     *
+     * @default 'month'
+     */
+    @Property('month')
+    public month: string;
+    /**
+     * Specifies the mask placeholder value for year section.
+     *
+     * @default 'year'
+     */
+    @Property('year')
+    public year: string;
+    /**
+     * Specifies the mask placeholder value for hour section.
+     *
+     * @default 'hour'
+     */
+    @Property('hour')
+    public hour: string;
+    /**
+     * Specifies the mask placeholder value for minute section.
+     *
+     * @default 'minute'
+     */
+    @Property('minute')
+    public minute: string;
+    /**
+     * Specifies the mask placeholder value for second section.
+     *
+     * @default 'second'
+     */
+     @Property('second')
+     public second: string;
+    /**
+     * Specifies the mask placeholder value for day of the week section.
+     *
+     * @default 'day of the week'
+     */
+    @Property('day of the week')
+    public dayOfTheWeek: string;
+}
 
 /**
  *
@@ -1535,7 +1587,11 @@ export class CalendarBase extends Component<HTMLElement> implements INotifyPrope
                 break;
             case 'dayHeaderFormat':
                 this.getCultureValues();
-                this.createContentHeader();
+                if (this.getModuleName() !== 'datepicker') {
+                    this.createContentHeader();
+                } else if (this.calendarElement) {
+                    this.createContentHeader();
+                }
                 this.adjustLongHeaderSize();
                 break;
             case 'min':
@@ -1547,12 +1603,18 @@ export class CalendarBase extends Component<HTMLElement> implements INotifyPrope
                     this.setProperties({ max: this.checkDateValue(new Date(this.checkValue(newProp.max))) }, true);
                 }
                 this.setProperties({ start: this.currentView() }, true);
-                detach(this.tableBodyElement);
+                if (this.tableBodyElement) {
+                    detach(this.tableBodyElement);
+                }
                 this.minMaxUpdate();
                 if (multiSelection) {
                     this.validateValues(multiSelection, values);
                 }
-                this.createContentBody();
+                if (this.getModuleName() !== 'datepicker') {
+                    this.createContentBody();
+                } else if (this.calendarElement) {
+                    this.createContentBody();
+                }
                 if ((this.todayDate < this.min || this.max < this.todayDate) && (this.footer) && (this.todayElement)) {
                     detach(this.todayElement);
                     detach(this.footer);
@@ -1574,14 +1636,24 @@ export class CalendarBase extends Component<HTMLElement> implements INotifyPrope
             case 'firstDayOfWeek':
             case 'weekRule':
                 this.checkView();
-                this.createContentHeader();
-                this.createContentBody();
+                if (this.getModuleName() !== 'datepicker') {
+                    this.createContentHeader();
+                    this.createContentBody();
+                } else if (this.calendarElement) {
+                    this.createContentHeader();
+                    this.createContentBody();
+                }
                 break;
 
             case 'locale':
                 this.globalize = new Internationalization(this.locale);
-                this.createContentHeader();
-                this.createContentBody();
+                if (this.getModuleName() !== 'datepicker') {
+                    this.createContentHeader();
+                    this.createContentBody();
+                } else if (this.calendarElement) {
+                    this.createContentHeader();
+                    this.createContentBody();
+                }
                 this.l10.setLocale(this.locale);
                 this.updateFooter();
                 break;

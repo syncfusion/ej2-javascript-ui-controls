@@ -835,7 +835,7 @@ export class Workbook extends Component<HTMLElement> implements INotifyPropertyC
      *
      * @param {number} position - Specifies the position to move a sheet in the list of sheets.
      * @param {number[]} sheetIndexes - Specifies the indexes of the sheet to be moved. By default, the active sheet will be moved.
-     * @returns {void}
+     * @returns {void} - Used to move the sheets to the specified position in the list of sheets.
      */
     public moveSheet(position: number, sheetIndexes?: number[]): void {
         moveSheet(this, position, sheetIndexes);
@@ -847,7 +847,7 @@ export class Workbook extends Component<HTMLElement> implements INotifyPropertyC
      * {% codeBlock src='spreadsheet/duplicateSheet/index.md' %}{% endcodeBlock %}
      *
      * @param {number} sheetIndex - Specifies the index of the sheet to be duplicated. By default, the active sheet will be duplicated.
-     * @returns {void}
+     * @returns {void} - Used to make a duplicate/copy of the sheet in the spreadsheet.
      */
     public duplicateSheet(sheetIndex?: number): void {
         duplicateSheet(this, sheetIndex);
@@ -987,7 +987,8 @@ export class Workbook extends Component<HTMLElement> implements INotifyPropertyC
      * @param {number} colIndex - Specifies the colIndex.
      * @returns {string | number} - To set the value for row and col.
      */
-    public getValueRowCol(sheetIndex: number, rowIndex: number, colIndex: number, formulaCellReference?: string): string | number {
+    public getValueRowCol(
+        sheetIndex: number, rowIndex: number, colIndex: number, formulaCellReference?: string, refresh?: boolean): string | number {
         const args: { action: string, sheetInfo: { visibleName: string, sheet: string, index: number }[] } = {
             action: 'getSheetInfo', sheetInfo: []
         };
@@ -1017,7 +1018,7 @@ export class Workbook extends Component<HTMLElement> implements INotifyPropertyC
                     this, `${sheet.name}!A1:${getCellAddress(rowIndex - 1, colIndex - 1)}`, null, null, null, null, formulaCellReference,
                     sheetIndex);
             }
-        } else if (cell && cell.formula && isNullOrUndefined(cell.value)) {
+        } else if (cell && cell.formula && (refresh || isNullOrUndefined(cell.value))) {
             this.notify('calculateFormula', { cell: cell, rowIdx: rowIndex - 1, colIdx: colIndex - 1, sheetIndex: sheetIndex });
         }
         return cell && cell.value;

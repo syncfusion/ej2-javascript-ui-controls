@@ -13,8 +13,7 @@
 	"author": "Syncfusion Inc.",
 	"license": "SEE LICENSE IN license",
 	"dependencies": {
-		"@syncfusion/ej2-file-utils": "*",
-		"tslint": "^6.1.3"
+		"@syncfusion/ej2-file-utils": "*"
 	},
 	"devDependencies": {
 		"@types/chai": "^3.4.28",

@@ -34,9 +34,9 @@ $fe-ddl-icon-color: $icon-color !default;
 $fe-error-color: $danger !default;
 $fe-img-border-color: $border-light !default;
 $fe-search-bg-color: $content-bg-color !default;
-$fe-tb-hover-border-color: $secondary-border-color-hover !default;
+$fe-tb-hover-border-color: $content-bg-color-alt3 !default;
 $fe-tb-focus-border-color: $fe-tb-hover-border-color !default;
-$fe-tb-focus-bg: $secondary-border-color-hover !default;
+$fe-tb-focus-bg: $content-bg-color-alt3 !default;
 $fe-checkbox-color: $primary-text-color !default;
 $fe-checkbox-bg-color: $primary !default;
 $fe-drop-border-color: $primary !default;
@@ -55,7 +55,7 @@ $fe-tb-ddb-height: calc(100% - 10px) !default;
 $fe-tb-ddb-btn-hvr-padding: 0 !default;
 $fe-tb-ddb-btn-padding: 0 !default;
 $fe-tb-ddb-border: 0 !default;
-$fe-tb-ddb-caret-size: 10px !default;
+$fe-tb-ddb-caret-size: 18px !default;
 $fe-upload-overlay-border: 2px !default;
 $fe-search-padding: 3px 12px 2px 0 !default;
 $fe-search-height: 29px !default;
@@ -200,19 +200,19 @@ $fe-big-grid-empty-inner-content-text-align: center !default;
 
 $fe-grid-empty-min-width: 200px !default;
 
-$fe-grid-empty-content-font-size: 20px !default;
+$fe-grid-empty-content-font-size: $text-base !default;
 $fe-grid-empty-content-margin: 0 auto !default;
-$fe-grid-empty-content-padding: 8px !default;
+$fe-grid-empty-content-padding: 18px 0 8px 0  !default;
 $fe-grid-empty-content-text-align: center !default;
 
 $fe-grid-empty-icon-height: 82px !default;
 $fe-grid-empty-icon-margin: 0 auto !default;
 $fe-grid-empty-icon-width: 82px !default;
 
-$fe-grid-empty-inner-content-font-size: 14px !default;
+$fe-grid-empty-inner-content-font-size: $text-sm !default;
 $fe-grid-empty-inner-content-margin: 0 auto !default;
 $fe-grid-empty-inner-content-opacity: .5 !default;
-$fe-grid-empty-inner-content-padding: 6px !default;
+$fe-grid-empty-inner-content-padding: 0 !default;
 $fe-grid-empty-inner-content-text-align: center !default;
 
 $fe-lg-icon-empty-min-width: 200px !default;
@@ -222,9 +222,9 @@ $fe-lg-icon-empty-content-margin: 0 auto !default;
 $fe-lg-icon-empty-content-padding: 18px 0 8px 0 !default;
 $fe-lg-icon-empty-content-text-align: center !default;
 
-$fe-lg-icon-empty-icon-height: 40px !default;
+$fe-lg-icon-empty-icon-height: 82px !default;
 $fe-lg-icon-empty-icon-margin: 0 auto !default;
-$fe-lg-icon-empty-icon-width: 40px !default;
+$fe-lg-icon-empty-icon-width: 82px !default;
 
 $fe-lg-icon-empty-inner-content-font-size: $text-sm !default;
 $fe-lg-icon-empty-inner-content-margin: 0 auto !default;

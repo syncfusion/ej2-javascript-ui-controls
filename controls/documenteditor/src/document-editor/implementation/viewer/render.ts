@@ -332,7 +332,7 @@ export class Renderer {
         let blocks: BlockWidget[] = shape.textFrame.childWidgets as BlockWidget[];
         
         this.pageContext.beginPath();
-        if (shape.fillFormat && shape.fillFormat.color) {
+        if (shape.fillFormat && shape.fillFormat.color && shape.fillFormat.fill) {
             this.pageContext.fillStyle = shape.fillFormat.color;
             this.pageContext.fillRect(shapeLeft, shapeTop, this.getScaledValue(shape.width), this.getScaledValue(shape.height));
         }

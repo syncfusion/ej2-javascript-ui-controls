@@ -2291,6 +2291,9 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
                 this.notify(events.batchSave, args);
             }
             this.notify('updateGridActions', args);
+            if (args.requestType === 'save' && this.aggregates.map((ag) => ag.showChildSummary == true).length) {
+                this.grid.refresh();
+            }
             this.trigger(events.actionComplete, args);
         };
     }

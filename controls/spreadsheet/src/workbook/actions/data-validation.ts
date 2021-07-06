@@ -135,8 +135,8 @@ export class WorkbookDataValidation {
         }
     }
 
-    private addHighlightHandler(args: { range: string, td? : HTMLElement }): void {
-        this.InvalidDataHandler(args.range, false, args.td);
+    private addHighlightHandler(args: { range: string, td? : HTMLElement, isclearFormat?: boolean }): void {
+        this.InvalidDataHandler(args.range, false, args.td, args.isclearFormat);
     }
 
     private removeHighlightHandler(args: { range: string }): void {
@@ -156,10 +156,9 @@ export class WorkbookDataValidation {
         return range;
     }
 
-    private InvalidDataHandler(range: string, isRemoveHighlightedData: boolean, td?: HTMLElement): void {
+    private InvalidDataHandler(range: string, isRemoveHighlightedData: boolean, td?: HTMLElement, isclearFormat?: boolean): void {
         const isCell: boolean = false;
         let cell: CellModel;
-        let validation: ValidationModel;
         let value: string;
         const sheet: SheetModel = this.parent.getActiveSheet();
         range = range ||  sheet.selectedRange;
@@ -176,11 +175,15 @@ export class WorkbookDataValidation {
                 let colIdx: number = range ? indexes[1] : 0;
                 const lastColIdx: number = range ? indexes[3] : sheet.rows[rowIdx].cells.length;
                 for (colIdx; colIdx <= lastColIdx; colIdx++) {
+                    let validation: ValidationModel;
                     if (sheet.rows[rowIdx].cells[colIdx]) {
                         const column: ColumnModel = getColumn(sheet, colIdx);
                         cell = sheet.rows[rowIdx].cells[colIdx];
                         if (cell && cell.validation) {
                             validation = cell.validation;
+                            if (isclearFormat && !validation.isHighlighted) {
+                               return;
+                            }
                             if (isRemoveHighlightedData) {
                                 if (validation.isHighlighted) {
                                     cell.validation.isHighlighted = false;
@@ -190,6 +193,9 @@ export class WorkbookDataValidation {
                             }
                         } else if (column && column.validation) {
                             validation = column.validation;
+                            if (isclearFormat && !validation.isHighlighted) {
+                                return;
+                             }
                             if (isRemoveHighlightedData && isfullCol) {
                                 if (validation.isHighlighted) {
                                     column.validation.isHighlighted = false;

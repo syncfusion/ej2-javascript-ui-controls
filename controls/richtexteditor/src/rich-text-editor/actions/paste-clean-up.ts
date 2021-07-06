@@ -127,7 +127,7 @@ export class PasteCleanup {
                     text: e.text,
                     allowedStylePropertiesArray: this.parent.pasteCleanupSettings.allowedStyleProps,
                     callBack: (a: string) => {
-                        value = a;
+                        value = a.trim();
                     }
                 });
             }

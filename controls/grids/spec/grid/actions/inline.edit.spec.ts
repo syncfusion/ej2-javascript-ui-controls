@@ -3102,4 +3102,41 @@ describe('EJ2-40519 - ActionBegin event arguments cancel property value getting 
         });
 
     });
+
+    describe('EJ2-50506 - Edit focus is not working properly when the Grid has a checkbox selection column', () => {
+        let gridObj: Grid;
+        beforeAll((done: Function) => {
+            gridObj = createGrid(
+                {
+                    dataSource: filterData,
+                    editSettings: { allowEditing: true, allowAdding: true, allowDeleting: true, mode: 'Normal' },
+                    toolbar: ['Add', 'Edit', 'Delete', 'Update', 'Cancel'],
+                    allowPaging: true,
+                    columns: [
+                        { type: 'Checkbox', width: 50, allowEditing: false },
+                        { field: 'OrderID', type: 'number', isPrimaryKey: true },
+                        { field: 'CustomerID', headerText: 'Customer ID', width: 150 },
+                        { field: 'Freight', format: 'C2', type: 'number', editType: 'numericedit' },
+                        { field: 'ShipCity', type: 'string', editType: 'dropdownedit' }
+                    ]
+                }, done);
+        });
+
+        it('Check focus cell with checkbox column', (done: Function) => {
+            let actionComplete = (args?: any): void => {
+                if (args.requestType === 'beginEdit') {
+                    expect(document.activeElement.id).toBe(gridObj.element.id + 'CustomerID');
+                    done();
+                }
+            };
+            gridObj.actionComplete = actionComplete;
+            gridObj.selectRow(0, true);
+            (<any>gridObj.toolbarModule).toolbarClickHandler({ item: { id: gridObj.element.id + '_edit' } });
+        });
+
+        afterAll(() => {
+            destroy(gridObj);
+            gridObj = null;
+        });
+    });
 });

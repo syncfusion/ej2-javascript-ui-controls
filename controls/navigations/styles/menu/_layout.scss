@@ -195,9 +195,6 @@
       box-shadow: $cmenu-sub-ul-box-shadow;
       overflow: hidden;
       position: absolute;
-      @if $skin-name == 'tailwind' or $skin-name == 'tailwind-dark' {
-        margin-top: 4px;
-      }
     }
 
     & .e-menu-vscroll.e-vscroll {
@@ -403,9 +400,6 @@
 
     &.e-menu-popup {
       box-shadow: $cmenu-parent-ul-box-shadow;
-      @if $skin-name == 'tailwind' or $skin-name == 'tailwind-dark' {
-        margin-top: 8px;
-      }
     }
 
     & .e-scroll-nav .e-icons {

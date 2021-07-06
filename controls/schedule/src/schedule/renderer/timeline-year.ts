@@ -50,12 +50,13 @@ export class TimelineYear extends Year {
             const innerTr: HTMLElement = createElement('tr');
             table.querySelector('tbody').appendChild(innerTr);
             const months: number[] = this.getMonths();
+            const dayHeaderDates: Date[] = this.getMonthDates(new Date(this.parent.selectedDate.getFullYear(), months[0], 1));
             for (let column: number = 0; column < this.columnCount; column++) {
                 const date: Date = new Date(this.parent.selectedDate.getFullYear(), months[column], 1);
                 const innerTd: HTMLElement = createElement('td', { className: cls.HEADER_CELLS_CLASS });
                 if (this.parent.activeViewOptions.orientation === 'Horizontal') {
                     if (this.parent.dayHeaderTemplate) {
-                        append(this.renderDayMonthHeaderTemplate(date, column, 'dayHeaderTemplate'), innerTd);
+                        append(this.renderDayMonthHeaderTemplate(dayHeaderDates[column], column, 'dayHeaderTemplate'), innerTd);
                     } else {
                         innerTd.innerHTML = `<span>${this.parent.getDayNames('abbreviated')[column % 7]}</span>`;
                     }
@@ -156,6 +157,7 @@ export class TimelineYear extends Year {
 
     private renderDefaultContent(wrapper: HTMLElement, monthBody: HTMLTableSectionElement, contentBody: HTMLTableSectionElement): void {
         const months: number[] = this.getMonths();
+        const dayHeaderDates: Date[] = this.getMonthDates(new Date(this.parent.selectedDate.getFullYear(), months[0], 1));
         for (let month: number = 0; month < this.rowCount; month++) {
             wrapper.appendChild(createElement('div', { className: cls.APPOINTMENT_CONTAINER_CLASS }));
             let monthDate: Date = new Date(this.parent.selectedDate.getFullYear(), months[month], 1);
@@ -176,7 +178,7 @@ export class TimelineYear extends Year {
                 monthTd.setAttribute('data-date', monthDate.getTime().toString());
             } else {
                 if (this.parent.dayHeaderTemplate) {
-                    append(this.renderDayMonthHeaderTemplate(monthStart, month, 'dayHeaderTemplate'), monthTd);
+                    append(this.renderDayMonthHeaderTemplate(dayHeaderDates[month], month, 'dayHeaderTemplate'), monthTd);
                 } else {
                     monthTd.innerHTML = `<span>${this.parent.getDayNames('abbreviated')[month % 7]}</span>`;
                 }

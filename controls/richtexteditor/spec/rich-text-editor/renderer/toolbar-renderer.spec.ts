@@ -37,6 +37,58 @@ describe('Toolbar - Renderer', () => {
             Browser.userAgent = defaultUA;
         });
     });
+    
+    describe('Checking the role attribute in div mode-', () => {
+        let rteObj: any;
+        let rteEle: HTMLElement;
+
+        beforeAll(() => {
+            rteObj = renderRTE({
+                toolbarSettings: {
+                    items: ['FontColor', 'BackgroundColor',]
+                }
+            });
+            rteEle = rteObj.element;
+        });
+
+        it(' FontCOlor and Backgroundcolor role resting', () => {
+            let trgEle: HTMLElement = <HTMLElement>rteEle.querySelectorAll(".e-toolbar-item")[0];
+            expect((trgEle.childNodes[0] as HTMLElement).hasAttribute('role')).toBe(true);
+            let trgEle2: HTMLElement = <HTMLElement>rteEle.querySelectorAll(".e-toolbar-item")[1];
+            expect((trgEle2.childNodes[0] as HTMLElement).hasAttribute('role')).toBe(true);
+        });
+
+        afterAll(() => {
+            destroy(rteObj);
+        });
+    });
+    
+    describe('Checking the role attribute in iframe mode-', () => {
+        let rteObj: any;
+        let rteEle: HTMLElement;
+        beforeAll(() => {
+            rteObj = renderRTE({
+                toolbarSettings: {
+                    items: ['FontColor', 'BackgroundColor',]
+                },
+                iframeSettings: {
+                    enable: true
+                }
+            });
+            rteEle = rteObj.element;
+        });
+
+        it(' FontCOlor and Backgroundcolor role resting', () => {
+            let trgEle: HTMLElement = <HTMLElement>rteEle.querySelectorAll(".e-toolbar-item")[0];
+            expect((trgEle.childNodes[0] as HTMLElement).hasAttribute('role')).toBe(true);
+            let trgEle2: HTMLElement = <HTMLElement>rteEle.querySelectorAll(".e-toolbar-item")[1];
+            expect((trgEle2.childNodes[0] as HTMLElement).hasAttribute('role')).toBe(true);
+        });
+
+        afterAll(() => {
+            destroy(rteObj);
+        });
+    });
 
     describe('Iframe content ', () => {
         let rteObj: any;

@@ -152,9 +152,15 @@ export class VirtualTreeContentRenderer extends VirtualContentRenderer {
 
     private dataBoundEvent(): void {
         const dataBoundEve: string = 'dataBound'; const initialRowTop: string = 'initialRowTop';
-        if (this.parent.getRows().length && !this[initialRowTop]){
+        if (this.parent.getRows().length && !this[initialRowTop] && !isNullOrUndefined(this.parent.getRowByIndex(0))) {
+            const rowTop: number = this.parent.getRowByIndex(0).getBoundingClientRect().top;
             const gridTop: number = this.parent.element.getBoundingClientRect().top;
-            this[initialRowTop] = this.parent.getRowByIndex(0).getBoundingClientRect().top - gridTop;
+            if (rowTop > 0){
+                this[initialRowTop] = this.parent.getRowByIndex(0).getBoundingClientRect().top - gridTop;
+            } else {
+                this[initialRowTop] = this.content.getBoundingClientRect().top -
+                this.parent.getRowByIndex(0).getBoundingClientRect().height;
+            }
         }
         super[dataBoundEve]();
     }
@@ -304,13 +310,13 @@ export class VirtualTreeContentRenderer extends VirtualContentRenderer {
                 this.parent.element.getBoundingClientRect().height);
             let index: number = (~~(content.scrollTop / this.parent.getRowHeight())
           + Math.ceil(vHeight / this.parent.getRowHeight()))
-            - this.parent.getRows().length;
+            - this.parent.pageSettings.pageSize;
             index = (index > 0) ? index : 0;
             if (!isNullOrUndefined(this[selectedRowIndex]) && this[selectedRowIndex] != -1 && index != this[selectedRowIndex]) {
                 index = this[selectedRowIndex];
             }
             this.startIndex = index;
-            this.endIndex = index + this.parent.getRows().length;
+            this.endIndex = index + this.parent.pageSettings.pageSize;
             if (this.endIndex > this.totalRecords) {
                 const lastInx: number = this.totalRecords - 1;
                 const remains: number = this.endIndex % lastInx;
@@ -321,7 +327,8 @@ export class VirtualTreeContentRenderer extends VirtualContentRenderer {
             let rowPt: number = Math.ceil(scrollArgs.offset.top / this.parent.getRowHeight());
             rowPt = rowPt % this.parent.pageSettings.pageSize;
             let firsttdinx: number = 0;
-            if (!isNullOrUndefined(this.parent.getRows()[rowPt])) {
+            if (!isNullOrUndefined(this.parent.getRows()[rowPt]) &&
+             !isNullOrUndefined(this.parent.getContent().querySelectorAll('.e-content tr')[rowPt])) {
                 const attr: string = this.parent.getContent().querySelectorAll('.e-content tr')[rowPt]
                     .querySelector('td').getAttribute('index');
                 firsttdinx = +attr; // this.parent.getContent().querySelector('.e-content tr').getAttribute('aria-rowindex');
@@ -340,12 +347,12 @@ export class VirtualTreeContentRenderer extends VirtualContentRenderer {
              nextSetResIndex != this[selectedRowIndex] && !isLastBlock) {
                 nextSetResIndex = this[selectedRowIndex];
             }
-            let lastIndex: number = nextSetResIndex + this.parent.getRows().length;
+            let lastIndex: number = nextSetResIndex + this.parent.pageSettings.pageSize;
             if (lastIndex > this.totalRecords) {
                 lastIndex = nextSetResIndex +
           (this.totalRecords - nextSetResIndex);
             }
-            this.startIndex =  !isLastBlock ? lastIndex - this.parent.getRows().length : nextSetResIndex;
+            this.startIndex =  !isLastBlock ? lastIndex - this.parent.pageSettings.pageSize : nextSetResIndex;
             this.endIndex = lastIndex;
             if (scrollArgs.offset.top > (this.parent.getRowHeight() * this.totalRecords)) {
                 this.translateY = this.getTranslateY(scrollArgs.offset.top, content.getBoundingClientRect().height);

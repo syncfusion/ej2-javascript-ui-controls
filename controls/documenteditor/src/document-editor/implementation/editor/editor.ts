@@ -50,7 +50,7 @@ import { DialogUtility } from '@syncfusion/ej2-popups';
 import { DocumentHelper, Layout } from '../viewer';
 import { Revision } from '../track-changes/track-changes';
 import { XmlHttpRequestHandler } from '../../base/ajax-helper';
-import { CommentActionEventArgs } from '../../base/index';
+import { CommentActionEventArgs, beforeCommentActionEvent, trackChangeEvent } from '../../base/index';
 import { CommentView } from '../comments';
 
 /**
@@ -72,6 +72,8 @@ export class Editor {
     private skipFieldDeleteTracking: boolean = false;
     private isForHyperlinkFormat: boolean = false;
     private isTrackingFormField: boolean = false;
+    private isCmtDeleteStarted: boolean = false;
+    private removeCommentCharacters: CommentCharacterElementBox[] = [];
     /**
      * @private
      */
@@ -83,7 +85,7 @@ export class Editor {
     /**
      * @private
      */
-     public isUserInsert: boolean = false;
+    public isUserInsert: boolean = false;
     /**
      * @private
      */
@@ -383,8 +385,13 @@ export class Editor {
     private getCommentHierarchicalIndex(comment: CommentElementBox): string {
         let index: string = '';
         while (comment.ownerComment) {
-            index = comment.ownerComment.replyComments.indexOf(comment) + ';' + index;
+            if (!isNullOrUndefined(comment.ownerComment)) {
+                index = comment.ownerComment.replyComments.indexOf(comment) + ';' + index;
             comment = comment.ownerComment;
+            } else {
+            index = comment.replyComments.indexOf(comment) + ';' + index;
+            comment = comment;
+            }
         }
         index = 'C;' + this.documentHelper.comments.indexOf(comment) + ';' + index;
         return index;
@@ -549,30 +556,37 @@ export class Editor {
      * @returns {void}
      */
     public deleteCommentInternal(comment: CommentElementBox): void {
+        this.isCmtDeleteStarted = true;
         this.initComplexHistory('DeleteComment');
         if (comment) {
-            const commentStart: CommentCharacterElementBox = comment.commentStart;
-            const commentEnd: CommentCharacterElementBox = comment.commentEnd;
-            this.removeInline(commentEnd);
-            this.removeInline(commentStart);
-            commentStart.removeCommentMark();
             if (comment.replyComments.length > 0) {
                 for (let i: number = comment.replyComments.length - 1; i >= 0; i--) {
                     this.deleteCommentInternal(comment.replyComments[i]);
                 }
             }
-            if (this.owner.editorHistory) {
-                this.initHistory('DeleteCommentWidget');
-                this.owner.editorHistory.currentBaseHistoryInfo.insertPosition = this.getCommentHierarchicalIndex(comment);
-                this.owner.editorHistory.currentBaseHistoryInfo.removedNodes.push(comment);
-            }
-            this.deleteCommentWidget(comment);
-            if (this.editorHistory) {
-                this.editorHistory.updateHistory();
-            }
+            this.isCmtDeleteStarted = true;
+            this.deleteCommentWidgetInternal(comment);
+            const commentStart: CommentCharacterElementBox = comment.commentStart;
+            const commentEnd: CommentCharacterElementBox = comment.commentEnd;
+            this.removeInline(commentEnd);
+            this.removeInline(commentStart);
+            commentStart.removeCommentMark();
         }
         if (this.editorHistory) {
             this.editorHistory.updateComplexHistory();
+        }
+        this.isCmtDeleteStarted = false;
+    }
+
+    private deleteCommentWidgetInternal(comment: CommentElementBox): void {
+        if (this.owner.editorHistory) {
+            this.initHistory('DeleteCommentWidget');
+            this.owner.editorHistory.currentBaseHistoryInfo.insertPosition = this.getCommentHierarchicalIndex(comment);
+            this.owner.editorHistory.currentBaseHistoryInfo.removedNodes.push(comment);
+        }
+        this.deleteCommentWidget(comment);
+        if (this.editorHistory) {
+            this.editorHistory.updateHistory();
         }
     }
 
@@ -609,7 +623,7 @@ export class Editor {
             return;
         }
         const eventArgs: CommentActionEventArgs = { author: comment.author, cancel: false, type: 'Resolve' };
-        this.owner.trigger('beforeCommentAction', eventArgs);
+        this.owner.trigger(beforeCommentActionEvent, eventArgs);
         if (eventArgs.cancel && eventArgs.type === 'Resolve') {
             return;
         }
@@ -629,7 +643,7 @@ export class Editor {
             return;
         }
         const eventArgs: CommentActionEventArgs = { author: comment.author, cancel: false, type: 'Reopen' };
-        this.owner.trigger('beforeCommentAction', eventArgs);
+        this.owner.trigger(beforeCommentActionEvent, eventArgs);
         if (eventArgs.cancel && eventArgs.type === 'Reopen') {
             return;
         }
@@ -1429,7 +1443,7 @@ export class Editor {
                     event.preventDefault();
                     if (!this.owner.isReadOnlyMode) {
                         let eventArgs: TrackChangeEventArgs = { isTrackChangesEnabled: !this.owner.enableTrackChanges };
-                        this.owner.trigger('trackChange', eventArgs);
+                        this.owner.trigger(trackChangeEvent, eventArgs);
 
                     }
             }
@@ -4556,7 +4570,7 @@ export class Editor {
         this.selection.currentPasteAction = 'DefaultPaste';
         this.defaultPaste(widgets as BodyWidget[], currentFormat)
     }
-    
+
     private defaultPaste(widgets: BodyWidget[], currentFormat?: WParagraphFormat): void {
         let selection: Selection = this.documentHelper.selection;
         let isRemoved: boolean = true;
@@ -5513,7 +5527,14 @@ export class Editor {
             if (index === element.length) {
                 // Add new Element in current 
                 if (!isBidi) {
-                    insertIndex++;
+                    if (!this.owner.editorHistory || !(this.owner.editorHistory && this.owner.editorHistory.currentHistoryInfo) || (this.owner.editorHistory && this.owner.editorHistory.currentHistoryInfo
+                        && (this.owner.editorHistory.currentHistoryInfo.action !== "SkipCommentInline" ||
+                            this.owner.editorHistory.currentHistoryInfo.action === "SkipCommentInline" &&
+                            (this.owner.editorHistory.currentHistoryInfo.modifiedActions[0] === this.editorHistory.currentBaseHistoryInfo
+                                || (this.owner.editorHistory.currentHistoryInfo.modifiedActions[0] !== this.editorHistory.currentBaseHistoryInfo
+                                    && !(element instanceof CommentCharacterElementBox)))))) {
+                        insertIndex++;
+                    }
                 }
                 if (newElement.removedIds.length > 0 || isUndoing) {
                     this.constructRevisionFromID(newElement, true, element);
@@ -5536,7 +5557,14 @@ export class Editor {
                 }
             } else {
                 if (!isBidi) {
-                    insertIndex++;
+                    if (!this.owner.editorHistory || !(this.owner.editorHistory && this.owner.editorHistory.currentHistoryInfo) || (this.owner.editorHistory && this.owner.editorHistory.currentHistoryInfo
+                        && (this.owner.editorHistory.currentHistoryInfo.action !== "SkipCommentInline" ||
+                            this.owner.editorHistory.currentHistoryInfo.action === "SkipCommentInline" &&
+                            (this.owner.editorHistory.currentHistoryInfo.modifiedActions[0] === this.editorHistory.currentBaseHistoryInfo
+                                || (this.owner.editorHistory.currentHistoryInfo.modifiedActions[0] !== this.editorHistory.currentBaseHistoryInfo
+                                    && !(element instanceof CommentCharacterElementBox)))))) {
+                        insertIndex++;
+                    }
                 }
                 let textElement: TextElementBox = new TextElementBox();
                 textElement.characterFormat.copyFormat(element.characterFormat);
@@ -5673,7 +5701,6 @@ export class Editor {
             selection.selectContent(selection.start, false);
         }
         this.insertBlockInternal(block);
-        this.addOrRemoveCommentsInBlock(block, true);
         if (this.checkInsertPosition(selection)) {
             let paragraph: BlockWidget = undefined;
             if (block instanceof ParagraphWidget) {
@@ -6884,7 +6911,13 @@ export class Editor {
             if (this.editorHistory.currentBaseHistoryInfo.modifiedProperties.length > 0) {
                 this.editorHistory.currentBaseHistoryInfo.updateSelection();
             }
-            this.editorHistory.updateHistory();
+            if (!(this.editorHistory.undoStack && this.editorHistory.undoStack.length > 0 && this.editorHistory.undoStack[this.editorHistory.undoStack.length - 1] instanceof HistoryInfo &&
+                (this.editorHistory.undoStack[this.editorHistory.undoStack.length - 1] as HistoryInfo).modifiedActions[(this.editorHistory.undoStack[this.editorHistory.undoStack.length - 1] as HistoryInfo).modifiedActions.length - 1] === this.editorHistory.currentBaseHistoryInfo)) {
+                this.editorHistory.updateHistory();
+            }
+            else {
+                this.editorHistory.currentBaseHistoryInfo = undefined;
+            }
         }
         this.fireContentChange();
         if (this.owner.enableLockAndEdit) {
@@ -10129,6 +10162,38 @@ export class Editor {
                 this.delBlock = undefined;
             }
         }
+        if (this.removeCommentCharacters.length > 0 && !this.isCmtDeleteStarted) {
+            for (let k: number = 0; k < this.removeCommentCharacters.length; k++) {
+                let currentBaseHistryInfo: BaseHistoryInfo = this.editorHistory.currentBaseHistoryInfo;
+                let commentStartChar: CommentCharacterElementBox = this.removeCommentCharacters[k];
+                this.isCmtDeleteStarted = true;
+                if (commentStartChar.commentMark) {
+                    commentStartChar.removeCommentMark();
+                }
+                if (commentStartChar.line && commentStartChar.line.paragraph &&
+                    commentStartChar.line.paragraph.bodyWidget && currentBaseHistryInfo) {
+                    this.removeInline(commentStartChar);
+                    this.selection.editPosition = currentBaseHistryInfo.insertPosition;
+                    this.isCmtDeleteStarted = false;
+                    if (this.editorHistory.currentHistoryInfo) {
+                        this.editorHistory.currentHistoryInfo.insertPosition = currentBaseHistryInfo.insertPosition;
+                        this.editorHistory.currentHistoryInfo.endPosition = currentBaseHistryInfo.insertPosition;
+                        this.editorHistory.currentHistoryInfo.selectionStart = currentBaseHistryInfo.selectionStart;
+                        this.editorHistory.currentHistoryInfo.selectionEnd = currentBaseHistryInfo.selectionEnd;
+                        currentBaseHistryInfo.endPosition = currentBaseHistryInfo.insertPosition;
+                        this.editorHistory.updateComplexHistory();
+                        this.editorHistory.currentBaseHistoryInfo = undefined;
+                    }
+                }
+            }
+            this.isCmtDeleteStarted = false;
+            this.removeCommentCharacters = [];
+            if (this.editorHistory.currentHistoryInfo) {
+                this.editorHistory.updateComplexHistory();
+                this.editorHistory.currentBaseHistoryInfo = undefined;
+            }
+            this.selection.owner.isShiftingEnabled = false;
+        }
     }
     /**
      * Merge the selected cells.
@@ -10774,7 +10839,7 @@ export class Editor {
         return paragraph;
     }
 
-    private addOrRemoveCommentsInBlock(block: BlockWidget, isAdd?: boolean): void {
+    private removeCommentsInBlock(block: BlockWidget): void {
         if (block instanceof TableWidget) {
             for (let i: number = 0; i < block.childWidgets.length; i++) {
                 let row: TableRowWidget = block.childWidgets[i] as TableRowWidget;
@@ -10782,35 +10847,41 @@ export class Editor {
                     let cell: TableCellWidget = row.childWidgets[j] as TableCellWidget;
                     for (let k: number = 0; k < cell.childWidgets.length; k++) {
                         let block: BlockWidget = cell.childWidgets[k] as BlockWidget;
-                        this.addOrRemoveCommentsInBlock(block, isAdd);
+                        this.removeCommentsInBlock(block);
                     }
                 }
             }
         } else {
-            this.addOrRemoveCommentInPara(block as ParagraphWidget, isAdd);
+            this.removeCommentInPara(block as ParagraphWidget);
         }
     }
 
-    private addOrRemoveCommentInPara(block: ParagraphWidget, isAdd?: boolean): void {
+    private removeCommentInPara(block: ParagraphWidget): void {
         for (let i: number = 0; i < block.childWidgets.length; i++) {
             let lineWidget: LineWidget = block.childWidgets[i] as LineWidget;
             //Iterate through each line widgets.
             for (let j: number = 0; j < lineWidget.children.length; j++) {
-                this.addOrRemoveCommentsInline(lineWidget.children[j] as ElementBox, isAdd);
+                this.removeCommentsInline(lineWidget.children[j] as ElementBox);
             }
+        }
+        if (this.editorHistory && this.editorHistory.currentHistoryInfo && this.removeCommentCharacters.length === 0 && !this.isCmtDeleteStarted && !(this.editorHistory.isUndoing || this.editorHistory.isRedoing)) {
+            this.editorHistory.updateComplexHistoryInternal();
         }
     }
 
-    private addOrRemoveCommentsInline(inline: ElementBox, isAdd?: boolean) {
-        if (inline instanceof CommentCharacterElementBox && inline.commentType === 0 && !isNullOrUndefined(inline.comment)) {
-            let comment = inline.comment.ownerComment ? (inline.comment.ownerComment) : inline.comment;
-            if (isAdd) {
-                this.addCommentWidget(comment, false, false, false);
-            } else {
-                if (inline.commentMark) {
-                    inline.removeCommentMark();
+    private removeCommentsInline(inline: ElementBox) {
+        if (inline instanceof CommentCharacterElementBox && inline.commentType === 1) {
+            if (!inline.comment.isReply) {
+                for (let i: number = 0; i < inline.comment.replyComments.length; i++) {
+                    this.removeCommentsInline(inline.comment.replyComments[i].commentEnd);
                 }
-                this.deleteCommentWidget(comment);
+            }
+            if (inline.comment.commentStart && inline.comment.commentStart.commentMark) {
+                inline.comment.commentStart.removeCommentMark();
+            }
+            if (!inline.comment.isReply && this.documentHelper.comments.indexOf(inline.comment) >= 0
+                || inline.comment.isReply && this.documentHelper.comments.indexOf(inline.comment.ownerComment) >= 0) {
+                this.deleteCommentWidgetInline(inline);
             }
         }
     }
@@ -10825,7 +10896,7 @@ export class Editor {
         this.removeFieldInBlock(block);
         this.removeFieldInBlock(block, true);
         this.removeFieldInBlock(block, undefined, true);
-        this.addOrRemoveCommentsInBlock(block);
+        this.removeCommentsInBlock(block);
         if (block.isInsideTable) {
             containerWidget = block.associatedCell;
             index = block.associatedCell.childWidgets.indexOf(block);
@@ -11761,6 +11832,28 @@ export class Editor {
         return false;
     }
     /**
+     * 
+     * @param comment 
+     * Deletes comment start and end markers along with its comment widgets.
+     */
+    private deleteCommentInSelection(comment: CommentElementBox) {
+        //if comment end mark is in selection, both comment start and end markers will get deleted along with its comment widgets.
+        let curentBaseHistoryInfo: BaseHistoryInfo = this.editorHistory.currentBaseHistoryInfo;
+        if (this.editorHistory && this.editorHistory.currentBaseHistoryInfo && !this.editorHistory.currentHistoryInfo
+            && !(this.editorHistory.isUndoing || this.editorHistory.isRedoing)) {
+            this.initComplexHistory('DeleteCommentInline');
+        }
+        this.deleteCommentInternal(comment);
+        if (this.editorHistory && this.editorHistory.currentHistoryInfo) {
+            if (!(this.editorHistory.isUndoing || this.editorHistory.isRedoing)) {
+                this.editorHistory.currentHistoryInfo.addModifiedAction(curentBaseHistoryInfo);
+            }
+            this.selection.editPosition = curentBaseHistoryInfo.insertPosition;
+            this.editorHistory.currentHistoryInfo.insertPosition = this.selection.editPosition;
+            this.editorHistory.currentBaseHistoryInfo = curentBaseHistoryInfo;
+        }
+    }
+    /**
      * @private
      */
     public removeContent(lineWidget: LineWidget, startOffset: number, endOffset: number, editAction?: number): void {
@@ -11769,7 +11862,8 @@ export class Editor {
         let startText: any = undefined;
         let textCount: number = 0;
         let lastText: any = undefined;
-
+        let cmtStartToRemove: CommentCharacterElementBox[] = [];
+        let removedCommentEnd: CommentCharacterElementBox[] = [];
         for (let i: number = isBidi ? 0 : lineWidget.children.length - 1; isBidi ? i < lineWidget.children.length : i >= 0; isBidi ? i++ : i--) {
             let inline: ElementBox = lineWidget.children[i];
             if (isNullOrUndefined(editAction) || editAction !== 2) {
@@ -11815,9 +11909,32 @@ export class Editor {
                     if (inline instanceof BookmarkElementBox) {
                         this.removedBookmarkElements.push(inline);
                     }
+                    if (!this.isCmtDeleteStarted && inline instanceof CommentCharacterElementBox && inline.commentType === 1) {
+                        // if (this.selection.isElementInSelection(inline.comment.commentStart)){
+                        //     // count -= inline.comment.commentStart.length + inline.comment.commentEnd.length;
+                        //     i--;
+                        //     // if (!inline.comment.isReply) {
+                        //     //     for (var z = 0; z < inline.comment.replyComments.length; z++) {
+                        //     //         count -= inline.comment.replyComments[z].commentStart.length;
+                        //     //         i--;
+                        //     //     }
+                        //     // }
+                        // }
+                        this.deleteCommentWidgetInline(inline);
+                        removedCommentEnd.push(inline);                      
+                    }
                 }
-                if (inline instanceof CommentCharacterElementBox && inline.commentType === 0) {
-                    (inline.comment.ownerComment) ? this.deleteCommentWidget(inline.comment.ownerComment) : this.deleteCommentWidget(inline.comment);
+                if (!this.isCmtDeleteStarted && inline instanceof CommentCharacterElementBox &&
+                    inline.commentType == 0 && (removedCommentEnd.indexOf(inline.comment.commentEnd) === -1) &&
+                    this.editorHistory && (!(this.editorHistory && this.editorHistory.currentHistoryInfo)
+                        || this.editorHistory && this.editorHistory.currentHistoryInfo
+                        && this.editorHistory.currentHistoryInfo.action != 'DeleteComment')) {
+                    this.skipCommentCharacter(inline);
+                    if (this.editorHistory && this.editorHistory.currentHistoryInfo) {
+                        this.editorHistory.currentHistoryInfo.insertPosition = this.selection.editPosition;
+                    }
+                    startOffset++;
+                    continue;
                 }
                 if (inline instanceof BookmarkElementBox) {
                     if (this.documentHelper.bookmarks.containsKey(inline.name)) {
@@ -11843,7 +11960,7 @@ export class Editor {
                     }
                     this.handleDeleteTracking(inline, startOffset, endOffset, i);
                 } else {
-                    // if (editAction < 4) {
+                    // if (editAction < 4) {                    
                     this.unLinkFieldCharacter(inline);
                     this.unlinkRangeFromRevision(inline, true);
                     this.addRemovedRevisionInfo(inline, undefined);
@@ -11900,6 +12017,82 @@ export class Editor {
             count -= (endIndex - startIndex);
             this.documentHelper.layout.clearListElementBox(lineWidget.paragraph);
         }
+        cmtStartToRemove = [];
+        removedCommentEnd = [];
+        if (this.editorHistory && this.editorHistory.currentHistoryInfo && this.removeCommentCharacters.length == 0 && !this.isCmtDeleteStarted && !(this.editorHistory.isUndoing || this.editorHistory.isRedoing)) {
+            this.editorHistory.updateComplexHistoryInternal();
+        }
+    }
+    /**
+     * 
+     * @param inline 
+     * Skips comment start marker, if its end marker is not in selection.
+     */
+    private skipCommentCharacter(inline: CommentCharacterElementBox) {
+        let curentHistoryInfo = this.editorHistory.currentBaseHistoryInfo;
+        // Initialized a complex history and skipped comment start marker position is recorded as a new action, 
+        // since its comment end mark is not in selection.
+        if (this.editorHistory.currentBaseHistoryInfo && !this.editorHistory.currentHistoryInfo
+            && !(this.editorHistory.isUndoing || this.editorHistory.isRedoing)) {
+            this.initComplexHistory('SkipCommentInline');
+            this.editorHistory.updateHistory();
+            this.initHistory(curentHistoryInfo.action);
+        }
+        if (this.editorHistory.currentHistoryInfo && this.editorHistory.currentHistoryInfo.action !== 'DeleteComment') {
+            if (!(this.editorHistory.isUndoing || this.editorHistory.isRedoing)) {
+                let offset: number = inline.line.getOffset(inline, 1);
+                var startPosition = new TextPosition(this.owner);
+                startPosition.setPositionParagraph(inline.line, offset);
+                let startOff: string = this.selection.getHierarchicalIndexByPosition(startPosition);
+                if (this.selection.isForward) {
+                    this.editorHistory.currentBaseHistoryInfo.selectionEnd = startOff;
+                    curentHistoryInfo.selectionStart = startOff;
+                    this.editorHistory.currentHistoryInfo.selectionEnd = curentHistoryInfo.selectionEnd;
+                } else {
+                    this.editorHistory.currentBaseHistoryInfo.selectionStart = startOff;
+                    curentHistoryInfo.selectionEnd = startOff;
+                    this.editorHistory.currentHistoryInfo.selectionStart = curentHistoryInfo.selectionStart;
+                }
+                curentHistoryInfo.insertPosition = this.selection.isForward ? curentHistoryInfo.selectionStart : curentHistoryInfo.selectionEnd;
+                curentHistoryInfo.endPosition = curentHistoryInfo.insertPosition;
+                this.editorHistory.currentHistoryInfo.insertPosition = curentHistoryInfo.insertPosition;
+                let baseHstry: BaseHistoryInfo = this.editorHistory.currentBaseHistoryInfo;
+                baseHstry.insertPosition = this.selection.isForward ? baseHstry.selectionStart : baseHstry.selectionEnd;
+                baseHstry.endPosition = baseHstry.insertPosition;
+                this.editorHistory.currentHistoryInfo.addModifiedAction(baseHstry);
+            }
+        }
+    }
+    /**
+     * Deletes comment widgets from comment pane along with history preservation.
+     */
+    private deleteCommentWidgetInline(inline: CommentCharacterElementBox): void {
+        let curentBaseHistoryInfo: BaseHistoryInfo = this.editorHistory.currentBaseHistoryInfo;
+        if (this.editorHistory && this.editorHistory.currentBaseHistoryInfo && !this.editorHistory.currentHistoryInfo) {
+            this.initComplexHistory('DeleteCommentInline');
+        }
+        if (!this.selection.isElementInSelection(inline.comment.commentStart)) {
+            this.removeCommentCharacters.push(inline.comment.commentStart);
+        }
+        this.deleteCommentWidgetInternal(inline.comment);
+        if (this.editorHistory && this.editorHistory.currentHistoryInfo) {
+            // let index = this.editorHistory.currentHistoryInfo.modifiedActions.indexOf(curentHistoryInfo);
+            // this.editorHistory.currentHistoryInfo.modifiedActions.push(this.editorHistory.currentHistoryInfo.modifiedActions.splice(index, 1)[0]);
+            let lstActionHistoryInfo: HistoryInfo = this.editorHistory.currentHistoryInfo;
+            let frstAction: BaseHistoryInfo = lstActionHistoryInfo.modifiedActions[0];
+            // if (frstAction.action === "DeleteCommentWidget" && frstAction.removedNodes[0] instanceof CommentElementBox
+            //     && !(frstAction.removedNodes[0] as CommentElementBox).isReply && (lstActionHistoryInfo.modifiedActions[1].action === "DeleteCommentWidget")) {
+            //     // index = this.editorHistory.currentHistoryInfo.modifiedActions.indexOf(curentHistoryInfo);
+            //     // this.editorHistory.currentHistoryInfo.modifiedActions.splice(index - 1, 0, this.editorHistory.currentHistoryInfo.modifiedActions.splice(0, 1)[0]);
+            // }
+        }
+        this.editorHistory.currentHistoryInfo.addModifiedAction(curentBaseHistoryInfo);
+        this.editorHistory.currentBaseHistoryInfo = curentBaseHistoryInfo;
+        this.selection.editPosition = curentBaseHistoryInfo.insertPosition;        
+        this.editorHistory.currentHistoryInfo.insertPosition = curentBaseHistoryInfo.insertPosition;
+        this.editorHistory.currentHistoryInfo.endPosition = curentBaseHistoryInfo.insertPosition;
+        this.editorHistory.currentHistoryInfo.selectionStart = curentBaseHistoryInfo.selectionStart;
+        this.editorHistory.currentHistoryInfo.selectionEnd = curentBaseHistoryInfo.selectionEnd;
     }
 
     private clearFieldElementRevisions(inline: ElementBox, revision: Revision[]): void {
@@ -12688,8 +12881,8 @@ export class Editor {
                     i--;
                 } else {
                     if (this.editorHistory.currentBaseHistoryInfo) {
-                        this.initComplexHistory(this.editorHistory.currentBaseHistoryInfo.action);
                         this.editorHistory.updateHistory();
+                        this.initComplexHistory(this.editorHistory.currentBaseHistoryInfo.action);
                     }
                     this.initInsertInline(bookMarkStart.clone());
                     if (this.editorHistory.currentHistoryInfo) {
@@ -12859,6 +13052,22 @@ export class Editor {
                 this.removeWholeElement(selection);
                 return;
             }
+        }
+        if (inline instanceof CommentCharacterElementBox && inline.commentType === 1) {
+            let commentEnd: CommentCharacterElementBox = inline;
+            let commentStart: CommentCharacterElementBox = inline.comment.commentStart;
+            let comment: CommentElementBox = inline.comment;
+            if (comment.isReply) {
+                comment = comment.ownerComment;
+            }
+            while (inline instanceof CommentCharacterElementBox) {
+                inline = inline.previousNode;
+            }
+            this.deleteCommentInternal(comment);
+            paragraph = inline.line.paragraph;
+            offset = inline.line.getOffset(inline, inline.length);
+            selection.start.setPositionParagraph(inline.line, offset);
+            selection.end.setPositionParagraph(inline.line, offset);
         }
         if (inline instanceof FieldElementBox && inline.fieldType === 1) {
             let prevInline: ElementBox = selection.getPreviousValidElement(inline);
@@ -14089,7 +14298,6 @@ export class Editor {
         }
         this.updateInsertPosition();
         this.insertInlineInternal(elementBox);
-        this.addOrRemoveCommentsInline(elementBox, true);
         if (this.checkEndPosition(selection)) {
             this.updateHistoryPosition(selection.start, false);
         }

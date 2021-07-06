@@ -227,7 +227,7 @@ describe('Protect sheet ->', () => {
                 helper.triggerKeyEvent('keydown', 46, null, null, null, helper.invoke('getCell', [0, 0]));
                 expect(spreadsheet.sheets[0].rows[0].cells[0].value).toBe('spreadsheet');
                 setTimeout((): void => {
-                    expect(helper.getElement('#' + helper.id + ' .e-editAlert-dlg').classList).toContain('e-popup-close');
+                    expect(helper.getElement('#' + helper.id + ' .e-editAlert-dlg')).toBeNull();
                     done();
                 });
             });

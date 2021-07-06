@@ -179,6 +179,12 @@
         }
       }
 
+      .e-empty-inner-content {
+        @if $fm-skin-name == 'tailwind' or $fm-skin-name == 'tailwind-dark' {
+          color: $content-text-color-alt2;
+        }
+      }
+
       .e-rowcell {
         @if $fm-skin-name == 'material-dark' or $fm-skin-name == 'bootstrap-dark' {
           color: $fe-grid-type-color;
@@ -319,6 +325,17 @@
 
           &.e-active {
             @include active-item;
+          }
+        }
+      }
+      @if $fm-skin-name == 'tailwind' or $fm-skin-name == 'tailwind-dark' {
+        .e-address {
+          .e-icons {
+            color: $icon-color;
+
+            &:hover {
+              color: $icon-color-hover;
+            }
           }
         }
       }

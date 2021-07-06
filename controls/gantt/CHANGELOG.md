@@ -2,6 +2,15 @@
 
 ## [Unreleased]
 
+## 19.2.46 (2021-07-06)
+
+### Gantt
+
+#### Bug Fixes
+
+- `#331671` - Right Labels are rendered properly in exported PDF document.
+- `#332161` - Issue fixed when drag and drop performed after adding record through context menu.
+
 ## 19.2.44 (2021-06-30)
 
 ### Gantt

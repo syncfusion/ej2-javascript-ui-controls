@@ -1655,7 +1655,7 @@
         }
         @if $skin-name !='material' {
             background: $e-de-bzr-button-bg-color;
-            @if $skin-name!='tailwind' and $skin-name!='tailwind-dark'{
+            @if $skin-name!='tailwind' and $skin-name!='tailwind-dark' {
                 height: 100%;
             }
             @if $skin-name !='fabric' {
@@ -1677,6 +1677,9 @@
         @if $skin-name=='tailwind' or $skin-name=='tailwind-dark' {
             border: none;
             height: calc(100% - 10px);
+            line-height: 1.3 !important;
+            padding: 10px 6px 10px 6px !important;
+            font-size: 14px !important;
         }
     }
     @if $skin-name=='fabric' {

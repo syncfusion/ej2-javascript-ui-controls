@@ -40,6 +40,10 @@
       vertical-align: top;
       white-space: nowrap;
       width: 80%;
+
+      &.e-hide {
+        display: none;
+      }
     }
 
     .e-dlg-modal {
@@ -60,6 +64,10 @@
       line-height: $dialog-content-line-height;
       overflow: auto;
       overflow-x: hidden;
+
+      &.e-hide {
+        display: none;
+      }
     }
 
     .e-footer-content {
@@ -70,6 +78,10 @@
       display: block;
       right: 0;
       width: 100%;
+
+      &.e-hide {
+        display: none;
+      }
     }
 
     .e-footer-content {

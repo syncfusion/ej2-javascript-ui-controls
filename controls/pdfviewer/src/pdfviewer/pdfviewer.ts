@@ -5831,6 +5831,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
     public updateFormFieldsValue(fieldValue: any): void {
         // eslint-disable-next-line
         let target: any = document.getElementById(fieldValue.id);
+        target= target? target: document.getElementById(fieldValue.id+'_content_html_element').children[0].children[0];
         if (target && fieldValue.type === 'Textbox' || fieldValue.type === 'Password') {
             target.value = fieldValue.value;
         } else if (fieldValue.type === 'RadioButton' || fieldValue.type === 'CheckBox') {
@@ -5841,10 +5842,11 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
         } else if (fieldValue.type === 'DropDown' || fieldValue.type === 'ListBox') {
             target.options[target.selectedIndex].text = fieldValue.value;
         }
-        if (fieldValue.type === 'SignatureField') {
+        if (fieldValue.type === 'SignatureField' || fieldValue.type === 'InitialField') {
             if (fieldValue.signatureType) {
                 fieldValue.signatureType = fieldValue.signatureType[0];
             }
+            fieldValue.fontName = fieldValue.fontName ? fieldValue.fontName: fieldValue.fontFamily;
             this.formFieldsModule.drawSignature(fieldValue.signatureType, fieldValue.value, target, fieldValue.fontName);
         } else {
             this.formFieldsModule.updateDataInSession(target);

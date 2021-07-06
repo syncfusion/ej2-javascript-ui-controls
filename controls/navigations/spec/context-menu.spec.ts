@@ -1298,6 +1298,20 @@ describe('ContextMenu', () => {
         });
     });
 
+    describe('Customer Reported issues', () => {
+        afterEach(() => {
+            contextMenu.destroy();
+        });
+
+        it('EJ2-50727- Role attribute error in context menu', () => {
+            document.body.appendChild(div);
+            document.body.appendChild(ul);
+            contextMenu = new ContextMenu({ items: items, target: '#target' }, '#contextmenu');
+            const wrap: HTMLElement = contextMenu.getWrapper();
+            expect(wrap.children[0].getAttribute('role')).toEqual('menubar');
+        });
+    });
+
     it('memory leak', () => {
         profile.sample();
         const average: any = inMB(profile.averageChange)

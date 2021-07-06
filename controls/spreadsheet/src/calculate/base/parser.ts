@@ -355,7 +355,7 @@ export class Parser {
                 storedString = storedString.set(key, condition);
                 tempString = tempString.substring(0, i) + key + tempString.substring(j + 1);
                 i = i + key.length;
-                if (i < tempString.length) {
+                if (i <= tempString.length) {
                     i = tempString.indexOf(this.parent.tic, i);
                 }
                 id++;

@@ -1288,7 +1288,7 @@ export class PdfViewerBase {
             } else {
                 window.sessionStorage.setItem(this.documentId + '_formfields', JSON.stringify(data.PdfRenderedFormFields));
             }
-            if (this.pdfViewer.enableFormFields) {
+            if (this.pdfViewer.enableFormFields && !this.pdfViewer.formDesignerModule) {
                 this.pdfViewer.formFieldsModule.formFieldCollections();
             }
             if (this.pdfViewer.formFieldCollections.length > 0) {
@@ -1406,7 +1406,9 @@ export class PdfViewerBase {
                     if (currentPageNumber !== this.currentPageNumber) {
                         this.pdfViewer.currentPageNumber = currentPageNumber;
                         this.currentPageNumber = currentPageNumber;
-                        this.pdfViewer.toolbarModule.updateCurrentPage(currentPageNumber);
+                        if (this.pdfViewer.toolbarModule) {
+                            this.pdfViewer.toolbarModule.updateCurrentPage(currentPageNumber);
+                        }
                     }
                 },
                 800);
@@ -6199,11 +6201,11 @@ export class PdfViewerBase {
                 const targetParentRect: ClientRect = (e.target as HTMLElement).parentElement.getBoundingClientRect();
                 offsetX = (e as PointerEvent).clientX - targetParentRect.left;
                 offsetY = (e as PointerEvent).clientY - targetParentRect.top;
-            } else if( e.target && (e.target as HTMLElement).parentElement && (e.target as HTMLElement).parentElement.classList.contains("foreign-object")) {
+            } else if( e.target && (e as any).path  && (e.target as HTMLElement).parentElement && (e.target as HTMLElement).parentElement.classList.contains("foreign-object")) {
                 const targetParentRect: ClientRect = (e as any).path[4].getBoundingClientRect();
                 offsetX = (e as PointerEvent).clientX - targetParentRect.left;
                 offsetY = (e as PointerEvent).clientY - targetParentRect.top;
-            } else if( e.target && (e.target as HTMLElement).parentElement && (e.target as HTMLElement).parentElement.parentElement.classList.contains("foreign-object")) {
+            } else if( e.target && (e as any).path  && (e.target as HTMLElement).parentElement && (e.target as HTMLElement).parentElement.parentElement.classList.contains("foreign-object")) {
                 const targetParentRect: ClientRect = (e as any).path[4].getBoundingClientRect();
                 offsetX = (e as PointerEvent).clientX - targetParentRect.left;
                 offsetY = (e as PointerEvent).clientY - targetParentRect.top;
@@ -7198,11 +7200,16 @@ export class PdfViewerBase {
             if (!isNullOrUndefined(this.pdfViewer.toolbar) && !isNullOrUndefined(this.pdfViewer.toolbar.formDesignerToolbarModule))
                 this.pdfViewer.toolbar.formDesignerToolbarModule.showHideDeleteIcon(true);
         }
-        if(this.eventArgs && this.eventArgs.source && (this.eventArgs.source as PdfAnnotationBaseModel).formFieldAnnotationType && !this.pdfViewer.designerMode) {
-            let currentObject: PdfAnnotationBaseModel = this.eventArgs.source;
-            let field: IFormField = { fontFamily: currentObject.fontFamily, fontSize: currentObject.fontSize, fontStyle: (currentObject as any).fontStyle,
-                color: (currentObject as PdfFormFieldBaseModel).color, backgroundColor: (currentObject as PdfFormFieldBaseModel).backgroundColor, alignment: (currentObject as any).alignment  };
-          this.pdfViewer.fireFormFieldClickEvent("formFieldMouseover", field as unknown as FormFieldModel);
+        if(this.eventArgs && this.eventArgs.source && (this.eventArgs.source as PdfFormFieldBaseModel).formFieldAnnotationType && !this.pdfViewer.designerMode) {
+            let currentObject: PdfFormFieldBaseModel = this.eventArgs.source;
+            let currentValue: any = (this.pdfViewer.nameTable as any)[currentObject.id.split('_')[0] + '_content'] ? (this.pdfViewer.nameTable as any)[currentObject.id.split('_')[0] + '_content'].value:null;
+            if (!currentValue) {
+                let field: IFormField = {
+                    id: currentObject.id, fontFamily: currentObject.fontFamily, fontSize: currentObject.fontSize, fontStyle: (currentObject as any).fontStyle,
+                    color: (currentObject as PdfFormFieldBaseModel).color, value: currentObject.value, type: (this.eventArgs.source as PdfAnnotationBaseModel).formFieldAnnotationType, backgroundColor: (currentObject as PdfFormFieldBaseModel).backgroundColor, alignment: (currentObject as any).alignment
+                };
+                this.pdfViewer.fireFormFieldClickEvent("formFieldClicked", field as unknown as FormFieldModel);
+            }
         }
         this.initialEventArgs = { source: this.eventArgs.source, sourceWrapper: this.eventArgs.sourceWrapper };
         this.initialEventArgs.position = this.currentPosition;

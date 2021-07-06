@@ -135,7 +135,7 @@ export class EditRender {
                         foreignKeyData: col.isForeignColumn() && getObject(col.field, args.foreignKeyData)
                     });
                 }
-                if (!isFocused && !cell.getAttribute('disabled')) {
+                if (!isFocused && !cell.getAttribute('disabled') && !parentsUntil(cell, 'e-checkbox-disabled')) {
                     this.focusElement(cell as HTMLInputElement, args.type);
                     isFocused = true;
                 }

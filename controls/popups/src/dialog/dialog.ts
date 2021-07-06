@@ -177,6 +177,10 @@ const DLG_RESIZABLE: string = 'e-dlg-resizable';
 const DLG_RESTRICT_LEFT_VALUE: string = 'e-restrict-left';
 const DLG_RESTRICT_WIDTH_VALUE: string = 'e-resize-viewport';
 const DLG_REF_ELEMENT: string = 'e-dlg-ref-element';
+const DLG_USER_ACTION_CLOSED: string = 'user action';
+const DLG_CLOSE_ICON_CLOSED: string = 'close icon';
+const DLG_ESCAPE_CLOSED: string = 'escape';
+const DLG_OVERLAYCLICK_CLOSED: string = 'overlayClick';
 
 /**
  * Provides information about a BeforeOpen event.
@@ -240,6 +244,10 @@ export interface BeforeCloseEventArgs {
      * Returns the original event arguments.
      */
     event: Event
+    /**
+     * Returns whether the dialog, is closed by "close icon", "overlayClick", "escape" and "user action"
+     */
+    closedBy?: string
 }
 
 /**
@@ -424,6 +432,7 @@ export class Dialog extends Component<HTMLElement> implements INotifyPropertyCha
     private allowMaxHeight: boolean;
     private preventVisibility: boolean;
     private refElement: HTMLElement;
+    private dlgClosedBy: string = DLG_USER_ACTION_CLOSED;
     /**
      * Specifies the value that can be displayed in dialog's content area.
      * It can be information, list, or other HTML elements.
@@ -808,15 +817,18 @@ export class Dialog extends Component<HTMLElement> implements INotifyPropertyCha
         this.preventVisibility = true;
         this.clonedEle = <HTMLElement>this.element.cloneNode(true);
         this.closeIconClickEventHandler = (event: Event): void => {
+            this.dlgClosedBy = DLG_CLOSE_ICON_CLOSED;
             this.hide(event);
         };
         // eslint-disable-next-line
         this.dlgOverlayClickEventHandler = (event: Object): void => {
+            this.dlgClosedBy = DLG_OVERLAYCLICK_CLOSED;
             (event as {[key: string]: boolean}).preventFocus = false;
             this.trigger('overlayClick', event, (overlayClickEventArgs: {[key: string]: object}) => {
                 if (!overlayClickEventArgs.preventFocus) {
                     this.focusContent();
                 }
+                this.dlgClosedBy = DLG_USER_ACTION_CLOSED;
             });
         };
         // eslint-disable-next-line
@@ -1009,6 +1021,7 @@ export class Dialog extends Component<HTMLElement> implements INotifyPropertyCha
             isContentEdit = element.hasAttribute('contenteditable') && element.getAttribute('contenteditable') === 'true';
         }
         if (event.keyCode === 27 && this.closeOnEscape) {
+            this.dlgClosedBy = DLG_ESCAPE_CLOSED;
             this.hide(event);
         }
         if ((event.keyCode === 13 && !event.ctrlKey && element.tagName.toLowerCase() !== 'textarea' &&
@@ -2054,7 +2067,8 @@ export class Dialog extends Component<HTMLElement> implements INotifyPropertyCha
                 element: this.element,
                 target: this.target,
                 container: this.isModal ? this.dlgContainer : this.element,
-                event: event
+                event: event,
+                closedBy: this.dlgClosedBy
             };
             this.closeArgs = eventArgs;
             this.trigger('beforeClose', eventArgs, (beforeCloseArgs: BeforeCloseEventArgs) => {
@@ -2079,6 +2093,7 @@ export class Dialog extends Component<HTMLElement> implements INotifyPropertyCha
                     this.preventVisibility = false;
                     this.isProtectedOnChange = prevOnChange;
                 }
+                this.dlgClosedBy = DLG_USER_ACTION_CLOSED;
             });
         }
     }

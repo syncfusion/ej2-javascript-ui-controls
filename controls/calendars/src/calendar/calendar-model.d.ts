@@ -1,6 +1,62 @@
-import { Component, EventHandler, Internationalization, ModuleDeclaration, isBlazor } from '@syncfusion/ej2-base';import { INotifyPropertyChanged, KeyboardEvents, L10n } from '@syncfusion/ej2-base';import { NotifyPropertyChanges, KeyboardEventArgs, BaseEventArgs } from '@syncfusion/ej2-base';import { cldrData, getDefaultDateObject, rippleEffect } from '@syncfusion/ej2-base';import { removeClass, detach, closest, addClass, attributes } from '@syncfusion/ej2-base';import { getValue, getUniqueID, extend, Browser } from '@syncfusion/ej2-base';import { Property, Event, EmitType, isNullOrUndefined, throwError } from '@syncfusion/ej2-base';import { Islamic, IslamicDateArgs } from './index';
+import { Component, EventHandler, Internationalization, ModuleDeclaration, isBlazor } from '@syncfusion/ej2-base';import { INotifyPropertyChanged, KeyboardEvents, L10n } from '@syncfusion/ej2-base';import { NotifyPropertyChanges, KeyboardEventArgs, BaseEventArgs } from '@syncfusion/ej2-base';import { cldrData, getDefaultDateObject, rippleEffect } from '@syncfusion/ej2-base';import { removeClass, detach, closest, addClass, attributes } from '@syncfusion/ej2-base';import { getValue, getUniqueID, extend, Browser , ChildProperty} from '@syncfusion/ej2-base';import { Property, Event, EmitType, isNullOrUndefined, throwError } from '@syncfusion/ej2-base';import { Islamic, IslamicDateArgs } from './index';
 import {CalendarType,CalendarView,WeekRule,DayHeaderFormats,NavigatedEventArgs,RenderDayCellEventArgs,ChangedEventArgs} from "./calendar";
 import {ComponentModel} from '@syncfusion/ej2-base';
+
+/**
+ * Interface for a class MaskPlaceholder
+ */
+export interface MaskPlaceholderModel {
+
+    /**
+     * Specifies the mask placeholder value for day section.
+     *
+     * @default 'day'
+     */
+    day?: string;
+
+    /**
+     * Specifies the mask placeholder value for month section.
+     *
+     * @default 'month'
+     */
+    month?: string;
+
+    /**
+     * Specifies the mask placeholder value for year section.
+     *
+     * @default 'year'
+     */
+    year?: string;
+
+    /**
+     * Specifies the mask placeholder value for hour section.
+     *
+     * @default 'hour'
+     */
+    hour?: string;
+
+    /**
+     * Specifies the mask placeholder value for minute section.
+     *
+     * @default 'minute'
+     */
+    minute?: string;
+
+    /**
+     * Specifies the mask placeholder value for second section.
+     *
+     * @default 'second'
+     */
+    second?: string;
+
+    /**
+     * Specifies the mask placeholder value for day of the week section.
+     *
+     * @default 'day of the week'
+     */
+    dayOfTheWeek?: string;
+
+}
 
 /**
  * Interface for a class CalendarBase

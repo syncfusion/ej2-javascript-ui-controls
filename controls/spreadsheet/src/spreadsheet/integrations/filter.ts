@@ -2,12 +2,12 @@
 import { Spreadsheet, locale, dialog, mouseDown, renderFilterCell, initiateFilterUI, FilterInfoArgs, getStartEvent } from '../index';
 import { reapplyFilter, filterCellKeyDown, DialogBeforeOpenEventArgs } from '../index';
 import { getFilteredColumn, cMenuBeforeOpen, filterByCellValue, clearFilter, getFilterRange, applySort, getCellPosition } from '../index';
-import { filterRangeAlert, filterComplete, beforeFilter, clearAllFilter, getFilteredCollection, sortImport, beforeDelete, sheetsDestroyed } from '../../workbook/common/event';
-import { FilterCollectionModel, getRangeIndexes, Workbook, getCellAddress, updateFilter, ColumnModel, beforeInsert, getColIndex, SortCollectionModel } from '../../workbook/index';
+import { filterRangeAlert, filterComplete, beforeFilter, clearAllFilter, getFilteredCollection, sortImport, beforeDelete, sheetsDestroyed, clear } from '../../workbook/common/event';
+import { FilterCollectionModel, getRangeIndexes, Workbook, getCellAddress, updateFilter, ColumnModel, beforeInsert, getColIndex, SortCollectionModel, getDataRange, inRange } from '../../workbook/index';
 import { getIndexesFromAddress, getSwapRange, SheetModel, getColumnHeaderText, CellModel } from '../../workbook/index';
 import { getData, getTypeFromFormat, getCell, getCellIndexes, getRangeAddress, getSheet } from '../../workbook/index';
-import { FilterOptions, BeforeFilterEventArgs, FilterEventArgs } from '../../workbook/common/interface';
-import { L10n, getComponent, EventHandler, isUndefined } from '@syncfusion/ej2-base';
+import { FilterOptions, BeforeFilterEventArgs, FilterEventArgs, ClearOptions } from '../../workbook/common/interface';
+import { L10n, getComponent, EventHandler, isUndefined, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { Dialog } from '../services';
 import { IFilterArgs, PredicateModel, ExcelFilterBase, beforeFltrcMenuOpen, CheckBoxFilterBase } from '@syncfusion/ej2-grids';
 import { beforeCustomFilterOpen, parentsUntil, filterCboxValue } from '@syncfusion/ej2-grids';
@@ -71,6 +71,7 @@ export class Filter {
         this.parent.on(beforeInsert, this.beforeInsertHandler, this);
         this.parent.on(beforeDelete, this.beforeDeleteHandler, this);
         this.parent.on(sheetsDestroyed, this.deleteSheetHandler, this);
+        this.parent.on(clear, this.clearHanlder, this);
     }
 
     private removeEventListener(): void {
@@ -96,6 +97,7 @@ export class Filter {
             this.parent.off(beforeInsert, this.beforeInsertHandler);
             this.parent.off(beforeDelete, this.beforeDeleteHandler);
             this.parent.off(sheetsDestroyed, this.deleteSheetHandler);
+            this.parent.off(clear, this.clearHanlder);
         }
     }
 
@@ -207,11 +209,9 @@ export class Filter {
             return;
         }
         let selectedRange: string = sheet.selectedRange;
-        const rangeIdx: number[] = getRangeIndexes(selectedRange);
+        let rangeIdx: number[] = getRangeIndexes(selectedRange);
         if (rangeIdx[0] === rangeIdx[2] && rangeIdx[1] === rangeIdx[3]) {
-            rangeIdx[0] = 0; rangeIdx[1] = 0;
-            rangeIdx[2] = sheet.usedRange.rowIndex;
-            rangeIdx[3] = sheet.usedRange.colIndex;
+            rangeIdx = getDataRange(rangeIdx[0], rangeIdx[1], sheet);
             selectedRange = getRangeAddress(rangeIdx);
         }
         const eventArgs: BeforeFilterEventArgs = {
@@ -221,7 +221,7 @@ export class Filter {
         if (!args.isCut) {
             this.parent.notify(beginAction, { action: 'filter', eventArgs: eventArgs });
         }
-        this.processRange(sheet, sheetIdx, args ? args.range : null);
+        this.processRange(sheet, sheetIdx, args.range ? args.range : selectedRange);
 
         if (predicates) {
             const range: number[] = this.filterRange.get(sheetIdx).slice();
@@ -688,7 +688,7 @@ export class Filter {
             predicates: this.getPredicates(sheetIdx)
         };
         this.filterRange.get(sheetIdx)[2] = getSheet(this.parent as Workbook, sheetIdx).usedRange.rowIndex; //extend the range if filtered
-        this.applyFilter(filterOptions, getRangeAddress(this.filterRange.get(sheetIdx)));
+        this.applyFilter(filterOptions, getRangeAddress(this.filterRange.get(sheetIdx)), sheetIdx);
     }
 
     /**
@@ -696,18 +696,21 @@ export class Filter {
      *
      * @param {FilterOptions} filterOptions - Specify the filteroptions.
      * @param {string} range - Specify the range.
+     * @param {number} sheetIdx - Specify the sheet index.
      * @returns {void} - Triggers events for filtering and applies filter.
      */
-    private applyFilter(filterOptions: FilterOptions, range: string): void {
-        const args: BeforeFilterEventArgs = { range: range, filterOptions: filterOptions, cancel: false };
-        this.parent.trigger(beforeFilter, args);
-        if (args.cancel) { return; }
+    private applyFilter(filterOptions: FilterOptions, range: string, sheetIdx: number): void {
+        const eventArgs: { range: string, predicates: PredicateModel[], cancel: boolean }
+            = { range: range, predicates: [].slice.call(this.filterCollection.get(sheetIdx)), cancel: false };
+        this.parent.notify(beginAction, { action: 'filter', eventArgs: eventArgs });
+        if (eventArgs.cancel) { return; }
         this.parent.showSpinner();
         this.parent.filter(filterOptions, range).then((args: FilterEventArgs) => {
             this.refreshFilterRange();
             this.parent.notify(getFilteredCollection, null);
             this.parent.hideSpinner();
-            this.parent.trigger(filterComplete, args);
+            delete eventArgs.cancel;
+            this.parent.notify(completeAction, { action: 'filter', eventArgs: eventArgs });
             return Promise.resolve(args);
         }).catch((error: string) => {
             this.filterRangeAlertHandler({ error: error });
@@ -823,7 +826,7 @@ export class Filter {
     private reapplyFilterHandler(): void {
         const sheetIdx: number = this.parent.activeSheetIndex;
         if (this.filterRange.has(sheetIdx)) {
-            this.applyFilter({ predicates: this.getPredicates(sheetIdx) }, getRangeAddress(this.filterRange.get(sheetIdx)));
+            this.applyFilter({ predicates: this.getPredicates(sheetIdx) }, getRangeAddress(this.filterRange.get(sheetIdx)), sheetIdx);
         }
     }
 
@@ -898,7 +901,7 @@ export class Filter {
                         const colIdx: number = getCellIndexes(predicate[i].field + '1')[1];
                         colCollection.push(colIdx);
                         condition.push(predicate[i].operator);
-                        value.push(predicate[i].value);
+                        value.push(isNullOrUndefined(predicate[i].value) ? '' : predicate[i].value);
                         type.push(predicate[i].type);
                         predi.push(predicate[i].predicate);
                     }
@@ -1119,6 +1122,16 @@ export class Filter {
             }
             if (isChanged) {
                 this.getFilteredCollection();
+            }
+        }
+    }
+
+    private clearHanlder(args: ClearOptions): void {
+        const info: { sheetIndex: number, indices: number[] } = this.parent.getAddressInfo(args.range);
+        if (this.filterRange.has(info.sheetIndex)) {
+            const indexes: number[] = this.filterRange.get(info.sheetIndex).slice();
+            if (inRange(info.indices, indexes[0], indexes[1]) && inRange(info.indices, indexes[0], indexes[3])) {
+                this.removeFilter(info.sheetIndex);
             }
         }
     }

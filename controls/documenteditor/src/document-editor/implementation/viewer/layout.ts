@@ -385,9 +385,16 @@ export class Layout {
         for (let i: number = 0; i < bodyWidget.childWidgets.length; i++) {
             const childWidget: IWidget = bodyWidget.childWidgets[i];
             if (childWidget instanceof ParagraphWidget) {
+                let widget: any = (childWidget as Widget).childWidgets[0] as LineWidget;
                 (childWidget as Widget).x = (childWidget as Widget).x;
                 (childWidget as Widget).y = i === 0 ? (childWidget as Widget).y + shiftTop : childTop;
                 childTop += childWidget.height;
+                for (let j: number = 0; j < widget.children.length; j++) {
+                    let element: ElementBox = widget.children[j];
+                    if (element instanceof ShapeElementBox) {
+                        element.y = (childWidget as Widget).y + element.verticalPosition;
+                    }
+                }
             } else {
                 this.shiftChildLocationForTableWidget(childWidget as TableWidget, shiftTop);
                 childTop += (childWidget as Widget).height;
@@ -714,7 +721,7 @@ export class Layout {
                 if (nextLine.paragraph.childWidgets.length === 1) {
                     nextLine.paragraph.destroy();
                 } else {
-                    nextLine.destroy();
+                    nextLine.paragraph.childWidgets.splice(nextLine.paragraph.childWidgets.indexOf(nextLine), 1);
                 }
                 nextLine = line.nextLine;
             }
@@ -2165,6 +2172,18 @@ export class Layout {
             }
         } else {
             lineWidget = isEmptyLine ? this.addLineWidget(paragraph) : line;
+        }
+        if (!isNullOrUndefined(paragraph.containerWidget) && paragraph.bodyWidget.floatingElements.length > 0 &&
+            !(paragraph.containerWidget instanceof TextFrame)) {
+            let elementBox = new TextElementBox();
+            elementBox.line = lineWidget;
+            lineWidget.children.push(elementBox);
+            elementBox.text = '¶';
+            elementBox.characterFormat = paragraph.characterFormat;
+            elementBox.width = this.documentHelper.textHelper.getTextSize(elementBox, elementBox.characterFormat);
+            this.adjustPosition(elementBox, paragraph.bodyWidget);
+            paragraph.x += elementBox.padding.left;
+            lineWidget.children.splice(0, 1);
         }
         //isNullOrUndefined(this.viewer.currentHeaderFooter) &&
         if (this.viewer instanceof PageLayoutViewer
@@ -3806,7 +3825,7 @@ export class Layout {
         }
         cell.margin = new Margin(left, top, right, bottom);
         let cellWidth: number = cell.cellFormat.cellWidth;
-        if (cellWidth > cell.cellFormat.preferredWidth && cell.cellFormat.preferredWidth !== 0 && cell.cellFormat.preferredWidthType !== 'Percent') {
+        if (cellWidth > cell.cellFormat.preferredWidth && cell.cellFormat.preferredWidth !== 0 && cell.cellFormat.preferredWidthType !== 'Percent' && cell.ownerTable.tableFormat.preferredWidthType !== 'Percent') {
             cellWidth = cell.cellFormat.preferredWidth;
         }
         cell.width = HelperMethods.convertPointToPixel(cellWidth);
@@ -4959,6 +4978,28 @@ export class Layout {
             (container.childWidgets[i] as Widget).y = top;
             if (container.childWidgets[i] instanceof TableWidget) {
                 this.updateChildLocationForTable(top, (container.childWidgets[i] as TableWidget));
+            }
+            if (container.childWidgets[i] instanceof ParagraphWidget) {
+                let para: ParagraphWidget = container.childWidgets[i] as ParagraphWidget;
+                for (let i: number = 0; i < para.childWidgets.length; i++) {
+                    let line: LineWidget = para.childWidgets[0] as LineWidget;
+                    for (let k: number = 0; k < line.children.length; k++) {
+                        let element: ElementBox = line.children[k];
+                        if (element instanceof FootnoteElementBox) {
+                            if (!isNullOrUndefined(para.bodyWidget.page.footnoteWidget)) {
+                                return;
+                            } else {
+                                const prevWidget: ParagraphWidget = para.bodyWidget.previousRenderedWidget as ParagraphWidget;
+                                const prevBodyWidget: BodyWidget = para.bodyWidget.previousRenderedWidget as BodyWidget;
+                                const newBodyWidget: BodyWidget = para.bodyWidget as BodyWidget;
+                                const footWidgets: BlockWidget[] = this.getFootNoteWidgetsOf(para);
+                                // this.updateContainerWidget(curretBlock as Widget, newBodyWidget, prevWidget.indexInOwner + 1, false);
+                                this.moveFootNotesToPage(footWidgets, prevBodyWidget, newBodyWidget);
+                                this.layoutfootNote(para.bodyWidget.page.footnoteWidget);
+                            }
+                        }
+                    }
+                }
             }
             top += (container.childWidgets[i] as Widget).height;
         }
@@ -6245,6 +6286,15 @@ export class Layout {
                     }
                 }
             }
+        } else if (!isNullOrUndefined(widget.bodyWidget.previousRenderedWidget) && (widget.bodyWidget.previousRenderedWidget as BodyWidget).page.footnoteWidget) {
+            for (let i: number = 0; i < (widget.bodyWidget.previousRenderedWidget as BodyWidget).page.footnoteWidget.childWidgets.length; i++) {
+                // eslint-disable-next-line max-len
+                for (let j: number = 0; j < footnoteElements.length; j++) {
+                    if (((widget.bodyWidget.previousRenderedWidget as BodyWidget).page.footnoteWidget.childWidgets[i] as BlockWidget).footNoteReference === footnoteElements[j]) {
+                        footWidgets.push((widget.bodyWidget.previousRenderedWidget as BodyWidget).page.footnoteWidget.childWidgets[i] as BlockWidget);
+                    }
+                }
+            }
         }
         return footWidgets;
     }
@@ -6741,12 +6791,12 @@ export class Layout {
                 lastBlock = body.lastChild as BlockWidget;
             }
             const footWidget: BlockWidget[] = this.getFootNoteWidgetsOf(lastBlock);
+            this.moveFootNotesToPage(footWidget, body, nextBody);
             if (block === lastBlock) {
                 break;
             }
             body.childWidgets.splice(body.childWidgets.indexOf(lastBlock), 1);
             nextBody.childWidgets.splice(0, 0, lastBlock);
-            this.moveFootNotesToPage(footWidget, body, nextBody);
             lastBlock.containerWidget = nextBody;
             nextBody.height += lastBlock.height;
             // eslint-disable-next-line no-constant-condition

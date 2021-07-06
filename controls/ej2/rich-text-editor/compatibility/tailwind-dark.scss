@@ -3,7 +3,7 @@ $imported-modules: () !default;
 .e-lib {
     @at-root
     {
-        @import url("../tailwind-dark.scss");
+        @import "../tailwind-dark.scss";
     }
 
     & .e-js [class^='e-'], & .e-js [class*=' e-'] {

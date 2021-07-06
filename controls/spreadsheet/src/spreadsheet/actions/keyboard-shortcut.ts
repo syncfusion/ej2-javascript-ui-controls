@@ -85,7 +85,7 @@ export class KeyboardShortcut {
                 e.preventDefault();
                 this.parent.notify(ribbonFind, null);
             }
-            if ((!isLocked || !actSheet.isProtected) && e.keyCode !== 70) {
+            if ((!isLocked || !actSheet.isProtected || e.keyCode === 86) && e.keyCode !== 70) {
                 if (e.keyCode === 71) {
                     e.preventDefault(); this.parent.notify(gotoDlg, null);
                 } else if (e.keyCode === 72) {
@@ -93,9 +93,7 @@ export class KeyboardShortcut {
                 } else if (e.keyCode === 88) {
                     this.parent.notify(cut, { promise: Promise });
                 } else if (e.keyCode === 86) {
-                    if (!isLocked) {
-                        this.parent.notify(paste, { isAction: true });
-                    }
+                    this.parent.notify(paste, { isAction: true });
                 } else if (e.keyCode === 66) {
                     e.preventDefault();
                     let value: FontWeight = this.parent.getCellStyleValue(

@@ -12,7 +12,7 @@ import {
     ListTextElementBox, BookmarkElementBox, EditRangeStartElementBox, EditRangeEndElementBox,
     ChartElementBox, ChartDataTable, ChartTitleArea, ChartDataFormat, ChartLayout, ChartArea, ChartLegend, ChartCategoryAxis,
     CommentElementBox, CommentCharacterElementBox, TextFormField, CheckBoxFormField, DropDownFormField, ShapeElementBox,
-    ContentControlProperties, FootnoteElementBox
+    ContentControlProperties, FootnoteElementBox, ShapeBase
 } from '../viewer/page';
 import { BlockWidget } from '../viewer/page';
 import { isNullOrUndefined } from '@syncfusion/ej2-base';
@@ -610,8 +610,10 @@ export class SfdtExport {
                 inlines.push(this.writeInlinesFootNote(paragraph, element, line, inlines));
                 continue;
             }
-            if (element instanceof ContentControl || this.startContent || this.blockContent) {
-                this.writeInlinesContentControl(element, line, inlines, i);
+            if ((element instanceof ContentControl && !isNullOrUndefined(element.contentControlProperties) && element.contentControlProperties.type !== 'BuildingBlockGallery') || this.startContent || this.blockContent) {
+                if (inlines.length > 0) {
+                    this.writeInlinesContentControl(element, line, inlines, i);
+                }
                 continue;
             } else {
                 let inline: any = this.writeInline(element);
@@ -1105,6 +1107,16 @@ export class SfdtExport {
                 this.writeLine(child, (this.startLine !== this.endLine && child !== this.startLine) ? 0 : offset, inlines);
             } else {
                 this.writeInlines(paragraph, child, inlines);
+                for (let i:number = 0; i < paragraph.floatingElements.length; i++) {
+                    let shape: ShapeBase = paragraph.floatingElements[i];
+                    if (shape instanceof ShapeElementBox) {
+                        let inline: any = this.writeInline(shape);
+                        if (!isNullOrUndefined(inline)) {
+                            inlines.push(inline);
+                        }
+                    }
+                }
+
             }
         }
         return endParagraph;
@@ -1155,7 +1167,7 @@ export class SfdtExport {
             if (!started || isContentStarted) {
                 continue;
             }
-            if (element instanceof ContentControl || this.startContent || this.blockContent) {
+            if ((element instanceof ContentControl && !isNullOrUndefined(element.contentControlProperties) && element.contentControlProperties.type !== 'BuildingBlockGallery') || this.startContent || this.blockContent) {
                 if (ended) {
                     this.startContent = false;
                     break;

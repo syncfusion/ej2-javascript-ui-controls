@@ -587,6 +587,11 @@ export interface PdfFormFieldBaseModel {
     id?: string;
 
     /**
+     * specifies the type of the signature.
+     */
+    signatureType?: string;
+
+    /**
      * Represents the name of the formField
      *
      * @default ''

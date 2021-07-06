@@ -309,6 +309,10 @@
         .e-chart-row-border.e-lastrow {
           border-bottom-width: 1px;
         }
+
+        @if $tab-skin == 'tailwind' or $tab-skin == 'tailwind-dark' {
+          line-height: normal;
+        }
       }
 
       .e-line-container-cell {
@@ -657,7 +661,12 @@
       }
 
       .e-connector-line-z-index {
-        z-index: 1;
+        @if $tab-skin == 'tailwind' or $tab-skin == 'tailwind-dark' {
+          z-index: 2;
+        }
+        @else {
+          z-index: 1;
+        }
       }
 
       .e-connector-line-hover {

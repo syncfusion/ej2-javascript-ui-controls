@@ -273,24 +273,7 @@ export class Print {
                                     // eslint-disable-next-line
                                     let font: any = currentData.radiobuttonItem[j].fontFamily;
                                     this.applyPosition(htmlElement, bounds, font, heightRatio, widthRatio, true, currentData.radiobuttonItem[j].zoomValue);
-                                    // htmlElement.style.backgroundColor = 'transparent';
-                                    // if (currentData.formFieldAnnotationType !== "SignatureField") {
-                                    //     htmlElement.style.borderColor = 'transparent';
-                                    // }
                                     targetField.appendChild(htmlElement);
-                                    if (signatureField.formFieldAnnotationType === "RadioButton") {
-                                    if (document.getElementsByClassName("e-pv-radiobtn-span").length > 0) {
-                                        let spanElement = document.getElementsByClassName("e-pv-radiobtn-span");
-                                        for (let i: number = 0; i < spanElement.length; i++) {
-                                            (spanElement as any)[i].style.width = ((signatureField.bounds.width * currentData.zoomValue) - 10) + "px";
-                                            (spanElement as any)[i].style.height = ((signatureField.bounds.height * currentData.zoomValue) - 10) + "px";
-                                            if (parseInt((spanElement as any)[i].style.width, 10) === 0 || parseInt((spanElement as any)[i].style.height, 10) === 0) {
-                                                (spanElement as any)[i].style.width = "2px";
-                                                (spanElement as any)[i].style.height = "2px";
-                                            }
-                                        }
-                                    }
-                                }
                                 }
                             }
                         } else {
@@ -301,24 +284,7 @@ export class Print {
                                 // eslint-disable-next-line
                                 let font: any = currentData.fontFamily;
                                 this.applyPosition(htmlElement, bounds, font, heightRatio, widthRatio, true, currentData.zoomValue);
-                               // htmlElement.style.backgroundColor = 'transparent';
-                                // if (currentData.formFieldAnnotationType !== "SignatureField") {
-                                //     htmlElement.style.borderColor = 'transparent';
-                                // }
                                 targetField.appendChild(htmlElement);
-                                if (signatureField.formFieldAnnotationType === "RadioButton") {
-                                    if (document.getElementsByClassName("e-pv-radiobtn-span").length > 0) {
-                                        let spanElement = document.getElementsByClassName("e-pv-radiobtn-span");
-                                        for (let i: number = 0; i < spanElement.length; i++) {
-                                            (spanElement as any)[i].style.width = ((signatureField.bounds.width * currentData.zoomValue) - 10) + "px";
-                                            (spanElement as any)[i].style.height = ((signatureField.bounds.height * currentData.zoomValue) - 10) + "px";
-                                            if (parseInt((spanElement as any)[i].style.width, 10) === 0 || parseInt((spanElement as any)[i].style.height, 10) === 0) {
-                                                (spanElement as any)[i].style.width = "2px";
-                                                (spanElement as any)[i].style.height = "2px";
-                                            }
-                                        }
-                                    }
-                                }
                             }
                         }
                     }

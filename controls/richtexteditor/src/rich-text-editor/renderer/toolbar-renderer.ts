@@ -419,7 +419,8 @@ export class ToolbarRenderer implements IRenderer {
                 }
             }
         });
-        dropDown.isStringTemplate = true; dropDown.createElement = proxy.parent.createElement; dropDown.appendTo(args.element);
+        dropDown.isStringTemplate = true; dropDown.createElement = proxy.parent.createElement; args.element.setAttribute('role', 'button');
+        dropDown.appendTo(args.element);
         const popupElement: Element = document.getElementById(dropDown.element.id + '-popup');
         popupElement.setAttribute('aria-owns', this.parent.getID());
         dropDown.element.insertBefore(content, dropDown.element.querySelector('.e-caret'));

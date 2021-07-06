@@ -2979,4 +2979,13 @@
       width: 1em;
     }
    }
+
+  .e-pv-annotation-toolbar.e-toolbar .e-toolbar-pop .e-toolbar-item:not(.e-separator) {
+    background-color: $pv-comment-panel-bg;
+    padding: 0 $pv-icon-padding-top;
+  }
+
+  .e-pv-annotation-toolbar.e-toolbar .e-toolbar-pop .e-toolbar-item .e-tbar-btn.e-btn {
+    padding: 0 $pv-icon-padding-top;
+  }
 }

@@ -236,6 +236,14 @@ export class RadioButton extends Component<HTMLInputElement> implements INotifyP
         return this.addOnPersist(['checked']);
     }
 
+    private getWrapper(): Element {
+        if (this.element) {
+            return this.element.parentElement;
+        } else {
+            return null;
+        }
+    }
+
     private getLabel(): Element {
         if (this.element) {
             return this.element.nextElementSibling;
@@ -291,7 +299,7 @@ export class RadioButton extends Component<HTMLInputElement> implements INotifyP
             label.classList.add(RTL);
         }
         if (this.cssClass) {
-            addClass([label], this.cssClass.split(' '));
+            addClass([wrapper], this.cssClass.split(' '));
         }
         if (this.label) {
             this.setText(this.label);
@@ -325,6 +333,7 @@ export class RadioButton extends Component<HTMLInputElement> implements INotifyP
      * @returns {void}
      */
     public onPropertyChanged(newProp: RadioButtonModel, oldProp: RadioButtonModel): void {
+        const wrap: Element = this.getWrapper();
         const label: Element = this.getLabel();
         for (const prop of Object.keys(newProp)) {
             switch (prop) {
@@ -345,10 +354,10 @@ export class RadioButton extends Component<HTMLInputElement> implements INotifyP
                 break;
             case 'cssClass':
                 if (oldProp.cssClass) {
-                    removeClass([label], oldProp.cssClass.split(' '));
+                    removeClass([wrap], oldProp.cssClass.split(' '));
                 }
                 if (newProp.cssClass) {
-                    addClass([label], newProp.cssClass.split(' '));
+                    addClass([wrap], newProp.cssClass.split(' '));
                 }
                 break;
             case 'enableRtl':
