@@ -257,7 +257,7 @@ export class FindAndReplace {
             }
             const args: FindOptions = {
                 value: value, sheetIndex: sheetIndex, findOpt: findOpt.findOption, mode: mode, isCSen: isCSen,
-                isEMatch: isEMatch, searchBy: searchBy
+                isEMatch: isEMatch, searchBy: searchBy, isAction: true
             };
             if (findOpt.findOption === 'next' || findOpt.findOption === 'prev') {
                 this.parent.find(args);

@@ -2,6 +2,16 @@
 
 ## [Unreleased]
 
+## 19.2.47 (2021-07-13)
+
+### Gantt
+
+#### Bug Fixes
+
+- `#331618` - Issue in updating `dataSource` property has been fixed.
+- `#333672` - Issue in calculating duration across DST has been fixed.
+- Issue in tooltip position has been fixed.
+
 ## 19.2.46 (2021-07-06)
 
 ### Gantt

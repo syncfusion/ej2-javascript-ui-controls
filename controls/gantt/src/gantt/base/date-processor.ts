@@ -941,7 +941,7 @@ export class DateProcessor {
             if (standardTZ < 0) {
                 const tzDiff: number = standardTZ - uTZ;
                 uDate.setTime(uDate.getTime() + (tzDiff * 60 * 1000));
-            } else if (standardTZ > 0) {
+            } else if (standardTZ >= 0) {
                 const tzDiff: number = uTZ - standardTZ;
                 uDate.setTime(uDate.getTime() - (tzDiff * 60 * 1000));
             }

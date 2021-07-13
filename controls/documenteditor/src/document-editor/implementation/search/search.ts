@@ -50,7 +50,6 @@ export class Search {
      * Gets the search results object.
      *
      * @aspType SearchResults
-     * @blazorType SearchResults
      * @returns {SearchResults} - Returns the search results object.
      */
     public get searchResults(): SearchResults {

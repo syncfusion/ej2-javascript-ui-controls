@@ -217,7 +217,7 @@ export class CommandHandler {
         this.diagram.tooltipObject.offsetX = 0;
         this.diagram.tooltipObject.offsetY = 0;
         if (isBlazor()) {
-            (this.diagram.tooltipObject as BlazorTooltip).updateTooltip(this.diagram.element);
+            (this.diagram.tooltipObject as BlazorTooltip).updateTooltip(targetEle);
         } else {
             (this.diagram.tooltipObject as Tooltip).refresh(targetEle);
         }
@@ -1452,7 +1452,7 @@ export class CommandHandler {
             ((newNode as Node).shape as BpmnShape).activity.subProcess.processes = process;
             this.cloneSubProcesses(newNode);
         }
-        if (newNode  && !this.diagram.isServerUpdate) {
+        if (newNode && !this.diagram.isServerUpdate) {
             this.selectObjects([newNode], multiSelect);
         }
         return newNode;
@@ -2306,13 +2306,13 @@ export class CommandHandler {
                 if (this.diagram.mode === 'SVG') {
                     let i: number = 1;
                     let target: string = zIndexTable[i];
-                    
+
                     // EJ2-49326 - (CR issue fix) An exception raised when send the swimlane back to the normal node.
                     while (!target && i < index) {
                         target = zIndexTable[++i];
                     }
                     // EJ2-46656 - CR issue fix
-                    target = this.resetTargetNode(objectId,target,i,zIndexTable);                    
+                    target = this.resetTargetNode(objectId, target, i, zIndexTable);
                     target = this.diagram.nameTable[target].parentId ? this.checkParentExist(target) : target;
                     this.moveSvgNode(objectId, target);
                     this.updateNativeNodeIndex(objectId);
@@ -2328,7 +2328,7 @@ export class CommandHandler {
         }
         this.diagram.protectPropertyChange(false);
         if (isBlazor()) {
-            this. getZIndexObjects();
+            this.getZIndexObjects();
         }
     }
     private resetTargetNode(objectId: string, target: string, i: number, zIndexTable: {}): string {
@@ -2341,8 +2341,8 @@ export class CommandHandler {
             return target;
         }
     }
-    private  getZIndexObjects(): void {
-        const element: (NodeModel|ConnectorModel)[] = [];
+    private getZIndexObjects(): void {
+        const element: (NodeModel | ConnectorModel)[] = [];
         let i: number; let j: number;
         for (i = 0; i < this.diagram.nodes.length; i++) {
             element.push(this.diagram.nodes[i]);
@@ -2353,7 +2353,7 @@ export class CommandHandler {
         this.updateBlazorZIndex(element);
     }
 
-    private updateBlazorZIndex(element: (NodeModel|ConnectorModel)[]): void {
+    private updateBlazorZIndex(element: (NodeModel | ConnectorModel)[]): void {
         const blazorInterop: string = 'sfBlazor';
         const blazor: string = 'Blazor';
         let diagramobject: object = {};
@@ -2379,7 +2379,7 @@ export class CommandHandler {
             window[blazorInterop].updateBlazorProperties(obj, this.diagram);
         }
     }
-    private getBlazorObject(objectName: (NodeModel|ConnectorModel)): object {
+    private getBlazorObject(objectName: (NodeModel | ConnectorModel)): object {
         const object: object = {
             sfIndex: getIndex(this.diagram, objectName.id),
             zIndex: objectName.zIndex
@@ -2387,7 +2387,7 @@ export class CommandHandler {
         return object;
     }
     //Checks whether the target is a child node.
-    private checkParentExist (target: string): string {
+    private checkParentExist(target: string): string {
         let objBehind: string = target;
         while (this.diagram.nameTable[objBehind].parentId) {
             objBehind = this.diagram.nameTable[objBehind].parentId;
@@ -2499,7 +2499,7 @@ export class CommandHandler {
         }
         this.diagram.protectPropertyChange(false);
         if (isBlazor()) {
-            this. getZIndexObjects();
+            this.getZIndexObjects();
         }
     }
 
@@ -2692,7 +2692,7 @@ export class CommandHandler {
                 }
             }
             if (isBlazor()) {
-                const elements: (NodeModel|ConnectorModel)[] = [];
+                const elements: (NodeModel | ConnectorModel)[] = [];
                 elements.push(index);
                 elements.push(intersectArray[intersectArray.length - 1]);
                 this.updateBlazorZIndex(elements);
@@ -3084,7 +3084,7 @@ export class CommandHandler {
         let list: (NodeModel | ConnectorModel)[] = [];
         list = list.concat(selectedItems.nodes, selectedItems.connectors);
         if (list.indexOf(mouseDownElement) === -1) {
-            this.clearSelection((list.length>0) ? true : false);
+            this.clearSelection((list.length > 0) ? true : false);
             this.selectObjects([mouseDownElement], true);
         }
     }
@@ -3157,7 +3157,7 @@ export class CommandHandler {
 
                             if (selectNodes) {
                                 for (let i: number = 0; i < selectNodes.length; i++) {
-                                    this.select(this.diagram.nameTable[selectNodes[i].id], (i !==0 && selectNodes.length>1) ? true: false);
+                                    this.select(this.diagram.nameTable[selectNodes[i].id], (i !== 0 && selectNodes.length > 1) ? true : false);
                                 }
                             }
                         }
@@ -3269,7 +3269,7 @@ export class CommandHandler {
     /** @private */
     public insertBlazorConnector(obj: Selector): void {
         if (obj instanceof Selector) {
-            for (let i: number = 0; i< obj.connectors.length; i++) {
+            for (let i: number = 0; i < obj.connectors.length; i++) {
                 this.diagram.insertBlazorConnector(obj.connectors[i] as Connector);
             }
         } else {
@@ -3358,22 +3358,22 @@ export class CommandHandler {
                         if (!isRotate) {
                             if (segmentChange) {
                                 switch ((connector.segments[0] as OrthogonalSegment).direction) {
-                                case 'Bottom':
-                                    tx = actualObject.wrapper.bounds.bottomCenter.x - existingInnerBounds.bottomCenter.x;
-                                    ty = actualObject.wrapper.bounds.bottomCenter.y - existingInnerBounds.bottomCenter.y;
-                                    break;
-                                case 'Top':
-                                    tx = actualObject.wrapper.bounds.topCenter.x - existingInnerBounds.topCenter.x;
-                                    ty = actualObject.wrapper.bounds.topCenter.y - existingInnerBounds.topCenter.y;
-                                    break;
-                                case 'Left':
-                                    tx = actualObject.wrapper.bounds.middleLeft.x - existingInnerBounds.middleLeft.x;
-                                    ty = actualObject.wrapper.bounds.middleLeft.y - existingInnerBounds.middleLeft.y;
-                                    break;
-                                case 'Right':
-                                    tx = actualObject.wrapper.bounds.middleRight.x - existingInnerBounds.middleRight.x;
-                                    ty = actualObject.wrapper.bounds.middleRight.y - existingInnerBounds.middleRight.y;
-                                    break;
+                                    case 'Bottom':
+                                        tx = actualObject.wrapper.bounds.bottomCenter.x - existingInnerBounds.bottomCenter.x;
+                                        ty = actualObject.wrapper.bounds.bottomCenter.y - existingInnerBounds.bottomCenter.y;
+                                        break;
+                                    case 'Top':
+                                        tx = actualObject.wrapper.bounds.topCenter.x - existingInnerBounds.topCenter.x;
+                                        ty = actualObject.wrapper.bounds.topCenter.y - existingInnerBounds.topCenter.y;
+                                        break;
+                                    case 'Left':
+                                        tx = actualObject.wrapper.bounds.middleLeft.x - existingInnerBounds.middleLeft.x;
+                                        ty = actualObject.wrapper.bounds.middleLeft.y - existingInnerBounds.middleLeft.y;
+                                        break;
+                                    case 'Right':
+                                        tx = actualObject.wrapper.bounds.middleRight.x - existingInnerBounds.middleRight.x;
+                                        ty = actualObject.wrapper.bounds.middleRight.y - existingInnerBounds.middleRight.y;
+                                        break;
                                 }
                                 this.dragSourceEnd(
                                     connector, tx, ty, true, null, 'ConnectorSourceEnd', undefined, undefined, undefined,
@@ -4783,7 +4783,7 @@ Remove terinal segment in initial
     }
 
     /** @private */
-    public expandNode(node: Node, diagram?: Diagram): ILayout {
+    public expandNode(node: Node, diagram?: Diagram, canLayout?: boolean): ILayout {
         let animation: boolean;
         //let objects: ILayout;
         const preventNodesUpdate: Boolean = this.diagram.preventNodesUpdate;
@@ -4798,12 +4798,15 @@ Remove terinal segment in initial
             this.diagram.organizationalChartModule.isAnimation = true;
         }
         this.diagram.blazorActions |= BlazorAction.expandNode;
-        const objects: ILayout = this.diagram.doLayout() as ILayout;
+        let objects: ILayout = {};
+        if (!canLayout) {
+            objects = this.diagram.doLayout() as ILayout;
+        }
         this.diagram.blazorActions &= ~BlazorAction.expandNode;
         this.diagram.preventNodesUpdate = preventNodesUpdate;
         this.diagram.preventConnectorsUpdate = false;
 
-        if (this.diagram.layoutAnimateModule && this.diagram.organizationalChartModule) {
+        if (this.diagram.layoutAnimateModule && this.diagram.organizationalChartModule && !canLayout) {
             this.diagram.allowServerDataBinding = false;
             this.layoutAnimateModule.expand(this.diagram.layout.enableAnimation, objects, node, this.diagram);
             this.diagram.allowServerDataBinding = true;
@@ -5346,7 +5349,7 @@ Remove terinal segment in initial
             };
             const arg: IScrollChangeEventArgs | IBlazorScrollChangeEventArgs = {
                 oldValue: Values as ScrollValues,
-                newValue: Values, source: this.diagram,panState: 'Completed'
+                newValue: Values, source: this.diagram, panState: 'Completed'
             };
             this.triggerEvent(DiagramEvent.scrollChange, arg);
         }
@@ -5456,10 +5459,10 @@ Remove terinal segment in initial
             addChildToContainer(this.diagram, parent, node);
         }
     }
-     /**
-     *
-     * @private
-     */
+    /**
+    *
+    * @private
+    */
     public updateLaneChildrenZindex(node: Node, target: IElement): void {
         let lowerIndexobject: Node = this.findLeastIndexObject(node, target) as Node;
         let swimlane: Node = this.diagram.nameTable[(target as Node).parentId];
@@ -5504,11 +5507,11 @@ Remove terinal segment in initial
     }
     private findLeastIndexObject(node: Node, target: IElement): Node | Connector {
         let lowerIndexobject: Node | Connector = node as Node;
-        if(node instanceof Node) {
+        if (node instanceof Node) {
             lowerIndexobject = this.findLeastIndexConnector(node.inEdges, target, lowerIndexobject) as Node;
             lowerIndexobject = this.findLeastIndexConnector(node.outEdges, target, lowerIndexobject) as Node;
         }
-        
+
         return lowerIndexobject;
     }
     /**

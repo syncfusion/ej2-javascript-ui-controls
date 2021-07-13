@@ -78,3 +78,18 @@ export const tbody: string = 'tbody';
 
 /** @hidden */
 export const colGroup: string = 'colgroup';
+
+/** @hidden */
+export const open: string = 'open';
+
+/** @hidden */
+export const change: string = 'change';
+
+/** @hidden */
+export const focus: string = 'focus';
+
+/** @hidden */
+export const create: string = 'created';
+
+/** @hidden */
+export const beforeOpen: string = 'beforeOpen';

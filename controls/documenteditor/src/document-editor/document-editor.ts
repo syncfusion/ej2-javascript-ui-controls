@@ -1,4 +1,4 @@
-import { Component, Property, INotifyPropertyChanged, NotifyPropertyChanges, Event, ModuleDeclaration, ChildProperty, isBlazor, classList, Complex, formatUnit } from '@syncfusion/ej2-base';
+import { Component, Property, INotifyPropertyChanged, NotifyPropertyChanges, Event, ModuleDeclaration, ChildProperty, classList, Complex, formatUnit } from '@syncfusion/ej2-base';
 import { isNullOrUndefined, L10n, EmitType, Browser } from '@syncfusion/ej2-base';
 import { Save } from '@syncfusion/ej2-file-utils';
 import { DocumentChangeEventArgs, ViewChangeEventArgs, ZoomFactorChangeEventArgs, StyleType, WStyle, BeforePaneSwitchEventArgs, LayoutType, FormFieldFillEventArgs, FormFieldData } from './index';
@@ -270,7 +270,7 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
     public layoutType: LayoutType;
 
     /**
-     * Current User
+     * Gets or sets the current user.
      *
      * @default ''
      */
@@ -278,8 +278,8 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
     public currentUser: string;
 
     /**
-     * User Selection Highlight Color
-     *
+     * Gets or sets the color used for highlighting the editable ranges or regions of the `currentUser` in Document Editor. The default value is "#FFFF00".
+     * Remarks: If the visibility of text affected due this highlight color matching with random color applied for the track changes, then modify the color value of this property to resolve text visibility problem.
      * @default '#FFFF00'
      */
     @Property('#FFFF00')
@@ -629,7 +629,6 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
      * Triggers whenever document changes in the document editor.
      *
      * @event
-     * @blazorproperty 'DocumentChanged'
      */
     @Event()
     public documentChange: EmitType<DocumentChangeEventArgs>;
@@ -637,7 +636,6 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
      * Triggers whenever container view changes in the document editor.
      *
      * @event
-     * @blazorproperty 'ViewChanged'
      */
     @Event()
     public viewChange: EmitType<ViewChangeEventArgs>;
@@ -645,7 +643,6 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
      * Triggers whenever zoom factor changes in the document editor.
      *
      * @event
-     * @blazorproperty 'ZoomFactorChanged'
      */
     @Event()
     public zoomFactorChange: EmitType<ZoomFactorChangeEventArgs>;
@@ -653,7 +650,6 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
      * Triggers whenever selection changes in the document editor.
      *
      * @event
-     * @blazorproperty 'SelectionChanged'
      */
     @Event()
     public selectionChange: EmitType<SelectionChangeEventArgs>;
@@ -661,7 +657,6 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
      * Triggers whenever hyperlink is clicked or tapped in the document editor.
      *
      * @event
-     * @blazorproperty 'OnRequestNavigate'
      */
     @Event()
     public requestNavigate: EmitType<RequestNavigateEventArgs>;
@@ -669,7 +664,6 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
      * Triggers whenever content changes in the document editor.
      *
      * @event
-     * @blazorproperty 'ContentChanged'
      */
     @Event()
     public contentChange: EmitType<ContentChangeEventArgs>;
@@ -677,7 +671,6 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
      * Triggers whenever key is pressed in the document editor.
      *
      * @event
-     * @blazorproperty 'OnKeyDown'
      */
     @Event()
     public keyDown: EmitType<DocumentEditorKeyDownEventArgs>;
@@ -685,7 +678,6 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
      * Triggers whenever search results changes in the document editor.
      *
      * @event
-     * @blazorproperty 'SearchResultsChanged'
      */
     @Event()
     public searchResultsChange: EmitType<SearchResultsChangeEventArgs>;
@@ -694,7 +686,6 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
      * Triggers when the component is created
      *
      * @event
-     * @blazorproperty 'Created'
      */
     @Event()
     public created: EmitType<Object>;
@@ -702,7 +693,6 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
      * Triggers when the component is destroyed.
      *
      * @event
-     * @blazorproperty 'Destroyed'
      */
     @Event()
     public destroyed: EmitType<Object>;
@@ -711,7 +701,6 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
      * Triggers while selecting the custom context-menu option.
      *
      * @event
-     * @blazorproperty 'ContextMenuItemSelected'
      */
     @Event()
     public customContextMenuSelect: EmitType<CustomContentMenuEventArgs>;
@@ -719,7 +708,6 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
      * Triggers before opening the custom context-menu option.
      *
      * @event
-     * @blazorproperty 'OnContextMenuOpen'
      */
     @Event()
     public customContextMenuBeforeOpen: EmitType<BeforeOpenCloseCustomContentMenuEventArgs>;
@@ -727,7 +715,6 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
      * Triggers before opening comment pane.
      *
      * @event
-     * @blazorproperty 'BeforePaneSwitch'
      */
     @Event()
     public beforePaneSwitch: EmitType<BeforePaneSwitchEventArgs>;
@@ -735,7 +722,6 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
     /**
      * Triggers after inserting comment.
      *
-     * @blazorproperty 'OnCommentBegin'
      * @event
      */
     @Event()
@@ -744,7 +730,6 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
      * Triggers after posting comment.
      *
      * @event
-     * @blazorproperty 'AfterCommentEnd'
      */
     @Event()
     public commentEnd: EmitType<Object>;
@@ -753,14 +738,12 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
      * Triggers before a file is opened.
      *
      * @event
-     * @blazorproperty 'onBeforeFileOpen'
      */
     @Event()
     public beforeFileOpen: EmitType<BeforeFileOpenArgs>;
     /**
      * Triggers after inserting comment.
      *
-     * @blazorproperty 'OnCommentDelete'
      * @event
      */
     @Event()
@@ -775,7 +758,6 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
     /**
      * Triggers when TrackChanges enabled / disabled.
      *
-     * @blazorproperty 'OnTrackChange'
      * @event
      */
     @Event()
@@ -845,7 +827,6 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
     /**
      * Gets the total number of pages.
      *
-     * @blazorType int
      * @returns {number} - Returns the page count.
      */
     public get pageCount(): number {
@@ -859,7 +840,6 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
      *
      * @default undefined
      * @aspType Selection
-     * @blazorType Selection
      * @returns {Selection} - Returns the selection object.
      */
     public get selection(): Selection {
@@ -869,7 +849,6 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
      * Gets the editor object of the document editor.
      *
      * @aspType Editor
-     * @blazorType Editor
      * @returns {Editor} - Returns the editor object.
      */
     public get editor(): Editor {
@@ -879,7 +858,6 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
      * Gets the editor history object of the document editor.
      *
      * @aspType EditorHistory
-     * @blazorType EditorHistory
      * @returns {EditorHistory} - Returns the editor history object.
      */
     public get editorHistory(): EditorHistory {
@@ -889,7 +867,6 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
      * Gets the search object of the document editor.
      *
      * @aspType Search
-     * @blazorType Search
      * @returns { Search } - Returns the search object.
      */
     public get search(): Search {
@@ -899,7 +876,6 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
      * Gets the context menu object of the document editor.
      *
      * @aspType ContextMenu
-     * @blazorType ContextMenu
      * @returns {ContextMenu} - Returns the context menu object.
      */
     public get contextMenu(): ContextMenu {
@@ -917,7 +893,6 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
      * Gets the spell check object of the document editor.
      *
      * @aspType SpellChecker
-     * @blazorType SpellChecker
      * @returns {SpellChecker} - Returns the spell checker object.
      */
     public get spellChecker(): SpellChecker {
@@ -1288,7 +1263,7 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
         if (this.enableLockAndEdit && this.collaborativeEditingModule) {
             this.collaborativeEditingModule.saveContent();
         }
-        const eventArgs: ContentChangeEventArgs = { source: isBlazor() ? null : this };
+        const eventArgs: ContentChangeEventArgs = { source: this };
         this.trigger(contentChangeEvent, eventArgs);
     }
     /**
@@ -1299,7 +1274,7 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
         if (this.enableLockAndEdit && this.enableEditor) {
             this.editor.enforceProtection('', false, true);
         }
-        const eventArgs: DocumentChangeEventArgs = { source: isBlazor() ? null : this };
+        const eventArgs: DocumentChangeEventArgs = { source: this };
         this.trigger(documentChangeEvent, eventArgs);
     }
     /**
@@ -1310,7 +1285,7 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
         if (!this.documentHelper.isCompositionStart && Browser.isDevice && this.editorModule) {
             this.editorModule.predictText();
         }
-        const eventArgs: SelectionChangeEventArgs = { source: isBlazor() ? null : this };
+        const eventArgs: SelectionChangeEventArgs = { source: this };
         // if (this.createdTriggered) {
         this.trigger(selectionChangeEvent, eventArgs);
         // }
@@ -1320,7 +1295,7 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
      * @returns {void}
      */
     public fireZoomFactorChange(): void {
-        const eventArgs: ZoomFactorChangeEventArgs = { source: isBlazor() ? null : this };
+        const eventArgs: ZoomFactorChangeEventArgs = { source: this };
         this.trigger(zoomFactorChangeEvent, eventArgs);
         this.notify(internalZoomFactorChange, eventArgs);
     }
@@ -1360,7 +1335,7 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
                 const eventArgs: ViewChangeEventArgs = {
                     startPage: pages[0].index + 1,
                     endPage: pages[pages.length - 1].index + 1,
-                    source: isBlazor() ? null : this
+                    source: this
                 };
                 this.trigger(viewChangeEvent, eventArgs);
             }

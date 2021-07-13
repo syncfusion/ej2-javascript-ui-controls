@@ -92,6 +92,7 @@ export class WTableFormat {
     public set bidi(value: boolean) {
         this.setPropertyValue('bidi', value);
     }
+       
     public get horizontalPositionAbs(): HorizontalAlignment {
         return this.getPropertyValue('horizontalPositionAbs') as HorizontalAlignment;
     }

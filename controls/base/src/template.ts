@@ -60,7 +60,14 @@ export function compile(template: string, helper?: Object, ignorePrefix?: boolea
     let argName: string = 'data';
 
     let evalExpResult: string = evalExp(template, argName, helper, ignorePrefix);
-    let fnCode: string = `var str="${evalExpResult}"; return str;`;
+    let condtion = `if(str.match(/value='([^\/]+)'\\s/g)){
+        var check = str.match(/value='([^\/]+)'/g)[0].split('=')[1];
+        var change = check.replace(/^\'/, '\"');
+        change = change.replace(/.$/,'\"');
+        str = str.replace(check, change);
+    }`;
+    let fnCode = "var str=\"" + evalExpResult + "\";" + condtion + " return str;";
+    // let fnCode: string = `var str="${evalExpResult}"; return str;`;
 
     // tslint:disable-next-line:no-function-constructor-with-string-args
     let fn: Function = new Function(argName, fnCode);

@@ -515,7 +515,7 @@ describe('Circular-Gauge Control', () => {
         it('Axis label font family Bootstrap4 color', (): void => {
             gauge.loaded = (args: ILoadedEventArgs): void => {
                 svg = document.getElementById('container_Axis_0_Label_0');
-                expect(svg.style.fontFamily).toBe('HelveticaNeue');
+                expect(svg.style.fontFamily).toBe('Roboto');
             };
             gauge.refresh();
         });

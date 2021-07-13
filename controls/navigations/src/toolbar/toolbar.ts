@@ -427,7 +427,7 @@ export class Toolbar extends Component<HTMLElement> implements INotifyPropertyCh
         }
         const btnItems: NodeList = this.element.querySelectorAll('.e-control.e-btn');
         [].slice.call(btnItems).forEach((el: EJ2Instance) => {
-            if (!isNOU(el) && !isNOU(el.ej2_instances[0]) && !((el.ej2_instances[0] as Button).isDestroyed)) {
+            if (!isNOU(el) && !isNOU(el.ej2_instances) && !isNOU(el.ej2_instances[0]) && !((el.ej2_instances[0] as Button).isDestroyed)) {
                 (el.ej2_instances[0] as Button).destroy();
             }
         });

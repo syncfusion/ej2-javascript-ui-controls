@@ -136,4 +136,8 @@ export interface IHtmlKeyboardEvent {
      * Specifies the ignoreDefault.
      */
     ignoreDefault?: boolean
+    /**
+     * Specifies the notifier name.
+     */
+    name?: string
 }

@@ -826,6 +826,9 @@ export class AnnotationToolbar {
             },
             beforeItemRender: (args: MenuEventArgs): void => {
                 this.pdfViewer.clearSelection(this.pdfViewerBase.currentPageNumber - 1);
+                if(args.element && args.element.className.indexOf("e-separator")!==-1) {
+                    args.element.style.margin = "8px 0";
+                }
                 if (args.item.text === 'ADD SIGNATURE') {
                     args.element.innerHTML = '';
                     this.saveSignatureCount = 0;
@@ -852,8 +855,8 @@ export class AnnotationToolbar {
                                     (signatureImage as HTMLElement).innerText = collectionKey;
                                     (signatureImage as HTMLElement).style.fontFamily = signatureCollection.image[0].fontFamily;
                                     (signatureImage as HTMLElement).style.fontSize = '15px';
-                                    (signatureImage as HTMLElement).style.display = 'inline-block';
-                                    (signatureImage as HTMLElement).style.top = '8px';
+                                    (signatureImage as HTMLElement).style.display = 'inline-flex';
+                                    (signatureImage as HTMLElement).style.alignItems = 'center';
                                     (signatureImage as HTMLElement).style.position = 'relative';
                                     (signatureImage as HTMLElement).id = 'sign_' + signatureID;
                                     (signatureImage as HTMLElement).style.width = '80px';
@@ -866,7 +869,8 @@ export class AnnotationToolbar {
                                     signatureImage.id = 'sign_' + signatureID;
                                     signatureImage.src = collectionKey;
                                     signatureImage.width = 80;
-                                    signatureImage.height = 32; 
+                                    signatureImage.height = 32;
+                                    signatureImage.classList.add('e-pv-signatureimage');
                                     (signatureImage as HTMLImageElement).style.paddingLeft= '20px';
                                     (signatureImage as HTMLImageElement).style.paddingRight= '18px';
                                     (signatureImage as HTMLImageElement).style.paddingTop= '12px';
@@ -890,18 +894,11 @@ export class AnnotationToolbar {
                             }
                         }
                     }
-                    let addInitialSpan: HTMLElement = createElement('span');
-                    addInitialSpan.classList.add('e-pv-align-sign');
+                    let addInitialSpan: HTMLElement = createElement('button');
+                    addInitialSpan.classList.add("e-control", "e-btn", "e-lib", "e-outline", "e-primary");
                     addInitialSpan.textContent = 'ADD SIGNATURE';
-                    addInitialSpan.style.fontFamily = 'Roboto';
-                    addInitialSpan.style.fontSize = '14px';
-                    if (navigator.userAgent.indexOf('MSIE') !== -1 || navigator.userAgent.indexOf('Trident') !== -1) {
-                        addInitialSpan.style.maxWidth = '140px';
-                    } else {
-                        addInitialSpan.style.width = 'fit-content';
-                    }
-                    addInitialSpan.addEventListener('mouseover', this.hoverSignature.bind(this));
-                    addInitialSpan.addEventListener('mouseleave', this.leaveSignature.bind(this));
+                    addInitialSpan.style.width = "auto";
+                    addInitialSpan.style.height = "36px";
                     addInitialSpan.addEventListener('click', this.clickSignature.bind(this));
                     args.element.appendChild(addInitialSpan);
                     args.element.addEventListener('mouseover', this.hoverInitialBtn.bind(this));
@@ -909,6 +906,7 @@ export class AnnotationToolbar {
                     args.element.style.display = 'flex';
                     args.element.style.flexDirection = 'column';
                     args.element.style.height = 'auto';
+                    args.element.style.alignItems = 'center';
                 }
 
                 if (args.item.text === 'ADD INITIAL') {
@@ -934,23 +932,23 @@ export class AnnotationToolbar {
                                     signatureImage = createElement('div');
                                     (signatureImage as HTMLElement).innerText = collectionKey;
                                     (signatureImage as HTMLElement).style.fontFamily = signatureCollection.image[0].fontFamily;
-                                    (signatureImage as HTMLElement).style.fontSize = '25px';
-                                    (signatureImage as HTMLElement).style.display='inline';
-                                    (signatureImage as HTMLElement).style.top= '8px';
+                                    (signatureImage as HTMLElement).style.fontSize = '15px';
+                                    (signatureImage as HTMLElement).style.display = 'inline-flex';
+                                    (signatureImage as HTMLElement).style.alignItems = 'center';
                                     (signatureImage as HTMLElement).style.position= 'relative';
                                     (signatureImage as HTMLElement).id = 'sign_' + signatureID;
                                     (signatureImage as HTMLElement).style.width = '80px';
-                                    (signatureImage as HTMLElement).style.height = '32px'; 
-                                    (signatureImage as HTMLElement).style.paddingLeft= '20px';
-                                    (signatureImage as HTMLElement).style.paddingRight= '18px';
-                                    (signatureImage as HTMLElement).style.paddingTop= '10px';
-                                    (signatureImage as HTMLElement).style.paddingBottom= '10px';
+                                    (signatureImage as HTMLElement).style.height = '53px';
+                                    (signatureImage as HTMLElement).style.overflow = 'hidden';
+                                    (signatureImage as HTMLElement).style.textOverflow = 'ellipsis';
+                                    (signatureImage as HTMLElement).style.paddingLeft = '11px';
                                 } else {
                                     signatureImage = createElement('img') as HTMLImageElement;
                                     signatureImage.id = 'sign_' + signatureID;
                                     signatureImage.src = collectionKey;
                                     signatureImage.width = 80;
                                     signatureImage.height = 32; 
+                                    signatureImage.classList.add('e-pv-signatureimage');
                                     (signatureImage as HTMLImageElement).style.paddingLeft= '20px';
                                     (signatureImage as HTMLImageElement).style.paddingRight= '18px';
                                     (signatureImage as HTMLImageElement).style.paddingTop= '12px';
@@ -978,18 +976,11 @@ export class AnnotationToolbar {
                         }
                     }
                     this.isSignatureIteam = false;
-                    let addInitialSpan: HTMLElement = createElement('span');
-                    addInitialSpan.classList.add('e-pv-align-sign');
+                    let addInitialSpan: HTMLElement = createElement('button');
+                    addInitialSpan.classList.add("e-control", "e-btn", "e-lib", "e-outline", "e-primary");
                     addInitialSpan.textContent = 'ADD INITIAL';
-                    if (navigator.userAgent.indexOf('MSIE') !== -1 || navigator.userAgent.indexOf('Trident') !== -1) {
-                        addInitialSpan.style.maxWidth = '100px';
-                    } else {
-                        addInitialSpan.style.width = 'fit-content';
-                    }
-                    addInitialSpan.style.fontFamily = 'Roboto';
-                    addInitialSpan.style.left= '40px';
-                    addInitialSpan.addEventListener('mouseover', this.hoverSignature.bind(this));
-                    addInitialSpan.addEventListener('mouseleave', this.leaveSignature.bind(this));
+                    addInitialSpan.style.width = "auto";
+                    addInitialSpan.style.height = "36px";
                     addInitialSpan.addEventListener('click', this.clickInitial.bind(this));
                     args.element.appendChild(addInitialSpan);
                     args.element.addEventListener('mouseover', this.hoverInitialBtn.bind(this));
@@ -997,6 +988,7 @@ export class AnnotationToolbar {
                     args.element.style.display = 'flex';
                     args.element.style.flexDirection = 'column';
                     args.element.style.height = 'auto';
+                    args.element.style.alignItems = 'center';
                 }
             },
             select: (args: MenuEventArgs): void => {
@@ -1077,13 +1069,7 @@ export class AnnotationToolbar {
             eventTarget.style.cursor='pointer';
         }
     }
-    private hoverSignature(): void {
-        const eventTarget: HTMLElement = event.target as HTMLElement;
-        if (eventTarget.classList.contains('e-pv-align-sign')){
-            eventTarget.classList.add('e-pv-signaturehover');
-            eventTarget.style.cursor='pointer';
-        }
-    }
+
     private hoverInitialBtn(event:any): void {
         const eventTarget: HTMLElement = event.target as HTMLElement;
         let currentFieldID: string = '';
@@ -1110,49 +1096,38 @@ export class AnnotationToolbar {
         const eventTarget: HTMLElement = event.target as HTMLElement;
         if (eventTarget.id === 'sign_' + eventTarget.id.split('_')[1] || eventTarget.classList.contains('e-pv-delete')) {
             eventTarget.classList.add('e-pv-signaturehover');
+            eventTarget.classList.remove('e-pv-signatureimage');
             eventTarget.style.cursor='pointer';
         }
     }
     private leaveSignatureDelete(): void {
         const eventTarget: HTMLElement = event.target as HTMLElement;
         if (eventTarget.id==='sign_'+eventTarget.id.split('_')[1] || eventTarget.classList.contains('e-pv-delete')) {
-            eventTarget.classList.remove('e-pv-signaturehover');
+            eventTarget.classList.remove('e-pv-signaturehover'); 
             if (eventTarget.children[0] && eventTarget.children[0].tagName === 'IMG') {
-                eventTarget.children[0].classList.remove('e-pv-signaturehover');
+                eventTarget.children[0].classList.remove('e-pv-signaturehover'); 
             }
             eventTarget.style.cursor='default';
         }
     }
-    private leaveSignature(): void {
-        const eventTarget: HTMLElement = event.target as HTMLElement;
-        if (eventTarget.classList.contains('e-pv-align-sign')){
-            eventTarget.classList.remove('e-pv-signaturehover');
-            eventTarget.style.cursor='default';
-        }
 
-    }
     private clickSignature(): void {
-        const eventTarget: HTMLElement = event.target as HTMLElement;
-        if (eventTarget.classList.contains('e-pv-align-sign')){
-           this.pdfViewerBase.isInitialField=false;
-           this.addSignature();
-        }
-
+        this.pdfViewerBase.isInitialField=false;
+        this.addSignature();
     }
     private clickInitial(): void {
-        const eventTarget: HTMLElement = event.target as HTMLElement;
-        if (eventTarget.classList.contains('e-pv-align-sign')){
-           this.pdfViewerBase.isInitialField=true;
-           this.addSignature();
-        }
-
+        this.pdfViewerBase.isInitialField=true;
+        this.addSignature();
     }
     private leaveSignatureImage(): void {
         const eventTarget: HTMLElement = event.target as HTMLElement;
         if (eventTarget.id==='sign_'+eventTarget.id.split('_')[1] || eventTarget.classList.contains('e-pv-delete')) {
             eventTarget.classList.remove('e-pv-signaturehover');
+            if(eventTarget.tagName === 'IMG')
+               eventTarget.classList.add('e-pv-signatureimage');
             if (eventTarget.children[0] && eventTarget.children[0].tagName === 'IMG') {
                 eventTarget.children[0].classList.remove('e-pv-signaturehover');
+                eventTarget.children[0].classList.add('e-pv-signatureimage');
             }
             eventTarget.style.cursor='default';
         }
@@ -3790,6 +3765,7 @@ export class AnnotationToolbar {
             this.primaryToolbar.deSelectItem(this.freeTextEditItem);
             this.primaryToolbar.deSelectItem(this.inkAnnotationItem);
             this.enableTextMarkupAnnotationPropertiesTools(true);
+            this.pdfViewer.annotationModule.textMarkupAnnotationModule.highlightColor = null;
             this.setCurrentColorInPicker();
             this.updateColorInIcon(this.colorDropDownElement, this.pdfViewer.annotationModule.textMarkupAnnotationModule.highlightColor);
             this.isHighlightEnabled = true;
@@ -3812,6 +3788,7 @@ export class AnnotationToolbar {
             this.primaryToolbar.deSelectItem(this.freeTextEditItem);
             this.primaryToolbar.deSelectItem(this.inkAnnotationItem);
             this.enableTextMarkupAnnotationPropertiesTools(true);
+            this.pdfViewer.annotationModule.textMarkupAnnotationModule.underlineColor = null;
             this.setCurrentColorInPicker();
             this.updateColorInIcon(this.colorDropDownElement, this.pdfViewer.annotationModule.textMarkupAnnotationModule.underlineColor);
             this.isUnderlineEnabled = true;
@@ -3834,6 +3811,7 @@ export class AnnotationToolbar {
             this.primaryToolbar.deSelectItem(this.freeTextEditItem);
             this.primaryToolbar.deSelectItem(this.inkAnnotationItem);
             this.enableTextMarkupAnnotationPropertiesTools(true);
+            this.pdfViewer.annotationModule.textMarkupAnnotationModule.strikethroughColor = null;
             this.setCurrentColorInPicker();
             // eslint-disable-next-line max-len
             this.updateColorInIcon(this.colorDropDownElement, this.pdfViewer.annotationModule.textMarkupAnnotationModule.strikethroughColor);

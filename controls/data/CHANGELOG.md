@@ -2,6 +2,30 @@
 
 ## [Unreleased]
 
+## 19.1.58 (2021-04-27)
+
+### DataManager
+
+#### Bug Fixes
+
+- `#I322813`, `#I324083` - Batch edit the changes made in server not reflected with `RemoteSaveAdaptor`, has been fixed.
+
+## 19.1.56 (2021-04-13)
+
+### DataManager
+
+#### Bug Fixes
+
+- `#I268513` - Wrong `$filter` issue has been fixed.
+
+## 19.1.55 (2021-04-06)
+
+### DataManager
+
+#### Bug Fixes
+
+- `#F163538`, `#I320452` - Blank row issue while adding new record with `RemoteSaveAdaptor` has been fixed.
+
 ## 19.1.54 (2021-03-30)
 
 ### DataManager
@@ -16,7 +40,7 @@
 
 #### Bug Fixes
 
-- `312017` - `RemoteSaveAdaptor` with batch editing issue has been fixed has been fixed.
+- `312017` - `RemoteSaveAdaptor` with batch editing issue has been fixed.
 
 ## 18.4.33 (2021-01-05)
 

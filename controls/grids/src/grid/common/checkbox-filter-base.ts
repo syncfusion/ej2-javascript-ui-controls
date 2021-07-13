@@ -60,6 +60,7 @@ export class CheckBoxFilterBase {
     protected valueFormatter: ValueFormatter;
     private searchHandler: Function;
     private isMenuNotEqual: boolean;
+    private isBlanks: boolean;
     /**
      * Constructor for checkbox filtering module
      *
@@ -348,6 +349,7 @@ export class CheckBoxFilterBase {
 
     public closeDialog(): void {
         if (this.dialogObj && !this.dialogObj.isDestroyed) {
+            this.isBlanks = false;
             const filterTemplateCol: Column[] = (this.options.columns as Column[]).filter((col: Column) => col.getFilterItemTemplate());
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             const registeredTemplate: any = (this.parent as any).registeredTemplate;
@@ -407,10 +409,15 @@ export class CheckBoxFilterBase {
                     field: this.options.field
                 };
                 if (value !== undefined && value !== null && value !== '') {
-                    if (this.isForeignColumn(this.options.column as Column)) {
-                        this.foreignFilter(args, value as string);
+                    if (this.isBlanks && value && typeof value === 'string' &&
+                        this.getLocalizedLabel('Blanks').toLowerCase().indexOf((value as string).toLowerCase()) >= 0) {
+                        this.fltrBtnHandler();
                     } else {
-                        this.options.handler(args);
+                        if (this.isForeignColumn(this.options.column as Column)) {
+                            this.foreignFilter(args, value as string);
+                        } else {
+                            this.options.handler(args);
+                        }
                     }
                 } else {
                     this.closeDialog();
@@ -583,6 +590,14 @@ export class CheckBoxFilterBase {
         const ignoreAccent: boolean = this.options.ignoreAccent;
         const field: string = this.isForeignColumn(column) ? column.foreignKeyValue : column.field;
         parsed = (parsed === '' || parsed === undefined) ? undefined : parsed;
+        let coll: PredicateModel[] = [];
+        const defaults: {
+            predicate?: string, field?: string, type?: string, uid?: string
+            operator?: string, matchCase?: boolean, ignoreAccent?: boolean
+        } = {
+            field: field, predicate: 'or', uid: this.options.uid,
+            operator: 'equal', type: this.options.type, matchCase: matchCase, ignoreAccent: ignoreAccent
+        };
         let predicte: Predicate;
         const moduleName : Function = (<{ getModuleName?: Function }>this.options.dataManager.adaptor).getModuleName;
         if (this.options.type === 'boolean') {
@@ -620,16 +635,21 @@ export class CheckBoxFilterBase {
             predicte = new Predicate(field, filterargs.operator, parsed, filterargs.matchCase, filterargs.ignoreAccent);
             if (this.options.type === 'date' || this.options.type === 'datetime') {
                 operator = 'equal';
-                if (isNullOrUndefined(parsed) && val.length) {
-                    return;
-                }
                 const filterObj: Object = {
                     field: field, operator: operator, value: parsed, matchCase: matchCase,
                     ignoreAccent: ignoreAccent
                 };
-                predicte = getDatePredicate(filterObj, this.options.type);
+                if (!isNullOrUndefined(parsed)) {
+                    predicte = getDatePredicate(filterObj, this.options.type);
+                }
             }
-            if (val.length) {
+            if (val && typeof val === 'string' && this.isBlanks &&
+                this.getLocalizedLabel('Blanks').toLowerCase().indexOf((val as string).toLowerCase()) >= 0) {
+                coll = coll.concat(CheckBoxFilterBase.generateNullValuePredicates(defaults));
+                const emptyValPredicte: Predicate = CheckBoxFilterBase.generatePredicate(coll);
+                emptyValPredicte.predicates.push(predicte);
+                query.where(emptyValPredicte);
+            } else if (val.length) {
                 predicte = !isNullOrUndefined(pred) ? predicte.and(pred.e as Predicate) : predicte;
                 query.where(predicte);
             } else if (!isNullOrUndefined(pred)) {
@@ -898,6 +918,9 @@ export class CheckBoxFilterBase {
         const dummyData: Object = extendObjWithFn({}, data, { column: this.options.column, parent: this.parent });
         label.innerHTML = !isNullOrUndefined(value) && value.toString().length ? value :
             this.getLocalizedLabel('Blanks');
+        if (label.innerHTML === this.getLocalizedLabel('Blanks')) {
+            this.isBlanks = true;
+        }
         if (typeof value === 'boolean') {
             label.innerHTML = value === true ? this.getLocalizedLabel('FilterTrue') : this.getLocalizedLabel('FilterFalse');
         }

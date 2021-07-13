@@ -2164,6 +2164,9 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
      */
 
     public onPropertyChanged(newProp: ScheduleModel, oldProp: ScheduleModel): void {
+        if ((this as any).isReact && isNullOrUndefined(this.activeView)) {
+            return;
+        }
         const state: StateArgs = {
             isRefresh: false, isResource: false, isDate: false, isView: false, isLayout: false, isDataManager: false
         };

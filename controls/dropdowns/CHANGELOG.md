@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 19.2.47 (2021-07-13)
+
+### MultiSelect
+
+#### Bug Fixes
+
+- `#I331063` - Issue with "popup is not opened while rendering component with HTML select tag and dynamically changing the data source" has been resolved.
+
 ## 19.1.65 (2021-05-25)
 
 ### DropDownList

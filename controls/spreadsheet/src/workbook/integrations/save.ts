@@ -105,7 +105,7 @@ export class WorkbookSave extends SaveWorker {
             'contextMenuBeforeOpen', 'created', 'dataBound', 'fileMenuItemSelect', 'fileMenuBeforeClose', 'fileMenuBeforeOpen',
             'saveComplete', 'sortComplete', 'select', 'actionBegin', 'actionComplete', 'afterHyperlinkClick', 'afterHyperlinkCreate',
             'beforeHyperlinkClick', 'beforeHyperlinkCreate', 'openComplete', 'openFailure', 'queryCellInfo', 'dialogBeforeOpen',
-            'dataSourceChanged']);
+            'dataSourceChanged', 'beforeConditionalFormat']);
         const basicSettings: { [key: string]: Object } = JSON.parse(jsonStr);
         const sheetCount: number = this.parent.sheets.length;
         if (sheetCount) { basicSettings.sheets = []; }

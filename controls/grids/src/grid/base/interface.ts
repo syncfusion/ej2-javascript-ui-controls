@@ -790,7 +790,10 @@ export interface IRenderer {
     getFrozenRightContent?(): Element;
     getFrozenRightHeader?(): Element;
     destroyTemplate?(templateName: string[]): void;
-    emptyVcRows?(): void ;
+    emptyVcRows?(): void;
+    getBlockSize?(): number;
+    getGroupedTotalBlocks?(): number;
+    isEndBlock?(block: number): boolean;
 }
 
 /**

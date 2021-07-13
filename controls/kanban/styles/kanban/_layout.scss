@@ -14,18 +14,30 @@
       table-layout: fixed;
       width: 100%;
 
+      @if ($kanban-skin == 'tailwind') {
+        border-spacing: 8px 0;
+      }
+
       col.e-collapsed {
         width: 50px;
+
+        @if ($kanban-skin == 'tailwind') {
+          width: 42px;
+        }
       }
     }
 
     .e-frozen-swimlane-row {
       position: relative;
-      z-index: 10001;
+      z-index: 101;
 
       .e-frozen-row {
         padding-left: 10px;
         padding-top: 13px;
+
+        @if ($kanban-skin == 'tailwind') {
+          padding: 12px 12px 12px 20px;
+        }
 
         .e-swimlane-header {
           display: flex;
@@ -35,6 +47,11 @@
             font-weight: 400;
             line-height: 20px;
             padding: 2px;
+
+            @if ($kanban-skin == 'tailwind') {
+              line-height: $kanban-leading-normal;
+              padding: 0 0 0 8px;
+            }
           }
 
           .e-item-count {
@@ -42,6 +59,15 @@
             line-height: 20px;
             opacity: .57;
             padding: 2px;
+
+            @if ($kanban-skin == 'tailwind') {
+              color: $kanban-header-item-color;
+              font-size: $kanban-text-xxs;
+              font-weight: $kanban-font-weight-medium;
+              line-height: $kanban-leading-relaxed;
+              opacity: 1;
+              padding: 3px;
+            }
           }
 
           .e-swimlane-row-expand,
@@ -53,8 +79,12 @@
             margin-left: 8px;
             padding: 6px;
 
-            &.e-frozen-icons {
-              pointer-events: none;
+            @if ($kanban-skin == 'tailwind') {
+              font-size: $kanban-text-lg;
+              height: 20px;
+              margin: 1px;
+              outline: none;
+              padding: 0;
             }
 
             &:hover,
@@ -67,6 +97,14 @@
               @if ($kanban-skin == 'highcontrast' or $kanban-skin == 'bootstrap4') {
                 border: 1px solid $kanban-border-hover-color;
                 color: $kanban-icons-toggle-color;
+              }
+
+              @if ($kanban-skin == 'tailwind') {
+                background: none;
+                box-shadow: $kanban-hover-box-shadow;
+                color: $kanban-primary-color;
+                margin: 1px;
+                padding: 0;
               }
             }
           }
@@ -89,6 +127,11 @@
         text-overflow: ellipsis;
         white-space: nowrap;
 
+        @if ($kanban-skin == 'tailwind') {
+          height: 42px;
+          padding: 11px;
+        }
+
         .e-header-wrap {
           display: flex;
 
@@ -102,18 +145,34 @@
 
         &.e-stacked-header-cell {
           border-bottom: 1px solid $kanban-border-color;
+
+          @if ($kanban-skin == 'tailwind') {
+            border-bottom: 1px solid $kanban-stacked-border-color;
+          }
         }
 
         &.e-toggle-header {
           .e-column-expand {
             cursor: pointer;
             padding: 6px;
+
+            @if ($kanban-skin == 'tailwind') {
+              font-size: $kanban-text-lg;
+              outline: none;
+              padding: 0;
+            }
           }
 
           .e-column-collapse {
             cursor: pointer;
             font-size: 12px;
             padding: 11px;
+
+            @if ($kanban-skin == 'tailwind') {
+              font-size: $kanban-text-lg;
+              outline: none;
+              padding: 0;
+            }
           }
         }
 
@@ -129,6 +188,10 @@
           background-color: $kanban-column-bg-color;
           text-align: center;
           width: 50px;
+
+          @if ($kanban-skin == 'tailwind') {
+            width: 42px;
+          }
 
           &.e-min-color {
             background: $kanban-min-color;
@@ -151,6 +214,13 @@
           overflow: hidden;
           padding-right: 5px;
           text-overflow: ellipsis;
+
+          @if ($kanban-skin == 'tailwind') {
+            font-size: $kanban-text-xs;
+            font-weight: $kanban-font-weight-medium;
+            line-height: $kanban-leading-normal;
+            text-transform: uppercase;
+          }
         }
 
         .e-item-count {
@@ -158,11 +228,24 @@
           font-weight: 400;
           line-height: 24px;
           opacity: .57;
+
+          @if ($kanban-skin == 'tailwind') {
+            font-size: $kanban-text-xxs;
+            font-weight: $kanban-font-weight-medium;
+            line-height: $kanban-leading-relaxed;
+            margin-top: 2px;
+            opacity: 1;
+            text-transform: uppercase;
+          }
         }
 
         .e-limits {
           display: flex;
           padding-top: 3px;
+
+          @if ($kanban-skin == 'tailwind') {
+            padding-top: 0;
+          }
 
           .e-min-count,
           .e-max-count {
@@ -170,6 +253,13 @@
             font-weight: 400;
             opacity: .57;
             width: 100%;
+
+            @if ($kanban-skin == 'tailwind') {
+              font-size: $kanban-text-xxs;
+              font-weight: $kanban-font-weight-medium;
+              line-height: $leading-relaxed;
+              opacity: 1;
+            }
           }
 
           .e-max-count {
@@ -197,6 +287,12 @@
             font-weight: 400;
             opacity: .57;
             padding: 4px 8px;
+
+            @if ($kanban-skin == 'tailwind') {
+              font-size: $kanban-text-xxs;
+              font-weight: $kanban-font-weight-medium;
+              line-height: $leading-relaxed;
+            }
           }
 
           .e-limits .e-max-count {
@@ -217,6 +313,10 @@
             text-align: center;
             width: 50px;
 
+            @if ($kanban-skin == 'tailwind') {
+              width: 42px;
+            }
+
             .e-card-wrapper,
             .e-card-container,
             .e-limits {
@@ -234,6 +334,15 @@
               text-overflow: ellipsis;
               white-space: nowrap;
               writing-mode: vertical-lr;
+
+              @if ($kanban-skin == 'tailwind') {
+                color: $kanban-header-font;
+                font-size: $kanban-text-xs;
+                font-weight: $kanban-font-weight-medium;
+                line-height: $kanban-leading-normal;
+                padding: 12px;
+                text-transform: uppercase;
+              }
 
               .e-item-count {
                 display: inline-block;
@@ -271,11 +380,24 @@
             overflow: auto;
             padding: 8px 8px 0;
 
+            @if ($kanban-skin == 'tailwind') {
+              padding: 12px 12px 0;
+            }
+
             .e-empty-card {
               font-size: 13px;
               line-height: 40px;
               padding: 10px 0;
               position: relative;
+
+              @if ($kanban-skin == 'tailwind') {
+                color: $kanban-header-font;
+                display: table;
+                font-size: $kanban-text-sm;
+                line-height: $kanban-leading-normal;
+                margin: 0 auto;
+                padding: 20px 0;
+              }
             }
 
             .e-card {
@@ -289,6 +411,14 @@
                 border-radius: 0;
               }
 
+              @if ($kanban-skin == 'tailwind') {
+                border: 1px solid transparent;
+                border-radius: 6px;
+                box-shadow: $kanban-card-box-shadow;
+                margin-bottom: 12px;
+                padding-bottom: 18px;
+              }
+
               &.e-draggable {
                 cursor: all-scroll;
               }
@@ -296,9 +426,18 @@
               .e-card-header {
                 padding: 7px 11px 0;
 
+                @if ($kanban-skin == 'tailwind') {
+                  padding: 18px 18px 0;
+                }
+
                 .e-card-header-title {
                   font-size: 14px;
                   line-height: 20px;
+
+                  @if ($kanban-skin == 'tailwind') {
+                    font-weight: $kanban-font-weight-medium;
+                    line-height: $kanban-leading-relaxed;
+                  }
                 }
               }
 
@@ -312,29 +451,62 @@
                 font-size: 13px;
                 line-height: 20px;
                 padding: 8px 11px;
+
+                @if ($kanban-skin == 'tailwind') {
+                  font-size: $kanban-text-sm;
+                  line-height: $kanban-leading-relaxed;
+                  padding: 12px 18px 0;
+                }
               }
 
               &.e-card-color {
                 border-left: 3px solid;
 
+                @if ($kanban-skin == 'tailwind') {
+                  border: 1px solid transparent;
+                  border-left: 2px solid;
+                }
+
                 .e-card-header {
                   padding: 7px 11px 0 8px;
+
+                  @if ($kanban-skin == 'tailwind') {
+                    padding: 18px 18px 0 16px;
+                  }
                 }
 
                 .e-card-content {
                   padding: 8px 11px 8px 8px;
+
+                  @if ($kanban-skin == 'tailwind') {
+                    padding: 12px 18px 0 16px;
+                  }
                 }
 
                 .e-card-tags {
                   padding: 0 11px 8px 8px;
+
+                  @if ($kanban-skin == 'tailwind') {
+                    padding: 12px 18px 0 16px;
+                  }
                 }
 
                 &.e-selection {
                   border-left: 3px solid;
 
+                  @if ($kanban-skin == 'tailwind') {
+                    border: 1px solid $kanban-card-border-color;
+                    border-left: 2px solid;
+                    box-shadow: $kanban-card-box-shadow;
+                  }
+
                   &:hover {
                     @if ($kanban-skin == 'fabric' or $kanban-skin == 'highcontrast') {
                       padding: 1px;
+                    }
+
+                    @if ($kanban-skin == 'tailwind') {
+                      box-shadow: $kanban-selection-hover-box-shadow;
                     }
                   }
 
@@ -344,10 +516,18 @@
                   @if ($kanban-skin == 'fabric' or $kanban-skin == 'highcontrast') {
                     border-left: 4px solid;
                   }
+
+                  @if ($kanban-skin == 'tailwind') {
+                    box-shadow: $kanban-selection-hover-box-shadow;
+                  }
                 }
 
                 .e-card-footer {
                   padding: 0 11px 7px 8px;
+
+                  @if ($kanban-skin == 'tailwind') {
+                    padding: 8px 18px 0 16px;
+                  }
                 }
               }
 
@@ -369,15 +549,31 @@
                 @if ($kanban-skin == 'bootstrap' or $kanban-skin == 'bootstrap4') {
                   border-radius: 4px;
                 }
+
+                @if ($kanban-skin == 'tailwind') {
+                  border-radius: 2px;
+                  font-size: $kanban-text-sm;
+                  line-height: $kanban-leading-relaxed;
+                  margin-right: 4px;
+                  padding: 1px 4px;
+                }
               }
 
               .e-card-tags {
                 line-height: 1;
                 padding: 0 11px 8px;
+
+                @if ($kanban-skin == 'tailwind') {
+                  padding: 12px 18px 0;
+                }
               }
 
               .e-card-footer {
                 padding: 0 11px 7px;
+
+                @if ($kanban-skin == 'tailwind') {
+                  padding: 8px 18px 0;
+                }
               }
 
               &.e-cloned-card {
@@ -390,10 +586,25 @@
                   border-color: $kanban-border-color;
                 }
 
+                @if ($kanban-skin == 'tailwind') {
+                  border: 1px solid $kanban-card-border-color;
+                  box-shadow: $kanban-card-box-shadow;
+                }
+
                 &:hover {
                   @if ($kanban-skin == 'fabric' or $kanban-skin == 'highcontrast') {
                     padding: 1px;
                   }
+
+                  @if ($kanban-skin == 'tailwind') {
+                    box-shadow: $kanban-selection-hover-box-shadow;
+                  }
+                }
+              }
+
+              &:hover {
+                @if ($kanban-skin == 'tailwind') {
+                  box-shadow: $kanban-selection-hover-box-shadow;
                 }
               }
 
@@ -406,6 +617,10 @@
               &.e-card-color {
                 &:focus {
                   border-left: 3px solid;
+
+                  @if ($kanban-skin == 'tailwind') {
+                    border-left: 2px solid;
+                  }
                 }
               }
 
@@ -433,10 +648,19 @@
             .e-target-dragged-clone,
             .e-target-dropped-clone {
               margin-bottom: 8px;
+
+              @if $kanban-skin == 'tailwind' {
+                border-radius: 6px;
+                margin-bottom: 12px;
+              }
             }
 
             .e-target-dragged-clone {
               border: 1px dashed $kanban-dragged-clone-border-color;
+
+              @if $kanban-skin == 'tailwind' {
+                background-color: $kanban-icons-toggle-bg-color;
+              }
             }
 
             .e-target-dropped-clone {
@@ -458,6 +682,12 @@
                 @if ($kanban-skin == 'highcontrast') {
                   color: $kanban-default-font;
                 }
+
+                @if ($kanban-skin == 'tailwind') {
+                  color: $content-text-color-disabled;
+                  font-size: $kanban-text-base;
+                  opacity: 1;
+                }
               }
             }
 
@@ -471,8 +701,16 @@
           height: 50px;
           min-height: 50px;
 
+          @if ($kanban-skin == 'tailwind') {
+            height: 46px;
+          }
+
           .e-swimlane-header {
             display: flex;
+
+            @if ($kanban-skin == 'tailwind') {
+              padding: 12px;
+            }
 
             .e-swimlane-row-expand,
             .e-swimlane-row-collapse {
@@ -482,6 +720,14 @@
               height: 24px;
               margin-left: 8px;
               padding: 6px;
+
+              @if ($kanban-skin == 'tailwind') {
+                font-size: $kanban-text-lg;
+                height: 20px;
+                margin: 1px;
+                outline: none;
+                padding: 0;
+              }
 
               &:hover,
               &:focus {
@@ -494,6 +740,15 @@
                   border: 1px solid $kanban-border-hover-color;
                   color: $kanban-icons-toggle-color;
                 }
+
+                @if ($kanban-skin == 'tailwind') {
+                  background: none;
+                  box-shadow: $kanban-hover-box-shadow;
+                  color: $kanban-primary-color;
+                  font-size: $kanban-text-lg;
+                  margin: 1px;
+                  padding: 0;
+                }
               }
             }
 
@@ -502,6 +757,11 @@
               font-weight: 400;
               line-height: 20px;
               padding: 2px;
+
+              @if ($kanban-skin == 'tailwind') {
+                line-height: $kanban-leading-normal;
+                padding: 0 0 0 8px;
+              }
             }
 
             .e-item-count {
@@ -509,6 +769,15 @@
               line-height: 20px;
               opacity: .57;
               padding: 2px;
+
+              @if ($kanban-skin == 'tailwind') {
+                color: $kanban-header-item-color;
+                font-size: $kanban-text-xxs;
+                font-weight: $kanban-font-weight-medium;
+                line-height: $kanban-leading-relaxed;
+                opacity: 1;
+                padding: 3px;
+              }
             }
           }
         }
@@ -517,6 +786,10 @@
           border: 1px solid transparent;
           border-radius: 4px;
           vertical-align: top;
+
+          @if ($kanban-skin == 'tailwind') {
+            outline: none;
+          }
 
           &.e-dropping {
             border: 1px dashed $kanban-border-color;
@@ -535,6 +808,11 @@
 
             @if ($kanban-skin == 'material') {
               border-color: $kanban-focus-color;
+            }
+
+            @if ($kanban-skin == 'tailwind') {
+              border: 1px solid transparent;
+              box-shadow: $kanban-hover-box-shadow;
             }
           }
 
@@ -568,6 +846,7 @@
             padding-left: 5px;
             padding-right: initial;
             text-align: right;
+            text-transform: uppercase;
           }
 
           .e-limits .e-max-count {
@@ -601,6 +880,13 @@
                   height: 24px;
                   margin-left: 0;
                   margin-right: 8px;
+
+                  @if ($kanban-skin == 'tailwind') {
+                    height: 20px;
+                    margin: 1px;
+                    outline: none;
+                    padding: 0;
+                  }
                 }
               }
             }
@@ -626,11 +912,21 @@
             @if $kanban-skin == 'highcontrast' {
               color: $kanban-default-font;
             }
+
+            @if ($kanban-skin == 'tailwind') {
+              font-size: 16px;
+              font-weight: $kanban-font-weight-medium;
+              line-height: $kanban-leading-normal;
+            }
           }
 
           .e-toolbar-menu,
           .e-toolbar-level-title {
             padding-top: 6px;
+
+            @if ($kanban-skin == 'tailwind') {
+              padding-top: 0;
+            }
 
             .e-icon-menu {
               font-size: 14px;
@@ -639,6 +935,10 @@
 
               @if $kanban-skin == 'highcontrast' {
                 color: $kanban-default-font;
+              }
+
+              @if $kanban-skin == 'tailwind' {
+                font-size: $kanban-text-lg;
               }
             }
           }
@@ -677,6 +977,10 @@
             height: 100%;
             opacity: .5;
             width: 100%;
+
+            @if $kanban-skin == 'tailwind' {
+              opacity: 1;
+            }
           }
         }
       }
@@ -695,27 +999,193 @@
 
       .e-icon-menu {
         font-size: 18px;
+
+        @if ($kanban-skin == 'tailwind') {
+          font-size: $kanban-text-xl;
+        }
+      }
+    }
+
+    .e-kanban-table {
+      @if ($kanban-skin == 'tailwind') {
+        border-spacing: 12px 0;
+      }
+    }
+
+    .e-frozen-swimlane-row .e-frozen-row {
+      @if ($kanban-skin == 'tailwind') {
+        padding: 16px 16px 16px 28px;
+      }
+
+      .e-swimlane-header {
+        .e-swimlane-text {
+          @if ($kanban-skin == 'tailwind') {
+            font-size: $kanban-text-base;
+            line-height: $kanban-leading-normal;
+          }
+        }
+
+        .e-item-count {
+          @if ($kanban-skin == 'tailwind') {
+            font-size: $kanban-text-xs;
+            line-height: $kanban-leading-normal;
+            padding: 4px;
+          }
+        }
+
       }
     }
 
     .e-kanban-table .e-header-cells {
       height: 56px;
 
+      @if ($kanban-skin == 'tailwind') {
+        height: 48px;
+      }
+
       .e-header-text {
         font-size: 16px;
         line-height: 24px;
+
+        @if ($kanban-skin == 'tailwind') {
+          font-size: $kanban-text-sm;
+          font-weight: $kanban-font-weight-medium;
+          line-height: $kanban-leading-normal;
+          text-transform: uppercase;
+        }
+      }
+
+      .e-item-count {
+        @if ($kanban-skin == 'tailwind') {
+          font-size: $kanban-text-xs;
+          font-weight: $kanban-font-weight-medium;
+          line-height: $kanban-leading-normal;
+          margin-top: 3px;
+          text-transform: uppercase;
+        }
+      }
+
+      .e-column-collapse,
+      .e-column-expand {
+        @if ($kanban-skin == 'tailwind') {
+          font-size: $kanban-text-xl;
+        }
       }
     }
 
     .e-kanban-content {
+      .e-content-row .e-content-cells .e-card-wrapper,
+      .e-content-row .e-content-cells .e-card-container {
+        @if ($kanban-skin == 'tailwind') {
+          padding: 16px 16px 0;
+        }
+
+        .e-target-dragged-clone,
+        .e-target-dropped-clone {
+          @if $kanban-skin == 'tailwind' {
+            margin-bottom: 16px;
+          }
+        }
+      }
+
+      .e-swimlane-row .e-content-cells .e-swimlane-header {
+        @if ($kanban-skin == 'tailwind') {
+          padding: 16px;
+        }
+
+        .e-swimlane-text {
+          @if ($kanban-skin == 'tailwind') {
+            font-size: $kanban-text-base;
+            line-height: $kanban-leading-normal;
+          }
+        }
+
+        .e-item-count {
+          @if ($kanban-skin == 'tailwind') {
+            font-size: $kanban-text-xs;
+            line-height: $kanban-leading-normal;
+            padding: 4px;
+          }
+        }
+
+        .e-swimlane-row-expand,
+        .e-swimlane-row-collapse {
+          @if ($kanban-skin == 'tailwind') {
+            font-size: $kanban-text-xl;
+          }
+        }
+      }
+
+      .e-content-row .e-content-cells .e-card-wrapper .e-card.e-card-color,
+      .e-content-row .e-content-cells .e-card-container .e-card.e-card-color {
+        .e-card-header {
+          @if ($kanban-skin == 'tailwind') {
+            padding: 24px 24px 0 22px;
+          }
+        }
+
+        .e-card-content {
+          @if ($kanban-skin == 'tailwind') {
+            padding: 8px 24px 0 22px;
+          }
+        }
+
+        .e-card-tags,
+        .e-card-footer {
+          @if ($kanban-skin == 'tailwind') {
+            padding: 12px 24px 0 22px;
+          }
+        }
+      }
+
       .e-content-row .e-content-cells .e-card-wrapper .e-card,
       .e-content-row .e-content-cells .e-card-container .e-card {
-        .e-card-header .e-card-header-title {
-          font-size: 15px;
+        .e-card-header {
+          @if ($kanban-skin == 'tailwind') {
+            padding: 24px 24px 0;
+          }
+        }
+
+        .e-card-content {
+          @if ($kanban-skin == 'tailwind') {
+            padding: 8px 24px 0;
+          }
+        }
+
+        .e-card-tags,
+        .e-card-footer {
+          @if ($kanban-skin == 'tailwind') {
+            padding: 12px 24px 0;
+          }
+        }
+      }
+
+      .e-content-row .e-content-cells .e-card-wrapper .e-card.e-card-color,
+      .e-content-row .e-content-cells .e-card-container .e-card.e-card-color,
+      .e-content-row .e-content-cells .e-card-wrapper .e-card,
+      .e-content-row .e-content-cells .e-card-container .e-card {
+        @if ($kanban-skin == 'tailwind') {
+          margin-bottom: 16px;
+        }
+
+        .e-card-header {
+          .e-card-header-title {
+            font-size: 15px;
+
+            @if ($kanban-skin == 'tailwind') {
+              font-size: $kanban-text-base;
+              line-height: $kanban-leading-normal;
+            }
+          }
         }
 
         .e-card-content {
           font-size: 14px;
+
+          @if ($kanban-skin == 'tailwind') {
+            font-size: $kanban-text-base;
+            line-height: $kanban-leading-normal;
+          }
         }
       }
     }
@@ -792,6 +1262,14 @@
         opacity: .87;
         padding: 5px 0;
         text-align: left;
+
+        @if ($kanban-skin == 'tailwind') {
+          color: $kanban-content-font;
+          font-weight: $kanban-font-weight-medium;
+          line-height: $kanban-leading-normal;
+          opacity: 1;
+          padding: 8px 0;
+        }
       }
 
       .e-label {

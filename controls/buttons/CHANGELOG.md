@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 19.2.47 (2021-07-13)
+
+### Checkbox
+
+#### Bug Fixes
+
+- Issue with checkbox icon on Mac OS has been resolved.
+
 ## 19.2.46 (2021-07-06)
 
 ### Chips

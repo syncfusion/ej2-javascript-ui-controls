@@ -8,6 +8,14 @@
 
 ## [Unreleased]
 
+## 19.2.47 (2021-07-13)
+
+### TreeMap
+
+#### Bug Fixes
+
+- `#I331257` - Labels will be displayed for all the leaf items in the TreeMap.
+
 ## 18.2.44 (2020-07-07)
 
 ### TreeMap

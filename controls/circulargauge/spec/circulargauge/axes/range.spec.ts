@@ -69,7 +69,7 @@ describe('Circular-Gauge Control', () => {
         it('Checking the axis range element', (done: Function) => {
             gauge.loaded = (args: ILoadedEventArgs): void => {
                 value = document.getElementById('container_Axis_Ranges_0').childElementCount;
-                expect(value == 0).toBe(true);
+                expect(value == 1).toBe(true);
                 done();
             };
             gauge.refresh();
@@ -87,7 +87,7 @@ describe('Circular-Gauge Control', () => {
         it('Checking the axis range element with given range both positive - same', (done: Function) => {
             gauge.loaded = (args: ILoadedEventArgs): void => {
                 value = document.getElementById('container_Axis_Ranges_0').childElementCount;
-                expect(value == 0).toBe(true);
+                expect(value == 1).toBe(true);
                 done();
             };
             gauge.axes[0].ranges[0].start = 10;
@@ -325,6 +325,26 @@ describe('Circular-Gauge Control', () => {
             gauge.axes[0].ranges[1].endWidth = 5;
             gauge.axes[0].ranges[0].radius = '50';
             gauge.axes[0].ranges[1].radius = '50';
+            gauge.refresh();
+        });
+        it('Checking axis range start value change by setRangeValue method', (done: Function) => {
+            gauge.loaded = (args: ILoadedEventArgs): void => {
+                ele = <HTMLElement>document.getElementById('container_Axis_Ranges_0').childNodes[0];
+                let start = gauge.axes[0].ranges[0].start;
+                gauge.setRangeValue(0, 0, 10, 50);
+                expect(start !== gauge.axes[0].ranges[0].start).toBe(true);
+                done();
+            };
+            gauge.refresh();
+        });
+        it('Checking axis range end value change by setRangeValue method', (done: Function) => {
+            gauge.loaded = (args: ILoadedEventArgs): void => {
+                ele = <HTMLElement>document.getElementById('container_Axis_Ranges_0').childNodes[0];
+                let end = gauge.axes[0].ranges[0].end;
+                gauge.setRangeValue(0, 0, 10, 40);
+                expect(end !== gauge.axes[0].ranges[0].end).toBe(true);
+                done();
+            };
             gauge.refresh();
         });
     });

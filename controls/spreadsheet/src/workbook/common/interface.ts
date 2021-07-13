@@ -36,6 +36,7 @@ export interface FindOptions {
     replaceValue?: string;
     replaceBy?: string;
     findCount?: string;
+    isAction?: boolean;
 }
 export interface ReplaceAllArgs {
     undoRedoOpt: string;

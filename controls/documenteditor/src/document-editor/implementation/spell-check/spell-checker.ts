@@ -67,7 +67,6 @@ export class SpellChecker {
      * Gets the boolean indicating whether optimized spell check to be performed.
      *
      * @aspType bool
-     * @blazorType bool
      * @returns {boolean} Returns enableOptimizedSpellCheck
      */
     public get enableOptimizedSpellCheck(): boolean {
@@ -78,7 +77,6 @@ export class SpellChecker {
      * Sets the boolean indicating whether optimized spell check to be performed.
      *
      * @aspType bool
-     * @blazorType bool
      */
     public set enableOptimizedSpellCheck(value: boolean) {
         this.performOptimizedCheck = value;
@@ -88,7 +86,6 @@ export class SpellChecker {
      * Gets the spell checked Unique words.
      *
      * @aspType int
-     * @blazorType int
      */
     public get uniqueWordsCount(): number {
         return isNullOrUndefined(this.uniqueWordsCountInternal) ? 0 : this.uniqueWordsCountInternal;
@@ -97,7 +94,6 @@ export class SpellChecker {
      * Sets the spell checked Unique words.
      *
      * @aspType int
-     * @blazorType int
      */
     public set uniqueWordsCount(value: number) {
         this.uniqueWordsCountInternal = value;
@@ -107,7 +103,6 @@ export class SpellChecker {
      * Gets the languageID.
      *
      * @aspType int
-     * @blazorType int
      */
     public get languageID(): number {
         return isNullOrUndefined(this.langIDInternal) ? 0 : this.langIDInternal;
@@ -116,7 +111,6 @@ export class SpellChecker {
      * Sets the languageID.
      *
      * @aspType int
-     * @blazorType int
      */
     public set languageID(value: number) {
         this.langIDInternal = value;
@@ -125,7 +119,6 @@ export class SpellChecker {
      * Getter indicates whether suggestion enabled.
      *
      * @aspType bool
-     * @blazorType bool
      */
     public get allowSpellCheckAndSuggestion(): boolean {
         return this.spellSuggestionInternal;
@@ -134,7 +127,6 @@ export class SpellChecker {
      * Setter to enable or disable suggestion
      *
      * @aspType bool
-     * @blazorType bool
      */
     public set allowSpellCheckAndSuggestion(value: boolean) {
         this.spellSuggestionInternal = value;
@@ -143,7 +135,6 @@ export class SpellChecker {
      * Getter indicates whether underline removed for mis-spelled word.
      *
      * @aspType bool
-     * @blazorType bool
      */
     public get removeUnderline(): boolean {
         return this.removeUnderlineInternal;
@@ -152,7 +143,6 @@ export class SpellChecker {
      * Setter to enable or disable underline for mis-spelled word
      *
      * @aspType bool
-     * @blazorType bool
      */
     public set removeUnderline(value: boolean) {
         this.removeUnderlineInternal = value;
@@ -162,7 +152,6 @@ export class SpellChecker {
      * Getter indicates whether spell check has to be performed or not.
      *
      * @aspType bool
-     * @blazorType bool
      */
     public get enableSpellCheck(): boolean {
         return this.enableSpellCheckInternal;
@@ -171,7 +160,6 @@ export class SpellChecker {
      * Setter to enable or disable spell check has to be performed or not
      *
      * @aspType bool
-     * @blazorType bool
      */
     public set enableSpellCheck(value: boolean) {
         this.enableSpellCheckInternal = value;

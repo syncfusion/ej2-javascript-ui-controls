@@ -246,6 +246,7 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
     protected preventChange: boolean = false;
     protected isAngular: boolean = false;
     protected isPreventChange: boolean = false;
+    protected isDynamicDataChange: boolean = false;
     /**
      * The `fields` property maps the columns of the data table and binds the data to the component.
      * * text - Maps the text column from data table for each list item.
@@ -555,9 +556,11 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
                 });
             } else {
                 if (isTextByValue) {
+                    let compareValue: string | number = null;
+                    compareValue = value;
                     dataSource.filter((item: { [key: string]: Object }) => {
                         const itemValue: string | number = getValue(fields.value, item);
-                        if (!isNullOrUndefined(itemValue) && !isNullOrUndefined(value) && itemValue.toString() === value.toString()) {
+                        if (!isNullOrUndefined(itemValue) && !isNullOrUndefined(value) && itemValue.toString() === compareValue.toString()) {
                             value = getValue(fields.text, item) as string;
                         }
                     });
@@ -721,6 +724,8 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
                 : !isNullOrUndefined(this.dataSource) ? true : false;
             if (!dataSource) {
                 this.renderItemsBySelect();
+            } else if (this.isDynamicDataChange) {
+                this.setListData(this.dataSource, this.fields, this.query);
             }
         } else {
             this.setListData(this.dataSource, this.fields, this.query);

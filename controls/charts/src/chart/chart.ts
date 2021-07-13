@@ -1928,6 +1928,10 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
      */
     public renderSeries(): void {
         let visibility: boolean;
+        if (this.enableCanvas) {
+            // To clip the series rect for canvas
+            (this.renderer as CanvasRenderer).canvasClip(this.chartAxisLayoutPanel.seriesClipRect);
+        }
         for (const item of this.visibleSeries) {
             if (item.category === 'TrendLine') {
                 visibility = this.series[item.sourceIndex].trendlines[item.index].visible;
@@ -1940,8 +1944,6 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
                 if (this.enableCanvas) {
                     // To render scatter and bubble series in canvas
                     this.renderCanvasSeries(item);
-                    // To clip the series rect for canvas
-                    (this.renderer as CanvasRenderer).canvasClip(this.chartAxisLayoutPanel.seriesClipRect);
                 }
                 item.renderSeries(this);
                 if (this.enableCanvas) {
@@ -3578,6 +3580,7 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
      * Called internally if any of the property value changed.
      * @private
      */
+    // tslint:disable-next-line:max-func-body-length
     public onPropertyChanged(newProp: ChartModel, oldProp: ChartModel): void {
         let renderer: boolean = false;
         let refreshBounds: boolean = false;
@@ -3702,6 +3705,13 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
                         renderer = true;
                         break;
                     case 'selectedDataIndexes':
+                        if (this.selectionModule) {
+                            this.selectionModule.currentMode = this.selectionMode;
+                            this.selectionModule.selectedDataIndexes = this.selectedDataIndexes as Indexes[];
+                            this.selectionModule.styleId = this.element.id + '_ej2_chart_selection';
+                            this.selectionModule.redrawSelection(this, oldProp.selectionMode, true);
+                        }
+                        break;
                     case 'selectionMode':
                         if (this.selectionModule && newProp.selectionMode && newProp.selectionMode.indexOf('Drag') === -1) {
                             this.selectionModule.currentMode = this.selectionMode;

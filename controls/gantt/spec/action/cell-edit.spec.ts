@@ -1283,11 +1283,12 @@ describe('taskType with resourceUnit mapping', () => {
         it('Add Notes using add dialog', () => {
             ganttObj.actionComplete = (args: any): void => {
                 if (args.requestType === 'add') {
-                    expect(ganttObj.currentViewData[0].ganttProperties.notes).toBe('Updated');
+                    expect(ganttObj.currentViewData[0].ganttProperties.notes).toBe('<p>Updated</p>');
                 }
             };
             let notesTab: RichTextEditor = (document.getElementById(ganttObj.element.id + 'NotesTabContainer') as any).ej2_instances[0]
             notesTab.value = "Updated";
+			notesTab.dataBind();
             let saveButton: HTMLElement = ganttObj.element.querySelector('#' + ganttObj.element.id + '_dialog > div.e-footer-content > button.e-control.e-btn.e-lib.e-primary.e-flat') as HTMLElement;
             triggerMouseEvent(saveButton, 'click');
         });

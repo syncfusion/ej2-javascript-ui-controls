@@ -377,6 +377,8 @@ export class Overview extends Component<HTMLElement> implements INotifyPropertyC
         this.canvas.removeChild(diagramLayer);
         view.diagramLayerDiv = null;
         view.diagramLayer = null;
+        const domTable: string = 'domTable';
+        window[domTable][this.id + 'html_layer'] = null;
     }
 
     private renderHtmlLayer(canvas: HTMLElement): HTMLElement {

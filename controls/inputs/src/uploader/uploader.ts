@@ -596,6 +596,7 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
     private newFileRef: number = 0;
     private isFirstFileOnSelection: boolean = false;
     private dragCounter : number = 0;
+    private isPreloadFiles: boolean;
     /**
      * Get the file item(li) which are shown in file list.
      *
@@ -1413,7 +1414,9 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
             this.renderButtonTemplates();
             this.uploadWrapper.appendChild(this.actionButtons);
             this.browseButton.blur();
-            this.uploadButton.focus();
+            if (!this.isPreloadFiles) {
+                this.uploadButton.focus();   
+            }
             this.wireActionButtonEvents();
         }
     }
@@ -1525,6 +1528,7 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
             if (isNullOrUndefined(this.files[0].size)) {
                 return;
             }
+            this.isPreloadFiles = true;
             let files: FilesPropModel[] = [].slice.call(this.files);
             const filesData: FileInfo[] = [];
             if (!this.multiple) {
@@ -1552,6 +1556,7 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
             if (this.sequentialUpload) {
                 this.count = this.filesData.length - 1;
             }
+            this.isPreloadFiles = false;
         }
     }
 

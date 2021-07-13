@@ -1,4 +1,4 @@
-import { Component, Property, INotifyPropertyChanged, NotifyPropertyChanges, Event, ModuleDeclaration, ChildProperty, isBlazor, classList, Complex, formatUnit } from '@syncfusion/ej2-base';import { isNullOrUndefined, L10n, EmitType, Browser } from '@syncfusion/ej2-base';import { Save } from '@syncfusion/ej2-file-utils';import { DocumentChangeEventArgs, ViewChangeEventArgs, ZoomFactorChangeEventArgs, StyleType, WStyle, BeforePaneSwitchEventArgs, LayoutType, FormFieldFillEventArgs, FormFieldData } from './index';import { SelectionChangeEventArgs, RequestNavigateEventArgs, ContentChangeEventArgs, DocumentEditorKeyDownEventArgs, CustomContentMenuEventArgs, BeforeOpenCloseCustomContentMenuEventArgs, CommentDeleteEventArgs, BeforeFileOpenArgs, CommentActionEventArgs } from './index';import { LayoutViewer, PageLayoutViewer, WebLayoutViewer, BulletsAndNumberingDialog } from './index';import { Print, SearchResultsChangeEventArgs } from './index';import { Page, BodyWidget, ParagraphWidget } from './index';import { WSectionFormat, WParagraphFormat, WCharacterFormat } from './index';import { SfdtReader } from './index';import { Selection } from './index';import { TextPosition } from './index';import { Editor, EditorHistory } from './index';import { WStyles } from './index';import { HeaderFooters } from './index';import { Search } from './index';import { OptionsPane } from './index';import { WordExport } from './index';import { TextExport } from './index';import { FormatType, PageFitType, DialogType, FormattingExceptions } from './index';import { ContextMenu } from './index';import { ImageResizer } from './index';import { SfdtExport } from './index';import { HyperlinkDialog, TableDialog, BookmarkDialog, StylesDialog, TableOfContentsDialog } from './index';import { PageSetupDialog, ParagraphDialog, ListDialog, StyleDialog, FontDialog } from './index';import { TablePropertiesDialog, BordersAndShadingDialog, CellOptionsDialog, TableOptionsDialog } from './index';import { SpellChecker } from './implementation/spell-check/spell-checker';import { SpellCheckDialog } from './implementation/dialogs/spellCheck-dialog';import { CharacterFormatProperties, ParagraphFormatProperties, SectionFormatProperties, DocumentHelper } from './index';import { PasteOptions } from './index';import { CommentReviewPane, CheckBoxFormFieldDialog, DropDownFormField, TextFormField, CheckBoxFormField, FieldElementBox, TextFormFieldInfo, CheckBoxFormFieldInfo, DropDownFormFieldInfo, ContextElementInfo, CollaborativeEditing, CollaborativeEditingEventArgs } from './implementation/index';import { TextFormFieldDialog } from './implementation/dialogs/form-field-text-dialog';import { DropDownFormFieldDialog } from './implementation/dialogs/form-field-drop-down-dialog';import { FormFillingMode, TrackChangeEventArgs, ServiceFailureArgs, ImageFormat } from './base';import { TrackChangesPane } from './implementation/track-changes/track-changes-pane';import { RevisionCollection } from './implementation/track-changes/track-changes';import { NotesDialog } from './implementation/dialogs/notes-dialog';import { FootNoteWidget } from './implementation/viewer/page';import { internalZoomFactorChange, contentChangeEvent, documentChangeEvent, selectionChangeEvent, zoomFactorChangeEvent, beforeFieldFillEvent, afterFieldFillEvent, serviceFailureEvent, viewChangeEvent, customContextMenuSelectEvent, customContextMenuBeforeOpenEvent } from './base/constants';
+import { Component, Property, INotifyPropertyChanged, NotifyPropertyChanges, Event, ModuleDeclaration, ChildProperty, classList, Complex, formatUnit } from '@syncfusion/ej2-base';import { isNullOrUndefined, L10n, EmitType, Browser } from '@syncfusion/ej2-base';import { Save } from '@syncfusion/ej2-file-utils';import { DocumentChangeEventArgs, ViewChangeEventArgs, ZoomFactorChangeEventArgs, StyleType, WStyle, BeforePaneSwitchEventArgs, LayoutType, FormFieldFillEventArgs, FormFieldData } from './index';import { SelectionChangeEventArgs, RequestNavigateEventArgs, ContentChangeEventArgs, DocumentEditorKeyDownEventArgs, CustomContentMenuEventArgs, BeforeOpenCloseCustomContentMenuEventArgs, CommentDeleteEventArgs, BeforeFileOpenArgs, CommentActionEventArgs } from './index';import { LayoutViewer, PageLayoutViewer, WebLayoutViewer, BulletsAndNumberingDialog } from './index';import { Print, SearchResultsChangeEventArgs } from './index';import { Page, BodyWidget, ParagraphWidget } from './index';import { WSectionFormat, WParagraphFormat, WCharacterFormat } from './index';import { SfdtReader } from './index';import { Selection } from './index';import { TextPosition } from './index';import { Editor, EditorHistory } from './index';import { WStyles } from './index';import { HeaderFooters } from './index';import { Search } from './index';import { OptionsPane } from './index';import { WordExport } from './index';import { TextExport } from './index';import { FormatType, PageFitType, DialogType, FormattingExceptions } from './index';import { ContextMenu } from './index';import { ImageResizer } from './index';import { SfdtExport } from './index';import { HyperlinkDialog, TableDialog, BookmarkDialog, StylesDialog, TableOfContentsDialog } from './index';import { PageSetupDialog, ParagraphDialog, ListDialog, StyleDialog, FontDialog } from './index';import { TablePropertiesDialog, BordersAndShadingDialog, CellOptionsDialog, TableOptionsDialog } from './index';import { SpellChecker } from './implementation/spell-check/spell-checker';import { SpellCheckDialog } from './implementation/dialogs/spellCheck-dialog';import { CharacterFormatProperties, ParagraphFormatProperties, SectionFormatProperties, DocumentHelper } from './index';import { PasteOptions } from './index';import { CommentReviewPane, CheckBoxFormFieldDialog, DropDownFormField, TextFormField, CheckBoxFormField, FieldElementBox, TextFormFieldInfo, CheckBoxFormFieldInfo, DropDownFormFieldInfo, ContextElementInfo, CollaborativeEditing, CollaborativeEditingEventArgs } from './implementation/index';import { TextFormFieldDialog } from './implementation/dialogs/form-field-text-dialog';import { DropDownFormFieldDialog } from './implementation/dialogs/form-field-drop-down-dialog';import { FormFillingMode, TrackChangeEventArgs, ServiceFailureArgs, ImageFormat } from './base';import { TrackChangesPane } from './implementation/track-changes/track-changes-pane';import { RevisionCollection } from './implementation/track-changes/track-changes';import { NotesDialog } from './implementation/dialogs/notes-dialog';import { FootNoteWidget } from './implementation/viewer/page';import { internalZoomFactorChange, contentChangeEvent, documentChangeEvent, selectionChangeEvent, zoomFactorChangeEvent, beforeFieldFillEvent, afterFieldFillEvent, serviceFailureEvent, viewChangeEvent, customContextMenuSelectEvent, customContextMenuBeforeOpenEvent } from './base/constants';
 import {ComponentModel} from '@syncfusion/ej2-base';
 
 /**
@@ -57,15 +57,15 @@ export interface DocumentEditorModel extends ComponentModel{
     layoutType?: LayoutType;
 
     /**
-     * Current User
+     * Gets or sets the current user.
      *
      * @default ''
      */
     currentUser?: string;
 
     /**
-     * User Selection Highlight Color
-     *
+     * Gets or sets the color used for highlighting the editable ranges or regions of the `currentUser` in Document Editor. The default value is "#FFFF00".
+     * Remarks: If the visibility of text affected due this highlight color matching with random color applied for the track changes, then modify the color value of this property to resolve text visibility problem.
      * @default '#FFFF00'
      */
     userColor?: string;
@@ -402,7 +402,6 @@ export interface DocumentEditorModel extends ComponentModel{
      * Triggers whenever document changes in the document editor.
      *
      * @event
-     * @blazorproperty 'DocumentChanged'
      */
     documentChange?: EmitType<DocumentChangeEventArgs>;
 
@@ -410,7 +409,6 @@ export interface DocumentEditorModel extends ComponentModel{
      * Triggers whenever container view changes in the document editor.
      *
      * @event
-     * @blazorproperty 'ViewChanged'
      */
     viewChange?: EmitType<ViewChangeEventArgs>;
 
@@ -418,7 +416,6 @@ export interface DocumentEditorModel extends ComponentModel{
      * Triggers whenever zoom factor changes in the document editor.
      *
      * @event
-     * @blazorproperty 'ZoomFactorChanged'
      */
     zoomFactorChange?: EmitType<ZoomFactorChangeEventArgs>;
 
@@ -426,7 +423,6 @@ export interface DocumentEditorModel extends ComponentModel{
      * Triggers whenever selection changes in the document editor.
      *
      * @event
-     * @blazorproperty 'SelectionChanged'
      */
     selectionChange?: EmitType<SelectionChangeEventArgs>;
 
@@ -434,7 +430,6 @@ export interface DocumentEditorModel extends ComponentModel{
      * Triggers whenever hyperlink is clicked or tapped in the document editor.
      *
      * @event
-     * @blazorproperty 'OnRequestNavigate'
      */
     requestNavigate?: EmitType<RequestNavigateEventArgs>;
 
@@ -442,7 +437,6 @@ export interface DocumentEditorModel extends ComponentModel{
      * Triggers whenever content changes in the document editor.
      *
      * @event
-     * @blazorproperty 'ContentChanged'
      */
     contentChange?: EmitType<ContentChangeEventArgs>;
 
@@ -450,7 +444,6 @@ export interface DocumentEditorModel extends ComponentModel{
      * Triggers whenever key is pressed in the document editor.
      *
      * @event
-     * @blazorproperty 'OnKeyDown'
      */
     keyDown?: EmitType<DocumentEditorKeyDownEventArgs>;
 
@@ -458,7 +451,6 @@ export interface DocumentEditorModel extends ComponentModel{
      * Triggers whenever search results changes in the document editor.
      *
      * @event
-     * @blazorproperty 'SearchResultsChanged'
      */
     searchResultsChange?: EmitType<SearchResultsChangeEventArgs>;
 
@@ -466,7 +458,6 @@ export interface DocumentEditorModel extends ComponentModel{
      * Triggers when the component is created
      *
      * @event
-     * @blazorproperty 'Created'
      */
     created?: EmitType<Object>;
 
@@ -474,7 +465,6 @@ export interface DocumentEditorModel extends ComponentModel{
      * Triggers when the component is destroyed.
      *
      * @event
-     * @blazorproperty 'Destroyed'
      */
     destroyed?: EmitType<Object>;
 
@@ -482,7 +472,6 @@ export interface DocumentEditorModel extends ComponentModel{
      * Triggers while selecting the custom context-menu option.
      *
      * @event
-     * @blazorproperty 'ContextMenuItemSelected'
      */
     customContextMenuSelect?: EmitType<CustomContentMenuEventArgs>;
 
@@ -490,7 +479,6 @@ export interface DocumentEditorModel extends ComponentModel{
      * Triggers before opening the custom context-menu option.
      *
      * @event
-     * @blazorproperty 'OnContextMenuOpen'
      */
     customContextMenuBeforeOpen?: EmitType<BeforeOpenCloseCustomContentMenuEventArgs>;
 
@@ -498,14 +486,12 @@ export interface DocumentEditorModel extends ComponentModel{
      * Triggers before opening comment pane.
      *
      * @event
-     * @blazorproperty 'BeforePaneSwitch'
      */
     beforePaneSwitch?: EmitType<BeforePaneSwitchEventArgs>;
 
     /**
      * Triggers after inserting comment.
      *
-     * @blazorproperty 'OnCommentBegin'
      * @event
      */
     commentBegin?: EmitType<Object>;
@@ -514,7 +500,6 @@ export interface DocumentEditorModel extends ComponentModel{
      * Triggers after posting comment.
      *
      * @event
-     * @blazorproperty 'AfterCommentEnd'
      */
     commentEnd?: EmitType<Object>;
 
@@ -522,14 +507,12 @@ export interface DocumentEditorModel extends ComponentModel{
      * Triggers before a file is opened.
      *
      * @event
-     * @blazorproperty 'onBeforeFileOpen'
      */
     beforeFileOpen?: EmitType<BeforeFileOpenArgs>;
 
     /**
      * Triggers after inserting comment.
      *
-     * @blazorproperty 'OnCommentDelete'
      * @event
      */
     commentDelete?: EmitType<CommentDeleteEventArgs>;
@@ -544,7 +527,6 @@ export interface DocumentEditorModel extends ComponentModel{
     /**
      * Triggers when TrackChanges enabled / disabled.
      *
-     * @blazorproperty 'OnTrackChange'
      * @event
      */
     trackChange?: EmitType<TrackChangeEventArgs>;

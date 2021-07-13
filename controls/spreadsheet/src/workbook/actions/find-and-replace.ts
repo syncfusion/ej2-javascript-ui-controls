@@ -884,7 +884,7 @@ export class WorkbookFindAndReplace {
         return requiredCount;
     }
     private findAllValues(findAllArguments: FindAllArgs): void {
-        let startSheet: number = findAllArguments.sheetIndex; let sheet: SheetModel = this.parent.sheets[startSheet - 1];
+        let startSheet: number = findAllArguments.sheetIndex; let sheet: SheetModel = this.parent.sheets[startSheet];
         let endRow: number = sheet.usedRange.rowIndex; let rowIndex: number = 0; let count: number = 0; let address: string;
         let endColumn: number = sheet.usedRange.colIndex; let columnIndex: number = 0;
         const sheetLength: number = this.parent.sheets.length; const initialSheet: number = findAllArguments.sheetIndex;

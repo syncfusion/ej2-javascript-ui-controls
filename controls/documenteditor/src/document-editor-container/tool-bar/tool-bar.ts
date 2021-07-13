@@ -102,9 +102,7 @@ export class Toolbar {
      * Enables or disables the specified Toolbar item.
      *
      * @param  {number} itemIndex - Index of the toolbar items that need to be enabled or disabled.
-     * @param  {boolean} isEnable  - Boolean value that determines whether the toolbar item should be enabled or disabled.
-     * By default, `isEnable` is set to true.
-     * @blazorArgsType itemIndex|int,isEnable|Boolean
+     * @param  {boolean} isEnable  - Boolean value that determines whether the toolbar item should be enabled or disabled. By default, `isEnable` is set to true.
      * @returns {void}
      */
     public enableItems(itemIndex: number, isEnable: boolean): void {

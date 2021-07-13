@@ -10,14 +10,15 @@ import { Freeze } from '../../../src/grid/actions/freeze';
 import { contentReady, freezeRender } from '../../../src/grid/base/constant';
 import { GridModel } from '../../../src/grid/base/grid-model';
 import { Column } from '../../../src/grid/models/column';
-import { data } from '../base/datasource.spec';
+import { data, filterData } from '../base/datasource.spec';
 import '../../../node_modules/es6-promise/dist/es6-promise';
 import  {profile , inMB, getMemoryProfile} from '../base/common.spec';
 import { Resize } from '../../../src/grid/actions/resize';
 import { RowDD } from '../../../src/grid/actions/row-reorder';
 import { Edit } from '../../../src/grid/actions/edit';
+import { VirtualScroll } from '../../../src/grid/actions/virtual-scroll';
 
-Grid.Inject(Filter, Freeze, Resize, RowDD, Edit);
+Grid.Inject(Filter, Freeze, Resize, RowDD, Edit, VirtualScroll);
 
 describe('ShowHide module testing', () => {
 
@@ -769,6 +770,30 @@ describe('ShowHide module testing', () => {
             expect(gridObj.getSelectedRecords().length).toBe(1);
         });
         
+        afterAll(() => {
+            destroy(gridObj);
+        });
+    });
+    describe('EJ2-50707 - Show/hide columns not working properly with virtualization', () => {
+        let gridObj: Grid;
+        beforeAll((done: Function) => {
+            gridObj = createGrid(
+                {
+                    dataSource: filterData,
+                    enableVirtualization: true,
+                    height: 400,
+                    columns: [
+                        { field: 'OrderID', headerText: 'Order ID', isPrimaryKey: true, textAlign: 'Right' },
+                        { field: 'CustomerID', headerText: 'Customer ID' },
+                        { field: 'Freight', format: 'C2', textAlign: 'Right' },
+                        { field: 'ShipName', headerText: 'Ship Name' }
+                    ]
+                }, done);
+        });
+        it('Hide Column without columns width and with virtualization', () => {
+            gridObj.hideColumns(['Order ID']);
+            expect(gridObj.getVisibleColumns().length).toBe(3);
+        });
         afterAll(() => {
             destroy(gridObj);
         });

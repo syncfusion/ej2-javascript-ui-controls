@@ -35,7 +35,8 @@ export class XhtmlValidation {
             this.ImageTags();
             this.removeTags();
             this.RemoveUnsupported();
-            this.currentElement.innerHTML = this.selfEncloseValidation(this.currentElement.innerHTML);
+            this.currentElement.innerHTML = this.selfEncloseValidation(this.currentElement.innerHTML,
+                this.currentElement.innerText === "\n" ? this.currentElement.innerText.length : this.currentElement.innerText.trim().length);
             this.parent.setProperties({ value: this.currentElement.innerHTML }, true);
         }
     }
@@ -45,7 +46,12 @@ export class XhtmlValidation {
      * @returns {void}
      * @deprecated
      */
-    public selfEncloseValidation(currentValue: string): string {
+    public selfEncloseValidation(currentValue: string, valueLength?: number): string {
+        if (valueLength === 0 && currentValue.indexOf('table') < 0 && currentValue.indexOf('img') < 0){ 
+            let arrayValue: string[] = currentValue.split('&nbsp;');
+            arrayValue[arrayValue.length - 1] = "&#8203;" + arrayValue[arrayValue.length - 1];
+            currentValue = arrayValue.join('');
+        }
         currentValue = currentValue.replace(/<br>/g, '<br/>').replace(/<hr>/g, '<hr/>').replace(/&nbsp;/gi, ' ').replace(/ /g, ' ');
         let valueTemp: RegExpExecArray;
         const valueDupe: string[] = [];

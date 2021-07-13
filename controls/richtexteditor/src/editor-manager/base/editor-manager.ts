@@ -79,6 +79,7 @@ export class EditorManager {
         this.observer.on(EVENTS.KEY_UP, this.editorKeyUp, this);
         this.observer.on(EVENTS.MODEL_CHANGED, this.onPropertyChanged, this);
         this.observer.on(EVENTS.MS_WORD_CLEANUP, this.onWordPaste, this);
+        this.observer.on(EVENTS.ON_BEGIN, this.onBegin, this);
     }
     private onWordPaste(e: NotifyArgs): void {
         this.observer.notify(EVENTS.MS_WORD_CLEANUP_PLUGIN, e);
@@ -91,6 +92,9 @@ export class EditorManager {
     }
     private editorKeyUp(e: IHtmlKeyboardEvent): void {
         this.observer.notify(EVENTS.KEY_UP_HANDLER, e);
+    }
+    private onBegin(e: IHtmlKeyboardEvent): void {
+        this.observer.notify(EVENTS.SPACE_ACTION, e);
     }
     /* eslint-disable */
     /**

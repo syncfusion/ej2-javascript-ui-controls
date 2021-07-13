@@ -2,6 +2,12 @@
 
 ## [Unreleased]
 
+## 19.2.47 (2021-07-13)
+
+### Common
+
+- `I327143`,`I332883` - Resolved the issue with Template Compilation malfunctions when value have special character apostrophe.
+
 ## 19.1.64 (2021-05-19)
 
 ### Common

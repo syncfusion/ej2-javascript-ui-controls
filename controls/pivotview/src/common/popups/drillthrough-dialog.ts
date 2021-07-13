@@ -82,6 +82,16 @@ export class DrillThroughDialog {
                     }, false);
                 },
                 beforeClose: () => {
+                    if (this.parent.dataSourceSettings.calculatedFieldSettings.length > 0) {
+                        for (let i: number = 0; i < Object.keys(this.gridIndexObjects).length; i++) {
+                            for (let k: number = 0; k < this.parent.dataSourceSettings.calculatedFieldSettings.length; k++) {
+                                let data: IDataSet = this.parent.engineModule.data[Number(Object.keys(this.gridIndexObjects)[i])] as IDataSet;
+                                if (!isNullOrUndefined(data[this.parent.dataSourceSettings.calculatedFieldSettings[k].name])) {
+                                    delete data[this.parent.dataSourceSettings.calculatedFieldSettings[k].name];
+                                }
+                            }
+                        }
+                    }
                     if (this.parent.editSettings.allowEditing && this.isUpdated) {
                         if (this.parent.dataSourceSettings.type === 'CSV') {
                             this.updateData(this.drillThroughGrid.dataSource as IDataSet[]);
@@ -442,30 +452,29 @@ export class DrillThroughDialog {
             }
         } else {
             for (let key of keys) {
-                if (this.engine.fieldList[key].aggregateType !== 'CalculatedField') {
-                    let editType: string = '';
-                    let isDateField: boolean = ((this.engine.fieldList[key].type === 'date' || this.engine.fieldList[key].type === 'datetime')
-                        && (this.isDateFieldExist(key) || (rawData[0] && rawData[0][key] && rawData[0][key].toString().indexOf(' ') === -1))) ? true : false;
-                    if (this.engine.fieldList[key].type === 'number') {
-                        editType = 'numericedit';
-                    } else if (this.engine.fieldList[key].type === 'date' && isDateField) {
-                        editType = 'datepickeredit';
-                    } else if (this.engine.fieldList[key].type === 'datetime' && isDateField) {
-                        editType = 'datetimepickeredit';
-                    } else {
-                        editType = 'defaultedit';
-                    }
-                    columns.push({
-                        field: key,
-                        headerText: this.engine.fieldList[key].caption,
-                        width: 120,
-                        visible: this.engine.fieldList[key].isSelected,
-                        validationRules: { required: true },
-                        editType: editType,
-                        format: !isNullOrUndefined(this.formatList[key]) ? this.formatList[key] : undefined,
-                        type: !isNullOrUndefined(this.formatList[key]) ? null : 'string'
-                    });
+                let editType: string = '';
+                let isDateField: boolean = ((this.engine.fieldList[key].type === 'date' || this.engine.fieldList[key].type === 'datetime')
+                    && (this.isDateFieldExist(key) || (rawData[0] && rawData[0][key] && rawData[0][key].toString().indexOf(' ') === -1))) ? true : false;
+                if (this.engine.fieldList[key].type === 'number') {
+                    editType = 'numericedit';
+                } else if (this.engine.fieldList[key].type === 'date' && isDateField) {
+                    editType = 'datepickeredit';
+                } else if (this.engine.fieldList[key].type === 'datetime' && isDateField) {
+                    editType = 'datetimepickeredit';
+                } else {
+                    editType = 'defaultedit';
                 }
+                columns.push({
+                    field: key,
+                    headerText: this.engine.fieldList[key].caption,
+                    width: 120,
+                    visible: this.engine.fieldList[key].isSelected,
+                    validationRules: { required: true },
+                    editType: editType,
+                    format: !isNullOrUndefined(this.formatList[key]) ? this.formatList[key] : undefined,
+                    type: !isNullOrUndefined(this.formatList[key]) ? null : 'string',
+                    allowEditing: this.engine.fieldList[key].aggregateType === 'CalculatedField' ? false : true
+                });
             }
         }
         return columns;

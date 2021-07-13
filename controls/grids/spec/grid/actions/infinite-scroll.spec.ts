@@ -1418,3 +1418,47 @@ describe('EJ2-50577 - Script error throws when add record in a empty Grid with i
         gridObj = null;
     });
 });
+
+describe('EJ2-50385 - Infinite scroll records removed after refreshing => ', () => {
+    let gridObj: Grid;
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: virtualData,
+                enableInfiniteScrolling: true,
+                height: 400,
+                columns: [
+                    { field: 'FIELD2', headerText: 'FIELD2', width: 120 },
+                    { field: 'FIELD1', headerText: 'FIELD1', width: 100 },
+                    { field: 'FIELD3', headerText: 'FIELD3', width: 120 },
+                    { field: 'FIELD4', headerText: 'FIELD4', width: 120 },
+                    { field: 'FIELD5', headerText: 'FIELD5', width: 120 }
+                ]
+            }, () => {
+                setTimeout(done, 200);
+            });
+    });
+    it('scroll bottom', function(done: Function){
+        gridObj.dataBound = null;
+        let dataBound = () => {
+            gridObj.dataBound = null;
+            done();
+        };
+        gridObj.dataBound = dataBound;
+        gridObj.getContent().firstElementChild.scrollTop = 5000;
+    });
+    it('refresh grid', function(done: Function){
+        let dataBound = () => {
+            expect(gridObj.getContent().firstElementChild.scrollTop).toBe(0);
+            expect(gridObj.pageSettings.currentPage).toBe(1);
+            gridObj.dataBound = null;
+            done();
+        };
+        gridObj.dataBound = dataBound;
+        gridObj.refresh();
+    });
+    afterAll(() => {
+        destroy(gridObj);
+        gridObj = null;
+    });
+});

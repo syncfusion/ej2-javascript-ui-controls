@@ -7,6 +7,7 @@ import { IGrid, ICellRenderer, CommandModel } from '../base/interface';
 import { CommandButtonType } from '../base/enum';
 import { CellRenderer } from './cell-renderer';
 import { appendChildren } from '../base/util';
+import { destroy } from '../base/constant';
 
 /**
  * `CommandColumn` used to render command column in grid
@@ -17,6 +18,7 @@ import { appendChildren } from '../base/util';
 export class CommandColumnRenderer extends CellRenderer implements ICellRenderer<Column> {
     private buttonElement: HTMLButtonElement = <HTMLButtonElement>this.parent.createElement('button', {});
     private unbounDiv: HTMLElement = this.parent.createElement('div', { className: 'e-unboundcelldiv', styles: 'display: inline-block' });
+    private childRefs: Button[] = [];
 
     public element: HTMLElement = this.parent.createElement('TD', {
         className: 'e-rowcell e-unboundcell', attrs: {
@@ -25,7 +27,18 @@ export class CommandColumnRenderer extends CellRenderer implements ICellRenderer
     });
     constructor(parent: IGrid, locator?: ServiceLocator) {
         super(parent, locator);
+        this.parent.on(destroy, this.destroyButtons, this);
     }
+
+    private destroyButtons(): void {
+        for (let i: number = 0; i < this.childRefs.length; i++) {
+            if (this.childRefs[i] && !this.childRefs[i].isDestroyed) {
+                this.childRefs[i].destroy();
+            }
+        }
+        this.parent.off(destroy, this.destroyButtons);
+    }
+
     /**
      * Function to render the cell content based on Column object.
      *
@@ -74,6 +87,7 @@ export class CommandColumnRenderer extends CellRenderer implements ICellRenderer
         });
         button.onclick = buttonOption.buttonOption.click;
         const buttonObj: Button = new Button(buttonOption.buttonOption, button);
+        this.childRefs.push(buttonObj);
         (<{ commandType?: CommandButtonType }>buttonObj).commandType = buttonOption.type;
         node.firstElementChild.appendChild(buttonObj.element);
         switch (buttonOption.type) {

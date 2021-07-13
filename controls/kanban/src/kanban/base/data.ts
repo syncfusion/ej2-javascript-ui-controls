@@ -202,6 +202,9 @@ export class Data {
             }
             this.parent.layoutModule.removeCard(data);
             this.parent.layoutModule.renderCardBasedOnIndex(data, position);
+            if (this.parent.layoutModule.isSelectedCard) {
+                this.parent.actionModule.SingleCardSelection(data);
+            }
             if (this.parent.sortSettings.field && this.parent.sortSettings.sortBy === 'Index'
                 && this.parent.sortSettings.direction === 'Descending' && position > 0) {
                 --position;
@@ -214,5 +217,5 @@ export class Data {
         this.parent.renderTemplates();
         this.parent.notify(events.contentReady, {});
         this.parent.trigger(events.dataBound, null, () => this.parent.hideSpinner());
-    }
+    }  
 }

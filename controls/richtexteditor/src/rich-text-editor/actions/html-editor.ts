@@ -1,6 +1,6 @@
 import * as events from '../base/constant';
 import { IRichTextEditor, IToolbarItemModel, IColorPickerRenderArgs, IRenderer } from '../base/interface';
-import { NotifyArgs, IToolbarOptions } from '../base/interface';
+import { NotifyArgs, IToolbarOptions, ActionBeginEventArgs } from '../base/interface';
 import { ServiceLocator } from '../services/service-locator';
 import { isNullOrUndefined, closest, KeyboardEventArgs, attributes, removeClass, addClass, Browser, detach } from '@syncfusion/ej2-base';
 import { HTMLFormatter } from '../formatter/html-formatter';
@@ -14,10 +14,13 @@ import { ColorPickerInput } from './color-picker';
 import { ClickEventArgs } from '@syncfusion/ej2-navigations';
 import { NodeSelection } from '../../selection/selection';
 import { InsertHtml } from '../../editor-manager/plugin/inserthtml';
+import { IHtmlKeyboardEvent } from '../../editor-manager/base/interface';
 import { getTextNodesUnder, sanitizeHelper } from '../base/util';
 import { isIDevice } from '../../common/util';
 import { RichTextEditorModel } from '../base/rich-text-editor-model';
 import { XhtmlValidation } from './xhtml-validation';
+import { ON_BEGIN } from './../../common/constant';
+import { EditorManager } from '../../editor-manager';
 
 /**
  * `HtmlEditor` module is used to HTML editor
@@ -139,12 +142,67 @@ export class HtmlEditor {
             ((e as NotifyArgs).args as KeyboardEventArgs).action === 'enter') {
             this.spaceLink(e.args as KeyboardEvent);
         }
+        if (((e as NotifyArgs).args as KeyboardEventArgs).action === 'space') {
+            const currentRange: Range = this.parent.getRange();
+            const editorValue: string = currentRange.startContainer.textContent.slice(0, currentRange.startOffset);
+            const orderedList: boolean = this.isOrderedList(editorValue);
+            const unOrderedList: boolean =  this.isUnOrderedList(editorValue);
+            if (orderedList && !unOrderedList || unOrderedList && !orderedList) {
+                const eventArgs: IHtmlKeyboardEvent = {
+                    callBack: null,
+                    event: ((e as NotifyArgs).args as KeyboardEventArgs),
+                    name: 'keydown-handler'
+                };
+                const actionBeginArgs: ActionBeginEventArgs = {
+                    cancel: false,
+                    item: { command: 'Lists', subCommand: orderedList ? 'OL' : 'UL' },
+                    name: 'actionBegin',
+                    originalEvent: ((e as NotifyArgs).args as KeyboardEventArgs),
+                    requestType: orderedList ? 'OL' : 'UL'
+                };
+                this.parent.trigger(events.actionBegin, actionBeginArgs, (actionBeginArgs: ActionBeginEventArgs) => {
+                    if (!actionBeginArgs.cancel) {
+                        this.parent.formatter.editorManager.observer.notify(ON_BEGIN, eventArgs);
+                        this.parent.trigger(events.actionComplete, {
+                            editorMode: this.parent.editorMode,
+                            elements: (this.parent.formatter.editorManager as EditorManager).domNode.blockNodes(),
+                            event: ((e as NotifyArgs).args as KeyboardEventArgs),
+                            name: events.actionComplete,
+                            range: this.parent.getRange(),
+                            requestType: orderedList ? 'OL' : 'UL'
+                        });
+                    }
+                });
+            }
+        }
         if (Browser.info.name === 'chrome' && !isNullOrUndefined(this.rangeElement) && !isNullOrUndefined(this.oldRangeElement) &&
             currentRange.startContainer.parentElement.tagName !== 'TD' && currentRange.startContainer.parentElement.tagName !== 'TH') {
             this.rangeElement = null;
             this.oldRangeElement = null;
             (e.args as KeyboardEvent).preventDefault();
         }
+    }
+    private isOrderedList(editorValue: string): boolean {
+        const olListStartRegex: RegExp[] = [/^[1]+[.]+$/, /^[i]+[.]+$/, /^[a]+[.]+$/];
+        if (!isNullOrUndefined(editorValue)) {
+            for (let i: number = 0; i < olListStartRegex.length; i++) {
+                if (olListStartRegex[i].test(editorValue)) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+    private isUnOrderedList(editorValue: string): boolean {
+        const ulListStartRegex: RegExp[] = [/^[*]$/, /^[-]$/ ];
+        if (!isNullOrUndefined(editorValue)) {
+            for (let i: number = 0; i < ulListStartRegex.length; i++) {
+                if (ulListStartRegex[i].test(editorValue)) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
     private backSpaceCleanup(e: NotifyArgs, currentRange: Range): void {
         let isLiElement: boolean = false;

@@ -824,7 +824,9 @@ export class ResourceBase {
             eventObj = extend(eventObj, resourceObj) as Record<string, any>;
         } else {
             for (let level: number = 0, length: number = this.resourceCollection.length; level < length; level++) {
-                eventObj[this.resourceCollection[level].field] = this.lastResourceLevel[index].groupOrder[level];
+                if (this.lastResourceLevel[index]) {
+                    eventObj[this.resourceCollection[level].field] = this.lastResourceLevel[index].groupOrder[level];
+                }
             }
         }
     }

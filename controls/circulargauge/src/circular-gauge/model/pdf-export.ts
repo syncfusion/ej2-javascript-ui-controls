@@ -45,9 +45,16 @@ export class PdfExport {
             });
             const isDownload: boolean = !(Browser.userAgent.toString().indexOf('HeadlessChrome') > -1);
             orientation = isNullOrUndefined(orientation) ? PdfPageOrientation.Landscape : orientation;
+            const exportElement: HTMLElement = this.control.svgObject.cloneNode(true) as HTMLElement;
+            const backgroundElement: HTMLElement = exportElement.childNodes[0] as HTMLElement;
+            const backgroundColor: string = backgroundElement.getAttribute('fill');
+            if ((this.control.theme === 'Tailwind' || this.control.theme === 'TailwindDark')
+                && (backgroundColor === 'rgba(255,255,255, 0.0)' || backgroundColor === 'transparent')) {
+                (exportElement.childNodes[0] as HTMLElement).setAttribute('fill', 'rgba(255,255,255, 1)');
+            }
             const url: string = window.URL.createObjectURL(
                 new Blob(
-                    [(new XMLSerializer()).serializeToString(this.control.svgObject)],
+                    [(new XMLSerializer()).serializeToString(exportElement)],
                     { type: 'image/svg+xml' }
                 )
             );

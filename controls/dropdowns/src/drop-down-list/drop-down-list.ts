@@ -108,7 +108,7 @@ export class DropDownList extends DropDownBase implements IInput {
     private backIconElement: Element;
     private clearIconElement: Element;
     private containerStyle: ClientRect;
-    protected previousValue: string | number | boolean = null;
+    protected previousValue: string | number | boolean;
     protected activeIndex: number;
     protected filterInput: HTMLInputElement;
     private searchKeyModule: KeyboardEvents;
@@ -447,6 +447,7 @@ export class DropDownList extends DropDownBase implements IInput {
         this.preventAltUp = false;
         this.isCustomFilter = false;
         this.isSecondClick = false;
+        this.previousValue = null;
         this.keyConfigure = {
             tab: 'tab',
             enter: '13',

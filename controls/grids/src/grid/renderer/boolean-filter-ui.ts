@@ -10,6 +10,9 @@ import { Filter } from '../actions/filter';
 import { isNullOrUndefined, extend } from '@syncfusion/ej2-base';
 import { FlMenuOptrUI } from './filter-menu-operator';
 import { Dialog, Popup } from '@syncfusion/ej2-popups';
+import * as events from '../base/constant';
+import * as literals from '../base/string-literals';
+
 /**
  * `boolfilterui` render boolean column.
  *
@@ -25,11 +28,17 @@ export class BooleanFilterUI implements IFilterMUI {
     private filterSettings: FilterSettings;
     private dropInstance: DropDownList;
     private dialogObj: Dialog;
+    private ddOpen: Function;
+    private ddComplete: Function;
 
     constructor(parent?: IGrid, serviceLocator?: ServiceLocator, filterSettings?: FilterSettings) {
         this.parent = parent;
         this.serviceLocator = serviceLocator;
         this.filterSettings = filterSettings;
+        if (this.parent) {
+            this.parent.on(events.filterMenuClose, this.destroy, this);
+            this.parent.on(events.destroy, this.destroy, this);
+        }
     }
     public create(args: {
         column: Column, target: HTMLElement,
@@ -50,14 +59,14 @@ export class BooleanFilterUI implements IFilterMUI {
                 placeholder: args.localizeText.getConstant('SelectValue'),
                 cssClass: 'e-popup-flmenu',
                 locale: this.parent.locale,
-                enableRtl: this.parent.enableRtl,
-                open: this.openPopup.bind(this),
-                actionComplete: (e: { result: string[] }) => {
-                    e.result  = DataUtil.distinct(e.result, fields, true ) as string[];
-                }
+                enableRtl: this.parent.enableRtl
             },
             args.column.filter.params
         ));
+        this.ddOpen = this.openPopup.bind(this);
+        this.ddComplete = this.actionComplete(fields);
+        this.dropInstance.addEventListener(literals.open, this.ddOpen);
+        this.dropInstance.addEventListener(events.actionComplete, this.ddComplete);
         this.dropInstance.appendTo(this.elem);
     }
 
@@ -76,5 +85,20 @@ export class BooleanFilterUI implements IFilterMUI {
 
     private openPopup(args: { popup: Popup }): void {
         getZIndexCalcualtion(args, this.dialogObj);
+    }
+
+    private actionComplete(fields: string): Function {
+        return (e: { result: string[] }) => {
+            e.result = DataUtil.distinct(e.result, fields, true) as string[];
+        }
+    }
+
+    private destroy(): void {
+        if (this.dropInstance.isDestroyed) { return; }
+        this.dropInstance.removeEventListener(literals.open, this.ddOpen);
+        this.dropInstance.removeEventListener(events.actionComplete, this.ddComplete);
+        this.dropInstance.destroy();
+        this.parent.off(events.filterMenuClose, this.destroy);
+        this.parent.off(events.destroy, this.destroy);
     }
 }

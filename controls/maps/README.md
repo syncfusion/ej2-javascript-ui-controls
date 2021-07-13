@@ -10,7 +10,7 @@ The Maps component is used to visualize the geographical data and represent the 
 
 ## Setup
 
-To install Maps and its dependent packages, use the following command.
+To install Maps and its dependent packages, use the following command
 
 ```sh
 npm install @syncfusion/ej2-maps
@@ -70,6 +70,6 @@ Check the license detail [here](https://github.com/syncfusion/ej2-javascript-ui-
 
 ## Changelog
 
-Check the changelog [here](https://github.com/syncfusion/ej2-javascript-ui-controls/blob/master/controls/maps/CHANGELOG.md?utm_source=npm&utm_campaign=maps)
+Check the changelog [here](https://github.com/syncfusion/ej2-javascript-ui-controls/blob/master/controls/maps/CHANGELOG.md?utm_source=npm&utm_campaign=maps).
 
 © Copyright 2019 Syncfusion, Inc. All Rights Reserved. The Syncfusion Essential Studio license and copyright applies to this distribution.

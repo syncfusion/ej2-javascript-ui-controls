@@ -337,6 +337,9 @@
   @if $ddl-multiselect-skin-name == 'bootstrap4' {
     font-size: $ddl-chip-bigger-font-size;
   }
+  @if $ddl-multiselect-skin-name == 'tailwind' or $ddl-multiselect-skin-name == 'tailwind-dark' {
+    font-size: $ddl-chip-bigger-font-size;
+  }
   height: $ddl-input-bigger-height;
   min-height: $ddl-input-bigger-height;
 }
@@ -771,6 +774,9 @@ ejs-multiselect {
 }
 
 .e-small .e-multi-select-wrapper input[type='text'] {
+  @if $ddl-multiselect-skin-name == 'tailwind' or $ddl-multiselect-skin-name == 'tailwind-dark' {
+    font-size: $ddl-chip-small-font-size;
+  }
   height: $ddl-small-input-height;
   min-height: $ddl-small-input-height;
 }

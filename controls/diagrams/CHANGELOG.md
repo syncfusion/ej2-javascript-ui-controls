@@ -8,6 +8,16 @@
 
 #### Bug Fixes
 
+- `#F166100, #F166081` - The issue "An exception occurs when resizing the diagram page with an overview" has been fixed.
+- `#I333468` - The issue "The connectors cannot be grouped using group API" has been fixed.
+- `#I332942` - The issue "The nodes that take place above the lane is not selectable" has been fixed.
+
+## 19.2.44 (2021-06-30)
+
+### Diagram
+
+#### Bug Fixes
+
 - `#I329576` - The issue While changing the connector flip property the connector's segment path is not updated correctly issue has been fixed.
 - `#I327457` - The issue with node gradient is not applied while continuously performing the undo and redo functionality issue has been fixed.
 - `#330528` - The issue "Connector horizontal Alignment is not rendered properly at initial rendering" has been fixed.

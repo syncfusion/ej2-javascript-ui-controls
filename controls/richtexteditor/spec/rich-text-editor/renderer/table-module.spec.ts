@@ -767,6 +767,42 @@ the tool bar support, it�s also customiza</p><table class="e-rte-table" style=
             (rteObj.tableModule as any).destroy();
         });
     });
+    describe('EJ2-50697 - table resizing -', () => {
+        let rteEle: HTMLElement;
+        let rteObj: RichTextEditor;
+        beforeAll(() => {
+            rteObj = renderRTE({
+                height: 400,
+                toolbarSettings: {
+                    items: ['Bold', 'CreateTable', 'FontColor', 'BackgroundColor']
+                },
+                quickToolbarSettings: { enable: false },
+                resizing: (args) => {
+                    expect(args.requestType.toLocaleLowerCase() === 'table');
+                }
+            });
+            rteEle = rteObj.element;
+        });
+        afterAll(() => {
+            destroy(rteObj);
+        });
+        it('when there is unequal number of columns - ', () => {
+            expect(rteObj.element.querySelectorAll('.e-rte-content').length).toBe(1);
+            (<HTMLElement>rteEle.querySelectorAll(".e-toolbar-item")[1] as HTMLElement).click();
+            let target: HTMLElement = (rteObj as any).tableModule.popupObj.element.querySelector('.e-insert-table-btn');
+            let clickEvent: any = document.createEvent("MouseEvents");
+            clickEvent.initEvent("click", false, true);
+            target.dispatchEvent(clickEvent);
+            target = rteObj.tableModule.editdlgObj.element.querySelector('.e-insert-table') as HTMLElement;
+            target.dispatchEvent(clickEvent);
+            let table: HTMLElement = rteObj.contentModule.getEditPanel().querySelector('table') as HTMLElement;
+            table.querySelector('tr').querySelectorAll('td')[2].remove();
+            table.querySelector('tr').querySelectorAll('td')[1].remove();
+            (rteObj.tableModule as any).resizeHelper({ target: table, preventDefault: function () { } });
+            expect(rteObj.contentModule.getEditPanel().querySelectorAll('.e-column-resize').length).toBe(2);
+            (rteObj.tableModule as any).destroy();
+        });
+    });
     describe('mobile resize', () => {
         let rteEle: HTMLElement;
         let rteObj: RichTextEditor;
@@ -3540,6 +3576,46 @@ the tool bar support, it�s also customiza</p><table class="e-rte-table" style=
                 rows = rteObj.element.querySelectorAll('tr');
                 expect(rows.length).toBe(4);
                 expect(rows[0].children.length).toBe(3);
+                done();
+            }, 400);
+        });
+
+        it('- insert column when table column have different size -', (done) => {
+            rteObj = renderRTE({
+                toolbarSettings: {
+                    items: ['Bold']
+                },
+                value: `<table class="e-rte-table" style="width: 100%;"><tbody>
+                <tr>
+                    <td style="width: 25%;" class="e-cell-select">1</td>
+                    <td style="width: 75%;">3</td>
+                </tr>
+                <tr>
+                    <td style="width: 25%;">2</td>
+                    <td style="width: 75%;">4</td>
+                </tr>
+            </tbody>
+            </table>`
+            });
+            rteEle = rteObj.element;
+            let domSelection: NodeSelection = new NodeSelection();
+            (rteObj.contentModule.getEditPanel() as HTMLElement).focus();
+            dispatchEvent((rteObj.contentModule.getEditPanel() as HTMLElement), 'mousedown');
+            let tableCell: Element = document.querySelectorAll('tr')[0].querySelectorAll('td')[0];
+            let eventsArg: any = { pageX: 50, pageY: 300, target: tableCell };
+            (<any>rteObj).tableModule.editAreaClickHandler({ args: eventsArg });
+            setTimeout(() => {
+                let rows: any = rteObj.element.querySelectorAll('tr');
+                expect(rows.length).toBe(2);
+                expect(rows[0].children.length).toBe(2);
+                domSelection.setSelectionText(rteObj.contentModule.getDocument(), tableCell.firstChild, tableCell.firstChild, 0, 0);
+                (document.querySelectorAll('.e-rte-quick-popup .e-toolbar-item button')[2] as HTMLElement).click();
+                (rows[0].querySelectorAll('td')[0] as HTMLElement).classList.add("e-cell-select");
+                (document.querySelectorAll('.e-rte-dropdown-items.e-dropdown-popup ul .e-item')[1] as HTMLElement).click();
+                rows = rteObj.element.querySelectorAll('tr');
+                expect(rows[0].children[0].style.width).not.toBe("33.3333%");
+                expect(rows[0].children[1].style.width).toBe("33.3333%");
+                expect(rows[0].children[2].style.width).not.toBe("33.3333%");
                 done();
             }, 400);
         });

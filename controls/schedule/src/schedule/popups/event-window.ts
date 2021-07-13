@@ -272,13 +272,11 @@ export class EventWindow {
     private renderFormElements(form: HTMLFormElement, args?: Record<string, any>): void {
         if (!isNullOrUndefined(this.parent.editorTemplate)) {
             if (args) {
-                if (!(this as any).parent.isReact) {
-                    if (this.recurrenceEditor) {
-                        this.recurrenceEditor.destroy();
-                        this.recurrenceEditor = null;
-                    }
-                    this.destroyComponents();
+                if (this.recurrenceEditor) {
+                    this.recurrenceEditor.destroy();
+                    this.recurrenceEditor = null;
                 }
+                this.destroyComponents();
                 const formElements: HTMLElement[] = [].slice.call(form.children);
                 for (const element of formElements) {
                     remove(element);

@@ -6912,6 +6912,7 @@ export class Editor {
                 this.editorHistory.currentBaseHistoryInfo.updateSelection();
             }
             if (!(this.editorHistory.undoStack && this.editorHistory.undoStack.length > 0 && this.editorHistory.undoStack[this.editorHistory.undoStack.length - 1] instanceof HistoryInfo &&
+                (this.editorHistory.undoStack[this.editorHistory.undoStack.length - 1] as HistoryInfo).modifiedActions &&
                 (this.editorHistory.undoStack[this.editorHistory.undoStack.length - 1] as HistoryInfo).modifiedActions[(this.editorHistory.undoStack[this.editorHistory.undoStack.length - 1] as HistoryInfo).modifiedActions.length - 1] === this.editorHistory.currentBaseHistoryInfo)) {
                 this.editorHistory.updateHistory();
             }

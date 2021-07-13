@@ -4,6 +4,23 @@
 
 ## [Unreleased]
 
+## 19.2.47 (2021-07-13)
+
+### CircularGauge
+
+#### Bug Fixes
+
+- `#I333600` - No script errors are thrown when the same start and end values are set in the range using the `setRangeValue()` method.
+
+## 19.2.46 (2021-07-06)
+
+### CircularGauge
+
+#### Bug Fixes
+
+- `#I333600` - No script errors are thrown when the same start and end values are set in the range using the `setRangeValue()` method.
+- `#I333600` - When the `start` and `end` values of the range are set to the same value, the range's path will be correct now.
+
 ## 19.1.58 (2021-04-27)
 
 ### CircularGauge

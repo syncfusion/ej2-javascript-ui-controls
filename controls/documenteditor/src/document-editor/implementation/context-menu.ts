@@ -555,7 +555,6 @@ export class ContextMenu {
      * @param {boolean} isEnable - To hide existing menu item and show custom menu item alone
      * @param {boolean} isBottom - To show the custom menu item in bottom of the existing item
      * @returns {void}
-     * @blazorArgsType items|List<Syncfusion.Blazor.Navigations.MenuItemModel>,isEnable|Boolean,isBottom|Boolean
      */
     public addCustomMenu(items: MenuItemModel[], isEnable?: boolean, isBottom?: boolean): void {
         let menuItems: MenuItemModel[] = JSON.parse(JSON.stringify(items));

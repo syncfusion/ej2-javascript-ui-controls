@@ -1508,8 +1508,8 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
             this.formatter.saveData();
         }
         if ((e as KeyboardEventArgs).action !== 'insert-link' &&
-        ((e as KeyboardEventArgs).action && (e as KeyboardEventArgs).action !== 'paste' || e.which === 9 ||
-        (e.code === 'Backspace' && e.which === 8))) {
+        ((e as KeyboardEventArgs).action && (e as KeyboardEventArgs).action !== 'paste' && (e as KeyboardEventArgs).action !== 'space'
+        || e.which === 9 || (e.code === 'Backspace' && e.which === 8))) {
             this.formatter.process(this, null, e);
             switch ((e as KeyboardEventArgs).action) {
             case 'toolbar-focus':

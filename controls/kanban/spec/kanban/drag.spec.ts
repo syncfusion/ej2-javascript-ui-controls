@@ -1421,6 +1421,74 @@ describe('Drag module', () => {
         });
     });
 
+    describe('EJ2-50533 - Card is not in selected state after drag and drop the card', () => {
+        let kanbanObj: Kanban;
+        let key: string;
+        let droppedElement: HTMLElement;
+        let dragElement: HTMLElement;
+        beforeAll((done: DoneFn) => {
+            const model: KanbanModel = {
+                cardSettings: {
+                    headerField: 'Id',
+                    selectionType: 'Single'
+                }
+            };
+            kanbanObj = util.createKanban(model, kanbanData, done);
+        });
+
+        afterAll(() => {
+            util.destroy(kanbanObj);
+        });
+
+        it('Card click action event args as false', () => {
+            let ele: HTMLElement = kanbanObj.element.querySelector('.e-card[data-id="1"]') as HTMLElement;
+            expect(ele.classList.contains('e-selection')).toEqual(false);
+            util.triggerMouseEvent(ele, 'click');
+            expect(ele.classList.contains('e-selection')).toEqual(true);
+        });
+
+        it('Dragged clone behavior testing', () => {
+            dragElement = (kanbanObj.element.querySelectorAll('.e-card[data-id="1"]') as NodeListOf<Element>).item(0) as HTMLElement;
+            key = dragElement.getAttribute('data-key');
+            util.triggerMouseEvent(dragElement, 'mousedown');
+            util.triggerMouseEvent(dragElement, 'mousemove', 100, 100);
+            expect(key).toEqual('Open');
+            expect(dragElement.classList.contains('e-kanban-dragged-card')).toBeTruthy();
+            expect(dragElement.nextElementSibling.classList.contains('e-target-dragged-clone')).toBeTruthy();
+            expect(kanbanObj.element.querySelectorAll('.e-target-dragged-clone').length).toBe(1);
+        });
+
+        it('Created Dropped clone on above the column testing and target is card', () => {
+            const element: Element = kanbanObj.element.querySelectorAll('.e-card[data-id="2"]').item(0);
+            util.triggerMouseEvent(element, 'mousemove', 250, 100);
+            expect(element.previousElementSibling.classList.contains('e-target-dropped-clone')).toEqual(true);
+        });
+
+        it('Dropped clone behavior testing', () => {
+            droppedElement = kanbanObj.element.querySelectorAll('.e-card[data-id="9"] .e-card-header').item(0) as HTMLElement;
+            util.triggerMouseEvent(droppedElement, 'mousemove', 500, 200);
+            util.triggerMouseEvent(droppedElement, 'mousemove', 500, 200);
+            expect(document.body.style.cursor).toBe('');
+            expect(droppedElement.closest('.e-card').nextElementSibling.classList.contains('e-target-dropped-clone')).toEqual(true);
+        });
+
+        it('Dropped clone testing', () => {
+            util.triggerMouseEvent(droppedElement, 'mouseup', 500, 200);
+        });
+
+        it('Testing the cards after dropping the card', () => {
+            const data: Record<string, any> = kanbanObj.getCardDetails(dragElement);
+            const curKey: string = data[kanbanObj.keyField] as string;
+            expect(curKey).not.toBe(key);
+            expect(curKey).toEqual('Testing');
+        });
+
+        it('check the selection after drag and drop', () => {
+            let ele: HTMLElement = kanbanObj.element.querySelector('.e-card[data-id="1"]') as HTMLElement;
+            expect(ele.classList.contains('e-selection')).toEqual(true);
+        });
+    });
+
     it('memory leak', () => {
         profile.sample();
         const average: number = inMB(profile.averageChange);

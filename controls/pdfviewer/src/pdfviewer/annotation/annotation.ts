@@ -449,7 +449,7 @@ export class Annotation {
                 this.pdfViewer.remove(annotation);
                 this.pdfViewer.renderDrawing();
                 this.pdfViewer.clearSelection(pageNumber);
-                window.sessionStorage.setItem(this.pdfViewerBase.documentId + '_formDesigner', JSON.stringify(this.pdfViewerBase.formFieldCollection));
+                this.pdfViewerBase.setItemInSessionStorage(this.pdfViewerBase.formFieldCollection, '_formDesigner');
                 this.pdfViewer.isDocumentEdited = true;
                 this.pdfViewerBase.tool = null;
                 this.pdfViewer.tool = null;
@@ -1409,33 +1409,37 @@ for (let i: number = 0; i < collections.length; i++) {
                         formFieldObj.wrapper.children.push(actionObject.annotation.wrapper.children[0]);
                         if (actionObject.annotation.shapeAnnotationType === "SignatureText")
                             formFieldObj.wrapper.children.push(actionObject.annotation.wrapper.children[1]);
-                   
                         let key: string = actionObject.annotation.id.split('_')[0] + '_content';
-                        var data = window.sessionStorage.getItem(this.pdfViewerBase.documentId + '_formDesigner');
-                        var formFieldsData = JSON.parse(data);
-                        for (let i: number = 0; i < formFieldsData.length; i++) {
-                            if (formFieldsData[i].Key === key) {
-                                if (actionObject.annotation.shapeAnnotationType === "SignatureText") {
-                                    formFieldsData[i].FormField.signatureType = "Text";
-                                    formFieldsData[i].FormField.value = actionObject.annotation.data;
-                                    this.pdfViewerBase.formFieldCollection[i].FormField.value = actionObject.annotation.data;
-                                    this.pdfViewerBase.formFieldCollection[i].FormField.signatureType = "Text";
-                                } else if (actionObject.annotation.shapeAnnotationType === "SignatureImage") {
-                                    formFieldsData[i].FormField.signatureType = "Image";
-                                    formFieldsData[i].FormField.value = actionObject.annotation.data;
-                                    this.pdfViewerBase.formFieldCollection[i].FormField.value = actionObject.annotation.data;
-                                    this.pdfViewerBase.formFieldCollection[i].FormField.signatureType = "Image";
-                                } else {
-                                    formFieldsData[i].FormField.signatureType = "Path";
-                                    this.pdfViewerBase.formFieldCollection[i].FormField.signatureType = "Path";
-                                    let collectionData: any = processPathData(actionObject.annotation.data);
-                                    let csData: any = splitArrayCollection(collectionData);
-                                    formFieldsData[i].FormField.value = JSON.stringify(csData);
-                                    this.pdfViewerBase.formFieldCollection[i].FormField.value = JSON.stringify(csData);
+                        let data: any = null;
+                        if (this.pdfViewer.formDesignerModule) {
+                            data = this.pdfViewerBase.getItemFromSessionStorage('_formDesigner');
+                        }
+                        if (data) {
+                            var formFieldsData = JSON.parse(data);
+                            for (let i: number = 0; i < formFieldsData.length; i++) {
+                                if (formFieldsData[i].Key === key) {
+                                    if (actionObject.annotation.shapeAnnotationType === "SignatureText") {
+                                        formFieldsData[i].FormField.signatureType = "Text";
+                                        formFieldsData[i].FormField.value = actionObject.annotation.data;
+                                        this.pdfViewerBase.formFieldCollection[i].FormField.value = actionObject.annotation.data;
+                                        this.pdfViewerBase.formFieldCollection[i].FormField.signatureType = "Text";
+                                    } else if (actionObject.annotation.shapeAnnotationType === "SignatureImage") {
+                                        formFieldsData[i].FormField.signatureType = "Image";
+                                        formFieldsData[i].FormField.value = actionObject.annotation.data;
+                                        this.pdfViewerBase.formFieldCollection[i].FormField.value = actionObject.annotation.data;
+                                        this.pdfViewerBase.formFieldCollection[i].FormField.signatureType = "Image";
+                                    } else {
+                                        formFieldsData[i].FormField.signatureType = "Path";
+                                        this.pdfViewerBase.formFieldCollection[i].FormField.signatureType = "Path";
+                                        let collectionData: any = processPathData(actionObject.annotation.data);
+                                        let csData: any = splitArrayCollection(collectionData);
+                                        formFieldsData[i].FormField.value = JSON.stringify(csData);
+                                        this.pdfViewerBase.formFieldCollection[i].FormField.value = JSON.stringify(csData);
+                                    }
                                 }
                             }
+                                this.pdfViewerBase.setItemInSessionStorage(this.pdfViewerBase.formFieldCollection, '_formDesigner');
                         }
-                        window.sessionStorage.setItem(this.pdfViewerBase.documentId + '_formDesigner', JSON.stringify(this.pdfViewerBase.formFieldCollection));
                     }
 
                     this.pdfViewer.renderDrawing(null, actionObject.annotation.pageIndex);
@@ -1573,20 +1577,25 @@ for (let i: number = 0; i < collections.length; i++) {
                     if (actionObject.annotation.shapeAnnotationType === "SignatureText")
                         formFieldObj.wrapper.children.splice(formFieldObj.wrapper.children.indexOf(annotationObj.wrapper.children[1]), 1);
                     let key: string = actionObject.annotation.id.split('_')[0] + '_content';
-                    var data = window.sessionStorage.getItem(this.pdfViewerBase.documentId + '_formDesigner');
-                    var formFieldsData = JSON.parse(data);
-                    for (let i: number = 0; i < formFieldsData.length; i++) {
-                        if (formFieldsData[i].Key === key) {
-                            formFieldsData[i].FormField.value = '';
-                            formFieldsData[i].FormField.signatureType = '';
-                            this.pdfViewerBase.formFieldCollection[i].FormField.value = '';
-                            this.pdfViewerBase.formFieldCollection[i].FormField.signatureType = '';
-                        }
+                    let data: any = null;
+                    if (this.pdfViewer.formDesignerModule) {
+                        data = this.pdfViewerBase.getItemFromSessionStorage('_formDesigner');
                     }
+                    if (data) {
+                        var formFieldsData = JSON.parse(data);
+                        for (let i: number = 0; i < formFieldsData.length; i++) {
+                            if (formFieldsData[i].Key === key) {
+                                formFieldsData[i].FormField.value = '';
+                                formFieldsData[i].FormField.signatureType = '';
+                                this.pdfViewerBase.formFieldCollection[i].FormField.value = '';
+                                this.pdfViewerBase.formFieldCollection[i].FormField.signatureType = '';
+                            }
+                        }
 
-                    this.pdfViewer.remove(actionObject.annotation);
-                    this.pdfViewer.renderDrawing();
-                    window.sessionStorage.setItem(this.pdfViewerBase.documentId + '_formDesigner', JSON.stringify(this.pdfViewerBase.formFieldCollection));
+                        this.pdfViewer.remove(actionObject.annotation);
+                        this.pdfViewer.renderDrawing();
+                        this.pdfViewerBase.setItemInSessionStorage(this.pdfViewerBase.formFieldCollection, '_formDesigner');
+                    }
                 }
             }
             this.redoCollection.push(actionObject);
@@ -1731,17 +1740,22 @@ for (let i: number = 0; i < collections.length; i++) {
                         if (actionObject.annotation.shapeAnnotationType === "SignatureText")
                             formFieldObj.wrapper.children.splice(formFieldObj.wrapper.children.indexOf(actionObject.annotation.wrapper.children[1]), 1);
                         let key: string = actionObject.annotation.id.split('_')[0] + '_content';
-                        var data = window.sessionStorage.getItem(this.pdfViewerBase.documentId + '_formDesigner');
-                        var formFieldsData = JSON.parse(data);
-                        for (let i: number = 0; i < formFieldsData.length; i++) {
-                            if (formFieldsData[i].Key === key) {
-                                formFieldsData[i].FormField.value = '';
-                                formFieldsData[i].FormField.signatureType = '';
-                                this.pdfViewerBase.formFieldCollection[i].FormField.value = '';
-                                this.pdfViewerBase.formFieldCollection[i].FormField.signatureType = '';
-                            }
+                        let data: any = null;
+                        if (this.pdfViewer.formDesignerModule) {
+                            data = this.pdfViewerBase.getItemFromSessionStorage('_formDesigner');
                         }
-                        window.sessionStorage.setItem(this.pdfViewerBase.documentId + '_formDesigner', JSON.stringify(this.pdfViewerBase.formFieldCollection));
+                        if (data) {
+                            var formFieldsData = JSON.parse(data);
+                            for (let i: number = 0; i < formFieldsData.length; i++) {
+                                if (formFieldsData[i].Key === key) {
+                                    formFieldsData[i].FormField.value = '';
+                                    formFieldsData[i].FormField.signatureType = '';
+                                    this.pdfViewerBase.formFieldCollection[i].FormField.value = '';
+                                    this.pdfViewerBase.formFieldCollection[i].FormField.signatureType = '';
+                                }
+                            }
+                            this.pdfViewerBase.setItemInSessionStorage(this.pdfViewerBase.formFieldCollection, '_formDesigner');
+                        }
                     }
 
                     this.pdfViewer.clearSelection(actionObject.annotation.pageIndex);
@@ -1883,34 +1897,39 @@ for (let i: number = 0; i < collections.length; i++) {
                     if (actionObject.annotation.shapeAnnotationType === "SignatureText")
                         formFieldObj.wrapper.children.push(annotationObj.wrapper.children[1]);
                     let key: string = actionObject.annotation.id.split('_')[0] + '_content';
-                    var data = window.sessionStorage.getItem(this.pdfViewerBase.documentId + '_formDesigner');
-                    var formFieldsData = JSON.parse(data);
-                    for (let i: number = 0; i < formFieldsData.length; i++) {
-                        if (formFieldsData[i].Key === key) {
-                            if (actionObject.annotation.shapeAnnotationType === "SignatureText") {
-                                formFieldsData[i].FormField.signatureType = "Text";
-                                formFieldsData[i].FormField.value = actionObject.annotation.data;
-                                this.pdfViewerBase.formFieldCollection[i].FormField.value = actionObject.annotation.data;
-                                this.pdfViewerBase.formFieldCollection[i].FormField.signatureType = "Text";
-                            } else if (actionObject.annotation.shapeAnnotationType === "SignatureImage") {
-                                formFieldsData[i].FormField.signatureType = "Image";
-                                formFieldsData[i].FormField.value = actionObject.annotation.data;
-                                this.pdfViewerBase.formFieldCollection[i].FormField.value = actionObject.annotation.data;
-                                this.pdfViewerBase.formFieldCollection[i].FormField.signatureType = "Image";
-                            } else {
-                                formFieldsData[i].FormField.signatureType = "Path";
-                                this.pdfViewerBase.formFieldCollection[i].FormField.signatureType = "Path";
-                                let collectionData: any = processPathData(actionObject.annotation.data);
-                                let csData: any = splitArrayCollection(collectionData);
-                                formFieldsData[i].FormField.value = JSON.stringify(csData);
-                                this.pdfViewerBase.formFieldCollection[i].FormField.value = JSON.stringify(csData);
+                    let data: any = null;
+                    if (this.pdfViewer.formDesignerModule) {
+                        data = this.pdfViewerBase.getItemFromSessionStorage('_formDesigner');
+                    }
+                    if (data) {
+                        var formFieldsData = JSON.parse(data);
+                        for (let i: number = 0; i < formFieldsData.length; i++) {
+                            if (formFieldsData[i].Key === key) {
+                                if (actionObject.annotation.shapeAnnotationType === "SignatureText") {
+                                    formFieldsData[i].FormField.signatureType = "Text";
+                                    formFieldsData[i].FormField.value = actionObject.annotation.data;
+                                    this.pdfViewerBase.formFieldCollection[i].FormField.value = actionObject.annotation.data;
+                                    this.pdfViewerBase.formFieldCollection[i].FormField.signatureType = "Text";
+                                } else if (actionObject.annotation.shapeAnnotationType === "SignatureImage") {
+                                    formFieldsData[i].FormField.signatureType = "Image";
+                                    formFieldsData[i].FormField.value = actionObject.annotation.data;
+                                    this.pdfViewerBase.formFieldCollection[i].FormField.value = actionObject.annotation.data;
+                                    this.pdfViewerBase.formFieldCollection[i].FormField.signatureType = "Image";
+                                } else {
+                                    formFieldsData[i].FormField.signatureType = "Path";
+                                    this.pdfViewerBase.formFieldCollection[i].FormField.signatureType = "Path";
+                                    let collectionData: any = processPathData(actionObject.annotation.data);
+                                    let csData: any = splitArrayCollection(collectionData);
+                                    formFieldsData[i].FormField.value = JSON.stringify(csData);
+                                    this.pdfViewerBase.formFieldCollection[i].FormField.value = JSON.stringify(csData);
+                                }
                             }
                         }
+                        this.pdfViewer.add(actionObject.annotation);
+                        let canvass: any = document.getElementById(this.pdfViewer.element.id + '_annotationCanvas_' + actionObject.pageIndex);
+                        this.pdfViewer.renderDrawing(canvass as any, actionObject.pageIndex);
+                        this.pdfViewerBase.setItemInSessionStorage(this.pdfViewerBase.formFieldCollection, '_formDesigner');
                     }
-                    this.pdfViewer.add(actionObject.annotation);
-                    let canvass: any = document.getElementById(this.pdfViewer.element.id + '_annotationCanvas_' + actionObject.pageIndex);
-                    this.pdfViewer.renderDrawing(canvass as any, actionObject.pageIndex);
-                    window.sessionStorage.setItem(this.pdfViewerBase.documentId + '_formDesigner', JSON.stringify(this.pdfViewerBase.formFieldCollection));
                 }
             }
             if (actionObject.redoElement && actionObject.redoElement.modifiedDate !== undefined) {
@@ -1925,46 +1944,51 @@ for (let i: number = 0; i < collections.length; i++) {
     private updateFormFieldValueChange(formFieldAnnotationType : any, annotation : any, value : any) : void {
         if (annotation) {
             var formFieldModel = this.pdfViewer.formDesigner.getFormField(annotation.id.split("_")[0]);
-            var data = window.sessionStorage.getItem(this.pdfViewerBase.documentId + '_formDesigner');
-            var formFieldsData = JSON.parse(data);
-            let index : number = this.pdfViewer.formDesigner.getFormFiledIndex(annotation.id.split('_')[0]);
-            switch (formFieldAnnotationType) {
-                case 'Textbox':
-                case 'PasswordField':
-                case 'RadioButton':
-                case 'DropdownList':
-                case 'ListBox':
-                    let inputElement: Element = document.getElementById(annotation.id.split("_")[0] + "_content_html_element").firstElementChild.firstElementChild;
-                    if (formFieldAnnotationType == 'Textbox' || formFieldAnnotationType == 'PasswordField') {
-                        formFieldModel.value = value;
-                        this.pdfViewer.formDesigner.updateValuePropertyChange(formFieldModel, inputElement, true, index, formFieldsData);
-                    }
-                    else if (formFieldAnnotationType == 'RadioButton') {
-                        formFieldModel.isSelected = value;
-                        this.pdfViewer.formDesigner.updateIsSelectedPropertyChange(formFieldModel, inputElement.firstElementChild as IElement, true, index, formFieldsData);
-                    }
-                    else if (formFieldAnnotationType == 'DropdownList' || formFieldAnnotationType == 'ListBox') {
-                        formFieldModel.selectedIndex = value;
-                        formFieldsData[index].FormField.selectedIndex = value;
-                        this.pdfViewerBase.formFieldCollection[index].FormField.selectedIndex = value;
-                        (this.pdfViewer.nameTable as any)[formFieldsData[index].Key.split("_")[0]].selectedIndex = value;
-                        if (formFieldAnnotationType == 'ListBox') {
-                            for (let k: number = 0; k < (inputElement as IElement).options.length; k++) {
-                                (inputElement as IElement).options[k].selected = value.includes(k) ? true : false;
+            let data: any = null;
+            if (this.pdfViewer.formDesignerModule) {
+                data = this.pdfViewerBase.getItemFromSessionStorage('_formDesigner');
+            }
+            if (data) {
+                var formFieldsData = JSON.parse(data);
+                let index : number = this.pdfViewer.formDesigner.getFormFiledIndex(annotation.id.split('_')[0]);
+                switch (formFieldAnnotationType) {
+                    case 'Textbox':
+                    case 'PasswordField':
+                    case 'RadioButton':
+                    case 'DropdownList':
+                    case 'ListBox':
+                        let inputElement: Element = document.getElementById(annotation.id.split("_")[0] + "_content_html_element").firstElementChild.firstElementChild;
+                        if (formFieldAnnotationType == 'Textbox' || formFieldAnnotationType == 'PasswordField') {
+                            formFieldModel.value = value;
+                            this.pdfViewer.formDesigner.updateValuePropertyChange(formFieldModel, inputElement, true, index, formFieldsData);
+                        }
+                        else if (formFieldAnnotationType == 'RadioButton') {
+                            formFieldModel.isSelected = value;
+                            this.pdfViewer.formDesigner.updateIsSelectedPropertyChange(formFieldModel, inputElement.firstElementChild as IElement, true, index, formFieldsData);
+                        }
+                        else if (formFieldAnnotationType == 'DropdownList' || formFieldAnnotationType == 'ListBox') {
+                            formFieldModel.selectedIndex = value;
+                            formFieldsData[index].FormField.selectedIndex = value;
+                            this.pdfViewerBase.formFieldCollection[index].FormField.selectedIndex = value;
+                            (this.pdfViewer.nameTable as any)[formFieldsData[index].Key.split("_")[0]].selectedIndex = value;
+                            if (formFieldAnnotationType == 'ListBox') {
+                                for (let k: number = 0; k < (inputElement as IElement).options.length; k++) {
+                                    (inputElement as IElement).options[k].selected = value.includes(k) ? true : false;
+                                }
+                            }
+                            else {
+                                (inputElement as IElement).selectedIndex = value;
                             }
                         }
-                        else {
-                            (inputElement as IElement).selectedIndex = value;
-                        }
-                    }
-                    break;
-                case 'Checkbox':
-                    let checkboxDivElement: Element = document.getElementById(annotation.id.split("_")[0] + "_content_html_element").firstElementChild.firstElementChild.lastElementChild;
-                    formFieldModel.isChecked = value;
-                    this.pdfViewer.formDesigner.updateIsCheckedPropertyChange(formFieldModel, checkboxDivElement, true, index, formFieldsData);
-                    break;
+                        break;
+                    case 'Checkbox':
+                        let checkboxDivElement: Element = document.getElementById(annotation.id.split("_")[0] + "_content_html_element").firstElementChild.firstElementChild.lastElementChild;
+                        formFieldModel.isChecked = value;
+                        this.pdfViewer.formDesigner.updateIsCheckedPropertyChange(formFieldModel, checkboxDivElement, true, index, formFieldsData);
+                        break;
+                }
+                this.pdfViewerBase.setItemInSessionStorage(this.pdfViewerBase.formFieldCollection, '_formDesigner');
             }
-            window.sessionStorage.setItem(this.pdfViewerBase.documentId + '_formDesigner', JSON.stringify(this.pdfViewerBase.formFieldCollection));
         }
     }
 
@@ -3228,7 +3252,8 @@ for (let i: number = 0; i < collections.length; i++) {
                         this.pdfViewer.toolbarModule.annotationToolbarModule.enableAnnotationPropertiesTools(true);
                     }
                     if (!isBlazor()) {
-                        if(this.pdfViewer.selectedItems.annotations.length === 1) {
+                        let signatureFieldAnnotation: any = this.pdfViewer.selectedItems.annotations.length === 1 ? (this.pdfViewer.nameTable as any)[this.pdfViewer.selectedItems.annotations[0].id.split('_')[0] + '_content'] : null;
+                        if(this.pdfViewer.selectedItems.annotations.length === 1 && !signatureFieldAnnotation ) {
                         this.pdfViewer.toolbarModule.annotationToolbarModule.selectAnnotationDeleteItem(true);
                         this.pdfViewer.toolbarModule.annotationToolbarModule.setCurrentColorInPicker();
                         this.pdfViewer.toolbarModule.annotationToolbarModule.isToolbarHidden = true;

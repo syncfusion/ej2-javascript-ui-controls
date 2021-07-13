@@ -2241,7 +2241,11 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
         }
         if (collapsedNode.length) {
             for (let i: number = collapsedNode.length - 1; i >= 0; i--) {
-                this.commandHandler.expandNode((collapsedNode[i] as Node), this);
+                if(i===0) {
+                this.commandHandler.expandNode((collapsedNode[i] as Node), this, false);
+                } else {
+                    this.commandHandler.expandNode((collapsedNode[i] as Node), this, true);
+                }
             }
         }
         if (this.canLayout) {
@@ -2879,7 +2883,10 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
      *
      */
     public group(): void {
-        if (this.selectedItems.nodes.length > 1) {
+        let selectedItems: (NodeModel | ConnectorModel)[] = [];
+        selectedItems = this.selectedItems.nodes;
+        selectedItems = selectedItems.concat(this.selectedItems.connectors);
+        if (selectedItems.length > 1) {
             this.callBlazorModel = false;
             this.insertBlazorDiagramObjects(this.selectedItems);
             this.commandHandler.group();

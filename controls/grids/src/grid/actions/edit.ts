@@ -516,6 +516,13 @@ export class Edit implements IAction {
         this.dlgCancel();
     }
 
+    private destroyEditComponents(): void {
+        if (this.parent.isEdit) {
+            this.destroyWidgets();
+            this.destroyForm();
+        }
+    }
+
     /**
      * @returns {void}
      * @hidden
@@ -528,7 +535,8 @@ export class Edit implements IAction {
             { event: events.autoCol, handler: this.updateColTypeObj },
             { event: events.tooltipDestroy, handler: this.destroyToolTip },
             { event: events.preventBatch, handler: this.preventBatch },
-            { event: events.destroyForm, handler: this.destroyForm }];
+            { event: events.destroyForm, handler: this.destroyForm },
+            { event: events.destroy, handler: this.destroyEditComponents }];
         addRemoveEventListener(this.parent, this.eventDetails, true, this);
         this.actionBeginFunction = this.onActionBegin.bind(this);
         this.actionCompleteFunction = this.actionComplete.bind(this);

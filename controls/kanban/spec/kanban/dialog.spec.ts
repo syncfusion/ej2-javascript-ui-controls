@@ -530,6 +530,102 @@ describe('Dialog actions module', () => {
         });
     });
 
+    describe('EJ2-50533 - Card is not in selected state after the edit card dialog is closed on save button', () => {
+        let kanbanObj: Kanban;
+        beforeAll((done: DoneFn) => {
+            const model: KanbanModel = {
+                dialogSettings: {
+                    fields: [
+                        { text: 'ID', key: 'Id', type: 'TextBox' },
+                        { key: 'Status', type: 'DropDown' },
+                        { key: 'Assignee', type: 'TextBox', },
+                        { key: 'Estimate', type: 'Numeric', validationRules: { range: [0, 100] } },
+                        { key: 'Summary', type: 'TextBox', validationRules: { required: true } }
+                    ]
+                },
+                cardSettings: {
+                    headerField: 'Id',
+                    selectionType: 'Single'
+                }
+            };
+            kanbanObj = util.createKanban(model, kanbanData, done);
+        });
+
+        afterAll(() => {
+            util.destroy(kanbanObj);
+        });
+
+        it('Card click action event args as false', () => {
+            let ele: HTMLElement = kanbanObj.element.querySelector('.e-card[data-id="4"]') as HTMLElement;
+            expect(ele.classList.contains('e-selection')).toEqual(false);
+            util.triggerMouseEvent(ele, 'click');
+            expect(ele.classList.contains('e-selection')).toEqual(true);
+        });
+
+        it('Click Card to open', () => {
+            let ele: HTMLElement = kanbanObj.element.querySelector('.e-card[data-id="4"]') as HTMLElement;
+            util.triggerMouseEvent(ele, 'dblclick');
+        });
+
+        it('Updating new value', () => {
+            expect(document.getElementById("Estimate-info")).not.toBeNull;
+            let element = (document.getElementsByClassName('e-numerictextbox')[0] as EJ2Instance);
+            (element.ej2_instances[0] as any).value = 99;
+            kanbanObj.dataBound();
+        });
+
+        it('clicking the save button to save data', () => {
+            let saveButton: HTMLElement = document.querySelector('.e-control.e-btn.e-lib.e-flat.e-dialog-edit.e-primary');
+            util.triggerMouseEvent(saveButton, 'click');
+            let ele: HTMLElement = kanbanObj.element.querySelector('.e-card[data-id="4"]') as HTMLElement;
+            expect(ele.classList.contains('e-selection')).toEqual(true);
+        });
+    });
+
+    describe('EJ2-50533 - Card is not in selected state after the edit card dialog is closed on cancel button', () => {
+        let kanbanObj: Kanban;
+        beforeAll((done: DoneFn) => {
+            const model: KanbanModel = {
+                dialogSettings: {
+                    fields: [
+                        { text: 'ID', key: 'Id', type: 'TextBox' },
+                        { key: 'Status', type: 'DropDown' },
+                        { key: 'Assignee', type: 'TextBox', },
+                        { key: 'Estimate', type: 'Numeric', validationRules: { range: [0, 100] } },
+                        { key: 'Summary', type: 'TextBox', validationRules: { required: true } }
+                    ]
+                },
+                cardSettings: {
+                    headerField: 'Id',
+                    selectionType: 'Single'
+                }
+            };
+            kanbanObj = util.createKanban(model, kanbanData, done);
+        });
+
+        afterAll(() => {
+            util.destroy(kanbanObj);
+        });
+
+        it('Card click action event args as false', () => {
+            let ele: HTMLElement = kanbanObj.element.querySelector('.e-card[data-id="4"]') as HTMLElement;
+            expect(ele.classList.contains('e-selection')).toEqual(false);
+            util.triggerMouseEvent(ele, 'click');
+            expect(ele.classList.contains('e-selection')).toEqual(true);
+        });
+
+        it('Click Card to open', () => {
+            let ele: HTMLElement = kanbanObj.element.querySelector('.e-card[data-id="4"]') as HTMLElement;
+            util.triggerMouseEvent(ele, 'dblclick');
+        });
+
+        it('clicking the cancel button', () => {
+            (kanbanObj.dialogModule as any).element.querySelector('.e-dialog-cancel').click();
+            let ele: HTMLElement = kanbanObj.element.querySelector('.e-card[data-id="4"]') as HTMLElement;
+            expect(ele.classList.contains('e-selection')).toEqual(true);
+        });
+    });
+
     it('memory leak', () => {
         profile.sample();
         const average: number = inMB(profile.averageChange);
@@ -538,5 +634,4 @@ describe('Dialog actions module', () => {
         //Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
         expect(memory).toBeLessThan(profile.samples[0] + 0.25);
     });
-
 });

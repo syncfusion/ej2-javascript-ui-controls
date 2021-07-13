@@ -141,6 +141,7 @@ export class Action {
         const target: Element = closest(e.target as Element, '.' + cls.CARD_CLASS);
         const cardDoubleClickObj: Record<string, any> = this.parent.getCardDetails(target);
         this.parent.activeCardData = { data: cardDoubleClickObj, element: target };
+        this.cardSelection(target, false, false);
         const args: CardClickEventArgs = { data: cardDoubleClickObj, element: target, cancel: false, event: e };
         this.parent.trigger(events.cardDoubleClick, args, (doubleClickArgs: CardClickEventArgs) => {
             if (!doubleClickArgs.cancel) {
@@ -358,4 +359,23 @@ export class Action {
         this.parent.notify(events.dataReady, { processedData: this.parent.kanbanData });
     }
 
+    /**
+     * Maintain the single card selection
+     *
+     * @param {Record<string, any>} data - Specifies the selected card data.
+     * @returns {void}
+     * @private
+     * @hidden
+     */
+    public SingleCardSelection(data: Record<string, any>): void {
+        if (this.parent.cardSettings.selectionType !== 'None' && data[this.parent.cardSettings.headerField]) {
+            let card: HTMLElement = this.parent.element.querySelector('.e-card[data-id=\"' +
+                data[this.parent.cardSettings.headerField].toString() + '"\]')
+            if (card) {
+                addClass([card], cls.CARD_SELECTION_CLASS);
+                card.setAttribute('aria-selected', 'true');
+                card.setAttribute('tabindex', '0');
+            }
+        }
+    }
 }

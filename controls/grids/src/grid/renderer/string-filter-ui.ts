@@ -10,6 +10,7 @@ import { Dialog, Popup } from '@syncfusion/ej2-popups';
 import { getZIndexCalcualtion, eventPromise } from '../base/util';
 import * as events from '../base/constant';
 import { FilterStateObj } from '../common/filter-interface';
+import * as literals from '../base/string-literals';
 
 /**
  * `string filterui` render string column.
@@ -27,10 +28,17 @@ export class StringFilterUI implements IFilterMUI {
     private filterSettings: FilterSettings;
     private filter: Filter;
     private dialogObj: Dialog;
+    private acOpen: Function;
+    private acFocus: Function;
+    private acComplete: Function;
     constructor(parent?: IGrid, serviceLocator?: ServiceLocator, filterSettings?: FilterSettings) {
         this.parent = parent;
         this.serLocator = serviceLocator;
         this.filterSettings = filterSettings;
+        if (this.parent) {
+            this.parent.on(events.filterMenuClose, this.destroy, this);
+            this.parent.on(events.destroy, this.destroy, this);
+        }
     }
     public create(args: IFilterCreate): void {
         this.instance = this.parent.createElement('input', { className: 'e-flmenu-input', id: 'strui-' + args.column.uid });
@@ -57,23 +65,21 @@ export class StringFilterUI implements IFilterMUI {
                 enableRtl: this.parent.enableRtl,
                 query: isForeignColumn ? foreignColumnQuery : this.parent.query.clone(),
                 sortOrder: 'Ascending',
-                open: this.openPopup.bind(this),
                 cssClass: 'e-popup-flmenu',
-                focus: () => {
-                    this.actObj.filterType = args.getOptrInstance.getFlOperator() as 'StartsWith' | 'Contains' | 'EndsWith';
-                },
                 autofill: true,
                 placeholder: args.localizeText.getConstant('EnterValue'),
                 actionComplete: (e: { result: { [key: string]: Object; }[] }) => {
-                    e.result = e.result.filter((obj: { [key: string]: Object; }, index: number, arr: { [key: string]: Object; }[]) => {
-                        return arr.map((mapObj: Object) => {
-                            return (getValue(this.actObj.fields.value, mapObj));
-                        }).indexOf(getValue((this.actObj.fields.value), obj)) === index;
-                    });
+                   
                 }
             },
             args.column.filter.params
         ));
+        this.acFocus = this.focus(autoComplete, args);
+        this.acComplete = this.actionComplete(autoComplete);
+        this.acOpen = this.openPopup.bind(this);
+        autoComplete.addEventListener(literals.focus, this.acFocus);
+        autoComplete.addEventListener(literals.open, this.acOpen);
+        autoComplete.addEventListener(events.actionComplete, this.acComplete);
         if (dataSource && 'result' in dataSource) {
             const query: Query = this.parent.getQuery ? this.parent.getQuery().clone() : new Query();
             const defObj: FilterStateObj = eventPromise({ requestType: 'stringfilterrequest' }, query);
@@ -85,7 +91,6 @@ export class StringFilterUI implements IFilterMUI {
         }
         return autoComplete;
     }
-
 
     public write(args: { column: Column, target: Element, parent: IGrid, filteredValue: number | string | Date | boolean }): void {
         if (args.filteredValue !== '' && !isNullOrUndefined(args.filteredValue)) {
@@ -109,6 +114,32 @@ export class StringFilterUI implements IFilterMUI {
 
     private openPopup(args: { popup: Popup }): void {
         getZIndexCalcualtion(args, this.dialogObj);
+    }
+
+    private focus(actObj: AutoComplete, args: IFilterCreate): Function {
+        return () => {
+            actObj.filterType = args.getOptrInstance.getFlOperator() as 'StartsWith' | 'Contains' | 'EndsWith';
+        }
+    }
+
+    private actionComplete(actObj: AutoComplete): Function {
+        return (e: { result: { [key: string]: Object; }[] }) => {
+            e.result = e.result.filter((obj: { [key: string]: Object; }, index: number, arr: { [key: string]: Object; }[]) => {
+                return arr.map((mapObj: Object) => {
+                    return (getValue(actObj.fields.value, mapObj));
+                }).indexOf(getValue((actObj.fields.value), obj)) === index;
+            });
+        }
+    }
+
+    private destroy(): void {
+        if (!this.actObj || this.actObj.isDestroyed) { return; }
+        this.actObj.removeEventListener(literals.focus, this.acFocus);
+        this.actObj.removeEventListener(literals.open, this.acOpen);
+        this.actObj.removeEventListener(events.actionComplete, this.acComplete);
+        this.actObj.destroy();
+        this.parent.off(events.filterMenuClose, this.destroy);
+        this.parent.off(events.destroy, this.destroy);
     }
 
 }

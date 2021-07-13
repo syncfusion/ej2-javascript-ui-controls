@@ -66,7 +66,7 @@ export class MonthEvent extends EventBase {
                 const appElement: Element[] = [].slice.call(this.element.querySelectorAll('.e-appointment-wrapper ' + '[data-group-index="' +
                     this.parent.crudModule.crudObj.sourceEvent[i].groupIndex + '"]'));
                 this.removeEventWrapper(appElement);
-                if (this.parent.crudModule.crudObj.sourceEvent[i].groupIndex !==
+                if (this.parent.crudModule.crudObj.targetEvent[i] && this.parent.crudModule.crudObj.sourceEvent[i].groupIndex !==
                     this.parent.crudModule.crudObj.targetEvent[i].groupIndex) {
                     const ele: Element[] = [].slice.call(this.element.querySelectorAll('.e-appointment-wrapper ' + '[data-group-index="' +
                         this.parent.crudModule.crudObj.targetEvent[i].groupIndex + '"]'));

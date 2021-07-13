@@ -470,6 +470,8 @@ export class CircularGauge extends Component<HTMLElement> implements INotifyProp
     public startValue: number;
     /** @private */
     public endValue: number;
+    /** @private */
+    private isRangeUpdate: boolean = false;
     /**
      * Render axis panel for gauge.
      *
@@ -1485,6 +1487,9 @@ export class CircularGauge extends Component<HTMLElement> implements INotifyProp
         const isClockWise: boolean = axis.direction === 'ClockWise';
         const startValue: number = Math.min(Math.max(start, axisRange.min), end);
         const endValue: number = Math.min(Math.max(start, end), axisRange.max);
+        range.start = start;
+        range.end = end;
+        this.isRangeUpdate = true;
         let startAngle: number = getAngleFromValue(startValue, axisRange.max, axisRange.min, axis.startAngle, axis.endAngle, isClockWise);
         let endAngle: number = getAngleFromValue(endValue, axisRange.max, axisRange.min, axis.startAngle, axis.endAngle, isClockWise);
         let startWidth: number;
@@ -1644,7 +1649,7 @@ export class CircularGauge extends Component<HTMLElement> implements INotifyProp
                 break;
             }
         }
-        if (!isPointerValueSame) {
+        if (!isPointerValueSame && !this.isRangeUpdate) {
             if (!refreshBounds && renderer) {
                 this.removeSvg();
                 this.renderElements();
@@ -1660,6 +1665,7 @@ export class CircularGauge extends Component<HTMLElement> implements INotifyProp
                 this.renderElements(false);
             }
         }
+        this.isRangeUpdate = false;
     }
 
     /**

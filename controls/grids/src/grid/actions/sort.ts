@@ -479,7 +479,7 @@ export class Sort implements IAction {
         for (let i: number = 0, len: number = cols.length; i < len; i++) {
             header = gObj.getColumnHeaderByField(cols[i].field);
             if (fieldNames.indexOf(cols[i].field) === -1 || isNullOrUndefined(header)) { continue; }
-            this.aria.setSort(<HTMLElement>header, cols[i].direction);
+            this.aria.setSort(<HTMLElement>header, (cols[i].direction).toLowerCase() as SortDirection);
             if (this.isMultiSort && cols.length > 1) {
                 header.querySelector('.e-headercelldiv').insertBefore(
                     this.parent.createElement('span', { className: 'e-sortnumber', innerHTML: (i + 1).toString() }),

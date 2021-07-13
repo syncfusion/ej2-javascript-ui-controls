@@ -187,11 +187,13 @@ export class FormDesigner {
                 if (document.getElementsByClassName("e-pv-radiobtn-span").length > 0) {
                     let spanElement = document.getElementsByClassName("e-pv-radiobtn-span");
                     for (let i: number = 0; i < spanElement.length; i++) {
-                        (spanElement as any)[i].style.width = ((drawingObject.bounds.width * zoomValue) - 10) + "px";
-                        (spanElement as any)[i].style.height = ((drawingObject.bounds.height * zoomValue) - 10) + "px";
-                        if (parseInt((spanElement as any)[i].style.width, 10) === 0 || parseInt((spanElement as any)[i].style.height, 10) === 0) {
-                            (spanElement as any)[i].style.width = "2px";
-                            (spanElement as any)[i].style.height = "2px";
+                        let bounds: any = this.getCheckboxRadioButtonBounds(drawingObject);
+                        (spanElement as any)[i].style.width = (bounds.width - 10) + "px";
+                        (spanElement as any)[i].style.height = (bounds.height - 10) + "px";
+                        if (parseInt((spanElement as any)[i].style.width, 10) <= 1 || parseInt((spanElement as any)[i].style.height, 10) <= 1) {
+                            (spanElement as any)[i].style.width = "1px";
+                            (spanElement as any)[i].style.height = "1px";
+                            (spanElement as any)[i].style.margin = "1px";
                         }
                     }
                 }
@@ -257,8 +259,7 @@ export class FormDesigner {
             if (!this.isFormFieldExistingInCollection) {
                 this.pdfViewerBase.formFieldCollection.push({ Key: element.id, FormField: formDesignObj });
             }
-            const annotationStringified: string = JSON.stringify(this.pdfViewerBase.formFieldCollection);
-            window.sessionStorage.setItem(this.pdfViewerBase.documentId + '_formDesigner', (annotationStringified));
+            this.pdfViewerBase.setItemInSessionStorage(this.pdfViewerBase.formFieldCollection, '_formDesigner');
             this.isFormFieldExistingInCollection = false;
             if (this.pdfViewerBase.formFieldCollection.length > 0) {
                 this.pdfViewerBase.enableFormFieldButton(true);
@@ -269,10 +270,10 @@ export class FormDesigner {
     }
 
     private getRadioButtonItem(radiobutton: any, formFieldProperty: any): boolean {
-        var data = window.sessionStorage.getItem(this.pdfViewerBase.documentId + '_formDesigner');
-        var formFieldsData = JSON.parse(data);
-        var isItemAdd: boolean = false;
-        if (formFieldsData != null) {
+        var data = this.pdfViewerBase.getItemFromSessionStorage('_formDesigner');
+        if (data) {
+            var formFieldsData = JSON.parse(data);
+            var isItemAdd: boolean = false;
             for (let i: number = 0; i < formFieldsData.length; i++) {
                 let currentData: any = formFieldsData[i];
                 let radiobuttonItem: IRadiobuttonItem;
@@ -334,8 +335,7 @@ export class FormDesigner {
                 }
             }
             if (isItemAdd) {
-                const annotationStringified: string = JSON.stringify(this.pdfViewerBase.formFieldCollection);
-                window.sessionStorage.setItem(this.pdfViewerBase.documentId + '_formDesigner', (annotationStringified));
+                this.pdfViewerBase.setItemInSessionStorage(this.pdfViewerBase.formFieldCollection, '_formDesigner');
             }
         }
         return isItemAdd;
@@ -625,8 +625,8 @@ export class FormDesigner {
     */
     public rerenderFormFields(pageIndex: number): void {
         let zoomValue: number = this.pdfViewerBase.getZoomFactor();
-        var data = window.sessionStorage.getItem(this.pdfViewerBase.documentId + '_formDesigner');
-        if (data !== null) {
+        var data: string = this.pdfViewerBase.getItemFromSessionStorage('_formDesigner');
+        if (data) {
             var formFieldsData = JSON.parse(data);
             const textLayer: HTMLElement = document.getElementById(this.pdfViewer.element.id + '_textLayer_' + pageIndex);
             const canvasElement: HTMLElement = document.getElementById(this.pdfViewer.element.id + '_pageCanvas_' + pageIndex);
@@ -652,7 +652,7 @@ export class FormDesigner {
                                 this.pdfViewerBase.formFieldCollection[i].FormField.lineBound = currentData.lineBound;
                                 this.pdfViewerBase.formFieldCollection[i].FormField.zoomValue = zoomValue;
                             }
-                            window.sessionStorage.setItem(this.pdfViewerBase.documentId + '_formDesigner', JSON.stringify(this.pdfViewerBase.formFieldCollection));
+                            this.pdfViewerBase.setItemInSessionStorage(this.pdfViewerBase.formFieldCollection, '_formDesigner');
                         }
                     }
                 }
@@ -703,17 +703,11 @@ export class FormDesigner {
             textLayer.appendChild(parentHtmlElement);
             if (signatureField.formFieldAnnotationType === "RadioButton") {
                 if (document.getElementsByClassName("e-pv-radiobtn-span").length > 0) {
+                    let bounds: any = this.getCheckboxRadioButtonBounds(signatureField);
                     let spanElement = document.getElementsByClassName("e-pv-radiobtn-span");
-                    for (let i: number = 0; i < spanElement.length; i++) {
-                        (spanElement as any)[i].style.width = ((signatureField.bounds.width * zoomValue) - 10) + "px";
-                        (spanElement as any)[i].style.height = ((signatureField.bounds.height * zoomValue) - 10) + "px";
-                        if (parseInt((spanElement as any)[i].style.width, 10) === 0 || parseInt((spanElement as any)[i].style.height, 10) === 0) {
-                            (spanElement as any)[i].style.width = "2px";
-                            (spanElement as any)[i].style.height = "2px";
-                        }
+                        this.renderRadioButtonSpan(spanElement, bounds, zoomValue);
                     }
                 }
-            }
             const point: PointModel = cornersPointsBeforeRotation(signatureField.wrapper.children[0]).topLeft;
             htmlElement.setAttribute(
                 'style', 'height:' + (element.actualSize.height * zoomValue) + 'px; width:' + (element.actualSize.width * zoomValue) +
@@ -725,6 +719,31 @@ export class FormDesigner {
             currentData.lineBound = { X: point.x * zoomValue, Y: point.y * zoomValue, Width: element.actualSize.width * zoomValue, Height: element.actualSize.height * zoomValue };
         }
         return currentData;
+    }
+
+    private renderRadioButtonSpan(spanElement: HTMLCollectionOf<Element>, bounds: any, zoomValue: number): void {
+        for (let i: number = 0; i < spanElement.length; i++) {
+            (spanElement as any)[i].style.width = Math.floor(bounds.width - 10) + "px";
+                (spanElement as any)[i].style.height = Math.floor(bounds.height - 10) + "px";
+                 if(bounds.width <= 14 && parseInt((spanElement as any)[i].style.width, 10) >= 2) {
+                     if( parseInt((spanElement as any)[i].style.width, 10) <= 5) {
+                        (spanElement as any)[i].style.width = Math.round(bounds.width / 3) + "px";
+                        (spanElement as any)[i].style.height = Math.round(bounds.height / 3) + "px";
+                     }
+                        (spanElement as any)[i].style.margin = Math.round(bounds.width / 3) + "px";        
+                 }
+                 if (parseInt((spanElement as any)[i].style.width, 10) <= 1 || parseInt((spanElement as any)[i].style.height, 10) <= 1) {
+                     if((bounds.width * zoomValue) >= 2) {
+                        (spanElement as any)[i].style.width = Math.round(bounds.width / 2) + "px";
+                        (spanElement as any)[i].style.height = Math.round(bounds.height / 2) + "px";
+                        (spanElement as any)[i].style.margin = Math.round((parseInt((spanElement as any)[i].style.width, 10) / 3)) + "px";
+                     } else {
+                        (spanElement as any)[i].style.width = "1px";
+                        (spanElement as any)[i].style.height = "1px";
+                        (spanElement as any)[i].style.margin = "1px";    
+                     }
+                 }
+             }
     }
     /**
      * @private
@@ -782,7 +801,7 @@ export class FormDesigner {
                     'pointer-events:' + ((this.pdfViewer.designerMode) ? 'none' : 'all')
                     + ';visibility:' + ((element.visible) ? 'visible' : 'hidden') + ';opacity:' + element.style.opacity + ';'
                 );
-                var data = window.sessionStorage.getItem(this.pdfViewerBase.documentId + '_formDesigner');
+                var data = this.pdfViewerBase.getItemFromSessionStorage('_formDesigner');
                 if (actualObject.formFieldAnnotationType === "RadioButton") {
                     let labelContainer: Element = htmlElement.firstElementChild.firstElementChild;
                     let spanElement: Element = htmlElement.firstElementChild.firstElementChild.lastElementChild;
@@ -797,6 +816,7 @@ export class FormDesigner {
                     }
                 }
                 if (actualObject.formFieldAnnotationType === "Checkbox") {
+                    let minCheckboxWidth: number = 20;
                     let labelContainer: Element = htmlElement.firstElementChild.firstElementChild;
                     let spanElement: Element = htmlElement.firstElementChild.firstElementChild.lastElementChild.firstElementChild;
                     if (element.actualSize.width > element.actualSize.height) {
@@ -813,6 +833,16 @@ export class FormDesigner {
                         (spanElement as any).style.height = ((element.actualSize.width / 2.5) * zoomValue) + "px";
                         (spanElement as any).style.left = ((element.actualSize.width / 2.5) * zoomValue) + "px";
                         (spanElement as any).style.top = ((element.actualSize.width / 5) * zoomValue) + "px";
+                    }
+                    if(spanElement.className.indexOf("e-pv-cb-checked")!==-1) {
+                        let checkboxWidth = parseInt((labelContainer as any).style.width, 10)
+                        if(checkboxWidth > minCheckboxWidth) {
+                            (spanElement as any).style.borderWidth = "3px";
+                        } else if(checkboxWidth <= 15) {
+                            (spanElement as any).style.borderWidth = "1px";
+                        } else {
+                            (spanElement as any).style.borderWidth = "2px";
+                        }
                     }
                 }
                 var formFieldsData = JSON.parse(data);
@@ -833,15 +863,40 @@ export class FormDesigner {
 
                     }
                 }
-                window.sessionStorage.setItem(this.pdfViewerBase.documentId + '_formDesigner', JSON.stringify(this.pdfViewerBase.formFieldCollection));
+                this.pdfViewerBase.setItemInSessionStorage(this.pdfViewerBase.formFieldCollection, '_formDesigner');
             }
         }
+    }
+
+    private getCheckboxRadioButtonBounds(drawingObject: PdfFormFieldBaseModel, bounds?: any): any {
+        let zoomValue: number = this.pdfViewerBase.getZoomFactor();
+        let width: number = 0;
+        let height: number = 0;
+        let display: string = '';
+        if (bounds) {
+            if (bounds.width > bounds.height) {
+                width = height = bounds.height * zoomValue;
+                display = "inherit";
+            } else {
+                width = height = bounds.width * zoomValue;
+                display = "flex";
+            }
+        } else if(drawingObject) {
+            if(drawingObject.bounds.width > drawingObject.bounds.height) {
+                width = height = drawingObject.bounds.height * zoomValue;
+                display = "inherit";
+            } else {
+                width = height = drawingObject.bounds.width * zoomValue;
+                display = "flex";
+            }
+        }
+        return {width: width, height:height, display: display};
     }
 
     private updateSessionFormFieldProperties(updatedFormFields: PdfFormFieldBaseModel): void {
         let zoomValue: number = this.pdfViewerBase.getZoomFactor();
         let element: DiagramHtmlElement = updatedFormFields.wrapper.children[0] as DiagramHtmlElement;
-        var data = window.sessionStorage.getItem(this.pdfViewerBase.documentId + '_formDesigner');
+        var data = this.pdfViewerBase.getItemFromSessionStorage('_formDesigner');
         var formFieldsData = JSON.parse(data);
         for (let i: number = 0; i < formFieldsData.length; i++) {
             if (formFieldsData[i].FormField.formFieldAnnotationType === "RadioButton") {
@@ -876,7 +931,7 @@ export class FormDesigner {
         } else {
             this.pdfViewerBase.enableFormFieldButton(false);
         }
-        window.sessionStorage.setItem(this.pdfViewerBase.documentId + '_formDesigner', JSON.stringify(this.pdfViewerBase.formFieldCollection));
+        this.pdfViewerBase.setItemInSessionStorage(this.pdfViewerBase.formFieldCollection, '_formDesigner');
     }
 
     /**
@@ -1058,7 +1113,7 @@ export class FormDesigner {
     /**
      * @private
      */
-    public createInputElement(formFieldAnnotationType: string, drawingObject: PdfFormFieldBaseModel, bounds?: any, isPrint?: boolean): HTMLElement {
+    public createInputElement(formFieldAnnotationType: string, drawingObject: PdfFormFieldBaseModel, formFieldBounds?: any, isPrint?: boolean): HTMLElement {
         let zoomValue: number = this.pdfViewerBase.getZoomFactor();
         const element: HTMLElement = createElement("div");
         element.className = "foreign-object";
@@ -1078,12 +1133,15 @@ export class FormDesigner {
             inputElement.addEventListener('click', this.inputElementClick.bind(this));
             this.updateTextboxProperties(drawingObject, inputElement);
         } else if (formFieldAnnotationType == "Checkbox") {
+            let minCheckboxWidth: number = 20;
             element.style.textAlign = (Browser.info.name === "chrome") ? "-webkit-center" : "center";
             element.style.display = "flex";
             element.style.alignItems = "center";
+            let bounds: any = this.getCheckboxRadioButtonBounds(drawingObject, formFieldBounds);
+            element.style.display = bounds.display;
             labelElement = createElement("label", { className: "e-pv-checkbox-container" });
-            labelElement.style.width = drawingObject.bounds ? (drawingObject.bounds.width * zoomValue) + "px" : (bounds.width * zoomValue) + "px";
-            labelElement.style.height = drawingObject.bounds ? (drawingObject.bounds.height * zoomValue) + "px" : (bounds.height * zoomValue) + "px";
+            labelElement.style.width = bounds.width + "px";
+            labelElement.style.height = bounds.height + "px";
             if (this.isDrawHelper)
                 labelElement.style.cursor = 'crosshair';
             else
@@ -1098,15 +1156,24 @@ export class FormDesigner {
                 innerSpan = createElement("span", { className: "e-pv-checkbox-span e-pv-cb-unchecked" });
             innerSpan.id = drawingObject.id + "_input_span";
             labelElement.id =  drawingObject.id + "_input_label";
-            innerSpan.style.width = drawingObject.bounds ? ((drawingObject.bounds.width / 5) * zoomValue) + "px" : ((bounds.width / 5) * zoomValue) + "px";
-            innerSpan.style.height = drawingObject.bounds ? ((drawingObject.bounds.height / 2.5) * zoomValue) + "px" : ((bounds.height / 2.5) * zoomValue) + "px";
-            innerSpan.style.left = drawingObject.bounds ? ((drawingObject.bounds.width / 2.5) * zoomValue) + "px" : ((bounds.width / 2.5) * zoomValue) + "px";
-            innerSpan.style.top = drawingObject.bounds ? ((drawingObject.bounds.height / 5) * zoomValue) + "px" : ((bounds.height / 5) * zoomValue) + "px";
-
+            innerSpan.style.width = (bounds.width / 5) + "px";
+            innerSpan.style.height = (bounds.height / 2.5) + "px";
+            innerSpan.style.left = (bounds.width / 2.5) + "px";
+            innerSpan.style.top = (bounds.height / 5) + "px";
+            if(innerSpan.className.indexOf("e-pv-cb-checked")!==-1) {
+                let checkboxWidth = parseInt(labelElement.style.width, 10)
+                if(checkboxWidth > minCheckboxWidth) {
+                    innerSpan.style.borderWidth = "3px";
+                } else if(checkboxWidth <= 15) {
+                    innerSpan.style.borderWidth = "1px";
+                } else {
+                    innerSpan.style.borderWidth = "2px";
+                }
+            }
             (inputElement as IElement).type = "checkbox";
             inputElement.style.margin = "0px";
-            inputElement.style.width = drawingObject.bounds ? (drawingObject.bounds.width * zoomValue) + "px" : (bounds.width * zoomValue) + "px";
-            inputElement.style.height = drawingObject.bounds ? (drawingObject.bounds.height * zoomValue) + "px" : (bounds.height * zoomValue) + "px";
+            inputElement.style.width = bounds.width + "px";
+            inputElement.style.height = bounds.height + "px";
             if (isPrint) {
                 this.updateCheckboxProperties(drawingObject, inputElement);
             } else {
@@ -1131,13 +1198,15 @@ export class FormDesigner {
             element.style.textAlign = (Browser.info.name === "chrome") ? "-webkit-center" : "center";
             element.style.display = "flex";
             element.style.alignItems = "center";
+            let bounds: any = this.getCheckboxRadioButtonBounds(drawingObject, formFieldBounds);
+            element.style.display = bounds.display;
             labelElement = createElement("label", { className: "e-pv-radiobtn-container" });
-            labelElement.style.width = drawingObject.bounds ? (drawingObject.bounds.width * zoomValue) + "px" : (bounds.width * zoomValue) + "px";
-            labelElement.style.height = drawingObject.bounds ? (drawingObject.bounds.height * zoomValue) + "px" : (bounds.height * zoomValue) + "px";
-            labelElement.style.display = "flex";
+            labelElement.style.width = bounds.width + "px";
+            labelElement.style.height = bounds.height + "px";
+            labelElement.style.display = "table";
+            labelElement.style.verticalAlign = "middle";
             labelElement.style.boxShadow = drawingObject.borderColor + ' 0px 0px 0px ' + drawingObject.thickness + 'px';
             labelElement.style.borderRadius = '50%';
-            labelElement.addEventListener('click', this.setRadioButtonState.bind(this));
             if (this.isDrawHelper)
                 labelElement.style.cursor = 'crosshair';
             else
@@ -1145,8 +1214,13 @@ export class FormDesigner {
             labelElement.style.background = drawingObject.backgroundColor;
             innerSpan = createElement("span", { className: "e-pv-radiobtn-span" });
             innerSpan.id = drawingObject.id;
-            innerSpan.style.width = drawingObject.bounds ? (drawingObject.bounds.width * zoomValue) + "px" : (bounds.width * zoomValue) + "px";
-            innerSpan.style.height = drawingObject.bounds ? (drawingObject.bounds.height * zoomValue) + "px" : (bounds.height * zoomValue) + "px";
+            innerSpan.style.width = Math.floor(bounds.width/2) + "px";
+            innerSpan.style.height = Math.floor(bounds.height/2) + "px";
+            if(zoomValue < 1 && bounds.width <= 20 && bounds.height <= 20) {
+                innerSpan.style.margin = Math.round((parseInt(labelElement.style.width)/3.5)) + "px";
+            } else {
+                    innerSpan.style.margin = "5px";
+            }
             innerSpan.addEventListener('click', this.setRadioButtonState.bind(this));
             labelElement.id =  drawingObject.id + "_input_label";
             (inputElement as IElement).type = "radio";
@@ -1155,9 +1229,9 @@ export class FormDesigner {
             inputElement.style.margin = "0px";
             inputElement.addEventListener('click',function (event){
                 event.stopPropagation();
-             });
-            inputElement.style.width = drawingObject.bounds ? (drawingObject.bounds.width * zoomValue) + "px" : (bounds.width * zoomValue) + "px";
-            inputElement.style.height = drawingObject.bounds ? (drawingObject.bounds.height * zoomValue) + "px" : (bounds.height * zoomValue) + "px";
+            });
+            inputElement.style.width = bounds.width + "px";
+            inputElement.style.height = bounds.height + "px";
             this.updateRadioButtonProperties(drawingObject, inputElement);
 
             labelElement.appendChild(inputElement);
@@ -1187,7 +1261,7 @@ export class FormDesigner {
     }
 
     private listBoxChange(event: Event) {
-        var data = window.sessionStorage.getItem(this.pdfViewerBase.documentId + '_formDesigner');
+        var data = this.pdfViewerBase.getItemFromSessionStorage('_formDesigner');
         var formFieldsData = JSON.parse(data);
         for (let i: number = 0; i < formFieldsData.length; i++) {
             if (formFieldsData[i].Key.split("_")[0] === (event.currentTarget as Element).id.split("_")[0] ||
@@ -1220,10 +1294,10 @@ export class FormDesigner {
                 this.pdfViewer.annotation.addAction(this.pdfViewerBase.formFieldCollection[i].FormField.pageNumber, null, this.pdfViewerBase.formFieldCollection[i].FormField, 'FormField Value Change', '', oldValues, this.pdfViewerBase.formFieldCollection[i].FormField.selectedIndex);
             }
         }
-        window.sessionStorage.setItem(this.pdfViewerBase.documentId + '_formDesigner', JSON.stringify(this.pdfViewerBase.formFieldCollection));
+        this.pdfViewerBase.setItemInSessionStorage(this.pdfViewerBase.formFieldCollection, '_formDesigner');
     }
     private dropdownChange(event: Event) {
-        var data = window.sessionStorage.getItem(this.pdfViewerBase.documentId + '_formDesigner');
+        var data = this.pdfViewerBase.getItemFromSessionStorage('_formDesigner');
         var formFieldsData = JSON.parse(data);
         for (let i: number = 0; i < formFieldsData.length; i++) {
             if (formFieldsData[i].Key.split("_")[0] === (event.target as Element).id.split("_")[0] ||
@@ -1249,9 +1323,10 @@ export class FormDesigner {
                 this.pdfViewer.annotation.addAction(this.pdfViewerBase.formFieldCollection[i].FormField.pageNumber, null, this.pdfViewerBase.formFieldCollection[i].FormField, 'FormField Value Change', '', oldValueIndex, selectIndex);
             }
         }
-        window.sessionStorage.setItem(this.pdfViewerBase.documentId + '_formDesigner', JSON.stringify(this.pdfViewerBase.formFieldCollection));
+        this.pdfViewerBase.setItemInSessionStorage(this.pdfViewerBase.formFieldCollection, '_formDesigner');
     }
     private setCheckBoxState(event: Event) {
+        let minCheckboxWidth: number = 20;
         let isChecked: boolean = false;
         if (!(this.pdfViewer.nameTable as any)[(event.target as Element).id.split("_")[0]].isReadonly) {
             if (event.target && (event.target as Element).firstElementChild && (event.target as any).firstElementChild.className === "e-pv-checkbox-span e-pv-cb-checked") {
@@ -1267,7 +1342,19 @@ export class FormDesigner {
                 (event.target as Element).firstElementChild.classList.add("e-pv-checkbox-span", "e-pv-cb-checked");
                 isChecked = true;
             }
-            var data = window.sessionStorage.getItem(this.pdfViewerBase.documentId + '_formDesigner');
+            var data = this.pdfViewerBase.getItemFromSessionStorage('_formDesigner');
+            if(isChecked) {
+                if((event.target as Element).firstElementChild.className.indexOf("e-pv-cb-checked")!==-1) {
+                    let checkboxWidth = parseInt((event.target as any).parentElement.style.width, 10)
+                    if(checkboxWidth > minCheckboxWidth) {
+                        (event.target as any).firstElementChild.style.borderWidth = "3px";
+                    } else if(checkboxWidth <= 15) {
+                        (event.target as any).firstElementChild.style.borderWidth = "1px";
+                    } else {
+                        (event.target as any).firstElementChild.style.borderWidth = "2px";
+                    }
+                }
+            }
             var formFieldsData = JSON.parse(data);
             for (let i: number = 0; i < formFieldsData.length; i++) {
                 if (formFieldsData[i].Key.split("_")[0] === (event.target as Element).id.split("_")[0] ||
@@ -1294,7 +1381,7 @@ export class FormDesigner {
                     this.pdfViewer.annotation.addAction(this.pdfViewerBase.formFieldCollection[i].FormField.pageNumber, null, this.pdfViewerBase.formFieldCollection[i].FormField, 'FormField Value Change', '', oldValue, isChecked);
                 }
             }
-            window.sessionStorage.setItem(this.pdfViewerBase.documentId + '_formDesigner', JSON.stringify(this.pdfViewerBase.formFieldCollection));
+            this.pdfViewerBase.setItemInSessionStorage(this.pdfViewerBase.formFieldCollection, '_formDesigner');
         }
     }
 
@@ -1309,7 +1396,7 @@ export class FormDesigner {
     }
 
     private setRadioButtonState(event: Event) {
-        var data = window.sessionStorage.getItem(this.pdfViewerBase.documentId + '_formDesigner');
+        var data = this.pdfViewerBase.getItemFromSessionStorage('_formDesigner');
         var formFieldsData = JSON.parse(data);
         for (let i: number = 0; i < formFieldsData.length; i++) {
             if (formFieldsData[i].FormField.radiobuttonItem != null) {
@@ -1346,11 +1433,11 @@ export class FormDesigner {
                     this.pdfViewer.annotation.addAction(this.pdfViewerBase.formFieldCollection[i].FormField.pageNumber, null, this.pdfViewerBase.formFieldCollection[i].FormField, 'FormField Value Change', '', undoElement, redoElement);
             }
         }
-        window.sessionStorage.setItem(this.pdfViewerBase.documentId + '_formDesigner', JSON.stringify(this.pdfViewerBase.formFieldCollection));
+        this.pdfViewerBase.setItemInSessionStorage(this.pdfViewerBase.formFieldCollection, '_formDesigner');
     }
 
     private getTextboxValue(event: Event): void {
-        var data = window.sessionStorage.getItem(this.pdfViewerBase.documentId + '_formDesigner');
+        var data = this.pdfViewerBase.getItemFromSessionStorage('_formDesigner');
         var formFieldsData = JSON.parse(data);
         for (let i: number = 0; i < formFieldsData.length; i++) {
             if (formFieldsData[i].Key.split("_")[0] === (event.target as Element).id.split("_")[0] ||
@@ -1369,7 +1456,7 @@ export class FormDesigner {
                 this.pdfViewer.annotation.addAction(this.pdfViewerBase.formFieldCollection[i].FormField.pageNumber, null, this.pdfViewerBase.formFieldCollection[i].FormField, 'FormField Value Change', '', oldValue, (event.target as IElement).value);   
             }
         }
-        window.sessionStorage.setItem(this.pdfViewerBase.documentId + '_formDesigner', JSON.stringify(this.pdfViewerBase.formFieldCollection));
+        this.pdfViewerBase.setItemInSessionStorage(this.pdfViewerBase.formFieldCollection, '_formDesigner');
     }
 
     private inputElementClick(event: any): void {
@@ -2277,8 +2364,10 @@ export class FormDesigner {
             if(formFieldId===this.pdfViewerBase.formFieldCollection[i].FormField.id){
                 this.pdfViewerBase.formFieldCollection[i].FormField.value='';
                 (this.pdfViewer.nameTable as any)[this.pdfViewerBase.formFieldCollection[i].FormField.id.split('_')[0]].value='';
+                (this.pdfViewer.nameTable as any)[this.pdfViewerBase.formFieldCollection[i].FormField.id].value='';
                 this.pdfViewerBase.formFieldCollection[i].FormField.signatureType='';
                 (this.pdfViewer.nameTable as any)[this.pdfViewerBase.formFieldCollection[i].FormField.id.split('_')[0]].signatureType='';
+                (this.pdfViewer.nameTable as any)[this.pdfViewerBase.formFieldCollection[i].FormField.id].signatureType='';
             }
         }
     }
@@ -2287,7 +2376,7 @@ export class FormDesigner {
      * @private
      */
     public removeFieldsFromAnnotationCollections(annotationId: string): any {
-        var data = window.sessionStorage.getItem(this.pdfViewerBase.documentId + '_formDesigner');
+        var data = this.pdfViewerBase.getItemFromSessionStorage('_formDesigner');
         var formFieldsData = JSON.parse(data);
         for (let i: number = 0; i < formFieldsData.length; i++) {
             if (formFieldsData[i].Key.split("_")[0] === annotationId) {
@@ -2296,7 +2385,7 @@ export class FormDesigner {
                 break;
             }
         }
-        window.sessionStorage.setItem(this.pdfViewerBase.documentId + '_formDesigner', JSON.stringify(this.pdfViewerBase.formFieldCollection));
+        this.pdfViewerBase.setItemInSessionStorage(this.pdfViewerBase.formFieldCollection, '_formDesigner');
         let storeObject: string = window.sessionStorage.getItem(this.pdfViewerBase.documentId + '_annotations_shape');
         if (storeObject) {
             let annotObject: IPageAnnotations[] = JSON.parse(storeObject);
@@ -2355,7 +2444,7 @@ export class FormDesigner {
     private activateCheckboxElement(formFieldType: FormFieldAnnotationType): void {
         (this.pdfViewer.drawingObject as any) = {
             formFieldAnnotationType: formFieldType,
-            name: 'Check Box' + this.setFormFieldIndex(), isChecked: false, backgroundColor: '#daeaf7ff', color: 'black', thickness: 1, borderColor: '#303030', isReadonly: false, visibility: "visible", isPrint: true, rotateAngle: 0, tooltip: ''
+            name: 'Check Box' + this.setFormFieldIndex(), isChecked: false, fontSize: 10 * this.pdfViewerBase.getZoomFactor(), backgroundColor: '#daeaf7ff', color: 'black', thickness: 1, borderColor: '#303030', isReadonly: false, visibility: "visible", isPrint: true, rotateAngle: 0, tooltip: ''
         };
         this.pdfViewer.tool = "DrawTool";
     }
@@ -2363,7 +2452,7 @@ export class FormDesigner {
     private activateRadioButtonElement(formFieldType: FormFieldAnnotationType): void {
         (this.pdfViewer.drawingObject as any) = {
             formFieldAnnotationType: formFieldType,
-            name: 'Radio Button' + this.setFormFieldIndex(), isSelected: false, backgroundColor: '#daeaf7ff', color: 'black', thickness: 1, borderColor: '#303030', isReadonly: false, visibility: "visible", isPrint: true, rotateAngle: 0, tooltip: ''
+            name: 'Radio Button' + this.setFormFieldIndex(), isSelected: false, fontSize: 10 * this.pdfViewerBase.getZoomFactor(), backgroundColor: '#daeaf7ff', color: 'black', thickness: 1, borderColor: '#303030', isReadonly: false, visibility: "visible", isPrint: true, rotateAngle: 0, tooltip: ''
         };
         this.pdfViewer.tool = "DrawTool";
     }
@@ -2662,9 +2751,9 @@ export class FormDesigner {
      */
     // eslint-disable-next-line
     public downloadFormDesigner(): string {
-        let data: string = window.sessionStorage.getItem(this.pdfViewerBase.documentId + '_formDesigner');
-        let formFieldsData: any = JSON.parse(data);
-        if (formFieldsData) {
+        let data: string = this.pdfViewerBase.getItemFromSessionStorage('_formDesigner');
+        if (data) {
+            let formFieldsData: any = JSON.parse(data);
             for (let i: number = 0; i < formFieldsData.length; i++) {
                 let currentData: any = formFieldsData[i].FormField;
                 if (currentData.formFieldAnnotationType === 'Textbox' || currentData.formFieldAnnotationType === 'PasswordField' || currentData.Multiline) {
@@ -2881,7 +2970,7 @@ export class FormDesigner {
     public updateDropdownFormDesignerProperties(selectedItem: PdfFormFieldBaseModel, isUndoRedo?: boolean): void {
         let dropdownElement: any = document.getElementById(selectedItem.id + "_content_html_element").firstElementChild.firstElementChild;
         if (this.pdfViewer.designerMode || isUndoRedo) {
-            var data = window.sessionStorage.getItem(this.pdfViewerBase.documentId + '_formDesigner');
+            var data = this.pdfViewerBase.getItemFromSessionStorage('_formDesigner');
             var formFieldsData = JSON.parse(data);
             let index : number = this.getFormFiledIndex(selectedItem.id.split('_')[0]);
             selectedItem.options = this.createDropdownDataSource(selectedItem);
@@ -2935,7 +3024,7 @@ export class FormDesigner {
             }
         }
         if (isUndoRedo)
-            window.sessionStorage.setItem(this.pdfViewerBase.documentId + '_formDesigner', JSON.stringify(this.pdfViewerBase.formFieldCollection));
+            this.pdfViewerBase.setItemInSessionStorage(this.pdfViewerBase.formFieldCollection, '_formDesigner');
     }
 
     /**
@@ -2944,7 +3033,7 @@ export class FormDesigner {
     public updateListBoxFormDesignerProperties(selectedItem: PdfFormFieldBaseModel, isUndoRedo?: boolean): void {
         let dropdownElement: any = document.getElementById(selectedItem.id + "_content_html_element").firstElementChild.firstElementChild;
         if (this.pdfViewer.designerMode || isUndoRedo) {
-            var data = window.sessionStorage.getItem(this.pdfViewerBase.documentId + '_formDesigner');
+            var data = this.pdfViewerBase.getItemFromSessionStorage('_formDesigner');
             var formFieldsData = JSON.parse(data);
             let index : number = this.getFormFiledIndex(selectedItem.id.split('_')[0]);
             selectedItem.options = this.createDropdownDataSource(selectedItem);
@@ -2999,7 +3088,7 @@ export class FormDesigner {
             }
         }
         if (isUndoRedo)
-            window.sessionStorage.setItem(this.pdfViewerBase.documentId + '_formDesigner', JSON.stringify(this.pdfViewerBase.formFieldCollection));
+            this.pdfViewerBase.setItemInSessionStorage(this.pdfViewerBase.formFieldCollection, '_formDesigner');
     } 
 
     private updateDropDownListDataSource(selectedItem: PdfFormFieldBaseModel, dropdownElement: any): void {
@@ -3034,7 +3123,7 @@ export class FormDesigner {
      */
     public updateSignatureTextboxProperties(selectedItem: PdfFormFieldBaseModel, isUndoRedo?: boolean): void {
         let inputElement: any = document.getElementById(selectedItem.id + "_content_html_element").firstElementChild.firstElementChild;
-        var data = window.sessionStorage.getItem(this.pdfViewerBase.documentId + '_formDesigner');
+        var data = this.pdfViewerBase.getItemFromSessionStorage('_formDesigner');
         var formFieldsData = JSON.parse(data);
         let index : number = this.getFormFiledIndex(selectedItem.id.split('_')[0]);
         if (this.pdfViewer.designerMode || isUndoRedo) {
@@ -3058,7 +3147,7 @@ export class FormDesigner {
             }
         }
         if (isUndoRedo)
-            window.sessionStorage.setItem(this.pdfViewerBase.documentId + '_formDesigner', JSON.stringify(this.pdfViewerBase.formFieldCollection));
+            this.pdfViewerBase.setItemInSessionStorage(this.pdfViewerBase.formFieldCollection, '_formDesigner');
     }
 
     /**
@@ -3066,7 +3155,7 @@ export class FormDesigner {
      */
     public updateCheckboxFormDesignerProperties(selectedItem: PdfFormFieldBaseModel, isUndoRedo?: boolean): void {
         let checkBoxElement: any = document.getElementById(selectedItem.id + "_content_html_element").firstElementChild.firstElementChild.lastElementChild;
-        var data = window.sessionStorage.getItem(this.pdfViewerBase.documentId + '_formDesigner');
+        var data = this.pdfViewerBase.getItemFromSessionStorage('_formDesigner');
         var formFieldsData = JSON.parse(data);
         let index : number = this.getFormFiledIndex(selectedItem.id.split('_')[0]);
         if ((this.formFieldName && this.formFieldName.value) || isUndoRedo) {
@@ -3109,7 +3198,7 @@ export class FormDesigner {
              this.updateIsRequiredPropertyChange(selectedItem, checkBoxElement, isUndoRedo, index, formFieldsData);
          }
         if (isUndoRedo)
-            window.sessionStorage.setItem(this.pdfViewerBase.documentId + '_formDesigner', JSON.stringify(this.pdfViewerBase.formFieldCollection));
+            this.pdfViewerBase.setItemInSessionStorage(this.pdfViewerBase.formFieldCollection, '_formDesigner');
     }
 
     /**
@@ -3117,7 +3206,7 @@ export class FormDesigner {
      */
     public updateRadioButtonDesignerProperties(selectedItem: PdfFormFieldBaseModel, isUndoRedo?: boolean): void {
         let radioButton: any = document.getElementById(selectedItem.id + "_content_html_element").firstElementChild.firstElementChild.firstElementChild;
-        var data = window.sessionStorage.getItem(this.pdfViewerBase.documentId + '_formDesigner');
+        var data = this.pdfViewerBase.getItemFromSessionStorage('_formDesigner');
         var formFieldsData = JSON.parse(data);
         let index : number = this.getFormFiledIndex(selectedItem.id.split('_')[0]);
         if ((this.formFieldName && this.formFieldName.value) || isUndoRedo) { 
@@ -3167,7 +3256,7 @@ export class FormDesigner {
         let inputElement: any = document.getElementById(selectedItem.id + "_content_html_element").firstElementChild.firstElementChild;
         let isMaxLengthChanged: boolean = false;
         let oldValue: any, newValue: any;
-        var data = window.sessionStorage.getItem(this.pdfViewerBase.documentId + '_formDesigner');
+        var data = this.pdfViewerBase.getItemFromSessionStorage('_formDesigner');
         var formFieldsData = JSON.parse(data);
         let index : number = this.getFormFiledIndex(selectedItem.id.split('_')[0]);
         if (this.pdfViewer.designerMode || isUndoRedo) {
@@ -3249,7 +3338,7 @@ export class FormDesigner {
         }
 
         if (isUndoRedo)
-            window.sessionStorage.setItem(this.pdfViewerBase.documentId + '_formDesigner', JSON.stringify(this.pdfViewerBase.formFieldCollection));
+            this.pdfViewerBase.setItemInSessionStorage(this.pdfViewerBase.formFieldCollection, '_formDesigner');
     }
 
     /**
@@ -3608,42 +3697,44 @@ export class FormDesigner {
                 this.pdfViewer.remove(annotation);
                 this.pdfViewer.renderDrawing();
             } else {
-                if (annotation.shapeAnnotationType === "SignatureText") {
-                    selectedItem.value = annotation.data;
-                    selectedItem.signatureType = "Text";
-                    formFieldsData[index].FormField.signatureType = "Text";
-                    formFieldsData[index].FormField.value = annotation.data;
-                    this.pdfViewerBase.formFieldCollection[index].FormField.value = annotation.data;
-                    this.pdfViewerBase.formFieldCollection[index].FormField.signatureType = "Text";
-                } else if (annotation.shapeAnnotationType === "SignatureImage") {
-                    selectedItem.value = annotation.data;
-                    selectedItem.signatureType = "Image";
-                    formFieldsData[index].FormField.signatureType = "Image";
-                    formFieldsData[index].FormField.value = annotation.data;
-                    this.pdfViewerBase.formFieldCollection[index].FormField.value = annotation.data;
-                    this.pdfViewerBase.formFieldCollection[index].FormField.signatureType = "Image";
-                } else {
-                    formFieldsData[index].FormField.signatureType = "Path";
-                    selectedItem.signatureType  = "Path";
-                    this.pdfViewerBase.formFieldCollection[index].FormField.signatureType = "Path";
-                    let collectionData: any = processPathData(annotation.data);
-                    let csData: any = splitArrayCollection(collectionData);
-                    selectedItem.value = JSON.stringify(csData);
-                    formFieldsData[index].FormField.value = JSON.stringify(csData);
-                    this.pdfViewerBase.formFieldCollection[index].FormField.value = JSON.stringify(csData);
-                }
-                (selectedItem as any).signatureBound = annotation.signatureBound;
-                if (oldValue === 'hidden') {
-                    this.pdfViewer.add(annotation);
-                    selectedItem.wrapper.children.push(annotation.wrapper);
-                    let canvass: any = document.getElementById(this.pdfViewer.element.id + '_annotationCanvas_' + selectedItem.pageIndex);
-                    this.pdfViewer.renderDrawing(canvass as any, selectedItem.pageIndex);
+                if (annotation) {
+                    if (annotation.shapeAnnotationType === "SignatureText") {
+                        selectedItem.value = annotation.data;
+                        selectedItem.signatureType = "Text";
+                        formFieldsData[index].FormField.signatureType = "Text";
+                        formFieldsData[index].FormField.value = annotation.data;
+                        this.pdfViewerBase.formFieldCollection[index].FormField.value = annotation.data;
+                        this.pdfViewerBase.formFieldCollection[index].FormField.signatureType = "Text";
+                    } else if (annotation.shapeAnnotationType === "SignatureImage") {
+                        selectedItem.value = annotation.data;
+                        selectedItem.signatureType = "Image";
+                        formFieldsData[index].FormField.signatureType = "Image";
+                        formFieldsData[index].FormField.value = annotation.data;
+                        this.pdfViewerBase.formFieldCollection[index].FormField.value = annotation.data;
+                        this.pdfViewerBase.formFieldCollection[index].FormField.signatureType = "Image";
+                    } else {
+                        formFieldsData[index].FormField.signatureType = "Path";
+                        selectedItem.signatureType = "Path";
+                        this.pdfViewerBase.formFieldCollection[index].FormField.signatureType = "Path";
+                        let collectionData: any = processPathData(annotation.data);
+                        let csData: any = splitArrayCollection(collectionData);
+                        selectedItem.value = JSON.stringify(csData);
+                        formFieldsData[index].FormField.value = JSON.stringify(csData);
+                        this.pdfViewerBase.formFieldCollection[index].FormField.value = JSON.stringify(csData);
+                    }
+                    (selectedItem as any).signatureBound = annotation.signatureBound;
+                    if (oldValue === 'hidden') {
+                        this.pdfViewer.add(annotation);
+                        selectedItem.wrapper.children.push(annotation.wrapper);
+                        let canvass: any = document.getElementById(this.pdfViewer.element.id + '_annotationCanvas_' + selectedItem.pageIndex);
+                        this.pdfViewer.renderDrawing(canvass as any, selectedItem.pageIndex);
+                    }
                 }
             }
         }
 
         if (index > -1) {
-            formFieldsData[index].FormField.visibility =selectedItem.visibility;
+            formFieldsData[index].FormField.visibility = selectedItem.visibility;
             this.pdfViewerBase.formFieldCollection[index].FormField.visibility = selectedItem.visibility;
         }
         // selectedItem.visibility = this.formFieldVisibility.value;

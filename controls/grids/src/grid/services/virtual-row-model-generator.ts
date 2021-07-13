@@ -83,13 +83,7 @@ export class VirtualRowModelGenerator implements IModelGenerator<Column> {
                 }
                 let median: number;
                 if (isGroupAdaptive(this.parent)) {
-                    median = this.model.pageSize / 2;
-                    if (!this.isBlockAvailable(indexes[0])) {
-                        this.cache[indexes[0]] = rows.slice(0, median);
-                    }
-                    if (!this.isBlockAvailable(indexes[1])) {
-                        this.cache[indexes[1]] = rows.slice(median, this.model.pageSize);
-                    }
+                    this.getGroupVirtualRecordsByIndex(rows);
                 } else {
                     if (isManualRefresh) {
                         this.setBlockForManualRefresh(this.cache, indexes, rows);
@@ -320,5 +314,22 @@ export class VirtualRowModelGenerator implements IModelGenerator<Column> {
             cells.push((this.rowModelGenerator as RowModelGenerator).generateCell(cols[i]));
         }
         return cells;
+    }
+
+    private getGroupVirtualRecordsByIndex(rows: Row<Column>[]): void {
+        const blocks: number = this.parent.contentModule.getGroupedTotalBlocks();
+        const blockSize: number = this.parent.contentModule.getBlockSize();
+        for (let i: number = 1; i <= blocks; i++) {
+            let count: number = 0; this.cache[i] = [];
+            for (let j: number = ((i - 1) * blockSize); j < rows.length; j++) {
+                if (count === blockSize) {
+                    break;
+                }
+                this.cache[i].push(rows[j]);
+                if (rows[j].isDataRow) {
+                    count++;
+                }
+            }
+        }
     }
 }

@@ -153,14 +153,14 @@ export class VirtualContentRenderer extends ContentRender implements IRenderer {
         const info: SentinelType = scrollArgs.sentinel;
         const viewInfo: VirtualInfo = this.currentInfo = this.getInfoFromView(scrollArgs.direction, info, scrollArgs.offset);
         if (isGroupAdaptive(this.parent)) {
-            if ((info.axis === 'Y' && viewInfo.blockIndexes && this.prevInfo.blockIndexes.toString() === viewInfo.blockIndexes.toString())
-                && scrollArgs.direction === 'up' && viewInfo.blockIndexes[viewInfo.blockIndexes.length - 1] !== 2) {
+            if (viewInfo.blockIndexes && this.prevInfo.blockIndexes.toString() === viewInfo.blockIndexes.toString()) {
                 return;
             } else {
                 viewInfo.event = 'refresh-virtual-block';
                 if (!isNullOrUndefined(viewInfo.offsets)) {
                     viewInfo.offsets.top = this.content.scrollTop;
                 }
+                this.parent.pageSettings.currentPage = viewInfo.page;
                 this.parent.notify(
                     viewInfo.event,
                     { requestType: 'virtualscroll', virtualInfo: viewInfo, focusElement: scrollArgs.focusElement });
@@ -1032,7 +1032,7 @@ export class VirtualContentRenderer extends ContentRender implements IRenderer {
     }
 
     public isEndBlock(index: number): boolean {
-        const totalBlocks: number = this.getTotalBlocks();
+        const totalBlocks: number = isGroupAdaptive(this.parent) ? this.getGroupedTotalBlocks() : this.getTotalBlocks();
         return index >= totalBlocks || index === totalBlocks - 1;
     }
 
@@ -1196,10 +1196,12 @@ export class VirtualContentRenderer extends ContentRender implements IRenderer {
             }
             if (!isRefresh) {
                 let width: number;
-                if (column.visible) {
-                    width = this.virtualEle.wrapper.offsetWidth + parseInt(column.width.toString(), 10);
-                } else {
-                    width = this.virtualEle.wrapper.offsetWidth - parseInt(column.width.toString(), 10);
+                if (column.width) {
+                    if (column.visible) {
+                        width = this.virtualEle.wrapper.offsetWidth + parseInt(column.width.toString(), 10);
+                    } else {
+                        width = this.virtualEle.wrapper.offsetWidth - parseInt(column.width.toString(), 10);
+                    }
                 }
                 if (width > gObj.width) {
                     this.setDisplayNone(tr, idx, displayVal, rows);

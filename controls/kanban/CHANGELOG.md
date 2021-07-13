@@ -2,12 +2,43 @@
 
 ## [Unreleased]
 
-## 19.2.46 (2021-07-06)
+## 19.2.47 (2021-07-13)
 
 ### Kanban
 
 #### Bug Fixes
 
+- `#F166554` - The problem with the selection that is not maintained in the card after performing CRUD operation has been fixed.
+
+## 19.2.46 (2021-07-06)
+
+### Kanban
+
+#### New Features
+
+- `#293618` - Provided support for swimlane frozen rows while scrolling the Kanban content.
+
+### Kanban
+
+#### Bug Fixes
+
+- `#I332574` - The issue with "Column headers of the kanban is not updated, with the drag and drop actions" has been resolved.
+
+## 19.1.67 (2021-06-08)
+
+### Kanban
+
+#### Bug Fixes
+
+- `#F165595` - The issue with "Card data changed even when the editing cancel in the `dialog(card editing)`" has been resolved.
+
+## 19.1.66 (2021-06-01)
+
+### Kanban
+
+#### Bug Fixes
+
+- `#F165617`, `#F165618` - The issue with "Kanban edit dialog element not removed when `args.cancel` is set to true on `dialogOpen` event" has been resolved.
 - `#I328517` - The issue with the "Swimlane template did not render properly when loaded on mobile device" has been resolved.
 - `#I326559` - The issue with "Descending order of cards in the column is not maintained when adding a new card" has been resolved.
 

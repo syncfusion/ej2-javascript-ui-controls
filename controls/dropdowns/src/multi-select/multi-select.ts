@@ -685,7 +685,6 @@ export class MultiSelect extends DropDownBase implements IInput {
     private selectAllEventEle: HTMLLIElement[] = [];
     private filterParent: HTMLElement;
     private removeIndex: number;
-    private isDynamicDataChange: boolean = false;
     private enableRTL(state: boolean): void {
         if (state) {
             this.overAllWrapper.classList.add(RTL_CLASS);
@@ -3550,10 +3549,9 @@ export class MultiSelect extends DropDownBase implements IInput {
                             parseInt(window.getComputedStyle(this.viewWrapper).paddingRight, 10);
                         while (((wrapperleng + remainSize + downIconWidth + this.clearIconWidth) > overAllContainer) && wrapperleng !== 0
                             && this.viewWrapper.innerHTML !== '') {
-                            const textArr: string[] = this.viewWrapper.innerHTML.split(this.delimiterChar);
-                            textArr.pop();
+                            const textArr: string[] = [];
                             this.viewWrapper.innerHTML = textArr.join(this.delimiterChar);
-                            remaining++;
+                            remaining = this.value.length;
                             wrapperleng = this.viewWrapper.offsetWidth +
                                 parseInt(window.getComputedStyle(this.viewWrapper).paddingRight, 10);
                         }
@@ -3687,7 +3685,7 @@ export class MultiSelect extends DropDownBase implements IInput {
         li = <HTMLElement[] & NodeListOf<Element>>this.list.querySelectorAll(state ?
             'li.e-list-item:not([aria-selected="true"]):not(.e-reorder-hide)' :
             'li.e-list-item[aria-selected="true"]:not(.e-reorder-hide)');
-        if (this.value && this.value.length && this.isPopupOpen() && event && event.target
+        if (this.value && this.value.length && event && event.target
         && closest(event.target as Element, '.e-close-hooker') && this.allowFiltering) {
             li = <HTMLElement[] & NodeListOf<Element>>this.mainList.querySelectorAll(state ?
                 'li.e-list-item:not([aria-selected="true"]):not(.e-reorder-hide)' :

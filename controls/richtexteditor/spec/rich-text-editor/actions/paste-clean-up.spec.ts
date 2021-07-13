@@ -1338,6 +1338,56 @@ describe("Paste when iframe enabled", () => {
     });
 });
 
+describe("Paste when Xhtml enabled", () => {
+    let rteObj: RichTextEditor;
+    let keyBoardEvent: any = {
+        preventDefault: () => { },
+        type: "keydown",
+        stopPropagation: () => { },
+        ctrlKey: false,
+        shiftKey: false,
+        action: null,
+        which: 64,
+        key: ""
+    };
+
+    beforeAll((done: Function) => {
+        rteObj = renderRTE({
+            enableXhtml: true
+        });
+        done();
+    });
+
+    it(" - Pasting the content when XHTML is enabled", (done) => {
+        rteObj.value = "<p class='xhtmlpara'>&nbsp; &nbsp;</p>"
+        rteObj.dataBind();
+        keyBoardEvent.clipboardData = {
+            getData: () => { return `<p>Rich Text Editor content Pasted.</p>` },
+            types: ['text/html', 'Files'],
+            items: { }
+        };
+        rteObj.pasteCleanupSettings.prompt = true;
+        rteObj.dataBind();
+        let selectNode = (rteObj as any).inputElement.querySelector('.xhtmlpara');
+        setCursorPoint(selectNode, 0);
+        rteObj.onPaste(keyBoardEvent);
+        setTimeout(() => {
+          if (rteObj.pasteCleanupSettings.prompt) {
+            let keepFormat: any = document.getElementById(rteObj.getID() + "_pasteCleanupDialog").getElementsByClassName(CLS_RTE_PASTE_KEEP_FORMAT);
+            keepFormat[0].click();
+            let pasteOK: any = document.getElementById(rteObj.getID() + '_pasteCleanupDialog').getElementsByClassName(CLS_RTE_PASTE_OK);
+            pasteOK[0].click();
+          }
+          expect(rteObj.inputElement.innerHTML === '<div><p>Rich Text Editor content Pasted.</p><p class=\"xhtmlpara\"> ​</p></div>').toBe(true);
+          done();
+        }, 50);
+    });
+
+    afterAll(() => {
+        destroy(rteObj);
+    });
+});
+
 describe("EJ2-40047 - When pasting content in RichTextEditor the font-size of text is changed, when changing the font-color from toolbar", () => {
     let rteObj: RichTextEditor;
     let controlId: string;

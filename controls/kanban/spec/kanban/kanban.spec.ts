@@ -896,6 +896,347 @@ describe('Kanban base module', () => {
         });
     });
 
+    describe('Default rendering header count testing -', () => {
+        let kanbanObj: Kanban;
+        let dragElement: HTMLElement;
+        const headTemplate: Element = createElement('div', { id: 'headtemplate' });
+        const cardTemplate: Element = createElement('div', { id: 'cardtemplate' });
+        beforeAll((done: DoneFn) => {
+            headTemplate.innerHTML = '<div class="header-template-wrap">' +
+                '<div class="header-icon e-icons ${keyField}"></div>' +
+                '<div class="header-text">${headerText}-${count}</div>' +
+                '</div>';
+            document.body.appendChild(headTemplate);
+            cardTemplate.innerHTML = '<table class="card-template-wrap">' +
+                '<colgroup>' +
+                '<col style="width:15%">' +
+                '<col style="width:85%">' +
+                '</colgroup>' +
+                '<tbody>' +
+                '<tr>' +
+                '<td class="card-icon-wrap">' +
+                '<div class="card-icon e-icons ${Status}"></div>' +
+                '</td>' +
+                '<td class="card-details-wrap">' +
+                '<table>' +
+                '<tbody>' +
+                '<tr>' +
+                '<td class="CardHeader">Id:</td>' +
+                '<td>${Id}</td>' +
+                '</tr>' +
+                '<tr>' +
+                '<td class="CardHeader">Type:</td>' +
+                '<td>${Type}</td>' +
+                '</tr>' +
+                '<tr>' +
+                '<td class="CardHeader">Priority:</td>' +
+                '<td>${Priority}</td>' +
+                '</tr>' +
+                '<tr>' +
+                '<td class="CardHeader">Summary:</td>' +
+                '<td>${Summary}</td>' +
+                '</tr>' +
+                '</tbody>' +
+                '</table>' +
+                '</td>' +
+                '</tr>' +
+                '</tbody>' +
+                '</table>';
+            document.body.appendChild(cardTemplate);
+            const commonCss: string = '.e-kanban th.e-template {' +
+                'text-align: center;' +
+                '}' +
+
+                '.e-kanban .header-template-wrap {' +
+                'color: #e3165b;' +
+                'display: inline-flex;' +
+                'font-size: 18px;' +
+                'font-weight: 500;' +
+                '}' +
+
+                '.e-kanban .header-template-wrap .header-icon {' +
+                'margin-top: 3px;' +
+                'width: 10%;' +
+                '}' +
+
+                '.e-kanban .header-template-wrap .header-icon::before {' +
+                'font-size: 18px;' +
+                '}' +
+
+                '.e-kanban .header-template-wrap .header-text {' +
+                'margin-left: 15px;' +
+                '}' +
+
+                '.e-kanban .e-card {' +
+                'height: auto !important;' +
+                '}' +
+
+                '.e-kanban .card-template-wrap {' +
+                'line-height: 1.2;' +
+                'font-size: 12px;' +
+                'height: 100%;' +
+                'table-layout: fixed;' +
+                'width: 100%;' +
+                '}' +
+
+                '.e-kanban .card-template-wrap td {' +
+                'background: none !important;' +
+                'border: none !important;' +
+                'height: auto !important;' +
+                'padding: 2px;' +
+                'line-height: 1.6;' +
+                '}' +
+
+                '.e-kanban .card-template-wrap .card-icon-wrap {' +
+                'padding-left: 6%;' +
+                'vertical-align: middle !important;' +
+                '}' +
+
+                '.e-kanban .card-details-wrap .CardHeader {' +
+                'font-weight: 500;' +
+                '}' +
+
+                '.e-kanban .Backlog::before,' +
+                '.e-kanban .Open::before {' +
+                'content: "\e607";' +
+                'color: #6495ed;' +
+                'font-size: 16px;' +
+                '}' +
+
+                '.e-kanban .InProgress::before {' +
+                'content: "\e606";' +
+                'color: #0000ff;' +
+                'font-size: 16px;' +
+                '}' +
+
+                '.e-kanban .Testing::before {' +
+                'content: "\e345";' +
+                'color: #ffa500;' +
+                'font-size: 16px;' +
+                '}' +
+
+                '.e-kanban .Close::before {' +
+                'content: "\ea84";' +
+                'color: #008000;' +
+                'font-size: 16px;' +
+                '}';
+            const defaultOptions: KanbanModel = {
+                keyField: 'Status',
+                allowDragAndDrop: true,
+                columns: [
+                    { headerText: 'Backlog', keyField: 'Open', template: '#headtemplate' },
+                    { headerText: 'In Progress', keyField: 'InProgress', template: '#headtemplate' },
+                    { headerText: 'Testing', keyField: 'Testing', template: '#headtemplate' },
+                    { headerText: 'Done', keyField: 'Close', template: '#headtemplate' }
+                ],
+                cardSettings: {
+                    headerField: 'Id',
+                    template: '#cardtemplate'
+                },
+                width: '900px'
+            };
+            kanbanObj = util.createKanban(defaultOptions, kanbanData, done);
+            const css: string = commonCss;
+            const style: HTMLStyleElement = document.createElement('style');
+            style.type = 'text/css';
+            style.id = 'scroll';
+            style.appendChild(document.createTextNode(css));
+            document.getElementById('Kanban').appendChild(style);
+        });
+
+        afterAll(() => {
+            util.destroy(kanbanObj);
+            remove(headTemplate);
+            remove(cardTemplate);
+        });
+        it('Templates with drag and drop between columns', () => {
+            // Mouse down action
+            dragElement = kanbanObj.element.querySelectorAll('.e-card[data-id="1"]').item(0) as HTMLElement;
+            util.triggerMouseEvent(dragElement, 'mousedown');
+            util.triggerMouseEvent(dragElement, 'mousemove', 100, 100);
+            // Mouse move action
+            const element: HTMLElement = kanbanObj.element.querySelectorAll('.e-card[data-id="2"].e-card').item(0) as HTMLElement;
+            util.triggerMouseEvent(element, 'mousemove', 240, 330);
+            expect(document.querySelector('.e-kanban-header').querySelectorAll('.e-header-cells')[0].querySelector('.header-text').innerHTML === 'Backlog-14').toBe(true);
+            expect(document.querySelector('.e-kanban-header').querySelectorAll('.e-header-cells')[1].querySelector('.header-text').innerHTML === 'In Progress-13').toBe(true);
+            util.triggerMouseEvent(element, 'mouseup', 240, 330);
+            expect(document.querySelector('.e-kanban-header').querySelectorAll('.e-header-cells')[0].querySelector('.header-text').innerHTML === 'Backlog-13').toBe(true);
+            expect(document.querySelector('.e-kanban-header').querySelectorAll('.e-header-cells')[1].querySelector('.header-text').innerHTML === 'In Progress-14').toBe(true);
+        });
+    });
+
+    describe('Swimlane rendering header count testing -', () => {
+        let kanbanObj: Kanban;
+        let dragElement: HTMLElement;
+        const headTemplate: Element = createElement('div', { id: 'headtemplate' });
+        const cardTemplate: Element = createElement('div', { id: 'cardtemplate' });
+        beforeAll((done: DoneFn) => {
+            headTemplate.innerHTML = '<div class="header-template-wrap">' +
+                '<div class="header-icon e-icons ${keyField}"></div>' +
+                '<div class="header-text">${headerText}-${count}</div>' +
+                '</div>';
+            document.body.appendChild(headTemplate);
+            cardTemplate.innerHTML = '<table class="card-template-wrap">' +
+                '<colgroup>' +
+                '<col style="width:15%">' +
+                '<col style="width:85%">' +
+                '</colgroup>' +
+                '<tbody>' +
+                '<tr>' +
+                '<td class="card-icon-wrap">' +
+                '<div class="card-icon e-icons ${Status}"></div>' +
+                '</td>' +
+                '<td class="card-details-wrap">' +
+                '<table>' +
+                '<tbody>' +
+                '<tr>' +
+                '<td class="CardHeader">Id:</td>' +
+                '<td>${Id}</td>' +
+                '</tr>' +
+                '<tr>' +
+                '<td class="CardHeader">Type:</td>' +
+                '<td>${Type}</td>' +
+                '</tr>' +
+                '<tr>' +
+                '<td class="CardHeader">Priority:</td>' +
+                '<td>${Priority}</td>' +
+                '</tr>' +
+                '<tr>' +
+                '<td class="CardHeader">Summary:</td>' +
+                '<td>${Summary}</td>' +
+                '</tr>' +
+                '</tbody>' +
+                '</table>' +
+                '</td>' +
+                '</tr>' +
+                '</tbody>' +
+                '</table>';
+            document.body.appendChild(cardTemplate);
+            const commonCss: string = '.e-kanban th.e-template {' +
+                'text-align: center;' +
+                '}' +
+
+                '.e-kanban .header-template-wrap {' +
+                'color: #e3165b;' +
+                'display: inline-flex;' +
+                'font-size: 18px;' +
+                'font-weight: 500;' +
+                '}' +
+
+                '.e-kanban .header-template-wrap .header-icon {' +
+                'margin-top: 3px;' +
+                'width: 10%;' +
+                '}' +
+
+                '.e-kanban .header-template-wrap .header-icon::before {' +
+                'font-size: 18px;' +
+                '}' +
+
+                '.e-kanban .header-template-wrap .header-text {' +
+                'margin-left: 15px;' +
+                '}' +
+
+                '.e-kanban .e-card {' +
+                'height: auto !important;' +
+                '}' +
+
+                '.e-kanban .card-template-wrap {' +
+                'line-height: 1.2;' +
+                'font-size: 12px;' +
+                'height: 100%;' +
+                'table-layout: fixed;' +
+                'width: 100%;' +
+                '}' +
+
+                '.e-kanban .card-template-wrap td {' +
+                'background: none !important;' +
+                'border: none !important;' +
+                'height: auto !important;' +
+                'padding: 2px;' +
+                'line-height: 1.6;' +
+                '}' +
+
+                '.e-kanban .card-template-wrap .card-icon-wrap {' +
+                'padding-left: 6%;' +
+                'vertical-align: middle !important;' +
+                '}' +
+
+                '.e-kanban .card-details-wrap .CardHeader {' +
+                'font-weight: 500;' +
+                '}' +
+
+                '.e-kanban .Backlog::before,' +
+                '.e-kanban .Open::before {' +
+                'content: "\e607";' +
+                'color: #6495ed;' +
+                'font-size: 16px;' +
+                '}' +
+
+                '.e-kanban .InProgress::before {' +
+                'content: "\e606";' +
+                'color: #0000ff;' +
+                'font-size: 16px;' +
+                '}' +
+
+                '.e-kanban .Testing::before {' +
+                'content: "\e345";' +
+                'color: #ffa500;' +
+                'font-size: 16px;' +
+                '}' +
+
+                '.e-kanban .Close::before {' +
+                'content: "\ea84";' +
+                'color: #008000;' +
+                'font-size: 16px;' +
+                '}';
+            const defaultOptions: KanbanModel = {
+                keyField: 'Status',
+                allowDragAndDrop: true,
+                columns: [
+                    { headerText: 'Backlog', keyField: 'Open', template: '#headtemplate' },
+                    { headerText: 'In Progress', keyField: 'InProgress', template: '#headtemplate' },
+                    { headerText: 'Testing', keyField: 'Testing', template: '#headtemplate' },
+                    { headerText: 'Done', keyField: 'Close', template: '#headtemplate' }
+                ],
+                swimlaneSettings: {
+                    keyField: 'Assignee'
+                },
+                cardSettings: {
+                    headerField: 'Id',
+                    template: '#cardtemplate'
+                },
+                width: '900px'
+            };
+            kanbanObj = util.createKanban(defaultOptions, kanbanData, done);
+            const css: string = commonCss;
+            const style: HTMLStyleElement = document.createElement('style');
+            style.type = 'text/css';
+            style.id = 'scroll';
+            style.appendChild(document.createTextNode(css));
+            document.getElementById('Kanban').appendChild(style);
+        });
+
+        afterAll(() => {
+            util.destroy(kanbanObj);
+            remove(headTemplate);
+            remove(cardTemplate);
+        });
+        it('Templates with drag and drop between columns', () => {
+            // Mouse down action
+            dragElement = kanbanObj.element.querySelectorAll('.e-card[data-id="25"]').item(0) as HTMLElement;
+            util.triggerMouseEvent(dragElement, 'mousedown');
+            util.triggerMouseEvent(dragElement, 'mousemove', 100, 100);
+            // Mouse move action
+            const element: HTMLElement = kanbanObj.element.querySelectorAll('.e-card[data-id="2"].e-card').item(0) as HTMLElement;
+            util.triggerMouseEvent(element, 'mousemove', 240, 330);
+            expect(document.querySelector('.e-kanban-header').querySelectorAll('.e-header-cells')[0].querySelector('.header-text').innerHTML === 'Backlog-14').toBe(true);
+            expect(document.querySelector('.e-kanban-header').querySelectorAll('.e-header-cells')[1].querySelector('.header-text').innerHTML === 'In Progress-13').toBe(true);
+            util.triggerMouseEvent(element, 'mouseup', 240, 330);
+            expect(document.querySelector('.e-kanban-header').querySelectorAll('.e-header-cells')[0].querySelector('.header-text').innerHTML === 'Backlog-13').toBe(true);
+            expect(document.querySelector('.e-kanban-header').querySelectorAll('.e-header-cells')[1].querySelector('.header-text').innerHTML === 'In Progress-14').toBe(true);
+        });
+    });
+
     describe('Stacked header rows', () => {
         let kanbanObj: Kanban;
         beforeAll((done: DoneFn) => {

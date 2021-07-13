@@ -38,20 +38,20 @@ $ddl-list-text-indent: 12px !default;
 $ddl-list-rtl-padding-right: 0 !default;
 $ddl-list-padding-right: 16px !default;
 $ddl-list-rtl-padding-left: 16px !default;
-$ddl-bigger-list-header-font-size: $text-sm !default;
+$ddl-bigger-list-header-font-size: $text-base !default;
 $ddl-multi-column-border-width: 0 0 1px 0 !default;
 $ddl-multi-column-border-color: $border-light !default;
 
 // Small Size
 
-$ddl-small-icon-font-size: $text-sm !default;
+$ddl-small-icon-font-size: 14px !default;
 $ddl-small-line-height: 24px !default;
 $ddl-small-list-font-color: $content-text-color !default;
 $ddl-small-list-text-indent: 12px !default;
 
 // Touch Small
 
-$ddl-bigger-small-icon-font-size: $text-lg !default;
+$ddl-bigger-small-icon-font-size: 18px !default;
 $ddl-bigger-small-line-height: 40px !default;
 $ddl-bigger-small-list-font-color: $content-text-color !default;
 $ddl-bigger-small-list-text-indent: 16px !default;
@@ -91,5 +91,18 @@ $ddl-small-list-header-font-size: $text-xxs !default;
   .e-bigger.e-small.e-dropdownbase .e-list-group-item,
   .e-bigger.e-small.e-fixed-head {
     font-size: $text-xs;
+  }
+
+  .e-dropdownbase .e-list-item .e-list-icon {
+    padding: 0 8px 0 0;
+  }
+
+  .e-bigger .e-dropdownbase .e-list-item .e-list-icon,
+  .e-bigger.e-small .e-dropdownbase .e-list-item .e-list-icon {
+    padding: 0 12px 0 0;
+  }
+
+  .e-small .e-dropdownbase .e-list-item .e-list-icon {
+    padding: 0 6px 0 0;
   }
 }

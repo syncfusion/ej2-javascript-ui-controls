@@ -1652,6 +1652,164 @@ describe('RTE base module', () => {
         });
     });
 
+    describe('OrderedListAction actionBegin and actionComplete testing', () => {
+        let beforeCount: boolean = false;
+        let afterCount: boolean = false;
+        let rteObj: RichTextEditor;
+        let editNode: HTMLElement;
+        let selectNode: any;
+        let curDocument: Document;
+        beforeAll(() => {
+            rteObj = renderRTE({
+                value: `<p>1.</p>`,
+                actionComplete: ((args) => {
+                    afterCount = true;
+                }),
+                actionBegin: ((args: any) => {
+                    beforeCount = true;
+                })
+            });
+            editNode = rteObj.contentModule.getEditPanel() as HTMLElement;
+            curDocument = rteObj.contentModule.getDocument();
+        });
+
+        it(' List creation with number 1. and space action', () => {
+            editNode.focus();
+            selectNode = editNode.children[0].firstChild;
+            setCursorPoint(curDocument, selectNode, 2);
+            keyboardEventArgs.action = 'space';
+            keyboardEventArgs.keyCode = 32;
+            (rteObj as any).keyDown(keyboardEventArgs);
+            expect(beforeCount).toBe(true);
+            expect(afterCount).toBe(true);
+        });
+        it(' List creation with number a. and space action', () => {
+            rteObj.value = 'a.';
+            rteObj.dataBind();
+            editNode.focus();
+            selectNode = editNode.children[0].firstChild;
+            setCursorPoint(curDocument, selectNode, 2);
+            keyboardEventArgs.action = 'space';
+            keyboardEventArgs.keyCode = 32;
+            (rteObj as any).keyDown(keyboardEventArgs);
+            expect(beforeCount).toBe(true);
+            expect(afterCount).toBe(true);
+        });
+        it(' List creation with number i. and space action', () => {
+            rteObj.value = 'i.';
+            rteObj.dataBind();
+            editNode.focus();
+            selectNode = editNode.children[0].firstChild;
+            setCursorPoint(curDocument, selectNode, 2);
+            keyboardEventArgs.action = 'space';
+            keyboardEventArgs.keyCode = 32;
+            (rteObj as any).keyDown(keyboardEventArgs);
+            expect(beforeCount).toBe(true);
+            expect(afterCount).toBe(true);
+        });
+        afterAll(() => {
+            destroy(rteObj);
+        });
+    });
+
+    describe('UnOrderedListAction actionBegin and actionComplete testing', () => {
+        let beforeCount: boolean = false;
+        let afterCount: boolean = false;
+        let rteObj: RichTextEditor;
+        let editNode: HTMLElement;
+        let selectNode: any;
+        let curDocument: Document;
+        beforeAll(() => {
+            rteObj = renderRTE({
+                value: `<p>*</p>`,
+                actionComplete: ((args) => {
+                    afterCount = true;
+                }),
+                actionBegin: ((args: any) => {
+                    beforeCount = true;
+                })
+            });
+            editNode = rteObj.contentModule.getEditPanel() as HTMLElement;
+            curDocument = rteObj.contentModule.getDocument();
+        });
+
+        it(' List creation with number * and space action', () => {
+            editNode.focus();
+            selectNode = editNode.children[0].firstChild;
+            setCursorPoint(curDocument, selectNode, 1);
+            keyboardEventArgs.action = 'space';
+            keyboardEventArgs.keyCode = 32;
+            (rteObj as any).keyDown(keyboardEventArgs);
+            expect(beforeCount).toBe(true);
+            expect(afterCount).toBe(true);
+        });
+        it(' List creation with number - and space action', () => {
+            rteObj.value = '-';
+            rteObj.dataBind();
+            editNode.focus();
+            selectNode = editNode.children[0].firstChild;
+            setCursorPoint(curDocument, selectNode, 1);
+            keyboardEventArgs.action = 'space';
+            keyboardEventArgs.keyCode = 32;
+            (rteObj as any).keyDown(keyboardEventArgs);
+            expect(beforeCount).toBe(true);
+            expect(afterCount).toBe(true);
+        });
+        afterAll(() => {
+            destroy(rteObj);
+        });
+    });
+
+    describe('Ordered and undorderedList Action prevention', () => {
+        let beforeCount: boolean = false;
+        let afterCount: boolean = false;
+        let rteObj: RichTextEditor;
+        let editNode: HTMLElement;
+        let selectNode: any;
+        let curDocument: Document;
+        beforeAll(() => {
+            rteObj = renderRTE({
+                value: `<p>1.</p>`,
+                actionComplete: ((args) => {
+                    afterCount = true;
+                }),
+                actionBegin: ((args: any) => {
+                    args.cancel = true;
+                    beforeCount = true;
+                    afterCount = false;
+                })
+            });
+            editNode = rteObj.contentModule.getEditPanel() as HTMLElement;
+            curDocument = rteObj.contentModule.getDocument();
+        });
+
+        it(' List creation with number 1. and action prevented', () => {
+            editNode.focus();
+            selectNode = editNode.children[0].firstChild;
+            setCursorPoint(curDocument, selectNode, 2);
+            keyboardEventArgs.action = 'space';
+            keyboardEventArgs.keyCode = 32;
+            (rteObj as any).keyDown(keyboardEventArgs);
+            expect(beforeCount).toBe(true);
+            expect(afterCount).toBe(false);
+        });
+        it(' List creation with * and action prevented', () => {
+            rteObj.value = '*';
+            rteObj.dataBind();
+            editNode.focus();
+            selectNode = editNode.children[0].firstChild;
+            setCursorPoint(curDocument, selectNode, 1);
+            keyboardEventArgs.action = 'space';
+            keyboardEventArgs.keyCode = 32;
+            (rteObj as any).keyDown(keyboardEventArgs);
+            expect(beforeCount).toBe(true);
+            expect(afterCount).toBe(false);
+        });
+        afterAll(() => {
+            destroy(rteObj);
+        });
+    });
+
     describe('div with inner element', () => {
         let rteObj: RichTextEditor;
         let elem: HTMLElement;

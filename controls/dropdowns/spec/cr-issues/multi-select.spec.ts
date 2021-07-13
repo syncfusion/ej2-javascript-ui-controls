@@ -2416,6 +2416,44 @@ describe('MultiSelect', () => {
             }
         });
     });
+    describe("EJ2-50033", () => {
+        let listObj: any;
+        let element: string = "<select id='select1'><option value = '0'>option1</option><option value=''>Empty</option><option value='1'>Option3</option></select>";
+        let isOpen:  boolean = false;
+        let mouseEventArgs: any = { preventDefault: function () { }, target: null };
+        beforeEach(() => {
+            document.body.innerHTML = element;
+            let select: HTMLSelectElement = document.getElementById('select1') as HTMLSelectElement;
+            document.body.appendChild(select);
+            listObj = new MultiSelect({
+                open: () => {
+                    isOpen = true;
+                }
+            });
+            listObj.appendTo('#select1');
+        });
+        afterEach(() => {
+            let select: HTMLSelectElement = document.getElementById('select1') as HTMLSelectElement;
+            if (select) {
+                let parent: HTMLElement = select.parentElement as HTMLElement;
+                parent.remove();
+            }
+        });
+        it('dynamically change datasource', (done) => {
+            listObj.datasource =[
+                { value: '1', text: 'Group1 A' },
+                { value: '2', text: 'Group1 B' },
+                { value: '3', text: 'Group1 C' },
+                { value: '4', text: 'Group1 D' }
+              ];
+            listObj.dataBind();
+            listObj.showPopup()
+            setTimeout(() => {
+                expect(isOpen).toBe(true);
+                done();
+            }, 100);
+        });
+    });
     describe("EJ2-46897- Hidden element not updated properly when predefined values provided", () => {
         let listObj: any;
         let element: HTMLInputElement = <HTMLInputElement>createElement('input', { id: 'multiselect', attrs: { type: "text" } });

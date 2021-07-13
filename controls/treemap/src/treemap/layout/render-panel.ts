@@ -506,7 +506,7 @@ export class LayoutPanel {
                 }
                 levelName = item['name'];
             }
-            renderText = textFormatter(format, item['data'], this.treemap) || levelName;
+            renderText = textFormatter(format, item['data'], this.treemap) || levelName || 'undefined';
             childItems = findChildren(item)['values'];
             renderText = !isLeafItem && childItems && childItems.length > 0 && this.treemap.enableDrillDown ?
                 !item['isDrilled'] ? treeMap.enableRtl ? renderText + ' [+]' : '[+] ' + renderText :

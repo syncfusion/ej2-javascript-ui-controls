@@ -337,8 +337,9 @@ export function isContainsData(source: string[], pathName: string, processData: 
     let isExist: boolean = false; let name: string = ''; let path: string;
     const leaf: LeafItemSettingsModel = treemap.leafItemSettings; for (let i: number = 0; i < source.length; i++) {
         path = treemap.levels[i] ? treemap.levels[i].groupPath : leaf.labelPath ? leaf.labelPath : treemap.weightValuePath;
-        if (source[i] === processData[path]) {
-            name += (processData[path]) + (i === source.length - 1 ? '' : '#');
+        const data: string = processData[path] || 'undefined';
+        if (source[i] === data) {
+            name += data + (i === source.length - 1 ? '' : '#');
             if (name === pathName) {
                 isExist = true;
                 break;

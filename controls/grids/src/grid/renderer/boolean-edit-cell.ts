@@ -17,6 +17,7 @@ export class BooleanEditCell extends EditCellBase implements IEditCell {
     private editRow: HTMLElement;
     private editType: string;
     private activeClasses: string[] = ['e-selectionbackground', 'e-active'];
+    private cbChange: Function;
 
     public create(args: { column: Column, value: string, type: string }): Element {
         const col: Column = args.column;
@@ -24,6 +25,7 @@ export class BooleanEditCell extends EditCellBase implements IEditCell {
         if (col.type === 'checkbox') {
             classNames = 'e-field e-boolcell e-edit-checkselect';
         }
+        this.removeEventHandler = this.removeEventListener;
         return createEditElement(this.parent, args.column, classNames, { type: 'checkbox', value: args.value });
     }
 
@@ -54,11 +56,21 @@ export class BooleanEditCell extends EditCellBase implements IEditCell {
                 {
                     label: this.parent.editSettings.mode !== 'Dialog' ? ' ' : args.column.headerText,
                     checked: chkState,
-                    disabled: !isEditable(args.column, args.requestType, args.element), enableRtl: this.parent.enableRtl,
-                    change: this.checkBoxChange.bind(this)
+                    disabled: !isEditable(args.column, args.requestType, args.element), enableRtl: this.parent.enableRtl
                 },
                 args.column.edit.params));
+        this.addEventListener();
         this.obj.appendTo(args.element as HTMLElement);
+    }
+
+    private addEventListener(): void {
+        this.cbChange = this.checkBoxChange.bind(this);
+        this.obj.addEventListener(literals.change, this.cbChange);
+    }
+
+    private removeEventListener(): void {
+        if (this.obj.isDestroyed) { return; }
+        this.obj.removeEventListener(literals.change, this.cbChange);
     }
 
     private checkBoxChange(args: ChangeEventArgs): void {

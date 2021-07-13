@@ -331,6 +331,7 @@ export class WordExport {
     private isRevisionContinuous: boolean = false;
     private formFieldShading: boolean;
     private trackChanges: boolean;
+    private compatibilityMode: number;
     // Gets the bookmark name
     private get bookmarks(): string[] {
         if (isNullOrUndefined(this.mBookmarks)) {
@@ -570,6 +571,7 @@ export class WordExport {
         this.protectionType = document.protectionType;
         this.formFieldShading = document.formFieldShading;
         this.trackChanges = document.trackChanges;
+        this.compatibilityMode = document.compatibilityMode;
     }
     // Clears the document
     private clearDocument(): void {
@@ -4935,6 +4937,16 @@ export class WordExport {
         }
         if (paragraphFormat.bidi) {
             writer.writeStartElement(undefined, 'bidi', this.wNamespace);
+            writer.writeEndElement();
+        }
+
+        if (!isNullOrUndefined(paragraphFormat.keepWithNext) && paragraphFormat.keepWithNext) {
+            writer.writeStartElement(undefined, 'keepNext', this.wNamespace);
+            writer.writeEndElement();
+        }
+
+        if (!isNullOrUndefined(paragraphFormat.keepLinesTogether) && paragraphFormat.keepLinesTogether) {
+            writer.writeStartElement(undefined, 'keepLines', this.wNamespace);
             writer.writeEndElement();
         }
         if (!isNullOrUndefined(paragraphFormat.outlineLevel)) {

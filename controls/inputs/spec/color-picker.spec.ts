@@ -1500,6 +1500,24 @@ describe('ColorPicker', () => {
         });
     });
 
+    describe('Customer Reported issues', () => {
+        let ele: Element;
+        beforeEach((): void => {
+            document.body.appendChild(element);
+        });
+        afterEach(() => {
+            colorPicker.destroy();
+            document.body.innerHTML = '';
+        });
+        it('EJ2-50728- Role Attribute error in colorpicker palette', () => {
+            colorPicker = new ColorPicker({ mode: 'Palette' , inline: true}, '#color-picker');
+            ele = element.nextElementSibling;
+            expect(ele.classList.contains('e-color-palette')).toBeTruthy();
+            expect(ele.children[0].classList.contains('e-palette')).toBeTruthy();
+            expect(ele.children[0].children[0].getAttribute('role')).toBe('presentation');
+        });
+    });
+
     it('memory leak', () => {
         profile.sample();
         let average: any = inMB(profile.averageChange);

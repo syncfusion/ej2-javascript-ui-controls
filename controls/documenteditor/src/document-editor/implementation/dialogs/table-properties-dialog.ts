@@ -439,7 +439,7 @@ export class TablePropertiesDialog {
             innerHTML: '<option value="Points">' + localValue.getConstant('Points') +
                 '</option><option value="Percent">' + localValue.getConstant('Percent') + '</option>', id: element.id + '_width_dropdown'
         }) as HTMLSelectElement;
-        const labeltext: HTMLInputElement = <HTMLInputElement>createElement('label', {
+        const labeltext: HTMLInputElement = <HTMLInputElement>createElement('span', {
             innerHTML: localValue.getConstant('Measure in'), styles: 'width: 60px;',
             className: 'e-de-table-measure-lbl'
         });
@@ -828,7 +828,7 @@ export class TablePropertiesDialog {
                 + '</option><option value="Exactly">' + localValue.getConstant('Exactly') + '</option>',
             id: element.id + '_height_type'
         }) as HTMLSelectElement;
-        const labeltext: HTMLLabelElement = <HTMLLabelElement>createElement('label', {
+        const labeltext: HTMLLabelElement = <HTMLLabelElement>createElement('span', {
             innerHTML: localValue.getConstant('Row height is'),
             className: 'e-de-table-measure-lbl'
         });
@@ -1027,7 +1027,7 @@ export class TablePropertiesDialog {
             innerHTML: '<option value="Points">' + localValue.getConstant('Points') + '</option><option value="Percent">' +
                 localValue.getConstant('Percent') + '</option>', 'id': element.id + '_measure_type_cell'
         }) as HTMLSelectElement;
-        const labeltext: HTMLLabelElement = createElement('label', {
+        const labeltext: HTMLLabelElement = createElement('span', {
             innerHTML: localValue.getConstant('Measure in'),
             className: 'e-de-table-measure-lbl'
         }) as HTMLLabelElement;

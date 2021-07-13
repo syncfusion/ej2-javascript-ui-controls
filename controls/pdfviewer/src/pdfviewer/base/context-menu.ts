@@ -253,24 +253,24 @@ export class ContextMenu implements IContextMenu {
                         menuName = 'ScaleRatio';
                     }
                     if (j === 0 && menuName !== ContextMenuItem[this.pdfViewer.contextMenuSettings.contextMenuItems[j]]) {
-                        if (menuName === 'Strikethrough') {
-                            menuName = 'Strike through';
-                        }
-                        if (menuName === 'ScaleRatio') {
-                            menuName = 'Scale Ratio';
-                        }
                         hideMenuItems.push(menuName);
                     }
                     if (j > 0 && menuName === ContextMenuItem[this.pdfViewer.contextMenuSettings.contextMenuItems[j]]) {
-                        if (menuName === 'Strikethrough') {
-                            menuName = 'Strike through';
-                        }
-                        if (menuName === 'ScaleRatio') {
-                            menuName = 'Scale Ratio';
-                        }
                         for (let k: number = 0; k < hideMenuItems.length; k++) {
                             if (hideMenuItems[k] === menuName) {
-                                hideMenuItems.splice(k, 1);
+                                if (this.pdfViewer.disableContextMenuItems && this.pdfViewer.disableContextMenuItems.length > 0) {
+                                    let isDisabled: boolean = false;
+                                    for (let l: number = 0; l < this.pdfViewer.disableContextMenuItems.length; l++) {
+                                        if (hideMenuItems[k] === ContextMenuItem[this.pdfViewer.disableContextMenuItems[l]]) {
+                                            isDisabled = true;
+                                        }
+                                    }
+                                    if (!isDisabled) {
+                                        hideMenuItems.splice(k, 1); 
+                                    }
+                                } else {
+                                    hideMenuItems.splice(k, 1);
+                                }
                             }
                         }
                     }

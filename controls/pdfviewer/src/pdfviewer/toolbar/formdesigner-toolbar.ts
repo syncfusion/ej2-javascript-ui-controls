@@ -315,16 +315,16 @@ export class FormDesignerToolbar {
             cssClass: 'e-pv-handwritten-popup',
             beforeItemRender: (args: MenuEventArgs): void => {
                 this.pdfViewer.clearSelection(this.pdfViewerBase.currentPageNumber - 1);
+                if(args.element && args.element.className.indexOf("e-separator")!==-1) {
+                    args.element.style.margin = "8px 0";
+                }
                 if (args.item.text === 'ADD SIGNATURE') {
-                    args.element.innerHTML = '';  
-                    let addInitialSpan: HTMLElement = createElement('span');
-                    addInitialSpan.classList.add('e-pv-align-sign');
+                    args.element.innerHTML = '';
+                    let addInitialSpan: HTMLElement = createElement('button');
+                    addInitialSpan.classList.add("e-control", "e-btn", "e-lib", "e-outline", "e-primary");
                     addInitialSpan.textContent = 'ADD SIGNATURE';
-                    addInitialSpan.style.fontFamily = 'Roboto';
-                    addInitialSpan.style.fontSize = '14px';
-                    addInitialSpan.style.width = 'fit-content';
-                    addInitialSpan.addEventListener('mouseover', this.hoverSignature.bind(this));
-                    addInitialSpan.addEventListener('mouseleave', this.leaveSignature.bind(this));
+                    addInitialSpan.style.width = "auto";
+                    addInitialSpan.style.height = "36px";
                     addInitialSpan.addEventListener('click', this.clickSignature.bind(this));
                     args.element.appendChild(addInitialSpan);
                     args.element.addEventListener('mouseover', this.hoverInitialBtn.bind(this));
@@ -332,17 +332,16 @@ export class FormDesignerToolbar {
                     args.element.style.display = 'flex';
                     args.element.style.flexDirection = 'column';
                     args.element.style.height = 'auto';
+                    args.element.style.alignItems = 'center';
                 }
 
                 if (args.item.text === 'ADD INITIAL') { 
                     args.element.innerHTML = ''; 
-                    let addInitialSpan: HTMLElement = createElement('span');
-                    addInitialSpan.classList.add('e-pv-align-sign');
+                    let addInitialSpan: HTMLElement = createElement('button');
+                    addInitialSpan.classList.add("e-control", "e-btn", "e-lib", "e-outline", "e-primary");
                     addInitialSpan.textContent = 'ADD INITIAL';
-                    addInitialSpan.style.width = 'fit-content';
-                    addInitialSpan.style.left= '40px';
-                    addInitialSpan.addEventListener('mouseover', this.hoverSignature.bind(this));
-                    addInitialSpan.addEventListener('mouseleave', this.leaveSignature.bind(this));
+                    addInitialSpan.style.width = "auto";
+                    addInitialSpan.style.height = "36px";
                     addInitialSpan.addEventListener('click', this.clickInitial.bind(this));
                     args.element.appendChild(addInitialSpan);
                     args.element.addEventListener('mouseover', this.hoverInitialBtn.bind(this));
@@ -350,26 +349,14 @@ export class FormDesignerToolbar {
                     args.element.style.display = 'flex';
                     args.element.style.flexDirection = 'column';
                     args.element.style.height = 'auto';
+                    args.element.style.alignItems = 'center';
                 }
             },
         };
         const drpDownBtn: DropDownButton = new DropDownButton(saveOptions); 
         drpDownBtn.appendTo(this.handWrittenSignatureItem); 
     }
-    private leaveSignature(): void {
-        const eventTarget: HTMLElement = event.target as HTMLElement;
-        if (eventTarget.classList.contains('e-pv-align-sign')){
-            eventTarget.classList.remove('e-pv-signaturehover');
-            eventTarget.style.cursor='default';
-        }
-    }
-    private hoverSignature(): void {
-        const eventTarget: HTMLElement = event.target as HTMLElement;
-        if (eventTarget.classList.contains('e-pv-align-sign')){
-            eventTarget.classList.add('e-pv-signaturehover');
-            eventTarget.style.cursor='pointer';
-        }
-    }
+
     private hoverInitialBtn(event:any): void {
         const eventTarget: HTMLElement = event.target as HTMLElement;
         let currentFieldID: string = isNullOrUndefined(event.path) ? event.composedPath()[0].id : event.path[0].id;

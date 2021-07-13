@@ -73,7 +73,7 @@ export class ContentRender implements IRenderer {
         const arg: NotifyArgs = args;
         return () => {
             if (this.parent.isFrozenGrid() && this.parent.enableVirtualization) {
-                let tableName: freezeTable = (<{ tableName?: freezeTable }>args).tableName;
+                const tableName: freezeTable = (<{ tableName?: freezeTable }>args).tableName;
                 this.isLoaded = this.parent.getFrozenMode() === literals.leftRight ? tableName === 'frozen-right' : tableName === 'movable';
                 if (this.parent.enableColumnVirtualization && args.requestType === 'virtualscroll' && this.isLoaded) {
                     const mHdr: Element[] = [].slice.call(this.parent.getMovableVirtualHeader().getElementsByClassName(literals.row));
@@ -281,6 +281,7 @@ export class ContentRender implements IRenderer {
             tbdy = contentModule.getTbody(tableName);
         }
         const isFrozenLeft: boolean = this.parent.getFrozenMode() === literals.leftRight && tableName === literals.frozenRight;
+        gObj.notify(events.destroyChildGrid, {});
         /* eslint-disable */
         if (args.requestType !== 'infiniteScroll' && (this.parent as any).registeredTemplate
             && (this.parent as any).registeredTemplate.template && !args.isFrozen && !isFrozenLeft) {
@@ -319,12 +320,13 @@ export class ContentRender implements IRenderer {
                 for (let m: number = 0; m < values.length; m++) {
                     if (scrollTop < values[m]) {
                         if (!isNullOrUndefined(args.virtualInfo) && args.virtualInfo.direction === 'up') {
-                            args.virtualInfo.blockIndexes = m === 0 || m === 1 ? [1, 2] : [m, m + 1];
-                            startIndex = m === 0 || m === 1 ? 0 : (m * bSize);
+                            startIndex = m > 0 ? ((m - 1) * bSize) : (m * bSize);
                             break;
                         } else {
-                            args.virtualInfo.blockIndexes = m === 0 || m === 1 ? [1, 2] : [m, m + 1];
-                            startIndex = m === 0 || m === 1 ? 0 : (m) * bSize;
+                            startIndex = m * bSize;
+                            if (this.parent.contentModule.isEndBlock(m) || this.parent.contentModule.isEndBlock(m + 1)) {
+                                args.virtualInfo.blockIndexes = [m, m + 1];
+                            }
                             break;
                         }
                     }
@@ -369,7 +371,9 @@ export class ContentRender implements IRenderer {
                 }
             }
             this.setInfiniteVisibleRows(args, modelData[i], tableName);
-            if (isGroupAdaptive(gObj) && this.rows.length >= (gObj.pageSettings.pageSize) && blockLoad) {
+            if (isGroupAdaptive(gObj) && args.virtualInfo && args.virtualInfo.blockIndexes
+                && (this.rowElements.length >= (args.virtualInfo.blockIndexes.length * this.parent.contentModule.getBlockSize()))
+                && blockLoad) {
                 break;
             }
             if (!gObj.rowTemplate) {

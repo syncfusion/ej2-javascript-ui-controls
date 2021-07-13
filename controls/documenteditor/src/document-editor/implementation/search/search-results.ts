@@ -12,7 +12,6 @@ export class SearchResults {
      * Gets the length of search results.
      *
      * @aspType int
-     * @blazorType int
      * @returns {number} - Returns search results length.
      */
     public get length(): number {
@@ -22,7 +21,6 @@ export class SearchResults {
      * Gets the index of current search result.
      *
      * @aspType int
-     * @blazorType int
      * @returns {number} - Returns current search result index.
      */
     public get index(): number {
@@ -33,7 +31,6 @@ export class SearchResults {
      *
      * @param {number} value - Specifies the search result index.
      * @aspType int
-     * @blazorType int
      */
     public set index(value: number) {
         if (this.length === 0 || value < 0 || value > this.searchModule.textSearchResults.length - 1) {

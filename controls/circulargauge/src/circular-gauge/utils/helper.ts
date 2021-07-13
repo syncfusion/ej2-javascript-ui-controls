@@ -324,7 +324,9 @@ export function getPathArc(
     center: GaugeLocation, start: number, end: number, radius: number,
     startWidth?: number, endWidth?: number, range?: Range, axis?: Axis
 ): string {
-    end -= isCompleteAngle(start, end) ? 0.0001 : 0;
+    if (isNullOrUndefined(range) || (range.start !== range.end)) {
+        end -= isCompleteAngle(start, end) ? 0.0001 : 0;
+    }
     const degree: number = getDegree(start, end);
     const startRadius: number = !isNullOrUndefined(range) ? (range.position === 'Outside' && !range.isLinearCircularGradient
         ? radius + startWidth : range.position === 'Cross'

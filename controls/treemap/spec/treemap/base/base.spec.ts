@@ -1,10 +1,11 @@
 import { TreeMap } from '../../../src/treemap/treemap';
 import { ILoadedEventArgs, IResizeEventArgs } from '../../../src/treemap/model/interface';
 import { createElement, remove } from '@syncfusion/ej2-base';
-import { jobData, sportsData, hierarchicalData, Country_Population, data } from '../base/data.spec';
+import { jobData, countryData, sportsData, hierarchicalData, Country_Population, data } from '../base/data.spec';
 import  {profile , inMB, getMemoryProfile} from '../common.spec';
 
 let jobDataSource: Object[] = jobData;
+let countryDataSource: Object[] = countryData;
 let gameDataSource: Object[] = sportsData;
 let hierarchyData: Object[] = hierarchicalData;
 let popuationData: Object[] = Country_Population;
@@ -87,6 +88,46 @@ describe('TreeMap Component Base Spec', () => {
             treemap.legendSettings.textStyle.color = null;
             treemap.legendSettings.titleStyle.color = null;
             treemap.theme = 'Bootstrap';
+            treemap.refresh();
+        });
+
+        it('Checking with unmapped datasource item for tree map groupPath', () => {
+            treemap.loaded = (args: ILoadedEventArgs) => {
+                let element: Element = document.getElementById(args.treemap.element.id + '_TreeMap_' + args.treemap.layoutType + '_Layout');
+                expect(element.childElementCount).toBe(53);
+            };
+            treemap.dataSource = jobData;
+            treemap.weightValuePath = 'EmployeesCount';
+            treemap.leafItemSettings = {
+                labelPath: 'EmployeesCount',
+                fill: '#6699cc',
+                border: { color: 'black', width: 2 }
+            };
+            treemap.levels = [
+                { groupPath: 'Country', fill: '#336699', border: { color: 'black', width: 2 } },
+                { groupPath: 'JobGroup', fill: '#336699', border: { color: 'black', width: 2 } }
+            ];
+            treemap.refresh();
+        });
+
+        it('Checking with tree map data when item text is substring of another tree map item', () => {
+            treemap.loaded = (args: ILoadedEventArgs) => {
+                let element: Element = document.getElementById(args.treemap.element.id + '_Level_Index_1_Item_Index_20_Group');
+                expect(element.getAttribute('tabindex')).toBe('23');
+                element = document.getElementById(args.treemap.element.id + '_Level_Index_1_Item_Index_18_Group');
+                expect(element.getAttribute('tabindex')).toBe('21');
+            };
+            treemap.dataSource = countryData;
+            treemap.weightValuePath = 'GDP';
+            treemap.leafItemSettings = {
+                labelPath: 'GDP',
+                fill: '#6699cc',
+                border: { color: 'black', width: 2 }
+            };
+            treemap.levels = [
+                { groupPath: 'Name', fill: '#336699', border: { color: 'black', width: 2 } },
+                { groupPath: 'Capital', fill: '#336699', border: { color: 'black', width: 2 } }
+            ];
             treemap.refresh();
         });
 

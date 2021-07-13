@@ -57,9 +57,6 @@ export class DragAndDrop extends ActionBase {
             helper: this.dragHelper.bind(this),
             queryPositionInfo: this.dragPosition.bind(this)
         });
-        if (!(dragObj.enableTapHold && Browser.isDevice && Browser.isTouch)) {
-            EventHandler.remove(element, 'touchstart', (dragObj as any).initialize);
-        }
     }
 
     private dragHelper(e: Record<string, any>): HTMLElement {

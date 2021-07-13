@@ -492,6 +492,9 @@ export class Group implements IAction {
         query = gObj.getDataModule().generateQuery(false);
         query.queries = gObj.getDataModule().aggregateQuery(gObj.getQuery().clone()).queries;
         const args: NotifyArgs = { requestType: 'virtualscroll', rowObject: rObj };
+        if (gObj.contentModule) {
+            args.virtualInfo = (<{ prevInfo?: object }>gObj.contentModule).prevInfo;
+        }
         dataManager = gObj.getDataModule().getData(args, query.requiresCount());
         dataManager.then((e: ReturnType) => gObj.renderModule.dataManagerSuccess(e, args));
     }

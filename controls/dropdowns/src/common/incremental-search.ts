@@ -1,4 +1,3 @@
-
 /**
  * IncrementalSearch module file
  */
@@ -36,7 +35,7 @@ export function incrementalSearch(
             }
         }
         index = index + 1;
-        return matches[index];
+        return matches[index] ? matches[index] : matches[0];
     } else {
         const listItems: Element[] = items;
         const strLength: number = queryString.length;

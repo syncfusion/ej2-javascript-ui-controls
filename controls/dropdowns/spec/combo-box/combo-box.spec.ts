@@ -2641,3 +2641,63 @@ describe('EJ2-48529 - Filtering is not firing while remove the last letter in po
         }, 450)
     });
 });
+describe('EJ2MVC-335 - Value updated incorrectly for autofill true case', () => {
+    let element: HTMLInputElement;
+    let keyEventArgs: any = {
+        preventDefault: (): void => { /** NO Code */ },
+        keyCode: 74
+    };
+    let keyEventArguments: any = { preventDefault: (): void => { /** NO Code */ }, action: 'down', keyCode: 40 };
+    let gameList: { [key: string]: Object }[] = [
+        {  Id : "Game1", Game :"22"  },
+        {  Id : "22", Game : "Tennis" },
+        {  Id:  "Game3", Game :"Basketball" },
+    ];
+    let comboBox: any;
+    beforeAll(() => {
+        element = <HTMLInputElement>createElement('input', { id: 'combBox' });
+        document.body.appendChild(element);
+    });
+    afterAll(() => {
+        document.body.innerHTML = '';
+        if (element) {
+            element.remove();
+        }
+    });
+    it('check the value update for autofill case while typing text in the control', () => {
+        comboBox = new ComboBox({
+            dataSource: gameList,
+            fields: { text: 'Game', value: 'Id'},
+            autofill : true,
+        });
+        comboBox.appendTo(element);
+        keyEventArguments.type = 'keydown';
+        keyEventArguments.action = 'down';
+        comboBox.keyActionHandler(keyEventArguments);
+        comboBox.inputElement.value = "2";
+        comboBox.onInput(keyEventArgs);
+        comboBox.onFilterUp(keyEventArgs);
+        comboBox.focusOut();
+        expect(comboBox.text).toBe("22");
+        expect(comboBox.value).toBe("Game1");
+        comboBox.hidePopup();
+        comboBox.destroy();    
+    });
+    it('check the value update while navigating in the popup for autofill case', () => {
+        comboBox = new ComboBox({
+            dataSource: gameList,
+            fields: { text: 'Game', value: 'Id'},
+            autofill : true,
+        });
+        comboBox.appendTo(element);
+        comboBox.showPopup();
+        keyEventArguments.type = 'keydown';
+        keyEventArguments.action = 'down';
+        comboBox.keyActionHandler(keyEventArguments);
+        comboBox.focusOut();
+        expect(comboBox.text).toBe("22");
+        expect(comboBox.value).toBe("Game1");
+        comboBox.hidePopup();
+        comboBox.destroy();    
+    });
+});

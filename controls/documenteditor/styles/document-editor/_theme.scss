@@ -3079,14 +3079,14 @@
             cursor: pointer;
             color: $dialog-active-icon-color;
         }
-        .e-de-para-dlg-container {
+        .e-de-para-dlg-container, .e-de-table-options-dlg {
             .e-checkbox-wrapper .e-label {
                 font-size: 12px;
             }
         }
     
         .e-bigger {
-            .e-de-para-dlg-container {
+            .e-de-para-dlg-container, .e-de-table-options-dlg {
                 .e-checkbox-wrapper .e-label {
                     font-size: 14px;
                 }

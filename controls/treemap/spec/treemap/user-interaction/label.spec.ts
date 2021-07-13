@@ -97,7 +97,7 @@ describe('TreeMap component Spec', () => {
 
         it('Checking a label with interSectAction: WrapText ', () => {
             treemap.loaded = (args: ILoadedEventArgs) => {
-                let spec: string = document.getElementById('labels_Level_Index_1_Item_Index_18_Text').textContent
+                let spec: string = document.getElementById('labels_Level_Index_1_Item_Index_23_Text').textContent
                 expect(spec).toEqual('Testers');
             }
             treemap.leafItemSettings.interSectAction = 'Wrap';
@@ -166,7 +166,7 @@ describe('TreeMap component Spec', () => {
 
         it('color value path and Range color Mapping', (done: Function) => {
             treemap.loaded = (args: ILoadedEventArgs) => {
-                spec = document.getElementById('colorMapping_Level_Index_2_Item_Index_18_RectPath')
+                spec = document.getElementById('colorMapping_Level_Index_2_Item_Index_21_RectPath')
                 //expect(spec.getAttribute('fill')).toBe('#6699cc');
                 expect(spec.getAttribute('fill')).toBe('green');
                 done();

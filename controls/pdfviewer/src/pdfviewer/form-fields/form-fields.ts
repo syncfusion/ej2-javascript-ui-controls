@@ -67,8 +67,8 @@ export class FormFields {
         this.maxTabIndex = 0;
         this.minTabIndex = -1;
         // eslint-disable-next-line
-        this.data = window.sessionStorage.getItem(this.pdfViewerBase.documentId + '_formfields');
-        if (this.data !== null) {
+        this.data = this.pdfViewerBase.getItemFromSessionStorage('_formfields');
+        if (this.data) {
             // eslint-disable-next-line
             this.formFieldsData = JSON.parse(this.data);
             const textLayer: HTMLElement = document.getElementById(this.pdfViewer.element.id + '_textLayer_' + pageIndex);
@@ -133,7 +133,9 @@ export class FormFields {
                         if (currentData.Name !== 'SignatureText' || currentData.Name !== 'SignatureImage') {
                             if (!isNullOrUndefined(this.getFormFieldType(currentData))) {
                                 let addedElement1: any = this.pdfViewer.formDesignerModule.addFormField(this.getFormFieldType(currentData), fieldProperties) as any;
-                                currentData.id = addedElement1.parentElement.id.split('_')[0];
+                                if (addedElement1) {
+                                    currentData.id = addedElement1.parentElement.id.split('_')[0];
+                                }
                             }
                         } if ( this.getFormFieldType(currentData) === 'SignatureField' || this.getFormFieldType(currentData) === 'InitialField') {
                             this.addSignaturePath(currentData);
@@ -174,8 +176,7 @@ export class FormFields {
                             for (let j: number = 0; j< this.pdfViewer.formFieldCollections.length; j++) {
                                 if ((inputField.type === 'text' || inputField.type === 'password' || inputField.type === 'textarea') && currentData.Name !== 'SignatureField') {
                                     if (currentData['uniqueID'] === this.pdfViewer.formFieldCollections[j].id) {
-                                        currentData['Value'] = this.pdfViewer.formFieldCollections[j].value;
-                                        inputField.value = this.pdfViewer.formFieldCollections[j].value;
+                                       this.pdfViewer.formFieldCollections[j].value = currentData['Value'];
                                     }
                                 }
                             }
@@ -208,8 +209,8 @@ export class FormFields {
                             inputField.addEventListener('keyup', this.updateSameFieldsValue.bind(this));
                         }
                     }
-                    window.sessionStorage.removeItem(this.pdfViewerBase.documentId + '_formfields');
-                    window.sessionStorage.setItem(this.pdfViewerBase.documentId + '_formfields', JSON.stringify(this.formFieldsData));
+                    window.sessionStorage.removeItem(this.pdfViewerBase.documentId + '_formfields');                   
+                    this.pdfViewerBase.setItemInSessionStorage(this.formFieldsData, '_formfields');
                 }
             }
         }
@@ -432,10 +433,10 @@ export class FormFields {
     // eslint-disable-next-line
     private getSignField(): any[] {
         // eslint-disable-next-line
-        let data: any = window.sessionStorage.getItem(this.pdfViewerBase.documentId + '_formfields');
+        let data: any = this.pdfViewerBase.getItemFromSessionStorage('_formfields');
         // eslint-disable-next-line
         let currentData: any;
-        if (data !== null) {
+        if (data) {
             // eslint-disable-next-line
             let formFieldsData: any = JSON.parse(data);
             for (let i: number = 0; i < formFieldsData.length; i++) {
@@ -455,8 +456,8 @@ export class FormFields {
      */
     public formFieldCollections(): void {
         // eslint-disable-next-line
-        let data: any = window.sessionStorage.getItem(this.pdfViewerBase.documentId + '_formfields');
-        if (data !== null) {
+        let data: any = this.pdfViewerBase.getItemFromSessionStorage('_formfields');
+        if (data) {
             // eslint-disable-next-line
             let formFieldsData: any = JSON.parse(data);
             for (let i: number = 0; i < formFieldsData.length; i++) {
@@ -574,12 +575,12 @@ export class FormFields {
     // eslint-disable-next-line
     public downloadFormFieldsData(): any {
         // eslint-disable-next-line
-        let data: any = window.sessionStorage.getItem(this.pdfViewerBase.documentId + '_formfields');
-        // eslint-disable-next-line
-        let formFieldsData: any = JSON.parse(data);
-        // eslint-disable-next-line
-        let datas: any = {};
-        if (formFieldsData) {
+        let data: any = this.pdfViewerBase.getItemFromSessionStorage('_formfields');
+        if (data) {
+             // eslint-disable-next-line
+            let formFieldsData: any = JSON.parse(data);
+            // eslint-disable-next-line
+            let datas: any = {};
             for (let m: number = 0; m < formFieldsData.length; m++) {
                 // eslint-disable-next-line
                 let currentData: any = formFieldsData[m];
@@ -668,8 +669,8 @@ export class FormFields {
                     }
                 }
             }
+            return (JSON.stringify(datas));
         }
-        return (JSON.stringify(datas));
     }
     private focusFormFields(event: MouseEvent): void {
         // eslint-disable-next-line
@@ -888,45 +889,44 @@ export class FormFields {
     }
 
     private updateSignatureDataInSession(annot: any, key: string) {
-        {
-            var data = window.sessionStorage.getItem(this.pdfViewerBase.documentId + '_formDesigner');
-            var formFieldsData = JSON.parse(data);
-            for (let i: number = 0; i < formFieldsData.length; i++) {
-                if (formFieldsData[i].Key === key) {
-                    if (annot.shapeAnnotationType === "SignatureText") {
-                        formFieldsData[i].FormField.signatureType = "Text";
-                        this.pdfViewerBase.formFieldCollection[i].FormField.signatureType = "Text";
-                        (this.pdfViewer.nameTable as any)[key].signatureType = "Text";
-                        formFieldsData[i].FormField.fontFamily = annot.fontFamily;
-                        this.pdfViewerBase.formFieldCollection[i].FormField.fontFamily = annot.fontFamily;
-                        (this.pdfViewer.nameTable as any)[key].fontFamily = annot.fontFamily;
-                    } else if (annot.shapeAnnotationType === "SignatureImage") {
-                        formFieldsData[i].FormField.signatureType = "Image";
-                        this.pdfViewerBase.formFieldCollection[i].FormField.signatureType = "Image";
-                        (this.pdfViewer.nameTable as any)[key].signatureType = "Image";
-                    } else {
-                        formFieldsData[i].FormField.signatureType = "Path";
-                        this.pdfViewerBase.formFieldCollection[i].FormField.signatureType = "Path";
-                        (this.pdfViewer.nameTable as any)[key].signatureType = "Path";
-                    }
-                    formFieldsData[i].FormField.signatureBound = annot.bounds;
-                    this.pdfViewerBase.formFieldCollection[i].FormField.signatureBound = annot.bounds;
-                    (this.pdfViewer.nameTable as any)[key].signatureBound = annot.bounds;
-                    if (annot.shapeAnnotationType === "Path") {
-                        let collectionData: any = processPathData(annot.data);
-                        let csData: any = splitArrayCollection(collectionData);
-                        formFieldsData[i].FormField.value = JSON.stringify(csData);
-                        (this.pdfViewer.nameTable as any)[key].value = annot.data;
-                        this.pdfViewerBase.formFieldCollection[i].FormField.value = JSON.stringify(csData);
-                    } else {
-                        formFieldsData[i].FormField.value = annot.data;
-                        this.pdfViewerBase.formFieldCollection[i].FormField.value = annot.data;
-                        (this.pdfViewer.nameTable as any)[key].value = annot.data;
-                    }
+        var data = this.pdfViewerBase.getItemFromSessionStorage('_formDesigner');
+        var formFieldsData = JSON.parse(data);
+        for (let i: number = 0; i < formFieldsData.length; i++) {
+            if (formFieldsData[i].Key === key) {
+                if (annot.shapeAnnotationType === "SignatureText") {
+                    formFieldsData[i].FormField.signatureType = "Text";
+                    this.pdfViewerBase.formFieldCollection[i].FormField.signatureType = "Text";
+                    (this.pdfViewer.nameTable as any)[key].signatureType = "Text";
+                    formFieldsData[i].FormField.fontFamily = annot.fontFamily;
+                    this.pdfViewerBase.formFieldCollection[i].FormField.fontFamily = annot.fontFamily;
+                    (this.pdfViewer.nameTable as any)[key].fontFamily = annot.fontFamily;
+                } else if (annot.shapeAnnotationType === "SignatureImage") {
+                    formFieldsData[i].FormField.signatureType = "Image";
+                    this.pdfViewerBase.formFieldCollection[i].FormField.signatureType = "Image";
+                    (this.pdfViewer.nameTable as any)[key].signatureType = "Image";
+                } else {
+                    formFieldsData[i].FormField.signatureType = "Path";
+                    this.pdfViewerBase.formFieldCollection[i].FormField.signatureType = "Path";
+                    (this.pdfViewer.nameTable as any)[key].signatureType = "Path";
+                }
+                formFieldsData[i].FormField.signatureBound = annot.bounds;
+                this.pdfViewerBase.formFieldCollection[i].FormField.signatureBound = annot.bounds;
+                (this.pdfViewer.nameTable as any)[key].signatureBound = annot.bounds;
+                if (annot.shapeAnnotationType === "Path") {
+                    let collectionData: any = processPathData(annot.data);
+                    let csData: any = splitArrayCollection(collectionData);
+                    formFieldsData[i].FormField.value = JSON.stringify(csData);
+                    (this.pdfViewer.nameTable as any)[key].value = annot.data;
+                    this.pdfViewerBase.formFieldCollection[i].FormField.value = JSON.stringify(csData);
+                } else {
+                    formFieldsData[i].FormField.value = annot.data;
+                    this.pdfViewerBase.formFieldCollection[i].FormField.value = annot.data;
+                    (this.pdfViewer.nameTable as any)[key].value = annot.data;
                 }
             }
-            window.sessionStorage.setItem(this.pdfViewerBase.documentId + '_formDesigner', JSON.stringify(formFieldsData));
         }
+
+        this.pdfViewerBase.setItemInSessionStorage(formFieldsData, '_formDesigner');
     }
 
     /**
@@ -970,7 +970,7 @@ export class FormFields {
                         currentTarget.value = event.target.value;
                     } else {
                         currentField.Text = event.target.value;
-                        window.sessionStorage.setItem(this.pdfViewerBase.documentId + '_formfields', JSON.stringify(this.formFieldsData));
+                        this.pdfViewerBase.setItemInSessionStorage(this.formFieldsData, '_formfields');                      
                     }
                 }
             }
@@ -1198,93 +1198,94 @@ export class FormFields {
     public updateDataInSession(target: any, signaturePath?: any, signatureBounds?: any, signatureFontFamily?: string, signatureFontSize?: Number): void {
         this.pdfViewer.isDocumentEdited = true;
         // eslint-disable-next-line
-        let data: any = window.sessionStorage.getItem(this.pdfViewerBase.documentId + '_formfields');
+        let data: any = this.pdfViewerBase.getItemFromSessionStorage('_formfields');
         if(data){
-        // eslint-disable-next-line
-        let FormFieldsData: any = JSON.parse(data);
-        for (let m: number = 0; m < FormFieldsData.length; m++) {
             // eslint-disable-next-line
-            let currentData: any = FormFieldsData[m];
-            if (currentData.uniqueID === target.id) {
-                if (target && target.type === 'text' || target.type === 'password' || target.type === 'textarea') {
-                    const signField: HTMLElement = target as HTMLElement;
-                    if (signField.classList.contains('e-pdfviewer-signatureformfields') || signField.classList.contains('e-pdfviewer-signatureformfields-signature')) {
-                        currentData.Value = signaturePath;
-                        if (signatureBounds) {
-                            currentData.Bounds = signatureBounds;
-                        }
-                        if (signatureFontFamily) {
-                            currentData.fontFamily = signatureFontFamily;
-                            currentData.fontSize = signatureFontSize;
+            let FormFieldsData: any = JSON.parse(data);
+            for (let m: number = 0; m < FormFieldsData.length; m++) {
+                // eslint-disable-next-line
+                let currentData: any = FormFieldsData[m];
+                if (currentData.uniqueID === target.id) {
+                    if (target && target.type === 'text' || target.type === 'password' || target.type === 'textarea') {
+                        const signField: HTMLElement = target as HTMLElement;
+                        if (signField.classList.contains('e-pdfviewer-signatureformfields') || signField.classList.contains('e-pdfviewer-signatureformfields-signature')) {
+                            currentData.Value = signaturePath;
+                            if (signatureBounds) {
+                                currentData.Bounds = signatureBounds;
+                            }
+                            if (signatureFontFamily) {
+                                currentData.fontFamily = signatureFontFamily;
+                                currentData.fontSize = signatureFontSize;
+                            } else {
+                                currentData.fontFamily = null;
+                            }
                         } else {
-                            currentData.fontFamily = null;
+                            currentData.Text = target.value;
+                            currentData.Value = target.value;
                         }
-                    } else {
-                        currentData.Text = target.value;
-                    }
-                } else if (target.type === 'radio') {
-                    for (let l: number = 0; l < FormFieldsData.length; l++) {
-                        // eslint-disable-next-line
-                        let currentType: any = FormFieldsData[l];
-                        if (FormFieldsData[l].GroupName === target.name) {
-                            FormFieldsData[l].Selected = false;
-                        }
-                    }
-                    currentData.Selected = true;
-                } else if (target.type === 'checkbox') {
-                    for (let l: number = 0; l < FormFieldsData.length; l++) {
-                        // eslint-disable-next-line
-                        let currentType: any = FormFieldsData[l];
-                        if (FormFieldsData[l].GroupName === target.name) {
-                            FormFieldsData[l].Selected = false;
+                    } else if (target.type === 'radio') {
+                        for (let l: number = 0; l < FormFieldsData.length; l++) {
                             // eslint-disable-next-line
-                            let currentTarget: any = document.getElementById(FormFieldsData[l].uniqueID);
-                            if (currentTarget) {
-                                if ((currentData.GroupName === target.name) && (currentData.uniqueID !== currentTarget.id)) {
-                                    currentData.Selected = false;
-                                    currentTarget.checked = false;
-                                    currentTarget.style.webkitAppearance = 'none';
+                            let currentType: any = FormFieldsData[l];
+                            if (FormFieldsData[l].GroupName === target.name) {
+                                FormFieldsData[l].Selected = false;
+                            }
+                        }
+                        currentData.Selected = true;
+                    } else if (target.type === 'checkbox') {
+                        for (let l: number = 0; l < FormFieldsData.length; l++) {
+                            // eslint-disable-next-line
+                            let currentType: any = FormFieldsData[l];
+                            if (FormFieldsData[l].GroupName === target.name) {
+                                FormFieldsData[l].Selected = false;
+                                // eslint-disable-next-line
+                                let currentTarget: any = document.getElementById(FormFieldsData[l].uniqueID);
+                                if (currentTarget) {
+                                    if ((currentData.GroupName === target.name) && (currentData.uniqueID !== currentTarget.id)) {
+                                        currentData.Selected = false;
+                                        currentTarget.checked = false;
+                                        currentTarget.style.webkitAppearance = 'none';
+                                    }
+                                }
+                            }
+                        }
+                        if (target.checked) {
+                            currentData.Selected = true;
+                        } else {
+                            currentData.Selected = false;
+                        }
+                    } else if (target.type === 'select-one' && target.size === 0) {
+                        // eslint-disable-next-line
+                        let currentValue: any = target.options[target.selectedIndex].text;
+                        // eslint-disable-next-line
+                        let childrens: any = target.children;
+                        const isChildElements: boolean = false;
+                        for (let k: number = 0; k < childrens.length; k++) {
+                            if (childrens[k].text === currentValue) {
+                                currentData.SelectedValue = currentValue;
+                            }
+                        }
+                    } else if (target.type === 'select-multiple' || target.size > 0) {
+                        // eslint-disable-next-line
+                        let currentValue: any = target.selectedOptions;
+                        currentData.SelectedList = [];
+                        for (let z: number = 0; z < currentValue.length; z++) {
+                            // eslint-disable-next-line
+                            let childrens: any = target.children;
+                            for (let k: number = 0; k < childrens.length; k++) {
+                                if (childrens[k] === currentValue[z]) {
+                                    currentData.SelectedList.push(k);
                                 }
                             }
                         }
                     }
-                    if (target.checked) {
-                        currentData.Selected = true;
-                    } else {
-                        currentData.Selected = false;
-                    }
-                } else if (target.type === 'select-one' && target.size === 0) {
-                    // eslint-disable-next-line
-                    let currentValue: any = target.options[target.selectedIndex].text;
-                    // eslint-disable-next-line
-                    let childrens: any = target.children;
-                    const isChildElements: boolean = false;
-                    for (let k: number = 0; k < childrens.length; k++) {
-                        if (childrens[k].text === currentValue) {
-                            currentData.SelectedValue = currentValue;
-                        }
-                    }
-                } else if (target.type === 'select-multiple' || target.size > 0) {
-                    // eslint-disable-next-line
-                    let currentValue: any = target.selectedOptions;
-                    currentData.SelectedList = [];
-                    for (let z: number = 0; z < currentValue.length; z++) {
-                        // eslint-disable-next-line
-                        let childrens: any = target.children;
-                        for (let k: number = 0; k < childrens.length; k++) {
-                            if (childrens[k] === currentValue[z]) {
-                                currentData.SelectedList.push(k);
-                            }
-                        }
-                    }
+                    break;
+                } else if (target && target.getAttribute('list') != null && target.type === 'text' && currentData.uniqueID === target.list.id) {
+                    currentData.SelectedValue = target.value;
                 }
-                break;
-            } else if (target && target.getAttribute('list') != null && target.type === 'text' && currentData.uniqueID === target.list.id) {
-                currentData.SelectedValue = target.value;
             }
-        }
-        window.sessionStorage.removeItem(this.pdfViewerBase.documentId + '_formfields');
-        window.sessionStorage.setItem(this.pdfViewerBase.documentId + '_formfields', JSON.stringify(FormFieldsData));
+            window.sessionStorage.removeItem(this.pdfViewerBase.documentId + '_formfields');
+            this.pdfViewerBase.setItemInSessionStorage(FormFieldsData, '_formfields');
         } else {
             if (this.pdfViewer.formDesignerModule) {
                 let selectedItem: any = (this.pdfViewer.nameTable as any)[target.id.split('_')[0]];
@@ -1298,7 +1299,7 @@ export class FormFields {
      * @private
      */
     public removeExistingFormFields():void{
-        var data = window.sessionStorage.getItem(this.pdfViewerBase.documentId + '_formDesigner');
+        var data = this.pdfViewerBase.getItemFromSessionStorage('_formDesigner');
         var formFieldsData = JSON.parse(data);
         for (let i: number = 0; i < formFieldsData.length; i++) {
             this.pdfViewer.formDesignerModule.deleteFormField(formFieldsData[i].Key.split('_')[0]);
@@ -1797,20 +1798,24 @@ export class FormFields {
     private addSignaturePath(signData: any): boolean {
         this.isSignatureField = false;
         // eslint-disable-next-line
-        let data: any = window.sessionStorage.getItem(this.pdfViewerBase.documentId + '_formfields');
-        // eslint-disable-next-line
-        let formFieldsData: any = JSON.parse(data);
-        for (let m: number = 0; m < formFieldsData.length; m++) {
+        let data: any = this.pdfViewerBase.getItemFromSessionStorage('_formfields');
+        if (data) {
             // eslint-disable-next-line
-            let currentData: any = formFieldsData[m];
-            // eslint-disable-next-line max-len
-            if ((currentData.Name === 'ink' || currentData.Name === 'SignatureField' || currentData.Name === 'SignatureImage' || currentData.Name === 'SignatureText') && currentData.FieldName === signData.ActualFieldName && currentData.Value && currentData.Value !== '') {
-                signData.Value = currentData.Value;
-                signData.Bounds = currentData.LineBounds;
-                signData.FontFamily = currentData.FontFamily;
-                signData.FontSize = currentData.FontSize;
-                this.isSignatureField = true;
-                break;
+            let formFieldsData: any = JSON.parse(data);
+            for (let m: number = 0; m < formFieldsData.length; m++) {
+                // eslint-disable-next-line
+                let currentData: any = formFieldsData[m];
+                // eslint-disable-next-line max-len
+                if ((currentData.Name === 'ink' || currentData.Name === 'SignatureField' || currentData.Name === 'SignatureImage' || currentData.Name === 'SignatureText') && currentData.FieldName === signData.ActualFieldName && currentData.Value && currentData.Value !== '') {
+                    signData.Value = currentData.Value;
+                    signData.FontFamily = currentData.FontFamily;
+                    signData.FontSize = currentData.FontSize;
+                    this.isSignatureField = true;
+                    if (!signData.Bounds) {
+                        signData.Bounds = currentData.LineBounds;
+                    }
+                    break;
+                }
             }
         }
         return this.isSignatureField;
@@ -1888,64 +1893,10 @@ export class FormFields {
                 }
                 fontHeight = this.ConvertPointToPixel(font.Size);
             }
-            this.setStyleToTextDiv(inputField, annotBounds.left, annotBounds.top, fontHeight, annotBounds.width, annotBounds.height, false);
+            this.pdfViewerBase.setStyleToTextDiv(inputField, annotBounds.left, annotBounds.top, fontHeight, annotBounds.width, annotBounds.height, false);
         }
     }
-    /**
-     * @param textDiv
-     * @param left
-     * @param top
-     * @param fontHeight
-     * @param width
-     * @param height
-     * @param isPrint
-     * @param textDiv
-     * @param left
-     * @param top
-     * @param fontHeight
-     * @param width
-     * @param height
-     * @param isPrint
-     * @param textDiv
-     * @param left
-     * @param top
-     * @param fontHeight
-     * @param width
-     * @param height
-     * @param isPrint
-     * @param textDiv
-     * @param left
-     * @param top
-     * @param fontHeight
-     * @param width
-     * @param height
-     * @param isPrint
-     * @param textDiv
-     * @param left
-     * @param top
-     * @param fontHeight
-     * @param width
-     * @param height
-     * @param isPrint
-     * @private
-     */
-    // eslint-disable-next-line max-len
-    public setStyleToTextDiv(textDiv: HTMLElement, left: number, top: number, fontHeight: number, width: number, height: number, isPrint: boolean): void {
-        let zoomvalue: number = this.pdfViewerBase.getZoomFactor();
-        if (isPrint) {
-            zoomvalue = 1;
-            textDiv.style.position = 'absolute';
-        }
-        textDiv.style.left = left * zoomvalue + 'px';
-        textDiv.style.top = top * zoomvalue + 'px';
-        textDiv.style.height = height * zoomvalue + 'px';
-        textDiv.style.width = width * zoomvalue + 'px';
-        textDiv.style.margin = '0px';
-        if (fontHeight > 0) {
-            textDiv.style.fontSize = fontHeight * zoomvalue + 'px';
-        }
-    }
-
+   
     // eslint-disable-next-line
     private renderExistingAnnnot(data: any, index: any, printContainer: any): any {
         if (!printContainer) {
@@ -1956,10 +1907,21 @@ export class FormFields {
             } else {
                 bounds = data.LineBounds;
             }
-            const currentLeft: number = this.ConvertPointToPixel(bounds.X);
-            const currentTop: number = this.ConvertPointToPixel(bounds.Y);
-            const currentWidth: number = this.ConvertPointToPixel(bounds.Width);
-            const currentHeight: number = this.ConvertPointToPixel(bounds.Height);
+            let currentLeft: number;
+            let currentTop: number;
+            let currentWidth: number;
+            let currentHeight: number;
+            if (bounds.x || bounds.y || bounds.width || bounds.height) {
+                currentLeft = bounds.x;
+                currentTop = bounds.y;
+                currentWidth = bounds.width;
+                currentHeight= bounds.height;
+            } else {
+                currentLeft = this.ConvertPointToPixel(bounds.X);
+                currentTop = this.ConvertPointToPixel(bounds.Y);
+                currentWidth = this.ConvertPointToPixel(bounds.Width);
+                currentHeight= this.ConvertPointToPixel(bounds.Height);
+            }
             // eslint-disable-next-line
             let currentPage: number = parseFloat(data['PageIndex']);
             // eslint-disable-next-line
@@ -2072,60 +2034,91 @@ export class FormFields {
         }
     }
 
+    /**
+     * @private
+     */
+    // eslint-disable-next-line
+    public clearFormFieldStorage(): void {
+        // eslint-disable-next-line
+        let sessionSize: any = Math.round(JSON.stringify(window.sessionStorage).length / 1024);
+        const maxSessionSize: number = 4500;
+        if (sessionSize > maxSessionSize) {
+            const storageLength: number = window.sessionStorage.length;
+            // eslint-disable-next-line
+            let annotationList: any = [];
+            for (let i: number = 0; i < storageLength; i++) {
+                if (window.sessionStorage.key(i) && window.sessionStorage.key(i).split('_')[3]) {
+                    if (window.sessionStorage.key(i).split('_')[3] === 'annotations') {
+                        // eslint-disable-next-line max-len
+                        this.pdfViewerBase.formFieldStorage[window.sessionStorage.key(i)] = window.sessionStorage.getItem(window.sessionStorage.key(i));
+                        annotationList.push(window.sessionStorage.key(i));
+                    }
+                }
+            }
+            if (annotationList) {
+                for (let i: number = 0; i < annotationList.length; i++) {
+                    window.sessionStorage.removeItem(annotationList[i]);
+                }
+            }
+        }
+    }
+
     // eslint-disable-next-line
     public clearFormFields(formField?: any): void {
         // eslint-disable-next-line
-        let data: any = window.sessionStorage.getItem(this.pdfViewerBase.documentId + '_formfields');
-        // eslint-disable-next-line
-        let formFieldsData: any;
-        if (formField) {
-            formFieldsData = [formField];
-        } else {
-            formFieldsData = JSON.parse(data);
-        }
-        let isFirstRadio: boolean = true;
-        for (let m: number = 0; m < formFieldsData.length; m++) {
+        let data: any = this.pdfViewerBase.getItemFromSessionStorage('_formfields');
+        if(data) {
             // eslint-disable-next-line
-            let currentData: any = formFieldsData[m];
+            let formFieldsData: any;
             if (formField) {
-                currentData.uniqueID = formField.id;
-                currentData.Name = formField.type;
+                formFieldsData = [formField];
+            } else {
+                formFieldsData = JSON.parse(data);
             }
-            // eslint-disable-next-line
-            this.currentTarget = document.getElementById(currentData.uniqueID);
-            if (currentData.Name === 'Textbox') {
-                this.currentTarget.value = '';
-            } else if (currentData.Name === 'RadioButton') {
-                if (isFirstRadio) {
-                    this.currentTarget.checked = true;
-                    this.updateDataInSession(this.currentTarget);
-                    isFirstRadio = false;
-                }
-            } else if (currentData.Name === 'DropDown') {
-                this.currentTarget.value = currentData.TextList[0];
-            } else if (currentData.Name === 'CheckBox') {
-                this.currentTarget.checked = false;
-            } else if (currentData.Name === 'SignatureField') {
+            let isFirstRadio: boolean = true;
+            for (let m: number = 0; m < formFieldsData.length; m++) {
                 // eslint-disable-next-line
-                let annotation: PdfAnnotationBaseModel = (this.pdfViewer.nameTable as any)[currentData.uniqueID];
-                if (annotation) {
-                    if (this.currentTarget && this.currentTarget.className === 'e-pdfviewer-signatureformfields-signature') {
-                        this.currentTarget.className = 'e-pdfviewer-signatureformfields';
-                        this.currentTarget.style.pointerEvents = '';
-                        this.currentTarget.parentElement.style.pointerEvents = '';
-                        this.updateDataInSession(this.currentTarget, '');
-                        if (formField) {
-                            formField.value = '';
-                            formField.signatureType = [formField.signatureType];
-                            formField.signatureType[0] = '';
-                        }
-                    }
-                    this.pdfViewer.remove(annotation);
-                    this.pdfViewer.renderDrawing();
+                let currentData: any = formFieldsData[m];
+                if (formField) {
+                    currentData.uniqueID = formField.id;
+                    currentData.Name = formField.type;
                 }
-            }
-            if (currentData.Name !== 'SignatureField' && currentData.Name !== 'ink' && currentData.Name !== 'RadioButton') {
-                this.updateDataInSession(this.currentTarget);
+                // eslint-disable-next-line
+                this.currentTarget = document.getElementById(currentData.uniqueID);
+                if (currentData.Name === 'Textbox') {
+                    this.currentTarget.value = '';
+                } else if (currentData.Name === 'RadioButton') {
+                    if (isFirstRadio) {
+                        this.currentTarget.checked = true;
+                        this.updateDataInSession(this.currentTarget);
+                        isFirstRadio = false;
+                    }
+                } else if (currentData.Name === 'DropDown') {
+                    this.currentTarget.value = currentData.TextList[0];
+                } else if (currentData.Name === 'CheckBox') {
+                    this.currentTarget.checked = false;
+                } else if (currentData.Name === 'SignatureField') {
+                    // eslint-disable-next-line
+                    let annotation: PdfAnnotationBaseModel = (this.pdfViewer.nameTable as any)[currentData.uniqueID];
+                    if (annotation) {
+                        if (this.currentTarget && this.currentTarget.className === 'e-pdfviewer-signatureformfields-signature') {
+                            this.currentTarget.className = 'e-pdfviewer-signatureformfields';
+                            this.currentTarget.style.pointerEvents = '';
+                            this.currentTarget.parentElement.style.pointerEvents = '';
+                            this.updateDataInSession(this.currentTarget, '');
+                            if (formField) {
+                                formField.value = '';
+                                formField.signatureType = [formField.signatureType];
+                                formField.signatureType[0] = '';
+                            }
+                        }
+                        this.pdfViewer.remove(annotation);
+                        this.pdfViewer.renderDrawing();
+                    }
+                }
+                if (currentData.Name !== 'SignatureField' && currentData.Name !== 'ink' && currentData.Name !== 'RadioButton') {
+                    this.updateDataInSession(this.currentTarget);
+                }
             }
         }
     }

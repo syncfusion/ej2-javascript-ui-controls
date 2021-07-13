@@ -174,7 +174,7 @@ export class AxisRenderer {
             if ((i === 0 && style.hiddenLabel === 'First') || (i === (length - 1) && style.hiddenLabel === 'Last')) {
                 continue;
             }
-            style.font.fontFamily = this.gauge.themeStyle.labelFontFamily || style.font.fontFamily;
+            style.font.fontFamily = style.font.fontFamily || this.gauge.themeStyle.labelFontFamily;
             if (axis.hideIntersectingLabel && (i !== 0)) {
                 //To remove the labels which is intersecting with last label.
                 const lastlabel: boolean = ((i !== (labelCollection.length - 1)) && ((isCompleteAngle(axis.startAngle, axis.endAngle) ||
@@ -585,6 +585,11 @@ export class AxisRenderer {
                     Math.floor(startAngle), Math.ceil(endAngle), colorIndex
                 );
             }
+        } else if ((range.start === range.end) && ((range.start >= min && range.end <= max) || (range.end >= min && range.start <= max))) {
+            this.rangeAppendPathCalculation(
+                range, rangeIndex, index, startWidth, endWidth, rangeElement,
+                Math.floor(startAngle), Math.ceil(endAngle), colorIndex
+            );
         }
     }
 

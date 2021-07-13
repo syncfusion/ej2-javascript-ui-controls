@@ -1010,3 +1010,49 @@ describe('EJ2-47491- Grid destroy with document click event ', () => {
         gridObj1 =  null;
     });
 });
+
+describe('EJ2-51101 Custom excel filter Radio button alignment issue => ', () => {
+    let gridObj: Grid; 
+    let actionComplete: (args: any) => void;
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: filterData,
+                allowFiltering: true,
+                allowPaging: false,
+                pageSettings: { currentPage: 1 },
+                filterSettings: { type: 'Excel' },
+                columns: [
+                    { field: 'OrderID', width: 120 },
+                    { field: 'CustomerID', headerText: 'CustomerID', width:120},
+                    { field:'Fright',headerText:'Frieght', width:130 },
+                    { field: 'ShipCountry',  headerText: 'Ship Country', width: 120}
+                ],
+                actionComplete : actionComplete
+            }, done);
+        });
+
+        it('action complete', (done: Function) => {
+                let flag: boolean = true;
+                actionComplete = (args?: any): void => {
+                    if (flag) {
+                        flag = false;
+                        (gridObj.filterModule as any).filterModule.excelFilterBase.renderFilterUI((gridObj.columns[1] as any).field,args.filterModel.dlg);
+                        done();
+                    }
+                };
+                gridObj.actionComplete = actionComplete;
+                (gridObj.element.querySelectorAll(".e-filtermenudiv")[1] as HTMLElement).click();                
+            });
+
+        it('checking the class for label element', () => {
+            expect(document.querySelector('.e-xlfl-radio').querySelector('label').classList.contains("e-xlfl-radio-and")).toBeTruthy();
+            expect(document.querySelector('.e-xlfl-radio').querySelectorAll('label')[1].classList.contains("e-xlfl-radio-or")).toBeTruthy();
+        });
+
+    afterAll(() => {
+        destroy(gridObj);
+        gridObj = null;
+        actionComplete = null;
+    });
+});

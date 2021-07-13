@@ -359,6 +359,10 @@
             top: $cpicker-slider-track-top;
             width: 100%;
             z-index: 1;
+
+            @if $skin-name == 'tailwind' or $skin-name == 'tailwind-dark' {
+              border-radius: 6px;
+            }
           }
         }
 
@@ -827,6 +831,14 @@
             & .e-slider-track {
               @if $skin-name == 'tailwind' or $skin-name == 'tailwind-dark' {
                 height: $cpicker-bigger-slider-height;
+              }
+            }
+
+            & .e-opacity-slider {
+              & .e-opacity-empty-track {
+                @if $skin-name == 'tailwind' or $skin-name == 'tailwind-dark' {
+                  height: 12px;
+                }
               }
             }
 

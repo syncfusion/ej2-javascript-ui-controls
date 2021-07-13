@@ -144,6 +144,23 @@ export class WParagraphFormat {
     public set textAlignment(value: TextAlignment) {
         this.setPropertyValue('textAlignment', value);
     }
+
+    public get keepWithNext(): boolean {
+        return this.getPropertyValue('keepWithNext') as boolean;
+    }
+
+    public set keepWithNext(value: boolean) {
+        this.setPropertyValue('keepWithNext', value);
+    }
+
+    public get keepLinesTogether(): boolean {
+        return this.getPropertyValue('keepLinesTogether') as boolean;
+    }
+
+    public set keepLinesTogether(value: boolean) {
+        this.setPropertyValue('keepLinesTogether', value);
+    }
+
     public get outlineLevel(): OutlineLevel {
         return this.getPropertyValue('outlineLevel') as OutlineLevel;
     }
@@ -296,6 +313,8 @@ export class WParagraphFormat {
         this.addUniqueParaFormat('outlineLevel', property, propValue, uniqueParaFormatTemp);
         this.addUniqueParaFormat('bidi', property, propValue, uniqueParaFormatTemp);
         this.addUniqueParaFormat('contextualSpacing', property, propValue, uniqueParaFormatTemp);
+        this.addUniqueParaFormat('keepWithNext', property, propValue, uniqueParaFormatTemp);
+        this.addUniqueParaFormat('keepLinesTogether', property, propValue, uniqueParaFormatTemp);
 
         this.uniqueParagraphFormat = WParagraphFormat.uniqueParagraphFormats.addUniqueFormat(uniqueParaFormatTemp, WParagraphFormat.uniqueFormatType);
     }
@@ -343,6 +362,12 @@ export class WParagraphFormat {
             value = false;
             break;
         case 'contextualSpacing':
+            value = false;
+            break;
+        case 'keepWithNext':
+            value = false;
+            break;
+        case 'keepLinesTogether':
             value = false;
             break;
         }
@@ -467,6 +492,12 @@ export class WParagraphFormat {
         }
         if (isNullOrUndefined(this.getValue('contextualSpacing'))) {
             this.contextualSpacing = format.getValue('contextualSpacing') as boolean;
+        }
+        if (isNullOrUndefined(this.getValue('keepWithNext'))) {
+            this.keepWithNext = format.getValue('keepWithNext') as boolean;
+        }
+        if (isNullOrUndefined(this.getValue('keepLinesTogether'))) {
+            this.keepLinesTogether = format.getValue('keepLinesTogether') as boolean;
         }
         if (isNullOrUndefined(this.listFormat)) {
             this.listFormat.mergeFormat(format.listFormat);

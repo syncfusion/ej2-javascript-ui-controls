@@ -414,6 +414,7 @@ $pv-print-overlay-bg-color: rgba($pv-print-popup-container-background-color, $pv
 $pv-comment-font-color: rgba(255, 255, 255, .9) !default;
 $pv-comment-text-color:  rgba(255, 255, 255, .6) !default;
 $pv-comment-panel-bg: rgba(0 , 0, 0, 1) !default;
+$pv-signature-image-panel-bg: #fff !default;
 $pv-comment-panel-bottom-color: rgb(255, 255, 255) !default;
 $pv-comments-content-container-bg: rgb(0, 0, 0) !default;
 $pv-comments-select-bg: $selection-bg !default;
@@ -499,3 +500,5 @@ $pv-formfield-properties-icon-padding: 5px !default;
 $pv-formfield-properties-icon-align-padding: 8px 8px !default;
 $pv-form-field-property-font-style-width: 46px !default;
 $pv-signature-delete-icon-margin-top: 10px !default;
+
+

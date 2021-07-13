@@ -34,12 +34,15 @@
         background-color: $cpicker-slider-handler-color;
         border-color: $cpicker-slider-handler-color;
         @if $skin-name == 'tailwind' or $skin-name == 'tailwind-dark' {
-          border: 1px solid $content-bg-color;
+          border: 1px solid $white;
         }
 
         &.e-handle-start:not(.e-tab-handle) {
           background-color: $cpicker-slider-handler-color;
           border-color: $cpicker-slider-handler-color;
+          @if $skin-name == 'tailwind' or $skin-name == 'tailwind-dark' {
+            border-color: $white;
+          }
         }
       }
 

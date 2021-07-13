@@ -38,7 +38,7 @@ export class InfiniteScroll implements IAction {
     private isRemove: boolean = false;
     private isInitialCollapse: boolean = false;
     protected prevScrollTop: number = 0;
-    private actions: string[] = ['filtering', 'searching', 'grouping', 'ungrouping', 'reorder', 'sorting'];
+    private actions: string[] = ['filtering', 'searching', 'grouping', 'ungrouping', 'reorder', 'sorting', 'refresh'];
     private keys: string[] = ['downArrow', 'upArrow', 'PageUp', 'PageDown'];
     private rowIndex: number;
     protected cellIndex: number;

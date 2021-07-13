@@ -1519,3 +1519,7 @@ export type FootEndNoteNumberFormat = 'Arabic' | 'UpperCaseRoman' | 'LowerCaseRo
  * Specifies the image format to export.
  */
 export type ImageFormat = 'Png' | 'Jpeg';
+/**
+ * Specifies the compatibility mode
+ */
+export type CompatibilityMode = 'Word2003' | 'Word2007' | 'Word2010' | 'Word2013';

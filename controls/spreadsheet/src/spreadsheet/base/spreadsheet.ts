@@ -1002,8 +1002,16 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
      * @default { mode: 'Sheet', searchBy: 'By Row', isCSen: 'false', isEMatch:'false' }
      * @returns {void} - To find the specified cell value.
      */
-    public find(args: FindOptions): void {
+     public find(args: FindOptions): void | string {
+         const activeCell: string = this.getActiveSheet().activeCell;
         super.findHandler(args);
+        if (!args.isAction) {
+            if (activeCell !== this.getActiveSheet().activeCell) {
+                return this.getActiveSheet().name + '!' + this.getActiveSheet().activeCell;
+            } else {
+                return null;
+            }
+        }
     }
     /**
      * To replace the specified cell value.

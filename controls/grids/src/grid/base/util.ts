@@ -1391,8 +1391,8 @@ export function ispercentageWidth(gObj: IGrid): boolean {
             percentageCol++;
         }
     }
-    return (gObj.width === 'auto' || typeof (gObj.width) === 'string' && gObj.width.indexOf('%') !== -1) && Browser.info.name !== 'chrome'
-        && !gObj.groupSettings.showGroupedColumn && gObj.groupSettings.columns.length
+    return (gObj.width === 'auto' || typeof (gObj.width) === 'string' && gObj.width.indexOf('%') !== -1) &&
+        !gObj.groupSettings.showGroupedColumn && gObj.groupSettings.columns.length
         && percentageCol && !undefinedWidthCol;
 }
 
@@ -1810,10 +1810,11 @@ export function createEditElement(parent: IGrid, column: Column, classNames: str
 }
 
 /**
-     * @param {string} uid - Defines column's uid
-     * @returns {Column} returns column model
-     * @hidden
-     */
+ * @param {IGrid} gObj - Grid instance
+ * @param {string} uid - Defines column's uid
+ * @returns {Column} returns column model
+ * @hidden
+ */
 export function getColumnModelByUid(gObj: IGrid, uid: string): Column {
     let column: Column;
     for (const col of ((<{ columnModel?: Column[] }>gObj).columnModel)) {
@@ -1826,6 +1827,7 @@ export function getColumnModelByUid(gObj: IGrid, uid: string): Column {
 }
 
 /**
+ * @param {IGrid} gObj - Grid instance
  * @param {string} field - Defines column's uid
  * @returns {Column} returns column model
  * @hidden
@@ -1839,4 +1841,31 @@ export function getColumnModelByFieldName(gObj: IGrid, field: string): Column {
         }
     }
     return column;
+}
+
+/**
+ * @param {string} id - Defines component id
+ * @param {string[]} evts - Defines events
+ * @param {object} handlers - Defines event handlers
+ * @param {any} instance - Defines class instance
+ * @hidden
+ */
+export function registerEventHandlers(id: string, evts: string[], handlers: object, instance: any): void {
+    instance.eventHandlers[id] = {};
+    for (let i: number = 0; i < evts.length; i++) {
+        instance.eventHandlers[id][evts[i]] = handlers[evts[i]];
+    }
+}
+
+/**
+ * @param {any} component - Defines component instance
+ * @param {string[]} evts - Defines events
+ * @param {any} instance - Defines class instance
+ * @hidden
+ */
+export function removeEventHandlers(component: any, evts: string[], instance: any): void {
+    for (let i: number = 0; i < evts.length; i++) {
+        if (component.isDestroyed) { break; }
+        component.removeEventListener(evts[i], instance.eventHandlers[component.element.id][evts[i]]);
+    }
 }

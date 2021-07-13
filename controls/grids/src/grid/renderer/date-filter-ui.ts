@@ -7,6 +7,8 @@ import { ServiceLocator } from '../services/service-locator';
 import { Filter } from '../actions/filter';
 import { Dialog, Popup } from '@syncfusion/ej2-popups';
 import {getCustomDateFormat} from '../base/util';
+import * as events from '../base/constant';
+import * as literals from '../base/string-literals';
 
 /**
  * `datefilterui` render date column.
@@ -23,10 +25,16 @@ export class DateFilterUI implements IFilterMUI {
     private datePickerObj: DatePicker;
     private fltrSettings: FilterSettings;
     private dialogObj: Dialog;
+    private dpOpen: Function = this.openPopup.bind(this);
+
     constructor(parent?: IGrid, serviceLocator?: ServiceLocator, filterSettings?: FilterSettings) {
         this.parent = parent;
         this.locator = serviceLocator;
         this.fltrSettings = filterSettings;
+        if (this.parent) {
+            this.parent.on(events.filterMenuClose, this.destroy, this);
+            this.parent.on(events.destroy, this.destroy, this);
+        }
     }
 
     public create(args: IFilterCreate): void {
@@ -42,8 +50,7 @@ export class DateFilterUI implements IFilterMUI {
                     placeholder: args.localizeText.getConstant('ChooseDate'),
                     width: '100%',
                     locale: this.parent.locale,
-                    enableRtl: this.parent.enableRtl,
-                    open: this.openPopup.bind(this)
+                    enableRtl: this.parent.enableRtl
                 },
                 args.column.filter.params
             ));
@@ -55,12 +62,12 @@ export class DateFilterUI implements IFilterMUI {
                     placeholder: args.localizeText.getConstant('ChooseDate'),
                     width: '100%',
                     locale: this.parent.locale,
-                    enableRtl: this.parent.enableRtl,
-                    open: this.openPopup.bind(this)
+                    enableRtl: this.parent.enableRtl
                 },
                 args.column.filter.params)
             );
         }
+        this.datePickerObj.addEventListener(literals.open, this.dpOpen);
         this.datePickerObj.appendTo(this.inputElem);
     }
 
@@ -80,5 +87,11 @@ export class DateFilterUI implements IFilterMUI {
         args.popup.element.style.zIndex = (this.dialogObj.zIndex + 1).toString();
     }
 
-
+    private destroy(): void {
+        if (this.datePickerObj.isDestroyed) { return; }
+        this.datePickerObj.removeEventListener(literals.open, this.dpOpen);
+        this.datePickerObj.destroy();
+        this.parent.off(events.filterMenuClose, this.destroy);
+        this.parent.off(events.destroy, this.destroy);
+    }
 }

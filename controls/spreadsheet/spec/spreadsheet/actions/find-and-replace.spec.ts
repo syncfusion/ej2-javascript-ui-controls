@@ -27,8 +27,8 @@ describe('Find & Replace ->', () => {
         });
 
         it('Find all', (done: Function) => {
-            const values: string[] = helper.invoke('findAll', ['Shoes', null, null, null, 1]);
-            expect(values.length).toBe(5)
+            const values: string[] = helper.invoke('findAll', ['Shoes', null, null, null, 0]);
+            expect(values.length).toBe(5);
             expect(values[0]).toBe('Sheet1!A2');
             expect(values[4]).toBe('Sheet1!A10');
             done();

@@ -1159,3 +1159,75 @@ describe('Swimlane Resize functionality', () => {
         done();
     });
 })
+
+describe('Node Selection Functionality', () => {
+    let diagram: Diagram;
+    let ele: HTMLElement;
+    let scroller: DiagramScroller;
+    let mouseEvents: MouseEvents = new MouseEvents();
+    beforeAll((): void => {
+        const isDef = (o: any) => o !== undefined && o !== null;
+        if (!isDef(window.performance)) {
+            console.log("Unsupported environment, window.performance.memory is unavailable");
+            this.skip(); //Skips test (in Chai)
+            return;
+        }
+
+        ele = createElement('div', { id: 'diagramlane' });
+        document.body.appendChild(ele);
+        let nodes: NodeModel[] = [
+            {
+                id: 'node1', height: 75, width: 75, offsetX: 200, offsetY: 100,
+            },
+            {
+                id: 'node2', height: 75, width: 75, offsetX: 350, offsetY: 100,
+            },
+            {
+                id: 'swimlane',
+                shape: {
+                    type: 'SwimLane',
+                    orientation: 'Horizontal',
+                    header: {
+                        annotation: { content: 'ONLINE PURCHASE STATUS' },
+                        height: 50, style: { fontSize: 11 },
+                    },
+                    lanes: [
+                        {
+                            id: 'stackCanvas1',
+                            header: {
+                                annotation: { content: 'CUSTOMER' }, width: 50,
+                                style: { fontSize: 11 }
+                            },
+                            height: 100
+                        },
+                    ],
+                },
+                offsetX: 420, offsetY: 270,
+                height: 100,
+                width: 650
+            },
+        ];
+        diagram = new Diagram({
+            width: 1000, height: 800, nodes: nodes
+        });
+        diagram.appendTo('#diagramlane');
+
+    });
+    afterAll((): void => {
+        diagram.destroy();
+        ele.remove();
+    });
+    it('Check whether node is select properly or not', (done: Function) => {
+        let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
+        mouseEvents.clickEvent(diagramCanvas, 200, 100);
+        mouseEvents.mouseDownEvent(diagramCanvas, 200, 100);
+        mouseEvents.mouseMoveEvent(diagramCanvas, 300, 300);
+        mouseEvents.mouseUpEvent(diagramCanvas, 300, 300);
+        mouseEvents.mouseUpEvent(diagramCanvas, 300, 300);
+        mouseEvents.dragAndDropEvent(diagramCanvas, 350, 100, 350, 200);
+        diagram.clearSelection();
+        mouseEvents.clickEvent(diagramCanvas, 350, 200);
+        expect(diagram.selectedItems.nodes[0].id === 'node2').toBe(true);
+        done();
+    });
+})

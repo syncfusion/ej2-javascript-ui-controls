@@ -283,7 +283,7 @@ export interface AnimationOptions extends AnimationModel {
 export function rippleEffect(element: HTMLElement, rippleOptions?: RippleOptions, done?: Function): () => void {
     let rippleModel: RippleOptions = getRippleModel(rippleOptions);
     if (rippleModel.rippleFlag === false || (rippleModel.rippleFlag === undefined && !isRippleEnabled)) {
-        return Function;
+        return (() => {});
     }
     element.setAttribute('data-ripple', 'true');
     EventHandler.add(element, 'mousedown', rippleHandler, { parent: element, rippleOptions: rippleModel });

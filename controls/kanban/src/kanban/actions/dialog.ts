@@ -261,6 +261,7 @@ export class KanbanDialog {
             if (!closeArgs.cancel) {
                 this.cardData = eventProp.data;
                 this.destroy();
+                this.parent.actionModule.SingleCardSelection(this.cardData);
             }
         });
     }
@@ -352,6 +353,7 @@ export class KanbanDialog {
             if (target.classList.contains('e-dialog-add')) {
                 this.parent.crudModule.addCard(this.cardData);
             }
+            this.parent.actionModule.SingleCardSelection(this.cardData);
             this.cardData = null;
         }
         if (!target.classList.contains('e-dialog-edit') && !target.classList.contains('e-dialog-add')) {

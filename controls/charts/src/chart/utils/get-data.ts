@@ -210,7 +210,7 @@ export class ChartData {
     public getClosest(series: Series, value: number, xvalues?: number[]): number {
         let closest: number; let data: number;
         const xData: number[] = xvalues ? xvalues : series.xData;
-        if (value >= <number>series.xMin - 0.5 && value <= <number>series.xMax + 0.5) {
+        if (value >= <number>series.xAxis.visibleRange.min && value <= <number>series.xAxis.visibleRange.max) {
             for (let i: number = 0; i < xData.length; i++) {
                 data = xData[i];
                 if (closest == null || Math.abs(data - value) < Math.abs(closest - value)) {

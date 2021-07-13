@@ -147,6 +147,7 @@ export class Selection implements IAction {
     private initialRowSelection: boolean = false;
     private isPrevRowSelection: boolean = false;
     private isKeyAction: boolean = false;
+    private isRowDragSelected: boolean = false;
     private evtHandlers: { event: string, handler: Function }[];
     /**
      * @hidden
@@ -1606,6 +1607,7 @@ export class Selection implements IAction {
             if (!this.isCellDrag) {
                 this.hideAutoFill();
                 this.selectRowsByRange(this.startDIndex, rowIndex);
+                this.isRowDragSelected = true;
             } else {
                 const td: Element = parentsUntil(e.target as HTMLElement, literals.rowCell);
                 if (td) {
@@ -2345,6 +2347,7 @@ export class Selection implements IAction {
                 this.isCellDrag = true;
                 isDrag = true;
             } else if (gObj.allowRowDragAndDrop && !gObj.isEdit && !this.parent.selectionSettings.checkboxOnly) {
+                this.isRowDragSelected = false;
                 if (!this.isRowType() || this.isSingleSel() || closest(target, 'td').classList.contains('e-selectionbackground')) {
                     this.isDragged = false;
                     return;
@@ -3017,7 +3020,8 @@ export class Selection implements IAction {
         this.drawBorders();
         this.updateAutoFillPosition();
         target = parentsUntil(target, literals.rowCell) as HTMLElement;
-        if ((target && target.parentElement.classList.contains(literals.row) && !this.parent.selectionSettings.checkboxOnly) || chkSelect) {
+        if (((target && target.parentElement.classList.contains(literals.row) && !this.parent.selectionSettings.checkboxOnly) || chkSelect)
+            && !this.isRowDragSelected) {
             if (this.parent.isCheckBoxSelection) {
                 this.isMultiCtrlRequest = true;
             }

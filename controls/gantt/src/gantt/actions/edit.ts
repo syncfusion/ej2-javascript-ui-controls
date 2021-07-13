@@ -2638,7 +2638,16 @@ export class Edit {
                         }
                     } else {
                         if (this.parent.viewType === 'ProjectView') {
-                            this.updateRealDataSource(args.data as IGanttData, rowPosition);
+                            if ((rowPosition === 'Top' || rowPosition === 'Bottom') ||
+                                ((rowPosition === 'Above' || rowPosition === 'Below') && !(args.data as IGanttData).parentItem)) {
+                                    if (args.data instanceof Array) {
+                                        this.updateRealDataSource(args.data as IGanttData, rowPosition);
+                                    } else {
+                                        let data: Object[] = [];
+                                        data.push(args.data);
+                                        this.updateRealDataSource(data as IGanttData, rowPosition);
+                                    }
+                                }
                         } else {
                             const dataSource: Object[] = isCountRequired(this.parent) ? getValue('result', this.parent.dataSource) :
                             this.parent.dataSource as Object[]; // eslint-disable-line

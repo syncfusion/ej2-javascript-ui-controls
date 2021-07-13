@@ -287,6 +287,7 @@ export class SfdtExport {
         this.document.protectionType = this.documentHelper.protectionType;
         this.document.dontUseHTMLParagraphAutoSpacing = this.documentHelper.dontUseHtmlParagraphAutoSpacing;
         this.document.formFieldShading = this.documentHelper.owner.documentEditorSettings.formFieldSettings.applyShading;
+        this.document.compatibilityMode = this.documentHelper.compatibilityMode;
     }
     /**
      * @private
@@ -1330,6 +1331,8 @@ export class SfdtExport {
         paragraphFormat.listFormat = this.writeListFormat(format.listFormat, isInline);
         paragraphFormat.tabs = this.writeTabs(format.tabs);
         paragraphFormat.bidi = isInline ? format.bidi : format.getValue('bidi');
+        paragraphFormat.keepLinesTogether = isInline ? format.keepLinesTogether : format.getValue('keepLinesTogether');
+        paragraphFormat.keepWithNext = isInline ? format.keepWithNext : format.getValue('keepWithNext');
         paragraphFormat.contextualSpacing = isInline ? format.contextualSpacing : format.getValue('contextualSpacing');
         if (this.writeInlineStyles && !isInline) {
             paragraphFormat.inlineFormat = this.writeParagraphFormat(format, true);

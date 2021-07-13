@@ -5375,17 +5375,22 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
             case 'locale':
                 if (this.viewerBase.loadedData) {
                     // eslint-disable-next-line
-                        let data: any = window.sessionStorage.getItem(this.viewerBase.documentId + '_formfields');
-                    this.viewerBase.formfieldvalue = JSON.parse(data);
-                    // eslint-disable-next-line
+                    let data: any = null;
+                    if (this.formFieldsModule) {
+                        data = this.viewerBase.getItemFromSessionStorage('_formfields');
+                    }
+                    if (data) {
+                        this.viewerBase.formfieldvalue = JSON.parse(data);
+                        // eslint-disable-next-line
                         let annotCollection: any[] = this.annotationCollection;
-                    const filename: string = this.viewerBase.jsonDocumentId;
-                    super.refresh();
-                    this.load(this.viewerBase.loadedData, null);
-                    this.addAnnotation(annotCollection);
-                    this.viewerBase.loadedData = null;
-                    this.downloadFileName = filename;
-                    this.fileName = filename;
+                        const filename: string = this.viewerBase.jsonDocumentId;
+                        super.refresh();
+                        this.load(this.viewerBase.loadedData, null);
+                        this.addAnnotation(annotCollection);
+                        this.viewerBase.loadedData = null;
+                        this.downloadFileName = filename;
+                        this.fileName = filename;
+                    }
                 }
                 break;
             case 'enableToolbar':

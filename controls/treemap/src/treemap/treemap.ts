@@ -916,7 +916,7 @@ export class TreeMap extends Component<HTMLElement> implements INotifyPropertyCh
             for (let j: number = 0; j < this.dataSource.length; j++) {
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 const currentData: any = {}; let childName: string = '';
-                if (this.dataSource[j][groupPath]) {
+                if (!isNullOrUndefined(groupPath)) {
                     const name: string = this.dataSource[j][groupPath];
                     if (i !== 0) {
                         for (let k: number = 0; k <= i; k++) {
@@ -958,7 +958,7 @@ export class TreeMap extends Component<HTMLElement> implements INotifyPropertyCh
             currentName = currentData[i]['levelOrderName'] as string;
             for (let j: number = 0; j < previousData.length; j++) {
                 previousData[j][currentPath] = isNullOrUndefined(previousData[j][currentPath]) ? [] : previousData[j][currentPath];
-                if (currentName.indexOf((previousData[j]['levelOrderName'] as string)) !== -1) {
+                if (this.IsChildHierarchy(currentName.split('#'), (previousData[j]['levelOrderName'] as string).split('#'))) {
                     if (isNullOrUndefined(currentData[i]['parent'])) {
                         currentData[i]['parent'] = previousData[j];
                     }
@@ -973,6 +973,22 @@ export class TreeMap extends Component<HTMLElement> implements INotifyPropertyCh
         if ((start - 1) > 0) {
             this.reOrderLevelData(start - 1);
         }
+    }
+
+    private IsChildHierarchy (current: string[], previous: string[]): boolean {
+        let isChild: boolean = false;
+        for (let i: number = 0; i < previous.length; i++)
+        {
+            if (current.length < i || previous[i] !== current[i])
+            {
+                return false;
+            }
+            else
+            {
+                isChild = true;
+            }
+        }
+        return isChild;
     }
 
     /**

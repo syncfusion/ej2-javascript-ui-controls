@@ -1471,3 +1471,85 @@ describe('Check connector when in grouping ', () => {
         done();
     });
 });
+describe('group', () => {
+    let diagram: Diagram;
+    let ele: HTMLElement;
+    let scroller: DiagramScroller;
+    let mouseEvents: MouseEvents = new MouseEvents();
+
+    beforeAll((): void => {
+        const isDef = (o: any) => o !== undefined && o !== null;
+        if (!isDef(window.performance)) {
+            console.log("Unsupported environment, window.performance.memory is unavailable");
+            this.skip(); //Skips test (in Chai)
+            return;
+        }
+        ele = createElement('div', { id: 'diagram_group_group_width_height' });
+        document.body.appendChild(ele);
+        var newnode = {
+            offsetX: 250,
+            offsetY: 250,
+            width: 100,
+            height: 100,
+            shape: {
+                type: "Basic",
+                shape: "Triangle"
+            },
+            style: {
+                fill: '#6BA5D7',
+                strokeColor: 'white'
+            },
+            annotations: [
+                { content: "ssss",
+                constraints: AnnotationConstraints.Interaction,
+                    style: { fill: "transparent" } }
+            ]
+        };
+        var nodes = [
+            {
+                id: 'node1', width: 50, height: 50, offsetX: 600,
+                offsetY: 300,
+            },
+        ];
+
+        var connectors = [
+            {
+            id: "connector1",
+            style: {
+                strokeColor: '#6BA5D7',
+                fill: '#6BA5D7',
+                strokeWidth: 2
+            },
+            targetDecorator: {
+                style: {
+                    fill: '#6BA5D7',
+                    strokeColor: '#6BA5D7'
+                }
+            },
+            sourcePoint: {
+                x: 100,
+                y: 100
+            },
+            targetPoint: {
+                x: 200,
+                y: 200
+            }},
+        ];
+
+        diagram = new Diagram({
+            width: '800px', height: '500px',nodes: nodes, connectors: connectors,
+        });
+        diagram.appendTo('#diagram_group_group_width_height');
+    });
+
+    afterAll((): void => {
+        diagram.destroy();
+        ele.remove();
+    });
+    it('group multiple node and connectors', (done: Function) => {
+       diagram.selectAll();
+       expect(function() {diagram.group()}).not.toThrow();
+       diagram.clearSelection();       
+       done();
+    });
+});

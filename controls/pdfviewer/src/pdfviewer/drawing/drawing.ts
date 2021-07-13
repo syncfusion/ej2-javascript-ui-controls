@@ -792,10 +792,12 @@ export class Drawing {
                 }
             }
         }
-        for (let i: number = 0; i < this.pdfViewer.formFieldCollections.length; i++) {
-            const element: any = this.pdfViewer.formFieldCollections[i];
-            if (element.id === obj.id) {
-                this.pdfViewer.formFieldCollections.splice(i, 1);
+        if (obj.formFieldAnnotationType === "SignatureField" || obj.formFieldAnnotationType === "InitialField") {
+            for (let i: number = 0; i < this.pdfViewer.formFieldCollections.length; i++) {
+                const element: any = this.pdfViewer.formFieldCollections[i];
+                if (element.id === obj.id) {
+                    this.pdfViewer.formFieldCollections.splice(i, 1);
+                }
             }
         }
         if (obj.formFieldAnnotationType === "Textbox" || obj.formFieldAnnotationType === "Checkbox" || obj.formFieldAnnotationType === "RadioButton"
@@ -1006,7 +1008,7 @@ export class Drawing {
                                         this.renderResizeHandle(
                                             node.wrapper.children[0], selectorElement, selectorModel.thumbsConstraints, zoom,
                                             // eslint-disable-next-line max-len
-                                            undefined, undefined, undefined, node.shapeAnnotationType === 'Stamp', false, isSignature, (node.shapeAnnotationType === 'FreeText' || node.shapeAnnotationType === 'HandWrittenSignature' || node.shapeAnnotationType === 'SignatureImage'|| node.shapeAnnotationType === 'Image' || node.shapeAnnotationType === 'SignatureText'), currentSelector);
+                                            undefined, undefined, undefined, node.shapeAnnotationType === 'Stamp', false, isSignature, (node.shapeAnnotationType === 'FreeText' || node.shapeAnnotationType === 'HandWrittenSignature' || node.shapeAnnotationType === 'SignatureImage' || node.shapeAnnotationType === 'Image' || node.shapeAnnotationType === 'SignatureText'), currentSelector);
                                     }
                                 }
                             }

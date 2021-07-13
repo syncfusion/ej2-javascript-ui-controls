@@ -45,6 +45,10 @@
     &.e-sfcontextmenu {
       position: absolute;
 
+      & .e-menu-vscroll {
+        position: absolute;
+      }
+
       & ul {
         white-space: nowrap;
 

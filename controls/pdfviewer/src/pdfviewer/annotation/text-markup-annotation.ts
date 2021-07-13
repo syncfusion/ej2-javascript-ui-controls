@@ -1026,9 +1026,9 @@ export class TextMarkupAnnotation {
         let subject: string;
         const context: CanvasRenderingContext2D = this.getPageContext(pageNumber);
         const modifiedDate: string = this.pdfViewer.annotation.stickyNotesAnnotationModule.getDateAndTime();
-        this.highlightColor = this.pdfViewer.highlightSettings.color;
-        this.underlineColor = this.pdfViewer.underlineSettings.color;
-        this.strikethroughColor = this.pdfViewer.strikethroughSettings.color;
+        this.highlightColor = this.highlightColor? this.highlightColor : this.pdfViewer.highlightSettings.color;
+        this.underlineColor = this.underlineColor? this.underlineColor : this.pdfViewer.underlineSettings.color;
+        this.strikethroughColor = this.strikethroughColor? this.strikethroughColor : this.pdfViewer.strikethroughSettings.color;
         this.highlightOpacity = this.pdfViewer.highlightSettings.opacity;
         this.underlineOpacity = this.pdfViewer.underlineSettings.opacity;
         this.strikethroughOpacity = this.pdfViewer.strikethroughSettings.opacity;

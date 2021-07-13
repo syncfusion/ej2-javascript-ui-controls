@@ -12,9 +12,25 @@
           color: $kanban-default-font;
         }
 
+        .e-header-text {
+          @if ($kanban-skin == 'tailwind') {
+            color: $kanban-header-font;
+          }
+        }
+
+        .e-item-count {
+          @if ($kanban-skin == 'tailwind') {
+            color: $kanban-header-item-color;
+          }
+        }
+
         .e-limits {
           @if $kanban-skin == 'highcontrast' {
             color: $kanban-border-hover-color;
+          }
+
+          @if ($kanban-skin == 'tailwind') {
+            color: $kanban-header-item-color;
           }
         }
 
@@ -31,6 +47,12 @@
             @if ($kanban-skin == 'highcontrast' or $kanban-skin == 'bootstrap4') {
               border: 1px solid $kanban-border-hover-color;
               color: $kanban-icons-toggle-color;
+            }
+
+            @if ($kanban-skin == 'tailwind') {
+              background: none;
+              box-shadow: $kanban-hover-box-shadow;
+              color: $kanban-primary-color;
             }
           }
         }
@@ -58,6 +80,10 @@
         }
 
         .e-card {
+          @if ($kanban-skin == 'tailwind') {
+            background: $kanban-bg-color;
+          }
+
           &.e-selection {
             background-color: $kanban-card-selection;
 
@@ -125,6 +151,19 @@
       textarea {
         @if $kanban-skin == 'highcontrast' {
           background-color: $kanban-bg-color;
+        }
+        @if ($kanban-skin == 'tailwind') {
+          background-color: $kanban-bg-color;
+          border-color: $kanban-focus-color;
+          border-radius: 4px;
+          outline: none;
+          padding: 4px 8px 4px 12px;
+        }
+
+        &:focus {
+          @if ($kanban-skin == 'tailwind') {
+            box-shadow: $kanban-text-focus-box-shadow;
+          }
         }
       }
     }

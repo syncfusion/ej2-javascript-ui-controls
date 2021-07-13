@@ -6,7 +6,9 @@ import { DropDownList, AutoComplete, ChangeEventArgs } from '@syncfusion/ej2-dro
 import { NumericTextBox } from '@syncfusion/ej2-inputs';
 import { RadioButton, CheckBox } from '@syncfusion/ej2-buttons';
 import { distinctStringValues, isComplexField, getComplexFieldID, getCustomDateFormat, applyBiggerTheme,
-    performComplexDataOperation } from '../base/util';
+    performComplexDataOperation, 
+    registerEventHandlers,
+    removeEventHandlers} from '../base/util';
 import { Column } from '../models/column';
 import { DatePicker, DateTimePicker } from '@syncfusion/ej2-calendars';
 import { OffsetPosition } from '@syncfusion/ej2-popups';
@@ -25,14 +27,9 @@ import * as literals from '../base/string-literals';
  */
 export class ExcelFilterBase extends CheckBoxFilterBase {
     //Internal variables
-    private datePicker: DatePicker;
-    private dateTimePicker: DateTimePicker;
-    private actObj: AutoComplete;
-    private numericTxtObj: NumericTextBox;
     private dlgDiv: HTMLElement;
     private dlgObj: Dialog;
     private customFilterOperators: Object;
-    private dropOptr: DropDownList;
     private optrData: Object;
     private menuItem: MenuItemModel;
     private menu: Element;
@@ -41,6 +38,8 @@ export class ExcelFilterBase extends CheckBoxFilterBase {
     private isCMenuOpen: boolean;
     private firstOperator: string;
     private secondOperator: string;
+    private childRefs: object[] = [];
+    private eventHandlers: { [x: string]: { [y: string]: Function } } = {};
 
     /**
      * Constructor for excel filtering module
@@ -92,10 +91,16 @@ export class ExcelFilterBase extends CheckBoxFilterBase {
     public destroy(): void {
         if (this.dlg) {
             this.unwireExEvents();
-            super.destroy();
+            super.closeDialog();
         }
-        if (this.cmenu && this.cmenu.parentElement) {
-            remove(this.cmenu);
+        if (this.menuObj) {
+            const li: HTMLElement = this.menuObj.element.querySelector('li.e-focused');
+            if (!(li && parentsUntil(li, 'e-excel-menu'))) {
+                this.destroyCMenu();
+            }
+        }
+        if (this.dlgObj && !this.dlgObj.isDestroyed) {
+            this.removeDialog();
         }
     }
 
@@ -114,8 +119,8 @@ export class ExcelFilterBase extends CheckBoxFilterBase {
             && !this.options.isResponsiveFilter) {
             const hdrele: string = this.parent.getColumnHeaderByUid(eleOptions.uid).getAttribute('aria-sort');
             const colIsSort: object = this.parent.getColumnByField(eleOptions.field).allowSorting;
-            const isAsc: string = (!colIsSort || hdrele === 'Ascending') ? 'e-disabled e-excel-ascending' : 'e-excel-ascending';
-            const isDesc: string = (!colIsSort || hdrele === 'Descending') ? 'e-disabled e-excel-descending' : 'e-excel-descending';
+            const isAsc: string = (!colIsSort || hdrele === 'ascending') ? 'e-disabled e-excel-ascending' : 'e-excel-ascending';
+            const isDesc: string = (!colIsSort || hdrele === 'descending') ? 'e-disabled e-excel-descending' : 'e-excel-descending';
             const ascName: string = (type === 'string') ? this.getLocalizedLabel('SortAtoZ') : (type === 'datetime' || type === 'date') ?
                 this.getLocalizedLabel('SortByOldest') : this.getLocalizedLabel('SortSmallestToLargest');
             const descName: string = (type === 'string') ? this.getLocalizedLabel('SortZtoA') : (type === 'datetime' || type === 'date') ?
@@ -313,7 +318,7 @@ export class ExcelFilterBase extends CheckBoxFilterBase {
     }
 
     public closeDialog(): void {
-        super.closeDialog();
+        this.destroy();
     }
 
     private selectHandler(e: MenuEventArgs): void {
@@ -386,6 +391,7 @@ export class ExcelFilterBase extends CheckBoxFilterBase {
         this.dlgObj[isStringTemplate] = true;
         this.renderResponsiveDialog();
         this.dlgDiv.setAttribute('aria-label', this.getLocalizedLabel('CustomFilterDialogARIA'));
+        this.childRefs.push(this.dlgObj);
         this.dlgObj.appendTo(this.dlgDiv);
     }
 
@@ -415,7 +421,7 @@ export class ExcelFilterBase extends CheckBoxFilterBase {
             this.parent.destroyTemplate(['filterTemplate']);
             this.parent.renderTemplates();
         }
-        this.removeObjects([this.dropOptr, this.datePicker, this.dateTimePicker, this.actObj, this.numericTxtObj, this.dlgObj]);
+        this.removeObjects(this.childRefs);
         remove(this.dlgDiv);
         this.parent.notify(events.filterDialogClose, {});
     }
@@ -581,20 +587,32 @@ export class ExcelFilterBase extends CheckBoxFilterBase {
             }
         }
         const col: Column = this.options.column as Column;
-        this.dropOptr = new DropDownList(extend(
+        const dropOptr: DropDownList = new DropDownList(extend(
             {
                 dataSource: dropDatasource,
                 fields: { text: 'text', value: 'value' },
                 text: selectedValue,
-                open: this.dropDownOpen.bind(this),
-                enableRtl: this.parent.enableRtl,
-                change: this.dropDownValueChange.bind(this)
+                enableRtl: this.parent.enableRtl
             },
             col.filter.params));
-        this.dropOptr.appendTo(optrInput);
+        this.childRefs.push(dropOptr);
+        let evt: object = { 'open': this.dropDownOpen.bind(this), 'change': this.dropDownValueChange.bind(this) };
+        registerEventHandlers(optrInput.id, [literals.open, literals.change], evt, this);
+        dropOptr.addEventListener(literals.open, this.eventHandlers[optrInput.id][literals.open]);
+        dropOptr.addEventListener(literals.change, this.eventHandlers[optrInput.id][literals.change]);
+        dropOptr.appendTo(optrInput);
         const operator: string = this.getSelectedValue(selectedValue);
         return { fieldElement, operator };
     }
+
+    private removeHandlersFromComponent(component: DropDownList | AutoComplete): void {
+        if (component.element.classList.contains('e-dropdownlist')) {
+            removeEventHandlers(component, [literals.open, literals.change], this);
+        } else if (component.element.classList.contains('e-autocomplete')) {
+            removeEventHandlers(component, [events.actionComplete, literals.focus], this);
+        }
+    }
+
     private dropDownOpen(args: { popup: Popup }): void {
         args.popup.element.style.zIndex = (this.dialogObj.zIndex + 1).toString();
     }
@@ -692,10 +710,12 @@ export class ExcelFilterBase extends CheckBoxFilterBase {
         }
 
         // Initialize AND RadioButton component.
-        const andRadio: RadioButton = new RadioButton({ label: this.getLocalizedLabel('AND'), name: 'default', cssClass: 'e-xlfl-radio-and', checked: true, enableRtl: this.parent.enableRtl });
+        const andRadio: RadioButton = new RadioButton({ label: this.getLocalizedLabel('AND'), name: 'default', checked: true, enableRtl: this.parent.enableRtl });
+        this.childRefs.push(andRadio);
 
         // Initialize OR RadioButton component.
-        const orRadio: RadioButton = new RadioButton({ label: this.getLocalizedLabel('OR'), name: 'default', cssClass: 'e-xlfl-radio-or', enableRtl: this.parent.enableRtl });
+        const orRadio: RadioButton = new RadioButton({ label: this.getLocalizedLabel('OR'), name: 'default', enableRtl: this.parent.enableRtl });
+        this.childRefs.push(orRadio);
 
         const flValue: string = predicates && predicates.length === 2 ? predicates[1].predicate as string : 'and';
         if (flValue === 'and') {
@@ -709,11 +729,15 @@ export class ExcelFilterBase extends CheckBoxFilterBase {
         // Render initialized RadioButton.
         andRadio.appendTo(frstpredicate);
         orRadio.appendTo(secndpredicate);
+
+        andRadio.element.nextElementSibling.classList.add('e-xlfl-radio-and');
+        orRadio.element.nextElementSibling.classList.add('e-xlfl-radio-or');
     }
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     private removeObjects(elements: any[]): void {
         for (const obj of elements) {
             if (obj && !obj.isDestroyed) {
+                this.removeHandlersFromComponent(obj);
                 obj.destroy();
             }
         }
@@ -820,6 +844,7 @@ export class ExcelFilterBase extends CheckBoxFilterBase {
             label: this.getLocalizedLabel('MatchCase'),
             enableRtl: this.parent.enableRtl, checked: flValue
         });
+        this.childRefs.push(checkbox);
 
         // Render initialized CheckBox.
         checkbox.appendTo(matchCaseInput);
@@ -828,7 +853,7 @@ export class ExcelFilterBase extends CheckBoxFilterBase {
     // eslint-disable-next-line max-len
     private renderDate(options: IFilterArgs, column: string, inputValue: HTMLElement, fValue: string | number | Date | boolean, isRtl: boolean): void {
         const format: string = getCustomDateFormat(options.format, options.type);
-        this.datePicker = new DatePicker(extend(
+        const datePicker: DatePicker = new DatePicker(extend(
             {
                 format: format,
                 cssClass: 'e-popup-flmenu',
@@ -839,13 +864,14 @@ export class ExcelFilterBase extends CheckBoxFilterBase {
                 locale: this.parent.locale
             },
             options.column.filter.params));
-        this.datePicker.appendTo(inputValue);
+        this.childRefs.push(datePicker);
+        datePicker.appendTo(inputValue);
     }
 
     // eslint-disable-next-line max-len
     private renderDateTime(options: IFilterArgs, column: string, inputValue: HTMLElement, fValue: string | number | Date | boolean, isRtl: boolean): void {
         const format: string = getCustomDateFormat(options.format, options.type);
-        this.dateTimePicker = new DateTimePicker(extend(
+        const dateTimePicker: DateTimePicker = new DateTimePicker(extend(
             {
                 format: format,
                 cssClass: 'e-popup-flmenu',
@@ -856,7 +882,8 @@ export class ExcelFilterBase extends CheckBoxFilterBase {
                 locale: this.parent.locale
             },
             options.column.filter.params));
-        this.dateTimePicker.appendTo(inputValue);
+        this.childRefs.push(dateTimePicker);
+        dateTimePicker.appendTo(inputValue);
     }
 
     private completeAction(e: { result: string[] }): void {
@@ -865,7 +892,7 @@ export class ExcelFilterBase extends CheckBoxFilterBase {
 
     // eslint-disable-next-line max-len
     private renderNumericTextBox(options: IFilterArgs, column: string, inputValue: HTMLElement, fValue: string | number | Date | boolean, isRtl: boolean): void {
-        this.numericTxtObj = new NumericTextBox(extend(
+        const numericTextBox: NumericTextBox = new NumericTextBox(extend(
             {
                 format: options.format as string,
                 placeholder: this.getLocalizedLabel('CustomFilterPlaceHolder'),
@@ -874,7 +901,8 @@ export class ExcelFilterBase extends CheckBoxFilterBase {
                 locale: this.parent.locale
             },
             options.column.filter.params));
-        this.numericTxtObj.appendTo(inputValue);
+        this.childRefs.push(numericTextBox);
+        numericTextBox.appendTo(inputValue);
     }
 
     // eslint-disable-next-line max-len
@@ -892,33 +920,8 @@ export class ExcelFilterBase extends CheckBoxFilterBase {
                 locale: this.parent.locale,
                 cssClass: 'e-popup-flmenu',
                 autofill: true,
-                focus: () => {
-                    const isComplex: boolean = !isNullOrUndefined(column) && isComplexField(column);
-                    const complexFieldName: string = !isNullOrUndefined(column) && getComplexFieldID(column);
-                    const columnvalue: string = isComplex ? complexFieldName : column;
-                    actObj.filterType = ((<EJ2Intance>this.dlgDiv.querySelector('#' + columnvalue +
-                        (inputValue.id === (columnvalue + '-xlfl-frstvalue') ?
-                            '-xlfl-frstoptr' :
-                            '-xlfl-secndoptr')
-                    )).ej2_instances[0] as DropDownList).value as 'Contains';
-                    actObj.ignoreCase = options.type === 'string' ?
-                        !((<EJ2Intance>this.dlgDiv.querySelector('#' + columnvalue + '-xlflmtcase')).ej2_instances[0] as CheckBox).checked :
-                        true;
-                    actObj.filterType = !isNullOrUndefined(actObj.filterType) ? actObj.filterType :
-                        'equal' as 'StartsWith' | 'Contains' | 'EndsWith';
-                },
                 placeholder: this.getLocalizedLabel('CustomFilterPlaceHolder'),
                 enableRtl: isRtl,
-                actionComplete: (e: { result: { [key: string]: Object; }[] }) => {
-                    const isComplex: boolean = !isNullOrUndefined(column) && isComplexField(column);
-                    e.result = e.result.filter((obj: { [key: string]: Object; }, index: number, arr: { [key: string]: Object; }[]) => {
-                        return arr.map((mapObject: Object) => {
-                            return isComplex ? performComplexDataOperation(actObj.fields.value, mapObject)
-                                : mapObject[actObj.fields.value];
-                        }).indexOf(isComplex ? performComplexDataOperation(actObj.fields.value, obj) :
-                            obj[this.actObj.fields.value]) === index;
-                    });
-                },
                 text: fValue as string
             },
             colObj.filter.params));
@@ -930,8 +933,42 @@ export class ExcelFilterBase extends CheckBoxFilterBase {
                 actObj.dataSource = new DataManager(e);
             });
         }
+        this.childRefs.push(actObj);
+        let evt: object = { 'actionComplete': this.acActionComplete(actObj, column), 'focus': this.acFocus(actObj, column, options, inputValue) };
+        registerEventHandlers(inputValue.id, [events.actionComplete, literals.focus], evt, this);
+        actObj.addEventListener(literals.focus, this.eventHandlers[inputValue.id][literals.focus]);
+        actObj.addEventListener(events.actionComplete, this.eventHandlers[inputValue.id][events.actionComplete]);
         actObj.appendTo(inputValue);
-        this.actObj = actObj;
     }
 
+    private acActionComplete(actObj: AutoComplete, column: string): Function {
+        return (e: { result: { [key: string]: Object; }[] }) => {
+            const isComplex: boolean = !isNullOrUndefined(column) && isComplexField(column);
+            e.result = e.result.filter((obj: { [key: string]: Object; }, index: number, arr: { [key: string]: Object; }[]) => {
+                return arr.map((mapObject: Object) => {
+                    return isComplex ? performComplexDataOperation(actObj.fields.value, mapObject)
+                        : mapObject[actObj.fields.value];
+                }).indexOf(isComplex ? performComplexDataOperation(actObj.fields.value, obj) :
+                    obj[actObj.fields.value]) === index;
+            });
+        }
+    }
+
+    private acFocus(actObj: AutoComplete, column: string, options: IFilterArgs, inputValue: HTMLElement): Function {
+        return () => {
+            const isComplex: boolean = !isNullOrUndefined(column) && isComplexField(column);
+            const complexFieldName: string = !isNullOrUndefined(column) && getComplexFieldID(column);
+            const columnvalue: string = isComplex ? complexFieldName : column;
+            actObj.filterType = ((<EJ2Intance>this.dlgDiv.querySelector('#' + columnvalue +
+                (inputValue.id === (columnvalue + '-xlfl-frstvalue') ?
+                    '-xlfl-frstoptr' :
+                    '-xlfl-secndoptr')
+            )).ej2_instances[0] as DropDownList).value as 'Contains';
+            actObj.ignoreCase = options.type === 'string' ?
+                !((<EJ2Intance>this.dlgDiv.querySelector('#' + columnvalue + '-xlflmtcase')).ej2_instances[0] as CheckBox).checked :
+                true;
+            actObj.filterType = !isNullOrUndefined(actObj.filterType) ? actObj.filterType :
+                'equal' as 'StartsWith' | 'Contains' | 'EndsWith';
+        }
+    }
 }

@@ -383,6 +383,12 @@ export class WUniqueFormat {
         if (property === 'contextualSpacing') {
             return 11;
         }
+        if (property === 'keepWithNext') {
+            return 12;
+        }
+        if (property === 'keepLinesTogether') {
+            return 13;
+        }
         return 0;
     }
     private static getSectionFormatType(property: string): number {
@@ -565,6 +571,12 @@ export class WUniqueFormat {
             return false;
         }
         if (this.isNotEqual('contextualSpacing', source, modifiedProperty, modifiedValue, 3)) {
+            return false;
+        }
+        if (this.isNotEqual('keepWithNext', source, modifiedProperty, modifiedValue, 3)) {
+            return false;
+        }
+        if (this.isNotEqual('keepLinesTogether', source, modifiedProperty, modifiedValue, 3)) {
             return false;
         }
         return true;

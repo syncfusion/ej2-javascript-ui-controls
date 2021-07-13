@@ -540,3 +540,5 @@ export const beforeCheckboxRendererQuery: string = 'before-checkbox-renderer-que
 export const createVirtualValidationForm: string = 'create-virtual-validation-form';
 /** @hidden */
 export const validateVirtualForm: string = 'validate-virtual-form';
+/** @hidden */
+export const destroyChildGrid: string = 'destroy-child-grid';

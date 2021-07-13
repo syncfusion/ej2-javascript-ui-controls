@@ -3052,9 +3052,6 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
         }
         this.element.innerHTML = '';
         classList(this.element, [], ['e-rtl', 'e-gridhover', 'e-responsive', 'e-default', 'e-device', 'e-grid-min-height']);
-        if ((<{ isAngular?: boolean }>this).isAngular && !this.isFreezeRefresh) {
-            this.element = null;
-        }
         this.isFreezeRefresh = false;
     }
 
@@ -3064,6 +3061,8 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
         this.scrollModule.destroy();
         this.keyboardModule.destroy();
         this.focusModule.destroy();
+        this.clipboardModule.destroy();
+        this.printModule.destroy();
     }
 
     /**

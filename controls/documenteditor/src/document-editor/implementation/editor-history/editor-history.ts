@@ -88,7 +88,6 @@ export class EditorHistory {
      * Gets or Sets the limit of undo operations can be done.
      *
      * @aspType int
-     * @blazorType int
      * @returns {number} - Returns the redo limit
      */
     public get undoLimit(): number {
@@ -98,7 +97,6 @@ export class EditorHistory {
      * Sets the limit of undo operations can be done.
      *
      * @aspType int
-     * @blazorType int
      * @param {number} value - Specified the value.
      */
     public set undoLimit(value: number) {
@@ -111,7 +109,6 @@ export class EditorHistory {
      * Gets or Sets the limit of redo operations can be done.
      *
      * @aspType int
-     * @blazorType int
      * @returns {number} - Returns the redo limit
      */
     public get redoLimit(): number {
@@ -121,7 +118,6 @@ export class EditorHistory {
      * Gets or Sets the limit of redo operations can be done.
      *
      * @aspType int
-     * @blazorType int
      * @param {number} value - Specified the value.
      */
     public set redoLimit(value: number) {

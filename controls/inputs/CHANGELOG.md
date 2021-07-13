@@ -2,6 +2,12 @@
 
 ## [Unreleased]
 
+## 19.2.46 (2021-07-06)
+
+### ColorPicker
+
+- Role Attribute error in ColorPicker has been fixed.
+
 ## 19.1.59 (2021-05-04)
 
 ### Range Slider

@@ -198,16 +198,19 @@ export class Print {
     // eslint-disable-next-line
     private renderFieldsForPrint(pageIndex: number, heightRatio: number, widthRatio: number): any {
         // eslint-disable-next-line
-        let data: any = window.sessionStorage.getItem(this.pdfViewerBase.documentId + '_formfields');
-        // eslint-disable-next-line
-        let formFieldsData: any = JSON.parse(data);
+        let data: any = null;
+        if (this.pdfViewer.formFieldsModule) {
+            data = this.pdfViewerBase.getItemFromSessionStorage('_formfields');
+        }
         let targetField: any;
         if (this.pdfViewer.printMode === 'Default') {
             targetField = this.frameDoc.document.getElementById('fields_' + pageIndex);
         } else {
             targetField = this.printWindow.document.getElementById('fields_' + pageIndex);
         }
-        if (formFieldsData) {
+        if (data) {
+            // eslint-disable-next-line
+            let formFieldsData: any = JSON.parse(data);
             for (let i: number = 0; i < formFieldsData.length; i++) {
                 // eslint-disable-next-line
                 let currentData: any = formFieldsData[i];
@@ -252,8 +255,12 @@ export class Print {
                 }
             }
         }
-        var formDesignerData = window.sessionStorage.getItem(this.pdfViewerBase.documentId + '_formDesigner');
-        if (formDesignerData !== null) {
+
+        let formDesignerData: any = null;
+        if (this.pdfViewer.formDesignerModule) {
+            formDesignerData = this.pdfViewerBase.getItemFromSessionStorage('_formDesigner');
+        }
+        if (formDesignerData) {
             var formDesignerFieldsData = JSON.parse(formDesignerData);
             for (let i: number = 0; i < formDesignerFieldsData.length; i++) {
                 // eslint-disable-next-line
@@ -347,12 +354,12 @@ export class Print {
                 if (font.Bold) {
                     inputField.style.fontWeight = 'Bold';
                 }
-                fontHeight = this.pdfViewer.formFieldsModule.ConvertPointToPixel(font.Size);
+                fontHeight = this.pdfViewerBase.ConvertPointToPixel(font.Size);
             }
             if (Browser.isIE) {
                 top = top - 1;
             }
-           this.pdfViewer.formFieldsModule.setStyleToTextDiv(inputField, left, top, fontHeight, width, height, true);
+           this.pdfViewerBase.setStyleToTextDiv(inputField, left, top, fontHeight, width, height, true);
         }
     }
     private printWindowOpen(): void {
@@ -389,7 +396,7 @@ export class Print {
             // eslint-disable-next-line max-len
             const canvasUrl: string = (this.printViewerContainer.children[i] as HTMLCanvasElement).toDataURL();
             printDocument.write('<div style="margin:0mm;width:816px;height:1056px;position:relative"><img src="' + canvasUrl + '" id="' + 'image_' + i + '" /><div id="' + 'fields_' + i + '" style="margin:0px;top:0px;left:0px;position:absolute;width:816px;height:1056px;z-index:2"></div></div>');
-            if (this.pdfViewer.formFieldsModule) {
+            if (this.pdfViewer.formFieldsModule || this.pdfViewer.formDesignerModule) {
                 const pageWidth: number = this.pdfViewerBase.pageSize[i].width;
                 const pageHeight: number = this.pdfViewerBase.pageSize[i].height;
                 var heightRatio: number;

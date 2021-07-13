@@ -1299,6 +1299,17 @@
       }
     }
 
+    button.e-rte-fontcolor-dropdown.e-dropdown-btn.e-tbar-btn.e-btn.e-control,
+    button.e-rte-backgroundcolor-dropdown.e-dropdown-btn.e-tbar-btn.e-btn.e-control,
+    button.e-rte-numberformatlist-dropdown.e-dropdown-btn.e-tbar-btn.e-btn.e-control,
+    button.e-rte-bulletformatlist-dropdown.e-dropdown-btn.e-tbar-btn.e-btn.e-control {
+      .e-icons.e-btn-icon,
+      .e-rte-color-content,
+      .e-rte-list-primary-content {
+        line-height: $rte-split-btn-line-height;
+       }
+     }
+
     .e-dropdown-btn .e-btn-icon.e-caret {
       font-size: $rte-dropdown-caret-icon-size;
     }
@@ -1341,6 +1352,17 @@
           line-height: $rte-big-split-btn-active-color-icon-line-height;
         }
       }
+
+      button.e-rte-fontcolor-dropdown.e-dropdown-btn.e-tbar-btn.e-btn.e-control,
+      button.e-rte-backgroundcolor-dropdown.e-dropdown-btn.e-tbar-btn.e-btn.e-control,
+      button.e-rte-numberformatlist-dropdown.e-dropdown-btn.e-tbar-btn.e-btn.e-control,
+      button.e-rte-bulletformatlist-dropdown.e-dropdown-btn.e-tbar-btn.e-btn.e-control {
+        .e-icons.e-btn-icon,
+        .e-rte-color-content,
+        .e-rte-list-primary-content {
+          line-height: $rte-big-split-btn-line-height;
+        }
+        }
 
       .e-dropdown-btn .e-caret {
         font-size: $rte-big-dropdown-caret-icon-size;

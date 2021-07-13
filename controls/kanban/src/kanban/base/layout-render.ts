@@ -24,6 +24,7 @@ export class LayoutRender extends MobileLayout {
     public swimlaneData: { [key: string]: any[] };
     public frozenSwimlaneRow: HTMLElement;
     public frozenOrder: number;
+    public isSelectedCard: boolean;
 
     constructor(parent: Kanban) {
         super(parent);
@@ -850,8 +851,13 @@ export class LayoutRender extends MobileLayout {
     }
 
     public refresh(): void {
+        let isColumnTemplateRefreshed: boolean = false;
         this.parent.columns.forEach((column: ColumnsModel) => {
             if (column.showItemCount) {
+                if (column && column.template && !isColumnTemplateRefreshed) {
+                    this.refreshHeaders();
+                    isColumnTemplateRefreshed = true;
+                }
                 const countSelector: string = `.${cls.HEADER_CELLS_CLASS}[data-key="${column.keyField}"] .${cls.CARD_ITEM_COUNT_CLASS}`;
                 const itemCount: Element = this.parent.element.querySelector(countSelector);
                 if (itemCount) {
@@ -976,6 +982,7 @@ export class LayoutRender extends MobileLayout {
     public removeCard(data: Record<string, any>): void {
         const cardKey: string = data[this.parent.cardSettings.headerField] as string;
         const cardElement: Element = this.parent.element.querySelector(`.${cls.CARD_CLASS}[data-id="${cardKey}"]`);
+        this.isSelectedCard = cardElement.classList.contains(cls.CARD_SELECTION_CLASS) ? true : false;
         const cardContainer: HTMLElement = cardElement.parentElement;
         if (cardElement) {
             remove(cardElement);

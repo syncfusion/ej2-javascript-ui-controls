@@ -25,6 +25,7 @@ export class DetailRow {
     private parent: IGrid;
     private focus: FocusStrategy;
     private lastrowcell: boolean;
+    private childRefs: Grid[] = [];
 
     /**
      * Constructor for the Grid detail template module
@@ -42,6 +43,8 @@ export class DetailRow {
         this.parent.on(events.keyPressed, this.keyPressHandler, this);
         this.parent.on(events.expandChildGrid, this.expand, this);
         this.parent.on(events.columnVisibilityChanged, this.refreshColSpan, this);
+        this.parent.on(events.destroy, this.destroyChildGrids, this);
+        this.parent.on(events.destroyChildGrid, this.destroyChildGrids, this);
     }
 
     private clickHandler(e: MouseEvent): void {
@@ -103,6 +106,7 @@ export class DetailRow {
                     }
                 } else {
                     childGrid = new Grid(this.getGridModel(gObj, rowObj, gObj.printMode));
+                    this.childRefs.push(childGrid);
                     if (childGrid.query) {
                         childGrid.query = childGrid.query.clone();
                     }
@@ -214,6 +218,8 @@ export class DetailRow {
         this.parent.off(events.keyPressed, this.keyPressHandler);
         this.parent.off(events.expandChildGrid, this.expand);
         this.parent.off(events.columnVisibilityChanged, this.refreshColSpan);
+        this.parent.off(events.destroy, this.destroyChildGrids);
+        this.parent.off(events.destroyChildGrid, this.destroyChildGrids);
     }
 
     private getTDfromIndex(index: number, className: string): Element {
@@ -327,6 +333,19 @@ export class DetailRow {
         for (let i: number = 0; i < detailrows.length; i++) {
             (<HTMLElement>detailrows[i]).querySelector('.e-detailcell').setAttribute('colspan', colSpan + '');
         }
+    }
+
+    private destroyChildGrids(): void {
+        let rows: Row<Column>[] = this.parent.getRowsObject();
+        for (let i: number = 0; i < rows.length; i++) {
+            rows[i].childGrid = null;
+        }
+        for (let i: number = 0; i < this.childRefs.length; i++) {
+            if (!this.childRefs[i].isDestroyed) {
+                this.childRefs[i].destroy();
+            }
+        }
+        this.childRefs = [];
     }
 
     /**

@@ -22,6 +22,7 @@ import { HelperMethods } from '../editor/editor-helper';
 import { Dictionary } from '../../base/dictionary';
 import { ChartComponent } from '@syncfusion/ej2-office-chart';
 import { Revision } from '../track-changes/track-changes';
+import { CompatibilityMode } from '../../base/types';
 /**
  * @private
  */
@@ -95,6 +96,9 @@ export class SfdtReader {
         }
         if (!isNullOrUndefined(jsonObject.background)) {
             this.documentHelper.backgroundColor = this.getColor(jsonObject.background.color);
+        }
+        if (!isNullOrUndefined(jsonObject.compatibilityMode)) {
+            this.documentHelper.compatibilityMode = this.getCompatibilityMode(jsonObject.compatibilityMode);
         }
         if (!isNullOrUndefined(jsonObject.abstractLists)) {
             this.parseAbstractList(jsonObject, this.documentHelper.abstractLists);
@@ -1661,6 +1665,19 @@ export class SfdtReader {
         let convertColor: string = color;
         return convertColor || '#ffffff';
     }
+    private getCompatibilityMode(compatibilityMode : number): CompatibilityMode {
+        switch (compatibilityMode)
+            {
+                case 0:
+                    return 'Word2003';
+                case 1:
+                    return 'Word2007';
+                case 2:
+                    return 'Word2010';
+                default:
+                    return 'Word2013';
+        }
+    }
     public parseParagraphFormat(sourceFormat: any, paragraphFormat: WParagraphFormat): void {
         if (!isNullOrUndefined(sourceFormat)) {
             if (!isNullOrUndefined(sourceFormat.bidi)) {
@@ -1699,6 +1716,12 @@ export class SfdtReader {
             }
             if (!isNullOrUndefined(sourceFormat.contextualSpacing)) {
                 paragraphFormat.contextualSpacing = sourceFormat.contextualSpacing;
+            }
+            if (!isNullOrUndefined(sourceFormat.keepWithNext)) {
+                paragraphFormat.keepWithNext = sourceFormat.keepWithNext;
+            }
+            if (!isNullOrUndefined(sourceFormat.keepLinesTogether)) {
+                paragraphFormat.keepLinesTogether = sourceFormat.keepLinesTogether;
             }
             paragraphFormat.listFormat = new WListFormat();
             if (sourceFormat.hasOwnProperty('listFormat')) {

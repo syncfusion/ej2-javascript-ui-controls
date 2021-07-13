@@ -605,6 +605,8 @@ describe('Sorting module => ', () => {
                 expect(sortSettings.columns[0].field).toBe('OrderID');
                 expect(sortSettings.columns[0].direction).toBe('Ascending');
                 expect(col1.parentElement.querySelectorAll('.e-sortnumber').length).toBe(0);
+                // EJ2- 50885 - Need to update the aria-sort attribute values to lowercase
+                expect(gridObj.element.querySelectorAll('.e-headercell')[0].getAttribute('aria-sort')).toBe('ascending');
                 done();
             };
             gridObj.actionComplete = actionComplete;
@@ -617,6 +619,8 @@ describe('Sorting module => ', () => {
                 expect(col1.querySelectorAll('.e-descending').length).toBe(1);
                 expect(sortSettings.columns[0].field).toBe('OrderID');
                 expect(sortSettings.columns[0].direction).toBe('Descending');
+                // EJ2- 50885 - Need to update the aria-sort attribute values to lowercase
+                expect(gridObj.element.querySelectorAll('.e-headercell')[0].getAttribute('aria-sort')).toBe('descending');
                 done();
             };
             gridObj.actionComplete = actionComplete;

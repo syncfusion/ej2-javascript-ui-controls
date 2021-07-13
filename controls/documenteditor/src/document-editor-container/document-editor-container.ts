@@ -1,4 +1,4 @@
-import { Component, Property, INotifyPropertyChanged, NotifyPropertyChanges, ModuleDeclaration, L10n, isBlazor, Complex, isNullOrUndefined, formatUnit } from '@syncfusion/ej2-base';
+import { Component, Property, INotifyPropertyChanged, NotifyPropertyChanges, ModuleDeclaration, L10n, Complex, isNullOrUndefined, formatUnit } from '@syncfusion/ej2-base';
 import { Event, EmitType } from '@syncfusion/ej2-base';
 import { Toolbar } from './tool-bar/tool-bar';
 import { DocumentEditorContainerModel } from './document-editor-container-model';
@@ -66,15 +66,15 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
     @Property('Pages')
     public layoutType: LayoutType;
     /**
-     * Current User
+     * Gets or sets the current user.
      *
      * @default ''
      */
     @Property('')
     public currentUser: string;
     /**
-     * User Selection Highlight Color
-     *
+     * Gets or sets the color used for highlighting the editable ranges or regions of the `currentUser` in Document Editor. The default value is "#FFFF00".
+     * Remarks: If the visibility of text affected due this highlight color matching with random color applied for the track changes, then modify the color value of this property to resolve text visibility problem.
      * @default '#FFFF00'
      */
     @Property('#FFFF00')
@@ -140,7 +140,6 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
      * Triggers when the component is created
      *
      * @event
-     * @blazorproperty 'Created'
      */
     @Event()
     public created: EmitType<Object>;
@@ -148,7 +147,6 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
      * Triggers when the component is destroyed.
      *
      * @event
-     * @blazorproperty 'Destroyed'
      */
     @Event()
     public destroyed: EmitType<Object>;
@@ -158,7 +156,6 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
      * Triggers whenever the content changes in the document editor container.
      *
      * @event
-     * @blazorproperty 'ContentChanged'
      */
     @Event()
     public contentChange: EmitType<ContainerContentChangeEventArgs>;
@@ -166,7 +163,6 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
      * Triggers whenever selection changes in the document editor container.
      *
      * @event
-     * @blazorproperty 'SelectionChanged'
      */
     @Event()
     public selectionChange: EmitType<ContainerSelectionChangeEventArgs>;
@@ -174,7 +170,6 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
      * Triggers whenever document changes in the document editor container.
      *
      * @event
-     * @blazorproperty 'DocumentChanged'
      */
     @Event()
     public documentChange: EmitType<ContainerDocumentChangeEventArgs>;
@@ -182,8 +177,6 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
      * Triggers when toolbar item is clicked.
      *
      * @event
-     * @blazorproperty 'OnToolbarClick'
-     * @blazorType Syncfusion.Blazor.Navigations.ClickEventArgs
      */
     @Event()
     public toolbarClick: EmitType<ClickEventArgs>;
@@ -191,7 +184,6 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
      * Triggers while selecting the custom context-menu option.
      *
      * @event
-     * @blazorproperty 'ContextMenuItemSelected'
      */
     @Event()
     public customContextMenuSelect: EmitType<CustomContentMenuEventArgs>;
@@ -199,7 +191,6 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
      * Triggers before opening the custom context-menu option.
      *
      * @event
-     * @blazorproperty 'OnContextMenuOpen'
      */
     @Event()
     public customContextMenuBeforeOpen: EmitType<BeforeOpenCloseCustomContentMenuEventArgs>;
@@ -207,14 +198,12 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
      * Trigger before switching panes in DocumentEditor.
      *
      * @event
-     * @blazorproperty 'BeforePaneSwitch'
      */
     @Event()
     public beforePaneSwitch: EmitType<BeforePaneSwitchEventArgs>;
     /**
      * Triggers on deleting a comment.
      *
-     * @blazorproperty 'OnCommentDelete'
      * @event
      */
     @Event()
@@ -237,7 +226,6 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
     /**
      * Triggers Keyboard shortcut of TrackChanges.
      *
-     * @blazorproperty 'OnEnableTrackChanges'
      * @event
      */
     @Event()
@@ -370,7 +358,6 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
      * Gets DocumentEditor instance.
      *
      * @aspType DocumentEditor
-     * @blazorType DocumentEditor
      * @returns {DocumentEditor} - Returns the DocumentEditor instance.
      */
     public get documentEditor(): DocumentEditor {
@@ -379,7 +366,6 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
     /**
      * Gets toolbar instance.
      *
-     * @blazorType Toolbar
      * @returns {Toolbar} - Returns toolbar module.
      */
     public get toolbar(): Toolbar {
@@ -989,7 +975,7 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
         if (this.statusBar) {
             this.statusBar.updatePageCount();
         }
-        let eventArgs: ContainerContentChangeEventArgs = { source: isBlazor() ? null : this };
+        let eventArgs: ContainerContentChangeEventArgs = { source: this };
         this.trigger(contentChangeEvent, eventArgs);
     }
     /**
@@ -1009,7 +995,7 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
         if (this.statusBar) {
             this.statusBar.updatePageCount();
         }
-        let eventArgs: ContainerDocumentChangeEventArgs = { source: isBlazor() ? null : this };
+        let eventArgs: ContainerDocumentChangeEventArgs = { source: this };
         this.trigger(documentChangeEvent, eventArgs);
     }
     /**
@@ -1018,7 +1004,7 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
     public onSelectionChange(): void {
         setTimeout(() => {
             this.showPropertiesPaneOnSelection();
-            let eventArgs: ContainerSelectionChangeEventArgs = { source: isBlazor() ? null : this };
+            let eventArgs: ContainerSelectionChangeEventArgs = { source: this };
             this.trigger(selectionChangeEvent, eventArgs);
         });
     }

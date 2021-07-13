@@ -143,10 +143,33 @@ export class DrillThrough {
                     }
                 }
             }
+            rawData = (this.parent.dataSourceSettings.calculatedFieldSettings.length > 0) ?
+                this.getCalcualtedFieldValue(Object.keys(pivotValue.indexObject), rawData) : rawData;
             if (!(isBlazor() && this.parent.enableVirtualization) && this.parent.dataSourceSettings.mode !== 'Server') {
                 this.triggerDialog(valueCaption, aggType, rawData, pivotValue, element);
             }
         }
+    }
+
+    private getCalcualtedFieldValue(indexArray: string[], rawData: IDataSet[]): IDataSet[] {
+        for (let k: number = 0; k < indexArray.length; k++) {
+            let colIndex: { [key: string]: string } = {};
+            colIndex[indexArray[k]] = indexArray[k];
+            for (let i: number = 0; i < this.parent.dataSourceSettings.calculatedFieldSettings.length; i++) {
+                let indexValue: number;
+                for (let j: number = this.parent.engineModule.fields.length - 1; j >= 0; j--) {
+                    if (this.parent.engineModule.fields[j] === this.parent.dataSourceSettings.calculatedFieldSettings[i].name) {
+                        indexValue = j;
+                        break;
+                    }
+                }
+                if (!isNullOrUndefined(rawData[k])) {
+                    let calculatedFeildValue: number = this.parent.engineModule.getAggregateValue([Number(indexArray[k])], colIndex as any, indexValue, 'calculatedfield');
+                    rawData[k][this.parent.dataSourceSettings.calculatedFieldSettings[i].name] = (isNaN(calculatedFeildValue) && isNullOrUndefined(calculatedFeildValue)) ? '#DIV/0!' : calculatedFeildValue;
+                }
+            }
+        }
+        return rawData;
     }
 
     /* eslint-disable @typescript-eslint/no-explicit-any */

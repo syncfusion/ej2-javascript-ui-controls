@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 19.2.47 (2021-07-13)
+
+### PDF Viewer
+
+#### Bug Fixes
+
+- `#287792`, `#335501` - Now, the ExportFormfields as JSON is working properly.
+
 ## 19.2.46 (2021-07-06)
 
 ### PDF Viewer

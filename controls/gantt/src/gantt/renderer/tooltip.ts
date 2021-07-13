@@ -52,6 +52,7 @@ export class Tooltip {
         const parent: Gantt = this.parent;
         if (parent.isOnEdit) {
             args.cancel = true;
+            return;
         }
         let element: Element;
         const row: Element = closest(args.target, 'div.' + cls.taskBarMainContainer);
@@ -188,14 +189,18 @@ export class Tooltip {
             return;
         }
         const postion: { x: number, y: number } = this.getPointorPosition(this.tooltipMouseEvent);
-        const containerPosition: { top: number, left: number } = this.parent.getOffsetRect(this.parent.chartPane);
+        const containerPosition: { top: number, left: number, width?: number, height?: number } =
+         this.parent.getOffsetRect(this.parent.chartPane);
         const topEnd: number = containerPosition.top + this.parent.chartPane.offsetHeight;
         const leftEnd: number = containerPosition.left + this.parent.chartPane.offsetWidth;
         let tooltipPositionX: number = postion.x;
         let tooltipPositionY: number = postion.y;
         let tooltipUpdated: boolean = false;
-        if (leftEnd < (tooltipPositionX + args.element.offsetWidth + 20)) {
-            tooltipPositionX = tooltipPositionX - args.element.offsetWidth - 10;
+        if (leftEnd < (tooltipPositionX + args.element.offsetWidth + 10)) {
+            while (leftEnd < (tooltipPositionX + args.element.offsetWidth + 10)) {
+                tooltipPositionX = containerPosition.left + containerPosition.width - args.element.offsetWidth - 10;
+                args.element.style.left = tooltipPositionX + 'px';
+            }
         } else {
             tooltipPositionX = tooltipPositionX + 10;
         }
@@ -208,7 +213,6 @@ export class Tooltip {
         if (window.innerHeight < args.element.offsetHeight + tooltipPositionY) {
             tooltipPositionY = tooltipPositionY - args.element.offsetHeight - (tooltipUpdated ? 20 : 10);
         }
-        args.element.style.left = tooltipPositionX + 'px';
         args.element.style.top = tooltipPositionY + 'px';
     }
     /**

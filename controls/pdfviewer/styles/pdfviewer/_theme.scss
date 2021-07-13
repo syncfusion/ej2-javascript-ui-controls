@@ -229,7 +229,9 @@
 
   .e-pv-annotation-toolbar.e-toolbar .e-toolbar-items .e-toolbar-item:not(.e-separator),
   .e-pv-formdesigner-toolbar.e-toolbar .e-toolbar-items .e-toolbar-item:not(.e-separator) {
-    height: auto;
+    @if $skin-name != 'tailwind' and $skin-name != 'tailwind-dark' {
+      height: auto;
+    }
     margin-left: $pv-toolbar-items-margin-left;
     margin-right: $pv-toolbar-items-margin-right;
   }
@@ -1523,6 +1525,7 @@
   .e-pv-annotation-textalign-container.e-btn:hover,
   .e-pv-annotation-textprop-container.e-btn:hover,
   .e-pv-annotation-handwritten-container.e-btn:hover,
+  .e-input-group.e-control-wrapper.e-pv-prop-dropdown.e-ddl.e-valid-input:hover,
   .e-pv-stamp.e-menu-wrapper ul .e-menu-item.e-focused:hover {
     background-color: $pv-annotation-dropdown-background-color-hover;
     border-color: $pv-annotation-dropdown-border-color-hover;
@@ -2424,22 +2427,6 @@
     width: 170px;
   }
 
-  .e-pv-align-sign:hover {
-    color: $pv-comment-panel-bg;
-  }
-
-  .e-pv-align-sign {
-    border: 1px solid $pv-signature-color;
-    border-radius: 2px;
-    color: $pv-signature-color;
-    height: 36px;
-    left: 26px;
-    padding-bottom: 10px;
-    padding-left: 10px;
-    padding-right: 10px;
-    position: relative;
- }
-
   .e-pv-font-sign {
     border: 1px solid $pv-sidebar-bookmark-title-color;
     border-radius: 5px;
@@ -2607,7 +2594,6 @@
     content: '';
     display: inline-block;
     height: inherit;
-    margin: 5px;
     width: inherit;
   }
 
@@ -2987,5 +2973,34 @@
 
   .e-pv-annotation-toolbar.e-toolbar .e-toolbar-pop .e-toolbar-item .e-tbar-btn.e-btn {
     padding: 0 $pv-icon-padding-top;
+  }
+
+  .e-pv-signature-window .e-dlg-content {
+    @if ($skin-name == 'highcontrast') {
+      padding: 16px;
+    }
+   }
+
+  .e-pv-signatureimage {
+    @if ($skin-name == 'highcontrast') {
+      background-color: $pv-signature-image-panel-bg;
+    }
+  }
+
+  .e-pv-annotation-toolbar .e-dropdown-btn.e-btn:hover,
+  .e-pv-annotation-toolbar .e-dropdown-btn.e-btn:hover .e-caret,
+  .e-pv-annotation-toolbar .e-dropdown-btn.e-btn:hover:focus,
+  .e-pv-annotation-toolbar .e-dropdown-btn.e-btn:hover:focus .e-caret {
+    @if ($skin-name == 'bootstrap4') {
+      color: $pv-prop-win-drop-down-color-hover;
+    }
+  }
+
+  .e-pv-annotation-toolbar .e-dropdown-btn.e-btn:focus,
+  .e-pv-annotation-toolbar .e-dropdown-btn.e-btn:focus .e-caret,
+  .e-pv-annotation-toolbar .e-dropdown-btn.e-btn:not(:hover) {
+    @if ($skin-name == 'bootstrap4') {
+      color: $pv-stamp-icon-color;
+    }
   }
 }

@@ -540,7 +540,7 @@ export class PivotEngine {
                                     let isDataMatch: boolean = PivotUtil.inArray(item[this.fieldKeys[fieldName] as any].toString(), cGroup.items) === -1 ? false : true;
                                     item[this.fieldKeys[newFieldName] as any] = (isDataMatch ? (cGroup.groupName && cGroup.groupName !== '') ? cGroup.groupName :
                                         this.localeObj.getConstant('group') + ' ' + i : (groupValue && groupValue !== item[this.fieldKeys[fieldName] as any].toString()) ?
-                                            groupValue : item[this.fieldKeys[fieldName] as any].toString());
+                                        groupValue : item[this.fieldKeys[fieldName] as any].toString());
                                     groupValue = item[this.fieldKeys[newFieldName] as any] as string;
                                 }
                             }
@@ -813,7 +813,7 @@ export class PivotEngine {
 
     private getPercentFormat(formatField: { [key: string]: IFormatSettings }, currentField: string): number {
         let isHavingFormat: any = (!isNullOrUndefined(formatField[currentField]) && !isNullOrUndefined(this.formatFields[currentField].format)) ? (this.formatFields[currentField].format).toLowerCase().match(/p[0-9]/) : undefined;   /* eslint-disable-line */
-        return !isNullOrUndefined(isHavingFormat) ? (Number((this.formatFields[currentField].format).replace(/[^0-9]/g,''))) : 2;
+        return !isNullOrUndefined(isHavingFormat) ? (Number((this.formatFields[currentField].format).replace(/[^0-9]/g, ''))) : 2;
     }
 
     private getFormattedFields(fields: IFieldOptions[]): void { /* eslint-disable-line */
@@ -2768,9 +2768,9 @@ export class PivotEngine {
                                 this.localeObj.getConstant('groupOutOfRange') : this.localeObj.getConstant('undefined') :
                                 String(headerValue)) : String(headerValue), actualText: headerValue === null ? (this.localeObj ?
                                     this.localeObj.getConstant('null') : String(headerValue)) : headerValue === undefined ?
-                                        (this.localeObj ? (fieldName in this.groupingFields) ?
-                                            this.localeObj.getConstant('groupOutOfRange') : this.localeObj.getConstant('undefined') :
-                                            String(headerValue)) : headerValue
+                                    (this.localeObj ? (fieldName in this.groupingFields) ?
+                                        this.localeObj.getConstant('groupOutOfRange') : this.localeObj.getConstant('undefined') :
+                                        String(headerValue)) : headerValue
                     };
                 member.actualText = formattedValue.actualText;
                 member.formattedText = formattedValue.formattedText;
@@ -4059,7 +4059,7 @@ export class PivotEngine {
         }
     }
     /* eslint-disable */
-    private getAggregateValue(rowIndex: number[], columnIndex: INumberIndex, value: number, type: string): number {
+    public getAggregateValue(rowIndex: number[], columnIndex: INumberIndex, value: number, type: string): number {
         //rowIndex = rowIndex.sort();
         //columnIndex = columnIndex.sort();
         let rlt: number = rowIndex.length;
@@ -4297,8 +4297,8 @@ export class PivotEngine {
         /* eslint-enable */
         let commonValue: number | string = value === null ? (this.localeObj ? this.localeObj.getConstant('null') :
             String(value)) : value === undefined ?
-                (this.localeObj ? (fieldName in this.groupingFields) ? this.localeObj.getConstant('groupOutOfRange') :
-                    this.localeObj.getConstant('undefined') : String(value)) : value;
+            (this.localeObj ? (fieldName in this.groupingFields) ? this.localeObj.getConstant('groupOutOfRange') :
+                this.localeObj.getConstant('undefined') : String(value)) : value;
         let formattedValue: IAxisSet = {
             formattedText: commonValue.toString(),
             actualText: commonValue,

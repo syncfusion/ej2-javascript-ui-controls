@@ -16,6 +16,7 @@ export class EditCellBase implements IEditCell {
     protected parent: IGrid;
     protected obj: AutoComplete | CheckBox | ComboBox | DatePicker | TextBox |
     DropDownList | MaskedTextBox | MultiSelect | TimePicker | Switch;
+    protected removeEventHandler: Function;
 
     constructor(parent?: IGrid) {
         this.parent = parent;
@@ -30,7 +31,10 @@ export class EditCellBase implements IEditCell {
     }
 
     public destroy(): void {
-        if (this.obj) {
+        if (this.obj && !this.obj.isDestroyed) {
+            if (this.removeEventHandler) {
+                this.removeEventHandler();
+            }
             this.obj.destroy();
         }
     }

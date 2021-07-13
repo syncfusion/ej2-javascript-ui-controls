@@ -99,6 +99,23 @@ export let jobData: Object[] = [
 
 ];
 
+export let countryData: Object[] = [
+    { Name: 'United States', Capital: 'DC', GDP: 17946 },
+    { Name: 'China', Capital: 'Beijing', GDP: 10866 },
+    { Name: 'Japan', Capital: 'Tokyo', GDP: 4123 },
+    { Name: 'Germany', Capital: 'Frankfurt', GDP: 3355 },
+    { Name: 'United Kingdom', Capital: 'London', GDP: 2848 },
+    { Name: 'France', Capital: 'Paris', GDP: 2421 },
+    { Name: 'India', Capital: 'Delhi', GDP: 1234 },
+    { Name: 'India Mumbai', Capital: 'Delhi', GDP: 3456 },
+    { Name: 'India Delhi', Capital: 'Delhi', GDP: 5678 },
+    { Name: 'India Chennai', Capital: 'Delhi', GDP: 7890 },
+    { Name: 'Italy', Capital: 'Rome', GDP: 1814 },
+    { Name: 'ItalyRome', Capital: 'Rome', GDP: 1814 },
+    { Name: 'ItalyVenice', Capital: 'Venice', GDP: 1814 },
+    { Name: 'Brazil', Capital: 'Brazilia', GDP: 1774 },
+];
+
 export let jobDataRTL: Object[] = [
     { Category: 'Employees', Country: 'USA', JobDescription: 'Sales', JobGroup: 'Executive', EmployeesCount: 50 },
     { Category: 'Employees', Country: 'USA', JobDescription: 'Sales', JobGroup: 'Analyst', EmployeesCount: 40 },

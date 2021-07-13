@@ -844,7 +844,7 @@ export class Toolbar {
         const zoomDropDownTemplateString: string = this.createZoomDropdownElement();
         // eslint-disable-next-line
         let items: any[] = [];
-        const submitButton : string = '<button id="' + this.pdfViewer.element.id + '_submitForm" class="e-tbar-btn"> Submit Form</button>';
+        const submitButton : string = '<button id="' + this.pdfViewer.element.id + '_submitForm" class="e-tbar-btn" style="font-size:15px"> Submit Form</button>';
         // eslint-disable-next-line max-len
         items.push({ prefixIcon: 'e-pv-open-document-icon e-pv-icon', cssClass: 'e-pv-open-document-container', id: this.pdfViewer.element.id + '_open', text: this.pdfViewer.localeObj.getConstant('Open text'), align: 'Left' });
         items.push({ type: 'Separator', align: 'Left', cssClass: 'e-pv-open-separator-container' });

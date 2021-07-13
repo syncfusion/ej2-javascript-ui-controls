@@ -1,4 +1,4 @@
-import { Component, Property, INotifyPropertyChanged, NotifyPropertyChanges, ModuleDeclaration, L10n, isBlazor, Complex, isNullOrUndefined, formatUnit } from '@syncfusion/ej2-base';import { Event, EmitType } from '@syncfusion/ej2-base';import { Toolbar } from './tool-bar/tool-bar';import { DocumentEditor, DocumentEditorSettings } from '../document-editor/document-editor';import { TextProperties } from './properties-pane/text-properties-pane';import { HeaderFooterProperties } from './properties-pane/header-footer-pane';import { ImageProperties } from './properties-pane/image-properties-pane';import { TocProperties } from './properties-pane/table-of-content-pane';import { TableProperties } from './properties-pane/table-properties-pane';import { StatusBar } from './properties-pane/status-bar';import { ViewChangeEventArgs, RequestNavigateEventArgs, ContainerContentChangeEventArgs, ContainerSelectionChangeEventArgs, ContainerDocumentChangeEventArgs, CustomContentMenuEventArgs, BeforeOpenCloseCustomContentMenuEventArgs, BeforePaneSwitchEventArgs, LayoutType, CommentDeleteEventArgs, ServiceFailureArgs, CommentActionEventArgs } from '../document-editor/base';import { createSpinner } from '@syncfusion/ej2-popups';import { ContainerServerActionSettingsModel, DocumentEditorSettingsModel, FormFieldSettingsModel } from '../document-editor/document-editor-model';import { CharacterFormatProperties, ParagraphFormatProperties, SectionFormatProperties } from '../document-editor/implementation';import { ToolbarItem } from '../document-editor/base/types';import { CustomToolbarItemModel, TrackChangeEventArgs } from '../document-editor/base/events-helper';import { ClickEventArgs } from '@syncfusion/ej2-navigations';import { internalZoomFactorChange, beforeCommentActionEvent, commentDeleteEvent, contentChangeEvent, trackChangeEvent, beforePaneSwitchEvent, serviceFailureEvent, documentChangeEvent, selectionChangeEvent, customContextMenuSelectEvent, customContextMenuBeforeOpenEvent } from '../document-editor/base/constants';
+import { Component, Property, INotifyPropertyChanged, NotifyPropertyChanges, ModuleDeclaration, L10n, Complex, isNullOrUndefined, formatUnit } from '@syncfusion/ej2-base';import { Event, EmitType } from '@syncfusion/ej2-base';import { Toolbar } from './tool-bar/tool-bar';import { DocumentEditor, DocumentEditorSettings } from '../document-editor/document-editor';import { TextProperties } from './properties-pane/text-properties-pane';import { HeaderFooterProperties } from './properties-pane/header-footer-pane';import { ImageProperties } from './properties-pane/image-properties-pane';import { TocProperties } from './properties-pane/table-of-content-pane';import { TableProperties } from './properties-pane/table-properties-pane';import { StatusBar } from './properties-pane/status-bar';import { ViewChangeEventArgs, RequestNavigateEventArgs, ContainerContentChangeEventArgs, ContainerSelectionChangeEventArgs, ContainerDocumentChangeEventArgs, CustomContentMenuEventArgs, BeforeOpenCloseCustomContentMenuEventArgs, BeforePaneSwitchEventArgs, LayoutType, CommentDeleteEventArgs, ServiceFailureArgs, CommentActionEventArgs } from '../document-editor/base';import { createSpinner } from '@syncfusion/ej2-popups';import { ContainerServerActionSettingsModel, DocumentEditorSettingsModel, FormFieldSettingsModel } from '../document-editor/document-editor-model';import { CharacterFormatProperties, ParagraphFormatProperties, SectionFormatProperties } from '../document-editor/implementation';import { ToolbarItem } from '../document-editor/base/types';import { CustomToolbarItemModel, TrackChangeEventArgs } from '../document-editor/base/events-helper';import { ClickEventArgs } from '@syncfusion/ej2-navigations';import { internalZoomFactorChange, beforeCommentActionEvent, commentDeleteEvent, contentChangeEvent, trackChangeEvent, beforePaneSwitchEvent, serviceFailureEvent, documentChangeEvent, selectionChangeEvent, customContextMenuSelectEvent, customContextMenuBeforeOpenEvent } from '../document-editor/base/constants';
 import {ComponentModel} from '@syncfusion/ej2-base';
 
 /**
@@ -49,15 +49,15 @@ export interface DocumentEditorContainerModel extends ComponentModel{
     layoutType?: LayoutType;
 
     /**
-     * Current User
+     * Gets or sets the current user.
      *
      * @default ''
      */
     currentUser?: string;
 
     /**
-     * User Selection Highlight Color
-     *
+     * Gets or sets the color used for highlighting the editable ranges or regions of the `currentUser` in Document Editor. The default value is "#FFFF00".
+     * Remarks: If the visibility of text affected due this highlight color matching with random color applied for the track changes, then modify the color value of this property to resolve text visibility problem.
      * @default '#FFFF00'
      */
     userColor?: string;
@@ -121,7 +121,6 @@ export interface DocumentEditorContainerModel extends ComponentModel{
      * Triggers when the component is created
      *
      * @event
-     * @blazorproperty 'Created'
      */
     created?: EmitType<Object>;
 
@@ -129,7 +128,6 @@ export interface DocumentEditorContainerModel extends ComponentModel{
      * Triggers when the component is destroyed.
      *
      * @event
-     * @blazorproperty 'Destroyed'
      */
     destroyed?: EmitType<Object>;
 
@@ -137,7 +135,6 @@ export interface DocumentEditorContainerModel extends ComponentModel{
      * Triggers whenever the content changes in the document editor container.
      *
      * @event
-     * @blazorproperty 'ContentChanged'
      */
     contentChange?: EmitType<ContainerContentChangeEventArgs>;
 
@@ -145,7 +142,6 @@ export interface DocumentEditorContainerModel extends ComponentModel{
      * Triggers whenever selection changes in the document editor container.
      *
      * @event
-     * @blazorproperty 'SelectionChanged'
      */
     selectionChange?: EmitType<ContainerSelectionChangeEventArgs>;
 
@@ -153,7 +149,6 @@ export interface DocumentEditorContainerModel extends ComponentModel{
      * Triggers whenever document changes in the document editor container.
      *
      * @event
-     * @blazorproperty 'DocumentChanged'
      */
     documentChange?: EmitType<ContainerDocumentChangeEventArgs>;
 
@@ -161,8 +156,6 @@ export interface DocumentEditorContainerModel extends ComponentModel{
      * Triggers when toolbar item is clicked.
      *
      * @event
-     * @blazorproperty 'OnToolbarClick'
-     * @blazorType Syncfusion.Blazor.Navigations.ClickEventArgs
      */
     toolbarClick?: EmitType<ClickEventArgs>;
 
@@ -170,7 +163,6 @@ export interface DocumentEditorContainerModel extends ComponentModel{
      * Triggers while selecting the custom context-menu option.
      *
      * @event
-     * @blazorproperty 'ContextMenuItemSelected'
      */
     customContextMenuSelect?: EmitType<CustomContentMenuEventArgs>;
 
@@ -178,7 +170,6 @@ export interface DocumentEditorContainerModel extends ComponentModel{
      * Triggers before opening the custom context-menu option.
      *
      * @event
-     * @blazorproperty 'OnContextMenuOpen'
      */
     customContextMenuBeforeOpen?: EmitType<BeforeOpenCloseCustomContentMenuEventArgs>;
 
@@ -186,14 +177,12 @@ export interface DocumentEditorContainerModel extends ComponentModel{
      * Trigger before switching panes in DocumentEditor.
      *
      * @event
-     * @blazorproperty 'BeforePaneSwitch'
      */
     beforePaneSwitch?: EmitType<BeforePaneSwitchEventArgs>;
 
     /**
      * Triggers on deleting a comment.
      *
-     * @blazorproperty 'OnCommentDelete'
      * @event
      */
     commentDelete?: EmitType<CommentDeleteEventArgs>;
@@ -215,7 +204,6 @@ export interface DocumentEditorContainerModel extends ComponentModel{
     /**
      * Triggers Keyboard shortcut of TrackChanges.
      *
-     * @blazorproperty 'OnEnableTrackChanges'
      * @event
      */
     trackChange?: EmitType<TrackChangeEventArgs>;

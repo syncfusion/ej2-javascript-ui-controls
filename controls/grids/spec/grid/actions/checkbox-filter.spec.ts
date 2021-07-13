@@ -2507,3 +2507,76 @@ describe('EJ2-49551 - Provide public event to handle queries on custom ExcelFilt
         gridObj = null;
     });
 });
+
+describe('EJ2-50998 - Searching blank in filter text box', () => {
+    let gridObj: Grid;
+    let actionComplete: () => void;
+    let checkBoxFilter: Element; 
+    let fltrData: Object[] = [
+        { OrderID: 10248, CustomerID: null, ShipCountry: 'France', Freight: 32.38 },
+        { OrderID: 10249, CustomerID: 'TOMSP', ShipCountry: 'Germany', Freight: 11.61 },
+        { OrderID: 10250, CustomerID: 'HANAR', ShipCountry: 'Brazil', Freight: 65.83 },
+        { OrderID: 10251, CustomerID: 'VICTE', ShipCountry: 'France', Freight: 41.34 },
+        { OrderID: 10252, CustomerID: 'SUPRD', ShipCountry: 'Belgium', Freight: 51.3 }];
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: fltrData,
+                allowFiltering: true,
+                filterSettings: { type: 'CheckBox' },
+                height: 500,
+                columns: [
+                    { field: 'OrderID', headerText: 'Order ID', isPrimaryKey: true,  textAlign: 'Right' },
+                    { field: 'CustomerID', headerText: 'Customer ID' },
+                    { field: 'Freight',  format: 'C2', textAlign: 'Right' },
+                    { field: 'ShipCountry', headerText: 'Ship Country', },
+                ],
+                actionComplete: actionComplete
+            }, done);
+    });
+
+    it('open filter popup', (done: Function) => {
+        actionComplete = (args?: any): void => {
+            if (args.requestType === 'filterafteropen') {
+                checkBoxFilter = gridObj.element.querySelector('.e-checkboxfilter');
+                gridObj.actionComplete = null;
+                done();
+            }
+        };
+        gridObj.actionComplete = actionComplete;        
+        (gridObj.filterModule as any).filterIconClickHandler(getClickObj(gridObj.getColumnHeaderByField('CustomerID').querySelector('.e-filtermenudiv')));
+    });
+
+    it('Searching blank value', (done: Function) => {
+        actionComplete = (args?: any): void => {
+            if (args.requestType === 'filterchoicerequest') {
+                expect(checkBoxFilter.querySelectorAll('.e-selectall').length).toBe(1);
+                expect(checkBoxFilter.querySelectorAll('.e-check').length).toBe(2);
+                expect((checkBoxFilter.querySelector('.e-checkboxlist').children[1] as HTMLElement).innerText).toBe('Blanks');
+                gridObj.actionComplete = null;
+                done();
+            }
+        };
+        gridObj.actionComplete = actionComplete;
+        let searchElement : any  = gridObj.element.querySelector('.e-searchinput');
+        searchElement.value = 'Blanks';
+        (gridObj.filterModule as any).filterModule.checkBoxBase.searchBoxKeyUp(getKeyUpObj(13,searchElement));
+    });
+
+    it('Check the filter data length', (done: Function) => {
+        actionComplete = (args?: any): void => {
+            if (args.requestType === 'filtering') {
+                expect(gridObj.currentViewData.length).toBe(1);
+                gridObj.actionComplete = null;
+                done();
+            }
+        };
+        gridObj.actionComplete = actionComplete;
+        checkBoxFilter.querySelectorAll('button')[0].click();
+    });
+    
+    afterAll(() => {
+        destroy(gridObj);
+        gridObj = fltrData = checkBoxFilter = actionComplete = null;
+    });
+});

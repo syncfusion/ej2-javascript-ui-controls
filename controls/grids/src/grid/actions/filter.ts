@@ -201,7 +201,9 @@ export class Filter implements IAction {
             }
         }
         if (this.element) {
-            remove(this.element);
+            if (this.element.parentElement) {
+                remove(this.element);
+            }
             const filterBarElement: Element = this.parent.getHeaderContent().querySelector('.e-filterbar');
             if (this.parent.isFrozenGrid() && filterBarElement) {
                 remove(filterBarElement);

@@ -39,6 +39,7 @@ export class Lists {
     private addEventListener(): void {
         this.parent.observer.on(EVENTS.LIST_TYPE, this.applyListsHandler, this);
         this.parent.observer.on(EVENTS.KEY_DOWN_HANDLER, this.keyDownHandler, this);
+        this.parent.observer.on(EVENTS.SPACE_ACTION, this.spaceKeyAction, this);
     }
     private testList(elem: Element): boolean {
         const olListRegex: RegExp[] = [/^[\d]+[.]+$/,
@@ -58,7 +59,7 @@ export class Lists {
         const olListStartRegex: RegExp[] = [/^[1]+[.]+$/, /^[i]+[.]+$/, /^[a]+[.]+$/];
         if (!isNullOrUndefined(range.startContainer.textContent.slice(0, range.startOffset))) {
             for (let i: number = 0; i < olListStartRegex.length; i++) {
-                if (olListStartRegex[i].test(range.startContainer.textContent.slice(0, range.startOffset))) {
+                if (olListStartRegex[i].test(range.startContainer.textContent.slice(0, range.startOffset).trim())) {
                     return true;
                 }
             }
@@ -86,8 +87,8 @@ export class Lists {
                     range.startOffset, range.startContainer.textContent.length);
                 this.applyListsHandler({ subCommand: 'OL', callBack: e.callBack });
                 e.event.preventDefault();
-            } else if (range.startContainer.textContent.slice(0, range.startOffset) === '*' ||
-            range.startContainer.textContent.slice(0, range.startOffset) === '-') {
+            } else if (range.startContainer.textContent.slice(0, range.startOffset).trim() === '*' ||
+            range.startContainer.textContent.slice(0, range.startOffset).trim() === '-') {
                 range.startContainer.textContent = range.startContainer.textContent.slice(
                     range.startOffset, range.startContainer.textContent.length);
                 this.applyListsHandler({ subCommand: 'UL', callBack: e.callBack });
@@ -249,6 +250,12 @@ export class Lists {
                 e.event.preventDefault();
                 break;
             }
+        }
+    }
+
+    private spaceKeyAction(e: IHtmlKeyboardEvent): void {
+        if (e.event.which === 32) {
+            this.spaceList(e);
         }
     }
 

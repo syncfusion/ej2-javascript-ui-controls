@@ -216,9 +216,12 @@ export class TableCommand {
         let curCell: Element;
         const allRows: HTMLCollectionOf<HTMLTableRowElement> = (closest((curRow), 'table') as HTMLTableElement).rows;
         const colIndex: number = Array.prototype.slice.call((curRow as HTMLElement).querySelectorAll('th,td')).indexOf(selectedCell);
-        const width: number = parseInt(e.item.width as string, 10) / (curRow.querySelectorAll('td,th').length + 1);
-        for (let j: number = 0; j < closest(curRow as HTMLElement, 'table').querySelectorAll('th,td').length; j++) {
-            (closest(curRow as HTMLElement, 'table').querySelectorAll('th,td')[j] as HTMLElement).style.width = width + '%';
+        const previousWidth: number = parseInt(e.item.width as string, 10) / (curRow.querySelectorAll('td,th').length);
+        const currentWidth: number = parseInt(e.item.width as string, 10) / (curRow.querySelectorAll('td,th').length + 1);
+        let currentTabElm: Element = closest(curRow as HTMLElement, 'table');
+        let thTdElm: NodeListOf<HTMLElement> = closest(curRow as HTMLElement, 'table').querySelectorAll('th,td');
+        for (let i: number = 0; i < thTdElm.length; i++) {
+            thTdElm[i].dataset.oldWidth = (thTdElm[i].offsetWidth / (currentTabElm as HTMLElement).offsetWidth * 100) + "%";
         }
         for (let i: number = 0; i < allRows.length; i++) {
             curCell = allRows[i].querySelectorAll('th,td')[colIndex];
@@ -231,6 +234,12 @@ export class TableCommand {
             // eslint-disable-next-line
             (e.item.subCommand === 'InsertColumnLeft') ? curCell.parentElement.insertBefore(colTemplate, curCell) :
                 this.insertAfter((colTemplate as HTMLElement), (curCell as Element));
+            (colTemplate as HTMLElement).style.width = currentWidth.toFixed(4) + "%";
+            delete (colTemplate as HTMLElement).dataset.oldWidth;
+        }
+        for (let i: number = 0; i < thTdElm.length; i++) {
+            thTdElm[i].style.width = (Number(thTdElm[i].dataset.oldWidth.split('%')[0]) * currentWidth / previousWidth).toFixed(4) + "%";
+            delete thTdElm[i].dataset.oldWidth;
         }
         e.item.selection.setSelectionText(this.parent.currentDocument, selectedCell, selectedCell, 0, 0);
         if (e.callBack) {

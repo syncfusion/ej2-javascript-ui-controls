@@ -58,7 +58,7 @@ describe('Action module', () => {
             const card: Element = kanbanObj.element.querySelector('.e-card[data-id="2"]');
             expect(card.classList.contains('e-selection')).toEqual(false);
             util.triggerMouseEvent(card, 'dblclick');
-            expect(card.classList.contains('e-selection')).toEqual(false);
+            expect(card.classList.contains('e-selection')).toEqual(true);
             expect(cardDoubleClickFunction).toHaveBeenCalled();
         });
 

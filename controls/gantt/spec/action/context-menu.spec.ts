@@ -260,8 +260,38 @@ describe('Context-', () => {
          });
     });
      describe('Content menu -', () => {
+        let ganttObj: Gantt;
         beforeAll((done: Function) => {
-            ganttObj = createGantt(ganttModel, done);
+            ganttObj = createGantt({
+                dataSource: projectData1,
+                allowSelection: true,
+                allowResizing: true,
+                allowSorting: true,
+                enableContextMenu: true,
+                contextMenuItems: menuItem,
+                taskFields: {
+                    id: 'TaskID',
+                    name: 'TaskName',
+                    startDate: 'StartDate',
+                    endDate: 'EndDate',
+                    duration: 'Duration',
+                    progress: 'Progress',
+                    child: 'subtasks',
+                    dependency: 'Predecessor'
+                },
+                editSettings: {
+                allowAdding: true,
+                allowEditing: true,
+                allowDeleting: true,
+                allowTaskbarEditing: true,
+                showDeleteConfirmDialog: true
+                },
+                toolbar: ['Add', 'Edit', 'Delete'],
+                projectStartDate: new Date('02/01/2017'),
+                projectEndDate: new Date('12/30/2017'),
+                rowHeight: 40,
+                taskbarHeight: 30,
+            }, done);
         });
         afterAll(() => {
             if (ganttObj) {
@@ -321,8 +351,17 @@ describe('Context-', () => {
             (ganttObj.contextMenuModule as any).contextMenuItemClick(e);
             let ok: HTMLElement = ganttObj.element.querySelector('#' + ganttObj.element.id + '_deleteConfirmDialog > div.e-footer-content > button');
             triggerMouseEvent(ok, 'click');
-            expect(ganttObj.currentViewData.length).toBe(41);
+            expect(ganttObj.currentViewData.length).toBe(40);
             done();
+        });
+        it('Add record Without rowposition and empty data', () => {
+            let data:object = { TaskID: 67,
+                TaskName: 'New task',
+                Duration: 3,
+                Progress: 80,
+            };
+            ganttObj.editModule.addRecord(data,'Top',0);
+            expect(ganttObj.dataSource['length']).toBe(2);
         });
         it('Destroy', () => {
             ganttObj.contextMenuModule.destroy();

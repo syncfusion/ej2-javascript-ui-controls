@@ -2,7 +2,25 @@
 
 ## [Unreleased]
 
+## 19.2.47 (2021-07-13)
+
+### Schedule
+
+#### Bug Fixes
+
+- `#I333860, #I333664` - An issue with the external drag between two scheduler has been fixed.
+- `#F166305` - An issue with dynamically changed `minDate` and `maxDate` property in react scheduler has been fixed.
+- `#F166752` - An issue with drag and drop doesn't work when enabled the desktop mode in mobile devices has been fixed.
+
 ## 19.2.46 (2021-07-06)
+
+### Schedule
+
+#### Bug Fixes
+
+- `#I332366` - An issue with the toolbar popup is not open properly when multiple schedules are rendered on a single page has been fixed.
+
+## 19.2.44 (2021-06-30)
 
 ### Schedule
 
@@ -14,7 +32,6 @@
 
 - `#FB25227` - An issue with the scheduler resize action is not working in timeline views has been fixed.
 - `#I331501` - An issue with the scheduler height is not responsive related to the parent container has been fixed.
-- `#I332366` - An issue with the toolbar popup is not open properly when multiple schedules are rendered on a single page has been fixed.
 
 ## 19.1.69 (2021-06-15)
 

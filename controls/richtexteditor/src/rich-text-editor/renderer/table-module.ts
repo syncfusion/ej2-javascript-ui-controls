@@ -548,7 +548,7 @@ export class Table {
 
     private tableResizeEleCreation(table: HTMLTableElement, e: MouseEvent): void {
         this.parent.preventDefaultResize(e);
-        const columns: NodeListOf<Element> = Array.prototype.slice.call(table.rows[0].cells, 1);
+        const columns: NodeListOf<Element> = Array.prototype.slice.call(table.rows[this.calMaxCol(table)].cells, 1);
         const rows: Element[] = [];
         for (let i: number = 0; i < table.rows.length; i++) {
             rows.push(Array.prototype.slice.call(table.rows[i].cells, 0, 1)[0]);
@@ -665,7 +665,7 @@ export class Table {
             this.hideTableQuickToolbar();
             if (target.classList.contains(classes.CLS_TB_COL_RES)) {
                 this.resizeBtnStat.column = true;
-                this.columnEle = this.curTable.rows[0].cells[parseInt(target.getAttribute('data-col'), 10)] as HTMLTableDataCellElement;
+                this.columnEle = this.curTable.rows[this.calMaxCol(this.curTable)].cells[parseInt(target.getAttribute('data-col'), 10)] as HTMLTableDataCellElement;
                 this.colIndex = this.columnEle.cellIndex;
                 this.moveEle = e.target as HTMLElement;
                 this.appendHelper();
@@ -743,6 +743,18 @@ export class Table {
         }
     }
 
+    private calMaxCol(element: HTMLTableElement): number {
+        let max: number = 0;
+        let maxRowIndex: number;
+        for (let i: number = 0; i < element.rows.length; i++) {
+            if (max < element.rows[i].cells.length) {
+                maxRowIndex = i;
+                max = element.rows[i].cells.length;
+            }
+        }
+        return maxRowIndex;
+    }
+
     private resizing(e: PointerEvent | TouchEvent): void {
         const pageX: number = this.getPointX(e);
         const pageY: number = this.getPointY(e);
@@ -761,7 +773,7 @@ export class Table {
                 const paddingSize: number = +getComputedStyle(this.contentModule.getEditPanel()).paddingRight.match(/\d/g).join('');
                 const rteWidth: number = (this.contentModule.getEditPanel() as HTMLElement).offsetWidth - paddingSize * 2;
                 if (this.resizeBtnStat.column) {
-                    const cellColl: HTMLCollectionOf<Element> = this.curTable.rows[0].cells;
+                    const cellColl: HTMLCollectionOf<Element> = this.curTable.rows[this.calMaxCol(this.curTable)].cells;
                     const width: number = parseFloat(this.columnEle.offsetWidth.toString());
                     const actualwid: number = width - mouseX;
                     const totalwid: number = parseFloat(this.columnEle.offsetWidth.toString()) +
@@ -770,10 +782,14 @@ export class Table {
                         if ((totalwid - actualwid) > 20 && actualwid > 20) {
                             const leftColumnWidth: number = totalwid - actualwid;
                             const rightColWidth: number = actualwid;
-                            (this.curTable.rows[i].cells[this.colIndex - 1] as HTMLTableDataCellElement).style.width =
+                            if (!isNOU(this.curTable.rows[i].cells[this.colIndex - 1])) {
+                                (this.curTable.rows[i].cells[this.colIndex - 1] as HTMLTableDataCellElement).style.width =
                                 this.convertPixelToPercentage(leftColumnWidth, tableWidth) + '%';
-                            (this.curTable.rows[i].cells[this.colIndex] as HTMLTableDataCellElement).style.width =
+                            }
+                            if (!isNOU(this.curTable.rows[i].cells[this.colIndex])) {
+                                (this.curTable.rows[i].cells[this.colIndex] as HTMLTableDataCellElement).style.width =
                                 this.convertPixelToPercentage(rightColWidth, tableWidth) + '%';
+                            }
                         }
                     }
                     this.updateHelper();

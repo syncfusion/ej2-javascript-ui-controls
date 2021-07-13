@@ -209,7 +209,6 @@ export class Selection {
      *
      * @default undefined
      * @aspType SelectionCharacterFormat
-     * @blazorType SelectionCharacterFormat
      * @returns {SelectionCharacterFormat} - Returns selection character format.
      */
     public get characterFormat(): SelectionCharacterFormat {
@@ -220,7 +219,6 @@ export class Selection {
      *
      * @default undefined
      * @aspType SelectionParagraphFormat
-     * @blazorType SelectionParagraphFormat
      * @returns {SelectionParagraphFormat} - Returns selection paragraph format.
      */
     public get paragraphFormat(): SelectionParagraphFormat {
@@ -231,7 +229,6 @@ export class Selection {
      *
      * @default undefined
      * @aspType SelectionSectionFormat
-     * @blazorType SelectionSectionFormat
      * @returns {SelectionSectionFormat} - Returns selection section format.
      */
     public get sectionFormat(): SelectionSectionFormat {
@@ -242,7 +239,6 @@ export class Selection {
      *
      * @default undefined
      * @aspType SelectionTableFormat
-     * @blazorType SelectionTableFormat
      * @returns {SelectionTableFormat} - Returns selection table format.
      */
     public get tableFormat(): SelectionTableFormat {
@@ -253,7 +249,6 @@ export class Selection {
      *
      * @default undefined
      * @aspType SelectionCellFormat
-     * @blazorType SelectionCellFormat
      * @returns {SelectionCellFormat} - Returns selection cell format.
      */
     public get cellFormat(): SelectionCellFormat {
@@ -264,7 +259,6 @@ export class Selection {
      *
      * @default undefined
      * @aspType SelectionRowFormat
-     * @blazorType SelectionRowFormat
      * @returns {SelectionRowFormat} - Returns selection row format.
      */
     public get rowFormat(): SelectionRowFormat {
@@ -275,7 +269,6 @@ export class Selection {
      *
      * @default undefined
      * @aspType SelectionImageFormat
-     * @blazorType SelectionImageFormat
      * @returns {SelectionImageFormat} - Returns selection image format.
      */
     public get imageFormat(): SelectionImageFormat {
@@ -409,7 +402,6 @@ export class Selection {
      *
      * @default ''
      * @aspType string
-     * @blazorType string
      * @returns {string}
      */
     public get text(): string {
@@ -9592,6 +9584,9 @@ export class Selection {
             } else {
                 //bookmark end element
                 let bookmrkEnd: BookmarkElementBox = bookmrkElmnt.reference;
+                if(bookmrkElmnt.reference.line.paragraph.bodyWidget == null){
+                    bookmrkEnd = bookmrkElmnt;
+                }
                 let endoffset: number = bookmrkEnd.line.getOffset(bookmrkEnd, 1);
                 let endPosition: TextPosition = new TextPosition(this.owner);
                 endPosition.setPositionParagraph(bookmrkEnd.line, endoffset);

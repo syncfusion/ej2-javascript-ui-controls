@@ -5,6 +5,7 @@ import { NumericTextBox } from '@syncfusion/ej2-inputs';
 import { ServiceLocator } from '../services/service-locator';
 import { Filter } from '../actions/filter';
 import { extend, isUndefined, KeyboardEventArgs  } from '@syncfusion/ej2-base';
+import * as events from '../base/constant';
 
 /**
  * `numberfilterui` render number column.
@@ -26,6 +27,10 @@ export class NumberFilterUI implements IFilterMUI {
         this.filterSettings = filterSettings;
         this.parent = parent;
         this.serviceLocator = serviceLocator;
+        if (this.parent) {
+            this.parent.on(events.filterMenuClose, this.destroy, this);
+            this.parent.on(events.destroy, this.destroy, this);
+        }
     }
 
     private keyEventHandler(args: KeyboardEventArgs): void {
@@ -64,5 +69,12 @@ export class NumberFilterUI implements IFilterMUI {
         const numberuiObj: NumericTextBox = (<EJ2Intance>document.querySelector('#numberui-' + column.uid)).ej2_instances[0];
         const filterValue: number = numberuiObj.value;
         filterObj.filterByColumn(column.field, filterOptr, filterValue, 'and', true);
+    }
+
+    private destroy(): void {
+        if (!this.numericTxtObj || this.numericTxtObj.isDestroyed) { return; }
+        this.numericTxtObj.destroy();
+        this.parent.off(events.filterMenuClose, this.destroy);
+        this.parent.off(events.destroy, this.destroy);
     }
 }

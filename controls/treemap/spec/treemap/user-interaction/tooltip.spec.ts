@@ -87,7 +87,7 @@ describe('TreeMap component Spec', () => {
         it('Checking with currency format', () => {
             treemap.loaded = (args: ILoadedEventArgs) => {
                 let layoutID: string = args.treemap.element.id + '_TreeMap_' + args.treemap.layoutType + '_Layout';
-                let rectEle: Element = document.getElementById(args.treemap.element.id + '_Level_Index_1_Item_Index_14_RectPath');
+                let rectEle: Element = document.getElementById(args.treemap.element.id + '_Level_Index_1_Item_Index_17_RectPath');
                 let rectBounds: ClientRect = rectEle.getBoundingClientRect();
                 let eventObj: Object = {
                     target: rectEle,
@@ -104,7 +104,7 @@ describe('TreeMap component Spec', () => {
 
         it('Checking with tooltip format', () => {
             treemap.loaded = (args: ILoadedEventArgs) => {
-                let rectEle: Element = document.getElementById(args.treemap.element.id + '_Level_Index_1_Item_Index_14_RectPath');
+                let rectEle: Element = document.getElementById(args.treemap.element.id + '_Level_Index_1_Item_Index_17_RectPath');
                 let rectBounds: ClientRect = rectEle.getBoundingClientRect();
                 let titleEle: Element = document.getElementById(args.treemap.element.id + '_TreeMap_title');
                 let eventObj: Object = {
@@ -127,7 +127,7 @@ describe('TreeMap component Spec', () => {
 
         it('Checking with tooltip template', () => {
             treemap.loaded = (args: ILoadedEventArgs) => {
-                let rectEle: Element = document.getElementById(args.treemap.element.id + '_Level_Index_1_Item_Index_14_RectPath');
+                let rectEle: Element = document.getElementById(args.treemap.element.id + '_Level_Index_1_Item_Index_17_RectPath');
                 let eventObj: Object = {
                     target: rectEle,
                     type: 'touchend',

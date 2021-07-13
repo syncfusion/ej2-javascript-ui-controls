@@ -30,7 +30,7 @@ import { Dialog, createSpinner } from '@syncfusion/ej2-popups';
 import { ImageResizer } from '../editor/image-resizer';
 import {
     HeaderFooterType, PageFitType, TableAlignment, ProtectionType, FormFieldType,
-    FootnoteRestartIndex, FootEndNoteNumberFormat, FootnoteType
+    FootnoteRestartIndex, FootEndNoteNumberFormat, FootnoteType, CompatibilityMode
 } from '../../base/types';
 import { Editor } from '../index';
 import { CaretHeightInfo } from '../editor/editor-helper';
@@ -301,6 +301,10 @@ export class DocumentHelper {
      * @private
      */
     public alignTablesRowByRow: boolean = false;
+    /**
+     * @private
+     */
+    public compatibilityMode: CompatibilityMode = "Word2013";
     /**
      * @private
      */

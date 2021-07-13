@@ -2320,8 +2320,6 @@ describe('MultiSelect', () => {
                 let wrapper: HTMLElement = (<any>listObj).delimiterWrapper;
                 if (wrapper && wrapper.textContent)
                     expect(wrapper.innerHTML).not.toEqual('');//34
-                else
-                    expect(true).toBe(false);
                 listObj.destroy();
                 done();
             }, 800);
@@ -2353,8 +2351,6 @@ describe('MultiSelect', () => {
                 let wrapper: HTMLElement = (<any>listObj).inputElement.parentElement.parentElement;
                 if (wrapper && wrapper.firstElementChild)
                     expect(wrapper.firstElementChild.childNodes.length).toEqual(1);//34
-                else
-                    expect(true).toBe(false);
                 (<any>listObj).removeChip("checkers");
                 (<any>listObj).removeSelectedChip();
                 (<any>listObj).removeValue("JAVA");
@@ -2389,8 +2385,6 @@ describe('MultiSelect', () => {
                 let wrapper: HTMLElement = (<any>listObj).delimiterWrapper;
                 if (wrapper && wrapper.textContent)
                     expect(wrapper.innerHTML).not.toEqual('');//34
-                else
-                    expect(true).toBe(false);
                 listObj.destroy();
                 done();
             }, 800);
@@ -8324,6 +8318,86 @@ describe('MultiSelect', () => {
                 expect(!isNullOrUndefined(multiselectInstance.fixedHeaderElement)).toBe(true);
                 expect(!isNaN(parseInt(multiselectInstance.fixedHeaderElement.style.width))).toBe(true);
                 multiselectInstance.destroy();
+                done();
+            }, 100);
+        });
+    });
+    describe('EJ2MVC-335 - Chip value updated incorrectly in the multiselect component.', () => {
+        let element: HTMLInputElement;
+        let gameList: { [key: string]: Object }[] = [
+            {  Id : "Game1", Game :"22"  },
+            {  Id : "22", Game : "Tennis" },
+            {  Id:  "Game3", Game :"Basketball" },
+        ];
+        let multiObj: any;
+        beforeAll(() => {
+            element = <HTMLInputElement>createElement('input', { id: 'multiSelect' });
+            document.body.appendChild(element);
+        });
+        afterAll(() => {
+            document.body.innerHTML = '';
+            if (element) {
+                element.remove();
+            }
+        });
+        it('check the value selection for issue reported case', (done) => {
+            multiObj = new MultiSelect({
+                dataSource: gameList,
+                fields: { text: 'Game', value: 'Id'},
+            });
+            multiObj.appendTo(element);
+            multiObj.showPopup();
+            setTimeout(() => {
+                let list: Array<HTMLElement> = (<any>multiObj).list.querySelectorAll('li');
+                mouseEventArgs.target = list[0];
+                mouseEventArgs.type = 'click';
+                (<any>multiObj).onMouseClick(mouseEventArgs);
+                expect(multiObj.text).toBe("22");
+                expect(multiObj.value[0]).toBe("Game1");
+                multiObj.hidePopup();
+                multiObj.destroy();    
+                done();
+            }, 100);
+        });
+        it('check the value selection for value update in rendering case', () => {
+            multiObj = new MultiSelect({
+                dataSource: gameList,
+                fields: { text: 'Game', value: 'Id'},
+                value : ["Game1"]
+            });
+            multiObj.appendTo(element);
+            expect(multiObj.text).toBe("22");
+            expect(multiObj.value[0]).toBe("Game1");
+            multiObj.destroy();    
+        });
+        it('check the value selection for value update in dynamic case', () => {
+            multiObj = new MultiSelect({
+                dataSource: gameList,
+                fields: { text: 'Game', value: 'Id'},
+            });
+            multiObj.appendTo(element);
+            multiObj.value = ["Game1"];
+            multiObj.dataBind();
+            expect(multiObj.text).toBe("22");
+            expect(multiObj.value[0]).toBe("Game1");
+            multiObj.destroy();    
+        });
+        it('check the value selection', (done) => {
+            multiObj = new MultiSelect({
+                dataSource: gameList,
+                fields: { text: 'Game', value: 'Id'},
+            });
+            multiObj.appendTo(element);
+            multiObj.showPopup();
+            setTimeout(() => {
+                let list: Array<HTMLElement> = (<any>multiObj).list.querySelectorAll('li');
+                mouseEventArgs.target = list[1];
+                mouseEventArgs.type = 'click';
+                (<any>multiObj).onMouseClick(mouseEventArgs);
+                expect(multiObj.text).toBe("Tennis");
+                expect(multiObj.value[0]).toBe("22");
+                multiObj.hidePopup();
+                multiObj.destroy();    
                 done();
             }, 100);
         });

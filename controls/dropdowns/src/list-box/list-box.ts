@@ -609,7 +609,7 @@ export class ListBox extends DropDownBase {
         }
     }
 
-    protected showSpinner(): void {
+    public showSpinner(): void {
         if (!this.spinner) {
             this.spinner = this.createElement('div', { className: 'e-listbox-wrapper' });
         }
@@ -619,7 +619,7 @@ export class ListBox extends DropDownBase {
         showSpinner(this.spinner);
     }
 
-    protected hideSpinner(): void {
+    public hideSpinner(): void {
         if (this.spinner.querySelector('.e-spinner-pane')) {
             hideSpinner(this.spinner);
         }

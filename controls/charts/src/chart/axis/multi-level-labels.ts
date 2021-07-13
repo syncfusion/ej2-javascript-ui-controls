@@ -11,7 +11,7 @@ import { Axis } from '../axis/axis';
 import { FontModel } from '../../common/model/base-model';
 import { isNullOrUndefined } from '@syncfusion/ej2-base';
 import { textWrap, appendClipElement, appendChildElement } from '../../common/utils/helper';
-import { valueToCoefficient, textTrim, textElement } from '../../common/utils/helper';
+import { valueToCoefficient, textTrim, textElement, withInBounds } from '../../common/utils/helper';
 import { Size, measureText, TextOption, PathOption, Rect, SvgRenderer } from '@syncfusion/ej2-svg-base';
 import { MultiLevelLabels, MultiLevelCategories } from '../model/chart-base';
 import { IAxisMultiLabelRenderEventArgs, IMultiLevelLabelClickEventArgs } from '../../chart/model/chart-interface';
@@ -38,6 +38,10 @@ export class MultiLevelLabel {
     public multiElements: Element;
     /** @private */
     public labelElement: Element;
+    /** @private */
+    public multiLevelLabelRectXRegion: Rect[] = [];
+    /** @private */
+    public xLabelCollection: TextOption[] = [];
     /**
      * Constructor for the logerithmic module.
      *
@@ -170,6 +174,11 @@ export class MultiLevelLabel {
                         this.chart.renderer, options, argsData.textStyle, argsData.textStyle.color || this.chart.themeStyle.axisLabel,
                         this.labelElement, false, this.chart.redraw, true, null, null, null, null, null, this.chart.enableCanvas
                     );
+                    if (this.chart.enableCanvas) {
+                        let textSize: Size = measureText(argsData.text, argsData.textStyle);
+                        this.multiLevelLabelRectXRegion.push(new Rect(options.x, options.y, textSize.width, textSize.height));
+                        this.xLabelCollection.push(options);
+                    }
                     if (multiLevel.border.width > 0 && multiLevel.border.type !== 'WithoutBorder') {
                         pathRect = this.renderXAxisLabelBorder(
                             level, endX - startX - padding, axis, startX, startY, labelSize, options, axisRect, argsData.alignment,
@@ -511,11 +520,20 @@ export class MultiLevelLabel {
      * @private
      */
     public click(event: Event): void {
-        const targetId: string = (<HTMLElement>event.target).id;
+        let targetId: string = (<HTMLElement>event.target).id;
         const multiLevelID: string = '_Axis_MultiLevelLabel_Level_';
         let textId: string;
         let elementId: string;
         let axisIndex: number;
+        if (this.chart.enableCanvas) {
+            for (let i: number = 0; i < this.multiLevelLabelRectXRegion.length; i++) {
+                if (withInBounds(
+                    event['x'], event['y'], this.multiLevelLabelRectXRegion[i],
+                    this.multiLevelLabelRectXRegion[i].width, this.multiLevelLabelRectXRegion[i].height)) {
+                        targetId = this.xLabelCollection[i].id;
+                    }
+            }
+        }
         if (targetId.indexOf(multiLevelID) > -1) {
             textId = targetId.split(multiLevelID)[1];
             elementId = targetId.split(multiLevelID)[0];

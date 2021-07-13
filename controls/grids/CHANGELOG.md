@@ -2,13 +2,48 @@
 
 ## [Unreleased]
 
+## 19.2.47 (2021-07-13)
+
+### Grid
+
+#### Bug Fixes
+
+- `#F166398` - Empty column misalignment while using percentage width column with grouping is fixed.
+- `#I331505` - Multi Selection issue when enable `rowDragAndDrop` is fixed.
+- `#I333234` - Throws scripts error while `hide/show` the columns with `virtualization` is enabled, issue has been fixed.
+- `#I325339` - Need to modify the `aria-sort` attribute value to lower case.
+- `#I332233` - searching blank value is not working in filter text box is fixed.
+- `#I329930` - Virtual scrolling issue has been fixed while using it with grouping feature.
+- `#I334284, #F166423` - Infinite scroll records removed after refreshing issue has been fixed.
+- `#I310815, I331546, I326532` - Grid instance retaining memory leak issue has been fixed.
+
+#### Breaking Changes
+
+- Modified the `aria-sort` attribute value from `Ascending, Descending` to `ascending, descending`.
+
 ## 19.2.46 (2021-07-06)
 
 ### Grid
 
 #### Bug Fixes
 
-- `#25509` - Column grouping is not working properly while `allowReordering` is set true, has been fixed.
+- `#I332536` - Persist selection is not working properly when using `up/down` arrows is fixed.
+- `#I331703` - Excel export filter icon misalignment while using the excel export header properties, issue has been fixed.
+- `#I331500` - throws script error while clearing initial filter dynamically is fixed.
+- `#I328056, #I331256` - `RowDeselected` event is not triggered after paging while using `clearSelction`, has been fixed.
+- `#I331465` - Focus issue while render dropdown component in the header template, issue has been fixed.
+- `#I332058` - Validation rules not working in grouped columns is fixed.
+- `#I332503` - throws script error when Adding new record in a empty Grid with `infiniteScrolling` feature is fixed.
+- `#I332932` - Edit focus is not working properly when checkbox column editing is disabled is fixed.
+- `#I328508` - When selecting last row in view-port, Grid scrolls up automatically issue has been fixed.
+
+## 19.2.44 (2021-06-30)
+
+### Grid
+
+#### Bug Fixes
+
+- `#FB25509` - Column grouping is not working properly while `allowReordering` is set true, has been fixed.
 
 #### New Features
 
@@ -27,7 +62,7 @@
 - `#I329350` - Immutable mode doesn’t work for date values issue has been fixed.
 - `#I329350` - Update the reordered data in immutable mode re-renders multiple rows issue has been fixed.
 - `#I327293` - CPU takes more usage when export the hierarchy grid issue has been fixed.
-- `#25510` -  Throws script error While grouping the complex columns is fixed.
+- `#FB25510` -  Throws script error While grouping the complex columns is fixed.
 
 ## 19.1.67 (2021-06-08)
 

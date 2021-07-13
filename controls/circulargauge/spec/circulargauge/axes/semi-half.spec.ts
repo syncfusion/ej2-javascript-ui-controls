@@ -133,7 +133,7 @@ describe('Circular-Gauge Control', () => {
         it('Checking start angle greater than 90 and end angle less than 360', (done: Function) => {
             gauge.loaded = (args: ILoadedEventArgs): void => {
                 ele = document.getElementById("container_Axis_Ranges_0");
-                expect(ele.childElementCount === 0).toBe(true);
+                expect(ele.childElementCount === 1).toBe(true);
                 done();
             };
             gauge.axes = [{

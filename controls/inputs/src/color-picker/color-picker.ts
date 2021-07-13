@@ -528,7 +528,7 @@ export class ColorPicker extends Component<HTMLInputElement> implements INotifyP
         for (let i: number = 0, len: number = colors.length; i < len; i++) {
             if (i === 0 || i % this.columns === 0) {
                 row = this.createElement('div', {
-                    className: 'e-row', attrs: { 'role': 'row' }
+                    className: 'e-row', attrs: { 'role': 'presentation' }
                 });
                 palette.appendChild(row);
             }
@@ -650,9 +650,12 @@ export class ColorPicker extends Component<HTMLInputElement> implements INotifyP
 
     private updateOpacitySliderBg(): void {
         const direction: string = this.enableRtl ? 'to left' : 'to right';
-        (select('.e-slider-track', this.opacitySlider.element) as HTMLElement).style.background =
-            'linear-gradient(' + direction + ', rgba(' + this.rgb.slice(0, 3) + ', 0) 0%, ' +
-            this.convertToRgbString(this.rgb.slice(0, 3)) + ' 100%)';
+        const opacityEle: HTMLElement = select('.e-opacity-empty-track', this.opacitySlider.element) as HTMLElement;
+        if (opacityEle) {
+            opacityEle.style.background =
+                'linear-gradient(' + direction + ', rgba(' + this.rgb.slice(0, 3) + ', 0) 0%, ' +
+                this.convertToRgbString(this.rgb.slice(0, 3)) + ' 100%)';
+        }
     }
 
     private hueChange(args: SliderChangeEventArgs): void {

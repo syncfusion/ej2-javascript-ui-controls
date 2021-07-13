@@ -7,6 +7,8 @@ import { IGrid } from '../base/interface';
 import { ServiceLocator } from '../services/service-locator';
 import { Query, DataManager } from '@syncfusion/ej2-data';
 import { Dialog, Popup } from '@syncfusion/ej2-popups';
+import * as events from '../base/constant';
+import * as literals from '../base/string-literals';
 
 /**
  * `filter operators` render boolean column.
@@ -23,13 +25,17 @@ export class FlMenuOptrUI {
     private customOptr: { [key: string]: Object }[];
     private optrData: Object;
     private dialogObj: Dialog;
+    private ddOpen: Function = this.dropDownOpen.bind(this);
 
     constructor(parent?: IGrid, customFltrOperators?: Object, serviceLocator?: ServiceLocator, filterSettings?: FilterSettings) {
         this.parent = parent;
         this.serviceLocator = serviceLocator;
         this.filterSettings = filterSettings;
         this.customFilterOperators = customFltrOperators;
-
+        if (this.parent) {
+            this.parent.on(events.filterMenuClose, this.destroyDropDownList, this);
+            this.parent.on(events.destroy, this.destroyDropDownList, this);
+        }
     }
 
     /**
@@ -57,11 +63,11 @@ export class FlMenuOptrUI {
         this.dropOptr = new DropDownList({
             dataSource: dropDatasource,
             fields: { text: 'text', value: 'value' },
-            open: this.dropDownOpen.bind(this),
             cssClass: 'e-popup-flmenu',
             enableRtl: this.parent.enableRtl,
             text: selectedValue
         });
+        this.dropOptr.addEventListener(literals.open, this.ddOpen);
         this.dropOptr.appendTo('#' + column.uid + '-floptr');
     }
 
@@ -110,5 +116,13 @@ export class FlMenuOptrUI {
      */
     public getFlOperator(): string {
         return (this.dropOptr.value as string);
+    }
+
+    private destroyDropDownList(): void {
+        if (this.dropOptr.isDestroyed) { return; }
+        this.dropOptr.removeEventListener(literals.open, this.ddOpen);
+        this.dropOptr.destroy();
+        this.parent.off(events.filterMenuClose, this.destroyDropDownList);
+        this.parent.off(events.destroy, this.destroyDropDownList);
     }
 }
