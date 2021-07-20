@@ -41,6 +41,7 @@ describe('Dynamic data binding - ', () => {
     });
 
     it('Checking dataChangeEventArgs', (done: Function) => {
+        dataChangeArgs = undefined;
         const spreadsheet: any = helper.getInstance();
         helper.edit('A12', 'Shirts');
         expect(dataChangeArgs).toBeUndefined();

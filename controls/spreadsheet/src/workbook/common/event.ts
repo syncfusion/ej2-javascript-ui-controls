@@ -224,3 +224,5 @@ export const deleteHyperlink: string = 'deleteHyperlink';
 export const moveOrDuplicateSheet: string = 'moveOrDuplicateSheet';
 /** @hidden */
 export const cFUndo: string = 'cFUndo';
+/** @hidden */
+export const refreshClipboard: string = 'refreshClipboard';

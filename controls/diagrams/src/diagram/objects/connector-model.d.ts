@@ -50,7 +50,6 @@ export interface DecoratorModel {
      * Defines the appearance of the decorator
      *
      * @default new ShapeStyle()
-     * @blazorType DecoratorShapeStyle
      */
     style?: ShapeStyleModel;
 
@@ -181,7 +180,6 @@ export interface BpmnFlowModel extends ConnectorShapeModel{
      * ```
      *
      * @default 'Default'
-     * @blazorDefaultValue 'Default'
      */
     message?: BpmnMessageFlows;
 
@@ -192,7 +190,6 @@ export interface BpmnFlowModel extends ConnectorShapeModel{
      * * BiDirectional - Sets the type of Association flow as BiDirectional
      * * @default 'Default'
      *
-     * @blazorDefaultValue Default
      */
     association?: BpmnAssociationFlows;
 
@@ -403,7 +400,6 @@ export interface DiagramConnectorSegmentModel {
      * ```
      *
      * @default 0
-     * @isBlazorNullableType true
      */
     length?: number;
 
@@ -415,7 +411,6 @@ export interface DiagramConnectorSegmentModel {
      * * Bottom - Sets the direction type as Bottom
      *
      * @default null
-     * @isBlazorNullableType true
      */
     direction?: Direction;
 
@@ -646,7 +641,6 @@ export interface ConnectorModel extends NodeBaseModel{
      *
      * @default 'Bpmn'
      * @aspType object
-     * @blazorType DiagramConnectorShape
      */
     shape?: ConnectorShapeModel | BpmnFlowModel | RelationShipModel | DiagramConnectorShapeModel;
 
@@ -670,7 +664,6 @@ export interface ConnectorModel extends NodeBaseModel{
      *
      * @default 'Default'
      * @aspNumberEnum
-     * @blazorNumberEnum
      */
     constraints?: ConnectorConstraints;
 
@@ -698,7 +691,6 @@ export interface ConnectorModel extends NodeBaseModel{
      * diagram.appendTo('#diagram');
      * ```
      *
-     * @blazorType ObservableCollection<DiagramConnectorAnnotation>
      */
     annotations?: PathAnnotationModel[];
 
@@ -720,9 +712,7 @@ export interface ConnectorModel extends NodeBaseModel{
      * Specifies the collection of the fixed user handle
      *
      * @aspDefaultValueIgnore
-     * @blazorDefaultValueIgnore
      * @default undefined
-     * @blazorType ObservableCollection<DiagramFixedUserHandle>
      */
     fixedUserHandles?: ConnectorFixedUserHandleModel[];
 
@@ -731,7 +721,6 @@ export interface ConnectorModel extends NodeBaseModel{
      *
      * @default []
      * @aspType object
-     * @blazorType ObservableCollection<DiagramConnectorSegment>
      */
     segments?: (OrthogonalSegmentModel | StraightSegmentModel | BezierSegmentModel | DiagramConnectorSegmentModel)[];
 
@@ -771,8 +760,6 @@ export interface ConnectorModel extends NodeBaseModel{
      *
      * @default 'Straight'
      * @aspType Syncfusion.EJ2.Diagrams.Segments
-     * @blazorDefaultValueIgnore
-     * @blazorDefaultValue  Syncfusion.Blazor.Diagrams.Segments.Straight
      */
     type?: Segments;
 
@@ -787,8 +774,6 @@ export interface ConnectorModel extends NodeBaseModel{
      * Defines the source decorator of the connector
      *
      * @default new Decorator()
-     * @blazorType ConnectorSourceDecorator
-     * @blazorDefaultValue new ConnectorSourceDecorator()
      */
     sourceDecorator?: DecoratorModel;
 
@@ -796,8 +781,6 @@ export interface ConnectorModel extends NodeBaseModel{
      * Defines the target decorator of the connector
      *
      * @default new Decorator()
-     * @blazorType ConnectorTargetDecorator
-     * @blazorDefaultValue new ConnectorTargetDecorator()
      */
     targetDecorator?: DecoratorModel;
 
@@ -826,7 +809,6 @@ export interface ConnectorModel extends NodeBaseModel{
      * Sets the source padding of the connector
      *
      * @default 0
-     * @isBlazorNullableType true
      */
     sourcePadding?: number;
 
@@ -834,7 +816,6 @@ export interface ConnectorModel extends NodeBaseModel{
      * Defines the size of the symbol preview
      *
      * @aspDefaultValueIgnore
-     * @blazorDefaultValueIgnore
      * @default undefined
      */
     previewSize?: SymbolSizeModel;
@@ -843,7 +824,6 @@ export interface ConnectorModel extends NodeBaseModel{
      * Defines the size of a drop symbol
      *
      * @aspDefaultValueIgnore
-     * @blazorDefaultValueIgnore
      * @default undefined
      */
     dragSize?: SymbolSizeModel;
@@ -852,7 +832,6 @@ export interface ConnectorModel extends NodeBaseModel{
      * Sets the target padding of the connector
      *
      * @default 0
-     * @isBlazorNullableType true
      */
     targetPadding?: number;
 
@@ -860,8 +839,6 @@ export interface ConnectorModel extends NodeBaseModel{
      * Defines the appearance of the connection path
      *
      * @default ''
-     * @blazorType ConnectorShapeStyle
-     * @blazorDefaultValue new ConnectorShapeStyle()
      */
     style?: StrokeStyleModel;
 

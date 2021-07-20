@@ -724,11 +724,29 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
                 : !isNullOrUndefined(this.dataSource) ? true : false;
             if (!dataSource) {
                 this.renderItemsBySelect();
-            } else if (this.isDynamicDataChange) {
+            } else {
                 this.setListData(this.dataSource, this.fields, this.query);
             }
         } else {
             this.setListData(this.dataSource, this.fields, this.query);
+        }
+    }
+    
+    protected renderSelectElement(selectElement: HTMLElement, listData: { [key: string]: Object }[]): void {
+        let isDataSource: boolean = this.dataSource instanceof Array ? (this.dataSource.length > 0 ? true : false)
+                : !isNullOrUndefined(this.dataSource) ? true : false;
+        if (this.isDynamicDataChange && (this.dataSource === null || (this.dataSource instanceof Array && this.dataSource.length === 0))) 
+        {
+            selectElement.innerHTML = '';
+        }
+        if (isDataSource) {
+            selectElement.innerHTML = '';
+            for (let i: number = 0; i < listData.length; i++) {
+                var option = this.createElement('option');
+                option.value = listData[i][this.fields.value];
+                option.text = listData[i][this.fields.text];
+                selectElement.appendChild(option);
+            }
         }
     }
 

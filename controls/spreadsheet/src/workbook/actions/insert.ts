@@ -1,6 +1,6 @@
 import { RangeModel, Workbook } from '../base/index';
 import { insert, insertModel, ExtendedRange, InsertDeleteModelArgs, workbookFormulaOperation } from '../../workbook/common/index';
-import { ModelType, insertMerge, MergeArgs, InsertDeleteEventArgs } from '../../workbook/common/index';
+import { ModelType, insertMerge, MergeArgs, InsertDeleteEventArgs, refreshClipboard } from '../../workbook/common/index';
 import { SheetModel, RowModel, CellModel } from '../../workbook/base/index';
 
 
@@ -141,6 +141,9 @@ export class WorkbookInsert {
         };
         if (args.modelType !== 'Sheet') {
             this.parent.notify(workbookFormulaOperation, insertArgs); this.parent.notify(workbookFormulaOperation, eventArgs);
+            this.parent.notify(
+                refreshClipboard,
+                { start: index, end: index + model.length - 1, modelType: args.modelType, model: args.model, isInsert: true });
             if (args.model !== this.parent.getActiveSheet()) { return; }
         }
         this.parent.notify(insert, {

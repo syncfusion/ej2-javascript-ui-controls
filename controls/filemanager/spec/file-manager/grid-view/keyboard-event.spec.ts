@@ -1080,6 +1080,8 @@ describe('FileManager control Grid view', () => {
                 expect(args.isInteracted).toEqual(true);
             }
             let li: any = document.getElementById('file_grid').querySelectorAll('tr.e-row');
+            let gridContent: HTMLElement = document.getElementById('file_grid').querySelector('.e-gridcontent .e-content');
+            gridContent.scrollTop = 20;
             expect(li[0].getAttribute('aria-selected')).toBe(null);
             expect(li[li.length - 1].getAttribute('aria-selected')).toBe(null);
             keyboardEventArgs.action = 'ctrlA';
@@ -1087,6 +1089,7 @@ describe('FileManager control Grid view', () => {
             expect(li[0].getAttribute('aria-selected')).toBe('true');
             expect(li[li.length - 1].getAttribute('aria-selected')).toBe('true');
             expect(document.querySelector(".e-headercell .e-frame").classList.contains('e-check')).toBe(true);
+            expect(gridContent.scrollTop).toBe(20);
         });
     });
 });

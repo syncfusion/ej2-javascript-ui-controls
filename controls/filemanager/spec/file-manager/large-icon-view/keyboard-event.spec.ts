@@ -6,7 +6,7 @@ import { NavigationPane } from '../../../src/file-manager/layout/navigation-pane
 import { DetailsView } from '../../../src/file-manager/layout/details-view';
 import { Toolbar } from '../../../src/file-manager/actions/toolbar';
 import { createElement } from '@syncfusion/ej2-base';
-import { data1, data4, data5, data12, accessData1, accessData5, accessDetails1, accessDetails2, accessData2, UploadData, data24, data25  } from '../data';
+import { data1, data4, data5, data12, data26, accessData1, accessData5, accessDetails1, accessDetails2, accessData2, UploadData, data24, data25  } from '../data';
 import { FileSelectEventArgs } from '../../../src';
 
 FileManager.Inject(Toolbar, NavigationPane, DetailsView);
@@ -163,6 +163,86 @@ describe('FileManager control LargeIcons view', () => {
             }, 500);
         });
 
+    });
+    describe('Scroll position testing for CTRL + A key', () => {
+        let mouseEventArgs: any, tapEvent: any;
+        let keyboardEventArgs: any;
+        let feObj: any;
+        let ele: HTMLElement;
+        let originalTimeout: any;
+        beforeEach((done: Function): void => {
+            jasmine.Ajax.install();
+            feObj = undefined;
+            ele = createElement('div', { id: 'file' });
+            document.body.appendChild(ele);
+            feObj = new FileManager({
+                view: 'LargeIcons',
+                ajaxSettings: {
+                    url: '/FileOperations',
+                    uploadUrl: '/Upload', downloadUrl: '/Download', getImageUrl: '/GetImage'
+                },
+                showThumbnail: false,
+            });
+            feObj.appendTo('#file');
+            this.request = jasmine.Ajax.requests.mostRecent();
+            this.request.respondWith({
+                status: 200,
+                responseText: JSON.stringify(data26)
+            });
+            originalTimeout = jasmine.DEFAULT_TIMEOUT_INTERVAL;
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = 50000;
+            keyboardEventArgs = {
+                preventDefault: (): void => { },
+                action: null,
+                target: null,
+                stopImmediatePropagation: (): void => { },
+            };
+            mouseEventArgs = {
+                preventDefault: (): void => { },
+                stopImmediatePropagation: (): void => { },
+                target: null,
+                type: null,
+                shiftKey: false,
+                ctrlKey: false,
+                originalEvent: { target: null }
+            };
+            tapEvent = {
+                originalEvent: mouseEventArgs,
+                tapCount: 1
+            };
+            setTimeout(function () {
+                done();
+            }, 500);
+        });
+        afterEach((): void => {
+            jasmine.Ajax.uninstall();
+            if (feObj) feObj.destroy();
+            ele.remove();
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = originalTimeout;
+        });
+        it('ctrl + A key testing', () => {
+            feObj.fileSelect = (args:FileSelectEventArgs) =>{
+                expect(args.isInteracted).toEqual(true);
+            }
+            let li: any = document.getElementById('file_largeicons').querySelectorAll('li');
+            let LargeIConContent: HTMLElement = document.getElementById('file_largeicons').querySelector('.e-list-parent.e-ul');
+            LargeIConContent.scrollTop = 20;
+            expect(li[0].classList.contains('e-active')).toBe(false);
+            expect(li[0].classList.contains('e-focus')).toBe(false);
+            expect(li[0].querySelector('.e-frame').classList.contains('e-check')).toBe(false);
+            keyboardEventArgs.action = 'ctrlA';
+            keyboardEventArgs.target = li[0];
+            feObj.largeiconsviewModule.keyActionHandler(keyboardEventArgs);
+            let nli: any = document.getElementById('file_largeicons').querySelectorAll('li');
+            expect(nli[0].classList.contains('e-active')).toBe(true);
+            expect(nli[0].classList.contains('e-focus')).toBe(false);
+            expect(nli[0].querySelector('.e-frame').classList.contains('e-check')).toBe(true);
+            expect(document.getElementById('file_largeicons').querySelectorAll('li.e-active').length).toBe(28);
+            expect(nli[27].classList.contains('e-active')).toBe(true);
+            expect(nli[27].classList.contains('e-focus')).toBe(true);
+            expect(nli[27].querySelector('.e-frame').classList.contains('e-check')).toBe(true);
+            expect(LargeIConContent.scrollTop).toBe(20);
+        });
     });
     describe('for LargeIcons View', () => {
         let keyboardEventArgs: any;

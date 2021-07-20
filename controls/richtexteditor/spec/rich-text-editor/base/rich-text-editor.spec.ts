@@ -387,6 +387,113 @@ describe('RTE base module', () => {
         });
     });
 
+    describe("Inline mode fontFamily and fontSize testing -", () => {
+        let rteObj: RichTextEditor;
+        beforeAll(() => {
+            rteObj = renderRTE({
+                value: '<p>Sample</p>',
+                inlineMode: {
+                    enable: true, onSelection: true
+                },
+                toolbarSettings: {
+                    items: ['FontName', 'FontSize']
+                },
+                fontFamily: {
+                    default: 'Verdana',
+                    width: '65px',
+                    items: [
+                        { text: 'Segoe UI', value: 'Segoe UI' },
+                        { text: 'Arial', value: 'Arial,Helvetica,sans-serif' },
+                        { text: 'Courier New', value: 'Courier New,Courier,monospace' },
+                        { text: 'Georgia', value: 'Georgia,serif' },
+                        { text: 'Impact', value: 'Impact,Charcoal,sans-serif' },
+                        { text: 'Lucida Console', value: 'Lucida Console,Monaco,monospace' },
+                        { text: 'Tahoma', value: 'Tahoma,Geneva,sans-serif' },
+                        { text: 'Times New Roman', value: 'Times New Roman,Times,serif' },
+                        { text: 'Trebuchet MS', value: 'Trebuchet MS,Helvetica,sans-serif' },
+                        { text: 'Verdana', value: 'Verdana,Geneva,sans-serif' }
+                    ]
+                },
+                fontSize: {
+                    default: "8pt",
+                    width: "35px",
+                    items: [
+                        { text: "8", value: "8pt" },
+                        { text: "10", value: "10pt" },
+                        { text: "12", value: "12pt" },
+                        { text: "14", value: "14pt" },
+                        { text: "18", value: "18pt" },
+                        { text: "24", value: "24pt" },
+                        { text: "36", value: "36pt" }
+                    ]
+                }
+            });
+        });
+
+        afterAll(() => {
+            destroy(rteObj);
+        });
+        it('Default mode RTE in initial render', () => {
+            expect((rteObj.contentModule.getEditPanel() as HTMLElement).style.fontFamily === 'Verdana').toBe(true);
+            expect((rteObj.contentModule.getEditPanel() as HTMLElement).style.fontSize === '8pt').toBe(true);
+        });
+    });
+
+    describe("Inline mode fontFamily and fontSize testing -", () => {
+        let rteObj: RichTextEditor;
+        beforeAll(() => {
+            rteObj = renderRTE({
+                value: '<p>Sample</p>',
+                inlineMode: {
+                    enable: true, onSelection: true
+                },
+                iframeSettings: {
+                    enable: true
+                },
+                toolbarSettings: {
+                    items: ['FontName', 'FontSize']
+                },
+                fontFamily: {
+                    default: 'Verdana',
+                    width: '65px',
+                    items: [
+                        { text: 'Segoe UI', value: 'Segoe UI' },
+                        { text: 'Arial', value: 'Arial,Helvetica,sans-serif' },
+                        { text: 'Courier New', value: 'Courier New,Courier,monospace' },
+                        { text: 'Georgia', value: 'Georgia,serif' },
+                        { text: 'Impact', value: 'Impact,Charcoal,sans-serif' },
+                        { text: 'Lucida Console', value: 'Lucida Console,Monaco,monospace' },
+                        { text: 'Tahoma', value: 'Tahoma,Geneva,sans-serif' },
+                        { text: 'Times New Roman', value: 'Times New Roman,Times,serif' },
+                        { text: 'Trebuchet MS', value: 'Trebuchet MS,Helvetica,sans-serif' },
+                        { text: 'Verdana', value: 'Verdana,Geneva,sans-serif' }
+                    ]
+                },
+                fontSize: {
+                    default: "8pt",
+                    width: "35px",
+                    items: [
+                        { text: "8", value: "8pt" },
+                        { text: "10", value: "10pt" },
+                        { text: "12", value: "12pt" },
+                        { text: "14", value: "14pt" },
+                        { text: "18", value: "18pt" },
+                        { text: "24", value: "24pt" },
+                        { text: "36", value: "36pt" }
+                    ]
+                }
+            });
+        });
+
+        afterAll(() => {
+            destroy(rteObj);
+        });
+        it('Iframe mode RTE in initial render', () => {
+            expect((rteObj.contentModule.getEditPanel() as HTMLElement).style.fontFamily === 'Verdana').toBe(true);
+            expect((rteObj.contentModule.getEditPanel() as HTMLElement).style.fontSize === '8pt').toBe(true);
+        });
+    });
+
     describe("DIV - RTE content focus and blur event handler testing", () => {
         let rteObj: RichTextEditor;
         let focusIn: boolean = false;

@@ -1,7 +1,7 @@
 import { isNullOrUndefined, NumberFormatOptions, Internationalization, DateFormatOptions } from '@syncfusion/ej2-base';
 import { LineWidget, ElementBox, BodyWidget, ParagraphWidget, TextElementBox, BlockWidget } from '../viewer/page';
 import { WCharacterFormat, WCellFormat, TextPosition, TextSearchResults } from '../index';
-import { HighlightColor, TextFormFieldType, CheckBoxSizeType, RevisionType, CollaborativeEditingAction } from '../../base/types';
+import { HighlightColor, TextFormFieldType, CheckBoxSizeType, RevisionType, CollaborativeEditingAction, CompatibilityMode } from '../../base/types';
 import { Widget, FieldElementBox } from '../viewer/page';
 import { Dictionary } from '../..';
 import { WBorder } from '../format';
@@ -417,6 +417,24 @@ export class HelperMethods {
         const time: string = modifiedDate.toLocaleTimeString([], { hour: 'numeric', minute: 'numeric' });
         const dateTime: string = dateString + ' ' + time;
         return dateTime;
+    }
+    public static getCompatibilityModeValue(compatibiltyMode: CompatibilityMode): string {
+        let compatValue: string;
+        switch (compatibiltyMode) {
+            case 'Word2003':
+                compatValue = '11';
+                break;
+            case 'Word2007':
+                compatValue = '12';
+                break;
+            case 'Word2010':
+                compatValue = '14';
+                break;
+            default:
+                compatValue = '15';
+                break;
+        }
+        return compatValue;
     }
 
 }

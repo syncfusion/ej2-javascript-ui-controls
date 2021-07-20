@@ -910,10 +910,10 @@ export class LinearGauge extends Component<HTMLElement> implements INotifyProper
                             axisIndex: axisInd
                         } as IPointerDragEventArgs);
                     }
-                    this.svgObject.setAttribute('cursor', 'pointer');
-                    if (!(isNullOrUndefined(current)) && current.pointer) {
+                    if (!isNullOrUndefined(current) && current.pointer) {
                         this.pointerDrag = true;
                         this.mouseElement = args.target;
+                        this.svgObject.setAttribute('cursor', current.style);
                         this.mouseElement.setAttribute('cursor', current.style);
                     }
                 }
@@ -940,7 +940,9 @@ export class LinearGauge extends Component<HTMLElement> implements INotifyProper
             let dragBlazorArgs: IPointerDragEventArgs;
             if (args.target && !args.cancel) {
                 if ((args.target.id.indexOf('MarkerPointer') > -1) || (args.target.id.indexOf('BarPointer') > -1)) {
-                    if (this.axes[this.axes.length - 1].pointers[this.axes[this.axes.length - 1].pointers.length - 1].enableDrag) {
+                    const pointerIndex: number = parseInt(args.target.id.slice(-1), 10);
+                    const axisIndex: number = parseInt(args.target.id.match(/\d/g)[0], 10);
+                    if (this.axes[axisIndex].pointers[pointerIndex].enableDrag) {
                         current = this.moveOnPointer(args.target as HTMLElement);
                         if (!(isNullOrUndefined(current)) && current.pointer) {
                             this.element.style.cursor = current.style;

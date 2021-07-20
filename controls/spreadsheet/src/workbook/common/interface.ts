@@ -292,6 +292,10 @@ export interface CellInfoEventArgs {
     cell: CellModel;
     /** Defines the cell address. */
     address: string;
+    /** Defines the row index of the cell. */
+    rowIndex: number;
+    /** Defines the column index of the cell. */
+    colIndex: number;
 }
 
 /** @hidden */

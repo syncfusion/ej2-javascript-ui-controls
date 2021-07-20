@@ -434,7 +434,9 @@ export class CommentReviewPane {
         if (this.reviewPane && this.reviewPane.parentElement) {
             this.reviewPane.parentElement.removeChild(this.reviewPane);
         }
-        this.owner.off('reviewPane', this.reviewPaneHelper);
+        if (!this.owner.isDestroyed) { 
+            this.owner.off('reviewPane', this.reviewPaneHelper);
+        }
         this.reviewPane.innerHTML = '';
         this.reviewPane = undefined;
         this.owner = undefined;

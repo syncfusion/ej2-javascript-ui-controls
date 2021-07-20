@@ -139,7 +139,7 @@ export class StatusBar {
             }
         ];
         this.spellCheckButton = new DropDownButton({
-            content: 'Spelling', items: spellCheckItems, enableRtl: this.container.enableRtl, select: this.onSpellCheck.bind(this),
+            content: this.localObj.getConstant('Spelling'), items: spellCheckItems, enableRtl: this.container.enableRtl, select: this.onSpellCheck.bind(this),
             beforeItemRender: (args: MenuEventArgs) => {
                 args.element.innerHTML = '<span></span>' + args.item.text;
                 if (isNullOrUndefined(this.currentLanguage)) {
@@ -178,7 +178,7 @@ export class StatusBar {
         this.zoom.content = Math.round(this.documentEditor.zoomFactor * 100) + '%';
     }
     private setSpellCheckValue(text: string): void {
-        this.spellCheckButton.content = 'Spelling';
+        this.spellCheckButton.content = this.localObj.getConstant('Spelling');
         if (text.match(this.localObj.getConstant('Spell Check'))) {
             this.documentEditor.spellChecker.enableSpellCheck = (this.documentEditor.spellChecker.enableSpellCheck) ? false : true;
             setTimeout(() => {

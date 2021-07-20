@@ -1775,6 +1775,34 @@ describe('Slider Control', () => {
             EventHandler.trigger(<any>(document), 'mouseup', mouseUp);
             expect((document.getElementsByClassName('e-handle')[0] as HTMLElement).getAttribute('aria-valuenow')).toBe('30');
         });
+        it('Tooltip visibility after dragging the range slider', () => {
+            dragEle = createElement('div', { id: 'slider' });
+            targetEle = createElement('div', {
+                id: 'target', styles: 'top: 150px;left: 300px;height: 300px;width: 500px;position: absolute;'
+            });
+            document.body.appendChild(targetEle);
+            targetEle.appendChild(dragEle);
+            slider = new Slider({ showButtons: true, enableAnimation: false, type: 'Range', value: [30, 60], tooltip: { placement: 'After', isVisible: true, showOn: 'Auto' } });
+            slider.appendTo('#slider');
+            expect(document.body.lastElementChild.classList.contains('e-tooltip-wrap')).toBe(false);
+            let mousedown: any = getEventObject('MouseEvents', 'mousedown');
+            mousedown = setMouseCoordinates(mousedown, 312, 144);
+            mousedown.target = mousedown.currentTarget = document.getElementsByClassName("e-handle-second")[0];
+            EventHandler.trigger(document.getElementsByClassName("e-handle-second")[0] as HTMLElement, 'mousedown', mousedown);
+            mousemove = getEventObject('MouseEvents', 'mousemove');
+            mousemove.srcElement = mousemove.target = mousemove.toElement = document.getElementsByClassName("e-handle-second");
+            mouseUp = getEventObject('MouseEvents', 'mouseup');
+            mouseUp.srcElement = mouseUp.target = mouseUp.toElement = document.getElementsByClassName("e-handle-second")[0];
+            mousemove = setMouseCoordinates(mousemove, 519, 148);
+            EventHandler.trigger(<any>(document), 'mousemove', mousemove);
+            EventHandler.trigger(<any>(document), 'mouseup', mouseUp);
+            expect(document.body.lastElementChild.classList.contains('e-tooltip-wrap')).toBe(true);
+            expect((document.getElementsByClassName('e-handle')[0] as HTMLElement).getAttribute('aria-valuenow')).toBe('44');
+            document.body.click();
+            setTimeout(() => {  expect(document.body.lastElementChild.classList.contains('e-tooltip-wrap')).toBe(false); }, 100);
+        });
+
+
         it('Slide the range slider for first handle collide checking using sliderbarmove', () => {
             dragEle = createElement('div', { id: 'slider' });
             targetEle = createElement('div', {

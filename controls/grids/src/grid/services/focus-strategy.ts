@@ -85,8 +85,8 @@ export class FocusStrategy {
     }
 
     public onClick(e: Event | { target: Element }, force?: boolean): void {
-        if (parentsUntil(e.target as HTMLElement, 'e-filterbarcell') &&
-            (e.target as HTMLElement).classList.contains('e-input-group-icon')) {
+        if (parentsUntil(e.target as HTMLElement, 'e-filterbarcell') && (parentsUntil(e.target as HTMLElement, 'e-multiselect') ||
+            (e.target as HTMLElement).classList.contains('e-input-group-icon'))) {
             return;
         }
         let isContent: boolean = !isNullOrUndefined(closest(<HTMLElement>e.target,  '.' + literals.gridContent));

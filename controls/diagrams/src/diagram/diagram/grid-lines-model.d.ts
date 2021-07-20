@@ -102,7 +102,6 @@ export interface SnapSettingsModel {
      *
      * @default 'All'
      * @aspNumberEnum
-     * @blazorNumberEnum
      */
     constraints?: SnapConstraints;
 

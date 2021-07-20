@@ -487,7 +487,6 @@ export class BasicShape extends Shape {
      * Defines the collection of points to draw a polygon
      *
      * @aspDefaultValueIgnore
-     * @blazorDefaultValueIgnore
      * @default undefined
      */
     @Collection<PointModel>([], Point)
@@ -849,7 +848,6 @@ export class BpmnSubEvent extends ChildProperty<BpmnSubEvent> {
      * Defines the position of the sub event
      *
      * @default new Point(0.5,0.5)
-     * @blazorType BpmnSubEventOffset
      */
 
     @Complex<PointModel>({}, Point)
@@ -859,9 +857,7 @@ export class BpmnSubEvent extends ChildProperty<BpmnSubEvent> {
      * Defines the collection of textual annotations of the sub events
      *
      * @aspDefaultValueIgnore
-     * @blazorDefaultValueIgnore
      * @default undefined
-     * @blazorType ObservableCollection<DiagramNodeAnnotation>
      */
     @Collection<ShapeAnnotationModel>([], ShapeAnnotation)
     public annotations: ShapeAnnotationModel[];
@@ -870,9 +866,7 @@ export class BpmnSubEvent extends ChildProperty<BpmnSubEvent> {
      * Defines the collection of connection points of the sub events
      *
      * @aspDefaultValueIgnore
-     * @blazorDefaultValueIgnore
      * @default undefined
-     * @blazorType ObservableCollection<DiagramPort>
      */
     @Collection<PointPortModel>([], PointPort)
     public ports: PointPortModel[];
@@ -881,7 +875,6 @@ export class BpmnSubEvent extends ChildProperty<BpmnSubEvent> {
      * Sets the width of the node
      *
      * @aspDefaultValueIgnore
-     * @blazorDefaultValueIgnore
      * @default undefined
      */
     @Property()
@@ -891,7 +884,6 @@ export class BpmnSubEvent extends ChildProperty<BpmnSubEvent> {
      * Sets the height of the node
      *
      * @aspDefaultValueIgnore
-     * @blazorDefaultValueIgnore
      * @default undefined
      */
     @Property()
@@ -1105,7 +1097,6 @@ export class BpmnSubProcess extends ChildProperty<BpmnSubProcess> {
      * diagram.appendTo('#diagram');
      * ```
      *
-     * @blazorType ObservableCollection<DiagramBpmnSubEvent>
      */
     @Collection<BpmnSubEventModel>([], BpmnSubEvent)
     public events: BpmnSubEventModel[];
@@ -1239,7 +1230,6 @@ export class BpmnAnnotation extends ChildProperty<BpmnAnnotation> {
      * Sets the angle between the bpmn shape and the annotation
      *
      * @aspDefaultValueIgnore
-     * @blazorDefaultValueIgnore
      * @default undefined
      */
     @Property(0)
@@ -1249,7 +1239,6 @@ export class BpmnAnnotation extends ChildProperty<BpmnAnnotation> {
      * Sets the height of the text
      *
      * @aspDefaultValueIgnore
-     * @blazorDefaultValueIgnore
      * @default undefined
      */
     @Property()
@@ -1259,7 +1248,6 @@ export class BpmnAnnotation extends ChildProperty<BpmnAnnotation> {
      * Sets the width of the text
      *
      * @aspDefaultValueIgnore
-     * @blazorDefaultValueIgnore
      * @default undefined
      */
     @Property()
@@ -1269,7 +1257,6 @@ export class BpmnAnnotation extends ChildProperty<BpmnAnnotation> {
      * Sets the distance between the bpmn shape and the annotation
      *
      * @aspDefaultValueIgnore
-     * @blazorDefaultValueIgnore
      * @default undefined
      */
     @Property(0)
@@ -1478,7 +1465,6 @@ export class MethodArguments extends ChildProperty<MethodArguments> {
      *
      * @default new ShapeStyle()
      * @aspType object
-     * @blazorType UMLParameterShapeStyle
      */
     @Complex<ShapeStyleModel | TextStyleModel>({}, TextStyle)
     public style: ShapeStyleModel | TextStyleModel;
@@ -1532,7 +1518,6 @@ export class UmlClassMethod extends UmlClassAttribute {
      *
      * @default ''
      * @IgnoreSingular
-     * @blazorType ObservableCollection<DiagramMethodArguments>
      */
 
     @Collection<MethodArgumentsModel>([], MethodArguments)
@@ -1564,7 +1549,6 @@ export class UmlClass extends ChildProperty<UmlClass> {
      * Defines the text of the bpmn annotation collection
      *
      * @default 'None'
-     * @blazorType ObservableCollection<DiagramUmlClassAttribute>
      */
 
     @Collection<UmlClassAttributeModel>([], UmlClassAttribute)
@@ -1573,7 +1557,6 @@ export class UmlClass extends ChildProperty<UmlClass> {
      * Defines the text of the bpmn annotation collection
      *
      * @default 'None'
-     * @blazorType ObservableCollection<DiagramUmlClassMethod>
      */
 
     @Collection<UmlClassMethodModel>([], UmlClassMethod)
@@ -1654,7 +1637,6 @@ export class UmlEnumerationMember extends ChildProperty<UmlEnumerationMember> {
      *
      * @default new ShapeStyle()
      * @aspType object
-     * @blazorType EnumerationMemberShapeStyle
      */
     @Complex<ShapeStyleModel | TextStyleModel>({}, TextStyle)
     public style: ShapeStyleModel | TextStyleModel;
@@ -1685,7 +1667,6 @@ export class UmlEnumeration extends ChildProperty<UmlEnumeration> {
      * Defines the text of the bpmn annotation collection
      *
      * @default 'None'
-     * @blazorType ObservableCollection<DiagramUmlEnumerationMember>
      */
 
     @Collection<UmlEnumerationMemberModel>([], UmlEnumerationMember)
@@ -1695,7 +1676,6 @@ export class UmlEnumeration extends ChildProperty<UmlEnumeration> {
      *
      * @default new ShapeStyle()
      * @aspType object
-     * @blazorType UMLEnumerationShapeStyle
      */
     @Complex<ShapeStyleModel | TextStyleModel>({}, TextStyle)
     public style: ShapeStyleModel | TextStyleModel;
@@ -1755,7 +1735,6 @@ export class UmlClassifierShape extends Shape {
      * Defines the text of the bpmn annotation collection
      *
      * @default 'None'
-     * @blazorType UMLEnumerationShapeStyle
      */
     @Complex<UmlEnumerationModel>({} as UmlEnumeration, UmlEnumeration)
     public enumerationShape: UmlEnumerationModel;
@@ -1786,7 +1765,6 @@ export class DiagramShape extends ChildProperty<DiagramShape> {
     /**
      * Defines the type of node shape
      *
-     * @isBlazorNullableType true
      */
     @Property('Basic')
     public type: Shapes;
@@ -1794,7 +1772,6 @@ export class DiagramShape extends ChildProperty<DiagramShape> {
     /**
      * Defines the type of the basic shape
      *
-     * @blazorDefaultValue 'Rectangle'
      */
     @Property('Rectangle')
     public basicShape: BasicShapes;
@@ -2006,7 +1983,6 @@ export class DiagramShape extends ChildProperty<DiagramShape> {
      * Defines the collection of points to draw a polygon
      *
      * @aspDefaultValueIgnore
-     * @blazorDefaultValueIgnore
      * @default undefined
      */
     @Collection<PointModel>([], Point)
@@ -2040,7 +2016,6 @@ export class DiagramShape extends ChildProperty<DiagramShape> {
      * Defines the text of the bpmn annotation collection
      *
      * @default 'None'
-     * @blazorType ObservableCollection<DiagramBpmnAnnotation>
      */
 
     @Collection<BpmnAnnotationModel>([], BpmnAnnotation)
@@ -2058,7 +2033,6 @@ export class DiagramShape extends ChildProperty<DiagramShape> {
      * Defines the text of the bpmn annotation
      *
      * @default 'None'
-     * @blazorType DiagramBpmnAnnotation
      */
     @Complex<BpmnAnnotationModel>({}, BpmnAnnotation)
     public annotation: BpmnAnnotationModel;
@@ -2115,9 +2089,7 @@ export class Node extends NodeBase implements IElement {
      * Defines the collection of textual annotations of nodes/connectors
      *
      * @aspDefaultValueIgnore
-     * @blazorDefaultValueIgnore
      * @default undefined
-     * @blazorType ObservableCollection<DiagramNodeAnnotation>
      */
     @Collection<ShapeAnnotationModel>([], ShapeAnnotation)
     public annotations: ShapeAnnotationModel[];
@@ -2135,7 +2107,6 @@ export class Node extends NodeBase implements IElement {
      *
      * @default new NodeLayoutInfo()
      * @aspType object
-     * @blazorType DiagramNodeLayoutInfo
      */
     @Complex<LayoutInfoModel>({}, LayoutInfo)
     public layoutInfo: LayoutInfo;
@@ -2152,9 +2123,7 @@ export class Node extends NodeBase implements IElement {
      * Defines the collection of connection points of nodes/connectors
      *
      * @aspDefaultValueIgnore
-     * @blazorDefaultValueIgnore
      * @default undefined
-     * @blazorType ObservableCollection<DiagramPort>
      */
     @Collection<PointPortModel>([], PointPort)
     public ports: PointPortModel[];
@@ -2171,9 +2140,7 @@ export class Node extends NodeBase implements IElement {
      * Specifies the collection of the fixed user handle
      *
      * @aspDefaultValueIgnore
-     * @blazorDefaultValueIgnore
      * @default undefined
-     * @blazorType ObservableCollection<DiagramNodeFixedUserHandle>
      */
     @Collection<NodeFixedUserHandleModel>([], NodeFixedUserHandle)
     public fixedUserHandles: NodeFixedUserHandleModel[];
@@ -2199,7 +2166,6 @@ export class Node extends NodeBase implements IElement {
      * Sets the reference point, that will act as the offset values(offsetX, offsetY) of a node
      *
      * @default new Point(0.5,0.5)
-     * @blazorType NodePivotPoint
      */
     @Complex<PointModel>({ x: 0.5, y: 0.5 }, Point)
     public pivot: PointModel;
@@ -2208,7 +2174,6 @@ export class Node extends NodeBase implements IElement {
      * Sets the width of the node
      *
      * @aspDefaultValueIgnore
-     * @blazorDefaultValueIgnore
      * @default undefined
      */
     @Property()
@@ -2218,7 +2183,6 @@ export class Node extends NodeBase implements IElement {
      * Sets the height of the node
      *
      * @aspDefaultValueIgnore
-     * @blazorDefaultValueIgnore
      * @default undefined
      */
     @Property()
@@ -2228,7 +2192,6 @@ export class Node extends NodeBase implements IElement {
      * Sets the minimum width of the node
      *
      * @aspDefaultValueIgnore
-     * @blazorDefaultValueIgnore
      * @default undefined
      */
     @Property()
@@ -2238,7 +2201,6 @@ export class Node extends NodeBase implements IElement {
      * Sets the minimum height of the node
      *
      * @aspDefaultValueIgnore
-     * @blazorDefaultValueIgnore
      * @default undefined
      */
     @Property()
@@ -2248,7 +2210,6 @@ export class Node extends NodeBase implements IElement {
      * Sets the maximum width of the node
      *
      * @aspDefaultValueIgnore
-     * @blazorDefaultValueIgnore
      * @default undefined
      */
     @Property()
@@ -2258,7 +2219,6 @@ export class Node extends NodeBase implements IElement {
      * Sets the maximum height of the node
      *
      * @aspDefaultValueIgnore
-     * @blazorDefaultValueIgnore
      * @default undefined
      */
     @Property()
@@ -2277,7 +2237,6 @@ export class Node extends NodeBase implements IElement {
      *
      * @default new ShapeStyle()
      * @aspType object
-     * @blazorType NodeShapeStyle
      */
     @Complex<ShapeStyleModel | TextStyleModel>({ fill: 'white' }, TextStyle)
     public style: ShapeStyleModel | TextStyleModel;
@@ -2303,7 +2262,6 @@ export class Node extends NodeBase implements IElement {
      *
      * @deprecated
      * @default 0
-     * @isBlazorNullableType true
      */
     @Property(0)
     public borderWidth: number;
@@ -2320,7 +2278,6 @@ export class Node extends NodeBase implements IElement {
      *
      * @default Basic Shape
      * @aspType object
-     * @blazorType DiagramShape
      */
     @ComplexFactory(getShapeType)
     public shape: ShapeModel | FlowShapeModel | BasicShapeModel | ImageModel | PathModel | TextModel | BpmnShapeModel | NativeModel | HtmlModel | UmlActivityShapeModel | UmlClassifierShapeModel | SwimLaneModel | DiagramShapeModel;
@@ -2330,7 +2287,6 @@ export class Node extends NodeBase implements IElement {
      * Defines the size of the symbol preview
      *
      * @aspDefaultValueIgnore
-     * @blazorDefaultValueIgnore
      * @default undefined
      */
     @Complex<SymbolSizeModel>({}, SymbolSize)
@@ -2340,7 +2296,6 @@ export class Node extends NodeBase implements IElement {
      * Defines the size of a drop symbol
      *
      * @aspDefaultValueIgnore
-     * @blazorDefaultValueIgnore
      * @default undefined
      */
     @Complex<SymbolSizeModel>({}, SymbolSize)
@@ -2387,7 +2342,6 @@ export class Node extends NodeBase implements IElement {
      *
      * @default 'Default'
      * @aspNumberEnum
-     * @blazorNumberEnum
      */
     @Property(NodeConstraints.Default)
     public constraints: NodeConstraints;
@@ -2404,7 +2358,6 @@ export class Node extends NodeBase implements IElement {
      * Defines the children of group element
      *
      * @aspDefaultValueIgnore
-     * @blazorDefaultValueIgnore
      * @default undefined
      */
     @Property()
@@ -2414,7 +2367,6 @@ export class Node extends NodeBase implements IElement {
      * Defines the type of the container
      *
      * @aspDefaultValueIgnore
-     * @blazorDefaultValueIgnore
      * @default null
      * @deprecated
      */
@@ -2426,7 +2378,6 @@ export class Node extends NodeBase implements IElement {
      * Sets the horizontalAlignment of the node
      *
      * @default 'Stretch'
-     * @blazorDefaultValue 'Left'
      */
     @Property('Left')
     public horizontalAlignment: HorizontalAlignment;
@@ -2434,7 +2385,6 @@ export class Node extends NodeBase implements IElement {
      * Sets the verticalAlignment of the node
      *
      * @default 'Stretch'
-     * @blazorDefaultValue 'Top'
      */
     @Property('Top')
     public verticalAlignment: VerticalAlignment;
@@ -2453,7 +2403,6 @@ export class Node extends NodeBase implements IElement {
      * Used to define the column for the grid container
      *
      * @aspDefaultValueIgnore
-     * @blazorDefaultValueIgnore
      * @default undefined
      */
 
@@ -2464,7 +2413,6 @@ export class Node extends NodeBase implements IElement {
      * Used to define a index of row in the grid
      *
      * @aspDefaultValueIgnore
-     * @blazorDefaultValueIgnore
      * @default undefined
      */
 
@@ -2475,7 +2423,6 @@ export class Node extends NodeBase implements IElement {
      * Used to define a index of column in the grid
      *
      * @aspDefaultValueIgnore
-     * @blazorDefaultValueIgnore
      * @default undefined
      */
 
@@ -2486,7 +2433,6 @@ export class Node extends NodeBase implements IElement {
      * Merge the row use the property in the grid container
      *
      * @aspDefaultValueIgnore
-     * @blazorDefaultValueIgnore
      * @default undefined
      */
     @Property()
@@ -2496,7 +2442,6 @@ export class Node extends NodeBase implements IElement {
      * Merge the column use the property in the grid container
      *
      * @aspDefaultValueIgnore
-     * @blazorDefaultValueIgnore
      * @default undefined
      */
     @Property()
@@ -2506,8 +2451,6 @@ export class Node extends NodeBase implements IElement {
      * Set the branch for the mind map
      *
      * @aspDefaultValueIgnore
-     * @blazorDefaultValue null
-     * @isBlazorNullableType true
      * @default ''
      */
     @Property('')
@@ -3134,7 +3077,6 @@ export class Lane extends ChildProperty<Shape> {
      * Defines the collection of child nodes
      *
      * @default []
-     * @blazorType ObservableCollection<DiagramNode>
      */
     @Collection<NodeModel>([], Node)
     public children: NodeModel[];
@@ -3330,7 +3272,6 @@ export class ChildContainer {
      * Defines the type of the container
      *
      * @aspDefaultValueIgnore
-     * @blazorDefaultValueIgnore
      * @default Canvas
      */
     @Property('Canvas')
@@ -3339,7 +3280,6 @@ export class ChildContainer {
      * Defines the type of the swimLane orientation.
      *
      * @aspDefaultValueIgnore
-     * @blazorDefaultValueIgnore
      * @default undefined
      */
     @Property('Vertical')
@@ -3370,7 +3310,6 @@ export class Selector extends ChildProperty<Selector> implements IElement {
     /**
      * Defines the collection of selected nodes
      *
-     * @blazorType ObservableCollection<DiagramNode>
      */
     @Collection<NodeModel>([], Node)
     public nodes: NodeModel[];
@@ -3378,7 +3317,6 @@ export class Selector extends ChildProperty<Selector> implements IElement {
     /**
      * Defines the collection of selected connectors
      *
-     * @blazorType ObservableCollection<DiagramConnector>
      */
     @Collection<ConnectorModel>([], Connector)
     public connectors: ConnectorModel[];
@@ -3391,7 +3329,6 @@ export class Selector extends ChildProperty<Selector> implements IElement {
      * Sets/Gets the width of the container
      *
      * @aspDefaultValueIgnore
-     * @blazorDefaultValueIgnore
      * @default undefined
      */
     @Property()
@@ -3401,7 +3338,6 @@ export class Selector extends ChildProperty<Selector> implements IElement {
      * Sets/Gets the height of the container
      *
      * @aspDefaultValueIgnore
-     * @blazorDefaultValueIgnore
      * @default undefined
      */
     @Property()
@@ -3411,7 +3347,6 @@ export class Selector extends ChildProperty<Selector> implements IElement {
      * Sets the rotate angle of the container
      *
      * @default 0
-     * @isBlazorNullableType true
      */
     @Property(0)
     public rotateAngle: number;
@@ -3420,7 +3355,6 @@ export class Selector extends ChildProperty<Selector> implements IElement {
      * Sets the positionX of the container
      *
      * @default 0
-     * @isBlazorNullableType true
      */
     @Property(0)
     public offsetX: number;
@@ -3429,7 +3363,6 @@ export class Selector extends ChildProperty<Selector> implements IElement {
      * Sets the positionY of the container
      *
      * @default 0
-     * @isBlazorNullableType true
      */
     @Property(0)
     public offsetY: number;
@@ -3438,7 +3371,6 @@ export class Selector extends ChildProperty<Selector> implements IElement {
      * Sets the pivot of the selector
      *
      * @default { x: 0.5, y: 0.5 }
-     * @blazorType SelectorPivot
      */
     @Complex<PointModel>({ x: 0.5, y: 0.5 }, Point)
     public pivot: PointModel;
@@ -3491,7 +3423,6 @@ export class Selector extends ChildProperty<Selector> implements IElement {
      * diagram.appendTo('#diagram');
      * ```
      *
-     * @blazorType ObservableCollection<DiagramUserHandle>
      * @default []
      */
     @Collection<UserHandleModel>([], UserHandle)
@@ -3516,7 +3447,6 @@ export class Selector extends ChildProperty<Selector> implements IElement {
      *
      * @default 'All'
      * @aspNumberEnum
-     * @blazorNumberEnum
      */
     @Property(SelectorConstraints.All)
     public constraints: SelectorConstraints;
@@ -3538,7 +3468,6 @@ export class Selector extends ChildProperty<Selector> implements IElement {
      *
      * @private
      * @aspNumberEnum
-     * @blazorNumberEnum
      */
     public thumbsConstraints: ThumbsConstraints;
 
@@ -3546,7 +3475,6 @@ export class Selector extends ChildProperty<Selector> implements IElement {
      * setTooltipTemplate helps to customize the content of a tooltip
      *
      * @aspDefaultValueIgnore
-     * @blazorDefaultValueIgnore
      * @default undefined
      * @deprecated
      */

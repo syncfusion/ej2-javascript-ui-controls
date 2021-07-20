@@ -149,7 +149,6 @@ export class UserHandle extends ChildProperty<UserHandle> {
      * Defines the offset of user Handle
      *
      * @default 0
-     * @isBlazorNullableType true
      */
     @Property(0)
     public offset: number;

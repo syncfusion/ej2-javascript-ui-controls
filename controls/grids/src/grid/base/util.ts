@@ -1,7 +1,7 @@
 import { ChildProperty, compile as baseTemplateComplier, setValue, Internationalization, isUndefined, closest } from '@syncfusion/ej2-base';
 import { extend as baseExtend, isNullOrUndefined, getValue, classList, NumberFormatOptions } from '@syncfusion/ej2-base';
 import { setStyleAttribute, addClass, attributes, remove, createElement, DateFormatOptions, removeClass } from '@syncfusion/ej2-base';
-import { isObject, IKeyValue, isBlazor, Browser, select, selectAll } from '@syncfusion/ej2-base';
+import { isObject, IKeyValue, isBlazor, select, selectAll } from '@syncfusion/ej2-base';
 import {
     IPosition, IGrid, IValueFormatter, IRow, ICell, IExpandedRow, PdfExportProperties,
     ExcelExportProperties, DataStateChangeEventArgs
@@ -1848,8 +1848,10 @@ export function getColumnModelByFieldName(gObj: IGrid, field: string): Column {
  * @param {string[]} evts - Defines events
  * @param {object} handlers - Defines event handlers
  * @param {any} instance - Defines class instance
+ * @returns {void}
  * @hidden
  */
+// eslint-disable-next-line
 export function registerEventHandlers(id: string, evts: string[], handlers: object, instance: any): void {
     instance.eventHandlers[id] = {};
     for (let i: number = 0; i < evts.length; i++) {
@@ -1861,8 +1863,10 @@ export function registerEventHandlers(id: string, evts: string[], handlers: obje
  * @param {any} component - Defines component instance
  * @param {string[]} evts - Defines events
  * @param {any} instance - Defines class instance
+ * @returns {void}
  * @hidden
  */
+// eslint-disable-next-line
 export function removeEventHandlers(component: any, evts: string[], instance: any): void {
     for (let i: number = 0; i < evts.length; i++) {
         if (component.isDestroyed) { break; }

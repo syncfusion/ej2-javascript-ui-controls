@@ -30,9 +30,7 @@ export interface LayerModel {
      * Defines the collection of the objects that are added to a particular layer
      *
      * @aspDefaultValueIgnore
-     * @blazorDefaultValueIgnore
      * @default undefined
-     * @isBlazorNullableType true
      */
     objects?: string[];
 
@@ -70,7 +68,6 @@ export interface LayerModel {
      * ```
      *
      * @aspDefaultValueIgnore
-     * @blazorDefaultValueIgnore
      * @default undefined
      */
     addInfo?: Object;

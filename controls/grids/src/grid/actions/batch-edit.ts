@@ -76,7 +76,8 @@ export class BatchEdit {
             { event: events.doubleTap, handler: this.dblClickHandler },
             { event: events.keyPressed, handler: this.keyDownHandler },
             { event: events.editNextValCell, handler: this.editNextValCell },
-            { event: events.closeBatch, handler: this.closeForm }];
+            { event: events.closeBatch, handler: this.closeForm },
+            { event: events.destroy, handler: this.destroy }];
         addRemoveEventListener(this.parent, this.evtHandlers, true, this);
         this.dataBoundFunction = this.dataBound.bind(this);
         this.batchCancelFunction = this.batchCancel.bind(this);

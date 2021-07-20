@@ -80,7 +80,9 @@ export class ColumnMenu implements IAction {
         this.removeEventListener();
         this.unwireFilterEvents();
         this.unwireEvents();
-        remove(this.element);
+        if (this.element.parentNode) {
+            remove(this.element);
+        }
     }
 
     public columnMenuHandlerClick(e: Event): void {
@@ -154,6 +156,7 @@ export class ColumnMenu implements IAction {
         }
         this.parent.on(events.click, this.columnMenuHandlerClick, this);
         this.parent.on(events.keyPressed, this.keyPressHandler, this);
+        this.parent.on(events.destroy, this.destroy, this);
     }
 
     /**
@@ -170,6 +173,7 @@ export class ColumnMenu implements IAction {
         }
         this.parent.off(events.click, this.columnMenuHandlerClick);
         this.parent.off(events.keyPressed, this.keyPressHandler);
+        this.parent.off(events.destroy, this.destroy);
     }
 
     private keyPressHandler(e: KeyboardEventArgs): void {

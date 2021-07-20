@@ -28,6 +28,7 @@ export class Freeze implements IAction {
     public addEventListener(): void {
         if (this.parent.isDestroyed) { return; }
         this.parent.on(events.initialLoad, this.instantiateRenderer, this);
+        this.parent.on(events.destroy, this.destroy, this);
     }
 
     private instantiateRenderer(): void {
@@ -58,6 +59,7 @@ export class Freeze implements IAction {
     public removeEventListener(): void {
         if (this.parent.isDestroyed) { return; }
         this.parent.off(events.initialLoad, this.instantiateRenderer);
+        this.parent.off(events.destroy, this.destroy);
     }
 
     public destroy(): void {

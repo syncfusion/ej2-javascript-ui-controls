@@ -2,6 +2,29 @@
 
 ## [Unreleased]
 
+## 19.2.48 (2021-07-20)
+
+### ListBox
+
+#### Bug Fixes
+
+- `#I333351` - The issue with item template not works while using drag and drop issue has been fixed.
+
+### MultiSelect
+
+#### Bug Fixes
+
+- `#I331063`, `#I335590` - Issue with "popup is not opened while rendering the component with HTML select tag and `dataSource` property" has been resolved.
+
+- `#I335674` - Issue with "filtering list item is reset to the popup while scrolling the popup item using mouse" has been resolved.
+
+### Dropdown Tree
+
+#### Bug Fixes
+
+- `#I333505` - The issue with "When placing the button in the header and footer templates of the Dropdown Tree, the button's click event is not triggered" has been resolved.
+- `#I304231` - Improved the item selection performance with large items in the Dropdown Tree component.
+
 ## 19.2.47 (2021-07-13)
 
 ### MultiSelect

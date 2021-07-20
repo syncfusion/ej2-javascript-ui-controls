@@ -2,6 +2,15 @@
 
 ## [Unreleased]
 
+## 19.2.48 (2021-07-20)
+
+### PDF Viewer
+
+#### Bug Fixes
+
+- `#333530` - Now, the PDF document is rendered correctly, when the viewport width property is null.
+- `#335487` - Now, the Radio button and checkbox fields are movable before resizing them.
+
 ## 19.2.47 (2021-07-13)
 
 ### PDF Viewer

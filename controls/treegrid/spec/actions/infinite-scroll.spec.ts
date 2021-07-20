@@ -336,4 +336,54 @@ describe('TreeGrid Infinite Scroll', () => {
     });
   });
 
+  describe('Add Row using addRecord method', () => {
+    let treegrid: TreeGrid;
+    let actionComplete: (e?: any) => void;
+    let actionBegin: (e?: any) => void;
+    let rows: Element[];
+    let expanded: () => void;
+    let collapsed: () => void;
+    let rowSelected: () => void;
+    beforeAll((done: Function) => {
+        treegrid = createGrid(
+        {
+            dataSource: virtualData,
+            enableInfiniteScrolling: true,
+            childMapping: 'Crew',
+            treeColumnIndex: 1,
+            pageSettings: { pageSize: 50 },
+            editSettings: { allowEditing: true, allowAdding: true, allowDeleting: true, newRowPosition: 'Child' },
+            toolbar: ['Add', 'Edit', 'Delete', 'Update', 'Cancel'],
+            allowFiltering: true,
+            allowSorting: true,
+            height: 400,
+            columns: [
+              { field: 'TaskID', headerText: 'Player Jersey', isPrimaryKey: true, width: 140, textAlign: 'Right' },
+              { field: 'FIELD1', headerText: 'Player Name', width: 140 },
+              { field: 'FIELD2', headerText: 'Year', width: 80, textAlign: 'Right' },
+              { field: 'FIELD3', headerText: 'Stint', width: 80, textAlign: 'Right' },
+              { field: 'FIELD4', headerText: 'TMID', width: 80, textAlign: 'Right' },
+              { field: 'FIELD5', headerText: 'TMID', width: 80, textAlign: 'Right' },
+              { field: 'FIELD6', headerText: 'TMID', width: 80, textAlign: 'Right' },
+              { field: 'FIELD7', headerText: 'TMID', width: 80, textAlign: 'Right' },
+              { field: 'FIELD8', headerText: 'TMID', width: 80, textAlign: 'Right' }
+            ]
+        },
+        done
+      );
+    });
+    it('Level test of the Added Child record', (done: Function) => {
+        actionComplete = (args?: any): void => {
+            expect(treegrid.grid.dataSource[4].level).toBe(2);
+            done();
+        }
+        treegrid.actionComplete = actionComplete;
+        treegrid.addRecord({TaskID:Math.random(),FIELD1: 'test'}, 3, 'Child');
+    });
+    afterAll(() => {
+        treegrid['infiniteScrollModule']['destroy']();
+        destroy(treegrid);
+    });
+  });
+
 });

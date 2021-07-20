@@ -306,7 +306,8 @@ export class Page implements IAction {
             { event: events.pageComplete, handler: this.handlers.complete },
             { event: events.uiUpdate, handler: this.handlers.updateLayout },
             { event: events.inBoundModelChanged, handler: this.handlers.inboundChange },
-            { event: events.keyPressed, handler: this.handlers.keyPress }];
+            { event: events.keyPressed, handler: this.handlers.keyPress },
+            {event: events.destroy, handler: this.destroy}];
         addRemoveEventListener(this.parent, this.evtHandlers, true, this);
     }
 

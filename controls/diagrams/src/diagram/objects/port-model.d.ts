@@ -101,7 +101,6 @@ export interface PortModel {
      *
      * @default 'Connect'
      * @aspNumberEnum
-     * @blazorNumberEnum
      */
     visibility?: PortVisibility;
 
@@ -117,7 +116,6 @@ export interface PortModel {
      *
      * @default 'Default'
      * @aspNumberEnum
-     * @blazorNumberEnum
      */
     constraints?: PortConstraints;
 
@@ -125,7 +123,6 @@ export interface PortModel {
      * Allows the user to save custom information/data about a port
      *
      * @aspDefaultValueIgnore
-     * @blazorDefaultValueIgnore
      * @default undefined
      */
     addInfo?: Object;

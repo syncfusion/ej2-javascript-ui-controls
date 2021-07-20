@@ -2228,7 +2228,8 @@ export class Selection implements IAction {
         } else {
             this.mUPTarget = null;
         }
-        if (this.isDragged && !this.isAutoFillSel && this.selectionSettings.mode === 'Cell' ) {
+        if (this.isDragged && !this.isAutoFillSel && this.selectionSettings.mode === 'Cell' &&
+            (e.target as Element).classList.contains(literals.rowCell)) {
             const target: Element = e.target as Element;
             const rowIndex: number = parseInt(target.parentElement.getAttribute(literals.ariaRowIndex), 10);
             const cellIndex: number =  parseInt(target.getAttribute(literals.ariaColIndex), 10);
@@ -2429,7 +2430,8 @@ export class Selection implements IAction {
             { event: events.columnPositionChanged, handler: this.columnPositionChanged },
             { event: events.contentReady, handler: this.initialEnd },
             { event: events.rowsRemoved, handler: this.rowsRemoved },
-            { event: events.headerRefreshed, handler: this.refreshHeader }];
+            { event: events.headerRefreshed, handler: this.refreshHeader },
+            {event: events.destroy, handler: this.destroy}];
         addRemoveEventListener(this.parent, this.evtHandlers, true, this);
         this.actionBeginFunction = this.actionBegin.bind(this);
         this.actionCompleteFunction = this.actionComplete.bind(this);
@@ -2538,7 +2540,9 @@ export class Selection implements IAction {
         this.isPersisted = true;
         this.checkBoxSelectionChanged();
         this.isPersisted = false;
-        this.initPerisistSelection();
+        if (!this.parent.isCheckBoxSelection) {
+            this.initPerisistSelection();
+        }
         const checkboxColumn: Column[] = this.parent.getColumns().filter((col: Column) => col.type === 'checkbox');
         if (checkboxColumn.length) {
             gObj.isCheckBoxSelection = !(this.selectionSettings.checkboxMode === 'ResetOnRowClick');

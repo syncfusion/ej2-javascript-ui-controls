@@ -1190,7 +1190,14 @@ export class LargeIconsView {
         if (this.parent.allowMultiSelection && !isNOU(firstItem)) {
             this.startItem = firstItem;
             const eveArgs: KeyboardEventArgs = { ctrlKey: true, shiftKey: true } as KeyboardEventArgs;
+            const liParent: HTMLElement = this.element.querySelector('.' + CLS.LIST_PARENT);
+            const liScrPos: number = liParent.scrollTop;
+            const getCurFocusedItem: Element = this.getFocusedItem();
             this.doSelection(lastItem, eveArgs);
+            liParent.scrollTop = liScrPos;
+            if (!isNOU(getCurFocusedItem)) {
+                this.addFocus(getCurFocusedItem);
+            }
         }
     }
 

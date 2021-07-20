@@ -646,6 +646,7 @@ export class RowDD {
         this.onDataBoundFn = this.onDataBound.bind(this);
         this.parent.addEventListener(events.dataBound, this.onDataBoundFn);
         this.parent.on(events.uiUpdate, this.enableAfterRender, this);
+        this.parent.on(events.destroy, this.destroy, this);
     }
 
     private stopTimer(): void {
@@ -911,6 +912,7 @@ export class RowDD {
         this.parent.off(events.columnDrop, this.columnDrop);
         this.parent.removeEventListener(events.dataBound, this.onDataBoundFn);
         this.parent.off(events.uiUpdate, this.enableAfterRender);
+        this.parent.off(events.destroy, this.destroy);
         //destory ejdrag and drop
     }
 

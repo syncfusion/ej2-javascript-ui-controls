@@ -2,7 +2,8 @@ import { Spreadsheet } from '../base';
 import { getCellPosition, refreshImgCellObj, BeforeImageRefreshData, refreshChartCellObj, insertDesignChart } from '../common/index';
 import { getRowIdxFromClientY, getColIdxFromClientX, overlayEleSize } from '../common/index';
 import { getRangeIndexes, SheetModel, refreshChartSize, focusChartBorder, getRowsHeight, getCellIndexes } from '../../workbook/index';
-import { EventHandler, removeClass, closest } from '@syncfusion/ej2-base';
+import { getColumnsWidth, ChartModel } from '../../workbook/index';
+import { EventHandler, removeClass, closest, isNullOrUndefined } from '@syncfusion/ej2-base';
 
 /**
  * Specifes to create or modify overlay.
@@ -104,6 +105,43 @@ export class Overlay {
         this.originalWidth = parseFloat(getComputedStyle(div, null).getPropertyValue('width').replace('px', ''));
         this.originalHeight = parseFloat(getComputedStyle(div, null).getPropertyValue('height').replace('px', ''));
         return div;
+    }
+
+    /**
+     * To adjust the layout inside freeze pane.
+     * @hidden
+     */
+    public adjustFreezePaneSize(model: ChartModel, element: HTMLElement, range: string): void {
+        const indexes: number[] = getRangeIndexes(range); const sheet: SheetModel = this.parent.getActiveSheet();
+        const frozenRow: number = this.parent.frozenRowCount(sheet); const frozenCol: number = this.parent.frozenColCount(sheet);
+        if (indexes[0] < frozenRow || indexes[1] < frozenCol) {
+            if (!isNullOrUndefined(model.top)) {
+                element.style.top = model.top + (sheet.showHeaders ? 31 : 0) - this.parent.viewport.beforeFreezeHeight + 'px';
+            }
+            if (!isNullOrUndefined(model.left)) {
+                element.style.left = model.left + this.parent.sheetModule.getRowHeaderWidth(sheet, true) -
+                    this.parent.viewport.beforeFreezeWidth + 'px';
+            }
+        } else {
+            if (!isNullOrUndefined(model.top)) {
+                element.style.top = model.top - this.parent.viewport.beforeFreezeHeight - (frozenRow ? getRowsHeight(
+                    sheet, getCellIndexes(sheet.topLeftCell)[0], frozenRow - 1) : 0) + 'px';
+            }
+            if (!isNullOrUndefined(model.left)) {
+                element.style.left = model.left - this.parent.viewport.beforeFreezeWidth - (frozenCol ? getColumnsWidth(
+                    sheet, getCellIndexes(sheet.topLeftCell)[1], frozenCol - 1) : 0) + 'px';
+            }
+        }
+        if (isNullOrUndefined(model.top)) {
+            const startTop: number = getCellIndexes(sheet.topLeftCell)[0];
+            model.top = this.parent.viewport.beforeFreezeHeight + (frozenRow && startTop === indexes[0] ? 0 : getRowsHeight(
+                sheet, frozenRow ? startTop : 0, indexes[0] - 1));
+        }
+        if (isNullOrUndefined(model.left)) {
+            const startLeft: number = getCellIndexes(sheet.topLeftCell)[1];
+            model.left = this.parent.viewport.beforeFreezeWidth + (frozenCol && startLeft === indexes[1] ? 0 : getColumnsWidth(
+                sheet, frozenCol ? startLeft : 0, indexes[1] - 1));
+        }
     }
 
     private addEventListener(div: HTMLElement): void {

@@ -8,7 +8,6 @@ export interface CustomCursorActionModel {
     /**
      * Defines the property of a Data Map Items
      *
-     * @blazorDefaultValueIgnore
      */
     action?: Actions;
 

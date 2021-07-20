@@ -98,7 +98,7 @@ export class SfdtReader {
             this.documentHelper.backgroundColor = this.getColor(jsonObject.background.color);
         }
         if (!isNullOrUndefined(jsonObject.compatibilityMode)) {
-            this.documentHelper.compatibilityMode = this.getCompatibilityMode(jsonObject.compatibilityMode);
+            this.documentHelper.compatibilityMode = jsonObject.compatibilityMode;
         }
         if (!isNullOrUndefined(jsonObject.abstractLists)) {
             this.parseAbstractList(jsonObject, this.documentHelper.abstractLists);
@@ -1664,19 +1664,6 @@ export class SfdtReader {
     private getColor(color: string): string {
         let convertColor: string = color;
         return convertColor || '#ffffff';
-    }
-    private getCompatibilityMode(compatibilityMode : number): CompatibilityMode {
-        switch (compatibilityMode)
-            {
-                case 0:
-                    return 'Word2003';
-                case 1:
-                    return 'Word2007';
-                case 2:
-                    return 'Word2010';
-                default:
-                    return 'Word2013';
-        }
     }
     public parseParagraphFormat(sourceFormat: any, paragraphFormat: WParagraphFormat): void {
         if (!isNullOrUndefined(sourceFormat)) {

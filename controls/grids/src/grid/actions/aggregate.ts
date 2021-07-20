@@ -6,7 +6,7 @@ import { CellType } from '../base/enum';
 import { ServiceLocator } from '../services/service-locator';
 import { ValueFormatter } from '../services/value-formatter';
 import { CellRendererFactory } from '../services/cell-render-factory';
-import { uiUpdate, initialEnd, dataReady, modelChanged, refreshAggregates, refreshFooterRenderer, groupAggregates } from '../base/constant';
+import { uiUpdate, initialEnd, dataReady, modelChanged, refreshAggregates, refreshFooterRenderer, groupAggregates, destroy } from '../base/constant';
 import { FooterRenderer } from '../renderer/footer-renderer';
 import { SummaryCellRenderer } from '../renderer/summary-cell-renderer';
 import { AggregateRowModel } from '../models/models';
@@ -102,6 +102,7 @@ export class Aggregate implements IAction {
         this.parent.on(initialEnd, this.initiateRender, this);
         this.parent.on(uiUpdate, this.onPropertyChanged, this);
         this.parent.on(refreshAggregates, this.refresh, this);
+        this.parent.on(destroy, this.destroy, this);
     }
 
     public removeEventListener(): void {
@@ -111,11 +112,12 @@ export class Aggregate implements IAction {
         this.parent.off(dataReady, this.footerRenderer.refresh);
         this.parent.off(uiUpdate, this.onPropertyChanged);
         this.parent.off(refreshAggregates, this.refresh);
+        this.parent.off(destroy, this.destroy);
+        remove(this.parent.element.querySelector('.' + literals.gridFooter));
     }
 
     public destroy(): void {
         this.removeEventListener();
-        remove(this.parent.element.querySelector('.' + literals.gridFooter));
     }
 
     public refresh(data: Object): void {

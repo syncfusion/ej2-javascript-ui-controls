@@ -1364,7 +1364,14 @@ export class DetailsView {
             break;
         case 'ctrlA':
             if (!isNOU(gridItems[0]) && this.parent.allowMultiSelection) {
+                const cnTable: HTMLElement = <HTMLElement>this.gridObj.getContent().querySelector('.e-content');
+                const crtSrlPos: number = cnTable.scrollTop;
+                const crtFocusIndex: number = this.gridObj.selectedRowIndex;
                 this.gridObj.selectionModule.selectRowsByRange(0, gridItems.length - 1);
+                cnTable.scrollTop = crtSrlPos;
+                if (crtFocusIndex !== -1) {
+                    this.addFocus(crtFocusIndex);
+                }
             }
             break;
         case 'ctrlHome':

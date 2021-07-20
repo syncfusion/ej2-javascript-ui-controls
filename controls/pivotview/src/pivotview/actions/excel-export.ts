@@ -142,7 +142,7 @@ export class ExcelExport {
                                     if (pivotCell.axis === 'value') {
                                         if (isNaN(pivotCell.value) || pivotCell.formattedText === '' ||
                                             pivotCell.formattedText === undefined || isNullOrUndefined(pivotCell.value)) {
-                                            cells[cells.length - 1].value = '';
+                                            cells[cells.length - 1].value = type === 'Excel' ? null : '';
                                         }
                                         let field: string = (this.parent.dataSourceSettings.valueAxis === 'row' &&
                                             this.parent.dataType === 'olap' && pivotCell.rowOrdinal &&

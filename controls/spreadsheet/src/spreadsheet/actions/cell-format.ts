@@ -29,20 +29,21 @@ export class CellFormat {
                 Object.keys(args.style).forEach((key: string): void => { curStyle[key] = args.style[key]; });
                 if (curStyle.border !== undefined) {
                     Object.assign(cell.style, <CellStyleModel>{ borderRight: args.style.border, borderBottom: args.style.border });
-                    this.setLeftBorder(args.style.border, cell, args.rowIdx, args.colIdx, args.row, args.onActionUpdate, args.first);
+                    this.setLeftBorder(args.style.border, cell, args.rowIdx, args.colIdx, args.row, args.onActionUpdate, args.first, sheet);
                     this.setTopBorder(
                         args.style.border, cell, args.rowIdx, args.colIdx, args.pRow, args.pHRow, args.onActionUpdate, args.first,
-                        args.lastCell, args.manualUpdate);
+                        args.lastCell, args.manualUpdate, sheet);
                     delete curStyle.border;
                 }
                 if (curStyle.borderTop !== undefined) {
                     this.setTopBorder(
                         args.style.borderTop, cell, args.rowIdx, args.colIdx, args.pRow, args.pHRow, args.onActionUpdate, args.first,
-                        args.lastCell, args.manualUpdate);
+                        args.lastCell, args.manualUpdate, sheet);
                     delete curStyle.borderTop;
                 }
                 if (curStyle.borderLeft !== undefined) {
-                    this.setLeftBorder(args.style.borderLeft, cell, args.rowIdx, args.colIdx, args.row, args.onActionUpdate, args.first);
+                    this.setLeftBorder(
+                        args.style.borderLeft, cell, args.rowIdx, args.colIdx, args.row, args.onActionUpdate, args.first, sheet);
                     delete curStyle.borderLeft;
                 }
                 if (Object.keys(curStyle).length) {
@@ -174,44 +175,64 @@ export class CellFormat {
             || keys.indexOf('borderBottom') > -1;
     }
     private setLeftBorder(
-        border: string, cell: HTMLElement, rowIdx: number, colIdx: number, row: Element, actionUpdate: boolean, first: string): void {
+        border: string, cell: HTMLElement, rowIdx: number, colIdx: number, row: Element, actionUpdate: boolean, first: string,
+        sheet: SheetModel): void {
         if (first && first.includes('Column')) { return; }
-        for (let j: number = 0; j < (cell as CellModel).rowSpan; j++) {
-            let prevCell: HTMLElement = this.parent.getCell(rowIdx + j, colIdx - 1, <HTMLTableRowElement>row);
-            let i: number = 1;
-            while (prevCell && prevCell.style.display === 'none') {
-                prevCell = this.parent.getCell(rowIdx + j, colIdx - 1 - i, <HTMLTableRowElement>row);
-                i++;
-            }
-            if (prevCell) {
+        let prevCell: HTMLElement = this.parent.getCell(rowIdx, colIdx - 1, <HTMLTableRowElement>row);
+        if (prevCell) {
+            let model: CellModel = getCell(rowIdx, colIdx - 1, sheet, false, true);
+            if (!!model.rowSpan || !!model.colSpan) {
+                const mergeArgs: { range: number[] } = { range: [rowIdx, colIdx - 1, rowIdx, colIdx - 1] };
+                this.parent.notify(activeCellMergedRange, mergeArgs);
+                model = getCell(mergeArgs.range[0], mergeArgs.range[1], sheet, false, true);
+                if (model.style && model.style.borderRight) {
+                    return;
+                } else {
+                    model = getCell(mergeArgs.range[0], mergeArgs.range[3], sheet, null, true);
+                    if (model.style && model.style.borderRight) { return; }
+                    cell.style.borderLeft = border;
+                }
+            } else {
                 if (actionUpdate && border !== '' && colIdx === this.parent.viewport.leftIndex) {
                     this.parent.getMainContent().scrollLeft -= this.getBorderSize(border);
                 }
                 prevCell.style.borderRight = (border === 'none') ? prevCell.style.borderRight : border;
-            } else {
-                cell.style.borderLeft = border;
             }
+        } else {
+            cell.style.borderLeft = border;
         }
     }
     private setTopBorder(
         border: string, cell: HTMLElement, rowIdx: number, colIdx: number, pRow: HTMLElement, pHRow: HTMLElement, actionUpdate: boolean,
-        first: string, lastCell: boolean, manualUpdate: boolean): void {
+        first: string, lastCell: boolean, manualUpdate: boolean, sheet: SheetModel): void {
         if (first && first.includes('Row')) { return; }
-        for (let j: number = 0; j < (cell as CellModel).colSpan; j++) {
-            const prevCell: HTMLElement = this.parent.getCell(rowIdx - 1, colIdx + j, <HTMLTableRowElement>pRow);
-            if (prevCell) {
-                if (isHiddenRow(this.parent.getActiveSheet(), rowIdx - 1)) {
+        const prevCell: HTMLElement = this.parent.getCell(rowIdx - 1, colIdx, <HTMLTableRowElement>pRow);
+        if (prevCell) {
+            let model: CellModel = getCell(rowIdx - 1, colIdx, sheet, false, true);
+            if (!!model.rowSpan || !!model.colSpan) {
+                const mergeArgs: { range: number[] } = { range: [rowIdx - 1, colIdx, rowIdx - 1, colIdx] };
+                this.parent.notify(activeCellMergedRange, mergeArgs);
+                model = getCell(mergeArgs.range[0], mergeArgs.range[1], sheet, false, true);
+                if (model.style && model.style.borderBottom) {
+                    return;
+                } else {
+                    model = getCell(mergeArgs.range[2], mergeArgs.range[1], sheet, null, true);
+                    if (model.style && model.style.borderBottom) { return; }
+                    cell.style.borderTop = border;
+                }
+            } else {
+                if (isHiddenRow(sheet, rowIdx - 1)) {
                     const index: number[] = [Number(prevCell.parentElement.getAttribute('aria-rowindex')) - 1, colIdx];
                     if ((this.parent.getCellStyleValue(['bottomPriority'], index) as CellStyleExtendedModel).bottomPriority) { return; }
                 }
-                if (actionUpdate && border !== '' && this.parent.getActiveSheet().topLeftCell.includes(`${rowIdx + 1}`)) {
+                if (actionUpdate && border !== '' && sheet.topLeftCell.includes(`${rowIdx + 1}`)) {
                     this.parent.getMainContent().parentElement.scrollTop -= this.getBorderSize(border);
                 }
-                this.setThickBorderHeight(border, rowIdx - 1, colIdx + j, prevCell, pRow, pHRow, actionUpdate, lastCell, manualUpdate);
+                this.setThickBorderHeight(border, rowIdx - 1, colIdx, prevCell, pRow, pHRow, actionUpdate, lastCell, manualUpdate);
                 prevCell.style.borderBottom = (border === 'none') ? prevCell.style.borderBottom : border;
-            } else {
-                cell.style.borderTop = border;
             }
+        } else {
+            cell.style.borderTop = border;
         }
     }
     private setThickBorderHeight(

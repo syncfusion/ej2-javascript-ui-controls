@@ -32,9 +32,7 @@ export class Layer extends ChildProperty<Layer> {
      * Defines the collection of the objects that are added to a particular layer
      *
      * @aspDefaultValueIgnore
-     * @blazorDefaultValueIgnore
      * @default undefined
-     * @isBlazorNullableType true
      */
     @Property()
     public objects: string[];
@@ -73,7 +71,6 @@ export class Layer extends ChildProperty<Layer> {
      * ```
      *
      * @aspDefaultValueIgnore
-     * @blazorDefaultValueIgnore
      * @default undefined
      */
     @Property()

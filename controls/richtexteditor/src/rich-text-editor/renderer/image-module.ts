@@ -344,8 +344,8 @@ export class Image {
         parseInt(img.style.width, 10) : img.width;
         const height: number = img.style.height !== '' ? parseInt(img.style.height, 10) : img.height;
         if (width > height) {
+            img.style.minWidth = '20px';
             if (this.parent.insertImageSettings.resizeByPercent) {
-                img.style.minWidth = '20px';
                 if (parseInt('' + img.getBoundingClientRect().width + '') !== 0 && parseInt('' + width + '') !== 0) {
                     const percentageValue = this.pixToPerc((width / height * expectedY), (img.previousElementSibling || img.parentElement));
                     img.style.width = Math.min(Math.round((percentageValue / img.getBoundingClientRect().width) * expectedX * 100) / 100, 100) + '%';
@@ -358,8 +358,7 @@ export class Image {
                 img.style.width = (width / height * expectedY) + 'px';
                 img.style.height = expectedY + 'px';
             } else {
-                img.setAttribute('width', (width / height * expectedY).toString());
-                img.setAttribute('height', expectedY.toString());
+                img.setAttribute('width', ((width / height * expectedY) + width / height).toString());
             }
         } else if (height > width) {
             if (this.parent.insertImageSettings.resizeByPercent) {
@@ -375,7 +374,6 @@ export class Image {
                 img.style.height = (height / width * expectedX) + 'px';
             } else {
                 img.setAttribute('width', expectedX.toString());
-                img.setAttribute('height', (height / width * expectedX).toString());
             }
         } else {
             if (this.parent.insertImageSettings.resizeByPercent) {
@@ -1954,7 +1952,7 @@ export class Image {
             }
         });
         this.uploadObj.appendTo(this.popupObj.element.childNodes[0] as HTMLElement);
-        detach(this.popupObj.element.querySelector('.e-rte-dialog-upload .e-file-select-wrap') as HTMLElement);
+        (this.popupObj.element.querySelector('.e-rte-dialog-upload .e-file-select-wrap') as HTMLElement).style.display = 'none';
         range.selectNodeContents(imageElement);
         this.parent.formatter.editorManager.nodeSelection.setRange(this.contentModule.getDocument(), range);
     }

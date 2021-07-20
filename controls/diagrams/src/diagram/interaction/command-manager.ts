@@ -17,14 +17,14 @@ import { PointModel } from '../primitives/point-model';
 import { MouseEventArgs } from './event-handlers';
 import { PointPortModel } from '../objects/port-model';
 import { ConnectorModel, StraightSegmentModel, OrthogonalSegmentModel, BezierSegmentModel } from '../objects/connector-model';
-import { NodeModel, BpmnTransactionSubProcessModel, BpmnAnnotationModel, SwimLaneModel, LaneModel } from '../objects/node-model';
+import { BpmnTransactionSubProcessModel, BpmnAnnotationModel, SwimLaneModel, LaneModel } from '../objects/node-model';
 import { OrthogonalSegment } from '../objects/connector';
 import { Rect } from '../primitives/rect';
 import { Diagram } from '../../diagram/diagram';
 import { DiagramElement, Corners } from './../core/elements/diagram-element';
 import { identityMatrix, rotateMatrix, transformPointByMatrix, scaleMatrix, Matrix } from './../primitives/matrix';
 import { cloneObject as clone, cloneObject, getBounds, getFunction, getIndex } from './../utility/base-util';
-import { completeRegion, getTooltipOffset, sort, findObjectIndex, intersect3, getAnnotationPosition } from './../utility/diagram-util';
+import { completeRegion, getTooltipOffset, sort, findObjectIndex, intersect3, getAnnotationPosition, findParentInSwimlane } from './../utility/diagram-util';
 import { updatePathElement, cloneBlazorObject, getUserHandlePosition, cloneSelectedObjects } from './../utility/diagram-util';
 import { updateDefaultValues } from './../utility/diagram-util';
 import { randomId, cornersPointsBeforeRotation } from './../utility/base-util';
@@ -71,6 +71,7 @@ import { DeepDiffMapper } from '../utility/diff-map';
 import { BlazorTooltip } from '../blazor-tooltip/blazor-Tooltip';
 import { Tooltip } from '@syncfusion/ej2-popups';
 import { DiagramTooltipModel } from '../objects/tooltip-model';
+import { NodeModel } from '../objects/node-model';
 
 /**
  * Defines the behavior of commands
@@ -2282,11 +2283,14 @@ export class CommandHandler {
             const index: number = this.diagram.nameTable[objectId].zIndex;
             const layerNum: number = this.diagram.layers.indexOf(this.getObjectLayer(objectId));
             const zIndexTable: {} = (this.diagram.layers[layerNum] as Layer).zIndexTable;
+            const tempTable: {} = JSON.parse(JSON.stringify(zIndexTable));
             const undoObject: SelectorModel = cloneObject(this.diagram.selectedItems);
+            let tempIndex: number = 0;
             //Checks whether the selected node is the only node in the node array.
             //Checks whether it is not a group and the nodes behind it are not it’s children.
             if (this.diagram.nodes.length !== 1 && (this.diagram.nameTable[objectId].children === undefined ||
                 this.checkObjectBehind(objectId, zIndexTable, index))) {
+                let obj: NodeModel = this.diagram.nameTable[objectId];
                 for (let i: number = index; i > 0; i--) {
                     if (zIndexTable[i]) {
                         //When there are empty records in the zindex table
@@ -2301,12 +2305,24 @@ export class CommandHandler {
                         }
                     }
                 }
-                zIndexTable[0] = this.diagram.nameTable[objectId].id;
-                this.diagram.nameTable[objectId].zIndex = 0;
+                for (let i: number = index; i > 0; i--) {
+                    if (zIndexTable[i]) {
+                        this.diagram.nameTable[zIndexTable[i]].zIndex = i;
+                    }
+                }
+                if (obj.shape.type !== 'SwimLane') {
+                    zIndexTable[0] = this.diagram.nameTable[objectId].id;
+                    this.diagram.nameTable[objectId].zIndex = 0;
+                } else {
+                    tempIndex = this.swapZIndexObjects(index, zIndexTable, objectId, tempTable);
+                }
                 if (this.diagram.mode === 'SVG') {
-                    let i: number = 1;
+                    let obj: NodeModel = this.diagram.nameTable[objectId];
+                    let i: number = obj.shape.type !== 'SwimLane' ? 1 : tempIndex;
+                    if (i !== tempIndex) {
+                        i = (obj.children && obj.children.length > 0) ? index : 1;
+                    }
                     let target: string = zIndexTable[i];
-
                     // EJ2-49326 - (CR issue fix) An exception raised when send the swimlane back to the normal node.
                     while (!target && i < index) {
                         target = zIndexTable[++i];
@@ -2331,12 +2347,77 @@ export class CommandHandler {
             this.getZIndexObjects();
         }
     }
+
+    private swapZIndexObjects(index: number, zIndexTable: {}, objectId: string, tempTable: {}): number {
+        let tempIndex: number = 0;
+        let childCount: number = 0;
+        let childIndex: number = -1;
+        let j: number = 1;
+        // Get the swimlane's Children count
+        for (let i: number = 0; i <= index; i++) {
+            if (zIndexTable[i] && this.diagram.nameTable[zIndexTable[i]].parentId === objectId) {
+                // Get the swimlane's first children position from z index table
+                if (childIndex === -1) {
+                    childIndex = i;
+                }
+                childCount++;
+            }
+        }
+        // Swap the swimlane children to the top of the z index table
+        for (let i: number = 0; i <= index; i++) {
+            if (zIndexTable[i] && j <= childCount) {
+                while (!zIndexTable[childIndex]) {
+                    childIndex++;
+                }
+                zIndexTable[i] = zIndexTable[childIndex];
+                this.diagram.nameTable[zIndexTable[i]].zIndex = i;
+                childIndex++;
+                j++;
+            }
+        }
+        let k: number = 0;
+        // Get the Z index from ZindexTable in the child's count position. In that position we want to put the swimlane
+        for (let i: number = 0; i < childCount; i++) {
+            while (!zIndexTable[k]) {
+                k++;
+            }
+            tempIndex = this.diagram.nameTable[zIndexTable[k]].zIndex;
+            k++;
+        }
+        tempIndex = tempIndex + 1;
+        // Check if there is a object in the z index table or not
+        while (!zIndexTable[tempIndex]) {
+            ++tempIndex;
+        }
+        k = 0;
+        // Place the swimlane at the next position of the swimlane's last children.
+        zIndexTable[tempIndex] = this.diagram.nameTable[objectId].id;
+        this.diagram.nameTable[objectId].zIndex = tempIndex;
+        tempIndex = tempIndex + 1;
+        // Now swap the intersect nodes at next position of the swimlane.
+        for (let i: number = tempIndex; i <= index; i++) {
+            if (zIndexTable[i]) {
+                while (!tempTable[k]) {
+                    k++;
+                }
+                zIndexTable[i] = tempTable[k];
+                this.diagram.nameTable[zIndexTable[i]].zIndex = i;
+                k++;
+            }
+        }
+        return tempIndex;
+    }
+
     private resetTargetNode(objectId: string, target: string, i: number, zIndexTable: {}): string {
         if (this.diagram.nameTable[objectId].shape.type === 'SwimLane'
             && this.diagram.nameTable[target].parentId != undefined && this.diagram.nameTable[target].parentId != "" && this.diagram.nameTable[this.diagram.nameTable[target].parentId].isLane) {
             i = i + 1;
-            target = zIndexTable[i]
-            return target = this.resetTargetNode(objectId, target, i, zIndexTable)
+            if (zIndexTable[i]) {
+                target = zIndexTable[i]
+                return target = this.resetTargetNode(objectId, target, i, zIndexTable)
+            } else {
+                return target;
+            }
         } else {
             return target;
         }
@@ -2422,14 +2503,26 @@ export class CommandHandler {
             const layerNum: number = this.diagram.layers.indexOf(this.getObjectLayer(objectName));
             const zIndexTable: {} = (this.diagram.layers[layerNum] as Layer).zIndexTable;
             const undoObject: SelectorModel = cloneObject(this.diagram.selectedItems);
-
+            let tempTable: {} = JSON.parse(JSON.stringify(zIndexTable));
+            let tempIndex: number = 0;
             //find the maximum zIndex of the tabel
-            const tabelLength: number = Number(Object.keys(zIndexTable).sort(
+            let tabelLength: number = Number(Object.keys(zIndexTable).sort(
                 (a: string, b: string) => { return Number(a) - Number(b); }).reverse()[0]);
             const index: number = this.diagram.nameTable[objectName].zIndex;
             const oldzIndexTable: string[] = [];
+            let length: number = 0;
             for (let i: number = 0; i <= tabelLength; i++) {
                 oldzIndexTable.push(zIndexTable[i]);
+            }
+            let object: NodeModel = this.diagram.nameTable[objectName];
+            if (object.shape.type === 'SwimLane') {
+                for (let i: number = tabelLength; i >= index; i--) {
+                    if (zIndexTable[i] && !(this.diagram.nameTable[zIndexTable[i]].parentId === objectName)) {
+                        length = i;
+                        tabelLength = length;
+                        break;
+                    }
+                }
             }
             for (let i: number = index; i < tabelLength; i++) {
                 //When there are empty records in the zindex table
@@ -2445,8 +2538,78 @@ export class CommandHandler {
                     }
                 }
             }
-            zIndexTable[tabelLength] = this.diagram.nameTable[objectName].id;
-            this.diagram.nameTable[objectName].zIndex = tabelLength;
+            for (let i: number = index; i < tabelLength; i++) {
+                if (zIndexTable[i]) {
+                    this.diagram.nameTable[zIndexTable[i]].zIndex = i;
+                }
+            }
+            if (object.shape.type !== 'SwimLane') {
+                zIndexTable[tabelLength] = this.diagram.nameTable[objectName].id;
+                this.diagram.nameTable[objectName].zIndex = tabelLength;
+            }
+            else {
+                let childCount: number = 0;
+                let childIndex: number = -1;
+                let tempIndex: number = 0;
+                let laneIndex: number = 0;
+                let cloneTable: {} = JSON.parse(JSON.stringify(zIndexTable));
+                for (let i: number = 0; i <= index; i++) {
+                    if (zIndexTable[i] && this.diagram.nameTable[zIndexTable[i]].parentId === objectName) {
+                        if (childIndex === -1) {
+                            childIndex = i;
+                            tempIndex = i;
+                            break;
+                        }
+                    }
+                }
+                for (let i: number = 0; i <= tabelLength; i++) {
+                    if (tempTable[i] && tempTable[i] !== objectName && this.diagram.nameTable[tempTable[i]].parentId !== objectName) {
+                        let node: Node = this.diagram.nameTable[tempTable[i]];
+                        let swimlaneObject: Node = this.diagram.nameTable[objectName];
+                        if (node.zIndex >= swimlaneObject.zIndex) {
+                            childCount++;
+                        }
+                    }
+                }
+                let k: number = childIndex;
+                for (let i = 0; i <= childCount; i++) {
+                    while (!zIndexTable[k]) {
+                        k++;
+                    }
+                    laneIndex = this.diagram.nameTable[zIndexTable[k]].zIndex;
+                    k++;
+                }
+                for (let i: number = laneIndex; i <= tabelLength; i++) {
+                    while (!cloneTable[childIndex]) {
+                        childIndex++;
+                    }
+                    while (!zIndexTable[i]) {
+                        i++;
+                    }
+                    zIndexTable[i] = cloneTable[childIndex];
+                    this.diagram.nameTable[zIndexTable[i]].zIndex = i;
+                    childIndex++;
+                }
+                zIndexTable[tabelLength] = this.diagram.nameTable[objectName].id;
+                this.diagram.nameTable[objectName].zIndex = tabelLength;
+                k = index + 1;
+                let j: number = tempIndex;
+                for (let i: number = 0; i < childCount; i++) {
+                    while (!tempTable[k]) {
+                        k++;
+                    }
+                    while (this.diagram.nameTable[tempTable[k]].parentId === objectName) {
+                        k++;
+                    }
+                    while (!zIndexTable[j]) {
+                        j++;
+                    }
+                    zIndexTable[j] = tempTable[k];
+                    this.diagram.nameTable[zIndexTable[j]].zIndex = j;
+                    k++;
+                    j++;
+                }
+            }
             if (this.diagram.mode === 'SVG') {
                 const diagramLayer: SVGGElement = this.diagram.diagramLayer as SVGGElement;
                 //const child: string[] = this.getChildElements(this.diagram.nameTable[objectName].wrapper.children);
@@ -2658,6 +2821,15 @@ export class CommandHandler {
                 }
             }
             if (intersectArray.length > 0) {
+                let node: Node = this.diagram.nameTable[zIndexTable[Number(intersectArray[0].zIndex)]];
+                if (node.parentId) {
+                    let parentId: string = '';
+                    let parent: string = findParentInSwimlane(node, this.diagram, parentId);
+                    let obj: NodeModel = this.diagram.nameTable[parent];
+                    if (obj.id !== nodeId) {
+                        intersectArray[0] = obj;
+                    }
+                }
                 const overlapObject: number = intersectArray[0].zIndex;
                 const currentObject: number = index.zIndex;
                 const temp: string = zIndexTable[overlapObject];
@@ -2677,7 +2849,6 @@ export class CommandHandler {
                 } else {
                     this.diagram.refreshCanvasLayers();
                 }
-
                 const redo: SelectorModel = cloneObject(this.diagram.selectedItems);
                 // eslint-disable-next-line
                 (this.diagram.nameTable[temp] instanceof Node) ? redo.nodes.push(cloneObject(this.diagram.nameTable[temp])) :
@@ -2733,8 +2904,23 @@ export class CommandHandler {
                     }
                 }
             }
+            for (let i: number = intersectArray.length - 1; i >= 0; i--) {
+                let child: Node = this.diagram.nameTable[intersectArray[i].id];
+                if (child.parentId === objectId) {
+                    intersectArray.splice(i, 1);
+                }
+            }
 
             if (intersectArray.length > 0) {
+                let child: Node = this.diagram.nameTable[intersectArray[intersectArray.length - 1].id];
+                if (child.parentId) {
+                    let parentId: string = '';
+                    let parent: string = findParentInSwimlane(child, this.diagram, parentId);
+                    let obj: NodeModel = this.diagram.nameTable[parent];
+                    if (objectId !== obj.id) {
+                        intersectArray[intersectArray.length - 1] = obj;
+                    }
+                }
                 const overlapObject: number = intersectArray[intersectArray.length - 1].zIndex;
                 const currentObject: number = node.zIndex;
                 const temp: string = zIndexTable[overlapObject];
@@ -2749,24 +2935,18 @@ export class CommandHandler {
                 zIndexTable[currentObject] = intersectArray[intersectArray.length - 1].id;
                 this.diagram.nameTable[zIndexTable[currentObject]].zIndex = currentObject;
                 if (this.diagram.mode === 'SVG') {
-                    if (!(node.children && node.children.length > 0)) {
-                        let tempChild: string = zIndexTable[intersectArray[intersectArray.length - 1].zIndex];
-                        if (intersectArray[intersectArray.length - 1].children && intersectArray[intersectArray.length - 1].children.length !== 0) {
-                            var tempParent = intersectArray[intersectArray.length - 1];
-                            tempChild = tempParent.children[0];
-                        }
-                        let checkChild = this.diagram.getObject(tempChild);
-                        if ((checkChild as Node).children && (checkChild as Node).children.length !== 0) {
-                            tempChild = (checkChild as Node).children[0];
-                        }
-                        this.moveSvgNode(objectId, tempChild);
-                        this.updateNativeNodeIndex(objectId, tempChild);
-                        if (isBlazor()) {
-                            const elements: (NodeModel | ConnectorModel)[] = [];
-                            elements.push(node);
-                            elements.push(intersectArray[intersectArray.length - 1]);
-                            this.updateBlazorZIndex(elements);
-                        }
+                    this.moveSvgNode(objectId, zIndexTable[intersectArray[intersectArray.length - 1].zIndex]);
+                    let node: NodeModel = this.diagram.nameTable[zIndexTable[intersectArray[intersectArray.length - 1].zIndex]];
+                    if (node.children && node.children.length > 0) {
+                        this.updateNativeNodeIndex(objectId);
+                    } else {
+                        this.updateNativeNodeIndex(objectId, zIndexTable[intersectArray[intersectArray.length - 1].zIndex]);
+                    }
+                    if (isBlazor()) {
+                        const elements: (NodeModel | ConnectorModel)[] = [];
+                        elements.push(node);
+                        elements.push(intersectArray[intersectArray.length - 1]);
+                        this.updateBlazorZIndex(elements);
                     }
                 } else {
                     this.diagram.refreshCanvasLayers();
@@ -5469,6 +5649,7 @@ Remove terinal segment in initial
         if (swimlane.zIndex > lowerIndexobject.zIndex) {
             let layerIndex: number = this.diagram.layers.indexOf(this.diagram.getActiveLayer());
             const layerZIndexTable: {} = (this.diagram.layers[layerIndex] as Layer).zIndexTable;
+            const tempTable: {} = JSON.parse(JSON.stringify(layerZIndexTable));
             let startIndex: number = lowerIndexobject.zIndex;
             let endIndex: number = swimlane.zIndex;
             for (var i = endIndex; i >= startIndex; i--) {
@@ -5483,8 +5664,7 @@ Remove terinal segment in initial
                         this.diagram.nameTable[layerZIndexTable[i]].zIndex = i;
                     }
                 } else {
-                    layerZIndexTable[i] = swimlane.id;
-                    this.diagram.nameTable[swimlane.id].zIndex = i;
+                    let tempIndex: number = this.swapZIndexObjects(endIndex, layerZIndexTable, swimlane.id, tempTable);
                 }
             }
             if (this.diagram.mode === 'SVG') {

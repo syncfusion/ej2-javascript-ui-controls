@@ -66,7 +66,6 @@ export abstract class NodeBase extends ChildProperty<NodeBase> {
      * Allows the user to save custom information/data about a node/connector
      *
      * @aspDefaultValueIgnore
-     * @blazorDefaultValueIgnore
      * @default undefined
      */
     @Property()
@@ -76,7 +75,6 @@ export abstract class NodeBase extends ChildProperty<NodeBase> {
      * Flip the element in Horizontal/Vertical directions
      *
      * @aspDefaultValueIgnore
-     * @blazorDefaultValue None
      * @default None
      */
     @Property('None')
@@ -86,7 +84,6 @@ export abstract class NodeBase extends ChildProperty<NodeBase> {
      * Defines the symbol info of a connector
      *
      * @aspDefaultValueIgnore
-     * @blazorDefaultValueIgnore
      * @default undefined
      * @ignoreapilink
      */

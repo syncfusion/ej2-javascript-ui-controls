@@ -42,6 +42,7 @@ export class LazyLoadGroup implements IAction {
     public addEventListener(): void {
         if (this.parent.isDestroyed) { return; }
         this.parent.on(events.initialLoad, this.instantiateRenderer, this);
+        this.parent.on(events.destroy, this.destroy, this);
     }
 
     /**
@@ -51,6 +52,7 @@ export class LazyLoadGroup implements IAction {
     public removeEventListener(): void {
         if (this.parent.isDestroyed) { return; }
         this.parent.off(events.initialLoad, this.instantiateRenderer);
+        this.parent.off(events.destroy, this.destroy);
     }
 
     private instantiateRenderer(): void {

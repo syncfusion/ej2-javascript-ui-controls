@@ -66,7 +66,7 @@ export class Virtualization {
         if (!(isBlazor() || this.listViewInstance.isServerRendered)) {
             this.listViewInstance.ulElement = this.listViewInstance.curUL = ListBase.createList(
                 // eslint-disable-next-line
-                this.listViewInstance.createElement, firstDs as any, this.listViewInstance.listBaseOption, null, this);
+                this.listViewInstance.createElement, firstDs as any, this.listViewInstance.listBaseOption, null, this.listViewInstance);
             this.listViewInstance.contentContainer = this.listViewInstance.createElement('div', { className: classNames.content });
             this.listViewInstance.element.appendChild(this.listViewInstance.contentContainer);
             this.listViewInstance.contentContainer.appendChild(this.listViewInstance.ulElement);
@@ -80,7 +80,7 @@ export class Virtualization {
         if (!(isBlazor() || this.listViewInstance.isServerRendered)) {
             const listItems: HTMLElement[]  = ListBase.createListItemFromJson(
                 // eslint-disable-next-line
-                this.listViewInstance.createElement, otherDs as any, this.listViewInstance.listBaseOption, null, null, this);
+                this.listViewInstance.createElement, otherDs as any, this.listViewInstance.listBaseOption, null, null, this.listViewInstance);
             append(listItems, this.listViewInstance.ulElement);
             this.listViewInstance.liCollection = <HTMLElement[] & NodeListOf<HTMLLIElement>>
             this.listViewInstance.curUL.querySelectorAll('li');
@@ -911,7 +911,7 @@ export class Virtualization {
             this.listViewInstance.listBaseOption,
             null,
             null,
-            this);
+            this.listViewInstance);
         // check for target element whether to insert before last item or group item
         if ((Object.keys(this.listViewInstance.curViewDS).length - 1) === index) {
             target = this.listViewInstance.curUL.lastElementChild as HTMLElement;
@@ -919,6 +919,12 @@ export class Virtualization {
             // target group header's first child item to append its header
             target = this.listViewInstance.getLiFromObjOrElement(this.listViewInstance.curViewDS[index + 1]) ||
                 this.listViewInstance.getLiFromObjOrElement(this.listViewInstance.curViewDS[index + 2]);
+        }
+        if (this.listViewInstance.fields.groupBy && this.listViewInstance.curViewDS[index + 1] && this.listViewInstance.curViewDS[index + 1].isHeader) {
+            let targetEle : HTMLElement = this.listViewInstance.getLiFromObjOrElement(this.listViewInstance.curViewDS[index - 1]);
+            if (targetEle) {
+                target = targetEle.nextElementSibling as HTMLElement;
+            }
         }
         // insert before the target element
         this.listViewInstance.ulElement.insertBefore(li[0], target);
@@ -934,8 +940,11 @@ export class Virtualization {
     public createUIItem(args: ItemCreatedArgs): void {
         const virtualTemplate: string = this.listViewInstance.template;
         const template: HTMLElement = this.listViewInstance.createElement('div');
-        const commonTemplate: string = '<div class="e-text-content" role="presentation"> ' +
+        let commonTemplate: string = '<div class="e-text-content" role="presentation"> ' +
             '<span class="e-list-text"> ${' + this.listViewInstance.fields.text + '} </span></div>';
+        if (this.listViewInstance.isReact) {
+            commonTemplate = null;
+        }
         if (this.listViewInstance.showCheckBox) {
             // eslint-disable-next-line
             (this.listViewInstance as any).renderCheckbox(args);
@@ -943,21 +952,23 @@ export class Virtualization {
                 (!isNullOrUndefined(this.listViewInstance.virtualCheckBox.outerHTML))) {
                 const div: HTMLElement = document.createElement('div');
                 div.innerHTML = this.listViewInstance.template || commonTemplate;
-                div.children[0].classList.add('e-checkbox');
-                if (this.listViewInstance.checkBoxPosition === 'Left')
-                {
-                    div.children[0].classList.add('e-checkbox-left');
+                if (div.children && div.children[0]) {
+                    div.children[0].classList.add('e-checkbox');
+                    if (this.listViewInstance.checkBoxPosition === 'Left')
+                    {
+                        div.children[0].classList.add('e-checkbox-left');
+                    }
+                    else
+                    {
+                        div.children[0].classList.add('e-checkbox-right');
+                    }
+                    if (this.listViewInstance.checkBoxPosition === 'Left') {
+                        div.children[0].insertBefore(this.listViewInstance.virtualCheckBox, (div.childNodes[0] as HTMLElement).children[0]);
+                    } else {
+                        div.children[0].appendChild(this.listViewInstance.virtualCheckBox);
+                    }
+                    this.listViewInstance.template = div.innerHTML;
                 }
-                else
-                {
-                    div.children[0].classList.add('e-checkbox-right');
-                }
-                if (this.listViewInstance.checkBoxPosition === 'Left') {
-                    div.children[0].insertBefore(this.listViewInstance.virtualCheckBox, (div.childNodes[0] as HTMLElement).children[0]);
-                } else {
-                    div.children[0].appendChild(this.listViewInstance.virtualCheckBox);
-                }
-                this.listViewInstance.template = div.innerHTML;
             }
             template.innerHTML = this.listViewInstance.template;
             this.listViewInstance.template = virtualTemplate;
@@ -977,7 +988,10 @@ export class Virtualization {
         }
         this.templateData = args.curData.isHeader ? (args.curData as { [key: string]: any[]; }).items[0] as DataSource :
             args.curData;
-        args.item.innerHTML = '';
+        if (!this.listViewInstance.isReact || (typeof this.listViewInstance.template == "string" && !args.item.classList.contains("e-list-group-item")) || 
+            (typeof this.listViewInstance.groupTemplate == "string" && args.item.classList.contains("e-list-group-item"))) {
+            args.item.innerHTML = '';
+        }
         (<ElementContext>args.item).context = { data: args.curData, nodes: { flatTemplateNodes: [], groupTemplateNodes: [] } };
         for (let i: number = 0; i < templateElements.length; i++) {
             this.compileTemplate(templateElements[i] as HTMLElement, args.item, false);
@@ -989,7 +1003,9 @@ export class Virtualization {
             groupTemplate.firstElementChild;
         (<ElementContext>args.item).context.type = args.curData.isHeader ? 'flatList' : 'groupList';
         const element: HTMLElement = args.curData.isHeader ? groupTemplate : template;
-        args.item.insertBefore(element.firstElementChild, null);
+        if (element.firstElementChild) {
+            args.item.insertBefore(element.firstElementChild, null);
+        }
     }
 
     private compileTemplate(element: HTMLElement, item: HTMLElement, isHeader: boolean): void {

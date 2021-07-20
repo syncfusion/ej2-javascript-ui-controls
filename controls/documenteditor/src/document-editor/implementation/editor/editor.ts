@@ -12957,6 +12957,7 @@ export class Editor {
                 return;
             }
         }
+        let isCommentDelete: boolean = false;
         let paragraph: ParagraphWidget = selection.start.paragraph;
         let currentLineWidget: LineWidget = selection.start.currentWidget;
         let offset: number = selection.start.offset;
@@ -13055,8 +13056,6 @@ export class Editor {
             }
         }
         if (inline instanceof CommentCharacterElementBox && inline.commentType === 1) {
-            let commentEnd: CommentCharacterElementBox = inline;
-            let commentStart: CommentCharacterElementBox = inline.comment.commentStart;
             let comment: CommentElementBox = inline.comment;
             if (comment.isReply) {
                 comment = comment.ownerComment;
@@ -13069,6 +13068,7 @@ export class Editor {
             offset = inline.line.getOffset(inline, inline.length);
             selection.start.setPositionParagraph(inline.line, offset);
             selection.end.setPositionParagraph(inline.line, offset);
+            isCommentDelete = true;
         }
         if (inline instanceof FieldElementBox && inline.fieldType === 1) {
             let prevInline: ElementBox = selection.getPreviousValidElement(inline);
@@ -13195,6 +13195,11 @@ export class Editor {
             this.setPositionForHistory();
             if (!isRedoing) {
                 this.reLayout(selection);
+                if (isCommentDelete) {
+                    (this.owner.editorHistory.undoStack[this.owner.editorHistory.undoStack.length -2] as HistoryInfo).modifiedActions.push(this.owner.editorHistory.undoStack[this.owner.editorHistory.undoStack.length - 1]);
+                    this.owner.editorHistory.undoStack.splice(this.owner.editorHistory.undoStack.length - 1, 1);
+                    isCommentDelete = false;
+                }
             } else {
                 this.fireContentChange();
             }

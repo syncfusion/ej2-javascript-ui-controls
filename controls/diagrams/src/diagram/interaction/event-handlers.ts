@@ -2181,7 +2181,7 @@ class ObjectFinder {
                 actualTarget[m] = parent;
             }
             if (m > 0 && isNode && node && (node.isLane || node.isPhase || node.isHeader)) {
-                if ((actualTarget[m] as Node).zIndex > (actualTarget[m - 1] as Node).zIndex) {
+                if ((actualTarget[m] as Node).zIndex < (actualTarget[m - 1] as Node).zIndex) {
                     let swap: NodeModel | ConnectorModel = actualTarget[m];
                     actualTarget[m] = actualTarget[m - 1];
                     actualTarget[m - 1] = swap;

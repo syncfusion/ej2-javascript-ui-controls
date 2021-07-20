@@ -1380,7 +1380,9 @@ export class Tab extends Component<HTMLElement> implements INotifyPropertyChange
                         ele.removeChild(ele.firstChild);
                     }
                 }
-                this.clearTemplate(['content']);
+                if ((this as any).isReact) {
+                    this.clearTemplate(['content']);
+                }
                 this.templateEle = [];
                 this.getContent(ele, this.items[0].content, 'render', 0);
                 ele.classList.remove(CLS_ACTIVE);

@@ -60,11 +60,18 @@ export function compile(template: string, helper?: Object, ignorePrefix?: boolea
     let argName: string = 'data';
 
     let evalExpResult: string = evalExp(template, argName, helper, ignorePrefix);
-    let condtion = `if(str.match(/value='([^\/]+)'\\s/g)){
-        var check = str.match(/value='([^\/]+)'/g)[0].split('=')[1];
-        var change = check.replace(/^\'/, '\"');
-        change = change.replace(/.$/,'\"');
-        str = str.replace(check, change);
+    let condtion = `
+    var rg = (/(?:value|href)([\\s='"./]+)([\\w-./?=&\\\\#"]+)(.)((['#\\\\&?=/".\\w\\d]+|[\\w)('-."\\s]+)['"]|)/g);
+    if(str.match(rg)){
+        var check = str.match(rg);
+        var str1 = str;
+        for (var i=0; i < check.length; i++) {
+            var check1 = str.match(rg)[i].split('=')[1];
+            var change = check1.replace(/^\'/, '\"');
+            change = change.replace(/.$/,'\"');
+            str1 = str1.replace(check1, change);
+        }
+        str = str.replace(str, str1);
     }`;
     let fnCode = "var str=\"" + evalExpResult + "\";" + condtion + " return str;";
     // let fnCode: string = `var str="${evalExpResult}"; return str;`;

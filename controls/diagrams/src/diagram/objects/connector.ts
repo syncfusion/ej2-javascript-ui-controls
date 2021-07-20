@@ -158,7 +158,6 @@ export class Decorator extends ChildProperty<Decorator> {
      * Defines the appearance of the decorator
      *
      * @default new ShapeStyle()
-     * @blazorType DecoratorShapeStyle
      */
     @Complex<ShapeStyleModel>({ fill: 'black', strokeColor: 'black', strokeWidth: 1 }, ShapeStyle)
     public style: ShapeStyleModel;
@@ -300,7 +299,6 @@ export class BpmnFlow extends ConnectorShape {
      * ```
      *
      * @default 'Default'
-     * @blazorDefaultValue 'Default'
      */
     @Property('Default')
     public message: BpmnMessageFlows;
@@ -312,7 +310,6 @@ export class BpmnFlow extends ConnectorShape {
      * * BiDirectional - Sets the type of Association flow as BiDirectional
      * * @default 'Default'
      *
-     * @blazorDefaultValue Default
      */
     @Property('Default')
     public association: BpmnAssociationFlows;
@@ -608,7 +605,6 @@ export class DiagramConnectorSegment extends ChildProperty<DiagramConnectorSegme
      * ```
      *
      * @default 0
-     * @isBlazorNullableType true
      */
     @Property(null)
     public length: number;
@@ -621,7 +617,6 @@ export class DiagramConnectorSegment extends ChildProperty<DiagramConnectorSegme
      * * Bottom - Sets the direction type as Bottom
      *
      * @default null
-     * @isBlazorNullableType true
      */
     @Property(null)
     public direction: Direction;
@@ -995,7 +990,6 @@ export class Connector extends NodeBase implements IElement {
      *
      * @default 'Bpmn'
      * @aspType object
-     * @blazorType DiagramConnectorShape
      */
     @ComplexFactory(getConnectorType)
     public shape: ConnectorShapeModel | BpmnFlowModel | RelationShipModel | DiagramConnectorShapeModel;
@@ -1020,7 +1014,6 @@ export class Connector extends NodeBase implements IElement {
      *
      * @default 'Default'
      * @aspNumberEnum
-     * @blazorNumberEnum
      */
     @Property(ConnectorConstraints.Default)
     public constraints: ConnectorConstraints;
@@ -1036,7 +1029,6 @@ export class Connector extends NodeBase implements IElement {
      * Defines the collection of textual annotations of connectors
      *
      * @aspDefaultValueIgnore
-     * @blazorDefaultValueIgnore
      * @default undefined
      */
 
@@ -1057,7 +1049,6 @@ export class Connector extends NodeBase implements IElement {
      * diagram.appendTo('#diagram');
      * ```
      *
-     * @blazorType ObservableCollection<DiagramConnectorAnnotation>
      */
     @Collection<PathAnnotationModel>([], PathAnnotation)
     public annotations: PathAnnotationModel[];
@@ -1082,9 +1073,7 @@ export class Connector extends NodeBase implements IElement {
      * Specifies the collection of the fixed user handle
      *
      * @aspDefaultValueIgnore
-     * @blazorDefaultValueIgnore
      * @default undefined
-     * @blazorType ObservableCollection<DiagramFixedUserHandle>
      */
     @Collection<ConnectorFixedUserHandleModel>([], ConnectorFixedUserHandle)
     public fixedUserHandles: ConnectorFixedUserHandleModel[];
@@ -1094,7 +1083,6 @@ export class Connector extends NodeBase implements IElement {
      *
      * @default []
      * @aspType object
-     * @blazorType ObservableCollection<DiagramConnectorSegment>
      */
     @CollectionFactory(getSegmentType)
     public segments: (OrthogonalSegmentModel | StraightSegmentModel | BezierSegmentModel | DiagramConnectorSegmentModel)[];
@@ -1138,8 +1126,6 @@ export class Connector extends NodeBase implements IElement {
      *
      * @default 'Straight'
      * @aspType Syncfusion.EJ2.Diagrams.Segments
-     * @blazorDefaultValueIgnore
-     * @blazorDefaultValue  Syncfusion.Blazor.Diagrams.Segments.Straight
      */
     @Property('Straight')
     public type: Segments;
@@ -1156,8 +1142,6 @@ export class Connector extends NodeBase implements IElement {
      * Defines the source decorator of the connector
      *
      * @default new Decorator()
-     * @blazorType ConnectorSourceDecorator
-     * @blazorDefaultValue new ConnectorSourceDecorator()
      */
     @Complex<DecoratorModel>({ shape: 'None' }, Decorator)
     public sourceDecorator: DecoratorModel;
@@ -1166,8 +1150,6 @@ export class Connector extends NodeBase implements IElement {
      * Defines the target decorator of the connector
      *
      * @default new Decorator()
-     * @blazorType ConnectorTargetDecorator
-     * @blazorDefaultValue new ConnectorTargetDecorator()
      */
     @Complex<DecoratorModel>({ shape: 'Arrow' }, Decorator)
     public targetDecorator: DecoratorModel;
@@ -1200,7 +1182,6 @@ export class Connector extends NodeBase implements IElement {
      * Sets the source padding of the connector
      *
      * @default 0
-     * @isBlazorNullableType true
      */
     @Property(0)
     public sourcePadding: number;
@@ -1209,7 +1190,6 @@ export class Connector extends NodeBase implements IElement {
      * Defines the size of the symbol preview
      *
      * @aspDefaultValueIgnore
-     * @blazorDefaultValueIgnore
      * @default undefined
      */
     @Complex<SymbolSizeModel>({}, SymbolSize)
@@ -1219,7 +1199,6 @@ export class Connector extends NodeBase implements IElement {
      * Defines the size of a drop symbol
      *
      * @aspDefaultValueIgnore
-     * @blazorDefaultValueIgnore
      * @default undefined
      */
     @Complex<SymbolSizeModel>({}, SymbolSize)
@@ -1229,7 +1208,6 @@ export class Connector extends NodeBase implements IElement {
      * Sets the target padding of the connector
      *
      * @default 0
-     * @isBlazorNullableType true
      */
     @Property(0)
     public targetPadding: number;
@@ -1238,8 +1216,6 @@ export class Connector extends NodeBase implements IElement {
      * Defines the appearance of the connection path
      *
      * @default ''
-     * @blazorType ConnectorShapeStyle
-     * @blazorDefaultValue new ConnectorShapeStyle()
      */
     @Complex<StrokeStyleModel>({ strokeWidth: 1, strokeColor: 'black' }, StrokeStyle)
     public style: StrokeStyleModel;

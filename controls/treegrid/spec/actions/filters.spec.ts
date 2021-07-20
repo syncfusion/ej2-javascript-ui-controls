@@ -598,6 +598,7 @@ describe('Hierarchy Filter Mode Testing - Parent and child', () => {
         actionComplete = (args: CellSaveEventArgs): void => {
           if (args.requestType === 'filterchoicerequest') {
             expect(document.getElementsByClassName('e-excel-menu')[0].querySelectorAll('.e-menu-item ').length == 9).toBe(true);
+            done();
           }
           if (args.requestType === 'filterafteropen') {
             (<HTMLElement>document.getElementsByClassName('e-excel-menu')[0].querySelector('.e-menu-item')).click();
@@ -609,8 +610,13 @@ describe('Hierarchy Filter Mode Testing - Parent and child', () => {
             dd2Obj.value = "contains"
             var act2Obj = (<any>document.getElementById('taskName-xlfl-secndvalue')).ej2_instances[0];
             act2Obj.value = "specification";
+            (<HTMLElement>document.getElementsByClassName('e-footer-content')[0].querySelector('.e-primary')).click();
+          }
+          if (args.requestType === 'filtering') {
+            expect(isNullOrUndefined(gridObj.getRows()[0].getElementsByClassName('e-rowcell')[1].querySelector("div>.e-treegridexpand"))).toBe(true);
+            expect(gridObj.getRows()[0].getElementsByClassName('e-rowcell')[1].querySelector("div>.e-treecell").innerHTML == "Software Specification").toBe(true);
             done();
-          }         
+          }      
         }
         gridObj.grid.actionComplete = actionComplete;
         (<HTMLElement>document.querySelectorAll('.e-filtermenudiv')[1]).click();
@@ -618,17 +624,6 @@ describe('Hierarchy Filter Mode Testing - Parent and child', () => {
         var mouseEve = document.createEvent('MouseEvents');
         mouseEve.initEvent('mouseover', true, true);
         document.getElementsByClassName('e-menu-item')[1].dispatchEvent(mouseEve);        
-    });
-    it('Check the AND of custom filter- Filtering', (done: Function) => {
-      actionComplete = (args: CellSaveEventArgs): void => {
-      if (args.requestType === 'filtering') {
-        expect(isNullOrUndefined(gridObj.getRows()[0].getElementsByClassName('e-rowcell')[1].querySelector("div>.e-treegridexpand"))).toBe(true);
-        expect(gridObj.getRows()[0].getElementsByClassName('e-rowcell')[1].querySelector("div>.e-treecell").innerHTML == "Software Specification").toBe(true);
-        done();
-      }
-    }
-      gridObj.grid.actionComplete = actionComplete;
-      (<HTMLElement>document.getElementsByClassName('e-footer-content')[0].querySelector('.e-primary')).click();
     });
       afterAll(() => {
         destroy(gridObj);
@@ -656,6 +651,7 @@ describe('Hierarchy Filter Mode Testing - Parent and child', () => {
         actionComplete = (args: CellSaveEventArgs): void => {
           if (args.requestType === 'filterchoicerequest') {
             expect(document.getElementsByClassName('e-excel-menu')[0].querySelectorAll('.e-menu-item ').length == 9).toBe(true);
+            done();
           }
           if (args.requestType == 'filterafteropen') {
             (<HTMLElement>document.getElementsByClassName('e-excel-menu')[0].querySelector('.e-menu-item')).click();
@@ -668,8 +664,15 @@ describe('Hierarchy Filter Mode Testing - Parent and child', () => {
             var ddObj = (<any>document.getElementById('taskName-xlfl-secndoptr')).ej2_instances[0];
             ddObj.value = "contains"
             var act2Obj = (<any>document.getElementById('taskName-xlfl-secndvalue')).ej2_instances[0];
-            act2Obj.value = "design"; 
-            done();           
+            act2Obj.value = "design";
+            (<HTMLElement>document.getElementsByClassName('e-footer-content')[0].querySelector('.e-primary')).click();
+          }
+          if (args.requestType === 'filtering') {
+            expect(isNullOrUndefined(gridObj.getRows()[0].getElementsByClassName('e-rowcell')[1].querySelector("div>.e-treegridexpand"))).toBe(false);
+            expect(gridObj.getRows()[0].getElementsByClassName('e-rowcell')[1].querySelector("div>.e-treecell").innerHTML == "Design").toBe(true);
+            expect(gridObj.getRows()[1].getElementsByClassName('e-rowcell')[1].querySelector("div>.e-treecell").innerHTML == "Design Documentation").toBe(true);
+            expect(gridObj.getRows()[2].getElementsByClassName('e-rowcell')[1].querySelector("div>.e-treecell").innerHTML == "Design complete").toBe(true);
+            done();
           }
         }
         gridObj.grid.actionComplete = actionComplete;
@@ -678,19 +681,6 @@ describe('Hierarchy Filter Mode Testing - Parent and child', () => {
         var mouseEve = document.createEvent('MouseEvents');
         mouseEve.initEvent('mouseover', true, true);
         document.getElementsByClassName('e-menu-item')[1].dispatchEvent(mouseEve);      
-      });
-      it('Check the OR of custom filter- Filtering', (done: Function) => {
-        actionComplete = (args: CellSaveEventArgs): void => {
-        if (args.requestType === 'filtering') {
-          expect(isNullOrUndefined(gridObj.getRows()[0].getElementsByClassName('e-rowcell')[1].querySelector("div>.e-treegridexpand"))).toBe(false);
-          expect(gridObj.getRows()[0].getElementsByClassName('e-rowcell')[1].querySelector("div>.e-treecell").innerHTML == "Design").toBe(true);
-          expect(gridObj.getRows()[1].getElementsByClassName('e-rowcell')[1].querySelector("div>.e-treecell").innerHTML == "Design Documentation").toBe(true);
-          expect(gridObj.getRows()[2].getElementsByClassName('e-rowcell')[1].querySelector("div>.e-treecell").innerHTML == "Design complete").toBe(true);
-          done();
-        }
-      }
-        gridObj.grid.actionComplete = actionComplete;
-        (<HTMLElement>document.getElementsByClassName('e-footer-content')[0].querySelector('.e-primary')).click();
       });
       afterAll(() => {
         destroy(gridObj);

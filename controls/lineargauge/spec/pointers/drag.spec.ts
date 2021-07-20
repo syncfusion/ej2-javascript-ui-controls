@@ -295,6 +295,36 @@ describe('Linear gauge control', () => {
             gauge.refresh();
         });
 
+        it('checking drag and drop - multiple pointer Triangle marker and circle marker', (done: Function): void => {
+            gauge.loaded = (args: ILoadedEventArgs): void => {
+                svg = <HTMLElement>document.getElementById('container_AxisIndex_0_MarkerPointer_0').children[0];
+                trigger.dragAndDropEvent(svg, 511.5, 63.75, 511.5, 100, '', gauge);
+                done();
+            };
+            gauge.axes = [{ pointers: [{ value: 0, type: 'Marker', markerType: 'Triangle', enableDrag: false }] }, { pointers: [{ enableDrag: true }] }]
+            gauge.refresh();
+        });
+
+        it('checking drag and drop - multiple pointer Triangle marker and Triangle marker', (done: Function): void => {
+            gauge.loaded = (args: ILoadedEventArgs): void => {
+                svg = <HTMLElement>document.getElementById('container_AxisIndex_0_MarkerPointer_0').children[0];
+                trigger.dragAndDropEvent(svg, 511.5, 63.75, 511.5, 100, '', gauge);
+                done();
+            };
+            gauge.axes = [{ pointers: [{ value: 0, type: 'Marker', markerType: 'Triangle', enableDrag: false }] }, { pointers: [{ markerType: 'Triangle', enableDrag: true }] }]
+            gauge.refresh();
+        });
+
+        it('checking drag and drop - multiple pointer marker and bar', (done: Function): void => {
+            gauge.loaded = (args: ILoadedEventArgs): void => {
+                svg = <HTMLElement>document.getElementById('container_AxisIndex_0_MarkerPointer_0').children[0];
+                trigger.dragAndDropEvent(svg, 511.5, 63.75, 511.5, 100, '', gauge);
+                done();
+            };
+            gauge.axes = [{ pointers: [{ value: 0, type: 'Marker', markerType: 'Triangle', enableDrag: false }] }, { pointers: [{ type: 'Bar', enableDrag: true }] }]
+            gauge.refresh();
+        });
+
         // it('checking drag and drop - touch move - axis inversed', (done: Function): void => {
         //     gauge.loaded = (args: ILoadedEventArgs): void => {
         //         debugger;
@@ -479,6 +509,7 @@ describe('Linear gauge control', () => {
             gauge.mouseElement = document.getElementById('container_AxisIndex_0_BarPointer_0');
             gauge.refresh();
         });
+
         it('checking with mouse move while pointer dragged', (done: Function): void => {
             gauge.loaded = (args: ILoadedEventArgs): void => {
                 gauge.pointerDrag = true;
@@ -488,6 +519,7 @@ describe('Linear gauge control', () => {
             gauge.mouseElement = document.getElementById('container_AxisIndex_0_BarPointer_0');
             gauge.refresh();
         });
+
         it('checking drag and drop  - image drag', (done: Function): void => {
             gauge.loaded = (args: ILoadedEventArgs): void => {
                 debugger;
@@ -503,6 +535,7 @@ describe('Linear gauge control', () => {
             gauge.axes[0].pointers[0].imageUrl ="hello.png";
             gauge.refresh();
         });
+
         it('checking drag and drop  - bar Horizontal drag', (done: Function): void => {
             gauge.loaded = (args: ILoadedEventArgs): void => {
                 let svg: HTMLElement = document.getElementById('container_AxisIndex_0_BarPointer_0');
@@ -514,6 +547,28 @@ describe('Linear gauge control', () => {
             gauge.orientation ="Horizontal";
             gauge.axes[0].pointers[0].value = 50;
             gauge.axes[0].pointers[0].enableDrag = true;
+            gauge.refresh();
+        });
+
+        it('checking drag and drop - multiple pointer bar and marker', (done: Function): void => {
+            gauge.loaded = (args: ILoadedEventArgs): void => {
+                svg = <HTMLElement>document.getElementById('container_AxisIndex_0_BarPointer_0').children[0];
+                trigger.mousedownEvent(svg, 501.5, 245, 501.5, 245);
+                trigger.dragAndDropEvent(svg, 501.5, 245, 450, 245, '', gauge);
+                done();
+            };
+            gauge.axes = [{ pointers: [{ value: 50, type: 'Bar', enableDrag: false }] }, { pointers: [{ enableDrag: true }] }];
+            gauge.refresh();
+        });
+
+        it('checking drag and drop - multiple pointer bar and bar', (done: Function): void => {
+            gauge.loaded = (args: ILoadedEventArgs): void => {
+                svg = <HTMLElement>document.getElementById('container_AxisIndex_0_BarPointer_0').children[0];
+                trigger.mousedownEvent(svg, 501.5, 245, 501.5, 245);
+                trigger.dragAndDropEvent(svg, 501.5, 245, 450, 245, '', gauge);
+                done();
+            };
+            gauge.axes = [{ pointers: [{ value: 50, type: 'Bar', enableDrag: false }] }, { pointers: [{ type: 'Bar', enableDrag: true }] }];
             gauge.refresh();
         });
     });

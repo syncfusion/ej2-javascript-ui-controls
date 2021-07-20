@@ -87,7 +87,6 @@ export interface FixedUserHandleModel {
      * Specifies the space between the fixed user handle and container
      *
      * @default new Margin(0,0,0,0)
-     * @blazorType fixedUserHandlePadding
      */
     padding?: MarginModel;
 
@@ -102,7 +101,6 @@ export interface NodeFixedUserHandleModel extends FixedUserHandleModel{
      * Specifies the position of the node fixed user handle
      *
      * @default { x: 0, y: 0 }
-     * @blazorType NodeFixedUserHandles
      */
     offset?: PointModel;
 
@@ -141,7 +139,6 @@ export interface ConnectorFixedUserHandleModel extends FixedUserHandleModel{
      * Specifies the displacement of an fixed user handle from its actual position
      *
      * @aspDefaultValueIgnore
-     * @blazorDefaultValueIgnore
      * @default undefined
      */
     displacement?: PointModel;

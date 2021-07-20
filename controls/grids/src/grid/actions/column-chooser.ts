@@ -46,6 +46,7 @@ export class ColumnChooser implements IAction {
     private searchOperator: string = 'startswith';
     private targetdlg: Element;
     private prevShowedCols: string[] = [];
+    private hideDialogFunction: Function = this.hideDialog.bind(this);
 
     /**
      * Constructor for the Grid ColumnChooser module
@@ -103,7 +104,7 @@ export class ColumnChooser implements IAction {
         EventHandler.add(document, 'click', this.clickHandler, this);
         this.parent.on(events.uiUpdate, this.enableAfterRenderEle, this);
         this.parent.on(events.initialEnd, this.render, this);
-        this.parent.addEventListener(events.dataBound, this.hideDialog.bind(this));
+        this.parent.addEventListener(events.dataBound, this.hideDialogFunction);
         this.parent.on(events.destroy, this.destroy, this);
         this.parent.on(events.rtlUpdated, this.rtlUpdate, this);
         this.parent.on(events.keyPressed, this.keyUpHandler, this);
@@ -123,7 +124,7 @@ export class ColumnChooser implements IAction {
         this.parent.off(events.rtlUpdated, this.rtlUpdate);
         this.parent.on(events.keyPressed, this.keyUpHandler, this);
         this.parent.off(events.resetColumns, this.onResetColumns);
-
+        this.parent.removeEventListener(events.dataBound, this.hideDialogFunction);
     }
 
     private render(): void {

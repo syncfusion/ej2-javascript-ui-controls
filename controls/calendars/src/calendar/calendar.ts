@@ -2406,8 +2406,8 @@ export class Calendar extends CalendarBase {
         }
         this.validateDate();
         this.minMaxUpdate();
-        this.setEnable(this.enabled);
         if (this.getModuleName() === 'calendar') {
+            this.setEnable(this.enabled);
             this.setClass(this.cssClass);
         }
         super.render();

@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 19.2.48 (2021-07-20)
+
+### Range Slider
+
+#### Bug Fixes
+
+- `#I329800` - The issue with "The Range Slider tooltip is not closed during the document click" has been resolved.
+
 ## 19.2.46 (2021-07-06)
 
 ### ColorPicker

@@ -90,7 +90,7 @@ export class BooleanFilterUI implements IFilterMUI {
     private actionComplete(fields: string): Function {
         return (e: { result: string[] }) => {
             e.result = DataUtil.distinct(e.result, fields, true) as string[];
-        }
+        };
     }
 
     private destroy(): void {

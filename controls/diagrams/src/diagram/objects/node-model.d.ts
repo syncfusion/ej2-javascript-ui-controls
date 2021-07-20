@@ -326,7 +326,6 @@ export interface BasicShapeModel extends ShapeModel{
      * Defines the collection of points to draw a polygon
      *
      * @aspDefaultValueIgnore
-     * @blazorDefaultValueIgnore
      * @default undefined
      */
     points?: PointModel[];
@@ -625,7 +624,6 @@ export interface BpmnSubEventModel {
      * Defines the position of the sub event
      *
      * @default new Point(0.5,0.5)
-     * @blazorType BpmnSubEventOffset
      */
 
     offset?: PointModel;
@@ -634,9 +632,7 @@ export interface BpmnSubEventModel {
      * Defines the collection of textual annotations of the sub events
      *
      * @aspDefaultValueIgnore
-     * @blazorDefaultValueIgnore
      * @default undefined
-     * @blazorType ObservableCollection<DiagramNodeAnnotation>
      */
     annotations?: ShapeAnnotationModel[];
 
@@ -644,9 +640,7 @@ export interface BpmnSubEventModel {
      * Defines the collection of connection points of the sub events
      *
      * @aspDefaultValueIgnore
-     * @blazorDefaultValueIgnore
      * @default undefined
-     * @blazorType ObservableCollection<DiagramPort>
      */
     ports?: PointPortModel[];
 
@@ -654,7 +648,6 @@ export interface BpmnSubEventModel {
      * Sets the width of the node
      *
      * @aspDefaultValueIgnore
-     * @blazorDefaultValueIgnore
      * @default undefined
      */
     width?: number;
@@ -663,7 +656,6 @@ export interface BpmnSubEventModel {
      * Sets the height of the node
      *
      * @aspDefaultValueIgnore
-     * @blazorDefaultValueIgnore
      * @default undefined
      */
     height?: number;
@@ -842,7 +834,6 @@ export interface BpmnSubProcessModel {
      * diagram.appendTo('#diagram');
      * ```
      *
-     * @blazorType ObservableCollection<DiagramBpmnSubEvent>
      */
     events?: BpmnSubEventModel[];
 
@@ -955,7 +946,6 @@ export interface BpmnAnnotationModel {
      * Sets the angle between the bpmn shape and the annotation
      *
      * @aspDefaultValueIgnore
-     * @blazorDefaultValueIgnore
      * @default undefined
      */
     angle?: number;
@@ -964,7 +954,6 @@ export interface BpmnAnnotationModel {
      * Sets the height of the text
      *
      * @aspDefaultValueIgnore
-     * @blazorDefaultValueIgnore
      * @default undefined
      */
     height?: number;
@@ -973,7 +962,6 @@ export interface BpmnAnnotationModel {
      * Sets the width of the text
      *
      * @aspDefaultValueIgnore
-     * @blazorDefaultValueIgnore
      * @default undefined
      */
     width?: number;
@@ -982,7 +970,6 @@ export interface BpmnAnnotationModel {
      * Sets the distance between the bpmn shape and the annotation
      *
      * @aspDefaultValueIgnore
-     * @blazorDefaultValueIgnore
      * @default undefined
      */
     length?: number;
@@ -1144,7 +1131,6 @@ export interface MethodArgumentsModel {
      *
      * @default new ShapeStyle()
      * @aspType object
-     * @blazorType UMLParameterShapeStyle
      */
     style?: ShapeStyleModel | TextStyleModel;
 
@@ -1183,7 +1169,6 @@ export interface UmlClassMethodModel extends UmlClassAttributeModel{
      *
      * @default ''
      * @IgnoreSingular
-     * @blazorType ObservableCollection<DiagramMethodArguments>
      */
 
     parameters?: MethodArgumentsModel[];
@@ -1207,7 +1192,6 @@ export interface UmlClassModel {
      * Defines the text of the bpmn annotation collection
      *
      * @default 'None'
-     * @blazorType ObservableCollection<DiagramUmlClassAttribute>
      */
 
     attributes?: UmlClassAttributeModel[];
@@ -1216,7 +1200,6 @@ export interface UmlClassModel {
      * Defines the text of the bpmn annotation collection
      *
      * @default 'None'
-     * @blazorType ObservableCollection<DiagramUmlClassMethod>
      */
 
     methods?: UmlClassMethodModel[];
@@ -1280,7 +1263,6 @@ export interface UmlEnumerationMemberModel {
      *
      * @default new ShapeStyle()
      * @aspType object
-     * @blazorType EnumerationMemberShapeStyle
      */
     style?: ShapeStyleModel | TextStyleModel;
 
@@ -1303,7 +1285,6 @@ export interface UmlEnumerationModel {
      * Defines the text of the bpmn annotation collection
      *
      * @default 'None'
-     * @blazorType ObservableCollection<DiagramUmlEnumerationMember>
      */
 
     members?: UmlEnumerationMemberModel[];
@@ -1313,7 +1294,6 @@ export interface UmlEnumerationModel {
      *
      * @default new ShapeStyle()
      * @aspType object
-     * @blazorType UMLEnumerationShapeStyle
      */
     style?: ShapeStyleModel | TextStyleModel;
 
@@ -1364,7 +1344,6 @@ export interface UmlClassifierShapeModel extends ShapeModel{
      * Defines the text of the bpmn annotation collection
      *
      * @default 'None'
-     * @blazorType UMLEnumerationShapeStyle
      */
     enumerationShape?: UmlEnumerationModel;
 
@@ -1386,14 +1365,12 @@ export interface DiagramShapeModel {
     /**
      * Defines the type of node shape
      *
-     * @isBlazorNullableType true
      */
     type?: Shapes;
 
     /**
      * Defines the type of the basic shape
      *
-     * @blazorDefaultValue 'Rectangle'
      */
     basicShape?: BasicShapes;
 
@@ -1580,7 +1557,6 @@ export interface DiagramShapeModel {
      * Defines the collection of points to draw a polygon
      *
      * @aspDefaultValueIgnore
-     * @blazorDefaultValueIgnore
      * @default undefined
      */
     points?: PointModel[];
@@ -1610,7 +1586,6 @@ export interface DiagramShapeModel {
      * Defines the text of the bpmn annotation collection
      *
      * @default 'None'
-     * @blazorType ObservableCollection<DiagramBpmnAnnotation>
      */
 
     annotations?: BpmnAnnotationModel[];
@@ -1626,7 +1601,6 @@ export interface DiagramShapeModel {
      * Defines the text of the bpmn annotation
      *
      * @default 'None'
-     * @blazorType DiagramBpmnAnnotation
      */
     annotation?: BpmnAnnotationModel;
 
@@ -1670,9 +1644,7 @@ export interface NodeModel extends NodeBaseModel{
      * Defines the collection of textual annotations of nodes/connectors
      *
      * @aspDefaultValueIgnore
-     * @blazorDefaultValueIgnore
      * @default undefined
-     * @blazorType ObservableCollection<DiagramNodeAnnotation>
      */
     annotations?: ShapeAnnotationModel[];
 
@@ -1688,7 +1660,6 @@ export interface NodeModel extends NodeBaseModel{
      *
      * @default new NodeLayoutInfo()
      * @aspType object
-     * @blazorType DiagramNodeLayoutInfo
      */
     layoutInfo?: LayoutInfo;
 
@@ -1703,9 +1674,7 @@ export interface NodeModel extends NodeBaseModel{
      * Defines the collection of connection points of nodes/connectors
      *
      * @aspDefaultValueIgnore
-     * @blazorDefaultValueIgnore
      * @default undefined
-     * @blazorType ObservableCollection<DiagramPort>
      */
     ports?: PointPortModel[];
 
@@ -1720,9 +1689,7 @@ export interface NodeModel extends NodeBaseModel{
      * Specifies the collection of the fixed user handle
      *
      * @aspDefaultValueIgnore
-     * @blazorDefaultValueIgnore
      * @default undefined
-     * @blazorType ObservableCollection<DiagramNodeFixedUserHandle>
      */
     fixedUserHandles?: NodeFixedUserHandleModel[];
 
@@ -1744,7 +1711,6 @@ export interface NodeModel extends NodeBaseModel{
      * Sets the reference point, that will act as the offset values(offsetX, offsetY) of a node
      *
      * @default new Point(0.5,0.5)
-     * @blazorType NodePivotPoint
      */
     pivot?: PointModel;
 
@@ -1752,7 +1718,6 @@ export interface NodeModel extends NodeBaseModel{
      * Sets the width of the node
      *
      * @aspDefaultValueIgnore
-     * @blazorDefaultValueIgnore
      * @default undefined
      */
     width?: number;
@@ -1761,7 +1726,6 @@ export interface NodeModel extends NodeBaseModel{
      * Sets the height of the node
      *
      * @aspDefaultValueIgnore
-     * @blazorDefaultValueIgnore
      * @default undefined
      */
     height?: number;
@@ -1770,7 +1734,6 @@ export interface NodeModel extends NodeBaseModel{
      * Sets the minimum width of the node
      *
      * @aspDefaultValueIgnore
-     * @blazorDefaultValueIgnore
      * @default undefined
      */
     minWidth?: number;
@@ -1779,7 +1742,6 @@ export interface NodeModel extends NodeBaseModel{
      * Sets the minimum height of the node
      *
      * @aspDefaultValueIgnore
-     * @blazorDefaultValueIgnore
      * @default undefined
      */
     minHeight?: number;
@@ -1788,7 +1750,6 @@ export interface NodeModel extends NodeBaseModel{
      * Sets the maximum width of the node
      *
      * @aspDefaultValueIgnore
-     * @blazorDefaultValueIgnore
      * @default undefined
      */
     maxWidth?: number;
@@ -1797,7 +1758,6 @@ export interface NodeModel extends NodeBaseModel{
      * Sets the maximum height of the node
      *
      * @aspDefaultValueIgnore
-     * @blazorDefaultValueIgnore
      * @default undefined
      */
     maxHeight?: number;
@@ -1814,7 +1774,6 @@ export interface NodeModel extends NodeBaseModel{
      *
      * @default new ShapeStyle()
      * @aspType object
-     * @blazorType NodeShapeStyle
      */
     style?: ShapeStyleModel | TextStyleModel;
 
@@ -1838,7 +1797,6 @@ export interface NodeModel extends NodeBaseModel{
      *
      * @deprecated
      * @default 0
-     * @isBlazorNullableType true
      */
     borderWidth?: number;
 
@@ -1852,7 +1810,6 @@ export interface NodeModel extends NodeBaseModel{
      *
      * @default Basic Shape
      * @aspType object
-     * @blazorType DiagramShape
      */
     shape?: ShapeModel | FlowShapeModel | BasicShapeModel | ImageModel | PathModel | TextModel | BpmnShapeModel | NativeModel | HtmlModel | UmlActivityShapeModel | UmlClassifierShapeModel | SwimLaneModel | DiagramShapeModel;
 
@@ -1860,7 +1817,6 @@ export interface NodeModel extends NodeBaseModel{
      * Defines the size of the symbol preview
      *
      * @aspDefaultValueIgnore
-     * @blazorDefaultValueIgnore
      * @default undefined
      */
     previewSize?: SymbolSizeModel;
@@ -1869,7 +1825,6 @@ export interface NodeModel extends NodeBaseModel{
      * Defines the size of a drop symbol
      *
      * @aspDefaultValueIgnore
-     * @blazorDefaultValueIgnore
      * @default undefined
      */
     dragSize?: SymbolSizeModel;
@@ -1914,7 +1869,6 @@ export interface NodeModel extends NodeBaseModel{
      *
      * @default 'Default'
      * @aspNumberEnum
-     * @blazorNumberEnum
      */
     constraints?: NodeConstraints;
 
@@ -1929,7 +1883,6 @@ export interface NodeModel extends NodeBaseModel{
      * Defines the children of group element
      *
      * @aspDefaultValueIgnore
-     * @blazorDefaultValueIgnore
      * @default undefined
      */
     children?: string[];
@@ -1938,7 +1891,6 @@ export interface NodeModel extends NodeBaseModel{
      * Defines the type of the container
      *
      * @aspDefaultValueIgnore
-     * @blazorDefaultValueIgnore
      * @default null
      * @deprecated
      */
@@ -1949,7 +1901,6 @@ export interface NodeModel extends NodeBaseModel{
      * Sets the horizontalAlignment of the node
      *
      * @default 'Stretch'
-     * @blazorDefaultValue 'Left'
      */
     horizontalAlignment?: HorizontalAlignment;
 
@@ -1957,7 +1908,6 @@ export interface NodeModel extends NodeBaseModel{
      * Sets the verticalAlignment of the node
      *
      * @default 'Stretch'
-     * @blazorDefaultValue 'Top'
      */
     verticalAlignment?: VerticalAlignment;
 
@@ -1975,7 +1925,6 @@ export interface NodeModel extends NodeBaseModel{
      * Used to define the column for the grid container
      *
      * @aspDefaultValueIgnore
-     * @blazorDefaultValueIgnore
      * @default undefined
      */
 
@@ -1985,7 +1934,6 @@ export interface NodeModel extends NodeBaseModel{
      * Used to define a index of row in the grid
      *
      * @aspDefaultValueIgnore
-     * @blazorDefaultValueIgnore
      * @default undefined
      */
 
@@ -1995,7 +1943,6 @@ export interface NodeModel extends NodeBaseModel{
      * Used to define a index of column in the grid
      *
      * @aspDefaultValueIgnore
-     * @blazorDefaultValueIgnore
      * @default undefined
      */
 
@@ -2005,7 +1952,6 @@ export interface NodeModel extends NodeBaseModel{
      * Merge the row use the property in the grid container
      *
      * @aspDefaultValueIgnore
-     * @blazorDefaultValueIgnore
      * @default undefined
      */
     rowSpan?: number;
@@ -2014,7 +1960,6 @@ export interface NodeModel extends NodeBaseModel{
      * Merge the column use the property in the grid container
      *
      * @aspDefaultValueIgnore
-     * @blazorDefaultValueIgnore
      * @default undefined
      */
     columnSpan?: number;
@@ -2023,8 +1968,6 @@ export interface NodeModel extends NodeBaseModel{
      * Set the branch for the mind map
      *
      * @aspDefaultValueIgnore
-     * @blazorDefaultValue null
-     * @isBlazorNullableType true
      * @default ''
      */
     branch?: BranchTypes;
@@ -2096,7 +2039,6 @@ export interface LaneModel {
      * Defines the collection of child nodes
      *
      * @default []
-     * @blazorType ObservableCollection<DiagramNode>
      */
     children?: NodeModel[];
 
@@ -2237,7 +2179,6 @@ export interface ChildContainerModel {
      * Defines the type of the container
      *
      * @aspDefaultValueIgnore
-     * @blazorDefaultValueIgnore
      * @default Canvas
      */
     type?: ContainerTypes;
@@ -2246,7 +2187,6 @@ export interface ChildContainerModel {
      * Defines the type of the swimLane orientation.
      *
      * @aspDefaultValueIgnore
-     * @blazorDefaultValueIgnore
      * @default undefined
      */
     orientation?: Orientation;
@@ -2268,14 +2208,12 @@ export interface SelectorModel {
     /**
      * Defines the collection of selected nodes
      *
-     * @blazorType ObservableCollection<DiagramNode>
      */
     nodes?: NodeModel[];
 
     /**
      * Defines the collection of selected connectors
      *
-     * @blazorType ObservableCollection<DiagramConnector>
      */
     connectors?: ConnectorModel[];
 
@@ -2283,7 +2221,6 @@ export interface SelectorModel {
      * Sets/Gets the width of the container
      *
      * @aspDefaultValueIgnore
-     * @blazorDefaultValueIgnore
      * @default undefined
      */
     width?: number;
@@ -2292,7 +2229,6 @@ export interface SelectorModel {
      * Sets/Gets the height of the container
      *
      * @aspDefaultValueIgnore
-     * @blazorDefaultValueIgnore
      * @default undefined
      */
     height?: number;
@@ -2301,7 +2237,6 @@ export interface SelectorModel {
      * Sets the rotate angle of the container
      *
      * @default 0
-     * @isBlazorNullableType true
      */
     rotateAngle?: number;
 
@@ -2309,7 +2244,6 @@ export interface SelectorModel {
      * Sets the positionX of the container
      *
      * @default 0
-     * @isBlazorNullableType true
      */
     offsetX?: number;
 
@@ -2317,7 +2251,6 @@ export interface SelectorModel {
      * Sets the positionY of the container
      *
      * @default 0
-     * @isBlazorNullableType true
      */
     offsetY?: number;
 
@@ -2325,7 +2258,6 @@ export interface SelectorModel {
      * Sets the pivot of the selector
      *
      * @default { x: 0.5, y: 0.5 }
-     * @blazorType SelectorPivot
      */
     pivot?: PointModel;
 
@@ -2376,7 +2308,6 @@ export interface SelectorModel {
      * diagram.appendTo('#diagram');
      * ```
      *
-     * @blazorType ObservableCollection<DiagramUserHandle>
      * @default []
      */
     userHandles?: UserHandleModel[];
@@ -2400,7 +2331,6 @@ export interface SelectorModel {
      *
      * @default 'All'
      * @aspNumberEnum
-     * @blazorNumberEnum
      */
     constraints?: SelectorConstraints;
 
@@ -2408,7 +2338,6 @@ export interface SelectorModel {
      * setTooltipTemplate helps to customize the content of a tooltip
      *
      * @aspDefaultValueIgnore
-     * @blazorDefaultValueIgnore
      * @default undefined
      * @deprecated
      */

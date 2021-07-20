@@ -3796,7 +3796,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
             const cell: Element = closest(ele, '.' + literals.rowCell);
             if (!cell) {
                 const row: Element = closest(ele, '.' + literals.row);
-                if (!isNullOrUndefined(row)) {
+                if (!isNullOrUndefined(row) && !row.classList.contains('e-addedrow')) {
                     const rowObj: Row<Column> = this.getRowObjectFromUID(row.getAttribute('data-uid'));
                     const rowIndex: number = parseInt(row.getAttribute(literals.ariaRowIndex), 10);
                     args = { row: row, rowData: rowObj.data, rowIndex: rowIndex };

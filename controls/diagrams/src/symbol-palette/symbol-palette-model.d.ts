@@ -18,7 +18,6 @@ export interface PaletteModel {
      * Sets the height of the symbol group
      *
      * @aspDefaultValueIgnore
-     * @blazorDefaultValueIgnore
      * @default undefined
      */
     height?: number;
@@ -62,7 +61,6 @@ export interface SymbolDragSizeModel {
      * Sets the drag width of the symbols
      *
      * @aspDefaultValueIgnore
-     * @blazorDefaultValueIgnore
      * @default undefined
      */
     width?: number;
@@ -71,7 +69,6 @@ export interface SymbolDragSizeModel {
      * Sets the drag height of the symbols
      *
      * @aspDefaultValueIgnore
-     * @blazorDefaultValueIgnore
      * @default undefined
      */
     height?: number;
@@ -87,7 +84,6 @@ export interface SymbolPreviewModel {
      * Sets the preview width of the symbols
      *
      * @aspDefaultValueIgnore
-     * @blazorDefaultValueIgnore
      * @default undefined
      */
     width?: number;
@@ -96,7 +92,6 @@ export interface SymbolPreviewModel {
      * Sets the preview height of the symbols
      *
      * @aspDefaultValueIgnore
-     * @blazorDefaultValueIgnore
      * @default undefined
      */
     height?: number;
@@ -140,7 +135,6 @@ export interface SymbolPaletteModel extends ComponentModel{
      * Defines the collection of symbol groups
      *
      * @default []
-     * @blazorType System.Collections.ObjectModel.ObservableCollection<SymbolPalettePalette>
      */
     palettes?: PaletteModel[];
 
@@ -213,7 +207,6 @@ export interface SymbolPaletteModel extends ComponentModel{
      * Defines the content of a symbol
      *
      * @aspDefaultValueIgnore
-     * @blazorDefaultValueIgnore
      * @default undefined
      * @deprecated
      */
@@ -223,7 +216,6 @@ export interface SymbolPaletteModel extends ComponentModel{
      * Defines the width of the symbol
      *
      * @aspDefaultValueIgnore
-     * @blazorDefaultValueIgnore
      * @default undefined
      */
     symbolWidth?: number;
@@ -232,7 +224,6 @@ export interface SymbolPaletteModel extends ComponentModel{
      * Defines the height of the symbol
      *
      * @aspDefaultValueIgnore
-     * @blazorDefaultValueIgnore
      * @default undefined
      */
     symbolHeight?: number;
@@ -255,7 +246,6 @@ export interface SymbolPaletteModel extends ComponentModel{
      * Defines the size and position of the symbol preview
      *
      * @aspDefaultValueIgnore
-     * @blazorDefaultValueIgnore
      * @default undefined
      */
     symbolPreview?: SymbolPreviewModel;
@@ -264,7 +254,6 @@ export interface SymbolPaletteModel extends ComponentModel{
      * Defines the size of a drop symbol
      *
      * @aspDefaultValueIgnore
-     * @blazorDefaultValueIgnore
      * @default undefined
      */
     symbolDragSize?: SymbolDragSizeModel;
@@ -287,8 +276,6 @@ export interface SymbolPaletteModel extends ComponentModel{
      *
      * @default 'Multiple'
      * @aspDefaultValueIgnore
-     * @blazorType Syncfusion.Blazor.Navigations.ExpandMode
-     * @blazorDefaultValue Syncfusion.Blazor.Navigations.ExpandMode.Multiple
      * @isEnumeration true
      */
     expandMode?: ExpandMode;
@@ -297,7 +284,6 @@ export interface SymbolPaletteModel extends ComponentModel{
      * Triggers after the selection changes in the symbol palette
      *
      * @event
-     * @blazorProperty 'OnPaletteSelectionChange'
      */
     paletteSelectionChange?: EmitType<IPaletteSelectionChangeArgs>;
 
@@ -305,7 +291,6 @@ export interface SymbolPaletteModel extends ComponentModel{
      * Triggers when the icon is expanded
      *
      * @event
-     * @blazorProperty 'OnPaletteExpanding'
      */
     paletteExpanding?: EmitType<IPaletteExpandArgs>;
 
@@ -319,7 +304,6 @@ export interface SymbolPaletteModel extends ComponentModel{
     /**
      * Helps to return the default properties of node
      *
-     * @blazorType DiagramNode
      */
     nodeDefaults?: NodeModel;
 
@@ -333,7 +317,6 @@ export interface SymbolPaletteModel extends ComponentModel{
     /**
      * Helps to return the default properties of connectors
      *
-     * @blazorType DiagramConnector
      */
     connectorDefaults?: ConnectorModel;
 

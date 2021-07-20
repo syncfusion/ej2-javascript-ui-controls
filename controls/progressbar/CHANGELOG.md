@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 19.2.48 (2021-07-20)
+
+### ProgressBar
+
+#### Bug Fixes
+
+- `#I334098` - ProgressBar renders properly when corner radius is set to "Round".
+
 ## 19.1.54 (2021-03-30)
 
 ### ProgressBar

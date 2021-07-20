@@ -4,7 +4,7 @@ import { isNullOrUndefined } from '@syncfusion/ej2-base';
 import { ImageFormatInfo, HelperMethods } from '../index';
 import { Dictionary, TabJustification, TabLeader } from '../../index';
 import { WTabStop } from '../index';
-import { ProtectionType } from '../../base';
+import { ProtectionType, CompatibilityMode } from '../../base';
 import { DocumentHelper } from '../viewer';
 import { Revision } from '../track-changes/track-changes';
 
@@ -331,7 +331,7 @@ export class WordExport {
     private isRevisionContinuous: boolean = false;
     private formFieldShading: boolean;
     private trackChanges: boolean;
-    private compatibilityMode: number;
+    private compatibilityMode: CompatibilityMode;
     // Gets the bookmark name
     private get bookmarks(): string[] {
         if (isNullOrUndefined(this.mBookmarks)) {
@@ -3457,7 +3457,7 @@ export class WordExport {
             writer.writeStartElement('a', 'noFill', this.aNamespace);
             writer.writeEndElement();
         }
-        let lineWeight: number = shape.lineFormat.weight ? shape.lineFormat.weight * this.emusPerPoint: this.emusPerPoint;
+        let lineWeight: number = shape.lineFormat.weight ? shape.lineFormat.weight * this.emusPerPoint : this.emusPerPoint;
         writer.writeStartElement('a', 'ln', this.aNamespace);
         writer.writeAttributeString(undefined, 'w', undefined, lineWeight.toString());
         if ((!isNullOrUndefined(shape.lineFormat.lineFormatType) && shape.lineFormat.lineFormatType !== 'None')
@@ -5926,7 +5926,8 @@ export class WordExport {
         writer.writeStartElement(undefined, 'compatSetting', this.wNamespace);
         writer.writeAttributeString(undefined, 'name', this.wNamespace, 'compatibilityMode');
         writer.writeAttributeString(undefined, 'uri', this.wNamespace, 'http://schemas.microsoft.com/office/word');
-        writer.writeAttributeString(undefined, 'val', this.wNamespace, '15');
+        let compatValue: string = HelperMethods.getCompatibilityModeValue(this.compatibilityMode);
+        writer.writeAttributeString(undefined, 'val', this.wNamespace, compatValue);
         writer.writeEndElement();
         writer.writeEndElement();
         if (this.document.footnotes) {

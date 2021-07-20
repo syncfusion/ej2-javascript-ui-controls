@@ -1149,6 +1149,8 @@ describe('Inline Editing module', () => {
         it('Add with invalid data', () => {
             (<any>gridObj.toolbarModule).toolbarClickHandler({ item: { id: gridObj.element.id + '_update' } });
             expect(document.querySelectorAll('.e-griderror').length).toBeGreaterThan(0);
+            // EJ2-50953 - When double-clicking inline editing validation message, JavaScript error is thrown
+            (gridObj as any).dblClickHandler({ target: document.querySelectorAll('.e-griderror')[0] });
         });
 
         it('Add complete', (done: Function) => {
@@ -3126,6 +3128,46 @@ describe('EJ2-40519 - ActionBegin event arguments cancel property value getting 
             let actionComplete = (args?: any): void => {
                 if (args.requestType === 'beginEdit') {
                     expect(document.activeElement.id).toBe(gridObj.element.id + 'CustomerID');
+                    done();
+                }
+            };
+            gridObj.actionComplete = actionComplete;
+            gridObj.selectRow(0, true);
+            (<any>gridObj.toolbarModule).toolbarClickHandler({ item: { id: gridObj.element.id + '_edit' } });
+        });
+
+        afterAll(() => {
+            destroy(gridObj);
+            gridObj = null;
+        });
+    });
+
+    describe('EJ2-51016 - wrong rowData is bound when editing a Virtualization Grid with Grouping enabled', () => {
+        let gridObj: Grid;
+        beforeAll((done: Function) => {
+            gridObj = createGrid(
+                {
+                    dataSource: filterData,
+                    enableVirtualization: true,
+                    height: 400,
+                    editSettings: { allowEditing: true, allowAdding: true, allowDeleting: true, mode: 'Dialog' },
+                    toolbar: ['Add', 'Edit', 'Delete', 'Update', 'Cancel'],
+                    allowGrouping: true,
+                    groupSettings: {columns: ['OrderID']},
+                    columns: [
+                        { field: 'OrderID', type: 'number', isPrimaryKey: true },
+                        { field: 'CustomerID', headerText: 'Customer ID', width: 150 },
+                        { field: 'Freight', format: 'C2', type: 'number', editType: 'numericedit' },
+                        { field: 'ShipCity', type: 'string', editType: 'dropdownedit' }
+                    ]
+                }, done);
+        });
+
+        it('Check rowData value with editing a row ', (done: Function) => {
+            let actionComplete = (args?: any): void => {
+                if (args.requestType === 'beginEdit') {
+                    expect(args.rowData.OrderID).toBe(gridObj.dataSource[0]['OrderID']);
+                    expect(args.rowData.CustomerID).toBe(gridObj.dataSource[0]['CustomerID']);
                     done();
                 }
             };

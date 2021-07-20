@@ -108,7 +108,6 @@ export class SnapSettings extends ChildProperty<SnapSettings> {
      *
      * @default 'All'
      * @aspNumberEnum
-     * @blazorNumberEnum
      */
     @Property(SnapConstraints.All)
     public constraints: SnapConstraints;

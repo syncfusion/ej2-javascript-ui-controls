@@ -1094,10 +1094,14 @@ export class VirtualContentRenderer extends ContentRender implements IRenderer {
 
     public getRowCollection(index: number, isMovable: boolean, isRowObject?: boolean, isFrozenRight?: boolean): Element | Object {
         const prev: number[] = this.prevInfo.blockIndexes;
-        const startIdx: number = (prev[0] - 1) * this.getBlockSize();
+        let startIdx: number = (prev[0] - 1) * this.getBlockSize();
         let rowCollection: Element[] = isMovable ? this.parent.getMovableDataRows() : this.parent.getDataRows();
         rowCollection = isFrozenRight ? this.parent.getFrozenRightDataRows() : rowCollection;
-        const collection: Element[] | Object[] = isRowObject ? this.parent.getCurrentViewRecords() : rowCollection;
+        let collection: Element[] | Object[] = isRowObject ? this.parent.getCurrentViewRecords() : rowCollection;
+        if (isRowObject && this.parent.allowGrouping && this.parent.groupSettings.columns.length) {
+            startIdx = parseInt(this.parent.getRows()[0].getAttribute(literals.ariaRowIndex), 10);
+            collection = collection.filter((m: object) => { return isNullOrUndefined((<{items?: object }>m).items); });
+        }
         let selectedRow: Element | Object = collection[index - startIdx];
         if (this.parent.frozenRows && this.parent.pageSettings.currentPage > 1) {
             if (!isRowObject) {

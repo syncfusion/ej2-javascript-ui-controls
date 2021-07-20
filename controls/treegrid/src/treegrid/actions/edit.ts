@@ -263,6 +263,7 @@ export class Edit {
         const updateMethod: Function = getObject('updateEditObj', this.parent.grid.editModule) as Function;
         updateMethod.apply(this.parent.grid.editModule);
         this.parent.grid.isEdit = false;
+        setValue('isEditCollapse', false, this.parent);
     }
 
     private resetIsOnBatch(): void {
@@ -686,7 +687,9 @@ export class Edit {
             }
         }
         if (args.requestType === 'add' || (this.isAddedRowByMethod && this.parent.enableVirtualization)) {
-            this.selectedIndex = this.parent.grid.selectedRowIndex;
+            if (!(this.parent.grid.selectedRowIndex == -1 && this.isAddedRowByMethod)) {
+                this.selectedIndex = this.parent.grid.selectedRowIndex;
+            }
             if (this.parent.enableVirtualization) {
                 let selector: string = '.e-row[aria-rowindex="' + this.selectedIndex + '"]';
                 let row: HTMLTableRowElement;

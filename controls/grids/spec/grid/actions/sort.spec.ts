@@ -713,5 +713,51 @@ describe('Sorting module => ', () => {
         });
     });
 
+    describe('EJ2-50992 - Duplicate Sort numbers showing in Grid column while prevent sort action using actionBegin event => ', () => {
+        let gridObj: Grid;
+        let actionBegin: (e?: Object) => void;
+        let cols: any;
+        beforeAll((done: Function) => {
+            gridObj = createGrid(
+                {
+                    dataSource: data,
+                    allowSorting: true,
+                    sortSettings: {
+                        columns: [
+                            { field: 'OrderDate', direction: 'Ascending' },
+                            { field: 'Freight', direction: 'Descending' }
+                        ]
+                    },
+                    allowPaging: true,
+                    pageSettings: { pageSize: 5 },
+                    columns: [
+                        { field: 'OrderID', isPrimaryKey: true, headerText: 'Order ID' },
+                        { field: 'CustomerID', headerText: 'Customer ID' },
+                        { field: 'Freight', headerText: 'Freight' },
+                        { field: 'OrderDate', headerText: 'Order Date' }],
+                    actionBegin: actionBegin
+                }, done);
+        });
+        it('Remove sorted column by field method testing', (done: Function) => {
+            actionBegin = (args: any): any => {
+                if (args.requestType === 'sorting') {
+                    args.cancel = true;
+                    done();
+                }
+            };
+            gridObj.actionBegin = actionBegin;
+            gridObj.removeSortColumn('Freight');
+        });
+        it('Check the  Duplicate Sort numbers showing', () => {
+            cols = gridObj.getHeaderContent().querySelectorAll('.e-headercell');
+            expect(cols[2].querySelectorAll('.e-sortnumber').length).toBe(1);
+            expect(cols[3].querySelectorAll('.e-sortnumber').length).toBe(1);
+        });
+        afterAll(() => {
+            destroy(gridObj);
+            gridObj = actionBegin = cols = null;
+        });
+    });
+
 
 });

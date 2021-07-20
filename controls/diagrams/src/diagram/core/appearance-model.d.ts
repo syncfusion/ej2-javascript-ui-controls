@@ -16,7 +16,6 @@ export interface MarginModel {
      * Sets the space to be left from the left side of the immediate parent of an element
      *
      * @default 0
-     * @isBlazorNullableType true
      */
     left?: number;
 
@@ -24,7 +23,6 @@ export interface MarginModel {
      * Sets the space to be left from the right side of the immediate parent of an element
      *
      * @default 0
-     * @isBlazorNullableType true
      */
     right?: number;
 
@@ -32,7 +30,6 @@ export interface MarginModel {
      * Sets the space to be left from the top side of the immediate parent of an element
      *
      * @default 0
-     * @isBlazorNullableType true
      */
     top?: number;
 
@@ -40,7 +37,6 @@ export interface MarginModel {
      * Sets the space to be left from the bottom side of the immediate parent of an element
      *
      * @default 0
-     * @isBlazorNullableType true
      */
     bottom?: number;
 
@@ -97,7 +93,6 @@ export interface StopModel {
      * Sets the position where the previous color transition ends and a new color transition starts
      *
      * @default 0
-     * @isBlazorNullableType true
      */
     offset?: number;
 
@@ -119,7 +114,6 @@ export interface GradientModel {
      * Defines the stop collection of gradient
      *
      * @default []
-     * @blazorType ObservableCollection<DiagramsGradientStop>
      */
     stops?: StopModel[];
 
@@ -348,7 +342,6 @@ export interface ShapeStyleModel {
      *
      * @default null
      * @aspType object
-     * @blazorType DiagramGradient
      */
     gradient?: GradientModel | LinearGradientModel | RadialGradientModel | DiagramGradientModel;
 

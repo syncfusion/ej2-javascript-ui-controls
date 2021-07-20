@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 19.2.48 (2021-07-20)
+
+### Splitter
+
+#### Bug Fixes
+
+- `#I334749` - Resolved the exception raised, when resizing the window with splitter rendered in the page.
+
 ## 19.1.63 (2021-05-13)
 
 ### Splitter

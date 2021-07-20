@@ -502,6 +502,7 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
         'of': 'of',
         'Fit one page': 'Fit one page',
         'Spell Check': 'Spell Check',
+        'Spelling': 'Spelling',
         'Underline errors': 'Underline errors',
         'Fit page width': 'Fit page width',
         'Update': 'Update',
@@ -888,6 +889,7 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
         this.documentEditor.on(internalZoomFactorChange, this.onZoomFactorChange, this);
     }
     private unWireEvents(): void{
+        if(this.documentEditor.isDestroyed) { return; }
         this.documentEditor.off(internalZoomFactorChange, this.onZoomFactorChange);
     }
     private onCommentBegin(): void {
@@ -1167,6 +1169,7 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
         }
         this.toolbarContainer = undefined;
         if (this.documentEditorInternal) {
+            this.unWireEvents();
             this.documentEditorInternal.destroy();
         }
         this.documentEditorInternal = undefined;

@@ -110,7 +110,6 @@ export interface PageSettingsModel {
      * Sets the width of a diagram Page
      *
      * @default null
-     * @isBlazorNullableType true
      */
     width?: number;
 
@@ -118,7 +117,6 @@ export interface PageSettingsModel {
      * Sets the height of a diagram Page
      *
      * @default null
-     * @isBlazorNullableType true
      */
     height?: number;
 
@@ -174,7 +172,6 @@ export interface PageSettingsModel {
      *
      * @default new FitOptions()
      * @aspType object
-     * @blazorType DiagramFitOptions
      */
     fitOptions?: FitOptionsModel;
 
@@ -189,7 +186,6 @@ export interface ScrollSettingsModel {
      * Defines horizontal offset of the scroller
      *
      * @default 0
-     * @isBlazorNullableType true
      */
     horizontalOffset?: number;
 
@@ -197,7 +193,6 @@ export interface ScrollSettingsModel {
      * Defines vertical offset of the scroller
      *
      * @default 0
-     * @isBlazorNullableType true
      */
     verticalOffset?: number;
 
@@ -212,7 +207,6 @@ export interface ScrollSettingsModel {
      * Allows to read the viewport width of the diagram
      *
      * @default 0
-     * @isBlazorNullableType true
      */
     viewPortWidth?: number;
 
@@ -220,7 +214,6 @@ export interface ScrollSettingsModel {
      * Allows to read the viewport height of the diagram
      *
      * @default 0
-     * @isBlazorNullableType true
      */
     viewPortHeight?: number;
 
@@ -264,7 +257,6 @@ export interface ScrollSettingsModel {
      * Defines the scrollable area of diagram. Applicable, if the scroll limit is “limited”.
      *
      * @aspDefaultValueIgnore
-     * @blazorDefaultValueIgnore
      * @default undefined
      */
     scrollableArea?: Rect;

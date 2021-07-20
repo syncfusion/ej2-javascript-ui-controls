@@ -153,6 +153,7 @@ export class ViewSource {
             (this.getPanel() as HTMLTextAreaElement).value = this.getTextAreaValue();
             (this.contentModule.getPanel() as HTMLElement).style.display = 'none';
             rteContent.style.display = 'block';
+            (this.getPanel() as HTMLTextAreaElement).style.display = 'block';
         } else {
             this.contentModule.getPanel().appendChild(this.previewElement);
             (this.getPanel() as HTMLTextAreaElement).value = this.getTextAreaValue();
@@ -199,6 +200,7 @@ export class ViewSource {
         const value: string = (serializeValue === null || serializeValue === '') ? '<p><br/></p>' : serializeValue;
         if (this.parent.iframeSettings.enable) {
             editHTML.parentElement.style.display = 'none';
+            editHTML.style.display = 'none';
             (this.contentModule.getPanel() as HTMLElement).style.display = 'block';
             this.contentModule.getEditPanel().innerHTML = value;
         } else {

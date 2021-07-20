@@ -2840,6 +2840,18 @@ export class FormField extends ChildProperty<FormField> {
     public name: string;
 
     /**
+     * Specifies whether the check box is in checked state or not.
+     */
+    @Property(false)
+    public isChecked: boolean;
+    
+    /**
+     * Specifies whether the radio button is in checked state or not.
+     */
+    @Property(false)
+    public isSelected: boolean;
+
+    /**
      * Gets the id of the form field.
      */
     @Property('')
@@ -3954,7 +3966,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
      * Gets the form fields present in the loaded PDF document. It used to get the form fields id, name, type and it's values.
      */
     // eslint-disable-next-line max-len
-    @Property({ name: '', id: '', type: '', isReadOnly: false, value: '', signatureType: [''], fontName: '', fontFamily: 'Helvetica', fontSize: 10, fontStyle: 'None', color: 'black', backgroundColor: 'white', alignment: 'Left',  visibility: 'visible', maxLength: 0, isRequired: false, isPrint: false, tooltip: '', options:[], signatureIndicatorSettings: { opacity: 1, backgroundColor: 'orange', width: 19, height: 10, fontSize: 10, text: null, color: 'black' }  })
+    @Property({ name: '', id: '', type: '', isReadOnly: false, isSelected: false, isChecked: false, value: '', signatureType: [''], fontName: '', fontFamily: 'Helvetica', fontSize: 10, fontStyle: 'None', color: 'black', backgroundColor: 'white', alignment: 'Left', visibility: 'visible', maxLength: 0, isRequired: false, isPrint: false, tooltip: '', options: [], signatureIndicatorSettings: { opacity: 1, backgroundColor: 'orange', width: 19, height: 10, fontSize: 10, text: null, color: 'black' } })
     public formFieldCollections: FormFieldModel[];
 
     /**

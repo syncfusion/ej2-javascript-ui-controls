@@ -2288,9 +2288,11 @@ export class DropDownTree extends Component<HTMLElement> implements INotifyPrope
         const target: HTMLElement = <HTMLElement>e.target;
         const isTree: Element = closest(target, '.' + PARENTITEM);
         const isFilter: Element = closest(target, '.' + FILTERWRAP);
+        const isHeader: Element = closest(target, '.' + HEADER);
+        const isFooter: Element = closest(target, '.' + FOOTER);
         const isScroller: boolean = target.classList.contains(DROPDOWN) ? true :
             (matches(target, '.e-ddt .e-popup') || matches(target, '.e-ddt .e-treeview'));
-        if ((this.isPopupOpen && (this.inputWrapper.contains(target) || isTree || isFilter || isScroller)) ||
+        if ((this.isPopupOpen && (this.inputWrapper.contains(target) || isTree || isFilter || isScroller || isHeader || isFooter)) ||
             ((this.allowMultiSelection || this.showCheckBox) && (this.isPopupOpen && target.classList.contains(CHIP_CLOSE) ||
                 (this.isPopupOpen && (target.classList.contains(CHECKALLPARENT) || target.classList.contains(ALLTEXT)
                  || target.classList.contains(CHECKBOXFRAME)))))) {
@@ -2759,13 +2761,60 @@ export class DropDownTree extends Component<HTMLElement> implements INotifyPrope
         }
         if (isNOU(data)) {
             if (this.treeSettings.loadOnDemand) {
-                data = this.treeObj.getTreeData(value)[0];
+                data = this.getNodeData(value);
             } else {
                 data = this.treeObj.getNode(value);
             }
             if (!isNOU(data)) { this.selectedData.push(data); }
         }
         return data;
+    }
+
+    private getNodeData(id: string): { [key: string]: Object } {
+        let childItems: { [key: string]: Object };
+        if (isNOU(id)) {
+            return childItems;
+        } else if (this.treeDataType === 1) {
+            for (let i: number = 0, objlen: number = this.treeItems.length; i < objlen; i++) {
+                let dataId: Object = getValue(this.fields.value, this.treeItems[i]);
+                if (!isNOU(this.treeItems[i]) && !isNOU(dataId) && dataId.toString() === id) {
+                    return this.treeItems[i];
+                }
+            }
+        } else {
+            return this.getChildNodeData(this.treeItems, this.fields, id);
+        }
+        return childItems;
+    }
+
+    private getChildNodeData(obj: { [key: string]: Object }[], mapper: FieldsModel, id: string): { [key: string]: Object } {
+        let newChildItems: { [key: string]: Object };
+        if (isNOU(obj)) {
+            return newChildItems;
+        }
+        for (let i: number = 0, objlen: number = obj.length; i < objlen; i++) {
+            let dataValue: Object = getValue(mapper.value, obj[i]);
+            if (obj[i] && dataValue && dataValue.toString() === id) {
+                return obj[i];
+            } else if (typeof mapper.child === 'string' && !isNOU(getValue(mapper.child, obj[i]))) {
+                let childNodeData: Object = getValue(mapper.child, obj[i]);
+                newChildItems = this.getChildNodeData(<{ [key: string]: Object }[]>childNodeData, this.getChildMapperFields(mapper), id);
+                if (newChildItems !== undefined) {
+                    break;
+                }
+            } else if (this.fields.dataSource instanceof DataManager && !isNOU(getValue('child', obj[i]))) {
+                let child: string = 'child';
+                newChildItems = this.getChildNodeData(<{ [key: string]: Object }[]>getValue(child, obj[i]), this.getChildMapperFields(mapper), id);
+                if (newChildItems !== undefined) {
+                    break;
+                }
+            }
+        }
+        return newChildItems;
+    }
+
+    private getChildMapperFields(mapper: FieldsSettingsModel): FieldsSettingsModel {
+        return (typeof mapper.child === 'string' || isNOU(mapper.child)) ? mapper : mapper.child;
     }
 
     private removeSelectedData(value: string, muteOnChange: boolean): void {
@@ -2788,6 +2837,7 @@ export class DropDownTree extends Component<HTMLElement> implements INotifyPrope
         // eslint-disable-next-line
         let selectedData: { [key: string]: Object };
         this.hiddenElement.innerHTML = '';
+        let hiddenInputValue = '';
         if ((!this.isChipDelete || this.treeSettings.autoCheck) && (this.inputWrapper.contains(this.chipWrapper))) {
             this.chipCollection.innerHTML = '';
         }
@@ -2801,7 +2851,6 @@ export class DropDownTree extends Component<HTMLElement> implements INotifyPrope
                 if (this.selectedText.length > 1) {
                     this.dataValue += (this.delimiterChar + ' ' + temp);
                     textValue += (',' + temp);
-                    this.setProperties({ text: textValue }, true);
                 } else {
                     this.dataValue += temp;
                     textValue += temp;
@@ -2810,9 +2859,13 @@ export class DropDownTree extends Component<HTMLElement> implements INotifyPrope
                             (this.allowMultiSelection || this.showCheckBox)) {
                     this.setChipValues(temp, this.value[i]);
                 }
-                this.hiddenElement.innerHTML += '<option selected value ="' + this.value[i] + '">' +
+                hiddenInputValue += '<option selected value ="' + this.value[i] + '">' +
                                         this.selectedText[this.selectedText.length - 1] + '</option>';
             }
+            if (this.selectedText.length > 1) {
+                this.setProperties({ text: textValue }, true);
+            }
+            this.hiddenElement.innerHTML = hiddenInputValue;
         }
         const isValid: boolean = this.getValidMode();
         if (this.mode !== 'Box' && (this.allowMultiSelection || this.showCheckBox) && !isValid) {

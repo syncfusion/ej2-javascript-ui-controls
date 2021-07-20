@@ -2,7 +2,26 @@
 
 ## [Unreleased]
 
+## 19.2.48 (2021-07-20)
+
+### Tree Grid
+
+#### Bug Fixes
+
+- `#I334684` - Issue in `addRecord` method with `newRowPosition` `Child` and InfiniteScrolling enabled has been resolved.
+- `#I334273` - Resolved issue in row position when we expand/collapse a row with Virtualization and collapseAll enabled.
+- `#I334442` - Expand/Collapse action works fine after cell save using Enter key.
+
 ## 19.2.47 (2021-07-13)
+
+### Tree Grid
+
+#### Bug Fixes
+
+- `#I328508` - Resolved white space issue while Virtualization and collapse all property is enabled.
+- `#334818` - Issue in `addRecord` method with `newRowPosition` `Child` and Virtualization enabled has been resolved.
+
+## 19.2.46 (2021-07-06)
 
 ### Tree Grid
 

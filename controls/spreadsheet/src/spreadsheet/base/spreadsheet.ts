@@ -1259,7 +1259,8 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
             new Promise((resolve: Function, reject: Function) => { resolve((() => { /** */ })()); });
         this.notify(cut, address ? {
             range: getIndexesFromAddress(address),
-            sId: this.sheets[getSheetIndex(this as Workbook, getSheetNameFromAddress(address))].id,
+            sId: this.sheets[getSheetIndex(this as Workbook, getSheetNameFromAddress(address))] ?
+            this.sheets[getSheetIndex(this as Workbook, getSheetNameFromAddress(address))].id : this.getActiveSheet().id,
             promise: promise
         } : { promise: promise });
         return promise;
@@ -1280,7 +1281,7 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
         this.notify(copy, address ? {
             range: getIndexesFromAddress(address),
             sId: this.sheets[getSheetIndex(this as Workbook, getSheetNameFromAddress(address))] ?
-                this.sheets[getSheetIndex(this as Workbook, getSheetNameFromAddress(address))].id : this.activeSheetIndex,
+                this.sheets[getSheetIndex(this as Workbook, getSheetNameFromAddress(address))].id : this.getActiveSheet().id,
             promise: promise
         } : { promise: promise });
         return promise;
@@ -2647,7 +2648,7 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
                                 || (!isUndefined(newRangeIdx) && newRangeIdx === idx))) {
                                 this.notify(dataSourceChanged, {
                                     sheetIdx: sheetIdx, rangeIdx: rangeIdx,
-                                    isLastRange: ranges.length - 1 === idx
+                                    isLastRange: ranges.length - 1 === idx, changedData: sheet.ranges[rangeIdx].dataSource
                                 });
                             }
                         });

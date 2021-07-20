@@ -10,6 +10,7 @@ import  {profile , inMB, getMemoryProfile} from '../../../spec/common.spec';
 import { PortVisibility, PortConstraints } from '../../../src/diagram/enum/enum';
 import { PointModel } from '../../../src/diagram/primitives/point-model';
 import { MouseEvents } from '../interaction/mouseevents.spec';
+import { ICollectionChangeEventArgs } from '../../../src/index';
 
 
 /**
@@ -524,4 +525,42 @@ describe('Diagram Control', () => {
            done();
      });
  });
+});
+
+describe('Port Draw', () => {
+    let diagram: Diagram;
+    let ele: HTMLElement;
+    beforeAll((): void => {
+        ele = createElement('div', { id: 'diagramPortDraw' });
+        document.body.appendChild(ele);
+        let node: NodeModel = {
+            id: 'node1', width: 100, height: 100, offsetX: 100, offsetY: 150, annotations: [{ content: 'Node1' }],
+            shape: { type: 'Basic', shape: 'Rectangle' },
+            ports: [
+                { id: 'port1', visibility: PortVisibility.Visible, constraints: PortConstraints.Draw, offset: { x: 1, y: 0.5 } },
+            ]
+        };
+        diagram = new Diagram({ width: 700, height: 600, nodes: [node], collectionChange: collectionChange, });
+        function collectionChange(args: ICollectionChangeEventArgs): void {
+            if (args.state === 'Changing' && args.type === 'Addition') {
+                args.cancel = true;
+            }
+        }
+        diagram.appendTo('#diagramPortDraw');
+    });
+
+    afterAll((): void => {
+        diagram.destroy();
+        ele.remove();
+    });
+
+    it('Checking port collections after arg.cancel is true', (done: Function) => {
+        let mouseEvents: MouseEvents = new MouseEvents();
+        let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
+        mouseEvents.mouseDownEvent(diagramCanvas, 150, 150);
+        mouseEvents.mouseMoveEvent(diagramCanvas, 451, 150);
+        mouseEvents.mouseUpEvent(diagramCanvas, 451, 150);
+        expect(diagram.nodes[0].ports[0].outEdges.length === 0).toBe(true);
+        done();
+    });
 });

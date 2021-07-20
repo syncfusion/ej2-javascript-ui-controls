@@ -1385,7 +1385,7 @@ export class Splitter extends Component<HTMLElement> {
             let updatePane: HTMLElement;
             let flexPane: HTMLElement;
             for (let i: number = 0; i < paneCount; i++) {
-                if (this.paneSettings[i].min !== null) {
+                if (!isNullOrUndefined(this.paneSettings[i].min)) {
                     paneMinRange = this.convertPixelToNumber((this.paneSettings[i].min).toString());
                     if (this.paneSettings[i].min.indexOf('%') > 0) {
                         paneMinRange = this.convertPercentageToPixel(this.paneSettings[i].min);

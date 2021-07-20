@@ -997,8 +997,13 @@ describe('UI virtualization', () => {
 
             expect(li[li.length - 2].getAttribute('data-uid')).toBe('group-list-item-numbers');
             expect(li[li.length - 2].querySelector('.e-list-text').textContent).toBe('numbers');
+        });
 
-            listObj.addItem([{ text: '2', id: '2', groupBy: 'numbers' }]);
+        it('should inject new item into DOM', () => {
+            listObj.addItem([{ text: '3', id: '3', groupBy: 'number' }]);
+            const li = listObj.element.querySelector('ul').querySelectorAll('li');
+            expect(li[3].getAttribute('data-uid')).toBe('3');
+            expect(li[3].querySelector('.e-list-text').textContent).toBe('3');
         });
 
         it('addItem with template', () => {

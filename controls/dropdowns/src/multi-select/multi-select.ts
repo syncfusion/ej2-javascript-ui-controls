@@ -93,6 +93,7 @@ export class MultiSelect extends DropDownBase implements IInput {
     private keyAction: boolean;
     private isSelectAll: boolean;
     private clearIconWidth: number = 0;
+    private isTyped: boolean;
 
     /**
      * The `fields` property maps the columns of the data table and binds the data to the component.
@@ -987,6 +988,9 @@ export class MultiSelect extends DropDownBase implements IInput {
         list: { [key: string]: Object }[] | number[] | boolean[] | string[],
         e?: Object, isUpdated?: boolean): void {
     /* eslint-enable @typescript-eslint/no-unused-vars */
+        if (!this.isTyped && this.element.tagName === 'SELECT') {
+            this.renderSelectElement(this.element, list as { [key: string]: Object }[]);
+        }
         super.onActionComplete(ulElement, list, e);
         this.updateSelectElementData(this.allowFiltering);
         // eslint-disable-next-line @typescript-eslint/no-this-alias
@@ -1278,7 +1282,9 @@ export class MultiSelect extends DropDownBase implements IInput {
         dataSource: { [key: string]: Object }[] | DataManager | string[] | number[] | boolean[],
         query?: Query, fields?: FieldSettingsModel): void {
         this.isDataFetched = false;
+        this.isTyped = true;
         if (this.targetElement().trim() === '') {
+            this.isTyped = false;
             const list: HTMLElement = this.mainList.cloneNode ? <HTMLElement>this.mainList.cloneNode(true) : this.mainList;
             if (this.backCommand) {
                 this.remoteCustomValue = false;
@@ -1405,6 +1411,7 @@ export class MultiSelect extends DropDownBase implements IInput {
         if (!isNullOrUndefined(eve)) {
             target = <HTMLElement>eve.relatedTarget;
         }
+        this.isTyped = false;
         if (this.popupObj && document.body.contains(this.popupObj.element) && this.popupObj.element.contains(target)) {
             if (this.mode !== 'CheckBox') {
                 this.inputElement.focus();
@@ -1724,6 +1731,7 @@ export class MultiSelect extends DropDownBase implements IInput {
                 return;
             case 13:
                 e.preventDefault();
+                this.isTyped = false;
                 if (this.mode !== 'CheckBox') {
                     this.selectByKey(e);
                 }
@@ -2882,6 +2890,7 @@ export class MultiSelect extends DropDownBase implements IInput {
         this.focused = true;
         this.initial = true;
         this.backCommand = true;
+        this.isTyped = false;
     }
 
     private updateData(delimiterChar: string, e?: MouseEvent | KeyboardEventArgs): void {
@@ -3260,11 +3269,11 @@ export class MultiSelect extends DropDownBase implements IInput {
                 }
                 this.makeTextBoxEmpty();
                 this.findGroupStart(target as HTMLElement);
+                if (this.mode !== 'CheckBox') {
+                    this.refreshListItems(isNullOrUndefined(li) ? null : li.textContent);
+                }
             } else {
                 e.preventDefault();
-            }
-            if (this.mode !== 'CheckBox') {
-                this.refreshListItems(isNullOrUndefined(li) ? null : li.textContent);
             }
             this.refreshPlaceHolder();
             this.deselectHeader();
@@ -3855,6 +3864,10 @@ export class MultiSelect extends DropDownBase implements IInput {
     }
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     protected updateDataSource(prop?: MultiSelectModel): void {
+        if (!isNullOrUndefined(prop) && (isNullOrUndefined(prop.dataSource)
+        || (!(prop.dataSource instanceof DataManager) && prop.dataSource.length === 0))) {
+            this.selectData = null;
+        }
         if (isNullOrUndefined(this.list)) {
             this.renderPopup();
         } else {
@@ -4088,6 +4101,7 @@ export class MultiSelect extends DropDownBase implements IInput {
                 duration: 100,
                 delay: delay ? delay : 0
             };
+            this.isTyped = false;
             const eventArgs: PopupEventArgs = { popup: this.popupObj, cancel: false, animation: animModel };
             this.trigger('close', eventArgs, (eventArgs: PopupEventArgs) => {
                 if (!eventArgs.cancel) {

@@ -35,6 +35,7 @@ export class Print {
     public static printGridProp: string[] = [...getCloneProperties(), events.beforePrint, events.printComplete, events.load];
 
     private defered: Deferred = new Deferred();
+    private actionBeginFunction: Function;
 
     /**
      * Constructor for the Grid print module
@@ -47,7 +48,8 @@ export class Print {
         this.parent = parent;
         if (this.parent.isDestroyed) { return; }
         this.parent.on(events.contentReady, this.isContentReady(), this);
-        this.parent.addEventListener(events.actionBegin, this.actionBegin.bind(this));
+        this.actionBeginFunction = this.actionBegin.bind(this);
+        this.parent.addEventListener(events.actionBegin, this.actionBeginFunction);
         this.parent.on(events.onEmpty, this.onEmpty.bind(this));
         this.parent.on(events.hierarchyPrint, this.hierarchyPrint, this);
         this.scrollModule = scrollModule;
@@ -201,6 +203,7 @@ export class Print {
             element: gObj.element
         };
         gObj.trigger(events.printComplete, args);
+        (gObj as Grid).destroy();
         this.parent.log('exporting_complete', this.getModuleName());
     }
 
@@ -257,7 +260,7 @@ export class Print {
     public destroy(): void {
         if (this.parent.isDestroyed) { return; }
         this.parent.off(events.contentReady, this.contentReady.bind(this));
-        this.parent.removeEventListener(events.actionBegin, this.actionBegin.bind(this));
+        this.parent.removeEventListener(events.actionBegin, this.actionBeginFunction);
         this.parent.off(events.onEmpty, this.onEmpty.bind(this));
         this.parent.off(events.hierarchyPrint, this.hierarchyPrint);
     }

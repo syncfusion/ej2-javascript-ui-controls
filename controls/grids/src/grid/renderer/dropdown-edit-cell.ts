@@ -71,7 +71,7 @@ export class DropDownEditCell extends EditCellBase implements IEditCell {
         this.ddOpen = this.dropDownOpen.bind(this);
         this.ddBeforeOpen = this.dropdownBeforeOpen.bind(this);
         this.ddComplete = this.ddActionComplete.bind(this);
-        
+
         this.obj.addEventListener(literals.create, this.ddCreated);
         this.obj.addEventListener(literals.open, this.ddOpen);
         this.obj.addEventListener(literals.beforeOpen, this.ddBeforeOpen);

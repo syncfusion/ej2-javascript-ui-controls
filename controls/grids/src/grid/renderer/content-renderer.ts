@@ -246,6 +246,7 @@ export class ContentRender implements IRenderer {
         const row: RowRenderer<Column> = new RowRenderer<Column>(this.serviceLocator, null, this.parent);
         const isInfiniteScroll: boolean = this.parent.enableInfiniteScrolling
             && (args as InfiniteScrollArgs).requestType === 'infiniteScroll';
+        gObj.notify(events.destroyChildGrid, {});
         this.rowElements = [];
         this.rows = [];
         const fCont: Element = this.getPanel().querySelector('.' + literals.frozenContent);
@@ -281,7 +282,6 @@ export class ContentRender implements IRenderer {
             tbdy = contentModule.getTbody(tableName);
         }
         const isFrozenLeft: boolean = this.parent.getFrozenMode() === literals.leftRight && tableName === literals.frozenRight;
-        gObj.notify(events.destroyChildGrid, {});
         /* eslint-disable */
         if (args.requestType !== 'infiniteScroll' && (this.parent as any).registeredTemplate
             && (this.parent as any).registeredTemplate.template && !args.isFrozen && !isFrozenLeft) {
@@ -374,6 +374,7 @@ export class ContentRender implements IRenderer {
             if (isGroupAdaptive(gObj) && args.virtualInfo && args.virtualInfo.blockIndexes
                 && (this.rowElements.length >= (args.virtualInfo.blockIndexes.length * this.parent.contentModule.getBlockSize()))
                 && blockLoad) {
+                this.parent.currentViewData['records'] = this.rows.map((m: Row<Column>) => m.data);
                 break;
             }
             if (!gObj.rowTemplate) {

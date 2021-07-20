@@ -235,7 +235,7 @@ export class FormulaBar {
                         (<HTMLTextAreaElement>document.getElementById(this.parent.element.id + '_formula_input'));
                     const addressRange: number[] = getRangeIndexes(address);
                     const cellEle: HTMLElement = this.parent.getCell(addressRange[0], addressRange[1]);
-                    if (cell && !cell.formula && cellEle) {
+                    if (cell && !cell.formula && cellEle && (!cell.validation || cell.validation.type !== 'List')) {
                         formulaInp.value = cellEle.textContent;
                     } else {
                         formulaInp.value = value;

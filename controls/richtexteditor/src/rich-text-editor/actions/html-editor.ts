@@ -515,6 +515,14 @@ export class HtmlEditor {
         if (this.parent.toolbarSettings.enable) {
             this.toolbarUpdate = new HtmlToolbarStatus(this.parent);
         }
+        if (this.parent.inlineMode.enable) {
+            if (!isNullOrUndefined(this.parent.fontFamily.default)) {
+                editElement.style.fontFamily = this.parent.fontFamily.default;
+            }
+            if (!isNullOrUndefined(this.parent.fontSize.default)) {
+                editElement.style.fontSize = this.parent.fontSize.default;
+            }
+        }
         this.parent.notify(events.bindOnEnd, {});
     }
 

@@ -6,7 +6,7 @@ import { DropDownList, AutoComplete, ChangeEventArgs } from '@syncfusion/ej2-dro
 import { NumericTextBox } from '@syncfusion/ej2-inputs';
 import { RadioButton, CheckBox } from '@syncfusion/ej2-buttons';
 import { distinctStringValues, isComplexField, getComplexFieldID, getCustomDateFormat, applyBiggerTheme,
-    performComplexDataOperation, 
+    performComplexDataOperation,
     registerEventHandlers,
     removeEventHandlers} from '../base/util';
 import { Column } from '../models/column';
@@ -596,7 +596,7 @@ export class ExcelFilterBase extends CheckBoxFilterBase {
             },
             col.filter.params));
         this.childRefs.push(dropOptr);
-        let evt: object = { 'open': this.dropDownOpen.bind(this), 'change': this.dropDownValueChange.bind(this) };
+        const evt: object = { 'open': this.dropDownOpen.bind(this), 'change': this.dropDownValueChange.bind(this) };
         registerEventHandlers(optrInput.id, [literals.open, literals.change], evt, this);
         dropOptr.addEventListener(literals.open, this.eventHandlers[optrInput.id][literals.open]);
         dropOptr.addEventListener(literals.change, this.eventHandlers[optrInput.id][literals.change]);
@@ -934,7 +934,7 @@ export class ExcelFilterBase extends CheckBoxFilterBase {
             });
         }
         this.childRefs.push(actObj);
-        let evt: object = { 'actionComplete': this.acActionComplete(actObj, column), 'focus': this.acFocus(actObj, column, options, inputValue) };
+        const evt: object = { 'actionComplete': this.acActionComplete(actObj, column), 'focus': this.acFocus(actObj, column, options, inputValue) };
         registerEventHandlers(inputValue.id, [events.actionComplete, literals.focus], evt, this);
         actObj.addEventListener(literals.focus, this.eventHandlers[inputValue.id][literals.focus]);
         actObj.addEventListener(events.actionComplete, this.eventHandlers[inputValue.id][events.actionComplete]);
@@ -951,7 +951,7 @@ export class ExcelFilterBase extends CheckBoxFilterBase {
                 }).indexOf(isComplex ? performComplexDataOperation(actObj.fields.value, obj) :
                     obj[actObj.fields.value]) === index;
             });
-        }
+        };
     }
 
     private acFocus(actObj: AutoComplete, column: string, options: IFilterArgs, inputValue: HTMLElement): Function {
@@ -969,6 +969,6 @@ export class ExcelFilterBase extends CheckBoxFilterBase {
                 true;
             actObj.filterType = !isNullOrUndefined(actObj.filterType) ? actObj.filterType :
                 'equal' as 'StartsWith' | 'Contains' | 'EndsWith';
-        }
+        };
     }
 }

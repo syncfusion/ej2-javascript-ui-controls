@@ -116,7 +116,6 @@ export abstract class Port extends ChildProperty<Port> {
      *
      * @default 'Connect'
      * @aspNumberEnum
-     * @blazorNumberEnum
      */
     @Property(PortVisibility.Connect)
     public visibility: PortVisibility;
@@ -134,7 +133,6 @@ export abstract class Port extends ChildProperty<Port> {
      *
      * @default 'Default'
      * @aspNumberEnum
-     * @blazorNumberEnum
      */
     @Property(PortConstraints.Default)
     public constraints: PortConstraints;
@@ -143,7 +141,6 @@ export abstract class Port extends ChildProperty<Port> {
      * Allows the user to save custom information/data about a port
      *
      * @aspDefaultValueIgnore
-     * @blazorDefaultValueIgnore
      * @default undefined
      */
     @Property()

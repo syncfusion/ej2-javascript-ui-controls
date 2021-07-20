@@ -888,13 +888,14 @@ export class ListBox extends DropDownBase {
                 /* eslint-enable */
             } else {
                 if (this.fields.groupBy) {
-                    this.ulElement.innerHTML = this.renderItems(this.listData as obj[], this.fields).innerHTML;
-                    this.setSelection();
+                    let sourceElem: HTMLElement = this.renderItems(this.listData as obj[], this.fields);
+                    this.updateListItems(sourceElem, this.ulElement); this.setSelection();
                 }
                 if (listObj.sortOrder !== 'None' || this.selectionSettings.showCheckbox
                     !== listObj.selectionSettings.showCheckbox || listObj.fields.groupBy || listObj.itemTemplate || this.itemTemplate) {
                     const sortable: { placeHolderElement: Element } = getComponent(ul as HTMLElement, 'sortable');
-                    ul.innerHTML = listObj.renderItems(listData as obj[], listObj.fields).innerHTML;
+                    let sourceElem: HTMLElement = listObj.renderItems(listData as obj[], listObj.fields);
+                    listObj.updateListItems(sourceElem, ul as HTMLElement); this.setSelection();
                     if (sortable.placeHolderElement) {
                         ul.appendChild(sortable.placeHolderElement);
                     }
@@ -917,6 +918,14 @@ export class ListBox extends DropDownBase {
             dragArgs = extend(dragArgs, { destination: dragArgs1 });
         }
         this.trigger('drop', dragArgs);
+    }
+
+    private updateListItems(sourceElem: HTMLElement, destElem: HTMLElement): void {
+        const i: number = 0;
+		destElem.innerHTML = "";
+		while (i < sourceElem.childNodes.length) {
+			destElem.appendChild(sourceElem.childNodes[i]);
+		}
     }
 
     private removeSelected(listObj: ListBox, elems: Element[]): void {
@@ -1698,7 +1707,8 @@ export class ListBox extends DropDownBase {
             if (!isBlazor()) {
                 if (isRefresh) {
                     if (fListBox.fields.groupBy) {
-                        fListBox.ulElement.innerHTML = fListBox.renderItems(listData as obj[], fListBox.fields).innerHTML;
+                        let sourceElem: HTMLElement = fListBox.renderItems(listData as obj[], fListBox.fields);
+                        fListBox.updateListItems(sourceElem, fListBox.ulElement);
                     } else {
                         elems.forEach((ele: Element) => { detach(ele); });
                     }
@@ -1741,7 +1751,8 @@ export class ListBox extends DropDownBase {
                 /* eslint-enable */
             } else {
                 if (isRefresh) {
-                    tListBox.ulElement.innerHTML = tListBox.renderItems(tListData as obj[], tListBox.fields).innerHTML;
+                    let sourceElem: HTMLElement = tListBox.renderItems(tListData as obj[], tListBox.fields);
+                    tListBox.updateListItems(sourceElem, tListBox.ulElement);
                     tListBox.setSelection();
                     fListBox.trigger('actionComplete', { items: tempItems, eventName: this.toolbarAction });
                 }
@@ -1850,7 +1861,8 @@ export class ListBox extends DropDownBase {
             /* eslint-enable */
         } else {
             if (isRefresh) {
-                tListBox.ulElement.innerHTML = tListBox.renderItems(listData as obj[], tListBox.fields).innerHTML;
+                let sourceElem: HTMLElement = tListBox.renderItems(listData as obj[], tListBox.fields);
+                tListBox.updateListItems(sourceElem, tListBox.ulElement);
                 this.trigger('actionComplete', { items: tempItems, eventName: this.toolbarAction });
             } else {
                 (tListBox.sortedData as dataType[]) = listData;

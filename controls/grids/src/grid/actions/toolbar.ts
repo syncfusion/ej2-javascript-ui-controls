@@ -120,7 +120,9 @@ export class Toolbar {
             }
             this.unWireEvent();
             this.removeEventListener();
-            remove(this.element);
+            if (this.element.parentNode) {
+                remove(this.element);
+            }
         }
     }
 
@@ -493,7 +495,8 @@ export class Toolbar {
             { event: events.inBoundModelChanged, handler: this.modelChanged },
             { event: events.dataBound, handler: this.refreshToolbarItems },
             { event: events.click, handler: this.removeResponsiveSearch },
-            { event: events.rowModeChange, handler: this.reRenderToolbar }];
+            { event: events.rowModeChange, handler: this.reRenderToolbar },
+            { event: events.destroy, handler: this.destroy }];
         addRemoveEventListener(this.parent, this.evtHandlers, true, this);
         this.rowSelectedFunction = this.rowSelected.bind(this);
         this.rowDeSelectedFunction = this.rowSelected.bind(this);

@@ -70,7 +70,7 @@ import { PathElement } from './core/elements/path-element';
 import { TextElement } from './core/elements/text-element';
 import { updateStyle, removeItem, updateConnector, updateShape, setUMLActivityDefaults, findNodeByName } from './utility/diagram-util';
 import { setSwimLaneDefaults } from './utility/diagram-util';
-import { checkPortRestriction, serialize, deserialize, updateHyperlink, getObjectType, removeGradient } from './utility/diagram-util';
+import { checkPortRestriction, serialize, deserialize, updateHyperlink, getObjectType, removeGradient, getChild } from './utility/diagram-util';
 import { Rect } from './primitives/rect';
 import { getPortShape } from './objects/dictionary/common';
 import { PointPortModel, PortModel } from './objects/port-model';
@@ -359,7 +359,6 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
      *
      * @default 'Default'
      * @aspNumberEnum
-     * @blazorNumberEnum
      */
     @Property(DiagramConstraints.Default)
     public constraints: DiagramConstraints;
@@ -375,7 +374,6 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
      *
      * @default 'Default'
      * @aspNumberEnum
-     * @blazorNumberEnum
      * @deprecated
      */
 
@@ -518,9 +516,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
      * ```
      *
      * @aspDefaultValueIgnore
-     * @blazorDefaultValueIgnore
      * @default undefined
-     * @blazorType ObservableCollection<DiagramNode>
      */
     @Collection<NodeModel>([], Node)
     public nodes: NodeModel[];
@@ -539,7 +535,6 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
      * ```
      *
      * @aspDefaultValueIgnore
-     * @blazorDefaultValueIgnore
      * @default undefined
      */
     @Property()
@@ -566,7 +561,6 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
      * ```
      *
      * @default []
-     * @blazorType ObservableCollection<DiagramConnector>
      */
     @Collection<ConnectorModel>([], Connector)
     public connectors: ConnectorModel[];
@@ -601,7 +595,6 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
      * Allows the user to save custom information/data about diagram
      *
      * @aspDefaultValueIgnore
-     * @blazorDefaultValueIgnore
      * @default undefined
      */
     @Property()
@@ -675,7 +668,6 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
      * ```
      *
      * @aspDefaultValueIgnore
-     * @blazorDefaultValueIgnore
      * @default undefined
      * @deprecated
      */
@@ -684,8 +676,6 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
 
     /**
      * Helps to assign the default properties of nodes
-     *
-     * @blazorType DiagramNode
      */
     @Property()
     public nodeDefaults: NodeModel;
@@ -715,7 +705,6 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
      * ```
      *
      * @aspDefaultValueIgnore
-     * @blazorDefaultValueIgnore
      * @default undefined
      * @deprecated
      */
@@ -724,8 +713,6 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
 
     /**
      * Helps to assign the default properties of connector
-     *
-     * @blazorType DiagramConnector
      */
     @Property()
     public connectorDefaults: ConnectorModel;
@@ -780,7 +767,6 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
      * }
      *
      * @aspDefaultValueIgnore
-     * @blazorDefaultValueIgnore
      * @default undefined
      * @deprecated
      */
@@ -791,7 +777,6 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
      * Allows to set accessibility content for diagram objects
      *
      * @aspDefaultValueIgnore
-     * @blazorDefaultValueIgnore
      * @default undefined
      */
     /**
@@ -871,7 +856,6 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
      * ```
      *
      * @aspDefaultValueIgnore
-     * @blazorDefaultValueIgnore
      * @default undefined
      * @deprecated
      */
@@ -881,7 +865,6 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
      * Allows the user to set custom tool that corresponds to the given action
      *
      * @aspDefaultValueIgnore
-     * @blazorDefaultValueIgnore
      * @default undefined
      */
     /**
@@ -938,7 +921,6 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
      * Allows the user to set custom cursor that corresponds to the given action
      *
      * @aspDefaultValueIgnore
-     * @blazorDefaultValueIgnore
      * @default undefined
      */
     /**
@@ -986,7 +968,6 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
      * A collection of JSON objects where each object represents a custom cursor action. Layer is a named category of diagram shapes.
      *
      * @default []
-     * @blazorType ObservableCollection<DiagramCustomCursor>
      */
     @Collection<CustomCursorActionModel>([], CustomCursorAction)
     public customCursor: CustomCursorActionModel[];
@@ -1017,7 +998,6 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
      * ```
      *
      * @aspDefaultValueIgnore
-     * @blazorDefaultValueIgnore
      * @default undefined
      * @deprecated
      */
@@ -1050,7 +1030,6 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
      * Defines the collection of selected items, size and position of the selector
      *
      * @default {}
-     * @blazorType DiagramSelectedItems
      */
     @Complex<SelectorModel>({}, Selector)
     public selectedItems: SelectorModel;
@@ -1083,7 +1062,6 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
      * Triggers after diagram is populated from the external data source
      *
      * @event
-     * @blazorProperty 'DataLoaded'
      * @deprecated
      */
     @Event()
@@ -1093,8 +1071,6 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
      * Triggers when a symbol is dragged into diagram from symbol palette
      *
      * @event
-     * @blazorProperty 'DragEnter'
-     * @blazorType Syncfusion.Blazor.Diagrams.IBlazorDragEnterEventArgs
      */
     @Event()
     public dragEnter: EmitType<IDragEnterEventArgs>;
@@ -1103,8 +1079,6 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
      * Triggers when a symbol is dragged outside of the diagram.
      *
      * @event
-     * @blazorProperty 'DragLeave'
-     * @blazorType Syncfusion.Blazor.Diagrams.IBlazorDragLeaveEventArgs
      */
     @Event()
     public dragLeave: EmitType<IDragLeaveEventArgs>;
@@ -1113,7 +1087,6 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
      * Triggers when a symbol is dragged over diagram
      *
      * @event
-     * @blazorProperty 'DragOver'
      * @deprecated
      */
     @Event()
@@ -1123,8 +1096,6 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
      * Triggers when a node, connector or diagram is clicked
      *
      * @event
-     * @blazorProperty 'Clicked'
-     * @blazorType Syncfusion.Blazor.Diagrams.IBlazorClickEventArgs
      */
     @Event()
     public click: EmitType<IClickEventArgs>;
@@ -1133,8 +1104,6 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
      * Triggers when a change is reverted or restored(undo/redo)
      *
      * @event
-     * @blazorProperty 'HistoryChanged'
-     * @blazorType 'IBlazorHistoryChangeArgs'
      */
     @Event()
     public historyChange: EmitType<IHistoryChangeArgs>;
@@ -1143,8 +1112,6 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
      * Triggers when a custom entry change is reverted or restored(undo/redo)
      *
      * @event
-     * @blazorProperty 'CustomHistoryChanged'
-     * @blazorType IBlazorCustomHistoryChangeArgs
      */
     @Event()
     public historyStateChange: EmitType<IBlazorCustomHistoryChangeArgs>;
@@ -1153,8 +1120,6 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
      * Triggers when a node, connector or diagram model is clicked twice
      *
      * @event
-     * @blazorProperty 'OnDoubleClick'
-     * @blazorType Syncfusion.Blazor.Diagrams.IBlazorDoubleClickEventArgs
      */
     @Event()
     public doubleClick: EmitType<IDoubleClickEventArgs>;
@@ -1163,8 +1128,6 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
      * Triggers when editor got focus at the time of node’s label or text node editing.
      *
      * @event
-     * @blazorProperty 'TextEdited'
-     * @blazorType Syncfusion.Blazor.Diagrams.IBlazorTextEditEventArgs
      */
     @Event()
     public textEdit: EmitType<ITextEditEventArgs>;
@@ -1173,8 +1136,6 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
      * Triggers when the diagram is zoomed or panned
      *
      * @event
-     * @blazorProperty 'ScrollChanged'
-     * @blazorType 'IBlazorScrollChangeEventArgs'
      * @deprecated
      */
     @Event()
@@ -1184,8 +1145,6 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
      * Triggers when the selection is changed in diagram
      *
      * @event
-     * @blazorProperty 'SelectionChanged'
-     * @blazorType 'IBlazorSelectionChangeEventArgs'
      */
     @Event()
     public selectionChange: EmitType<ISelectionChangeEventArgs>;
@@ -1194,7 +1153,6 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
      * Triggers when a node is resized
      *
      * @event
-     * @blazorProperty 'OnSizeChange'
      */
     @Event()
     public sizeChange: EmitType<ISizeChangeEventArgs>;
@@ -1203,8 +1161,6 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
      * Triggers when the connection is changed
      *
      * @event
-     * @blazorProperty 'OnConnectionChange'
-     * @blazorType 'IBlazorConnectionChangeEventArgs'
      */
     @Event()
     public connectionChange: EmitType<IConnectionChangeEventArgs>;
@@ -1213,7 +1169,6 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
      * Triggers when the connector's source point is changed
      *
      * @event
-     * @blazorProperty 'OnSourcePointChange'
      * @deprecated
      */
     @Event()
@@ -1223,7 +1178,6 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
      * Triggers when the connector's target point is changed
      *
      * @event
-     * @blazorProperty 'OnTargetPointChange'
      * @deprecated
      */
     @Event()
@@ -1233,8 +1187,6 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
      * Triggers once the node or connector property changed.
      *
      * @event
-     * @blazorProperty 'PropertyChanged'
-     * @blazorType Syncfusion.Blazor.Diagrams.IBlazorPropertyChangeEventArgs
      */
     @Event()
     public propertyChange: EmitType<IPropertyChangeEventArgs>;
@@ -1243,8 +1195,6 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
      * Triggers while dragging the elements in diagram
      *
      * @event
-     * @blazorProperty 'OnPositionChange'
-     * @blazorType Syncfusion.Blazor.Diagrams.IBlazorDraggingEventArgs
      */
     @Event()
     public positionChange: EmitType<IDraggingEventArgs>;
@@ -1253,7 +1203,6 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
      * Triggers when a user releases a key.
      *
      * @event
-     * @blazorProperty 'OnKeyUp'
      */
     @Event()
     public keyUp: EmitType<IKeyEventArgs>;
@@ -1262,7 +1211,6 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
      * Triggers when a user is pressing a key.
      *
      * @event
-     * @blazorProperty 'OnKeyDown'
      */
     @Event()
     public keyDown: EmitType<IKeyEventArgs>;
@@ -1271,7 +1219,6 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
      * Triggers after animation is completed for the diagram elements.
      *
      * @event
-     * @blazorProperty 'OnAnimationComplete'
      * @deprecated
      */
     @Event()
@@ -1281,7 +1228,6 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
      * Triggers when the diagram elements are rotated
      *
      * @event
-     * @blazorProperty 'OnRotateChange'
      */
     @Event()
     public rotateChange: EmitType<IRotationEventArgs>;
@@ -1292,8 +1238,6 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
      *
      * @deprecated
      * @event
-     * @blazorProperty 'OnCollectionChange'
-     * @blazorType 'IBlazorCollectionChangeEventArgs'
      */
     @Event()
     public collectionChange: EmitType<ICollectionChangeEventArgs>;
@@ -1302,8 +1246,6 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
      * Triggers when a node/connector fixedUserHandle is clicked in the diagram.
      *
      * @event
-     * @blazorProperty 'FixedUserHandleClick'
-     * @blazorType 'BlazorFixedUserHandleClickEventArgs'
      */
     @Event()
     public fixedUserHandleClick: EmitType<FixedUserHandleClickEventArgs>;
@@ -1312,7 +1254,6 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
      * Triggers when a mouseDown on the user handle.
      *
      * @event
-     * @blazorProperty 'OnUserHandleMouseDown'
      */
     @Event()
     public onUserHandleMouseDown: EmitType<UserHandleEventsArgs>;
@@ -1321,7 +1262,6 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
      * Triggers when a mouseUp on the user handle.
      *
      * @event
-     * @blazorProperty 'OnUserHandleMouseUp'
      */
     @Event()
     public onUserHandleMouseUp: EmitType<UserHandleEventsArgs>;
@@ -1330,7 +1270,6 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
      * Triggers when a mouseEnter on the user handle.
      *
      * @event
-     * @blazorProperty 'OnUserHandleMouseEnter'
      */
     @Event()
     public onUserHandleMouseEnter: EmitType<UserHandleEventsArgs>;
@@ -1339,7 +1278,6 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
      * Triggers when a mouseLeave on the user handle.
      *
      * @event
-     * @blazorProperty 'OnUserHandleMouseLeave'
      */
     @Event()
     public onUserHandleMouseLeave: EmitType<UserHandleEventsArgs>;
@@ -1348,9 +1286,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
      * Triggers when a segment is added/removed to/from the connector.
      *
      * @event
-     * @blazorProperty 'OnSegmentCollectionChange'
      * @deprecated
-     * @blazorType 'IBlazorSegmentCollectionChangeEventArgs'
      */
     @Event()
     public segmentCollectionChange: EmitType<ISegmentCollectionChangeEventArgs>;
@@ -1369,7 +1305,6 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
      *
      * @deprecated
      * @event
-     * @blazorProperty 'OnExpandStateChange'
      */
     @Event()
     public expandStateChange: EmitType<IExpandStateChangeEventArgs>;
@@ -1378,7 +1313,6 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
      * Triggered when the diagram is rendered completely.
      *
      * @event
-     * @blazorProperty 'Created'
      */
     @Event()
     public created: EmitType<Object>;
@@ -1387,8 +1321,6 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
      * Triggered when mouse enters a node/connector.
      *
      * @event
-     * @blazorProperty 'MouseEnter'
-     * @blazorType Syncfusion.Blazor.Diagrams.IBlazorMouseEventArgs
      */
     @Event()
     public mouseEnter: EmitType<IMouseEventArgs>;
@@ -1397,8 +1329,6 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
      * Triggered when mouse leaves node/connector.
      *
      * @event
-     * @blazorProperty 'MouseLeave'
-     * @blazorType Syncfusion.Blazor.Diagrams.IBlazorMouseEventArgs
      */
     @Event()
     public mouseLeave: EmitType<IMouseEventArgs>;
@@ -1407,9 +1337,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
      * Triggered when mouse hovers a node/connector.
      *
      * @event
-     * @blazorProperty 'MouseOver'
      * @deprecated
-     * @blazorType Syncfusion.Blazor.Diagrams.IBlazorMouseEventArgs
      */
     @Event()
     public mouseOver: EmitType<IMouseEventArgs>;
@@ -1418,8 +1346,6 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
      * Triggers before opening the context menu
      *
      * @event
-     * @blazorProperty 'OnContextMenuOpen'
-     * @blazorType Syncfusion.Blazor.Diagrams.DiagramBeforeMenuOpenEventArgs
      */
     @Event()
     public contextMenuOpen: EmitType<BeforeOpenCloseMenuEventArgs>;
@@ -1428,8 +1354,6 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
      * Triggers before rendering the context menu item
      *
      * @event
-     * @blazorProperty 'OnContextMenuItemRender'
-     * @blazorType Syncfusion.Blazor.Diagrams.DiagramMenuEventArgs
      * @deprecated
      */
     @Event()
@@ -1439,8 +1363,6 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
      * Triggers when a context menu item is clicked
      *
      * @event
-     * @blazorProperty 'ContextMenuItemClicked'
-     * @blazorType Syncfusion.Blazor.Diagrams.DiagramMenuEventArgs
      */
     @Event()
     public contextMenuClick: EmitType<MenuEventArgs>;
@@ -1449,7 +1371,6 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
      * Triggers when a command executed.
      *
      * @event
-     * @blazorProperty 'OnCommandExecuted'
      */
     @Event()
     public commandExecute: EmitType<ICommandExecuteEventArgs>;
@@ -1458,7 +1379,6 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
      * A collection of JSON objects where each object represents a layer. Layer is a named category of diagram shapes.
      *
      * @default []
-     * @blazorType ObservableCollection<DiagramLayer>
      */
     @Collection<LayerModel>([], Layer)
     public layers: LayerModel[];
@@ -1467,8 +1387,6 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
      * Triggers when a symbol is dragged and dropped from symbol palette to drawing area
      *
      * @event
-     * @blazorProperty 'OnDrop'
-     * @blazorType 'IBlazorDropEventArgs'
      */
     @Event()
     public drop: EmitType<IDropEventArgs>;
@@ -1581,6 +1499,10 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
     /** @private */
     public previousSelectedObject: (NodeModel | ConnectorModel)[];
     public canLayout: boolean = true;
+    /** @private */
+    public swimlaneChildTable: {} = {};
+    /** @private */
+    public swimlaneZIndexTable: {} = {};
     private changedConnectorCollection: ConnectorModel[] = [];
     private changedNodesCollection: NodeModel[] = [];
     private previousNodeCollection: NodeModel[] = [];
@@ -2241,8 +2163,8 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
         }
         if (collapsedNode.length) {
             for (let i: number = collapsedNode.length - 1; i >= 0; i--) {
-                if(i===0) {
-                this.commandHandler.expandNode((collapsedNode[i] as Node), this, false);
+                if (i === 0) {
+                    this.commandHandler.expandNode((collapsedNode[i] as Node), this, false);
                 } else {
                     this.commandHandler.expandNode((collapsedNode[i] as Node), this, true);
                 }
@@ -2267,8 +2189,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                     updateConnectorObject.push(cloneObject(obj, undefined, undefined, true));
                 }
                 this.commandHandler.getObjectChanges(previousConnectorObject, updateConnectorObject, changeConnectors);
-                if(!(this.blazorActions & BlazorAction.ClearObject))
-                {
+                if (!(this.blazorActions & BlazorAction.ClearObject)) {
                     const blazorInterop: string = 'sfBlazor';
                     const blazor: string = 'Blazor';
                     const diagramObject: Object = { nodes: [], connectors: changeConnectors };
@@ -2776,7 +2697,6 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
      * @returns { void }  Add a process into the sub-process.\
      * @param {NodeModel | ConnectorModel} process - provide the process value.
      * @param {boolean} parentId - provide the parentId value.
-     * @blazorArgsType process|DiagramNode
      *
      */
     public addProcess(process: NodeModel, parentId: string): void {
@@ -4401,9 +4321,24 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
             if (args.cancel && this.drawingObject) {
                 this.removeElements(args.element as NodeModel | ConnectorModel);
                 this.tooltipObject.close();
+                let sourceNodee: NodeModel = this.getObject((args.element as Connector).sourceID);
+                let isOutEdgee: boolean;
                 if (getObjectType(args.element) === Connector) {
                     if ((args.element as Connector).sourceID) {
                         this.removeNodeEdges((args.element as Connector).sourceID, (args.element as Connector).id, true);
+                        if (sourceNodee.ports.length > 0) {
+                            for (let i: number = 0; i < sourceNodee.ports.length; i++) {
+                                const port: PointPortModel = sourceNodee.ports[i];
+                                if (port.id === (args.element as Connector).sourcePortID) {
+                                    if (port.outEdges.length > 0) {
+                                        isOutEdgee = false;
+                                    } else {
+                                        isOutEdgee = true;
+                                    }
+                                }
+                            }
+                            this.removePortEdges(sourceNodee, (args.element as Connector).sourcePortID, (args.element as Connector).id, isOutEdgee);
+                        }
                     }
                     if ((args.element as Connector).targetID) {
                         this.removeNodeEdges((args.element as Connector).targetID, (args.element as Connector).id, false);
@@ -5442,6 +5377,23 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
      * @returns { string }     Serializes the diagram control as a string .\
      */
     public saveDiagram(): string {
+        let children: string[] = []; let node: Node; let grid: GridPanel; let childTable: DiagramElement[];
+        let child: Canvas; const gridChild: string = 'childTable';
+        for (let i: number = 0; i < this.nodes.length; i++) {
+            node = this.nodes[i] as Node;
+            if (node.shape.type === 'SwimLane') {
+                grid = node.wrapper.children[0] as GridPanel;
+                childTable = grid[gridChild];
+                for (const key of Object.keys(childTable)) {
+                    child = childTable[key];
+                    children = getChild(child as Canvas, children);
+                }
+                for (let i: number = 0; i < children.length; i++) {
+                    this.swimlaneChildTable[children[i]] = this.nameTable[children[i]].zIndex;
+                }
+                this.swimlaneZIndexTable[node.id] = node.zIndex;
+            }
+        }
         return serialize(this);
     }
     /**
@@ -6423,7 +6375,16 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                 this.activeLayer.objects.push(obj.id);
             }
         }
-        this.setZIndex(layer || this.activeLayer, obj);
+        if ((obj instanceof Node || obj instanceof Connector) &&
+            (obj.shape.type !== 'SwimLane' || ((obj as Node).children && (obj as Node).children.length > 0))) {
+            if (obj.parentId) {
+                let zIndex: number = this.swimlaneZIndexTable[obj.parentId];
+                if (zIndex && zIndex !== -1) {
+                    obj.zIndex = this.swimlaneChildTable[obj.id];
+                }
+            }
+            this.setZIndex(layer || this.activeLayer, obj);
+        }
     }
     private updateLayer(newProp: DiagramModel): void {
         for (const key of Object.keys(newProp.layers)) {
@@ -6665,7 +6626,10 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
             if (independentObj) {
                 if (!layer) { this.addToLayer(obj, false); layer = this.activeLayer; }
                 //Move the common properties like zindex and id to an abstract class
-                if (obj instanceof Node || obj instanceof Connector) { this.setZIndex(layer, obj); }
+                if ((obj instanceof Node || obj instanceof Connector) &&
+                    (obj.shape.type !== 'SwimLane' || ((obj as Node).children && (obj as Node).children.length > 0))) {
+                    this.setZIndex(layer, obj);
+                }
             }
             if (obj instanceof Node) {
                 if (independentObj) {
@@ -6982,6 +6946,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
         }
         if (obj.shape.type === 'SwimLane' && obj.wrapper && obj.wrapper.children.length > 0 &&
             obj.wrapper.children[0] instanceof GridPanel) {
+            this.setZIndex(this.activeLayer, obj);
             swimLaneMeasureAndArrange(obj);
             arrangeChildNodesInSwimLane(this, obj);
             this.updateDiagramElementQuad();

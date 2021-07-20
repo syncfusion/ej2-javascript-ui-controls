@@ -336,7 +336,7 @@ export class DetailRow {
     }
 
     private destroyChildGrids(): void {
-        let rows: Row<Column>[] = this.parent.getRowsObject();
+        const rows: Row<Column>[] = this.parent.getRowsObject();
         for (let i: number = 0; i < rows.length; i++) {
             rows[i].childGrid = null;
         }

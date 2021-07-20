@@ -112,6 +112,7 @@ export class InfiniteScroll implements IAction {
         this.parent.on(events.virtualScrollAddActionBegin, this.infiniteAddActionBegin, this);
         this.parent.on(events.modelChanged, this.modelChanged, this);
         this.parent.on(events.refreshInfiniteCurrentViewData, this.refreshInfiniteCurrentViewData, this);
+        this.parent.on(events.destroy, this.destroy, this);
         this.actionBeginFunction = this.actionBegin.bind(this);
         this.actionCompleteFunction = this.actionComplete.bind(this);
         this.parent.on(events.deleteComplete, this.deleteComplate, this);
@@ -146,6 +147,7 @@ export class InfiniteScroll implements IAction {
         this.parent.off(events.virtualScrollAddActionBegin, this.infiniteAddActionBegin);
         this.parent.off(events.modelChanged, this.modelChanged);
         this.parent.off(events.refreshInfiniteCurrentViewData, this.refreshInfiniteCurrentViewData);
+        this.parent.off(events.destroy, this.destroy);
         this.parent.removeEventListener(events.actionBegin, this.actionBeginFunction);
         this.parent.removeEventListener(events.actionComplete, this.actionCompleteFunction);
     }

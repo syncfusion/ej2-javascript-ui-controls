@@ -51,7 +51,6 @@ export interface NodeBaseModel {
      * Allows the user to save custom information/data about a node/connector
      *
      * @aspDefaultValueIgnore
-     * @blazorDefaultValueIgnore
      * @default undefined
      */
     addInfo?: Object;
@@ -60,7 +59,6 @@ export interface NodeBaseModel {
      * Flip the element in Horizontal/Vertical directions
      *
      * @aspDefaultValueIgnore
-     * @blazorDefaultValue None
      * @default None
      */
     flip?: FlipDirection;
@@ -69,7 +67,6 @@ export interface NodeBaseModel {
      * Defines the symbol info of a connector
      *
      * @aspDefaultValueIgnore
-     * @blazorDefaultValueIgnore
      * @default undefined
      * @ignoreapilink
      */

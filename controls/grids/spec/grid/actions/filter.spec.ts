@@ -2516,3 +2516,45 @@ describe('EJ2-50100- Script error is thrown while clearing initial filter dynami
         gridObj = actionComplete = null;
     });
 });
+
+describe('EJ2-51105 - apply Filter programmatically throws script error when having ColumnMenu ', ()=>{
+    let gridObj: Grid;
+    let actionComplete: (args: any) => void;
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: filterData,
+                allowFiltering: true,
+                showColumnMenu: true,
+                filterSettings: { type: 'CheckBox' },
+                columns: [
+                    { field: 'OrderID', headerText: 'Order ID', isPrimaryKey: true, width: 120, textAlign: 'Right' },
+                    { field: 'CustomerID', headerText: 'Customer ID', width: 150 },
+                    { field: 'OrderDate', headerText: 'Order Date', width: 130, format: 'yMd', textAlign: 'Right' },
+                    { field: 'Freight', width: 120, format: 'C2', textAlign: 'Right' },
+                    { field: 'ShipCountry', headerText: 'Ship Country', width: 150 }
+                ],
+                actionComplete: actionComplete
+            }, done);
+    });
+    it('Filter the CustomerID in programmatically ', (done: Function) => {
+        actionComplete = (args?: any): void => {
+            gridObj.actionComplete = null;
+            done();
+        };
+        gridObj.actionComplete = actionComplete;
+        gridObj.filterSettings.columns = [
+            {
+                field: 'CustomerID',
+                matchCase: false,
+                operator: 'equal',
+                predicate: 'or',
+                value: 'VINET'
+            }
+        ];
+    });        
+    afterAll(() => {
+        destroy(gridObj);
+        gridObj = actionComplete = null;
+    });
+});

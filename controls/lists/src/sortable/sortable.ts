@@ -340,7 +340,8 @@ export class Sortable extends Base<HTMLElement> implements INotifyPropertyChange
         // eslint-disable-next-line prefer-const
         curIdx = dropInst.element.childElementCount;
         prevIdx = this.getIndex(this.target);
-        if (dropInst.element === e.target || (!isPlaceHolderPresent && this.curTarget === this.target)) {
+        const target: HTMLElement = (e.target.className.indexOf("e-list-nrt") > -1) ? e.target.parentElement : e.target;
+        if (dropInst.element === target || (!isPlaceHolderPresent && this.curTarget === this.target)) {
             const beforeDropArgs: DropEventArgs = {
                 previousIndex: prevIdx, currentIndex: this.curTarget === this.target ? prevIdx : curIdx,
                 target: e.target, droppedElement: this.target, helper: e.helper, cancel: false

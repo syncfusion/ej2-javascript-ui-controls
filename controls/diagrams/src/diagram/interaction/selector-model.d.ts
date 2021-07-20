@@ -97,7 +97,6 @@ export interface UserHandleModel {
      * Defines the offset of user Handle
      *
      * @default 0
-     * @isBlazorNullableType true
      */
     offset?: number;
 

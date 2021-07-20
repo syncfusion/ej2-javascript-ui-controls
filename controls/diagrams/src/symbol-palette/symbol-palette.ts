@@ -49,7 +49,6 @@ export class Palette extends ChildProperty<Palette> {
      * Sets the height of the symbol group
      *
      * @aspDefaultValueIgnore
-     * @blazorDefaultValueIgnore
      * @default undefined
      */
     @Property()
@@ -105,7 +104,6 @@ export class SymbolDragSize extends ChildProperty<SymbolDragSize> {
      * Sets the drag width of the symbols
      *
      * @aspDefaultValueIgnore
-     * @blazorDefaultValueIgnore
      * @default undefined
      */
     @Property()
@@ -115,7 +113,6 @@ export class SymbolDragSize extends ChildProperty<SymbolDragSize> {
      * Sets the drag height of the symbols
      *
      * @aspDefaultValueIgnore
-     * @blazorDefaultValueIgnore
      * @default undefined
      */
     @Property()
@@ -132,7 +129,6 @@ export class SymbolPreview extends ChildProperty<SymbolPreview> {
      * Sets the preview width of the symbols
      *
      * @aspDefaultValueIgnore
-     * @blazorDefaultValueIgnore
      * @default undefined
      */
     @Property()
@@ -142,7 +138,6 @@ export class SymbolPreview extends ChildProperty<SymbolPreview> {
      * Sets the preview height of the symbols
      *
      * @aspDefaultValueIgnore
-     * @blazorDefaultValueIgnore
      * @default undefined
      */
     @Property()
@@ -203,7 +198,6 @@ export class SymbolPalette extends Component<HTMLElement> implements INotifyProp
      * Defines the collection of symbol groups
      *
      * @default []
-     * @blazorType System.Collections.ObjectModel.ObservableCollection<SymbolPalettePalette>
      */
     @Collection<PaletteModel>([], Palette)
     public palettes: PaletteModel[];
@@ -212,7 +206,6 @@ export class SymbolPalette extends Component<HTMLElement> implements INotifyProp
      * Defines the size, appearance and description of a symbol
      *
      * @aspDefaultValueIgnore
-     * @blazorDefaultValueIgnore
      * @default undefined
      */
     /**
@@ -288,7 +281,6 @@ export class SymbolPalette extends Component<HTMLElement> implements INotifyProp
      * Defines the content of a symbol
      *
      * @aspDefaultValueIgnore
-     * @blazorDefaultValueIgnore
      * @default undefined
      * @deprecated
      */
@@ -299,7 +291,6 @@ export class SymbolPalette extends Component<HTMLElement> implements INotifyProp
      * Defines the width of the symbol
      *
      * @aspDefaultValueIgnore
-     * @blazorDefaultValueIgnore
      * @default undefined
      */
     @Property()
@@ -309,7 +300,6 @@ export class SymbolPalette extends Component<HTMLElement> implements INotifyProp
      * Defines the height of the symbol
      *
      * @aspDefaultValueIgnore
-     * @blazorDefaultValueIgnore
      * @default undefined
      */
     @Property()
@@ -335,7 +325,6 @@ export class SymbolPalette extends Component<HTMLElement> implements INotifyProp
      * Defines the size and position of the symbol preview
      *
      * @aspDefaultValueIgnore
-     * @blazorDefaultValueIgnore
      * @default undefined
      */
     @Complex<SymbolPreviewModel>({}, SymbolPreview)
@@ -345,7 +334,6 @@ export class SymbolPalette extends Component<HTMLElement> implements INotifyProp
      * Defines the size of a drop symbol
      *
      * @aspDefaultValueIgnore
-     * @blazorDefaultValueIgnore
      * @default undefined
      */
     @Complex<SymbolDragSizeModel>({}, SymbolDragSize)
@@ -371,8 +359,6 @@ export class SymbolPalette extends Component<HTMLElement> implements INotifyProp
      *
      * @default 'Multiple'
      * @aspDefaultValueIgnore
-     * @blazorType Syncfusion.Blazor.Navigations.ExpandMode
-     * @blazorDefaultValue Syncfusion.Blazor.Navigations.ExpandMode.Multiple
      * @isEnumeration true
      */
     @Property('Multiple')
@@ -382,7 +368,6 @@ export class SymbolPalette extends Component<HTMLElement> implements INotifyProp
      * Triggers after the selection changes in the symbol palette
      *
      * @event
-     * @blazorProperty 'OnPaletteSelectionChange'
      */
     @Event()
     public paletteSelectionChange: EmitType<IPaletteSelectionChangeArgs>;
@@ -391,7 +376,6 @@ export class SymbolPalette extends Component<HTMLElement> implements INotifyProp
      * Triggers when the icon is expanded
      *
      * @event
-     * @blazorProperty 'OnPaletteExpanding'
      */
     @Event()
     public paletteExpanding: EmitType<IPaletteExpandArgs>;
@@ -415,7 +399,6 @@ export class SymbolPalette extends Component<HTMLElement> implements INotifyProp
     /**
      * Helps to return the default properties of node
      *
-     * @blazorType DiagramNode
      */
     @Property()
     public nodeDefaults: NodeModel;
@@ -432,7 +415,6 @@ export class SymbolPalette extends Component<HTMLElement> implements INotifyProp
     /**
      * Helps to return the default properties of connectors
      *
-     * @blazorType DiagramConnector
      */
     @Property()
     public connectorDefaults: ConnectorModel;
@@ -780,7 +762,6 @@ export class SymbolPalette extends Component<HTMLElement> implements INotifyProp
      *
      * @returns {  void}    Refreshes the ruler when the Ruler properties are updated .\
      * @param { PaletteModel[]} palettes -Defines the collection of palettes to be added.
-     * @blazorArgsType palettes|System.Collections.ObjectModel.ObservableCollection<SymbolPalettePalette>
      */
     public addPalettes(palettes: PaletteModel[]): void {
         let palette: Palette;
@@ -825,7 +806,6 @@ export class SymbolPalette extends Component<HTMLElement> implements INotifyProp
      *
      * @returns {void}   Remove particular palettes to symbol palette at runtime .\
      * @param {string[]} palettes - provide the scale value.
-     * @blazorArgsType palettes|string[]
      */
     public removePalettes(palettes: string[]): void {
         const isEnableServerDatabind: boolean = this.allowServerDataBinding;
@@ -1960,7 +1940,6 @@ export interface SymbolInfo {
      * Defines the width of the symbol to be drawn over the palette
      *
      * @aspDefaultValueIgnore
-     * @blazorDefaultValueIgnore
      * @default undefined
      */
     width?: number;
@@ -1969,7 +1948,6 @@ export interface SymbolInfo {
      * Defines the height of the symbol to be drawn over the palette
      *
      * @aspDefaultValueIgnore
-     * @blazorDefaultValueIgnore
      * @default undefined
      */
     height?: number;
@@ -2012,7 +1990,6 @@ export interface SymbolDescription {
      * Defines the symbol description
      *
      * @aspDefaultValueIgnore
-     * @blazorDefaultValueIgnore
      * @default undefined
      */
     text?: string;

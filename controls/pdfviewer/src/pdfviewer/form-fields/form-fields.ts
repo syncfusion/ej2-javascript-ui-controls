@@ -130,6 +130,9 @@ export class FormFields {
                             value: currentData['Text'], isChecked: currentData['Selected'], isSelected: currentData['Selected'], fontFamily: fontFamily, fontStyle: fontStyle, backgroundColor: backColor, color: foreColor, borderColor: borderRGB, thickness: borderWidth, fontSize: fontSize,
                             isReadOnly: currentData['IsReadonly'], isRequired: currentData['IsRequired'], alignment: textAlignment, options: this.getListValues(currentData), selectedIndex: this.selectedIndex, maxLength: currentData.MaxLength, font: { isItalic: !isNullOrUndefined(font) ? font.Italic : false, isBold: !isNullOrUndefined(font) ? font.Bold : false, isStrikeout: !isNullOrUndefined(font) ? font.Strikeout : false, isUnderline: !isNullOrUndefined(font) ? font.Underline : false }
                         };
+                        if(currentData.Name ==='DropDown'){
+                            fieldProperties.value = currentData['SelectedValue']
+                        }
                         if (currentData.Name !== 'SignatureText' || currentData.Name !== 'SignatureImage') {
                             if (!isNullOrUndefined(this.getFormFieldType(currentData))) {
                                 let addedElement1: any = this.pdfViewer.formDesignerModule.addFormField(this.getFormFieldType(currentData), fieldProperties) as any;
@@ -917,12 +920,15 @@ export class FormFields {
                     let csData: any = splitArrayCollection(collectionData);
                     formFieldsData[i].FormField.value = JSON.stringify(csData);
                     (this.pdfViewer.nameTable as any)[key].value = annot.data;
+                    (this.pdfViewer.nameTable as any)[key.split('_')[0]].value = annot.data;
                     this.pdfViewerBase.formFieldCollection[i].FormField.value = JSON.stringify(csData);
                 } else {
                     formFieldsData[i].FormField.value = annot.data;
                     this.pdfViewerBase.formFieldCollection[i].FormField.value = annot.data;
+                    (this.pdfViewer.nameTable as any)[key.split('_')[0]].value = annot.data;
                     (this.pdfViewer.nameTable as any)[key].value = annot.data;
                 }
+                this.pdfViewer.formDesigner.updateFormFieldCollections(formFieldsData[i].FormField);
             }
         }
 

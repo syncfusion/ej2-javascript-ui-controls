@@ -1356,7 +1356,7 @@ export class TextMarkupAnnotation {
                 const pageAnnotations: ITextMarkupAnnotation[] = this.getAnnotations(this.selectTextMarkupCurrentPage, null);
                 if (pageAnnotations) {
                     for (let i: number = 0; i < pageAnnotations.length; i++) {
-                        if (JSON.stringify(this.currentTextMarkupAnnotation) === JSON.stringify(pageAnnotations[i])) {
+                        if (this.currentTextMarkupAnnotation.annotName === pageAnnotations[i].annotName) {
                             deletedAnnotation = pageAnnotations.splice(i, 1)[0];
                             // eslint-disable-next-line max-len
                             this.pdfViewer.annotationModule.addAction(this.selectTextMarkupCurrentPage, i, deletedAnnotation, 'Text Markup Deleted', null);

@@ -1231,3 +1231,432 @@ describe('Node Selection Functionality', () => {
         done();
     });
 })
+
+describe('Swimlane child disappears', () => {
+    let diagram: Diagram;
+    let ele: HTMLElement;
+    let scroller: DiagramScroller;
+    let mouseEvents: MouseEvents = new MouseEvents();
+    beforeAll((): void => {
+        const isDef = (o: any) => o !== undefined && o !== null;
+        if (!isDef(window.performance)) {
+            console.log("Unsupported environment, window.performance.memory is unavailable");
+            this.skip(); //Skips test (in Chai)
+            return;
+        }
+
+        ele = createElement('div', { id: 'diagramlane' });
+        document.body.appendChild(ele);
+        let nodes: NodeModel[] = [
+            {
+               id: 'nodes', height: 100, width: 100, offsetX: 200, offsetY: 200
+            },
+            {
+                id: 'swimlane',
+                shape: {
+                    type: 'SwimLane',
+                    orientation: 'Horizontal',
+                    header: {
+                        annotation: { content: 'ONLINE PURCHASE STATUS' },
+                        height: 50, style: { fontSize: 11 },
+                    },
+                    lanes: [
+                        {
+                            id: 'stackCanvas1',
+                            header: {
+                                annotation: { content: 'CUSTOMER' }, width: 50,
+                                style: { fontSize: 11 }
+                            },
+                            height: 100
+                        },
+        
+                    ],
+        
+                },
+                offsetX: 420, offsetY: 270,
+                height: 100,
+                width: 650
+            },
+        ];
+        diagram = new Diagram({
+            width: 800, height: 800, nodes: nodes
+        });
+        diagram.appendTo('#diagramlane');
+
+    });
+    afterAll((): void => {
+        diagram.destroy();
+        ele.remove();
+    });
+    it('Send swimlane back and check z index', (done: Function) => {
+        diagram.select([diagram.nodes[1]]);
+        let zIndex: number = diagram.nodes[1].zIndex;
+        diagram.sendToBack();
+        diagram.clearSelection();
+        expect(diagram.nodes[1].zIndex !== zIndex).toBe(true);
+        done();
+    });
+    it('Send swimlane front and check z index', (done: Function) => {
+        diagram.select([diagram.nodes[1]]);
+        let zIndex: number = diagram.nodes[1].zIndex;
+        diagram.bringToFront();
+        diagram.clearSelection();
+        expect(diagram.nodes[1].zIndex !== zIndex).toBe(true);
+        done();
+    });
+})
+
+describe('Group Node - SendToBack & BringToFront', () => {
+    let diagram: Diagram;
+    let ele: HTMLElement;
+    let scroller: DiagramScroller;
+    let mouseEvents: MouseEvents = new MouseEvents();
+    beforeAll((): void => {
+        const isDef = (o: any) => o !== undefined && o !== null;
+        if (!isDef(window.performance)) {
+            console.log("Unsupported environment, window.performance.memory is unavailable");
+            this.skip(); //Skips test (in Chai)
+            return;
+        }
+
+        ele = createElement('div', { id: 'diagramlane' });
+        document.body.appendChild(ele);
+        let nodes: NodeModel[] = [
+            {
+                id: 'node2', width: 200, height: 50, offsetX: 300, offsetY: 100, style: { fill: 'red' },
+                annotations: [{ content: 'node2' }],
+            },
+            {
+                id: 'node3', width: 250, height: 150, offsetX: 300, offsetY: 200, style: { fill: 'blue' },
+                annotations: [{ content: 'node3' }]
+            },
+            { id: 'group1', children: ['node2', 'node3'], },
+            {
+                id: 'node1', width: 100, height: 100, offsetX: 300, offsetY: 200, style: { fill: 'yellow' },
+                annotations: [{ content: 'node1' }],
+            }
+        ];
+        diagram = new Diagram({
+            width: 800, height: 800, nodes: nodes
+        });
+        diagram.appendTo('#diagramlane');
+    });
+    afterAll((): void => {
+        diagram.destroy();
+        ele.remove();
+    });
+    it('Send group node front and check z index', (done: Function) => {
+        diagram.select([diagram.getObject('group1')]);
+        diagram.bringToFront();
+        expect(diagram.selectedItems.nodes[0].zIndex === 3).toBe(true);
+        done();
+    });
+    it('Send group back and check z index', (done: Function) => {
+        diagram.select([diagram.getObject('group1')]);
+        diagram.sendToBack();
+        expect(diagram.selectedItems.nodes[0].zIndex === 0).toBe(true);
+        done();
+    });
+})
+
+describe('Child Node - Backward & Forward', () => {
+    let diagram: Diagram;
+    let ele: HTMLElement;
+    let scroller: DiagramScroller;
+    let mouseEvents: MouseEvents = new MouseEvents();
+    beforeAll((): void => {
+        const isDef = (o: any) => o !== undefined && o !== null;
+        if (!isDef(window.performance)) {
+            console.log("Unsupported environment, window.performance.memory is unavailable");
+            this.skip(); //Skips test (in Chai)
+            return;
+        }
+
+        ele = createElement('div', { id: 'diagramlane' });
+        document.body.appendChild(ele);
+        let nodes: NodeModel[] = [
+            {
+                id: 'node2', width: 200, height: 50, offsetX: 300, offsetY: 100, style: { fill: 'red' },
+                annotations: [{ content: 'node2' }],
+            },
+            {
+                id: 'node3', width: 250, height: 150, offsetX: 300, offsetY: 200, style: { fill: 'blue' },
+                annotations: [{ content: 'node3' }]
+            },
+            { id: 'group1', children: ['node2', 'node3'], },
+            {
+                id: 'node1', width: 100, height: 100, offsetX: 300, offsetY: 200, style: { fill: 'yellow' },
+                annotations: [{ content: 'node1' }],
+            }
+        ];
+        diagram = new Diagram({
+            width: 800, height: 800, nodes: nodes
+        });
+        diagram.appendTo('#diagramlane');
+    });
+    afterAll((): void => {
+        diagram.destroy();
+        ele.remove();
+    });
+    it('Send group node front and check z index', (done: Function) => {
+        diagram.select([diagram.getObject('node1')]);
+        diagram.sendBackward();
+        expect(diagram.selectedItems.nodes[0].zIndex === 2).toBe(true);
+        done();
+    });
+    it('Send group back and check z index', (done: Function) => {
+        diagram.select([diagram.getObject('node1')]);
+        diagram.moveForward();
+        expect(diagram.selectedItems.nodes[0].zIndex === 3).toBe(true);
+        done();
+    });
+})
+
+describe('Swimlane - Z order commands', () => {
+    let diagram: Diagram;
+    let ele: HTMLElement;
+    let scroller: DiagramScroller;
+    let mouseEvents: MouseEvents = new MouseEvents();
+    beforeAll((): void => {
+        const isDef = (o: any) => o !== undefined && o !== null;
+        if (!isDef(window.performance)) {
+            console.log("Unsupported environment, window.performance.memory is unavailable");
+            this.skip(); //Skips test (in Chai)
+            return;
+        }
+
+        ele = createElement('div', { id: 'diagramlane' });
+        document.body.appendChild(ele);
+        let nodes: NodeModel[] =  [
+            {
+                id: 'node1', height: 100, width: 100, offsetX: 200, offsetY: 200, 
+             },
+             {
+                 id: 'node2', height: 100, width: 100, offsetX: 350, offsetY: 200, 
+              },
+            {
+                id: 'swimlane',
+                shape: {
+                    type: 'SwimLane',
+                    orientation: 'Horizontal',
+                    header: {
+                        annotation: { content: 'ONLINE PURCHASE STATUS' },
+                        height: 50, style: { fontSize: 11 },
+                    },
+                    lanes: [
+                        {
+                            id: 'stackCanvas1',
+                            header: {
+                                annotation: { content: 'CUSTOMER' }, width: 50,
+                                style: { fontSize: 11 }
+                            },
+                            height: 100
+                        },
+        
+                    ],
+        
+                },
+                offsetX: 420, offsetY: 270,
+                height: 100,
+                width: 650
+            },
+            
+             
+        ];
+        diagram = new Diagram({
+            width: 800, height: 800, nodes: nodes
+        });
+        diagram.appendTo('#diagramlane');
+
+    });
+    afterAll((): void => {
+        diagram.destroy();
+        ele.remove();
+    });
+    it('Send Swimlane backward - Send to back command', (done: Function) => {
+        let node: NodeModel = diagram.getObject('swimlane');
+        diagram.select([node]);
+        diagram.sendToBack();
+        diagram.clearSelection();
+        expect(node.zIndex === 3).toBe(true);
+        done();
+    });
+    it('Bring Swimlane to front - Bring to front Command', (done: Function) => {
+        let node: NodeModel = diagram.getObject('swimlane');
+        diagram.select([node]);
+        diagram.bringToFront();
+        diagram.clearSelection();
+        expect(node.zIndex === 5).toBe(true);
+        done();
+    });
+})
+
+describe('Swimlane & Child - Send to back command', () => {
+    let diagram: Diagram;
+    let ele: HTMLElement;
+    let scroller: DiagramScroller;
+    let mouseEvents: MouseEvents = new MouseEvents();
+    beforeAll((): void => {
+        const isDef = (o: any) => o !== undefined && o !== null;
+        if (!isDef(window.performance)) {
+            console.log("Unsupported environment, window.performance.memory is unavailable");
+            this.skip(); //Skips test (in Chai)
+            return;
+        }
+
+        ele = createElement('div', { id: 'diagramorder' });
+        document.body.appendChild(ele);
+        let nodes: NodeModel[] =  [
+            {
+                id: 'node1', height: 100, width: 100, offsetX: 200, offsetY: 200, 
+             },
+             {
+                 id: 'node2', height: 100, width: 100, offsetX: 350, offsetY: 200, 
+              },
+            {
+                id: 'swimlane',
+                shape: {
+                    type: 'SwimLane',
+                    orientation: 'Horizontal',
+                    header: {
+                        annotation: { content: 'ONLINE PURCHASE STATUS' },
+                        height: 50, style: { fontSize: 11 },
+                    },
+                    lanes: [
+                        {
+                            id: 'stackCanvas1',
+                            header: {
+                                annotation: { content: 'CUSTOMER' }, width: 50,
+                                style: { fontSize: 11 }
+                            },
+                            height: 100
+                        },
+        
+                    ],
+        
+                },
+                offsetX: 420, offsetY: 270,
+                height: 100,
+                width: 650
+            },
+            
+             
+        ];
+        diagram = new Diagram({
+            width: 800, height: 800, nodes: nodes
+        });
+        diagram.appendTo('#diagramorder');
+
+    });
+    afterAll((): void => {
+        diagram.destroy();
+        ele.remove();
+    });
+    it('Send child backward to swimlane', (done: Function) => {
+        let node: NodeModel = diagram.getObject('swimlane');
+        diagram.select([node]);
+        diagram.sendToBack();
+        diagram.clearSelection();
+        let node2: NodeModel = diagram.getObject('node1');
+        diagram.select([node2]);
+        diagram.sendToBack();
+        diagram.clearSelection();
+        expect(node.zIndex === 4).toBe(true);
+        done();
+    });
+    it('Send Swimlane backward to all child', (done: Function) => {
+        let node: NodeModel = diagram.getObject('swimlane');
+        diagram.select([node]);
+        diagram.sendToBack();
+        diagram.clearSelection();
+        expect(node.zIndex === 3).toBe(true);
+        done();
+    });
+})
+
+describe('Swimlane & Child - Bring to Front command', () => {
+    let diagram: Diagram;
+    let ele: HTMLElement;
+    let scroller: DiagramScroller;
+    let mouseEvents: MouseEvents = new MouseEvents();
+    beforeAll((): void => {
+        const isDef = (o: any) => o !== undefined && o !== null;
+        if (!isDef(window.performance)) {
+            console.log("Unsupported environment, window.performance.memory is unavailable");
+            this.skip(); //Skips test (in Chai)
+            return;
+        }
+
+        ele = createElement('div', { id: 'diagramorder2' });
+        document.body.appendChild(ele);
+        let nodes: NodeModel[] =  [
+            {
+                id: 'swimlane',
+                shape: {
+                    type: 'SwimLane',
+                    orientation: 'Horizontal',
+                    header: {
+                        annotation: { content: 'ONLINE PURCHASE STATUS' },
+                        height: 50, style: { fontSize: 11 },
+                    },
+                    lanes: [
+                        {
+                            id: 'stackCanvas1',
+                            header: {
+                                annotation: { content: 'CUSTOMER' }, width: 50,
+                                style: { fontSize: 11 }
+                            },
+                            height: 100
+                        },
+        
+                    ],
+        
+                },
+                offsetX: 420, offsetY: 270,
+                height: 100,
+                width: 650
+            },
+            
+             
+        ];
+        diagram = new Diagram({
+            width: 800, height: 800, nodes: nodes
+        });
+        diagram.appendTo('#diagramorder2');
+
+    });
+    afterAll((): void => {
+        diagram.destroy();
+        ele.remove();
+    });
+    it('Bring child Front to swimlane', (done: Function) => {
+        let newnode: NodeModel =  {
+            id: 'node1', height: 100, width: 100, offsetX: 200, offsetY: 200, 
+         };
+         diagram.add(newnode);
+         let newNode2: NodeModel = {
+            id: 'node2', height: 100, width: 100, offsetX: 350, offsetY: 200, 
+         };
+         diagram.add(newNode2);
+        let node: NodeModel = diagram.getObject('swimlane');
+        diagram.select([node]);
+        diagram.bringToFront();
+        diagram.clearSelection();
+        let node2: NodeModel = diagram.getObject('node1');
+        diagram.select([node2]);
+        diagram.bringToFront();
+        diagram.clearSelection();
+        expect(node.zIndex === 4).toBe(true);
+        done();
+    });
+    it('Bring Swimlane Front to all child', (done: Function) => {
+        let node: NodeModel = diagram.getObject('swimlane');
+        diagram.select([node]);
+        diagram.bringToFront();
+        diagram.clearSelection();
+        expect(node.zIndex === 5).toBe(true);
+        done();
+    });
+})
+
+

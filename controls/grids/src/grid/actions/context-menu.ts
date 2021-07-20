@@ -107,6 +107,7 @@ export class ContextMenu implements IAction {
         if (this.parent.isDestroyed) { return; }
         this.parent.on(events.uiUpdate, this.enableAfterRenderMenu, this);
         this.parent.on(events.initialLoad, this.render, this);
+        this.parent.on(events.destroy, this.destroy, this);
     }
 
     /**
@@ -117,6 +118,7 @@ export class ContextMenu implements IAction {
         if (this.parent.isDestroyed) { return; }
         this.parent.off(events.initialLoad, this.render);
         this.parent.off(events.uiUpdate, this.enableAfterRenderMenu);
+        this.parent.off(events.destroy, this.destroy);
         EventHandler.remove(this.element, 'keydown', this.keyDownHandler.bind(this));
     }
 
@@ -507,7 +509,9 @@ export class ContextMenu implements IAction {
         const gridElement: Element = this.parent.element;
         if (!gridElement || (!gridElement.querySelector('.' + literals.gridHeader) && !gridElement.querySelector( '.' + literals.gridContent))) { return; }
         this.contextMenu.destroy();
-        remove(this.element);
+        if (this.element.parentNode) {
+            remove(this.element);
+        }
         this.removeEventListener();
         this.parent.element.classList.remove('e-noselect');
     }

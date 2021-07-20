@@ -380,7 +380,7 @@ export class ShowHide {
         if (cellIdx - 1 > -1) {
             if (sheet.showHeaders && hRow.cells[cellIdx - 1]) { hRow.cells[cellIdx - 1].classList.add('e-hide-start'); }
         }
-        if (hRow.cells[cellIdx]) { hRow.cells[cellIdx].classList.add('e-hide-end'); }
+        if (sheet.showHeaders && hRow.cells[cellIdx]) { hRow.cells[cellIdx].classList.add('e-hide-end'); }
     }
     private appendCell(sheet: SheetModel, indexes: number[]): void {
         let startIdx: number; let endIdx: number; let hRow: HTMLTableRowElement; let row: HTMLTableRowElement; let hColgrp: HTMLElement;

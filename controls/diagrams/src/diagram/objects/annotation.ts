@@ -92,7 +92,6 @@ export class Annotation extends ChildProperty<Annotation> {
      *
      * @default 'InheritReadOnly'
      * @aspNumberEnum
-     * @blazorNumberEnum
      */
     @Property(AnnotationConstraints.InheritReadOnly)
     public constraints: AnnotationConstraints;
@@ -120,7 +119,6 @@ export class Annotation extends ChildProperty<Annotation> {
      * ```
      *
      * @aspDefaultValueIgnore
-     * @blazorDefaultValueIgnore
      * @default undefined
      */
     @Complex<HyperlinkModel>(undefined, Hyperlink)
@@ -138,7 +136,6 @@ export class Annotation extends ChildProperty<Annotation> {
      * Sets the width of the text
      *
      * @aspDefaultValueIgnore
-     * @blazorDefaultValueIgnore
      * @default undefined
      */
     @Property()
@@ -148,7 +145,6 @@ export class Annotation extends ChildProperty<Annotation> {
      * Sets the height of the text
      *
      * @aspDefaultValueIgnore
-     * @blazorDefaultValueIgnore
      * @default undefined
      */
     @Property()
@@ -166,7 +162,6 @@ export class Annotation extends ChildProperty<Annotation> {
      * Defines the appearance of the text
      *
      * @default new TextStyle()
-     * @blazorType AnnotationStyle
      */
     @Complex<TextStyleModel>({ strokeWidth: 0, strokeColor: 'transparent', fill: 'transparent' }, TextStyle)
     public style: TextStyleModel;
@@ -245,7 +240,6 @@ export class Annotation extends ChildProperty<Annotation> {
      * ```
      *
      * @aspDefaultValueIgnore
-     * @blazorDefaultValueIgnore
      * @default undefined
      */
     @Property()

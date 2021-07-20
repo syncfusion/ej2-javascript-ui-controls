@@ -2393,6 +2393,16 @@ export interface FormFieldModel {
     name?: string;
 
     /**
+     * Specifies whether the check box is in checked state or not.
+     */
+    isChecked?: boolean;
+
+    /**
+     * Specifies whether the radio button is in checked state or not.
+     */
+    isSelected?: boolean;
+
+    /**
      * Gets the id of the form field.
      */
     id?: string;

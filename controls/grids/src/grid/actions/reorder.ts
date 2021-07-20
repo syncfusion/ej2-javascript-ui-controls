@@ -41,6 +41,7 @@ export class Reorder implements IAction {
         this.parent.on(events.headerDrop, this.headerDrop, this);
         this.parent.on(events.headerRefreshed, this.createReorderElement, this);
         this.parent.on(events.keyPressed, this.keyPressHandler, this);
+        this.parent.on(events.destroy, this.destroy, this);
     }
 
     private chkDropPosition(srcElem: Element, destElem: Element): boolean {
@@ -432,8 +433,12 @@ export class Reorder implements IAction {
         const gridElement: Element = this.parent.element;
         if (this.parent.isDestroyed || !gridElement || (!gridElement.querySelector('.' + literals.gridHeader) &&
             !gridElement.querySelector( '.' + literals.gridContent))) { return; }
-        remove(this.upArrow);
-        remove(this.downArrow);
+        if (this.upArrow.parentNode) {
+            remove(this.upArrow);
+        }
+        if (this.downArrow.parentNode) {
+            remove(this.downArrow);
+        }
         this.parent.off(events.headerDrop, this.headerDrop);
         this.parent.off(events.uiUpdate, this.enableAfterRender);
         this.parent.off(events.reorderComplete, this.onActionComplete);
@@ -442,6 +447,7 @@ export class Reorder implements IAction {
         this.parent.off(events.columnDragStop, this.dragStop);
         this.parent.off(events.headerRefreshed, this.createReorderElement);
         this.parent.off(events.keyPressed, this.keyPressHandler);
+        this.parent.off(events.destroy, this.destroy);
         //call ejdrag and drop destroy
     }
 

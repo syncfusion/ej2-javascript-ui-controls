@@ -270,6 +270,7 @@ export class Sort implements IAction {
         }
         this.backupSettings();
         this.removeSortIcons();
+        const args: Object = { requestType: 'sorting', type: events.actionBegin, target: this.currentTarget };
         for (let i: number = 0, len: number = cols.length; i < len; i++) {
             if (cols[i].field === field) {
                 if (gObj.allowGrouping && gObj.groupSettings.columns.indexOf(cols[i].field) > -1) {
@@ -279,14 +280,14 @@ export class Sort implements IAction {
                 cols.splice(i, 1);
                 this.isRemove = true;
                 if (this.isModelChanged) {
-                    this.parent.notify(events.modelChanged, {
-                        requestType: 'sorting', type: events.actionBegin, target: this.currentTarget
-                    });
+                    this.parent.notify(events.modelChanged, args);
                 }
                 break;
             }
         }
-        this.addSortIcons();
+        if (!(<{ cancel?: boolean }>args).cancel) {
+            this.addSortIcons();
+        }
     }
 
     private getSortedColsIndexByField(field: string, sortedColumns?: SortDescriptorModel[]): number {
@@ -338,7 +339,8 @@ export class Sort implements IAction {
             { event: events.click, handler: this.clickHandler },
             { event: events.headerRefreshed, handler: this.refreshSortIcons },
             { event: events.keyPressed, handler: this.keyPressed },
-            { event: events.cancelBegin, handler: this.cancelBeginEvent }];
+            { event: events.cancelBegin, handler: this.cancelBeginEvent },
+            { event: events.destroy, handler: this.destroy }];
         addRemoveEventListener(this.parent, this.evtHandlers, true, this);
     }
 

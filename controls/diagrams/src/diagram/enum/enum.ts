@@ -422,7 +422,6 @@ export type AnnotationType =
  * Default - By default the ports will be visible when a node is hovered and being tried to connect
  *
  * @aspNumberEnum
- * @blazorNumberEnum
  */
 export enum PortVisibility {
     /** Always shows the port */
@@ -447,7 +446,6 @@ export enum PortVisibility {
  *
  * @IgnoreSingular
  * @aspNumberEnum
- * @blazorNumberEnum
  */
 
 export enum SnapConstraints {
@@ -489,7 +487,6 @@ export enum SnapConstraints {
  * Resize - Shows/hides all resize handles of the selector
  *
  * @aspNumberEnum
- * @blazorNumberEnum
  * @IgnoreSingular
  */
 export enum SelectorConstraints {
@@ -831,7 +828,6 @@ export type TextAlign =
  * * Default - Default features of the connector.
  *
  * @aspNumberEnum
- * @blazorNumberEnum
  * @IgnoreSingular
  */
 export enum ConnectorConstraints {
@@ -894,7 +890,6 @@ export enum ConnectorConstraints {
  * None - Disable all annotation constraints
  *
  * @aspNumberEnum
- * @blazorNumberEnum
  * @IgnoreSingular
  */
 export enum AnnotationConstraints {
@@ -948,7 +943,6 @@ export enum AnnotationConstraints {
  * Default - Enables all constraints
  *
  * @aspNumberEnum
- * @blazorNumberEnum
  * @IgnoreSingular
  */
 export enum NodeConstraints {
@@ -1095,7 +1089,6 @@ export enum ThumbsConstraints {
  * Default - Enables/Disable all constraints
  *
  * @aspNumberEnum
- * @blazorNumberEnum
  * @IgnoreSingular
  */
 export enum DiagramConstraints {
@@ -1142,7 +1135,6 @@ export enum DiagramConstraints {
  * Default - Enables/Disable all constraints
  *
  * @aspNumberEnum
- * @blazorNumberEnum
  * @IgnoreSingular
  */
 export enum DiagramTools {
@@ -2073,7 +2065,6 @@ export type ScrollLimit =
  * * Shift - shift key
  *
  * @aspNumberEnum
- * @blazorNumberEnum
  * @IgnoreSingular
  */
 
@@ -2161,7 +2152,6 @@ export enum KeyModifiers {
  * * The Star
  *
  * @aspNumberEnum
- * @blazorNumberEnum
  * @IgnoreSingular
  */
 
@@ -2539,7 +2529,6 @@ export type FitModes =
 /** Enables/Disables certain features of port connection
  *
  * @aspNumberEnum
- * @blazorNumberEnum
  * @IgnoreSingular
  */
 export enum PortConstraints {

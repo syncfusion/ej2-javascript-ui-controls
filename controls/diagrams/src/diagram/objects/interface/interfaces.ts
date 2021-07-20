@@ -166,7 +166,6 @@ export interface IExportOptions extends IPrintOptions {
 export interface DiagramMenuEventArgs extends MenuEventArgs {
     cancel?: boolean;
     /**
-     * @blazorType Syncfusion.Blazor.Navigations.MenuItemModel
      */
     item: MenuItemModel;
 }
@@ -176,16 +175,12 @@ export interface DiagramBeforeMenuOpenEventArgs extends BeforeOpenCloseMenuEvent
     /**
      * Defines the hidden items of the diagram context menu
      *
-     * @blazorType Object
-     * @blazorType List<string>
      */
     hiddenItems: string[];
     /**
-     * @blazorType List<Syncfusion.Blazor.Navigations.MenuItemModel>
      */
     items: MenuItemModel[];
     /**
-     * @blazorType Syncfusion.Blazor.Navigations.MenuItemModel
      */
     parentItem: MenuItemModel;
 }

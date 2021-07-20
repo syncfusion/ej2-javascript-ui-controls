@@ -274,8 +274,8 @@ export class ProgressAnimation {
                 } else if (progress.type === 'Circular') {
                     if (labelText === '') {
                         labelPath.setAttribute('visibility', 'visible');
-                        value = effect(args.timeStamp, start, end, args.duration, false);
-                        valueChanged = parseInt((((value - start) / progress.totalAngle) * percentage).toString(), 10);
+                        value = effect(args.timeStamp, start, end - start, args.duration, false);
+                        valueChanged = parseInt(((value / progress.totalAngle) * percentage).toString(), 10);
                         labelPath.innerHTML = valueChanged.toString() + '%';
                     }
                 }

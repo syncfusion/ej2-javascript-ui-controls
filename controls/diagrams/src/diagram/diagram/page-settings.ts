@@ -124,7 +124,6 @@ export class PageSettings extends ChildProperty<PageSettings> {
      * Sets the width of a diagram Page
      *
      * @default null
-     * @isBlazorNullableType true
      */
     @Property(null)
     public width: number;
@@ -133,7 +132,6 @@ export class PageSettings extends ChildProperty<PageSettings> {
      * Sets the height of a diagram Page
      *
      * @default null
-     * @isBlazorNullableType true
      */
     @Property(null)
     public height: number;
@@ -194,7 +192,6 @@ export class PageSettings extends ChildProperty<PageSettings> {
      *
      * @default new FitOptions()
      * @aspType object
-     * @blazorType DiagramFitOptions
      */
     @Complex<FitOptionsModel>({}, FitOptions)
     public fitOptions: FitOptionsModel;
@@ -208,7 +205,6 @@ export class ScrollSettings extends ChildProperty<ScrollSettings> {
      * Defines horizontal offset of the scroller
      *
      * @default 0
-     * @isBlazorNullableType true
      */
     @Property(0)
     public horizontalOffset: number;
@@ -217,7 +213,6 @@ export class ScrollSettings extends ChildProperty<ScrollSettings> {
      * Defines vertical offset of the scroller
      *
      * @default 0
-     * @isBlazorNullableType true
      */
     @Property(0)
     public verticalOffset: number;
@@ -233,7 +228,6 @@ export class ScrollSettings extends ChildProperty<ScrollSettings> {
      * Allows to read the viewport width of the diagram
      *
      * @default 0
-     * @isBlazorNullableType true
      */
     @Property(0)
     public viewPortWidth: number;
@@ -242,7 +236,6 @@ export class ScrollSettings extends ChildProperty<ScrollSettings> {
      * Allows to read the viewport height of the diagram
      *
      * @default 0
-     * @isBlazorNullableType true
      */
     @Property(0)
     public viewPortHeight: number;
@@ -290,7 +283,6 @@ export class ScrollSettings extends ChildProperty<ScrollSettings> {
      * Defines the scrollable area of diagram. Applicable, if the scroll limit is “limited”.
      *
      * @aspDefaultValueIgnore
-     * @blazorDefaultValueIgnore
      * @default undefined
      */
     @Property()

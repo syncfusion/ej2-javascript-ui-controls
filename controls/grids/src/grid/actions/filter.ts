@@ -197,7 +197,9 @@ export class Filter implements IAction {
         if (this.filterSettings.type === 'FilterBar' && this.filterSettings.showFilterBarOperator) {
             const dropdownlist: NodeListOf<Element> = [].slice.call(this.element.getElementsByClassName('e-filterbaroperator'));
             for (let i: number = 0; i < dropdownlist.length; i++) {
-                (<EJ2Intance>dropdownlist[i]).ej2_instances[0].destroy();
+                if ((<EJ2Intance>dropdownlist[i]).ej2_instances[0]) {
+                    (<EJ2Intance>dropdownlist[i]).ej2_instances[0].destroy();
+                }
             }
         }
         if (this.element) {
@@ -383,6 +385,7 @@ export class Filter implements IAction {
         this.parent.on(events.click, this.filterIconClickHandler, this);
         this.parent.on('persist-data-changed', this.initialEnd, this);
         this.parent.on(events.closeFilterDialog, this.clickHandler, this);
+        this.parent.on(events.destroy, this.destroy, this);
         this.refreshFilterValueFn = this.refreshFilterValue.bind(this);
         this.parent.addEventListener(events.beforeDataBound, this.refreshFilterValueFn);
     }
@@ -405,6 +408,7 @@ export class Filter implements IAction {
         this.parent.off(events.filterMenuClose, this.filterMenuClose);
         this.parent.off(events.click, this.filterIconClickHandler);
         this.parent.off(events.closeFilterDialog, this.clickHandler);
+        this.parent.off(events.destroy, this.destroy);
     }
 
     private filterMenuClose(): void {
@@ -547,7 +551,6 @@ export class Filter implements IAction {
                         }
                         return;
                     }
-                    this.addFilteredClass((<{currentFilteringColumn?: string}>args).currentFilteringColumn);
                     this.updateFilterIcon();
                     this.refreshFilterSettings();
                     this.updateFilterMsg();

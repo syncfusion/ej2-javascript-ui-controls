@@ -59,7 +59,6 @@ export class LayoutInfo extends ChildProperty<LayoutInfo> {
     /**
      * Defines assistant for the layout
      *
-     * @blazorDefaultValueIgnore
      * @default ''
      * @aspDefaultValueIgnore
      * @isBlazorNullableType true
@@ -70,7 +69,6 @@ export class LayoutInfo extends ChildProperty<LayoutInfo> {
     /**
      * Defines the level for the layout
      *
-     * @blazorDefaultValueIgnore
      */
     @Property('')
     public level: number;
@@ -78,7 +76,6 @@ export class LayoutInfo extends ChildProperty<LayoutInfo> {
     /**
      * Defines the subtree for the layout
      *
-     * @blazorDefaultValueIgnore
      */
     @Property('')
     public hasSubTree: boolean;
@@ -86,7 +83,6 @@ export class LayoutInfo extends ChildProperty<LayoutInfo> {
     /**
      * Defines the row for the layout
      *
-     * @blazorDefaultValueIgnore
      */
     @Property('')
     public rows: number;

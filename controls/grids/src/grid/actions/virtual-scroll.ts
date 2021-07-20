@@ -57,6 +57,7 @@ export class VirtualScroll implements IAction {
         this.parent.on(events.columnWidthChanged, this.refreshVirtualElement, this);
         this.parent.on(events.createVirtualValidationForm, this.createVirtualValidationForm, this);
         this.parent.on(events.validateVirtualForm, this.virtualEditFormValidation, this);
+        this.parent.on(events.destroy, this.destroy, this);
     }
 
     public removeEventListener(): void {
@@ -65,6 +66,7 @@ export class VirtualScroll implements IAction {
         this.parent.off(events.columnWidthChanged, this.refreshVirtualElement);
         this.parent.off(events.createVirtualValidationForm, this.createVirtualValidationForm);
         this.parent.off(events.validateVirtualForm, this.virtualEditFormValidation);
+        this.parent.off(events.destroy, this.destroy);
     }
 
     private getCurrentEditedData(prevData: object): object {
@@ -118,7 +120,7 @@ export class VirtualScroll implements IAction {
                 }
             } else if (gObj.editModule.virtualFormObj && (!error || error.style.display === 'none')) {
                 const existingErrors: NodeListOf<Element> = gObj.editModule.virtualFormObj.element.querySelectorAll('.e-tooltip-wrap:not([style*="display: none"])');
-                for(let i: number = 0; i < existingErrors.length; i++) {
+                for (let i: number = 0; i < existingErrors.length; i++) {
                     remove(existingErrors[i]);
                 }
                 this.setEditedDataToValidationForm(gObj.editModule.virtualFormObj.element, this.getCurrentEditedData(args.prevData));
@@ -154,7 +156,6 @@ export class VirtualScroll implements IAction {
     }
 
     private setEditedDataToValidationForm(form: Element, editedData: object): void {
-        const gObj: IGrid = this.parent;
         const inputs: HTMLInputElement[] = [].slice.call(form.getElementsByClassName('e-field'));
         for (let i: number = 0, len: number = inputs.length; i < len; i++) {
             const col: Column = getColumnModelByUid(this.parent, inputs[i].getAttribute('e-mappinguid'));

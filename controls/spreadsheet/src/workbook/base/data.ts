@@ -59,6 +59,9 @@ export function getData(
                             if (indexes[3] < i + 1) { cells[rowKey] = (sRow + 1).toString(); }
                             data[index.toString()] = cells;
                         } else {
+                            const eventArgs: CellInfoEventArgs = { cell: getCell(sRow, i, sheet), address: getCellAddress(sRow, i),
+                                rowIndex: sRow, colIndex: i };
+                            context.trigger(queryCellInfo, eventArgs);
                             const cellObj: CellModel = {}; Object.assign(cellObj, row ? getCell(sRow, i, sheet) : null);
                             if (cellObj.colSpan > 1 && cellObj.rowSpan > 1) {
                                 let cell: CellModel;
@@ -98,9 +101,7 @@ export function getData(
                             if (cellObj.style) {
                                 const style: CellStyleModel = {}; Object.assign(style, cellObj.style); cellObj.style = style;
                             }
-                            const eventArgs: CellInfoEventArgs = { cell: cellObj, address: getCellAddress(sRow, i) };
-                            context.trigger(queryCellInfo, eventArgs);
-                            (data as Map<string, CellModel>).set(eventArgs.address, eventArgs.cell);
+                            (data as Map<string, CellModel>).set(eventArgs.address, cellObj);
                         }
                         i++;
                     }

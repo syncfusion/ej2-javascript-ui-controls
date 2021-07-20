@@ -675,36 +675,7 @@ export class SpreadsheetChart {
         element.style.width = chart.width + 'px';
         element.style.height = chart.height + 'px';
         if (sheet.frozenRows || sheet.frozenColumns) {
-            const indexes: number[] = getRangeIndexes(eleRange);
-            const frozenRow: number = this.parent.frozenRowCount(sheet); const frozenCol: number = this.parent.frozenColCount(sheet);
-            if (indexes[0] < frozenRow || indexes[1] < frozenCol) {
-                if (!isNullOrUndefined(chart.top)) {
-                    element.style.top = chart.top + (sheet.showHeaders ? 31 : 0) - this.parent.viewport.beforeFreezeHeight + 'px';
-                }
-                if (!isNullOrUndefined(chart.left)) {
-                    element.style.left = chart.left + this.parent.sheetModule.getRowHeaderWidth(sheet, true) -
-                        this.parent.viewport.beforeFreezeWidth + 'px';
-                }
-            } else {
-                if (!isNullOrUndefined(chart.top)) {
-                    element.style.top = chart.top - this.parent.viewport.beforeFreezeHeight - (frozenRow ? getRowsHeight(
-                        sheet, getCellIndexes(sheet.topLeftCell)[0], frozenRow - 1) : 0) + 'px';
-                }
-                if (!isNullOrUndefined(chart.left)) {
-                    element.style.left = chart.left - this.parent.viewport.beforeFreezeWidth - (frozenCol ? getColumnsWidth(
-                        sheet, getCellIndexes(sheet.topLeftCell)[1], frozenCol - 1) : 0) + 'px';
-                }
-            }
-            if (isNullOrUndefined(chart.top)) {
-                const startTop: number = getCellIndexes(sheet.topLeftCell)[0];
-                chart.top = this.parent.viewport.beforeFreezeHeight + (frozenRow && startTop === indexes[0] ? 0 : getRowsHeight(
-                    sheet, frozenRow ? startTop : 0, indexes[0] - 1));
-            }
-            if (isNullOrUndefined(chart.left)) {
-                const startLeft: number = getCellIndexes(sheet.topLeftCell)[1];
-                chart.left = this.parent.viewport.beforeFreezeWidth + (frozenCol && startLeft === indexes[1] ? 0 : getColumnsWidth(
-                    sheet, frozenCol ? startLeft : 0, indexes[1] - 1));
-            }
+            overlayObj.adjustFreezePaneSize(chart, element, eleRange);
         } else {
             element.style.top = isNullOrUndefined(chart.top) ? element.style.top : (chart.top + 'px');
             element.style.left = isNullOrUndefined(chart.left) ? element.style.left : (chart.left + 'px');

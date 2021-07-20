@@ -2,15 +2,15 @@
 
 ## [Unreleased]
 
-## 19.2.47 (2021-07-13)
+## 19.2.48 (2021-07-20)
 
 ### Excel Export
 
 #### Bug Fixes
 
-- Sheet name proper in Grid to Excel export.
+- Performance issue caused by duplicate row checking is resolved.
 
-## 19.1.54 (2021-03-30)
+## 19.2.46 (2021-07-06)
 
 ### Excel Export
 

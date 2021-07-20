@@ -80,7 +80,8 @@ export class CellRenderer implements ICellRenderer {
         if (!hasTemplate(this.parent as Workbook, args.rowIdx, args.colIdx, this.parent.activeSheetIndex)) {
             this.parent.notify(renderFilterCell, { td: args.td, rowIndex: args.rowIdx, colIndex: args.colIdx });
         }
-        const evtArgs: CellRenderEventArgs = { cell: args.cell, element: args.td, address: args.address };
+        const evtArgs: CellRenderEventArgs = { cell: args.cell, element: args.td, address: args.address, rowIndex: args.rowIdx, colIndex:
+            args.colIdx };
         this.parent.trigger('beforeCellRender', evtArgs);
         this.updateRowHeight({
             rowIdx: args.rowIdx as number,
@@ -587,6 +588,7 @@ export class CellRenderer implements ICellRenderer {
         if (!element && (isHiddenRow(sheet, rowIdx) || isHiddenCol(sheet, colIdx))) { return; }
         if (element || !this.parent.scrollSettings.enableVirtualization || this.parent.insideViewport(rowIdx, colIdx)) {
             const cell: HTMLElement = <HTMLElement>element || this.parent.getCell(rowIdx, colIdx);
+            if (!cell) { return; }
             this.update(<CellRenderArgs>{ rowIdx: rowIdx, colIdx: colIdx, td: cell, cell: getCell(
                 rowIdx, colIdx, sheet), lastCell: lastCell, isRefresh: true, isHeightCheckNeeded: true,
             manualUpdate: true, first: '' });

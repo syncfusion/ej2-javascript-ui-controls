@@ -3641,10 +3641,16 @@ export class Layout {
         } else {
             clientWidth = this.viewer.clientArea.x;
         }
-        if (clientActiveX < clientWidth
-            || (element instanceof ListTextElementBox && lineWidget.isFirstLine()
-                && leftIndent > 0 && firstLineIndent < 0)) {
+        if (clientActiveX < clientWidth) {
             return viewer.clientArea.x - viewer.clientActiveArea.x;
+        }
+        if ((element instanceof ListTextElementBox && lineWidget.isFirstLine()
+            && leftIndent > 0 && firstLineIndent < 0)) {
+            if ((viewer.clientArea.x - viewer.clientActiveArea.x) > 0) {
+                return viewer.clientArea.x - viewer.clientActiveArea.x;
+            } else if (tabs.length === 0 && paragraph.paragraphFormat.listFormat) {
+                tabs = paragraph.paragraphFormat.listFormat.listLevel.paragraphFormat.tabs;
+            }
         }
         // Calculates tabwidth based on pageleftmargin and defaulttabwidth property
         let position: number = viewer.clientActiveArea.x -
@@ -4184,7 +4190,7 @@ export class Layout {
             this.updateSpannedRowCollection(rowSpan, row, cellWidget);
             if (rowIndex - cellWidget.rowIndex === rowSpan - 1) {
                 let mergedCellHeight: number = cellWidget.y + cellWidget.height + cellWidget.margin.bottom - row.y;
-                if (row.height < mergedCellHeight) {
+                if ((row.rowFormat.heightType !== 'Exactly' || (row.rowFormat.heightType === 'Exactly' && row.rowFormat.height > mergedCellHeight)) && row.height < mergedCellHeight) {
                     row.height = mergedCellHeight;
                 }
             }
@@ -4332,6 +4338,9 @@ export class Layout {
         cellSpacing = (!isNullOrUndefined(row.ownerTable) && !isNullOrUndefined(row.ownerTable.tableFormat)) ? HelperMethods.convertPointToPixel(row.ownerTable.tableFormat.cellSpacing) : 0;
         while (count < rowWidgets.length) {
             count = rowWidgets.length;
+            if (this.isRowSpanEnd(row, viewer) && row.rowFormat.heightType === 'Exactly' && this.documentHelper.splittedCellWidgets.length === 1) {
+                this.documentHelper.splittedCellWidgets = [];
+            }
             if (row.ownerTable.isInsideTable || (this.documentHelper.splittedCellWidgets.length === 0 && tableRowWidget.y + tableRowWidget.height + cellSpacing + this.footnoteHeight <= viewer.clientArea.bottom)) {
                 if (this.isVerticalMergedCellContinue(row) && (tableRowWidget.y === viewer.clientArea.y
                     || tableRowWidget.y === this.viewer.clientArea.y + tableRowWidget.ownerTable.headerHeight)) {
@@ -4690,7 +4699,11 @@ export class Layout {
                     cellWidget.height = spanEndRowWidget.y + spanEndRowWidget.height - cellWidget.y - cellWidget.margin.bottom;
                     // eslint-disable-next-line max-len
                 } else if (isLayouted && spanEndRowWidget && (spanEndRowWidget.y !== 0 && spanEndRowWidget.height !== 0) && cellWidget.y + cellWidget.height + cellWidget.margin.bottom > spanEndRowWidget.y + spanEndRowWidget.height) {
+                    if (spanEndRowWidget.rowFormat.heightType !== 'Exactly' || (spanEndRowWidget.rowFormat.heightType === 'Exactly' && spanEndRowWidget.rowFormat.height > cellWidget.y + cellWidget.height + cellWidget.margin.bottom - spanEndRowWidget.y)) {
                     spanEndRowWidget.height = cellWidget.y + cellWidget.height + cellWidget.margin.bottom - spanEndRowWidget.y;
+                    } else {
+                        cellWidget.height = (spanEndRowWidget.y - cellWidget.y) + spanEndRowWidget.height;
+                    }
                     //Update the next rowlayout widget location. Reason for the updation is previous row height is updated when cell height is greater. So already layouted next row location has to be updated again.
                     // if (rowWidget === spanEndRowWidget && rowWidget.nextWidget instanceof TableRowWidget) {
                     //     let nextRow: TableRowWidget = rowWidget.nextWidget as TableRowWidget;
@@ -5099,6 +5112,15 @@ export class Layout {
                 if (allowRowBreakAcrossPages) {
                     // eslint-disable-next-line max-len
                     splittedRow = (isNullOrUndefined(splittedWidget) && this.isFirstLineFitForRow(bottom, rowWidget)) ? this.getSplittedWidgetForRow(bottom, tableCollection, [rowWidget], rowWidget) : rowWidget;
+                } else {
+                    if ((isNullOrUndefined(tableWidget.containerWidget.containerWidget.previousWidget)
+                        && this.isFirstLineFitForRow(bottom, rowWidget))
+                        || (tableWidget.isInsideTable
+                            && !((tableWidget.containerWidget.containerWidget as TableRowWidget).rowFormat.allowBreakAcrossPages))) {
+                        splittedRow = this.getSplittedWidgetForRow(bottom, tableCollection, [rowWidget], rowWidget);
+                    } else if (!isNullOrUndefined(tableWidget.containerWidget.containerWidget.previousWidget)) {
+                        splittedRow = rowWidget;
+                    }
                 }
                 if (!isNullOrUndefined(splittedRow)) {
                     if (i === 0 && splittedRow === rowWidget) {
@@ -5920,7 +5942,7 @@ export class Layout {
         }
         tableView[tableView.length - 1].isLayouted = true;
         if (this.documentHelper.compatibilityMode !== 'Word2013') {
-            this.viewer.clientActiveArea.x = this.viewer.clientActiveArea.x + HelperMethods.convertPointToPixel(((table.firstChild as TableRowWidget).firstChild as TableCellWidget).leftMargin);
+            this.viewer.clientArea.x = this.viewer.clientActiveArea.x + HelperMethods.convertPointToPixel(((table.firstChild as TableRowWidget).firstChild as TableCellWidget).leftMargin);
         }
         return tableView[tableView.length - 1];
     }

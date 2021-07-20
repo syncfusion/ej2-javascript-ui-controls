@@ -1273,17 +1273,15 @@ export class DocumentHelper {
      * @param {string} author - Specifies author name.
      * @returns {string} - Return autor color.
      */
-    public getAuthorColor(author: string): string {
+     public getAuthorColor(author: string): string {
         if (this.authors.containsKey(author)) {
             return this.authors.get(author);
         }
-        let color: string = this.owner.userColor;
-        if (author !== this.owner.currentUser) {
-            if (this.authors.length === 0 && color !== '#b5082e') {
-                color = '#b5082e';  //dark red
-            } else {
-                color = this.generateRandomColor();
-            }
+        let color: string;
+        if (this.authors.length === 0) {
+            color = '#b5082e';  //dark red
+        } else {
+            color = this.generateRandomColor();
         }
         this.authors.add(author, color);
         return color;

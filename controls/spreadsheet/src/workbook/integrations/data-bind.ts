@@ -350,7 +350,8 @@ export class DataBind {
      * @param {boolean} args.isLastRange - Specify the isLastRange.
      * @returns {void} - Remove old data from sheet.
      */
-    private dataSourceChangedHandler(args: { oldProp: Workbook, sheetIdx: string, rangeIdx: string, isLastRange: boolean }): void {
+    private dataSourceChangedHandler(
+        args: { oldProp: Workbook, sheetIdx: string, rangeIdx: string, isLastRange: boolean, changedData: Object[] }): void {
         let row: RowModel;
         const sheet: SheetModel = this.parent.sheets[args.sheetIdx];
         const range: ExtendedRange = sheet.ranges[args.rangeIdx];
@@ -375,14 +376,18 @@ export class DataBind {
             interface Viewport { topIndex: number; bottomIndex: number; leftIndex: number; rightIndex: number; }
             const viewport: Viewport = (this.parent as unknown as { viewport: Viewport }).viewport;
             const refreshRange: number[] = [viewport.topIndex, viewport.leftIndex, viewport.bottomIndex, viewport.rightIndex];
-            const args: { sheet: ExtendedSheet, indexes: number[], promise: Promise<CellModel> } = {
+            const eventArgs: { sheet: ExtendedSheet, indexes: number[], promise: Promise<CellModel> } = {
                 sheet: sheet as ExtendedSheet, indexes: refreshRange, promise:
                     // eslint-disable-next-line @typescript-eslint/no-unused-vars
                     new Promise((resolve: Function, reject: Function) => { resolve((() => { /** */ })()); })
             };
-            this.updateSheetFromDataSourceHandler(args);
-            args.promise.then(() => {
+            this.updateSheetFromDataSourceHandler(eventArgs);
+            eventArgs.promise.then(() => {
                 this.parent.notify('updateView', { indexes: refreshRange });
+                this.parent.trigger(
+                    'dataSourceChanged',
+                    { data: args.changedData, action: 'dataSourceChanged', rangeIndex: Number(args.rangeIdx), sheetIndex:
+                    Number(args.sheetIdx) });
             });
         }
     }

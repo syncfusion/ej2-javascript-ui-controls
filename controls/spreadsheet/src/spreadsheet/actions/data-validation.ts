@@ -1,5 +1,5 @@
-import { Spreadsheet, DialogBeforeOpenEventArgs, editAlert, IOffset, IViewport } from '../index';
-import { isValidation, checkDateFormat, applyCellFormat, workbookEditOperation, activeCellChanged, validationHighlight } from '../../workbook/common/event';
+import { Spreadsheet, DialogBeforeOpenEventArgs, editAlert, IOffset, IViewport, CellSaveEventArgs } from '../index';
+import { isValidation, checkDateFormat, applyCellFormat, workbookEditOperation, activeCellChanged } from '../../workbook/common/event';
 import { getCell, setCell } from '../../workbook/base/cell';
 import { CellModel } from '../../workbook/base/cell-model';
 import { FormValidatorModel, FormValidator, NumericTextBox } from '@syncfusion/ej2-inputs';
@@ -14,8 +14,8 @@ import { getRangeIndexes, getIndexesFromAddress, getCellIndexes } from '../../wo
 import { CellFormatArgs } from '../../workbook/common/interface';
 import { DropDownList, PopupEventArgs } from '@syncfusion/ej2-dropdowns';
 import { DialogModel, BeforeOpenEventArgs } from '@syncfusion/ej2-popups';
-import { ValidationModel, ValidationType, ValidationOperator, CellStyleModel, getSheet, getSheetIndex, ColumnModel, Workbook } from '../../workbook/index';
-import { getColumn, isLocked, getRowsHeight, getColumnsWidth } from '../../workbook/index';
+import { ValidationModel, ValidationType, CellStyleModel, getSheet, getSheetIndex, ColumnModel, Workbook } from '../../workbook/index';
+import { getColumn, isLocked, getRowsHeight, getColumnsWidth, validationHighlight, ValidationOperator } from '../../workbook/index';
 
 /**
  * Represents Data Validation support for Spreadsheet.
@@ -129,14 +129,12 @@ export class DataValidation {
             const cell: CellModel = getCell(indexes[0], indexes[1], sheet);
             const column: ColumnModel = getColumn(sheet, indexes[1]);
             const tdEle: HTMLElement = this.parent.getCell(indexes[0], indexes[1]);
-            let validation: ValidationModel;
-            if (!tdEle) {
-                return;
-            }
+            if (!tdEle) { return; }
             if (document.getElementsByClassName('e-validation-list')[0]) {
                 remove(document.getElementsByClassName('e-validation-list')[0]);
                 this.data = [];
             }
+            let validation: ValidationModel;
             if (cell && cell.validation) {
                 validation = cell.validation;
             } else if (column && column.validation) {
@@ -161,7 +159,7 @@ export class DataValidation {
                         fields: { text: 'text', value: 'id' },
                         width: '0px',
                         popupHeight: '200px',
-                        change: () => { this.listValueChange(this.listObj.text); },
+                        change: () => this.listValueChange(this.listObj.text),
                         open: (args: PopupEventArgs) => {
                             args.popup.offsetX = - (tdEle.offsetWidth - 20) + 4;
                             args.popup.offsetY = -13;
@@ -251,7 +249,7 @@ export class DataValidation {
                 workbookEditOperation,
                 { action: 'updateCellValue', address: sheet.activeCell, value: value });
             this.parent.serviceLocator.getService<ICellRenderer>('cell').refreshRange(cellIdx);
-            this.parent.trigger('cellSave', {
+            this.parent.trigger('cellSave', <CellSaveEventArgs>{
                 value: value, oldValue: cellObj && cellObj.value, address: sheet.name + '!' + sheet.activeCell,
                 displayText: this.parent.getDisplayText(getCell(cellIdx[0], cellIdx[1], sheet))
             });

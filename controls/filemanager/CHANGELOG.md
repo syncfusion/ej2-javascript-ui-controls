@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 19.2.48 (2021-07-20)
+
+### File Manager
+
+#### Bug Fixes
+
+- `#F166908` - The issue with "When pressing Ctrl+A key, the scroll bar is moved to last item in File Manager detail view" has been resolved.
+
 ## 19.2.44 (2021-06-30)
 
 ### File Manager

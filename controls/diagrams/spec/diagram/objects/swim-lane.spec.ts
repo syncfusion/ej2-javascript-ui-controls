@@ -10313,7 +10313,7 @@ describe('Swimlane - Enable Line Routing', () => {
                 setTimeout(
                     () => {
                        console.log("Swim lane zindex update issue and line routing issue")
-                       expect(diagram.nameTable["swimlane"].wrapper.actualSize.width===715&&diagram.nameTable["swimlane"].wrapper.actualSize.height ===510&&diagram.nameTable["swimlane"].zIndex ===0).toBe(true);
+                       expect(diagram.nameTable["swimlane"].wrapper.actualSize.width===715&&diagram.nameTable["swimlane"].wrapper.actualSize.height ===510&&diagram.nameTable["swimlane"].zIndex ===16).toBe(true);
                        done();
                     },
                     1000);
@@ -10530,7 +10530,7 @@ describe('Swimlane interaction from different lane', () => {
          setTimeout(function () {
              console.log("Swim lane zindex update issue ");
               
-             expect(diagram.nodes[0].zIndex === 16 && diagram.nodes[1].zIndex === 17 && diagram.connectors[0].zIndex === 18).toBe(true);
+             expect(diagram.nodes[0].zIndex === 19 && diagram.nodes[1].zIndex === 20 && diagram.connectors[0].zIndex === 21).toBe(true);
              done();
          }, 1000);
      });

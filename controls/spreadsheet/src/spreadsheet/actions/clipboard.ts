@@ -1,7 +1,7 @@
 import { detach, EventHandler, Browser, L10n, isNullOrUndefined, extend } from '@syncfusion/ej2-base';
 import { ClickEventArgs } from '@syncfusion/ej2-navigations';
 import { Spreadsheet } from '../base/index';
-import { SheetModel, getRangeIndexes, getCell, setCell, getSheet, CellModel, getSwapRange, inRange, isHiddenRow, Workbook, getUpdatedFormula } from '../../workbook/index';
+import { SheetModel, getRangeIndexes, getCell, setCell, getSheet, CellModel, getSwapRange, inRange, Workbook } from '../../workbook/index';
 import { CellStyleModel, getRangeAddress, workbookEditOperation, getSheetIndexFromId, getSheetName } from '../../workbook/index';
 import { RowModel, getFormattedCellObject, workbookFormulaOperation, checkIsFormula, Sheet, mergedRange } from '../../workbook/index';
 import { ExtendedSheet, Cell, pasteMerge, setMerge, MergeArgs, getCellIndexes, getCellAddress, ChartModel } from '../../workbook/index';
@@ -13,9 +13,9 @@ import { getMaxHgt, setMaxHgt, setRowEleHeight, deleteImage, getRowIdxFromClient
 import { Dialog } from '../services/index';
 import { Deferred } from '@syncfusion/ej2-data';
 import { BeforeOpenEventArgs } from '@syncfusion/ej2-popups';
-import { refreshRibbonIcons, isCellReference, getColumn, isLocked as isCellLocked, FilterCollectionModel } from '../../workbook/index';
+import { refreshRibbonIcons, refreshClipboard, getColumn, isLocked as isCellLocked, FilterCollectionModel } from '../../workbook/index';
 import { getFilteredCollection, setChart, parseIntValue, isSingleCell, activeCellMergedRange, getRowsHeight } from '../../workbook/index';
-import { ConditionalFormatModel } from '../../workbook/index';
+import { ConditionalFormatModel, getUpdatedFormula, ModelType } from '../../workbook/index';
 
 /**
  * Represents clipboard support for Spreadsheet.
@@ -49,6 +49,7 @@ export class Clipboard {
         this.parent.on(ribbonClick, this.ribbonClickHandler, this);
         this.parent.on(contentLoaded, this.initCopyIndicator, this);
         this.parent.on(rowHeightChanged, this.rowHeightChanged, this);
+        this.parent.on(refreshClipboard, this.refreshOnInsertDelete, this);
         EventHandler.add(ele, 'cut', this.cut, this);
         EventHandler.add(ele, 'copy', this.copy, this);
         EventHandler.add(ele, 'paste', this.paste, this);
@@ -66,6 +67,7 @@ export class Clipboard {
             this.parent.off(ribbonClick, this.ribbonClickHandler);
             this.parent.off(contentLoaded, this.initCopyIndicator);
             this.parent.off(rowHeightChanged, this.rowHeightChanged);
+            this.parent.off(refreshClipboard, this.refreshOnInsertDelete);
         }
         EventHandler.remove(ele, 'cut', this.cut);
         EventHandler.remove(ele, 'copy', this.copy);
@@ -255,19 +257,18 @@ export class Clipboard {
                 const pasteType: string = beginEventArgs.type ? beginEventArgs.type : args.type;
                 const cRows: RowModel[] = [];
                 const isInRange: boolean = this.isInRange(cIdx, selIdx, copiedIdx);
-                for (let i: number = cIdx[0], l: number = 0;  i <= cIdx[2]; i++, l++) {
+                for (let i: number = cIdx[0], l: number = 0; i <= cIdx[2]; i++, l++) {
                     if (isInRange) {
                         cRows[selIdx[0] + l] = { cells: [] };
                     }
-                    if (!isHiddenRow(this.parent.getActiveSheet(), i)) {
-                        for (let j: number = cIdx[1], k: number = 0; j <= cIdx[3]; j++, k++) {
-                            if (isInRange) {
-                                cRows[selIdx[0] + l].cells[selIdx[1] + k] = getCell(selIdx[0] + l, selIdx[1] + k, prevSheet);
-                            }
-                            cell = isExternal ? rows[i].cells[j] : extend({}, (isInRange && cRows[i] && cRows[i].cells[j])
-                                ? cRows[i].cells[j] : getCell(i, j, prevSheet), null, true);
-                            if (cell && args && args.type || pasteType) {
-                                switch (pasteType) {
+                    for (let j: number = cIdx[1], k: number = 0; j <= cIdx[3]; j++, k++) {
+                        if (isInRange) {
+                            cRows[selIdx[0] + l].cells[selIdx[1] + k] = getCell(selIdx[0] + l, selIdx[1] + k, prevSheet);
+                        }
+                        cell = isExternal ? rows[i].cells[j] : extend({}, (isInRange && cRows[i] && cRows[i].cells[j])
+                            ? cRows[i].cells[j] : getCell(i, j, prevSheet), null, true);
+                        if (cell && args && args.type || pasteType) {
+                            switch (pasteType) {
                                 case 'Formats':
                                     cell = { format: cell.format, style: cell.style };
                                     break;
@@ -278,104 +279,97 @@ export class Clipboard {
                                         ele.classList.add('e-alt-unwrap');
                                     }
                                     break;
-                                }
-                                isExtend = ['Formats', 'Values'].indexOf(args.type) > -1;
                             }
-                            if ((!this.parent.scrollSettings.isFinite && (cIdx[2] - cIdx[0] > (1048575 - selIdx[0])
-                                || cIdx[3] - cIdx[1] > (16383 - selIdx[1])))
-                                || (this.parent.scrollSettings.isFinite && (cIdx[2] - cIdx[0] > (curSheet.rowCount - 1 - selIdx[0])
-                                    || cIdx[3] - cIdx[1] > (curSheet.colCount - 1 - selIdx[1])))) {
-                                this.showDialog();
-                                return;
-                            }
-                            const conditionalFormats: ConditionalFormatModel[] = this.getConditionalFormats(i, j, prevSheet);
-                            if (isRepeative) {
-                                for (let x: number = selIdx[0]; x <= selIdx[2]; x += (cIdx[2] - cIdx[0]) + 1) {
-                                    for (let y: number = selIdx[1]; y <= selIdx[3]; y += (cIdx[3] - cIdx[1] + 1)) {
-                                        prevCell = getCell(x + l, y + k, curSheet) || {};
-                                        if (!isExternal && (prevCell.colSpan !== undefined || prevCell.rowSpan !== undefined)) {
-                                            mergeArgs = { range: [x + l, y + k, x + l, y + k] };
-                                            const merge: MergeArgs = { range: mergeArgs.range, merge: false, isAction: false, type: 'All' };
-                                            mergeCollection.push(merge);
-                                            if (this.parent.activeSheetIndex === curSheet.index) {
-                                                this.parent.notify(setMerge, merge);
-                                            }
-                                        }
-                                        const colInd: number = y + k;
-                                        cell = extend({}, cell ? cell : {}, null, true);
-                                        if (!isExtend) {
-                                            const newFormula: string = getUpdatedFormula([x + l, colInd], [i, j], prevSheet);
-                                            if (!isNullOrUndefined(newFormula)) {
-                                                cell.formula = newFormula;
-                                            }
-                                        }
-                                        this.setConditionalFormats(conditionalFormats, x + l, colInd, curSheet);
-                                        let toSkip: boolean = false;
-                                        if (this.parent.filteredRows && this.parent.filteredRows.rowIdxColl &&
-                                            this.parent.filteredRows.sheetIdxColl) {
-                                            for (let i: number = 0, len: number =
-                                                this.parent.filteredRows.sheetIdxColl.length; i < len; i++) {
-                                                if (this.parent.filteredRows.sheetIdxColl[i] === this.parent.activeSheetIndex &&
-                                                    this.parent.filteredRows.rowIdxColl[i] === x + l) {
-                                                    toSkip = true;
-                                                    break;
-                                                }
-                                            }
-                                        }
-                                        if (!toSkip) {
-                                            if (this.parent.getActiveSheet().isProtected && cell &&
-                                                (isNullOrUndefined(cell.isLocked) || cell.isLocked === true)) {
-                                                cell.isLocked = prevCell.isLocked;
-                                            }
-                                            this.setCell(x + l, colInd, curSheet, cell, isExtend, false, conditionalFormats.length ? true
-                                                : y === selIdx[3], isExternal as boolean);
-                                        }
-                                        const sId: number = this.parent.activeSheetIndex;
-                                        const cellElem: HTMLTableCellElement = this.parent.getCell(x + l, colInd) as HTMLTableCellElement;
-                                        const address: string = getCellAddress(x + l, colInd);
-                                        const cellArgs: Object = {
-                                            address: this.parent.sheets[sId].name + '!' + address,
-                                            requestType: 'paste',
-                                            value : getCell(x + l, colInd, curSheet ) ? getCell(x + l, colInd, curSheet ).value : '',
-                                            oldValue:  prevCell.value,
-                                            element: cellElem,
-                                            displayText: this.parent.getDisplayText(cell)
-                                        };
-                                        this.parent.trigger('cellSave', cellArgs);
-                                    }
-                                }
-                            } else {
-                                if (isExternal || !hasTemplate(this.parent as Workbook, i, j, copiedIdx)) {
-                                    if (notRemoveMerge) {
-                                        this.setCell(rowIdx, selIdx[1] + k, curSheet, { value: cell.value }, true, false, j === cIdx[3]);
-                                    } else {
-                                        this.setCell(rowIdx, selIdx[1] + k, curSheet, cell, isExtend, false, j === cIdx[3]);
-                                    }
-                                }
-                            }
-                            if (!isExternal && this.copiedInfo.isCut && !(inRange(selIdx, i, j) &&
-                             copiedIdx === this.parent.activeSheetIndex)) {
-                                let cell: CellModel = getCell(i, j, prevSheet);
-                                if (cell) {
-                                    if (cell.isLocked || isNullOrUndefined(cell.isLocked)) {
-                                        cell = null;
-                                    } else if (cell.isLocked === false) {
-                                        if (this.parent.getActiveSheet().isProtected ) {
-                                            cell =  { isLocked: false};
-                                        } else {
-                                            cell = null;
+                            isExtend = ['Formats', 'Values'].indexOf(args.type) > -1;
+                        }
+                        if ((!this.parent.scrollSettings.isFinite && (cIdx[2] - cIdx[0] > (1048575 - selIdx[0])
+                            || cIdx[3] - cIdx[1] > (16383 - selIdx[1])))
+                            || (this.parent.scrollSettings.isFinite && (cIdx[2] - cIdx[0] > (curSheet.rowCount - 1 - selIdx[0])
+                                || cIdx[3] - cIdx[1] > (curSheet.colCount - 1 - selIdx[1])))) {
+                            this.showDialog();
+                            return;
+                        }
+                        const conditionalFormats: ConditionalFormatModel[] = this.getConditionalFormats(i, j, prevSheet);
+                        if (isRepeative) {
+                            for (let x: number = selIdx[0]; x <= selIdx[2]; x += (cIdx[2] - cIdx[0]) + 1) {
+                                let toSkip: boolean = false;
+                                if (!copyInfo.isCut && this.parent.filteredRows && this.parent.filteredRows.rowIdxColl &&
+                                    this.parent.filteredRows.sheetIdxColl) {
+                                    for (let i: number = 0, len: number =
+                                        this.parent.filteredRows.sheetIdxColl.length; i < len; i++) {
+                                        if (this.parent.filteredRows.sheetIdxColl[i] === cSIdx && this.parent.filteredRows.rowIdxColl[i] ===
+                                            x + l) {
+                                            toSkip = true; break;
                                         }
                                     }
                                 }
-                                this.setCell(i, j, prevSheet, cell, false, true, j === cIdx[3]);
+                                if (toSkip) { continue; }
+                                for (let y: number = selIdx[1]; y <= selIdx[3]; y += (cIdx[3] - cIdx[1] + 1)) {
+                                    prevCell = getCell(x + l, y + k, curSheet) || {};
+                                    if (!isExternal && (prevCell.colSpan !== undefined || prevCell.rowSpan !== undefined)) {
+                                        mergeArgs = { range: [x + l, y + k, x + l, y + k] };
+                                        const merge: MergeArgs = { range: mergeArgs.range, merge: false, isAction: false, type: 'All' };
+                                        mergeCollection.push(merge);
+                                        if (this.parent.activeSheetIndex === curSheet.index) {
+                                            this.parent.notify(setMerge, merge);
+                                        }
+                                    }
+                                    const colInd: number = y + k;
+                                    cell = extend({}, cell ? cell : {}, null, true);
+                                    if (!isExtend) {
+                                        const newFormula: string = getUpdatedFormula([x + l, colInd], [i, j], prevSheet);
+                                        if (!isNullOrUndefined(newFormula)) {
+                                            cell.formula = newFormula;
+                                        }
+                                    }
+                                    this.setConditionalFormats(conditionalFormats, x + l, colInd, curSheet);
+                                    if (this.parent.getActiveSheet().isProtected && cell &&
+                                        (isNullOrUndefined(cell.isLocked) || cell.isLocked === true)) {
+                                        cell.isLocked = prevCell.isLocked;
+                                    }
+                                    this.setCell(x + l, colInd, curSheet, cell, isExtend, false, conditionalFormats.length ? true
+                                        : y === selIdx[3], isExternal as boolean);
+                                    const sId: number = this.parent.activeSheetIndex;
+                                    const cellElem: HTMLTableCellElement = this.parent.getCell(x + l, colInd) as HTMLTableCellElement;
+                                    const address: string = getCellAddress(x + l, colInd);
+                                    const cellArgs: Object = {
+                                        address: this.parent.sheets[sId].name + '!' + address,
+                                        requestType: 'paste',
+                                        value: getCell(x + l, colInd, curSheet) ? getCell(x + l, colInd, curSheet).value : '',
+                                        oldValue: prevCell.value,
+                                        element: cellElem,
+                                        displayText: this.parent.getDisplayText(cell)
+                                    };
+                                    this.parent.trigger('cellSave', cellArgs);
+                                }
+                            }
+                        } else {
+                            if (isExternal || !hasTemplate(this.parent as Workbook, i, j, copiedIdx)) {
+                                if (notRemoveMerge) {
+                                    this.setCell(rowIdx, selIdx[1] + k, curSheet, { value: cell.value }, true, false, j === cIdx[3]);
+                                } else {
+                                    this.setCell(rowIdx, selIdx[1] + k, curSheet, cell, isExtend, false, j === cIdx[3]);
+                                }
                             }
                         }
-                        rowIdx++;
+                        if (!isExternal && this.copiedInfo.isCut && !(inRange(selIdx, i, j) &&
+                            copiedIdx === this.parent.activeSheetIndex)) {
+                            let cell: CellModel = getCell(i, j, prevSheet);
+                            if (cell) {
+                                if (cell.isLocked || isNullOrUndefined(cell.isLocked)) {
+                                    cell = null;
+                                } else if (cell.isLocked === false) {
+                                    if (this.parent.getActiveSheet().isProtected) {
+                                        cell = { isLocked: false };
+                                    } else {
+                                        cell = null;
+                                    }
+                                }
+                            }
+                            this.setCell(i, j, prevSheet, cell, false, true, j === cIdx[3]);
+                        }
                     }
-                    else {
-                        selIdx[2] = selIdx[2] - 1;
-                        l = l - 1;
-                    }
+                    rowIdx++;
                 }
                 this.parent.notify(refreshRibbonIcons, null);
                 this.parent.setUsedRange(rfshRange[2] + 1, rfshRange[3]);
@@ -943,6 +937,43 @@ export class Clipboard {
             style.fontSize = Math.round(parseFloat(fontSize)) + 'pt';
         }
         return style;
+    }
+
+    private refreshOnInsertDelete(args: { model: SheetModel, start: number, end: number, modelType: ModelType, isInsert?: boolean }): void {
+        if (this.copiedInfo) {
+            if (args.model.id !== this.copiedInfo.sId) { return; }
+            const range: number[] = this.copiedInfo.range;
+            if (args.isInsert) {
+                if (args.modelType === 'Column') {
+                    if (args.start <= range[3]) {
+                        if (args.start <= range[1]) {
+                            const len: number = args.end - args.start + 1;
+                            range[1] += len; range[3] += len;
+                        } else {
+                            range[3] = range[1] + (args.start - range[1] - 1);
+                        }
+                        this.performAction();
+                    }
+                } else {
+                    if (args.start <= range[2]) {
+                        if (args.start <= range[0]) {
+                            const len: number = args.end - args.start + 1;
+                            range[0] += len; range[2] += len;
+                        } else {
+                            range[2] = range[1] + (args.start - range[1] - 1);
+                        }
+                        this.performAction();
+                    }
+                }
+            } else {
+               this.clearCopiedInfo();
+            }
+        }
+    }
+
+    private performAction(): void {
+        this.copiedInfo.isCut ? this.parent.cut(getRangeAddress(this.copiedInfo.range)) :
+            this.parent.copy(getRangeAddress(this.copiedInfo.range));
     }
 
     private getClipboardEle(): HTMLInputElement {

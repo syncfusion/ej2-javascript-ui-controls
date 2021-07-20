@@ -1,5 +1,5 @@
 import { closest, KeyboardEventArgs, isNullOrUndefined } from '@syncfusion/ej2-base';
-import { click, keyPressed, commandClick, initialEnd } from '../base/constant';
+import { click, keyPressed, commandClick, initialEnd, destroy } from '../base/constant';
 import { CellType } from '../base/enum';
 import { ServiceLocator } from '../services/service-locator';
 import { IGrid, EJ2Intance, CommandClickEventArgs } from '../base/interface';
@@ -118,12 +118,14 @@ export class CommandColumn {
         this.parent.off(click, this.commandClickHandler);
         this.parent.off(keyPressed, this.keyPressHandler);
         this.parent.off(initialEnd, this.load);
+        this.parent.off(destroy, this.destroy);
     }
     private addEventListener(): void {
         if (this.parent.isDestroyed) { return; }
         this.parent.on(click, this.commandClickHandler, this);
         this.parent.on(keyPressed, this.keyPressHandler, this);
         this.parent.on(initialEnd, this.load, this);
+        this.parent.on(destroy, this.destroy, this);
     }
 
     private keyPressHandler(e: KeyboardEventArgs): void {

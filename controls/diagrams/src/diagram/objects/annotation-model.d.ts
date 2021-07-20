@@ -81,7 +81,6 @@ export interface AnnotationModel {
      *
      * @default 'InheritReadOnly'
      * @aspNumberEnum
-     * @blazorNumberEnum
      */
     constraints?: AnnotationConstraints;
 
@@ -108,7 +107,6 @@ export interface AnnotationModel {
      * ```
      *
      * @aspDefaultValueIgnore
-     * @blazorDefaultValueIgnore
      * @default undefined
      */
     hyperlink?: HyperlinkModel;
@@ -124,7 +122,6 @@ export interface AnnotationModel {
      * Sets the width of the text
      *
      * @aspDefaultValueIgnore
-     * @blazorDefaultValueIgnore
      * @default undefined
      */
     width?: number;
@@ -133,7 +130,6 @@ export interface AnnotationModel {
      * Sets the height of the text
      *
      * @aspDefaultValueIgnore
-     * @blazorDefaultValueIgnore
      * @default undefined
      */
     height?: number;
@@ -149,7 +145,6 @@ export interface AnnotationModel {
      * Defines the appearance of the text
      *
      * @default new TextStyle()
-     * @blazorType AnnotationStyle
      */
     style?: TextStyleModel;
 
@@ -222,7 +217,6 @@ export interface AnnotationModel {
      * ```
      *
      * @aspDefaultValueIgnore
-     * @blazorDefaultValueIgnore
      * @default undefined
      */
     addInfo?: Object;

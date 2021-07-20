@@ -45,7 +45,6 @@ export interface LayoutInfoModel {
     /**
      * Defines assistant for the layout
      *
-     * @blazorDefaultValueIgnore
      * @default ''
      * @aspDefaultValueIgnore
      * @isBlazorNullableType true
@@ -55,21 +54,18 @@ export interface LayoutInfoModel {
     /**
      * Defines the level for the layout
      *
-     * @blazorDefaultValueIgnore
      */
     level?: number;
 
     /**
      * Defines the subtree for the layout
      *
-     * @blazorDefaultValueIgnore
      */
     hasSubTree?: boolean;
 
     /**
      * Defines the row for the layout
      *
-     * @blazorDefaultValueIgnore
      */
     rows?: number;
 

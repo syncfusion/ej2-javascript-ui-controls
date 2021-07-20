@@ -3033,6 +3033,7 @@ export class Slider extends Component<HTMLElement> implements INotifyPropertyCha
         if (event.relatedTarget !== this.secondHandle && event.relatedTarget !== this.firstHandle &&
             event.relatedTarget !== this.element && event.relatedTarget !== this.firstBtn && event.relatedTarget !== this.secondBtn) {
             this.closeMaterialTooltip();
+            this.closeTooltip();
             if (this.element.querySelector('.' + classNames.sliderTabHandle)) {
                 this.element.querySelector('.' + classNames.sliderTabHandle).classList.remove(classNames.sliderTabHandle);
             }

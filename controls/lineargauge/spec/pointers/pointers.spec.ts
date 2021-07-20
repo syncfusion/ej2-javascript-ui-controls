@@ -293,7 +293,7 @@ describe('Linear gauge control', () => {
             }
             ];
             gauge.refresh();
-            gauge.axes[0].pointers = [{}];
+            gauge.axes[0].pointers = [{},{}];
         });
 
         // it('checking with bar into the container in vertical orientation', () => {

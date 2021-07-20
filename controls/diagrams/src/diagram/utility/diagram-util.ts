@@ -1100,7 +1100,7 @@ export function removeChildNodes(node: NodeModel, diagram: Diagram): void {
  * @param { string[] } children - provide the children  value.
  * @private
  */
-function getChild(child: Canvas, children: string[]): string[] {
+export function getChild(child: Canvas, children: string[]): string[] {
     if (child && child.children && child.children.length > 0) {
         for (let j: number = 0; j < child.children.length; j++) {
             const subChild: DiagramElement = child.children[j];
@@ -1492,6 +1492,8 @@ export function deserialize(model: string, diagram: Diagram): Object {
     diagram.selectedItems = dataObj.selectedItems;
     diagram.enableServerDataBinding(true);
     diagram.canLayout = true;
+    diagram.swimlaneChildTable = {};
+    diagram.swimlaneZIndexTable = {};
     return dataObj;
 }
 /* eslint-enable */

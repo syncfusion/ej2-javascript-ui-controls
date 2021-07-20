@@ -67,10 +67,7 @@ export class StringFilterUI implements IFilterMUI {
                 sortOrder: 'Ascending',
                 cssClass: 'e-popup-flmenu',
                 autofill: true,
-                placeholder: args.localizeText.getConstant('EnterValue'),
-                actionComplete: (e: { result: { [key: string]: Object; }[] }) => {
-                   
-                }
+                placeholder: args.localizeText.getConstant('EnterValue')
             },
             args.column.filter.params
         ));
@@ -119,7 +116,7 @@ export class StringFilterUI implements IFilterMUI {
     private focus(actObj: AutoComplete, args: IFilterCreate): Function {
         return () => {
             actObj.filterType = args.getOptrInstance.getFlOperator() as 'StartsWith' | 'Contains' | 'EndsWith';
-        }
+        };
     }
 
     private actionComplete(actObj: AutoComplete): Function {
@@ -129,7 +126,7 @@ export class StringFilterUI implements IFilterMUI {
                     return (getValue(actObj.fields.value, mapObj));
                 }).indexOf(getValue((actObj.fields.value), obj)) === index;
             });
-        }
+        };
     }
 
     private destroy(): void {

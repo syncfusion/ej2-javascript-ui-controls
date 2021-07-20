@@ -11,7 +11,6 @@ export class SymbolSize extends ChildProperty<SymbolSize> {
      * Sets the width of the symbols
      *
      * @aspDefaultValueIgnore
-     * @blazorDefaultValueIgnore
      * @default undefined
      */
     @Property()
@@ -21,7 +20,6 @@ export class SymbolSize extends ChildProperty<SymbolSize> {
      * Sets the height of the symbols
      *
      * @aspDefaultValueIgnore
-     * @blazorDefaultValueIgnore
      * @default undefined
      */
     @Property()
@@ -38,7 +36,6 @@ export class SymbolPaletteInfo extends ChildProperty<SymbolPaletteInfo> {
      * Defines the width of the symbol description
      *
      * @aspDefaultValueIgnore
-     * @blazorDefaultValueIgnore
      * @default undefined
      */
     @Property()
@@ -48,7 +45,6 @@ export class SymbolPaletteInfo extends ChildProperty<SymbolPaletteInfo> {
      * Defines the height of the symbol description
      *
      * @aspDefaultValueIgnore
-     * @blazorDefaultValueIgnore
      * @default undefined
      */
     @Property()

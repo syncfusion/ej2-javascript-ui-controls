@@ -66,11 +66,15 @@ export class WrapText {
                         }
                         if (isCustomHgt || isMerge) {
                             if (ele.children.length === 0 || !ele.querySelector('.e-wrap-content')) {
+                                let styleText: string = (ele as HTMLElement).style.cssText;
+                                if (styleText) {
+                                    styleText = styleText.split(';').filter((text: string) => !text.includes('border')).join(';');
+                                }
                                 ele.innerHTML
                                     = this.parent.createElement('span', {
                                         className: 'e-wrap-content',
                                         innerHTML: ele.innerHTML,
-                                        styles: (ele as HTMLElement).style.cssText
+                                        styles: styleText
                                     }).outerHTML;
                             }
                         }

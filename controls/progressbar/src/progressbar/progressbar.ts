@@ -562,6 +562,8 @@ export class ProgressBar extends Component<HTMLElement> implements INotifyProper
         const moveTo: number = (this.enableRtl) ? ((this.cornerRadius === 'Round') ?
             (x + this.progressRect.width) - ((lineCapRadius / 2) * thickness) : (x + this.progressRect.width)) :
             ((this.cornerRadius === 'Round') ? (x + (lineCapRadius / 2) * thickness) : x);
+        //TODO : BLAZ-14309 - ProgressBar renders improperly when corner radius is set to "Round" and the value between one to four.
+        thickness = width < thickness && this.cornerRadius === 'Round' ? width : thickness;
         const lineTo: number = (this.enableRtl) ? ((this.cornerRadius === 'Round' && width) ?
             (moveTo - width + (lineCapRadius * thickness)) : (moveTo - width)) :
             ((this.cornerRadius === 'Round' && width) ? (moveTo + width - (lineCapRadius * thickness)) : (moveTo + width));
@@ -606,10 +608,12 @@ export class ProgressBar extends Component<HTMLElement> implements INotifyProper
                 posy = this.progressRect.y;
                 pathWidth += ((!isLabel && isMaximum) || this.isIndeterminate) ? 4 : 0;
             } else {
-                posx = (this.enableRtl && !isLabel) ? (x + totalWidth) : x;
+                //TODO : BLAZ-14309 - ProgressBar renders improperly when corner radius is set to "Round" and the value between one to four.
+                posx = (this.enableRtl && !isLabel) ? (x + totalWidth + (this.cornerRadius === 'Round' ? thickness / 10 : 0)) : x - (this.cornerRadius === 'Round' ? thickness / 10 : 0);
                 pathWidth = totalWidth * range;
-                posx += (this.cornerRadius === 'Round' && !isLabel) ?
-                    ((this.enableRtl) ? (lineCapRadius / 2) * thickness : -(lineCapRadius / 2) * thickness) : 0;
+                //TODO : BLAZ-14309 - ProgressBar renders improperly when corner radius is set to "Round" and the value between one to four.
+                //posx += (this.cornerRadius === 'Round' && !isLabel) ?
+                //    ((this.enableRtl) ? (lineCapRadius / 2) * thickness : -(lineCapRadius / 2) * thickness) : 0;
                 posy = (this.progressRect.y + (this.progressRect.height / 2)) - (thickness / 2);
                 pathWidth += (this.cornerRadius === 'Round' && !isLabel) ? (lineCapRadius * thickness) : 0;
             }
@@ -812,7 +816,7 @@ export class ProgressBar extends Component<HTMLElement> implements INotifyProper
                     this.circular.renderCircularProgress(
                         this.previousEndAngle, this.previousTotalEnd, !isNullOrUndefined(oldProp.value));
                     if (this.showProgressValue) {
-                        this.circular.renderCircularLabel();
+                        this.circular.renderCircularLabel(true);
                     }
                     if (this.progressAnnotationModule && this.animation.enable && !this.isIndeterminate) {
                         this.annotateAnimation.doAnnotationAnimation(this.clipPath, this, this.annotateEnd, this.annotateTotal);
@@ -820,7 +824,7 @@ export class ProgressBar extends Component<HTMLElement> implements INotifyProper
                 } else {
                     this.linear.renderLinearProgress(!isNullOrUndefined(oldProp.value), this.previousWidth);
                     if (this.showProgressValue) {
-                        this.linear.renderLinearLabel();
+                        this.linear.renderLinearLabel(true);
                     }
                 }
                 break;

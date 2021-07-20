@@ -521,6 +521,7 @@ export class Edit implements IAction {
             this.destroyWidgets();
             this.destroyForm();
         }
+        this.destroy();
     }
 
     /**

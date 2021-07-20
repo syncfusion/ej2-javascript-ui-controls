@@ -103,6 +103,8 @@ export class AddUserDialog {
      * @returns {void}
      */
     public loadUserDetails = (): void => {
+        this.userList.dataSource = this.documentHelper.userCollection.slice();
+        this.userList.dataBind();
         this.documentHelper.restrictEditingPane.addedUser.dataSource = this.documentHelper.userCollection.slice();
         this.documentHelper.restrictEditingPane.addedUser.dataBind();
     };
@@ -113,7 +115,7 @@ export class AddUserDialog {
     public okButtonClick = (): void => {
         this.documentHelper.restrictEditingPane.isAddUser = true;
         this.documentHelper.restrictEditingPane.showStopProtectionPane(false);
-        this.documentHelper.restrictEditingPane.loadPaneValue();
+        this.documentHelper.restrictEditingPane.addUserCollection();
         this.documentHelper.restrictEditingPane.isAddUser = false;
         this.documentHelper.dialog.hide();
     };

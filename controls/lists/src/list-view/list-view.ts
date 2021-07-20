@@ -793,10 +793,6 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
                 }
             } catch (e) {
                 compile(this.template);
-                // eslint-disable-next-line
-                if ((this as any).isReact) {
-                    this.renderReactTemplates();
-                }
             }
         }
         this.listBaseOption = {
@@ -863,10 +859,6 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
         this.removeElement(this.ulElement);
         this.removeElement(this.headerEle);
         this.removeElement(this.contentContainer);
-        // eslint-disable-next-line
-        if ((this as any).isReact) {
-            this.clearTemplate();
-        }
         this.curUL = this.ulElement = this.liCollection = this.headerEle = this.contentContainer = undefined;
     }
 
@@ -1322,18 +1314,25 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
             }
         }
     }
-    private spaceKeyHandler(): void {
+    private spaceKeyHandler(e: KeyboardEventArgs): void {
         if (this.enable && this.showCheckBox && Object.keys(this.dataSource).length && this.curUL) {
             const li: Element = this.curUL.querySelector('.' + classNames.focused);
+            let checkboxElement: Element;
+            let checkIcon: Element;
             if (!isNullOrUndefined(li) && isNullOrUndefined(li.querySelector('.' + classNames.checked))) {
                 const args: ItemCreatedArgs = {
                     curData: undefined, dataSource: undefined, fields: undefined, options: undefined,
                     text: undefined, item: <HTMLElement>li
                 };
-                this.checkInternally(args, args.item.querySelector('.' + classNames.checkboxWrapper));
+                checkboxElement = args.item.querySelector('.' + classNames.checkboxWrapper);
+                this.checkInternally(args, checkboxElement);
+                checkIcon = checkboxElement.querySelector('.' + classNames.checkboxIcon + '.' + classNames.icon);
             } else {
                 this.uncheckItem(li);
             }
+            const eventArgs: object = this.selectEventData(li, e);
+            merge(eventArgs, { isChecked:  checkIcon ? checkIcon.classList.contains(classNames.checked) : false });
+            this.trigger('select', eventArgs);
         }
     }
 
@@ -1361,7 +1360,7 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
             this.back();
             break;
         case 32:
-            this.spaceKeyHandler();
+            this.spaceKeyHandler(e);
             break;
         }
     }
@@ -1675,10 +1674,6 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
                 this.localData = (e as ResultData).result;
                 if (!this.isServerRendered || (!isBlazor())) {
                     listViewComponent.removeElement(listViewComponent.contentContainer);
-                    // eslint-disable-next-line
-                    if ((this as any).isReact) {
-                        this.clearTemplate();
-                    }
                 }
                 this.renderList();
                 this.trigger('actionComplete', e);
@@ -1935,8 +1930,17 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
                 if (Object.keys(this.dataSource).length) {
                     if (!(isBlazor() && this.isServerRendered)) {
                         if ((this.template || this.groupTemplate) && !this.virtualizationModule.isNgTemplate()) {
-                            this.listBaseOption.template = null;
-                            this.listBaseOption.groupTemplate = null;
+                            if ((this as any).isReact) {
+                                if (typeof this.template == "string") {
+                                    this.listBaseOption.template = null;
+                                }
+                                if (typeof this.groupTemplate == "string") {
+                                    this.listBaseOption.groupTemplate = null;
+                                }
+                            } else {
+                                this.listBaseOption.template = null;
+                                this.listBaseOption.groupTemplate = null;
+                            }
                             this.listBaseOption.itemCreated = this.virtualizationModule.createUIItem.bind(this.virtualizationModule);
                         }
                     }
@@ -1982,10 +1986,6 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
             this.header();
             this.setLocalData();
             this.setHTMLAttribute();
-            // eslint-disable-next-line
-            if ((this as any).isReact) {
-                this.renderReactTemplates();
-            }
         } else {
             this.initBlazor(true);
         }
@@ -2509,13 +2509,19 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
     }
 
     private addListItem(dataSource: DataSource, index: number, ulElement: HTMLElement, curViewDS: DataSource[]): void {
-        const target: HTMLElement = this.getLiFromObjOrElement((curViewDS as DataSource[])[index + 1]) ||
+        let target: HTMLElement = this.getLiFromObjOrElement((curViewDS as DataSource[])[index + 1]) ||
             this.getLiFromObjOrElement((curViewDS as DataSource[])[index + 2]) || null;
         const li: HTMLElement[] = ListBase.createListItemFromJson(this.createElement, [dataSource], this.listBaseOption, null, null, this);
         this.setAttributes(li);
         // eslint-disable-next-line
         if (this.template && (this as any).isReact) {
             this.renderReactTemplates();
+        }
+        if (this.fields.groupBy && curViewDS[index + 1] && curViewDS[index + 1].isHeader) {
+            let targetEle: HTMLElement = this.getLiFromObjOrElement(curViewDS[index - 1]);
+            if (targetEle) {
+                target = targetEle.nextElementSibling as HTMLElement;
+            }
         }
         ulElement.insertBefore(li[0], target);
     }

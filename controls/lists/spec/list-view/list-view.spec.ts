@@ -1610,6 +1610,27 @@ describe('ListView', () => {
             expect(listObj.liCollection[0].classList.contains('e-active')).toBe(false);
         });
 
+        it('Select event using Space Key', () => {
+            let eventArgs: any;
+            listObj = new ListView({
+                dataSource: NestedData, showCheckBox: true, showHeader: true, select: (args: SelectEventArgs) => {
+                    eventArgs = args;
+                }
+            });
+            listObj.appendTo('#listView');
+            listObj.liCollection[0].classList.add('e-focused');
+            let keyEventArgs: any = {
+                preventDefault: (): void => { },
+                keyCode: 32
+            };
+            listObj.keyActionHandler(keyEventArgs);
+            expect(listObj.liCollection[0].classList.contains('e-active')).toBe(true);
+            expect(eventArgs.isChecked).toBe(true);
+            listObj.keyActionHandler(keyEventArgs);
+            expect(listObj.liCollection[0].classList.contains('e-active')).toBe(false);
+            expect(eventArgs.isChecked).toBe(false);
+        });
+
         it('Going back using Backspace from child Key after selecting', () => {
             listObj = new ListView({ dataSource: NestedData, showCheckBox: true, showHeader: true });
             listObj.appendTo('#listView');
@@ -1853,6 +1874,10 @@ describe('ListView', () => {
             treeObj.appendTo(ele);
             treeObj.addItem([{ id: 'gc4f', text: 'Bugatti 16', category: 'Bugatti' }]);
             expect(treeObj.curUL.querySelectorAll('.e-list-group-item').length).toBe(3);
+            treeObj.addItem([{ id: '120', text: 'Audi 5', category: 'Audi' }]);
+            expect(treeObj.element.querySelectorAll('li')[3].querySelector('.e-list-text').textContent).toBe("Audi 5");
+            treeObj.addItem([{ id: '211', text: 'BMW A6', category: 'BMW' }]);
+            expect(treeObj.element.querySelectorAll('li')[6].querySelector('.e-list-text').textContent).toBe("BMW A6");
         });
 
         afterEach(() => {

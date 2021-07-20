@@ -248,6 +248,7 @@ export class Group implements IAction {
         this.parent.on(events.onEmpty, this.initialEnd, this);
         this.parent.on(events.initialEnd, this.render, this);
         this.parent.on(events.groupAggregates, this.onGroupAggregates, this);
+        this.parent.on(events.destroy, this.destroy, this);
         this.parent.on('blazor-action-begin', this.blazorActionBegin, this);
         this.parent.on('group-expand-collapse', this.updateExpand, this);
         this.parent.on('persist-data-changed', this.initialEnd, this);
@@ -273,6 +274,7 @@ export class Group implements IAction {
         this.parent.off(events.sortComplete, this.refreshSortIcons);
         this.parent.off(events.keyPressed, this.keyPressHandler);
         this.parent.off(events.groupAggregates, this.onGroupAggregates);
+        this.parent.off(events.destroy, this.destroy);
         this.parent.off('blazor-action-begin', this.blazorActionBegin);
         this.parent.off('group-expand-collapse', this.updateExpand);
     }
@@ -976,7 +978,9 @@ export class Group implements IAction {
         }
         this.removeEventListener();
         this.refreshToggleBtn(true);
-        remove(this.element);
+        if (this.element.parentNode) {
+            remove(this.element);
+        }
         //call ejdrag and drop destroy
     }
 

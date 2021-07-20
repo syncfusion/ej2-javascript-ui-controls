@@ -9,7 +9,6 @@ export interface SymbolSizeModel {
      * Sets the width of the symbols
      *
      * @aspDefaultValueIgnore
-     * @blazorDefaultValueIgnore
      * @default undefined
      */
     width?: number;
@@ -18,7 +17,6 @@ export interface SymbolSizeModel {
      * Sets the height of the symbols
      *
      * @aspDefaultValueIgnore
-     * @blazorDefaultValueIgnore
      * @default undefined
      */
     height?: number;
@@ -34,7 +32,6 @@ export interface SymbolPaletteInfoModel {
      * Defines the width of the symbol description
      *
      * @aspDefaultValueIgnore
-     * @blazorDefaultValueIgnore
      * @default undefined
      */
     width?: number;
@@ -43,7 +40,6 @@ export interface SymbolPaletteInfoModel {
      * Defines the height of the symbol description
      *
      * @aspDefaultValueIgnore
-     * @blazorDefaultValueIgnore
      * @default undefined
      */
     height?: number;

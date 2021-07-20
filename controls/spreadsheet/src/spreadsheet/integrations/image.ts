@@ -140,6 +140,9 @@ export class SpreadsheetImage {
             element.style.top = args.options.top + 'px';
             element.style.left = args.options.left + 'px';
         }
+        if (sheet.frozenRows || sheet.frozenColumns) {
+            overlayObj.adjustFreezePaneSize(args.options, element, range);
+        }
         if (!args.options.imageId) {
             this.pictureCount++;
         }

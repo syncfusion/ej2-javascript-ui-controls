@@ -446,11 +446,11 @@ export class SpellChecker {
     public handleSuggestions(allsuggestions: any): string[] {
         this.spellCheckSuggestion = [];
         if (allsuggestions.length === 0) {
-            this.spellCheckSuggestion.push('Add To Dictionary');
+            this.spellCheckSuggestion.push(this.documentHelper.owner.contextMenu.locale.getConstant('Add to Dictionary'));
         } else {
 
             allsuggestions = (allsuggestions.length === 5) ? this.constructInlineMenu(allsuggestions) : allsuggestions;
-            this.spellCheckSuggestion.push('Add To Dictionary');
+            this.spellCheckSuggestion.push(this.documentHelper.owner.contextMenu.locale.getConstant('Add to Dictionary'));
         }
         /* eslint-disable @typescript-eslint/no-explicit-any */
         const spellSuggestion: any = [];

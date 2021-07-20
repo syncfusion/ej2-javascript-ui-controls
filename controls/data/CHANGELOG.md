@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 19.2.48 (2021-07-20)
+
+### DataManager
+
+#### Bug Fixes
+
+- `#I334900`, `#I335587`, `#I335411` - Blank line appears while adding new record with `RemoteSaveAdaptor` has been fixed.
+
 ## 19.1.58 (2021-04-27)
 
 ### DataManager

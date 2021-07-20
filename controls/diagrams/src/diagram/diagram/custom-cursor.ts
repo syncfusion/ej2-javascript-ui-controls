@@ -9,7 +9,6 @@ export class CustomCursorAction extends ChildProperty<CustomCursorAction> {
     /**
      * Defines the property of a Data Map Items
      *
-     * @blazorDefaultValueIgnore
      */
     @Property('')
     public action: Actions;

@@ -106,7 +106,6 @@ export class FixedUserHandle extends ChildProperty<FixedUserHandle> {
      * Specifies the space between the fixed user handle and container
      *
      * @default new Margin(0,0,0,0)
-     * @blazorType fixedUserHandlePadding
      */
     @Complex<MarginModel>({ left: 0, right: 0, top: 0, bottom: 0 }, Margin)
     public padding: MarginModel;
@@ -119,7 +118,6 @@ export class NodeFixedUserHandle extends FixedUserHandle {
      * Specifies the position of the node fixed user handle
      *
      * @default { x: 0, y: 0 }
-     * @blazorType NodeFixedUserHandles
      */
     @Complex<PointModel>({ x: 0, y: 0 }, Point)
     public offset: PointModel;
@@ -158,7 +156,6 @@ export class ConnectorFixedUserHandle extends FixedUserHandle {
      * Specifies the displacement of an fixed user handle from its actual position
      *
      * @aspDefaultValueIgnore
-     * @blazorDefaultValueIgnore
      * @default undefined
      */
     @Complex<PointModel>({ x: 0, y: 0 }, Point)

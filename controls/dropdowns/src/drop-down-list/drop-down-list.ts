@@ -1906,6 +1906,9 @@ export class DropDownList extends DropDownBase implements IInput {
             return;
         }
         if (this.isActive) {
+            if (!this.isTyped && this.element.tagName === 'SELECT') {
+                this.renderSelectElement(this.element, list);
+            }
             const selectedItem: HTMLElement = this.selectedLI ? <HTMLElement>this.selectedLI.cloneNode(true) : null;
             super.onActionComplete(ulElement, list, e);
             this.updateSelectElementData(this.allowFiltering);
@@ -2603,7 +2606,8 @@ export class DropDownList extends DropDownBase implements IInput {
                 this.initValue();
             } else if (this.element.tagName === 'SELECT' && (<HTMLSelectElement>this.element).options[0]) {
                 const selectElement: HTMLSelectElement = <HTMLSelectElement>this.element;
-                this.value = selectElement.options[selectElement.selectedIndex].value;
+                this.value = !isNullOrUndefined(selectElement.options[selectElement.selectedIndex]) ?
+                    selectElement.options[selectElement.selectedIndex].value : null;
                 this.text = isNullOrUndefined(this.value) ? null : selectElement.options[selectElement.selectedIndex].textContent;
                 this.initValue();
             }
@@ -2723,6 +2727,7 @@ export class DropDownList extends DropDownBase implements IInput {
     protected updateDataSource(props?: DropDownListModel): void {
         if (this.inputElement.value !== '' || (!isNullOrUndefined(props) && (isNullOrUndefined(props.dataSource)
         || (!(props.dataSource instanceof DataManager) && props.dataSource.length === 0)))) {
+            this.selectData = null;
             this.clearAll(null, props);
         }
         if (!(!isNullOrUndefined(props) && (isNullOrUndefined(props.dataSource)

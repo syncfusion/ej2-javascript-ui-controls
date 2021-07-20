@@ -187,10 +187,6 @@ export class InfiniteScroll {
                 infiniteCurrentViewData[keys[keys.length - 1]].push(args.result[i]);
             }
         }
-        if (args.e.requestType === 'save' && getValue('action', args.e) === 'add'
-       && this.parent.editSettings.newRowPosition === 'Child') {
-            (args.result[0] as ITreeData).level += 1;
-        }
     }
 
 

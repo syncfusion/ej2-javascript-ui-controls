@@ -243,7 +243,7 @@ export class Linear {
 
     /** Render the Linear Label */
     //tslint:disable-next-line:max-func-body-length
-    public renderLinearLabel(): void {
+    public renderLinearLabel(isProgressRefresh: boolean = false): void {
         let linearlabel: Element;
         let posX: number;
         let posY: number;
@@ -337,7 +337,7 @@ export class Linear {
                 );
                 linearLabelGroup.appendChild(clipPath);
                 linearlabel.setAttribute('style', 'clip-path:url(#' + progress.element.id + '_clippathLabel)');
-                this.animation.doLabelAnimation(linearlabel, (progress.previousWidth ? progress.previousWidth :0), progressWidth, progress, this.delay, textSize.width);
+                this.animation.doLabelAnimation(linearlabel, (progress.previousWidth ? progress.previousWidth :0), progressWidth - (isProgressRefresh ? progress.previousWidth : 0), progress, this.delay, textSize.width);
             }
             progress.svgObject.appendChild(linearLabelGroup);
             progress.previousWidth = progressWidth;

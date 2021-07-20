@@ -2,6 +2,15 @@
 
 ## [Unreleased]
 
+## 19.2.48 (2021-07-20)
+
+### Diagram
+
+#### Bug Fixes
+
+- `#I330099` - The issue "The ports outEdges is not updated when cancel the port draw connector addition" has been fixed.
+- `I324505` - The issue "An exception will raise while sending the node front to the group " has been fixed.
+
 ## 19.2.46 (2021-07-06)
 
 ### Diagram
