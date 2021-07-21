@@ -615,7 +615,7 @@ export class VerticalEvent extends EventBase {
             });
             for (let i: number = 0; i < appointment.length - 1; i++) {
                 for (let j: number = i + 1; j < appointment.length; j++) {
-                    if (appointment[i].Id === appointment[j].Id) {
+                    if (appointment[i][fieldMapping.id] === appointment[j][fieldMapping.id]) {
                         appointment.splice(j, 1); j--;
                     }
                 }
