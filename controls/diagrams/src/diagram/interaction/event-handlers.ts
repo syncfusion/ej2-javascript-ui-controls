@@ -1353,20 +1353,22 @@ export class DiagramEventHandler {
             if (this.hoverElement.tooltip.openOn === 'Auto' && content !== '') {
                 updateTooltip(this.diagram, isPrivateTooltip ? this.hoverElement : undefined);
             }
-            const offset: PointModel = getTooltipOffset(this.diagram, mousePosition, this.hoverElement);
+            this.diagram.tooltipObject.offsetX = 0;
+            this.diagram.tooltipObject.offsetY = 0;
+            const objects: IElement[] = this.diagram.findObjectsUnderMouse(this.currentPosition);
+            const obj: IElement = this.diagram.findObjectUnderMouse(objects, this.action, this.inAction);
+            let targetEle = document.getElementById((obj as Node).id + '_groupElement');
             if (this.hoverElement.tooltip.openOn === 'Auto' && content !== '') {
                 (this.diagram.tooltipObject as Tooltip).close();
                 (this.diagram.tooltipObject as DiagramTooltipModel).openOn = (this.hoverElement.tooltip as DiagramTooltipModel).openOn;
-                this.diagram.tooltipObject.offsetX = offset.x;
-                this.diagram.tooltipObject.offsetY = offset.y;
                 if (isBlazor()) {
-                    (this.diagram.tooltipObject as BlazorTooltip).open(this.diagram.element, {});
+                    (this.diagram.tooltipObject as BlazorTooltip).open(targetEle, {});
                 } else {
                     (this.diagram.tooltipObject as Tooltip).dataBind();
                 }
             }
             if (canEnableToolTip(this.hoverElement, this.diagram) && this.hoverElement.tooltip.openOn === 'Auto') {
-                (this.diagram.tooltipObject as Tooltip).open(this.diagram.element);
+                (this.diagram.tooltipObject as Tooltip).open(targetEle);
             }
         }
     }

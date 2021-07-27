@@ -68,7 +68,7 @@ export class TableProperties {
     private get documentEditor(): DocumentEditor {
         return this.container.documentEditor;
     }
-    // eslint-disable-next-line max-len
+    /* eslint-disable-next-line max-len */
     public constructor(container: DocumentEditorContainer, imageProperty: ImageProperties, textProperties: TextProperties, isRtl?: boolean) {
         this.container = container;
         this.isRtl = isRtl;
@@ -114,7 +114,7 @@ export class TableProperties {
         const textHeader: HTMLElement = createElement('div', { innerHTML: this.localObj.getConstant('Text') });
         this.parentElement = createElement('div', { styles: 'height:100%;overflow:auto;display:none', className: 'e-de-prop-pane' });
         this.element = createElement('div', { id: this.elementId + '_propertyTabDiv', className: 'e-de-property-tab' });
-        // eslint-disable-next-line max-len
+        /* eslint-disable-next-line max-len */
         const items: TabItemModel[] = [{ header: { text: tableHeader }, content: this.tableProperties }, { header: { text: textHeader }, content: this.tableTextProperties.element }] as TabItemModel[];
         this.propertiesTab = new Tab({ items: items, animation: { previous: { effect: 'None' }, next: { effect: 'None' } }, selected: this.onTabSelection.bind(this) });
         this.propertiesTab.isStringTemplate = true;
@@ -314,13 +314,13 @@ export class TableProperties {
             if (this.documentEditor.selection.contextType === 'TableText' || this.documentEditor.selection.contextType === 'TableImage') {
                 this.shadingBtn.value = this.documentEditor.selection.cellFormat.background ? this.documentEditor.selection.cellFormat.background : '';
             }
-            // eslint-disable-next-line max-len
+            /* eslint-disable-next-line max-len */
             this.topMargin.value = this.documentEditor.selection.cellFormat.topMargin ? this.documentEditor.selection.cellFormat.topMargin : 0;
-            // eslint-disable-next-line max-len
+            /* eslint-disable-next-line max-len */
             this.bottomMargin.value = this.documentEditor.selection.cellFormat.bottomMargin ? this.documentEditor.selection.cellFormat.bottomMargin : 0;
-            // eslint-disable-next-line max-len
+            /* eslint-disable-next-line max-len */
             this.rightMargin.value = this.documentEditor.selection.cellFormat.rightMargin ? this.documentEditor.selection.cellFormat.rightMargin : 0;
-            // eslint-disable-next-line max-len
+            /* eslint-disable-next-line max-len */
             this.leftMargin.value = this.documentEditor.selection.cellFormat.leftMargin ? this.documentEditor.selection.cellFormat.leftMargin : 0;
         }
     }
@@ -486,7 +486,7 @@ export class TableProperties {
         this.alignCenterHorizontal.addEventListener('click', this.applyAlignCenterHorizontal.bind(this));
         alignmentDiv.appendChild(parentDiv);
     }
-    // eslint-disable-next-line max-len
+    /* eslint-disable-next-line max-len */
     private createCellMarginTextBox(textboxLabel: string, textboxId: string, parentDiv: HTMLElement, styles: string, parentStyle: string, maxValue: number, toolTipText: string): NumericTextBox {
         const cellMarginParentDiv: HTMLElement = createElement('div', { styles: parentStyle });
         cellMarginParentDiv.classList.add('e-de-cell-text-box');
@@ -583,7 +583,7 @@ export class TableProperties {
         liTag.appendChild(liInnerDiv);
         return liTag;
     }
-    // eslint-disable-next-line max-len
+    /* eslint-disable-next-line max-len */
     public createDropDownButton(id: string, styles: string, parentDiv: HTMLElement, iconCss: string, content: string, items?: ItemModel[], target?: HTMLElement): DropDownButton {
         const buttonElement: HTMLButtonElement = createElement('button', { id: id, styles: styles, attrs: { type: 'button' } }) as HTMLButtonElement;
         parentDiv.appendChild(buttonElement);
@@ -591,7 +591,7 @@ export class TableProperties {
         if (this.isRtl) {
             splitButtonClass = 'e-rtl ' + splitButtonClass;
         }
-        // eslint-disable-next-line max-len
+        /* eslint-disable-next-line max-len */
         const dropDownBtn: DropDownButton = new DropDownButton({ iconCss: iconCss, content: content, enableRtl: this.isRtl, cssClass: splitButtonClass }, buttonElement);
         if (items) {
             dropDownBtn.items = items;
@@ -601,7 +601,7 @@ export class TableProperties {
         }
         return dropDownBtn;
     }
-    // eslint-disable-next-line max-len
+    /* eslint-disable-next-line max-len */
     private createButtonTemplate(id: string, iconcss: string, div: HTMLElement, buttonClass: string, styles: string, toolTipText: string, content?: string, iconPos?: string): Button {
         const buttonElement: HTMLButtonElement = createElement('Button', { id: id, styles: styles, attrs: { type: 'button' } }) as HTMLButtonElement;
         div.appendChild(buttonElement);
@@ -620,7 +620,7 @@ export class TableProperties {
         if (isBorderWidth) {
             cssClass = cssClass + ' e-de-border-clr-picker';
         }
-        // eslint-disable-next-line max-len
+        /* eslint-disable-next-line max-len */
         const colorPicker: ColorPicker = new ColorPicker({ showButtons: true, cssClass: cssClass, enableRtl: this.isRtl, locale: this.container.locale }, inputElement);
         inputElement.parentElement.setAttribute('title', toolTipText);
         return colorPicker;

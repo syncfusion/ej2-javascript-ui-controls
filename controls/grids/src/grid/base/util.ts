@@ -1,7 +1,7 @@
 import { ChildProperty, compile as baseTemplateComplier, setValue, Internationalization, isUndefined, closest } from '@syncfusion/ej2-base';
 import { extend as baseExtend, isNullOrUndefined, getValue, classList, NumberFormatOptions } from '@syncfusion/ej2-base';
 import { setStyleAttribute, addClass, attributes, remove, createElement, DateFormatOptions, removeClass } from '@syncfusion/ej2-base';
-import { isObject, IKeyValue, isBlazor, select, selectAll } from '@syncfusion/ej2-base';
+import { isObject, IKeyValue, select, selectAll } from '@syncfusion/ej2-base';
 import {
     IPosition, IGrid, IValueFormatter, IRow, ICell, IExpandedRow, PdfExportProperties,
     ExcelExportProperties, DataStateChangeEventArgs
@@ -731,20 +731,15 @@ export function wrap(elem: any, action: boolean): void {
 /**
  * @param {ServiceLocator} serviceLocator - Defines the service locator
  * @param {Column} column  - Defines the column
- * @param {boolean} isServerRendered - Defines is server rendered or not
  * @returns {void}
  * @hidden
  */
-export function setFormatter(serviceLocator?: ServiceLocator, column?: Column, isServerRendered?: boolean): void {
+export function setFormatter(serviceLocator?: ServiceLocator, column?: Column): void {
     const fmtr: IValueFormatter = serviceLocator.getService<IValueFormatter>('valueFormatter');
     const format: string = 'format';
     let args: object;
     if (column.type === 'date' || column.type === 'datetime') {
         args = { type: column.type, skeleton: column.format };
-        if (isBlazor() && isServerRendered) {
-            const isServer: string = 'isServerRendered';
-            args[isServer] = isServerRendered;
-        }
         if ((typeof (column.format) === 'string') && column.format !== 'yMd') {
             args[format] = column.format;
         }
@@ -1072,13 +1067,11 @@ export function getCustomDateFormat(format: string | Object, colType: string): s
     if (colType === 'date') {
         formatvalue = typeof (format) === 'object' ?
             intl.getDatePattern({ type: format[type] ? format[type] : 'date', format: format[formatter] }, false) :
-            isBlazor() ? intl.getDatePattern({ type: 'dateTime', format: format }, false) :
-                intl.getDatePattern({ type: 'dateTime', skeleton: format }, false);
+            intl.getDatePattern({ type: 'dateTime', skeleton: format }, false);
     } else {
         formatvalue = typeof (format) === 'object' ?
             intl.getDatePattern({ type: format[type] ? format[type] : 'dateTime', format: format[formatter] }, false) :
-            isBlazor() ? intl.getDatePattern({ type: 'dateTime', format: format }, false) :
-                intl.getDatePattern({ type: 'dateTime', skeleton: format }, false);
+            intl.getDatePattern({ type: 'dateTime', skeleton: format }, false);
     }
     return formatvalue;
 }

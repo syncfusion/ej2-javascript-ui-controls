@@ -58,6 +58,7 @@ export interface DocumentEditorContainerModel extends ComponentModel{
     /**
      * Gets or sets the color used for highlighting the editable ranges or regions of the `currentUser` in Document Editor. The default value is "#FFFF00".
      * Remarks: If the visibility of text affected due this highlight color matching with random color applied for the track changes, then modify the color value of this property to resolve text visibility problem.
+     *
      * @default '#FFFF00'
      */
     userColor?: string;
@@ -120,98 +121,98 @@ export interface DocumentEditorContainerModel extends ComponentModel{
     /**
      * Triggers when the component is created
      *
-     * @event
+     * @event created
      */
     created?: EmitType<Object>;
 
     /**
      * Triggers when the component is destroyed.
      *
-     * @event
+     * @event destroyed
      */
     destroyed?: EmitType<Object>;
 
     /**
      * Triggers whenever the content changes in the document editor container.
      *
-     * @event
+     * @event contentChange
      */
     contentChange?: EmitType<ContainerContentChangeEventArgs>;
 
     /**
      * Triggers whenever selection changes in the document editor container.
      *
-     * @event
+     * @event selectionChange
      */
     selectionChange?: EmitType<ContainerSelectionChangeEventArgs>;
 
     /**
      * Triggers whenever document changes in the document editor container.
      *
-     * @event
+     * @event documentChange
      */
     documentChange?: EmitType<ContainerDocumentChangeEventArgs>;
 
     /**
      * Triggers when toolbar item is clicked.
      *
-     * @event
+     * @event toolbarClick
      */
     toolbarClick?: EmitType<ClickEventArgs>;
 
     /**
      * Triggers while selecting the custom context-menu option.
      *
-     * @event
+     * @event customContextMenuSelect
      */
     customContextMenuSelect?: EmitType<CustomContentMenuEventArgs>;
 
     /**
      * Triggers before opening the custom context-menu option.
      *
-     * @event
+     * @event customContextMenuBeforeOpen
      */
     customContextMenuBeforeOpen?: EmitType<BeforeOpenCloseCustomContentMenuEventArgs>;
 
     /**
      * Trigger before switching panes in DocumentEditor.
      *
-     * @event
+     * @event beforePaneSwitch
      */
     beforePaneSwitch?: EmitType<BeforePaneSwitchEventArgs>;
 
     /**
      * Triggers on deleting a comment.
      *
-     * @event
+     * @event commentDelete
      */
     commentDelete?: EmitType<CommentDeleteEventArgs>;
 
     /**
      * Triggers on comment actions(Post, edit, reply, resolve, reopen).
      *
-     * @event
+     * @event beforeCommentAction
      */
     beforeCommentAction?: EmitType<CommentActionEventArgs>;
 
     /**
      * Triggers when the server action fails.
      *
-     * @event
+     * @event serviceFailure
      */
     serviceFailure?: EmitType<ServiceFailureArgs>;
 
     /**
      * Triggers Keyboard shortcut of TrackChanges.
      *
-     * @event
+     * @event trackChange
      */
     trackChange?: EmitType<TrackChangeEventArgs>;
 
     /**
      * Triggers when user interaction prevented in content control.
      *
-     * @event
+     * @event contentControl
      */
     contentControl?: EmitType<Object>;
 

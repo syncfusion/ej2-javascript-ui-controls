@@ -62,7 +62,7 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
     public minValue: number = Number.MIN_SAFE_INTEGER;
     public maxValue: number = Number.MAX_SAFE_INTEGER;
     public categoryCollection: string[] = ['All'];
-    private dependencyLevel: number = 0;
+    public dependencyLevel: number = 0;
     private refreshedCells: Map<string, string[]> = new Map<string, string[]>();
     private computedValues: Map<string, string | number> = null;
     /** @hidden */
@@ -71,6 +71,10 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
     public isRandomVal: boolean = false;
     /** @hidden */
     public randCollection: string[] = [];
+    /** @hidden */
+    public dependencyCollection: string[] = [];
+    /** @hidden */
+    public uniqueRange: string[] = [];
 
     /**
      * @hidden
@@ -108,7 +112,8 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
         'Calculation overflow',
         'Missing sheet',
         'cannot_parse',
-        'expression_cannot_end_with_an_operator'
+        'expression_cannot_end_with_an_operator',
+        '#SPILL!'
     ];
     private errorStrings: string[] = null;
     /** @hidden */
@@ -2099,9 +2104,10 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
      * To get the exact value from argument.
      *
      * @param {string} arg - Formula argument for getting a exact value.
+     * @param {boolean} isUnique - It specifies unique formula or not.
      * @returns {string} - To get the exact value from argument.
      */
-    public getValueFromArg(arg: string): string {
+    public getValueFromArg(arg: string, isUnique?: boolean): string {
         arg = arg.trim();
         let s: string | number = arg;
         let dateTime: Date = this.dateTime1900;
@@ -2145,9 +2151,9 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
                     this.clearFormulaDependentCells(this.cell);
                 }
                 // eslint-disable-next-line no-throw-literal
-                throw this.formulaErrorStrings[FormulasErrorsStrings.circular_reference] + s;
+                if (!isUnique) { throw this.formulaErrorStrings[FormulasErrorsStrings.circular_reference] + s; }
             }
-            pObjCVal = this.getParentObjectCellValue(s, false);
+            pObjCVal = this.getParentObjectCellValue(s, false, isUnique);
             this.updateDependentCell(s);
             return pObjCVal.toString();
         }
@@ -2313,7 +2319,7 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
         return text;
     }
 
-    private getParentObjectCellValue(val: string, refresh: boolean): string | number {
+    private getParentObjectCellValue(val: string, refresh: boolean, isUnique?: boolean): string | number {
         if (val === this.trueValue || val === this.falseValue) {
             return val;
         }
@@ -2344,7 +2350,7 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
         }
         const saveCell: string = (this.cell === '' || this.cell === null) ? '' : this.cell;
         this.cell = val;
-        if (saveCell === this.cell) {
+        if (saveCell === this.cell && !isUnique) {
             throw this.formulaErrorStrings[FormulasErrorsStrings.circular_reference];
         }
         const cValue: string | number = this.getParentCellValue(row, col, this.grid, saveCell, grid, refresh);
@@ -2354,14 +2360,16 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
     }
 
     private getParentCellValue(
-        row: number, col: number, grd: Object, fromCell: string, fromCellGrid: Object, refresh: boolean): number | string {
+        row: number, col: number, grd: Object, fromCell: string, fromCellGrd: Object, refresh: boolean): number | string {
         // formulainfotable
         let cValue: number | string;
+        const gridId: number = grd && typeof grd === 'string' && Number(grd) > -1 ? Number(grd) : this.getSheetID(grd);
         if ((this.parentObject as any).getValueRowCol === undefined) {
-            cValue = this.getValueRowCol(this.getSheetID(grd), row, col);
+            cValue = this.getValueRowCol(gridId, row, col);
         } else {
-            if (fromCell) { fromCell = fromCellGrid === grd ? '' : fromCell + this.getSheetID(fromCellGrid); }
-            cValue = (this.parentObject as any).getValueRowCol(this.getSheetID(grd), row, col, fromCell, refresh);
+            if (fromCell) { fromCell = fromCellGrd === grd ? '' : fromCell + ',' +
+                (fromCellGrd && typeof fromCellGrd === 'string' && Number(fromCellGrd) > -1 ? fromCellGrd : this.getSheetID(fromCellGrd)); }
+            cValue = (this.parentObject as any).getValueRowCol(gridId, row, col, fromCell, refresh);
             return isNullOrUndefined(cValue) ? this.emptyString : cValue.toString();
         }
         if (cValue === '' || cValue === undefined) {
@@ -2418,7 +2426,8 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
      * @param {number[]} usedRangeCol - Specify the used range collection.
      * @returns {void} - Specifies when changing the value.
      */
-    public valueChanged(grid: string, changeArgs: ValueChangedArgs, isCalculate?: boolean, usedRangeCol?: number[]): void {
+    public valueChanged(
+        grid: string, changeArgs: ValueChangedArgs, isCalculate?: boolean, usedRangeCol?: number[], refresh?: boolean): void {
         const pgrid: string = grid; this.spreadSheetUsedRange = usedRangeCol;
         this.grid = grid;
         let isComputedValueChanged: boolean = true;
@@ -2477,7 +2486,7 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
                 }
                 if (isCompute) {
                     this.parser.isFormulaParsed = true;
-                    const cValue: string | number = this.computeFormula(formula.getParsedFormula());
+                    const cValue: string | number = this.calculateFormula(formula.getParsedFormula(), refresh);
                     isComputedValueChanged = (cValue !== formula.getFormulaValue());
                     formula.setFormulaValue(cValue);
                 }
@@ -2494,7 +2503,7 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
                     isCompute = false;
                 }
                 if (isCompute) {
-                    formula.setFormulaValue(this.computeFormula(formula.getParsedFormula()));
+                    formula.setFormulaValue(this.calculateFormula(formula.getParsedFormula(), refresh));
                 }
                 if (this.getFormulaInfoTable().has(cellTxt)) {
                     this.getFormulaInfoTable().set(cellTxt, formula);
@@ -2852,7 +2861,7 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
                 for (i = 0; i < dependentCells.length; i++) {
                     const dCell: string = dependentCells[i];
                     const token: string = this.getSheetToken(dCell);
-
+                    this.actCell = dCell.split(token)[1];
                     if (token.length) {
                         this.grid = family.tokenToParentObject.get(token);
                     }

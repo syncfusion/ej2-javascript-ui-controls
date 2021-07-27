@@ -2,11 +2,23 @@
 
 ## [Unreleased]
 
-## 19.2.48 (2021-07-20)
+## 19.2.49 (2021-07-27)
 
 ### Pdf Export
 
 #### Bug Fixes
+
+- Rendering issue with PDF Grid text pagination into PDF export is fixed.
+
+- Rendering issue with PDF Grid layout result into PDF export is fixed.
+
+## 19.2.46 (2021-07-06)
+
+### Pdf Export
+
+#### Bug Fixes
+
+- Rendering issue with Line break on multi line text is fixed.
 
 - Performance issue with true type font is fixed.
 

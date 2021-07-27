@@ -22,6 +22,10 @@ export const ribbonFind: string = 'ribbonFind';
 /** @hidden */
 export const getFilteredCollection: string = 'getFilteredCollection';
 /** @hidden */
+export const getUniqueRange: string = 'getUniqueRange';
+/** @hidden */
+export const removeUniquecol: string = 'removeUniquecol';
+/** @hidden */
 export const saveCompleted: string = 'saveCompleted';
 /** @hidden */
 export const applyNumberFormatting: string = 'applyNumber';

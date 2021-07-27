@@ -1034,7 +1034,7 @@ export class PdfExport {
                     cell: cell
                 };
                 args.value = args.column.type === 'boolean' && typeof args.value === 'string' ? args.value :
-                    this.exportValueFormatter.formatCellValue(args, gObj.isServerRendered);
+                    this.exportValueFormatter.formatCellValue(args);
                 this.parent.trigger(events.pdfQueryCellInfo, args);
                 if (!isNullOrUndefined(args.image)) {
                     args.value = new PdfBitmap(args.image.base64);

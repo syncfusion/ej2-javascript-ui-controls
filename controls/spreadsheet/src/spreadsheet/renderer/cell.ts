@@ -132,7 +132,9 @@ export class CellRenderer implements ICellRenderer {
             }
         }
         if (args.cell && args.cell.formula && (!args.cell.value || args.isRefreshing)) {
-            this.calculateFormula(args);
+            if (args.cell.formula.indexOf('UNIQUE') === - 1 && args.cell.value !== '') {
+                this.calculateFormula(args);
+            }
         }
         const formatArgs: { [key: string]: string | boolean | CellModel } = {
             type: args.cell && getTypeFromFormat(args.cell.format),
@@ -244,7 +246,7 @@ export class CellRenderer implements ICellRenderer {
     private calculateFormula(args: CellRenderArgs): void {
         const isFormula: boolean = checkIsFormula(args.cell.formula);
         const eventArgs: { [key: string]: string | number | boolean } = { action: 'refreshCalculate', value: args.cell.formula, rowIndex:
-            args.rowIdx, colIndex: args.colIdx, isFormula: isFormula, sheetIndex: args.sheetIndex };
+            args.rowIdx, colIndex: args.colIdx, isFormula: isFormula, sheetIndex: args.sheetIndex, isRefreshing: args.isRefreshing };
         this.parent.notify(workbookFormulaOperation, eventArgs);
         args.cell.value = getCell(
             args.rowIdx, args.colIdx, isNullOrUndefined(args.sheetIndex) ? this.parent.getActiveSheet() :

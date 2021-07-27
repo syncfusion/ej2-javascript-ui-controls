@@ -512,6 +512,8 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
     /** @hidden */
     public groupingModule: Grouping;
     /** @hidden */
+    public exportType: string;
+    /** @hidden */
     public notEmpty: boolean;
     /** @hidden */
     public currentAction: string;
@@ -3263,6 +3265,7 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
         if (this.enableVirtualization && this.dataSourceSettings.mode !== 'Server') {
             this.excelExportModule.exportToExcel('Excel', excelExportProperties);
         } else {
+            this.exportType = 'Excel';
             this.grid.excelExport(excelExportProperties, isMultipleExport, workbook, isBlob);
         }
     }
@@ -3279,6 +3282,7 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
         if (this.enableVirtualization && this.dataSourceSettings.mode !== 'Server') {
             this.excelExportModule.exportToExcel('CSV', excelExportProperties);
         } else {
+            this.exportType = 'CSV';
             this.grid.csvExport(excelExportProperties, isMultipleExport, workbook, isBlob);
         }
     }

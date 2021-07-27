@@ -8,11 +8,8 @@ import { BaselineAlignment, BiDirectionalOverride } from '../../index';
  * @private
  */
 export interface TextSizeInfo {
-    // eslint-disable-next-line @typescript-eslint/naming-convention
     Height?: number
-    // eslint-disable-next-line @typescript-eslint/naming-convention
     BaselineOffset?: number
-    // eslint-disable-next-line @typescript-eslint/naming-convention
     Width?: number
 }
 /**
@@ -63,7 +60,6 @@ export class TextHelper {
         // Calculate the text element's height and baseline offset.
         const textHelper: TextSizeInfo = this.getHeight(characterFormat);
         const textSizeInfo: TextSizeInfo = {
-            // eslint-disable-next-line @typescript-eslint/naming-convention
             'Width': width, 'Height': textHelper.Height, 'BaselineOffset': textHelper.BaselineOffset
         };
         return this.paragraphMarkInfo[format] = textSizeInfo;
@@ -131,7 +127,6 @@ export class TextHelper {
         // }
         baselineOffset = tempDivTopVal - textTopVal;
         document.body.removeChild(parentDiv);
-        // eslint-disable-next-line @typescript-eslint/naming-convention
         return { 'Height': textHeight, 'BaselineOffset': baselineOffset };
     }
     public measureTextExcludingSpaceAtEnd(text: string, characterFormat: WCharacterFormat): number {
@@ -198,7 +193,6 @@ export class TextHelper {
         // Calculate the text element's height and baseline offset.
         const textHelper: TextSizeInfo = this.getHeight(characterFormat);
         return {
-            // eslint-disable-next-line @typescript-eslint/naming-convention
             'Width': width, 'Height': textHelper.Height, 'BaselineOffset': textHelper.BaselineOffset
         };
     }

@@ -1,7 +1,6 @@
-/* eslint-disable */
 import { BaseEventArgs } from '@syncfusion/ej2-base';
 import { AnnotationType, CommentStatus } from './index';
-import { ShapeLabelSettingsModel, DocumentTextCollectionSettingsModel, RectangleBoundsModel, FormFieldModel } from '../pdfviewer-model'; 
+import { ShapeLabelSettingsModel, DocumentTextCollectionSettingsModel, RectangleBoundsModel, FormFieldModel } from '../pdfviewer-model';
 import { IFormField, IFormFieldBound } from '../form-designer';
 /**
  * Exports types used by PDF viewer.
@@ -139,14 +138,14 @@ export interface AjaxRequestFailureEventArgs extends BaseEventArgs {
 /**
  * This class describes ajaxRequestSuccess event arguments.
  */
- export interface AjaxRequestSuccessEventArgs extends BaseEventArgs {
+export interface AjaxRequestSuccessEventArgs extends BaseEventArgs {
     /**
      * Get the name of the Event.
      */
     name: string
     /**
-    * Get the loaded PDF document name in the PDF viewer
-    */
+     * Get the loaded PDF document name in the PDF viewer
+     */
     documentName: string
     /**
      * Get the action name of the request.
@@ -155,6 +154,7 @@ export interface AjaxRequestFailureEventArgs extends BaseEventArgs {
     /**
      * Get the data as a JSON object from the request.
      */
+    // eslint-disable-next-line
     data: any
 }
 
@@ -245,9 +245,9 @@ export interface HyperlinkClickEventArgs extends BaseEventArgs {
      */
     hyperlinkElement: HTMLAnchorElement
     /**
-    * Hyperlink navigation will not work if it is set to TRUE. The value is set to FALSE by default.
-    */
-    cancel:boolean
+     * Hyperlink navigation will not work if it is set to TRUE. The value is set to FALSE by default.
+     */
+    cancel: boolean
 }
 
 /**
@@ -307,6 +307,10 @@ export interface AnnotationAddEventArgs extends BaseEventArgs {
      */
     // eslint-disable-next-line
     multiplePageCollection?: any;
+    /**
+     * Defines the name of the custom stamp added to the PDF page.
+     */
+    customStampName?: string;
 }
 
 /**
@@ -1059,7 +1063,6 @@ export interface ExtractTextCompletedEventArgs extends BaseEventArgs {
     /**
      * Returns the extracted text collection
      */
-    // eslint-disable-next-line
     documentTextCollection: DocumentTextCollectionSettingsModel[][];
 }
 /**
@@ -1208,6 +1211,24 @@ export interface FormFieldRemoveArgs extends BaseEventArgs {
 }
 
 /**
+ * Triggers an event when the form field is double-clicked.
+ */
+export interface FormFieldDoubleClickArgs extends BaseEventArgs {
+    /**
+     * Returns the event name.
+     */
+    name: string
+    /**
+     * If TRUE, property panel of the form field does not open. FALSE by default.
+     */
+    cancel: boolean
+    /**
+     * Returns the double-clicked form field object.
+     */
+    field: IFormField
+}
+
+/**
  * This event arguments provides the necessary information about form field properties change event.
  */
 export interface FormFieldPropertiesChangeArgs extends BaseEventArgs {
@@ -1286,10 +1307,12 @@ export interface FormFieldPropertiesChangeArgs extends BaseEventArgs {
     /**
      * Specifies the old value of the form field.
      */
+    // eslint-disable-next-line
     oldValue?: any;
     /**
      * Specifies the new value of the form field.
      */
+    // eslint-disable-next-line
     newValue?: any;
 }
 
@@ -1300,15 +1323,15 @@ export interface FormFieldMouseLeaveArgs extends BaseEventArgs {
     /**
      * Get the name of the event.
      */
-     name: string
-     /**
-      * Event arguments for the form field mouse leave event.
-      */
-     field: IFormField
-     /**
-      * Get the page number.
-      */
-     pageIndex: number
+    name: string
+    /**
+     * Event arguments for the form field mouse leave event.
+     */
+    field: IFormField
+    /**
+     * Get the page number.
+     */
+    pageIndex: number
 }
 
 /**
@@ -1349,51 +1372,51 @@ export interface FormFieldMouseoverArgs extends BaseEventArgs {
  * This event arguments provides the necessary information about form field move event.
  */
 export interface FormFieldMoveArgs extends BaseEventArgs {
-     /**
+    /**
      * Get the name of the event.
      */
-      name: string
-      /**
-       * Event arguments for the form field move event.
-       */
-      field: IFormField
-      /**
-       * Get the page number.
-       */
-      pageIndex: number
-      /**
-       * Get the previous position of the form field in the page.
-       */
-     previousPosition: IFormFieldBound
-      /**
-       * Current position of form field in the page.
-       */
-     currentPosition: IFormFieldBound
+    name: string
+    /**
+     * Event arguments for the form field move event.
+     */
+    field: IFormField
+    /**
+     * Get the page number.
+     */
+    pageIndex: number
+    /**
+     * Get the previous position of the form field in the page.
+     */
+    previousPosition: IFormFieldBound
+    /**
+     * Current position of form field in the page.
+     */
+    currentPosition: IFormFieldBound
 }
 
 /**
  * This event arguments provides the necessary information about form field resize event.
  */
 export interface FormFieldResizeArgs extends BaseEventArgs {
-     /**
+    /**
      * Get the name of the event.
      */
-     name: string
-     /**
-      * Event arguments for the form field resize event.
-      */
-     field: IFormField
-     /**
-      * Get the page number.
-      */
-     pageIndex: number
-     /**
-      * Get the previous position of the form field in the page.
-      */
+    name: string
+    /**
+     * Event arguments for the form field resize event.
+     */
+    field: IFormField
+    /**
+     * Get the page number.
+     */
+    pageIndex: number
+    /**
+     * Get the previous position of the form field in the page.
+     */
     previousPosition: IFormFieldBound
-     /**
-      * Current position of form field in the page.
-      */
+    /**
+     * Current position of form field in the page.
+     */
     currentPosition: IFormFieldBound
 }
 
@@ -1404,18 +1427,18 @@ export interface FormFieldSelectArgs extends BaseEventArgs {
     /**
      * Get the name of the event.
      */
-     name: string
-     /**
-      * Event arguments for the form field select event.
-      */
-     field: IFormField
-     /**
-      * Get the page number.
-      */
-     pageIndex: number
-     /**
-      * Specifies whether the the form field is selected programmatically or by UI.
-      */
+    name: string
+    /**
+     * Event arguments for the form field select event.
+     */
+    field: IFormField
+    /**
+     * Get the page number.
+     */
+    pageIndex: number
+    /**
+     * Specifies whether the the form field is selected programmatically or by UI.
+     */
     isProgrammaticSelection: boolean
 }
 
@@ -1426,13 +1449,13 @@ export interface FormFieldUnselectArgs extends BaseEventArgs {
     /**
      * Get the name of the event.
      */
-     name: string
-     /**
-      * Event arguments for the form field unselect event.
-      */
-     field: IFormField
-     /**
-      * Get the page number.
-      */
-     pageIndex: number
+    name: string
+    /**
+     * Event arguments for the form field unselect event.
+     */
+    field: IFormField
+    /**
+     * Get the page number.
+     */
+    pageIndex: number
 }

@@ -70,7 +70,7 @@ export class BulletsAndNumberingDialog {
                 }
             ],
             heightAdjustMode: 'None',
-            width: "auto",
+            width: 'auto',
             selecting: this.onTabSelect.bind(this)
         });
         this.tabObj.isStringTemplate = true;
@@ -210,7 +210,6 @@ export class BulletsAndNumberingDialog {
         this.documentHelper.dialog.content = this.target;
         this.documentHelper.dialog.beforeOpen = this.loadNumberingBulletDialog;
         this.documentHelper.dialog.close = this.closeNumberingBulletDialog;
-        // eslint-disable-next-line @typescript-eslint/naming-convention
         this.documentHelper.dialog.position = { X: 'center', Y: 'center' };
         this.documentHelper.dialog.buttons = [{
             click: this.onOkButtonClick,

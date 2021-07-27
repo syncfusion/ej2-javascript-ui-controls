@@ -766,13 +766,13 @@ $de-font-dlg-font-size: 12px;
 $de-floating-menu-width: 70px;
 $de-floating-menu-height: 65px;
 $de-floating-menu-padding: 10px;
-$de-cmt-container-padding: 0px 8px;
-$de-cmt-sub-container-margin: 8px 0px;
-$de-rply-cmt-sub-container-margin: 11.5px 8px 0px 8px;
+$de-cmt-container-padding: 0 8px;
+$de-cmt-sub-container-margin: 8px 0;
+$de-rply-cmt-sub-container-margin: 11.5px 8px 0 8px;
 $de-cmt-view-mrgn-top: 11.5px;
 $de-ui-floating-menu-padding: 10px 4px 5px 10px;
 $de-ui-list-header-presetmenu-min-width: 50px;
-$de-ui-wfloating-menu: 0px 5px 5px 0px;
+$de-ui-wfloating-menu: 0 5px 5px 0;
 $de-bullet-number-width: 272px;
 $de-rp-content-ln-ht: none;
 $de-rp-font-size: 12px;
@@ -820,7 +820,7 @@ $de-unprotect-dlg-title-mrgn-btm: 8px;
 $de-user-dlg-textbox-input-mrgn-right: 16px;
 $de-user-dlg-list-mrgn-btm: 15px;
 $de-user-dlg-user-mrgn-btm: 12px;
-$de-trckchanges-inner-mrgn: 8px 0px 8px 7.5px !default;
+$de-trckchanges-inner-mrgn: 8px 0 8px 7.5px !default;
 $de-rp-close-icon-top: -7px;
 $de-rp-width: 268px !default;
 $de-rp-btn-enforce-prtct-margin: 0 46px;
@@ -1649,8 +1649,8 @@ $de-rp-btn-enforce-bx-shadow: none;
   .e-de-op {
     border-right: 1px solid $de-op-border-clr;
     padding-left: $de-op-padding-left;
-    padding-top: $de-op-padding-top;
     padding-right: $de-op-padding-left;
+    padding-top: $de-op-padding-top;
     position: relative;
     width: 300px;
   }
@@ -2919,5 +2919,3 @@ $de-rp-btn-enforce-bx-shadow: none;
     transform: translate(-43%, -43%);
   }
 }
-
-

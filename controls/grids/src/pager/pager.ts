@@ -1,4 +1,4 @@
-import { Component, ModuleDeclaration, L10n, EmitType, Browser, isBlazor } from '@syncfusion/ej2-base';
+import { Component, ModuleDeclaration, L10n, EmitType, Browser } from '@syncfusion/ej2-base';
 import { createElement, compile as templateCompiler } from '@syncfusion/ej2-base';
 import { isNullOrUndefined } from '@syncfusion/ej2-base';
 import { Property, Event, NotifyPropertyChanges, INotifyPropertyChanged } from '@syncfusion/ej2-base';
@@ -505,8 +505,7 @@ export class Pager extends Component<HTMLElement> implements INotifyPropertyChan
             this.getPagerTemplate()(data, this, 'template', tempId, null, null, this.element);
             this.renderReactTemplates();
         } else {
-            result = isBlazor() ? this.getPagerTemplate()(data, this, 'template', tempId, this.isStringTemplate) as Element[] :
-                this.isVue ? this.getPagerTemplate()(data, this) as Element[] : this.getPagerTemplate()(data);
+            result = this.isVue ? this.getPagerTemplate()(data, this) as Element[] : this.getPagerTemplate()(data);
             appendChildren(this.element, result);
         }
     }
@@ -611,14 +610,12 @@ export class Pager extends Component<HTMLElement> implements INotifyPropertyChan
         this.element.appendChild(createElement(
             'div', {
                 className: 'e-mfirst e-icons e-icon-first',
-                attrs: { title: isBlazor() ? this.getLocalizedLabel('FirstPageTooltip') : this.getLocalizedLabel('firstPageTooltip'),
-                    tabindex: '-1' }
+                attrs: { title: this.getLocalizedLabel('firstPageTooltip'), tabindex: '-1' }
             }));
         this.element.appendChild(createElement(
             'div', {
                 className: 'e-mprev e-icons e-icon-prev',
-                attrs: { title: isBlazor() ? this.getLocalizedLabel('PreviousPageTooltip') :
-                    this.getLocalizedLabel('previousPageTooltip'), tabindex: '-1' }
+                attrs: { title: this.getLocalizedLabel('previousPageTooltip'), tabindex: '-1' }
             }));
     }
 
@@ -626,14 +623,12 @@ export class Pager extends Component<HTMLElement> implements INotifyPropertyChan
         this.element.appendChild(createElement(
             'div', {
                 className: 'e-mnext e-icons e-icon-next',
-                attrs: { title: isBlazor() ? this.getLocalizedLabel('NextPageTooltip') :
-                    this.getLocalizedLabel('nextPageTooltip'), tabindex: '-1' }
+                attrs: { title: this.getLocalizedLabel('nextPageTooltip'), tabindex: '-1' }
             }));
         this.element.appendChild(createElement(
             'div', {
                 className: 'e-mlast e-icons e-icon-last',
-                attrs: { title: isBlazor() ? this.getLocalizedLabel('LastPageTooltip') :
-                    this.getLocalizedLabel('lastPageTooltip'), tabindex: '-1' }
+                attrs: { title: this.getLocalizedLabel('lastPageTooltip'), tabindex: '-1' }
             }));
     }
 

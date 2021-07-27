@@ -368,9 +368,7 @@ export class Render {
                 columns[i].setParser(valueFormatter.getParserFunction(columns[i].format as DateFormatOptions));
             }
             if (typeof (columns[i].format) === 'string') {
-                const isServerRendered: string = 'isServerRendered';
-                const isServerDateMap: boolean = this.parent[isServerRendered] || this.parent.printModule.isPrintGrid();
-                setFormatter(this.locator, columns[i], isServerDateMap);
+                setFormatter(this.locator, columns[i]);
             } else if (!columns[i].format && columns[i].type === 'number') {
                 columns[i].setParser(
                     fmtr.getParserFunction({ format: 'n2' } as NumberFormatOptions));

@@ -1,4 +1,3 @@
-/* eslint-disable */
 import { AnnotationDataFormat, PdfViewer } from '../index';
 import { PdfViewerBase } from '../index';
 import { createElement, Browser, isBlazor } from '@syncfusion/ej2-base';
@@ -104,11 +103,10 @@ export class NavigationPane {
     public commentPanelResizer: HTMLElement;
 
     /**
-     * @param viewer
-     * @param base
-     * @param viewer
-     * @param base
-     * @private
+     * Initialize the constructor of navigationPane.
+     *
+     * @param { PdfViewer } viewer - Specified PdfViewer class.
+     * @param { PdfViewerBase } base - The pdfViewerBase.
      */
     constructor(viewer: PdfViewer, base: PdfViewerBase) {
         this.pdfViewer = viewer;
@@ -116,6 +114,7 @@ export class NavigationPane {
     }
     /**
      * @private
+     * @returns {void}
      */
     public initializeNavigationPane(): void {
         if (!Browser.isDevice || this.pdfViewer.enableDesktopMode) {
@@ -235,6 +234,7 @@ export class NavigationPane {
 
     /**
      * @private
+     * @returns {void}
      */
     public adjustPane(): void {
         if (isBlazor()) {
@@ -321,7 +321,7 @@ export class NavigationPane {
         const moreOptionButtonSpan: HTMLElement = createElement('span', { id: this.pdfViewer.element.id + '_annotation_more_icon', className: 'e-pv-more-icon e-pv-icon' });
         annotationButton.appendChild(moreOptionButtonSpan);
         if (Browser.isDevice && !isBlazor()) {
-            let commentCloseIconDiv: HTMLElement = createElement('button');
+            const commentCloseIconDiv: HTMLElement = createElement('button');
             commentCloseIconDiv.setAttribute('aria-label', 'annotation button');
             commentCloseIconDiv.setAttribute('type', 'button');
             commentCloseIconDiv.style.borderColor = 'transparent';
@@ -330,7 +330,7 @@ export class NavigationPane {
             commentCloseIconDiv.style.backgroundColor = '#fafafa';
             commentCloseIconDiv.addEventListener('click', this.closeCommentPanelContainer.bind(this));
             commentpanelTilte.style.left = '37px';
-            let commentCloseIcon: HTMLElement = createElement('span', { className: 'e-pv-annotation-tools-close-icon e-pv-icon' });
+            const commentCloseIcon: HTMLElement = createElement('span', { className: 'e-pv-annotation-tools-close-icon e-pv-icon' });
             commentCloseIconDiv.appendChild(commentCloseIcon);
             commentPanelTitleContainer.appendChild(commentCloseIconDiv);
         }
@@ -356,6 +356,7 @@ export class NavigationPane {
 
     /**
      * @private
+     * @returns {void}
      */
     public createAnnotationContextMenu(): void {
         // eslint-disable-next-line max-len
@@ -483,9 +484,11 @@ export class NavigationPane {
     };
     /**
      * @private
+     * @returns {void}
      */
     public closeCommentPanelContainer(): void {
-        const proxy: NavigationPane = this;
+        let proxy: NavigationPane = null;
+        proxy = this;
         const viewerContainer: HTMLElement = document.getElementById(this.pdfViewer.element.id + '_viewerContainer');
         const pageContainer: HTMLElement = document.getElementById(this.pdfViewer.element.id + '_pageViewContainer');
         const commentPanel: HTMLElement = document.getElementById(this.pdfViewer.element.id + '_commantPanel');
@@ -522,8 +525,9 @@ export class NavigationPane {
     }
 
     /**
-     * @param option
      * @private
+     * @param {string} option - The option.
+     * @returns {void}
      */
     public createNavigationPaneMobile(option: string): void {
         this.isNavigationToolbarVisible = true;
@@ -612,7 +616,8 @@ export class NavigationPane {
     private initiateBookmarks(): void {
         if (Browser.isDevice && !this.pdfViewer.enableDesktopMode) {
             this.pdfViewerBase.mobileScrollerContainer.style.display = 'none';
-            let mobileTool: any = document.querySelectorAll('.e-pv-mobile-annotation-toolbar');
+            // eslint-disable-next-line
+            const mobileTool: any = document.querySelectorAll('.e-pv-mobile-annotation-toolbar');
             for (let i: number = 0; i < mobileTool.length; i++) {
                 mobileTool[i].style.display = 'none';
             }
@@ -634,6 +639,7 @@ export class NavigationPane {
 
     /**
      * @private
+     * @returns {void}
      */
     public goBackToToolbar(): void {
         this.isNavigationToolbarVisible = false;
@@ -692,8 +698,9 @@ export class NavigationPane {
     }
 
     /**
-     * @param text
      * @private
+     * @param {string} text - The text.
+     * @returns {void}
      */
     public createTooltipMobile(text: string): void {
         if (!this.isTooltipCreated) {
@@ -753,6 +760,7 @@ export class NavigationPane {
 
     /**
      * @private
+     * @returns {void}
      */
     public toolbarResize(): void {
         if (this.searchInput) {
@@ -801,6 +809,7 @@ export class NavigationPane {
 
     /**
      * @private
+     * @returns {void}
      */
     public enableThumbnailButton(): void {
         if (this.thumbnailButton) {
@@ -812,6 +821,7 @@ export class NavigationPane {
 
     /**
      * @private
+     * @returns {void}
      */
     public enableBookmarkButton(): void {
         if (this.bookmarkButton) {
@@ -850,6 +860,7 @@ export class NavigationPane {
 
     /**
      * @private
+     * @returns {void}
      */
     public setResizeIconTop(): void {
         // eslint-disable-next-line max-len
@@ -860,6 +871,7 @@ export class NavigationPane {
 
     /**
      * @private
+     * @returns {void}
      */
     public setCommentPanelResizeIconTop(): void {
         // eslint-disable-next-line max-len
@@ -867,13 +879,20 @@ export class NavigationPane {
             this.commentPanelResizeIcon.style.top = (this.commentPanelContainer.clientHeight) / 2 + 'px';
         }
     }
-
+    /**
+     * @param {MouseEvent} event - The event.
+     * @returns {void}
+     */
     private resizeIconMouseOver = (event: MouseEvent): void => {
         (event.srcElement as HTMLElement).style.cursor = 'default';
     };
-
+    /**
+     * @param {MouseEvent} event - The event.
+     * @returns {void}
+     */
     private resizePanelMouseDown = (event: MouseEvent): void => {
-        const proxy: NavigationPane = this;
+        let proxy: NavigationPane = null;
+        proxy = this;
         proxy.offset = [
             proxy.sideBarResizer.offsetLeft - event.clientX,
             proxy.sideBarResizer.offsetTop - event.clientY,
@@ -887,9 +906,13 @@ export class NavigationPane {
             proxy.sideBarContentContainer.style.cursor = 'e-resize';
         }
     };
-
+    /**
+     * @param {MouseEvent} event - The event.
+     * @returns {void}
+     */
     private resizeViewerMouseLeave = (event: MouseEvent): void => {
-        const proxy: NavigationPane = this;
+        let proxy: NavigationPane = null;
+        proxy = this;
         proxy.isDown = false;
         if (proxy.isNavigationPaneResized && proxy.sideBarContentContainer) {
             proxy.pdfViewerBase.viewerContainer.style.cursor = 'default';
@@ -903,6 +926,7 @@ export class NavigationPane {
     };
     /**
      * @private
+     * @returns {number} - Returns the number.
      */
     get outerContainerWidth(): number {
         if (!this.mainContainerWidth) {
@@ -912,7 +936,8 @@ export class NavigationPane {
     }
 
     /**
-     *  @private
+     * @private
+     * @returns {number} - Returns the number.
      */
     public getViewerContainerScrollbarWidth(): number {
         // eslint-disable-next-line max-len
@@ -920,7 +945,8 @@ export class NavigationPane {
     }
 
     /**
-     *  @private
+     * @private
+     * @returns {number} - Returns the number.
      */
     get sideToolbarWidth(): number {
         if (this.sideBarToolbar) {
@@ -931,6 +957,7 @@ export class NavigationPane {
     }
     /**
      * @private
+     * @returns {number} - Returns the number.
      */
     get sideBarContentContainerWidth(): number {
         if (this.sideBarContentContainer) {
@@ -941,7 +968,8 @@ export class NavigationPane {
     }
 
     /**
-     *  @private
+     * @private
+     * @returns {number} - Returns the number.
      */
     get commentPanelContainerWidth(): number {
         if (this.commentPanelContainer) {
@@ -950,8 +978,13 @@ export class NavigationPane {
             return 0;
         }
     }
+    /**
+     * @param {MouseEvent} event - The event.
+     * @returns {void}
+     */
     private resizePanelMouseMove = (event: MouseEvent): void => {
-        const proxy: NavigationPane = this;
+        let proxy: NavigationPane = null;
+        proxy = this;
         if (!this.pdfViewerBase.getPopupNoteVisibleStatus()) {
             const target: HTMLElement = event.target as HTMLElement;
             // eslint-disable-next-line max-len
@@ -1013,17 +1046,24 @@ export class NavigationPane {
             }
         }
     };
+    /**
+     * @param {MouseEvent} event - The event.
+     * @returns {void}
+     */
     private sideToolbarOnClose = (event: MouseEvent): void => {
-        const proxy: NavigationPane = this;
+        let proxy: NavigationPane = null;
+        proxy = this;
         proxy.removeThumbnailSelectionIconTheme();
         proxy.removeBookmarkSelectionIconTheme();
         proxy.updateViewerContainerOnClose();
     };
     /**
      * @private
+     * @returns {void}
      */
     public updateViewerContainerOnClose(): void {
-        const proxy: NavigationPane = this;
+        let proxy: NavigationPane = null;
+        proxy = this;
         if (proxy.sideBarContentContainer) {
             proxy.sideBarContentContainer.style.display = 'none';
             if (this.pdfViewer.enableRtl) {
@@ -1040,9 +1080,11 @@ export class NavigationPane {
     }
     /**
      * @private
+     * @returns {void}
      */
     public updateViewerContainerOnExpand(): void {
-        const proxy: NavigationPane = this;
+        let proxy: NavigationPane = null;
+        proxy = this;
         if (proxy.sideBarContentContainer) {
             proxy.sideBarContentContainer.style.display = 'block';
             if (this.pdfViewer.enableRtl) {
@@ -1063,6 +1105,7 @@ export class NavigationPane {
     }
     /**
      * @private
+     * @returns {number} - Returns the number.
      */
     public getViewerContainerLeft(): number {
         if (this.sideToolbarWidth) {
@@ -1073,6 +1116,7 @@ export class NavigationPane {
     }
     /**
      * @private
+     * @returns {number} - Returns the number.
      */
     public getViewerContainerRight(): number {
         if (this.commentPanelResizer) {
@@ -1083,14 +1127,20 @@ export class NavigationPane {
     }
     /**
      * @private
+     * @returns {number} - Returns the number.
      */
     public getViewerMainContainerWidth(): number {
         return this.pdfViewer.element.clientWidth - this.sideToolbarWidth;
     }
+    /**
+     * @param {MouseEvent} event - The event.
+     * @returns {void}
+     */
     private sideToolbarOnClick = (event: MouseEvent): void => {
         this.sideBarTitle.textContent = this.pdfViewer.localeObj.getConstant('Page Thumbnails');
         this.sideBarContent.setAttribute('aria-label', 'Thumbnail View Panel');
-        const proxy: NavigationPane = this;
+        let proxy: NavigationPane = null;
+        proxy = this;
         const isblazor: boolean = isBlazor();
         // eslint-disable-next-line max-len
         const bookmarkPane: HTMLElement = isblazor ? this.pdfViewer.element.querySelector('.e-pv-bookmark-view') : document.getElementById(this.pdfViewer.element.id + '_bookmark_view');
@@ -1127,9 +1177,11 @@ export class NavigationPane {
 
     /**
      * @private
+     * @returns {void}
      */
     public openThumbnailPane = (): void => {
-        const proxy: NavigationPane = this;
+        let proxy: NavigationPane = null;
+        proxy = this;
         const sideBarContent: HTMLElement = document.getElementById(this.pdfViewer.element.id + '_sideBarContent');
         const sideBarContentContainer: HTMLElement = document.getElementById(this.pdfViewer.element.id + '_sideBarContentContainer');
         const viewerContainer: HTMLElement = document.getElementById(this.pdfViewer.element.id + '_viewerContainer');
@@ -1168,6 +1220,7 @@ export class NavigationPane {
     };
     /**
      * @private
+     * @returns {void}
      */
     public setThumbnailSelectionIconTheme(): void {
         if (this.thumbnailButton) {
@@ -1194,6 +1247,7 @@ export class NavigationPane {
 
     /**
      * @private
+     * @returns {void}
      */
     public resetThumbnailView(): void {
         if (this.sideBarContentContainer) {
@@ -1213,7 +1267,10 @@ export class NavigationPane {
             this.resetThumbnailIcon();
         }
     }
-
+    /**
+     * @param {MouseEvent} event - The event.
+     * @returns {void}
+     */
     private bookmarkButtonOnClick = (event: MouseEvent): void => {
         this.openBookmarkcontentInitially();
     };
@@ -1246,9 +1303,11 @@ export class NavigationPane {
 
     /**
      * @private
+     * @returns {void}
      */
     public openBookmarkcontentInitially(): void {
-        const proxy: NavigationPane = this;
+        let proxy: NavigationPane = null;
+        proxy = this;
         if (document.getElementById(this.pdfViewer.element.id + '_thumbnail_view')) {
             document.getElementById(this.pdfViewer.element.id + '_thumbnail_view').style.display = 'none';
         }
@@ -1284,6 +1343,7 @@ export class NavigationPane {
 
     /**
      * @private
+     * @returns {void}
      */
     public disableBookmarkButton(): void {
         if (this.sideBarContentContainer) {
@@ -1292,9 +1352,13 @@ export class NavigationPane {
             this.bookmarkButton.children[0].classList.add('e-pv-bookmark-disable-icon');
         }
     }
-
+    /**
+     * @param {MouseEvent} event - The event.
+     * @returns {void}
+     */
     private commentPanelMouseDown = (event: MouseEvent): void => {
-        const proxy: NavigationPane = this;
+        let proxy: NavigationPane = null;
+        proxy = this;
         proxy.offset = [
             proxy.commentPanelResizer.offsetLeft - event.clientX,
             proxy.commentPanelResizer.offsetTop - event.clientY,
@@ -1305,9 +1369,13 @@ export class NavigationPane {
         proxy.pdfViewerBase.viewerContainer.style.cursor = 'e-resize';
         proxy.commentPanelResizer.style.cursor = 'e-resize';
     };
-
+    /**
+     * @param {MouseEvent} event - The event.
+     * @returns {void}
+     */
     private updateCommentPanelContainer = (event: MouseEvent): void => {
-        const proxy: NavigationPane = this;
+        let proxy: NavigationPane = null;
+        proxy = this;
         // prevent the commentPanel from becoming too narrow, or from occupying more
         // than half of the available viewer width.
         if (this.pdfViewer.enableRtl) {
@@ -1347,9 +1415,13 @@ export class NavigationPane {
         proxy.pdfViewerBase.pageContainer.style.width = proxy.pdfViewerBase.viewerContainer.clientWidth + 'px';
         proxy.pdfViewerBase.updateZoomValue();
     };
-
+    /**
+     * @param {MouseEvent} event - The event.
+     * @returns {void}
+     */
     private commentPanelMouseLeave = (event: MouseEvent): void => {
-        const proxy: NavigationPane = this;
+        let proxy: NavigationPane = null;
+        proxy = this;
         if (proxy.commentPanelContainer) {
             proxy.pdfViewerBase.viewerContainer.style.cursor = 'default';
             proxy.commentPanelContainer.style.cursor = 'default';
@@ -1358,6 +1430,7 @@ export class NavigationPane {
 
     /**
      * @private
+     * @returns {void}
      */
     public clear(): void {
         if (!Browser.isDevice) {
@@ -1372,13 +1445,16 @@ export class NavigationPane {
 
     /**
      * @private
+     * @returns {void}
      */
     public destroy(): void {
         if (this.annotationMenuObj) {
             this.annotationMenuObj.destroy();
         }
     }
-
+    /**
+     * @returns {string} - Returns the string.
+     */
     public getModuleName(): string {
         return 'NavigationPane';
     }

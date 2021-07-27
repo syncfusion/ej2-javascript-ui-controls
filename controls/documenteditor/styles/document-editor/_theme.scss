@@ -1,4 +1,5 @@
 @include export-module('documenteditor-theme') {
+    // sass-lint:disable-all
     .e-de-background {
         background-color: $de-background;
     }
@@ -8,11 +9,11 @@
         font-weight: $de-header-font-weight;
         margin-top: 6px;
     }
-    // sass-lint:disable-all
+
     .e-de-check-exactnumbr-width {
         width: $de-check-exactnumbr-width !important;
     }
-    // sass-lint:enable-all
+
     .e-de-ff-dlg-heading {
         display: block;
         font-size: $de-para-dlg-heading-font-size;
@@ -761,7 +762,7 @@
         .e-de-font-dlg-display .e-colorpicker-wrapper .e-btn.e-icon-btn {
             padding: 4px 8px !important;
         }
-        // sass-lint:enable-all
+
         .e-de-rp-close-icon.e-btn {
             background: $de-rp-btn-bg-color;
             border: 0;
@@ -844,7 +845,7 @@
         .e-de-bookmark {
             margin-top: 0 !important;
         }
-        // sass-lint:enable-all
+
         .e-styles-common {
             padding-top: $de-style-list-top;
         }

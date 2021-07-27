@@ -2,6 +2,16 @@
 
 ## [Unreleased]
 
+## 19.2.49 (2021-07-27)
+
+### Grid
+
+#### Bug Fixes
+
+- `#FB26500` - copy are hidden in context menu while cell selection mode is resolved.
+- `#I334589` - throws script error drag and drop on an expanded row with `DetailsTemplate` is fixed.
+- `#I307521` - Provided a feature to change the cursor indication while dragging.
+
 ## 19.2.48 (2021-07-20)
 
 ### Grid

@@ -1,3 +1,4 @@
+/* eslint-disable */
 import { createElement, L10n, classList } from '@syncfusion/ej2-base';
 import { DocumentEditor, HighlightColor } from '../../document-editor/index';
 import { ComboBox } from '@syncfusion/ej2-dropdowns';
@@ -37,6 +38,12 @@ export class Text {
     private get documentEditor(): DocumentEditor {
         return this.container.documentEditor;
     }
+    /**
+     * Initialize text properties.
+     *
+     * @param {DocumentEditorContainer} container - DocumentEditorContainer instance.
+     * @param {boolean} isRtl - Specifies the RTL layout.
+     */
     public constructor(container: DocumentEditorContainer, isRtl?: boolean) {
         this.container = container;
         this.isRtl = isRtl;
@@ -104,14 +111,12 @@ export class Text {
             classList(propertiesDiv, ['e-de-ctnr-segment-rtl'], []);
         }
 
-        // eslint-disable-next-line max-len
         const leftDiv2: HTMLElement = createElement('div', { id: element + '_color', className: 'e-de-font-clr-picker e-de-ctnr-group-btn', styles: 'display:inline-flex;' });
         if (isRtl) {
             classList(leftDiv2, ['e-rtl'], []);
         }
         colorDiv.appendChild(leftDiv2);
         textDiv.appendChild(colorDiv);
-        // eslint-disable-next-line max-len
         this.fontColor = this.createFontColorPicker(element + '_textColor', 40.5, leftDiv2, this.localObj.getConstant('Font color'));
         classList(leftDiv2.firstElementChild.lastElementChild.lastElementChild.firstChild as HTMLElement, ['e-de-ctnr-fontcolor', 'e-icons'], ['e-caret']);
         this.initializeHighlightColorElement();
@@ -119,7 +124,7 @@ export class Text {
         classList(this.highlightColor.element.nextElementSibling.firstElementChild, ['e-de-ctnr-highlight', 'e-icons'], ['e-caret']);
         this.highlightColorInputElement = this.highlightColor.element.firstChild as HTMLElement;
         this.clearFormat = this.createButtonTemplate(element + '_clearFormat', 'e-de-ctnr-clearall e-icons', leftDiv2, 'e-de-prop-font-last-button', '40.5', this.localObj.getConstant('Clear all formatting'));
-        let rightDiv2: HTMLElement = createElement('div', {
+        const rightDiv2: HTMLElement = createElement('div', {
             id: element + '_rightDiv2', className: divClassName, styles: 'display:inline-flex;'
         });
         if (isRtl) {
@@ -138,10 +143,10 @@ export class Text {
             iconCss: 'e-icons e-de-ctnr-change-case',
             enableRtl: this.isRtl
         });
-        let changeCaseContainer: HTMLElement = createElement('div', {
+        const changeCaseContainer: HTMLElement = createElement('div', {
             id: container.id + '_changeCase', className: 'e-de-ctnr-group-btn'
         });
-        let buttonElement: HTMLButtonElement = createElement('button', {
+        const buttonElement: HTMLButtonElement = createElement('button', {
             id: changeCaseContainer.id + '_dropdownBtn',
             attrs: { type: 'button' }
         }) as HTMLButtonElement;
@@ -153,15 +158,15 @@ export class Text {
         if (this.isRetrieving) {
             return;
         }
-        let text: string = args.item.text;
+        const text: string = args.item.text;
         switch (text) {
-            case 'UPPERCASE':
-                if (!this.documentEditor.isReadOnly && this.documentEditor.editor) {
-                    this.documentEditor.editor.changeCase('Uppercase');
-                }
-                break;
-            default:
-                break;
+        case 'UPPERCASE':
+            if (!this.documentEditor.isReadOnly && this.documentEditor.editor) {
+                this.documentEditor.editor.changeCase('Uppercase');
+            }
+            break;
+        default:
+            break;
         }
     }
     private createHighlightColorSplitButton(id: string, width: number, divElement: HTMLElement, toolTipText: string): SplitButton {
@@ -173,7 +178,7 @@ export class Text {
         const hgltSplitObj: SplitButton = new SplitButton({
             cssClass: 'e-de-btn-hghlclr',
             iconCss: 'e-de-ctnr-hglt-color',
-            // eslint-disable-next-line max-len
+            /* eslint-disable-next-line max-len */
             target: this.highlightColorElement, close: this.closePopup.bind(this), beforeOpen: this.openPopup.bind(this), enableRtl: this.isRtl
         });
         hgltSplitObj.appendTo(buttonElement);
@@ -302,7 +307,7 @@ export class Text {
     }
     private applyHighlightColor (color: string): void {
         this.appliedHighlightColor = color;
-        let hgltColor: HighlightColor = this.getHighLightColor(color);
+        const hgltColor: HighlightColor = this.getHighLightColor(color);
         if (hgltColor === 'NoColor') {
             this.documentEditor.selection.characterFormat.highlightColor = null;
         }
@@ -355,7 +360,7 @@ export class Text {
         return div;
 
     }
-    // eslint-disable-next-line max-len
+    /* eslint-disable-next-line max-len */
     private createButtonTemplate(id: string, iconcss: string, div: HTMLElement, buttonClass: string, width: string, toolTipText: string): HTMLButtonElement {
         const button: HTMLButtonElement = createElement('Button', { id: id, attrs: { type: 'button' } }) as HTMLButtonElement;
         // button.style.width = width + 'px';

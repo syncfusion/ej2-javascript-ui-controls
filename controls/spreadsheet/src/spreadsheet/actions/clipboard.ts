@@ -257,6 +257,7 @@ export class Clipboard {
                 const pasteType: string = beginEventArgs.type ? beginEventArgs.type : args.type;
                 const cRows: RowModel[] = [];
                 const isInRange: boolean = this.isInRange(cIdx, selIdx, copiedIdx);
+                const isRowSelected: boolean = (selIdx[1] === 0 && selIdx[3] === curSheet.colCount - 1);
                 for (let i: number = cIdx[0], l: number = 0; i <= cIdx[2]; i++, l++) {
                     if (isInRange) {
                         cRows[selIdx[0] + l] = { cells: [] };
@@ -307,6 +308,7 @@ export class Clipboard {
                                 for (let y: number = selIdx[1]; y <= selIdx[3]; y += (cIdx[3] - cIdx[1] + 1)) {
                                     prevCell = getCell(x + l, y + k, curSheet) || {};
                                     if (!isExternal && (prevCell.colSpan !== undefined || prevCell.rowSpan !== undefined)) {
+                                        if (isRowSelected) { continue; }
                                         mergeArgs = { range: [x + l, y + k, x + l, y + k] };
                                         const merge: MergeArgs = { range: mergeArgs.range, merge: false, isAction: false, type: 'All' };
                                         mergeCollection.push(merge);
@@ -790,6 +792,7 @@ export class Clipboard {
                     tr.querySelectorAll('td').forEach((td: Element, j: number) => {
                         cellStyle = this.getStyle(td, ele);
                         td.textContent = td.textContent.replace(/(\r\n|\n|\r)/gm, '');
+                        td.textContent = td.textContent.replace(/\s+/g, ' ');
                         const cSpan: number = isNaN(parseInt(td.getAttribute('colspan'), 10)) ? 1 : parseInt(td.getAttribute('colspan'), 10);
                         const rSpan: number = isNaN(parseInt(td.getAttribute('rowspan'), 10)) ? 1 : parseInt(td.getAttribute('rowspan'), 10);
                         let wrap: boolean;

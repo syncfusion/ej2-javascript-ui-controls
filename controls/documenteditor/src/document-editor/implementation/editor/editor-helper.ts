@@ -389,7 +389,7 @@ export class HelperMethods {
         if (type === 'Titlecase') {
             const valArry: string[] = splitBy ? value.split(splitBy) : value.split(' ');
             for (let i: number = 0; i < valArry.length; i++) {
-                // eslint-disable-next-line max-len
+                /* eslint-disable-next-line max-len */
                 text += splitBy ? valArry[i].charAt(0).toUpperCase() + valArry[i].slice(1, valArry[i].length) : this.capitaliseFirstInternal(valArry[i]);
                 if (valArry.length >= 0 && !splitBy) {
                     text += ' ';
@@ -418,21 +418,21 @@ export class HelperMethods {
         const dateTime: string = dateString + ' ' + time;
         return dateTime;
     }
-    public static getCompatibilityModeValue(compatibiltyMode: CompatibilityMode): string {
+    public static getCompatibilityModeValue(compatibilityMode: CompatibilityMode): string {
         let compatValue: string;
-        switch (compatibiltyMode) {
-            case 'Word2003':
-                compatValue = '11';
-                break;
-            case 'Word2007':
-                compatValue = '12';
-                break;
-            case 'Word2010':
-                compatValue = '14';
-                break;
-            default:
-                compatValue = '15';
-                break;
+        switch (compatibilityMode) {
+        case 'Word2003':
+            compatValue = '11';
+            break;
+        case 'Word2007':
+            compatValue = '12';
+            break;
+        case 'Word2010':
+            compatValue = '14';
+            break;
+        default:
+            compatValue = '15';
+            break;
         }
         return compatValue;
     }

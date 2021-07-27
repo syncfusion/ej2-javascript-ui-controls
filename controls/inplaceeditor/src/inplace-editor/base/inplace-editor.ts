@@ -142,6 +142,7 @@ export class InPlaceEditor extends Component<HTMLElement> implements INotifyProp
     private beginEditArgs: BeginEditEventArgs;
     private btnElements: HTMLElement = undefined;
     private dataManager: DataManager = undefined;
+    private oldValue: string | number | Date | string[] | Date[] | number[] = undefined;
     private componentRoot: HTMLElement | HTMLInputElement;
     private dataAdaptor: UrlAdaptor | ODataV4Adaptor | WebApiAdaptor;
     private prevValue: string | number | Date | string[] | Date[] | number[];
@@ -868,7 +869,7 @@ export class InPlaceEditor extends Component<HTMLElement> implements INotifyProp
             cssClass: classProp, enableRtl: this.enableRtl, locale: this.locale, change: this.changeHandler.bind(this)
         });
         if (!isNOU(this.value)) {
-            this.updateModelValue();
+            this.updateModelValue(false);
         }
         if (this.isExtModule) {
             this.notify(events.render, { module: modulesList[this.type], target: ele, type: this.type });
@@ -973,20 +974,20 @@ export class InPlaceEditor extends Component<HTMLElement> implements INotifyProp
         this.setProperties({ model: model }, true);
     }
     private updateValue(): void {
-        let value : string | number | string[] | number[] | Date | Date[] = this.value;
+        this.oldValue = this.value;
         if (this.enableHtmlSanitizer && typeof(this.value) === 'string') {
-            value = this.sanitizeHelper(this.value);
+            this.oldValue = this.sanitizeHelper(this.value);
         }
         if (!isNOU(this.value)) {
-            this.setProperties({ value: getCompValue(this.type, value) }, true);
-            this.extendModelValue(getCompValue(this.type, value));
+            this.setProperties({ value: getCompValue(this.type, this.oldValue) }, true);
+            this.extendModelValue(getCompValue(this.type, this.oldValue));
         }
     }
-    private updateModelValue(): void {
+    private updateModelValue(updateOldValue: boolean): void {
         if (this.type === 'MultiSelect' && !this.isEmpty(this.value as string[])) {
-            this.model.value = (<string[]>this.value).slice();
+            this.model.value = !updateOldValue ? (<string[]>this.value).slice() : (<string[]>this.oldValue).slice();
         } else {
-            this.model.value = this.value;
+            this.model.value = !updateOldValue ? this.value : this.oldValue;
         }
     }
     public setValue(): void {
@@ -1339,6 +1340,7 @@ export class InPlaceEditor extends Component<HTMLElement> implements INotifyProp
     private triggerSuccess(args: ActionEventArgs): void {
         const val: string = args.value;
         this.trigger('actionSuccess', args, (actionArgs: ActionEventArgs) => {
+            this.oldValue = val;
             this.removeSpinner('submit');
             if (!actionArgs.cancel) {
                 this.renderValue(this.checkValue((actionArgs.value !== val) ? actionArgs.value : this.getRenderValue()));
@@ -1352,7 +1354,13 @@ export class InPlaceEditor extends Component<HTMLElement> implements INotifyProp
     private triggerEndEdit(closeBeginBy: string): void {
         const endEditArgs = { cancel: false, mode: this.mode, action: closeBeginBy };
         this.trigger('endEdit', endEditArgs, (args: EndEditEventArgs) => {
-            if (!args.cancel) { this.removeEditor(); }
+            if (!args.cancel) {
+                if (this.formEle && this.formEle.classList.contains(classes.ERROR)) {
+                    this.updateModelValue(true);
+                    this.setProperties({ value: this.oldValue }, true);
+                }
+                this.removeEditor();
+            }
         });
     }
     private wireEvents(): void {

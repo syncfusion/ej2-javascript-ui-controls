@@ -8,7 +8,15 @@
 
 ## [Unreleased]
 
-## 19.2.48 (2021-07-20)
+## 19.2.49 (2021-07-27)
+
+### TreeMap
+
+#### Bug Fixes
+
+- TreeMap properly render in React when theme applied.
+
+## 19.2.47 (2021-07-13)
 
 ### TreeMap
 

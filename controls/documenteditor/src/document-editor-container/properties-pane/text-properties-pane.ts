@@ -18,6 +18,14 @@ export class TextProperties {
         return this.container.documentEditor;
     }
 
+    /**
+     * Initialize the Text properties pane.
+     *
+     * @param {DocumentEditorContainer} container DocumentEditorContainer instance.
+     * @param {string} id Identifier element reference.
+     * @param {boolean} isTableProperties Specified if text properties is inside the text properties.
+     * @param {boolean} isRtl Specifies the RTL layout.
+     */
     public constructor(container: DocumentEditorContainer, id: string, isTableProperties: boolean, isRtl?: boolean) {
         this.container = container;
         this.text = new Text(container, isRtl);

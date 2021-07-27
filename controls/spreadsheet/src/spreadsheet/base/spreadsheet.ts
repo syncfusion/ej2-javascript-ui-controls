@@ -1964,14 +1964,14 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
 
     /**
      * @hidden
-     * @param {number} sheetIndex - specify the sheet index
+     * @param {number} sheetId - Specifies the sheet id.
      * @param {number} rowIndex - specify the row index.
      * @param {number} colIndex - specify the col index.
      * @returns {string | number} - to get Value Row Col.
      */
     public getValueRowCol(
-        sheetIndex: number, rowIndex: number, colIndex: number, formulaCellReference?: string, refresh?: boolean): string | number {
-        return super.getValueRowCol(sheetIndex, rowIndex, colIndex, formulaCellReference, refresh);
+        sheetId: number, rowIndex: number, colIndex: number, formulaCellReference?: string, refresh?: boolean): string | number {
+        return super.getValueRowCol(sheetId, rowIndex, colIndex, formulaCellReference, refresh);
     }
 
     /**

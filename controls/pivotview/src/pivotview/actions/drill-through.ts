@@ -143,8 +143,6 @@ export class DrillThrough {
                     }
                 }
             }
-            rawData = (this.parent.dataSourceSettings.calculatedFieldSettings.length > 0) ?
-                this.getCalcualtedFieldValue(Object.keys(pivotValue.indexObject), rawData) : rawData;
             if (!(isBlazor() && this.parent.enableVirtualization) && this.parent.dataSourceSettings.mode !== 'Server') {
                 this.triggerDialog(valueCaption, aggType, rawData, pivotValue, element);
             }

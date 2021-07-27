@@ -1782,11 +1782,11 @@ export class Render {
         } else {
             this.colPos++;
             /* eslint-disable-next-line */
-            if (isNullOrUndefined((<any>args.data)[this.colPos].value) || isNullOrUndefined((<any>args.data)[this.colPos].formattedText)) {
-                args.value = '';
+            if (isNullOrUndefined((<any>args.data)[this.colPos].value) || isNullOrUndefined((<any>args.data)[this.colPos].formattedText) || (<any>args.data)[this.colPos].formattedText === "") {
+                args.value = this.parent.exportType === 'Excel' ? null : '';
             } else {
                 /* eslint-disable-next-line */
-                args.value = (<any>args.data)[this.colPos].value || (<any>args.data)[this.colPos].formattedText;
+                args.value = !isNullOrUndefined((<any>args.data)[this.colPos].value) ? (<any>args.data)[this.colPos].value : (<any>args.data)[this.colPos].formattedText;
             }
         }
         args = this.exportContentEvent(args);

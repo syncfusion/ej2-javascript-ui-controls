@@ -141,6 +141,7 @@ export interface AutoDetectInfo {
     k: number;
     sRanges: number[];
     range: ExtendedRange;
+    sheetIndex?: number;
 }
 
 /**

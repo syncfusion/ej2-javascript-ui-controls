@@ -59,7 +59,7 @@ export class CellOptionsDialog {
     public constructor(documentHelper: DocumentHelper) {
         this.documentHelper = documentHelper;
     }
-     /**
+    /**
      * @private
      * @returns {WCellFormat} - Returns cell format.
      */
@@ -124,7 +124,6 @@ export class CellOptionsDialog {
         }
         this.loadCellMarginsDialog();
         this.documentHelper.dialog.header = localizeValue.getConstant('Cell Options');
-        // eslint-disable-next-line @typescript-eslint/naming-convention
         this.documentHelper.dialog.position = { X: 'center', Y: 'top' };
         this.documentHelper.dialog.height = 'auto';
         this.documentHelper.dialog.width = 'auto';

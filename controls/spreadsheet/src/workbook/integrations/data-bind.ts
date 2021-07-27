@@ -1,5 +1,5 @@
 import { DataManager, Query, Deferred, ReturnOption, QueryOptions } from '@syncfusion/ej2-data';
-import { Workbook, getCell, CellModel, RowModel, SheetModel, setCell } from '../base/index';
+import { Workbook, getCell, CellModel, RowModel, SheetModel, setCell, getSheetIndexFromId } from '../base/index';
 import { getRangeIndexes, checkIsFormula, updateSheetFromDataSource, checkDateFormat, dataSourceChanged } from '../common/index';
 import { ExtendedSheet, ExtendedRange, AutoDetectInfo, getCellIndexes, dataChanged, getCellAddress, isInRange } from '../common/index';
 import { triggerDataChange } from '../common/index';
@@ -127,6 +127,7 @@ export class DataBind {
                                     }
                                 });
                             }
+                            const curSheetIdx: number = args.formulaCellRef ? getSheetIndexFromId(this.parent, args.sheet.id) : undefined;
                             result.forEach((item: { [key: string]: string }, i: number) => {
                                 rowIdx = sRowIdx + sRanges[k] + i + (range.showFieldAsHeader ? 1 : 0) + insertRowCount;
                                 for (let j: number = 0; j < flds.length; j++) {
@@ -140,8 +141,8 @@ export class DataBind {
                                             flds[j].includes('emptyCell') ? {} : this.getCellDataFromProp(item[flds[j]]);
                                     }
                                     this.checkDataForFormat({
-                                        args: args, cell: cell, colIndex: sColIdx + j, rowIndex: rowIdx, i: i, j: j, k: k,
-                                        range: range, sRanges: sRanges, value: item[flds[j]]
+                                        args: args, cell: cell, colIndex: sColIdx + j, rowIndex: rowIdx, i: i, j: j, k: k, range: range,
+                                        sRanges: sRanges, value: item[flds[j]], sheetIndex: curSheetIdx
                                     });
                                 }
                             });
@@ -279,7 +280,8 @@ export class DataBind {
                 colIndex: args.colIndex,
                 isDate: false,
                 updatedVal: args.value,
-                isTime: false
+                isTime: false,
+                sheetIndex: args.sheetIndex
             };
             this.parent.notify(checkDateFormat, dateEventArgs);
             if (dateEventArgs.isDate) {

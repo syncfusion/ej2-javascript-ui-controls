@@ -60,21 +60,33 @@ export function compile(template: string, helper?: Object, ignorePrefix?: boolea
     let argName: string = 'data';
 
     let evalExpResult: string = evalExp(template, argName, helper, ignorePrefix);
-    let condtion = `
-    var rg = (/(?:value|href)([\\s='"./]+)([\\w-./?=&\\\\#"]+)(.)((['#\\\\&?=/".\\w\\d]+|[\\w)('-."\\s]+)['"]|)/g);
-    if(str.match(rg)){
-        var check = str.match(rg);
+    let condtion = `var valueRegEx = (/value=\\'([A-Za-z0-9 _]*)((.)([\\w)(!-;?-■\\s]+)['])/g);
+    var hrefRegex = (/(?:href)([\\s='"./]+)([\\w-./?=&\\\\#"]+)((.)([\\w)(!-;/?-■\\s]+)['])/g);
+    if(str.match(valueRegEx)){
+        var check = str.match(valueRegEx);
         var str1 = str;
         for (var i=0; i < check.length; i++) {
-            var check1 = str.match(rg)[i].split('=')[1];
-            var change = check1.replace(/^\'/, '\"');
-            change = change.replace(/.$/,'\"');
+            var check1 = str.match(valueRegEx)[i].split('value=')[1];
+            var change = check1.match(/^'/) !== null ? check1.replace(/^'/, '\"') : check1;
+            change =change.match(/.$/)[0] === '\\'' ? change.replace(/.$/,'\"') : change;
             str1 = str1.replace(check1, change);
         }
         str = str.replace(str, str1);
-    }`;
-    let fnCode = "var str=\"" + evalExpResult + "\";" + condtion + " return str;";
-    // let fnCode: string = `var str="${evalExpResult}"; return str;`;
+    }
+    else if(str.match(hrefRegex)) {
+        var check = str.match(hrefRegex);
+        var str1 = str;
+        for (var i=0; i < check.length; i++) {
+            var check1 = str.match(hrefRegex)[i].split('href=')[1];
+            var change = check1.match(/^'/) !== null ? check1.replace(/^'/, '\"') : check1;
+            change =change.match(/.$/)[0] === '\\'' ? change.replace(/.$/,'\"') : change;
+            str1 = str1.replace(check1, change);
+        }
+        str = str.replace(str, str1);
+    }
+    `;
+    let fnCode: string = "var str=\"" + evalExpResult + "\";" + condtion + " return str;";
+    //let fnCode: string = `var str="${evalExpResult}"; return str;`;
 
     // tslint:disable-next-line:no-function-constructor-with-string-args
     let fn: Function = new Function(argName, fnCode);

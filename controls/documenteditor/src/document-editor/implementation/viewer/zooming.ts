@@ -50,7 +50,7 @@ export class Zoom {
             event.preventDefault();
             const pageX: number = event.pageX - this.documentHelper.viewerContainer.offsetLeft;
             if (pageX < this.documentHelper.pageContainer.offsetWidth) {
-                let isFirefFox: RegExpMatchArray = navigator.userAgent.match('Firefox');
+                const isFirefFox: RegExpMatchArray = navigator.userAgent.match('Firefox');
                 /* eslint-disable */
                 const wheel: boolean = isFirefFox ? event.detail < 0 : (Browser.isIE ? (event as any).wheelDelta > 0 : event.deltaY < 0);
                 /* eslint-enable */

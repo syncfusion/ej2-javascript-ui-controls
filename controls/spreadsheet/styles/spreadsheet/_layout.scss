@@ -31,6 +31,10 @@
       padding: 12px;
     }
 
+    &.e-filter-open {
+      position: relative;
+    }
+
     & .e-findtool-dlg {
       border: 1px solid;
       height: $find-tool-dlg-height;

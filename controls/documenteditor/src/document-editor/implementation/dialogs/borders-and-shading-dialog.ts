@@ -685,7 +685,6 @@ export class BordersAndShadingDialog {
         this.documentHelper.dialog.header = localeValue.getConstant('Borders and Shading');
         this.documentHelper.dialog.beforeOpen = this.documentHelper.updateFocus;
         this.documentHelper.dialog.close = this.closeBordersShadingsDialog;
-        // eslint-disable-next-line @typescript-eslint/naming-convention
         this.documentHelper.dialog.position = { X: 'center', Y: 'center' };
         this.documentHelper.dialog.width = 'auto';
         this.documentHelper.dialog.height = 'auto';

@@ -1,4 +1,4 @@
-import { Component, INotifyPropertyChanged, NotifyPropertyChanges, ChildProperty, L10n, Collection, Complex, isBlazor } from '@syncfusion/ej2-base';import { ModuleDeclaration, isNullOrUndefined, Property, Event, EmitType } from '@syncfusion/ej2-base';import { IAnnotationPoint, IPoint, PdfViewerBase } from './index';import { Navigation } from './index';import { Magnification } from './index';import { Toolbar } from './index';import { ToolbarItem } from './index';import { LinkTarget, InteractionMode, SignatureFitMode, AnnotationType, AnnotationToolbarItem, LineHeadStyle, ContextMenuAction, FontStyle, TextAlignment, AnnotationResizerShape, AnnotationResizerLocation, ZoomMode, PrintMode, CursorType, ContextMenuItem, DynamicStampItem, SignStampItem, StandardBusinessStampItem, FormFieldType, AllowedInteraction, AnnotationDataFormat, SignatureType, CommentStatus, SignatureItem, FormDesignerToolbarItem } from './base/types';import { Annotation } from './index';import { LinkAnnotation } from './index';import { ThumbnailView } from './index';import { BookmarkView } from './index';import { TextSelection } from './index';import { TextSearch } from './index';import { FormFields } from './index';import { FormDesigner } from './index';import { Print, CalibrationUnit } from './index';import { UnloadEventArgs, LoadEventArgs, LoadFailedEventArgs, AjaxRequestFailureEventArgs, PageChangeEventArgs, PageClickEventArgs, ZoomChangeEventArgs, HyperlinkClickEventArgs, HyperlinkMouseOverArgs, ImportStartEventArgs, ImportSuccessEventArgs, ImportFailureEventArgs, ExportStartEventArgs, ExportSuccessEventArgs, ExportFailureEventArgs, AjaxRequestInitiateEventArgs, AjaxRequestSuccessEventArgs } from './index';import { AnnotationAddEventArgs, AnnotationRemoveEventArgs, AnnotationPropertiesChangeEventArgs, AnnotationResizeEventArgs, AnnotationSelectEventArgs, AnnotationMoveEventArgs, AnnotationDoubleClickEventArgs, AnnotationMouseoverEventArgs, PageMouseoverEventArgs, AnnotationMouseLeaveEventArgs , ButtonFieldClickEventArgs} from './index';import { TextSelectionStartEventArgs, TextSelectionEndEventArgs, DownloadStartEventArgs, DownloadEndEventArgs, ExtractTextCompletedEventArgs, PrintStartEventArgs, PrintEndEventArgs } from './index';import { TextSearchStartEventArgs, TextSearchCompleteEventArgs, TextSearchHighlightEventArgs } from './index';import { PdfAnnotationBase, PdfFormFieldBase, ZOrderPageTable } from './drawing/pdf-annotation';import { PdfAnnotationBaseModel, PdfFormFieldBaseModel } from './drawing/pdf-annotation-model';import { Drawing, ClipBoardObject } from './drawing/drawing';import { Selector } from './drawing/selector';import { SelectorModel } from './drawing/selector-model';import { PointModel, IElement, Rect, cornersPointsBeforeRotation } from '@syncfusion/ej2-drawings';import { renderAdornerLayer } from './drawing/dom-util';import { ThumbnailClickEventArgs } from './index';import { ValidateFormFieldsArgs, BookmarkClickEventArgs, AnnotationUnSelectEventArgs, BeforeAddFreeTextEventArgs, FormFieldFocusOutEventArgs, CommentEventArgs, FormFieldClickArgs, FormFieldAddArgs, FormFieldRemoveArgs, FormFieldPropertiesChangeArgs, FormFieldMouseLeaveArgs, FormFieldMouseoverArgs, FormFieldMoveArgs, FormFieldResizeArgs, FormFieldSelectArgs, FormFieldUnselectArgs } from './base';import { AddSignatureEventArgs, RemoveSignatureEventArgs, MoveSignatureEventArgs, SignaturePropertiesChangeEventArgs, ResizeSignatureEventArgs, SignatureSelectEventArgs } from './base';import { IFormField, IFormFieldBound } from './form-designer/form-designer';import { PdfPageRotateAngle } from '@syncfusion/ej2-pdf-export';
+import { Component, INotifyPropertyChanged, NotifyPropertyChanges, ChildProperty, L10n, Collection, Complex, isBlazor } from '@syncfusion/ej2-base';import { ModuleDeclaration, isNullOrUndefined, Property, Event, EmitType } from '@syncfusion/ej2-base';import { IAnnotationPoint, IPoint, PdfViewerBase } from './index';import { Navigation } from './index';import { Magnification } from './index';import { Toolbar } from './index';import { ToolbarItem } from './index';import { LinkTarget, InteractionMode, SignatureFitMode, AnnotationType, AnnotationToolbarItem, LineHeadStyle, ContextMenuAction, FontStyle, TextAlignment, AnnotationResizerShape, AnnotationResizerLocation, ZoomMode, PrintMode, CursorType, ContextMenuItem, DynamicStampItem, SignStampItem, StandardBusinessStampItem, FormFieldType, AllowedInteraction, AnnotationDataFormat, SignatureType, CommentStatus, SignatureItem, FormDesignerToolbarItem, DisplayMode } from './base/types';import { Annotation } from './index';import { LinkAnnotation } from './index';import { ThumbnailView } from './index';import { BookmarkView } from './index';import { TextSelection } from './index';import { TextSearch } from './index';import { FormFields } from './index';import { FormDesigner } from './index';import { Print, CalibrationUnit } from './index';import { UnloadEventArgs, LoadEventArgs, LoadFailedEventArgs, AjaxRequestFailureEventArgs, PageChangeEventArgs, PageClickEventArgs, ZoomChangeEventArgs, HyperlinkClickEventArgs, HyperlinkMouseOverArgs, ImportStartEventArgs, ImportSuccessEventArgs, ImportFailureEventArgs, ExportStartEventArgs, ExportSuccessEventArgs, ExportFailureEventArgs, AjaxRequestInitiateEventArgs, AjaxRequestSuccessEventArgs } from './index';import { AnnotationAddEventArgs, AnnotationRemoveEventArgs, AnnotationPropertiesChangeEventArgs, AnnotationResizeEventArgs, AnnotationSelectEventArgs, AnnotationMoveEventArgs, AnnotationDoubleClickEventArgs, AnnotationMouseoverEventArgs, PageMouseoverEventArgs, AnnotationMouseLeaveEventArgs , ButtonFieldClickEventArgs} from './index';import { TextSelectionStartEventArgs, TextSelectionEndEventArgs, DownloadStartEventArgs, DownloadEndEventArgs, ExtractTextCompletedEventArgs, PrintStartEventArgs, PrintEndEventArgs } from './index';import { TextSearchStartEventArgs, TextSearchCompleteEventArgs, TextSearchHighlightEventArgs } from './index';import { PdfAnnotationBase, PdfFormFieldBase, ZOrderPageTable } from './drawing/pdf-annotation';import { PdfAnnotationBaseModel, PdfFormFieldBaseModel } from './drawing/pdf-annotation-model';import { Drawing, ClipBoardObject } from './drawing/drawing';import { Selector } from './drawing/selector';import { SelectorModel } from './drawing/selector-model';import { PointModel, IElement, Rect, cornersPointsBeforeRotation } from '@syncfusion/ej2-drawings';import { renderAdornerLayer } from './drawing/dom-util';import { ThumbnailClickEventArgs } from './index';import { ValidateFormFieldsArgs, BookmarkClickEventArgs, AnnotationUnSelectEventArgs, BeforeAddFreeTextEventArgs, FormFieldFocusOutEventArgs, CommentEventArgs, FormFieldClickArgs, FormFieldAddArgs, FormFieldRemoveArgs, FormFieldPropertiesChangeArgs, FormFieldMouseLeaveArgs, FormFieldMouseoverArgs, FormFieldMoveArgs, FormFieldResizeArgs, FormFieldSelectArgs, FormFieldUnselectArgs, FormFieldDoubleClickArgs } from './base';import { AddSignatureEventArgs, RemoveSignatureEventArgs, MoveSignatureEventArgs, SignaturePropertiesChangeEventArgs, ResizeSignatureEventArgs, SignatureSelectEventArgs } from './base';import { IFormField, IFormFieldBound } from './form-designer/form-designer';import { PdfPageRotateAngle } from '@syncfusion/ej2-pdf-export';
 import {IAjaxHeaders} from "./pdfviewer";
 import {ComponentModel} from '@syncfusion/ej2-base';
 
@@ -143,6 +143,11 @@ export interface SignatureFieldSettingsModel {
     pageNumber?: number;
 
     /**
+     * Specifies the properties of the signature Dialog Settings in the signature field.
+     */
+    signatureDialogSettings?: SignatureDialogSettingsModel;
+
+    /**
      * Specifies the properties of the signature indicator in the signature field.
      */
     signatureIndicatorSettings?: SignatureIndicatorSettingsModel;
@@ -200,6 +205,11 @@ export interface InitialFieldSettingsModel {
     isInitialField?: boolean;
 
     /**
+     * Get or set the signature dialog settings for initial field.
+     */
+    initialDialogSettings?: SignatureDialogSettingsModel;
+
+    /**
      * Specifies the properties of the signature indicator in the initial field.
      */
     initialIndicatorSettings?: SignatureIndicatorSettingsModel;
@@ -247,6 +257,23 @@ export interface SignatureIndicatorSettingsModel {
      * Specifies the color of the text of signature indicator.
      */
     color?: string;
+
+}
+
+/**
+ * Interface for a class SignatureDialogSettings
+ */
+export interface SignatureDialogSettingsModel {
+
+    /**
+     * Get or set the required signature options will be enabled in the signature dialog.
+     */
+    displayMode?: DisplayMode;
+
+    /**
+     * Get or set a boolean value to show or hide the save signature check box option in the signature dialog. FALSE by default.
+     */
+    hideSaveSignature?: boolean;
 
 }
 
@@ -2188,6 +2215,16 @@ export interface HandWrittenSignatureSettingsModel {
      */
     annotationSelectorSettings?: AnnotationSelectorSettingsModel;
 
+    /**
+     * Get or set the Signature DialogSettings for Handwritten signature.
+     */
+    signatureDialogSettings?: SignatureDialogSettingsModel;
+
+    /**
+     * Get or set the initialDialogSettings for Handwritten initial.
+     */
+    initialDialogSettings?: SignatureDialogSettingsModel;
+
 }
 
 /**
@@ -3444,6 +3481,7 @@ export interface PdfViewerModel extends ComponentModel{
      * FALSE by default
      *
      * @default false
+     * @deprecated
      */
     hideSaveSignature?: boolean;
 
@@ -3739,6 +3777,16 @@ export interface PdfViewerModel extends ComponentModel{
      * Sets the settings for the color of the text search highlight.
      */
     textSearchColorSettings?: TextSearchColorSettingsModel;
+
+    /**
+     * Get or set the signature dialog settings for signature field.
+     */
+    signatureDialogSettings?: SignatureDialogSettingsModel;
+
+    /**
+     * Get or set the signature dialog settings for initial field.
+     */
+    initialDialogSettings?: SignatureDialogSettingsModel;
 
     /**
      * Defines the settings of handWrittenSignature.
@@ -4328,6 +4376,14 @@ export interface PdfViewerModel extends ComponentModel{
      * @blazorProperty 'formFieldUnselect'
      */
     formFieldUnselect?: EmitType<FormFieldUnselectArgs>;
+
+    /**
+     * Triggers an event when the form field is double-clicked.
+     *
+     * @event
+     * @blazorProperty 'formFieldDoubleClick'
+     */
+    formFieldDoubleClick?: EmitType<FormFieldDoubleClickArgs>;
 
     /**
      * PDF document annotation collection.

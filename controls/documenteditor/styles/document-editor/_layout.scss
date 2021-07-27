@@ -117,19 +117,20 @@
       display: block;
     }
   }
-  
+
   .e-documenteditor {
-    @if $skin_name != 'tailwind' and $skin_name != 'tailwind-dark' {
+    @if $skin-name != 'tailwind' and $skin-name != 'tailwind-dark' {
       .e-checkbox-wrapper .e-frame {
         height: 14px;
         line-height: 6px;
         width: 14px;
       }
-  
+
       .e-checkbox-wrapper .e-label {
         font-size: 12px;
-      }      
-    }    
+      }
+    }
+
     .e-de-op-close-button {
       left: 267px;
       position: absolute;

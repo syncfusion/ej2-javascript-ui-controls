@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 19.2.49 (2021-07-27)
+
+### MultiSelect
+
+#### Bug Fixes
+
+- `#FB26653` - Issue with "placeholder is not updated properly while updating the placeholder value with special characters" has been resolved.
+
 ## 19.2.48 (2021-07-20)
 
 ### ListBox

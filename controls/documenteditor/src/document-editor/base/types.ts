@@ -1277,10 +1277,11 @@ export type PasteOptions =
      */
     'KeepTextOnly';
 
- /**
-  * Specifies the paste options for table
-  * @private
-  */
+/**
+ * Specifies the paste options for table
+ *
+ * @private
+ */
 export type TablePasteOptions = 'InsertAsRows' | 'NestTable' | 'InsertAsColumns' | 'OverwriteCells' | 'DefaultPaste';
 
 /**
@@ -1470,7 +1471,7 @@ export type TextWrappingStyle = 'Inline' | 'InFrontOfText' | 'Behind' | 'Square'
  *
  * @private
  */
- export type TextWrappingType = 'Both' | 'Left' | 'Right' | 'Largest';
+export type TextWrappingType = 'Both' | 'Left' | 'Right' | 'Largest';
 
 /**
  * Form Filling Mode

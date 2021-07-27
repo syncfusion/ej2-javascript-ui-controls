@@ -17,7 +17,7 @@ export class WBorders implements IWidget {
     private diagonalDownIn: WBorder = new WBorder(this);
     private lineWidthIn: number = 0;
     private valueIn: LineStyle;
-    /* eslint-disable */
+
     public ownerBase: Object;
 
     public get left(): WBorder {

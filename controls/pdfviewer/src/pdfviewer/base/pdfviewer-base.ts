@@ -20,6 +20,7 @@ import { createSpinner, showSpinner, hideSpinner } from './spinner';
 import { BlazorUiAdaptor } from './blazor-ui-adaptor';
 import { IFormField } from '../form-designer';
 import { FormFieldModel } from '../pdfviewer-model';
+import { FormFieldDoubleClickArgs } from './events-helper';
 /**
  * The `ISize` module is used to handle page size property of PDF viewer.
  *
@@ -3478,6 +3479,13 @@ export class PdfViewerBase {
                             comments.firstChild.click();
                         }
                     }
+                }
+            }
+            if(this.pdfViewer.designerMode && this.pdfViewer.selectedItems.formFields.length > 0) {
+                let eventArgs: FormFieldDoubleClickArgs = {name: "formFieldDoubleClick", field: this.pdfViewer.selectedItems.formFields[0] as IFormField, cancel: false };
+                this.pdfViewer.fireFormFieldDoubleClickEvent(eventArgs);
+                if(!eventArgs.cancel) {
+                  this.pdfViewer.formDesigner.createPropertiesWindow();
                 }
             }
         } else {
@@ -7276,7 +7284,11 @@ export class PdfViewerBase {
                         if (isSkip) {
                             stampName = stampObj.id;
                         }
+                        stampName = stampModule.customStampName ? stampModule.customStampName : stampModule.currentStampAnnotation.signatureName;
                         this.customStampCollection.push({ customStampName: stampName, customStampImageSource: stampObj.data });
+                        if (isBlazor()) {
+                            this.pdfViewer._dotnetInstance.invokeMethodAsync("UpdateCustomStampCollection", stampName, stampObj.data);
+                        }
                     }
                     if (this.pdfViewer.customStampSettings.enableCustomStamp && this.pdfViewer.customStampSettings.isAddToMenu) {
                         this.stampAdded = true;
@@ -9073,7 +9085,7 @@ export class PdfViewerBase {
                     newAnnotation.AnnotType = 'stamp';
                     newAnnotation.Icon = annotation.icon;
                     newAnnotation.isDynamic = false;
-                    newAnnotation.Rect = this.convertBounds(annotation.bounds);
+                    newAnnotation.Rect = this.convertBounds(annotation.bounds, false, true);
                     newAnnotation.RotateAngle = annotation.rotateAngle;
                     newAnnotation.FillColor = annotation.fillColor;
                     newAnnotation.StrokeColor = annotation.strokeColor;
@@ -9192,7 +9204,7 @@ export class PdfViewerBase {
      * @private
      */
     // eslint-disable-next-line
-    public convertBounds(bounds: any, isRect?: boolean): any {
+    public convertBounds(bounds: any, isRect?: boolean, isStamp?: boolean): any {
         if (bounds) {
             if (isRect) {
                 const left: number = bounds.left ? bounds.left : bounds.Left ? bounds.Left : 0;
@@ -9205,9 +9217,18 @@ export class PdfViewerBase {
                 const y: number = bounds.y ? bounds.y : bounds.top ? bounds.top : bounds.Top ? bounds.Top : 0;
                 const width: number = bounds.width ? bounds.width : bounds.Width ? bounds.Width : 0;
                 const height: number = bounds.height ? bounds.height : bounds.Height ? bounds.Height : 0;
-                return { X: x, Y: y, Left: x, Top: y, Height: height, Width: width };
+                if (isStamp) {
+                    return { X: this.ConvertPixelToPoint(x), Y: this.ConvertPixelToPoint(y), Left: this.ConvertPixelToPoint(x), Top: this.ConvertPixelToPoint(y), Height: this.ConvertPixelToPoint(height), Width: this.ConvertPixelToPoint(width) };
+                } else {
+                    return { X: x, Y: y, Left: x, Top: y, Height: height, Width: width };
+                }
             }
         }
+    }
+
+    // eslint-disable-next-line
+    private ConvertPixelToPoint(number: any): any {
+        return (number * (72 / 96));
     }
 
     // eslint-disable-next-line

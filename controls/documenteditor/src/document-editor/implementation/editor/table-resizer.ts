@@ -77,17 +77,17 @@ export class TableResizer {
         const cellSpacing: number = isNullOrUndefined(tableWidget) ? 0 : tableWidget.tableFormat.cellSpacing;
         if (tableWidget && cellSpacing > 0) {
             this.currentResizingTable = tableWidget;
-            // eslint-disable-next-line max-len
+            /* eslint-disable-next-line max-len */
             if (this.documentHelper.isInsideRect(tableWidget.x - HelperMethods.convertPointToPixel(tableWidget.leftBorderWidth) - 0.25, tableWidget.y, HelperMethods.convertPointToPixel(tableWidget.leftBorderWidth) + 0.5, tableWidget.height, touchPoint)) {
                 return position = 0;
             }
             let startingPointX: number = tableWidget.x;
             for (let i: number = 0; i < tableWidget.tableHolder.columns.length; i++) {
                 const preferredWidth: number = HelperMethods.convertPointToPixel(tableWidget.tableHolder.columns[i].preferredWidth);
-                // eslint-disable-next-line max-len
+                /* eslint-disable-next-line max-len */
                 if ((this.documentHelper.isInsideRect(startingPointX - 1, tableWidget.y, tableWidget.leftBorderWidth + resizerBoundaryWidth, tableWidget.height, touchPoint))) {
                     return position = i > 0 ? i : 0;
-                    // eslint-disable-next-line max-len
+                    /* eslint-disable-next-line max-len */
                 } else if (i > 0 && (this.documentHelper.isInsideRect(startingPointX + preferredWidth - resizerBoundaryWidth / 2, tableWidget.y, resizerBoundaryWidth, tableWidget.height, touchPoint))) {
                     return position = (i + 1);
                 }
@@ -96,11 +96,11 @@ export class TableResizer {
         } else {
             if (!isNullOrUndefined(cellWidget)) {
                 this.currentResizingTable = cellWidget.ownerTable;
-                // eslint-disable-next-line max-len
+                /* eslint-disable-next-line max-len */
                 if (this.documentHelper.isInsideRect(cellWidget.x - cellWidget.margin.left - resizerBoundaryWidth / 2, cellWidget.y - cellWidget.margin.top, resizerBoundaryWidth, cellWidget.height + cellWidget.margin.top + cellWidget.margin.bottom, touchPoint)) {
                     return position = cellWidget.columnIndex;
                 } else if (isNullOrUndefined(cellWidget.nextRenderedWidget)
-                    // eslint-disable-next-line max-len
+                    /* eslint-disable-next-line max-len */
                     && this.documentHelper.isInsideRect(cellWidget.x + cellWidget.margin.right + cellWidget.width - resizerBoundaryWidth / 2, cellWidget.y - cellWidget.margin.top, resizerBoundaryWidth, cellWidget.height + cellWidget.margin.top + cellWidget.margin.bottom, touchPoint)) {
                     return position = (cellWidget.columnIndex + cellWidget.cellFormat.columnSpan);
                 } else if (cellWidget.childWidgets.length > 0) {
@@ -117,17 +117,17 @@ export class TableResizer {
         let childCellWidget: TableCellWidget = undefined;
         if (!isNullOrUndefined(childTableWidget) && childTableWidget.tableFormat.cellSpacing > 0) {
             this.currentResizingTable = childTableWidget;
-            // eslint-disable-next-line max-len
+            /* eslint-disable-next-line max-len */
             if (this.documentHelper.isInsideRect(childTableWidget.x - childTableWidget.leftBorderWidth - 0.25, childTableWidget.y, childTableWidget.leftBorderWidth + 0.5, childTableWidget.height, touchPoint)) {
                 return position = 0;
             }
             let startingPointX: number = childTableWidget.x;
             for (let i: number = 0; i < childTableWidget.tableHolder.columns.length; i++) {
                 const preferredWidth: number = HelperMethods.convertPointToPixel(childTableWidget.tableHolder.columns[i].preferredWidth);
-                // eslint-disable-next-line max-len
+                /* eslint-disable-next-line max-len */
                 if ((this.documentHelper.isInsideRect(startingPointX - 1, childTableWidget.y, childTableWidget.leftBorderWidth + 2, childTableWidget.height, touchPoint))) {
                     return position = i > 0 ? i : 0;
-                    // eslint-disable-next-line max-len
+                    /* eslint-disable-next-line max-len */
                 } else if (i > 0 && (this.documentHelper.isInsideRect(startingPointX + preferredWidth - 1, childTableWidget.y, 2, childTableWidget.height, touchPoint))) {
                     return position = (i + 1);
                 }
@@ -139,11 +139,11 @@ export class TableResizer {
             }
             if (!isNullOrUndefined(childCellWidget)) {
                 this.currentResizingTable = childCellWidget.ownerTable;
-                // eslint-disable-next-line max-len
+                /* eslint-disable-next-line max-len */
                 if (this.documentHelper.isInsideRect(childCellWidget.x - childCellWidget.margin.left - 1, childCellWidget.y - childCellWidget.margin.top, 2, childCellWidget.height, touchPoint)) {
                     return position = childCellWidget.columnIndex;
                 } else if (isNullOrUndefined(childCellWidget.nextRenderedWidget)
-                    // eslint-disable-next-line max-len
+                    /* eslint-disable-next-line max-len */
                     && this.documentHelper.isInsideRect(childCellWidget.x + childCellWidget.margin.right + childCellWidget.width - 1, childCellWidget.y - childCellWidget.margin.top, 2, childCellWidget.height, touchPoint)) {
                     return position = (childCellWidget.columnIndex + childCellWidget.cellFormat.columnSpan);
                 } else if (childCellWidget.childWidgets.length > 0) {
@@ -165,7 +165,7 @@ export class TableResizer {
         const cellSpacing: number = isNullOrUndefined(tableWidget) ? 0 : tableWidget.tableFormat.cellSpacing;
         if (tableWidget && cellSpacing > 0) {
             this.currentResizingTable = tableWidget;
-            // eslint-disable-next-line max-len
+            /* eslint-disable-next-line max-len */
             if (this.owner.documentHelper.isInsideRect(tableWidget.x, tableWidget.y + tableWidget.height - cellSpacing, this.getActualWidth(tableWidget.lastChild as TableRowWidget), (isNullOrUndefined(tableWidget.nextSplitWidget) ? tableWidget.bottomBorderWidth + cellSpacing : 0), touchPoint)) {
                 return (tableWidget.lastChild as TableRowWidget).rowIndex;
             }
@@ -173,7 +173,7 @@ export class TableResizer {
                 //Need to consider for splitted widgets
                 const rowWidget: TableRowWidget = tableWidget.childWidgets[i] as TableRowWidget;
                 if (tableWidget.childWidgets.indexOf(rowWidget) > -1
-                    // eslint-disable-next-line max-len
+                    /* eslint-disable-next-line max-len */
                     && (this.owner.documentHelper.isInsideRect(rowWidget.x, rowWidget.y + rowWidget.height + cellSpacing / 2, this.getActualWidth(rowWidget), cellSpacing / 2, touchPoint))) {
                     return rowWidget.rowIndex;
                 }
@@ -190,7 +190,7 @@ export class TableResizer {
                 } else {
                     height = (rowWidget.nextRenderedWidget as TableRowWidget).topBorderWidth + 2;
                 }
-                // eslint-disable-next-line max-len
+                /* eslint-disable-next-line max-len */
                 if (this.owner.documentHelper.isInsideRect(rowWidget.x, rowWidget.y + rowWidget.height - height, rowWidget.width, height * 2, touchPoint)) {
                     this.currentResizingTable = rowWidget.ownerTable;
                     return rowWidget.rowIndex;
@@ -692,7 +692,7 @@ export class TableResizer {
         }
 
     }
-    // eslint-disable-next-line max-len
+    /* eslint-disable-next-line max-len */
     private changeWidthOfCells(table: TableWidget, leftColumnCollection: TableCellWidget[], rightColumnCollection: TableCellWidget[], dragValue: number): void {
         if (leftColumnCollection.length > 0) {
             let flag: boolean = false;
@@ -879,7 +879,7 @@ export class TableResizer {
                 cell.updateWidth(table.tableHolder.getCellWidth(cell.columnIndex, cell.cellFormat.columnSpan, tableWidth));
             }
             if (row.rowFormat.gridAfter > 0) {
-                // eslint-disable-next-line max-len
+                /* eslint-disable-next-line max-len */
                 this.updateGridAfterWidth(table.tableHolder.getCellWidth(row.childWidgets.length, row.rowFormat.gridAfter, tableWidth), row);
             }
         }

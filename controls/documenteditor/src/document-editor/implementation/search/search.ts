@@ -132,7 +132,7 @@ export class Search {
         const endPosition: TextPosition = this.documentHelper.selection.start;
         if (this.owner.enableTrackChanges && this.documentHelper.selection.start.currentWidget) {
             let inline: ElementBox = undefined;
-            // eslint-disable-next-line max-len
+            /* eslint-disable-next-line max-len */
             const inlineElement: ElementInfo = (this.documentHelper.selection.end.currentWidget as LineWidget).getInline(this.owner.selection.start.offset, 0);
             inline = inlineElement.element as ElementBox;
             if (inline.revisions.length > 0) {
@@ -208,7 +208,7 @@ export class Search {
             this.navigate(results.innerList[i]);
             this.owner.editorModule.insertTextInternal(replaceText, true);
             if (result.isHeader || result.isFooter) {
-                // eslint-disable-next-line max-len
+                /* eslint-disable-next-line max-len */
                 this.documentHelper.layout.updateHeaderFooterToParent(this.documentHelper.selection.start.paragraph.bodyWidget as HeaderFooterWidget);
             }
             results.innerList[i].destroy();

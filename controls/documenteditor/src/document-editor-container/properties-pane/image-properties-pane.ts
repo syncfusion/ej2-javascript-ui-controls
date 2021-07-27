@@ -75,7 +75,7 @@ export class ImageProperties {
         aspectRatioDiv.appendChild(aspectRatio);
         this.aspectRatioBtn = new CheckBox({ label: localObj.getConstant('Aspect ratio'), enableRtl: this.isRtl }, aspectRatio);
     }
-    // eslint-disable-next-line max-len
+    /* eslint-disable-next-line max-len */
     private createImagePropertiesDiv(id: string, outerDiv: HTMLElement, inputId: string, spanContent: string, tooltip: string): HTMLElement {
         const divElement: HTMLElement = createElement('div', { id: this.elementId + id, styles: 'position: relative;width: 100%;', className: 'e-de-ctnr-segment' });
         divElement.setAttribute('title', tooltip);

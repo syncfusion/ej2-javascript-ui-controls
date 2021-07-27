@@ -1,4 +1,3 @@
-/* eslint-disable */
 import { PdfViewer } from '../index';
 
 /**
@@ -45,9 +44,7 @@ export class AjaxHandler {
 
     /**
      * Constructor for Ajax class
-     *
-     * @param  {PdfViewer} pdfviewer
-     * @returns defaultType
+     * @param  {PdfViewer} pdfviewer - The pdfviewer.
      * @private
      */
     constructor(pdfviewer: PdfViewer) {
@@ -59,6 +56,7 @@ export class AjaxHandler {
      * Send the request to server
      *
      * @param  {object} jsonObj - To send to service
+     * @returns {void}
      * @private
      */
     public send(jsonObj: object): void {

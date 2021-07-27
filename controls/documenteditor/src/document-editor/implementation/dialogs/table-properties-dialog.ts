@@ -199,7 +199,6 @@ export class TablePropertiesDialog {
             this.documentHelper.selection.caret.style.display = 'none';
         }
         this.documentHelper.dialog2.header = localValue.getConstant('Table Properties');
-        // eslint-disable-next-line @typescript-eslint/naming-convention
         this.documentHelper.dialog2.position = { X: 'center', Y: 'center' };
         this.documentHelper.dialog2.width = 'auto';
         this.documentHelper.dialog2.height = 'auto';
@@ -266,12 +265,12 @@ export class TablePropertiesDialog {
             if (this.cellFormat.preferredWidthType === 'Percent') {
                 if (!this.tableFormat.hasValue('preferredWidth') && !this.tableFormat.hasValue('preferredWidthType')
                     && this.documentHelper.selection.start.paragraph.associatedCell.ownerTable.tableFormat.preferredWidth === 0) {
-                    // eslint-disable-next-line max-len
+                    /* eslint-disable-next-line max-len */
                     const containerWidth: number = this.documentHelper.selection.start.paragraph.associatedCell.ownerTable.getOwnerWidth(true);
-                    // eslint-disable-next-line max-len
+                    /* eslint-disable-next-line max-len */
                     const tableWidth: number = this.documentHelper.selection.start.paragraph.associatedCell.ownerTable.getTableClientWidth(containerWidth);
                     this.tableFormat.preferredWidthType = 'Percent';
-                    // eslint-disable-next-line max-len
+                    /* eslint-disable-next-line max-len */
                     this.tableFormat.preferredWidth = tableWidth / HelperMethods.convertPixelToPoint(this.documentHelper.owner.viewer.clientArea.width) * 100;
                 }
             }

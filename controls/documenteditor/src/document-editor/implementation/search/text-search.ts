@@ -47,12 +47,15 @@ export class TextSearch {
         if (textToFind.indexOf('\\') > -1) {
             textToFind = textToFind.split('\\').join('\\\\');
         }
-        // eslint-disable-next-line max-len
-        if (textToFind.indexOf('(') > -1 || textToFind.indexOf(')') > -1 || textToFind.indexOf('.') > -1 || textToFind.indexOf('[') > -1 || textToFind.indexOf(']') > -1 || textToFind.indexOf('$') > -1 || textToFind.indexOf('{') > -1 || textToFind.indexOf('}') > -1 || textToFind.indexOf('*') > -1 || textToFind.indexOf('|') > -1 || textToFind.indexOf('^') > -1 || textToFind.indexOf('?') > -1) {
+        if (textToFind.indexOf('(') > -1 || textToFind.indexOf(')') > -1 || textToFind.indexOf('.') > -1 || textToFind.indexOf('[') > -1
+            || textToFind.indexOf(']') > -1 || textToFind.indexOf('$') > -1 || textToFind.indexOf('{') > -1
+            || textToFind.indexOf('}') > -1 || textToFind.indexOf('*') > -1 || textToFind.indexOf('|') > -1
+            || textToFind.indexOf('^') > -1 || textToFind.indexOf('?') > -1) {
             let text: string = '';
             for (let i: number = 0; i < textToFind.length; i++) {
-                // eslint-disable-next-line max-len
-                if (textToFind[i] === '(' || textToFind[i] === ')' || textToFind[i] === '.' || textToFind[i] === '[' || textToFind[i] === ']' || textToFind[i] === '$' || textToFind[i] === '{' || textToFind[i] === '}' || textToFind[i] === '*' || textToFind[i] === '|' || textToFind[i] === '^' || textToFind[i] === '?') {
+                if (textToFind[i] === '(' || textToFind[i] === ')' || textToFind[i] === '.' || textToFind[i] === '['
+                    || textToFind[i] === ']' || textToFind[i] === '$' || textToFind[i] === '{' || textToFind[i] === '}'
+                    || textToFind[i] === '*' || textToFind[i] === '|' || textToFind[i] === '^' || textToFind[i] === '?') {
                     text += '\\' + textToFind[i];
                 } else {
                     text += textToFind[i];
@@ -108,7 +111,7 @@ export class TextSearch {
             } else if (inlineElement instanceof FieldElementBox) {
                 const fieldBegin: FieldElementBox = inlineElement as FieldElementBox;
                 if (!isNullOrUndefined(fieldBegin.fieldEnd)) {
-                    // eslint-disable-next-line max-len
+                    /* eslint-disable-next-line max-len */
                     inlineElement = isNullOrUndefined(fieldBegin.fieldSeparator) ? fieldBegin.fieldEnd as FieldElementBox : fieldBegin.fieldSeparator as FieldElementBox;
                 }
             }
@@ -136,7 +139,7 @@ export class TextSearch {
 
         return { elementsWithOffset: spans, fullText: text };
     }
-    // eslint-disable-next-line max-len
+    /* eslint-disable-next-line max-len */
     public updateMatchedTextLocation(matches: RegExpExecArray[], results: TextSearchResults, textInfo: Dictionary<TextElementBox, number>, indexInInline: number, inlines: ElementBox, isFirstMatch: boolean, selectionEnd: TextPosition, startPosition?: number): void {
         for (let i: number = 0; i < matches.length; i++) {
             const match: RegExpExecArray = matches[i];
@@ -193,7 +196,7 @@ export class TextSearch {
             }
         }
     }
-    // eslint-disable-next-line max-len
+    /* eslint-disable-next-line max-len */
     private findDocument(results: TextSearchResults, pattern: RegExp, isFirstMatch: boolean, findOption?: FindOption, hierachicalPosition?: string): void {
         if (this.isPatternEmpty(pattern)) {
             return;
@@ -210,7 +213,7 @@ export class TextSearch {
             if (selectionEnd.paragraph instanceof ParagraphWidget) {
                 let indexInInline: number = 0;
                 // IndexInInline Handled specifically for simple find operation to start from starting point
-                // eslint-disable-next-line max-len
+                /* eslint-disable-next-line max-len */
                 const inlineElement: ElementInfo = (selectionEnd.currentWidget as LineWidget).getInline(this.owner.selection.start.offset, indexInInline);
                 inline = inlineElement.element as ElementBox;
                 indexInInline = inlineElement.index;
@@ -219,7 +222,7 @@ export class TextSearch {
                     nextParagraphWidget = this.findInline(inline, pattern, findOption, indexInInline, isFirstMatch, results, selectionEnd);
                     while (results.length === 0 && !isNullOrUndefined(nextParagraphWidget)) {
                         while (!isNullOrUndefined(nextParagraphWidget) && nextParagraphWidget.childWidgets.length === 0) {
-                            // eslint-disable-next-line max-len
+                            /* eslint-disable-next-line max-len */
                             nextParagraphWidget = this.owner.selection.getNextParagraph(nextParagraphWidget.containerWidget as BodyWidget) as ParagraphWidget;
                         }
                         if (isNullOrUndefined(nextParagraphWidget)) {
@@ -270,10 +273,10 @@ export class TextSearch {
             return;
         }
     }
-    // eslint-disable-next-line max-len
+    /* eslint-disable-next-line max-len */
     private findInlineText(section: Widget, pattern: RegExp, findOption: FindOption, isFirstMatch: boolean, results: TextSearchResults, selectionEnd: TextPosition): void {
         let paragraphWidget: ParagraphWidget = this.owner.selection.getFirstParagraphBlock(section.childWidgets[0] as BlockWidget);
-        // eslint-disable-next-line max-len
+        /* eslint-disable-next-line max-len */
         while (!isNullOrUndefined(paragraphWidget) && paragraphWidget.childWidgets.length === 1 && (paragraphWidget.childWidgets[0] as LineWidget).children.length === 0) {
             paragraphWidget = this.owner.selection.getNextParagraphBlock(paragraphWidget) as ParagraphWidget;
         }
@@ -285,7 +288,7 @@ export class TextSearch {
             }
             this.findInline(inlineEle, pattern, findOption, 0, isFirstMatch, results, selectionEnd);
             paragraphWidget = this.owner.selection.getNextParagraphBlock(paragraphWidget) as ParagraphWidget;
-            // eslint-disable-next-line max-len
+            /* eslint-disable-next-line max-len */
             while (!isNullOrUndefined(paragraphWidget) && (paragraphWidget.childWidgets.length === 1) && (paragraphWidget.childWidgets[0] as LineWidget).children.length === 0) {
                 paragraphWidget = this.owner.selection.getNextParagraphBlock(paragraphWidget) as ParagraphWidget;
             }
@@ -294,7 +297,7 @@ export class TextSearch {
             return;
         }
     }
-    // eslint-disable-next-line max-len
+    /* eslint-disable-next-line max-len */
     private findInline(inlineElement: ElementBox, pattern: RegExp, option: FindOption, indexInInline: number, isFirstMatch: boolean, results: TextSearchResults, selectionEnd: TextPosition): ParagraphWidget {
         const inlines: ElementBox = inlineElement;
         const textInfo: TextInLineInfo = this.getElementInfo(inlineElement, indexInInline);
@@ -311,7 +314,7 @@ export class TextSearch {
         if (isFirstMatch) {
             return undefined;
         }
-        // eslint-disable-next-line max-len
+        /* eslint-disable-next-line max-len */
         const paragraphWidget: ParagraphWidget = this.owner.selection.getNextParagraphBlock(inlineElement.line.paragraph) as ParagraphWidget;
         return paragraphWidget;
     }

@@ -3,7 +3,6 @@ import { WParagraphFormat } from './paragraph-format';
 import { WCharacterFormat } from './character-format';
 import { HelperMethods } from '../editor/editor-helper';
 import { isNullOrUndefined } from '@syncfusion/ej2-base';
-/* eslint-disable */
 /**
  * @private
  */

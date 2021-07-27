@@ -388,7 +388,7 @@ export class SheetRender implements IRenderer {
                 colIdx: indexes[1], rowIdx: indexes[0], cell: value, address: key, row: row, pRow: row.previousSibling,
                 first: !args.skipUpdateOnFirst && indexes[1] === args.indexes[1] ? 'Column' : (this.parent.scrollSettings.
                     enableVirtualization && indexes[0] === args.indexes[0] && this.parent.viewport.topIndex !==
-                    skipHiddenIdx(sheet, 0, true) ? 'Row' : '') }));
+                    skipHiddenIdx(sheet, 0, true) ? 'Row' : ''), isRefreshing: true }));
             this.checkColMerge(indexes, args.indexes, cell, value);
             if (frozenRow && indexes[0] === frozenRow - 1) { count = 0; }
         });
@@ -442,7 +442,7 @@ export class SheetRender implements IRenderer {
                 pHRow: hdrRow.previousSibling,
                 isHeightCheckNeeded: true, first: !args.skipUpdateOnFirst && indexes[0] === args.indexes[0] ?
                     'Row' : (this.parent.scrollSettings.enableVirtualization && indexes[1] === args.indexes[1] && this.parent.viewport.leftIndex
-                        !== skipHiddenIdx(sheet, 0, true, 'columns') ? 'Column' : '') }));
+                        !== skipHiddenIdx(sheet, 0, true, 'columns') ? 'Column' : ''), isRefreshing: true }));
             this.checkRowMerge(indexes, args.indexes, cell, value);
             if (frozenCol && indexes[1] === frozenCol - 1) { row = null; }
         });
@@ -533,9 +533,9 @@ export class SheetRender implements IRenderer {
                     refChild = row.firstElementChild;
                 }
                 cell = this.cellRenderer.render(<CellRenderArgs>{colIdx: indexes[1], rowIdx: indexes[0], cell: value, address: key,
-                    lastCell: indexes[1] === args.indexes[3], isHeightCheckNeeded: args.direction === 'first',
-                    first: args.direction === 'last' && !args.skipUpdateOnFirst && indexes[1] === args.indexes[1] ? 'Column' : '',
-                    checkNextBorder: args.direction === 'last' && indexes[3] === args.indexes[3] ? 'Column' : '' });
+                    lastCell: indexes[1] === args.indexes[3], isHeightCheckNeeded: args.direction === 'first', first: args.direction ===
+                    'last' && !args.skipUpdateOnFirst && indexes[1] === args.indexes[1] ? 'Column' : '', checkNextBorder: args.direction
+                    === 'last' && indexes[3] === args.indexes[3] ? 'Column' : '', isRefreshing: args.direction === 'first' });
                 if (args.direction === 'last') {
                     this.checkColMerge(
                         indexes, args.indexes, cell, value, ((indexes[0] < frozenRow ? hTBody : tBody).rows[rowCount - 1] ||
@@ -611,7 +611,7 @@ export class SheetRender implements IRenderer {
                 cKey, lastCell: indexes[1] === args.indexes[3], row: row, pHRow: hRow.previousSibling,
             checkNextBorder: args.direction === 'last' && indexes[2] === args.indexes[2] ? 'Row' : '', pRow: row.previousSibling,
             isHeightCheckNeeded: args.direction === 'first' || args.direction === '', hRow: hRow, first: args.direction === 'last' &&
-                !args.skipUpdateOnFirst && indexes[0] === args.indexes[0] ? 'Row' : '' }));
+                !args.skipUpdateOnFirst && indexes[0] === args.indexes[0] ? 'Row' : '', isRefreshing: args.direction === 'first' }));
             if (args.direction ===  'last' && tBody.rows.length) {
                 this.checkRowMerge(
                     indexes, args.indexes, cell, value, (indexes[1] < frozenCol ? rTBody : tBody).rows[0].cells[indexes[1] < frozenCol ?

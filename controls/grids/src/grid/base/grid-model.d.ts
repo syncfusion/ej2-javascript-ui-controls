@@ -1,4 +1,4 @@
-﻿import { isNullOrUndefined, setValue, getValue, isBlazor } from '@syncfusion/ej2-base';import { Component, ModuleDeclaration, ChildProperty, Browser, closest, extend, TouchEventArgs } from '@syncfusion/ej2-base';import { addClass, removeClass, append, remove, classList, setStyleAttribute } from '@syncfusion/ej2-base';import { Property, Collection, Complex, Event, NotifyPropertyChanges, INotifyPropertyChanged, L10n } from '@syncfusion/ej2-base';import { EventHandler, KeyboardEvents, KeyboardEventArgs as KeyArg, EmitType } from '@syncfusion/ej2-base';import { Query, DataManager, DataUtil, DataOptions, UrlAdaptor } from '@syncfusion/ej2-data';import { ItemModel, ClickEventArgs } from '@syncfusion/ej2-navigations';import { createSpinner, hideSpinner, showSpinner, Tooltip } from '@syncfusion/ej2-popups';import { iterateArrayOrObject, prepareColumns, parentsUntil, wrap, templateCompiler, isGroupAdaptive, refreshForeignData } from './util';import { getRowHeight, setColumnIndex, Global, ispercentageWidth, renderMovable, getNumberFormat } from './util';import { setRowElements, resetRowIndex, compareChanges, getCellByColAndRowIndex, performComplexDataOperation } from './util';import * as events from '../base/constant';import { ReturnType, BatchChanges } from '../base/type';import { IDialogUI, ScrollPositionType, ActionArgs, ExportGroupCaptionEventArgs, FilterUI, LazyLoadArgs } from './interface';import {AggregateQueryCellInfoEventArgs, IGrid } from './interface';import { IRenderer, IValueFormatter, IFilterOperator, IIndex, RowDataBoundEventArgs, QueryCellInfoEventArgs } from './interface';import { CellDeselectEventArgs, CellSelectEventArgs, CellSelectingEventArgs, ParentDetails, ContextMenuItemModel } from './interface';import { PdfQueryCellInfoEventArgs, ExcelQueryCellInfoEventArgs, ExcelExportProperties, PdfExportProperties } from './interface';import { PdfHeaderQueryCellInfoEventArgs, ExcelHeaderQueryCellInfoEventArgs, ExportDetailDataBoundEventArgs } from './interface';import { ColumnMenuOpenEventArgs, BatchCancelArgs, RecordDoubleClickEventArgs, DataResult, PendingState } from './interface';import { HeaderCellInfoEventArgs, KeyboardEventArgs, RecordClickEventArgs, AdaptiveDialogEventArgs } from './interface';import { FailureEventArgs, FilterEventArgs, ColumnDragEventArgs, GroupEventArgs, PrintEventArgs, ICustomOptr } from './interface';import { RowDeselectEventArgs, RowSelectEventArgs, RowSelectingEventArgs, PageEventArgs, RowDragEventArgs } from './interface';import { BeforeBatchAddArgs, BeforeBatchDeleteArgs, BeforeBatchSaveArgs, ResizeArgs, ColumnMenuItemModel } from './interface';import { BatchAddArgs, BatchDeleteArgs, BeginEditArgs, CellEditArgs, CellSaveArgs, BeforeDataBoundArgs, RowInfo } from './interface';import { DetailDataBoundEventArgs, ColumnChooserEventArgs, AddEventArgs, SaveEventArgs, EditEventArgs, DeleteEventArgs } from './interface';import { ExcelExportCompleteArgs, PdfExportCompleteArgs, DataStateChangeEventArgs, DataSourceChangedEventArgs } from './interface';import { SearchEventArgs, SortEventArgs, ISelectedCell, EJ2Intance, BeforeCopyEventArgs, ColumnDataStateChangeEventArgs} from './interface';import {BeforePasteEventArgs, CheckBoxChangeEventArgs, CommandClickEventArgs, BeforeAutoFillEventArgs } from './interface';import { Render } from '../renderer/render';import { Column, ColumnModel, ActionEventArgs } from '../models/column';import { SelectionType, GridLine, RenderType, SortDirection, SelectionMode, PrintMode, FilterType, FilterBarMode } from './enum';import { CheckboxSelectionType, HierarchyGridPrintMode, NewRowPosition, freezeTable, ClipMode, freezeMode } from './enum';import { WrapMode, ToolbarItems, ContextMenuItem, ColumnMenuItem, ToolbarItem, CellSelectionMode, EditMode, ResizeMode } from './enum';import { ColumnQueryModeType, RowRenderingDirection } from './enum';import { Data } from '../actions/data';import { Cell } from '../models/cell';import { RowRenderer } from '../renderer/row-renderer';import { CellRenderer } from '../renderer/cell-renderer';import { CellRendererFactory } from '../services/cell-render-factory';import { ServiceLocator } from '../services/service-locator';import { ValueFormatter } from '../services/value-formatter';import { RendererFactory } from '../services/renderer-factory';import { ColumnWidthService } from '../services/width-controller';import { AriaService } from '../services/aria-service';import { FocusStrategy } from '../services/focus-strategy';import { PageSettingsModel, AggregateRowModel, AggregateColumnModel, ColumnChooserSettingsModel } from '../models/models';import { PageSettings } from '../models/page-settings';import { ColumnChooserSettings } from '../models/column-chooser-settings';import { Sort } from '../actions/sort';import { Page } from '../actions/page';import { Selection } from '../actions/selection';import { Filter } from '../actions/filter';import { Search } from '../actions/search';import { Resize } from '../actions/resize';import { Reorder } from '../actions/reorder';import { RowDD } from '../actions/row-reorder';import { ShowHide } from '../actions/show-hide';import { Scroll } from '../actions/scroll';import { InfiniteScroll } from '../actions/infinite-scroll';import { Group } from '../actions/group';import { Print } from '../actions/print';import { DetailRow } from '../actions/detail-row';import { Toolbar } from '../actions/toolbar';import { AggregateRow } from '../models/aggregate';import { Edit } from '../actions/edit';import { Row } from '../models/row';import { ColumnChooser } from '../actions/column-chooser';import { ExcelExport } from '../actions/excel-export';import { PdfExport } from '../actions/pdf-export';import { Clipboard } from '../actions/clipboard';import { CommandColumn } from '../actions/command-column';import { ContextMenu } from '../actions/context-menu';import { BeforeOpenCloseMenuEventArgs, MenuEventArgs } from '@syncfusion/ej2-navigations';import { ColumnMenu } from '../actions/column-menu';import { CheckState } from './enum';import { Aggregate } from '../actions/aggregate';import { ILogger } from '../actions/logger';import { IModelGenerator } from '../base/interface';import { RowModelGenerator } from '../services/row-model-generator';import { ColumnDeselectEventArgs, ColumnSelectEventArgs, ColumnSelectingEventArgs } from './interface';import { DateFormatOptions, NumberFormatOptions } from '@syncfusion/ej2-base';import * as literals from '../base/string-literals';import { Workbook } from '@syncfusion/ej2-excel-export';
+﻿import { isNullOrUndefined, setValue, getValue } from '@syncfusion/ej2-base';import { Component, ModuleDeclaration, ChildProperty, Browser, closest, extend, TouchEventArgs } from '@syncfusion/ej2-base';import { addClass, removeClass, append, remove, classList, setStyleAttribute } from '@syncfusion/ej2-base';import { Property, Collection, Complex, Event, NotifyPropertyChanges, INotifyPropertyChanged, L10n } from '@syncfusion/ej2-base';import { EventHandler, KeyboardEvents, KeyboardEventArgs as KeyArg, EmitType } from '@syncfusion/ej2-base';import { Query, DataManager, DataUtil, DataOptions, UrlAdaptor } from '@syncfusion/ej2-data';import { ItemModel, ClickEventArgs } from '@syncfusion/ej2-navigations';import { createSpinner, hideSpinner, showSpinner, Tooltip } from '@syncfusion/ej2-popups';import { iterateArrayOrObject, prepareColumns, parentsUntil, wrap, templateCompiler, isGroupAdaptive, refreshForeignData } from './util';import { getRowHeight, setColumnIndex, Global, ispercentageWidth, renderMovable, getNumberFormat } from './util';import { setRowElements, resetRowIndex, compareChanges, getCellByColAndRowIndex, performComplexDataOperation } from './util';import * as events from '../base/constant';import { ReturnType, BatchChanges } from '../base/type';import { IDialogUI, ScrollPositionType, ActionArgs, ExportGroupCaptionEventArgs, FilterUI, LazyLoadArgs } from './interface';import {AggregateQueryCellInfoEventArgs, IGrid } from './interface';import { IRenderer, IValueFormatter, IFilterOperator, IIndex, RowDataBoundEventArgs, QueryCellInfoEventArgs } from './interface';import { CellDeselectEventArgs, CellSelectEventArgs, CellSelectingEventArgs, ParentDetails, ContextMenuItemModel } from './interface';import { PdfQueryCellInfoEventArgs, ExcelQueryCellInfoEventArgs, ExcelExportProperties, PdfExportProperties } from './interface';import { PdfHeaderQueryCellInfoEventArgs, ExcelHeaderQueryCellInfoEventArgs, ExportDetailDataBoundEventArgs } from './interface';import { ColumnMenuOpenEventArgs, BatchCancelArgs, RecordDoubleClickEventArgs, DataResult, PendingState } from './interface';import { HeaderCellInfoEventArgs, KeyboardEventArgs, RecordClickEventArgs, AdaptiveDialogEventArgs } from './interface';import { FailureEventArgs, FilterEventArgs, ColumnDragEventArgs, GroupEventArgs, PrintEventArgs, ICustomOptr } from './interface';import { RowDeselectEventArgs, RowSelectEventArgs, RowSelectingEventArgs, PageEventArgs, RowDragEventArgs } from './interface';import { BeforeBatchAddArgs, BeforeBatchDeleteArgs, BeforeBatchSaveArgs, ResizeArgs, ColumnMenuItemModel } from './interface';import { BatchAddArgs, BatchDeleteArgs, BeginEditArgs, CellEditArgs, CellSaveArgs, BeforeDataBoundArgs, RowInfo } from './interface';import { DetailDataBoundEventArgs, ColumnChooserEventArgs, AddEventArgs, SaveEventArgs, EditEventArgs, DeleteEventArgs } from './interface';import { ExcelExportCompleteArgs, PdfExportCompleteArgs, DataStateChangeEventArgs, DataSourceChangedEventArgs } from './interface';import { SearchEventArgs, SortEventArgs, ISelectedCell, EJ2Intance, BeforeCopyEventArgs, ColumnDataStateChangeEventArgs} from './interface';import {BeforePasteEventArgs, CheckBoxChangeEventArgs, CommandClickEventArgs, BeforeAutoFillEventArgs } from './interface';import { Render } from '../renderer/render';import { Column, ColumnModel, ActionEventArgs } from '../models/column';import { SelectionType, GridLine, RenderType, SortDirection, SelectionMode, PrintMode, FilterType, FilterBarMode } from './enum';import { CheckboxSelectionType, HierarchyGridPrintMode, NewRowPosition, freezeTable, ClipMode, freezeMode } from './enum';import { WrapMode, ToolbarItems, ContextMenuItem, ColumnMenuItem, ToolbarItem, CellSelectionMode, EditMode, ResizeMode } from './enum';import { ColumnQueryModeType, RowRenderingDirection } from './enum';import { Data } from '../actions/data';import { Cell } from '../models/cell';import { RowRenderer } from '../renderer/row-renderer';import { CellRenderer } from '../renderer/cell-renderer';import { CellRendererFactory } from '../services/cell-render-factory';import { ServiceLocator } from '../services/service-locator';import { ValueFormatter } from '../services/value-formatter';import { RendererFactory } from '../services/renderer-factory';import { ColumnWidthService } from '../services/width-controller';import { AriaService } from '../services/aria-service';import { FocusStrategy } from '../services/focus-strategy';import { PageSettingsModel, AggregateRowModel, AggregateColumnModel, ColumnChooserSettingsModel } from '../models/models';import { PageSettings } from '../models/page-settings';import { ColumnChooserSettings } from '../models/column-chooser-settings';import { Sort } from '../actions/sort';import { Page } from '../actions/page';import { Selection } from '../actions/selection';import { Filter } from '../actions/filter';import { Search } from '../actions/search';import { Resize } from '../actions/resize';import { Reorder } from '../actions/reorder';import { RowDD } from '../actions/row-reorder';import { ShowHide } from '../actions/show-hide';import { Scroll } from '../actions/scroll';import { InfiniteScroll } from '../actions/infinite-scroll';import { Group } from '../actions/group';import { Print } from '../actions/print';import { DetailRow } from '../actions/detail-row';import { Toolbar } from '../actions/toolbar';import { AggregateRow } from '../models/aggregate';import { Edit } from '../actions/edit';import { Row } from '../models/row';import { ColumnChooser } from '../actions/column-chooser';import { ExcelExport } from '../actions/excel-export';import { PdfExport } from '../actions/pdf-export';import { Clipboard } from '../actions/clipboard';import { CommandColumn } from '../actions/command-column';import { ContextMenu } from '../actions/context-menu';import { BeforeOpenCloseMenuEventArgs, MenuEventArgs } from '@syncfusion/ej2-navigations';import { ColumnMenu } from '../actions/column-menu';import { CheckState } from './enum';import { Aggregate } from '../actions/aggregate';import { ILogger } from '../actions/logger';import { IModelGenerator } from '../base/interface';import { RowModelGenerator } from '../services/row-model-generator';import { ColumnDeselectEventArgs, ColumnSelectEventArgs, ColumnSelectingEventArgs } from './interface';import { DateFormatOptions, NumberFormatOptions } from '@syncfusion/ej2-base';import * as literals from '../base/string-literals';import { Workbook } from '@syncfusion/ej2-excel-export';
 import {ComponentModel} from '@syncfusion/ej2-base';
 
 /**
@@ -17,7 +17,6 @@ export interface SortDescriptorModel {
      * Defines the direction of sort column.
      *
      * @default ''
-     * @blazorDefaultValue null
      */
     direction?: SortDirection;
 
@@ -121,8 +120,6 @@ export interface PredicateModel {
      * </table>
      *
      * @default null
-     * @blazorType Syncfusion.Blazor.Operator
-     * @blazorDefaultValue Syncfusion.Blazor.Operator.None
      */
     operator?: string;
 
@@ -435,8 +432,6 @@ export interface SearchSettingsModel {
      * </table>
      *
      * @default 'contains'
-     * @blazorType Syncfusion.Blazor.Operator
-     * @blazorDefaultValue Syncfusion.Blazor.Operator.Contains
      */
     operator?: string;
 
@@ -697,8 +692,6 @@ export interface GridModel extends ComponentModel{
 
     /**
      * Gets the parent Grid details.
-     *
-     * @deprecated
      */
     parentDetails?: ParentDetails;
 
@@ -810,7 +803,6 @@ export interface GridModel extends ComponentModel{
      * {% codeBlock src='grid/enableInfiniteScrolling/index.md' %}{% endcodeBlock %}
      *
      * @default false
-     * @deprecated
      */
     enableInfiniteScrolling?: boolean;
 
@@ -886,7 +878,6 @@ export interface GridModel extends ComponentModel{
      * {% codeBlock src='grid/infiniteScrollSettings/index.md' %}{% endcodeBlock %}
      *
      * @default { enableCache: false, maxBlocks: 5, initialBlocks: 5 }
-     * @deprecated
      */
     infiniteScrollSettings?: InfiniteScrollSettingsModel;
 
@@ -1117,8 +1108,6 @@ export interface GridModel extends ComponentModel{
      * and child relationship.
      *
      * > Check the [`Child Grid`](../../grid/hierarchy-grid/) for its configuration.
-     *
-     * @blazorType GridModel<object>
      */
     childGrid?: GridModel;
 
@@ -1177,7 +1166,6 @@ export interface GridModel extends ComponentModel{
      * {% codeBlock src='grid/query/index.md' %}{% endcodeBlock %}
      *
      * @default null
-     * @blazorType Syncfusion.Blazor.Data.Query
      */
     query?: Query;
 
@@ -1315,7 +1303,6 @@ export interface GridModel extends ComponentModel{
      * Triggers when the component is created.
      *
      * @event created
-     * @blazorProperty 'Created'
      */
     created?: EmitType<Object>;
 
@@ -1323,7 +1310,6 @@ export interface GridModel extends ComponentModel{
      * Triggers when the component is destroyed.
      *
      * @event destroyed
-     * @blazorProperty 'Destroyed'
      */
     destroyed?: EmitType<Object>;
 
@@ -1331,7 +1317,6 @@ export interface GridModel extends ComponentModel{
      * This event allows customization of Grid properties before rendering.
      *
      * @event load
-     * @blazorProperty 'OnLoad'
      */
     load?: EmitType<Object>;
 
@@ -1340,7 +1325,6 @@ export interface GridModel extends ComponentModel{
      * This will be triggered before the row element is appended to the Grid element.
      *
      * @event rowDataBound
-     * @blazorProperty 'RowDataBound'
      */
     rowDataBound?: EmitType<RowDataBoundEventArgs>;
 
@@ -1349,7 +1333,6 @@ export interface GridModel extends ComponentModel{
      * This will be triggered before the cell element is appended to the Grid element.
      *
      * @event queryCellInfo
-     * @blazorProperty 'QueryCellInfo'
      */
     queryCellInfo?: EmitType<QueryCellInfoEventArgs>;
 
@@ -1357,7 +1340,6 @@ export interface GridModel extends ComponentModel{
      * Triggered for stacked header.
      *
      * @event headerCellInfo
-     * @blazorProperty 'HeaderCellInfo'
      */
     headerCellInfo?: EmitType<HeaderCellInfoEventArgs>;
 
@@ -1366,7 +1348,6 @@ export interface GridModel extends ComponentModel{
      * {% codeBlock src='grid/actionBegin/index.md' %}{% endcodeBlock %}
      *
      * @event actionBegin
-     * @blazorProperty 'OnActionBegin'
      */
     actionBegin?: EmitType<PageEventArgs | GroupEventArgs | FilterEventArgs | SearchEventArgs | SortEventArgs | AddEventArgs | SaveEventArgs | EditEventArgs | DeleteEventArgs | ActionEventArgs>;
 
@@ -1374,7 +1355,6 @@ export interface GridModel extends ComponentModel{
      * Triggers when Grid actions such as sorting, filtering, paging, grouping etc. are completed.
      *
      * @event actionComplete
-     * @blazorProperty 'OnActionComplete'
      */
     actionComplete?: EmitType<PageEventArgs | GroupEventArgs | FilterEventArgs | SearchEventArgs | SortEventArgs | AddEventArgs | SaveEventArgs | EditEventArgs | DeleteEventArgs | ActionEventArgs>;
 
@@ -1382,7 +1362,6 @@ export interface GridModel extends ComponentModel{
      * Triggers when any Grid action failed to achieve the desired results.
      *
      * @event actionFailure
-     * @blazorProperty 'OnActionFailure'
      */
     actionFailure?: EmitType<FailureEventArgs>;
 
@@ -1390,7 +1369,6 @@ export interface GridModel extends ComponentModel{
      * Triggers when data source is populated in the Grid.
      *
      * @event dataBound
-     * @blazorProperty 'DataBound'
      */
     dataBound?: EmitType<Object>;
 
@@ -1398,7 +1376,6 @@ export interface GridModel extends ComponentModel{
      * Triggers when record is double clicked.
      *
      * @event recordDoubleClick
-     * @blazorProperty 'OnRecordDoubleClick'
      */
     recordDoubleClick?: EmitType<RecordDoubleClickEventArgs>;
 
@@ -1406,7 +1383,6 @@ export interface GridModel extends ComponentModel{
      * Triggers when record is clicked.
      *
      * @event recordClick
-     * @blazorProperty 'OnRecordClick'
      */
     recordClick?: EmitType<RecordClickEventArgs>;
 
@@ -1414,7 +1390,6 @@ export interface GridModel extends ComponentModel{
      * Triggers before row selection occurs.
      *
      * @event rowSelecting
-     * @blazorProperty 'RowSelecting'
      */
     rowSelecting?: EmitType<RowSelectingEventArgs>;
 
@@ -1422,7 +1397,6 @@ export interface GridModel extends ComponentModel{
      * Triggers after a row is selected.
      *
      * @event rowSelected
-     * @blazorProperty 'RowSelected'
      */
     rowSelected?: EmitType<RowSelectEventArgs>;
 
@@ -1437,7 +1411,6 @@ export interface GridModel extends ComponentModel{
      * Triggers when a selected row is deselected.
      *
      * @event rowDeselected
-     * @blazorProperty 'RowDeselected'
      */
     rowDeselected?: EmitType<RowDeselectEventArgs>;
 
@@ -1445,7 +1418,6 @@ export interface GridModel extends ComponentModel{
      * Triggers before any cell selection occurs.
      *
      * @event cellSelecting
-     * @blazorProperty 'CellSelecting'
      */
     cellSelecting?: EmitType<CellSelectingEventArgs>;
 
@@ -1453,7 +1425,6 @@ export interface GridModel extends ComponentModel{
      * Triggers after a cell is selected.
      *
      * @event cellSelected
-     * @blazorProperty 'CellSelected'
      */
     cellSelected?: EmitType<CellSelectEventArgs>;
 
@@ -1461,7 +1432,6 @@ export interface GridModel extends ComponentModel{
      * Triggers before the selected cell is deselecting.
      *
      * @event cellDeselecting
-     * @deprecated
      */
     cellDeselecting?: EmitType<CellDeselectEventArgs>;
 
@@ -1469,7 +1439,6 @@ export interface GridModel extends ComponentModel{
      * Triggers when a particular selected cell is deselected.
      *
      * @event cellDeselected
-     * @deprecated
      */
     cellDeselected?: EmitType<CellDeselectEventArgs>;
 
@@ -1505,7 +1474,6 @@ export interface GridModel extends ComponentModel{
      * Triggers when column header element drag (move) starts.
      *
      * @event columnDragStart
-     * @deprecated
      */
     columnDragStart?: EmitType<ColumnDragEventArgs>;
 
@@ -1513,7 +1481,6 @@ export interface GridModel extends ComponentModel{
      * Triggers when column header element is dragged (moved) continuously.
      *
      * @event columnDrag
-     * @deprecated
      */
     columnDrag?: EmitType<ColumnDragEventArgs>;
 
@@ -1521,7 +1488,6 @@ export interface GridModel extends ComponentModel{
      * Triggers when a column header element is dropped on the target column.
      *
      * @event columnDrop
-     * @deprecated
      */
     columnDrop?: EmitType<ColumnDragEventArgs>;
 
@@ -1529,7 +1495,6 @@ export interface GridModel extends ComponentModel{
      * Triggers after print action is completed.
      *
      * @event printComplete
-     * @deprecated
      */
     printComplete?: EmitType<PrintEventArgs>;
 
@@ -1537,7 +1502,6 @@ export interface GridModel extends ComponentModel{
      * Triggers before the print action starts.
      *
      * @event beforePrint
-     * @deprecated
      */
     beforePrint?: EmitType<PrintEventArgs>;
 
@@ -1545,7 +1509,6 @@ export interface GridModel extends ComponentModel{
      * Triggers before exporting each cell to PDF document. You can also customize the PDF cells.
      *
      * @event pdfQueryCellInfo
-     * @deprecated
      */
     pdfQueryCellInfo?: EmitType<PdfQueryCellInfoEventArgs>;
 
@@ -1553,7 +1516,6 @@ export interface GridModel extends ComponentModel{
      * Triggers before exporting each header cell to PDF document. You can also customize the PDF cells.
      *
      * @event pdfHeaderQueryCellInfo
-     * @deprecated
      */
     pdfHeaderQueryCellInfo?: EmitType<PdfHeaderQueryCellInfoEventArgs>;
 
@@ -1561,7 +1523,6 @@ export interface GridModel extends ComponentModel{
      * Triggers before exporting aggregate cell to PDF document. You can also customize the PDF cells.
      *
      * @event pdfAggregateQueryCellInfo
-     * @deprecated
      */
     pdfAggregateQueryCellInfo?: EmitType<AggregateQueryCellInfoEventArgs>;
 
@@ -1569,7 +1530,6 @@ export interface GridModel extends ComponentModel{
      * Triggers before exporting aggregate cell to Excel document. You can also customize the PDF cells.
      *
      * @event excelAggregateQueryCellInfo
-     * @deprecated
      */
     excelAggregateQueryCellInfo?: EmitType<AggregateQueryCellInfoEventArgs>;
 
@@ -1577,7 +1537,6 @@ export interface GridModel extends ComponentModel{
      * Triggers before exporting each detail Grid to PDF document.
      *
      * @event exportDetailDataBound
-     * @deprecated
      */
     exportDetailDataBound?: EmitType<ExportDetailDataBoundEventArgs>;
 
@@ -1586,7 +1545,6 @@ export interface GridModel extends ComponentModel{
      * You can also customize the Excel cells.
      *
      * @event excelQueryCellInfo
-     * @deprecated
      */
     excelQueryCellInfo?: EmitType<ExcelQueryCellInfoEventArgs>;
 
@@ -1595,7 +1553,6 @@ export interface GridModel extends ComponentModel{
      * You can also customize the Excel cells.
      *
      * @event excelHeaderQueryCellInfo
-     * @deprecated
      */
     excelHeaderQueryCellInfo?: EmitType<ExcelHeaderQueryCellInfoEventArgs>;
 
@@ -1603,7 +1560,6 @@ export interface GridModel extends ComponentModel{
      * Triggers before Grid data is exported to Excel file.
      *
      * @event beforeExcelExport
-     * @deprecated
      */
     beforeExcelExport?: EmitType<Object>;
 
@@ -1611,7 +1567,6 @@ export interface GridModel extends ComponentModel{
      * Triggers after Grid data is exported to Excel file.
      *
      * @event excelExportComplete
-     * @deprecated
      */
     excelExportComplete?: EmitType<ExcelExportCompleteArgs>;
 
@@ -1619,7 +1574,6 @@ export interface GridModel extends ComponentModel{
      * Triggers before Grid data is exported to PDF document.
      *
      * @event beforePdfExport
-     * @blazorProperty 'OnPdfExport'
      */
     beforePdfExport?: EmitType<Object>;
 
@@ -1627,7 +1581,6 @@ export interface GridModel extends ComponentModel{
      * Triggers after Grid data is exported to PDF document.
      *
      * @event pdfExportComplete
-     * @deprecated
      */
     pdfExportComplete?: EmitType<PdfExportCompleteArgs>;
 
@@ -1635,7 +1588,6 @@ export interface GridModel extends ComponentModel{
      * Triggers when row element's before drag(move).
      *
      * @event rowDragStartHelper
-     * @deprecated
      */
     rowDragStartHelper?: EmitType<RowDragEventArgs>;
 
@@ -1644,7 +1596,6 @@ export interface GridModel extends ComponentModel{
      * > This event triggers at initial expand.
      *
      * @event detailDataBound
-     * @blazorProperty 'DetailDataBound'
      */
     detailDataBound?: EmitType<DetailDataBoundEventArgs>;
 
@@ -1652,7 +1603,6 @@ export interface GridModel extends ComponentModel{
      * Triggers when row element's drag(move) starts.
      *
      * @event rowDragStart
-     * @blazorProperty 'RowDrag'
      */
     rowDragStart?: EmitType<RowDragEventArgs>;
 
@@ -1660,7 +1610,6 @@ export interface GridModel extends ComponentModel{
      * Triggers when row elements are dragged (moved) continuously.
      *
      * @event rowDrag
-     * @deprecated
      */
     rowDrag?: EmitType<RowDragEventArgs>;
 
@@ -1668,7 +1617,6 @@ export interface GridModel extends ComponentModel{
      * Triggers when row elements are dropped on the target row.
      *
      * @event rowDrop
-     * @blazorProperty 'RowDrop'
      */
     rowDrop?: EmitType<RowDragEventArgs>;
 
@@ -1676,8 +1624,6 @@ export interface GridModel extends ComponentModel{
      * Triggers when toolbar item is clicked.
      *
      * @event toolbarClick
-     * @blazorProperty 'OnToolbarClick'
-     * @blazorType Syncfusion.Blazor.Navigations.ClickEventArgs
      */
     toolbarClick?: EmitType<ClickEventArgs>;
 
@@ -1685,7 +1631,6 @@ export interface GridModel extends ComponentModel{
      * Triggers before the columnChooser open.
      *
      * @event beforeOpenColumnChooser
-     * @deprecated
      */
     beforeOpenColumnChooser?: EmitType<ColumnChooserEventArgs>;
 
@@ -1700,7 +1645,6 @@ export interface GridModel extends ComponentModel{
      * Triggers when records are added in batch mode.
      *
      * @event batchAdd
-     * @deprecated
      */
     batchAdd?: EmitType<BatchAddArgs>;
 
@@ -1708,7 +1652,6 @@ export interface GridModel extends ComponentModel{
      * Triggers when records are deleted in batch mode.
      *
      * @event batchDelete
-     * @deprecated
      */
     batchDelete?: EmitType<BatchDeleteArgs>;
 
@@ -1716,7 +1659,6 @@ export interface GridModel extends ComponentModel{
      * Triggers when cancel the batch edit changes batch mode.
      *
      * @event batchCancel
-     * @deprecated
      */
     batchCancel?: EmitType<BatchCancelArgs>;
 
@@ -1724,7 +1666,6 @@ export interface GridModel extends ComponentModel{
      * Triggers before records are added in batch mode.
      *
      * @event beforeBatchAdd
-     * @blazorProperty 'OnBatchAdd'
      */
     beforeBatchAdd?: EmitType<BeforeBatchAddArgs>;
 
@@ -1732,7 +1673,6 @@ export interface GridModel extends ComponentModel{
      * Triggers before records are deleted in batch mode.
      *
      * @event beforeBatchDelete
-     * @blazorProperty 'OnBatchDelete'
      */
     beforeBatchDelete?: EmitType<BeforeBatchDeleteArgs>;
 
@@ -1740,7 +1680,6 @@ export interface GridModel extends ComponentModel{
      * Triggers before records are saved in batch mode.
      *
      * @event beforeBatchSave
-     * @blazorProperty 'OnBatchSave'
      */
     beforeBatchSave?: EmitType<BeforeBatchSaveArgs>;
 
@@ -1748,7 +1687,6 @@ export interface GridModel extends ComponentModel{
      * Triggers before the record is to be edit.
      *
      * @event beginEdit
-     * @blazorProperty 'OnBeginEdit'
      */
     beginEdit?: EmitType<BeginEditArgs>;
 
@@ -1756,7 +1694,6 @@ export interface GridModel extends ComponentModel{
      * Triggers when command button is clicked.
      *
      * @event commandClick
-     * @blazorProperty 'CommandClicked'
      */
     commandClick?: EmitType<CommandClickEventArgs>;
 
@@ -1764,7 +1701,6 @@ export interface GridModel extends ComponentModel{
      * Triggers when the cell is being edited.
      *
      * @event cellEdit
-     * @blazorProperty 'OnCellEdit'
      */
     cellEdit?: EmitType<CellEditArgs>;
 
@@ -1772,7 +1708,6 @@ export interface GridModel extends ComponentModel{
      * Triggers when cell is saved.
      *
      * @event cellSave
-     * @blazorProperty 'OnCellSave'
      */
     cellSave?: EmitType<CellSaveArgs>;
 
@@ -1780,7 +1715,6 @@ export interface GridModel extends ComponentModel{
      * Triggers when cell is saved.
      *
      * @event cellSaved
-     * @blazorProperty 'CellSaved'
      */
     cellSaved?: EmitType<CellSaveArgs>;
 
@@ -1788,7 +1722,6 @@ export interface GridModel extends ComponentModel{
      * Triggers when column resize starts.
      *
      * @event resizeStart
-     * @blazorProperty 'OnResizeStart'
      */
     resizeStart?: EmitType<ResizeArgs>;
 
@@ -1796,7 +1729,6 @@ export interface GridModel extends ComponentModel{
      * Triggers on column resizing.
      *
      * @event resizing
-     * @deprecated
      */
     resizing?: EmitType<ResizeArgs>;
 
@@ -1804,7 +1736,6 @@ export interface GridModel extends ComponentModel{
      * Triggers when column resize ends.
      *
      * @event resizeStop
-     * @blazorProperty 'ResizeStopped'
      */
     resizeStop?: EmitType<ResizeArgs>;
 
@@ -1812,7 +1743,6 @@ export interface GridModel extends ComponentModel{
      * Triggers when any keyboard keys are pressed inside the grid.
      *
      * @event keyPressed
-     * @deprecated
      */
     keyPressed?: EmitType<KeyboardEventArgs>;
 
@@ -1820,7 +1750,6 @@ export interface GridModel extends ComponentModel{
      * Triggers before data is bound to Grid.
      *
      * @event beforeDataBound
-     * @blazorProperty 'OnDataBound'
      */
     beforeDataBound?: EmitType<BeforeDataBoundArgs>;
 
@@ -1828,7 +1757,6 @@ export interface GridModel extends ComponentModel{
      * Triggers before context menu opens.
      *
      * @event contextMenuOpen
-     * @deprecated
      */
     contextMenuOpen?: EmitType<BeforeOpenCloseMenuEventArgs>;
 
@@ -1836,8 +1764,6 @@ export interface GridModel extends ComponentModel{
      * Triggers when click on context menu.
      *
      * @event contextMenuClick
-     * @blazorProperty 'ContextMenuItemClicked'
-     * @blazorType ContextMenuClickEventArgs
      */
     contextMenuClick?: EmitType<MenuEventArgs>;
 
@@ -1845,7 +1771,6 @@ export interface GridModel extends ComponentModel{
      * Triggers before column menu opens.
      *
      * @event columnMenuOpen
-     * @deprecated
      */
     columnMenuOpen?: EmitType<ColumnMenuOpenEventArgs>;
 
@@ -1853,8 +1778,6 @@ export interface GridModel extends ComponentModel{
      * Triggers when click on column menu.
      *
      * @event columnMenuClick
-     * @blazorProperty 'ColumnMenuItemClicked'
-     * @blazorType ColumnMenuClickEventArgs
      */
     columnMenuClick?: EmitType<MenuEventArgs>;
 
@@ -1862,7 +1785,6 @@ export interface GridModel extends ComponentModel{
      * Triggers when the check box state change in checkbox column.
      *
      * @event checkBoxChange
-     * @deprecated
      */
     checkBoxChange?: EmitType<CheckBoxChangeEventArgs>;
 
@@ -1870,7 +1792,6 @@ export interface GridModel extends ComponentModel{
      * Triggers before Grid copy action.
      *
      * @event beforeCopy
-     * @deprecated
      */
     beforeCopy?: EmitType<BeforeCopyEventArgs>;
 
@@ -1878,7 +1799,6 @@ export interface GridModel extends ComponentModel{
      * Triggers before Grid paste action.
      *
      * @event beforePaste
-     * @deprecated
      */
     beforePaste?: EmitType<BeforePasteEventArgs>;
 
@@ -1886,7 +1806,6 @@ export interface GridModel extends ComponentModel{
      * Triggers before Grid autoFill action.
      *
      * @event beforeAutoFill
-     * @deprecated
      */
     beforeAutoFill?: EmitType<BeforeAutoFillEventArgs>;
 
@@ -1896,7 +1815,6 @@ export interface GridModel extends ComponentModel{
      * on the action performed.
      *
      * @event columnDataStateChange
-     * @deprecated
      */
     columnDataStateChange?: EmitType<ColumnDataStateChangeEventArgs>;
 
@@ -1905,7 +1823,6 @@ export interface GridModel extends ComponentModel{
      * In this event,the current view data and total record count should be assigned to the `dataSource` based on the action performed.
      *
      * @event dataStateChange
-     * @deprecated
      */
     dataStateChange?: EmitType<DataStateChangeEventArgs>;
 
@@ -1914,7 +1831,6 @@ export interface GridModel extends ComponentModel{
      * Invoke the done method from the argument to start render after edit operation.
      *
      * @event dataSourceChanged
-     * @deprecated
      */
     dataSourceChanged?: EmitType<DataSourceChangedEventArgs>;
 
@@ -1922,7 +1838,6 @@ export interface GridModel extends ComponentModel{
      * Triggers before exporting each caption row to PDF/Excel/CSV document. You can also customize the export caption row values.
      *
      * @event exportGroupCaption
-     * @deprecated
      */
     exportGroupCaption?: EmitType<ExportGroupCaptionEventArgs>;
 
@@ -1930,7 +1845,6 @@ export interface GridModel extends ComponentModel{
      * Triggers when expand the caption row in lazy load grouping.
      *
      * @event lazyLoadGroupExpand
-     * @deprecated
      */
     lazyLoadGroupExpand?: EmitType<LazyLoadArgs>;
 
@@ -1938,7 +1852,6 @@ export interface GridModel extends ComponentModel{
      * Triggers when collapse the caption row in lazy load grouping.
      *
      * @event lazyLoadGroupCollapse
-     * @deprecated
      */
     lazyLoadGroupCollapse?: EmitType<LazyLoadArgs>;
 

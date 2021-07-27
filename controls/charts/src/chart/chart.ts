@@ -1946,10 +1946,10 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
                     this.renderCanvasSeries(item);
                 }
                 item.renderSeries(this);
-                if (this.enableCanvas) {
-                    (this.renderer as CanvasRenderer).canvasRestore();
-                }
             }
+        }
+        if (this.enableCanvas) {
+            (this.renderer as CanvasRenderer).canvasRestore();
         }
         this.visible = 0;
         const options: BaseAttibutes = {

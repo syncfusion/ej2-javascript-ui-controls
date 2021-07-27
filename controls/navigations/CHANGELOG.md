@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 19.2.49 (2021-07-27)
+
+### Toolbar
+
+#### Bug Fixes
+
+- `#I335318` - An issue with Toolbar arrow icons when enabled RTL mode has been fixed.
+
 ## 19.2.46 (2021-07-06)
 
 ### Context Menu

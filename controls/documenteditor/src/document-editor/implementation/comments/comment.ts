@@ -1,3 +1,4 @@
+/* eslint-disable */
 import { createElement, L10n, classList, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { DocumentEditor } from '../../document-editor';
 import { CommentElementBox, CommentCharacterElementBox, ElementBox } from '../../implementation/viewer/page';
@@ -103,7 +104,9 @@ export class CommentReviewPane {
                     this.parentPaneElement.style.display = 'block';
                     if (this.owner) {
                         setTimeout(() => {
-                            this.owner.resize();
+                            if (this.owner) {
+                                this.owner.resize();
+                            }    
                         }, 10);
                     }
                 }
@@ -112,7 +115,9 @@ export class CommentReviewPane {
                 this.parentPaneElement.style.display = 'none';
                 if (this.owner) {
                     setTimeout(() => {
-                        this.owner.resize();
+                        if (this.owner) {
+                            this.owner.resize();
+                        }
                     }, 10);
                 }
             }
@@ -138,7 +143,6 @@ export class CommentReviewPane {
         const changesHeader: HTMLElement = createElement('div', { innerHTML: localValue.getConstant('Changes') });
         this.parentPaneElement = createElement('div', { styles: 'height:100%;overflow:auto;display:none', className: 'e-de-review-pane' });
         this.element = createElement('div', { className: 'e-de-property-tab' });
-        // eslint-disable-next-line max-len
         const items: TabItemModel[] = [{ header: { text: commentHeader }, content: this.reviewPane }, { header: { text: changesHeader } }] as TabItemModel[];
         this.reviewTab = new Tab({ items: items, selected: this.onTabSelection, animation: { previous: { effect: 'None' }, next: { effect: 'None' } } });
         this.reviewTab.appendTo(this.element);
@@ -174,7 +178,7 @@ export class CommentReviewPane {
         }
         setTimeout(() => {
             this.owner.resize();
-        }, 10);   
+        }, 10);
     };
 
     public initPaneHeader(localValue: L10n): HTMLElement {
@@ -213,7 +217,6 @@ export class CommentReviewPane {
                     showCloseIcon: true,
                     closeOnEscape: true,
                     animationSettings: { effect: 'Zoom' },
-                    // eslint-disable-next-line @typescript-eslint/naming-convention
                     position: { X: 'Center', Y: 'Center' }
                 });
             } else {
@@ -354,7 +357,7 @@ export class CommentReviewPane {
         for (let i: number = 0; i < keys.length; i++) {
             const commentView: CommentView = this.commentPane.comments.get(keys[i]);
             if (this.owner.isReadOnly) {
-                commentView.replyViewTextBox.style.display = 'none'
+                commentView.replyViewTextBox.style.display = 'none';
                 commentView.menuBar.style.display = 'none';
             } else {
                 commentView.replyViewTextBox.style.display = 'block';
@@ -403,6 +406,7 @@ export class CommentReviewPane {
             if (this.owner.editorHistory) {
                 this.owner.editorHistory.undo();
                 this.owner.editorHistory.redoStack.pop();
+                this.owner.editor.deleteCommentInternal(comment);
             } else if (this.owner.editor) {
                 this.owner.editor.deleteCommentInternal(comment);
             }
@@ -617,7 +621,7 @@ export class CommentPane {
             }
             //this.commentPane.removeChild();
             for (let i: number = 0; i < comment.replyComments.length; i++) {
-                let replyCmt: CommentElementBox = comment.replyComments[i];
+                const replyCmt: CommentElementBox = comment.replyComments[i];
                 if (this.comments.containsKey(replyCmt)) {
                     this.comments.remove(replyCmt);
                 }

@@ -2,6 +2,19 @@
 
 ## [Unreleased]
 
+## 19.2.49 (2021-07-27)
+
+### Document Editor
+
+#### Bug Fixes
+
+- `#I333226` - Resolved the underline issue.
+- `#I330233` - Resolved the shape shifting issue in editing.
+- `#I332508` - Resolved the tracking of multiline tracking and empty paragraph revision.
+- `#I335858`, `#F148494` - Resolved the script error in component destroy.
+- `#F166420` - Resolved the SFDT exporting issue with shape.
+- `#I332253` - Resolved the cut paste hyperlink with track changes enabled.
+
 ## 19.2.48 (2021-07-20)
 
 ### Document Editor
@@ -9,7 +22,7 @@
 #### Bug Fixes
 
 - `#I329790`, `#I331351` - Resolved export issue for the Table with compatibility mode.
-- `#I335409` - Resolved userlist updating issue in restrict editing pane.
+- `#I335409` - Resolved user list updating issue in restrict editing pane.
 - `#I328976` - Table and document content is not layouted properly.
 - `#I331333` - Resolved the page unresponsive issue in splitting the nested tables.
 

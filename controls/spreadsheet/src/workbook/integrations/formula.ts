@@ -1,6 +1,6 @@
 import { Workbook, getSheetName, getSheetIndex, getSheet, SheetModel, RowModel, CellModel, getSheetIndexByName, getCell } from '../base/index';
 import { getSingleSelectedRange } from '../base/index';
-import { workbookFormulaOperation, getColumnHeaderText, aggregateComputation, AggregateArgs, getRangeIndexes } from '../common/index';
+import { workbookFormulaOperation, getColumnHeaderText, aggregateComputation, AggregateArgs, getRangeIndexes, getUniqueRange, removeUniquecol } from '../common/index';
 import { Calculate, ValueChangedArgs, CalcSheetFamilyItem, FormulaInfo, CommonErrors, getAlphalabel } from '../../calculate/index';
 import { IFormulaColl } from '../../calculate/common/interface';
 import { isNullOrUndefined } from '@syncfusion/ej2-base';
@@ -64,12 +64,16 @@ export class WorkbookFormula {
     private addEventListener(): void {
         this.parent.on(workbookFormulaOperation, this.performFormulaOperation, this);
         this.parent.on(aggregateComputation, this.aggregateComputation, this);
+        this.parent.on(getUniqueRange, this.getUniqueRange, this);
+        this.parent.on(removeUniquecol, this.removeUniquecol, this);
     }
 
     private removeEventListener(): void {
         if (!this.parent.isDestroyed) {
             this.parent.off(workbookFormulaOperation, this.performFormulaOperation);
             this.parent.off(aggregateComputation, this.aggregateComputation);
+            this.parent.off(getUniqueRange, this.getUniqueRange);
+            this.parent.off(removeUniquecol, this.removeUniquecol);
         }
     }
 
@@ -136,7 +140,7 @@ export class WorkbookFormula {
             }
             this.refreshCalculate(
                 <number>args.rowIndex, <number>args.colIndex, <string>args.value,
-                <boolean>args.isFormula, <number>args.sheetIndex
+                <boolean>args.isFormula, <number>args.sheetIndex, <boolean>args.isRefreshing
             );
             args.value = args.value ? args.value.toString().split('-*').join('-').split('/*').join('/').split('*/').
                 join('*').split('-/').join('-').split('*+').join('*').split('+*').join('+') : args.value;
@@ -208,6 +212,27 @@ export class WorkbookFormula {
         this.parent.sheets.forEach((sheet: SheetModel, idx: number) => {
             this.sheetInfo.push({ visibleName: sheet.name, sheet: 'Sheet' + sheet.id, index: idx });
         });
+    }
+
+    private getUniqueRange(args: { [key: string]: string[] }): void {
+        args.range = this.calculateInstance.uniqueRange;
+    }
+
+    private removeUniquecol(): void {
+        const cellAddr: string = this.parent.getActiveSheet().activeCell;
+        for (let i: number = 0; i < this.calculateInstance.uniqueRange.length; i++) {
+            if (this.calculateInstance.uniqueRange[i].split(':')[0] === cellAddr) {
+                const range: number[] = getRangeIndexes(this.calculateInstance.uniqueRange[i]);
+                this.calculateInstance.uniqueRange.splice(i, 1);
+                for (let j: number = range[0]; j <= range[2]; j++) {
+                    for (let k: number = range[1]; k <= range[3]; k++) {
+                        const cell: CellModel = getCell(j, k, this.parent.getActiveSheet());
+                        cell.formula = '';
+                        this.parent.updateCell({ value: '', formula: ''}, getRangeAddress([j, k]));
+                    }
+                }
+            }
+        }
     }
 
     private sheetDeletion(delSheetName: string, sheetId: number, index: number): void {
@@ -394,14 +419,15 @@ export class WorkbookFormula {
         }
     }
 
-    private refreshCalculate(rowIdx: number, colIdx: number, value: string, isFormula: boolean, sheetIdx: number): void {
+    private refreshCalculate(
+        rowIdx: number, colIdx: number, value: string, isFormula: boolean, sheetIdx: number, isRefreshing: boolean): void {
         const sheet: SheetModel = isNullOrUndefined(sheetIdx) ? this.parent.getActiveSheet() : getSheet(this.parent, sheetIdx);
         let sheetName: string = sheet.id + '';
         if (isFormula) {
             value = this.parseSheetRef(value);
             const cellArgs: ValueChangedArgs = new ValueChangedArgs(rowIdx + 1, colIdx + 1, value);
             const usedRange: number[] = [sheet.usedRange.rowIndex, sheet.usedRange.colIndex];
-            this.calculateInstance.valueChanged(sheetName, cellArgs, true, usedRange);
+            this.calculateInstance.valueChanged(sheetName, cellArgs, true, usedRange, isRefreshing);
             const referenceCollection: string[] = this.calculateInstance.randCollection;
             if (this.calculateInstance.isRandomVal === true) {
                 let rowId: number;

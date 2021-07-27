@@ -73,7 +73,7 @@ export class ListDialog {
     public get levelNumber(): number {
         if (this.listLevel.ownerBase instanceof WLevelOverride) {
             return (this.listLevel.ownerBase as WLevelOverride).levelNumber;
-        // eslint-disable-next-line max-len
+        /* eslint-disable-next-line max-len */
         } else if (this.listLevel.ownerBase instanceof WAbstractList && !isNullOrUndefined((this.listLevel.ownerBase as WAbstractList).levels)) {
             return (this.listLevel.ownerBase as WAbstractList).levels.indexOf(this.listLevel);
         } else {
@@ -137,7 +137,6 @@ export class ListDialog {
         this.wireAndBindEvent(locale, isRtl);
         this.documentHelper.dialog2.beforeOpen = this.loadListDialog;
         this.documentHelper.dialog2.close = this.closeListDialog;
-        // eslint-disable-next-line @typescript-eslint/naming-convention
         this.documentHelper.dialog2.position = { X: 'center', Y: 'top' };
         this.documentHelper.dialog2.show();
     }

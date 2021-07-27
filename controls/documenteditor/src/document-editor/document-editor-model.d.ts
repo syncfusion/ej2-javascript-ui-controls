@@ -66,6 +66,7 @@ export interface DocumentEditorModel extends ComponentModel{
     /**
      * Gets or sets the color used for highlighting the editable ranges or regions of the `currentUser` in Document Editor. The default value is "#FFFF00".
      * Remarks: If the visibility of text affected due this highlight color matching with random color applied for the track changes, then modify the color value of this property to resolve text visibility problem.
+     *
      * @default '#FFFF00'
      */
     userColor?: string;
@@ -401,168 +402,168 @@ export interface DocumentEditorModel extends ComponentModel{
     /**
      * Triggers whenever document changes in the document editor.
      *
-     * @event
+     * @event documentChange
      */
     documentChange?: EmitType<DocumentChangeEventArgs>;
 
     /**
      * Triggers whenever container view changes in the document editor.
      *
-     * @event
+     * @event viewChange
      */
     viewChange?: EmitType<ViewChangeEventArgs>;
 
     /**
      * Triggers whenever zoom factor changes in the document editor.
      *
-     * @event
+     * @event zoomFactorChange
      */
     zoomFactorChange?: EmitType<ZoomFactorChangeEventArgs>;
 
     /**
      * Triggers whenever selection changes in the document editor.
      *
-     * @event
+     * @event selectionChange
      */
     selectionChange?: EmitType<SelectionChangeEventArgs>;
 
     /**
      * Triggers whenever hyperlink is clicked or tapped in the document editor.
      *
-     * @event
+     * @event requestNavigate
      */
     requestNavigate?: EmitType<RequestNavigateEventArgs>;
 
     /**
      * Triggers whenever content changes in the document editor.
      *
-     * @event
+     * @event contentChange
      */
     contentChange?: EmitType<ContentChangeEventArgs>;
 
     /**
      * Triggers whenever key is pressed in the document editor.
      *
-     * @event
+     * @event keyDown
      */
     keyDown?: EmitType<DocumentEditorKeyDownEventArgs>;
 
     /**
      * Triggers whenever search results changes in the document editor.
      *
-     * @event
+     * @event searchResultsChange
      */
     searchResultsChange?: EmitType<SearchResultsChangeEventArgs>;
 
     /**
      * Triggers when the component is created
      *
-     * @event
+     * @event created
      */
     created?: EmitType<Object>;
 
     /**
      * Triggers when the component is destroyed.
      *
-     * @event
+     * @event destroyed
      */
     destroyed?: EmitType<Object>;
 
     /**
      * Triggers while selecting the custom context-menu option.
      *
-     * @event
+     * @event customContextMenuSelect
      */
     customContextMenuSelect?: EmitType<CustomContentMenuEventArgs>;
 
     /**
      * Triggers before opening the custom context-menu option.
      *
-     * @event
+     * @event customContextMenuBeforeOpen
      */
     customContextMenuBeforeOpen?: EmitType<BeforeOpenCloseCustomContentMenuEventArgs>;
 
     /**
      * Triggers before opening comment pane.
      *
-     * @event
+     * @event beforePaneSwitch
      */
     beforePaneSwitch?: EmitType<BeforePaneSwitchEventArgs>;
 
     /**
      * Triggers after inserting comment.
      *
-     * @event
+     * @event commentBegin
      */
     commentBegin?: EmitType<Object>;
 
     /**
      * Triggers after posting comment.
      *
-     * @event
+     * @event commentEnd
      */
     commentEnd?: EmitType<Object>;
 
     /**
      * Triggers before a file is opened.
      *
-     * @event
+     * @event beforeFileOpen
      */
     beforeFileOpen?: EmitType<BeforeFileOpenArgs>;
 
     /**
      * Triggers after inserting comment.
      *
-     * @event
+     * @event commentDelete
      */
     commentDelete?: EmitType<CommentDeleteEventArgs>;
 
     /**
      * Triggers on comment actions(Post, edit, reply, resolve, reopen).
      *
-     * @event
+     * @event beforeCommentAction
      */
     beforeCommentAction?: EmitType<CommentActionEventArgs>;
 
     /**
      * Triggers when TrackChanges enabled / disabled.
      *
-     * @event
+     * @event trackChange
      */
     trackChange?: EmitType<TrackChangeEventArgs>;
 
     /**
      * Triggers before form field fill.
      *
-     * @event
+     * @event beforeFormFieldFill
      */
     beforeFormFieldFill?: EmitType<FormFieldFillEventArgs>;
 
     /**
      * Triggers when the server side action fails.
      *
-     * @event
+     * @event serviceFailure
      */
     serviceFailure?: EmitType<ServiceFailureArgs>;
 
     /**
      * Triggers after form field fill.
      *
-     * @event
+     * @event afterFormFieldFill
      */
     afterFormFieldFill?: EmitType<FormFieldFillEventArgs>;
 
     /**
      * Triggers when the document editor collaborative actions (such as LockContent, SaveContent, UnlockContent) gets completed.
      *
-     * @event
+     * @event actionComplete
      */
     actionComplete?: EmitType<CollaborativeEditingEventArgs>;
 
     /**
      * Triggers when user interaction prevented in content control.
      *
-     * @event
+     * @event contentControl
      */
     contentControl?: EmitType<Object>;
 

@@ -85,6 +85,10 @@ export class BasicFormulas {
             description: 'Returns a value you specify if a formula evaluates to an error; otherwise, it returns the result of the formula.'
         },
         {
+            formulaName: 'UNIQUE', category: 'Lookup & Reference',
+            description: 'Returns a unique values from a range or array.'
+        },
+        {
             formulaName: 'CHOOSE', category: 'Lookup & Reference',
             description: 'Returns a value from a list, given an index number.'
         },
@@ -762,6 +766,208 @@ export class BasicFormulas {
             return this.parent.getErrorStrings()[CommonErrors.value];
         }
         return Math.round(result);
+    }
+
+    /**
+         * @hidden
+         * @param {string[]} args - specify the range.
+         * @returns {number | string} - Compute the unique.
+         */
+    public ComputeUNIQUE(...args: string[]): number | string {
+        const argArr: string[] = args; let result: string;
+        if (isNullOrUndefined(args) || args[0] === '' || argArr.length > 3) {
+            return this.parent.formulaErrorStrings[FormulasErrorsStrings.wrong_number_arguments];
+        }
+        const byCol: string = argArr[1] ? argArr[1].toUpperCase() : 'FALSE';
+        const exactlyOne: string = argArr[2] ? argArr[2].toUpperCase() : 'FALSE';
+        const uniqueCollection: string[] = [];
+        if (argArr[0].indexOf(':') > -1) {
+            const rangeSplit: string[] = argArr[0].split(':');
+            if (this.parent.isCellReference(rangeSplit[0]) && this.parent.isCellReference(rangeSplit[1])) {
+                if (this.parent.dependencyCollection.indexOf(argArr[0]) === -1) {
+                    this.parent.dependencyCollection.push(argArr[0]);
+                } else { this.clearDependency(argArr[0]); }
+                const j: number = argArr[0].indexOf(':'); let swap: number;
+                let rowIdx: number = this.parent.rowIndex(this.parent.substring(argArr[0], 0, j));
+                let colIdx: number = this.parent.colIndex(this.parent.substring(argArr[0], 0, j));
+                let endRowIdx: number = this.parent.rowIndex(this.parent.substring(argArr[0], j + 1, j + argArr[0].length - j - 1));
+                let endColIdx: number = this.parent.colIndex(this.parent.substring(argArr[0], j + 1, j + argArr[0].length - j - 1));
+                if (rowIdx > endRowIdx) {
+                    swap = endRowIdx; endRowIdx = rowIdx; rowIdx = swap;
+                }
+                if (colIdx > endColIdx) {
+                    swap = endColIdx; endColIdx = colIdx; colIdx = swap;
+                }
+                let sheetIndex: string | number = '';
+                if (argArr[0].indexOf('!') === 0) {
+                    sheetIndex = argArr[0]; sheetIndex = sheetIndex.replace('!', ''); sheetIndex = sheetIndex.indexOf('!');
+                    sheetIndex = argArr[0].substring(0, sheetIndex + 2);
+                }
+                argArr[0] = sheetIndex + getAlphalabel(colIdx) + rowIdx + ':' + getAlphalabel(endColIdx) + endRowIdx;
+
+                const cellRange: string | string[] = this.parent.getCellCollection(argArr[0]);
+                const colDiff: number = endColIdx - colIdx; const cellValues: string[] = [];
+                for (let i: number = 0; i < cellRange.length; i++) {
+                    cellValues.push(cellRange[i]);
+                }
+                if (byCol === 'FALSE') {
+                    if (colDiff === 0) {
+                        for (let i: number = 0; i < cellValues.length; i++) {
+                            uniqueCollection.push(this.parent.getValueFromArg(cellValues[i]));
+                        }
+                    } else {
+                        let temp: string = ''; let diff: number = colDiff;
+                        for (let i: number = 0; i < cellValues.length; i++) {
+                            if (i === cellValues.length - 1) {
+                                temp = temp + this.parent.getValueFromArg(cellValues[i]) + '+';
+                                uniqueCollection.push(temp.substring(0, temp.length - 1));
+                            }
+                            if (i <= diff) {
+                                temp = temp + this.parent.getValueFromArg(cellValues[i]) + '+';
+                            } else {
+                                uniqueCollection.push(temp.substring(0, temp.length - 1));
+                                diff = colDiff + i;
+                                temp = this.parent.getValueFromArg(cellValues[i]) + '+';
+                            }
+                        }
+                    }
+                } else {
+                    let temp: string = ''; const diff: number = colDiff + 1; const rowDiff: number = endRowIdx - rowIdx;
+                    for (let i: number = 0; i < diff; i++) {
+                        for (let j: number = 0; j <= rowDiff; j++) {
+                            temp = temp + this.parent.getValueFromArg(cellValues[j * diff + i]) + '+';
+                        }
+                        uniqueCollection.push(temp.substring(0, temp.length - 1));
+                        temp = '';
+                    }
+
+                }
+                let tmp: string[] = []; const tmp2: string[] = [];
+                for (let i: number = 0; i < uniqueCollection.length; i++) {
+                    if (tmp.indexOf(uniqueCollection[i]) === -1) {
+                        tmp.push(uniqueCollection[i]);
+                    } else {
+                        tmp2.push(uniqueCollection[i]);
+                    }
+                }
+                if (exactlyOne === 'TRUE') {
+                    const exactOne: string[] = [];
+                    for (let i: number = 0; i < tmp.length; i++) {
+                        if (tmp2.indexOf(tmp[i]) === -1) {
+                            exactOne.push(tmp[i]);
+                        }
+                    }
+                    tmp = exactOne;
+                }
+                const actCell: string = this.parent.actCell;
+                let actRowIdx: number = this.parent.rowIndex(actCell);
+                let actColIdx: number = this.parent.colIndex(actCell);
+                if (this.parent.dependencyLevel === 0) {
+                    if (byCol === 'FALSE') {
+                        for (let i: number = actRowIdx, diff: number = tmp.length + actRowIdx; i < diff; i++) {
+                            const splitValue: string[] = tmp[0].split('+');
+                            for (let j: number = actColIdx, diff2: number = splitValue.length + actColIdx; j < diff2; j++) {
+                                if (i === diff - 1 && j === diff2 - 1 &&
+                                    this.parent.uniqueRange.indexOf(this.parent.actCell + ':' + getAlphalabel(j) + i) === - 1) {
+                                    this.parent.uniqueRange.push(this.parent.actCell + ':' + getAlphalabel(j) + i);
+                                }
+                            }
+                        }
+                        for (let i: number = actRowIdx, diff: number = tmp.length + actRowIdx; i < diff; i++) {
+                            const splitValue: string[] = tmp[0].split('+');
+                            for (let j: number = actColIdx, diff2: number = splitValue.length + actColIdx; j < diff2; j++) {
+                                const value: string = this.parent.getValueFromArg(getAlphalabel(j) + i, true);
+                                if (value !== '' && value.indexOf('UNIQUE') !== 1) {
+                                    return this.parent.formulaErrorStrings[FormulasErrorsStrings.spill];
+                                }
+                            }
+                        }
+                    } else {
+                        for (let i: number = actColIdx, diff: number = tmp.length + actColIdx; i < diff; i++) {
+                            const splitValue: string[] = tmp[0].split('+');
+                            for (let j: number = actRowIdx, diff2: number = splitValue.length + actRowIdx; j < diff2; j++) {
+                                if (i === diff - 1 && j === diff2 - 1 &&
+                                    this.parent.uniqueRange.indexOf(this.parent.actCell + ':' + getAlphalabel(i) + j) === - 1) {
+                                    this.parent.uniqueRange.push(this.parent.actCell + ':' + getAlphalabel(i) + j);
+                                }
+                            }
+                        }
+                        for (let i: number = actColIdx, diff: number = tmp.length + actColIdx; i < diff; i++) {
+                            const splitValue: string[] = tmp[0].split('+');
+                            for (let j: number = actRowIdx, diff2: number = splitValue.length + actRowIdx; j < diff2; j++) {
+                                const value: string = this.parent.getValueFromArg(getAlphalabel(i) + j, true);
+                                if (value !== '' && value.indexOf('UNIQUE') !== 1) {
+                                    return this.parent.formulaErrorStrings[FormulasErrorsStrings.spill];
+                                }
+                            }
+                        }
+                    }
+                } else if (this.parent.dependencyLevel > 0 &&
+                    this.parent.getValueFromArg(getAlphalabel(actColIdx) + actRowIdx, true).indexOf('#SPILL!') > - 1) {
+                    return this.parent.formulaErrorStrings[FormulasErrorsStrings.spill];
+                }
+                if (byCol === 'FALSE') {
+                    for (let i: number = 0; i < tmp.length; i++) {
+                        const splitValue: string[] = tmp[i].split('+');
+                        if (i > 0) { actRowIdx++; actColIdx = this.parent.colIndex(actCell); }
+                        for (let i: number = 0; i < splitValue.length; i++) {
+                            (this.parent.parentObject as any).setValueRowCol(this.parent.getSheetID(this.parent.grid) + 1,
+                                splitValue[i], actRowIdx, actColIdx);
+                            if (splitValue[i + 1]) {
+                                actColIdx++;
+                            }
+                        }
+                    }
+                    result = tmp[0].split('+')[0];
+                } else {
+                    for (let i: number = 0; i < tmp.length; i++) {
+                        const splitValue: string[] = tmp[i].split('+');
+                        for (let i: number = 0; i < splitValue.length; i++) {
+                            (this.parent.parentObject as any).setValueRowCol(this.parent.getSheetID(this.parent.grid) + 1,
+                                splitValue[i], actRowIdx, actColIdx);
+                            if (splitValue[i + 1]) {
+                                actRowIdx++;
+                            } else {
+                                actColIdx++;
+                                actRowIdx = this.parent.rowIndex(actCell);
+                            }
+                        }
+                    }
+                    result = tmp[0].split('+')[0];
+                }
+            }
+        } else if (this.parent.isCellReference(argArr[0])) {
+            if (this.parent.dependencyCollection.indexOf(argArr[0]) === -1) {
+                this.parent.dependencyCollection.push(argArr[0]);
+            } else { this.clearDependency(argArr[0]); }
+            result = this.parent.getValueFromArg(argArr[0]);
+        }
+        return result;
+    }
+
+    public clearDependency(value: string): void {
+        const actCell: string = this.parent.actCell;
+        const actRowIdx: number = this.parent.rowIndex(actCell);
+        const actColIdx: number = this.parent.colIndex(actCell);
+        const j: number = value.indexOf(':');
+        const rowIndex: number = this.parent.rowIndex(this.parent.substring(value, 0, j));
+        const colIndex: number = this.parent.colIndex(this.parent.substring(value, 0, j));
+        const eRowIdx: number = this.parent.rowIndex(this.parent.substring(value, j + 1, j + value.length - j - 1));
+        const eColIdx: number = this.parent.colIndex(this.parent.substring(value, j + 1, j + value.length - j - 1));
+        const rowDiff: number = eRowIdx - rowIndex + actRowIdx; const colDiff: number = eColIdx - colIndex + actColIdx;
+        const formulaText: string = this.parent.getFormulaInfoTable().get('!' + this.parent.getSheetID(this.parent.grid) + '!' + actCell) ?
+            this.parent.getFormulaInfoTable().get('!' + this.parent.getSheetID(this.parent.grid) + '!' + actCell).getFormulaText() : '';
+        for (let i: number = actRowIdx; i <= rowDiff; i++) {
+            for (let j: number = actColIdx; j <= colDiff; j++) {
+                if (this.parent.dependencyLevel > 0 || formulaText.indexOf('UNIQUE') > - 1) {
+                    if (this.parent.getValueFromArg('!' + this.parent.getSheetID(this.parent.grid) + '!' +
+                        getAlphalabel(actColIdx) + actRowIdx, true).indexOf('#SPILL!') > - 1) {
+                        return;
+                    }
+                    (this.parent.parentObject as any).setValueRowCol(this.parent.getSheetID(this.parent.grid) + 1, null, i, j);
+                }
+            }
+        }
     }
 
     /**

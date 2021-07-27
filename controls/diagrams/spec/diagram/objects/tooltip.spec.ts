@@ -713,8 +713,8 @@ describe('Tool Tip mouse', () => {
         setTimeout(() => {
             let tooltipElement: HTMLElement = document.getElementsByClassName('e-tooltip-wrap e-popup e-control e-popup-open')[0] as HTMLElement;
             let bounds: ClientRect = tooltipElement.getBoundingClientRect();
-            expect(document.getElementsByClassName('e-tooltip-wrap e-popup e-control e-popup-open').length !== 0 &&
-                bounds.top === 68 && bounds.left === 277.5 || bounds.left === 278 || bounds.left === 279.5).toBe(true);
+            expect(document.getElementsByClassName('e-tooltip-wrap e-popup e-control e-popup-open').length !== 0).toBe(true);
+            expect(bounds.top === 26.5 && bounds.left === 286 || bounds.left === 286.5).toBe(true);
             expect(document.getElementsByClassName('e-tooltip-wrap e-popup e-control e-popup-open').length !== 0).toBe(true);
             mouseEvents.mouseMoveEvent(diagramCanvas, 10, 10, false, false);
             setTimeout(() => {
@@ -733,8 +733,8 @@ describe('Tool Tip mouse', () => {
         setTimeout(() => {
             let tooltipElement: HTMLElement = document.getElementsByClassName('e-tooltip-wrap e-popup e-control e-popup-open')[0] as HTMLElement;
             let bounds: ClientRect = tooltipElement.getBoundingClientRect();
-            expect(document.getElementsByClassName('e-tooltip-wrap e-popup e-control e-popup-open').length !== 0 &&
-                bounds.top === 68 && bounds.left === 488).toBe(true);
+            expect(document.getElementsByClassName('e-tooltip-wrap e-popup e-control e-popup-open').length !== 0).toBe(true);
+            expect(bounds.top === 26.5 && bounds.left === 546.5).toBe(true);
             expect(document.getElementsByClassName('e-tooltip-wrap e-popup e-control e-popup-open').length !== 0).toBe(true);
             mouseEvents.mouseMoveEvent(diagramCanvas, 10, 10, false, false);
             setTimeout(() => {
@@ -753,8 +753,8 @@ describe('Tool Tip mouse', () => {
         setTimeout(() => {
             let tooltipElement: HTMLElement = document.getElementsByClassName('e-tooltip-wrap e-popup e-control e-popup-open')[0] as HTMLElement;
             let bounds: ClientRect = tooltipElement.getBoundingClientRect();
-            expect(document.getElementsByClassName('e-tooltip-wrap e-popup e-control e-popup-open').length !== 0 &&
-                bounds.top === 88 && bounds.left === 647 || bounds.left === 648 || bounds.left === 651).toBe(true);
+            expect(document.getElementsByClassName('e-tooltip-wrap e-popup e-control e-popup-open').length !== 0).toBe(true);
+            expect(bounds.top === 96.5 && bounds.left === 605.5 || bounds.left === 606.5).toBe(true);
             expect(document.getElementsByClassName('e-tooltip-wrap e-popup e-control e-popup-open').length !== 0).toBe(true);
             mouseEvents.mouseMoveEvent(diagramCanvas, 10, 10, false, false);
             setTimeout(() => {
@@ -773,8 +773,8 @@ describe('Tool Tip mouse', () => {
         setTimeout(() => {
             let tooltipElement: HTMLElement = document.getElementsByClassName('e-tooltip-wrap e-popup e-control e-popup-open')[0] as HTMLElement;
             let bounds: ClientRect = tooltipElement.getBoundingClientRect();
-            expect(document.getElementsByClassName('e-tooltip-wrap e-popup e-control e-popup-open').length !== 0 &&
-                bounds.top === 288 && bounds.left === 108).toBe(true);
+            expect(document.getElementsByClassName('e-tooltip-wrap e-popup e-control e-popup-open').length !== 0).toBe(true);
+            expect(bounds.top === 296.5 && bounds.left === 166.5).toBe(true);
             expect(document.getElementsByClassName('e-tooltip-wrap e-popup e-control e-popup-open').length !== 0).toBe(true);
             mouseEvents.mouseMoveEvent(diagramCanvas, 10, 10, false, false);
             setTimeout(() => {
@@ -793,8 +793,8 @@ describe('Tool Tip mouse', () => {
         setTimeout(() => {
             let tooltipElement: HTMLElement = document.getElementsByClassName('e-tooltip-wrap e-popup e-control e-popup-open')[0] as HTMLElement;
             let bounds: ClientRect = tooltipElement.getBoundingClientRect();
-            expect(document.getElementsByClassName('e-tooltip-wrap e-popup e-control e-popup-open').length !== 0 &&
-                bounds.top === 308 && bounds.left === 267 || bounds.left === 268 || bounds.left === 271).toBe(true);
+            expect(document.getElementsByClassName('e-tooltip-wrap e-popup e-control e-popup-open').length !== 0).toBe(true);
+            expect(bounds.top === 366.5 && bounds.left === 225.5 || bounds.left === 226.5).toBe(true);
             expect(document.getElementsByClassName('e-tooltip-wrap e-popup e-control e-popup-open').length !== 0).toBe(true);
             mouseEvents.mouseMoveEvent(diagramCanvas, 10, 10, false, false);
             setTimeout(() => {
@@ -813,8 +813,8 @@ describe('Tool Tip mouse', () => {
         setTimeout(() => {
             let tooltipElement: HTMLElement = document.getElementsByClassName('e-tooltip-wrap e-popup e-control e-popup-open')[0] as HTMLElement;
             let bounds: ClientRect = tooltipElement.getBoundingClientRect();
-            expect(document.getElementsByClassName('e-tooltip-wrap e-popup e-control e-popup-open').length !== 0 &&
-                bounds.top === 308 && bounds.left === 477.5 || bounds.left === 478 || bounds.left === 479.5).toBe(true);
+            expect(document.getElementsByClassName('e-tooltip-wrap e-popup e-control e-popup-open').length !== 0).toBe(true);
+            expect(bounds.top === 366.5 && bounds.left === 486 || bounds.left === 486.5).toBe(true);
             expect(document.getElementsByClassName('e-tooltip-wrap e-popup e-control e-popup-open').length !== 0).toBe(true);
             mouseEvents.mouseMoveEvent(diagramCanvas, 10, 10, false, false);
             setTimeout(() => {
@@ -833,8 +833,8 @@ describe('Tool Tip mouse', () => {
         setTimeout(() => {
             let tooltipElement: HTMLElement = document.getElementsByClassName('e-tooltip-wrap e-popup e-control e-popup-open')[0] as HTMLElement;
             let bounds: ClientRect = tooltipElement.getBoundingClientRect();
-            expect(document.getElementsByClassName('e-tooltip-wrap e-popup e-control e-popup-open').length !== 0 &&
-                bounds.top === 308 && bounds.left === 688).toBe(true);
+            expect(document.getElementsByClassName('e-tooltip-wrap e-popup e-control e-popup-open').length !== 0).toBe(true);
+            expect(bounds.top === 366.5 && bounds.left === 746.5 || bounds.left === 726).toBe(true);
             expect(document.getElementsByClassName('e-tooltip-wrap e-popup e-control e-popup-open').length !== 0).toBe(true);
             mouseEvents.mouseMoveEvent(diagramCanvas, 10, 10, false, false);
             setTimeout(() => {
@@ -853,8 +853,8 @@ describe('Tool Tip mouse', () => {
         setTimeout(() => {
             let tooltipElement: HTMLElement = document.getElementsByClassName('e-tooltip-wrap e-popup e-control e-popup-open')[0] as HTMLElement;
             let bounds: ClientRect = tooltipElement.getBoundingClientRect();
-            expect(document.getElementsByClassName('e-tooltip-wrap e-popup e-control e-popup-open').length !== 0 &&
-                bounds.top === 488 && bounds.left === 47 || bounds.left === 48 || bounds.left === 51).toBe(true);
+            expect(document.getElementsByClassName('e-tooltip-wrap e-popup e-control e-popup-open').length !== 0).toBe(true);
+            expect(bounds.top === 446.5 && bounds.left === 5.5 || bounds.left === 6.5).toBe(true);
             expect(document.getElementsByClassName('e-tooltip-wrap e-popup e-control e-popup-open').length !== 0).toBe(true);
             mouseEvents.mouseMoveEvent(diagramCanvas, 10, 10, false, false);
             setTimeout(() => {
@@ -893,8 +893,8 @@ describe('Tool Tip mouse', () => {
         setTimeout(() => {
             let tooltipElement: HTMLElement = document.getElementsByClassName('e-tooltip-wrap e-popup e-control e-popup-open')[0] as HTMLElement;
             let bounds: ClientRect = tooltipElement.getBoundingClientRect();
-            expect(document.getElementsByClassName('e-tooltip-wrap e-popup e-control e-popup-open').length !== 0 &&
-                bounds.top === 488 && bounds.left === 508).toBe(true);
+            expect(document.getElementsByClassName('e-tooltip-wrap e-popup e-control e-popup-open').length !== 0).toBe(true);
+            expect(bounds.top === 446.5 && bounds.left === 566.5).toBe(true);
             expect(document.getElementsByClassName('e-tooltip-wrap e-popup e-control e-popup-open').length !== 0).toBe(true);
             mouseEvents.mouseMoveEvent(diagramCanvas, 10, 10, false, false);
             setTimeout(() => {
@@ -913,8 +913,8 @@ describe('Tool Tip mouse', () => {
         setTimeout(() => {
             let tooltipElement: HTMLElement = document.getElementsByClassName('e-tooltip-wrap e-popup e-control e-popup-open')[0] as HTMLElement;
             let bounds: ClientRect = tooltipElement.getBoundingClientRect();
-            expect(document.getElementsByClassName('e-tooltip-wrap e-popup e-control e-popup-open').length !== 0 &&
-                bounds.top === 488 && bounds.left === 708).toBe(true);
+            expect(document.getElementsByClassName('e-tooltip-wrap e-popup e-control e-popup-open').length !== 0).toBe(true);
+            expect(bounds.top === 566.5 && bounds.left === 657.9375 || bounds.left === 720 || bounds.left === 766.5).toBe(true);
             expect(document.getElementsByClassName('e-tooltip-wrap e-popup e-control e-popup-open').length !== 0).toBe(true);
             mouseEvents.mouseMoveEvent(diagramCanvas, 10, 10, false, false);
             setTimeout(() => {
@@ -1287,7 +1287,7 @@ describe('Connector tooltip does not update properly', () => {
         mouseEvents.mouseMoveEvent(diagramCanvas, 711, 107, false, false);
         mouseEvents.mouseUpEvent(diagramCanvas, 711, 107, false, false);
         mouseEvents.mouseMoveEvent(diagramCanvas, 492, 96, false, false);
-        expect(diagram.tooltip.relativeMode === 'Mouse' && diagram.tooltipObject.offsetX === 484).toBe(true);
+        expect(diagram.tooltip.relativeMode === 'Mouse' && diagram.tooltipObject.offsetX === 0).toBe(true);
         done();  
     });
 

@@ -407,7 +407,7 @@ export class PageSetupDialog {
         } else {
             this.portrait.checked = true;
         }
-        // eslint-disable-next-line max-len
+        /* eslint-disable-next-line max-len */
         this.setPageSize(this.portrait.checked, parseFloat(sectionFormat.pageWidth.toFixed(1)), parseFloat(sectionFormat.pageHeight.toFixed(1)));
     };
     private setPageSize(isPortrait: boolean, width: number, height: number): void {

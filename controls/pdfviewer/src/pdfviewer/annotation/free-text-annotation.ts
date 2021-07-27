@@ -777,11 +777,15 @@ export class FreeTextAnnotation {
 
     private updateFreeTextAnnotationSize(isSize : boolean): void {
         const inuptEleObj: FreeTextAnnotation = this;
+        const previousHeight: number = inuptEleObj.inputBoxElement.getBoundingClientRect().height;
         if (!isSize && !inuptEleObj.inputBoxElement.readOnly) {
             inuptEleObj.inputBoxElement.style.height = 'auto';
         }
+        const currentHeight: number = inuptEleObj.inputBoxElement.getBoundingClientRect().height;
+        const difference: number = currentHeight - previousHeight;
         // eslint-disable-next-line max-len
         inuptEleObj.inputBoxElement.style.height = inuptEleObj.inputBoxElement.readOnly ? inuptEleObj.inputBoxElement.style.height : inuptEleObj.inputBoxElement.scrollHeight + 5 + 'px';
+        inuptEleObj.inputBoxElement.style.height = (difference < 0 && !inuptEleObj.inputBoxElement.readOnly) ? (previousHeight + 'px') : inuptEleObj.inputBoxElement.style.height;
         let inputEleHeight: number = parseFloat(this.inputBoxElement.style.height);
         let inputEleWidth: number = parseFloat(this.inputBoxElement.style.width);
         inputEleHeight = ((inputEleHeight - 1) / inuptEleObj.pdfViewerBase.getZoomFactor());

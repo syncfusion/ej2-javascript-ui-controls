@@ -239,6 +239,7 @@ export const defaultLocale: object = {
     CEILING: 'Rounds a number up to the nearest multiple of a given factor.',
     PRODUCT: 'Multiplies a series of numbers and/or cells.',
     INT: 'Returns a number to the nearest integer.',
+    UNIQUE: 'Returns a unique values from a range or array',
     ROUNDUP: 'Rounds a number away from zero.',
     SUMPRODUCT: 'Returns sum of the product of given ranges of arrays.',
     SORT: 'Sorts a range of an array',

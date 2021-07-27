@@ -1,4 +1,4 @@
-import { CustomEditEventArgs, IGrid } from '../base/interface';
+import { IGrid } from '../base/interface';
 import { isNullOrUndefined, closest, extend } from '@syncfusion/ej2-base';
 import { Column } from '../models/column';
 import { InlineEditRender } from './inline-edit-renderer';
@@ -72,7 +72,7 @@ export class EditRender {
         let frForm: Element;
         const frzCols: boolean = gObj.isFrozenGrid();
         const index: number = gObj.getFrozenMode() === 'Right' && gObj.editSettings.mode === 'Normal' ? 1 : 0;
-        let form: Element = gObj.editSettings.mode === 'Dialog' ?
+        const form: Element = gObj.editSettings.mode === 'Dialog' ?
             select('#' + gObj.element.id + '_dialogEdit_wrapper .e-gridform', document) :
             gObj.element.getElementsByClassName('e-gridform')[index];
         const isVirtualFrozen: boolean = frzCols && this.parent.enableColumnVirtualization && args.isScroll;

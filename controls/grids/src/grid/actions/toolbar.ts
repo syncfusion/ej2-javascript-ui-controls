@@ -1,5 +1,5 @@
 import { L10n, EventHandler, extend, isNullOrUndefined, MouseEventArgs } from '@syncfusion/ej2-base';
-import { remove, isBlazor, select } from '@syncfusion/ej2-base';
+import { remove, select } from '@syncfusion/ej2-base';
 import { Toolbar as tool, ItemModel, ClickEventArgs } from '@syncfusion/ej2-navigations';
 import { IGrid, NotifyArgs } from '../base/interface';
 import * as events from '../base/constant';
@@ -178,7 +178,7 @@ export class Toolbar {
             this.element.classList.add('e-res-toolbar');
         }
         if (this.parent.toolbarTemplate) {
-            if (!isBlazor() && typeof (this.parent.toolbarTemplate) === 'string') {
+            if (typeof (this.parent.toolbarTemplate) === 'string') {
                 this.toolbar.appendTo(this.parent.toolbarTemplate);
                 this.element = this.toolbar.element;
             } else {

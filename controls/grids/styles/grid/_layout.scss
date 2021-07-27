@@ -1796,6 +1796,10 @@
       cursor: not-allowed;
     }
 
+    .e-pointercur {
+      cursor: grabbing;
+    }
+
     .e-cloneproperties.e-headerclone table {
       border-spacing: 0;
     }

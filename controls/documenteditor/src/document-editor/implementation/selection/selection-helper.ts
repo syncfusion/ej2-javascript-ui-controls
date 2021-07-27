@@ -2,7 +2,7 @@ import { DocumentEditor } from '../../document-editor';
 import {
     Widget, BodyWidget, TableRowWidget, TableWidget,
     LineWidget, ElementBox, TextElementBox, ListTextElementBox, ImageElementBox, Page, ParagraphWidget, TableCellWidget,
-    FieldElementBox, BlockWidget, BlockContainer, BookmarkElementBox, DocumentHelper, ShapeElementBox, CommentCharacterElementBox
+    FieldElementBox, BlockWidget, BlockContainer, BookmarkElementBox, DocumentHelper, CommentCharacterElementBox
 } from '../index';
 import { ElementInfo, IndexInfo, HelperMethods } from '../index';
 import { Point } from '../index';

@@ -3,7 +3,7 @@ import { EventHandler, KeyboardEventArgs, Browser, closest, isUndefined, isNullO
 import { getRangeIndexes, getRangeFromAddress, getIndexesFromAddress, getRangeAddress, isSingleCell } from '../../workbook/common/address';
 import { keyDown, editOperation, clearCopy, mouseDown, selectionComplete, enableToolbarItems, completeAction } from '../common/event';
 import { formulaBarOperation, formulaOperation, setActionData, keyUp, getCellPosition, deleteImage, focus, isLockedCells } from '../common/index';
-import { workbookEditOperation, getFormattedBarText, getFormattedCellObject, wrapEvent, isValidation, activeCellMergedRange, activeCellChanged } from '../../workbook/common/event';
+import { workbookEditOperation, getFormattedBarText, getFormattedCellObject, wrapEvent, isValidation, activeCellMergedRange, activeCellChanged, getUniqueRange, removeUniquecol } from '../../workbook/common/event';
 import { CellModel, SheetModel, getSheetName, getSheetIndex, getCell, getColumn, ColumnModel, getRowsHeight, getColumnsWidth, Workbook } from '../../workbook/base/index';
 import { getSheetNameFromAddress, getSheet } from '../../workbook/base/index';
 import { RefreshValueArgs } from '../integrations/index';
@@ -30,6 +30,9 @@ export class Edit {
     private selectionStart: number = null;
     private selectionEnd: number = null;
     private endFormulaRef: boolean;
+    private uniqueColl: string;
+    private uniqueCell: boolean;
+    private uniqueActCell: string = '';
 
     private keyCodes: { [key: string]: number } = {
         BACKSPACE: 8,
@@ -439,14 +442,22 @@ export class Edit {
             } else {
                 const sheet: SheetModel = this.parent.getActiveSheet();
                 let address: string = sheet.selectedRange;
-                this.parent.notify(beginAction, { action: 'cellDelete', eventArgs: { address: sheet.name + '!' + address }});
                 let range: number[] = getIndexesFromAddress(address);
                 range = range[0] > range[2] ? getSwapRange(range) : range;
                 address = getRangeAddress(range);
-                this.parent.clearRange(address, null, true);
-                this.parent.serviceLocator.getService<ICellRenderer>('cell').refreshRange(range);
-                this.parent.notify(selectionComplete, {});
-                this.parent.notify(completeAction, { action: 'cellDelete', eventArgs: { address: sheet.name + '!' + address }});
+                const isUnique: boolean = this.checkUniqueRange(range);
+                if (!isUnique) {
+                    this.parent.notify(beginAction, { action: 'cellDelete', eventArgs: { address: sheet.name + '!' + address }});
+                    this.parent.clearRange(address, null, true);
+                    this.parent.serviceLocator.getService<ICellRenderer>('cell').refreshRange(range);
+                    this.parent.notify(selectionComplete, {});
+                    this.parent.notify(completeAction, { action: 'cellDelete', eventArgs: { address: sheet.name + '!' + address }});
+                }
+                if (isUnique && this.uniqueColl.split(':')[0] === address.split(':')[0]) {
+                    this.updateUniqueRange('');
+                    this.parent.notify(removeUniquecol, null);
+                    this.uniqueColl = '';
+                }
             }
             break;
         }
@@ -763,7 +774,7 @@ export class Edit {
     }
 
     private updateEditedValue(tdRefresh: boolean = true): boolean {
-        const oldCellValue: string = this.editCellData.oldValue;
+        const oldCellValue: string = this.editCellData.oldValue; const newVal: string = this.editCellData.value;
         const oldValue: string = oldCellValue ? oldCellValue.toString().toUpperCase() : '';
         let isValidate: boolean = true;
         const address: string | number[] = this.editCellData.addr;
@@ -771,6 +782,16 @@ export class Edit {
         const sheet: SheetModel = this.parent.getActiveSheet();
         const cell: CellModel = getCell(cellIndex[0], cellIndex[1], sheet);
         const column: ColumnModel = getColumn(sheet, cellIndex[1]);
+        if (oldCellValue && oldCellValue.toString().indexOf('=UNIQUE(') > - 1 && this.editCellData.value === '') {
+            this.parent.notify(removeUniquecol, null);
+        }
+        const isUniqueRange: boolean = this.checkUniqueRange(cellIndex);
+        if (isUniqueRange && oldCellValue !== '' && this.editCellData.value === '') {
+            const rangeIdx: number[] = getRangeIndexes(this.uniqueColl);
+            if (getCell(rangeIdx[0], rangeIdx[1], sheet).value.indexOf('#SPILL!') === - 1) {
+                return isValidate;
+            }
+        }
         /* To set the before cell details for undo redo. */
         this.parent.notify(setActionData, { args: { action: 'beforeCellSave', eventArgs: { address: this.editCellData.addr } } });
         if (this.parent.allowDataValidation && ((cell && cell.validation) || (column && column.validation)))  {
@@ -805,19 +826,85 @@ export class Edit {
                 this.parent.notify(wrapEvent, { range: cellIndex, wrap: true, sheet: sheet });
             }
             if (tdRefresh) { this.parent.refreshNode(this.editCellData.element, eventArgs); }
+            if (isUniqueRange) {
+                if ((oldCellValue !== '' && this.editCellData.value === '') ||
+                (this.editCellData.formula && this.editCellData.formula.length > 1 && oldCellValue !== this.editCellData.formula)) {
+                    this.reApplyFormula();
+                } else {
+                    this.updateUniqueRange(newVal);
+                }
+            }
         }
         return isValidate;
+    }
+
+    private checkUniqueRange(cellIdx: number[]): boolean {
+        let isUnique: boolean = false; const args: {range: string[]} = {range : []};
+        this.parent.notify(getUniqueRange, args);
+        const collection: string[] = args.range;
+        for (let i: number = 0; i < collection.length; i++) {
+            const rangeIdx: number[] = getRangeIndexes(collection[i]);
+            for (let j: number = rangeIdx[0]; j <= rangeIdx[2]; j++) {
+                for (let k: number = rangeIdx[1]; k <= rangeIdx[3]; k++) {
+                    if (cellIdx[0] === j && cellIdx[1] === k) {
+                        isUnique = true; this.uniqueCell = true;
+                        this.uniqueColl = collection[i];
+                        break;
+                    }
+                }
+            }
+        }
+        return isUnique;
+    }
+
+    private updateUniqueRange(value: string): void {
+        const rangeIdx: number[] = getRangeIndexes(this.uniqueColl);
+        for (let j: number = rangeIdx[0]; j <= rangeIdx[2]; j++) {
+            for (let k: number = rangeIdx[1]; k <= rangeIdx[3]; k++) {
+                if (j === rangeIdx[0] && k === rangeIdx[1]) {
+                    this.parent.updateCell({value: '#SPILL!'}, getRangeAddress([j, k]));
+                } else {
+                    if (getRangeAddress([j, k]).split(':')[0] === this.editCellData.addr) {
+                        this.parent.updateCell({value: value}, getRangeAddress([j, k]));
+                    } else {
+                        this.parent.updateCell({value: ''}, getRangeAddress([j, k]));
+                    }
+                }
+            }
+        }
+    }
+
+    private reApplyFormula(): void {
+        const cellIdx: number[] = getRangeIndexes(this.uniqueColl);
+        const cell: CellModel = getCell(cellIdx[0], cellIdx[1], this.parent.getActiveSheet());
+        this.parent.updateCell({value: ''}, getRangeAddress([cellIdx[0], cellIdx[1]]));
+        const sheets: SheetModel[] = this.parent.sheets; let formula: string = cell.formula;
+        for (let i: number = 0; i < sheets.length; i++) {
+            if (formula.indexOf(sheets[i].name) > - 1) {
+                formula = formula.replace(sheets[i].name, '!' + i);
+            }
+        }
+        this.parent.computeExpression(formula);
+        this.uniqueCell = false;
+        if (this.uniqueActCell !== '') {
+            this.editCellData.value = this.uniqueActCell;
+            this.uniqueActCell = '';
+        }
     }
 
     private refreshDependentCellValue(rowIdx: number, colIdx: number, sheetIdx: number): void {
         if (rowIdx && colIdx) {
             rowIdx--; colIdx--;
             if ((this.editCellData.rowIndex !== rowIdx || this.editCellData.colIndex !== colIdx)
-                && this.parent.activeSheetIndex === sheetIdx) {
+                && this.parent.activeSheetIndex === sheetIdx|| this.uniqueCell) {
                 const td: HTMLElement = this.parent.getCell(rowIdx, colIdx);
                 if (td) {
                     const sheet: SheetModel = getSheet(this.parent as Workbook, sheetIdx);
                     const cell: CellModel = getCell(rowIdx, colIdx, sheet);
+                    const actCell: number[] = getRangeIndexes(sheet.activeCell);
+                    if (actCell[0] === rowIdx && actCell[1] === colIdx) {
+                        this.uniqueActCell = cell.value;
+                    }
                     const eventArgs: RefreshValueArgs = this.getRefreshNodeArgs(cell, rowIdx, colIdx);
                     this.parent.refreshNode(td, eventArgs);
                 }

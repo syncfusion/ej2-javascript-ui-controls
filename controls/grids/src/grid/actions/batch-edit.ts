@@ -1,4 +1,4 @@
-import { extend, addClass, removeClass, setValue, isBlazor, closest, select } from '@syncfusion/ej2-base';
+import { extend, addClass, removeClass, setValue, closest, select } from '@syncfusion/ej2-base';
 import { remove, classList } from '@syncfusion/ej2-base';
 import { FormValidator } from '@syncfusion/ej2-inputs';
 import { isNullOrUndefined, KeyboardEventArgs, isUndefined } from '@syncfusion/ej2-base';
@@ -471,16 +471,14 @@ export class BatchEdit {
             rowData: data ? data : gObj.getSelectedRecords()[0],
             cancel: false
         };
-        if (!isBlazor() || this.parent.isJsComponent) {
-            if (data) {
-                args.row = gObj.editModule.deleteRowUid ? gObj.getRowElementByUID(gObj.editModule.deleteRowUid)
-                    : gObj.getRows()[gObj.getCurrentViewRecords().indexOf(data)];
-            } else {
-                args.row = data ? gObj.getRows()[index] : selectedRows[0];
-            }
-            if (!args.row) {
-                return;
-            }
+        if (data) {
+            args.row = gObj.editModule.deleteRowUid ? gObj.getRowElementByUID(gObj.editModule.deleteRowUid)
+                : gObj.getRows()[gObj.getCurrentViewRecords().indexOf(data)];
+        } else {
+            args.row = data ? gObj.getRows()[index] : selectedRows[0];
+        }
+        if (!args.row) {
+            return;
         }
         // tslint:disable-next-line:max-func-body-length
         gObj.trigger(events.beforeBatchDelete, args, (beforeBatchDeleteArgs: BeforeBatchDeleteArgs) => {
@@ -838,12 +836,10 @@ export class BatchEdit {
             type: !isAdd ? 'edit' : 'add', cancel: false,
             foreignKeyData: rowObj && rowObj.foreignKeyData
         };
-        if (!isBlazor() || this.parent.isJsComponent) {
-            args.cell = cells[this.getColIndex(cells, this.getCellIdx(col.uid))];
-            args.row = row;
-            args.columnObject = col;
-            if (!args.cell) { return; }
-        }
+        args.cell = cells[this.getColIndex(cells, this.getCellIdx(col.uid))];
+        args.row = row;
+        args.columnObject = col;
+        if (!args.cell) { return; }
         gObj.trigger(events.cellEdit, args, (cellEditArgs: CellEditArgs) => {
             if (cellEditArgs.cancel) { return; }
             cellEditArgs.cell = cellEditArgs.cell ? cellEditArgs.cell : cells[this.getColIndex(cells, this.getCellIdx(col.uid))];
@@ -1061,10 +1057,8 @@ export class BatchEdit {
             cancel: false
         };
 
-        if (!isBlazor() || this.parent.isJsComponent) {
-            args.cell = this.form.parentElement;
-            args.columnObject = column;
-        }
+        args.cell = this.form.parentElement;
+        args.columnObject = column;
         return args;
     }
 

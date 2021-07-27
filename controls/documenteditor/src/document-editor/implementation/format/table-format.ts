@@ -33,12 +33,6 @@ export class WTableFormat {
         }
         this.setPropertyValue('cellSpacing', value);
     }
-    public set bottomMargin(value: number) {
-        this.setPropertyValue('bottomMargin', value);
-    }
-    public get tableAlignment(): TableAlignment {
-        return this.getPropertyValue('tableAlignment') as TableAlignment;
-    }
     public get leftMargin(): number {
         return this.getPropertyValue('leftMargin') as number;
     }
@@ -59,6 +53,12 @@ export class WTableFormat {
     }
     public get bottomMargin(): number {
         return this.getPropertyValue('bottomMargin') as number;
+    }
+    public set bottomMargin(value: number) {
+        this.setPropertyValue('bottomMargin', value);
+    }
+    public get tableAlignment(): TableAlignment {
+        return this.getPropertyValue('tableAlignment') as TableAlignment;
     }
     public set tableAlignment(value: TableAlignment) {
         this.setPropertyValue('tableAlignment', value);
@@ -92,7 +92,6 @@ export class WTableFormat {
     public set bidi(value: boolean) {
         this.setPropertyValue('bidi', value);
     }
-       
     public get horizontalPositionAbs(): HorizontalAlignment {
         return this.getPropertyValue('horizontalPositionAbs') as HorizontalAlignment;
     }

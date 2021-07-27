@@ -1,4 +1,4 @@
-import { createElement, remove, isBlazor } from '@syncfusion/ej2-base';
+import { createElement, remove } from '@syncfusion/ej2-base';
 import { Pager } from './pager';
 import { DropDownList, ChangeEventArgs } from '@syncfusion/ej2-dropdowns';
 
@@ -57,9 +57,10 @@ export class PagerDropDown {
         const dropDownDiv: Element = createElement('div', { className: 'e-pagerdropdown' });
         const defaultTextDiv: Element = createElement('div', { className: 'e-pagerconstant' });
         const input: HTMLElement = createElement('input', { attrs: { type: 'text', tabindex: '1' } });
-        this.pagerCons = createElement('span', { className: 'e-constant', innerHTML: isBlazor() ?
-            this.pagerModule.getLocalizedLabel('PagerDropDown') :
-            this.pagerModule.getLocalizedLabel('pagerDropDown') });
+        this.pagerCons = createElement('span', {
+            className: 'e-constant', innerHTML:
+                this.pagerModule.getLocalizedLabel('pagerDropDown')
+        });
         dropDownDiv.appendChild(input);
         defaultTextDiv.appendChild(this.pagerCons);
         this.pagerDropDownDiv.appendChild(dropDownDiv);
@@ -114,11 +115,9 @@ export class PagerDropDown {
     public refresh(): void {
         if (this.pagerCons) {
             if (this.pagerModule.pageSize === this.pagerModule.totalRecordsCount) {
-                this.pagerCons.innerHTML = isBlazor() ? this.pagerModule.getLocalizedLabel('PagerAllDropDown') :
-                    this.pagerModule.getLocalizedLabel('pagerAllDropDown');
+                this.pagerCons.innerHTML = this.pagerModule.getLocalizedLabel('pagerAllDropDown');
             } else {
-                this.pagerCons.innerHTML = isBlazor() ? this.pagerModule.getLocalizedLabel('PagerDropDown') :
-                    this.pagerModule.getLocalizedLabel('pagerDropDown');
+                this.pagerCons.innerHTML = this.pagerModule.getLocalizedLabel('pagerDropDown');
             }
         }
     }

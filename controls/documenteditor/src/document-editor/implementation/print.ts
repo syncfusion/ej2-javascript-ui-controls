@@ -1,3 +1,4 @@
+/* eslint-disable */
 import { DocumentHelper } from './viewer';
 import { Page } from './viewer/page';
 import { isNullOrUndefined } from '@syncfusion/ej2-base';
@@ -69,48 +70,31 @@ export class Print {
 
     /**
      * Generate Document Image.
+     *
+     * @param documentHelper
+     * @param pageNumber
+     * @param imageType
      * @private
      */
     public exportAsImage(documentHelper: DocumentHelper, pageNumber: number, imageType: string): HTMLImageElement {
         let image: HTMLImageElement;
         if (!isNullOrUndefined(pageNumber) && pageNumber <= documentHelper.pages.length && pageNumber >= 1) {
-            let printPage: Page = documentHelper.pages[(pageNumber - 1)];
-            let pageHeight: number = printPage.boundingRectangle.height;
-            let pageWidth: number = printPage.boundingRectangle.width;
+            const prntPage: Page = documentHelper.pages[(pageNumber - 1)];
+            const pgHeight: number = prntPage.boundingRectangle.height;
+            const pgWidth: number = prntPage.boundingRectangle.width;
             documentHelper.render.isPrinting = true;
-            documentHelper.render.renderWidgets(printPage, 0, 0, 0, 0);
+            documentHelper.render.renderWidgets(prntPage, 0, 0, 0, 0);
             //get the image data from the canvas
-            let imageData: string = documentHelper.render.pageCanvas.toDataURL(imageType, 1);
+            const imageData: string = documentHelper.render.pageCanvas.toDataURL(imageType, 1);
             documentHelper.render.isPrinting = false;
             image = new Image();
             image.src = imageData;
             // tslint:disable-next-line:max-line-length
-            image.setAttribute('style', 'margin:0px;display:block;width:' + pageWidth.toString() + 'px;height:' + pageHeight.toString() + 'px;');
+            image.setAttribute('style', 'margin:0px;display:block;width:' + pgWidth.toString() + 'px;height:' + pgHeight.toString() + 'px;');
         }
         return image;
     }
 
-    /**
-     * Generate Document Image.
-     * @private
-     */
-    public generateDoumentImages(documentHelper: DocumentHelper, pageNumber: number): HTMLImageElement {
-        let image: HTMLImageElement;
-        if (!isNullOrUndefined(pageNumber) && pageNumber <= documentHelper.pages.length && pageNumber >= 1) {
-            let printPage: Page = documentHelper.pages[(pageNumber - 1)];
-            let pageHeight: number = printPage.boundingRectangle.height;
-            let pageWidth: number = printPage.boundingRectangle.width;
-            documentHelper.render.isPrinting = true;
-            documentHelper.render.renderWidgets(printPage, 0, 0, 0, 0);
-            let canvasURL: string = documentHelper.render.pageCanvas.toDataURL('image/jpeg');
-            documentHelper.render.isPrinting = false;
-            image = new Image();
-            image.src = canvasURL;
-            // tslint:disable-next-line:max-line-length
-            image.setAttribute('style', 'margin:0px;display:block;width:' + pageWidth.toString() + 'px;height:' + pageHeight.toString() + 'px;');
-        }
-        return image;
-    }
     /**
      * Generates print content.
      *

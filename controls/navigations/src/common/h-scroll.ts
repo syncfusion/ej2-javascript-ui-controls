@@ -440,17 +440,9 @@ export class HScroll extends Component<HTMLElement> implements INotifyPropertyCh
             }
         }
         if (scrollLeft === 0) {
-            if ((!this.contains(rootEle, CLS_RTL) || this.browserCheck) || this.ieCheck) {
-                this.arrowDisabling(navLeftEle, navRightEle);
-            } else {
-                this.arrowDisabling(navRightEle, navLeftEle);
-            }
+            this.arrowDisabling(navLeftEle, navRightEle);
         } else if (Math.ceil(width + scrollLeft + .1) >= target.scrollWidth) {
-            if ((!this.contains(rootEle, CLS_RTL) || this.browserCheck) || this.ieCheck) {
-                this.arrowDisabling(navRightEle, navLeftEle);
-            } else {
-                this.arrowDisabling(navLeftEle, navRightEle);
-            }
+            this.arrowDisabling(navRightEle, navLeftEle);
         } else {
             const disEle: HTEle = <HTEle>this.element.querySelector('.' + CLS_HSCROLLNAV + '.' + CLS_DISABLE);
             if (disEle) {

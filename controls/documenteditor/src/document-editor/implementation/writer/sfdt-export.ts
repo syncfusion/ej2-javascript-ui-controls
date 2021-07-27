@@ -1187,10 +1187,6 @@ export class SfdtExport {
                 }
                 offset = -1;
             }
-            if (!this.isExport && !inline.hasOwnProperty('text') && this.owner.enableTrackChanges && !this.isPartialExport) {
-                let index: number = inlines.length - 1;
-                inlines.splice(index, 1);
-            }
             if (ended) {
                 break;
             }

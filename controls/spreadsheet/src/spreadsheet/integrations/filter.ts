@@ -2,15 +2,16 @@
 import { Spreadsheet, locale, dialog, mouseDown, renderFilterCell, initiateFilterUI, FilterInfoArgs, getStartEvent } from '../index';
 import { reapplyFilter, filterCellKeyDown, DialogBeforeOpenEventArgs } from '../index';
 import { getFilteredColumn, cMenuBeforeOpen, filterByCellValue, clearFilter, getFilterRange, applySort, getCellPosition } from '../index';
-import { filterRangeAlert, filterComplete, beforeFilter, clearAllFilter, getFilteredCollection, sortImport, beforeDelete, sheetsDestroyed, clear } from '../../workbook/common/event';
-import { FilterCollectionModel, getRangeIndexes, Workbook, getCellAddress, updateFilter, ColumnModel, beforeInsert, getColIndex, SortCollectionModel, getDataRange, inRange } from '../../workbook/index';
-import { getIndexesFromAddress, getSwapRange, SheetModel, getColumnHeaderText, CellModel } from '../../workbook/index';
-import { getData, getTypeFromFormat, getCell, getCellIndexes, getRangeAddress, getSheet } from '../../workbook/index';
+import { filterRangeAlert, clearAllFilter, getFilteredCollection, beforeDelete, sheetsDestroyed } from '../../workbook/common/event';
+import { FilterCollectionModel, getRangeIndexes, getCellAddress, updateFilter, ColumnModel, beforeInsert } from '../../workbook/index';
+import { getIndexesFromAddress, getSwapRange, getColumnHeaderText, CellModel, getDataRange } from '../../workbook/index';
+import { getData, Workbook, getTypeFromFormat, getCell, getCellIndexes, getRangeAddress, getSheet, inRange } from '../../workbook/index';
+import { SheetModel, sortImport, clear, getColIndex, SortCollectionModel } from '../../workbook/index';
 import { FilterOptions, BeforeFilterEventArgs, FilterEventArgs, ClearOptions } from '../../workbook/common/interface';
-import { L10n, getComponent, EventHandler, isUndefined, isNullOrUndefined } from '@syncfusion/ej2-base';
+import { L10n, getComponent, EventHandler, isUndefined, isNullOrUndefined, Browser } from '@syncfusion/ej2-base';
 import { Dialog } from '../services';
 import { IFilterArgs, PredicateModel, ExcelFilterBase, beforeFltrcMenuOpen, CheckBoxFilterBase } from '@syncfusion/ej2-grids';
-import { beforeCustomFilterOpen, parentsUntil, filterCboxValue } from '@syncfusion/ej2-grids';
+import { filterCmenuSelect, parentsUntil, filterCboxValue, filterDialogCreated, filterDialogClose } from '@syncfusion/ej2-grids';
 import { Button } from '@syncfusion/ej2-buttons';
 import { Query, DataManager, Predicate } from '@syncfusion/ej2-data';
 import { SortOrder, MenuItemModel } from '@syncfusion/ej2-navigations';
@@ -56,7 +57,7 @@ export class Filter {
         this.parent.on(renderFilterCell, this.renderFilterCellHandler, this);
         this.parent.on(clearAllFilter, this.clearAllFilterHandler, this);
         this.parent.on(beforeFltrcMenuOpen, this.beforeFilterMenuOpenHandler, this);
-        this.parent.on(beforeCustomFilterOpen, this.beforeCustomFilterOpenHandler, this);
+        this.parent.on(filterCmenuSelect, this.closeDialog, this);
         this.parent.on(reapplyFilter, this.reapplyFilterHandler, this);
         this.parent.on(filterByCellValue, this.filterByCellValueHandler, this);
         this.parent.on(clearFilter, this.clearFilterHandler, this);
@@ -72,6 +73,8 @@ export class Filter {
         this.parent.on(beforeDelete, this.beforeDeleteHandler, this);
         this.parent.on(sheetsDestroyed, this.deleteSheetHandler, this);
         this.parent.on(clear, this.clearHanlder, this);
+        this.parent.on(filterDialogCreated, this.filterDialogCreatedHandler, this);
+        this.parent.on(filterDialogClose, this.removeFilterClass, this);
     }
 
     private removeEventListener(): void {
@@ -82,7 +85,7 @@ export class Filter {
             this.parent.off(renderFilterCell, this.renderFilterCellHandler);
             this.parent.off(clearAllFilter, this.clearAllFilterHandler);
             this.parent.off(beforeFltrcMenuOpen, this.beforeFilterMenuOpenHandler);
-            this.parent.off(beforeCustomFilterOpen, this.beforeCustomFilterOpenHandler);
+            this.parent.off(filterCmenuSelect, this.closeDialog);
             this.parent.off(reapplyFilter, this.reapplyFilterHandler);
             this.parent.off(filterByCellValue, this.filterByCellValueHandler);
             this.parent.off(clearFilter, this.clearFilterHandler);
@@ -98,6 +101,8 @@ export class Filter {
             this.parent.off(beforeDelete, this.beforeDeleteHandler);
             this.parent.off(sheetsDestroyed, this.deleteSheetHandler);
             this.parent.off(clear, this.clearHanlder);
+            this.parent.off(filterDialogCreated, this.filterDialogCreatedHandler);
+            this.parent.off(filterDialogClose, this.removeFilterClass);
         }
     }
 
@@ -266,13 +271,29 @@ export class Filter {
      * @returns {void} - Removes all the filter related collections for the active sheet.
      */
     private removeFilter(sheetIdx: number): void {
+        const range: number[] = this.filterRange.get(sheetIdx).slice();
+        const rangeAddr: string = getRangeAddress(range);
+        const eventArgs: BeforeFilterEventArgs = { range: rangeAddr, cancel: false };
+        this.parent.notify(beginAction, { action: 'filter', eventArgs: eventArgs });
+        if (eventArgs.cancel) { return; }
         if (this.filterCollection.get(sheetIdx).length) {
             this.parent.clearFilter();
         }
-        const range: number[] = this.filterRange.get(sheetIdx).slice();
         this.filterRange.delete(sheetIdx);
         this.filterCollection.delete(sheetIdx);
         this.refreshFilterRange(range, true, sheetIdx);
+        if (this.parent.filterCollection) {
+            let count: number = 0; let filterColl: FilterCollectionModel;
+            for (let i: number = 0, len: number = this.parent.filterCollection.length; i < len; i++) {
+                filterColl = this.parent.filterCollection[count];
+                if (filterColl.sheetIndex === sheetIdx && filterColl.filterRange === rangeAddr) {
+                    this.parent.filterCollection.splice(count, 1);
+                } else {
+                    count++;
+                }
+            }
+        }
+        this.parent.notify(completeAction, { action: 'filter', eventArgs: eventArgs });
     }
     /**
      * Handles filtering cell value based on context menu.
@@ -485,7 +506,13 @@ export class Filter {
             const excelFilter: Dialog = getComponent(filterPopup, 'dialog');
             EventHandler.remove(filterPopup, getStartEvent(), this.filterMouseDownHandler);
             if (excelFilter) { excelFilter.hide(); }
+            this.removeFilterClass();
         }
+    }
+
+    private removeFilterClass(): void {
+        if (this.parent.element.style.position === 'relative') { this.parent.element.style.position = ''; }
+        if (this.parent.element.classList.contains('e-filter-open')) { this.parent.element.classList.remove('e-filter-open'); }
     }
 
     /**
@@ -509,7 +536,7 @@ export class Filter {
             if (this.isPopupOpened()) {
                 this.closeDialog();
             }
-            this.openDialog(target, pos.left, pos.top);
+            this.openDialog(target, pos.left, target ? target.getBoundingClientRect().bottom : pos.top);
         } else { args.isFilterCell = false; }
     }
 
@@ -520,13 +547,14 @@ export class Filter {
      * @returns {void} - Opens the filter popup dialog on filter button click.
      */
     private filterMouseDownHandler(e: MouseEvent & TouchEvent): void {
+        if (Browser.isDevice && e.type === 'mousedown') { return; }
         const target: HTMLElement = e.target as HTMLElement;
         if (target.classList.contains('e-filter-icon')) {
             if (this.isPopupOpened()) {
                 this.closeDialog();
                 return;
             }
-            this.openDialog(target, e.x, e.y);
+            this.openDialog(target, e.x, target.getBoundingClientRect().bottom);
         } else if (this.isPopupOpened()) {
             if (!target.classList.contains('e-searchinput') && !target.classList.contains('e-searchclear')
                 && (target.offsetParent && !target.offsetParent.classList.contains('e-filter-popup'))) {
@@ -566,7 +594,10 @@ export class Filter {
                 if (value) { checkBoxData = new DataManager(jsonData.slice(index)); }
                 return !!value;
             });
-
+            const offset: ClientRect = this.parent.element.getBoundingClientRect();
+            xPos -= offset.left; yPos -= offset.top;
+            this.parent.element.style.position = 'relative';
+            this.parent.element.classList.add('e-filter-open');
             const options: IFilterArgs = {
                 type: this.getColumnType(sheet, colIndex, range), field: field, displayName: displayName || 'Column ' + field,
                 dataSource: checkBoxData, height: this.parent.element.classList.contains('e-bigger') ? 800 : 500, columns: [],
@@ -579,9 +610,24 @@ export class Filter {
             const filterPopup: HTMLElement = document.querySelector('.e-filter-popup');
             if (filterPopup && filterPopup.id.includes(this.parent.element.id)) {
                 EventHandler.add(filterPopup, getStartEvent(), this.filterMouseDownHandler, this);
+                filterPopup.style.top = '0px';
+                filterPopup.style.visibility = 'hidden';
+                if (filterPopup.classList.contains('e-hide')) { filterPopup.classList.remove('e-hide'); }
+                let height: number = filterPopup.getBoundingClientRect().height;
+                if (height < 400) { height = 400; }
+                let popupOpenArea: number = offset.height - yPos;
+                filterPopup.style.top = (height > popupOpenArea ? (yPos - Math.abs(height - popupOpenArea)) : yPos) + 'px';
+                filterPopup.style.visibility = '';
             }
             this.parent.hideSpinner();
         });
+    }
+
+    private filterDialogCreatedHandler(): void {
+        const filterPopup: HTMLElement = document.querySelector('.e-filter-popup');
+        if (filterPopup && filterPopup.id.includes(this.parent.element.id) && filterPopup.classList.contains('e-popup-close')) {
+            filterPopup.classList.add('e-hide');
+        }
     }
 
     /**
@@ -777,15 +823,6 @@ export class Filter {
         }
         return (num > str && num > date && num > time) ? 'number' : (str > num && str > date && str > time) ? 'string'
             : (date > num && date > str && date > time) ? 'date' : 'datetime';
-    }
-
-    /**
-     * Triggers before the custom filter dialog opened.
-     *
-     * @returns {void} - Triggers before the custom filter dialog opened.
-     */
-    private beforeCustomFilterOpenHandler(): void {
-        this.closeDialog();
     }
 
     /**

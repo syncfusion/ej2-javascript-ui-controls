@@ -1,4 +1,3 @@
-/* eslint-disable */
 import { PdfViewer, PdfViewerBase } from '../index';
 
 /**
@@ -60,7 +59,12 @@ export class BlazorUiAdaptor {
     private mobileSearchNextOccurenceElement: HTMLElement = null;
     private cssClass: string = 'e-overlay';
     private disableClass: string = ' e-overlay';
-
+    /**
+     * Initialize the constructor of blazorUIadapater.
+     *
+     * @param { PdfViewer } pdfviewer - Specified PdfViewer class.
+     * @param { PdfViewerBase } pdfViewerBase - The pdfViewerBase.
+     */
     constructor(pdfviewer: PdfViewer, pdfViewerBase: PdfViewerBase) {
         this.pdfViewer = pdfviewer;
         this.pdfViewerBase = pdfViewerBase;
@@ -126,15 +130,25 @@ export class BlazorUiAdaptor {
         this.mobileSearchPreviousOccurenceElement = this.pdfViewerBase.getElement('_prev_occurrence') as HTMLElement;
         this.mobileSearchNextOccurenceElement = this.pdfViewerBase.getElement('_next_occurrence') as HTMLElement;
     }
-
+    /**
+     * Update the total page.
+     * @returns {void}
+     */
     public updateTotalPage() : void {
         this.totalPageElement.textContent = this.pdfViewer.localeObj.getConstant('of') + this.pdfViewerBase.pageCount.toString();
     }
-
+    /**
+     * Update current page.
+     * @param {number} pageNumber - The pageNumber.
+     * @returns {void}
+     */
     public updateCurrentPage(pageNumber: number) : void {
         this.currentPageBoxElement.value = pageNumber.toString();
     }
-
+    /**
+     * Load the PDF document.
+     * @returns {void}
+     */
     public loadDocument(): void {
         if (this.pdfViewer.enableNavigation) {
             this.currentPageBoxElementContainer.classList.remove(this.cssClass);
@@ -211,7 +225,10 @@ export class BlazorUiAdaptor {
         }
     }
 
-    // tslint:disable-next-line
+    /**
+     * Reset the toolbar.
+     * @returns {void}
+     */
     public resetToolbar(): void {
         if (this.pdfViewer.enableToolbar) {
             this.currentPageBoxElement.value = '0';
@@ -334,7 +351,11 @@ export class BlazorUiAdaptor {
             }
         }
     }
-
+    /**
+     * when the page changes.
+     * @param {number} currentPageNumber - The current page number.
+     * @returns {void}
+     */
     public pageChanged(currentPageNumber: number): void {
         if (this.pdfViewer.enableNavigation) {
             this.currentPageBoxElement.value = currentPageNumber.toString();
@@ -366,7 +387,11 @@ export class BlazorUiAdaptor {
             }
         }
     }
-
+    /**
+     * @param {string} item - The current item.
+     * @param {boolean} enable - To enable the item or not.
+     * @returns {void}
+     */
     public updateUndoRedoButton(item: string, enable: boolean): void {
         if (item === 'undo') {
             if (enable) {
@@ -387,7 +412,9 @@ export class BlazorUiAdaptor {
             }
         }
     }
-
+    /**
+     * @returns {void}
+     */
     public  disableUndoRedoButton(): void {
         if (!this.isEnabled(this.undoElement)) {
             this.undoElement.className += this.disableClass;
@@ -396,7 +423,11 @@ export class BlazorUiAdaptor {
             this.redoElement.className += this.disableClass;
         }
     }
-
+    /**
+     * @param {boolean} isEnable - To enable the item or not.
+     * @param {boolean} isProperitiesChange - To enable the item or not.
+     * @returns {void}
+     */
     public enableAnnotationPropertiesTool(isEnable: boolean, isProperitiesChange: boolean): void {
         if (isProperitiesChange) {
             if (isEnable) {
@@ -434,7 +465,11 @@ export class BlazorUiAdaptor {
             }
         }
     }
-
+    /**
+     * @param {boolean} isEnable - To enable the item or not.
+     * @param {boolean} isProperitiesChange - To enable the item or not.
+     * @returns {void}
+     */
     public enableFreeTextAnnotationPropertiesTools(isEnable: boolean, isProperitiesChange: boolean): void {
         if (isProperitiesChange && isEnable) {
             this.annotationColorElement.classList.remove(this.cssClass);
@@ -450,7 +485,11 @@ export class BlazorUiAdaptor {
             this.annotationCommentPanelElement.classList.remove(this.cssClass);
         }
     }
-
+    /**
+     * @param {boolean} isEnable - To enable the item or not.
+     * @param {boolean} isPropertiesChange - To enable the item or not.
+     * @returns {void}
+     */
     public enableStampAnnotationPropertiesTools(isEnable: boolean, isPropertiesChange: boolean): void {
         if (isEnable) {
             this.annotationOpacityElement.classList.remove(this.cssClass);
@@ -495,7 +534,11 @@ export class BlazorUiAdaptor {
             this.annotationTextPropertiesElement.className += this.disableClass;
         }
     }
-
+    /**
+     * @param {boolean} isEnable - To enable the item or not.
+     * @param {boolean} isProperitiesChange - To enable the item or not.
+     * @returns {void}
+     */
     public enableSignaturePropertiesTools(isEnable: boolean, isProperitiesChange: boolean): void {
         if (isEnable) {
             this.annotationStrokeColorElement.classList.remove(this.cssClass);
@@ -539,7 +582,9 @@ export class BlazorUiAdaptor {
             this.annotationTextPropertiesElement.className += this.disableClass;
         }
     }
-
+    /**
+     * @returns {void}
+     */
     public annotationAdd(): void {
         if (!this.isEnabled(this.annotationColorElement)) {
             this.annotationColorElement.className += this.disableClass;
@@ -569,7 +614,9 @@ export class BlazorUiAdaptor {
             this.annotationTextPropertiesElement.className += this.disableClass;
         }
     }
-
+    /**
+     * @returns {void}
+     */
     public annotationUnSelect(): void {
         if (!this.isEnabled(this.annotationColorElement)) {
             this.annotationColorElement.className += this.disableClass;
@@ -602,80 +649,90 @@ export class BlazorUiAdaptor {
             this.annotationDeleteElement.className += this.disableClass;
         }
     }
-
+    /**
+     * @param {string} annotationType - The annotationType.
+     * @returns {void}
+     */
     public annotationSelect(annotationType: string): void {
-    {
-            if (annotationType === 'FreeText') {
-                this.annotationColorElement.classList.remove(this.cssClass);
-                this.annotationStrokeColorElement.classList.remove(this.cssClass);
-                this.annotationThicknessElement.classList.remove(this.cssClass);
-                this.annotationOpacityElement.classList.remove(this.cssClass);
-                this.annotationFontColorElement.classList.remove(this.cssClass);
-                this.annotationFontFamilyElement.classList.remove(this.cssClass);
-                this.annotationFontSizeElement.classList.remove(this.cssClass);
-                this.annotationTextAlignElement.classList.remove(this.cssClass);
-                this.annotationTextPropertiesElement.classList.remove(this.cssClass);
-            }
-            if (annotationType === 'Shape' || annotationType === 'Measure') {
-                this.annotationColorElement.classList.remove(this.cssClass);
-                this.annotationStrokeColorElement.classList.remove(this.cssClass);
-                this.annotationThicknessElement.classList.remove(this.cssClass);
-                this.annotationOpacityElement.classList.remove(this.cssClass);
-                if (!this.isEnabled(this.annotationFontColorElement)) {
-                    this.annotationFontColorElement.className += this.disableClass;
-                }
-                if (!this.isEnabled(this.annotationFontFamilyElement)) {
-                    this.annotationFontFamilyElement.className += this.disableClass;
-                }
-                if (!this.isEnabled(this.annotationFontSizeElement)) {
-                    this.annotationFontSizeElement.className += this.disableClass;
-                }
-                if (!this.isEnabled(this.annotationTextAlignElement)) {
-                    this.annotationTextAlignElement.className += this.disableClass;
-                }
-                if (!this.isEnabled(this.annotationTextPropertiesElement)) {
-                    this.annotationTextPropertiesElement.className += this.disableClass;
-                }
-            }
-            if (annotationType === 'TextMarkup') {
-                this.annotationColorElement.classList.remove(this.cssClass);
-                if (!this.isEnabled(this.annotationStrokeColorElement)) {
-                    this.annotationStrokeColorElement.className += this.disableClass;
-                }
-                if (!this.isEnabled(this.annotationThicknessElement)) {
-                    this.annotationThicknessElement.className += this.disableClass;
-                }
-                this.annotationOpacityElement.classList.remove(this.cssClass);
-                if (!this.isEnabled(this.annotationFontColorElement)) {
-                    this.annotationFontColorElement.className += this.disableClass;
-                }
-                if (!this.isEnabled(this.annotationFontFamilyElement)) {
-                    this.annotationFontFamilyElement.className += this.disableClass;
-                }
-                if (!this.isEnabled(this.annotationFontSizeElement)) {
-                    this.annotationFontSizeElement.className += this.disableClass;
-                }
-                if (!this.isEnabled(this.annotationTextAlignElement)) {
-                    this.annotationTextAlignElement.className += this.disableClass;
-                }
-                if (!this.isEnabled(this.annotationTextPropertiesElement)) {
-                    this.annotationTextPropertiesElement.className += this.disableClass;
-                }
-            }
-            this.annotationDeleteElement.classList.remove(this.cssClass);
-            this.annotationCommentPanelElement.classList.remove(this.cssClass);
+        if (annotationType === 'FreeText') {
+            this.annotationColorElement.classList.remove(this.cssClass);
+            this.annotationStrokeColorElement.classList.remove(this.cssClass);
+            this.annotationThicknessElement.classList.remove(this.cssClass);
+            this.annotationOpacityElement.classList.remove(this.cssClass);
+            this.annotationFontColorElement.classList.remove(this.cssClass);
+            this.annotationFontFamilyElement.classList.remove(this.cssClass);
+            this.annotationFontSizeElement.classList.remove(this.cssClass);
+            this.annotationTextAlignElement.classList.remove(this.cssClass);
+            this.annotationTextPropertiesElement.classList.remove(this.cssClass);
         }
+        if (annotationType === 'Shape' || annotationType === 'Measure') {
+            this.annotationColorElement.classList.remove(this.cssClass);
+            this.annotationStrokeColorElement.classList.remove(this.cssClass);
+            this.annotationThicknessElement.classList.remove(this.cssClass);
+            this.annotationOpacityElement.classList.remove(this.cssClass);
+            if (!this.isEnabled(this.annotationFontColorElement)) {
+                this.annotationFontColorElement.className += this.disableClass;
+            }
+            if (!this.isEnabled(this.annotationFontFamilyElement)) {
+                this.annotationFontFamilyElement.className += this.disableClass;
+            }
+            if (!this.isEnabled(this.annotationFontSizeElement)) {
+                this.annotationFontSizeElement.className += this.disableClass;
+            }
+            if (!this.isEnabled(this.annotationTextAlignElement)) {
+                this.annotationTextAlignElement.className += this.disableClass;
+            }
+            if (!this.isEnabled(this.annotationTextPropertiesElement)) {
+                this.annotationTextPropertiesElement.className += this.disableClass;
+            }
+        }
+        if (annotationType === 'TextMarkup') {
+            this.annotationColorElement.classList.remove(this.cssClass);
+            if (!this.isEnabled(this.annotationStrokeColorElement)) {
+                this.annotationStrokeColorElement.className += this.disableClass;
+            }
+            if (!this.isEnabled(this.annotationThicknessElement)) {
+                this.annotationThicknessElement.className += this.disableClass;
+            }
+            this.annotationOpacityElement.classList.remove(this.cssClass);
+            if (!this.isEnabled(this.annotationFontColorElement)) {
+                this.annotationFontColorElement.className += this.disableClass;
+            }
+            if (!this.isEnabled(this.annotationFontFamilyElement)) {
+                this.annotationFontFamilyElement.className += this.disableClass;
+            }
+            if (!this.isEnabled(this.annotationFontSizeElement)) {
+                this.annotationFontSizeElement.className += this.disableClass;
+            }
+            if (!this.isEnabled(this.annotationTextAlignElement)) {
+                this.annotationTextAlignElement.className += this.disableClass;
+            }
+            if (!this.isEnabled(this.annotationTextPropertiesElement)) {
+                this.annotationTextPropertiesElement.className += this.disableClass;
+            }
+        }
+        this.annotationDeleteElement.classList.remove(this.cssClass);
+        this.annotationCommentPanelElement.classList.remove(this.cssClass);
     }
-
+    /**
+     * @param {string} fontFamily - The fontFamily.
+     * @returns {void}
+     */
     public updateFontFamilyInIcon(fontFamily: string): void {
         this.annotationFontFamilyInputElement.value = fontFamily;
     }
-
+    /**
+     * @param {number} fontSize - The fontSize.
+     * @returns {void}
+     */
     public updateFontSizeInIcon(fontSize: number): void {
-        let fontValue: string = fontSize.toString() + 'px';
+        const fontValue: string = fontSize.toString() + 'px';
         this.annotationFontSizeInputElement.value = fontValue;
     }
-
+    /**
+     * @param {boolean} isEnable - To enable or disable.
+     * @returns {void}
+     */
     public enableSearchItems(isEnable: boolean): void {
         if (isEnable) {
             this.mobileSearchPreviousOccurenceElement.classList.remove(this.cssClass);
@@ -689,7 +746,10 @@ export class BlazorUiAdaptor {
             }
         }
     }
-
+    /**
+     * @param {boolean} isTapHidden - To enable or disable.
+     * @returns {void}
+     */
     public tapOnMobileDevice(isTapHidden: boolean): void {
         if (this.mobileToolbarContainerElement != null) {
             if (isTapHidden) {
@@ -699,9 +759,11 @@ export class BlazorUiAdaptor {
             }
         }
     }
-
+    /**
+     * @param {HTMLElement} element - The HTMLElement.
+     * @returns {boolean} - Returns trur or false.
+     */
     public isEnabled(element: HTMLElement): boolean {
         return element.classList.contains(this.cssClass);
-
     }
 }

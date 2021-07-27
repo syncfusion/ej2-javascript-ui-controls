@@ -1031,7 +1031,6 @@ export class FormDesigner {
         this.pdfViewerBase.isToolbarSignClicked = false;
         this.pdfViewerBase.isInitialField = this.isInitialField;
         this.pdfViewerBase.signatureModule.showSignatureDialog(true);
-        this.pdfViewerBase.isInitialField = false;
     }
 
     /**
@@ -1221,7 +1220,7 @@ export class FormDesigner {
             } else {
                     innerSpan.style.margin = "5px";
             }
-            innerSpan.addEventListener('click', this.setRadioButtonState.bind(this));
+            labelElement.addEventListener('click', this.setRadioButtonState.bind(this));
             labelElement.id =  drawingObject.id + "_input_label";
             (inputElement as IElement).type = "radio";
             if (!isPrint)
@@ -1278,15 +1277,15 @@ export class FormDesigner {
                 for (let j: number = 0; j < (event.currentTarget as IElement).selectedOptions.length; j++) {
                     let selectIndex: number = (event.currentTarget as IElement).selectedOptions[j].index;
                     let oldValueIndex: number = 0;
-                    if (this.pdfViewerBase.formFieldCollection[i].FormField.selectedIndex.length !== 0) {
+                    if (this.pdfViewerBase.formFieldCollection[i].FormField.selectedIndex && this.pdfViewerBase.formFieldCollection[i].FormField.selectedIndex.length !== 0) {
                         oldValueIndex = this.pdfViewerBase.formFieldCollection[i].FormField.selectedIndex.pop();
                         this.pdfViewerBase.formFieldCollection[i].FormField.selectedIndex.push(oldValueIndex);
                     }
-                    let oldValue = formFieldsData[i].FormField.option[oldValueIndex].value;
+                    let oldValue = formFieldsData[i].FormField.option[oldValueIndex].itemValue;
                     formFieldsData[i].FormField.selectedIndex.push(selectIndex);
                     (this.pdfViewer.nameTable as any)[formFieldsData[i].Key.split("_")[0]].selectedIndex = formFieldsData[i].FormField.selectedIndex;
                     this.pdfViewerBase.formFieldCollection[i].FormField.selectedIndex = formFieldsData[i].FormField.selectedIndex;
-                    let newValue = formFieldsData[i].FormField.option[selectIndex].value;
+                    let newValue = formFieldsData[i].FormField.option[selectIndex].itemValue;
                     this.pdfViewerBase.formFieldCollection[i].FormField.value = newValue;
                     this.updateFormFieldCollections(this.pdfViewerBase.formFieldCollection[i].FormField);
                     this.pdfViewer.fireFormFieldPropertiesChangeEvent("formFieldPropertiesChange", formFieldsData[i].FormField, this.pdfViewerBase.formFieldCollection[i].FormField.pageNumber, true, false, false,
@@ -1304,17 +1303,18 @@ export class FormDesigner {
         for (let i: number = 0; i < formFieldsData.length; i++) {
             if (formFieldsData[i].Key.split("_")[0] === (event.target as Element).id.split("_")[0] ||
                 (this.pdfViewer.nameTable as any)[(event.target as Element).id.split("_")[0]].name === formFieldsData[i].FormField.name) {
+                this.pdfViewerBase.formFieldCollection[i].FormField.selectedIndex=[];
                 let selectIndex: number = (document.getElementById((event.currentTarget as Element).id) as IElement).selectedIndex;
                 let oldValueIndex: number = 0;
                 if (formFieldsData[i].FormField.selectedIndex.length !== 0) {
                     oldValueIndex = formFieldsData[i].FormField.selectedIndex.pop();
                     formFieldsData[i].FormField.selectedIndex.push(oldValueIndex);
                 }
-                let oldValue = formFieldsData[i].FormField.option[oldValueIndex].value;
+                let oldValue = formFieldsData[i].FormField.option[oldValueIndex].itemValue;
                 formFieldsData[i].FormField.selectedIndex.push(selectIndex);
                 (this.pdfViewer.nameTable as any)[formFieldsData[i].Key.split("_")[0]].selectedIndex = selectIndex;
                 this.pdfViewerBase.formFieldCollection[i].FormField.selectedIndex.push(selectIndex);
-                let newValue = formFieldsData[i].FormField.option[selectIndex].value;
+                let newValue = formFieldsData[i].FormField.option[selectIndex].itemValue;
                 this.pdfViewerBase.formFieldCollection[i].FormField.value = newValue;
                 if (formFieldsData[i].Key.split("_")[0] !== (event.target as Element).id.split("_")[0]) {
                     let inputElement: Element = document.getElementById((formFieldsData[i].Key.split("_")[0] + "_content_html_element")).firstElementChild.firstElementChild;
@@ -3434,6 +3434,18 @@ export class FormDesigner {
         
         if (!this.pdfViewer.designerMode || isUndoRedo) {
             element.checked = selectedItem.isSelected;
+            if (index > -1) {
+                formFieldsData[index].FormField.isSelected = selectedItem.isSelected;
+                this.pdfViewerBase.formFieldCollection[index].FormField.isSelected = selectedItem.isSelected;
+                for (let i: number = 0; i < formFieldsData[index].FormField.radiobuttonItem.length; i++) {
+                    if (formFieldsData[index].FormField.radiobuttonItem[i].id.split("_")[0] === selectedItem.id.split("_")[0]) {
+                        formFieldsData[index].FormField.radiobuttonItem[i].isSelected = selectedItem.isSelected;
+                        this.pdfViewerBase.formFieldCollection[index].FormField.radiobuttonItem[i].isSelected = selectedItem.isSelected;
+                    } 
+                }
+            }
+            this.pdfViewerBase.setItemInSessionStorage(this.pdfViewerBase.formFieldCollection, '_formDesigner');
+            (this.pdfViewer.nameTable as any)[selectedItem.id.split('_')[0]].isSelected = selectedItem.isSelected;
         }
     }
 
@@ -3862,8 +3874,15 @@ export class FormDesigner {
             selectedItem.isRequired = this.formFieldRequired.checked;
         }
         if (index > -1) {
-            formFieldsData[index].FormField.isRequired =selectedItem.isRequired;
+            formFieldsData[index].FormField.isRequired = selectedItem.isRequired;
             this.pdfViewerBase.formFieldCollection[index].FormField.isRequired = selectedItem.isRequired;
+            if (this.pdfViewerBase.formFieldCollection[index].FormField.radiobuttonItem) {
+                for (let i: number = 0; i < this.pdfViewerBase.formFieldCollection[index].FormField.radiobuttonItem.length; i++) {
+                    this.pdfViewerBase.formFieldCollection[index].FormField.radiobuttonItem[i].isRequired = selectedItem.isRequired;
+                    (this.pdfViewer.nameTable as any)[this.pdfViewerBase.formFieldCollection[index].FormField.radiobuttonItem[i].id.split('_')[0]].isRequired = selectedItem.isRequired;   
+                }
+                this.pdfViewerBase.setItemInSessionStorage(this.pdfViewerBase.formFieldCollection, '_formDesigner');
+            }
         }
         (this.pdfViewer.nameTable as any)[selectedItem.id.split('_')[0]].isRequired = selectedItem.isRequired;
         this.setRequiredToElement(selectedItem, element, selectedItem.isRequired);
@@ -3901,14 +3920,23 @@ export class FormDesigner {
     /**
      * @private
      */
-    public getFormFiledIndex(id : any) : number {
+    public getFormFiledIndex(id: any): number {
         if (this.pdfViewerBase.formFieldCollection == null || this.pdfViewerBase.formFieldCollection.length == 0)
             return -1;
-        for (let i: number = 0; i < this.pdfViewerBase.formFieldCollection.length; i++) {
-            if (this.pdfViewerBase.formFieldCollection[i].Key.split("_")[0] === id) {
-                return i;
-            } 
-        }   
+        let index: number = this.pdfViewerBase.formFieldCollection.findIndex(el => el.Key.split('_')[0] === id);
+        if (index > -1) {
+            return index;
+        } else {
+            for (let i: number = 0; i < this.pdfViewerBase.formFieldCollection.length; i++) {
+                if (this.pdfViewerBase.formFieldCollection[i].FormField.formFieldAnnotationType === 'RadioButton' && this.pdfViewerBase.formFieldCollection[i].FormField.radiobuttonItem) {
+                    for (let k: number = 0; k < this.pdfViewerBase.formFieldCollection[i].FormField.radiobuttonItem.length; k++) {
+                        if (this.pdfViewerBase.formFieldCollection[i].FormField.radiobuttonItem[k].id.split("_")[0] === id) {
+                            return i;
+                        }
+                    }
+                }
+            }
+        }
         return -1;
     }
 
@@ -4881,7 +4909,8 @@ export class FormDesigner {
                         break;
                     case 'RadioButton':
                         let radioButtonDivDivElement: Element = document.getElementById(formField.id + "_content_html_element").firstElementChild.firstElementChild.firstElementChild;
-                        this.setRequiredToElement(formField, radioButtonDivDivElement, isRequired);
+                        this.setRequiredToElement(formField, radioButtonDivDivElement, isRequired);                    
+                        this.updateFormFieldCollections(formField);
                         break;
                     case 'Checkbox':
                         let checkboxDivElement: Element = document.getElementById(formField.id + "_content_html_element").firstElementChild.firstElementChild.lastElementChild;

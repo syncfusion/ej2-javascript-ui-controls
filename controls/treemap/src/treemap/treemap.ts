@@ -529,6 +529,10 @@ export class TreeMap extends Component<HTMLElement> implements INotifyPropertyCh
     }
 
     protected render(): void {
+        this.renderElements();
+    }
+	
+	private renderElements(): void {
         LevelsData.levelsData = null;
         LevelsData.defaultLevelsData = null;
         LevelsData.hierarchyData = null;
@@ -1598,7 +1602,7 @@ export class TreeMap extends Component<HTMLElement> implements INotifyPropertyCh
         }
         if (render) {
             this.createSvg();
-            this.render();
+            this.renderElements();
         }
     }
 

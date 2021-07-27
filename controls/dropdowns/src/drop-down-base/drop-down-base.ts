@@ -1138,6 +1138,7 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
                     (this.fields as FieldSettingsModel & { properties: Object }).properties,
                     headerItems, option, this);
             }
+            this.renderReactTemplates();
             this.DropDownBaseupdateBlazorTemplates(false, true, false, false, false, false, false, false);
         }
     }

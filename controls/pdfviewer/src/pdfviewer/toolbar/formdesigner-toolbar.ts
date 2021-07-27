@@ -294,7 +294,7 @@ export class FormDesignerToolbar {
     private createSignContainer(): void {
         this.handWrittenSignatureItem = this.pdfViewerBase.getElement('_formfield_signature');
         // eslint-disable-next-line max-len
-        this.primaryToolbar.createTooltip(this.pdfViewerBase.getElement('_formfield_signature'), this.pdfViewer.localeObj.getConstant('Draw Signature'));
+        this.primaryToolbar.createTooltip(this.pdfViewerBase.getElement('_formfield_signature'), this.pdfViewer.localeObj.getConstant('HandwrittenSignatureDialogHeaderText'));
         // eslint-disable-next-line
         let proxy: any = this;
         let items: ItemModel[] =[]; 

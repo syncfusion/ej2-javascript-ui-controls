@@ -982,24 +982,24 @@ export class Workbook extends Component<HTMLElement> implements INotifyPropertyC
     }
 
     /** @hidden
-     * @param {number} sheetIndex - Specifies the sheetIndex.
+     * @param {number} sheetId - Specifies the sheet id.
      * @param {number} rowIndex - Specifies the rowIndex.
      * @param {number} colIndex - Specifies the colIndex.
      * @returns {string | number} - To set the value for row and col.
      */
     public getValueRowCol(
-        sheetIndex: number, rowIndex: number, colIndex: number, formulaCellReference?: string, refresh?: boolean): string | number {
+        sheetId: number, rowIndex: number, colIndex: number, formulaCellReference?: string, refresh?: boolean): string | number {
         const args: { action: string, sheetInfo: { visibleName: string, sheet: string, index: number }[] } = {
             action: 'getSheetInfo', sheetInfo: []
         };
         this.notify(events.workbookFormulaOperation, args);
-        const id: number = getSheetIndexByName(this, 'Sheet' + (sheetIndex + 1), args.sheetInfo);
+        const id: number = getSheetIndexByName(this, 'Sheet' + sheetId, args.sheetInfo);
         if (id === -1) {
             const errArgs: { action: string, refError: string } = { action: 'getReferenceError', refError: '' };
             this.notify(events.workbookFormulaOperation, errArgs);
             return errArgs.refError;
         }
-        sheetIndex = getSheetIndexFromId(this, sheetIndex + 1);
+        let sheetIndex: number = getSheetIndexFromId(this, sheetId);
         const sheet: SheetModel = getSheet(this, sheetIndex);
         const cell: CellModel = getCell(rowIndex - 1, colIndex - 1, sheet);
         if (formulaCellReference && formulaCellReference.includes('!') && !cell && sheet.ranges && sheet.ranges.length) {
@@ -1010,15 +1010,16 @@ export class Workbook extends Component<HTMLElement> implements INotifyPropertyC
             });
             if (isNotLoaded) {
                 this.formulaRefCell = formulaCellReference;
-                sheetIndex = getSheetIndexFromId(this, Number(formulaCellReference[formulaCellReference.length - 1]) + 1);
+                sheetIndex = getSheetIndexFromId(
+                    this, Number(formulaCellReference.substring(formulaCellReference.lastIndexOf(',') + 1, formulaCellReference.length)));
                 if (isNullOrUndefined(sheetIndex)) { return cell && cell.value; }
                 formulaCellReference = formulaCellReference.substring(
-                    formulaCellReference.lastIndexOf('!') + 1, formulaCellReference.length - 1);
+                    formulaCellReference.lastIndexOf('!') + 1, formulaCellReference.lastIndexOf(','));
                 getData(
                     this, `${sheet.name}!A1:${getCellAddress(rowIndex - 1, colIndex - 1)}`, null, null, null, null, formulaCellReference,
                     sheetIndex);
             }
-        } else if (cell && cell.formula && (refresh || isNullOrUndefined(cell.value))) {
+        } else if (cell && cell.formula && (refresh || isNullOrUndefined(cell.value)) && cell.formula.indexOf('UNIQUE') === - 1) {
             this.notify('calculateFormula', { cell: cell, rowIdx: rowIndex - 1, colIdx: colIndex - 1, sheetIndex: sheetIndex });
         }
         return cell && cell.value;
@@ -1265,7 +1266,7 @@ export class Workbook extends Component<HTMLElement> implements INotifyPropertyC
             sheetIdx = this.activeSheetIndex;
         }
         setCell(range[0], range[1], this.sheets[sheetIdx], cell, true);
-        if (cell.value) {
+        if (cell.value || cell.value === '') {
             this.notify(
                 events.workbookEditOperation,
                 {
@@ -1441,7 +1442,7 @@ export class Workbook extends Component<HTMLElement> implements INotifyPropertyC
      */
     public getDisplayText(cell: CellModel): string {
         if (!cell) { return ''; }
-        if (cell.value && cell.format) {
+        if (cell.format && !isNullOrUndefined(cell.value)) {
             const eventArgs: { [key: string]: string | number | boolean } = {
                 formattedText: cell.value, value: cell.value, format: cell.format, onLoad: true
             };

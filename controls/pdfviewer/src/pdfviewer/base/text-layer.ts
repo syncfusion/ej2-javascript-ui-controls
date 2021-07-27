@@ -1,4 +1,3 @@
-/* eslint-disable */
 import { createElement, isNullOrUndefined, Browser, isBlazor } from '@syncfusion/ej2-base';
 import { Dialog } from '@syncfusion/ej2-popups';
 import { PdfViewer, PdfViewerBase } from '../index';
@@ -25,8 +24,8 @@ export class TextLayer {
     // eslint-disable-next-line
     public characterBound: any[] = [];
     /**
-     * @param pdfViewer
-     * @param pdfViewerBase
+     * @param {PdfViewer} pdfViewer - The PdfViewer.
+     * @param {PdfViewerBase} pdfViewerBase - The PdfViewerBase.
      * @private
      */
     constructor(pdfViewer: PdfViewer, pdfViewerBase: PdfViewerBase) {
@@ -34,14 +33,11 @@ export class TextLayer {
         this.pdfViewerBase = pdfViewerBase;
     }
     /**
-     * @param pageNumber
-     * @param pageWidth
-     * @param pageHeight
-     * @param pageDiv
-     * @param pageNumber
-     * @param pageWidth
-     * @param pageHeight
-     * @param pageDiv
+     * @param {number} pageNumber - The pageNumber.
+     * @param {number} pageWidth - The pageWidth.
+     * @param {number} pageHeight - The pageHeight.
+     * @param {HTMLElement} pageDiv - The pageDiv.
+     * @returns {HTMLElement} - The HTMLElement.
      * @private
      */
     public addTextLayer(pageNumber: number, pageWidth: number, pageHeight: number, pageDiv: HTMLElement): HTMLElement {
@@ -57,10 +53,11 @@ export class TextLayer {
         return textLayer;
     }
     /**
-     * @param pageNumber
-     * @param textContents
-     * @param textBounds
-     * @param rotation
+     * @param {number} pageNumber - The pageNumber.
+     * @param {any} textContents - The textContents.
+     * @param {any} textBounds - The textBounds.
+     * @param {any} rotation - The rotation.
+     * @returns {void}
      * @private
      */
     // eslint-disable-next-line
@@ -200,7 +197,8 @@ export class TextLayer {
         textDiv.style.transformOrigin = '0%';
     }
     /**
-     * @param pageNumber
+     * @param {number} pageNumber - The pageNumber.
+     * @returns {void}
      * @private
      */
     public resizeTextContentsOnZoom(pageNumber: number): void {
@@ -252,6 +250,8 @@ export class TextLayer {
     }
     /**
      * @private
+     * @param {boolean} isPinchZoomed - The isPinchZoomed.
+     * @returns {void}
      */
     public clearTextLayers(isPinchZoomed?: boolean): void {
         let lowerPageValue: number = this.pdfViewerBase.currentPageNumber - 3;
@@ -291,46 +291,17 @@ export class TextLayer {
         }
     }
     private removeForeignObjects(element: HTMLElement): void {
-        const childElement = element.getElementsByClassName('foreign-object');
+        // eslint-disable-next-line
+        const childElement: any = element.getElementsByClassName('foreign-object');
         if (childElement) {
             for (let i: number = 0; i < childElement.length; i++) {
-                if (childElement[i].parentElement.className === "e-pv-text-layer") {
+                if (childElement[i].parentElement.className === 'e-pv-text-layer') {
                     element.removeChild(childElement[0]);
                 }
             }
         }
     }
     /**
-     * @param pageNumber
-     * @param divId
-     * @param fromOffset
-     * @param toOffset
-     * @param textString
-     * @param className
-     * @param pageNumber
-     * @param divId
-     * @param fromOffset
-     * @param toOffset
-     * @param textString
-     * @param className
-     * @param pageNumber
-     * @param divId
-     * @param fromOffset
-     * @param toOffset
-     * @param textString
-     * @param className
-     * @param pageNumber
-     * @param divId
-     * @param fromOffset
-     * @param toOffset
-     * @param textString
-     * @param className
-     * @param pageNumber
-     * @param divId
-     * @param fromOffset
-     * @param toOffset
-     * @param textString
-     * @param className
      * @param pageNumber
      * @param divId
      * @param fromOffset
@@ -354,24 +325,6 @@ export class TextLayer {
         }
     }
     /**
-     * @param startPage
-     * @param endPage
-     * @param anchorOffsetDiv
-     * @param focusOffsetDiv
-     * @param anchorOffset
-     * @param focusOffset
-     * @param startPage
-     * @param endPage
-     * @param anchorOffsetDiv
-     * @param focusOffsetDiv
-     * @param anchorOffset
-     * @param focusOffset
-     * @param startPage
-     * @param endPage
-     * @param anchorOffsetDiv
-     * @param focusOffsetDiv
-     * @param anchorOffset
-     * @param focusOffset
      * @param startPage
      * @param endPage
      * @param anchorOffsetDiv
@@ -441,6 +394,7 @@ export class TextLayer {
     }
     /**
      * @private
+     * @returns {void}
      */
     public clearDivSelection(): void {
         const textLayers: NodeList = document.querySelectorAll('div[id*="' + this.pdfViewer.element.id + '_textLayer_"]');
@@ -478,7 +432,8 @@ export class TextLayer {
         }
     }
     /**
-     * @param isAdd
+     * @param {boolean} isAdd - The isAdd.
+     * @returns {void}
      * @private
      */
     public modifyTextCursor(isAdd: boolean): void {
@@ -498,7 +453,8 @@ export class TextLayer {
     }
 
     /**
-     * @param selection
+     * @param {Selection} selection - The Selection.
+     * @returns {boolean} - Returns true or false.
      * @private
      */
     public isBackWardSelection(selection: Selection): boolean {
@@ -511,7 +467,8 @@ export class TextLayer {
     }
 
     /**
-     * @param element
+     * @param {Node} element - The element.
+     * @returns {number} - Returns number.
      * @private
      */
     public getPageIndex(element: Node): number {
@@ -532,10 +489,9 @@ export class TextLayer {
     }
 
     /**
-     * @param element
-     * @param pageIndex
-     * @param element
-     * @param pageIndex
+     * @param {Node} element - The element.
+     * @param {number} pageIndex - The pageIndex.
+     * @returns {number} - Returns number.
      * @private
      */
     public getTextIndex(element: Node, pageIndex: number): number {
@@ -564,6 +520,7 @@ export class TextLayer {
     }
     /**
      * @private
+     * @returns {boolean} - Returns true or false.
      */
     public getTextSearchStatus(): boolean {
         if (this.pdfViewer.textSearchModule) {
@@ -574,7 +531,8 @@ export class TextLayer {
     }
 
     /**
-     * @param text
+     * @param {string} text - The text.
+     * @returns {void}
      * @private
      */
     public createNotificationPopup(text: string): void {
@@ -625,7 +583,9 @@ export class TextLayer {
             }
         }
     }
-
+    /**
+     * @returns {void}
+     */
     private closeNotification = (): void => {
         this.notifyDialog.hide();
     };

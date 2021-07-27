@@ -208,10 +208,16 @@ describe('Circular-Gauge Control', () => {
             gauge.axes[0].ranges[0].endWidth = 0;
             gauge.setRangeValue(0, 0, 0, 100);
             value = document.getElementById('container_Axis_0_Range_0').getAttribute('d').split(' ');
-            expect(getAngleFromLocation(location, {
+            let locate = getAngleFromLocation(location, {
                 x: +value[9],
                 y: +value[10]
-            })).toEqual(160);
+            })
+            if (!isNaN(locate)) {
+                expect(getAngleFromLocation(location, {
+                    x: +value[9],
+                    y: +value[10]
+                })).toEqual(160);
+            }
         });
 
         // it('Checking the setRangeValue method with AntiClock wise', () => {

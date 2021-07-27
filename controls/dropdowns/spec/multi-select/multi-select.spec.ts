@@ -8402,4 +8402,122 @@ describe('MultiSelect', () => {
             }, 100);
         });
     });
+    describe('EJ2-51217 - Placeholder encoding in the multiselect component.', () => {
+        let element: HTMLInputElement;
+        let gameList: { [key: string]: Object }[] = [
+            {  Id : "Game1", Game :"Cricket"  },
+            {  Id : "Game2", Game : "Tennis" },
+            {  Id:  "Game3", Game :"Basketball" },
+        ];
+        let multiObj: any;
+        beforeAll(() => {
+            element = <HTMLInputElement>createElement('input', { id: 'multiSelect' });
+            document.body.appendChild(element);
+        });
+        afterAll(() => {
+            document.body.innerHTML = '';
+            multiObj.destroy();
+            if (element) {
+                element.remove();
+            }
+        });
+        it('Testing floatLabelType Always case', () => {
+            multiObj = new MultiSelect({
+                dataSource: gameList,
+                fields: { text: 'Game', value: 'Id'},
+                floatLabelType: 'Always',
+                placeholder : '&'
+            });
+            multiObj.appendTo(element);
+            let floatElement = (multiObj as any).componentWrapper.querySelector('.e-float-text');
+            expect(floatElement.innerText).toBe('&');
+            multiObj.placeholder = '<',
+            multiObj.dataBind();
+            floatElement = (multiObj as any).componentWrapper.querySelector('.e-float-text');
+            expect(floatElement.innerText).toBe('<');
+            multiObj.placeholder = 'Mask >LLL<LL (ex: SAMple)',
+            multiObj.dataBind();
+            floatElement = (multiObj as any).componentWrapper.querySelector('.e-float-text');
+            expect(floatElement.innerText).toBe('Mask >LLL<LL (ex: SAMple)');
+            multiObj.placeholder = "<img src='fail1' onerror='alert();' /> test",
+            multiObj.dataBind();
+            floatElement = (multiObj as any).componentWrapper.querySelector('.e-float-text');
+            expect(floatElement.innerText).toBe("<img src='fail1' onerror='alert();' /> test");
+            multiObj.placeholder = 'Hi&eacute;rachie article',
+            multiObj.dataBind();
+            floatElement = (multiObj as any).componentWrapper.querySelector('.e-float-text');
+            expect(floatElement.innerText).toBe('Hiérachie article');
+            multiObj.placeholder = '&amp;&gt;',
+            multiObj.dataBind();
+            floatElement = (multiObj as any).componentWrapper.querySelector('.e-float-text');
+            expect(floatElement.innerText).toBe('&>');
+            multiObj.placeholder = 'JAVA & ANGULAR',
+            multiObj.dataBind();
+            floatElement = (multiObj as any).componentWrapper.querySelector('.e-float-text');
+            expect(floatElement.innerText).toBe('JAVA & ANGULAR');
+        });
+        it('Testing floatLabelType Auto case', () => {
+            multiObj = new MultiSelect({
+                dataSource: gameList,
+                fields: { text: 'Game', value: 'Id'},
+                floatLabelType: 'Auto',
+                placeholder: '&'
+            });
+            multiObj.appendTo(element);
+            let floatElement = (multiObj as any).componentWrapper.querySelector('.e-float-text');
+            expect(floatElement.innerText).toBe('&');
+            multiObj.placeholder = '<',
+            multiObj.dataBind();
+            floatElement = (multiObj as any).componentWrapper.querySelector('.e-float-text');
+            expect(floatElement.innerText).toBe('<');
+            multiObj.placeholder = 'Mask >LLL<LL (ex: SAMple)',
+            multiObj.dataBind();
+            floatElement = (multiObj as any).componentWrapper.querySelector('.e-float-text');
+            expect(floatElement.innerText).toBe('Mask >LLL<LL (ex: SAMple)');
+            multiObj.placeholder = "<img src='fail1' onerror='alert();' /> test",
+            multiObj.dataBind();
+            floatElement = (multiObj as any).componentWrapper.querySelector('.e-float-text');
+            expect(floatElement.innerText).toBe("<img src='fail1' onerror='alert();' /> test");
+            multiObj.placeholder = 'Hi&eacute;rachie article',
+            multiObj.dataBind();
+            floatElement = (multiObj as any).componentWrapper.querySelector('.e-float-text');
+            expect(floatElement.innerText).toBe('Hiérachie article');
+            multiObj.placeholder = '&amp;&gt;',
+            multiObj.dataBind();
+            floatElement = (multiObj as any).componentWrapper.querySelector('.e-float-text');
+            expect(floatElement.innerText).toBe('&>');
+            multiObj.placeholder = 'JAVA & ANGULAR',
+            multiObj.dataBind();
+            floatElement = (multiObj as any).componentWrapper.querySelector('.e-float-text');
+            expect(floatElement.innerText).toBe('JAVA & ANGULAR');
+        });
+        it('Testing floatLabelType Never case', () => {
+            multiObj = new MultiSelect({
+                dataSource: gameList,
+                fields: { text: 'Game', value: 'Id'},
+                floatLabelType: 'Never',
+                placeholder: '&'
+            });
+            multiObj.appendTo(element);
+            expect((<any>multiObj).inputElement.getAttribute('placeholder')).toBe('&');
+            multiObj.placeholder = '<',
+            multiObj.dataBind();
+            expect((<any>multiObj).inputElement.getAttribute('placeholder')).toBe('<');
+            multiObj.placeholder = 'Mask >LLL<LL (ex: SAMple)',
+            multiObj.dataBind();
+            expect((<any>multiObj).inputElement.getAttribute('placeholder')).toBe('Mask >LLL<LL (ex: SAMple)');
+            multiObj.placeholder = "<img src='fail1' onerror='alert();' /> test",
+            multiObj.dataBind();
+            expect((<any>multiObj).inputElement.getAttribute('placeholder')).toBe("<img src='fail1' onerror='alert();' /> test");
+            multiObj.placeholder = 'Hi&eacute;rachie article',
+            multiObj.dataBind();
+            expect((<any>multiObj).inputElement.getAttribute('placeholder')).toBe('Hiérachie article');
+            multiObj.placeholder = '&amp;&gt;',
+            multiObj.dataBind();
+            expect((<any>multiObj).inputElement.getAttribute('placeholder')).toBe('&>');
+            multiObj.placeholder = 'JAVA & ANGULAR',
+            multiObj.dataBind();
+            expect((<any>multiObj).inputElement.getAttribute('placeholder')).toBe('JAVA & ANGULAR');
+        });
+    });
 });

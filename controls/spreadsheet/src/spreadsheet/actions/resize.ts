@@ -350,6 +350,7 @@ export class Resize {
                 if (idx >= this.parent.viewport.topIndex && idx <= this.parent.viewport.bottomIndex) {
                     autofitValue = autofitValue > 20 ? autofitValue : 20;
                     setRowHeight(sheet, idx, autofitValue > 0 ? autofitValue : 0);
+                    setRow(sheet, idx, { customHeight: false });
                     this.resizeStart(idx, this.parent.getViewportIndex(idx), autofitValue + 'px', isCol, true, prevData);
                     this.parent.notify(rowHeightChanged, { threshold: threshold, rowIdx: idx });
                 } else {

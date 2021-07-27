@@ -285,7 +285,7 @@ export class StatusBar {
             removeFromElement.classList.remove('e-btn-toggle');
         }
     }
-    // eslint-disable-next-line max-len
+    /* eslint-disable-next-line max-len */
     private createButtonTemplate(className: string, iconcss: string, toolTipText: string, div: HTMLElement, appendDiv: HTMLButtonElement, toggle: boolean): HTMLButtonElement {
         appendDiv = createElement('Button', { className: className, attrs: { type: 'button' } }) as HTMLButtonElement;
         div.appendChild(appendDiv);

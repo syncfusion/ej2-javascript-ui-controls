@@ -788,7 +788,7 @@ export class AnnotationToolbar {
     private createSignContainer(): void {
         this.handWrittenSignatureItem = this.pdfViewerBase.getElement('_annotation_signature');
         // eslint-disable-next-line max-len
-        this.primaryToolbar.createTooltip(this.pdfViewerBase.getElement('_annotation_signature'), this.pdfViewer.localeObj.getConstant('Draw Signature'));
+        this.primaryToolbar.createTooltip(this.pdfViewerBase.getElement('_annotation_signature'), this.pdfViewer.localeObj.getConstant('SignatureFieldDialogHeaderText'));
         // eslint-disable-next-line
         let proxy: any = this;
         let items: ItemModel[] =[];
@@ -1322,6 +1322,7 @@ export class AnnotationToolbar {
                     let elements: any = this.pdfViewerBase.customStampCollection;
                     for (let n: number = 0; n < elements.length; n++) {
                         if (elements[n].customStampName === args.item.text) {
+                            this.pdfViewer.annotationModule.stampAnnotationModule.customStampName = args.item.text;
                             this.checkStampAnnotations();
                             this.pdfViewer.annotation.stampAnnotationModule.isStampAddMode = true;
                             this.pdfViewer.annotationModule.stampAnnotationModule.isStampAnnotSelected = true;
@@ -1378,6 +1379,7 @@ export class AnnotationToolbar {
         let upoadedFiles: any = args.target.files;
         if (args.target.files[0] !== null) {
             const uploadedFile: File = upoadedFiles[0];
+            this.pdfViewer.annotationModule.stampAnnotationModule.customStampName = uploadedFile.name.split('.')[0];
             if (uploadedFile.type.split('/')[0] === 'image') {
                 const reader: FileReader = new FileReader();
                 // eslint-disable-next-line

@@ -1798,6 +1798,68 @@ describe('InPlace-Editor Control', () => {
             done();
         });
     });
+    describe('Default value updated for the editor testing -', () => {
+        let ele: HTMLElement;
+        let valueEle: HTMLElement;
+        let valueWrapper: HTMLElement;
+        let editorObj: InPlaceEditor;
+        afterEach((): void => {
+            destroy(editorObj);
+        });
+        it('Initial value binded for the Maskedtextbox', (done: Function) => {
+            editorObj = renderEditor({
+                mode: 'Inline',
+                name: 'Game',
+                type: 'Numeric',
+                value: '123456789',
+                validationRules: {
+                    Game: { required: true, maxLength: 5 }
+                }
+            });
+            ele = editorObj.element;
+            valueWrapper = <HTMLElement>select('.' + classes.VALUE_WRAPPER, ele);
+            valueEle = <HTMLElement>select('.' + classes.VALUE, valueWrapper);
+            valueEle.click();
+            expect(valueWrapper.classList.contains(classes.OPEN)).toEqual(true);
+            expect(editorObj.enableEditMode).toEqual(true);
+            editorObj.validate();
+            expect(select('.' + classes.FORM, this.element).classList.contains(classes.ERROR)).toEqual(true);
+            expect(select('.e-input-group', this.element).classList.contains(classes.ERROR)).toEqual(true);
+            dispatchEvent(document.querySelector('.e-btn-cancel'), 'mousedown');
+            expect(valueWrapper.classList.contains(classes.OPEN)).toEqual(false);
+            valueEle.click();
+            expect(editorObj.model.value === editorObj.value).toBe(true);
+            done();
+        });
+        it('Initial value not binded for the Maskedtextbox', (done: Function) => {
+            editorObj = renderEditor({
+                mode: 'Inline',
+                name: 'Game',
+                type: 'Numeric',
+                validationRules: {
+                    Game: { required: true, maxLength: 5 }
+                }
+            });
+            ele = editorObj.element;
+            valueWrapper = <HTMLElement>select('.' + classes.VALUE_WRAPPER, ele);
+            valueEle = <HTMLElement>select('.' + classes.VALUE, valueWrapper);
+            valueEle.click();
+            expect(valueWrapper.classList.contains(classes.OPEN)).toEqual(true);
+            expect(editorObj.enableEditMode).toEqual(true);
+            editorObj.validate();
+            expect(select('.' + classes.FORM, this.element).classList.contains(classes.ERROR)).toEqual(true);
+            expect(select('.e-input-group', this.element).classList.contains(classes.ERROR)).toEqual(true);
+            (document.querySelector('.e-numerictextbox') as HTMLInputElement).value = "123456789";
+            triggerKeyBoardEvent(select('.' + classes.BTN_SAVE, ele) as HTMLElement, 13);
+            expect(valueWrapper.classList.contains(classes.OPEN)).toEqual(true);
+            expect(select('.' + classes.FORM, this.element).classList.contains(classes.ERROR)).toEqual(true);
+            expect(select('.e-input-group', this.element).classList.contains(classes.ERROR)).toEqual(true);
+            triggerKeyBoardEvent(select('.' + classes.BTN_CANCEL, ele) as HTMLElement, 13);
+            valueEle.click();
+            expect(editorObj.model.value === editorObj.value).toBe(true);
+            done();
+        });
+    });
     describe('destroy method testing', () => {
         let editorObj: InPlaceEditor;
         afterAll((): void => {

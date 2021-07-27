@@ -263,7 +263,8 @@ export class AccumulationSelection extends BaseSelection {
                     legendShape = document.getElementById(this.control.element.id + '_chart_legend_shape_' + index.point);
                     this.removeSvgClass(legendShape, this.getSelectionClass(legendShape.id));
                 }
-                const opacity: number = accumulationTooltip && (accumulationTooltip.previousPoints[0].point.index === index.point) ?
+                const opacity: number = accumulationTooltip && accumulationTooltip.previousPoints.length > 0
+                    && (accumulationTooltip.previousPoints[0].point.index === index.point) ?
                     accumulationTooltip.svgTooltip.opacity : this.series[index.series].opacity;
                 element.setAttribute('opacity', opacity.toString());
                 this.removeSvgClass(element, this.getSelectionClass(element.id));

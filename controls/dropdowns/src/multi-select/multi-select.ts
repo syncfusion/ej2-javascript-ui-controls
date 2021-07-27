@@ -15,7 +15,7 @@ import { append, addClass, removeClass, closest, detach, remove, select, selectA
 import { getUniqueID, formatUnit, isNullOrUndefined, isUndefined, ModuleDeclaration } from '@syncfusion/ej2-base';
 import { DataManager, Query, Predicate } from '@syncfusion/ej2-data';
 import { SortOrder } from '@syncfusion/ej2-lists';
-import { createFloatLabel, removeFloating, floatLabelFocus, floatLabelBlur } from './float-label';
+import { createFloatLabel, removeFloating, floatLabelFocus, floatLabelBlur, encodePlaceholder } from './float-label';
 
 // eslint-disable-next-line @typescript-eslint/no-empty-interface
 export interface RemoveEventArgs extends SelectEventArgs { }
@@ -55,6 +55,7 @@ const TOTAL_COUNT_WRAPPER: string = 'e-delim-total';
 const BOX_ELEMENT: string = 'e-multiselect-box';
 const FILTERPARENT: string = 'e-filter-parent';
 const CUSTOM_WIDTH: string = 'e-search-custom-width';
+const FILTERINPUT: string = 'e-input-filter';
 /**
  * The Multiselect allows the user to pick a more than one value from list of predefined values.
  * ```html
@@ -1778,7 +1779,7 @@ export class MultiSelect extends DropDownBase implements IInput {
         e.preventDefault();
         this.moveByList(1);
         this.keyAction = true;
-        if (document.activeElement.classList.contains('e-input-filter')
+        if (document.activeElement.classList.contains(FILTERINPUT)
         || (this.mode === 'CheckBox' && !this.allowFiltering && document.activeElement !== this.list)) {
             this.list.focus();
             EventHandler.add(this.list, 'keydown', this.onKeyDown, this);
@@ -1807,7 +1808,7 @@ export class MultiSelect extends DropDownBase implements IInput {
     }
     private spaceKeySelection(e: KeyboardEventArgs): void {
         if (this.mode === 'CheckBox') {
-            if (!document.activeElement.classList.contains('e-input-filter')) {
+            if (!document.activeElement.classList.contains(FILTERINPUT)) {
                 e.preventDefault();
                 this.keyAction = true;
                 this.list.focus();
@@ -2130,7 +2131,7 @@ export class MultiSelect extends DropDownBase implements IInput {
             if ((this.value && this.value.length) || (!isNullOrUndefined(this.text) && this.text !== '')) {
                 this.inputElement.placeholder = '';
             } else {
-                this.inputElement.placeholder = this.placeholder;
+                this.inputElement.placeholder = encodePlaceholder(this.placeholder);
             }
         } else {
             this.setFloatLabelType();
@@ -2595,6 +2596,11 @@ export class MultiSelect extends DropDownBase implements IInput {
                 close: () => {
                     if (this.popupObj.element.parentElement) {
                         this.popupObj.unwireScrollEvents();
+                        // For restrict the page scrolling in safari browser
+                        const checkboxFilterInput: HTMLElement = this.popupWrapper.querySelector('.' + FILTERINPUT);
+                        if (this.mode === 'CheckBox' && checkboxFilterInput && document.activeElement === checkboxFilterInput) {
+                            checkboxFilterInput.blur();
+                        }
                         detach(this.popupObj.element);
                     }
                 },

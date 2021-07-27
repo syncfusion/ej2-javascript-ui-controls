@@ -152,6 +152,9 @@ export class Sortable extends Base<HTMLElement> implements INotifyPropertyChange
         }
         addClass([element], ['e-sortableclone']);
         removeClass([element], ['e-listboxtool-container']);
+        if (element && element.className.indexOf("e-listbox-wrapper") < 0) {
+            addClass([element], ['e-listbox-wrapper']);
+        }
         document.body.appendChild(element);
         return element;
     }

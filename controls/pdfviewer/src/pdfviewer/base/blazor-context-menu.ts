@@ -1,4 +1,3 @@
-/* eslint-disable */
 import { PdfViewer, IContextMenu } from '../index';
 import { PdfViewerBase } from './pdfviewer-base';
 
@@ -22,12 +21,20 @@ export class BlazorContextMenu implements IContextMenu {
      * @private
      */
     public previousAction: string;
-
+    /**
+     * Initialize the constructor of blazorcontext
+     *
+     * @param { PdfViewer } pdfViewer - Specified PdfViewer class.
+     * @param { PdfViewerBase } pdfViewerBase - The pdfViewerBase.
+     */
     constructor(pdfViewer: PdfViewer, pdfViewerBase: PdfViewerBase) {
         this.pdfViewer = pdfViewer;
         this.pdfViewerBase = pdfViewerBase;
     }
-
+    /**
+     * Create the context menu.
+     * @returns {void}
+     */
     public createContextMenu(): void {
         const htmlCollection: HTMLCollection = document.getElementsByClassName( this.pdfViewer.element.id + '_context_menu');
         if (htmlCollection) {
@@ -38,12 +45,27 @@ export class BlazorContextMenu implements IContextMenu {
             }
         }
     }
+    /**
+     * open the context menu.
+     * @param {number} top - The top.
+     * @param {number} left - The left.
+     * @param {HTMLElement} target - The target.
+     * @returns {void}
+     */
     public open(top: number, left: number, target: HTMLElement): void {
         this.pdfViewer._dotnetInstance.invokeMethodAsync('OpenContextMenu', top, left);
     }
+    /**
+     * close the context menu.
+     * @returns {void}
+     */
     public close(): void {
         this.pdfViewer._dotnetInstance.invokeMethodAsync('CloseContextMenu');
     }
+    /**
+     * destroy the context menu.
+     * @returns {void}
+     */
     public destroy(): void {
         this.previousAction = '';
         this.contextMenuElement =  null;

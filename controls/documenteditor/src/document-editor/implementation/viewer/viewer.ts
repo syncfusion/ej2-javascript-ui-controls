@@ -1,3 +1,4 @@
+/* eslint-disable */
 import { Dictionary } from '../../base/dictionary';
 import { WList } from '../list/list';
 import { WAbstractList } from '../list/abstract-list';
@@ -166,7 +167,6 @@ export class DocumentHelper {
      */
     public isMouseDown: boolean = false;
     private isMouseEntered: boolean = false;
-    // eslint-disable-next-line
     private scrollMoveTimer: any = 0;
     /**
      * @private
@@ -304,7 +304,7 @@ export class DocumentHelper {
     /**
      * @private
      */
-    public compatibilityMode: CompatibilityMode = "Word2013";
+    public compatibilityMode: CompatibilityMode = 'Word2013';
     /**
      * @private
      */
@@ -1273,7 +1273,7 @@ export class DocumentHelper {
      * @param {string} author - Specifies author name.
      * @returns {string} - Return autor color.
      */
-     public getAuthorColor(author: string): string {
+    public getAuthorColor(author: string): string {
         if (this.authors.containsKey(author)) {
             return this.authors.get(author);
         }
@@ -1418,7 +1418,6 @@ export class DocumentHelper {
             this.dialogInternal = new Dialog({
                 target: document.body, showCloseIcon: true,
                 allowDragging: true, enableRtl: isRtl, visible: false,
-                // eslint-disable-next-line @typescript-eslint/naming-convention
                 width: '1px', isModal: true, position: { X: 'center', Y: 'center' }, zIndex: this.owner.zIndex + 20,
                 animationSettings: { effect: 'None' }
             });
@@ -1438,7 +1437,6 @@ export class DocumentHelper {
             this.dialogInternal3 = new Dialog({
                 target: document.body, showCloseIcon: true,
                 allowDragging: true, enableRtl: isRtl, visible: false,
-                // eslint-disable-next-line @typescript-eslint/naming-convention
                 width: '1px', isModal: true, position: { X: 'center', Y: 'center' }, zIndex: this.owner.zIndex,
                 animationSettings: { effect: 'None' }
             });
@@ -1464,7 +1462,6 @@ export class DocumentHelper {
             this.dialogInternal2 = new Dialog({
                 target: document.body, showCloseIcon: true,
                 allowDragging: true, enableRtl: isRtl, visible: false,
-                // eslint-disable-next-line @typescript-eslint/naming-convention
                 width: '1px', isModal: true, position: { X: 'center', Y: 'Top' }, zIndex: this.owner.zIndex + 10
             });
             this.dialogInternal2.isStringTemplate = true;
@@ -1602,7 +1599,6 @@ export class DocumentHelper {
             this.iframe.style.left = this.owner.viewer.containerLeft + 'px';
         }
         this.owner.viewer.updateScrollBars();
-        // eslint-disable-next-line max-len
         const vtHeight: number = this.owner.viewer.containerTop + this.visibleBounds.height - (this.owner.viewer.padding.top + this.owner.viewer.padding.bottom);
         if (vtHeight > this.pageContainer.offsetHeight) {
             this.viewerContainer.scrollTop = this.owner.viewer.containerTop - (vtHeight - this.pageContainer.offsetHeight);
@@ -1689,7 +1685,6 @@ export class DocumentHelper {
             if (!this.selection.isEmpty) {
                 let y: number = this.selection.getCaretBottom(this.selection.start, false);
                 let page: Page = this.selection.getPage(this.selection.start.paragraph);
-                // eslint-disable-next-line max-len
                 const pageTop: number = (page.boundingRectangle.y - (this.owner.viewer.pageGap * (this.pages.indexOf(page) + 1)) * this.zoomFactor + (this.owner.viewer as PageLayoutViewer).pageGap * (this.pages.indexOf(page) + 1));
                 this.touchStart.style.left = page.boundingRectangle.x + (Math.round(this.selection.start.location.x) * this.zoomFactor - 14) + 'px';
                 this.touchStart.style.top = pageTop + ((y) * this.zoomFactor) + 'px';
@@ -1724,7 +1719,6 @@ export class DocumentHelper {
             if (this.formFillPopup) {
                 this.formFillPopup.hidePopup();
             }
-            // eslint-disable-next-line max-len
             if (this.isLeftButtonPressed(event) && !this.owner.isReadOnlyMode && this.owner.enableImageResizerMode && !isNullOrUndefined(this.owner.imageResizerModule.selectedResizeElement)) {
                 if (this.selection.isInShape) {
                     const textFram: TextFrame = this.owner.selection.getCurrentTextFrame();
@@ -1741,7 +1735,6 @@ export class DocumentHelper {
             const touchPoint: Point = this.owner.viewer.findFocusedPage(cursorPoint, true);
             this.mouseDownOffset.x = touchPoint.x;
             this.mouseDownOffset.y = touchPoint.y;
-            // eslint-disable-next-line max-len
             this.isMouseDownInFooterRegion = this.selection.isCursorInsidePageRect(cursorPoint, this.currentPage) && this.selection.isCursorInFooterRegion(cursorPoint, this.currentPage);
             this.isSelectionChangedOnMouseMoved = false;
             if (!this.owner.isReadOnlyMode && (this.owner.editorModule.tableResize.isInCellResizerArea(touchPoint) ||
@@ -1811,8 +1804,6 @@ export class DocumentHelper {
                         const table: TableWidget = this.owner.editorModule.tableResize.currentResizingTable;
                         const startPosition: TextPosition = this.selection.setPositionForBlock(table, true);
                         const endPosition: TextPosition = this.selection.setPositionForBlock(table, false);
-
-                        // eslint-disable-next-line max-len
                         if (!(this.owner.documentHelper.isDocumentProtected) || this.selection.checkSelectionIsAtEditRegion(startPosition, endPosition)) {
                             this.owner.editorModule.tableResize.handleResizing(touchPoint);
                         }
@@ -1866,7 +1857,7 @@ export class DocumentHelper {
                 this.isMouseEntered = false;
             }
         }
-        
+
     };
     private scrollForwardOnSelection(cursorPoint: Point): void {
         if (this.viewerContainer) {
@@ -3414,7 +3405,6 @@ export abstract class LayoutViewer {
                     }
                 }
                 if (!isEmptyWidget || isEmptyWidget && this.owner.enableHeaderAndFooter) {
-                    // eslint-disable-next-line max-len
                     bottom = 0.667 + Math.min(pageHeight / 100 * 40, Math.max(footerDistance + page.footerWidget.height + footnoteHeight, bottomMargin));
                 }
             }

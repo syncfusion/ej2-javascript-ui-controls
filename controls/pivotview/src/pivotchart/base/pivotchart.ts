@@ -258,7 +258,7 @@ export class PivotChart {
                     for (let cKey of cKeys) {
                         let cellIndex: number = Number(cKey);
                         let cell: IAxisSet = pivotValues[rowIndex][cellIndex] as IAxisSet;
-                        let measureAllow: boolean = cell.rowHeaders === '' ? this.dataSourceSettings.rows.length === 0 : true;
+                        let measureAllow: boolean = isNullOrUndefined(cell.rowHeaders) ? this.dataSourceSettings.rows.length === 0 : true;
                         let actualText: any = (this.parent.dataType === 'olap' && tupInfo && tupInfo.measureName) ?
                             tupInfo.measureName : cell.actualText;
                         if (!(this.parent.dataType === 'olap' && cell.isGrandSum) && !totColIndex[cell.colIndex] && cell.axis === 'value' && firstRowCell.type !== 'header' &&
@@ -366,6 +366,9 @@ export class PivotChart {
                 currentSeries = this.persistSettings.chartSeries ? this.frameChartSeries(this.persistSettings.chartSeries) as SeriesModel : currentSeries;
                 if (!isNullOrUndefined((currentSeries as any).palettes) && (currentSeries as any).palettes.length > 0 && (isNullOrUndefined(this.persistSettings.palettes) || this.persistSettings.palettes.length == 0)) {
                     this.chartSettings.palettes = (currentSeries as any).palettes;
+                }
+                for (let i: number = 0; i < this.columnGroupObject[key].length; i++) {
+                    this.columnGroupObject[key][i].x = this.columnGroupObject[key][i].x === '' ? this.parent.localeObj.getConstant('blank') : this.columnGroupObject[key][i].x;
                 }
                 currentSeries.dataSource = this.columnGroupObject[key];
                 currentSeries.xName = 'x';

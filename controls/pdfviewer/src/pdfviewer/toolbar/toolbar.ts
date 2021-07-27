@@ -1915,6 +1915,7 @@ export class Toolbar {
             let elements: any = this.pdfViewerBase.customStampCollection;
             for (let n: number = 0; n < elements.length; n++) {
                 if (elements[n].customStampName === args.Item.Text) {
+                    this.pdfViewer.annotationModule.stampAnnotationModule.customStampName = args.Item.Text;
                     this.annotationToolbarModule.checkStampAnnotations();
                     this.pdfViewer.annotation.stampAnnotationModule.isStampAddMode = true;
                     this.pdfViewer.annotationModule.stampAnnotationModule.isStampAnnotSelected = true;

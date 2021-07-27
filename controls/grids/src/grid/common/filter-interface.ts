@@ -25,7 +25,6 @@ export interface XLSearchSettings {
 /** @hidden */
 export interface IXLFilter extends Component<HTMLElement> {
     filterSettings?: XLFilterSettings;
-    isJsComponent?: boolean;
     destroyTemplate?: Function;
     getQuery?: Function;
     searchSettings?: XLSearchSettings;

@@ -1,4 +1,3 @@
-/* eslint-disable */
 import { isNullOrUndefined, classList, createElement } from '@syncfusion/ej2-base';
 
 const globalTimeOut: { [key: string]: GlobalTimeOut } = {};
@@ -38,21 +37,19 @@ export type SpinnerType = 'Material' | 'Fabric'| 'Bootstrap' | 'HighContrast' | 
  * E.g : blazorSpinner({ action: "Create", options: {target: targetElement}, type: "" });
  * ```
  *
- * @param args
- * @param action
- * @param options
- * @param target
- * @param type
- * @param action
- * @param options
- * @param target
- * @param type
  * @private
+ * @param {string} action - The action.
+ * @param {CreateArgs} options - The options
+ * @param {string} target - The target
+ * @param {string} type - the type
+ * @returns {void}
  */
 export function Spinner(action: string, options: CreateArgs, target: string, type: string): void {
     switch (action) {
     case 'Create':
+        // eslint-disable-next-line
         const element: HTMLElement = <HTMLElement>document.querySelector(options.target as string) as HTMLElement;
+        // eslint-disable-next-line
         const args: SpinnerArgs = { type: <SpinnerType>type, target: element, cssClass: options.cssClass,
             label: options.label, width: options.width };
         createSpinner(args);
@@ -64,6 +61,7 @@ export function Spinner(action: string, options: CreateArgs, target: string, typ
         hideSpinner(document.querySelector(target));
         break;
     case 'Set':
+        // eslint-disable-next-line
         const setArgs: SetArgs = { cssClass: options.cssClass, type: <SpinnerType>type };
         setSpinner(setArgs);
         break;
@@ -75,14 +73,10 @@ export function Spinner(action: string, options: CreateArgs, target: string, typ
  * ```
  * E.g : createSpinner({ target: targetElement, width: '34px', label: 'Loading..' });
  * ```
- *
- * @param args
  * @private
- */
-
-/**
- * @param args
- * @param internalCreateElement
+ * @param  {SpinnerArgs} args - The SpinnerArgs.
+ * @param {createElementParams} internalCreateElement - The internalCreateElement
+ * @returns {void}
  */
 export function createSpinner ( args: SpinnerArgs, internalCreateElement ?: createElementParams): void {
     if (!args.target) {
@@ -90,7 +84,7 @@ export function createSpinner ( args: SpinnerArgs, internalCreateElement ?: crea
     }
     let radius: number;
     const makeElement: createElementParams = !isNullOrUndefined(internalCreateElement) ? internalCreateElement : createElement;
-    let container: { wrap: HTMLElement; inner_wrap: HTMLElement } = create_spinner_container(args.target, makeElement);
+    let container: { wrap: HTMLElement; innerWrap: HTMLElement } = createSpinnerContainer(args.target, makeElement);
     if (!isNullOrUndefined(args.cssClass)) {
         container.wrap.classList.add(args.cssClass);
     }
@@ -104,7 +98,7 @@ export function createSpinner ( args: SpinnerArgs, internalCreateElement ?: crea
         radius = calculateRadius(width, theme);
         setTheme(theme, container.wrap, radius, makeElement);
         if (!isNullOrUndefined(args.label)) {
-            createLabel(container.inner_wrap, args.label, makeElement);
+            createLabel(container.innerWrap, args.label, makeElement);
         }
     }
     container.wrap.classList.add(CLS_HIDESPIN);
@@ -112,15 +106,10 @@ export function createSpinner ( args: SpinnerArgs, internalCreateElement ?: crea
 }
 
 /**
- * @param container
- * @param label
- * @param makeElement
- * @param container
- * @param label
- * @param makeElement
- * @param container
- * @param label
- * @param makeElement
+ * @param {HTMLElement} container - The HTMLElement.
+ * @param {number} label - The label.
+ * @param {createElementParams} makeElement - The makeElement.
+ * @returns {HTMLElement} - Returns HTMLElement.
  */
 function createLabel(container: HTMLElement, label: string, makeElement: createElementParams) : HTMLElement {
     const labelEle: HTMLElement = makeElement('div', {});
@@ -131,42 +120,36 @@ function createLabel(container: HTMLElement, label: string, makeElement: createE
 }
 
 /**
- * @param container
- * @param radius
- * @param makeElement
- * @param container
- * @param radius
- * @param makeElement
+ * @param {HTMLElement} container - The HTMLElement.
+ * @param {number} radius - The radius.
+ * @param {createElementParams} makeElement - The makeElement.
+ * @returns {void}
  */
 function createMaterialSpinner(container: HTMLElement, radius: number, makeElement: createElementParams): void {
-    const uniqueID: string = random_generator();
+    const uniqueID: string = randomGenerator();
     globalTimeOut[uniqueID] = { timeOut: 0, type: 'Material', radius: radius };
-    create_material_element (container, uniqueID, makeElement, CLS_MATERIALSPIN);
-    mat_calculate_attributes(radius, container, 'Material', CLS_MATERIALSPIN);
+    createMaterialElement (container, uniqueID, makeElement, CLS_MATERIALSPIN);
+    matCalculateAttributes(radius, container, 'Material', CLS_MATERIALSPIN);
 }
 
 /**
- * @param container
- * @param radius
- * @param makeElement
+ * @param {HTMLElement} container - The HTMLElement.
+ * @param {number} radius - The radius.
+ * @param {createElementParams} makeElement - The makeElement.
+ * @returns {void}
  */
 function createBootstrap4Spinner(container: HTMLElement, radius: number, makeElement: createElementParams): void {
-    const uniqueID: string = random_generator();
+    const uniqueID: string = randomGenerator();
     globalTimeOut[uniqueID] = { timeOut: 0, type: 'Bootstrap4', radius: radius };
-    create_material_element (container, uniqueID, makeElement, CLS_BOOT4SPIN);
-    mat_calculate_attributes(radius, container, 'Bootstrap4', CLS_BOOT4SPIN);
+    createMaterialElement (container, uniqueID, makeElement, CLS_BOOT4SPIN);
+    matCalculateAttributes(radius, container, 'Bootstrap4', CLS_BOOT4SPIN);
 }
 
 /**
- * @param container
- * @param uniqueID
- * @param radius
- * @param container
- * @param uniqueID
- * @param radius
- * @param container
- * @param uniqueID
- * @param radius
+ * @param {HTMLElement} container - The HTMLElement.
+ * @param {string} uniqueID - The uniqueID.
+ * @param {number} radius - The radius.
+ * @returns {void}
  */
 function startMatAnimate(container: HTMLElement, uniqueID: string, radius: number): void {
     const globalObject: {[key: string]: GlobalVariables } = {};
@@ -177,34 +160,34 @@ function startMatAnimate(container: HTMLElement, uniqueID: string, radius: numbe
 }
 
 /**
- * @param container
- * @param radius
- * @param makeElement
- * @param container
- * @param radius
- * @param makeElement
+ * @param {HTMLElement} container - The HTMLElement.
+ * @param {number} radius - The radius.
+ * @param {createElementParams} makeElement - The makeElement.
+ * @returns {void}
  */
 function createFabricSpinner(container: HTMLElement, radius: number, makeElement: createElementParams): void {
-    const uniqueID: string = random_generator();
+    const uniqueID: string = randomGenerator();
     globalTimeOut[uniqueID] = { timeOut: 0, type: 'Fabric', radius: radius };
-    create_fabric_element(container, uniqueID, CLS_FABRICSPIN, makeElement);
-    fb_calculate_attributes(radius, container, CLS_FABRICSPIN);
+    createFabricElement(container, uniqueID, CLS_FABRICSPIN, makeElement);
+    fbCalculateAttributes(radius, container, CLS_FABRICSPIN);
 }
 
 /**
- * @param container
- * @param radius
- * @param makeElement
+ * @param {HTMLElement} container - The HTMLElement.
+ * @param {number} radius - The radius.
+ * @param {createElementParams} makeElement - The makeElement.
+ * @returns {void}
  */
 function createHighContrastSpinner(container: HTMLElement, radius: number, makeElement: createElementParams): void {
-    const uniqueID: string = random_generator();
+    const uniqueID: string = randomGenerator();
     globalTimeOut[uniqueID] = { timeOut: 0, type: 'HighContrast', radius: radius };
-    create_fabric_element(container, uniqueID, CLS_HIGHCONTRASTSPIN, makeElement);
-    fb_calculate_attributes(radius, container, CLS_HIGHCONTRASTSPIN);
+    createFabricElement(container, uniqueID, CLS_HIGHCONTRASTSPIN, makeElement);
+    fbCalculateAttributes(radius, container, CLS_HIGHCONTRASTSPIN);
 }
 
 /**
- * @param container
+ * @param {HTMLElement} container - The container
+ * @returns {string} - Returns the string
  */
 function getTheme (container: HTMLElement) : string {
     const theme: string = window.getComputedStyle(container as Element, ':after').getPropertyValue('content');
@@ -212,10 +195,11 @@ function getTheme (container: HTMLElement) : string {
 }
 
 /**
- * @param theme
- * @param container
- * @param radius
- * @param makeElement
+ * @param {string} theme - The theme.
+ * @param {HTMLElement} container - The HTMLElement.
+ * @param {number} radius - The radius.
+ * @param {createElementParams} makeElement - The makeElement.
+ * @returns {void}
  */
 function setTheme(theme: string, container: HTMLElement, radius: number, makeElement: createElementParams): void {
     const innerContainer: HTMLElement = container.querySelector('.' + CLS_SPININWRAP) as HTMLElement;
@@ -243,35 +227,25 @@ function setTheme(theme: string, container: HTMLElement, radius: number, makeEle
 }
 
 /**
- * @param innerContainer
- * @param radius
- * @param makeElement
- * @param innerContainer
- * @param radius
- * @param makeElement
- * @param innerContainer
- * @param radius
- * @param makeElement
+ * @param {HTMLElement} innerContainer - The innerContainer.
+ * @param {number} radius - The radius.
+ * @param {createElementParams} makeElement - The makeElement.
+ * @returns {void}
  */
 function createBootstrapSpinner(innerContainer: HTMLElement, radius: number, makeElement: createElementParams): void {
-    const uniqueID: string = random_generator();
+    const uniqueID: string = randomGenerator();
     globalTimeOut[uniqueID] = { timeOut: 0, type: 'Bootstrap', radius: radius };
-    create_bootstrap_element(innerContainer, uniqueID, makeElement);
-    boot_calculate_attributes(innerContainer, radius);
+    createBootstrapElement(innerContainer, uniqueID, makeElement);
+    bootCalculateAttributes(innerContainer, radius);
 }
 
 /**
- * @param innerContainer
- * @param uniqueID
- * @param makeElement
- * @param innerContainer
- * @param uniqueID
- * @param makeElement
- * @param innerContainer
- * @param uniqueID
- * @param makeElement
+ * @param {HTMLElement} innerContainer - The HTMLElement.
+ * @param {string} uniqueID - The uniqueID.
+ * @param {createElementParams} makeElement - The createElementParams.
+ * @returns {void}
  */
-function create_bootstrap_element(innerContainer: HTMLElement, uniqueID: string, makeElement: createElementParams): void {
+function createBootstrapElement(innerContainer: HTMLElement, uniqueID: string, makeElement: createElementParams): void {
     const svgBoot: SVGSVGElement = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
     const viewBoxValue: number = 64;
     const trans: number = 32;
@@ -290,12 +264,11 @@ function create_bootstrap_element(innerContainer: HTMLElement, uniqueID: string,
 }
 
 /**
- * @param innerContainer
- * @param radius
- * @param innerContainer
- * @param radius
+ * @param {HTMLElement} innerContainer - The innerContainer.
+ * @param {number} radius - The radius.
+ * @returns {void}
  */
-function boot_calculate_attributes( innerContainer: HTMLElement, radius: number): void {
+function bootCalculateAttributes( innerContainer: HTMLElement, radius: number): void {
     const svg: SVGSVGElement = innerContainer.querySelector('svg.e-spin-bootstrap') as SVGSVGElement;
     svg.style.width = svg.style.height = radius + 'px';
     const x: number = 0; const y: number = 0; const rad: number = 24;
@@ -311,10 +284,9 @@ function boot_calculate_attributes( innerContainer: HTMLElement, radius: number)
 }
 
 /**
- * @param begin
- * @param stop
- * @param begin
- * @param stop
+ * @param {number} begin - The begin.
+ * @param {number} stop - The stop.
+ * @returns {number[]} - Returns the number.
  */
 function generateSeries(begin: number, stop: number): number[] {
     const series: number[] = [];
@@ -323,7 +295,8 @@ function generateSeries(begin: number, stop: number): number[] {
     let count: number = 1;
     formSeries(start);
     /**
-     * @param i
+     * @param {number} i - The number
+     * @returns {void}
      */
     function formSeries(i: number): void {
         series.push(i);
@@ -350,7 +323,8 @@ function generateSeries(begin: number, stop: number): number[] {
 }
 
 /**
- * @param innerContainer
+ * @param {HTMLElement} innerContainer - The innerContainer.
+ * @returns {void}
  */
 function animateBootstrap(innerContainer: HTMLElement): void {
     const svg: SVGSVGElement = innerContainer.querySelector('svg.e-spin-bootstrap') as SVGSVGElement;
@@ -362,41 +336,38 @@ function animateBootstrap(innerContainer: HTMLElement): void {
     }
 
     /**
-     * @param circle
-     * @param start
-     * @param end
-     * @param series
-     * @param id
+     * @param {SVGCircleElement} circle - The circle.
+     * @param {number} start - The start.
+     * @param {number} end - The end.
+     * @param {number[]} series - The series
+     * @param {string} id - The id.
+     * @returns {void}
      */
     function rotation (circle: SVGCircleElement, start: number, end: number, series: number[], id: string): void {
         let count: number = 0;
-        boot_animate(start);
+        bootAnimate(start);
         /**
-         * @param radius
+         * @param {number} radius - The radisu.
+         * @returns {void}
          */
-        function boot_animate(radius: number): void {
+        function bootAnimate(radius: number): void {
             if (globalTimeOut[id].isAnimate) {
                 ++count;
                 circle.setAttribute('r', radius + '');
                 if (count >= series.length) {
                     count = 0;
                 }
-                globalTimeOut[id].timeOut = setTimeout( boot_animate.bind(null, series[count]), 18);
+                globalTimeOut[id].timeOut = setTimeout( bootAnimate.bind(null, series[count]), 18);
             }
         }
     }
 }
 
 /**
- * @param container
- * @param template
- * @param cssClass
- * @param container
- * @param template
- * @param cssClass
- * @param container
- * @param template
- * @param cssClass
+ * @param {HTMLElement} container - The container.
+ * @param {string} template - The template.
+ * @param {string} cssClass - The cssClass.
+ * @returns {void}
  */
 function replaceContent(container: HTMLElement, template: string, cssClass?: string): void {
     if (!isNullOrUndefined(cssClass)) {
@@ -407,10 +378,9 @@ function replaceContent(container: HTMLElement, template: string, cssClass?: str
 }
 
 /**
- * @param width
- * @param theme
- * @param width
- * @param theme
+ * @param {string | number} width - The width
+ * @param {string} theme - The theme.
+ * @returns {number} - Returns the number.
  */
 function calculateRadius(width: string | number, theme: string): number {
     let defaultSize: number;
@@ -432,14 +402,11 @@ function calculateRadius(width: string | number, theme: string): number {
 }
 
 /**
- * @param id
- * @param radius
- * @param count
- * @param previousId
- * @param id
- * @param radius
- * @param count
- * @param previousId
+ * @param {string} id - The id.
+ * @param {number} radius - The radius.
+ * @param {number} count - The count.
+ * @param {number} previousId - The previousId.
+ * @returns {GlobalVariables} - Returns GlobalVariables.
  */
 function globalVariables(id: string, radius: number, count: number, previousId: number) : GlobalVariables {
     return  {
@@ -450,9 +417,9 @@ function globalVariables(id: string, radius: number, count: number, previousId: 
 }
 
 /**
- *
+ * @returns {string} - Returns string.
  */
-function random_generator() : string {
+function randomGenerator() : string {
     let random: string = '';
     const combine: string = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
     for (let i: number = 0; i < 5; i++) {
@@ -462,16 +429,13 @@ function random_generator() : string {
 }
 
 /**
- * @param innerCon
- * @param uniqueID
- * @param themeClass
- * @param makeElement
- * @param innerCon
- * @param uniqueID
- * @param themeClass
- * @param makeElement
+ * @param {HTMLElement} innerCon - The innerContainer.
+ * @param {string} uniqueID - The uniqueID.
+ * @param {string} themeClass - The themeClass
+ * @param {createElementParams} makeElement - The makeElement.
+ * @returns {void}
  */
-function create_fabric_element ( innerCon: HTMLElement, uniqueID: string, themeClass: string, makeElement: createElementParams ): void {
+function createFabricElement ( innerCon: HTMLElement, uniqueID: string, themeClass: string, makeElement: createElementParams ): void {
     const svgFabric: SVGSVGElement =  document.createElementNS('http://www.w3.org/2000/svg', 'svg');
     svgFabric.setAttribute('id', uniqueID);
     svgFabric.setAttribute('class', themeClass);
@@ -485,24 +449,13 @@ function create_fabric_element ( innerCon: HTMLElement, uniqueID: string, themeC
 }
 
 /**
- * @param innerContainer
- * @param uniqueID
- * @param makeElement
- * @param cls
- * @param innerContainer
- * @param uniqueID
- * @param makeElement
- * @param cls
- * @param innerContainer
- * @param uniqueID
- * @param makeElement
- * @param cls
- * @param innerContainer
- * @param uniqueID
- * @param makeElement
- * @param cls
+ * @param {HTMLElement} innerContainer - The innerContainer.
+ * @param {string} uniqueID - The uniqueID.
+ * @param {createElementParams} makeElement - The makeElement.
+ * @param {string} cls - The class
+ * @returns {void}
  */
-function create_material_element ( innerContainer: HTMLElement, uniqueID: string, makeElement: createElementParams, cls: string): void {
+function createMaterialElement ( innerContainer: HTMLElement, uniqueID: string, makeElement: createElementParams, cls: string): void {
     const svgMaterial: SVGSVGElement =   document.createElementNS('http://www.w3.org/2000/svg', 'svg');
     svgMaterial.setAttribute('class', cls);
     svgMaterial.setAttribute('id', uniqueID);
@@ -513,21 +466,23 @@ function create_material_element ( innerContainer: HTMLElement, uniqueID: string
 }
 
 /**
- * @param target
- * @param makeElement
+ * @param {HTMLElement} target - The target.
+ * @param {createElementParams} makeElement - The makeElement.
+ * @returns {HTMLElement;HTMLElement} - Retruns the HTMLElement.
  */
-function create_spinner_container(target: HTMLElement, makeElement: createElementParams): { wrap: HTMLElement; inner_wrap: HTMLElement} {
+function createSpinnerContainer(target: HTMLElement, makeElement: createElementParams): { wrap: HTMLElement; innerWrap: HTMLElement} {
     const spinnerContainer: HTMLElement = makeElement('div', {});
     spinnerContainer.classList.add(CLS_SPINWRAP);
     const spinnerInnerContainer: HTMLElement = makeElement('div', {});
     spinnerInnerContainer.classList.add(CLS_SPININWRAP);
     target.appendChild(spinnerContainer);
     spinnerContainer.appendChild(spinnerInnerContainer);
-    return { wrap: spinnerContainer , inner_wrap: spinnerInnerContainer };
+    return { wrap: spinnerContainer , innerWrap: spinnerInnerContainer };
 }
 
 /**
- * @param spinnerInfo
+ * @param {SpinnerInfo} spinnerInfo - The SpinnerInfo.
+ * @returns {void}
  */
 function animateMaterial(spinnerInfo: SpinnerInfo): void {
     const start: number = 1; const end: number = 149;
@@ -538,20 +493,14 @@ function animateMaterial(spinnerInfo: SpinnerInfo): void {
 }
 
 /**
- * @param start
- * @param end
- * @param easing
- * @param duration
- * @param count
- * @param max
- * @param spinnerInfo
- * @param start
- * @param end
- * @param easing
- * @param duration
- * @param count
- * @param max
- * @param spinnerInfo
+ * @param {number} start - The start.
+ * @param {number} end - The end.
+ * @param {Function} easing - The easing.
+ * @param {number} duration - The duration.
+ * @param {number} count - The count.
+ * @param {number} max - The max.
+ * @param {SpinnerInfo} spinnerInfo - The SpinnerInfo.
+ * @returns {void}
  */
 function createCircle(start: number, end: number, easing: Function, duration: number,
                       count: number, max: number, spinnerInfo: SpinnerInfo): void {
@@ -561,24 +510,24 @@ function createCircle(start: number, end: number, easing: Function, duration: nu
     const diameter: number = getSize((spinnerInfo.globalInfo[spinnerInfo.uniqueID].radius * 2) + '');
     const strokeSize: number = getStrokeSize(diameter);
     const rotate: number = -90 * (spinnerInfo.globalInfo[spinnerInfo.uniqueID].count || 0);
-    mat_animation(spinnerInfo);
+    matAnimation(spinnerInfo);
     /**
-     * @param spinnerInfo
+     * @param {SpinnerInfo} spinnerInfo - The SpinnerInfo.
+     * @returns {void}
      */
-    function mat_animation(spinnerInfo: SpinnerInfo): void {
+    function matAnimation(spinnerInfo: SpinnerInfo): void {
         const currentTime: number = Math.max(0, Math.min(new Date().getTime() - startTime, duration));
         updatePath( easing(currentTime, start, change, duration), spinnerInfo.container);
         if (id === spinnerInfo.globalInfo[spinnerInfo.uniqueID].previousId && currentTime < duration) {
-            globalTimeOut[spinnerInfo.uniqueID].timeOut = setTimeout(mat_animation.bind(null, spinnerInfo), 1);
+            globalTimeOut[spinnerInfo.uniqueID].timeOut = setTimeout(matAnimation.bind(null, spinnerInfo), 1);
         } else {
             animateMaterial(spinnerInfo);
         }
     }
     /**
-     * @param value
-     * @param container
-     * @param value
-     * @param container
+     * @param {number} value - The value.
+     * @param {HTMLElement} container - The container.
+     * @returns {void}
      */
     function updatePath (value: number, container: HTMLElement): void {
         if ((!isNullOrUndefined(container.querySelector('svg.e-spin-material')))
@@ -592,16 +541,13 @@ function createCircle(start: number, end: number, easing: Function, duration: nu
 }
 
 /**
- * @param radius
- * @param container
- * @param type
- * @param cls
- * @param radius
- * @param container
- * @param type
- * @param cls
+ * @param {number} radius - The radius.
+ * @param {HTMLElement} container - The container.
+ * @param {string} type - The type.
+ * @param {string} cls - The class
+ * @returns {void}
  */
-function mat_calculate_attributes (radius: number , container: HTMLElement, type: string, cls: string): void {
+function matCalculateAttributes (radius: number , container: HTMLElement, type: string, cls: string): void {
     const diameter: number = radius * 2;
     const svg: SVGSVGElement = container.querySelector('svg.' + cls) as SVGSVGElement;
     const path: SVGPathElement = svg.querySelector('path.e-path-circle') as SVGPathElement;
@@ -619,7 +565,8 @@ function mat_calculate_attributes (radius: number , container: HTMLElement, type
 }
 
 /**
- * @param value
+ * @param {string} value - The value.
+ * @returns {number} - Returns number.
  */
 function getSize(value: string ): number {
     const parsed: number = parseFloat(value);
@@ -627,10 +574,9 @@ function getSize(value: string ): number {
 }
 
 /**
- * @param diameter
- * @param strokeSize
- * @param diameter
- * @param strokeSize
+ * @param {number} diameter - The diameter.
+ * @param {number} strokeSize - The strokeSize.
+ * @returns {string} - Returns string.
  */
 function drawArc(diameter: number, strokeSize: number): string {
     const radius: number = diameter / 2;
@@ -640,35 +586,30 @@ function drawArc(diameter: number, strokeSize: number): string {
 }
 
 /**
- * @param diameter
+ * @param {number} diameter - The diameter.
+ * @returns {number} - Returns number.
  */
 function getStrokeSize(diameter: number): number {
     return 10 / 100 * diameter;
 }
 
 /**
- * @param diameter
- * @param strokeSize
- * @param value
- * @param max
- * @param diameter
- * @param strokeSize
- * @param value
- * @param max
+ * @param {number} diameter - The diameter.
+ * @param {number} strokeSize - The strokeSize.
+ * @param {number} value - The value.
+ * @param {number} max - The max.
+ * @returns {number} - Returns number.
  */
 function getDashOffset(diameter: number, strokeSize: number, value: number, max: number): number {
     return (diameter - strokeSize) * Math.PI * ( (3 * (max) / 100) - (value / 100) );
 }
 
 /**
- * @param current
- * @param start
- * @param change
- * @param duration
- * @param current
- * @param start
- * @param change
- * @param duration
+ * @param {number} current - The current.
+ * @param {number} start - The start.
+ * @param {number} change - The change.
+ * @param {number} duration - The duration
+ * @returns {number} - Returns number.
  */
 function easeAnimation(current: number, start: number, change: number, duration: number): number {
     const timestamp: number = (current /= duration) * current;
@@ -677,17 +618,12 @@ function easeAnimation(current: number, start: number, change: number, duration:
 }
 
 /**
- * @param radius
- * @param innerConainer
- * @param trgClass
- * @param radius
- * @param innerConainer
- * @param trgClass
- * @param radius
- * @param innerConainer
- * @param trgClass
+ * @param {number} radius - The radius.
+ * @param {HTMLElement} innerConainer - The innerConainer.
+ * @param {string} trgClass - The trgClass.
+ * @returns {void}
  */
-function fb_calculate_attributes(radius: number, innerConainer: HTMLElement, trgClass: string): void {
+function fbCalculateAttributes(radius: number, innerConainer: HTMLElement, trgClass: string): void {
     const centerX: number = radius; const centerY: number = radius;
     const diameter: number = radius * 2;
     const startArc: number = 315; const endArc: number = 45;
@@ -703,10 +639,11 @@ function fb_calculate_attributes(radius: number, innerConainer: HTMLElement, trg
 }
 
 /**
- * @param centerX
- * @param centerY
- * @param radius
- * @param angle
+ * @param {number} centerX - The centerX.
+ * @param {number} centerY - The centerY.
+ * @param {number} radius - The radius.
+ * @param {number} angle - The angle.
+ * @returns {number;number} - Returns number.
  */
 function defineArcPoints(centerX: number, centerY: number, radius: number, angle: number): {x: number; y: number} {
     const radians: number = (angle - 90) * Math.PI / 180.0;
@@ -717,11 +654,12 @@ function defineArcPoints(centerX: number, centerY: number, radius: number, angle
 }
 
 /**
- * @param x
- * @param y
- * @param radius
- * @param startArc
- * @param endArc
+ * @param {number} x - The x.
+ * @param {number} y - The y.
+ * @param {number} radius - The radius.
+ * @param {number} startArc - The startArc.
+ * @param {number} endArc - The endArc.
+ * @returns {string} - Returns string.
  */
 function defineArc(x: number, y: number, radius: number, startArc: number, endArc: number): string {
     const start: {x: number; y: number } = defineArcPoints(x, y, radius, endArc);
@@ -734,12 +672,10 @@ function defineArc(x: number, y: number, radius: number, startArc: number, endAr
 }
 
 /**
- * @param x
- * @param y
- * @param radius
- * @param x
- * @param y
- * @param radius
+ * @param {number} x - The x.
+ * @param {number} y - The y.
+ * @param {number} radius - The radius.
+ * @returns {void}
  */
 function defineCircle(x: number, y: number, radius: number ): string {
     const d : string = [
@@ -752,9 +688,9 @@ function defineCircle(x: number, y: number, radius: number ): string {
 }
 /**
  * Function to show the Spinner.
- *
- * @param container - Specify the target of the Spinner.
  * @private
+ * @param {HTMLElement} container - The container.
+ * @returns {void}
  */
 export function showSpinner(container: HTMLElement): void {
     showHideSpinner(container, false);
@@ -762,8 +698,9 @@ export function showSpinner(container: HTMLElement): void {
 }
 
 /**
- * @param container
- * @param isHide
+ * @param {HTMLElement} container - The container.
+ * @param {boolean} isHide - To show or hide.
+ * @returns {void}
  */
 function showHideSpinner(container: HTMLElement, isHide: boolean): void {
     let spinnerWrap: HTMLElement;
@@ -773,8 +710,8 @@ function showHideSpinner(container: HTMLElement, isHide: boolean): void {
     }
     if (container && spinnerWrap) {
         const inner: HTMLElement = spinnerWrap.querySelector('.' + CLS_SPININWRAP) as HTMLElement;
-        let spinCheck: boolean;
-        spinCheck = isHide ? !spinnerWrap.classList.contains(CLS_SPINTEMPLATE) && !spinnerWrap.classList.contains(CLS_HIDESPIN) :
+        // eslint-disable-next-line max-len
+        const spinCheck: boolean = isHide ? !spinnerWrap.classList.contains(CLS_SPINTEMPLATE) && !spinnerWrap.classList.contains(CLS_HIDESPIN) :
             !spinnerWrap.classList.contains(CLS_SPINTEMPLATE) && !spinnerWrap.classList.contains(CLS_SHOWSPIN);
         if (spinCheck) {
             const svgEle: SVGSVGElement = spinnerWrap.querySelector('svg') as SVGSVGElement;
@@ -785,22 +722,25 @@ function showHideSpinner(container: HTMLElement, isHide: boolean): void {
             globalTimeOut[id].isAnimate = !isHide;
             switch (globalTimeOut[id].type) {
             case 'Material':
+                // eslint-disable-next-line
                 isHide ? clearTimeout(globalTimeOut[id].timeOut) : startMatAnimate(inner, id, globalTimeOut[id].radius);
                 break;
             case 'Bootstrap':
+                // eslint-disable-next-line
                 isHide ? clearTimeout(globalTimeOut[id].timeOut) : animateBootstrap(inner);
                 break;
             }
         }
+        // eslint-disable-next-line
         isHide ? classList(spinnerWrap, [CLS_HIDESPIN], [CLS_SHOWSPIN]) : classList(spinnerWrap, [CLS_SHOWSPIN], [CLS_HIDESPIN]);
         container = null;
     }
 }
 /**
  * Function to hide the Spinner.
- *
- * @param container - Specify the target of the Spinner.
  * @private
+ * @param {HTMLElement} container - Specify the target of the Spinner.
+ * @returns {void}
  */
 export function hideSpinner(container: HTMLElement): void  {
     showHideSpinner(container, true);
@@ -812,10 +752,10 @@ export function hideSpinner(container: HTMLElement): void  {
  * ```
  * E.g : setSpinner({ cssClass: 'custom-css'; type: 'Material' });
  * ```
- *
- * @param args
- * @param internalCreateElement
  * @private
+ * @param {SetSpinnerArgs} args - The args.
+ * @param {createElementParams} internalCreateElement - The internalCreateElement.
+ * @returns {void}
  */
 export function setSpinner(args: SetSpinnerArgs, internalCreateElement?: createElementParams): void  {
     const makeElement: createElementParams = !isNullOrUndefined(internalCreateElement) ? internalCreateElement : createElement;
@@ -832,11 +772,12 @@ export function setSpinner(args: SetSpinnerArgs, internalCreateElement?: createE
 }
 
 /**
- * @param template
- * @param container
- * @param theme
- * @param cssClass
- * @param makeEle
+ * @param {string} template - The template.
+ * @param {HTMLElement} container - The container.
+ * @param {string} theme - The theme.
+ * @param {string} cssClass - The cssClass.
+ * @param {createElementParams} makeEle - The makeEle.
+ * @returns {void}
  */
 function ensureTemplate ( template: string, container: HTMLElement, theme: string, cssClass: string, makeEle: createElementParams): void {
     if (isNullOrUndefined(template) && !container.classList.contains(CLS_SPINTEMPLATE)) {
@@ -855,18 +796,11 @@ function ensureTemplate ( template: string, container: HTMLElement, theme: strin
 }
 
 /**
- * @param container
- * @param theme
- * @param cssClass
- * @param makeEle
- * @param container
- * @param theme
- * @param cssClass
- * @param makeEle
- * @param container
- * @param theme
- * @param cssClass
- * @param makeEle
+ * @param {HTMLElement} container - The container.
+ * @param {string} theme - The theme.
+ * @param {string} cssClass - The cssClass.
+ * @param {createElementParams} makeEle - The makeEle.
+ * @returns {void}
  */
 function replaceTheme( container: HTMLElement, theme: string, cssClass: string, makeEle: createElementParams): void {
     if (!isNullOrUndefined(cssClass)) {

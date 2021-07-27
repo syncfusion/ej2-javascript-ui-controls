@@ -93,7 +93,7 @@ export class FormFieldPopUp {
     private initDatePicker(): HTMLElement {
         const dateDiv: HTMLElement = createElement('div', { className: 'e-de-date-field' });
         const dateInput: HTMLInputElement = createElement('input', { className: 'e-de-txt-form' }) as HTMLInputElement;
-        // eslint-disable-next-line max-len
+        /* eslint-disable-next-line max-len */
         const datePicker: DateTimePicker = new DateTimePicker({ allowEdit: false, strictMode: true, change: this.enableDisableDatePickerOkButton });
         this.dateInput = dateInput;
         const textBoxButtonDiv: HTMLElement = createElement('div', { className: 'e-de-cmt-action-button' });
@@ -248,7 +248,6 @@ export class FormFieldPopUp {
                         height: 'auto',
                         width: 'auto',
                         relateTo: this.owner.documentHelper.viewerContainer.parentElement,
-                        // eslint-disable-next-line @typescript-eslint/naming-convention
                         position: { X: position.x, Y: position.y + lineHeight }
                     });
                 }

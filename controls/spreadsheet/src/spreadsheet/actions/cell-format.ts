@@ -61,6 +61,10 @@ export class CellFormat {
                         args.manualUpdate);
                 }
                 Object.assign(cell.style, args.style);
+                if(cell.firstElementChild && cell.firstElementChild.classList.contains("e-wrap-content")){
+                    let wrapEle= cell.firstElementChild as HTMLElement;
+                    Object.assign(wrapEle.style, args.style);
+                }
                 const CellElem: CellModel = getCell(args.rowIdx, args.colIdx, sheet); // Need to remove after adding span support to merge
                 if (CellElem && (CellElem.rowSpan || CellElem.colSpan) && cell.offsetHeight > 0) {
                     const height: number = getTextHeight(this.parent as Workbook, CellElem.style || this.parent.cellStyle);

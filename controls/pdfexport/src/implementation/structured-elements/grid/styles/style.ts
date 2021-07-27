@@ -390,14 +390,13 @@ export class PdfGridRowStyle {
     public get backgroundImage() : PdfImage {
         return this.gridRowBackgroundImage;
     }
-    // public setBackgroundImage(value : PdfImage) : void {
-    //     this.gridRowBackgroundImage = value;
-    //     if (typeof this.parent !== 'undefined') {
-    //         for (let i : number = 0; i < this.parent.cells.count; i++) {
-    //             this.parent.cells.getCell(i).style.backgroundImage = value;
-    //         }
-    //     }
-    // }
+    /**
+     * sets the `backgroundImage` of the 'PdfGridCell'.
+     * @private
+     */
+    public setBackgroundImage(value: PdfImage): void {
+        this.gridRowBackgroundImage = value;
+    }
     // Constructor
     /**
      * Initializes a new instance of the `PdfGridRowStyle` class.

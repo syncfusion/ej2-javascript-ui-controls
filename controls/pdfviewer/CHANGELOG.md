@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 19.2.49 (2021-07-27)
+
+### PDF Viewer
+
+#### Bug Fixes
+
+- `#334546` - Now, the stamp annotation size is maintained properly in the saved PDF document once the annotation is moved.
+
 ## 19.2.48 (2021-07-20)
 
 ### PDF Viewer

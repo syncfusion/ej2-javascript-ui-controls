@@ -42,6 +42,7 @@ export interface IStampAnnotation {
     isPrint: boolean
     isCommentLock: boolean
     isMaskedImage: boolean
+    customStampName: string
 }
 interface IRectangles {
     height: number
@@ -109,6 +110,10 @@ export class StampAnnotation {
      * @private
      */
     public isAddAnnotationProgramatically: boolean = false;
+    /**
+     * @private
+     */
+    public customStampName: string = null;
     private dynamicText: string = '';
     constructor(pdfviewer: PdfViewer, pdfViewerBase: PdfViewerBase) {
         this.pdfViewer = pdfviewer;
@@ -496,7 +501,7 @@ export class StampAnnotation {
                 bounds: { left: X, top: Y, width: annotation.width, height: annotation.height, }, annotName: annotation.AnnotName, comments: annotation.Comments, review: { state: annotation.State, stateModel: annotation.StateModel, author: annotation.Author, modifiedDate: annotation.ModifiedDate }, shapeAnnotationType: 'stamp',
                 // eslint-disable-next-line max-len
                 annotationSelectorSettings: this.getSettings(annotation), annotationSettings: annotation.AnnotationSettings, customData: this.pdfViewer.annotation.getCustomData(annotation), allowedInteractions: annotation.allowedInteractions, isPrint: annotation.isPrint, isCommentLock: annotation.IsCommentLock,
-                isMaskedImage: annotation.IsMaskedImage
+                isMaskedImage: annotation.IsMaskedImage, customStampName: ''
             };
             this.storeStampInSession(pageIndex, annotationObject);
             if(this.isAddAnnotationProgramatically)
@@ -589,6 +594,7 @@ export class StampAnnotation {
             // eslint-disable-next-line max-len
             annotation.Author = (this.pdfViewer.annotationSettings.author !== 'Guest') ? this.pdfViewer.annotationSettings.author : this.pdfViewer.customStampSettings.author ? this.pdfViewer.customStampSettings.author : 'Guest';
             annotation.isPrint = this.pdfViewer.customStampSettings.isPrint;
+            this.customStampName = this.customStampName ? this.customStampName : this.currentStampAnnotation.signatureName ? this.currentStampAnnotation.signatureName : annotation.id;
             annotationObject = {
                 // eslint-disable-next-line max-len
                 stampAnnotationType: 'image', author: annotation.author, modifiedDate: annotation.modifiedDate, subject: '',
@@ -599,7 +605,7 @@ export class StampAnnotation {
                 bounds: { left: annotation.bounds.x, top: annotation.bounds.y, width: annotation.bounds.width, height: annotation.bounds.height }, stampFillcolor: '', isDynamicStamp: false, annotName: annotation.annotName, comments: [], review: { state: '', stateModel: '', author: annotation.author, modifiedDate: annotation.modifiedDate }, shapeAnnotationType: 'stamp',
                 // eslint-disable-next-line max-len
                 annotationSelectorSettings: annotationSelectorSettings, annotationSettings: this.pdfViewer.annotationModule.updateSettings(this.pdfViewer.customStampSettings), customData: this.pdfViewer.annotationModule.getData('image'), isPrint: annotation.isPrint,
-                allowedInteractions: allowedInteractions, isCommentLock: false, isMaskedImage: annotation.isMaskedImage
+                allowedInteractions: allowedInteractions, isCommentLock: false, isMaskedImage: annotation.isMaskedImage, customStampName: this.customStampName
             };
         } else if (annotation.stampAnnotationType) {
             annotationObject = {
@@ -611,7 +617,7 @@ export class StampAnnotation {
                 bounds: { left: annotation.bounds.left, top: annotation.bounds.top, width: annotation.bounds.width, height: annotation.bounds.height }, annotName: annotation.annotName, comments: annotation.Comments, review: { state: annotation.State, stateModel: annotation.StateModel, author: annotation.author, modifiedDate: annotation.ModifiedDate }, shapeAnnotationType: 'stamp',
                 // eslint-disable-next-line max-len
                 annotationSelectorSettings: annotationSelectorSettings, annotationSettings: this.pdfViewer.annotationModule.updateSettings(this.pdfViewer.stampSettings), customData: this.pdfViewer.annotationModule.getData(annotation.stampAnnotationType), isPrint: annotation.isPrint,
-                allowedInteractions: allowedInteractions, isCommentLock: annotation.isCommentLock, isMaskedImage: annotation.isMaskedImage
+                allowedInteractions: allowedInteractions, isCommentLock: annotation.isCommentLock, isMaskedImage: annotation.isMaskedImage, customStampName: ''
             };
         } else {
             annotationObject = {
@@ -623,7 +629,7 @@ export class StampAnnotation {
                 bounds: { left: annotation.bounds.x, top: annotation.bounds.y, width: annotation.bounds.width, height: annotation.bounds.height, }, annotName: annotation.annotName, comments: annotation.Comments, review: { state: annotation.State, stateModel: annotation.StateModel, author: annotation.author, modifiedDate: annotation.ModifiedDate },
                 // eslint-disable-next-line max-len
                 annotationSelectorSettings: annotationSelectorSettings, annotationSettings: this.pdfViewer.annotationModule.updateSettings(this.pdfViewer.stampSettings), customData: this.pdfViewer.annotationModule.getData(annotation.shapeAnnotationType), isPrint: annotation.isPrint,
-                allowedInteractions: allowedInteractions, isCommentLock: annotation.isCommentLock, isMaskedImage: annotation.isMaskedImage
+                allowedInteractions: allowedInteractions, isCommentLock: annotation.isCommentLock, isMaskedImage: annotation.isMaskedImage, customStampName: ''
             };
         }
         if (opacity) {
@@ -651,7 +657,8 @@ export class StampAnnotation {
                 let settings: any = { opacity: annotationObject.opacity, author: annotationObject.author, modifiedDate: annotationObject.modifiedDate };
                 if (annotation.shapeAnnotationType === 'Image') {
                     this.pdfViewerBase.stampAdded = false;
-                    this.pdfViewer.fireAnnotationAdd(annotationObject.pageNumber, annotationObject.annotName, 'Image', bounds, settings);
+                    this.pdfViewer.fireAnnotationAdd(annotationObject.pageNumber, annotationObject.annotName, 'Image', bounds, settings, null, null, null, null, null, this.customStampName);
+                    this.customStampName = null;
                 } else {
                     this.pdfViewer.fireAnnotationAdd(annotationObject.pageNumber, annotationObject.annotName, 'Stamp', bounds, settings);
                 }
@@ -747,11 +754,22 @@ export class StampAnnotation {
                 bounds: { left: position.left, top: position.top, width: position.width, height: position.height }, stampFillcolor: '', isDynamicStamp: false,
                 annotName: annotationName, comments: this.pdfViewer.annotationModule.getAnnotationComments(annotation.Comments, annotation, annotation.Author), review: { state: annotation.State, stateModel: annotation.StateModel, author: author, modifiedDate: modifiedDate }, shapeAnnotationType: 'stamp',
                 // eslint-disable-next-line max-len
-                annotationSelectorSettings: annotationSelectorSettings, annotationSettings: annotationSettings, customData: this.pdfViewer.annotation.getCustomData(annotation), isPrint: isPrint, isCommentLock: isCommentsLock, isMaskedImage: annotation.IsMaskedImage
+                annotationSelectorSettings: annotationSelectorSettings, annotationSettings: annotationSettings, customData: this.pdfViewer.annotation.getCustomData(annotation), isPrint: isPrint, isCommentLock: isCommentsLock, isMaskedImage: annotation.IsMaskedImage, customStampName: annotation.CustomStampName
             };
             this.storeStampInSession(pageIndex, annotationObject);
             annot.comments = this.pdfViewer.annotationModule.getAnnotationComments(annotation.Comments, annotation, annotation.Author);
             annot.review = { state: annotation.State, stateModel: annotation.StateModel, author: author, modifiedDate: modifiedDate };
+            if (this.isAddAnnotationProgramatically) {
+                // eslint-disable-next-line
+                let settings: any = {
+                    opacity: annot.opacity, borderColor: annot.strokeColor, borderWidth: annot.thickness, author: annotation.author, subject: annotation.subject, modifiedDate: annotation.modifiedDate,
+                    // eslint-disable-next-line
+                    fillColor: annot.fillColor, fontSize: annot.fontSize, width: annot.bounds.width, height: annot.bounds.height, fontColor: annot.fontColor, fontFamily: annot.fontFamily, defaultText: annot.dynamicText, fontStyle: annot.font, textAlignment: annot.textAlign
+                };
+                this.customStampName = this.customStampName ? this.customStampName : this.currentStampAnnotation.signatureName ? this.currentStampAnnotation.signatureName : annotation.id;
+                this.pdfViewer.fireAnnotationAdd(annot.pageIndex, annot.annotName, 'Image', annot.bounds, settings, null, null, null, null, null, this.customStampName);
+                this.customStampName = null;
+            }
             this.pdfViewer.add(annot as PdfAnnotationBase);
             // eslint-disable-next-line
             if (canvas != undefined && canvas != null) {
@@ -1221,7 +1239,7 @@ export class StampAnnotation {
                 rotateAngle: annotation.RotateAngle, creationDate: annotation.ModifiedDate, pageNumber: pageNumber, icon: '', stampAnnotationPath: this.findImageData(annotation.Apperarance), randomId: 'image', isDynamicStamp: this.pdfViewerBase.isDynamicStamp, dynamicText: ' ',
                 bounds: this.calculateImagePosition(annotation.Rect, true), annotName: annotation.AnnotName, comments: this.pdfViewer.annotationModule.getAnnotationComments(annotation.Comments, annotation, annotation.Author), review: { state: annotation.State, stateModel: annotation.StateModel, author: annotation.Author, modifiedDate: annotation.ModifiedDate }, shapeAnnotationType: 'stamp',
                 // eslint-disable-next-line max-len
-                annotationSelectorSettings: this.getSettings(annotation), annotationSettings: annotation.annotationSettings, customData: this.pdfViewer.annotation.getCustomData(annotation), isPrint: annotation.isPrint, isCommentLock: annotation.IsCommentLock, isMaskedImage: annotation.IsMaskedImage
+                annotationSelectorSettings: this.getSettings(annotation), annotationSettings: annotation.annotationSettings, customData: this.pdfViewer.annotation.getCustomData(annotation), isPrint: annotation.isPrint, isCommentLock: annotation.IsCommentLock, isMaskedImage: annotation.IsMaskedImage, customStampName: annotation.CustomStampName
             };
             this.pdfViewer.annotationModule.storeAnnotations(pageNumber, annotationObject, '_annotations_stamp');
         }
@@ -1235,7 +1253,7 @@ export class StampAnnotation {
                 // eslint-disable-next-line max-len
                 bounds: this.calculateImagePosition(annotation.Rect, true), annotName: annotation.AnnotName, comments: this.pdfViewer.annotationModule.getAnnotationComments(annotation.Comments, annotation, annotation.Author), review: { state: annotation.State, stateModel: annotation.StateModel, author: annotation.Author, modifiedDate: annotation.ModifiedDate }, shapeAnnotationType: 'stamp',
                 // eslint-disable-next-line max-len
-                annotationSelectorSettings: this.getSettings(annotation), annotationSettings: annotation.AnnotationSettings, customData: this.pdfViewer.annotation.getCustomData(annotation), isPrint: annotation.isPrint, isCommentLock: annotation.IsCommentLock, isMaskedImage: annotation.IsMaskedImage
+                annotationSelectorSettings: this.getSettings(annotation), annotationSettings: annotation.AnnotationSettings, customData: this.pdfViewer.annotation.getCustomData(annotation), isPrint: annotation.isPrint, isCommentLock: annotation.IsCommentLock, isMaskedImage: annotation.IsMaskedImage, customStampName: ''
             };
             if (isDynamic) {
                 annotationObject.dynamicText = this.findDynamicText(annotation.Apperarance, annotation.Subject);
@@ -1276,7 +1294,7 @@ export class StampAnnotation {
                 rotateAngle: annotation.RotateAngle, pageNumber: pageNumber, randomId: 'stamp', isDynamicStamp: this.pdfViewerBase.isDynamicStamp, dynamicText: this.dynamicText,
                 // eslint-disable-next-line max-len
                 annotationId: annotation.AnnotName, comments: this.pdfViewer.annotationModule.getAnnotationComments(annotation.Comments, annotation, annotation.Author), review: { state: annotation.State, stateModel: annotation.StateModel, author: annotation.Author, modifiedDate: annotation.ModifiedDate }, shapeAnnotationType: 'stamp', annotationSettings: annotation.AnnotationSettings, customData: this.pdfViewer.annotation.getCustomData(annotation),
-                isPrint: annotation.isPrint, isMaskedImage: annotation.IsMaskedImage
+                isPrint: annotation.isPrint, isMaskedImage: annotation.IsMaskedImage, customStampName: annotation.CustomStampName
             };
             return annotationObject;
         }
@@ -1296,7 +1314,7 @@ export class StampAnnotation {
                 rotateAngle: annotation.RotateAngle, creationDate: stampAnnotation.creationDate, pageNumber: pageNumber, icon: stampAnnotation.iconName, stampAnnotationPath: stampAnnotation.pathdata, randomId: 'stamp', isDynamicStamp: this.pdfViewerBase.isDynamicStamp, dynamicText: this.dynamicText,
                 // eslint-disable-next-line max-len
                 bounds: { left: annotation.Rect.X, top: annotation.Rect.Y, width: annotation.Rect.Width, height: annotation.Rect.Height }, annotationId: annotation.AnnotName, comments: this.pdfViewer.annotationModule.getAnnotationComments(annotation.Comments, annotation, annotation.Author), review: { state: annotation.State, stateModel: annotation.StateModel, author: annotation.Author, modifiedDate: annotation.ModifiedDate }, shapeAnnotationType: 'stamp', customData: this.pdfViewer.annotation.getCustomData(annotation),
-                isPrint: annotation.isPrint, isMaskedImage: annotation.IsMaskedImage
+                isPrint: annotation.isPrint, isMaskedImage: annotation.IsMaskedImage, customStampName: ''
             };
             return annotationObject;
         }
@@ -1392,7 +1410,7 @@ export class StampAnnotation {
                 if (annotationBase.annotName === pageAnnotations[i].annotName) {
                     if (property === 'bounds') {
                         // eslint-disable-next-line max-len
-                        pageAnnotations[i].bounds = { left: annotationBase.bounds.x, top: annotationBase.bounds.y, width: annotationBase.bounds.width, height: annotationBase.bounds.height };
+                        pageAnnotations[i].bounds = { left: annotationBase.wrapper.bounds.x, top: annotationBase.wrapper.bounds.y, width: annotationBase.wrapper.bounds.width, height: annotationBase.wrapper.bounds.height };
                         pageAnnotations[i].modifiedDate = this.pdfViewer.annotation.stickyNotesAnnotationModule.getDateAndTime();
                     }
                     this.pdfViewer.annotationModule.storeAnnotationCollections(pageAnnotations[i], pageNumber);
@@ -1478,11 +1496,13 @@ export class StampAnnotation {
        annotationSettings.maxHeight = annotationObject.maxHeight?annotationObject.maxHeight:0;
 
        //checking the stamp is custom and Updating the string and datetime values for dynamic stamp
-       if(annotationObject.customStamps && annotationObject.customStamps[0].customStampName == 'Image')
+       if(annotationObject.customStamps && annotationObject.customStamps[0].customStampName)
        {
         apperarance[0] ={
         imagedata: annotationObject.customStamps[0].customStampImageSource,
         isImport: true};
+        this.customStampName = annotationObject.customStamps[0].customStampName;
+        this.pdfViewerBase.customStampCollection.push(annotationObject.customStamps[0]);
         stampAnnotationtype = 'Image';
         annotationObject.width =annotationObject.width?annotationObject.width :100;
         annotationObject.height = annotationObject.height?annotationObject.height :100;
@@ -1568,6 +1588,7 @@ export class StampAnnotation {
         StrokeColor: '#dce3ef',
         Subject: stampName,
         matrix: null,
+        CustomStampName: this.customStampName? this.customStampName : '',
         pageNumber: page}
         
         //Adding the annotation object to an array and return it

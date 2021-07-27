@@ -1,3 +1,4 @@
+/* eslint-disable */
 import { Dialog } from '@syncfusion/ej2-popups';
 import { CheckBox } from '@syncfusion/ej2-buttons';
 import { NumericTextBox } from '@syncfusion/ej2-inputs';
@@ -248,7 +249,6 @@ export class TableOptionsDialog {
         this.documentHelper.dialog.header = documentLocale.getConstant('Table Options');
         this.documentHelper.dialog.content = this.target;
         this.documentHelper.dialog.beforeOpen = undefined;
-        // eslint-disable-next-line @typescript-eslint/naming-convention
         this.documentHelper.dialog.position = { X: 'center', Y: 'center' };
         //  this.documentHelper.dialog.cssClass = 'e-de-table-margin-size';
         this.documentHelper.dialog.height = 'auto';

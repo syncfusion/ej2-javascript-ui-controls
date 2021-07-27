@@ -1,4 +1,5 @@
 @include export-module('document-editor-container-theme') {
+    // sass-lint:disable-all
     .e-de-toolbar {
         height: 100%;
     }
@@ -43,13 +44,13 @@
         float: right;
         height: 33px;
     }
-    // sass-lint:disable-all
+
     .e-de-pagenumber-text {
         border: none !important;
         height: 22px !important;
         margin-top: $de-pagenumber-text-margin-top !important;
     }
-    // sass-lint:enable-all
+
     .e-de-pagenumber-input {
         background: $e-de-pagenumber-bg;
         border: 1px solid $de-panel-border;
@@ -401,16 +402,16 @@
         .e-de-font-clr-picker .e-colorpicker-wrapper .e-btn.e-icon-btn.e-rtl {
             padding: 0;
         }
-        // sass-lint:disable-all
+
         .e-de-prop-font-colorpicker .e-btn.e-icon-btn,
         .e-de-prop-font-colorpicker .e-split-btn-wrapper .e-split-colorpicker.e-split-btn {
             padding: 4px 8px !important;
         }
-        // sass-lint:enable-all
+
         .e-de-ctnr-style-div {
             width: $de-text-pane-style-width;
         }
-        // sass-lint:disable-all
+
         .e-btn-toggle {
             .e-tbar-btn-text {
                 color: $de-toggle-btn-color !important;
@@ -419,7 +420,7 @@
                 color: $de-toggle-btn-color !important;
             }
         }
-        // sass-lint:enable-all
+
         .e-de-ctnr-list,
         .e-de-list-header-presetmenu {
             color: $de-prop-btn-icon-clr;
@@ -512,13 +513,13 @@
             box-shadow: $de-toggle-btn-border;
             color: $de-toggle-btn-color;
         }
-        // sass-lint:disable-all
+
         .e-de-pagenumber-text {
             border: none !important;
             height: 22px !important;
             margin-top: $de-pagenumber-text-margin-top !important;
         }
-        // sass-lint:enable-all
+
     }
     .de-split-button>div:first-child {
         margin-right: $de-list-button-margin-right;
@@ -691,7 +692,7 @@
     .e-de-cntr-highlight-pane {
         border: 1px solid $de-panel-border;
     }
-    // sass-lint:disable-all
+
     .e-de-btn-hghlclr>button:first-child {
         padding: 1px !important;
     }
@@ -701,13 +702,13 @@
         height: 18px !important;
         width: 18px !important;
     }
-    // sass-lint:enable-all
+
     .e-de-font-clr-picker>div div button,
     .e-de-font-clr-picker>div button,
     .e-de-font-clr-picker>button {
         width: $de-clr-pckr-width;
     }
-    // sass-lint:disable-all
+
     .e-de-floating-menu.e-de-bullets-menu .e-de-floating-menuitem-md {
         height: 55px;
         padding: 4px !important;
@@ -942,7 +943,7 @@
         margin-left: 0;
         margin-right: 78px;
     }
-    // sass-lint:enable-all
+
     .e-de-toc-template1-content1 {
         font-size: 10px;
         height: 11px;
@@ -1119,14 +1120,14 @@
         margin-left: 8px;
         margin-right: 10.3px;
     }
-    // sass-lint:disable-all
+
     .e-de-grp-btn-ctnr .e-de-ctnr-group-btn {
         height: 38px !important;
     }
     .e-bigger .e-de-grp-btn-ctnr .e-de-ctnr-group-btn {
         height: 42px !important;
     }
-    // sass-lint:enable-all
+
     .e-de-grp-btn-ctnr .e-de-ctnr-group-btn>button {
         height: 38px;
         width: 38px;
@@ -1520,7 +1521,7 @@
             width: 25px !important;
             border-radius: 4px;
         }
-        // sass-lint:enable-all
+
         @if $skin-name=='bootstrap' or $skin-name=='bootstrap4' or $skin-name=='tailwind' or $skin-name=='tailwind-dark' {
             .e-de-font-clr-picker>div div button {
                 width: 38px;
@@ -1641,7 +1642,7 @@
                 line-height: 0;
             }
         }
-        // sass-lint:enable-all
+
     }
 }
 
@@ -1794,7 +1795,7 @@
             .e-btn-icon {
                font-size: $e-de-bzr-btn-font-size; 
                @if $skin-name=='tailwind' or  $skin-name=='tailwind-dark' {  
-                   padding-bottom: 0px !important;
+                   padding-bottom: 0 !important;
                }
             }
         }

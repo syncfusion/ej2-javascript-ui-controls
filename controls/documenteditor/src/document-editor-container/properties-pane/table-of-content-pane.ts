@@ -167,7 +167,7 @@ export class TocProperties {
         optionsDiv.appendChild(label);
     }
 
-    // eslint-disable-next-line max-len
+    /* eslint-disable-next-line max-len */
     public createDropDownButton(id: string, parentDiv: HTMLElement, iconCss: string, content: string[], selectedIndex: number): DropDownList {
         const buttonElement: HTMLButtonElement = createElement('input', { id: id }) as HTMLButtonElement;
         parentDiv.appendChild(buttonElement);

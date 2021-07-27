@@ -1,3 +1,4 @@
+/* eslint-disable */
 import { LayoutViewer } from '../index';
 import { Selection } from '../index';
 import { TextPosition, ImageInfo } from '../selection/selection-helper';
@@ -172,7 +173,6 @@ export class Editor {
     }
     /* eslint-disable @typescript-eslint/no-explicit-any */
     public copiedContent: any = '';
-    /* eslint-enable @typescript-eslint/no-explicit-any */
     private copiedTextContent: string = '';
     private previousParaFormat: WParagraphFormat = undefined;
     private previousCharFormat: WCharacterFormat = undefined;
@@ -302,13 +302,11 @@ export class Editor {
                 this.selection.end.setPositionInternal(this.selection.start);
             }
         }
-        /* eslint-disable */
         const styleObj: Object = this.documentHelper.styles.findByName(style);
-        /* eslint-enable */
         if (styleObj !== undefined) {
             this.onApplyParagraphFormat('styleName', styleObj, false, true);
         } else {
-            // eslint-disable-next-line max-len
+            /* eslint-disable-next-line max-len */
             this.documentHelper.owner.parser.parseStyle(JSON.parse(this.getCompleteStyles()), JSON.parse(this.documentHelper.preDefinedStyles.get(style)), this.documentHelper.styles);
             this.applyStyle(style);
         }
@@ -387,10 +385,10 @@ export class Editor {
         while (comment.ownerComment) {
             if (!isNullOrUndefined(comment.ownerComment)) {
                 index = comment.ownerComment.replyComments.indexOf(comment) + ';' + index;
-            comment = comment.ownerComment;
+                comment = comment.ownerComment;
             } else {
-            index = comment.replyComments.indexOf(comment) + ';' + index;
-            comment = comment;
+                index = comment.replyComments.indexOf(comment) + ';' + index;
+                comment = comment;
             }
         }
         index = 'C;' + this.documentHelper.comments.indexOf(comment) + ';' + index;
@@ -438,10 +436,10 @@ export class Editor {
                 this.selection.end.offset -= 1;
             }
         }
-        let paragraphInfo: ParagraphInfo = this.selection.getParagraphInfo(this.selection.start);
-        let startIndex: string = this.selection.getHierarchicalIndex(paragraphInfo.paragraph, paragraphInfo.offset.toString());
-        let endParagraphInfo: ParagraphInfo = this.selection.getParagraphInfo(this.selection.end);
-        let endIndex: string = this.selection.getHierarchicalIndex(endParagraphInfo.paragraph, endParagraphInfo.offset.toString());
+        const paragraphInfo: ParagraphInfo = this.selection.getParagraphInfo(this.selection.start);
+        const startIndex: string = this.selection.getHierarchicalIndex(paragraphInfo.paragraph, paragraphInfo.offset.toString());
+        const endParagraphInfo: ParagraphInfo = this.selection.getParagraphInfo(this.selection.end);
+        const endIndex: string = this.selection.getHierarchicalIndex(endParagraphInfo.paragraph, endParagraphInfo.offset.toString());
         this.initComplexHistory('InsertComment');
         let startPosition: TextPosition = this.selection.start;
         let endPosition: TextPosition = this.selection.end;
@@ -453,15 +451,15 @@ export class Editor {
         // Clones the end position.
         position.setPositionInternal(endPosition);
 
-        let commentRangeStart: CommentCharacterElementBox = new CommentCharacterElementBox(0);
-        let commentRangeEnd: CommentCharacterElementBox = new CommentCharacterElementBox(1);
-        let isAtSameParagraph: boolean = startPosition.isInSameParagraphIndex(endPosition);
+        const commentRangeStart: CommentCharacterElementBox = new CommentCharacterElementBox(0);
+        const commentRangeEnd: CommentCharacterElementBox = new CommentCharacterElementBox(1);
+        const isAtSameParagraph: boolean = startPosition.isInSameParagraphIndex(endPosition);
         // Adds comment start at selection start position.
         endPosition.setPositionInternal(startPosition);
         this.initInsertInline(commentRangeStart);
         if (isNullOrUndefined(position.paragraph)) {
             const endIndex: string = this.selection.getHierarchicalIndex(endParagraphInfo.paragraph, endParagraphInfo.offset.toString());
-            let endPos: TextPosition = this.selection.getTextPosBasedOnLogicalIndex(endIndex);
+            const endPos: TextPosition = this.selection.getTextPosBasedOnLogicalIndex(endIndex);
             position.setPositionInternal(endPos);
         }
         // Updates the cloned position, since comment start is added in the same paragraph.
@@ -501,7 +499,7 @@ export class Editor {
         }
         this.reLayout(this.selection, false);
         if (!this.isUserInsert) {
-            let comment: CommentView = this.owner.commentReviewPane.commentPane.comments.get(commentAdv);
+            const comment: CommentView = this.owner.commentReviewPane.commentPane.comments.get(commentAdv);
             comment.postComment();
         }
     }
@@ -775,7 +773,7 @@ export class Editor {
 
                 const currentStart: TextPosition = this.selection.getElementPosition(commentWidget.commentStart).startPosition;
                 for (let i: number = 0; i < this.documentHelper.comments.length; i++) {
-                    // eslint-disable-next-line max-len
+                    /* eslint-disable-next-line max-len */
                     const paraIndex: TextPosition = this.selection.getElementPosition(this.documentHelper.comments[i].commentStart).startPosition;
                     if (currentStart.isExistBefore(paraIndex)) {
                         isInserted = true;
@@ -864,7 +862,6 @@ export class Editor {
         this.documentHelper.hashValue = data[1];
         this.protectDocument(this.currentProtectionType);
     }
-    /* eslint-enable @typescript-eslint/no-explicit-any */
     private protectDocument(protectionType: ProtectionType): void {
         this.protect(protectionType);
         const restrictPane: HTMLElement = this.documentHelper.restrictEditingPane.restrictPane;
@@ -903,7 +900,6 @@ export class Editor {
         const encodeString: string[] = JSON.parse(result.data);
         this.validateHashValue(encodeString[1]);
     }
-    /* eslint-enable @typescript-eslint/no-explicit-any */
     private validateHashValue(currentHashValue: string): void {
         const localeValue: L10n = new L10n('documenteditor', this.owner.defaultLocale);
         localeValue.setLocale(this.documentHelper.owner.locale);
@@ -1007,7 +1003,7 @@ export class Editor {
                 if (!documentHelper.owner.isReadOnlyMode && documentHelper.owner.isDocumentLoaded && this.canEditContentControl) {
                     if (documentHelper.prefix.substring(2) !== textBoxText) {
                         if (this.selection.isEmpty) {
-                            // eslint-disable-next-line max-len
+                            /* eslint-disable-next-line max-len */
                             this.selection.start.setPositionForLineWidget(documentHelper.selection.start.currentWidget, this.selection.start.offset - (documentHelper.prefix.length - 2));
                             this.handleTextInput(textBoxText);
                             documentHelper.prefix = '@' + String.fromCharCode(160) + textBoxText;
@@ -1022,7 +1018,7 @@ export class Editor {
                 if (documentHelper.prefix.substring(2) !== textBoxText) {
                     if (this.selection.isEmpty && documentHelper.isCompositionStart) {
                         documentHelper.isCompositionStart = false;
-                        // eslint-disable-next-line max-len
+                        /* eslint-disable-next-line max-len */
                         this.selection.start.setPositionForLineWidget(documentHelper.selection.start.currentWidget, this.selection.start.offset - documentHelper.prefix.substring(2).length);
                         this.selection.retrieveCurrentFormatProperties();
                         if (documentHelper.suffix === '' || textBoxText === '') {
@@ -1044,7 +1040,7 @@ export class Editor {
 
             } else if (documentHelper.isCompositionEnd || documentHelper.isCompositionStart && !documentHelper.isCompositionUpdated) {
                 if (textBoxText.length < documentHelper.prefix.length &&
-                    // eslint-disable-next-line max-len
+                    /* eslint-disable-next-line max-len */
                     textBoxText === documentHelper.prefix.substring(2, documentHelper.prefix.length - 1) || documentHelper.editableDiv.innerText.length < 2) {
                     this.handleBackKey();
                     return;
@@ -1052,9 +1048,9 @@ export class Editor {
                     documentHelper.editableDiv.innerText[documentHelper.editableDiv.innerText.length - 1] !== String.fromCharCode(160)) {
                     documentHelper.isCompositionStart = false;
                     //When cursor is placed in between a word and chosen a word from predicted words.
-                    // eslint-disable-next-line max-len
+                    /* eslint-disable-next-line max-len */
                     this.selection.start.setPositionForLineWidget(documentHelper.selection.start.currentWidget, this.selection.start.offset - (documentHelper.prefix.length - 2));
-                    // eslint-disable-next-line max-len
+                    /* eslint-disable-next-line max-len */
                     this.selection.end.setPositionForLineWidget(documentHelper.selection.end.currentWidget, this.selection.end.offset + documentHelper.suffix.length);
                     //Retrieve the character format properties. Since the selection was changed manually.
                     this.selection.retrieveCurrentFormatProperties();
@@ -1075,7 +1071,7 @@ export class Editor {
                 } else if (text.indexOf(documentHelper.prefix) === -1 && text[text.length - 1] !== String.fromCharCode(160)
                     && text[text.length - 1] !== ' ') {
                     if ((textBoxText.charAt(0).toLowerCase() + textBoxText.slice(1)) === documentHelper.prefix.substring(2)) {
-                        // eslint-disable-next-line max-len
+                        /* eslint-disable-next-line max-len */
                         this.selection.start.setPositionParagraph(documentHelper.selection.start.currentWidget, this.selection.start.offset - (documentHelper.prefix.length - 2));
                     }
                     this.handleTextInput(textBoxText);
@@ -3784,13 +3780,11 @@ export class Editor {
         this.nodes = [];
         return true;
     }
-    /* eslint-disable @typescript-eslint/no-explicit-any */
     private insertClonedFieldResult(selection: Selection, nodes: any, fieldSeparator: FieldElementBox): void {
         let fieldEnd: FieldElementBox;
         let isStarted: boolean = false;
         for (let i: number = nodes.length - 1; i > -1; i--) {
             let node: any = nodes[i] as any;
-            /* eslint-enable @typescript-eslint/no-explicit-any */
             if (!isStarted) {
                 if (fieldSeparator === node) {
                     isStarted = true;
@@ -3915,7 +3909,6 @@ export class Editor {
      * @param {any} pasteWindow - Specifies the paste window
      * @private
      */
-    /* eslint-disable @typescript-eslint/no-explicit-any */
     public pasteInternal(event: ClipboardEvent, pasteWindow?: any): void {
         this.currentPasteOptions = this.owner.defaultPasteOption;
         if (this.documentHelper.owner.enableLocalPaste) {
@@ -3928,7 +3921,6 @@ export class Editor {
             if (isNullOrUndefined(pasteWindow)) {
                 pasteWindow = window;
             }
-            /* eslint-enable @typescript-eslint/no-explicit-any */
             let textContent: string = '';
             let htmlContent: string = '';
             let rtfContent: string = '';
@@ -4309,9 +4301,11 @@ export class Editor {
             widgets.push(bodyWidget);
         } else {
             this.viewer.owner.parser.addCustomStyles(pasteContent);
-            if (!isPaste && pasteContent.comments.length > 0) {
+            if (pasteContent.comments && pasteContent.comments.length > 0) {
                 this.documentHelper.owner.parser.commentsCollection = new Dictionary<string, CommentElementBox>();
-                this.documentHelper.owner.parser.parseComments(pasteContent, comments);
+                this.documentHelper.owner.parser.commentStarts = new Dictionary<string, CommentCharacterElementBox>();
+                this.documentHelper.owner.parser.commentEnds = new Dictionary<string, CommentCharacterElementBox>();
+                this.documentHelper.owner.parser.parseComments(pasteContent, comments ? comments : this.documentHelper.comments);
             }
             for (let i: number = 0; i < pasteContent.sections.length; i++) {
                 let parser: SfdtReader = this.documentHelper.owner.parser;
@@ -4531,17 +4525,18 @@ export class Editor {
         }
 
         this.pasteContentsInternal(this.getBlocks(content, true), true, currentFormat);
+        if (content.comments && content.comments.length > 0) {
+            this.documentHelper.layout.layoutComments(this.documentHelper.comments);
+        }
         this.isInsertField = false;
     }
     private pasteContentsInternal(widgets: BodyWidget[], isPaste: boolean, currentFormat?: WParagraphFormat): void {
         this.isPaste = isPaste;
-        /* eslint-enable @typescript-eslint/no-explicit-any */
         let selection: Selection = this.documentHelper.selection;
         if (selection.start.paragraph.isInsideTable && selection.end.paragraph.isInsideTable) {
             let isTablePaste: boolean = false;
             if (widgets.length === 1) {
                 let childWidgets: IWidget[] = widgets[0].childWidgets;
-                // tslint:disable-next-line:max-line-length
                 if ((childWidgets.length < 3)) {
                     if (childWidgets.length === 1 && childWidgets[0] instanceof TableWidget || childWidgets.length === 2 && childWidgets[0] instanceof TableWidget && (childWidgets[1] as ParagraphWidget).isEmpty()) {
                         isTablePaste = true;
@@ -4977,7 +4972,6 @@ export class Editor {
     }
 
     private pasteContent(widgets: BodyWidget[], currentFormat?: WParagraphFormat): void {
-        /* eslint-enable @typescript-eslint/no-explicit-any */
         this.documentHelper.owner.isShiftingEnabled = true;
         let insertPosition: string = '';
 
@@ -5526,16 +5520,7 @@ export class Editor {
         if (!isEqualFormat) {
             if (index === element.length) {
                 // Add new Element in current 
-                if (!isBidi) {
-                    if (!this.owner.editorHistory || !(this.owner.editorHistory && this.owner.editorHistory.currentHistoryInfo) || (this.owner.editorHistory && this.owner.editorHistory.currentHistoryInfo
-                        && (this.owner.editorHistory.currentHistoryInfo.action !== "SkipCommentInline" ||
-                            this.owner.editorHistory.currentHistoryInfo.action === "SkipCommentInline" &&
-                            (this.owner.editorHistory.currentHistoryInfo.modifiedActions[0] === this.editorHistory.currentBaseHistoryInfo
-                                || (this.owner.editorHistory.currentHistoryInfo.modifiedActions[0] !== this.editorHistory.currentBaseHistoryInfo
-                                    && !(element instanceof CommentCharacterElementBox)))))) {
-                        insertIndex++;
-                    }
-                }
+                insertIndex = this.incrementCommentIndex(isBidi, element, insertIndex);
                 if (newElement.removedIds.length > 0 || isUndoing) {
                     this.constructRevisionFromID(newElement, true, element);
                 } else if (isTrackingEnabled && !isUndoing && !this.skipFieldDeleteTracking) {
@@ -5556,16 +5541,7 @@ export class Editor {
                     element.line.children.splice(insertIndex, 0, newElement);
                 }
             } else {
-                if (!isBidi) {
-                    if (!this.owner.editorHistory || !(this.owner.editorHistory && this.owner.editorHistory.currentHistoryInfo) || (this.owner.editorHistory && this.owner.editorHistory.currentHistoryInfo
-                        && (this.owner.editorHistory.currentHistoryInfo.action !== "SkipCommentInline" ||
-                            this.owner.editorHistory.currentHistoryInfo.action === "SkipCommentInline" &&
-                            (this.owner.editorHistory.currentHistoryInfo.modifiedActions[0] === this.editorHistory.currentBaseHistoryInfo
-                                || (this.owner.editorHistory.currentHistoryInfo.modifiedActions[0] !== this.editorHistory.currentBaseHistoryInfo
-                                    && !(element instanceof CommentCharacterElementBox)))))) {
-                        insertIndex++;
-                    }
-                }
+                insertIndex = this.incrementCommentIndex(isBidi, element, insertIndex);                
                 let textElement: TextElementBox = new TextElementBox();
                 textElement.characterFormat.copyFormat(element.characterFormat);
                 textElement.text = (element as TextElementBox).text.substring(index);
@@ -5636,7 +5612,19 @@ export class Editor {
             this.documentHelper.layout.reLayoutParagraph(paragraph, lineIndex, insertIndex, undefined, undefined);
         }
     }
-
+    private incrementCommentIndex(isBidi: boolean, element: ElementBox, insertIndex: number): number {
+        if (!isBidi) {
+            if (!this.owner.editorHistory || !(this.owner.editorHistory && this.owner.editorHistory.currentHistoryInfo) || (this.owner.editorHistory && this.owner.editorHistory.currentHistoryInfo
+                && (this.owner.editorHistory.currentHistoryInfo.action !== "SkipCommentInline" ||
+                    this.owner.editorHistory.currentHistoryInfo.action === "SkipCommentInline" &&
+                    (this.owner.editorHistory.currentHistoryInfo.modifiedActions[0] === this.editorHistory.currentBaseHistoryInfo
+                        || (this.owner.editorHistory.currentHistoryInfo.modifiedActions[0] !== this.editorHistory.currentBaseHistoryInfo
+                            && !(element instanceof CommentCharacterElementBox)))))) {
+                insertIndex++;
+            }
+        }
+        return insertIndex;
+    }
     /**
      * @private
      * @returns {void}
@@ -7914,7 +7902,7 @@ export class Editor {
      * Change the selected text case.
      * @private
      */
-    // eslint-disable-next-line max-len
+    /* eslint-disable-next-line max-len */
     public changeSelectedTextCase(selection: Selection, startPosition: TextPosition, endPosition: TextPosition, property: string, removedTextNodes?: IWidget[]): void {
         let blockInfo: ParagraphInfo = this.selection.getParagraphInfo(startPosition);
         selection.editPosition = this.selection.getHierarchicalIndex(blockInfo.paragraph, blockInfo.offset.toString());
@@ -7939,7 +7927,7 @@ export class Editor {
             selection.selectPosition(startPosition, endPosition);
         }
     }
-    // eslint-disable-next-line max-len
+    /* eslint-disable-next-line max-len */
     private changeTextCase(para: ParagraphWidget, selection: Selection, startPosition: TextPosition, endPosition: TextPosition, property: string, isRevert: boolean): void {
         if (startPosition.paragraph.isInsideTable && (!endPosition.paragraph.isInsideTable
             || startPosition.paragraph.associatedCell !== endPosition.paragraph.associatedCell
@@ -7957,7 +7945,7 @@ export class Editor {
             this.changeCaseParagraph(para, selection, startPosition, endPosition, property, isRevert);
         }
     }
-    // eslint-disable-next-line max-len
+    /* eslint-disable-next-line max-len */
     private changeCaseParagraph(para: ParagraphWidget, selection: Selection, startPos: TextPosition, endPos: TextPosition, property: string, isRevert: boolean): void {
         para = para.combineWidget(this.owner.viewer) as ParagraphWidget;
         let startOffsetVal: number = 0;
@@ -7993,7 +7981,7 @@ export class Editor {
             let endElementBox: ElementBox = undefined;
             let childIndex: number = -1;
             let isIncreaseIteration: boolean = true;
-            // eslint-disable-next-line max-len
+            /* eslint-disable-next-line max-len */
             for (let j: number = !isBidi ? 0 : line.children.length - 1; !isBidi ? j < line.children.length : j >= 0; isBidi ? j-- : isIncreaseIteration ? j++ : j--) {
                 let child: ElementBox = line.children[j] as ElementBox;
                 if (!isBidi && isLineContainsRtl) {
@@ -8057,7 +8045,7 @@ export class Editor {
         }
         this.changeCaseNextBlock(para, startPos, endPos, property, isRevert);
     }
-    // eslint-disable-next-line max-len
+    /* eslint-disable-next-line max-len */
     private changeCaseInline(inline: ElementBox, selection: Selection, startIndex: number, endIndex: number, property: string, isRevert: boolean): number {
         if (inline instanceof TextElementBox) {
             if (startIndex === 0 && endIndex === inline.length) {
@@ -8081,7 +8069,7 @@ export class Editor {
             }
         }
     }
-    // eslint-disable-next-line max-len
+    /* eslint-disable-next-line max-len */
     private changeCaseInlineInternal(inlineObj: ElementBox, selection: Selection, startIndex: number, endIndex: number, property: string, isRevert: boolean): number {
         let x: number = 0;
         let index: number = inlineObj.line.children.indexOf(inlineObj);
@@ -8128,7 +8116,7 @@ export class Editor {
         }
         return x;
     }
-    // eslint-disable-next-line max-len
+    /* eslint-disable-next-line max-len */
     private changeCaseNextBlock(block: BlockWidget, start: TextPosition, end: TextPosition, property: string, isRevert: boolean): void {
         block = this.getNextBlockForChangeCase(block, start, end, property, isRevert);
         if (!isNullOrUndefined(block)) { //Goto the next block.
@@ -8139,7 +8127,7 @@ export class Editor {
             }
         }
     }
-    // eslint-disable-next-line max-len
+    /* eslint-disable-next-line max-len */
     private getNextBlockForChangeCase(block: BlockWidget, start: TextPosition, end: TextPosition, property: string, isRevert: boolean): BlockWidget {
         let widgetCollection: BlockWidget[] = block.getSplitWidgets() as BlockWidget[];
         block = widgetCollection[widgetCollection.length - 1];
@@ -8169,7 +8157,7 @@ export class Editor {
         return input;
     }
     // Table
-    // eslint-disable-next-line max-len
+    /* eslint-disable-next-line max-len */
     private changeCaseForTable(indexToStart: number, tableWidget: TableWidget, selection: Selection, startPos: TextPosition, endPos: TextPosition, property: string, isRevert: boolean): void {
         tableWidget = tableWidget.combineWidget(this.owner.viewer) as TableWidget;
         for (let i: number = indexToStart; i < tableWidget.childWidgets.length; i++) {
@@ -8185,7 +8173,7 @@ export class Editor {
         this.documentHelper.layout.layoutBodyWidgetCollection(tableWidget.index, tableWidget.containerWidget, tableWidget, false);
         this.changeCaseNextBlock(tableWidget, startPos, endPos, property, isRevert);
     }
-    // eslint-disable-next-line max-len
+    /* eslint-disable-next-line max-len */
     private changeCaseForSelectedCell(cell: TableCellWidget, selection: Selection, property: string, isRevert: boolean): void {
         for (let i: number = 0; i < cell.childWidgets.length; i++) {
             let block: BlockWidget = cell.childWidgets[i] as BlockWidget;
@@ -8196,7 +8184,7 @@ export class Editor {
             }
         }
     }
-    // eslint-disable-next-line max-len
+    /* eslint-disable-next-line max-len */
     private changeCaseForSelectedPara(paragraph: ParagraphWidget, selection: Selection, property: string, isRevert: boolean): void {
         for (let i: number = 0; i < paragraph.childWidgets.length; i++) {
             let line: LineWidget = paragraph.childWidgets[i] as LineWidget;
@@ -8209,7 +8197,7 @@ export class Editor {
             }
         }
     }
-    // eslint-disable-next-line max-len
+    /* eslint-disable-next-line max-len */
     private changeCaseForSelTable(tableWidget: TableWidget, selection: Selection, property: string, isRevert: boolean): void {
         for (let i: number = 0; i < tableWidget.childWidgets.length; i++) {
             let row: TableRowWidget = tableWidget.childWidgets[i] as TableRowWidget;
@@ -8219,7 +8207,7 @@ export class Editor {
         }
     }
     // Cell
-    // eslint-disable-next-line max-len
+    /* eslint-disable-next-line max-len */
     private changeCaseParaFormatInCell(tableCell: TableCellWidget, startPos: TextPosition, endPos: TextPosition, property: string, isRevert: boolean): void {
         let selection: Selection = this.documentHelper.selection;
         if (endPos.paragraph.isInsideTable) {
@@ -8251,7 +8239,7 @@ export class Editor {
         }
     }
     // Table
-    // eslint-disable-next-line max-len
+    /* eslint-disable-next-line max-len */
     private changeCaseParaForTableCell(tableWidget: TableWidget, startCell: TableCellWidget, endCell: TableCellWidget, property: string, isRevert: boolean): void {
         let selection: Selection = this.documentHelper.selection;
         let cellStartValue: number = selection.getCellLeft(startCell.ownerRow, startCell);
@@ -8272,7 +8260,7 @@ export class Editor {
             }
         }
     }
-    // eslint-disable-next-line max-len
+    /* eslint-disable-next-line max-len */
     private changeCaseParaForCellInternal(tableCell: TableCellWidget, selection: Selection, property: string, isRevert: boolean): void {
         for (let i: number = 0; i < tableCell.childWidgets.length; i++) {
             let childBlock: BlockWidget = tableCell.childWidgets[i] as BlockWidget;
@@ -8283,7 +8271,7 @@ export class Editor {
             }
         }
     }
-    // eslint-disable-next-line max-len
+    /* eslint-disable-next-line max-len */
     private changeCaseParaFormatTableInternal(table: TableWidget, selection: Selection, property: string, isRevert: boolean): void {
         for (let x: number = 0; x < table.childWidgets.length; x++) {
             let row: TableRowWidget = table.childWidgets[x] as TableRowWidget;
@@ -8293,7 +8281,7 @@ export class Editor {
         }
     }
     // Row
-    // eslint-disable-next-line max-len
+    /* eslint-disable-next-line max-len */
     private changeCaseParaForRow(wRow: TableRowWidget, selection: Selection, start: TextPosition, end: TextPosition, property: string, isRevert: boolean): void {
         for (let i: number = wRow.rowIndex; i < wRow.ownerTable.childWidgets.length; i++) {
             let row: TableRowWidget = wRow.ownerTable.childWidgets[i] as TableRowWidget;
@@ -13400,11 +13388,7 @@ export class Editor {
                             removedNode = this.removeCharacterInLine(elementBox, indexInInline, endOffset);
                         } else {
                             let index: number = revision.range.indexOf(elementBox);
-                            let count: number = 1;
-                            if (revision.range.length > index + 1 && revision.range[index + 1] instanceof WCharacterFormat) {
-                                count += 1;
-                            }
-                            revision.range.splice(index, count);
+                            revision.range.splice(index, 1);
                             if (revision.range.length === 0) {
                                 this.owner.revisionsInternal.remove(revision);
                             }
@@ -14189,26 +14173,24 @@ export class Editor {
     private checkIsNotRedoing(): boolean {
         return this.documentHelper.owner.enableHistoryMode && !this.editorHistory.isRedoing;
     }
-    /* eslint-disable */
     /**
      * deleteSelectedContentInternal
      * @private
      */
     public deleteSelectedContentInternal(selection: Selection, isBackSpace: boolean, startPosition: TextPosition, endPosition: TextPosition): boolean {
-        /* eslint-enable */
         let startPos: TextPosition = startPosition;
         let endPos: TextPosition = endPosition;
         if (!startPosition.isExistBefore(endPosition)) {
             startPos = endPosition;
             endPos = startPosition;
         }
-        let blockInfo: ParagraphInfo = this.selection.getParagraphInfo(startPos);
+        const blockInfo: ParagraphInfo = this.selection.getParagraphInfo(startPos);
         selection.editPosition = this.selection.getHierarchicalIndex(blockInfo.paragraph, blockInfo.offset.toString());
         let skipBackSpace: boolean = false;
         if (isBackSpace && startPos.isInSameParagraph(endPos)) {
             //Handled specifically to skip removal of contents, if selection is only paragraph mark and next rendered block is table.
             if (startPos.offset < endPos.offset && startPos.offset === selection.getParagraphLength(endPos.paragraph)) {
-                let nextBlock: BlockWidget = selection.getNextRenderedBlock(startPos.paragraph);
+                const nextBlock: BlockWidget = selection.getNextRenderedBlock(startPos.paragraph);
                 skipBackSpace = nextBlock instanceof TableWidget;
             }
             //Handled specifically to remove paragraph completely (Delete behavior), if the selected paragraph is empty.
@@ -14222,7 +14204,7 @@ export class Editor {
             if (this.checkInsertPosition(selection)) {
                 this.editorHistory.currentBaseHistoryInfo.insertPosition = selection.editPosition;
             }
-            let editAction: number = (isBackSpace ? 1 : 0);
+            const editAction: number = (isBackSpace ? 1 : 0);
             this.deleteSelectedContent(endPos.paragraph, selection, startPos, endPos, editAction);
         }
         return skipBackSpace;
@@ -14257,13 +14239,13 @@ export class Editor {
      * Insert image
      *
      * @private
-     * @param {string} imageString  Base64 string, web URL or file URL.
+     * @param {string} base64String Base64 string, web URL or file URL.
      * @param {number} width Image width
      * @param {number} height Image height
      * @returns {void}
      */
     public insertPicture(base64String: string, width: number, height: number): void {
-        let imageElementBox: ImageElementBox = new ImageElementBox(true);
+        const imageElementBox: ImageElementBox = new ImageElementBox(true);
         imageElementBox.imageString = base64String;
         imageElementBox.width = width;
         imageElementBox.height = height;
@@ -14271,16 +14253,16 @@ export class Editor {
         this.insertPictureInternal(imageElementBox);
     }
     private insertPictureInternal(imageElementBox: ImageElementBox): void {
-        let selection: Selection = this.documentHelper.selection;
+        const selection: Selection = this.documentHelper.selection;
         this.initHistory('InsertInline');
         this.fitImageToPage(selection, imageElementBox);
         this.insertInlineInSelection(selection, imageElementBox);
         this.reLayout(selection);
     }
     private fitImageToPage(selection: Selection, imageElementBox: ImageElementBox): void {
-        let section: BodyWidget = selection.start.paragraph.bodyWidget as BodyWidget;
-        let pageWidth: number = section.sectionFormat.pageWidth - section.sectionFormat.leftMargin - section.sectionFormat.rightMargin;
-        let pageHeight: number = section.sectionFormat.pageHeight - section.sectionFormat.topMargin - section.sectionFormat.topMargin;
+        const section: BodyWidget = selection.start.paragraph.bodyWidget as BodyWidget;
+        const pageWidth: number = section.sectionFormat.pageWidth - section.sectionFormat.leftMargin - section.sectionFormat.rightMargin;
+        const pageHeight: number = section.sectionFormat.pageHeight - section.sectionFormat.topMargin - section.sectionFormat.topMargin;
         //Resizes image to page size.
         if (imageElementBox.width > pageWidth) {
             imageElementBox.height = imageElementBox.height * pageWidth / imageElementBox.width;
@@ -14293,6 +14275,10 @@ export class Editor {
     }
     //Insert Picture implementation ends
     /**
+     * @param {selection} Selection context.
+     * @param {elementBox} Elementbox
+     * @param selection
+     * @param elementBox
      * @private
      */
     public insertInlineInSelection(selection: Selection, elementBox: ElementBox): void {
@@ -14314,9 +14300,9 @@ export class Editor {
      * @returns {void}
      */
     public onPortrait(): void {
-        let sectionFormat: WSectionFormat = new WSectionFormat();
-        let width: number = this.documentHelper.selection.sectionFormat.pageWidth;
-        let height: number = this.documentHelper.selection.sectionFormat.pageHeight;
+        const sectionFormat: WSectionFormat = new WSectionFormat();
+        const width: number = this.documentHelper.selection.sectionFormat.pageWidth;
+        const height: number = this.documentHelper.selection.sectionFormat.pageHeight;
         if (width > height) {
             sectionFormat.pageWidth = height;
             sectionFormat.pageHeight = width;
@@ -14328,9 +14314,9 @@ export class Editor {
      * @returns {void}
      */
     public onLandscape(): void {
-        let sectionFormat: WSectionFormat = new WSectionFormat();
-        let width: number = this.documentHelper.selection.sectionFormat.pageWidth;
-        let height: number = this.documentHelper.selection.sectionFormat.pageHeight;
+        const sectionFormat: WSectionFormat = new WSectionFormat();
+        const width: number = this.documentHelper.selection.sectionFormat.pageWidth;
+        const height: number = this.documentHelper.selection.sectionFormat.pageHeight;
         if (width < height) {
             sectionFormat.pageWidth = height;
             sectionFormat.pageHeight = width;
@@ -14338,7 +14324,7 @@ export class Editor {
         this.onApplySectionFormat(undefined, sectionFormat);
     }
     private copyValues(): WSectionFormat {
-        let format: WSectionFormat = new WSectionFormat();
+        const format: WSectionFormat = new WSectionFormat();
         format.bottomMargin = this.documentHelper.selection.sectionFormat.bottomMargin;
         format.topMargin = this.documentHelper.selection.sectionFormat.topMargin;
         format.leftMargin = this.documentHelper.selection.sectionFormat.leftMargin;
@@ -14350,11 +14336,12 @@ export class Editor {
         return format;
     }
     /**
+     * @param property
      * @private
      * @returns {void}
      */
     public changeMarginValue(property: string): void {
-        let sectionFormat: WSectionFormat = this.copyValues();
+        const sectionFormat: WSectionFormat = this.copyValues();
 
         if (property === 'lastCustomSetting' || property === 'normal') {
             sectionFormat.topMargin = 72;
@@ -14390,14 +14377,15 @@ export class Editor {
         this.onApplySectionFormat(undefined, sectionFormat);
     }
     /**
+     * @param property
      * @private
      * @returns {void}
      */
     public onPaperSize(property: string): void {
-        let sectionFormat: WSectionFormat = this.copyValues();
+        const sectionFormat: WSectionFormat = this.copyValues();
 
-        let width: number = this.documentHelper.selection.sectionFormat.pageWidth;
-        let height: number = this.documentHelper.selection.sectionFormat.pageHeight;
+        const width: number = this.documentHelper.selection.sectionFormat.pageWidth;
+        const height: number = this.documentHelper.selection.sectionFormat.pageHeight;
         if (property === 'letter') {
             if (width < height) {
                 sectionFormat.pageWidth = 611.9;
@@ -14483,29 +14471,34 @@ export class Editor {
     }
     //Update List Items
     /**
+     * @param blockAdv
+     * @param updateNextBlockList
+     * @param blockAdv
+     * @param updateNextBlockList
      * @private
      * @returns {void}
      */
     public updateListItemsTillEnd(blockAdv: BlockWidget, updateNextBlockList: boolean): void {
         let block: BlockWidget = updateNextBlockList ? this.documentHelper.selection.getNextRenderedBlock(blockAdv) : blockAdv;
         while (!isNullOrUndefined(block) && !this.documentHelper.isTextInput) {
-            //Updates the list value of the rendered paragraph. 
+            //Updates the list value of the rendered paragraph.
             this.updateRenderedListItems(block);
             block = block.getSplitWidgets().pop().nextRenderedWidget as BlockWidget;
         }
 
     }
     /**
+     * @param block
      * @private
      * @returns {void}
      */
     public updateWholeListItems(block: BlockWidget): void {
         this.documentHelper.renderedLists.clear();
         this.documentHelper.renderedLevelOverrides = [];
-        let sectionIndex: number = block.bodyWidget.index;
+        const sectionIndex: number = block.bodyWidget.index;
         let currentBlock: BlockWidget;
         for (let j: number = 0; j < this.documentHelper.pages.length; j++) {
-            let page: Page = this.documentHelper.pages[j];
+            const page: Page = this.documentHelper.pages[j];
             if (page.bodyWidgets[0].index === sectionIndex) {
                 currentBlock = this.getNextBlockForList(page.bodyWidgets[0].firstChild as BlockWidget);
                 if (!isNullOrUndefined(currentBlock)) {
@@ -14528,7 +14521,7 @@ export class Editor {
     private getNextBlockForList(currentBlock: BlockWidget): BlockWidget {
         if (currentBlock instanceof ParagraphWidget &&
             this.documentHelper.layout.isFirstElementWithPageBreak(currentBlock)) {
-            let nextBlock: BlockWidget = currentBlock.nextRenderedWidget as BlockWidget;
+            const nextBlock: BlockWidget = currentBlock.nextRenderedWidget as BlockWidget;
             if (nextBlock.equals(currentBlock)) {
                 return nextBlock as BlockWidget;
             }
@@ -14551,7 +14544,7 @@ export class Editor {
         }
         let row: TableRowWidget = table.firstChild as TableRowWidget;
         do {
-            let isListUpdated: boolean = this.updateListItemsForRow(row, block);
+            const isListUpdated: boolean = this.updateListItemsForRow(row, block);
             if (isListUpdated) {
                 return true;
             }
@@ -14584,6 +14577,7 @@ export class Editor {
 
     // public abstract updateListParagraphs(): void;
     /**
+     * @param block
      * @private
      * @returns {void}
      */
@@ -14631,7 +14625,7 @@ export class Editor {
             }
             if (!isNullOrUndefined(currentList) && !isNullOrUndefined(this.documentHelper.getAbstractListById(currentList.abstractListId))
                 && !isNullOrUndefined(this.documentHelper.getAbstractListById(currentList.abstractListId).levels[levelNumber])) {
-                let currentListLevel: WListLevel = this.documentHelper.layout.getListLevel(currentList, levelNumber);
+                const currentListLevel: WListLevel = this.documentHelper.layout.getListLevel(currentList, levelNumber);
                 //Updates the list numbering from document start for reLayouting.
                 this.updateListNumber(currentListLevel, paragraph, false);
             }
@@ -14641,12 +14635,12 @@ export class Editor {
     private updateRenderedListItemsForPara(paragraph: ParagraphWidget): void {
 
         if (!isNullOrUndefined(this.documentHelper.getListById(paragraph.paragraphFormat.listFormat.listId))) {
-            let currentList: WList = this.documentHelper.getListById(paragraph.paragraphFormat.listFormat.listId);
-            let listLevelNumber: number = paragraph.paragraphFormat.listFormat.listLevelNumber;
+            const currentList: WList = this.documentHelper.getListById(paragraph.paragraphFormat.listFormat.listId);
+            const listLevelNumber: number = paragraph.paragraphFormat.listFormat.listLevelNumber;
             if (!isNullOrUndefined(currentList) && !isNullOrUndefined(this.documentHelper.getAbstractListById(currentList.abstractListId))
 
                 && !isNullOrUndefined(this.documentHelper.getAbstractListById(currentList.abstractListId).levels[paragraph.paragraphFormat.listFormat.listLevelNumber])) {
-                let currentListLevel: WListLevel = this.documentHelper.layout.getListLevel(currentList, listLevelNumber);
+                const currentListLevel: WListLevel = this.documentHelper.layout.getListLevel(currentList, listLevelNumber);
                 //Updates the list numbering from document start for reLayouting.
                 this.updateListNumber(currentListLevel, paragraph, true);
             }
@@ -14656,7 +14650,7 @@ export class Editor {
         if (currentListLevel.listLevelPattern !== 'Bullet') {
             let element: ListTextElementBox = undefined;
             if (paragraph.childWidgets.length > 0) {
-                let lineWidget: LineWidget = paragraph.childWidgets[0] as LineWidget;
+                const lineWidget: LineWidget = paragraph.childWidgets[0] as LineWidget;
                 if (lineWidget.children.length > 0) {
                     if (paragraph.paragraphFormat.bidi) {
                         element = lineWidget.children[lineWidget.children.length - 1] as ListTextElementBox;
@@ -14666,11 +14660,11 @@ export class Editor {
                 }
             }
             if (!isNullOrUndefined(element) && element instanceof ListTextElementBox) {
-                let text: string = this.documentHelper.layout.getListNumber(paragraph.paragraphFormat.listFormat);
+                const text: string = this.documentHelper.layout.getListNumber(paragraph.paragraphFormat.listFormat);
                 if (isUpdate) {
-                    let prevWidth: number = element.width;
+                    const prevWidth: number = element.width;
                     element.text = text;
-                    let currentWidth: number = this.documentHelper.textHelper.getTextSize(element, element.characterFormat);
+                    const currentWidth: number = this.documentHelper.textHelper.getTextSize(element, element.characterFormat);
                     if (currentWidth > prevWidth) {
                         element.width = currentWidth;
                     }
@@ -14680,13 +14674,14 @@ export class Editor {
     }
     /**
      * Get offset value to update in selection
-     * 
+     *
+     * @param selection
      * @private
      * @returns {void}
      */
     public getOffsetValue(selection: Selection): void {
         if (this.startParagraph) {
-            let lineInfo: LineInfo = selection.getLineInfoBasedOnParagraph(this.startParagraph, this.startOffset);
+            const lineInfo: LineInfo = selection.getLineInfoBasedOnParagraph(this.startParagraph, this.startOffset);
             selection.start.setPositionFromLine(lineInfo.line, lineInfo.offset);
         }
         selection.start.updatePhysicalPosition(true);
@@ -14694,7 +14689,7 @@ export class Editor {
             selection.end.setPositionInternal(selection.start);
         } else {
             if (this.endParagraph) {
-                let lineInfo: LineInfo = selection.getLineInfoBasedOnParagraph(this.endParagraph, this.endOffset);
+                const lineInfo: LineInfo = selection.getLineInfoBasedOnParagraph(this.endParagraph, this.endOffset);
                 selection.end.setPositionFromLine(lineInfo.line, lineInfo.offset);
             }
             selection.end.updatePhysicalPosition(true);
@@ -14702,8 +14697,8 @@ export class Editor {
     }
 
     private setPositionParagraph(paragraph: ParagraphWidget, offset: number, skipSelectionChange: boolean): void {
-        let selection: Selection = this.documentHelper.selection;
-        let lineInfo: LineInfo = selection.getLineInfoBasedOnParagraph(paragraph, offset);
+        const selection: Selection = this.documentHelper.selection;
+        const lineInfo: LineInfo = selection.getLineInfoBasedOnParagraph(paragraph, offset);
         selection.start.setPositionFromLine(lineInfo.line, lineInfo.offset);
         selection.end.setPositionInternal(selection.start);
         if (!skipSelectionChange) {
@@ -14711,15 +14706,22 @@ export class Editor {
         }
     }
     /**
+     * @param textPosition
+     * @param editPosition
+     * @param textPosition
+     * @param editPosition
      * @private
      * @returns {void}
      */
     public setPositionForCurrentIndex(textPosition: TextPosition, editPosition: string): void {
-        let blockInfo: ParagraphInfo = this.selection.getParagraph({ index: editPosition });
-        let lineInfo: LineInfo = this.selection.getLineInfoBasedOnParagraph(blockInfo.paragraph, blockInfo.offset);
+        const blockInfo: ParagraphInfo = this.selection.getParagraph({ index: editPosition });
+        const lineInfo: LineInfo = this.selection.getLineInfoBasedOnParagraph(blockInfo.paragraph, blockInfo.offset);
         textPosition.setPositionForLineWidget(lineInfo.line, lineInfo.offset);
     }
     /**
+     * Insert page number in the current cursor position.
+     *
+     * @param {string} numberFormat - Optional switch that overrides the numeral style of the page number.
      * @returns {void}
      */
     public insertPageNumber(numberFormat?: string): void {
@@ -14728,11 +14730,12 @@ export class Editor {
         } else {
             numberFormat = ' \\*' + numberFormat;
         }
-        let fieldCode: string = 'PAGE ' + numberFormat + ' \\* MERGEFORMAT';
+        const fieldCode: string = 'PAGE ' + numberFormat + ' \\* MERGEFORMAT';
         this.createFields(fieldCode);
     }
 
     /**
+     * @param numberFormat
      * @private
      * @returns {void}
      */
@@ -14742,27 +14745,27 @@ export class Editor {
         } else {
             numberFormat = ' \*' + numberFormat;
         }
-        let fieldCode: string = 'NUMPAGES ' + numberFormat + ' \* MERGEFORMAT';
+        const fieldCode: string = 'NUMPAGES ' + numberFormat + ' \* MERGEFORMAT';
         this.createFields(fieldCode);
     }
 
     private createFields(fieldCode: string): void {
-        let paragraph: ParagraphWidget = new ParagraphWidget();
-        let line: LineWidget = new LineWidget(paragraph);
-        let fieldBegin: FieldElementBox = new FieldElementBox(0);
+        const paragraph: ParagraphWidget = new ParagraphWidget();
+        const line: LineWidget = new LineWidget(paragraph);
+        const fieldBegin: FieldElementBox = new FieldElementBox(0);
         line.children.push(fieldBegin);
-        let fieldtext: FieldTextElementBox = new FieldTextElementBox();
+        const fieldtext: FieldTextElementBox = new FieldTextElementBox();
         fieldtext.fieldBegin = fieldBegin;
         fieldtext.text = '1';
-        let text: TextElementBox = new TextElementBox();
+        const text: TextElementBox = new TextElementBox();
         text.text = fieldCode;
         line.children.push(text);
-        let fieldSeparator: FieldElementBox = new FieldElementBox(2);
+        const fieldSeparator: FieldElementBox = new FieldElementBox(2);
         fieldSeparator.fieldBegin = fieldBegin;
         fieldBegin.fieldSeparator = fieldSeparator;
         line.children.push(fieldSeparator);
         line.children.push(fieldtext);
-        let fieldEnd: FieldElementBox = new FieldElementBox(1);
+        const fieldEnd: FieldElementBox = new FieldElementBox(1);
         fieldEnd.fieldBegin = fieldBegin;
         fieldEnd.fieldSeparator = fieldSeparator;
         fieldSeparator.fieldEnd = fieldEnd;
@@ -14771,28 +14774,28 @@ export class Editor {
         fieldBegin.line = line;
         paragraph.childWidgets.push(line);
         this.documentHelper.fields.push(fieldBegin);
-        let bodyWidget: BodyWidget = new BodyWidget();
+        const bodyWidget: BodyWidget = new BodyWidget();
         bodyWidget.sectionFormat = new WSectionFormat(bodyWidget);
         bodyWidget.childWidgets.push(paragraph);
         this.pasteContentsInternal([bodyWidget], false);
     }
     /**
      * Insert Bookmark at current selection range
-     * 
+     *
      * @param {string} name - Name of bookmark
      * @returns {void}
      */
     public insertBookmark(name: string): void {
         if (this.documentHelper.bookmarks.containsKey(name)) {
-            let existingBookmark: BookmarkElementBox = this.documentHelper.bookmarks.get(name);
+            const existingBookmark: BookmarkElementBox = this.documentHelper.bookmarks.get(name);
             existingBookmark.line.children.splice(existingBookmark.line.children.indexOf(existingBookmark), 1);
-            // eslint-disable-next-line max-len
+            /* eslint-disable-next-line max-len */
             existingBookmark.reference.line.children.splice(existingBookmark.reference.line.children.indexOf(existingBookmark.reference), 1);
             this.documentHelper.bookmarks.remove(name);
         }
-        let bookmark: BookmarkElementBox = new BookmarkElementBox(0);
+        const bookmark: BookmarkElementBox = new BookmarkElementBox(0);
         bookmark.name = name;
-        let bookmarkEnd: BookmarkElementBox = new BookmarkElementBox(1);
+        const bookmarkEnd: BookmarkElementBox = new BookmarkElementBox(1);
         bookmarkEnd.name = name;
         bookmark.reference = bookmarkEnd;
         bookmarkEnd.reference = bookmark;
@@ -14813,14 +14816,14 @@ export class Editor {
     /**
      * Deletes specific bookmark
      *
-     * @param {string} name - Name of bookmark
+     * @param {string} bookmarkName - Name of bookmark to delete.
      * @returns {void}
      */
     public deleteBookmark(bookmarkName: string): void {
-        let bookmarks: Dictionary<string, BookmarkElementBox> = this.documentHelper.bookmarks;
-        let bookmark: BookmarkElementBox = bookmarks.get(bookmarkName);
+        const bookmarks: Dictionary<string, BookmarkElementBox> = this.documentHelper.bookmarks;
+        const bookmark: BookmarkElementBox = bookmarks.get(bookmarkName);
         if (bookmark instanceof BookmarkElementBox) {
-            let bookmarkEnd: BookmarkElementBox = bookmark.reference;
+            const bookmarkEnd: BookmarkElementBox = bookmark.reference;
             this.initHistory('DeleteBookmark');
             if (this.editorHistory) {
                 this.editorHistory.currentBaseHistoryInfo.setBookmarkInfo(bookmark);
@@ -14831,11 +14834,12 @@ export class Editor {
         this.fireContentChange();
     }
     /**
+     * @param bookmark
      * @private
      * @returns {void}
      */
     public deleteBookmarkInternal(bookmark: BookmarkElementBox): void {
-        let previousNode: ElementBox = bookmark.previousNode;
+        const previousNode: ElementBox = bookmark.previousNode;
         if (previousNode instanceof FieldElementBox && previousNode.fieldType === 0
             && !isNullOrUndefined(previousNode.formFieldData)) {
             previousNode.formFieldData.name = '';
@@ -14846,7 +14850,7 @@ export class Editor {
             bookmark.reference.line.children.splice(bookmark.reference.indexInOwner, 1);
         }
         // Remove bookmark from header footer collections
-        let paragraph: ParagraphWidget = bookmark.line.paragraph;
+        const paragraph: ParagraphWidget = bookmark.line.paragraph;
         if (bookmark.line.paragraph.isInHeaderFooter) {
             let headerFooterWidget: HeaderFooterWidget = undefined;
             if (paragraph.containerWidget instanceof TableCellWidget) {
@@ -14871,14 +14875,14 @@ export class Editor {
             end.offset += 1;
         }
         let blockInfo: ParagraphInfo = this.selection.getParagraphInfo(start);
-        let startIndex: string = this.selection.getHierarchicalIndex(blockInfo.paragraph, blockInfo.offset.toString());
+        const startIndex: string = this.selection.getHierarchicalIndex(blockInfo.paragraph, blockInfo.offset.toString());
         blockInfo = this.selection.getParagraphInfo(end);
-        let endIndex: string = this.selection.getHierarchicalIndex(blockInfo.paragraph, blockInfo.offset.toString());
+        const endIndex: string = this.selection.getHierarchicalIndex(blockInfo.paragraph, blockInfo.offset.toString());
         return { 'start': startIndex, 'end': endIndex };
     }
 
     private insertElements(endElements: ElementBox[], startElements?: ElementBox[]): void {
-        let info: SelectionInfo = this.getSelectionInfo();
+        const info: SelectionInfo = this.getSelectionInfo();
         if (!isNullOrUndefined(startElements)) {
             this.insertElementsInternal(this.selection.getTextPosBasedOnLogicalIndex(info.start), startElements);
         }
@@ -14893,9 +14897,9 @@ export class Editor {
         this.initHistory('InsertElements');
         this.updateInsertPosition();
         let indexInInline: number = 0;
-        let paragraphInfo: ParagraphInfo = this.selection.getParagraphInfo(this.selection.start);
+        const paragraphInfo: ParagraphInfo = this.selection.getParagraphInfo(this.selection.start);
         if (this.selection.start.paragraph.isEmpty()) {
-            let paragraph: ParagraphWidget = this.selection.start.paragraph as ParagraphWidget;
+            const paragraph: ParagraphWidget = this.selection.start.paragraph as ParagraphWidget;
             (paragraph.childWidgets[0] as LineWidget).children.push(elements[0]);
             elements[0].line = (paragraph.childWidgets[0] as LineWidget);
             elements[0].linkFieldCharacter(this.documentHelper);
@@ -14906,12 +14910,12 @@ export class Editor {
             this.selection.selectPosition(position, position);
         } else {
 
-            let inlineObj: ElementInfo = this.selection.start.currentWidget.getInline(this.documentHelper.selection.start.offset, indexInInline);
-            let curInline: ElementBox = inlineObj.element;
+            const inlineObj: ElementInfo = this.selection.start.currentWidget.getInline(this.documentHelper.selection.start.offset, indexInInline);
+            const curInline: ElementBox = inlineObj.element;
             indexInInline = inlineObj.index;
-            let firstElement: ElementBox = elements[0];
+            const firstElement: ElementBox = elements[0];
             this.insertElementInternal(curInline, firstElement, indexInInline, undefined, true);
-            let index: number = firstElement.indexInOwner;
+            const index: number = firstElement.indexInOwner;
             let lastElement: ElementBox = firstElement;
             for (let i: number = 1; i < elements.length; i++) {
                 lastElement = elements[i];
@@ -14928,23 +14932,25 @@ export class Editor {
         }
     }
     /**
+     * @param index
      * @private
      * @returns {CommentElementBox}
      */
     public getCommentElementBox(index: string): CommentElementBox {
-        let position: string[] = index.split(';');
-        let comment: CommentElementBox = this.documentHelper.comments[parseInt(position[1], 10)];
+        const position: string[] = index.split(';');
+        const comment: CommentElementBox = this.documentHelper.comments[parseInt(position[1], 10)];
         if (position.length > 2 && position[2] !== '') {
             return comment.replyComments[parseInt(position[2], 10)];
         }
         return comment;
     }
     /**
+     * @param position
      * @private
      * @returns {BlockInfo}
      */
     public getBlock(position: IndexInfo): BlockInfo {
-        let bodyWidget: BodyWidget = this.selection.getBodyWidget(position);
+        const bodyWidget: BodyWidget = this.selection.getBodyWidget(position);
         return this.getBlockInternal(bodyWidget, position);
     }
 
@@ -14953,9 +14959,9 @@ export class Editor {
             return undefined;
         }
         let index: number = position.index.indexOf(';');
-        let value: string = position.index.substring(0, index);
+        const value: string = position.index.substring(0, index);
         position.index = position.index.substring(index).replace(';', '');
-        let node: Widget = widget;
+        const node: Widget = widget;
         // if (node instanceof WSection && value === 'HF') {
         //     //Gets the block in Header footers.
         //     let blockObj: BlockInfo = this.getBlock((node as WSection).headerFooters, position);
@@ -14963,9 +14969,9 @@ export class Editor {
         //     return { 'node': (!isNullOrUndefined(blockObj)) ? blockObj.node : undefined, 'position': (!isNullOrUndefined(blockObj)) ? blockObj.position : undefined };
         // }
         index = parseInt(value, 10);
-        let childWidget: Widget = this.selection.getBlockByIndex(widget, index);
+        const childWidget: Widget = this.selection.getBlockByIndex(widget, index);
         if (childWidget) {
-            let child: Widget = childWidget as Widget;
+            const child: Widget = childWidget as Widget;
             if (position.index.indexOf(';') >= 0) {
                 if (child instanceof ParagraphWidget) {
                     if (position.index.indexOf(';') >= 0) {
@@ -14974,7 +14980,7 @@ export class Editor {
                     return { 'node': child as ParagraphWidget, 'position': position };
                 }
                 if (child instanceof Widget) {
-                    let blockObj: BlockInfo = this.getBlockInternal((child as Widget), position);
+                    const blockObj: BlockInfo = this.getBlockInternal((child as Widget), position);
 
                     return { 'node': (!isNullOrUndefined(blockObj)) ? blockObj.node : undefined, 'position': (!isNullOrUndefined(blockObj)) ? blockObj.position : undefined };
                 }
@@ -14987,6 +14993,8 @@ export class Editor {
         return { 'node': node as BlockWidget, 'position': position };
     }
     /**
+     * @param position
+     * @param isInsertPosition
      * @private
      * @returns {void}
      */
@@ -14994,7 +15002,7 @@ export class Editor {
         if (this.editorHistory && !isNullOrUndefined(this.editorHistory.currentBaseHistoryInfo)) {
             let hierarchicalIndex: string;
             if (position instanceof TextPosition) {
-                let blockInfo: ParagraphInfo = this.selection.getParagraphInfo(position);
+                const blockInfo: ParagraphInfo = this.selection.getParagraphInfo(position);
                 hierarchicalIndex = this.selection.getHierarchicalIndex(blockInfo.paragraph, blockInfo.offset.toString());
             } else {
                 hierarchicalIndex = position;
@@ -15015,19 +15023,19 @@ export class Editor {
      */
     public applyBorders(settings: BorderSettings): void {
         this.initHistory('Borders');
-        let startPos: TextPosition = this.selection.isForward ? this.selection.start : this.selection.end;
-        let endPos: TextPosition = this.selection.isForward ? this.selection.end : this.selection.start;
+        const startPos: TextPosition = this.selection.isForward ? this.selection.start : this.selection.end;
+        const endPos: TextPosition = this.selection.isForward ? this.selection.end : this.selection.start;
         let table: TableWidget = startPos.paragraph.associatedCell.ownerTable;
         table = table.combineWidget(this.owner.viewer) as TableWidget;
         if (this.editorHistory) {
-            let clonedTable: TableWidget = this.cloneTableToHistoryInfo(table);
+            const clonedTable: TableWidget = this.cloneTableToHistoryInfo(table);
         }
-        let startCell: TableCellWidget = startPos.paragraph.associatedCell;
-        let endCell: TableCellWidget = endPos.paragraph.associatedCell;
+        const startCell: TableCellWidget = startPos.paragraph.associatedCell;
+        const endCell: TableCellWidget = endPos.paragraph.associatedCell;
         let cells: TableCellWidget[];
-        let border: WBorder = this.getBorder(settings.borderColor, settings.lineWidth, settings.borderStyle);
+        const border: WBorder = this.getBorder(settings.borderColor, settings.lineWidth, settings.borderStyle);
         if (this.selection.isEmpty) {
-            //Apply borders for current selected cell initially.                    
+            //Apply borders for current selected cell initially.
             if (settings.type === 'OutsideBorders' || settings.type === 'AllBorders' ||
                 settings.type === 'LeftBorder') {
                 endCell.cellFormat.borders.left.copyFormat(border);
@@ -15057,36 +15065,36 @@ export class Editor {
             }
         } else {
             if (settings.type === 'OutsideBorders' || settings.type === 'TopBorder') {
-                let selectedCell: TableCellWidget[] = this.getTopBorderCellsOnSelection();
+                const selectedCell: TableCellWidget[] = this.getTopBorderCellsOnSelection();
                 for (let i: number = 0; i < selectedCell.length; i++) {
                     selectedCell[i].cellFormat.borders.top.copyFormat(border);
                 }
             }
             if (settings.type === 'OutsideBorders' || settings.type === 'LeftBorder') {
-                let selectedCell: TableCellWidget[] = this.getLeftBorderCellsOnSelection();
+                const selectedCell: TableCellWidget[] = this.getLeftBorderCellsOnSelection();
                 for (let i: number = 0; i < selectedCell.length; i++) {
                     selectedCell[i].cellFormat.borders.left.copyFormat(border);
                 }
             }
             if (settings.type === 'OutsideBorders' || settings.type === 'RightBorder') {
-                let selectedCell: TableCellWidget[] = this.getRightBorderCellsOnSelection();
+                const selectedCell: TableCellWidget[] = this.getRightBorderCellsOnSelection();
                 for (let i: number = 0; i < selectedCell.length; i++) {
                     selectedCell[i].cellFormat.borders.right.copyFormat(border);
                 }
             }
             if (settings.type === 'OutsideBorders' || settings.type === 'BottomBorder') {
-                let selectedCell: TableCellWidget[] = this.getBottomBorderCellsOnSelection();
+                const selectedCell: TableCellWidget[] = this.getBottomBorderCellsOnSelection();
                 for (let i: number = 0; i < selectedCell.length; i++) {
                     selectedCell[i].cellFormat.borders.bottom.copyFormat(border);
                 }
             }
         }
-        //Apply Only borders property to selected cells      
+        //Apply Only borders property to selected cells
         if (settings.type === 'BottomBorder' || settings.type === 'AllBorders' || settings.type === 'OutsideBorders'
             || settings.type === 'NoBorder') {
             cells = this.getAdjacentCellToApplyBottomBorder();
             for (let i: number = 0; i < cells.length; i++) {
-                let cell: TableCellWidget = cells[i];
+                const cell: TableCellWidget = cells[i];
                 if (settings.type === 'NoBorder') {
                     cell.cellFormat.borders.top.copyFormat(this.clearBorder());
                 } else {
@@ -15098,7 +15106,7 @@ export class Editor {
             || settings.type === 'NoBorder') {
             cells = this.getAdjacentCellToApplyRightBorder();
             for (let i: number = 0; i < cells.length; i++) {
-                let cell: TableCellWidget = cells[i];
+                const cell: TableCellWidget = cells[i];
                 if (settings.type === 'NoBorder') {
                     cell.cellFormat.borders.left.copyFormat(this.clearBorder());
                 } else {
@@ -15118,7 +15126,7 @@ export class Editor {
         this.editorHistory.updateHistory();
     }
     private applyAllBorders(border: WBorder, borderType: BorderType): void {
-        let cells: TableCellWidget[] = this.selection.getSelectedCells();
+        const cells: TableCellWidget[] = this.selection.getSelectedCells();
         for (let i: number = 0; i < cells.length; i++) {
             if (borderType === 'NoBorder') {
                 cells[i].cellFormat.borders.left.copyFormat(this.clearBorder());
@@ -15134,11 +15142,11 @@ export class Editor {
         }
     }
     private applyInsideBorders(border: WBorder, borderType: BorderType, table: TableWidget): void {
-        let cells: TableCellWidget[] = this.selection.getSelectedCells();
+        const cells: TableCellWidget[] = this.selection.getSelectedCells();
         for (let i: number = 0; i < cells.length; i++) {
-            let cell: TableCellWidget = cells[i];
-            let isLastSelectedRow: boolean = cell.ownerRow === cells[cells.length - 1].ownerRow;
-            let isLastRightCell: boolean = (cell.columnIndex + cell.cellFormat.columnSpan - 1) === cells[cells.length - 1].columnIndex;
+            const cell: TableCellWidget = cells[i];
+            const isLastSelectedRow: boolean = cell.ownerRow === cells[cells.length - 1].ownerRow;
+            const isLastRightCell: boolean = (cell.columnIndex + cell.cellFormat.columnSpan - 1) === cells[cells.length - 1].columnIndex;
             if (borderType === 'NoBorder') {
                 cell.cellFormat.borders.right.copyFormat(this.clearBorder());
                 cell.cellFormat.borders.bottom.copyFormat(this.clearBorder());
@@ -15152,10 +15160,10 @@ export class Editor {
             }
             if (!isLastSelectedRow && borderType !== 'InsideVerticalBorder') {
                 // Apply adjacent bottom borders.
-                let nextRowIndex: number = cell.ownerRow.rowIndex + cell.cellFormat.rowSpan;
-                let nextRow: TableRowWidget = table.childWidgets[nextRowIndex] as TableRowWidget;
+                const nextRowIndex: number = cell.ownerRow.rowIndex + cell.cellFormat.rowSpan;
+                const nextRow: TableRowWidget = table.childWidgets[nextRowIndex] as TableRowWidget;
                 if (nextRow) {
-                    let selectedCells: TableCellWidget[] = this.getAdjacentBottomBorderOnEmptyCells(nextRow, cell, true);
+                    const selectedCells: TableCellWidget[] = this.getAdjacentBottomBorderOnEmptyCells(nextRow, cell, true);
                     for (let j: number = 0; j < selectedCells.length; j++) {
                         if (borderType === 'NoBorder') {
                             selectedCells[j].cellFormat.borders.top.copyFormat(this.clearBorder());
@@ -15167,7 +15175,7 @@ export class Editor {
             }
             if (!isLastRightCell && borderType !== 'InsideHorizontalBorder') {
                 // Apply adjacent right borders.
-                let rightBorderCells: TableCellWidget[] = this.getSelectedCellsNextWidgets(cell, table);
+                const rightBorderCells: TableCellWidget[] = this.getSelectedCellsNextWidgets(cell, table);
                 for (let k: number = 0; k < rightBorderCells.length; k++) {
                     if (borderType === 'NoBorder') {
                         rightBorderCells[k].cellFormat.borders.left.copyFormat(this.clearBorder());
@@ -15180,10 +15188,10 @@ export class Editor {
     }
 
     private getTopBorderCellsOnSelection(): TableCellWidget[] {
-        let startPos: TextPosition = this.selection.isForward ? this.selection.start : this.selection.end;
-        let startCell: TableCellWidget = startPos.paragraph.associatedCell;
-        let topBorderCells: TableCellWidget[] = [];
-        let cells: TableCellWidget[] = this.selection.getSelectedCells();
+        const startPos: TextPosition = this.selection.isForward ? this.selection.start : this.selection.end;
+        const startCell: TableCellWidget = startPos.paragraph.associatedCell;
+        const topBorderCells: TableCellWidget[] = [];
+        const cells: TableCellWidget[] = this.selection.getSelectedCells();
         for (let i: number = 0; i < cells.length; i++) {
             if (cells[i].ownerRow === startCell.ownerRow) {
                 topBorderCells.push(cells[i] as TableCellWidget);
@@ -15193,10 +15201,10 @@ export class Editor {
     }
 
     private getLeftBorderCellsOnSelection(): TableCellWidget[] {
-        let startPos: TextPosition = this.selection.isForward ? this.selection.start : this.selection.end;
-        let startCell: TableCellWidget = startPos.paragraph.associatedCell;
-        let cells: TableCellWidget[] = this.selection.getSelectedCells();
-        let leftBorderCells: TableCellWidget[] = [];
+        const startPos: TextPosition = this.selection.isForward ? this.selection.start : this.selection.end;
+        const startCell: TableCellWidget = startPos.paragraph.associatedCell;
+        const cells: TableCellWidget[] = this.selection.getSelectedCells();
+        const leftBorderCells: TableCellWidget[] = [];
         for (let i: number = 0; i < cells.length; i++) {
             if (cells[i].columnIndex === startCell.columnIndex) {
                 leftBorderCells.push(cells[i] as TableCellWidget);
@@ -15206,8 +15214,8 @@ export class Editor {
     }
 
     private getRightBorderCellsOnSelection(): TableCellWidget[] {
-        let cells: TableCellWidget[] = this.selection.getSelectedCells();
-        let rightBorderCells: TableCellWidget[] = [];
+        const cells: TableCellWidget[] = this.selection.getSelectedCells();
+        const rightBorderCells: TableCellWidget[] = [];
         for (let i: number = 0; i < cells.length; i++) {
             if ((cells[i].columnIndex + cells[i].cellFormat.columnSpan - 1) === cells[cells.length - 1].columnIndex) {
                 rightBorderCells.push(cells[i] as TableCellWidget);
@@ -15217,10 +15225,10 @@ export class Editor {
     }
 
     private getBottomBorderCellsOnSelection(): TableCellWidget[] {
-        let endPos: TextPosition = this.selection.isForward ? this.selection.end : this.selection.start;
-        let endCell: TableCellWidget = endPos.paragraph.associatedCell;
-        let cells: TableCellWidget[] = this.selection.getSelectedCells();
-        let bottomBorderCells: TableCellWidget[] = [];
+        const endPos: TextPosition = this.selection.isForward ? this.selection.end : this.selection.start;
+        const endCell: TableCellWidget = endPos.paragraph.associatedCell;
+        const cells: TableCellWidget[] = this.selection.getSelectedCells();
+        const bottomBorderCells: TableCellWidget[] = [];
         for (let i: number = 0; i < cells.length; i++) {
             if (cells[i].ownerRow === endCell.ownerRow) {
                 bottomBorderCells.push(cells[i] as TableCellWidget);
@@ -15230,7 +15238,7 @@ export class Editor {
     }
 
     private clearAllBorderValues(borders: WBorders): void {
-        let border: WBorder = this.clearBorder();
+        const border: WBorder = this.clearBorder();
         borders.bottom.copyFormat(border);
         borders.left.copyFormat(border);
         borders.right.copyFormat(border);
@@ -15239,7 +15247,7 @@ export class Editor {
         borders.horizontal.copyFormat(border);
     }
     private clearBorder(): WBorder {
-        let border: WBorder = new WBorder();
+        const border: WBorder = new WBorder();
         border.lineStyle = 'Cleared';
         return border;
     }
@@ -15254,10 +15262,10 @@ export class Editor {
         }
         let table: TableWidget = startPos.paragraph.associatedCell.ownerTable;
         table = table.combineWidget(this.owner.viewer) as TableWidget;
-        let startCell: TableCellWidget = startPos.paragraph.associatedCell;
-        let endCell: TableCellWidget = endPos.paragraph.associatedCell;
-        let nextRowIndex: number = endCell.ownerRow.rowIndex + endCell.cellFormat.rowSpan;
-        let nextRow: TableRowWidget = table.childWidgets[nextRowIndex] as TableRowWidget;
+        const startCell: TableCellWidget = startPos.paragraph.associatedCell;
+        const endCell: TableCellWidget = endPos.paragraph.associatedCell;
+        const nextRowIndex: number = endCell.ownerRow.rowIndex + endCell.cellFormat.rowSpan;
+        const nextRow: TableRowWidget = table.childWidgets[nextRowIndex] as TableRowWidget;
         if (nextRow) {
             if (endCell.cellFormat.columnSpan > 1) {
                 for (let i: number = endCell.columnIndex; i < endCell.columnIndex + endCell.cellFormat.columnSpan; i++) {
@@ -15267,7 +15275,7 @@ export class Editor {
                 cells = this.getAdjacentBottomBorderOnEmptyCells(nextRow, endCell);
                 if (!this.selection.isEmpty) {
                     for (let i: number = 0; i < nextRow.childWidgets.length; i++) {
-                        let nextCellColIndex: number = (nextRow.childWidgets[i] as TableCellWidget).columnIndex;
+                        const nextCellColIndex: number = (nextRow.childWidgets[i] as TableCellWidget).columnIndex;
                         if (nextCellColIndex >= startCell.columnIndex && nextCellColIndex <= endCell.columnIndex) {
                             cells.push(nextRow.childWidgets[i] as TableCellWidget);
                         }
@@ -15278,7 +15286,7 @@ export class Editor {
         return cells;
     }
     private getAdjacentBottomBorderOnEmptyCells(nextRow: TableRowWidget, cell: TableCellWidget, isSingleCell?: boolean): TableCellWidget[] {
-        let cells: TableCellWidget[] = [];
+        const cells: TableCellWidget[] = [];
         if (cell.cellFormat.columnSpan > 1) {
             for (let i: number = cell.columnIndex; i < cell.columnIndex + cell.cellFormat.columnSpan; i++) {
                 cells.push(nextRow.childWidgets[i] as TableCellWidget);
@@ -15305,16 +15313,16 @@ export class Editor {
         }
         let table: TableWidget = startPosIn.paragraph.associatedCell.ownerTable;
         table = table.combineWidget(this.owner.viewer) as TableWidget;
-        let startCell: TableCellWidget = startPosIn.paragraph.associatedCell;
-        let endCell: TableCellWidget = endPosIn.paragraph.associatedCell;
+        const startCell: TableCellWidget = startPosIn.paragraph.associatedCell;
+        const endCell: TableCellWidget = endPosIn.paragraph.associatedCell;
         if (this.selection.isEmpty) {
-            let selectedCell: TableCellWidget = startPosIn.paragraph.associatedCell;
+            const selectedCell: TableCellWidget = startPosIn.paragraph.associatedCell;
             cells = this.getSelectedCellsNextWidgets(selectedCell, table);
         } else {
 
-            let selectedCells: TableCellWidget[] = this.getRightBorderCellsOnSelection();
+            const selectedCells: TableCellWidget[] = this.getRightBorderCellsOnSelection();
             for (let i: number = 0; i < selectedCells.length; i++) {
-                let cell: TableCellWidget = selectedCells[i] as TableCellWidget;
+                const cell: TableCellWidget = selectedCells[i] as TableCellWidget;
                 cells = cells.concat(this.getSelectedCellsNextWidgets(cell, table));
 
             }
@@ -15322,13 +15330,13 @@ export class Editor {
         return cells;
     }
     private getSelectedCellsNextWidgets(selectedCell: TableCellWidget, table: TableWidget): TableCellWidget[] {
-        let cells: TableCellWidget[] = [];
+        const cells: TableCellWidget[] = [];
         if (!isNullOrUndefined(selectedCell.nextWidget)) {
             cells.push(selectedCell.nextWidget as TableCellWidget);
             if (selectedCell.cellFormat.rowSpan > 1) {
-                let nextRowIndex: number = selectedCell.ownerRow.rowIndex + selectedCell.cellFormat.rowSpan;
+                const nextRowIndex: number = selectedCell.ownerRow.rowIndex + selectedCell.cellFormat.rowSpan;
                 for (let i: number = selectedCell.ownerRow.rowIndex + 1; i < nextRowIndex; i++) {
-                    let nextRow: TableRowWidget = table.childWidgets[i] as TableRowWidget;
+                    const nextRow: TableRowWidget = table.childWidgets[i] as TableRowWidget;
                     if (nextRow) {
                         for (let j: number = 0; j < nextRow.childWidgets.length; j++) {
                             if ((nextRow.childWidgets[j] as TableCellWidget).columnIndex ===
@@ -15344,7 +15352,7 @@ export class Editor {
     }
 
     private getBorder(borderColor: string, lineWidth: number, borderStyle: LineStyle): WBorder {
-        let border: WBorder = new WBorder();
+        const border: WBorder = new WBorder();
         border.color = borderColor || '#000000';
         border.lineWidth = lineWidth || 1;
         border.lineStyle = borderStyle || 'Single';
@@ -15451,12 +15459,12 @@ export class Editor {
             this.documentHelper.owner.isShiftingEnabled = true;
             this.editorHistory.initializeHistory('TableFormat');
 
-            let table: TableWidget = this.selection.start.paragraph.associatedCell.ownerTable.combineWidget(this.owner.viewer) as TableWidget;
+            const table: TableWidget = this.selection.start.paragraph.associatedCell.ownerTable.combineWidget(this.owner.viewer) as TableWidget;
             if (isShading) {
                 for (let i: number = 0; i < table.childWidgets.length; i++) {
-                    let rowWidget: TableRowWidget = table.childWidgets[i] as TableRowWidget;
+                    const rowWidget: TableRowWidget = table.childWidgets[i] as TableRowWidget;
                     for (let j: number = 0; j < rowWidget.childWidgets.length; j++) {
-                        let cellWidget: TableCellWidget = rowWidget.childWidgets[j] as TableCellWidget;
+                        const cellWidget: TableCellWidget = rowWidget.childWidgets[j] as TableCellWidget;
                         cellWidget.cellFormat.shading.copyFormat(format.shading);
                     }
                 }
@@ -15471,7 +15479,7 @@ export class Editor {
     }
 
     private applyTablePropertyValue(selection: Selection, property: string, value: Object, table: TableWidget): void {
-        let sourceFormat: WTableFormat = table.tableFormat;
+        const sourceFormat: WTableFormat = table.tableFormat;
         if (!isNullOrUndefined(this.editorHistory.currentBaseHistoryInfo)) {
             value = this.editorHistory.currentBaseHistoryInfo.addModifiedTableProperties(sourceFormat, property, value);
         }
@@ -15550,6 +15558,7 @@ export class Editor {
     }
     /**
      * Applies Row Format Changes
+     *
      * @param {WRowFormat} format Specifies row format
      * @private
      * @returns {void}
@@ -15560,9 +15569,9 @@ export class Editor {
         }
         this.editorHistory.initializeHistory('RowFormat');
         this.documentHelper.owner.isShiftingEnabled = true;
-        let rowStartPos: TextPosition = this.selection.isForward ? this.selection.start : this.selection.end;
-        let rowEndPos: TextPosition = this.selection.isForward ? this.selection.end : this.selection.start;
-        let table: TableWidget = rowStartPos.paragraph.associatedCell.ownerTable.combineWidget(this.owner.viewer) as TableWidget;
+        const rowStartPos: TextPosition = this.selection.isForward ? this.selection.start : this.selection.end;
+        const rowEndPos: TextPosition = this.selection.isForward ? this.selection.end : this.selection.start;
+        const table: TableWidget = rowStartPos.paragraph.associatedCell.ownerTable.combineWidget(this.owner.viewer) as TableWidget;
         this.applyRowFormat(rowStartPos.paragraph.associatedCell.ownerRow, rowStartPos, rowEndPos, undefined, format);
         this.reLayout(this.selection, false);
     }
@@ -15571,13 +15580,13 @@ export class Editor {
         if (end.paragraph.associatedCell.ownerRow === row) {
             return;
         }
-        let newRow: TableRowWidget = row.nextWidget as TableRowWidget;
+        const newRow: TableRowWidget = row.nextWidget as TableRowWidget;
         if (!isNullOrUndefined(newRow)) {
             this.applyRowFormat(newRow, start, end, property, value);
         }
     }
     private applyRowPropertyValue(selection: Selection, property: string, value: Object, row: TableRowWidget): void {
-        let applyFormat: WRowFormat = row.rowFormat;
+        const applyFormat: WRowFormat = row.rowFormat;
         if (!isNullOrUndefined(this.editorHistory.currentBaseHistoryInfo)) {
             value = this.editorHistory.currentBaseHistoryInfo.addModifiedRowProperties(applyFormat, property, value);
         }
@@ -15631,6 +15640,8 @@ export class Editor {
         this.reLayout(this.selection, false);
     }
     /**
+     * @param selection
+     * @param value
      * @private
      * @returns {void}
      */
@@ -15653,10 +15664,10 @@ export class Editor {
             start = selection.end;
             end = selection.start;
         }
-        let startCell: TableCellWidget = start.paragraph.associatedCell;
-        let endCell: TableCellWidget = end.paragraph.associatedCell;
+        const startCell: TableCellWidget = start.paragraph.associatedCell;
+        const endCell: TableCellWidget = end.paragraph.associatedCell;
         let cells: TableCellWidget[];
-        let table: TableWidget = startCell.ownerTable.combineWidget(this.owner.viewer) as TableWidget;
+        const table: TableWidget = startCell.ownerTable.combineWidget(this.owner.viewer) as TableWidget;
         let appliedFormat: WCellFormat;
         for (let k: number = startCell.columnIndex; k <= endCell.columnIndex; k++) {
             cells = this.getSelectedCellInColumn(startCell.ownerTable, startCell.ownerRow.rowIndex, k, endCell.ownerRow.rowIndex);
@@ -15668,9 +15679,9 @@ export class Editor {
     }
 
     private getSelectedCellInColumn(table: TableWidget, rowStartIndex: number, columnIndex: number, rowEndIndex: number): TableCellWidget[] {
-        let cells: TableCellWidget[] = [];
+        const cells: TableCellWidget[] = [];
         for (let i: number = rowStartIndex; i <= rowEndIndex; i++) {
-            let row: TableRowWidget = table.childWidgets[i] as TableRowWidget;
+            const row: TableRowWidget = table.childWidgets[i] as TableRowWidget;
             for (let j: number = 0; j < row.childWidgets.length; j++) {
                 if ((row.childWidgets[j] as TableCellWidget).columnIndex === columnIndex) {
                     cells.push(row.childWidgets[j] as TableCellWidget);
@@ -15680,11 +15691,11 @@ export class Editor {
         return cells;
     }
     private getColumnCells(table: TableWidget, columnIndex: number, isLeftSideCollection: boolean): TableCellWidget[] {
-        let cells: TableCellWidget[] = [];
+        const cells: TableCellWidget[] = [];
         for (let k: number = 0; k < table.childWidgets.length; k++) {
-            let row: TableRowWidget = table.childWidgets[k] as TableRowWidget;
+            const row: TableRowWidget = table.childWidgets[k] as TableRowWidget;
             for (let i: number = 0; i < row.childWidgets.length; i++) {
-                let cell: TableCellWidget = row.childWidgets[i] as TableCellWidget;
+                const cell: TableCellWidget = row.childWidgets[i] as TableCellWidget;
                 if (isLeftSideCollection) {
                     if (cell.columnIndex + cell.cellFormat.columnSpan === columnIndex) {
                         cells.push(cell);
@@ -15786,6 +15797,7 @@ export class Editor {
     /**
      * Updates the table of contents.
      *
+     * @param tocField
      * @private
      * @returns {void}
      */
@@ -15797,14 +15809,14 @@ export class Editor {
             return;
         }
         // Decode field code to get parameters
-        let code: string = this.selection.getFieldCode(tocField);
+        const code: string = this.selection.getFieldCode(tocField);
         if (code.toLocaleLowerCase().indexOf('toc') !== -1) {
             this.insertTableOfContents(this.validateTocSettings(this.getTocSettings(code, tocField)));
         }
 
     }
     private getTocSettings(code: string, tocField: FieldElementBox): TableOfContentsSettings {
-        let tocSettings: TableOfContentsSettings = {};
+        const tocSettings: TableOfContentsSettings = {};
         tocSettings.includePageNumber = true;
         tocSettings.rightAlign = true;
         // Decode field code to get parameters
@@ -15813,48 +15825,48 @@ export class Editor {
             tocSettings.startLevel = 1;
             tocSettings.endLevel = 3;
         } else {
-            let swtiches: string[] = code.split('\\');
+            const swtiches: string[] = code.split('\\');
             for (let i: number = 0; i < swtiches.length; i++) {
-                let swtch: string = swtiches[i];
+                const swtch: string = swtiches[i];
                 if (swtch.length === 0) {
                     continue;
                 }
                 switch (swtch[0]) {
-                    case 'o':
-                        if (!isNullOrUndefined(swtch.match(/\d+/g))) {
-                            let levels: number[] = swtch.match(/\d+/g).map(Number);
-                            tocSettings.startLevel = levels[0];
-                            tocSettings.endLevel = levels[1];
-                        } else {
-                            tocSettings.startLevel = 1;
-                            tocSettings.endLevel = 9;
-                        }
+                case 'o':
+                    if (!isNullOrUndefined(swtch.match(/\d+/g))) {
+                        const levels: number[] = swtch.match(/\d+/g).map(Number);
+                        tocSettings.startLevel = levels[0];
+                        tocSettings.endLevel = levels[1];
+                    } else {
+                        tocSettings.startLevel = 1;
+                        tocSettings.endLevel = 9;
+                    }
 
-                        break;
-                    case 'h':
-                        tocSettings.includeHyperlink = true;
-                        break;
+                    break;
+                case 'h':
+                    tocSettings.includeHyperlink = true;
+                    break;
 
-                    case 'n':
-                        tocSettings.includePageNumber = false;
-                        break;
+                case 'n':
+                    tocSettings.includePageNumber = false;
+                    break;
 
-                    case 'p':
-                        tocSettings.rightAlign = false;
-                        break;
+                case 'p':
+                    tocSettings.rightAlign = false;
+                    break;
 
-                    case 'u':
-                        tocSettings.includeOutlineLevels = true;
-                        break;
+                case 'u':
+                    tocSettings.includeOutlineLevels = true;
+                    break;
 
-                    case 't':
-                        this.decodeTSwitch(tocSettings, swtch);
-                        break;
+                case 't':
+                    this.decodeTSwitch(tocSettings, swtch);
+                    break;
                 }
             }
         }
         //assigns tab leader.
-        let tabs: WTabStop[] = tocField.paragraph.paragraphFormat.getUpdatedTabs();
+        const tabs: WTabStop[] = tocField.paragraph.paragraphFormat.getUpdatedTabs();
         if (tabs.length > 0) {
             tocSettings.tabLeader = tabs[tabs.length - 1].tabLeader;
         }
@@ -15870,7 +15882,7 @@ export class Editor {
         tSwitch = tSwitch.replace('"', '');
         tSwitch = tSwitch.replace('"', '');
         tSwitch = tSwitch.trim();
-        let levels: string[] = tSwitch.split(',');
+        const levels: string[] = tSwitch.split(',');
         for (let index: number = 0; index < levels.length; index++) {
             tocSettings.levelSettings[levels[index]] = parseInt(levels[index + 1], 10);
             index++;
@@ -15912,28 +15924,28 @@ export class Editor {
         }
         // Build TOC field code based on parameter
         code = this.constructTocFieldCode(tableOfContentsSettings);
-        let isStartParagraph: boolean = this.selection.start.isAtParagraphStart;
-        let blockInfo: ParagraphInfo = this.selection.getParagraphInfo(this.selection.start);
-        let initialStart: string = this.selection.getHierarchicalIndex(blockInfo.paragraph, blockInfo.offset.toString());
+        const isStartParagraph: boolean = this.selection.start.isAtParagraphStart;
+        const blockInfo: ParagraphInfo = this.selection.getParagraphInfo(this.selection.start);
+        const initialStart: string = this.selection.getHierarchicalIndex(blockInfo.paragraph, blockInfo.offset.toString());
 
         // Build TOC fields
 
-        let widgets: ParagraphWidget[] = this.buildToc(this.validateTocSettings(tableOfContentsSettings), code, true, isStartParagraph);
+        const widgets: ParagraphWidget[] = this.buildToc(this.validateTocSettings(tableOfContentsSettings), code, true, isStartParagraph);
         if (widgets.length > 0) {
-            let tocLastPara: ParagraphWidget = new ParagraphWidget();
-            let tocLastLine: LineWidget = new LineWidget(tocLastPara);
+            const tocLastPara: ParagraphWidget = new ParagraphWidget();
+            const tocLastLine: LineWidget = new LineWidget(tocLastPara);
             tocLastPara.childWidgets.push(tocLastLine);
             let index: number = 0;
             if (!isStartParagraph) {
                 index = 1;
             }
-            let line: LineWidget = widgets[index].childWidgets[0] as LineWidget;
-            let fieldBegin: FieldElementBox = line.children[0] as FieldElementBox;
+            const line: LineWidget = widgets[index].childWidgets[0] as LineWidget;
+            const fieldBegin: FieldElementBox = line.children[0] as FieldElementBox;
             this.appendEndField(fieldBegin, tocLastLine);
             widgets.push(tocLastPara);
             this.appendEmptyPara(widgets);
         } else {
-            let localizeValue: L10n = new L10n('documenteditor', this.owner.defaultLocale);
+            const localizeValue: L10n = new L10n('documenteditor', this.owner.defaultLocale);
             localizeValue.setLocale(this.owner.locale);
             DialogUtility.alert({
                 title: localizeValue.getConstant('No Headings'),
@@ -15947,7 +15959,7 @@ export class Editor {
 
         this.setPositionForCurrentIndex(this.selection.start, initialStart);
         this.selection.end.setPositionInternal(this.selection.start);
-        let bodyWidget: BodyWidget = new BodyWidget();
+        const bodyWidget: BodyWidget = new BodyWidget();
         bodyWidget.sectionFormat = new WSectionFormat(bodyWidget);
         bodyWidget.childWidgets = widgets;
         this.pasteContentsInternal([bodyWidget], false);
@@ -15963,8 +15975,8 @@ export class Editor {
     }
 
     private appendEmptyPara(widgets: ParagraphWidget[]): void {
-        let emptyPara: ParagraphWidget = new ParagraphWidget();
-        let emptyLine: LineWidget = new LineWidget(emptyPara);
+        const emptyPara: ParagraphWidget = new ParagraphWidget();
+        const emptyLine: LineWidget = new LineWidget(emptyPara);
         emptyPara.childWidgets.push(emptyLine);
         widgets.push(emptyPara);
     }
@@ -15988,7 +16000,7 @@ export class Editor {
         if (tocSettings.includeOutlineLevels) {
             tocFieldCode = tocFieldCode + ' \\u';
         }
-        let tSwitch: string = this.constructTSwitch(tocSettings);
+        const tSwitch: string = this.constructTSwitch(tocSettings);
         if (tSwitch.length > 6) {
             tocFieldCode = tocFieldCode + tSwitch;
         }
@@ -15997,9 +16009,9 @@ export class Editor {
 
     private constructTSwitch(tocSettings: TableOfContentsSettings): string {
         let tSwitch: string = '';
-        let prefix: string = ' \\t ';
+        const prefix: string = ' \\t ';
         if (!isNullOrUndefined(tocSettings.levelSettings)) {
-            for (let key of Object.keys(tocSettings.levelSettings)) {
+            for (const key of Object.keys(tocSettings.levelSettings)) {
                 tSwitch = tSwitch + key + ',' + tocSettings.levelSettings[key].toString() + ',';
             }
         }
@@ -16010,7 +16022,7 @@ export class Editor {
 
 
     private appendEndField(fieldBegin: FieldElementBox, lineWidget: LineWidget): void {
-        let fieldEnd: FieldElementBox = new FieldElementBox(1);
+        const fieldEnd: FieldElementBox = new FieldElementBox(1);
         fieldEnd.fieldSeparator = fieldBegin.fieldSeparator;
         fieldBegin.fieldSeparator.fieldEnd = fieldEnd;
         fieldEnd.fieldBegin = fieldBegin;
@@ -16018,7 +16030,7 @@ export class Editor {
         fieldEnd.line = lineWidget;
         //For TOC we used to append field end at last we need to map that inserted revision to field end.
         if (fieldBegin.revisions.length > 0) {
-            let currentRevision: Revision = fieldBegin.revisions[fieldBegin.revisions.length - 1];
+            const currentRevision: Revision = fieldBegin.revisions[fieldBegin.revisions.length - 1];
             currentRevision.range.push(fieldEnd);
             fieldEnd.revisions.push(currentRevision);
         }
@@ -16047,24 +16059,25 @@ export class Editor {
     }
     /**
      * Builds the TOC
+     *
      * @private
      * @returns {ParagraphWidget[]}
-     * 
+     *
      */
 
     public buildToc(tocSettings: TableOfContentsSettings, fieldCode: string, isFirstPara: boolean, isStartParagraph?: boolean): ParagraphWidget[] {
-        let tocDomBody: BodyWidget = this.documentHelper.pages[0].bodyWidgets[0];
-        let widgets: ParagraphWidget[] = [];
+        const tocDomBody: BodyWidget = this.documentHelper.pages[0].bodyWidgets[0];
+        const widgets: ParagraphWidget[] = [];
         this.createHeadingLevels(tocSettings);
         if (tocSettings.includeOutlineLevels) {
             this.createOutlineLevels(tocSettings);
         }
-        let sectionFormat: WSectionFormat = this.selection.start.paragraph.bodyWidget.sectionFormat;
+        const sectionFormat: WSectionFormat = this.selection.start.paragraph.bodyWidget.sectionFormat;
         let widget: IWidget = tocDomBody.childWidgets[0];
         while (widget !== undefined) {
 
             if (widget instanceof ParagraphWidget && (this.isHeadingStyle(widget) || (tocSettings.includeOutlineLevels && this.isOutlineLevelStyle(widget)))) {
-                let bookmarkName: string = this.insertTocBookmark(widget);
+                const bookmarkName: string = this.insertTocBookmark(widget);
 
                 this.createTOCWidgets(widget, widgets, fieldCode, bookmarkName, tocSettings, isFirstPara, isStartParagraph, sectionFormat);
                 isFirstPara = false;
@@ -16077,7 +16090,7 @@ export class Editor {
 
     private createOutlineLevels(settings: TableOfContentsSettings): void {
         for (let i: number = settings.startLevel; i <= settings.endLevel; i++) {
-            let levelStyle: string = 'Level' + i.toString();
+            const levelStyle: string = 'Level' + i.toString();
             if (isNullOrUndefined(this.tocStyles[levelStyle])) {
                 this.tocStyles[levelStyle] = i;
             }
@@ -16087,20 +16100,20 @@ export class Editor {
     private createHeadingLevels(settings: TableOfContentsSettings): void {
         //let normalStyle: string = 'Normal';
         for (let i: number = settings.startLevel; i <= settings.endLevel; i++) {
-            let headingStyle: string = 'Heading ' + i.toString();
+            const headingStyle: string = 'Heading ' + i.toString();
             if (isNullOrUndefined(this.tocStyles[headingStyle])) {
                 this.tocStyles[headingStyle] = i;
             }
         }
         if (!isNullOrUndefined(settings.levelSettings)) {
-            for (let key of Object.keys(settings.levelSettings)) {
+            for (const key of Object.keys(settings.levelSettings)) {
                 this.tocStyles[key] = settings.levelSettings[key];
             }
         }
     }
 
     private isHeadingStyle(para: ParagraphWidget): boolean {
-        let style: WStyle = (para.paragraphFormat.baseStyle as WStyle);
+        const style: WStyle = (para.paragraphFormat.baseStyle as WStyle);
         if (style !== undefined) {
             return isNullOrUndefined(this.tocStyles[style.name]) ? false : true;
         }
@@ -16108,24 +16121,24 @@ export class Editor {
     }
 
     private isOutlineLevelStyle(para: ParagraphWidget): boolean {
-        let styleName: OutlineLevel = para.paragraphFormat.outlineLevel;
+        const styleName: OutlineLevel = para.paragraphFormat.outlineLevel;
         return isNullOrUndefined(this.tocStyles[styleName]) ? false : true;
     }
 
     private createTocFieldElement(lineWidget: LineWidget, fieldCode: string, isSkipRevision?: boolean): FieldElementBox {
         //begin
-        let fieldBegin: FieldElementBox = new FieldElementBox(0);
+        const fieldBegin: FieldElementBox = new FieldElementBox(0);
         fieldBegin.hasFieldEnd = true;
         fieldBegin.line = lineWidget;
         lineWidget.children.push(fieldBegin);
-        let currentRevision: Revision = undefined;
+        const currentRevision: Revision = undefined;
         //format toc
-        let textElement: TextElementBox = new TextElementBox();
+        const textElement: TextElementBox = new TextElementBox();
         textElement.text = fieldCode;
         textElement.line = lineWidget;
         lineWidget.children.push(textElement);
         //field separator
-        let fieldSeparator: FieldElementBox = new FieldElementBox(2);
+        const fieldSeparator: FieldElementBox = new FieldElementBox(2);
         fieldSeparator.fieldBegin = fieldBegin;
         fieldSeparator.fieldBegin.fieldSeparator = fieldSeparator;
         fieldSeparator.line = lineWidget;
@@ -16148,13 +16161,13 @@ export class Editor {
             tocPara = new ParagraphWidget();
             let styleName: string = undefined;
             //Adds toc syles into paragraph
-            let headingStyleName: string = widget.paragraphFormat.baseStyle.name;
+            const headingStyleName: string = widget.paragraphFormat.baseStyle.name;
             if (tocSettings.includeOutlineLevels && isNullOrUndefined(this.tocStyles[headingStyleName])) {
                 styleName = widget.paragraphFormat.outlineLevel;
             } else {
                 styleName = headingStyleName;
             }
-            let tocStyleName: string = 'Toc' + this.tocStyles[styleName];
+            const tocStyleName: string = 'Toc' + this.tocStyles[styleName];
             let paraStyle: Object = this.documentHelper.styles.findByName(tocStyleName, 'Paragraph');
             if (isNullOrUndefined(paraStyle)) {
 
@@ -16164,7 +16177,7 @@ export class Editor {
             tocPara.paragraphFormat.applyStyle(paraStyle as WParagraphStyle);
             //Creates right tab for page number.
             if (tocSettings.rightAlign && tocSettings.includePageNumber) {
-                let tabStop: WTabStop = new WTabStop();
+                const tabStop: WTabStop = new WTabStop();
                 tabStop.position = sectionFormat.pageWidth - (sectionFormat.leftMargin + sectionFormat.rightMargin);
                 tabStop.tabLeader = tocSettings.tabLeader;
                 tabStop.deletePosition = 0;
@@ -16188,9 +16201,9 @@ export class Editor {
         let paragraph: ParagraphWidget = widget;
         while (paragraph instanceof ParagraphWidget) {
             for (let lineIndex: number = 0; lineIndex < paragraph.childWidgets.length; lineIndex++) {
-                let lineWidget: LineWidget = paragraph.childWidgets[lineIndex] as LineWidget;
+                const lineWidget: LineWidget = paragraph.childWidgets[lineIndex] as LineWidget;
                 for (let elementIndex: number = 0; elementIndex < lineWidget.children.length; elementIndex++) {
-                    let element: ElementBox = lineWidget.children[elementIndex];
+                    const element: ElementBox = lineWidget.children[elementIndex];
                     if (element.isPageBreak) {
                         continue;
                     }
@@ -16204,7 +16217,7 @@ export class Editor {
                         }
                     } else if (element instanceof TextElementBox || element instanceof ListTextElementBox) {
                         let temp: string = element.text;
-                        let tabChar: string = '\t';
+                        const tabChar: string = '\t';
                         if (temp.indexOf(tabChar) !== -1) {
                             temp = temp.replace(new RegExp(tabChar, 'g'), ' ');
                         }
@@ -16220,7 +16233,7 @@ export class Editor {
             if (tocSettings.includeHyperlink && (bookmarkName !== undefined)) {
                 fieldBegin = this.insertTocHyperlink(tocLine, bookmarkName, text);
             } else {
-                let span: TextElementBox = new TextElementBox();
+                const span: TextElementBox = new TextElementBox();
                 span.text = text;
                 span.line = tocLine;
                 tocLine.children.push(span);
@@ -16228,12 +16241,12 @@ export class Editor {
             //inserts page number
             if (tocSettings.includePageNumber && (bookmarkName !== undefined)) {
                 if (tocSettings.rightAlign) {
-                    let tabText: TabElementBox = new TabElementBox();
+                    const tabText: TabElementBox = new TabElementBox();
                     tabText.text = '\t';
                     tabText.line = tocLine;
                     tocLine.children.push(tabText);
                 }
-                let pageField: FieldElementBox = this.insertTocPageNumber(bookmarkName, tocLine, tocSettings.rightAlign, widget);
+                const pageField: FieldElementBox = this.insertTocPageNumber(bookmarkName, tocLine, tocSettings.rightAlign, widget);
                 this.appendEndField(pageField, tocLine);
             }
             if (tocSettings.includeHyperlink && fieldBegin !== undefined) {
@@ -16247,18 +16260,18 @@ export class Editor {
             if (widgets.length === 1 || emptyParaAppended) {
                 this.insertRevisionForBlock(tocPara, 'Insertion', true);
             } else {
-                let revision: Revision = this.owner.revisionsInternal.changes[0];
+                const revision: Revision = this.owner.revisionsInternal.changes[0];
                 this.insertRevisionForBlock(tocPara, 'Insertion', true, revision);
             }
         }
     }
 
     private insertTocHyperlink(lineWidget: LineWidget, bookmarkName: string, text: string): FieldElementBox {
-        let fieldCode: string = ' HYPERLINK \\l \"' + bookmarkName + '\" ';
-        let fieldBegin: FieldElementBox = this.createTocFieldElement(lineWidget, fieldCode, true);
+        const fieldCode: string = ' HYPERLINK \\l \"' + bookmarkName + '\" ';
+        const fieldBegin: FieldElementBox = this.createTocFieldElement(lineWidget, fieldCode, true);
 
         //text element.
-        let span: TextElementBox = new TextElementBox();
+        const span: TextElementBox = new TextElementBox();
         span.text = text;
         span.line = lineWidget;
         lineWidget.children.push(span);
@@ -16267,11 +16280,11 @@ export class Editor {
 
 
     private insertTocPageNumber(bookMarkname: string, lineWidget: LineWidget, isRightAlign: boolean, widget: ParagraphWidget): FieldElementBox {
-        let fieldCode: string = ' PAGEREF' + bookMarkname + ' \\h ';
-        let fieldBegin: FieldElementBox = this.createTocFieldElement(lineWidget, fieldCode, true);
+        const fieldCode: string = ' PAGEREF' + bookMarkname + ' \\h ';
+        const fieldBegin: FieldElementBox = this.createTocFieldElement(lineWidget, fieldCode, true);
         let text: string = (this.documentHelper.pages.indexOf(widget.bodyWidget.page) + 1).toString();
         //text element.
-        let span: FieldTextElementBox = new FieldTextElementBox();
+        const span: FieldTextElementBox = new FieldTextElementBox();
         span.fieldBegin = fieldBegin;
         if (!isRightAlign) {
             text = ' ' + text;
@@ -16284,16 +16297,16 @@ export class Editor {
     }
 
     private updatePageRef(): void {
-        for (let key of Object.keys(this.pageRefFields)) {
+        for (const key of Object.keys(this.pageRefFields)) {
             if (this.documentHelper.bookmarks.containsKey(key)) {
-                let bookmark: BookmarkElementBox = this.documentHelper.bookmarks.get(key);
-                let pageRef: string = (bookmark.paragraph.bodyWidget.page.index + 1).toString();
-                let span: FieldTextElementBox = this.pageRefFields[key];
+                const bookmark: BookmarkElementBox = this.documentHelper.bookmarks.get(key);
+                const pageRef: string = (bookmark.paragraph.bodyWidget.page.index + 1).toString();
+                const span: FieldTextElementBox = this.pageRefFields[key];
                 if (pageRef !== span.text) {
                     span.text = pageRef;
-                    let paragraph: ParagraphWidget = span.paragraph;
-                    let lineIndex: number = paragraph.childWidgets.indexOf(span.line);
-                    let elementIndex: number = span.line.children.indexOf(span);
+                    const paragraph: ParagraphWidget = span.paragraph;
+                    const lineIndex: number = paragraph.childWidgets.indexOf(span.line);
+                    const elementIndex: number = span.line.children.indexOf(span);
                     this.documentHelper.layout.reLayoutParagraph(paragraph, lineIndex, elementIndex);
                 }
             }
@@ -16301,18 +16314,19 @@ export class Editor {
     }
     /**
      * Inserts toc bookmark.
-     * 
+     *
+     * @param widget
      * @returns {string}
      */
     private insertTocBookmark(widget: ParagraphWidget): string {
         let bookmarkName: string = undefined;
-        let lineLength: number = widget.childWidgets.length;
+        const lineLength: number = widget.childWidgets.length;
         if (lineLength > 0) {
-            let splitParagraph: ParagraphWidget[] = widget.getSplitWidgets() as ParagraphWidget[];
-            let firstParagraph: ParagraphWidget = splitParagraph[0];
-            let lastParagraph: ParagraphWidget = splitParagraph.pop();
-            let startLine: LineWidget = firstParagraph.childWidgets[0] as LineWidget;
-            let endLine: LineWidget = lastParagraph.childWidgets[lastParagraph.childWidgets.length - 1] as LineWidget;
+            const splitParagraph: ParagraphWidget[] = widget.getSplitWidgets() as ParagraphWidget[];
+            const firstParagraph: ParagraphWidget = splitParagraph[0];
+            const lastParagraph: ParagraphWidget = splitParagraph.pop();
+            const startLine: LineWidget = firstParagraph.childWidgets[0] as LineWidget;
+            const endLine: LineWidget = lastParagraph.childWidgets[lastParagraph.childWidgets.length - 1] as LineWidget;
             if ((startLine !== undefined) && (endLine !== undefined)) {
                 let startElement: ElementBox = startLine.children[0];
                 if (startElement instanceof ListTextElementBox || startElement instanceof CommentCharacterElementBox) {
@@ -16325,7 +16339,7 @@ export class Editor {
                 if (!isNullOrUndefined(startElement) && startElement instanceof BookmarkElementBox && (startElement as BookmarkElementBox).bookmarkType === 0 && ((startElement as BookmarkElementBox).name.toLowerCase().match('^_toc'))) {
                     return (startElement as BookmarkElementBox).name;
                 }
-                let endElement: ElementBox = endLine.children[endLine.children.length - 1];
+                const endElement: ElementBox = endLine.children[endLine.children.length - 1];
                 if ((startElement !== undefined) && (endElement !== undefined)) {
                     this.selection.start.setPositionForSelection(startLine, startElement, 0, this.selection.start.location);
                     this.selection.end.setPositionForSelection(endLine, endElement, endElement.length, this.selection.end.location);
@@ -16345,18 +16359,23 @@ export class Editor {
             formatString = '0' + formatString;
             count--;
         }
-        let bookmarkName: string = '_Toc' + formatString + this.tocBookmarkId;
+        const bookmarkName: string = '_Toc' + formatString + this.tocBookmarkId;
         return bookmarkName;
     }
 
     /**
-     * Change cell content alignment 
+     * Change cell content alignment
+     *
+     * @param verticalAlignment
+     * @param textAlignment
+     * @param verticalAlignment
+     * @param textAlignment
      * @private
      * @returns {void}
      */
     public onCellContentAlignment(verticalAlignment: CellVerticalAlignment, textAlignment: TextAlignment): void {
         this.owner.isShiftingEnabled = true;
-        let selection: Selection = this.owner.selection;
+        const selection: Selection = this.owner.selection;
         if (selection.isEmpty && selection.start.paragraph.isInsideTable) {
             if (this.owner.editorHistory) {
                 this.owner.editorHistory.initComplexHistory(selection, 'MultiSelection');
@@ -16364,7 +16383,7 @@ export class Editor {
             //Selecting the table cell to update the all the paragraph format.
             selection.selectTableCell();
             this.initHistory('CellContentVerticalAlignment');
-            let cellFormat: WCellFormat = selection.start.paragraph.associatedCell.cellFormat;
+            const cellFormat: WCellFormat = selection.start.paragraph.associatedCell.cellFormat;
             this.applyCellPropertyValue(selection, 'verticalAlignment', verticalAlignment, cellFormat);
             this.reLayout(selection, false);
             this.initHistory('TextAlignment');
@@ -16395,6 +16414,7 @@ export class Editor {
 
     //Restrict editing implementation starts
     /**
+     * @param user
      * @private
      * @returns {void}
      */
@@ -16404,7 +16424,7 @@ export class Editor {
         }
         this.initComplexHistory('RestrictEditing');
         this.selection.skipEditRangeRetrieval = true;
-        let selection: Selection = this.documentHelper.selection;
+        const selection: Selection = this.documentHelper.selection;
         let startPos: TextPosition = this.selection.start;
         let endPos: TextPosition = this.selection.end;
         if (!this.selection.isForward) {
@@ -16413,20 +16433,20 @@ export class Editor {
         }
         if (selection.start.paragraph.isInsideTable && selection.end.paragraph.isInsideTable
             && selection.start.paragraph.associatedCell.ownerTable.contains(selection.end.paragraph.associatedCell)) {
-            let startCell: TableCellWidget = this.getOwnerCell(this.selection.isForward);
-            let endCell: TableCellWidget = this.getOwnerCell(!this.selection.isForward);
+            const startCell: TableCellWidget = this.getOwnerCell(this.selection.isForward);
+            const endCell: TableCellWidget = this.getOwnerCell(!this.selection.isForward);
             if (startCell.rowIndex === endCell.rowIndex) {
-                let startIndex: number = startCell.ownerRow.childWidgets.indexOf(startCell);
-                let endIndex: number = startCell.ownerRow.childWidgets.indexOf(endCell);
-                let startElement: ElementBox[] = [];
-                let endElement: ElementBox[] = [];
+                const startIndex: number = startCell.ownerRow.childWidgets.indexOf(startCell);
+                const endIndex: number = startCell.ownerRow.childWidgets.indexOf(endCell);
+                const startElement: ElementBox[] = [];
+                const endElement: ElementBox[] = [];
 
                 for (let i: number = startIndex; i <= endIndex; i++) {
-                    let editStart: EditRangeStartElementBox = this.addEditElement(user);
+                    const editStart: EditRangeStartElementBox = this.addEditElement(user);
                     editStart.columnFirst = i;
                     editStart.columnLast = i;
                     editStart.line = selection.start.currentWidget;
-                    let editEnd: EditRangeEndElementBox = editStart.editRangeEnd;
+                    const editEnd: EditRangeEndElementBox = editStart.editRangeEnd;
                     editEnd.line = selection.end.currentWidget;
                     startElement.push(editStart);
                     endElement.push(editEnd);
@@ -16440,8 +16460,8 @@ export class Editor {
                 this.fireContentChange();
             } else {
                 this.insertEditRangeInsideTable(startCell, endCell, user);
-                let startLine: LineWidget = this.selection.getFirstParagraphInCell(startCell).childWidgets[0] as LineWidget;
-                let endLine: LineWidget = this.selection.getLastParagraph(endCell).childWidgets[0] as LineWidget;
+                const startLine: LineWidget = this.selection.getFirstParagraphInCell(startCell).childWidgets[0] as LineWidget;
+                const endLine: LineWidget = this.selection.getLastParagraph(endCell).childWidgets[0] as LineWidget;
                 let offset: number = startLine.getOffset(startLine.children[0], 1);
                 this.selection.start.setPositionParagraph(startLine, offset);
                 offset = endLine.getOffset(endLine.children[0], 1);
@@ -16458,24 +16478,24 @@ export class Editor {
     }
 
     private insertEditRangeInsideTable(startCell: TableCellWidget, endCell: TableCellWidget, user: string): void {
-        let table: TableWidget = startCell.ownerTable;
-        let count: number = table.childWidgets.indexOf(endCell.ownerRow);
-        let rowStartIndex: number = table.childWidgets.indexOf(startCell.ownerRow);
+        const table: TableWidget = startCell.ownerTable;
+        const count: number = table.childWidgets.indexOf(endCell.ownerRow);
+        const rowStartIndex: number = table.childWidgets.indexOf(startCell.ownerRow);
         let startLeft: number = this.selection.getCellLeft(startCell.ownerRow, startCell);
         let endLeft: number = startLeft + startCell.cellFormat.cellWidth;
-        let endCellLeft: number = this.selection.getCellLeft(endCell.ownerRow, endCell);
-        let endCellRight: number = endCellLeft + endCell.cellFormat.cellWidth;
-        let cellInfo: CellInfo = this.updateSelectedCellsInTable(startLeft, endLeft, endCellLeft, endCellRight);
+        const endCellLeft: number = this.selection.getCellLeft(endCell.ownerRow, endCell);
+        const endCellRight: number = endCellLeft + endCell.cellFormat.cellWidth;
+        const cellInfo: CellInfo = this.updateSelectedCellsInTable(startLeft, endLeft, endCellLeft, endCellRight);
         startLeft = cellInfo.start;
         endLeft = cellInfo.end;
         let endElement: EditRangeEndElementBox[] = [];
         for (let i: number = rowStartIndex; i <= count; i++) {
-            let row: TableRowWidget = table.childWidgets[i] as TableRowWidget;
+            const row: TableRowWidget = table.childWidgets[i] as TableRowWidget;
             let cellSelectionStartIndex: number = -1;
             let cellSelectionEndIndex: number = -1;
             for (let j: number = 0; j < row.childWidgets.length; j++) {
-                let cell: TableCellWidget = row.childWidgets[j] as TableCellWidget;
-                let cellStart: number = this.selection.getCellLeft(row, cell);
+                const cell: TableCellWidget = row.childWidgets[j] as TableCellWidget;
+                const cellStart: number = this.selection.getCellLeft(row, cell);
                 if (this.checkCellWithInSelection(startLeft, endLeft, cellStart)) {
                     if (cellSelectionStartIndex === -1) {
                         cellSelectionStartIndex = j;
@@ -16483,7 +16503,7 @@ export class Editor {
                     cellSelectionEndIndex = j;
                 }
             }
-            let newEndElement: EditRangeEndElementBox[] = [];
+            const newEndElement: EditRangeEndElementBox[] = [];
             for (let z: number = cellSelectionStartIndex; z <= cellSelectionEndIndex; z++) {
                 let index: number = 0;
                 let startCell: TableCellWidget;
@@ -16492,13 +16512,13 @@ export class Editor {
                     startCell = row.childWidgets[cellSelectionStartIndex] as TableCellWidget;
                     startParagraph = this.selection.getFirstParagraphInCell(startCell).childWidgets[0] as LineWidget;
                 }
-                let editStart: EditRangeStartElementBox = this.addEditElement(user);
+                const editStart: EditRangeStartElementBox = this.addEditElement(user);
                 editStart.columnFirst = z;
                 editStart.columnLast = z;
                 editStart.line = startParagraph;
                 editStart.line.children.splice(index, 0, editStart);
                 index++;
-                let editEnd: EditRangeEndElementBox = editStart.editRangeEnd;
+                const editEnd: EditRangeEndElementBox = editStart.editRangeEnd;
                 newEndElement.push(editEnd);
                 if (endElement.length > 0 && z === cellSelectionEndIndex) {
                     for (let l: number = 0; l < endElement.length; l++) {
@@ -16511,8 +16531,8 @@ export class Editor {
             }
             endElement = newEndElement;
             if (i === count && endElement.length > 0) {
-                let cellWidget: TableCellWidget = row.childWidgets[cellSelectionEndIndex] as TableCellWidget;
-                let lastLine: LineWidget = this.selection.getLastParagraph(cellWidget).lastChild as LineWidget;
+                const cellWidget: TableCellWidget = row.childWidgets[cellSelectionEndIndex] as TableCellWidget;
+                const lastLine: LineWidget = this.selection.getLastParagraph(cellWidget).lastChild as LineWidget;
                 let index: number = lastLine.children.length - 1;
                 for (let l: number = 0; l < endElement.length; l++) {
                     endElement[l].line = lastLine;
@@ -16524,8 +16544,8 @@ export class Editor {
     }
 
     private addRestrictEditingForSelectedArea(user: string): void {
-        let editStart: EditRangeStartElementBox = this.addEditElement(user);
-        let editEnd: EditRangeEndElementBox = editStart.editRangeEnd;
+        const editStart: EditRangeStartElementBox = this.addEditElement(user);
+        const editEnd: EditRangeEndElementBox = editStart.editRangeEnd;
         if (this.editorHistory && this.editorHistory.currentHistoryInfo) {
             this.editorHistory.currentHistoryInfo.editRangeStart = editStart;
         }
@@ -16542,17 +16562,18 @@ export class Editor {
 
     }
     /**
+     * @param user
      * @private
      * @returns {void}
      */
     public addEditElement(user: string): EditRangeStartElementBox {
-        let editStart: EditRangeStartElementBox = new EditRangeStartElementBox();
+        const editStart: EditRangeStartElementBox = new EditRangeStartElementBox();
         if (user.toLocaleLowerCase() === 'everyone') {
             editStart.group = user;
         } else {
             editStart.user = user;
         }
-        let editEnd: EditRangeEndElementBox = new EditRangeEndElementBox();
+        const editEnd: EditRangeEndElementBox = new EditRangeEndElementBox();
         editEnd.editRangeStart = editStart;
         editStart.editRangeEnd = editEnd;
         this.editStartRangeCollection.push(editStart);
@@ -16561,6 +16582,7 @@ export class Editor {
         return editStart;
     }
     /**
+     * @param protectionType
      * @private
      * @returns {void}
      */
@@ -16575,12 +16597,12 @@ export class Editor {
 
     private addEditCollectionToDocument(): void {
         for (let i: number = 0; i < this.editStartRangeCollection.length; i++) {
-            let editStart: EditRangeStartElementBox = this.editStartRangeCollection[i];
-            let user: string = editStart.user === '' ? editStart.group : editStart.user;
+            const editStart: EditRangeStartElementBox = this.editStartRangeCollection[i];
+            const user: string = editStart.user === '' ? editStart.group : editStart.user;
             if (this.documentHelper.editRanges.length > 0 && this.documentHelper.editRanges.containsKey(user)) {
                 this.documentHelper.editRanges.get(user).push(editStart);
             } else {
-                let collection: EditRangeStartElementBox[] = [];
+                const collection: EditRangeStartElementBox[] = [];
                 collection.push(editStart);
                 this.documentHelper.editRanges.add(user, collection);
             }
@@ -16588,6 +16610,8 @@ export class Editor {
         this.selection.updateEditRangeCollection();
     }
     /**
+     * @param editStart
+     * @param user
      * @private
      * @returns {void}
      */
@@ -16595,12 +16619,13 @@ export class Editor {
         if (this.documentHelper.editRanges.length > 0 && this.documentHelper.editRanges.containsKey(user)) {
             this.documentHelper.editRanges.get(user).push(editStart);
         } else {
-            let collection: EditRangeStartElementBox[] = [];
+            const collection: EditRangeStartElementBox[] = [];
             collection.push(editStart);
             this.documentHelper.editRanges.add(user, collection);
         }
     }
     /**
+     * @param user
      * @private
      * @returns {void}
      */
@@ -16609,7 +16634,7 @@ export class Editor {
             return;
         }
         this.selection.skipEditRangeRetrieval = true;
-        let editStart: EditRangeStartElementBox = this.selection.getEditRangeStartElement();
+        const editStart: EditRangeStartElementBox = this.selection.getEditRangeStartElement();
         this.initHistory('RemoveEditRange');
         if (this.editorHistory) {
             this.editorHistory.currentBaseHistoryInfo.setEditRangeInfo(editStart);
@@ -16623,6 +16648,8 @@ export class Editor {
         this.selection.skipEditRangeRetrieval = false;
     }
     /**
+     * @param editStart
+     * @param currentUser
      * @private
      * @returns {void}
      */
@@ -16631,7 +16658,7 @@ export class Editor {
         if (isNullOrUndefined(currentUser)) {
             user = editStart.user === '' ? editStart.group : editStart.user;
         }
-        let index: number = this.documentHelper.editRanges.get(user).indexOf(editStart);
+        const index: number = this.documentHelper.editRanges.get(user).indexOf(editStart);
         this.documentHelper.editRanges.get(user).splice(index, 1);
         if (this.documentHelper.editRanges.get(user).length === 0) {
             this.documentHelper.editRanges.remove(user);
@@ -16646,10 +16673,10 @@ export class Editor {
      */
     public removeAllEditRestrictions(): void {
         this.selection.skipEditRangeRetrieval = true;
-        let startPosition: TextPosition = this.selection.start;
-        let endPosition: TextPosition = this.selection.end;
+        const startPosition: TextPosition = this.selection.start;
+        const endPosition: TextPosition = this.selection.end;
         let editStart: EditRangeStartElementBox[] = [];
-        let keys: string[] = this.documentHelper.editRanges.keys;
+        const keys: string[] = this.documentHelper.editRanges.keys;
         for (let j: number = 0; j < keys.length; j++) {
             editStart = this.documentHelper.editRanges.get(keys[j]);
             for (let i: number = 0; i < editStart.length; i++) {
@@ -16688,25 +16715,25 @@ export class Editor {
 
     private insertFormFieldInternal(type: FormFieldType): void {
         this.updateInsertPosition();
-        let element: ElementBox[] = [];
-        let temp: WCharacterFormat = this.getCharacterFormat(this.selection);
-        let format: WCharacterFormat = new WCharacterFormat(undefined);
+        const element: ElementBox[] = [];
+        const temp: WCharacterFormat = this.getCharacterFormat(this.selection);
+        const format: WCharacterFormat = new WCharacterFormat(undefined);
         format.copyFormat(temp);
-        let fieldBegin: FieldElementBox = new FieldElementBox(0);
+        const fieldBegin: FieldElementBox = new FieldElementBox(0);
         fieldBegin.formFieldData = this.getFormFieldData(type);
         fieldBegin.characterFormat.copyFormat(format);
         element.push(fieldBegin);
-        let bookmark: BookmarkElementBox = new BookmarkElementBox(0);
+        const bookmark: BookmarkElementBox = new BookmarkElementBox(0);
         bookmark.characterFormat.copyFormat(format);
         fieldBegin.formFieldData.name = this.getBookmarkName(type, 'Insert', this.formFieldCounter);
         bookmark.name = fieldBegin.formFieldData.name;
         element.push(bookmark);
-        let span: TextElementBox = new TextElementBox();
+        const span: TextElementBox = new TextElementBox();
         span.text = this.getFormFieldCode(type);
         element.push(span);
-        let fieldSeparator: FieldElementBox = new FieldElementBox(2);
+        const fieldSeparator: FieldElementBox = new FieldElementBox(2);
         element.push(fieldSeparator);
-        let result: TextElementBox = new TextElementBox();
+        const result: TextElementBox = new TextElementBox();
         if (type === 'CheckBox') {
             result.text = String.fromCharCode(9744);
         } else {
@@ -16714,17 +16741,17 @@ export class Editor {
         }
         result.characterFormat.copyFormat(format);
         element.push(result);
-        let fieldEnd: FieldElementBox = new FieldElementBox(1);
+        const fieldEnd: FieldElementBox = new FieldElementBox(1);
         fieldEnd.characterFormat.copyFormat(format);
         element.push(fieldEnd);
-        let bookmarkEnd: BookmarkElementBox = new BookmarkElementBox(1);
+        const bookmarkEnd: BookmarkElementBox = new BookmarkElementBox(1);
         bookmarkEnd.characterFormat.copyFormat(format);
         bookmarkEnd.name = fieldBegin.formFieldData.name;
         bookmarkEnd.reference = bookmark;
         bookmark.reference = bookmarkEnd;
         element.push(bookmarkEnd);
         this.insertElement(element);
-        let paragraph: ParagraphWidget = this.selection.start.paragraph;
+        const paragraph: ParagraphWidget = this.selection.start.paragraph;
         fieldEnd.linkFieldCharacter(this.documentHelper);
         if (this.documentHelper.fields.indexOf(fieldBegin) === -1) {
             this.documentHelper.fields.push(fieldBegin);
@@ -16732,7 +16759,7 @@ export class Editor {
         if (this.documentHelper.formFields.indexOf(fieldBegin) === -1) {
             this.documentHelper.formFields.push(fieldBegin);
         }
-        let offset: number = bookmarkEnd.line.getOffset(bookmarkEnd, 1);
+        const offset: number = bookmarkEnd.line.getOffset(bookmarkEnd, 1);
         this.selection.selects(bookmarkEnd.line, offset, true);
         this.updateEndPosition();
         this.reLayout(this.selection, true);
@@ -16740,15 +16767,17 @@ export class Editor {
 
     private getFormFieldData(type: FormFieldType): FormField {
         switch (type) {
-            case 'Text':
-                return new TextFormField();
-            case 'CheckBox':
-                return new CheckBoxFormField();
-            case 'DropDown':
-                return new DropDownFormField();
+        case 'Text':
+            return new TextFormField();
+        case 'CheckBox':
+            return new CheckBoxFormField();
+        case 'DropDown':
+            return new DropDownFormField();
         }
     }
     /**
+     * @param field
+     * @param info
      * @private
      * @returns {void}
      */
@@ -16772,11 +16801,15 @@ export class Editor {
         }
     }
     /**
+     * @param type
+     * @param formData
+     * @param type
+     * @param formData
      * @private
      * @returns {boolean}
      */
     public editFormField(type: FormFieldType, formData: FormField): boolean {
-        let begin: FieldElementBox = this.selection.getCurrentFormField();
+        const begin: FieldElementBox = this.selection.getCurrentFormField();
         if (isNullOrUndefined(begin) || isNullOrUndefined(begin.formFieldData)) {
             return false;
         }
@@ -16800,10 +16833,10 @@ export class Editor {
         this.editHyperlinkInternal = isNullOrUndefined(this.editorHistory)
             || (this.editorHistory && isNullOrUndefined(this.editorHistory.currentBaseHistoryInfo));
         // Preserves the character format for hyperlink field.
-        let temp: WCharacterFormat = begin.characterFormat.cloneFormat();
-        let format: WCharacterFormat = new WCharacterFormat();
+        const temp: WCharacterFormat = begin.characterFormat.cloneFormat();
+        const format: WCharacterFormat = new WCharacterFormat();
         format.copyFormat(temp);
-        let textFormat: WCharacterFormat = begin.fieldSeparator.nextElement.characterFormat.cloneFormat();
+        const textFormat: WCharacterFormat = begin.fieldSeparator.nextElement.characterFormat.cloneFormat();
         let currentOffset: number = begin.line.getOffset(begin, 0);
         this.selection.start.setPositionParagraph(begin.line, currentOffset);
         let endElement: ElementBox = begin.fieldEnd;
@@ -16816,8 +16849,8 @@ export class Editor {
         this.deleteSelectedContents(this.selection, false);
         this.skipFieldDeleteTracking = false;
         this.updateInsertPosition();
-        let element: ElementBox[] = [];
-        let fieldBegin: FieldElementBox = new FieldElementBox(0);
+        const element: ElementBox[] = [];
+        const fieldBegin: FieldElementBox = new FieldElementBox(0);
         fieldBegin.formFieldData = formData;
         element.push(fieldBegin);
         fieldBegin.characterFormat.copyFormat(format);
@@ -16827,7 +16860,7 @@ export class Editor {
         let span: TextElementBox = new TextElementBox();
         span.text = this.getFormFieldCode(type);
         element.push(span);
-        let fieldSeparator: FieldElementBox = new FieldElementBox(2);
+        const fieldSeparator: FieldElementBox = new FieldElementBox(2);
         fieldSeparator.characterFormat.copyFormat(format);
         element.push(fieldSeparator);
         span = new TextElementBox();
@@ -16850,7 +16883,7 @@ export class Editor {
             }
         }
         element.push(span);
-        let fieldEnd: FieldElementBox = new FieldElementBox(1);
+        const fieldEnd: FieldElementBox = new FieldElementBox(1);
         fieldEnd.characterFormat.copyFormat(format);
         element.push(fieldEnd);
         let lastElement: ElementBox = fieldEnd;
@@ -16859,12 +16892,12 @@ export class Editor {
             element.push(bookmarkEnd);
         }
         this.insertElement(element);
-        let paragraph: ParagraphWidget = this.selection.start.paragraph;
+        const paragraph: ParagraphWidget = this.selection.start.paragraph;
         fieldEnd.linkFieldCharacter(this.documentHelper);
         if (this.documentHelper.fields.indexOf(fieldBegin) === -1) {
             this.documentHelper.fields.push(fieldBegin);
         }
-        let offset: number = lastElement.line.getOffset(lastElement, 1);
+        const offset: number = lastElement.line.getOffset(lastElement, 1);
         this.selection.selects(lastElement.line, offset, true);
         this.updateEndPosition();
         if (this.editorHistory && this.editorHistory.currentBaseHistoryInfo) {
@@ -16901,21 +16934,27 @@ export class Editor {
 
     private getFormFieldCode(type: FormFieldType): string {
         switch (type) {
-            case 'Text':
-                return 'FORMTEXT';
-            case 'CheckBox':
-                return 'FORMCHECKBOX';
-            case 'DropDown':
-                return 'FORMDROPDOWN';
+        case 'Text':
+            return 'FORMTEXT';
+        case 'CheckBox':
+            return 'FORMCHECKBOX';
+        case 'DropDown':
+            return 'FORMDROPDOWN';
         }
     }
 
     /**
-     * @private 
+     * @param field
+     * @param reset
+     * @param value
+     * @param field
+     * @param reset
+     * @param value
+     * @private
      * @returns {void}
      */
     public toggleCheckBoxFormField(field: FieldElementBox, reset?: boolean, value?: boolean): void {
-        let formFieldData: FormField = field.formFieldData;
+        const formFieldData: FormField = field.formFieldData;
         if (formFieldData instanceof CheckBoxFormField && formFieldData.enabled) {
             this.initHistory('UpdateFormField');
             if (this.editorHistory) {
@@ -16931,8 +16970,8 @@ export class Editor {
             } else {
                 (formFieldData as CheckBoxFormField).checked = !(formFieldData as CheckBoxFormField).checked;
             }
-            let separator: FieldElementBox = field.fieldSeparator;
-            let checkBoxTextElement: TextElementBox = separator.nextNode as TextElementBox;
+            const separator: FieldElementBox = field.fieldSeparator;
+            const checkBoxTextElement: TextElementBox = separator.nextNode as TextElementBox;
             if ((formFieldData as CheckBoxFormField).checked) {
                 checkBoxTextElement.text = String.fromCharCode(9745);
             } else {
@@ -16943,11 +16982,14 @@ export class Editor {
         }
     }
     /**
+     * @param field
+     * @param value
+     * @param reset
      * @private
      * @returns {void}
      */
     public updateFormField(field: FieldElementBox, value: string | number, reset?: boolean): void {
-        let formFieldData: FormField = field.formFieldData;
+        const formFieldData: FormField = field.formFieldData;
         if (formFieldData) {
             this.initHistory('UpdateFormField');
             if (this.editorHistory) {
@@ -16975,18 +17017,18 @@ export class Editor {
                 }
             }
             let formattedText: string = value as string;
-            let type: TextFormFieldType = formFieldData.type;
+            const type: TextFormFieldType = formFieldData.type;
             if (type === 'Text' && formFieldData.format !== '') {
                 formattedText = HelperMethods.formatText(formFieldData.format, value as string);
             }
             this.updateFormFieldResult(field, formattedText);
         } else if (formFieldData instanceof DropDownFormField) {
-            let text: string = formFieldData.dropdownItems[value as number];
+            const text: string = formFieldData.dropdownItems[value as number];
             formFieldData.selectedIndex = value as number;
             this.updateFormFieldResult(field, text);
         }
-        let endoffset: number = field.fieldEnd.line.getOffset(field.fieldEnd, 1);
-        let startPos: TextPosition = new TextPosition(this.owner);
+        const endoffset: number = field.fieldEnd.line.getOffset(field.fieldEnd, 1);
+        const startPos: TextPosition = new TextPosition(this.owner);
         startPos.setPositionParagraph(field.fieldEnd.line, endoffset);
         //selects the field range
         this.documentHelper.selection.selectRange(startPos, startPos);
@@ -17004,7 +17046,7 @@ export class Editor {
             textElement.text = value;
             textElement = textElement.nextNode;
             do {
-                let index: number = field.line.children.indexOf(textElement);
+                const index: number = field.line.children.indexOf(textElement);
                 if (textElement instanceof TextElementBox) {
                     textElement = textElement.nextNode;
                     field.line.children.splice(index, 1);
@@ -17020,7 +17062,7 @@ export class Editor {
     }
 
     private checkBookmarkAvailability(name: string, action: string): boolean {
-        let bookmarkCol: Dictionary<string, BookmarkElementBox> = this.documentHelper.bookmarks;
+        const bookmarkCol: Dictionary<string, BookmarkElementBox> = this.documentHelper.bookmarks;
         for (let i: number = 0; i < bookmarkCol.length; i++) {
             if (bookmarkCol.containsKey(name)) {
                 return false;
@@ -17040,13 +17082,14 @@ export class Editor {
         return name;
     }
     /**
+     * @param formField
      * @private
      * @returns {void}
      */
     public applyFormTextFormat(formField: FieldElementBox): void {
         if (!isNullOrUndefined(formField)) {
             let text: string = this.getFormFieldText(formField);
-            let currentValue: string = text;
+            const currentValue: string = text;
             text = HelperMethods.formatText((formField.formFieldData as TextFormField).format, text);
             this.applyTextFormatInternal(formField, text);
             this.initHistory('FormTextFormat');
@@ -17059,7 +17102,7 @@ export class Editor {
     // Inserts 5 space on Form Fill inline mode if length is 0
     private insertSpaceInFormField(): void {
         if (this.documentHelper.isInlineFormFillProtectedMode && this.selection.isInlineFormFillMode()) {
-            let resultText: string = this.getFormFieldText();
+            const resultText: string = this.getFormFieldText();
             if (resultText.length === 0 || resultText === '\r') {
 
                 this.insertTextInternal(this.documentHelper.textHelper.repeatChar(this.documentHelper.textHelper.getEnSpaceCharacter(), 5), true);
@@ -17068,6 +17111,7 @@ export class Editor {
         }
     }
     /**
+     * @param formField
      * @private
      * @returns {string}
      */
@@ -17075,8 +17119,8 @@ export class Editor {
         if (isNullOrUndefined(formField)) {
             formField = this.selection.getCurrentFormField();
         }
-        let seperator: FieldElementBox = formField.fieldSeparator;
-        let text: string = this.getNextRenderedWidgetText(seperator);
+        const seperator: FieldElementBox = formField.fieldSeparator;
+        const text: string = this.getNextRenderedWidgetText(seperator);
         return text;
     }
 
@@ -17113,6 +17157,8 @@ export class Editor {
         return text;
     }
     /**
+     * @param field
+     * @param text
      * @private
      * @returns {void}
      */
@@ -17156,7 +17202,7 @@ export class Editor {
         this.selection.isFormatUpdated = false;
     }
     private constructCommentInitial(authorName: string): string {
-        let splittedName: string[] = authorName.split(' ');
+        const splittedName: string[] = authorName.split(' ');
         let initials: string = '';
         for (let i: number = 0; i < splittedName.length; i++) {
             if (splittedName[i].length > 0 && splittedName[i] !== '') {
@@ -17174,18 +17220,18 @@ export class Editor {
         if (this.selection.isinFootnote || this.selection.isinEndnote) {
             return;
         }
-        let footnote: FootnoteElementBox = new FootnoteElementBox();
+        const footnote: FootnoteElementBox = new FootnoteElementBox();
         footnote.characterFormat.baselineAlignment = 'Superscript';
         footnote.footnoteType = 'Footnote';
         footnote.text = 's';
-        let paragraph: ParagraphWidget = new ParagraphWidget();
-        let lineWidget: LineWidget = new LineWidget(paragraph);
-        let text: TextElementBox = new TextElementBox();
+        const paragraph: ParagraphWidget = new ParagraphWidget();
+        const lineWidget: LineWidget = new LineWidget(paragraph);
+        const text: TextElementBox = new TextElementBox();
         text.characterFormat.baselineAlignment = 'Superscript';
         text.line = lineWidget;
         text.text = '?';
         lineWidget.children.push(text);
-        let text1: TextElementBox = new TextElementBox();
+        const text1: TextElementBox = new TextElementBox();
         text1.text = ' ';
         text1.line = lineWidget;
         lineWidget.children.push(text1);
@@ -17222,10 +17268,10 @@ export class Editor {
             let isInserted: boolean = false;
             if (this.documentHelper.footnoteCollection.length > 0) {
 
-                let currentStart: TextPosition = this.selection.getElementPosition(footnote).startPosition;
+                const currentStart: TextPosition = this.selection.getElementPosition(footnote).startPosition;
                 for (let i: number = 0; i < this.documentHelper.footnoteCollection.length; i++) {
 
-                    let paraIndex: TextPosition = this.selection.getElementPosition(this.documentHelper.footnoteCollection[i]).startPosition;
+                    const paraIndex: TextPosition = this.selection.getElementPosition(this.documentHelper.footnoteCollection[i]).startPosition;
                     if (currentStart.isExistBefore(paraIndex)) {
                         isInserted = true;
                         this.documentHelper.footnoteCollection.splice(i, 0, footnote);
@@ -17243,25 +17289,25 @@ export class Editor {
     /**
      * Insert Endnote at current selection
      *
-     * @returns {void}     
+     * @returns {void}
      */
     public insertEndnote(): void {
         if (this.selection.isinFootnote || this.selection.isinEndnote) {
             return;
         }
         this.documentHelper.layout.isEndnoteContentChanged = true;
-        let endnote: FootnoteElementBox = new FootnoteElementBox();
+        const endnote: FootnoteElementBox = new FootnoteElementBox();
         endnote.characterFormat.baselineAlignment = 'Superscript';
         endnote.footnoteType = 'Endnote';
         endnote.text = 's';
-        let paragraph: ParagraphWidget = new ParagraphWidget();
-        let lineWidget: LineWidget = new LineWidget(paragraph);
-        let footText: TextElementBox = new TextElementBox();
+        const paragraph: ParagraphWidget = new ParagraphWidget();
+        const lineWidget: LineWidget = new LineWidget(paragraph);
+        const footText: TextElementBox = new TextElementBox();
         footText.characterFormat.baselineAlignment = 'Superscript';
         footText.line = lineWidget;
         footText.text = '?';
         lineWidget.children.push(footText);
-        let followText: TextElementBox = new TextElementBox();
+        const followText: TextElementBox = new TextElementBox();
         followText.text = ' ';
         followText.line = lineWidget;
         lineWidget.children.push(followText);
@@ -17275,8 +17321,8 @@ export class Editor {
         // this.documentHelper.layout.isLayoutWhole = true;
         // this.layoutWholeDocument();
         // this.documentHelper.layout.isLayoutWhole = false;
-        let lastpage: number = this.documentHelper.pages.length;
-        let bodyWidget: BlockContainer = this.documentHelper.pages[lastpage - 1].bodyWidgets[0];
+        const lastpage: number = this.documentHelper.pages.length;
+        const bodyWidget: BlockContainer = this.documentHelper.pages[lastpage - 1].bodyWidgets[0];
         let footPara: BlockWidget;
         if (bodyWidget.page.endnoteWidget) {
             for (let i: number = 0; i < bodyWidget.page.endnoteWidget.childWidgets.length; i++) {
@@ -17298,10 +17344,10 @@ export class Editor {
             let isInserted: boolean = false;
             if (this.documentHelper.endnoteCollection.length > 0) {
 
-                let currentStart: TextPosition = this.selection.getElementPosition(endnote).startPosition;
+                const currentStart: TextPosition = this.selection.getElementPosition(endnote).startPosition;
                 for (let i: number = 0; i < this.documentHelper.endnoteCollection.length; i++) {
 
-                    let paraIndex: TextPosition = this.selection.getElementPosition(this.documentHelper.endnoteCollection[i]).startPosition;
+                    const paraIndex: TextPosition = this.selection.getElementPosition(this.documentHelper.endnoteCollection[i]).startPosition;
                     if (currentStart.isExistBefore(paraIndex)) {
                         isInserted = true;
                         this.documentHelper.endnoteCollection.splice(i, 0, endnote);
@@ -17312,21 +17358,21 @@ export class Editor {
             if (!isInserted) {
                 this.documentHelper.endnoteCollection.push(endnote);
             }
-            let lastpage: number = this.documentHelper.pages.length;
+            const lastpage: number = this.documentHelper.pages.length;
             if (this.documentHelper.endnoteCollection.length > 0) {
                 let positionchanged: boolean = false;
                 // this.documentHelper.layout.isFootnoteContentChanged = true;
                 let foot: FootnoteElementBox;
                 let endnoteWidget: FootNoteWidget;
-                let footIndex: number = this.documentHelper.endnoteCollection.indexOf(endnote);
+                const footIndex: number = this.documentHelper.endnoteCollection.indexOf(endnote);
                 let insertIndex: number = 1;
-                let height: number = 0;
+                const height: number = 0;
                 let isCreated: boolean;
-                let bodyWidget: BlockContainer = this.documentHelper.pages[lastpage - 1].bodyWidgets[0];
+                const bodyWidget: BlockContainer = this.documentHelper.pages[lastpage - 1].bodyWidgets[0];
                 if (bodyWidget.page.endnoteWidget) {
                     for (let j: number = 0; j < bodyWidget.page.endnoteWidget.childWidgets.length; j++) {
 
-                        let currentIndex: number = this.documentHelper.endnoteCollection.indexOf((bodyWidget.page.endnoteWidget.childWidgets[j] as BlockWidget).footNoteReference);
+                        const currentIndex: number = this.documentHelper.endnoteCollection.indexOf((bodyWidget.page.endnoteWidget.childWidgets[j] as BlockWidget).footNoteReference);
                         if (currentIndex > footIndex) {
                             if (currentIndex - footIndex === 1) {
                                 insertIndex = j;
@@ -17345,16 +17391,16 @@ export class Editor {
                     endnoteWidget = new FootNoteWidget();
                     endnoteWidget.footNoteType = 'Endnote';
                     endnoteWidget.page = bodyWidget.page;
-                    let newParagraph: ParagraphWidget = new ParagraphWidget();
+                    const newParagraph: ParagraphWidget = new ParagraphWidget();
                     newParagraph.characterFormat = new WCharacterFormat();
                     newParagraph.paragraphFormat = new WParagraphFormat();
                     newParagraph.index = 0;
-                    let lineWidget: LineWidget = new LineWidget(newParagraph);
+                    const lineWidget: LineWidget = new LineWidget(newParagraph);
                     newParagraph.childWidgets.push(lineWidget);
                     endnoteWidget.childWidgets.push(newParagraph);
                 }
                 for (let j: number = 0; j < foot.blocks.length; j++) {
-                    let block: BlockWidget = foot.blocks[j];
+                    const block: BlockWidget = foot.blocks[j];
                 }
                 if (positionchanged) {
                     endnoteWidget.childWidgets.splice(insertIndex, 0, foot.blocks[0]);
@@ -17377,9 +17423,9 @@ export class Editor {
     }
     private separator(type: string): void {
         //let block = new page_1.block;
-        let paragraph: ParagraphWidget = new ParagraphWidget();
-        let lineWidget: LineWidget = new LineWidget(paragraph);
-        let text: TextElementBox = new TextElementBox();
+        const paragraph: ParagraphWidget = new ParagraphWidget();
+        const lineWidget: LineWidget = new LineWidget(paragraph);
+        const text: TextElementBox = new TextElementBox();
         text.characterFormat.fontColor = 'empty';
         text.line = lineWidget;
         text.text = '\u0003';
@@ -17390,12 +17436,12 @@ export class Editor {
         } else if (type === 'endnote' && this.documentHelper.endnotes.separator.length < 1) {
             this.documentHelper.endnotes.separator.push(paragraph);
         }
-    };
+    }
     private continuationSeparator(type: string): void {
         //var block = new page_1.block;
-        let paragraph: ParagraphWidget = new ParagraphWidget();
-        let lineWidget: LineWidget = new LineWidget(paragraph);
-        let text: TextElementBox = new TextElementBox();
+        const paragraph: ParagraphWidget = new ParagraphWidget();
+        const lineWidget: LineWidget = new LineWidget(paragraph);
+        const text: TextElementBox = new TextElementBox();
         text.characterFormat.fontColor = 'empty';
         text.line = lineWidget;
         text.text = '\u0004';

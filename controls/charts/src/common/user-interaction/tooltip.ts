@@ -164,13 +164,14 @@ export class BaseTooltip extends ChartData {
         let position: TooltipPlacement = null;
         if (this.text.length <= 1) {
             let contentSize: Size; let headerSize: Size;
-            if (chart.tooltip.template && chart.getModuleName() === 'chart' && chart.tooltip.template[0] !== '#' && typeof chart.tooltip.template === 'string') {
+            let tooltipTemplate: string = !customTemplate ? chart.tooltip.template : customTemplate;
+            if (tooltipTemplate && chart.getModuleName() === 'chart' && tooltipTemplate[0] !== '#' && typeof tooltipTemplate === 'string') {
                 const templateDiv: HTMLDivElement = document.createElement('div');
                 templateDiv.id = 'testing_template'; templateDiv.className = 'ejSVGTooltip';
                 templateDiv.setAttribute('style', 'pointer-events:none; position:absolute;z-index: 1');
                 document.getElementById(this.chart.element.id + '_Secondary_Element').appendChild(templateDiv);
                 const template: string =
-                    ((chart.tooltip.template as any).replaceAll('${x}', point.x as string) as any).replaceAll('${y}', point.y as string);
+                    ((tooltipTemplate as any).replaceAll('${x}', point.x as string) as any).replaceAll('${y}', point.y as string);
                 templateDiv.innerHTML = template;
                 contentSize = new Size(
                     (templateDiv.firstElementChild as HTMLElement).offsetWidth,

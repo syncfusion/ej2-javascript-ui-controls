@@ -1294,6 +1294,10 @@ export class CircularGauge extends Component<HTMLElement> implements INotifyProp
             this.titleStyle.fontFamily = this.themeStyle.fontFamily || this.titleStyle.fontFamily;
             this.titleStyle.size = this.themeStyle.fontSize || this.titleStyle.size;
             this.titleStyle.fontWeight = this.titleStyle.fontWeight || this.themeStyle.titleFontWeight;
+            const titleSize: string = this.titleStyle.size;
+            if (!isNaN(Number(titleSize))) {
+                this.titleStyle.size = titleSize + 'px';
+            }
             const size: Size = measureText(this.title, this.titleStyle);
             const options: TextOption = new TextOption(
                 this.element.id + '_CircularGaugeTitle',

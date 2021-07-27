@@ -146,7 +146,7 @@ export class RowDD {
         }
         const cloneElement: HTMLElement = this.parent.element.querySelector('.e-cloneproperties') as HTMLElement;
         const target: Element = this.getElementFromPosition(cloneElement, e.event);
-        classList(cloneElement, ['e-defaultcur'], ['e-notallowedcur', 'e-movecur']);
+        classList(cloneElement, ['e-defaultcur'], ['e-notallowedcur', 'e-movecur', 'e-grabcur']);
 
         this.isOverflowBorder = true;
         this.hoverState = gObj.enableHover;
@@ -171,7 +171,7 @@ export class RowDD {
                 parentsUntil(cloneElement.parentElement, 'e-grid').id === parentsUntil(target, 'e-grid').id) {
                 classList(cloneElement, ['e-notallowedcur'], ['e-defaultcur']);
             } else {
-                classList(cloneElement, ['e-defaultcur'], ['e-notallowedcur']);
+                classList(cloneElement, ['e-grabcur'], ['e-notallowedcur']);
             }
         } else {
             const elem: Element = parentsUntil(target, 'e-grid');
@@ -500,7 +500,7 @@ export class RowDD {
         if (args.dropIndex === args.fromIndex || isNaN(args.dropIndex)) {
             return;
         }
-        if (this.parent.childGrid) {
+        if (this.parent.isDetail()) {
             (<Grid>this.parent).detailCollapseAll();
             const rows: HTMLTableRowElement[] = [].slice.call(this.parent.getContentTable().querySelector( literals.tbody).children);
             const rowObjects: Row<Column>[] = this.parent.getRowsObject();
@@ -709,8 +709,8 @@ export class RowDD {
         const cloneElement: HTMLElement = this.parent.element.querySelector('.e-cloneproperties') as HTMLElement;
         this.removeFirstRowBorder(element);
         this.removeLastRowBorder(element);
-        if (parentsUntil(element, 'e-grid') && (!this.parent.rowDropSettings.targetID && element.classList.contains(literals.row) &&
-            parentsUntil(cloneElement.parentElement, 'e-grid').id === parentsUntil(element, 'e-grid').id) || this.istargetGrid) {
+        if (parentsUntil(element, 'e-grid') && element.classList.contains(literals.row) &&
+            (parentsUntil(cloneElement.parentElement, 'e-grid').id === parentsUntil(element, 'e-grid').id || this.istargetGrid)) {
             removeClass(node.querySelectorAll('.e-rowcell,.e-rowdragdrop,.e-detailrowcollapse'), ['e-dragborder']);
             let rowElement: HTMLElement[] = [];
             const targetRowIndex: number = parseInt(targetRow.getAttribute(literals.ariaRowIndex), 10);
@@ -939,7 +939,9 @@ export class RowDD {
                 if (gObj.isFrozenGrid()) {
                     this.rows = [gObj.getRowByIndex(dragIdx), gObj.getMovableRowByIndex(dragIdx)];
                     if (gObj.getFrozenMode() === literals.leftRight) {
-                        this.rows = [gObj.getRowByIndex(dragIdx), gObj.getMovableRowByIndex(dragIdx), gObj.getFrozenRightRowByIndex(dragIdx)];
+                        this.rows = [
+                            gObj.getRowByIndex(dragIdx), gObj.getMovableRowByIndex(dragIdx), gObj.getFrozenRightRowByIndex(dragIdx)
+                        ];
                     }
                 }
             }

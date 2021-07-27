@@ -1,6 +1,6 @@
 import { IGrid } from '../base/interface';
 import { Column } from '../models/column';
-import { isNullOrUndefined, addClass, extend, closest, updateBlazorTemplate, isBlazor } from '@syncfusion/ej2-base';
+import { isNullOrUndefined, addClass, extend, closest } from '@syncfusion/ej2-base';
 import * as events from '../base/constant';
 import { appendChildren, alignFrozenEditForm, getMovableTbody, getFrozenRightTbody, setStyleAndAttributes } from '../base/util';
 import * as literals from '../base/string-literals';
@@ -186,7 +186,6 @@ export class InlineEditRender {
         }
         let fCls: string;
         let cont: Element;
-        const cloneFrozen: string = 'cloneFrozen';
         const idx: number = parseInt(row.getAttribute(literals.ariaRowIndex), 10);
         if (this.parent.isFrozenGrid()) {
             if (idx < this.parent.frozenRows) {
@@ -223,17 +222,12 @@ export class InlineEditRender {
                     this.updateFrozenRightCont(frRows, frTd, td);
                 }
             }
-            if (isBlazor() && this.parent.isServerRendered) {
-                args[cloneFrozen].appendChild(mTd);
-                args[cloneFrozen].classList.add(literals.editedRow);
-            } else {
-                fRows.appendChild(mTd);
-                fRows.classList.add(literals.editedRow);
-                if (this.parent.getFrozenMode() === literals.leftRight) {
-                    frRows.appendChild(frTd);
-                    frRows.classList.add(literals.editedRow);
-                    alignFrozenEditForm(args.frozenRightForm.querySelector('td:not(.e-hide)'), args.form.querySelector('td:not(.e-hide)'));
-                }
+            fRows.appendChild(mTd);
+            fRows.classList.add(literals.editedRow);
+            if (this.parent.getFrozenMode() === literals.leftRight) {
+                frRows.appendChild(frTd);
+                frRows.classList.add(literals.editedRow);
+                alignFrozenEditForm(args.frozenRightForm.querySelector('td:not(.e-hide)'), args.form.querySelector('td:not(.e-hide)'));
             }
             alignFrozenEditForm(args.movableForm.querySelector('td:not(.e-hide)'), args.form.querySelector('td:not(.e-hide)'));
         }
@@ -385,6 +379,7 @@ export class InlineEditRender {
         } else {
             appendChildren(form, this.parent.getEditTemplate()(dummyData, this.parent, 'editSettingsTemplate', editTemplateID));
         }
+        // eslint-disable-next-line
         const setRules: Function = () => {
             const cols: Column[] = this.parent.getColumns();
             for (let i: number = 0; i < cols.length; i++) {
@@ -394,6 +389,5 @@ export class InlineEditRender {
                 }
             }
         };
-        updateBlazorTemplate(editTemplateID, 'Template', this.parent.editSettings, true, setRules);
     }
 }

@@ -496,8 +496,6 @@ export interface IGrid extends Component<HTMLElement> {
 
     isEdit?: boolean;
 
-    isJsComponent?: boolean;
-
     commonQuery?: Query;
 
     scrollPosition: ScrollPositionType;

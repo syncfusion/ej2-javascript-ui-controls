@@ -197,7 +197,7 @@ export class EditorHistory {
         if (tableResize.resizeNode === 1) {
             this.initializeHistory('RowResizing');
             if (!isNullOrUndefined(this.currentBaseHistoryInfo)) {
-                // eslint-disable-next-line max-len
+                /* eslint-disable-next-line max-len */
                 this.currentBaseHistoryInfo.modifiedProperties.push(new RowHistoryFormat(startingPoint, (tableResize.currentResizingTable.childWidgets[tableResize.resizerPosition] as TableRowWidget).rowFormat));
             }
         } else {
@@ -331,7 +331,7 @@ export class EditorHistory {
     public updateComplexHistory(): void {
         const selection: Selection = this.documentHelper.selection;
         if (this.currentHistoryInfo.hasAction) {
-            if (this.currentHistoryInfo.action === 'AutoFormatHyperlink' || this.currentHistoryInfo.action === 'SkipCommentInline' 
+            if (this.currentHistoryInfo.action === 'AutoFormatHyperlink' || this.currentHistoryInfo.action === 'SkipCommentInline'
             || this.currentHistoryInfo.action === 'DeleteCommentInline') {
                 const startPosition: TextPosition = new TextPosition(selection.owner);
                 this.owner.editorModule.setPositionForCurrentIndex(startPosition, this.currentHistoryInfo.insertPosition);

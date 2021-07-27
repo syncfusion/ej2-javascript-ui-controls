@@ -1,4 +1,3 @@
-/* eslint-disable */
 /**
  * Enum toolbarItem for toolbar settings
  */
@@ -64,8 +63,8 @@ export type LinkTarget = 'CurrentTab' | 'NewTab' | 'NewWindow';
  */
 export type InteractionMode = 'TextSelection' | 'Pan';
 /**
-* Enum type for Signature Items
-*/
+ * Enum type for Signature Items
+ */
 export type SignatureItem = 'Signature' | 'Initial';
 
 /**
@@ -159,6 +158,15 @@ export enum AnnotationResizerLocation {
     Edges = 2
 }
 
+export enum DisplayMode {
+    /** Draw - Display only the draw option in the signature dialog. */
+    Draw = 1 << 0,
+    /** Text - Display only the type option in the signature dialog. */
+    Text = 1 << 1,
+    /** Upload - Display only the upload option in the signature dialog. */
+    Upload = 1 << 2
+}
+
 /**
  * set the ZoomMode on rendering
  */
@@ -175,20 +183,30 @@ export type PrintMode = 'Default' | 'NewWindow' ;
 export enum CursorType {
     auto = 'auto',
     crossHair = 'crosshair',
+    // eslint-disable-next-line
     e_resize = 'e-resize',
+    // eslint-disable-next-line
     ew_resize = 'ew-resize',
     grab = 'grab',
     grabbing = 'grabbing',
     move = 'move',
+    // eslint-disable-next-line
     n_resize = 'n-resize',
+    // eslint-disable-next-line
     ne_resize = 'ne-resize',
+    // eslint-disable-next-line
     ns_resize = 'ns-resize',
+    // eslint-disable-next-line
     nw_resize = 'nw-resize',
     pointer = 'pointer',
+    // eslint-disable-next-line
     s_resize = 's-resize',
+    // eslint-disable-next-line
     se_resize = 'se-resize',
+    // eslint-disable-next-line
     sw_resize = 'sw-resize',
     text = 'text',
+    // eslint-disable-next-line
     w_resize = 'w-resize'
 }
 

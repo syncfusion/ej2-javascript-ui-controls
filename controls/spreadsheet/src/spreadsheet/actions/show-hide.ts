@@ -96,16 +96,23 @@ export class ShowHide {
             if (!count) { return; }
             this.parent.selectRange(sheet.selectedRange);
             if (this.parent.scrollSettings.enableVirtualization) {
+                let startIndex: number = args.startIndex; const endIndex: number = args.startIndex;
                 if (this.parent.viewport.topIndex >= args.startIndex) { this.parent.viewport.topIndex = args.endIndex + 1; }
                 args.startIndex = this.parent.viewport.bottomIndex + 1; args.endIndex = args.startIndex + count - 1;
                 const indexes: number[] = this.parent.skipHidden(args.startIndex, args.endIndex);
                 args.startIndex = indexes[0]; args.endIndex = indexes[1];
                 this.parent.viewport.bottomIndex = args.endIndex;
-                this.parent.renderModule.refreshUI(
-                    { colIndex: this.parent.viewport.leftIndex, direction: '', refresh: 'RowPart' },
-                    `${getCellAddress(args.startIndex, this.parent.viewport.leftIndex)}:${getCellAddress(
-                        args.endIndex,
-                        this.parent.viewport.leftIndex + this.parent.viewport.colCount + (this.parent.getThreshold('col') * 2))}`);
+                if (count > this.parent.viewport.rowCount + (this.parent.getThreshold('row') * 2)) {
+                    startIndex = startIndex < 1 ? endIndex + 1 : startIndex - 1;
+                    this.parent.updateTopLeftCell(startIndex, null);
+                    this.parent.renderModule.refreshSheet();
+                } else {
+                    this.parent.renderModule.refreshUI(
+                        { colIndex: this.parent.viewport.leftIndex, direction: '', refresh: 'RowPart' },
+                        `${getCellAddress(args.startIndex, this.parent.viewport.leftIndex)}:${getCellAddress(
+                            args.endIndex,
+                            this.parent.viewport.leftIndex + this.parent.viewport.colCount + (this.parent.getThreshold('col') * 2))}`);
+                }
             }
             if (sheet.showHeaders) {
                 if (idx === 0) {
@@ -154,10 +161,10 @@ export class ShowHide {
                 if (sheet.showHeaders) {
                     hRow = rowRenderer.refresh(i, null, null, true);
                     hFrag.appendChild(hRow);
-                    if (rTBody) { detach(rTBody.lastElementChild); }
+                    if (rTBody && rTBody.childElementCount) { detach(rTBody.lastElementChild); }
                 }
                 row = frag.appendChild(rowRenderer.refresh(i, row, hRow));
-                if (tBody) { detach(tBody.lastElementChild); }
+                if (tBody && tBody.childElementCount) { detach(tBody.lastElementChild); }
                 for (let j: number = this.parent.viewport.leftIndex; j <= this.parent.viewport.rightIndex; j++) {
                     cell = getCell(i, j, sheet) || {};
                     if (cell.rowSpan !== undefined) {
@@ -211,16 +218,20 @@ export class ShowHide {
                 }
             }
             if (args.skipAppend) { return; }
-            if (sheet.showHeaders && rTBody) { rTBody.insertBefore(hFrag, rTBody.children[idx]); }
-            if (tBody) { tBody.insertBefore(frag, tBody.children[idx]); }
-            this.parent.selectRange(sheet.selectedRange);
-            if (args.autoFit && sheet.showHeaders) {
-                this.parent.notify(autoFit, { startIndex: args.startIndex, endIndex: args.endIndex, isRow: true });
-            }
-            mergeCollection.forEach((mergeArgs: MergeArgs): void => { this.parent.notify(setMerge, mergeArgs); });
-            if (newStartRow !== undefined && newStartRow !== args.endIndex) {
-                args.startIndex = newStartRow;
-                this.hideRow(args);
+            if (Math.abs(endRow - startRow) > this.parent.viewport.rowCount + (this.parent.getThreshold('row') * 2)) {
+                this.parent.renderModule.refreshSheet();
+            } else {
+                if (sheet.showHeaders && rTBody) { rTBody.insertBefore(hFrag, rTBody.children[idx]); }
+                if (tBody) { tBody.insertBefore(frag, tBody.children[idx]); }
+                this.parent.selectRange(sheet.selectedRange);
+                if (args.autoFit && sheet.showHeaders) {
+                    this.parent.notify(autoFit, { startIndex: args.startIndex, endIndex: args.endIndex, isRow: true });
+                }
+                mergeCollection.forEach((mergeArgs: MergeArgs): void => { this.parent.notify(setMerge, mergeArgs); });
+                if (newStartRow !== undefined && newStartRow !== args.endIndex) {
+                    args.startIndex = newStartRow;
+                    this.hideRow(args);
+                }
             }
         }
     }

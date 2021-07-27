@@ -310,11 +310,10 @@ export class ExportValueFormatter {
      * Used to format the exporting cell value
      *
      * @param  {ExportHelperArgs} args - Specifies cell details.
-     * @param  {boolean} isServerBlaz - Specifies blazor platform
      * @returns {string} returns formated value
      * @hidden
      */
-    public formatCellValue(args: ExportHelperArgs, isServerBlaz?: boolean): string {
+    public formatCellValue(args: ExportHelperArgs): string {
         if (args.isForeignKey) {
             args.value = getValue(args.column.foreignKeyValue, getForeignData(args.column, {}, args.value as string | number)[0]);
         }
@@ -332,11 +331,11 @@ export class ExportValueFormatter {
                 let format: DateFormatOptions;
                 const cFormat: string = args.column.format;
                 if (args.column.type === 'date') {
-                    format = isServerBlaz ? { type: 'date', format: cFormat } : { type: 'date', skeleton: cFormat };
+                    format = { type: 'date', skeleton: cFormat };
                 } else if (args.column.type === 'time') {
-                    format = isServerBlaz ? { type: 'time', format: cFormat } : { type: 'time', skeleton: cFormat };
+                    format = { type: 'time', skeleton: cFormat };
                 } else {
-                    format = isServerBlaz ? { type: 'dateTime', format: cFormat } : { type: 'dateTime', skeleton: cFormat };
+                    format = { type: 'dateTime', skeleton: cFormat };
                 }
                 return this.returnFormattedValue(args, format);
             } else {

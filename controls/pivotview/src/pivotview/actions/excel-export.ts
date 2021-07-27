@@ -149,9 +149,7 @@ export class ExcelExport {
                                             (this.engine as OlapEngine).tupRowInfo[pivotCell.rowOrdinal]) ?
                                             (this.engine as OlapEngine).tupRowInfo[pivotCell.rowOrdinal].measureName :
                                             pivotCell.actualText as string;
-                                        cells[cells.length - 1].style = {
-                                            numberFormat: formatList[field], bold: false, wrapText: true
-                                        };
+                                        cells[cells.length - 1].style = !isNullOrUndefined(cells[cells.length - 1].value) ? { numberFormat: formatList[field], bold: false, wrapText: true } : { bold: false, wrapText: true };
                                         if (pivotCell.style) {
                                             cells[cells.length - 1].style.backColor = pivotCell.style.backgroundColor;
                                             cells[cells.length - 1].style.fontColor = pivotCell.style.color;

@@ -75,6 +75,7 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
     /**
      * Gets or sets the color used for highlighting the editable ranges or regions of the `currentUser` in Document Editor. The default value is "#FFFF00".
      * Remarks: If the visibility of text affected due this highlight color matching with random color applied for the track changes, then modify the color value of this property to resolve text visibility problem.
+     *
      * @default '#FFFF00'
      */
     @Property('#FFFF00')
@@ -135,18 +136,17 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
      */
     @Property(false)
     public enableLockAndEdit: boolean;
-    /* eslint-disable */
     /**
      * Triggers when the component is created
      *
-     * @event
+     * @event created
      */
     @Event()
     public created: EmitType<Object>;
     /**
      * Triggers when the component is destroyed.
      *
-     * @event
+     * @event destroyed
      */
     @Event()
     public destroyed: EmitType<Object>;
@@ -155,70 +155,70 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
     /**
      * Triggers whenever the content changes in the document editor container.
      *
-     * @event
+     * @event contentChange
      */
     @Event()
     public contentChange: EmitType<ContainerContentChangeEventArgs>;
     /**
      * Triggers whenever selection changes in the document editor container.
      *
-     * @event
+     * @event selectionChange
      */
     @Event()
     public selectionChange: EmitType<ContainerSelectionChangeEventArgs>;
     /**
      * Triggers whenever document changes in the document editor container.
      *
-     * @event
+     * @event documentChange
      */
     @Event()
     public documentChange: EmitType<ContainerDocumentChangeEventArgs>;
     /**
      * Triggers when toolbar item is clicked.
      *
-     * @event
+     * @event toolbarClick
      */
     @Event()
     public toolbarClick: EmitType<ClickEventArgs>;
     /**
      * Triggers while selecting the custom context-menu option.
      *
-     * @event
+     * @event customContextMenuSelect
      */
     @Event()
     public customContextMenuSelect: EmitType<CustomContentMenuEventArgs>;
     /**
      * Triggers before opening the custom context-menu option.
      *
-     * @event
+     * @event customContextMenuBeforeOpen
      */
     @Event()
     public customContextMenuBeforeOpen: EmitType<BeforeOpenCloseCustomContentMenuEventArgs>;
     /**
      * Trigger before switching panes in DocumentEditor.
      *
-     * @event
+     * @event beforePaneSwitch
      */
     @Event()
     public beforePaneSwitch: EmitType<BeforePaneSwitchEventArgs>;
     /**
      * Triggers on deleting a comment.
      *
-     * @event
+     * @event commentDelete
      */
     @Event()
     public commentDelete: EmitType<CommentDeleteEventArgs>;
     /**
      * Triggers on comment actions(Post, edit, reply, resolve, reopen).
      *
-     * @event
+     * @event beforeCommentAction
      */
     @Event()
     public beforeCommentAction: EmitType<CommentActionEventArgs>;
     /**
      * Triggers when the server action fails.
      *
-     * @event
+     * @event serviceFailure
      */
     @Event()
     public serviceFailure: EmitType<ServiceFailureArgs>;
@@ -226,19 +226,17 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
     /**
      * Triggers Keyboard shortcut of TrackChanges.
      *
-     * @event
+     * @event trackChange
      */
     @Event()
     public trackChange: EmitType<TrackChangeEventArgs>;
-    /* eslint-disable */
     /**
      * Triggers when user interaction prevented in content control.
      *
-     * @event
+     * @event contentControl
      */
     @Event()
     public contentControl: EmitType<Object>;
-     /* eslint-enable */
     /**
      * Document editor container's toolbar module
      *
@@ -380,13 +378,11 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
     public constructor(options?: DocumentEditorContainerModel, element?: string | HTMLElement) {
         super(options, element);
     }
-    /* eslint-disable @typescript-eslint/naming-convention */
     /**
      * default locale
      *
      * @private
      */
-    // eslint-disable-next-line
     public defaultLocale: Object = {
         'New': 'New',
         'Insert Footnote': 'Insert Footnote',
@@ -547,7 +543,7 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
         'TrackChanges': 'Track Changes',
         'AllCaps': 'AllCaps',
         'Change case Tooltip': 'Change case',
-        "UPPERCASE": 'UPPERCASE'
+        'UPPERCASE': 'UPPERCASE'
     };
     /* eslint-enable @typescript-eslint/naming-convention */
 
@@ -888,8 +884,15 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
     private wireEvents(): void{
         this.documentEditor.on(internalZoomFactorChange, this.onZoomFactorChange, this);
     }
-    private unWireEvents(): void{
-        if(this.documentEditor.isDestroyed) { return; }
+    private unWireEvents(): void {
+        if (isNullOrUndefined(this.documentEditor)) {
+            return;
+        }
+        else {
+            if (this.documentEditor.isDestroyed) {
+                return;
+            }
+        }
         this.documentEditor.off(internalZoomFactorChange, this.onZoomFactorChange);
     }
     private onCommentBegin(): void {

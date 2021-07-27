@@ -432,7 +432,7 @@ export class ContextMenu implements IAction {
             }
             break;
         case 'Copy':
-            if (this.parent.getSelectedRowIndexes().length === 0 ||
+            if ((this.parent.getSelectedRowIndexes().length === 0 && this.parent.getSelectedRowCellIndexes().length === 0) ||
                 this.parent.getCurrentViewRecords().length === 0) {
                 status = true;
             }

@@ -214,6 +214,15 @@ export class Formula {
                 action: 'refreshEditor', value: updatedFormulaValue,
                 refreshFormulaBar: true, refreshEditorElem: true, refreshCurPos: !this.isFormulaBar
             });
+        if (this.isPopupOpened) {
+            this.hidePopUp();
+            const suggPopupElem: HTMLElement = select('#' + this.parent.element.id + '_ac_popup');
+            if (suggPopupElem) {
+                detach(suggPopupElem);
+            }
+            this.isPopupOpened = false;
+        }
+    
     }
 
     private onSuggestionComplete(args: { result: string[], cancel: boolean }): void {

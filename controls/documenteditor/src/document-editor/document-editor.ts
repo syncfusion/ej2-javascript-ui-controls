@@ -280,6 +280,7 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
     /**
      * Gets or sets the color used for highlighting the editable ranges or regions of the `currentUser` in Document Editor. The default value is "#FFFF00".
      * Remarks: If the visibility of text affected due this highlight color matching with random color applied for the track changes, then modify the color value of this property to resolve text visibility problem.
+     *
      * @default '#FFFF00'
      */
     @Property('#FFFF00')
@@ -601,7 +602,6 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
      */
     @Property({ systemClipboard: 'SystemClipboard', spellCheck: 'SpellCheck', restrictEditing: 'RestrictEditing', canLock: 'CanLock', getPendingActions: 'GetPendingActions' })
     public serverActionSettings: ServerActionSettingsModel;
-    /* eslint-disable */
     /**
      * Add custom headers to XMLHttpRequest.
      *
@@ -628,151 +628,147 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
     /**
      * Triggers whenever document changes in the document editor.
      *
-     * @event
+     * @event documentChange
      */
     @Event()
     public documentChange: EmitType<DocumentChangeEventArgs>;
     /**
      * Triggers whenever container view changes in the document editor.
      *
-     * @event
+     * @event viewChange
      */
     @Event()
     public viewChange: EmitType<ViewChangeEventArgs>;
     /**
      * Triggers whenever zoom factor changes in the document editor.
      *
-     * @event
+     * @event zoomFactorChange
      */
     @Event()
     public zoomFactorChange: EmitType<ZoomFactorChangeEventArgs>;
     /**
      * Triggers whenever selection changes in the document editor.
      *
-     * @event
+     * @event selectionChange
      */
     @Event()
     public selectionChange: EmitType<SelectionChangeEventArgs>;
     /**
      * Triggers whenever hyperlink is clicked or tapped in the document editor.
      *
-     * @event
+     * @event requestNavigate
      */
     @Event()
     public requestNavigate: EmitType<RequestNavigateEventArgs>;
     /**
      * Triggers whenever content changes in the document editor.
      *
-     * @event
+     * @event contentChange
      */
     @Event()
     public contentChange: EmitType<ContentChangeEventArgs>;
     /**
      * Triggers whenever key is pressed in the document editor.
      *
-     * @event
+     * @event keyDown
      */
     @Event()
     public keyDown: EmitType<DocumentEditorKeyDownEventArgs>;
     /**
      * Triggers whenever search results changes in the document editor.
      *
-     * @event
+     * @event searchResultsChange
      */
     @Event()
     public searchResultsChange: EmitType<SearchResultsChangeEventArgs>;
-    /* eslint-disable */
     /**
      * Triggers when the component is created
      *
-     * @event
+     * @event created
      */
     @Event()
     public created: EmitType<Object>;
     /**
      * Triggers when the component is destroyed.
      *
-     * @event
+     * @event destroyed
      */
     @Event()
     public destroyed: EmitType<Object>;
-    /* eslint-enable */
     /**
      * Triggers while selecting the custom context-menu option.
      *
-     * @event
+     * @event customContextMenuSelect
      */
     @Event()
     public customContextMenuSelect: EmitType<CustomContentMenuEventArgs>;
     /**
      * Triggers before opening the custom context-menu option.
      *
-     * @event
+     * @event customContextMenuBeforeOpen
      */
     @Event()
     public customContextMenuBeforeOpen: EmitType<BeforeOpenCloseCustomContentMenuEventArgs>;
     /**
      * Triggers before opening comment pane.
      *
-     * @event
+     * @event beforePaneSwitch
      */
     @Event()
     public beforePaneSwitch: EmitType<BeforePaneSwitchEventArgs>;
-    /* eslint-disable */
     /**
      * Triggers after inserting comment.
      *
-     * @event
+     * @event commentBegin
      */
     @Event()
     public commentBegin: EmitType<Object>;
     /**
      * Triggers after posting comment.
      *
-     * @event
+     * @event commentEnd
      */
     @Event()
     public commentEnd: EmitType<Object>;
-    /* eslint-enable */
     /**
      * Triggers before a file is opened.
      *
-     * @event
+     * @event beforeFileOpen
      */
     @Event()
     public beforeFileOpen: EmitType<BeforeFileOpenArgs>;
     /**
      * Triggers after inserting comment.
      *
-     * @event
+     * @event commentDelete
      */
     @Event()
     public commentDelete: EmitType<CommentDeleteEventArgs>;
     /**
      * Triggers on comment actions(Post, edit, reply, resolve, reopen).
      *
-     * @event
+     * @event beforeCommentAction
      */
     @Event()
     public beforeCommentAction: EmitType<CommentActionEventArgs>;
     /**
      * Triggers when TrackChanges enabled / disabled.
      *
-     * @event
+     * @event trackChange
      */
     @Event()
     public trackChange: EmitType<TrackChangeEventArgs>;
     /**
      * Triggers before form field fill.
      *
-     * @event
+     * @event beforeFormFieldFill
      */
     @Event()
     public beforeFormFieldFill: EmitType<FormFieldFillEventArgs>;
     /**
      * Triggers when the server side action fails.
      *
-     * @event
+     * @event serviceFailure
      */
     @Event()
     public serviceFailure: EmitType<ServiceFailureArgs>;
@@ -780,26 +776,24 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
     /**
      * Triggers after form field fill.
      *
-     * @event
+     * @event afterFormFieldFill
      */
     @Event()
     public afterFormFieldFill: EmitType<FormFieldFillEventArgs>;
     /**
      * Triggers when the document editor collaborative actions (such as LockContent, SaveContent, UnlockContent) gets completed.
      *
-     * @event
+     * @event actionComplete
      */
     @Event()
     public actionComplete: EmitType<CollaborativeEditingEventArgs>;
-    /* eslint-disable */
     /**
      * Triggers when user interaction prevented in content control.
      *
-     * @event
+     * @event contentControl
      */
     @Event()
     public contentControl: EmitType<Object>;
-    /* eslint-enable */
     /**
      * @private
      */
@@ -1043,101 +1037,102 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
     public onPropertyChanged(model: DocumentEditorModel, oldProp: DocumentEditorModel): void {
         for (const prop of Object.keys(model)) {
             switch (prop) {
-                case 'zoomFactor':
-                    if (this.viewer && oldProp.zoomFactor !== model.zoomFactor) {
-                        this.documentHelper.zoomFactor = model.zoomFactor;
+            case 'zoomFactor':
+                if (this.viewer && oldProp.zoomFactor !== model.zoomFactor) {
+                    this.documentHelper.zoomFactor = model.zoomFactor;
+                }
+                break;
+            case 'layoutType':
+                if (this.selection && this.selection.isWebLayout) {
+                    break;
+                }
+                this.viewer.destroy();
+                if (this.layoutType === 'Pages') {
+                    this.viewer = new PageLayoutViewer(this);
+                } else {
+                    if (this.enableHeaderAndFooter === true) {
+                        this.selection.closeHeaderFooter();
                     }
-                    break;
-                case 'layoutType':
-                    if (this.selection && this.selection.isWebLayout) {
-                        break;
-                    }
-                    this.viewer.destroy();
-                    if (this.layoutType === 'Pages') {
-                        this.viewer = new PageLayoutViewer(this);
-                    } else {
-                        if (this.enableHeaderAndFooter === true) {
-                            this.selection.closeHeaderFooter();
-                        }
-                        this.viewer = new WebLayoutViewer(this);
-                    }
-                    let paragraph: ParagraphWidget = this.selection.start.paragraph;
-                    if (paragraph.containerWidget instanceof FootNoteWidget) {
-                        this.selection.clearSelectionHighlightInSelectedWidgets();
-                        this.selection.selectContent(this.documentStart, true);
-                    }
-                    this.editor.layoutWholeDocument();
-                    setTimeout((): void => {
-                        this.fireViewChange();
-                    }, 200);
-                    break;
-                case 'locale':
-                    this.localizeDialogs();
-                    break;
-                case 'isReadOnly':
-                    if (!isNullOrUndefined(this.optionsPaneModule) && this.optionsPaneModule.isOptionsPaneShow) {
-                        this.optionsPaneModule.showHideOptionsPane(false);
-                    }
-                    if (this.showComments) {
-                        this.commentReviewPane.showHidePane(true, 'Comments');
-                    }
-                    this.commentReviewPane.enableDisableItems();
-                    break;
-                case 'currentUser':
-                case 'userColor':
-                    if (this.selection && this.documentHelper.isDocumentProtected) {
-                        this.selection.highlightEditRegion();
-                    }
-                    this.viewer.updateScrollBars();
-                    break;
-                case 'pageGap':
-                case 'pageOutline':
-                    this.viewer.updateScrollBars();
-                    break;
-                case 'zIndex':
-                    if (this.documentHelper.dialog) {
-                        this.documentHelper.dialog.zIndex = model.zIndex + 10;
-                    }
-                    if (this.documentHelper.dialog2) {
-                        this.documentHelper.dialog2.zIndex = model.zIndex;
-                    }
-                    break;
-                case 'showComments':
-                    if (this.viewer) {
-                        this.documentHelper.showComments(model.showComments);
-                    }
-                    this.viewer.updateScrollBars();
-                    break;
-                case 'enableRtl':
-                    this.localizeDialogs(model.enableRtl);
-                    break;
-                case 'enableComment':
-                    if (this.viewer && this.showComments) {
-                        this.showComments = this.showComments ? this.enableComment : false;
-                        this.documentHelper.showComments(model.enableComment);
-                    }
-                    this.viewer.updateScrollBars();
-                    break;
-                case 'showRevisions':
-                    if (this.isReadOnly || this.documentHelper.isDocumentProtected) {
-                        this.showRevisions = false;
-                        this.documentHelper.showRevisions(false);
-                    } else if (this.viewer) {
-                        this.documentHelper.showRevisions(model.showRevisions);
-                    }
-                    this.viewer.updateScrollBars();
-                    break;
-                case 'documentEditorSettings':
-                    this.viewer.updateScrollBars();
-                    break;
-                case 'height':
-                    this.element.style.height = formatUnit(this.height);
-                    this.resize();
-                    break;
-                case 'width':
-                    this.element.style.width = formatUnit(this.width);
-                    this.resize();
-                    break;
+                    this.viewer = new WebLayoutViewer(this);
+                }
+                /* eslint-disable */
+                const paragraph: ParagraphWidget = this.selection.start.paragraph;
+                if (paragraph.containerWidget instanceof FootNoteWidget) {
+                    this.selection.clearSelectionHighlightInSelectedWidgets();
+                    this.selection.selectContent(this.documentStart, true);
+                }
+                this.editor.layoutWholeDocument();
+                setTimeout((): void => {
+                    this.fireViewChange();
+                }, 200);
+                break;
+            case 'locale':
+                this.localizeDialogs();
+                break;
+            case 'isReadOnly':
+                if (!isNullOrUndefined(this.optionsPaneModule) && this.optionsPaneModule.isOptionsPaneShow) {
+                    this.optionsPaneModule.showHideOptionsPane(false);
+                }
+                if (this.showComments) {
+                    this.commentReviewPane.showHidePane(true, 'Comments');
+                }
+                this.commentReviewPane.enableDisableItems();
+                break;
+            case 'currentUser':
+            case 'userColor':
+                if (this.selection && this.documentHelper.isDocumentProtected) {
+                    this.selection.highlightEditRegion();
+                }
+                this.viewer.updateScrollBars();
+                break;
+            case 'pageGap':
+            case 'pageOutline':
+                this.viewer.updateScrollBars();
+                break;
+            case 'zIndex':
+                if (this.documentHelper.dialog) {
+                    this.documentHelper.dialog.zIndex = model.zIndex + 10;
+                }
+                if (this.documentHelper.dialog2) {
+                    this.documentHelper.dialog2.zIndex = model.zIndex;
+                }
+                break;
+            case 'showComments':
+                if (this.viewer) {
+                    this.documentHelper.showComments(model.showComments);
+                }
+                this.viewer.updateScrollBars();
+                break;
+            case 'enableRtl':
+                this.localizeDialogs(model.enableRtl);
+                break;
+            case 'enableComment':
+                if (this.viewer && this.showComments) {
+                    this.showComments = this.showComments ? this.enableComment : false;
+                    this.documentHelper.showComments(model.enableComment);
+                }
+                this.viewer.updateScrollBars();
+                break;
+            case 'showRevisions':
+                if (this.isReadOnly || this.documentHelper.isDocumentProtected) {
+                    this.showRevisions = false;
+                    this.documentHelper.showRevisions(false);
+                } else if (this.viewer) {
+                    this.documentHelper.showRevisions(model.showRevisions);
+                }
+                this.viewer.updateScrollBars();
+                break;
+            case 'documentEditorSettings':
+                this.viewer.updateScrollBars();
+                break;
+            case 'height':
+                this.element.style.height = formatUnit(this.height);
+                this.resize();
+                break;
+            case 'width':
+                this.element.style.width = formatUnit(this.width);
+                this.resize();
+                break;
             }
         }
     }
@@ -2133,7 +2128,7 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
             = this.enableTablePropertiesDialog = this.enableBordersAndShadingDialog
             = this.enableTableOptionsDialog = this.enableSpellCheck = this.enableComment
             = this.enableFormField = true;
-        // eslint-disable-next-line max-len
+        /* eslint-disable-next-line max-len */
         DocumentEditor.Inject(Print, SfdtExport, WordExport, TextExport, Selection, Search, Editor, ImageResizer, EditorHistory, ContextMenu, OptionsPane, HyperlinkDialog, TableDialog, NotesDialog, BookmarkDialog, TableOfContentsDialog, PageSetupDialog, StyleDialog, ListDialog, ParagraphDialog, BulletsAndNumberingDialog, FontDialog, TablePropertiesDialog, BordersAndShadingDialog, TableOptionsDialog, CellOptionsDialog, StylesDialog, SpellChecker, SpellCheckDialog, CheckBoxFormFieldDialog, TextFormFieldDialog, DropDownFormFieldDialog);
     }
     /**
@@ -2224,7 +2219,7 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
                 if (formFields[i].formFieldData instanceof TextFormField) {
                     this.editor.updateFormField(formFields[i], (formFields[i].formFieldData as TextFormField).defaultValue, true);
                 } else if (formFields[i].formFieldData instanceof CheckBoxFormField) {
-                    // eslint-disable-next-line max-len
+                    /* eslint-disable-next-line max-len */
                     this.editor.toggleCheckBoxFormField(formFields[i], true, (formFields[i].formFieldData as CheckBoxFormField).defaultValue);
                 } else if (formFields[i].formFieldData instanceof DropDownFormField) {
                     this.editor.updateFormField(formFields[i], 0, true);
@@ -2342,7 +2337,7 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
             throw new Error('Invalid operation.');
         }
         if (this.printModule) {
-            let mimeType: string = format === 'Png' ? 'image/png': 'image/jpeg';
+            const mimeType: string = format === 'Png' ? 'image/png' : 'image/jpeg';
             return this.printModule.exportAsImage(this.documentHelper, pageNumber, mimeType);
         }
         return undefined;
@@ -2456,7 +2451,7 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
         paragraph.containerWidget = section;
         const sections: BodyWidget[] = [];
         sections.push(section);
-        // eslint-disable-next-line max-len
+        /* eslint-disable-next-line max-len */
         const hfs: HeaderFooters = this.parser.parseHeaderFooter({ header: {}, footer: {}, evenHeader: {}, evenFooter: {}, firstPageHeader: {}, firstPageFooter: {} }, undefined);
         if (this.viewer) {
             this.clearPreservedCollectionsInViewer();
@@ -2486,7 +2481,6 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
         }
         return [];
     }
-    /* eslint-disable */
     /**
      * Gets the style objects on given style type.
      *
@@ -2577,6 +2571,7 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
     /**
      * Shows the restrict editing pane.
      *
+     * @param {boolean} show Specifies to show or hide restrict editing pane.
      * @returns {void}
      */
     public showRestrictEditingPane(show?: boolean): void {

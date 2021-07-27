@@ -30,8 +30,14 @@ export class SfdtReader {
     /* eslint-disable @typescript-eslint/no-explicit-any */
     private documentHelper: DocumentHelper = undefined;
     private fieldSeparator: FieldElementBox;
-    private commentStarts: Dictionary<string, CommentCharacterElementBox> = undefined;
-    private commentEnds: Dictionary<string, CommentCharacterElementBox> = undefined;
+    /**
+     * @private
+     */
+    public commentStarts: Dictionary<string, CommentCharacterElementBox> = undefined;
+    /**
+     * @private
+     */
+    public commentEnds: Dictionary<string, CommentCharacterElementBox> = undefined;
     /**
      * @private
      */
@@ -1099,7 +1105,7 @@ export class SfdtReader {
                     }
                 }
                 hasValidElmts = true;
-            } else if (inline.hasOwnProperty('commentId') && !this.isPaste) {
+            } else if (inline.hasOwnProperty('commentId')) {
                 let commentID: string = inline.commentId;
                 let commentStart: CommentCharacterElementBox = undefined;
                 let comment: CommentElementBox;

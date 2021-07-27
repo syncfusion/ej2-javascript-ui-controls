@@ -84,7 +84,7 @@ export class WrapText {
                     }
                     if (!(isCustomHgt || isMerge)) {
                         colwidth = getExcludedColumnWidth(args.sheet, i, j, cell.colSpan > 1 ? j + cell.colSpan - 1 : j);
-                        let displayText: string = this.parent.getDisplayText(cell);
+                        let displayText: string = this.parent.getDisplayText(cell).toString();
                         if (displayText.indexOf('\n') < 0) {
                             const editElem: HTMLElement = this.parent.element.querySelector('.e-spreadsheet-edit');
                             if (editElem) {
@@ -166,10 +166,12 @@ export class WrapText {
                 const cell: CellModel = getCell(args.rowIdx, i, sheet);
                 if (cell && cell.wrap) {
                     const ele: Element = this.parent.getCell(args.rowIdx, i);
+                    let styleText: string = (ele as HTMLElement).style.cssText;
                     if (ele.children.length === 0 || !ele.querySelector('.e-wrap-content')) {
                         ele.innerHTML = this.parent.createElement('span', {
                             className: 'e-wrap-content',
-                            innerHTML: ele.innerHTML
+                            innerHTML: ele.innerHTML,
+                            styles: styleText
                         }).outerHTML;
                     }
                 }

@@ -136,7 +136,7 @@ export class Paragraph {
         return element;
 
     }
-    // eslint-disable-next-line max-len
+    /* eslint-disable-next-line max-len */
     private createButtonTemplate(id: string, iconcss: string, div: HTMLElement, buttonClass: string, width: string, toolTipText: string): HTMLButtonElement {
         const buttonElement: HTMLButtonElement = createElement('Button', { id: id, attrs: { type: 'button' } }) as HTMLButtonElement;
         // buttonElement.style.width = width + 'px';
@@ -392,7 +392,6 @@ export class Paragraph {
     }
     private createStyleDropDownList(selectElement: HTMLElement): void {
         this.style = new DropDownList({
-            // eslint-disable-next-line @typescript-eslint/naming-convention
             dataSource: [{ StyleName: 'Normal', Class: 'e-icons e-edit-font' }],
             cssClass: 'e-de-prop-dropdown',
             popupHeight: '240px',

@@ -3,7 +3,7 @@
 import { Component, INotifyPropertyChanged, NotifyPropertyChanges, ChildProperty, L10n, Collection, Complex, isBlazor } from '@syncfusion/ej2-base';
 import { ModuleDeclaration, isNullOrUndefined, Property, Event, EmitType } from '@syncfusion/ej2-base';
 // eslint-disable-next-line max-len
-import { PdfViewerModel, HighlightSettingsModel, UnderlineSettingsModel, StrikethroughSettingsModel, LineSettingsModel, ArrowSettingsModel, RectangleSettingsModel, CircleSettingsModel, PolygonSettingsModel, StampSettingsModel, StickyNotesSettingsModel, CustomStampSettingsModel, VolumeSettingsModel, RadiusSettingsModel, AreaSettingsModel, PerimeterSettingsModel, DistanceSettingsModel, MeasurementSettingsModel, FreeTextSettingsModel, AnnotationSelectorSettingsModel, TextSearchColorSettingsModel, DocumentTextCollectionSettingsModel, TextDataSettingsModel, RectangleBoundsModel, SignatureFieldSettingsModel, InitialFieldSettingsModel, SignatureIndicatorSettingsModel, TextFieldSettingsModel, PasswordFieldSettingsModel, CheckBoxFieldSettingsModel, RadioButtonFieldSettingsModel, DropdownFieldSettingsModel, ListBoxFieldSettingsModel, ItemModel } from './pdfviewer-model';
+import { PdfViewerModel, HighlightSettingsModel, UnderlineSettingsModel, StrikethroughSettingsModel, LineSettingsModel, ArrowSettingsModel, RectangleSettingsModel, CircleSettingsModel, PolygonSettingsModel, StampSettingsModel, StickyNotesSettingsModel, CustomStampSettingsModel, VolumeSettingsModel, RadiusSettingsModel, AreaSettingsModel, PerimeterSettingsModel, DistanceSettingsModel, MeasurementSettingsModel, FreeTextSettingsModel, AnnotationSelectorSettingsModel, TextSearchColorSettingsModel, DocumentTextCollectionSettingsModel, TextDataSettingsModel, RectangleBoundsModel, SignatureFieldSettingsModel, InitialFieldSettingsModel, SignatureIndicatorSettingsModel, TextFieldSettingsModel, PasswordFieldSettingsModel, CheckBoxFieldSettingsModel, RadioButtonFieldSettingsModel, DropdownFieldSettingsModel, ListBoxFieldSettingsModel, ItemModel, SignatureDialogSettingsModel } from './pdfviewer-model';
 import { ToolbarSettingsModel, ShapeLabelSettingsModel } from './pdfviewer-model';
 // eslint-disable-next-line max-len
 import { ServerActionSettingsModel, AjaxRequestSettingsModel, CustomStampModel, HandWrittenSignatureSettingsModel, AnnotationSettingsModel, TileRenderingSettingsModel, ScrollSettingsModel, FormFieldModel, InkAnnotationSettingsModel } from './pdfviewer-model';
@@ -13,7 +13,7 @@ import { Magnification } from './index';
 import { Toolbar } from './index';
 import { ToolbarItem } from './index';
 // eslint-disable-next-line max-len
-import { LinkTarget, InteractionMode, SignatureFitMode, AnnotationType, AnnotationToolbarItem, LineHeadStyle, ContextMenuAction, FontStyle, TextAlignment, AnnotationResizerShape, AnnotationResizerLocation, ZoomMode, PrintMode, CursorType, ContextMenuItem, DynamicStampItem, SignStampItem, StandardBusinessStampItem, FormFieldType, AllowedInteraction, AnnotationDataFormat, SignatureType, CommentStatus, SignatureItem, FormDesignerToolbarItem } from './base/types';
+import { LinkTarget, InteractionMode, SignatureFitMode, AnnotationType, AnnotationToolbarItem, LineHeadStyle, ContextMenuAction, FontStyle, TextAlignment, AnnotationResizerShape, AnnotationResizerLocation, ZoomMode, PrintMode, CursorType, ContextMenuItem, DynamicStampItem, SignStampItem, StandardBusinessStampItem, FormFieldType, AllowedInteraction, AnnotationDataFormat, SignatureType, CommentStatus, SignatureItem, FormDesignerToolbarItem, DisplayMode } from './base/types';
 import { Annotation } from './index';
 import { LinkAnnotation } from './index';
 import { ThumbnailView } from './index';
@@ -39,7 +39,7 @@ import { PointModel, IElement, Rect, cornersPointsBeforeRotation } from '@syncfu
 import { renderAdornerLayer } from './drawing/dom-util';
 import { ThumbnailClickEventArgs } from './index';
 // eslint-disable-next-line max-len
-import { ValidateFormFieldsArgs, BookmarkClickEventArgs, AnnotationUnSelectEventArgs, BeforeAddFreeTextEventArgs, FormFieldFocusOutEventArgs, CommentEventArgs, FormFieldClickArgs, FormFieldAddArgs, FormFieldRemoveArgs, FormFieldPropertiesChangeArgs, FormFieldMouseLeaveArgs, FormFieldMouseoverArgs, FormFieldMoveArgs, FormFieldResizeArgs, FormFieldSelectArgs, FormFieldUnselectArgs } from './base';
+import { ValidateFormFieldsArgs, BookmarkClickEventArgs, AnnotationUnSelectEventArgs, BeforeAddFreeTextEventArgs, FormFieldFocusOutEventArgs, CommentEventArgs, FormFieldClickArgs, FormFieldAddArgs, FormFieldRemoveArgs, FormFieldPropertiesChangeArgs, FormFieldMouseLeaveArgs, FormFieldMouseoverArgs, FormFieldMoveArgs, FormFieldResizeArgs, FormFieldSelectArgs, FormFieldUnselectArgs, FormFieldDoubleClickArgs } from './base';
 // eslint-disable-next-line max-len
 import { AddSignatureEventArgs, RemoveSignatureEventArgs, MoveSignatureEventArgs, SignaturePropertiesChangeEventArgs, ResizeSignatureEventArgs, SignatureSelectEventArgs } from './base';
 import { ContextMenuSettingsModel } from './pdfviewer-model';
@@ -211,6 +211,12 @@ export class SignatureFieldSettings extends ChildProperty<SignatureFieldSettings
     public pageNumber: number;
 
     /**
+     * Specifies the properties of the signature Dialog Settings in the signature field.
+     */
+    @Property()
+    public signatureDialogSettings: SignatureDialogSettingsModel;
+
+    /**
      * Specifies the properties of the signature indicator in the signature field.
      */
     @Property()
@@ -277,6 +283,12 @@ export class InitialFieldSettings extends ChildProperty<InitialFieldSettings> {
     public isInitialField: boolean;
 
     /**
+     * Get or set the signature dialog settings for initial field.
+     */
+    @Property()
+    public initialDialogSettings: SignatureDialogSettingsModel;
+
+    /**
      * Specifies the properties of the signature indicator in the initial field.
      */
     @Property()
@@ -334,6 +346,22 @@ export class SignatureIndicatorSettings extends ChildProperty<SignatureIndicator
 
 }
 
+/**
+ * The `SignatureDialogSettings` module is used to customize the signature dialog box.
+ */
+export class SignatureDialogSettings extends ChildProperty<SignatureDialogSettings> {
+    /**
+     * Get or set the required signature options will be enabled in the signature dialog.
+     */
+    @Property(DisplayMode.Draw | DisplayMode.Text | DisplayMode.Upload)
+    public displayMode: DisplayMode;
+
+    /**
+     * Get or set a boolean value to show or hide the save signature check box option in the signature dialog. FALSE by default.
+     */
+    @Property(false)
+    public hideSaveSignature: boolean;
+}
 /**
  * The `ServerActionSettings` module is used to provide the server action methods of PDF viewer.
  */
@@ -2632,6 +2660,18 @@ export class HandWrittenSignatureSettings extends ChildProperty<HandWrittenSigna
     @Property('')
     public annotationSelectorSettings: AnnotationSelectorSettingsModel;
 
+    /**
+     * Get or set the Signature DialogSettings for Handwritten signature.
+     */
+    @Property()
+    public signatureDialogSettings: SignatureDialogSettingsModel;
+    
+    /**
+     * Get or set the initialDialogSettings for Handwritten initial.
+     */
+    @Property()
+    public initialDialogSettings: SignatureDialogSettingsModel;
+
 }
 
 /**
@@ -4094,6 +4134,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
      * FALSE by default
      *
      * @default false
+     * @deprecated
      */
     @Property(false)
     public hideSaveSignature: boolean;
@@ -4282,14 +4323,14 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
      * Get or set the signature field settings.
      */
     // eslint-disable-next-line max-len
-    @Property({ signatureIndicatorSettings: { opacity: 1, backgroundColor: 'orange', width: 19, height: 10, fontSize: 10, text: null, color: 'black' } })
+    @Property({ signatureIndicatorSettings: { opacity: 1, backgroundColor: 'orange', width: 19, height: 10, fontSize: 10, text: null, color: 'black' }, signatureDialogSettings: {displayMode: DisplayMode.Draw | DisplayMode.Text | DisplayMode.Upload, hideSaveSignature: false} })
     public signatureFieldSettings: SignatureFieldSettingsModel;
 
     /**
      * Get or set the initial field settings.
      */
     // eslint-disable-next-line max-len
-    @Property({ signatureIndicatorSettings: { opacity: 1, backgroundColor: 'orange', width: 19, height: 10, fontSize: 10, text: null, color: 'black' } })
+    @Property({ signatureIndicatorSettings: { opacity: 1, backgroundColor: 'orange', width: 19, height: 10, fontSize: 10, text: null, color: 'black' }, initialDialogSettings: {displayMode: DisplayMode.Draw | DisplayMode.Text | DisplayMode.Upload, hideSaveSignature: false} })
     public initialFieldSettings: InitialFieldSettingsModel;
 
     /**
@@ -4437,10 +4478,22 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
     public textSearchColorSettings: TextSearchColorSettingsModel;
 
     /**
+     * Get or set the signature dialog settings for signature field.
+     */
+     @Property({ displayMode: DisplayMode.Draw | DisplayMode.Text | DisplayMode.Upload, hideSaveSignature: false })
+    public signatureDialogSettings: SignatureDialogSettingsModel;
+
+    /**
+     * Get or set the signature dialog settings for initial field.
+     */
+    @Property({ displayMode: DisplayMode.Draw | DisplayMode.Text | DisplayMode.Upload, hideSaveSignature: false })
+    public initialDialogSettings: SignatureDialogSettingsModel;
+
+    /**
      * Defines the settings of handWrittenSignature.
      */
     // eslint-disable-next-line max-len
-    @Property({ signatureItem: ['Signature', 'Initial'], saveSignatureLimit: 1, saveInitialLimit: 1, opacity: 1, strokeColor: '#000000', width: 150, height: 100, thickness: 1, annotationSelectorSettings: { selectionBorderColor: '', resizerBorderColor: 'black', resizerFillColor: '#FF4081', resizerSize: 8, selectionBorderThickness: 1, resizerShape: 'Square', selectorLineDashArray: [], resizerLocation: AnnotationResizerLocation.Corners | AnnotationResizerLocation.Edges, resizerCursorType: null }, allowedInteractions: ['None'] })
+    @Property({ signatureItem: ['Signature', 'Initial'], saveSignatureLimit: 1, saveInitialLimit: 1, opacity: 1, strokeColor: '#000000', width: 150, height: 100, thickness: 1, annotationSelectorSettings: { selectionBorderColor: '', resizerBorderColor: 'black', resizerFillColor: '#FF4081', resizerSize: 8, selectionBorderThickness: 1, resizerShape: 'Square', selectorLineDashArray: [], resizerLocation: AnnotationResizerLocation.Corners | AnnotationResizerLocation.Edges, resizerCursorType: null }, allowedInteractions: ['None'], signatureDialogSettings: { displayMode: DisplayMode.Draw | DisplayMode.Text | DisplayMode.Upload, hideSaveSignature: false }, initialDialogSettings: { displayMode: DisplayMode.Draw | DisplayMode.Text | DisplayMode.Upload, hideSaveSignature: false} })
     public handWrittenSignatureSettings: HandWrittenSignatureSettingsModel;
 
     /**
@@ -5300,6 +5353,15 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
     public formFieldUnselect: EmitType<FormFieldUnselectArgs>;
 
     /**
+     * Triggers an event when the form field is double-clicked.
+     *
+     * @event
+     * @blazorProperty 'formFieldDoubleClick'
+     */
+    @Event()
+    public formFieldDoubleClick: EmitType<FormFieldDoubleClickArgs>;
+
+    /**
      * PDF document annotation collection.
      *
      * @private
@@ -5713,8 +5775,10 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
         'Font color': 'Font Color',
         'Text Align': 'Text Align',
         'Text Properties': 'Font Style',
-        'Draw Signature': 'Draw Signature',
-        'Draw Initial': 'Draw Initial',
+        'SignatureFieldDialogHeaderText': 'Add Signature',
+        'HandwrittenSignatureDialogHeaderText': 'Add Signature',
+        'InitialFieldDialogHeaderText': 'Add Initial',
+        'HandwrittenInitialDialogHeaderText': 'Add Initial',
         'Draw Ink': 'Draw Ink',
         'Create': 'Create',
         'Font family': 'Font Family',
@@ -6128,6 +6192,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
         }
         if (field.type === 'SignatureField') {
             if (!eventArgs.cancel) {
+                this.viewerBase.isInitialField = false;
                 this.viewerBase.signatureModule.showSignatureDialog(true);
             }
         }
@@ -6156,6 +6221,18 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
     public fireFormFieldRemoveEvent(name: string, field: IFormField, pageIndex: number): void {
         const eventArgs: FormFieldRemoveArgs = { name: name, field: field, pageIndex: pageIndex };
         this.trigger('formFieldRemove', eventArgs);
+    }
+
+    /**
+     * @param name - Returns the event name.
+     * @param field - Returns the double-clicked form field object.
+     * @param cancel - If TRUE, property panel of the form field does not open. FALSE by default.
+     * @private
+     */
+    // eslint-disable-next-line
+    public fireFormFieldDoubleClickEvent(eventArgs: FormFieldDoubleClickArgs): FormFieldDoubleClickArgs {
+        this.trigger('formFieldDoubleClick', eventArgs);
+        return eventArgs;
     }
 
     /**
@@ -6526,7 +6603,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
      * @private
      */
     // eslint-disable-next-line
-    public fireAnnotationAdd(pageNumber: number, index: string, type: AnnotationType, bounds: any, settings: any, textMarkupContent?: string, tmStartIndex?: number, tmEndIndex?: number, labelSettings?: ShapeLabelSettingsModel, multiPageCollection?: any): void {
+    public fireAnnotationAdd(pageNumber: number, index: string, type: AnnotationType, bounds: any, settings: any, textMarkupContent?: string, tmStartIndex?: number, tmEndIndex?: number, labelSettings?: ShapeLabelSettingsModel, multiPageCollection?: any, customStampName?: string): void {
         const eventArgs: AnnotationAddEventArgs = { name: 'annotationAdd', pageIndex: pageNumber, annotationId: index, annotationType: type, annotationBound: bounds, annotationSettings: settings };
         if (textMarkupContent) {
             if (isBlazor()) {
@@ -6544,6 +6621,9 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
         }
         if (multiPageCollection) {
             eventArgs.multiplePageCollection = multiPageCollection;
+        }
+        if (type === 'Image') {
+            eventArgs.customStampName = customStampName;
         }
         this.viewerBase.isAnnotationSelect = false;
         this.trigger('annotationAdd', eventArgs);

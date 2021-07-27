@@ -4222,7 +4222,6 @@ export class PivotEngine {
                 break;
             case 'calculatedfield':
                 isValueExist = true;
-                this.rawIndexObject[rowIndex[ri]] = rowIndex[ri];
                 let calcField: ICalculatedFields = this.calculatedFields[this.fields[value]];
                 let actualFormula: string = calcField.formula;
                 let aggregateField: { [key: string]: Object } = {};

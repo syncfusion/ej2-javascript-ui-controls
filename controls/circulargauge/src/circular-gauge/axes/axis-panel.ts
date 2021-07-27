@@ -109,12 +109,15 @@ export class AxisLayoutPanel {
                         newPoint = (endAngle > 180 && endAngle < 270) ? endPoint :
                             getLocationFromAngle(270 - 90, currentRadius, this.gauge.midPoint);
                         startXDiff = Math.abs(this.gauge.gaugeRect.x - Math.abs(newPoint.x - this.gauge.gaugeRect.x));
-                        newPoint = (endAngle >= 180 && endAngle <= 360) ? this.gauge.midPoint : endPoint;
+                        newPoint = (endAngle >= 180 && endAngle <= 360) ? this.gauge.midPoint : (endAngle <= 90) ? endPoint :
+                            getLocationFromAngle(0, currentRadius, this.gauge.midPoint);
                         endXDiff = Math.abs(newPoint.x - this.gauge.gaugeRect.width);
                         newPoint = (endAngle > 180 && endAngle < 270) ? this.gauge.midPoint : (endAngle >= 270 && endAngle <= 360) ?
                             endPoint : getLocationFromAngle(360 - 90, currentRadius, this.gauge.midPoint);
                         startYDiff = Math.abs(newPoint.y - this.gauge.gaugeRect.y);
-                        endYDiff = Math.abs(startPoint.y - (this.gauge.gaugeRect.y + this.gauge.gaugeRect.height));
+                        endPoint = (endAngle <= 360 && endAngle >= 270 || (endAngle >= 0 && endAngle < 90)) ?
+                            startPoint : ((270 - startAngle) < (endAngle - 90)) ? endPoint : startPoint;
+                        endYDiff = Math.abs(endPoint.y - (this.gauge.gaugeRect.y + this.gauge.gaugeRect.height));
                     }
                     if ((!isNullOrUndefined(startXDiff) && !isNullOrUndefined(endXDiff) && !isNullOrUndefined(startYDiff) &&
                         !isNullOrUndefined(endYDiff)) && ((startXDiff > 0 || endXDiff > 0) && (startYDiff > 0 || endYDiff > 0))) {
@@ -190,7 +193,7 @@ export class AxisLayoutPanel {
      */
     private calculateVisibleRange(axis: Axis, rect: Rect): void {
         const interval: number = axis.majorTicks.interval;
-        let minimumValue: number = Math.min(axis.minimum === null ? 0 : axis.minimum, axis.maximum);
+        let minimumValue: number = Math.min(axis.minimum === null ? 0 : axis.minimum, axis.maximum !== null ? axis.maximum : 100);
         let maximumValue: number = Math.max(axis.minimum, axis.maximum === null ? 100 : axis.maximum);
 
         axis.pointers.map((pointer: Pointer) => {

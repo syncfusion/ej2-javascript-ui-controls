@@ -75,7 +75,7 @@ export class Renderer {
             if (page.index === 0) {
                 marginTop = top - this.viewer.padding.top;
             }
-            // eslint-disable-next-line max-len
+            /* eslint-disable-next-line max-len */
             this.pageContext.fillRect(left - this.viewer.padding.left, marginTop, width + this.viewer.padding.left, height + this.viewer.padding.top);
         } else {
             this.pageContext.fillRect(left, top, width, height);
@@ -162,7 +162,7 @@ export class Renderer {
             const footerDistance: number = HelperMethods.convertPointToPixel(page.bodyWidgets[0].sectionFormat.footerDistance);
 
             const footerHeight: number = page.boundingRectangle.height -
-                // eslint-disable-next-line max-len
+                /* eslint-disable-next-line max-len */
                 Math.max(page.footerWidget.height + footerDistance, HelperMethods.convertPointToPixel(page.footerWidget.sectionFormat.bottomMargin));
             height = Math.max(page.boundingRectangle.height - headerFooterHeight, footerHeight);
             pageHt = page.boundingRectangle.height - footerDistance;
@@ -177,7 +177,7 @@ export class Renderer {
                 this.renderWidget(page, block);
             }
         }
-        this.renderFloatingItems(page, widget.floatingElements, "InFrontOfText");
+        this.renderFloatingItems(page, widget.floatingElements, 'InFrontOfText');
         if (cliped) {
             this.pageContext.restore();
         }
@@ -208,7 +208,7 @@ export class Renderer {
             const footerDistance: number = HelperMethods.convertPointToPixel(page.bodyWidgets[0].sectionFormat.footerDistance);
 
             let footerHeight: number = this.getScaledValue(page.boundingRectangle.height) -
-                // eslint-disable-next-line max-len
+                /* eslint-disable-next-line max-len */
                 this.getScaledValue(Math.max(page.footerWidget.height + footerDistance, HelperMethods.convertPointToPixel(page.footerWidget.sectionFormat.bottomMargin)));
             //Maximum footer height limit
             footerHeight = Math.max((this.getScaledValue(page.boundingRectangle.height) - headerFooterHeight), footerHeight);
@@ -236,7 +236,7 @@ export class Renderer {
         return type;
     }
 
-    // eslint-disable-next-line max-len
+    /* eslint-disable-next-line max-len */
     public renderDashLine(context: CanvasRenderingContext2D, x: number, y: number, width: number, fillStyle: string, isSmallDash: boolean): void {
         context.beginPath();
         context.strokeStyle = fillStyle;
@@ -288,7 +288,7 @@ export class Renderer {
                 ((bodyWidget.childWidgets[0] as TableWidget).childWidgets.length > 0) &&
                 (((bodyWidget.childWidgets[0] as TableWidget).childWidgets[0] as TableRowWidget).rowFormat.isHeader ||
                     page.repeatHeaderRowTableWidget)) {
-                // eslint-disable-next-line max-len
+                /* eslint-disable-next-line max-len */
                 this.renderHeader(page, widget as TableWidget, this.documentHelper.layout.getHeader(bodyWidget.childWidgets[0] as TableWidget));
             }
             this.renderWidget(page, widget);
@@ -1069,7 +1069,7 @@ export class Renderer {
         while (lineCount < (underline === 'Double' ? 2 : 1)) {
             lineCount++;
             let width: number = elementBox.width;
-            if (elementBox instanceof TextElementBox && isNullOrUndefined(elementBox.nextNode)) {              
+            if (elementBox instanceof TextElementBox && !(elementBox instanceof TabElementBox) && isNullOrUndefined(elementBox.nextNode)) {              
                 width = this.documentHelper.textHelper.getWidth(HelperMethods.trimEnd(elementBox.text), elementBox.characterFormat);
             }
             this.pageContext.fillRect(this.getScaledValue(left + elementBox.margin.left, 1), this.getScaledValue(y, 2), this.getScaledValue(width), this.getScaledValue(underlineHeight));

@@ -257,8 +257,8 @@ export class HyperlinkDialog {
         if (!isNullOrUndefined(this.navigationUrl)) {
             this.documentHelper.owner.editorModule.editHyperlink(this.documentHelper.selection, address, displayText, isBookmark);
         } else {
-            // eslint-disable-next-line max-len
-            let remove: boolean = (this.documentHelper.selection.text !== displayText || this.documentHelper.selection.text.indexOf('\r') === -1)  && !this.displayTextBox.disabled;
+            const remove: boolean = (this.documentHelper.selection.text !== displayText ||
+                this.documentHelper.selection.text.indexOf('\r') === -1) && !this.displayTextBox.disabled;
             this.documentHelper.owner.editorModule.insertHyperlinkInternal(address, displayText, remove, isBookmark);
         }
         this.documentHelper.hideDialog();

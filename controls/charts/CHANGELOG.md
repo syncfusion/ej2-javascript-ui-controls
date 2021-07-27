@@ -2,7 +2,28 @@
 
 ## [Unreleased]
 
-## 19.2.48 (2021-07-20)
+## 19.2.49 (2021-07-27)
+
+### Chart
+
+#### Bug Fixes
+
+- `#335336` - Chart series is now rendeirng properly while zooming in canvas mode.
+- `#330763` - Tooltip template is now working fine without cropping.
+
+### Accumulation chart
+
+#### Bug Fixes
+
+- `#335151` - Console error while selecting point after cancelling a tooltip has been fixed.
+
+## 19.2.47 (2021-07-13)
+
+### Sparkline
+
+#### Bug Fixes
+
+- Resolved the console script exception while mouseover on the Sparkline.
 
 ### Chart
 

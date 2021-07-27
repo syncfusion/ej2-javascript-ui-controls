@@ -1,3 +1,4 @@
+/* eslint-disable */
 import { L10n, createElement, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { TextSearchResults } from '../index';
 import { Button } from '@syncfusion/ej2-buttons';
@@ -143,10 +144,10 @@ export class SpellCheckDialog {
                 } else if (elements[i] instanceof TextElementBox) {
                     const matchResults: MatchResults = this.parent.spellChecker.getMatchedResultsFromElement(elements[i]);
                     const results: TextSearchResults = matchResults.textResults;
-                    // eslint-disable-next-line max-len
-                    const markIndex: number = (elements[i].ischangeDetected) ? (elements[i] as ErrorTextElementBox).start.offset : elements[i].line.getOffset(elements[i], 0);
-                    // eslint-disable-next-line max-len
-                    this.parent.searchModule.textSearch.updateMatchedTextLocation(matchResults.matches, results, matchResults.elementInfo, 0, elements[i], false, null, markIndex);
+                    const markIndex: number = (elements[i].ischangeDetected) ?
+                        (elements[i] as ErrorTextElementBox).start.offset : elements[i].line.getOffset(elements[i], 0);
+                    this.parent.searchModule.textSearch.updateMatchedTextLocation(matchResults.matches, results, matchResults.elementInfo,
+                        0, elements[i], false, null, markIndex);
                     for (let j: number = 0; j < results.length; j++) {
                         const element: ElementBox = this.parent.spellChecker.createErrorElementWithInfo(results.innerList[j], elements[i]);
                         this.parent.spellChecker.manageReplace(this.selectedText, element);
@@ -196,8 +197,8 @@ export class SpellCheckDialog {
             });
         } else {
             error = this.parent.spellChecker.manageSpecialCharacters(error, undefined, true);
-            // eslint-disable-next-line max-len
-            suggestions = this.parent.spellChecker.errorSuggestions.containsKey(error) ? this.parent.spellChecker.errorSuggestions.get(error) : [];
+            suggestions = this.parent.spellChecker.errorSuggestions.containsKey(error) ?
+                this.parent.spellChecker.errorSuggestions.get(error) : [];
             this.handleRetrievedSuggestion(error, suggestions);
         }
     }

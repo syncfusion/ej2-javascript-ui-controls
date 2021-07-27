@@ -3,7 +3,7 @@
  * Specifies whether to display the floating label above the input element.
  */
 import { removeClass, addClass, detach } from '@syncfusion/ej2-base';
-import { attributes, isNullOrUndefined, createElement, SanitizeHtmlHelper } from '@syncfusion/ej2-base';
+import { attributes, isNullOrUndefined, createElement } from '@syncfusion/ej2-base';
 import { FloatLabelType } from '@syncfusion/ej2-inputs';
 
 const FLOATLINE: string = 'e-float-line';
@@ -36,10 +36,10 @@ export function createFloatLabel(
         attributes(element, { 'aria-labelledby': floatLabelElement.id });
     }
     if (!isNullOrUndefined(inputElement.placeholder) && inputElement.placeholder !== '') {
-        floatLabelElement.innerText = SanitizeHtmlHelper.sanitize(inputElement.placeholder);
+        floatLabelElement.innerText = encodePlaceholder(inputElement.placeholder);
         inputElement.removeAttribute('placeholder');
     }
-    floatLabelElement.innerText = SanitizeHtmlHelper.sanitize(placeholder);
+    floatLabelElement.innerText = encodePlaceholder(placeholder);
     searchWrapper.appendChild(floatLinelement);
     searchWrapper.appendChild(floatLabelElement);
     overAllWrapper.classList.add('e-float-input');
@@ -160,5 +160,15 @@ export function floatLabelBlur(
         }
         addClass([label], LABELBOTTOM);
     }
+}
+export function encodePlaceholder(placeholder: string): string {
+    let result: string = '';
+    if (!isNullOrUndefined(placeholder) && placeholder !== '') {
+        const spanElement: HTMLElement = document.createElement('span');
+        spanElement.innerHTML = '<input  placeholder="' + placeholder + '"/>';
+        const hiddenInput: HTMLInputElement = (spanElement.children[0]) as HTMLInputElement;
+        result = hiddenInput.placeholder;
+    }
+    return result;
 }
 /* eslint-enable valid-jsdoc */

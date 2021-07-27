@@ -358,6 +358,119 @@ describe('Circular-Gauge Control', () => {
             gauge.axes[0].endAngle = 350;
             gauge.refresh();
         });
+        it('Checking Axis minimum value with maximum value as null', (done: Function) => {
+            gauge.loaded = (args: ILoadedEventArgs): void => {
+            svg = <HTMLElement>document.getElementById('container_Axis_0_Label_0').childNodes[0];
+            let value = Number(svg.textContent);
+            expect(value == gauge.axes[0].minimum).toBe(true);
+            done();   
+            };
+            gauge.axes = [{
+                minimum: 20,
+                maximum: null
+            }]
+            gauge.refresh();
+        });
+        it('Checking Axis minimum value', (done: Function) => {
+            gauge.loaded = (args: ILoadedEventArgs): void => {
+            svg = <HTMLElement>document.getElementById('container_Axis_0_Label_0').childNodes[0];
+            let value = Number(svg.textContent);
+            expect(value == gauge.axes[0].minimum).toBe(true);
+            done();   
+            };
+            gauge.axes[0].startAngle = 200;
+            gauge.axes[0].endAngle = 160;
+            gauge.axes[0].minimum = 30;
+            gauge.axes[0].maximum = null;
+            gauge.refresh();
+        });
+        it('Checking Axis maximum value with minimum value as null', (done: Function) => {
+            gauge.loaded = (args: ILoadedEventArgs): void => {
+            let count = document.getElementById("container_Axis_Labels_0").childElementCount;
+            svg = <HTMLElement>document.getElementById('container_Axis_0_Label_'+(count-1)).childNodes[0];
+            let value = Number(svg.textContent);
+            expect(value == gauge.axes[0].maximum).toBe(true);
+            done();   
+            };
+            gauge.axes = [{
+                minimum: null,
+                maximum: 80
+            }]
+            gauge.refresh();
+        });
+        it('Checking Axis maximum value', (done: Function) => {
+            gauge.loaded = (args: ILoadedEventArgs): void => {
+            let count = document.getElementById("container_Axis_Labels_0").childElementCount;
+            svg = <HTMLElement>document.getElementById('container_Axis_0_Label_' + (count - 1)).childNodes[0];
+            let value = Number(svg.textContent);
+            expect(value == gauge.axes[0].maximum).toBe(true);
+            done();   
+            };
+            gauge.axes[0].startAngle = 200;
+            gauge.axes[0].endAngle = 160;
+            gauge.axes[0].maximum = 70;
+            gauge.refresh();
+        });
+        it('Checking Axis width value with moveToCenter property', (done: Function) => {
+            gauge.loaded = (args: ILoadedEventArgs): void => {
+            svg = document.getElementById('container_AxisLine_0');
+            let value = svg.getAttribute('d');
+            let split = value.split(" ");
+            expect(Number(gauge.width.substring(0,3)) >= Number(split[4])*2).toBe(true);
+            done();   
+            };
+            gauge.moveToCenter = true;
+            gauge.width = '205px';
+            gauge.height = '220px';
+            gauge.axes[0].startAngle = 250;
+            gauge.axes[0].endAngle = 150;
+            gauge.axes[0].minimum = 0;
+            gauge.axes[0].maximum = 100;
+            gauge.refresh();
+        });
+        it('Checking Axis height value with moveToCenter property', (done: Function) => {
+            gauge.loaded = (args: ILoadedEventArgs): void => {
+            svg = document.getElementById('container_AxisLine_0');
+            let value = svg.getAttribute('d');
+            let split = value.split(" ");
+            expect(Number(gauge.height.substring(0,3)) >= Number(split[split.length -1])).toBe(true);
+            done();   
+            };
+            gauge.moveToCenter = true;
+            gauge.width = '205px';
+            gauge.height = '220px';
+            gauge.axes[0].startAngle = 250;
+            gauge.axes[0].endAngle = 150;
+            gauge.axes[0].minimum = 0;
+            gauge.axes[0].maximum = 100;
+            gauge.refresh();
+        });
+        it('Checking title size with pixel value', (done: Function) => {
+            gauge.loaded = (args: ILoadedEventArgs): void => {
+                svg = document.getElementById('container_CircularGaugeTitle');
+                let value = svg.getAttribute('y');
+                if (value !== null && Number(value) === 30.25) {
+                    expect(Number(value) == 30.25).toBe(true);
+                }
+                done();
+            };
+            gauge.title = 'CircularGauge';
+            gauge.titleStyle.size = '20px';
+            gauge.refresh();
+        });
+        it('Checking title size without pixel value', (done: Function) => {
+            gauge.loaded = (args: ILoadedEventArgs): void => {
+                svg = document.getElementById('container_CircularGaugeTitle');
+                let value = svg.getAttribute('y');
+                if (value !== null && Number(value) === 30.25) {
+                    expect(Number(value) == 30.25).toBe(true);
+                }
+                done();
+            };
+            gauge.title = 'CircularGauge';
+            gauge.titleStyle.size = '20';
+            gauge.refresh();
+        });
 
     });
 

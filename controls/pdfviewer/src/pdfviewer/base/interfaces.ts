@@ -1,4 +1,3 @@
-/* eslint-disable */
 /**
  * ContextMenu module is used to handle the context menus used in the control.
  *

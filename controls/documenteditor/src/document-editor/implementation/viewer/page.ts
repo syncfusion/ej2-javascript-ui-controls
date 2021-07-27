@@ -1,3 +1,4 @@
+/* eslint-disable */
 import { WTableFormat, WRowFormat, WCellFormat } from '../format/index';
 import {
     WidthType, WColor, AutoFitType, TextFormFieldType, CheckBoxSizeType, VerticalOrigin, VerticalAlignment,
@@ -48,7 +49,8 @@ export class Rect {
         this.width = width;
         this.height = height;
     }
-    /** 
+    /**
+     * @param currentBound
      * @private
      */
     public isIntersecting(currentBound: Rect): boolean {
@@ -58,7 +60,7 @@ export class Rect {
         }
         return true;
     }
-    /** 
+    /**
      * @private
      */
     public clone(): Rect {
@@ -561,7 +563,6 @@ export class BodyWidget extends BlockContainer {
         //         ((this as HeaderFooterWidget).currentNode as WHeaderFooter).layoutedWidgets.splice(index, 1);
         //     }
         //     this.currentNode = undefined;
-        /* eslint-disable brace-style */
         if (!isNullOrUndefined(this.page)) {
             let index: number = this.indexInOwner;
             if (this.indexInOwner > -1) {
@@ -1756,7 +1757,6 @@ export class TableWidget extends BlockWidget {
             this.tableHolder.autoFitColumn(containerWidth, tableWidth, isAutoWidth, this.isInsideTable);
         } else {
             // Fits the column width based on preferred width. i.e. Fixed layout.
-            // eslint-disable-next-line max-len
             this.tableHolder.fitColumns(containerWidth, tableWidth, isAutoWidth, this.leftIndent + this.rightIndent);
         }
         // if (!isAutoFit && isAutoWidth) {
@@ -5553,7 +5553,7 @@ export class ShapeElementBox extends ShapeBase {
         }
         if (this.textFrame) {
             shape.textFrame = this.textFrame.clone();
-            shape.textFrame.containerShape = shape;
+            shape.textFrame.containerShape = this.textFrame.containerShape;
         }
         if (this.margin) {
             shape.margin = this.margin.clone();
@@ -8137,7 +8137,6 @@ export class WTableHolder {
     /**
      * @private
      */
-    // eslint-disable-next-line max-len
     public fitColumns(containerWidth: number, preferredTableWidth: number, isAutoWidth: boolean, indent?: number): void {
         if (isNullOrUndefined(indent)) {
             indent = 0;

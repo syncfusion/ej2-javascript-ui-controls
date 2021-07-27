@@ -1177,8 +1177,8 @@ export class ResizeTool extends ToolBase {
                     }
                 }
                 // eslint-disable-next-line
-                if ((this.prevSource.shapeAnnotationType === 'FreeText' || this.prevSource.shapeAnnotationType === 'SignatureText') && this.commandHandler.selectedItems.annotations && this.commandHandler.selectedItems.annotations.length > 0) {
-                    this.commandHandler.nodePropertyChange(this.commandHandler.selectedItems.annotations[0], {fontSize:newObject.bounds.height / 2});
+                if ((this.prevSource.shapeAnnotationType === 'SignatureText') && this.commandHandler.selectedItems.annotations && this.commandHandler.selectedItems.annotations.length > 0) {
+                    this.commandHandler.nodePropertyChange(this.commandHandler.selectedItems.annotations[0], { fontSize: newObject.bounds.height / 2 });
                 }
 
                 // eslint-disable-next-line

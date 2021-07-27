@@ -61,10 +61,10 @@ export class SearchResults {
         const start: TextPosition = innerList.start;
         const end: TextPosition = innerList.end;
         let blockInfo: ParagraphInfo = this.searchModule.documentHelper.owner.selection.getParagraphInfo(start);
-        // eslint-disable-next-line max-len
+        /* eslint-disable-next-line max-len */
         const startIndex: string = this.searchModule.documentHelper.owner.selection.getHierarchicalIndex(blockInfo.paragraph, blockInfo.offset.toString());
         blockInfo = this.searchModule.documentHelper.owner.selection.getParagraphInfo(end);
-        // eslint-disable-next-line max-len
+        /* eslint-disable-next-line max-len */
         const endIndex: string = this.searchModule.documentHelper.owner.selection.getHierarchicalIndex(blockInfo.paragraph, blockInfo.offset.toString());
         return { 'startOffset': startIndex, 'endOffset': endIndex };
     }

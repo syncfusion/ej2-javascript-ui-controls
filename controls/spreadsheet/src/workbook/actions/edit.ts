@@ -96,8 +96,13 @@ export class WorkbookEdit {
             cell = sheet.rows[range[0]].cells[range[1]] = {};
         }
         if (!isValueOnly) {
-            const isFormula: boolean = checkIsFormula(value);
-            if (!isFormula) {
+            let isFormula: boolean = checkIsFormula(value);
+            isFormula = value === '#SPILL!' ? true : isFormula;
+            let skipFormula: boolean = false; // for unique formula
+            if (cell.formula && cell.formula.indexOf('UNIQUE') > - 1 && value === '') {
+                skipFormula = true;
+            }
+            if (!isFormula && !skipFormula) {
                 cell.formula = '';
                 cell.value = <string>parseIntValue(value);
             }
@@ -122,10 +127,18 @@ export class WorkbookEdit {
                     cell.value = <string>dateEventArgs.updatedVal;
                 }
             }
-            this.parent.notify(workbookFormulaOperation, eventArgs);
-            if (isFormula) {
-                cell.formula = <string>eventArgs.value;
-                value = cell.value;
+            if (value === '#SPILL!') {
+                cell.value = value;
+            } else {
+                if (!skipFormula && value !== '') {
+                    this.parent.notify(workbookFormulaOperation, eventArgs);
+                } else {
+                    value = cell.value;
+                }
+                if (isFormula) {
+                    cell.formula = <string>eventArgs.value;
+                    value = cell.value;
+                }
             }
         } else {
             if (value && value.toString().indexOf(this.decimalSep) > -1) {

@@ -283,6 +283,7 @@ export class PdfGridLayouter extends ElementLayouter {
      */
     private clientSize : SizeF;
     private gridLayoutFormat : PdfGridLayoutFormat;
+    private isHeader: boolean;
     // Constructors
     /**
      * Initializes a new instance of the `StringLayouter` class.
@@ -489,17 +490,36 @@ export class PdfGridLayouter extends ElementLayouter {
             for (let i : number = 0; i < this.Grid.headers.count; i++) {
                 let row : PdfGridRow = this.Grid.headers.getHeader(i);
                 let headerHeight : number = this.currentBounds.y;
+                this.isHeader = true;
+                if (startPage != this.currentPage) {
+                    for (let k: number = this.cellStartIndex; k <= this.cellEndIndex; k++) {
+                        if (row.cells.getCell(k).isCellMergeContinue) {
+                            row.cells.getCell(k).isCellMergeContinue = false;
+                            row.cells.getCell(k).value = "";
+                        }
+                    }
+                }
                 // RowLayoutResult
-                
-                let headerResult : RowLayoutResult = this.drawRow(row);
-                // if (headerHeight === this.currentBounds.y) {
-                //     drawHeader = true;
-                //     if (PdfGrid.repeatRowIndex === -1) {
-                //         PdfGrid.repeatRowIndex = this.rows.getRow.indexOf(row);
-                //     }
-                // } else {
+                let headerResult: RowLayoutResult = this.drawRow(row);
+                if (headerHeight === this.currentBounds.y) {
+                    drawHeader = true;
+                    if (PdfGridLayouter.repeatRowIndex === -1) {
+                        PdfGridLayouter.repeatRowIndex = i;
+                    }
+                } else {
                     drawHeader = false;
-                // }
+                }
+                if (!headerResult.isFinish && startPage !== null
+                    && format.layout !== PdfLayoutType.OnePage && drawHeader) {
+                    this.startLocation.x = this.currentBounds.x;
+                    this.currentPage = this.getNextPageformat(format);
+                    this.startLocation.y = this.currentBounds.y;
+                    if (typeof format.paginateBounds !== 'undefined' && format.paginateBounds.x === 0 && format.paginateBounds.y === 0 && format.paginateBounds.width === 0 && format.paginateBounds.height === 0)
+                        this.currentBounds.x += this.startLocation.x;
+
+                    this.drawRow(row);
+                }
+                this.isHeader = false;
             }
             let i : number = 0;
             let length : number = this.Grid.rows.count;

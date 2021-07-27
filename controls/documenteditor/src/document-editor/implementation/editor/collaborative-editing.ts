@@ -287,13 +287,13 @@ export class CollaborativeEditing {
         const end: TextPosition = new TextPosition(this.owner);
         end.setPosition(endElement.line, false);
         this.owner.sfdtExportModule.isPartialExport = true;
-        // eslint-disable-next-line max-len
+        /* eslint-disable-next-line max-len */
         const sfdtContent: string = this.owner.sfdtExportModule.write(start.currentWidget, start.offset, end.currentWidget, end.offset, false);
         this.owner.sfdtExportModule.isPartialExport = false;
         return sfdtContent;
     }
 
-    // eslint-disable-next-line max-len
+    /* eslint-disable-next-line max-len */
     private successHandler(result: CollaborativeEditingEventArgs, selectionInfo: LockSelectionInfo, startInfo: ParagraphInfo, endInfo: ParagraphInfo): void {
         const canLock: boolean = JSON.parse(result.data).canLock;
         if (canLock) {
@@ -324,7 +324,6 @@ export class CollaborativeEditing {
             localizeValue.setLocale(this.owner.locale);
             DialogUtility.alert({
                 content: localizeValue.getConstant('Already locked'),
-                // eslint-disable-next-line @typescript-eslint/naming-convention
                 closeOnEscape: true, showCloseIcon: true, position: { X: 'Center', Y: 'Center' }
             });
         }
@@ -334,7 +333,6 @@ export class CollaborativeEditing {
         localizeValue.setLocale(this.owner.locale);
         DialogUtility.alert({
             content: localizeValue.getConstant('Error in establishing connection with web server'),
-            // eslint-disable-next-line @typescript-eslint/naming-convention
             closeOnEscape: true, showCloseIcon: true, position: { X: 'Center', Y: 'Center' }
         });
     }

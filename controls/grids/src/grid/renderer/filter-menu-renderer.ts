@@ -1,5 +1,5 @@
-import { isNullOrUndefined, getValue, L10n, remove, isBlazor } from '@syncfusion/ej2-base';
-import { Browser, updateBlazorTemplate } from '@syncfusion/ej2-base';
+import { isNullOrUndefined, getValue, L10n, remove } from '@syncfusion/ej2-base';
+import { Browser } from '@syncfusion/ej2-base';
 import { FilterSettings } from '../base/grid';
 import { IGrid, IValueFormatter, IFilterArgs, EJ2Intance, FilterUI } from '../base/interface';
 import { PredicateModel } from '../base/grid-model';
@@ -222,7 +222,6 @@ export class FilterMenuRenderer {
                 this.parent.renderTemplates();
             } else {
                 const compElement: Element[] = column.getFilterTemplate()(fltrData, this.parent, 'filterTemplate', tempID);
-                updateBlazorTemplate(tempID, 'FilterTemplate', column);
                 appendChildren(valueDiv, compElement);
             }
             if (this.isMenuCheck) {
@@ -287,7 +286,7 @@ export class FilterMenuRenderer {
             if ((<HTMLInputElement>element.children[0]).value) {
                 fltrValue = (<HTMLInputElement>element.children[0]).value;
             } else {
-                if (!isBlazor() && !isNullOrUndefined((<EJ2Intance>(element.children[0] as Element)).ej2_instances)) {
+                if (!isNullOrUndefined((<EJ2Intance>(element.children[0] as Element)).ej2_instances)) {
                     // eslint-disable-next-line @typescript-eslint/no-explicit-any
                     fltrValue = ((<EJ2Intance>(((this.parent as any).isAngular ? element.children[0] :
                         element.querySelector('input')) as Element)).ej2_instances[0] as { value?: string | boolean | Date }).value;

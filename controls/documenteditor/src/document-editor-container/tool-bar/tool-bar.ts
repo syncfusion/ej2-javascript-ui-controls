@@ -2,7 +2,7 @@ import { createElement, L10n, isNullOrUndefined, EventHandler, classList, Browse
 import { Toolbar as EJ2Toolbar, ClickEventArgs } from '@syncfusion/ej2-navigations';
 import { Button } from '@syncfusion/ej2-buttons';
 import { DocumentEditorContainer } from '../document-editor-container';
-import { DropDownButton, DropDownButtonModel, MenuEventArgs, ItemModel } from '@syncfusion/ej2-splitbuttons';
+import { DropDownButton, MenuEventArgs, ItemModel } from '@syncfusion/ej2-splitbuttons';
 import { DocumentEditor } from '../../document-editor/document-editor';
 import { showSpinner, hideSpinner, DialogUtility } from '@syncfusion/ej2-popups';
 import { ToolbarItem, BeforeFileOpenArgs } from '../../document-editor/base';
@@ -216,7 +216,7 @@ export class Toolbar {
                         this.onBeforeRenderRestrictDropdown(args, id);
                     }
                 });
-                splitbutton.appendTo("#" + id + RESTRICT_EDITING_ID);
+                splitbutton.appendTo('#' + id + RESTRICT_EDITING_ID);
             }
             if (this.toolbarItems.indexOf('FormFields') >= 0) {
                 const splitbutton: DropDownButton = new DropDownButton({
@@ -227,7 +227,7 @@ export class Toolbar {
                     cssClass: 'e-de-toolbar-btn-first e-caret-hide',
                     select: this.onDropDownButtonSelect.bind(this)
                 });
-                splitbutton.appendTo("#" + id + FORM_FIELDS_ID);
+                splitbutton.appendTo('#' + id + FORM_FIELDS_ID);
             }
         }
     }
@@ -666,7 +666,6 @@ export class Toolbar {
             DialogUtility.alert({
                 content: this.container.localObj.getConstant('Error in establishing connection with web server'),
                 closeOnEscape: true, showCloseIcon: true,
-                // eslint-disable-next-line @typescript-eslint/naming-convention
                 position: { X: 'Center', Y: 'Center' }
             });
         } else {
@@ -813,12 +812,12 @@ export class Toolbar {
         const id: string = this.container.element.id + TOOLBAR_ID;
         if (this.toolbarItems.indexOf('Undo') >= 0) {
             // We can optimize this condition check to single bool validation instead of array collection.
-            // eslint-disable-next-line max-len
+            /* eslint-disable-next-line max-len */
             this.toolbar.enableItems(document.getElementById(id + UNDO_ID).parentElement, this.container.documentEditor.editorHistory.canUndo());
         }
         if (this.toolbarItems.indexOf('Redo') >= 0) {
             // We can optimize this condition check to single bool validation instead of array collection.
-            // eslint-disable-next-line max-len
+            /* eslint-disable-next-line max-len */
             this.toolbar.enableItems(document.getElementById(id + REDO_ID).parentElement, this.container.documentEditor.editorHistory.canRedo());
         }
     }

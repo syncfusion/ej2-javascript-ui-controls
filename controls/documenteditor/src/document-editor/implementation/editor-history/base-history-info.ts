@@ -34,7 +34,6 @@ export class BaseHistoryInfo {
     public documentHelper: DocumentHelper;
     private actionIn: Action;
     private removedNodesIn: IWidget[];
-    /* eslint-disable */
     private modifiedPropertiesIn: Object[];
     private modifiedNodeLength: number[];
     private selectionStartIn: string;
@@ -243,8 +242,8 @@ export class BaseHistoryInfo {
         let start: string = this.selectionStart;
         let end: string = this.selectionEnd;
         let isForwardSelection: boolean = TextPosition.isForwardSelection(start, end);
-        // eslint-disable-next-line max-len  
-        if (this.modifiedProperties.length > 0 || this.action === 'Selection' || this.action === 'ClearCharacterFormat' || this.action === 'ClearParagraphFormat') {
+        if (this.modifiedProperties.length > 0 || this.action === 'Selection'
+            || this.action === 'ClearCharacterFormat' || this.action === 'ClearParagraphFormat') {
             selectionStartTextPosition = this.owner.selection.getTextPosBasedOnLogicalIndex(start);
             selectionEndTextPosition = this.owner.selection.getTextPosBasedOnLogicalIndex(end);
             this.revertModifiedProperties(selectionStartTextPosition, selectionEndTextPosition);

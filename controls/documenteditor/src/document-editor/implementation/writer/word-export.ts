@@ -895,21 +895,21 @@ export class WordExport {
     private getFootNoteNumberFormat(numberFormat: string): string {
         let patternType: string;
         switch (numberFormat) {
-            case 'UpperCaseRoman':
-                patternType = 'upperRoman';
-                break;
-            case 'LowerCaseRoman':
-                patternType = 'lowerRoman';
-                break;
-            case 'UpperCaseLetter':
-                patternType = 'upperLetter';
-                break;
-            case 'LowerCaseLetter':
-                patternType = 'lowerLetter';
-                break;
-            default:
-                patternType = 'decimal';
-                break;
+        case 'UpperCaseRoman':
+            patternType = 'upperRoman';
+            break;
+        case 'LowerCaseRoman':
+            patternType = 'lowerRoman';
+            break;
+        case 'UpperCaseLetter':
+            patternType = 'upperLetter';
+            break;
+        case 'LowerCaseLetter':
+            patternType = 'lowerLetter';
+            break;
+        default:
+            patternType = 'decimal';
+            break;
         }
         return patternType;
     }
@@ -917,12 +917,12 @@ export class WordExport {
 
     private getFootNoteNumberRestart(numberRestart: string): string {
         switch (numberRestart) {
-            case 'RestartForEachSection ':
-                return 'eachSect';
-            case 'RestartForEachPage':
-                return 'eachPage';
-            default:
-                return 'continuous';
+        case 'RestartForEachSection ':
+            return 'eachSect';
+        case 'RestartForEachPage':
+            return 'eachPage';
+        default:
+            return 'continuous';
         }
     }
 
@@ -1148,7 +1148,7 @@ export class WordExport {
         }
     }
     // serialize the content Control
-    // eslint-disable-next-line max-len
+    /* eslint-disable-next-line max-len */
     private serializeContentControl(writer: XmlWriter, contentControlItem: any, item: any, isLastSection?: boolean, inlines?: boolean): void {
         if (isNullOrUndefined(contentControlItem)) {
             throw new Error('contentCOntrol should not be undefined');
@@ -1160,7 +1160,7 @@ export class WordExport {
         }
     }
     // serialize Content Control Properties
-    // eslint-disable-next-line max-len
+    /* eslint-disable-next-line max-len */
     private serializeContentProperties(writer: XmlWriter, contentProperties: any, items: any, isLastSection: boolean, inlines?: boolean): void {
         const repeatSdt: any = undefined;
         if (!isNullOrUndefined(contentProperties.title)) {
@@ -3457,7 +3457,7 @@ export class WordExport {
             writer.writeStartElement('a', 'noFill', this.aNamespace);
             writer.writeEndElement();
         }
-        let lineWeight: number = shape.lineFormat.weight ? shape.lineFormat.weight * this.emusPerPoint : this.emusPerPoint;
+        let lineWeight: number = shape.lineFormat.weight ? shape.lineFormat.weight * this.emusPerPoint: this.emusPerPoint;
         writer.writeStartElement('a', 'ln', this.aNamespace);
         writer.writeAttributeString(undefined, 'w', undefined, lineWeight.toString());
         if ((!isNullOrUndefined(shape.lineFormat.lineFormatType) && shape.lineFormat.lineFormatType !== 'None')

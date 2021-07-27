@@ -1,4 +1,3 @@
-/* eslint-disable */
 import { createElement, Browser, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { ContextMenu as Context, MenuEventArgs, MenuItemModel, BeforeOpenCloseMenuEventArgs } from '@syncfusion/ej2-navigations';
 import { PdfViewer, PdfViewerBase, IContextMenu } from '../index';
@@ -28,11 +27,10 @@ export class ContextMenu implements IContextMenu {
      */
     public previousAction: string;
     /**
-     * @param pdfViewer
-     * @param pdfViewerBase
-     * @param pdfViewer
-     * @param pdfViewerBase
-     * @private
+     * Initialize the constructor of ontextmenu
+     *
+     * @param { PdfViewer } pdfViewer - Specified PdfViewer class.
+     * @param { PdfViewerBase } pdfViewerBase - The pdfViewerBase.
      */
     constructor(pdfViewer: PdfViewer, pdfViewerBase: PdfViewerBase) {
         this.pdfViewer = pdfViewer;
@@ -53,6 +51,7 @@ export class ContextMenu implements IContextMenu {
     }
     /**
      * @private
+     * @returns {void}
      */
     public createContextMenu(): void {
         this.contextMenuElement = createElement('ul', { id: this.pdfViewer.element.id + '_context_menu', className: 'e-pv-context-menu' });
@@ -95,7 +94,6 @@ export class ContextMenu implements IContextMenu {
         return target;
     }
 
-    // eslint-disable-next-line
     private contextMenuOnBeforeOpen(args: BeforeOpenCloseMenuEventArgs): void {
         const target: HTMLElement = this.setTarget(args);
         // eslint-disable-next-line max-len
@@ -154,16 +152,20 @@ export class ContextMenu implements IContextMenu {
                     this.pdfViewerBase.getElement('_context_menu_separator').classList.add('e-menu-hide');
                     this.pdfViewerBase.getElement('_context_menu_comment_separator').classList.add('e-menu-hide');
                     // eslint-disable-next-line max-len
-                } else if (this.pdfViewer.selectedItems.annotations.length !== 0 && (this.pdfViewer.selectedItems.annotations[0].shapeAnnotationType === 'HandWrittenSignature'||this.pdfViewer.selectedItems.annotations[0].shapeAnnotationType === 'SignatureText'||this.pdfViewer.selectedItems.annotations[0].shapeAnnotationType === 'SignatureImage')) {
+                } else if (this.pdfViewer.selectedItems.annotations.length !== 0 && (this.pdfViewer.selectedItems.annotations[0].shapeAnnotationType === 'HandWrittenSignature' || this.pdfViewer.selectedItems.annotations[0].shapeAnnotationType === 'SignatureText' || this.pdfViewer.selectedItems.annotations[0].shapeAnnotationType === 'SignatureImage')) {
                     this.onOpeningForShape(false, true);
                     // eslint-disable-next-line max-len
                 } else if (this.pdfViewer.selectedItems.annotations.length !== 0 && this.pdfViewer.selectedItems.annotations[0].shapeAnnotationType !== 'Path') {
                     this.onOpeningForShape(true);
-                } else if(this.pdfViewer.selectedItems.formFields.length !== 0 && this.pdfViewer.selectedItems.formFields[0].formFieldAnnotationType && this.pdfViewer.designerMode) {
+                    // eslint-disable-next-line max-len
+                } else if (this.pdfViewer.selectedItems.formFields.length !== 0 && this.pdfViewer.selectedItems.formFields[0].formFieldAnnotationType && this.pdfViewer.designerMode) {
                     this.onOpeningForShape(true);
-                    if (!isNullOrUndefined(this.pdfViewer.toolbar) && !isNullOrUndefined(this.pdfViewer.toolbar.formDesignerToolbarModule))
-                    this.pdfViewer.toolbar.formDesignerToolbarModule.showHideDeleteIcon(true);
+                    // eslint-disable-next-line max-len
+                    if (!isNullOrUndefined(this.pdfViewer.toolbar) && !isNullOrUndefined(this.pdfViewer.toolbar.formDesignerToolbarModule)) {
+                        this.pdfViewer.toolbar.formDesignerToolbarModule.showHideDeleteIcon(true);
+                    }
                 } else {
+                    // eslint-disable-next-line
                     let target: any = this.pdfViewerBase.designerModetarget;
                     if (args.event && args.event.target) {
                         target = args.event.target;
@@ -184,6 +186,7 @@ export class ContextMenu implements IContextMenu {
                         this.pdfViewerBase.getElement('_context_menu_comment_separator').classList.remove('e-menu-hide');
                         // eslint-disable-next-line max-len
                         this.contextMenuObj.enableItems([this.pdfViewer.localeObj.getConstant('Cut'), this.pdfViewer.localeObj.getConstant('Copy'), this.pdfViewer.localeObj.getConstant('Paste'), this.pdfViewer.localeObj.getConstant('Delete Context'), this.pdfViewer.localeObj.getConstant('Comment')], false);
+                        // eslint-disable-next-line max-len
                     } else if (this.pdfViewer.annotationModule && this.pdfViewer.annotationModule.textMarkupAnnotationModule.currentTextMarkupAnnotation) {
                         // eslint-disable-next-line max-len
                         this.contextMenuObj.hideItems([this.pdfViewer.localeObj.getConstant('Highlight context'), this.pdfViewer.localeObj.getConstant('Underline context'), this.pdfViewer.localeObj.getConstant('Strikethrough context'), this.pdfViewer.localeObj.getConstant('Properties'), this.pdfViewer.localeObj.getConstant('Cut'),
@@ -266,7 +269,7 @@ export class ContextMenu implements IContextMenu {
                                         }
                                     }
                                     if (!isDisabled) {
-                                        hideMenuItems.splice(k, 1); 
+                                        hideMenuItems.splice(k, 1);
                                     }
                                 } else {
                                     hideMenuItems.splice(k, 1);
@@ -310,7 +313,7 @@ export class ContextMenu implements IContextMenu {
         } else {
             this.contextMenuObj.enableItems([this.pdfViewer.localeObj.getConstant('Comment')], false);
         }
-        if(this.pdfViewer.selectedItems.formFields.length !=0) {
+        if (this.pdfViewer.selectedItems.formFields.length !== 0) {
             this.contextMenuObj.enableItems([this.pdfViewer.localeObj.getConstant('Comment')], false);
         }
     }
@@ -318,7 +321,7 @@ export class ContextMenu implements IContextMenu {
     private onOpeningForShape(isProp: boolean, isSignature?: boolean): void {
         if (this.pdfViewer.annotation && this.pdfViewer.annotation.isShapeCopied) {
             this.contextMenuObj.enableItems([this.pdfViewer.localeObj.getConstant('Paste')], true);
-        } else if(this.pdfViewer.formDesigner && this.pdfViewer.formDesigner.isShapeCopied){
+        } else if (this.pdfViewer.formDesigner && this.pdfViewer.formDesigner.isShapeCopied) {
             this.contextMenuObj.enableItems([this.pdfViewer.localeObj.getConstant('Paste')], true);
         } else {
             this.contextMenuObj.enableItems([this.pdfViewer.localeObj.getConstant('Paste')], false);
@@ -330,7 +333,8 @@ export class ContextMenu implements IContextMenu {
             if (this.pdfViewer.selectedItems.annotations.length !== 0 && (this.pdfViewer.selectedItems.annotations[0].shapeAnnotationType === 'Line' || this.pdfViewer.selectedItems.annotations[0].shapeAnnotationType === 'LineWidthArrowHead' ||
                 this.pdfViewer.selectedItems.annotations[0].shapeAnnotationType === 'Distance')) {
                 this.contextMenuObj.showItems([this.pdfViewer.localeObj.getConstant('Properties')]);
-            } else if(this.pdfViewer.selectedItems.formFields.length!==0 && this.pdfViewer.selectedItems.formFields[0].formFieldAnnotationType) {
+                // eslint-disable-next-line max-len
+            } else if (this.pdfViewer.selectedItems.formFields.length !== 0 && this.pdfViewer.selectedItems.formFields[0].formFieldAnnotationType) {
                 this.contextMenuObj.hideItems([this.pdfViewer.localeObj.getConstant('Comment')]);
                 this.pdfViewerBase.getElement('_context_menu_separator').classList.add('e-menu-hide');
                 this.contextMenuObj.showItems([this.pdfViewer.localeObj.getConstant('Properties')]);
@@ -360,6 +364,7 @@ export class ContextMenu implements IContextMenu {
     }
     /**
      * @private
+     * @returns {void}
      */
     public destroy(): void {
         if (this.contextMenuObj) {
@@ -369,11 +374,18 @@ export class ContextMenu implements IContextMenu {
     }
     /**
      * @private
+     * @returns {void}
      */
     public close(): void {
         this.contextMenuObj.close();
     }
-
+    /**
+     * open the context menu.
+     * @param {number} top - The top.
+     * @param {number} left - The left.
+     * @param {HTMLElement} target - The target.
+     * @returns {void}
+     */
     public open(top: number, left: number, target: HTMLElement): void {
         this.contextMenuObj.open(top, left, target);
     }

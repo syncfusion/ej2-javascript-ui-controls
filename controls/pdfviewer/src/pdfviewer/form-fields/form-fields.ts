@@ -470,11 +470,19 @@ export class FormFields {
                 let type: FormFieldType = currentData['Name'];
                 if (currentData.Name !== 'ink') {
                     // eslint-disable-next-line
-                    let formFieldCollection: FormFieldModel = { name: this.retriveFieldName(currentData), id: this.pdfViewer.element.id + 'input_' + parseFloat(currentData['PageIndex']) + '_' + i, isReadOnly: false, type: type, value: this.retriveCurrentValue(currentData), signatureType: [], fontName: '' };
+                    let formFieldCollection: FormFieldModel = { name: this.retriveFieldName(currentData), id: this.pdfViewer.element.id + 'input_' + parseFloat(currentData['PageIndex']) + '_' + i, isReadOnly: false, type: type, value: this.retriveCurrentValue(currentData), fontName: '' };
                     this.pdfViewer.formFieldCollections.push(formFieldCollection);
                 }
             }
         }
+    }
+    private updateFormFieldsCollection(formField: any): void {
+        let type: FormFieldType = formField['Name'];
+        let formFieldCollection: FormFieldModel = {
+            name: this.retriveFieldName(formField), id: formField.uniqueID, isReadOnly: formField.IsReadonly, isRequired: formField.IsRequired, isSelected: type === 'CheckBox' ? false : formField.Selected,
+            isChecked: type === 'RadioButton' ? false : formField.Selected, type: type, value: type === 'ListBox' || type === 'DropDown' ? formField.SelectedValue : formField.Value, fontName: formField.Font ? formField.Font.Name : ''
+        };
+        this.pdfViewer.formFieldCollections[this.pdfViewer.formFieldCollections.findIndex(el => el.id === formFieldCollection.id)] = formFieldCollection;
     }
     // eslint-disable-next-line
     public updateFormFieldValues(formFields: any): void {
@@ -606,6 +614,9 @@ export class FormFields {
                 } else if (currentData.Name === 'CheckBox') {
                     if (currentData.Selected === false) {
                         this.pdfViewerBase.validateForm = true;
+                        this.pdfViewerBase.nonFillableFields[currentData.GroupName] = currentData.Selected;
+                    } else {
+                        delete (this.pdfViewerBase.nonFillableFields[currentData.GroupName]);
                     }
                     if (currentData.CheckboxIndex && currentData.Selected) {
                         datas[currentData.GroupName] = currentData.CheckboxIndex;
@@ -1285,10 +1296,12 @@ export class FormFields {
                             }
                         }
                     }
+                    this.updateFormFieldsCollection(currentData);
                     break;
                 } else if (target && target.getAttribute('list') != null && target.type === 'text' && currentData.uniqueID === target.list.id) {
                     currentData.SelectedValue = target.value;
                 }
+                this.updateFormFieldsCollection(currentData);
             }
             window.sessionStorage.removeItem(this.pdfViewerBase.documentId + '_formfields');
             this.pdfViewerBase.setItemInSessionStorage(FormFieldsData, '_formfields');

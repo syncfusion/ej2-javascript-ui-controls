@@ -594,10 +594,6 @@ export class Edit implements IAction {
                             !isNullOrUndefined((<EJ2Intance>(elements[k] as Element)).ej2_instances[0].value)) {
                             elements[k].blur();
                             value = ((<EJ2Intance>(elements[k] as Element)).ej2_instances[0] as { value?: string | boolean | Date }).value;
-                            if ((column.type === 'date' || column.type === 'dateTime' || column.type === 'datetime') &&
-                                ((<EJ2Intance>(elements[k] as Element)).ej2_instances[0].isServerRendered)) {
-                                value = elements[k].value;
-                            }
                         }
                     } else if ((<EJ2Intance>(elements[k] as Element)).ej2_instances) {
                         value = ((<EJ2Intance>(elements[k] as Element)).ej2_instances[0] as { value?: string | boolean | Date }).value;

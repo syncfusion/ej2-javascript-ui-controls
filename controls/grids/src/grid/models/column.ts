@@ -1,5 +1,5 @@
 import { merge, isNullOrUndefined, extend, Property } from '@syncfusion/ej2-base';
-import { NumberFormatOptions, DateFormatOptions, isBlazor } from '@syncfusion/ej2-base';
+import { NumberFormatOptions, DateFormatOptions } from '@syncfusion/ej2-base';
 import { DataManager, Query, DataUtil } from '@syncfusion/ej2-data';
 import { ICellFormatter, IFilterUI, IEditCell, CommandModel, IFilter, CommandButtonOptions, DataResult, IGrid } from '../base/interface';
 import { TextAlign, ClipMode, Action, SortDirection, CommandButtonType, freezeDirection, freezeTable } from '../base/enum';
@@ -102,7 +102,6 @@ export class Column {
      * Defines the data type of the column.
      *
      * @default null
-     * @blazorType ColumnType
      */
     public type: string;
 
@@ -114,7 +113,6 @@ export class Column {
      *
      * @default null
      * @aspType string
-     * @blazorType string
      */
     public format: string | NumberFormatOptions | DateFormatOptions;
 
@@ -256,7 +254,6 @@ export class Column {
      * Defines the method used to apply custom header cell values from external function and display this on each header cell rendered.
      *
      * @default null
-     * @deprecated
      */
     public headerValueAccessor: HeaderValueAccessor | string;
 
@@ -332,8 +329,6 @@ export class Column {
      * Defines the type of component for editable.
      *
      * @default 'stringedit'
-     * @blazorType EditType
-     * @blazorDefaultValue EditType.DefaultEdit
      */
     public editType: string;
 
@@ -349,7 +344,6 @@ export class Column {
      *
      * @default null
      * @aspType object
-     * @blazorType object
      */
     public defaultValue: string;
 
@@ -478,7 +472,7 @@ export class Column {
         merge(this, options);
         this.parent = parent;
         if (this.type === 'none') {
-            this.type = (isBlazor() && !isNullOrUndefined(this.template) && isNullOrUndefined(this.field)) ? 'none' : null;
+            this.type = null;
         } else if (this.type) {
             this.type = typeof(this.type) === 'string' ? this.type.toLowerCase() : undefined;
         }
@@ -495,7 +489,7 @@ export class Column {
         }
         this.toJSON = () => {
             const col: object = {};
-            const skip: string[] = ['filter', 'dataSource', isBlazor() ? ' ' : 'headerText', 'template', 'headerTemplate', 'edit',
+            const skip: string[] = ['filter', 'dataSource', 'headerText', 'template', 'headerTemplate', 'edit',
                 'editTemplate', 'filterTemplate', 'commandsTemplate', 'parent'];
             const keys : string[] = Object.keys(this);
             for (let i: number = 0; i < keys.length; i++) {
@@ -786,7 +780,6 @@ export interface ColumnModel {
      * Define the alignment of column header which is used to align the text of column header.
      *
      * @aspdefaultvalueignore
-     * @blazorDefaultValueIgnore
      * @default null
      */
     headerTextAlign?: TextAlign;
@@ -802,7 +795,6 @@ export interface ColumnModel {
      * Defines the data type of the column.
      *
      * @default null
-     * @blazorType ColumnType
      */
     type?: string;
 
@@ -814,7 +806,6 @@ export interface ColumnModel {
      *
      * @default null
      * @aspType string
-     * @blazorType string
      */
     format?: string | NumberFormatOptions | DateFormatOptions;
 
@@ -1026,7 +1017,6 @@ export interface ColumnModel {
      * ```
      *
      * @default null
-     * @deprecated
      */
     headerValueAccessor?: HeaderValueAccessor | string;
 
@@ -1103,8 +1093,6 @@ export interface ColumnModel {
      * Defines the type of component for editing.
      *
      * @default 'stringedit'
-     * @blazorType EditType
-     * @blazorDefaultValue EditType.DefaultEdit
      */
     editType?: string;
 
@@ -1120,7 +1108,6 @@ export interface ColumnModel {
      *
      * @default null
      * @aspType object
-     * @blazorType object
      */
     defaultValue?: string;
 
@@ -1340,9 +1327,6 @@ export interface ActionEventArgs {
     filterChoiceCount: number;
     /**
      * Defines the excel search operator
-     *
-     * @blazorType Syncfusion.Blazor.Operator
-     * @blazorDefaultValue Syncfusion.Blazor.Operator.None
      */
     excelSearchOperator: string;
 }
@@ -1358,8 +1342,6 @@ export class CommandColumnModel {
     public title: string;
     /**
      * Define the command Button type.
-     *
-     * @blazorDefaultValue none
      */
     @Property()
     public type: CommandButtonType;
